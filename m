@@ -1,114 +1,161 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH v2 2/4] power: add axp20x-battery driver
-Date: Mon, 10 Oct 2016 14:57:26 +0200
-Message-ID: <20161010125726.GJ3462@lukather>
-References: <20161009062714.5085-1-icenowy@aosc.xyz>
- <20161009062714.5085-2-icenowy@aosc.xyz>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [Rebase][PATCH v5 5/5] PM / runtime: Optimize the use of device links
+Date: Mon, 10 Oct 2016 14:57:19 +0200
+Message-ID: <1574332.vLCXXYhHrf@vostro.rjw.lan>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============2308901754984139505=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161009062714.5085-2-icenowy@aosc.xyz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Icenowy Zheng <icenowy@aosc.xyz>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Michael Haas <haas@computerlinguist.org>, Russell King <linux@armlinux.org.uk>, quentin@lukather.free-electrons.com, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kernel.org>, Bruno =?iso-8859-1?Q?Pr=E9mont?= <bonbons@linux-vserser.org>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <13957403.ZrB4mMbICz@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---===============2308901754984139505==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="k1BdFSKqAqVdu8k/"
-Content-Disposition: inline
+If the device has no links to suppliers that should be used for
+runtime PM (links with DEVICE_LINK_PM_RUNTIME set), there is no
+reason to walk the list of suppliers for that device during
+runtime suspend and resume.
 
+Add a simple mechanism to detect that case and possibly avoid the
+extra unnecessary overhead.
 
---k1BdFSKqAqVdu8k/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/core.c          |   20 +++++++++++++-------
+ drivers/base/power/runtime.c |   23 ++++++++++++++++++++---
+ include/linux/pm.h           |    1 +
+ include/linux/pm_runtime.h   |    4 ++++
+ 4 files changed, 38 insertions(+), 10 deletions(-)
 
-Hi Icenowy,
-
-On Sun, Oct 09, 2016 at 02:27:12PM +0800, Icenowy Zheng wrote:
-> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
-> +		ret =3D regmap_read(power->regmap, AXP20X_BATT_DISCHRG_I_H, &dh);
-> +		if (ret)
-> +			return ret;
-> +		ret =3D regmap_read(power->regmap, AXP20X_BATT_DISCHRG_I_L, &dl);
-> +		if (ret)
-> +			return ret;
-> +		/* it's a 12 bit integer, high 8-bit is stored in dh */
-> +		val->intval =3D dh << 4 | dl >> 4;
-> +		break;
-> +	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +		ret =3D regmap_read(power->regmap, AXP20X_BATT_V_H, &dh);
-> +		if (ret)
-> +			return ret;
-> +		ret =3D regmap_read(power->regmap, AXP20X_BATT_V_L, &dl);
-> +		if (ret)
-> +			return ret;
-> +		/* it's a 12 bit integer, high 8-bit is stored in dh */
-> +		val->intval =3D dh << 4 | dl >> 4;
-> +		/* The formula below is from axp22_vbat_to_mV function
-> +		 * of Allwinner 3.4 kernel.
-> +		 */
-> +		val->intval =3D val->intval * 1100 / 1000;
-> +		break;
-
-I really feel that this should be implemented through a IIO driver
-(like the AXP288). This is especially true for the AXP209 and its
-multiple GPIOs that can be muxed to a general purpose ADC, but it's
-also true for the AXP221 / 223 TS pin that can also be used as an ADC.
-
-Quentin has been working on this lately for the AXP209, feel free to
-sync with him to support the AXP22*
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---k1BdFSKqAqVdu8k/
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJX+5A2AAoJEBx+YmzsjxAghjcP/iGGOskvxjncUTy4aoL3U+Ig
-s+PbApkTZyheW7Sfbgr2H0fzbyfuybhF2ArVaExOkYnNMU4H9QQbP+jWV/DThb++
-rc0NuKKKAv8tSPhad/baRkyiw+ZfmePLFX6VEsT1yxBbez/B/2W4DZq7KEeQtTxx
-zierUsTSlmTfflDvF78nxKD4tDr4h101FMRP8Q2N8LHgE19t4cPbfA5uI9k24Apk
-dsbJ/YrCF41PYnx+hXe1rQQLJZOnX6hjN9YcguAmWUzE3QzMbkh+cRIecKwdLyvc
-TYX5i4RhFwSG5R57u/Sx0EYoyzWlW9JgSJNpqw8kG0rDbZ3jpBv4zwEIylt27zm8
-jjNistQzURehwAFeyth9igIF/i+bZ9zSkm+iwp1+XQkET0AVqBLTpfeRNE0uUG6e
-rAEUCadXXBCh+JgJYhAecUQ0AbbAWH/Lusr/en1SmbL/LpFUECcsbhImgsS+iDXe
-uoqib84WT5CiTMjHG4eRDFlBUKvziRpD0GJ5h+S2Nn9XlpvXW/+GA5+hR0/uG+fm
-0DmzCnuhu4MpPWEhcjghRfyk172BcHP2g/KO8tCLUIfQkfpi6riM2Q69nXPIWZYa
-3oWHi5b9zg7i4Z9gf99klvyBLyRBeflcjQWgrUrzEeQPjfWTDTlZBFtvdYVpXkX9
-qSwfM7ZsU9ikpz2Gf1Xo
-=PYKL
------END PGP SIGNATURE-----
-
---k1BdFSKqAqVdu8k/--
-
-
---===============2308901754984139505==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============2308901754984139505==--
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -170,14 +170,17 @@ struct device_link *device_link_add(stru
+ 	if (!link)
+ 		goto out;
+ 
+-	if ((flags & DL_FLAG_PM_RUNTIME) && (flags & DL_FLAG_RPM_ACTIVE)) {
+-		if (pm_runtime_get_sync(supplier) < 0) {
+-			pm_runtime_put_noidle(supplier);
+-			kfree(link);
+-			link = NULL;
+-			goto out;
++	if (flags & DL_FLAG_PM_RUNTIME) {
++		if (flags & DL_FLAG_RPM_ACTIVE) {
++			if (pm_runtime_get_sync(supplier) < 0) {
++				pm_runtime_put_noidle(supplier);
++				kfree(link);
++				link = NULL;
++				goto out;
++			}
++			link->rpm_active = true;
+ 		}
+-		link->rpm_active = true;
++		pm_runtime_new_link(consumer);
+ 	}
+ 	get_device(supplier);
+ 	link->supplier = supplier;
+@@ -250,6 +253,9 @@ static void __device_link_del(struct dev
+ 	dev_info(link->consumer, "Dropping the link to %s\n",
+ 		 dev_name(link->supplier));
+ 
++	if (link->flags & DL_FLAG_PM_RUNTIME)
++		pm_runtime_drop_link(link->consumer);
++
+ 	list_del_rcu(&link->s_node);
+ 	list_del_rcu(&link->c_node);
+ 	call_srcu(&device_links_srcu, &link->rcu_head, __device_link_free_srcu);
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -305,6 +305,7 @@ static int __rpm_callback(int (*cb)(stru
+ 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
+ {
+ 	int retval, idx;
++	bool use_links = dev->power.links_count > 0;
+ 
+ 	if (dev->power.irq_safe) {
+ 		spin_unlock(&dev->power.lock);
+@@ -318,7 +319,7 @@ static int __rpm_callback(int (*cb)(stru
+ 		 * routine returns, so it is safe to read the status outside of
+ 		 * the lock.
+ 		 */
+-		if (dev->power.runtime_status == RPM_RESUMING) {
++		if (use_links && dev->power.runtime_status == RPM_RESUMING) {
+ 			idx = device_links_read_lock();
+ 
+ 			retval = rpm_get_suppliers(dev);
+@@ -341,8 +342,9 @@ static int __rpm_callback(int (*cb)(stru
+ 		 *
+ 		 * Do that if resume fails too.
+ 		 */
+-		if ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
+-		    || (dev->power.runtime_status == RPM_RESUMING && retval)) {
++		if (use_links
++		    && ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
++		    || (dev->power.runtime_status == RPM_RESUMING && retval))) {
+ 			idx = device_links_read_lock();
+ 
+  fail:
+@@ -1593,6 +1595,21 @@ void pm_runtime_put_suppliers(struct dev
+ 	device_links_read_unlock(idx);
+ }
+ 
++void pm_runtime_new_link(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	dev->power.links_count++;
++	spin_unlock_irq(&dev->power.lock);
++}
++
++void pm_runtime_drop_link(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	WARN_ON(dev->power.links_count == 0);
++	dev->power.links_count--;
++	spin_unlock_irq(&dev->power.lock);
++}
++
+ /**
+  * pm_runtime_force_suspend - Force a device into suspend state if needed.
+  * @dev: Device to suspend.
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -597,6 +597,7 @@ struct dev_pm_info {
+ 	unsigned int		use_autosuspend:1;
+ 	unsigned int		timer_autosuspends:1;
+ 	unsigned int		memalloc_noio:1;
++	unsigned int		links_count;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+ 	int			runtime_error;
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -58,6 +58,8 @@ extern void pm_runtime_set_memalloc_noio
+ extern void pm_runtime_clean_up_links(struct device *dev);
+ extern void pm_runtime_get_suppliers(struct device *dev);
+ extern void pm_runtime_put_suppliers(struct device *dev);
++extern void pm_runtime_new_link(struct device *dev);
++extern void pm_runtime_drop_link(struct device *dev);
+ 
+ static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
+ {
+@@ -192,6 +194,8 @@ static inline void pm_runtime_set_memall
+ static inline void pm_runtime_clean_up_links(struct device *dev) {}
+ static inline void pm_runtime_get_suppliers(struct device *dev) {}
+ static inline void pm_runtime_put_suppliers(struct device *dev) {}
++static inline void pm_runtime_new_link(struct device *dev) {}
++static inline void pm_runtime_drop_link(struct device *dev) {}
+ 
+ #endif /* !CONFIG_PM */
+ 
