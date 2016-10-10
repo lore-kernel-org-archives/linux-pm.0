@@ -1,28 +1,47 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 4/8] PM / Domains: Save the fwnode in genpd_power_state
-Date: Mon, 10 Oct 2016 12:03:33 +0200
-Message-ID: <CAPDyKFqp8B67Hxpj+07aQ_8kEZNJ_5M+MexWz21jLpWWacw+bw@mail.gmail.com>
-References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org> <1475879821-8035-5-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 7/8] PM / Domains: Support IRQ safe PM domains
+Date: Mon, 10 Oct 2016 13:04:58 +0200
+Message-ID: <CAPDyKFqDtcL+qz3jx=1wGiXO-u_g7k_RW-PEeB7L1hyqNQH-wg@mail.gmail.com>
+References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org> <1475879821-8035-8-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f171.google.com ([209.85.216.171]:34290 "EHLO
-        mail-qt0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751307AbcJJKDf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 06:03:35 -0400
-Received: by mail-qt0-f171.google.com with SMTP id q7so48535467qtq.1
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 03:03:34 -0700 (PDT)
-In-Reply-To: <1475879821-8035-5-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1475879821-8035-8-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: Lina Iyer <lina.iyer@linaro.org>
 Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 8 October 2016 at 00:36, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Save the fwnode for the genpd state in the state node. PM Domain clients
-> may use the fwnode to read in the platform specific domain state
-> properties and associate them with the state.
+On 8 October 2016 at 00:37, Lina Iyer <lina.iyer@linaro.org> wrote:
+> Generic Power Domains currently support turning on/off only in process
+> context. This prevents the usage of PM domains for domains that could be
+> powered on/off in a context where IRQs are disabled. Many such domains
+> exist today and do not get powered off, when the IRQ safe devices in
+> that domain are powered off, because of this limitation.
 >
+> However, not all domains can operate in IRQ safe contexts. Genpd
+> therefore, has to support both cases where the domain may or may not
+> operate in IRQ safe contexts. Configuring genpd to use an appropriate
+> lock for that domain, would allow domains that have IRQ safe devices to
+> runtime suspend and resume, in atomic context.
+>
+> To achieve domain specific locking, set the domain's ->flag to
+> GENPD_FLAG_IRQ_SAFE while defining the domain. This indicates that genpd
+> should use a spinlock instead of a mutex for locking the domain. Locking
+> is abstracted through genpd_lock() and genpd_unlock() functions that use
+> the flag to determine the appropriate lock to be used for that domain.
+>
+> Domains that have lower latency to suspend and resume and can operate
+> with IRQs disabled may now be able to save power, when the component
+> devices and sub-domains are idle at runtime.
+>
+> The restriction this imposes on the domain hierarchy is that non-IRQ
+> safe domains may not have IRQ-safe subdomains, but IRQ safe domains may
+> have IRQ safe and non-IRQ safe subdomains and devices.
+>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 
 Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
@@ -31,34 +50,225 @@ Kind regards
 Uffe
 
 > ---
->  drivers/base/power/domain.c | 1 +
->  include/linux/pm_domain.h   | 1 +
->  2 files changed, 2 insertions(+)
+>  drivers/base/power/domain.c | 111 ++++++++++++++++++++++++++++++++++++++++----
+>  include/linux/pm_domain.h   |  10 +++-
+>  2 files changed, 110 insertions(+), 11 deletions(-)
 >
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 4208b67..e0f31fe 100644
+> index d0ae559..87a016a 100644
 > --- a/drivers/base/power/domain.c
 > +++ b/drivers/base/power/domain.c
-> @@ -1957,6 +1957,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
->
->         genpd_state->power_on_latency_ns = 1000 * exit_latency;
->         genpd_state->power_off_latency_ns = 1000 * entry_latency;
-> +       genpd_state->fwnode = &state_node->fwnode;
->
->         return 0;
->  }
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index b489496..6a89881 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -39,6 +39,7 @@ struct genpd_power_state {
->         s64 power_off_latency_ns;
->         s64 power_on_latency_ns;
->         s64 residency_ns;
-> +       struct fwnode_handle *fwnode;
+> @@ -74,11 +74,70 @@ static const struct genpd_lock_ops genpd_mtx_ops = {
+>         .unlock = genpd_unlock_mtx,
 >  };
 >
->  struct generic_pm_domain {
+> +static void genpd_lock_spin(struct generic_pm_domain *genpd)
+> +       __acquires(&genpd->slock)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&genpd->slock, flags);
+> +       genpd->lock_flags = flags;
+> +}
+> +
+> +static void genpd_lock_nested_spin(struct generic_pm_domain *genpd,
+> +                                       int depth)
+> +       __acquires(&genpd->slock)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave_nested(&genpd->slock, flags, depth);
+> +       genpd->lock_flags = flags;
+> +}
+> +
+> +static int genpd_lock_interruptible_spin(struct generic_pm_domain *genpd)
+> +       __acquires(&genpd->slock)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&genpd->slock, flags);
+> +       genpd->lock_flags = flags;
+> +       return 0;
+> +}
+> +
+> +static void genpd_unlock_spin(struct generic_pm_domain *genpd)
+> +       __releases(&genpd->slock)
+> +{
+> +       spin_unlock_irqrestore(&genpd->slock, genpd->lock_flags);
+> +}
+> +
+> +static const struct genpd_lock_ops genpd_spin_ops = {
+> +       .lock = genpd_lock_spin,
+> +       .lock_nested = genpd_lock_nested_spin,
+> +       .lock_interruptible = genpd_lock_interruptible_spin,
+> +       .unlock = genpd_unlock_spin,
+> +};
+> +
+>  #define genpd_lock(p)                  p->lock_ops->lock(p)
+>  #define genpd_lock_nested(p, d)                p->lock_ops->lock_nested(p, d)
+>  #define genpd_lock_interruptible(p)    p->lock_ops->lock_interruptible(p)
+>  #define genpd_unlock(p)                        p->lock_ops->unlock(p)
+>
+> +#define genpd_is_irq_safe(genpd)       (genpd->flags & GENPD_FLAG_IRQ_SAFE)
+> +
+> +static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+> +               struct generic_pm_domain *genpd)
+> +{
+> +       bool ret;
+> +
+> +       ret = pm_runtime_is_irq_safe(dev) && !genpd_is_irq_safe(genpd);
+> +
+> +       /* Warn once for each IRQ safe dev in no sleep domain */
+> +       if (ret)
+> +               dev_warn_once(dev, "PM domain %s will not be powered off\n",
+> +                               genpd->name);
+> +
+> +       return ret;
+> +}
+> +
+>  /*
+>   * Get the generic PM domain for a particular struct device.
+>   * This validates the struct device pointer, the PM domain pointer,
+> @@ -343,7 +402,12 @@ static int genpd_poweroff(struct generic_pm_domain *genpd, bool is_async)
+>                 if (stat > PM_QOS_FLAGS_NONE)
+>                         return -EBUSY;
+>
+> -               if (!pm_runtime_suspended(pdd->dev) || pdd->dev->power.irq_safe)
+> +               /*
+> +                * Do not allow PM domain to be powered off, when an IRQ safe
+> +                * device is part of a non-IRQ safe domain.
+> +                */
+> +               if (!pm_runtime_suspended(pdd->dev) ||
+> +                       irq_safe_dev_in_no_sleep_domain(pdd->dev, genpd))
+>                         not_suspended++;
+>         }
+>
+> @@ -506,10 +570,10 @@ static int genpd_runtime_suspend(struct device *dev)
+>         }
+>
+>         /*
+> -        * If power.irq_safe is set, this routine will be run with interrupts
+> -        * off, so it can't use mutexes.
+> +        * If power.irq_safe is set, this routine may be run with
+> +        * IRQs disabled, so suspend only if the PM domain also is irq_safe.
+>          */
+> -       if (dev->power.irq_safe)
+> +       if (irq_safe_dev_in_no_sleep_domain(dev, genpd))
+>                 return 0;
+>
+>         genpd_lock(genpd);
+> @@ -543,8 +607,11 @@ static int genpd_runtime_resume(struct device *dev)
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+>
+> -       /* If power.irq_safe, the PM domain is never powered off. */
+> -       if (dev->power.irq_safe) {
+> +       /*
+> +        * As we don't power off a non IRQ safe domain, which holds
+> +        * an IRQ safe device, we don't need to restore power to it.
+> +        */
+> +       if (irq_safe_dev_in_no_sleep_domain(dev, genpd)) {
+>                 timed = false;
+>                 goto out;
+>         }
+> @@ -586,7 +653,8 @@ static int genpd_runtime_resume(struct device *dev)
+>  err_stop:
+>         genpd_stop_dev(genpd, dev);
+>  err_poweroff:
+> -       if (!dev->power.irq_safe) {
+> +       if (!pm_runtime_is_irq_safe(dev) ||
+> +               (pm_runtime_is_irq_safe(dev) && genpd_is_irq_safe(genpd))) {
+>                 genpd_lock(genpd);
+>                 genpd_poweroff(genpd, 0);
+>                 genpd_unlock(genpd);
+> @@ -1223,6 +1291,17 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
+>             || genpd == subdomain)
+>                 return -EINVAL;
+>
+> +       /*
+> +        * If the domain can be powered on/off in an IRQ safe
+> +        * context, ensure that the subdomain can also be
+> +        * powered on/off in that context.
+> +        */
+> +       if (!genpd_is_irq_safe(genpd) && genpd_is_irq_safe(subdomain)) {
+> +               WARN("Parent %s of subdomain %s must be IRQ safe\n",
+> +                               genpd->name, subdomain->name);
+> +               return -EINVAL;
+> +       }
+> +
+>         link = kzalloc(sizeof(*link), GFP_KERNEL);
+>         if (!link)
+>                 return -ENOMEM;
+> @@ -1337,6 +1416,17 @@ static int genpd_set_default_power_state(struct generic_pm_domain *genpd)
+>         return 0;
+>  }
+>
+> +static void genpd_lock_init(struct generic_pm_domain *genpd)
+> +{
+> +       if (genpd->flags & GENPD_FLAG_IRQ_SAFE) {
+> +               spin_lock_init(&genpd->slock);
+> +               genpd->lock_ops = &genpd_spin_ops;
+> +       } else {
+> +               mutex_init(&genpd->mlock);
+> +               genpd->lock_ops = &genpd_mtx_ops;
+> +       }
+> +}
+> +
+>  /**
+>   * pm_genpd_init - Initialize a generic I/O PM domain object.
+>   * @genpd: PM domain object to initialize.
+> @@ -1356,8 +1446,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+>         INIT_LIST_HEAD(&genpd->master_links);
+>         INIT_LIST_HEAD(&genpd->slave_links);
+>         INIT_LIST_HEAD(&genpd->dev_list);
+> -       mutex_init(&genpd->mlock);
+> -       genpd->lock_ops = &genpd_mtx_ops;
+> +       genpd_lock_init(genpd);
+>         genpd->gov = gov;
+>         INIT_WORK(&genpd->power_off_work, genpd_power_off_work_fn);
+>         atomic_set(&genpd->sd_count, 0);
+> @@ -2133,7 +2222,9 @@ static int pm_genpd_summary_one(struct seq_file *s,
+>         }
+>
+>         list_for_each_entry(pm_data, &genpd->dev_list, list_node) {
+> -               kobj_path = kobject_get_path(&pm_data->dev->kobj, GFP_KERNEL);
+> +               kobj_path = kobject_get_path(&pm_data->dev->kobj,
+> +                               genpd_is_irq_safe(genpd) ?
+> +                               GFP_ATOMIC : GFP_KERNEL);
+>                 if (kobj_path == NULL)
+>                         continue;
+>
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 811b968..81ece61 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -15,9 +15,11 @@
+>  #include <linux/err.h>
+>  #include <linux/of.h>
+>  #include <linux/notifier.h>
+> +#include <linux/spinlock.h>
+>
+>  /* Defines used for the flags field in the struct generic_pm_domain */
+>  #define GENPD_FLAG_PM_CLK      (1U << 0) /* PM domain uses PM clk */
+> +#define GENPD_FLAG_IRQ_SAFE    (1U << 1) /* PM domain operates in atomic */
+>
+>  enum gpd_status {
+>         GPD_STATE_ACTIVE = 0,   /* PM domain is active */
+> @@ -76,7 +78,13 @@ struct generic_pm_domain {
+>         unsigned int state_idx; /* state that genpd will go to when off */
+>         void *free; /* Free the state that was allocated for default */
+>         const struct genpd_lock_ops *lock_ops;
+> -       struct mutex mlock;
+> +       union {
+> +               struct mutex mlock;
+> +               struct {
+> +                       spinlock_t slock;
+> +                       unsigned long lock_flags;
+> +               };
+> +       };
+>
+>  };
+>
 > --
 > 2.7.4
 >
