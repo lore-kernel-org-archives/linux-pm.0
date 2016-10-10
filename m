@@ -1,178 +1,89 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 1/8] PM / Domains: Make genpd state allocation dynamic
-Date: Mon, 10 Oct 2016 09:05:24 -0600
-Message-ID: <20161010150524.GB44885@linaro.org>
-References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
- <1475879821-8035-2-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFo1wFdNo3hR9WUZJ=sonKi4_sWb1PUFvPvyHeavbvqLvw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 177171] New: Reduced frequency window for conservative governor
+Date: Mon, 10 Oct 2016 15:43:23 +0000
+Message-ID: <bug-177171-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFo1wFdNo3hR9WUZJ=sonKi4_sWb1PUFvPvyHeavbvqLvw@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Axel Haslam <ahaslam+renesas@baylibre.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:51246 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752286AbcJJPne (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Oct 2016 11:43:34 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 1CE2D20279
+        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 15:43:25 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+        by mail.kernel.org (Postfix) with ESMTP id 0D19C201BC
+        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 15:43:24 +0000 (UTC)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Mon, Oct 10 2016 at 02:40 -0600, Ulf Hansson wrote:
->On 8 October 2016 at 00:36, Lina Iyer <lina.iyer@linaro.org> wrote:
->> Allow PM Domain states to be defined dynamically by the drivers. This
->> removes the limitation on the maximum number of states possible for a
->> domain.
->>
->> Cc: Axel Haslam <ahaslam+renesas@baylibre.com>
->> Suggested-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> ---
->>  arch/arm/mach-imx/gpc.c     | 17 ++++++++++-------
->>  drivers/base/power/domain.c | 36 ++++++++++++++++++++++++------------
->>  include/linux/pm_domain.h   |  5 ++---
->>  3 files changed, 36 insertions(+), 22 deletions(-)
->>
->> diff --git a/arch/arm/mach-imx/gpc.c b/arch/arm/mach-imx/gpc.c
->> index 0df062d..57a410b 100644
->> --- a/arch/arm/mach-imx/gpc.c
->> +++ b/arch/arm/mach-imx/gpc.c
->> @@ -380,13 +380,6 @@ static struct pu_domain imx6q_pu_domain = {
->>                 .name = "PU",
->>                 .power_off = imx6q_pm_pu_power_off,
->>                 .power_on = imx6q_pm_pu_power_on,
->> -               .states = {
->> -                       [0] = {
->> -                               .power_off_latency_ns = 25000,
->> -                               .power_on_latency_ns = 2000000,
->> -                       },
->> -               },
->> -               .state_count = 1,
->>         },
->>  };
->>
->> @@ -430,6 +423,16 @@ static int imx_gpc_genpd_init(struct device *dev, struct regulator *pu_reg)
->>         if (!IS_ENABLED(CONFIG_PM_GENERIC_DOMAINS))
->>                 return 0;
->>
->> +       imx6q_pu_domain.base.states = devm_kzalloc(dev,
->> +                                       sizeof(*imx6q_pu_domain.base.states),
->> +                                       GFP_KERNEL);
->> +       if (!imx6q_pu_domain.base.states)
->> +               return -ENOMEM;
->> +
->> +       imx6q_pu_domain.base.states[0].power_off_latency_ns = 25000;
->> +       imx6q_pu_domain.base.states[0].power_on_latency_ns = 2000000;
->> +       imx6q_pu_domain.base.state_count = 1;
->> +
->>         pm_genpd_init(&imx6q_pu_domain.base, NULL, false);
->>         return of_genpd_add_provider_onecell(dev->of_node,
->>                                              &imx_gpc_onecell_data);
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index e023066..4e87170 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -1282,6 +1282,21 @@ out:
->>  }
->>  EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
->>
->> +static int genpd_set_default_power_state(struct generic_pm_domain *genpd)
->> +{
->> +       struct genpd_power_state *state;
->> +
->> +       state = kzalloc(sizeof(*state), GFP_KERNEL);
->> +       if (!state)
->> +               return -ENOMEM;
->> +
->> +       genpd->states = state;
->> +       genpd->state_count = 1;
->> +       genpd->free = state;
->> +
->> +       return 0;
->> +}
->> +
->>  /**
->>   * pm_genpd_init - Initialize a generic I/O PM domain object.
->>   * @genpd: PM domain object to initialize.
->> @@ -1293,6 +1308,8 @@ EXPORT_SYMBOL_GPL(pm_genpd_remove_subdomain);
->>  int pm_genpd_init(struct generic_pm_domain *genpd,
->>                   struct dev_power_governor *gov, bool is_off)
->>  {
->> +       int ret;
->> +
->>         if (IS_ERR_OR_NULL(genpd))
->>                 return -EINVAL;
->>
->> @@ -1325,19 +1342,12 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
->>                 genpd->dev_ops.start = pm_clk_resume;
->>         }
->>
->> -       if (genpd->state_idx >= GENPD_MAX_NUM_STATES) {
->> -               pr_warn("Initial state index out of bounds.\n");
->> -               genpd->state_idx = GENPD_MAX_NUM_STATES - 1;
->> -       }
->> -
->> -       if (genpd->state_count > GENPD_MAX_NUM_STATES) {
->> -               pr_warn("Limiting states to  %d\n", GENPD_MAX_NUM_STATES);
->> -               genpd->state_count = GENPD_MAX_NUM_STATES;
->> -       }
->> -
->>         /* Use only one "off" state if there were no states declared */
->> -       if (genpd->state_count == 0)
->> -               genpd->state_count = 1;
->> +       if (genpd->state_count == 0) {
->> +               ret = genpd_set_default_power_state(genpd);
->> +               if (ret)
->> +                       return ret;
->> +       }
->>
->>         mutex_lock(&gpd_list_lock);
->>         list_add(&genpd->gpd_list_node, &gpd_list);
->> @@ -1374,6 +1384,8 @@ static int genpd_remove(struct generic_pm_domain *genpd)
->>                 kfree(link);
->>         }
->>
->> +       kfree(genpd->free);
->> +
->
->To be safe, let's move this after cancel_work_sync() - as to prevent
->no accesses is made to ->states pointer after you have freed it.
->
-OK
+https://bugzilla.kernel.org/show_bug.cgi?id=177171
 
-Thanks,
-Lina
+            Bug ID: 177171
+           Summary: Reduced frequency window for conservative governor
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 4.8
+          Hardware: All
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: linux-pm@vger.kernel.org
+          Reporter: aleksey@rybalkin.org
+        Regression: No
 
->>         list_del(&genpd->gpd_list_node);
->>         mutex_unlock(&genpd->lock);
->>         cancel_work_sync(&genpd->power_off_work);
->> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
->> index a09fe5c..de1d8f3 100644
->> --- a/include/linux/pm_domain.h
->> +++ b/include/linux/pm_domain.h
->> @@ -19,8 +19,6 @@
->>  /* Defines used for the flags field in the struct generic_pm_domain */
->>  #define GENPD_FLAG_PM_CLK      (1U << 0) /* PM domain uses PM clk */
->>
->> -#define GENPD_MAX_NUM_STATES   8 /* Number of possible low power states */
->> -
->>  enum gpd_status {
->>         GPD_STATE_ACTIVE = 0,   /* PM domain is active */
->>         GPD_STATE_POWER_OFF,    /* PM domain is off */
->> @@ -70,9 +68,10 @@ struct generic_pm_domain {
->>         void (*detach_dev)(struct generic_pm_domain *domain,
->>                            struct device *dev);
->>         unsigned int flags;             /* Bit field of configs for genpd */
->> -       struct genpd_power_state states[GENPD_MAX_NUM_STATES];
->> +       struct genpd_power_state *states;
->>         unsigned int state_count; /* number of states */
->>         unsigned int state_idx; /* state that genpd will go to when off */
->> +       void *free; /* Free the state that was allocated for default */
->>
->>  };
->>
->> --
->> 2.7.4
->>
->
->After the minor change suggested above, you may add my ack.
->
->Kind regards
->Uffe
+Hello.
+
+Since 4.8 the conservative governor has a reduced frequency window on my
+machine (ThinkPad X250), despite correct values for scaling_{min,max}_freq
+
+$ cat /sys/devices/system/cpu/cpufreq/policy0/scaling_{min,max}_freq
+500000
+2200000
+
+The actual window became from 2000000 to 2200000 with accordingly more heating
+and more cpu fan activations, which is not optimal.
+
+I have bisected the problem to this commit: 
+
+commit d352cf47d93e39494b44b792cca8d35a3a0bd9b3
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Mon Jun 13 23:33:49 2016 +0200
+
+    cpufreq: conservative: Do not use transition notifications
+
+    The conservative governor registers a transition notifier so it
+    can update its internal requested_freq value if it falls out of the
+    policy->min...policy->max range, but requested_freq is not really
+    necessary.
+
+    That value is used to track the frequency requested by the governor
+    previously, but policy->cur can be used instead of it and then the
+    governor will not have to worry about updating the tracked value when
+    the current frequency changes independently (for example, as a result
+    of min or max changes).
+
+    Accodringly, drop requested_freq from struct cs_policy_dbs_info
+    and modify cs_dbs_timer() to use policy->cur instead of it.
+    While at it, notice that __cpufreq_driver_target() clamps its
+    target_freq argument between policy->min and policy->max, so
+    the callers of it don't have to do that and make additional
+    changes in cs_dbs_timer() in accordance with that.
+
+    After these changes the transition notifier used by the conservative
+    governor is not necessary any more, so drop it, which also makes it
+    possible to drop the struct cs_governor definition and simplify the
+    code accordingly.
+
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
