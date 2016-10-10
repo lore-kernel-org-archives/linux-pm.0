@@ -1,89 +1,80 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 177171] New: Reduced frequency window for conservative governor
-Date: Mon, 10 Oct 2016 15:43:23 +0000
-Message-ID: <bug-177171-137361@https.bugzilla.kernel.org/>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 5/8] dt/bindings: Update binding for PM domain idle
+ states
+Date: Mon, 10 Oct 2016 16:45:06 +0100
+Message-ID: <4e55d6ad-8de7-72d7-7512-5e4ff2aabc79@arm.com>
+References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
+ <1475879821-8035-6-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:51246 "EHLO mail.kernel.org"
+Received: from foss.arm.com ([217.140.101.70]:49272 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752286AbcJJPne (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Oct 2016 11:43:34 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 1CE2D20279
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 15:43:25 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-        by mail.kernel.org (Postfix) with ESMTP id 0D19C201BC
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 15:43:24 +0000 (UTC)
+        id S1751392AbcJJPpL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Oct 2016 11:45:11 -0400
+In-Reply-To: <1475879821-8035-6-git-send-email-lina.iyer@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=177171
 
-            Bug ID: 177171
-           Summary: Reduced frequency window for conservative governor
-           Product: Power Management
-           Version: 2.5
-    Kernel Version: 4.8
-          Hardware: All
-                OS: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: cpufreq
-          Assignee: linux-pm@vger.kernel.org
-          Reporter: aleksey@rybalkin.org
-        Regression: No
 
-Hello.
+On 07/10/16 23:36, Lina Iyer wrote:
+> Update DT bindings to describe idle states of PM domains.
+>
+> This patch is based on the original patch by Marc Titinger.
+>
+> Cc: <devicetree@vger.kernel.org>
+> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Acked-by: Rob Herring <robh@kernel.org>
+> ---
+>  .../devicetree/bindings/power/power_domain.txt     | 38 ++++++++++++++++++++++
+>  1 file changed, 38 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 025b5e7..7f8f27e 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -29,6 +29,10 @@ Optional properties:
+>     specified by this binding. More details about power domain specifier are
+>     available in the next section.
+>
+> +- domain-idle-states : A phandle of an idle-state that shall be soaked into a
+> +                generic domain power state. The idle state definitions are
+> +                compatible with arm,idle-state specified in [1].
+> +
 
-Since 4.8 the conservative governor has a reduced frequency window on my
-machine (ThinkPad X250), despite correct values for scaling_{min,max}_freq
+Please do add the following details to the binding. IMO, this binding is
+not complete in terms of specification as there are few open questions:
 
-$ cat /sys/devices/system/cpu/cpufreq/policy0/scaling_{min,max}_freq
-500000
-2200000
+1. What not define a standard compatible instead of "arm,idle-state" ?
+    I agree it can be used, but as part of this *generic* binding, IMO
+    it's better to have something generic and can be used by devices.
+    Otherwise, this binding becomes CPU specific, that too ARM CPU
+    specific.
 
-The actual window became from 2000000 to 2200000 with accordingly more heating
-and more cpu fan activations, which is not optimal.
+2. Now taking CPU as a special device, how does this co-exist with the
+    cpu-idle-states ? Better to have some description may be in the ARM
+    CPU idle binding document(not here of-course)
 
-I have bisected the problem to this commit: 
+3. I still haven't seen any explanation for not considering complete
+    hierarchical power domain representation which was raised in earlier
+    versions. I had provided example for the proposal. I just saw them
+    already in use in the upstream kernel by Renasas. e.g.:
+    arch/arm/boot/dts/r8a73a4.dtsi
 
-commit d352cf47d93e39494b44b792cca8d35a3a0bd9b3
-Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Date:   Mon Jun 13 23:33:49 2016 +0200
+    How does that fit with your proposal, though you have not made one
+    yet for CPUs in this binding ? In the above file, CPUs have either
+    own power domain inside the L2 one which is cluster level power
+    domain.
 
-    cpufreq: conservative: Do not use transition notifications
-
-    The conservative governor registers a transition notifier so it
-    can update its internal requested_freq value if it falls out of the
-    policy->min...policy->max range, but requested_freq is not really
-    necessary.
-
-    That value is used to track the frequency requested by the governor
-    previously, but policy->cur can be used instead of it and then the
-    governor will not have to worry about updating the tracked value when
-    the current frequency changes independently (for example, as a result
-    of min or max changes).
-
-    Accodringly, drop requested_freq from struct cs_policy_dbs_info
-    and modify cs_dbs_timer() to use policy->cur instead of it.
-    While at it, notice that __cpufreq_driver_target() clamps its
-    target_freq argument between policy->min and policy->max, so
-    the callers of it don't have to do that and make additional
-    changes in cs_dbs_timer() in accordance with that.
-
-    After these changes the transition notifier used by the conservative
-    governor is not necessary any more, so drop it, which also makes it
-    possible to drop the struct cs_governor definition and simplify the
-    code accordingly.
-
-    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-    Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+One must be able to get answers to these above questions with this
+binding. Until then it's *incomplete* though it may be correct.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Regards,
+Sudeep
