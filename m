@@ -1,163 +1,235 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v2 5/8] dt/bindings: Update binding for PM domain idle
- states
-Date: Mon, 10 Oct 2016 16:13:32 -0600
-Message-ID: <20161010221332.GD44885@linaro.org>
-References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
- <1475879821-8035-6-git-send-email-lina.iyer@linaro.org>
- <4e55d6ad-8de7-72d7-7512-5e4ff2aabc79@arm.com>
- <20161010164342.GC44885@linaro.org>
- <ffc0b521-329a-d41f-c952-bb9c4877ea87@arm.com>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: Re: [PATCH v3 2/9] hwmon: (core) New hwmon registration API
+Date: Mon, 10 Oct 2016 16:48:22 -0700
+Message-ID: <20161010234822.GA11563@roeck-us.net>
+References: <1469417552-9749-1-git-send-email-linux@roeck-us.net>
+ <1469417552-9749-3-git-send-email-linux@roeck-us.net>
+ <1475570759.3052.22.camel@chaos.suse>
+ <20161004193713.GA26304@roeck-us.net>
+ <20161007143213.0ba633fe@endymion>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f51.google.com ([209.85.220.51]:33379 "EHLO
-        mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752100AbcJJWNo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 18:13:44 -0400
-Received: by mail-pa0-f51.google.com with SMTP id vu5so2149375pab.0
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 15:13:35 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <ffc0b521-329a-d41f-c952-bb9c4877ea87@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20161007143213.0ba633fe@endymion>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>
+Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Punit Agrawal <punit.agrawal-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, khilman@kernel.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-On Mon, Oct 10 2016 at 11:13 -0600, Sudeep Holla wrote:
->
->
->On 10/10/16 17:43, Lina Iyer wrote:
->>On Mon, Oct 10 2016 at 09:45 -0600, Sudeep Holla wrote:
->>>
->>>
->>>On 07/10/16 23:36, Lina Iyer wrote:
->>>>Update DT bindings to describe idle states of PM domains.
->>>>
->>>>This patch is based on the original patch by Marc Titinger.
->>>>
->>>>Cc: <devicetree@vger.kernel.org>
->>>>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->>>>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>>>Acked-by: Rob Herring <robh@kernel.org>
->>>>---
->>>>.../devicetree/bindings/power/power_domain.txt     | 38
->>>>++++++++++++++++++++++
->>>>1 file changed, 38 insertions(+)
->>>>
->>>>diff --git a/Documentation/devicetree/bindings/power/power_domain.txt
->>>>b/Documentation/devicetree/bindings/power/power_domain.txt
->>>>index 025b5e7..7f8f27e 100644
->>>>--- a/Documentation/devicetree/bindings/power/power_domain.txt
->>>>+++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>>>@@ -29,6 +29,10 @@ Optional properties:
->>>>   specified by this binding. More details about power domain
->>>>specifier are
->>>>   available in the next section.
->>>>
->>>>+- domain-idle-states : A phandle of an idle-state that shall be
->>>>soaked into a
->>>>+                generic domain power state. The idle state
->>>>definitions are
->>>>+                compatible with arm,idle-state specified in [1].
->>>>+
->>>
->>>Please do add the following details to the binding. IMO, this binding is
->>>not complete in terms of specification as there are few open questions:
->>>
->>>1. What not define a standard compatible instead of "arm,idle-state" ?
->>>  I agree it can be used, but as part of this *generic* binding, IMO
->>>  it's better to have something generic and can be used by devices.
->>>  Otherwise, this binding becomes CPU specific, that too ARM CPU
->>>  specific.
->>>
->>We had gone down this path of having a separate DT bindings for domains
->>that is not arm,idle-state. See RFC patches. But the binding did closely
->>match this and it so was suggested that we use arm,idle-state which is
->>already defined.
->>
->
->Either we say this binding is ARM CPU specific or generic, I can't
->understand this mix 'n' match really. You have removed all the CPUIdle
->stuff from this series which is good and makes it simpler, but linking
->it to only "arm,idle-state" make be feel it's not generic. OK I will
->have a look at the RFC as why generic compatible was rejected.
->
-I will look for the discussion around it as well. A initial look through
-didn't get me the thread I was looking for.
+On Fri, Oct 07, 2016 at 02:32:13PM +0200, Jean Delvare wrote:
+> Hi Guenter,
+> 
+> On Tue, 4 Oct 2016 12:37:13 -0700, Guenter Roeck wrote:
+> > On Tue, Oct 04, 2016 at 10:45:59AM +0200, Jean Delvare wrote:
+> > > I see this patch is upstream now, but I had started reviewing it and
+> > > maybe some of my comments are still relevant.
+> > > 
+> > As always, I appreciate the feedback. I'll be happy to submit follow-up
+> > patches to address any concerns.
+> > 
+> > > It's not meant to be a complete review, which is why I had not sent it
+> > > yet :-(
+> > > 
+> > > Also I did not follow the first iterations of this patchset so my
+> > > apologies if I raise points which have already been discussed.
+> > > 
+> > > May I ask if any other subsystem is already doing anything like that?
+> > > 
+> > Depends what you mean with "anything like that". The API is inspired by
+> > the iio API and a little by the thermal API. The details are probably
+> > unique, though.
+> 
+> I meant the idea of describing the device capabilities and letting the
+> core code generate the device attributes (or anything else) based on
+> that data. The benefits are obvious, but it has a complexity and
+> run-time cost so I am wondering how popular this approach is.
+> 
 
->>>2. Now taking CPU as a special device, how does this co-exist with the
->>>  cpu-idle-states ? Better to have some description may be in the ARM
->>>  CPU idle binding document(not here of-course)
->>>
->>The is a binding for a generic PM domain. This has no bearing on the CPU
->>or its idle states. Its just that the data is compatible with
->>arm,idle-state.
->>
->
->I understand that but it's not that simple which I assume you *do*
->agree. Hence may need bit of an explanation in the binding(not here
->of-course as I mentioned earlier, but in the CPU Idle bindings).
->Please consider DT bindings as any other specification. All I am
->asking is more description in the binding.
->
-Any ideas of what description you would like to see? It seemed fairly
-explanatory in the idle-states.txt, so I didn't go into depth here.
+The goal of this patch series was to provide abstraction between driver
+and userspace ABI. I think this is quite common in the kernel.
 
->>>3. I still haven't seen any explanation for not considering complete
->>>  hierarchical power domain representation which was raised in earlier
->>>  versions. I had provided example for the proposal. I just saw them
->>>  already in use in the upstream kernel by Renasas. e.g.:
->>>  arch/arm/boot/dts/r8a73a4.dtsi
->>>
->>Hierarchical power domains have been available for few years in DT. The
->>OF features of domains have always supported it. Platforms are free to
->>define domains in hierarchy they seem fit for their SoCs. This is a
->>feature that is available today and is not being modified in these
->>patches. It will be creating confusion if I talk about hierarchical
->>domains which are obvious and irrelevant to this series.
->>
->
->Agreed and sorry if I created any confusion. But this binding doesn't
->clearly state how to build up the hierarchy if the leaf node is not a
->power-domain node and I am just trying have those clarifications in the
->binding. It would be good if those details are *explicitly* mentioned in
->the binding, not this particularly, but in CPU Idle one when you
->introduce the user of that.
->
-As we have today, devices have their own way of figuring out their idle
-states, they are not represented in DT (CPU being an exception). 
+I am not sure I undersatand the run-time cost concern. The main run-time
+cost occurs during device instantiation and only happens once. Other
+abstraction APIs in the kernel have a much higher runtime cost, and
+instantiation tends to be quite costly as well.
 
->>>  How does that fit with your proposal, though you have not made one
->>>  yet for CPUs in this binding ? In the above file, CPUs have either
->>>  own power domain inside the L2 one which is cluster level power
->>>  domain.
->>>
->>Again, this series is not about the CPUs. This is about adding features
->>to genpd that may be used in other contexts including cpuidle in the
->>future.
->>
->
->Yes I understand and hence I was confused as why I don't see an
->*generic* compatible but just *arm,idle-states* in the example.
->
->>>One must be able to get answers to these above questions with this
->>>binding. Until then it's *incomplete* though it may be correct.
->>>
->>I have always tried to answer all your questions. If anything remains
->>unclarified pls. bring it up.
->>
->
->It's not about questions, and definitely you have answered all my
->questions, no argument there at all. Now we need to make those useful
->discussions part of this binding so that it's *self explanatory* and
->one need not refer back these discussions when writing DT for some
->different SoC which differs from this. Again that could be part of
->your CPUIdle series, I just raised it here as it got mixed sense from
->this series. It was hard to be not to associate CPUIdle for reasons
->mentioned above.
->
+The new API has the addd benefit of reducing driver size, in some cases
+significantly. Maybe I am off, but I considered this important, which is
+why I mentioned it. Maybe I should not have mentioned it at all, and
+instead have focused on abstraction alone.
+
+> You mean at the binary level?
+> 
+> Have you considered the case where several devices exist for the same
+> driver? Static attributes are shared between devices, but with the
+> generated ones this is no longer the case, right?
+> 
+As mentioned above, I considered static sizes to be more important.
+Sure, there are situations where multiple instances of a driver are
+loaded, but those are not typically memory size limited. But, again,
+I guess maybe I should not have mentioned driver size impact at all.
+
+> > > > +
+> > > > +	mode = ops->is_visible(drvdata, type, attr, index);
+> > > 
+> > > Any reason why you don't simply attach the provided ->is_visible to the
+> > > attribute group and let the driver core do the work?
+> > > 
+> > Parameter are all different
+> > 	umode_t (*is_visible)(const void *drvdata, enum hwmon_sensor_types type,
+> > 	                              u32 attr, int channel);
+> > vs.
+> > 	umode_t (*is_visible)(struct kobject *, struct attribute *, int);
+> 
+> But this is the consequence of how you implemented it, not the reason?
+> 
+Not really. The drivers are now abstracted from the ABI and don't know anything
+about it. Effectively I would need a shim is_visible function to convert the
+sysfs parameters into driver function parameters. That should still be possible,
+I just don't immediately see the benefits.
+
+> Now I seem to understand that delegating the check to the driver core
+> would make it happen later, which means you would have to instantiate
+> all attributes, even if some are never going to be used? So this is an
+> optimization?
+> 
+Not for that purpose. I didn't even get to that point because I did not see
+a value in the shim function mentioned above.
+
+> But this prevents sharing the attributes between devices, as pointed
+> out above. Well, I guess you can't have it all. I don't know what is
+> the more important.
+> 
+> > > > +		return ERR_PTR(-ENOENT);
+> > > > +
+> > > > +	if ((mode & S_IRUGO) && !ops->read)
+> > > > +		return ERR_PTR(-EINVAL);
+> > > > +	if ((mode & S_IWUGO) && !ops->write)
+> > > > +		return ERR_PTR(-EINVAL);
+> > > > +
+> > > > +	if (type == hwmon_chip) {
+> > > 
+> > > This needs a comment. It's not obvious what "hwmon_chip" is supposed to
+> > > represent. From what I understand, maybe "hwmon_unique" would be a more
+> > > appropriate name.
+> > > 
+> > Those are meant to be for attributes which apply to the entire chip.
+> 
+> Not really. As you implemented it, it is meant for attributes which are
+> not specific to an input or output in particular. That is, attributes
+> which do not include a channel number. "update_interval" and
+> "alarms" (which I'd like to get rid of, btw) apply to the entire chip,
+> but "temp_reset_history" does not.
+> 
+> > Not sure if 'hwmon_unique' would reflect that better.
+> > From the documentation:
+> > 	"A virtual sensor type, used to describe attributes
+> > 	 which apply to the entire chip"
+> > 
+> > Do you have an idea for a better description ?
+> 
+> For one thing I would rename hwmon_chip_attr_templates to
+> hwmon_chip_attrs (or whatever, without _templates.) They are used
+> directly, as opposed to all other hwmon_*_attr_templates strings which
+> must be generated as needed.
+> 
+> This is the reason why the term "unique" came to my mind: the absence
+> of %d in the name makes this array special. If we can't find a name
+> that expresses that, I think a comment should be added to explain it.
+> 
+> As for the description in the documentation, what about:
+> 
+> 	"A virtual sensor type, used to describe attributes
+> 	which are not bound to a specific input or output"
+> 
+> "input or output" could be shortened as "channel" but I think spelling
+> it out is more explicit.
+> 
+I have no problem with that.
+
+> > > > +		name = (char *)template;
+> > > > +	} else {
+> > > > +		name = devm_kzalloc(dev, strlen(template) + 16, GFP_KERNEL);
+> > > > +		if (!name)
+> > > > +			return ERR_PTR(-ENOMEM);
+> > > > +		scnprintf(name, strlen(template) + 16, template,
+> > > > +			  index + hwmon_attr_base(type));
+> > > > +	}
+> > > > +
+> > > > +	hattr = devm_kzalloc(dev, sizeof(*hattr), GFP_KERNEL);
+> > > > +	if (!hattr)
+> > > > +		return ERR_PTR(-ENOMEM);
+> > > 
+> > > So basically you are doing 1 or 2 memory allocations for every
+> > > attribute? Looks quite bad from a memory fragmentation
+> > > perspective :-( Not to mention performance. Given that you have all the
+> > > data at hand before you start, can't you preallocate an array with the
+> > > right number of hattr and pick from it? That would at least solve half
+> > > of the problem.
+> 
+> FTR I took a quick look at the iio code and there seems to be something
+> like the idea above implemented in iio_device_register_sysfs(). But
+> attributes themselves as instantiated by iio_device_register_sysfs()
+> are still allocated individually. But hey I'm not familiar with the iio
+> code anyway, I'm sure you know it better than I do.
+> 
+> > > Something similar for string allocation may work too, although it's
+> > > somewhat more complex due to the variable length. But I think the
+> > > abituguru3 driver is doing it right, so maybe you can too.
+> >
+> > I'll look into it.
+> 
+> > > (...)
+> > > As a side note I am wondering if it would be reasonable to limit it to a
+> > > single group, instead of a NULL-terminated array of groups. This would
+> > > make the code a little more efficient.
+> > > 
+> > The underlying code is all the same; hwmon_device_register_with_groups()
+> > also calls __hwmon_device_register(). I would prefer to keep the code as
+> > common as possible.
+> 
+> OK, that makes sense. Maybe it can be revisited when/if we manage to
+> remove some of the old registration methods.
+> 
+> > > > (...)
+> > > > @@ -26,6 +164,16 @@ struct device *
+> > > >  devm_hwmon_device_register_with_groups(struct device *dev, const char *name,
+> > > >  				       void *drvdata,
+> > > >  				       const struct attribute_group **groups);
+> > > > +struct device *
+> > > > +hwmon_device_register_with_info(struct device *dev,
+> > > > +				const char *name, void *drvdata,
+> > > > +				const struct hwmon_chip_info *info,
+> > > > +				const struct attribute_group **groups);
+> > > > +struct device *
+> > > > +devm_hwmon_device_register_with_info(struct device *dev,
+> > > > +				     const char *name, void *drvdata,
+> > > > +				     const struct hwmon_chip_info *info,
+> > > > +				     const struct attribute_group **groups);
+> > > >  
+> > > >  void hwmon_device_unregister(struct device *dev);
+> > > >  void devm_hwmon_device_unregister(struct device *dev);
+> > > 
+> > > This is adding a 4th and 5th way to register a hwmon device. Starts
+> > > being a bit messy... Do you have any plans to get rid of some of the
+> > > other functions to make things more consistent and efficient?
+> >
+> > Would be nice, but then someone would have to spend the time cleaning
+> > up the old drivers to replace the old API, and for the most part we would
+> > not be able to test the result. Are you sure that is worth the risk ?
+> 
+> What I had in mind was rather along the lines of marking the function
+> as __deprecated, adding a run-time notice message when it is called,
+> and let whoever uses these driver contribute the fix. Call me an
+> optimistic :-) There are 54 drivers still using
+> hwmon_device_register(), out of 157.
+> 
+For most of those testing was not possible, otherwise I would have converted
+them by now.
+
+I am not sure about deprecated; doesn't that mean a failure to compile with
+-Werror ? That would not help much.
 
 Thanks,
-Lina
+Guenter
