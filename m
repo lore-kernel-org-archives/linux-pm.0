@@ -1,44 +1,92 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 3/8] PM / Domains: Allow domain power states to be read
- from DT
-Date: Mon, 10 Oct 2016 23:24:55 +0200
-Message-ID: <CAPDyKFru7fjqnxWbMdjsYu5ZMQd1j_vduAFXusWkwspVjzCMcw@mail.gmail.com>
-References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
- <1475879821-8035-4-git-send-email-lina.iyer@linaro.org> <CAPDyKFo62XuwsoqqPyFa7FYMutd2ng-xt9f7aFh_2T6ab=vAZg@mail.gmail.com>
- <20161010150301.GA44885@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Subject: [PATCH] cpufreq: skip invalid entries when searching the frequency
+Date: Tue, 11 Oct 2016 00:38:13 +0300
+Message-ID: <20161010213813.22087-1-aaro.koskinen@iki.fi>
+References: <20161007225925.GI15204@raspberrypi.musicnaut.iki.fi>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f174.google.com ([209.85.220.174]:35852 "EHLO
-        mail-qk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751765AbcJJVY5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 17:24:57 -0400
-Received: by mail-qk0-f174.google.com with SMTP id o68so3988196qkf.3
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 14:24:57 -0700 (PDT)
-In-Reply-To: <20161010150301.GA44885@linaro.org>
+Received: from emh06.mail.saunalahti.fi ([62.142.5.116]:36536 "EHLO
+        emh06.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751708AbcJJViU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 17:38:20 -0400
+In-Reply-To: <20161007225925.GI15204@raspberrypi.musicnaut.iki.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-[...]
+Skip invalid entries when searching the frequency. This fixes cpufreq
+at least on loongson2 MIPS board.
 
->>> +int of_genpd_parse_idle_states(struct device_node *dn,
->>> +                       struct genpd_power_state **states, int *n)
->>
->>
->> Instead of taking **states as a parameter, let's instead return it as
->> a pointer for the allocated struct. In case of failures, let's return
->> ERR_PTR().
->>
-> Hmm.. I thought about it. There are 2 return values from this function.
-> If we return a pointer to the allocated memory, we still have to return
-> the size of it as an argument. I wasn't happy splitting the return
-> values in 2 different places.
+Fixes: da0c6dc00c69 ("cpufreq: Handle sorted frequency tables more efficiently")
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ include/linux/cpufreq.h | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-Ahh, right. So let's keep it as is!
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 631ba33b..0c1b188 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -645,6 +645,9 @@ static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		freq = table[i].frequency;
+ 
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++
+ 		if (freq >= target_freq)
+ 			return i;
+ 
+@@ -665,6 +668,9 @@ static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		freq = table[i].frequency;
+ 
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++
+ 		if (freq == target_freq)
+ 			return i;
+ 
+@@ -706,6 +712,9 @@ static inline int cpufreq_table_find_index_ah(struct cpufreq_policy *policy,
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		freq = table[i].frequency;
+ 
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++
+ 		if (freq == target_freq)
+ 			return i;
+ 
+@@ -735,6 +744,9 @@ static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		freq = table[i].frequency;
+ 
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++
+ 		if (freq <= target_freq)
+ 			return i;
+ 
+@@ -767,6 +779,9 @@ static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		freq = table[i].frequency;
+ 
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++
+ 		if (freq == target_freq)
+ 			return i;
+ 
+@@ -800,6 +815,9 @@ static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
+ 	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+ 		freq = table[i].frequency;
+ 
++		if (freq == CPUFREQ_ENTRY_INVALID)
++			continue;
++
+ 		if (freq == target_freq)
+ 			return i;
+ 
+-- 
+2.9.2
 
-[...]
-
-Kind regards
-Uffe
