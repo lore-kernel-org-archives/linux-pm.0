@@ -1,15 +1,16 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Subject: [soc-thermal:for-kernelci 20/79] include/linux/device.h:575:26:
- warning: 'dev_attr_emul_temp' defined but not used
-Date: Tue, 11 Oct 2016 00:13:08 +0800
-Message-ID: <201610110002.j5mGcRVz%fengguang.wu@intel.com>
+Subject: [soc-thermal:for-kernelci 37/79]
+ drivers/thermal/thermal_sysfs.c:596:12: error: static declaration of
+ 'thermal_zone_create_device_groups' follows non-static declaration
+Date: Tue, 11 Oct 2016 00:19:36 +0800
+Message-ID: <201610110030.LzobSC3K%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="wac7ysb48OaltWcw"
+Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:63514 "EHLO mga04.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:54237 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752958AbcJJQNU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Oct 2016 12:13:20 -0400
+        id S1752307AbcJJQUW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Oct 2016 12:20:22 -0400
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -17,74 +18,264 @@ To: Eduardo Valentin <edubezval@gmail.com>
 Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
 
 
---wac7ysb48OaltWcw
+--mP3DRpeJDSE+ciuQ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 tree:   https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git for-kernelci
 head:   6eb525fbac3341918ec0e81f2e2c70cedcd26059
-commit: 0c3b19545334c2e2e1ca2303cf1cb1202f1d9fe9 [20/79] thermal: core: move emul_temp creation to tz->device.groups
+commit: 2add47fde8a0c1a3638826e64e9b261d87454175 [37/79] thermal: core: move thermal_zone sysfs to thermal_sysfs.c
 config: x86_64-randconfig-x014-201641 (attached as .config)
 compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
 reproduce:
-        git checkout 0c3b19545334c2e2e1ca2303cf1cb1202f1d9fe9
+        git checkout 2add47fde8a0c1a3638826e64e9b261d87454175
         # save the attached .config to linux build tree
         make ARCH=x86_64 
 
-All warnings (new ones prefixed by >>):
+Note: the soc-thermal/for-kernelci HEAD 6eb525fbac3341918ec0e81f2e2c70cedcd26059 builds fine.
+      It only hurts bisectibility.
 
-   In file included from drivers/thermal/thermal_core.c:29:0:
->> include/linux/device.h:575:26: warning: 'dev_attr_emul_temp' defined but not used [-Wunused-variable]
+All error/warnings (new ones prefixed by >>):
+
+>> drivers/thermal/thermal_sysfs.c:596:12: error: static declaration of 'thermal_zone_create_device_groups' follows non-static declaration
+    static int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   In file included from drivers/thermal/thermal_sysfs.c:24:0:
+   drivers/thermal/thermal_core.h:70:5: note: previous declaration of 'thermal_zone_create_device_groups' was here
+    int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+        ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/thermal/thermal_sysfs.c:596:12: warning: 'thermal_zone_create_device_groups' defined but not used [-Wunused-function]
+    static int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
+               ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   In file included from drivers/thermal/thermal_sysfs.c:19:0:
+   include/linux/device.h:575:26: warning: 'dev_attr_emul_temp' defined but not used [-Wunused-variable]
      struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
                              ^
-   drivers/thermal/thermal_core.c:1054:8: note: in expansion of macro 'DEVICE_ATTR'
+>> drivers/thermal/thermal_sysfs.c:398:8: note: in expansion of macro 'DEVICE_ATTR'
     static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
            ^~~~~~~~~~~
 
-vim +/dev_attr_emul_temp +575 include/linux/device.h
+vim +/thermal_zone_create_device_groups +596 drivers/thermal/thermal_sysfs.c
 
-ca22e56d Kay Sievers        2011-12-14  559  };
-ca22e56d Kay Sievers        2011-12-14  560  
-ca22e56d Kay Sievers        2011-12-14  561  ssize_t device_show_ulong(struct device *dev, struct device_attribute *attr,
-ca22e56d Kay Sievers        2011-12-14  562  			  char *buf);
-ca22e56d Kay Sievers        2011-12-14  563  ssize_t device_store_ulong(struct device *dev, struct device_attribute *attr,
-ca22e56d Kay Sievers        2011-12-14  564  			   const char *buf, size_t count);
-ca22e56d Kay Sievers        2011-12-14  565  ssize_t device_show_int(struct device *dev, struct device_attribute *attr,
-ca22e56d Kay Sievers        2011-12-14  566  			char *buf);
-ca22e56d Kay Sievers        2011-12-14  567  ssize_t device_store_int(struct device *dev, struct device_attribute *attr,
-ca22e56d Kay Sievers        2011-12-14  568  			 const char *buf, size_t count);
-91872392 Borislav Petkov    2012-10-09  569  ssize_t device_show_bool(struct device *dev, struct device_attribute *attr,
-91872392 Borislav Petkov    2012-10-09  570  			char *buf);
-91872392 Borislav Petkov    2012-10-09  571  ssize_t device_store_bool(struct device *dev, struct device_attribute *attr,
-91872392 Borislav Petkov    2012-10-09  572  			 const char *buf, size_t count);
-ca22e56d Kay Sievers        2011-12-14  573  
-a7fd6706 Kay Sievers        2005-10-01  574  #define DEVICE_ATTR(_name, _mode, _show, _store) \
-a7fd6706 Kay Sievers        2005-10-01 @575  	struct device_attribute dev_attr_##_name = __ATTR(_name, _mode, _show, _store)
-ced321bf Greg Kroah-Hartman 2013-07-14  576  #define DEVICE_ATTR_RW(_name) \
-ced321bf Greg Kroah-Hartman 2013-07-14  577  	struct device_attribute dev_attr_##_name = __ATTR_RW(_name)
-ced321bf Greg Kroah-Hartman 2013-07-14  578  #define DEVICE_ATTR_RO(_name) \
-ced321bf Greg Kroah-Hartman 2013-07-14  579  	struct device_attribute dev_attr_##_name = __ATTR_RO(_name)
-1130c55c Greg Kroah-Hartman 2013-08-23  580  #define DEVICE_ATTR_WO(_name) \
-1130c55c Greg Kroah-Hartman 2013-08-23  581  	struct device_attribute dev_attr_##_name = __ATTR_WO(_name)
-ca22e56d Kay Sievers        2011-12-14  582  #define DEVICE_ULONG_ATTR(_name, _mode, _var) \
-ca22e56d Kay Sievers        2011-12-14  583  	struct dev_ext_attribute dev_attr_##_name = \
-
-:::::: The code at line 575 was first introduced by commit
-:::::: a7fd67062efc5b0fc9a61368c607fa92d1d57f9e [PATCH] add sysfs attr to re-emit device hotplug event
-
-:::::: TO: Kay Sievers <kay.sievers@suse.de>
-:::::: CC: Greg Kroah-Hartman <gregkh@suse.de>
+   392	 * These are thermal zone device attributes that will always be present.
+   393	 * All the attributes created for tzp (create_s32_tzp_attr) also are always
+   394	 * present on the sysfs interface.
+   395	 */
+   396	static DEVICE_ATTR(type, 0444, type_show, NULL);
+   397	static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ > 398	static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+   399	static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
+   400	static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
+   401	static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
+   402			   sustainable_power_store);
+   403	
+   404	/* These thermal zone device attributes are created based on conditions */
+   405	static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+   406	static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+   407	
+   408	/* These attributes are unconditionally added to a thermal zone */
+   409	static struct attribute *thermal_zone_dev_attrs[] = {
+   410		&dev_attr_type.attr,
+   411		&dev_attr_temp.attr,
+   412	#if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
+   413		&dev_attr_emul_temp.attr,
+   414	#endif
+   415		&dev_attr_policy.attr,
+   416		&dev_attr_available_policies.attr,
+   417		&dev_attr_sustainable_power.attr,
+   418		&dev_attr_k_po.attr,
+   419		&dev_attr_k_pu.attr,
+   420		&dev_attr_k_i.attr,
+   421		&dev_attr_k_d.attr,
+   422		&dev_attr_integral_cutoff.attr,
+   423		&dev_attr_slope.attr,
+   424		&dev_attr_offset.attr,
+   425		NULL,
+   426	};
+   427	
+   428	static struct attribute_group thermal_zone_attribute_group = {
+   429		.attrs = thermal_zone_dev_attrs,
+   430	};
+   431	
+   432	/* We expose mode only if .get_mode is present */
+   433	static struct attribute *thermal_zone_mode_attrs[] = {
+   434		&dev_attr_mode.attr,
+   435		NULL,
+   436	};
+   437	
+   438	static umode_t thermal_zone_mode_is_visible(struct kobject *kobj,
+   439						    struct attribute *attr,
+   440						    int attrno)
+   441	{
+   442		struct device *dev = container_of(kobj, struct device, kobj);
+   443		struct thermal_zone_device *tz;
+   444	
+   445		tz = container_of(dev, struct thermal_zone_device, device);
+   446	
+   447		if (tz->ops->get_mode)
+   448			return attr->mode;
+   449	
+   450		return 0;
+   451	}
+   452	
+   453	static struct attribute_group thermal_zone_mode_attribute_group = {
+   454		.attrs = thermal_zone_mode_attrs,
+   455		.is_visible = thermal_zone_mode_is_visible,
+   456	};
+   457	
+   458	/* We expose passive only if passive trips are present */
+   459	static struct attribute *thermal_zone_passive_attrs[] = {
+   460		&dev_attr_passive.attr,
+   461		NULL,
+   462	};
+   463	
+   464	static umode_t thermal_zone_passive_is_visible(struct kobject *kobj,
+   465						       struct attribute *attr,
+   466						       int attrno)
+   467	{
+   468		struct device *dev = container_of(kobj, struct device, kobj);
+   469		struct thermal_zone_device *tz;
+   470		enum thermal_trip_type trip_type;
+   471		int count;
+   472	
+   473		tz = container_of(dev, struct thermal_zone_device, device);
+   474	
+   475		for (count = 0; count < tz->trips; count++) {
+   476			tz->ops->get_trip_type(tz, count, &trip_type);
+   477	
+   478			if (trip_type == THERMAL_TRIP_PASSIVE)
+   479				return attr->mode;
+   480		}
+   481	
+   482		return 0;
+   483	}
+   484	
+   485	static struct attribute_group thermal_zone_passive_attribute_group = {
+   486		.attrs = thermal_zone_passive_attrs,
+   487		.is_visible = thermal_zone_passive_is_visible,
+   488	};
+   489	
+   490	static const struct attribute_group *thermal_zone_attribute_groups[] = {
+   491		&thermal_zone_attribute_group,
+   492		&thermal_zone_mode_attribute_group,
+   493		&thermal_zone_passive_attribute_group,
+   494		/* This is not NULL terminated as we create the group dynamically */
+   495	};
+   496	
+   497	/**
+   498	 * create_trip_attrs() - create attributes for trip points
+   499	 * @tz:		the thermal zone device
+   500	 * @mask:	Writeable trip point bitmap.
+   501	 *
+   502	 * helper function to instantiate sysfs entries for every trip
+   503	 * point and its properties of a struct thermal_zone_device.
+   504	 *
+   505	 * Return: 0 on success, the proper error value otherwise.
+   506	 */
+   507	static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+   508	{
+   509		int size = sizeof(struct thermal_attr) * tz->trips;
+   510		struct attribute **attrs;
+   511		int indx;
+   512	
+   513		tz->trip_type_attrs = kzalloc(size, GFP_KERNEL);
+   514		if (!tz->trip_type_attrs)
+   515			return -ENOMEM;
+   516	
+   517		tz->trip_temp_attrs = kzalloc(size, GFP_KERNEL);
+   518		if (!tz->trip_temp_attrs) {
+   519			kfree(tz->trip_type_attrs);
+   520			return -ENOMEM;
+   521		}
+   522	
+   523		if (tz->ops->get_trip_hyst) {
+   524			tz->trip_hyst_attrs = kzalloc(size, GFP_KERNEL);
+   525			if (!tz->trip_hyst_attrs) {
+   526				kfree(tz->trip_type_attrs);
+   527				kfree(tz->trip_temp_attrs);
+   528				return -ENOMEM;
+   529			}
+   530		}
+   531	
+   532		attrs = kzalloc(sizeof(*attrs) * tz->trips * 3 + 1, GFP_KERNEL);
+   533		if (!attrs) {
+   534			kfree(tz->trip_type_attrs);
+   535			kfree(tz->trip_temp_attrs);
+   536			if (tz->ops->get_trip_hyst)
+   537				kfree(tz->trip_hyst_attrs);
+   538			return -ENOMEM;
+   539		}
+   540	
+   541		for (indx = 0; indx < tz->trips; indx++) {
+   542			/* create trip type attribute */
+   543			snprintf(tz->trip_type_attrs[indx].name, THERMAL_NAME_LENGTH,
+   544				 "trip_point_%d_type", indx);
+   545	
+   546			sysfs_attr_init(&tz->trip_type_attrs[indx].attr.attr);
+   547			tz->trip_type_attrs[indx].attr.attr.name =
+   548							tz->trip_type_attrs[indx].name;
+   549			tz->trip_type_attrs[indx].attr.attr.mode = S_IRUGO;
+   550			tz->trip_type_attrs[indx].attr.show = trip_point_type_show;
+   551			attrs[indx] = &tz->trip_type_attrs[indx].attr.attr;
+   552	
+   553			/* create trip temp attribute */
+   554			snprintf(tz->trip_temp_attrs[indx].name, THERMAL_NAME_LENGTH,
+   555				 "trip_point_%d_temp", indx);
+   556	
+   557			sysfs_attr_init(&tz->trip_temp_attrs[indx].attr.attr);
+   558			tz->trip_temp_attrs[indx].attr.attr.name =
+   559							tz->trip_temp_attrs[indx].name;
+   560			tz->trip_temp_attrs[indx].attr.attr.mode = S_IRUGO;
+   561			tz->trip_temp_attrs[indx].attr.show = trip_point_temp_show;
+   562			if (IS_ENABLED(CONFIG_THERMAL_WRITABLE_TRIPS) &&
+   563			    mask & (1 << indx)) {
+   564				tz->trip_temp_attrs[indx].attr.attr.mode |= S_IWUSR;
+   565				tz->trip_temp_attrs[indx].attr.store =
+   566								trip_point_temp_store;
+   567			}
+   568			attrs[indx + tz->trips] = &tz->trip_temp_attrs[indx].attr.attr;
+   569	
+   570			/* create Optional trip hyst attribute */
+   571			if (!tz->ops->get_trip_hyst)
+   572				continue;
+   573			snprintf(tz->trip_hyst_attrs[indx].name, THERMAL_NAME_LENGTH,
+   574				 "trip_point_%d_hyst", indx);
+   575	
+   576			sysfs_attr_init(&tz->trip_hyst_attrs[indx].attr.attr);
+   577			tz->trip_hyst_attrs[indx].attr.attr.name =
+   578						tz->trip_hyst_attrs[indx].name;
+   579			tz->trip_hyst_attrs[indx].attr.attr.mode = S_IRUGO;
+   580			tz->trip_hyst_attrs[indx].attr.show = trip_point_hyst_show;
+   581			if (tz->ops->set_trip_hyst) {
+   582				tz->trip_hyst_attrs[indx].attr.attr.mode |= S_IWUSR;
+   583				tz->trip_hyst_attrs[indx].attr.store =
+   584						trip_point_hyst_store;
+   585			}
+   586			attrs[indx + tz->trips * 2] =
+   587						&tz->trip_hyst_attrs[indx].attr.attr;
+   588		}
+   589		attrs[tz->trips * 3] = NULL;
+   590	
+   591		tz->trips_attribute_group.attrs = attrs;
+   592	
+   593		return 0;
+   594	}
+   595	
+ > 596	static int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
+   597						     int mask)
+   598	{
+   599		const struct attribute_group **groups;
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---wac7ysb48OaltWcw
+--mP3DRpeJDSE+ciuQ
 Content-Type: application/gzip
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICMe8+1cAAy5jb25maWcAhDzLcuO2svt8hWpyF+cskvF4HGdSt7yASFBCRBI0AMqWNyzH
+H4sICDK/+1cAAy5jb25maWcAhDzLcuO2svt8hWpyF+cskvF4HGdSt7yASFBCRBI0AMqWNyzH
 o0lc8dhz/MhJ/v52N0gRAJu6WUzM7gaIR7+7qe+/+34h3l6fvt6+3t/dPjz8s/h9/7h/vn3d
 f158uX/Y/+8i14tau4XMlfsRiMv7x7e/3//96bw7P1uc/fjpx5PFZv/8uH9YZE+PX+5/f4Ox
 90+P333/XabrQq2AbKncxT/D4zWNjJ7HB1VbZ9rMKV13ucx0Ls2I1K1rWtcV2lTCXbzbP3w5
@@ -602,4 +793,4 @@ aOqFW1NFeF83eVuVLmXdnqjAMa6p3ADaETRsL4LXucuhyibx/2LoqC51XAVTZ3k1DcJXjZsu
 K/hooFkWCXzfnaMVgzOJVG3hJX1mxtUUGfqUFb3n/TWm/VJ7Ori969HtsWSdA3oM5tc4M2L5
 WY+zKtwEVBaEMfEmz7huQZSb0NzbmjbQVyiTreva1CuPCSj4P/yV8SVjrAEA
 
---wac7ysb48OaltWcw--
+--mP3DRpeJDSE+ciuQ--
