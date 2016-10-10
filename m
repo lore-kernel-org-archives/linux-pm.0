@@ -1,155 +1,96 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 1/5] clk: add support for runtime pm
-Date: Mon, 10 Oct 2016 15:44:36 +0200
-Message-ID: <CAPDyKFqExx5yfByx3ic3pBPAGqH1fsDR+m+nkrOXYzov60x4sg@mail.gmail.com>
-References: <CGME20160919105548eucas1p24b28143fab25eb47f5629d31f817b0bc@eucas1p2.samsung.com>
- <1474282525-30441-1-git-send-email-m.szyprowski@samsung.com>
- <1474282525-30441-2-git-send-email-m.szyprowski@samsung.com>
- <CAPDyKFqtGTJ38K5xm+-xVZcjAmLuo21613GHwUkQKKJXvYtsLQ@mail.gmail.com>
- <86cd1c31-6265-7493-fe6d-9a64fc34cd65@samsung.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Mon, 10 Oct 2016 16:04:29 +0200
+Message-ID: <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com> <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <86cd1c31-6265-7493-fe6d-9a64fc34cd65@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>, Michael Turquette <mturquette@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Inki Dae <inki.dae@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-clk <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <90faea7d-65b6-590a-83f1-24fcdffa0569-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
-
->>> @@ -157,11 +181,17 @@ static bool clk_core_is_prepared(struct clk_core
->>> *core)
->>>          if (!core->ops->is_prepared)
->>>                  return core->prepare_count;
+On 10 October 2016 at 13:18, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>
+> On 06/10/16 13:22, Ulf Hansson wrote:
+>> On 20 September 2016 at 12:28, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>> controllers) is partitioned across 3 PM domains which are:
+>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>> - XUSBB: Device controller
+>>> - XUSBC: Host controller
 >>>
->>> -       return core->ops->is_prepared(core->hw);
->>> +       clk_pm_runtime_get(core);
->>
->> I guess you should assign status to the return code, and check it.
->
->
-> Okay. I assume that in case of any failure from runtime pm, the function
-> should return false?
-
-I think so, yes.
-
->
->
-
-[...]
-
->>>   static void clk_disable_unused_subtree(struct clk_core *core)
->>> @@ -768,6 +834,9 @@ static void clk_disable_unused_subtree(struct
->>> clk_core *core)
->>>          if (core->flags & CLK_OPS_PARENT_ENABLE)
->>>                  clk_core_prepare_enable(core->parent);
+>>> These power domains are not nested and can be powered-up and down
+>>> independently of one another. In practice different scenarios require
+>>> different combinations of the power domains, for example:
+>>> - Superspeed host: XUSBA and XUSBC
+>>> - Superspeed device: XUSBA and XUSBB
 >>>
->>> +       if (clk_pm_runtime_get(core) != 0)
->>
->> Is there any reason to why you haven't moved this further down in this
->> function, like just before calling clk_core_is_enabled()?
->
->
-> Yes, clk_enable_lock() takes a spinlock, so I cannot call pm_runtime_get
-> after it.
-
-Of course, you are right!
-
->
->
->>
->> You may also simplify this:
->> if (clk_pm_runtime_get(core))
->>
->>> +               return;
->>> +
->>
->> You need to restore the call made to clk_core_prepare_enable()
->> earlier, so please update the error handling to cope with this.
->>
-
-[...]
-
->>> @@ -2546,6 +2631,8 @@ struct clk *clk_register(struct device *dev, struct
->>> clk_hw *hw)
->>>                  goto fail_name;
->>>          }
->>>          core->ops = hw->init->ops;
->>> +       if (dev && (hw->init->flags & CLK_RUNTIME_PM))
->>> +               core->dev = dev;
->>
->> I guess you need this to play safe, although I am really wondering if
->> we should try without.
->>
->> Not that many clocks are currently being registered with a valid
->> struct device pointer. For the other cases why not try to use runtime
->> PM as per default?
->
->
-> I've that tried initially, but it causes failure for all the clock
-> controllers, which don't enable runtime pm. One of such case is max77686
-> PMIC, which provides 3 clocks. Maybe a negative flag (CLK_NO_RUNTIME_PM)
-> will be a better solution, so by default the runtime pm calls will be
-> enabled for every driver providing struct device?
-
-I assume that's because the runtime PM errors in clk_pm_runtime_get()
-and friends, are being propagated to the callers? Especially because
-the runtime PM core returns error codes, in cases when runtime PM
-hasn't been enabled for the device.
-
->
->> Moreover we anyway rely on the clock provider to enable runtime PM for
->> the clock device, and when that isn't the case the runtime PM
->> deployment in the core should still be safe, right!?
->
->
-> I don't get the above comment. Do you want to check if runtime pm has
-> been enabled during clock registration?
-
-Yes, something like that. Apologize, I was clearly being too vague.
-
-My point is, we don't need to invent a specific clock provider flag
-for this. Instead the clock core could just at clock registration
-check if runtime PM is enabled for the device (pm_runtime_enabled()),.
-and from that assign an internal clock core flag to keep track of
-whether runtime PM should be managed or not.
-
->
->>>         if (dev && dev->driver)
->>>                  core->owner = dev->driver->owner;
->>>          core->hw = hw;
->>> diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
->>> index a39c0c530778..8a131eb71fdf 100644
->>> --- a/include/linux/clk-provider.h
->>> +++ b/include/linux/clk-provider.h
->>> @@ -35,6 +35,7 @@
->>>   #define CLK_IS_CRITICAL                BIT(11) /* do not gate, ever */
->>>   /* parents need enable during gate/ungate, set rate and re-parent */
->>>   #define CLK_OPS_PARENT_ENABLE  BIT(12)
->>> +#define CLK_RUNTIME_PM         BIT(13)
+>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>> domains under the XUSBA, superspeed may not always be used/required and
+>>> so this would keep it on unnecessarily.
 >>>
->>>   struct clk;
->>>   struct clk_hw;
->>> --
->>> 1.9.1
+>>> Given that Tegra uses device-tree for describing the hardware, it would
+>>> be ideal that the device-tree 'power-domains' property for generic PM
+>>> domains could be extended to allow more than one PM domain to be
+>>> specified. For example, define the following the Tegra210 xHCI device ...
 >>>
+>>>         usb@70090000 {
+>>>                 compatible = "nvidia,tegra210-xusb";
+>>>                 ...
+>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>>         };
+>>>
+>>> This RFC extends the generic PM domain framework to allow a device to
+>>> define more than one PM domain in the device-tree 'power-domains'
+>>> property.
 >>
+>> First, I don't really like extending the internal logic of genpd to
+>> deal with multiple PM domains per device. *If* this really is needed,
+>> I think we should try to extend the struct device to cover this, then
+>> make genpd to use it somehow.
 >
-> Best regards
-> --
-> Marek Szyprowski, PhD
-> Samsung R&D Institute Poland
+> I had looked at that initially but it was looking quite complex because
+> of the various structures (dev_pm_domain in the device structure,
+> pm_domain_data in pm_subsys_data, etc). This implementation is quite
+
+I didn't care much about the complexity, more trying to understand how
+the HW actually works. :-)
+
+> simple and less intrusive. However, if there is a lot of interest in
+> this and it does appear to be, I would agree that having the device
+> structure handle this would be best.
 >
+>> Second, another way of seeing this is: Depending on the current
+>> runtime selected configuration you need to re-configure the PM domain
+>> topology - but the device would still remain in the same PM domain.
+>>
+>> In other words, you would need to remove/add subdomain(s) depending on
+>> the selected configuration. Would that better reflect the HW?
+>
+> I am not 100% sure I follow what you are saying, but ultimately, I would
+> like to get to ...
+>
+>         usb@70090000 {
+>                 compatible = "nvidia,tegra210-xusb";
+>                 ...
+>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>         };
+
+So, is this really is a proper description of the HW? Isn't it so,
+that the usb device always resides in one and the same PM domain?
+
+Now, depending on the selected speed mode (superspeed) additional
+logic may needs to be powered on and configured for the usb device to
+work?
+Perhaps, one could consider those additional logics as a master/parent
+PM domain for the usb device's PM domain?
+
+Or this is not how the HW works? :-)
 
 Kind regards
 Uffe
