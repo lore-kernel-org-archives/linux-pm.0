@@ -1,34 +1,209 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Mon, 10 Oct 2016 14:09:26 +0000
-Message-ID: <bug-176411-137361-LAXBkopXBs@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 3/8] PM / Domains: Allow domain power states to be
+ read from DT
+Date: Mon, 10 Oct 2016 09:03:01 -0600
+Message-ID: <20161010150301.GA44885@linaro.org>
+References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
+ <1475879821-8035-4-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFo62XuwsoqqPyFa7FYMutd2ng-xt9f7aFh_2T6ab=vAZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40434 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752648AbcJJOJa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Oct 2016 10:09:30 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 533F820274
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 14:09:27 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id 5793B20253
-        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 14:09:26 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFo62XuwsoqqPyFa7FYMutd2ng-xt9f7aFh_2T6ab=vAZg@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Marc Titinger <mtitinger+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+On Mon, Oct 10 2016 at 04:01 -0600, Ulf Hansson wrote:
+>On 8 October 2016 at 00:36, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> This patch allows domains to define idle states in the DT. SoC's can
+>> define domain idle states in DT using the "domain-idle-states" property
+>> of the domain provider. Add API to read the idle states from DT that can
+>> be set in the genpd object.
+>>
+>> This patch is based on the original patch by Marc Titinger.
+>>
+>> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> ---
+>>  drivers/base/power/domain.c | 95 +++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/pm_domain.h   |  8 ++++
+>>  2 files changed, 103 insertions(+)
+>>
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index 4e87170..4208b67 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -1917,6 +1917,101 @@ out:
+>>         return ret ? -EPROBE_DEFER : 0;
+>>  }
+>>  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+>> +
+>> +static const struct of_device_id idle_state_match[] = {
+>> +       { .compatible = "arm,idle-state", },
+>> +       { }
+>> +};
+>> +
+>> +static int genpd_parse_state(struct genpd_power_state *genpd_state,
+>> +                                   struct device_node *state_node)
+>> +{
+>> +       int err;
+>> +       u32 residency;
+>> +       u32 entry_latency, exit_latency;
+>> +       const struct of_device_id *match_id;
+>> +
+>> +       match_id = of_match_node(idle_state_match, state_node);
+>> +       if (!match_id)
+>> +               return -EINVAL;
+>> +
+>> +       err = of_property_read_u32(state_node, "entry-latency-us",
+>> +                                               &entry_latency);
+>> +       if (err) {
+>> +               pr_debug(" * %s missing entry-latency-us property\n",
+>> +                                               state_node->full_name);
+>> +               return -EINVAL;
+>> +       }
+>> +
+>> +       err = of_property_read_u32(state_node, "exit-latency-us",
+>> +                                               &exit_latency);
+>> +       if (err) {
+>> +               pr_debug(" * %s missing exit-latency-us property\n",
+>> +                                               state_node->full_name);
+>> +               return -EINVAL;
+>> +       }
+>> +
+>> +       err = of_property_read_u32(state_node, "min-residency-us", &residency);
+>> +       if (!err)
+>> +               genpd_state->residency_ns = 1000 * residency;
+>> +
+>> +       genpd_state->power_on_latency_ns = 1000 * exit_latency;
+>> +       genpd_state->power_off_latency_ns = 1000 * entry_latency;
+>> +
+>> +       return 0;
+>> +}
+>> +
+>> +/**
+>> + * of_genpd_parse_idle_states: Return array of idle states for the genpd.
+>> + *
+>> + * @dn: The genpd device node
+>> + * @states: The pointer to which the state array will be saved.
+>> + * @n: The count of elements in the array returned from this function.
+>> + *
+>> + * Returns the device states parsed from the OF node. The memory for the states
+>> + * is allocated by this function and is the responsibility of the caller to
+>> + * free the memory after use.
+>> + */
+>> +int of_genpd_parse_idle_states(struct device_node *dn,
+>> +                       struct genpd_power_state **states, int *n)
+>
+>Instead of taking **states as a parameter, let's instead return it as
+>a pointer for the allocated struct. In case of failures, let's return
+>ERR_PTR().
+>
+Hmm.. I thought about it. There are 2 return values from this function.
+If we return a pointer to the allocated memory, we still have to return
+the size of it as an argument. I wasn't happy splitting the return
+values in 2 different places.
 
---- Comment #16 from Mike Lui <mike.d.lui@gmail.com> ---
-Created attachment 241321
-  --> https://bugzilla.kernel.org/attachment.cgi?id=241321&action=edit
-dmesg after toggling cpu1
+>> +{
+>> +       struct genpd_power_state *st;
+>> +       struct device_node *np;
+>> +       int i = 0;
+>> +       int err, ret;
+>> +       int count;
+>> +       struct of_phandle_iterator it;
+>> +
+>> +       count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
+>
+>If count is zero or an error, we should return an error code (ERR_PTR()). Right?
+>
+OK
+>> +
+>> +       st = kcalloc(count, sizeof(*st), GFP_KERNEL);
+>> +       if (!st)
+>> +               return -ENOMEM;
+>> +
+>> +       /* Loop over the phandles until all the requested entry is found */
+>> +       of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
+>> +               np = of_node_get(it.node);
+>
+>I don't think you need to increment the usage count for the device
+>node as that is already managed by of_for_each_phandle().
+>
+>It's only in the error case below, when it's needed.
+>
+Hmm.. Didn't realize that.. will fix.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+>> +               ret = genpd_parse_state(&st[i++], np);
+>> +               if (ret) {
+>> +                       pr_err
+>> +                       ("Parsing idle state node %s failed with err %d\n",
+>> +                                                       np->full_name, ret);
+>> +                       of_node_put(np);
+>> +                       goto fail;
+>
+>The goto seems unnecessary. Why not deal with all error handling here
+>and return the error code?
+>
+>> +               }
+>> +               of_node_put(np);
+>
+>According the comment above, you should be able to remove this.
+>
+>> +       }
+>> +
+>> +       *n = count;
+>> +       *states = st;
+>> +
+>> +       return 0;
+>> +fail:
+>> +       kfree(st);
+>> +       return ret;
+>> +}
+>> +EXPORT_SYMBOL(of_genpd_parse_idle_states);
+>
+>Please use EXPORT_SYMBOL_GPL() instead.
+>
+Hmm.. OK
+
+Thanks,
+Lina
+>> +
+>>  #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
+>>
+>>
+>> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+>> index f4492eb..b489496 100644
+>> --- a/include/linux/pm_domain.h
+>> +++ b/include/linux/pm_domain.h
+>> @@ -205,6 +205,8 @@ extern int of_genpd_add_device(struct of_phandle_args *args,
+>>  extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+>>                                   struct of_phandle_args *new_subdomain);
+>>  extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+>> +extern int of_genpd_parse_idle_states(struct device_node *dn,
+>> +                       struct genpd_power_state **states, int *n);
+>>
+>>  int genpd_dev_pm_attach(struct device *dev);
+>>  #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+>> @@ -234,6 +236,12 @@ static inline int of_genpd_add_subdomain(struct of_phandle_args *parent,
+>>         return -ENODEV;
+>>  }
+>>
+>> +static inline int of_genpd_parse_idle_states(struct device_node *dn,
+>> +                       struct genpd_power_state **states, int *n)
+>> +{
+>> +       return -ENODEV;
+>> +}
+>> +
+>>  static inline int genpd_dev_pm_attach(struct device *dev)
+>>  {
+>>         return -ENODEV;
+>> --
+>> 2.7.4
+>>
+>
+>Kind regards
+>Uffe
