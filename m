@@ -1,96 +1,163 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Resend][PATCH v3] cpufreq: intel_pstate: Proportional algorithm for Atom
-Date: Mon, 10 Oct 2016 23:41:25 +0200
-Message-ID: <3001586.30BU9lMrGG@vostro.rjw.lan>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v2 5/8] dt/bindings: Update binding for PM domain idle
+ states
+Date: Mon, 10 Oct 2016 16:13:32 -0600
+Message-ID: <20161010221332.GD44885@linaro.org>
+References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
+ <1475879821-8035-6-git-send-email-lina.iyer@linaro.org>
+ <4e55d6ad-8de7-72d7-7512-5e4ff2aabc79@arm.com>
+ <20161010164342.GC44885@linaro.org>
+ <ffc0b521-329a-d41f-c952-bb9c4877ea87@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41092 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1751609AbcJJVlW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 17:41:22 -0400
+Received: from mail-pa0-f51.google.com ([209.85.220.51]:33379 "EHLO
+        mail-pa0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752100AbcJJWNo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 18:13:44 -0400
+Received: by mail-pa0-f51.google.com with SMTP id vu5so2149375pab.0
+        for <linux-pm@vger.kernel.org>; Mon, 10 Oct 2016 15:13:35 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <ffc0b521-329a-d41f-c952-bb9c4877ea87@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, ulf.hansson@linaro.org, khilman@kernel.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Mon, Oct 10 2016 at 11:13 -0600, Sudeep Holla wrote:
+>
+>
+>On 10/10/16 17:43, Lina Iyer wrote:
+>>On Mon, Oct 10 2016 at 09:45 -0600, Sudeep Holla wrote:
+>>>
+>>>
+>>>On 07/10/16 23:36, Lina Iyer wrote:
+>>>>Update DT bindings to describe idle states of PM domains.
+>>>>
+>>>>This patch is based on the original patch by Marc Titinger.
+>>>>
+>>>>Cc: <devicetree@vger.kernel.org>
+>>>>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>>>>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>>Acked-by: Rob Herring <robh@kernel.org>
+>>>>---
+>>>>.../devicetree/bindings/power/power_domain.txt     | 38
+>>>>++++++++++++++++++++++
+>>>>1 file changed, 38 insertions(+)
+>>>>
+>>>>diff --git a/Documentation/devicetree/bindings/power/power_domain.txt
+>>>>b/Documentation/devicetree/bindings/power/power_domain.txt
+>>>>index 025b5e7..7f8f27e 100644
+>>>>--- a/Documentation/devicetree/bindings/power/power_domain.txt
+>>>>+++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>>>>@@ -29,6 +29,10 @@ Optional properties:
+>>>>   specified by this binding. More details about power domain
+>>>>specifier are
+>>>>   available in the next section.
+>>>>
+>>>>+- domain-idle-states : A phandle of an idle-state that shall be
+>>>>soaked into a
+>>>>+                generic domain power state. The idle state
+>>>>definitions are
+>>>>+                compatible with arm,idle-state specified in [1].
+>>>>+
+>>>
+>>>Please do add the following details to the binding. IMO, this binding is
+>>>not complete in terms of specification as there are few open questions:
+>>>
+>>>1. What not define a standard compatible instead of "arm,idle-state" ?
+>>>  I agree it can be used, but as part of this *generic* binding, IMO
+>>>  it's better to have something generic and can be used by devices.
+>>>  Otherwise, this binding becomes CPU specific, that too ARM CPU
+>>>  specific.
+>>>
+>>We had gone down this path of having a separate DT bindings for domains
+>>that is not arm,idle-state. See RFC patches. But the binding did closely
+>>match this and it so was suggested that we use arm,idle-state which is
+>>already defined.
+>>
+>
+>Either we say this binding is ARM CPU specific or generic, I can't
+>understand this mix 'n' match really. You have removed all the CPUIdle
+>stuff from this series which is good and makes it simpler, but linking
+>it to only "arm,idle-state" make be feel it's not generic. OK I will
+>have a look at the RFC as why generic compatible was rejected.
+>
+I will look for the discussion around it as well. A initial look through
+didn't get me the thread I was looking for.
 
-The PID algorithm used by the intel_pstate driver tends to drive
-performance to the minimum for workloads with utilization below the
-setpoint, which is undesirable, so replace it with a modified
-"proportional" algorithm on Atom.
+>>>2. Now taking CPU as a special device, how does this co-exist with the
+>>>  cpu-idle-states ? Better to have some description may be in the ARM
+>>>  CPU idle binding document(not here of-course)
+>>>
+>>The is a binding for a generic PM domain. This has no bearing on the CPU
+>>or its idle states. Its just that the data is compatible with
+>>arm,idle-state.
+>>
+>
+>I understand that but it's not that simple which I assume you *do*
+>agree. Hence may need bit of an explanation in the binding(not here
+>of-course as I mentioned earlier, but in the CPU Idle bindings).
+>Please consider DT bindings as any other specification. All I am
+>asking is more description in the binding.
+>
+Any ideas of what description you would like to see? It seemed fairly
+explanatory in the idle-states.txt, so I didn't go into depth here.
 
-The new algorithm will set the new P-state to be 1.25 times the
-available maximum times the (frequency-invariant) utilization during
-the previous sampling period except when the target P-state computed
-this way is lower than the average P-state during the previous
-sampling period.  In the latter case, it will increase the target by
-50% of the difference between it and the average P-state to prevent
-performance from dropping down too fast in some cases.
+>>>3. I still haven't seen any explanation for not considering complete
+>>>  hierarchical power domain representation which was raised in earlier
+>>>  versions. I had provided example for the proposal. I just saw them
+>>>  already in use in the upstream kernel by Renasas. e.g.:
+>>>  arch/arm/boot/dts/r8a73a4.dtsi
+>>>
+>>Hierarchical power domains have been available for few years in DT. The
+>>OF features of domains have always supported it. Platforms are free to
+>>define domains in hierarchy they seem fit for their SoCs. This is a
+>>feature that is available today and is not being modified in these
+>>patches. It will be creating confusion if I talk about hierarchical
+>>domains which are obvious and irrelevant to this series.
+>>
+>
+>Agreed and sorry if I created any confusion. But this binding doesn't
+>clearly state how to build up the hierarchy if the leaf node is not a
+>power-domain node and I am just trying have those clarifications in the
+>binding. It would be good if those details are *explicitly* mentioned in
+>the binding, not this particularly, but in CPU Idle one when you
+>introduce the user of that.
+>
+As we have today, devices have their own way of figuring out their idle
+states, they are not represented in DT (CPU being an exception). 
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Tested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
+>>>  How does that fit with your proposal, though you have not made one
+>>>  yet for CPUs in this binding ? In the above file, CPUs have either
+>>>  own power domain inside the L2 one which is cluster level power
+>>>  domain.
+>>>
+>>Again, this series is not about the CPUs. This is about adding features
+>>to genpd that may be used in other contexts including cpuidle in the
+>>future.
+>>
+>
+>Yes I understand and hence I was confused as why I don't see an
+>*generic* compatible but just *arm,idle-states* in the example.
+>
+>>>One must be able to get answers to these above questions with this
+>>>binding. Until then it's *incomplete* though it may be correct.
+>>>
+>>I have always tried to answer all your questions. If anything remains
+>>unclarified pls. bring it up.
+>>
+>
+>It's not about questions, and definitely you have answered all my
+>questions, no argument there at all. Now we need to make those useful
+>discussions part of this binding so that it's *self explanatory* and
+>one need not refer back these discussions when writing DT for some
+>different SoC which differs from this. Again that could be part of
+>your CPUIdle series, I just raised it here as it got mixed sense from
+>this series. It was hard to be not to associate CPUIdle for reasons
+>mentioned above.
+>
 
-Resending without the [RFC/RFT] tag as it has been tested by Srinivas in the
-meantime and the performance is fine (better than the current algorithm in
-some cases).
-
-v1 -> v2:
-  It is better to compare the average P-state to the target (than to
-  compare the average perf ratio to the utilization), because that takes
-  turbo into account more accurately.
-
-  Plus if the target is below the min, it is better to compare the min
-  to the average instead of comparing the target to it.
-
-v2 -> v3:
-  Fix a typo in the ternary operator reported by Doug.
-
----
- drivers/cpufreq/intel_pstate.c |   22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1232,6 +1232,7 @@ static inline int32_t get_target_pstate_
- {
- 	struct sample *sample = &cpu->sample;
- 	int32_t busy_frac, boost;
-+	int target, avg_pstate;
- 
- 	busy_frac = div_fp(sample->mperf, sample->tsc);
- 
-@@ -1242,7 +1243,26 @@ static inline int32_t get_target_pstate_
- 		busy_frac = boost;
- 
- 	sample->busy_scaled = busy_frac * 100;
--	return get_avg_pstate(cpu) - pid_calc(&cpu->pid, sample->busy_scaled);
-+
-+	target = limits->no_turbo || limits->turbo_disabled ?
-+			cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
-+	target += target >> 2;
-+	target = mul_fp(target, busy_frac);
-+	if (target < cpu->pstate.min_pstate)
-+		target = cpu->pstate.min_pstate;
-+
-+	/*
-+	 * If the average P-state during the previous cycle was higher than the
-+	 * current target, add 50% of the difference to the target to reduce
-+	 * possible performance oscillations and offset possible performance
-+	 * loss related to moving the workload from one CPU to another within
-+	 * a package/module.
-+	 */
-+	avg_pstate = get_avg_pstate(cpu);
-+	if (avg_pstate > target)
-+		target += (avg_pstate - target) >> 1;
-+
-+	return target;
- }
- 
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
-
+Thanks,
+Lina
