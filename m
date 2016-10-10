@@ -1,66 +1,89 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: Re: [PATCH] PM / AVS: rockchip-io: make the log more consistent
-Date: Mon, 10 Oct 2016 22:15:50 +0200
-Message-ID: <1883054.D2Rm2X9N2G@phil>
-References: <1476103462-7559-1-git-send-email-shawn.lin@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: [PATCH 4/6] clk: pxa: export core clocks
+Date: Mon, 10 Oct 2016 22:09:07 +0200
+Message-ID: <1476130149-31834-5-git-send-email-robert.jarzmik@free.fr>
+References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:58630 "EHLO gloria.sntech.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751722AbcJJUQL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Oct 2016 16:16:11 -0400
-In-Reply-To: <1476103462-7559-1-git-send-email-shawn.lin@rock-chips.com>
+Received: from smtp10.smtpout.orange.fr ([80.12.242.132]:53357 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751488AbcJJUQy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 16:16:54 -0400
+In-Reply-To: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Lin <shawn.lin@rock-chips.com>
-Cc: Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
-Am Montag, 10. Oktober 2016, 20:44:22 CEST schrieb Shawn Lin:
-> When testing SD hotplug automatically, I got bunch of
-> useless log like this:
-> 
-> [  588.357838] mmc0: card 0007 removed
-> [  589.492664] rockchip-iodomain ff770000.syscon:io-domains: Setting to
-> 3300000 done [  589.500698] vccio_sd: ramp_delay not set
-> [  589.504817] rockchip-iodomain ff770000.syscon:io-domains: Setting to
-> 3300000 done [  589.669705] rockchip-iodomain ff770000.syscon:io-domains:
-> Setting to 3300000 done [  589.677593] vccio_sd: ramp_delay not set
-> [  589.681581] rockchip-iodomain ff770000.syscon:io-domains: Setting to
-> 1800000 done [  590.032820] dwmmc_rockchip ff0c0000.dwmmc: Successfully
-> tuned phase to 140 [  590.039725] mmc0: new ultra high speed SDR50 SDHC
-> card at address 0007 [  590.046641] mmcblk0: mmc0:0007 SD32G 29.3 GiB
-> [  590.052163]  mmcblk0: p1
-> 
-> Moreover the code is intent to print the 'uV' for debug but
-> later print it using dev_info. It looks more like to me that
-> it should be the real intention of the code. Anyway, let's
-> mark this verbose log as debug message.
-> 
-> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
+pxaxxx_get_clk_frequency_khz() needs several clocks to be available
+through clk_get(), ie. the cpu clocks, system bus clock and memory
+clocks.
 
-reducing the amount of logs, especially for information not generally needed 
-looks sane
+Add the missing clkdev so that their rate can be acquired.
 
-Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+---
+ drivers/clk/pxa/clk-pxa25x.c |  9 ++++++---
+ drivers/clk/pxa/clk-pxa27x.c | 13 ++++++++-----
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
-> ---
-> 
->  drivers/power/avs/rockchip-io-domain.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/avs/rockchip-io-domain.c
-> b/drivers/power/avs/rockchip-io-domain.c index 01b6d3f..56bce19 100644
-> --- a/drivers/power/avs/rockchip-io-domain.c
-> +++ b/drivers/power/avs/rockchip-io-domain.c
-> @@ -143,7 +143,7 @@ static int rockchip_iodomain_notify(struct
-> notifier_block *nb, if (ret && event == REGULATOR_EVENT_PRE_VOLTAGE_CHANGE)
->  		return NOTIFY_BAD;
-> 
-> -	dev_info(supply->iod->dev, "Setting to %d done\n", uV);
-> +	dev_dbg(supply->iod->dev, "Setting to %d done\n", uV);
->  	return NOTIFY_OK;
->  }
-
+diff --git a/drivers/clk/pxa/clk-pxa25x.c b/drivers/clk/pxa/clk-pxa25x.c
+index 3bb603a27f2b..6a3009eec830 100644
+--- a/drivers/clk/pxa/clk-pxa25x.c
++++ b/drivers/clk/pxa/clk-pxa25x.c
+@@ -189,8 +189,10 @@ RATE_RO_OPS(clk_pxa25x_cpll, "cpll");
+ 
+ static void __init pxa25x_register_core(void)
+ {
+-	clk_register_clk_pxa25x_cpll();
+-	clk_register_clk_pxa25x_run();
++	clkdev_pxa_register(CLK_NONE, "cpll", NULL,
++			    clk_register_clk_pxa25x_cpll());
++	clkdev_pxa_register(CLK_NONE, "run", NULL,
++			    clk_register_clk_pxa25x_run());
+ 	clkdev_pxa_register(CLK_CORE, "core", NULL,
+ 			    clk_register_clk_pxa25x_core());
+ }
+@@ -212,7 +214,8 @@ static void __init pxa25x_base_clocks_init(void)
+ {
+ 	pxa25x_register_plls();
+ 	pxa25x_register_core();
+-	clk_register_clk_pxa25x_memory();
++	clkdev_pxa_register(CLK_NONE, "system_bus", NULL,
++			    clk_register_clk_pxa25x_memory());
+ }
+ 
+ #define DUMMY_CLK(_con_id, _dev_id, _parent) \
+diff --git a/drivers/clk/pxa/clk-pxa27x.c b/drivers/clk/pxa/clk-pxa27x.c
+index 3b36e8d0f81e..9fb40e884999 100644
+--- a/drivers/clk/pxa/clk-pxa27x.c
++++ b/drivers/clk/pxa/clk-pxa27x.c
+@@ -270,9 +270,10 @@ RATE_RO_OPS(clk_pxa27x_run, "run");
+ 
+ static void __init pxa27x_register_core(void)
+ {
+-	clk_register_clk_pxa27x_cpll();
+-	clk_register_clk_pxa27x_run();
+-
++	clkdev_pxa_register(CLK_NONE, "cpll", NULL,
++			    clk_register_clk_pxa27x_cpll());
++	clkdev_pxa_register(CLK_NONE, "run", NULL,
++			    clk_register_clk_pxa27x_run());
+ 	clkdev_pxa_register(CLK_CORE, "core", NULL,
+ 			    clk_register_clk_pxa27x_core());
+ }
+@@ -382,8 +383,10 @@ static void __init pxa27x_base_clocks_init(void)
+ {
+ 	pxa27x_register_plls();
+ 	pxa27x_register_core();
+-	clk_register_clk_pxa27x_system_bus();
+-	clk_register_clk_pxa27x_memory();
++	clkdev_pxa_register(CLK_NONE, "system_bus", NULL,
++			    clk_register_clk_pxa27x_system_bus());
++	clkdev_pxa_register(CLK_NONE, "memory", NULL,
++			    clk_register_clk_pxa27x_memory());
+ 	clk_register_clk_pxa27x_lcd_base();
+ }
+ 
+-- 
+2.1.4
 
