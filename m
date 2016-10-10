@@ -1,35 +1,84 @@
-From: Alexander Stein <alexander.stein@systec-electronic.com>
-Subject: Re: [PATCH 0/2] ARM: at91: properly handle LPDDR poweroff
-Date: Mon, 10 Oct 2016 08:00:30 +0200
-Message-ID: <1791580.DIVsjjyavb@ws-stein>
-References: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: [PATCH v17 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Mon, 10 Oct 2016 14:22:10 +0800
+Message-ID: <cover.1476000169.git.baolin.wang@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f41.google.com ([209.85.220.41]:35757 "EHLO
+        mail-pa0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751537AbcJJGW7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 10 Oct 2016 02:22:59 -0400
+Received: by mail-pa0-f41.google.com with SMTP id qn10so45030366pac.2
+        for <linux-pm@vger.kernel.org>; Sun, 09 Oct 2016 23:22:59 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gmail.com, dwmw2@infradead.org
+Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, r.baldyga@samsung.com, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, john.stultz@linaro.org, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 
-Hi Alexandre,
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should. Thus provide a standard framework for doing this in kernel.
 
-On Friday 07 October 2016 18:34:25, Alexandre Belloni wrote:
-> Hi,
-> 
-> This patch set improves LPDDR support on SoCs using the Atmel MPDDR
-> controller.
-> 
-> LPDDR memoris can only handle up to 400 uncontrolled power offs in their
-> life. The proper power off sequence has to be applied before shutting down
-> the SoC.
-> 
-> I'm not too happy with the code duplication but this is a design choice
-> that has been made before because both shitdown controler are really
-                                         ^^^^^^^^
+Now introduce one user with wm831x_power to support and test the usb charger,
+which is pending testing. Moreover there may be other potential users will use
+it in future.
 
-I guess you mean shutdown? :) Same for the suject of 2nd patch.
+Changes since v16:
+ - Modify the charger current range with introducing the maximum and minimum
+ current.
+ - Remove the getting charger type method from power supply.
+ - Add the getting charger type method from extcon system.
+ - Introduce new usb_charger_get_current() API for users to get the maximum and
+ minimum current.
+ - Rename some APIs and other optimization.
 
-Best regards,
-Alexander
+Changes since v15:
+ - Add charger state checking to avoid sending out duplicate notifies to users.
+ - Add one work to notify power users the current has been changed.
+
+Changes since v14:
+ - Add kernel documentation for struct usb_cahrger.
+ - Remove some redundant WARN() functions.
+
+Changes since v13:
+ - Remove the charger checking in usb_gadget_vbus_draw() function.
+ - Rename some functions in charger.c file.
+ - Rebase on git://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb.git tags/usb-for-v4.8
+
+Changes since v12:
+ - Remove the class and device things.
+ - Link usb charger to udc-core.ko.
+ - Create one "charger" subdirectory which holds all charger-related attributes.
+
+Changes since v11:
+ - Reviewed and tested by Li Jun.
+
+Changes since v10:
+ - Introduce usb_charger_get_state() function to check charger state.
+ - Remove the mutex lock in usb_charger_set_cur_limit_by_type() function
+ in case will be issued in atomic context.
+
+Baolin Wang (4):
+  usb: gadget: Introduce the usb charger framework
+  usb: gadget: Support for the usb charger framework
+  usb: gadget: Integrate with the usb gadget supporting for usb charger
+  power: wm831x_power: Support USB charger current limit management
+
+ drivers/power/wm831x_power.c     |   75 ++++
+ drivers/usb/gadget/Kconfig       |    8 +
+ drivers/usb/gadget/udc/Makefile  |    1 +
+ drivers/usb/gadget/udc/charger.c |  878 ++++++++++++++++++++++++++++++++++++++
+ drivers/usb/gadget/udc/core.c    |   19 +-
+ include/linux/mfd/wm831x/pdata.h |    3 +
+ include/linux/usb/charger.h      |  186 ++++++++
+ include/linux/usb/gadget.h       |    3 +
+ include/uapi/linux/usb/charger.h |   31 ++
+ 9 files changed, 1203 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/usb/gadget/udc/charger.c
+ create mode 100644 include/linux/usb/charger.h
+ create mode 100644 include/uapi/linux/usb/charger.h
+
+-- 
+1.7.9.5
+
