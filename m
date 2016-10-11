@@ -1,124 +1,93 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Tue, 11 Oct 2016 10:15:03 +0100
-Message-ID: <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
- <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
- <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 5/8] dt/bindings: Update binding for PM domain idle
+ states
+Date: Tue, 11 Oct 2016 12:29:30 +0100
+Message-ID: <5a50adda-5c34-2e6c-83a0-4e2b7d15ab51@arm.com>
+References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
+ <1475879821-8035-6-git-send-email-lina.iyer@linaro.org>
+ <4e55d6ad-8de7-72d7-7512-5e4ff2aabc79@arm.com>
+ <20161010164342.GC44885@linaro.org>
+ <ffc0b521-329a-d41f-c952-bb9c4877ea87@arm.com>
+ <20161010221332.GD44885@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20161010221332.GD44885@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, khilman@kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Marc Titinger <mtitinger+renesas@baylibre.com>, brendan.jackman@arm.com, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 
-On 10/10/16 15:04, Ulf Hansson wrote:
-> On 10 October 2016 at 13:18, Jon Hunter <jonathanh@nvidia.com> wrote:
+
+On 10/10/16 23:13, Lina Iyer wrote:
+> On Mon, Oct 10 2016 at 11:13 -0600, Sudeep Holla wrote:
+
+[...]
+
+>> Either we say this binding is ARM CPU specific or generic, I can't
+>> understand this mix 'n' match really. You have removed all the
+>> CPUIdle stuff from this series which is good and makes it simpler,
+>> but linking it to only "arm,idle-state" make be feel it's not
+>> generic. OK I will have a look at the RFC as why generic compatible
+>> was rejected.
 >>
->> On 06/10/16 13:22, Ulf Hansson wrote:
->>> On 20 September 2016 at 12:28, Jon Hunter <jonathanh@nvidia.com> wrote:
->>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>>> controllers) is partitioned across 3 PM domains which are:
->>>> - XUSBA: Superspeed logic (for USB 3.0)
->>>> - XUSBB: Device controller
->>>> - XUSBC: Host controller
->>>>
->>>> These power domains are not nested and can be powered-up and down
->>>> independently of one another. In practice different scenarios require
->>>> different combinations of the power domains, for example:
->>>> - Superspeed host: XUSBA and XUSBC
->>>> - Superspeed device: XUSBA and XUSBB
->>>>
->>>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>>> domains under the XUSBA, superspeed may not always be used/required and
->>>> so this would keep it on unnecessarily.
->>>>
->>>> Given that Tegra uses device-tree for describing the hardware, it would
->>>> be ideal that the device-tree 'power-domains' property for generic PM
->>>> domains could be extended to allow more than one PM domain to be
->>>> specified. For example, define the following the Tegra210 xHCI device ...
->>>>
->>>>         usb@70090000 {
->>>>                 compatible = "nvidia,tegra210-xusb";
->>>>                 ...
->>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>>         };
->>>>
->>>> This RFC extends the generic PM domain framework to allow a device to
->>>> define more than one PM domain in the device-tree 'power-domains'
->>>> property.
->>>
->>> First, I don't really like extending the internal logic of genpd to
->>> deal with multiple PM domains per device. *If* this really is needed,
->>> I think we should try to extend the struct device to cover this, then
->>> make genpd to use it somehow.
+> I will look for the discussion around it as well. A initial look
+> through didn't get me the thread I was looking for.
+>
+
+Sure
+
+[...]
+
 >>
->> I had looked at that initially but it was looking quite complex because
->> of the various structures (dev_pm_domain in the device structure,
->> pm_domain_data in pm_subsys_data, etc). This implementation is quite
-> 
-> I didn't care much about the complexity, more trying to understand how
-> the HW actually works. :-)
-
-OK.
-
->> simple and less intrusive. However, if there is a lot of interest in
->> this and it does appear to be, I would agree that having the device
->> structure handle this would be best.
+>> I understand that but it's not that simple which I assume you *do*
+>> agree. Hence may need bit of an explanation in the binding(not here
+>> of-course as I mentioned earlier, but in the CPU Idle bindings).
+>> Please consider DT bindings as any other specification. All I am
+>> asking is more description in the binding.
 >>
->>> Second, another way of seeing this is: Depending on the current
->>> runtime selected configuration you need to re-configure the PM domain
->>> topology - but the device would still remain in the same PM domain.
->>>
->>> In other words, you would need to remove/add subdomain(s) depending on
->>> the selected configuration. Would that better reflect the HW?
+> Any ideas of what description you would like to see? It seemed fairly
+> explanatory in the idle-states.txt, so I didn't go into depth here.
+>
+
+Various use cases we discussed and what takes precedence,... etc
+E.g.: if the Renasas example I pointed out had cpu-idle-states and
+power-domain but no domain-idle-states which is perfectly valid without
+this bindings.
+
+Basically all the important this we have discussed so far. Even the
+OSC/PCC is worth mentioning so that we are explicitly clear that this
+binding has no affiliation to those PSCI methods. In short it should be
+able to answer any question one might get if is completely new to this
+binding but is aware of old one.
+
+[...]
+
 >>
->> I am not 100% sure I follow what you are saying, but ultimately, I would
->> like to get to ...
+>> Agreed and sorry if I created any confusion. But this binding doesn't
+>> clearly state how to build up the hierarchy if the leaf node is not a
+>> power-domain node and I am just trying have those clarifications in the
+>> binding. It would be good if those details are *explicitly* mentioned in
+>> the binding, not this particularly, but in CPU Idle one when you
+>> introduce the user of that.
 >>
->>         usb@70090000 {
->>                 compatible = "nvidia,tegra210-xusb";
->>                 ...
->>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>         };
-> 
-> So, is this really is a proper description of the HW? Isn't it so,
-> that the usb device always resides in one and the same PM domain?
+> As we have today, devices have their own way of figuring out their idle
+> states, they are not represented in DT (CPU being an exception).
 
-I guess technically, the usbhost controller resides in one partition and
-the super-speed logic in another. So could the usbhost domain be the
-primary? Possibly, but the device cannot be probed without both enabled.
-
-> Now, depending on the selected speed mode (superspeed) additional
-> logic may needs to be powered on and configured for the usb device to
-> work?
-> Perhaps, one could consider those additional logics as a master/parent
-> PM domain for the usb device's PM domain?
-> 
-> Or this is not how the HW works? :-)
-
-It might be possible for this case, but to be honest, the more I think
-about this, I do wonder if we need to be able to make the framework a
-lot more flexible for devices that need multiple power-domains. In other
-words, for devices that use multiple domains allow them to control them
-similarly to what we do for regulators or clocks. So if there is more
-than one defined, then the genpd core will not bind the device to the
-pm-domain and let the driver handle it. This way if you do need more
-granular control of the pm-domains in the driver you can do whatever you
-need to.
-
-I know that Rajendra (CC'ed) was looking into whether he had a need to
-control multiple power-domains individually from within the context of a
-single device driver.
-
-Cheers
-Jon
+I understand that, and I assume this binding will provide a way to
+represent that for devices too if required. No ? Otherwise I see no
+point in just saying it's generic.
 
 -- 
-nvpublic
+Regards,
+Sudeep
