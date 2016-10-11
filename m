@@ -1,93 +1,100 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 5/8] dt/bindings: Update binding for PM domain idle
- states
-Date: Tue, 11 Oct 2016 12:29:30 +0100
-Message-ID: <5a50adda-5c34-2e6c-83a0-4e2b7d15ab51@arm.com>
-References: <1475879821-8035-1-git-send-email-lina.iyer@linaro.org>
- <1475879821-8035-6-git-send-email-lina.iyer@linaro.org>
- <4e55d6ad-8de7-72d7-7512-5e4ff2aabc79@arm.com>
- <20161010164342.GC44885@linaro.org>
- <ffc0b521-329a-d41f-c952-bb9c4877ea87@arm.com>
- <20161010221332.GD44885@linaro.org>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [bug report] twl4030_charger: use runtime_pm to keep usb phy active
+ while charging.
+Date: Tue, 11 Oct 2016 14:30:25 +0300
+Message-ID: <20161011113025.GA13807@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161010221332.GD44885@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, khilman@kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, rjw@rjwysocki.net, Marc Titinger <mtitinger+renesas@baylibre.com>, brendan.jackman@arm.com, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from aserp1040.oracle.com ([141.146.126.69]:17150 "EHLO
+        aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752378AbcJKLap (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2016 07:30:45 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: neil@brown.name
+Cc: linux-pm@vger.kernel.org
 
+Hello NeilBrown,
 
+The patch e57c4a67d712: "twl4030_charger: use runtime_pm to keep usb
+phy active while charging." from Jul 30, 2015, leads to the following
+static checker warning:
 
-On 10/10/16 23:13, Lina Iyer wrote:
-> On Mon, Oct 10 2016 at 11:13 -0600, Sudeep Holla wrote:
+	drivers/power/supply/twl4030_charger.c:521 twl4030_charger_enable_usb()
+	error: 'bci->transceiver' dereferencing possible ERR_PTR()
 
-[...]
+drivers/power/supply/twl4030_charger.c
+   468  static int twl4030_charger_enable_usb(struct twl4030_bci *bci, bool enable)
+   469  {
+   470          int ret;
+   471  
+   472          if (bci->usb_mode == CHARGE_OFF)
+   473                  enable = false;
+   474          if (enable && !IS_ERR_OR_NULL(bci->transceiver)) {
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We assume that ->transceiver can be NULL.
 
->> Either we say this binding is ARM CPU specific or generic, I can't
->> understand this mix 'n' match really. You have removed all the
->> CPUIdle stuff from this series which is good and makes it simpler,
->> but linking it to only "arm,idle-state" make be feel it's not
->> generic. OK I will have a look at the RFC as why generic compatible
->> was rejected.
->>
-> I will look for the discussion around it as well. A initial look
-> through didn't get me the thread I was looking for.
->
+   475  
+   476                  twl4030_charger_update_current(bci);
+   477  
+   478                  /* Need to keep phy powered */
+   479                  if (!bci->usb_enabled) {
+   480                          pm_runtime_get_sync(bci->transceiver->dev);
+   481                          bci->usb_enabled = 1;
+   482                  }
+   483  
+   484                  if (bci->usb_mode == CHARGE_AUTO)
+   485                          /* forcing the field BCIAUTOUSB (BOOT_BCI[1]) to 1 */
+   486                          ret = twl4030_clear_set_boot_bci(0, TWL4030_BCIAUTOUSB);
+   487  
+   488                  /* forcing USBFASTMCHG(BCIMFSTS4[2]) to 1 */
+   489                  ret = twl4030_clear_set(TWL_MODULE_MAIN_CHARGE, 0,
+   490                          TWL4030_USBFASTMCHG, TWL4030_BCIMFSTS4);
+   491                  if (bci->usb_mode == CHARGE_LINEAR) {
+   492                          twl4030_clear_set_boot_bci(TWL4030_BCIAUTOAC|TWL4030_CVENAC, 0);
+   493                          /* Watch dog key: WOVF acknowledge */
+   494                          ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x33,
+   495                                                 TWL4030_BCIWDKEY);
+   496                          /* 0x24 + EKEY6: off mode */
+   497                          ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x2a,
+   498                                                 TWL4030_BCIMDKEY);
+   499                          /* EKEY2: Linear charge: USB path */
+   500                          ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x26,
+   501                                                 TWL4030_BCIMDKEY);
+   502                          /* WDKEY5: stop watchdog count */
+   503                          ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0xf3,
+   504                                                 TWL4030_BCIWDKEY);
+   505                          /* enable MFEN3 access */
+   506                          ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x9c,
+   507                                                 TWL4030_BCIMFKEY);
+   508                           /* ICHGEOCEN - end-of-charge monitor (current < 80mA)
+   509                            *                      (charging continues)
+   510                            * ICHGLOWEN - current level monitor (charge continues)
+   511                            * don't monitor over-current or heat save
+   512                            */
+   513                          ret = twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0xf0,
+   514                                                 TWL4030_BCIMFEN3);
+   515                  }
+   516          } else {
+   517                  ret = twl4030_clear_set_boot_bci(TWL4030_BCIAUTOUSB, 0);
+   518                  ret |= twl_i2c_write_u8(TWL_MODULE_MAIN_CHARGE, 0x2a,
+   519                                          TWL4030_BCIMDKEY);
+   520                  if (bci->usb_enabled) {
+   521                          pm_runtime_mark_last_busy(bci->transceiver->dev);
+                                                          ^^^^^^^^^^^^^^^^^^^^^
+But we dereference it here.  Possibly checking ->usb_enabled prevents
+a crash?
 
-Sure
+   522                          pm_runtime_put_autosuspend(bci->transceiver->dev);
+   523                          bci->usb_enabled = 0;
+   524                  }
+   525                  bci->usb_cur = 0;
+   526          }
+   527  
+   528          return ret;
+   529  }
 
-[...]
-
->>
->> I understand that but it's not that simple which I assume you *do*
->> agree. Hence may need bit of an explanation in the binding(not here
->> of-course as I mentioned earlier, but in the CPU Idle bindings).
->> Please consider DT bindings as any other specification. All I am
->> asking is more description in the binding.
->>
-> Any ideas of what description you would like to see? It seemed fairly
-> explanatory in the idle-states.txt, so I didn't go into depth here.
->
-
-Various use cases we discussed and what takes precedence,... etc
-E.g.: if the Renasas example I pointed out had cpu-idle-states and
-power-domain but no domain-idle-states which is perfectly valid without
-this bindings.
-
-Basically all the important this we have discussed so far. Even the
-OSC/PCC is worth mentioning so that we are explicitly clear that this
-binding has no affiliation to those PSCI methods. In short it should be
-able to answer any question one might get if is completely new to this
-binding but is aware of old one.
-
-[...]
-
->>
->> Agreed and sorry if I created any confusion. But this binding doesn't
->> clearly state how to build up the hierarchy if the leaf node is not a
->> power-domain node and I am just trying have those clarifications in the
->> binding. It would be good if those details are *explicitly* mentioned in
->> the binding, not this particularly, but in CPU Idle one when you
->> introduce the user of that.
->>
-> As we have today, devices have their own way of figuring out their idle
-> states, they are not represented in DT (CPU being an exception).
-
-I understand that, and I assume this binding will provide a way to
-represent that for devices too if required. No ? Otherwise I see no
-point in just saying it's generic.
-
--- 
-Regards,
-Sudeep
+regards,
+dan carpenter
