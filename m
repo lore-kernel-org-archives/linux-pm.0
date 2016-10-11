@@ -1,168 +1,68 @@
 From: Andreas Herrmann <aherrmann@suse.com>
-Subject: Re: [PATCH 1/1] cpufreq: pcc-cpufreq: Re-introduce deadband effect
- to reduce number of frequency changes
-Date: Tue, 11 Oct 2016 08:28:47 +0200
-Message-ID: <20161011062847.GA4102@suselix.suse.de>
+Subject: Re: [PATCH v2 1/2] cpufreq/ondemand: Introduce op to customize
+ mapping of load to frequency
+Date: Tue, 11 Oct 2016 08:30:05 +0200
+Message-ID: <20161011063005.GB4102@suselix.suse.de>
 References: <20160819121814.GA17296@suselix.suse.de>
- <20160819122101.GB17296@suselix.suse.de>
- <20160829060153.GA5094@vireshk-i7>
- <20160901132140.GA10183@suselix.suse.de>
- <20160907050201.GK27345@vireshk-i7>
- <20160914145643.GA19982@suselix.suse.de>
- <20161005051753.GK4664@vireshk-i7>
+ <20160923165632.GA9786@suselix.suse.de>
+ <20160923170256.GB9786@suselix.suse.de>
+ <20161005040118.GJ4664@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.nue.novell.com ([195.135.221.5]:33262 "EHLO
+Received: from smtp.nue.novell.com ([195.135.221.5]:36179 "EHLO
         smtp.nue.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750717AbcJKG3u (ORCPT
+        with ESMTP id S1750717AbcJKGa3 (ORCPT
         <rfc822;groupwise-linux-pm@vger.kernel.org:0:0>);
-        Tue, 11 Oct 2016 02:29:50 -0400
+        Tue, 11 Oct 2016 02:30:29 -0400
 Content-Disposition: inline
-In-Reply-To: <20161005051753.GK4664@vireshk-i7>
+In-Reply-To: <20161005040118.GJ4664@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stratos Karafotis <stratosk@semaphore.gr>, Thomas Renninger <trenn@suse.com>
 
-On Wed, Oct 05, 2016 at 10:47:53AM +0530, Viresh Kumar wrote:
-> Sorry for being late Andreas :(
-> 
-> On 14-09-16, 16:56, Andreas Herrmann wrote:
-> 
-> First of all, thanks for your hardwork in getting these numbers out.
-> Really appreciate it.
-> 
-> > Below is some trace data. I hope it is of some help.
+On Wed, Oct 05, 2016 at 09:31:18AM +0530, Viresh Kumar wrote:
+> On 23-09-16, 19:02, Andreas Herrmann wrote:
+> > Introduce op for ondemand governor that is used to map load to
+> > frequency. It allows a cpufreq driver to provide a specific mapping
+> > function if the generic function is not optimal for the driver.
 > > 
-> > (A) - sampling 10s period when system is idle
-> > (B) - sampling 10s period when system partially loaded (kernel
-> >       compilation using 2 jobs)
+> > Performance results (kernel compile with different number of jobs)
+> > based on 4.8.0-rc7 (with and w/o my patches on top) from
+> > an HP ProLiant DL580 Gen8 system using pcc-cpufreq:
+> >  - Intel(R) Xeon(R) CPU E7-4890 v2 @ 2.80GHz
+> >  - 60 CPUs, 128GB RAM
+> >  
+> >                     vanilla                  generic_map_load_to_freq function
+> >  # of jobs  user    sys   elapsed   % CPU      user    sys   elapsed   % CPU
+> >     2      445.44  110.51  272.99   203.00    445.56  111.22  273.35   203.00
+> >     4      444.41  126.20  142.81   399.00    445.61  126.10  143.12   399.00
+> >     8      483.04  150.58   82.19   770.40    483.51  150.84   82.17   771.40
+> >    16      626.81  185.01   55.00  1475.40    628.01  185.54   55.02  1477.80
+> >    32      816.72  204.39   37.26  2740.00    818.58  205.51   37.02  2765.40
+> >    64      406.59   51.12   14.04  3257.80    406.22   51.84   13.84  3308.80
+> >   120      413.00   48.39   14.36  3211.20    413.61   49.06   14.54  3181.00
 > > 
-> > (1) 4.8-rc5
-> > (2) 4.8-rc5 with my patch (reintro of deadband effect within
-> >     pcc-cpufreq)
-> > (3) 4.8-rc5 with reversal of 6393d6a102 (cpufreq: ondemand: Eliminate
-> >     the deadband effect)
+> > Similar tests on another system using acpi_cpufreq didn't show
+> > significant performance differences between these two kernel versions.
 > > 
-> > Let me know whether you are looking for other trace data wrt this
-> > issue.
-> > 
-> > 
-> > Thanks,
-> > 
-> > Andreas
-> > 
+> > Link: https://marc.info/?i=20160819121814.GA17296%40suselix.suse.de
+> > Signed-off-by: Andreas Herrmann <aherrmann@suse.com>
 > > ---
-> > 
-> > (A)-(1)
-> > 
-> >  # Total Lost Samples: 0
-> >  # Samples: 41  of event 'power:cpu_frequency'
-> >  # Event count (approx.): 41
-> >  # Overhead  Command       Shared Object     Symbol                       
-> >  # ........  ............  ................  .............................
-> >      39.02%  kworker/14:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      29.27%  kworker/0:0   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      19.51%  kworker/10:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       7.32%  kworker/5:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       2.44%  kworker/23:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       2.44%  kworker/40:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> > 
-> > (A)-(2)
-> > 
-> >  # Total Lost Samples: 0
-> >  # Samples: 6  of event 'power:cpu_frequency'
-> >  # Event count (approx.): 6
-> >  # Overhead  Command       Shared Object     Symbol                       
-> >  # ........  ............  ................  .............................
-> >      33.33%  kworker/1:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      16.67%  kworker/16:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      16.67%  kworker/22:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      16.67%  kworker/26:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      16.67%  kworker/33:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> > 
-> > (A)-(3)
-> > 
-> >  # Total Lost Samples: 0
-> >  # Samples: 7  of event 'power:cpu_frequency'
-> >  # Event count (approx.): 7
-> >  # Overhead  Command       Shared Object     Symbol                       
-> >  # ........  ............  ................  .............................
-> >      28.57%  kworker/58:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      14.29%  kworker/19:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      14.29%  kworker/20:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      14.29%  kworker/22:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      14.29%  kworker/23:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >      14.29%  kworker/35:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> > 
-> > ---
-> > 
-> > (B)-(1)
-> > 
-> >  # Total Lost Samples: 0
-> >  # Samples: 2K of event 'power:cpu_frequency'
-> >  # Event count (approx.): 2382
-> >  # Overhead  Command       Shared Object     Symbol                       
-> >  # ........  ............  ................  .............................
-> >       5.75%  kworker/0:0   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       4.16%  kworker/12:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       3.11%  kworker/17:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       2.94%  kworker/2:1   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       2.73%  kworker/19:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       ...
-> > 
-> > (B)-(2)
-> > 
-> >  # Total Lost Samples: 0
-> >  # Samples: 320  of event 'power:cpu_frequency'
-> >  # Event count (approx.): 320
-> >  # Overhead  Command       Shared Object     Symbol                       
-> >  # ........  ............  ................  .............................
-> >       4.69%  kworker/56:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       4.06%  kworker/12:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       4.06%  kworker/28:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       4.06%  kworker/6:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       3.75%  kworker/32:2  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       ...
-> > 
-> > (B)-(3)
-> > 
-> >  # Total Lost Samples: 0
-> >  # Samples: 333  of event 'power:cpu_frequency'
-> >  # Event count (approx.): 333
-> >  # Overhead  Command       Shared Object     Symbol                       
-> >  # ........  ............  ................  .............................
-> >       4.80%  kworker/51:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       4.50%  kworker/39:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       4.20%  kworker/47:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       3.90%  kworker/59:1  [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       3.90%  kworker/7:2   [kernel.vmlinux]  [k] cpufreq_notify_transition
-> >       ...
+> >  drivers/cpufreq/cpufreq_governor.h |  5 +++++
+> >  drivers/cpufreq/cpufreq_ondemand.c | 35 ++++++++++++++++++++++++++++++-----
+> >  2 files changed, 35 insertions(+), 5 deletions(-)
 > 
-> I am worried by all of these.. So, its not the DVFS transition which
-> took time, but cpufreq_notify_transition(). And probably one of the
-> drivers in your setup is screwing up here, which has registered with
-> cpufreq_register_notifier().
+> NAK.
 > 
-> Can you please take a look at that ? Just check which all routines are
-> getting called as part of srcu_notifier_call_chain().
+> If we are absolutely required to hack it in some way, then I would
+> prefer your first patchset as the noise was limited to only your
+> driver.
+> 
+> We aren't going to provide such operations from the governors, sorry.
 
-I'll take a look into this.
+Yep, understandable.
 
-> Also a simple (hacky) solution to fix the problem you have got is to
-> divide the range of frequency in steps (which you have already done
-> AFAICT in one of your patches) and not mention the frequencies that
-> were part of the deadband earlier. That will keep the CPU at either
-> low freq or some higher freqs.
-
-Yes, seems worth to try this.
-
-> But I am quite sure that we have an abuser here and we better find it
-> now.
-
-
-Thanks,
 
 Andreas
-
