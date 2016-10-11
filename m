@@ -1,46 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 7/8] PM / OPP: Allow platform specific custom opp_set_rate() callbacks
-Date: Wed, 12 Oct 2016 00:26:32 +0200
-Message-ID: <4594322.zH4gqY9UBX@vostro.rjw.lan>
-References: <cover.1475581665.git.viresh.kumar@linaro.org> <f774c37de292f89053f22e9a2ac0f51c73c8dd89.1475581665.git.viresh.kumar@linaro.org> <20161005012929.GF4664@vireshk-i7>
+From: Hoan Tran <hotran@apm.com>
+Subject: Re: [PATCH] cpufreq: CPPC: Correct desired_perf calculation
+Date: Tue, 11 Oct 2016 15:31:36 -0700
+Message-ID: <CAFHUOYyBZXKuVusNf4jy17cnY9zj9g5AacZYDO3x-y31J7oRmg@mail.gmail.com>
+References: <1476220320-19685-1-git-send-email-hotran@apm.com> <12733315.XoNTxDd2zv@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161005012929.GF4664@vireshk-i7>
+In-Reply-To: <12733315.XoNTxDd2zv@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Prashanth Prakash <pprakash@codeaurora.org>, Al Stone <ahs3@redhat.com>, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, Loc Ho <lho@apm.com>, Duc Dang <dhdang@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 05, 2016 06:59:29 AM Viresh Kumar wrote:
-> On 04-10-16, 17:26, Viresh Kumar wrote:
-> > diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> > +int dev_pm_opp_register_set_rate_helper(struct device *dev,
-> > +	int (*set_rate)(struct device *dev, struct dev_pm_set_rate_data *data))
-> > +{
-> > +	return -ENOTSUPP;
-> > +}
-> 
-> + this to fix up a warning:
-> 
-> diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-> index ef882ed24b0e..483f33e70895 100644
-> --- a/include/linux/pm_opp.h
-> +++ b/include/linux/pm_opp.h
-> @@ -180,7 +180,7 @@ static inline int dev_pm_opp_set_supported_hw(struct device *dev,
->  
->  static inline void dev_pm_opp_put_supported_hw(struct device *dev) {}
->  
-> -int dev_pm_opp_register_set_rate_helper(struct device *dev,
-> +static inline int dev_pm_opp_register_set_rate_helper(struct device *dev,
->         int (*set_rate)(struct device *dev, struct dev_pm_set_rate_data *data))
->  {
->         return -ENOTSUPP;
-> 
-> 
+Hi Rafael,
 
-Can you resend the full patch, please?
+On Tue, Oct 11, 2016 at 2:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, October 11, 2016 02:12:00 PM Hoan Tran wrote:
+>> The desired_perf is an abstract performance number. Its value should
+>> be in the range of [lowest perf, highest perf] of CPPC.
+>> The correct calculation is
+>>   desired_perf = freq * cppc_highest_perf / cppc_dmi_max_khz
+>>
+>> Signed-off-by: Hoan Tran <hotran@apm.com>
+>> ---
+>>  drivers/cpufreq/cppc_cpufreq.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+>> index 1b2f28f..ab1d4b7 100644
+>> --- a/drivers/cpufreq/cppc_cpufreq.c
+>> +++ b/drivers/cpufreq/cppc_cpufreq.c
+>> @@ -84,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
+>>
+>>       cpu = all_cpu_data[policy->cpu];
+>>
+>> -     cpu->perf_ctrls.desired_perf = (u64)target_freq * policy->max / cppc_dmi_max_khz;
+>> +     cpu->perf_ctrls.desired_perf = (u64)target_freq * cpu->perf_caps.highest_perf / cppc_dmi_max_khz;
+>>       freqs.old = policy->cur;
+>>       freqs.new = target_freq;
+>>
+>>
+>
+> This patch has already been applied AFAICS.
+>
 
-Thanks,
-Rafael
+You mean this applied patch "cpufreq: CPPC: Avoid overflow when
+calculating desired_perf"
+
+This is another the bug, not the overflow bug.
+
+Thanks
+Hoan
+
+
+
+> Thanks,
+> Rafael
+>
