@@ -1,45 +1,45 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 177171] Reduced frequency window for conservative governor
-Date: Tue, 11 Oct 2016 21:24:23 +0000
-Message-ID: <bug-177171-137361-oPEFi5CjuI@https.bugzilla.kernel.org/>
-References: <bug-177171-137361@https.bugzilla.kernel.org/>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: CPPC: Correct desired_perf calculation
+Date: Tue, 11 Oct 2016 23:50:27 +0200
+Message-ID: <12733315.XoNTxDd2zv@vostro.rjw.lan>
+References: <1476220320-19685-1-git-send-email-hotran@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:35292 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752710AbcJKV0J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Oct 2016 17:26:09 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 1BB762034A
-        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 21:24:26 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-        by mail.kernel.org (Postfix) with ESMTP id DE4EC202E5
-        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 21:24:23 +0000 (UTC)
-In-Reply-To: <bug-177171-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1476220320-19685-1-git-send-email-hotran@apm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Hoan Tran <hotran@apm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, pprakash@codeaurora.org, Al Stone <ahs3@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lho@apm.com, Duc Dang <dhdang@apm.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=177171
+On Tuesday, October 11, 2016 02:12:00 PM Hoan Tran wrote:
+> The desired_perf is an abstract performance number. Its value should
+> be in the range of [lowest perf, highest perf] of CPPC.
+> The correct calculation is
+>   desired_perf = freq * cppc_highest_perf / cppc_dmi_max_khz
+> 
+> Signed-off-by: Hoan Tran <hotran@apm.com>
+> ---
+>  drivers/cpufreq/cppc_cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 1b2f28f..ab1d4b7 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -84,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
+>  
+>  	cpu = all_cpu_data[policy->cpu];
+>  
+> -	cpu->perf_ctrls.desired_perf = (u64)target_freq * policy->max / cppc_dmi_max_khz;
+> +	cpu->perf_ctrls.desired_perf = (u64)target_freq * cpu->perf_caps.highest_perf / cppc_dmi_max_khz;
+>  	freqs.old = policy->cur;
+>  	freqs.new = target_freq;
+>  
+> 
 
-Rafael J. Wysocki <rjw@rjwysocki.net> changed:
+This patch has already been applied AFAICS.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
- Attachment #241561|0                           |1
-        is obsolete|                            |
-
---- Comment #6 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
-Created attachment 241571
-  --> https://bugzilla.kernel.org/attachment.cgi?id=241571&action=edit
-cpufreq: conservative: Fix next frequency selection
-
-Sorry, one piece was missing in the previous patch.
-
-Please test this one instead.
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Thanks,
+Rafael
