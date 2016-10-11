@@ -1,42 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Fix struct pstate_adjust_policy kerneldoc
-Date: Tue, 11 Oct 2016 23:13:59 +0200
-Message-ID: <369062367.B9mLYn3C9F@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Hoan Tran <hotran@apm.com>
+Subject: [PATCH] cpufreq: CPPC: Correct desired_perf calculation
+Date: Tue, 11 Oct 2016 14:12:00 -0700
+Message-ID: <1476220320-19685-1-git-send-email-hotran@apm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44574 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1752916AbcJKVJJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2016 17:09:09 -0400
+Received: from mail-pa0-f54.google.com ([209.85.220.54]:35433 "EHLO
+        mail-pa0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752796AbcJKVVS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2016 17:21:18 -0400
+Received: by mail-pa0-f54.google.com with SMTP id qn10so21101682pac.2
+        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 14:20:53 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, pprakash@codeaurora.org, Al Stone <ahs3@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lho@apm.com, Duc Dang <dhdang@apm.com>, Hoan Tran <hotran@apm.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The desired_perf is an abstract performance number. Its value should
+be in the range of [lowest perf, highest perf] of CPPC.
+The correct calculation is
+  desired_perf = freq * cppc_highest_perf / cppc_dmi_max_khz
 
-It looks like the name of struct pstate_adjust_policy was updated
-without updating its kerneldoc comment accordingly, so fix that
-mistake.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Hoan Tran <hotran@apm.com>
 ---
- drivers/cpufreq/intel_pstate.c |    2 +-
+ drivers/cpufreq/cppc_cpufreq.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -225,7 +225,7 @@ struct cpudata {
- static struct cpudata **all_cpu_data;
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 1b2f28f..ab1d4b7 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -84,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
  
- /**
-- * struct pid_adjust_policy - Stores static PID configuration data
-+ * struct pstate_adjust_policy - Stores static PID configuration data
-  * @sample_rate_ms:	PID calculation sample rate in ms
-  * @sample_rate_ns:	Sample rate calculation in ns
-  * @deadband:		PID deadband
+ 	cpu = all_cpu_data[policy->cpu];
+ 
+-	cpu->perf_ctrls.desired_perf = (u64)target_freq * policy->max / cppc_dmi_max_khz;
++	cpu->perf_ctrls.desired_perf = (u64)target_freq * cpu->perf_caps.highest_perf / cppc_dmi_max_khz;
+ 	freqs.old = policy->cur;
+ 	freqs.new = target_freq;
+ 
+-- 
+1.9.1
 
