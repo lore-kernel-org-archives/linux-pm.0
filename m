@@ -1,59 +1,32 @@
-From: Hoan Tran <hotran@apm.com>
-Subject: Re: [PATCH] cpufreq: CPPC: Correct desired_perf calculation
-Date: Tue, 11 Oct 2016 15:31:36 -0700
-Message-ID: <CAFHUOYyBZXKuVusNf4jy17cnY9zj9g5AacZYDO3x-y31J7oRmg@mail.gmail.com>
-References: <1476220320-19685-1-git-send-email-hotran@apm.com> <12733315.XoNTxDd2zv@vostro.rjw.lan>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
+Date: Tue, 11 Oct 2016 22:39:56 +0000
+Message-ID: <bug-176411-137361-x6EvNCm8KO@https.bugzilla.kernel.org/>
+References: <bug-176411-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <12733315.XoNTxDd2zv@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Prashanth Prakash <pprakash@codeaurora.org>, Al Stone <ahs3@redhat.com>, linux-pm@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>, Loc Ho <lho@apm.com>, Duc Dang <dhdang@apm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:44674 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754537AbcJKWkA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Oct 2016 18:40:00 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 841EE2034A
+        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 22:39:58 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id 3549420108
+        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 22:39:56 +0000 (UTC)
+In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Rafael,
+https://bugzilla.kernel.org/show_bug.cgi?id=176411
 
-On Tue, Oct 11, 2016 at 2:50 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 11, 2016 02:12:00 PM Hoan Tran wrote:
->> The desired_perf is an abstract performance number. Its value should
->> be in the range of [lowest perf, highest perf] of CPPC.
->> The correct calculation is
->>   desired_perf = freq * cppc_highest_perf / cppc_dmi_max_khz
->>
->> Signed-off-by: Hoan Tran <hotran@apm.com>
->> ---
->>  drivers/cpufreq/cppc_cpufreq.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
->> index 1b2f28f..ab1d4b7 100644
->> --- a/drivers/cpufreq/cppc_cpufreq.c
->> +++ b/drivers/cpufreq/cppc_cpufreq.c
->> @@ -84,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
->>
->>       cpu = all_cpu_data[policy->cpu];
->>
->> -     cpu->perf_ctrls.desired_perf = (u64)target_freq * policy->max / cppc_dmi_max_khz;
->> +     cpu->perf_ctrls.desired_perf = (u64)target_freq * cpu->perf_caps.highest_perf / cppc_dmi_max_khz;
->>       freqs.old = policy->cur;
->>       freqs.new = target_freq;
->>
->>
->
-> This patch has already been applied AFAICS.
->
+--- Comment #17 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+Please attach dmesg from a fresh boot too.
 
-You mean this applied patch "cpufreq: CPPC: Avoid overflow when
-calculating desired_perf"
-
-This is another the bug, not the overflow bug.
-
-Thanks
-Hoan
-
-
-
-> Thanks,
-> Rafael
->
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
