@@ -1,32 +1,56 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 177171] Reduced frequency window for conservative governor
-Date: Tue, 11 Oct 2016 04:46:31 +0000
-Message-ID: <bug-177171-137361-cQgRJAV9Sz@https.bugzilla.kernel.org/>
-References: <bug-177171-137361@https.bugzilla.kernel.org/>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v17 3/4] usb: gadget: Integrate with the usb gadget
+ supporting for usb charger
+Date: Tue, 11 Oct 2016 13:11:47 +0800
+Message-ID: <CAMz4ku+E7y4NSvDXan8B6S-8bZFTtasG6gka5LgBFp=UBp=JAg@mail.gmail.com>
+References: <cover.1476000169.git.baolin.wang@linaro.org> <700f8d4fc3c52418eeba5445f6822093cc9ff036.1476000169.git.baolin.wang@linaro.org>
+ <57FC573C.2060301@linux.intel.com> <CAMz4kuL5yk5EZQ37ofA39uK_JwYYH5DA_=Z+nLEMO06KvyQmDQ@mail.gmail.com>
+ <57FC6B51.9030205@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:55692 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751297AbcJKErn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Oct 2016 00:47:43 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id D7BE9202EB
-        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 04:46:32 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id 9FF4B20253
-        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 04:46:31 +0000 (UTC)
-In-Reply-To: <bug-177171-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <57FC6B51.9030205@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lu Baolu <baolu.lu@linux.intel.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, r.baldyga@samsung.com, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>USB <lin>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=177171
+Hi Baolu,
 
---- Comment #4 from Aleksey Rybalkin <aleksey@rybalkin.org> ---
-Yes, that is correct.
+On 11 October 2016 at 12:32, Lu Baolu <baolu.lu@linux.intel.com> wrote:
+> Hi,
+>
+> On 10/11/2016 12:07 PM, Baolin Wang wrote:
+>>>>  /*
+>>>> >> + * usb_charger_unregister() - Unregister a usb charger.
+>>>> >> + * @uchger - the usb charger to be unregistered.
+>>>> >> + */
+>>>> >> +static int usb_charger_unregister(struct usb_charger *uchger)
+>>>> >> +{
+>>>> >> +     ida_simple_remove(&usb_charger_ida, uchger->id);
+>>>> >> +     sysfs_remove_groups(&uchger->gadget->dev.kobj, usb_charger_groups);
+>>>> >> +
+>>>> >> +     mutex_lock(&charger_lock);
+>>>> >> +     list_del(&uchger->list);
+>>>> >> +     mutex_unlock(&charger_lock);
+>>>> >> +
+>>>> >> +     kfree(uchger);
+>>> >
+>>> > Any reasons you want to put kfree() here? You allocated the memory
+>>> > in usb_charger_init(). Isn't usb_charger_exit() a better place?
+>> The usb_charger_exit() will issue usb_charger_unregister() and we need
+>> use the usb_charger structure in usb_charger_unregister() to
+>> unregister the usb charger.
+>>
+>
+> This seems not to be a strong reason. :-)
+>
+> You can unregister the charger first and then free the structure.
+> Just do the reverse operation of what you have done in the init
+> function.
+
+Make sense to me. I will modify this in next version. Thanks for your comments.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Baolin.wang
+Best Regards
