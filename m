@@ -1,31 +1,260 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 6/6] cpufreq: pxa: convert to clock API
-Date: Wed, 12 Oct 2016 08:06:01 +0530
-Message-ID: <20161012023601.GC19385@vireshk-i7>
-References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
- <1476130149-31834-7-git-send-email-robert.jarzmik@free.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1476130149-31834-7-git-send-email-robert.jarzmik@free.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: [PATCH V2] cpufreq: skip invalid entries when searching the frequency
+Date: Wed, 12 Oct 2016 08:45:05 +0530
+Message-ID: <3b0a25515d3dc44d8fbdb91a35eaa13565a204f6.1476241978.git.viresh.kumar@linaro.org>
+References: <10213813.22087-1-aaro.koskinen@iki.fi>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pa0-f43.google.com ([209.85.220.43]:33554 "EHLO
+        mail-pa0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752360AbcJLDQD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 11 Oct 2016 23:16:03 -0400
+Received: by mail-pa0-f43.google.com with SMTP id vu5so23845227pab.0
+        for <linux-pm@vger.kernel.org>; Tue, 11 Oct 2016 20:15:27 -0700 (PDT)
+In-Reply-To: <10213813.22087-1-aaro.koskinen@iki.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Aaro Koskinen <aaro.koskinen@iki.fi>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10-10-16, 22:09, Robert Jarzmik wrote:
-> As the clock settings have been introduced into the clock pxa drivers,
-> which are now available to change the CPU clock by themselves, remove
-> the clock handling from this driver, and rely on pxa clock drivers.
-> 
-> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> ---
->  drivers/cpufreq/pxa2xx-cpufreq.c | 191 ++++++++-------------------------------
->  1 file changed, 39 insertions(+), 152 deletions(-)
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
 
-As you mentioned in the previous patch, why can't you use cpufreq-dt
-driver now and delete this one ?
+Skip invalid entries when searching the frequency. This fixes cpufreq
+at least on loongson2 MIPS board.
 
+Fixes: da0c6dc00c69 ("cpufreq: Handle sorted frequency tables more efficiently")
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- Use cpufreq_frequency_table() instead.
+
+Hi Aaro,
+
+Can you please test this patch instead?
+
+ include/linux/cpufreq.h | 104 ++++++++++++++++++++++++------------------------
+ 1 file changed, 52 insertions(+), 52 deletions(-)
+
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 631ba33bbe9f..5fa55fc56e18 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -639,19 +639,19 @@ static inline int cpufreq_table_find_index_al(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
++	struct cpufreq_frequency_table *pos, *best = table - 1;
+ 	unsigned int freq;
+-	int i, best = -1;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		freq = table[i].frequency;
++	cpufreq_for_each_valid_entry(pos, table) {
++		freq = pos->frequency;
+ 
+ 		if (freq >= target_freq)
+-			return i;
++			return pos - table;
+ 
+-		best = i;
++		best = pos;
+ 	}
+ 
+-	return best;
++	return best - table;
+ }
+ 
+ /* Find lowest freq at or above target in a table in descending order */
+@@ -659,28 +659,28 @@ static inline int cpufreq_table_find_index_dl(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
++	struct cpufreq_frequency_table *pos, *best = table - 1;
+ 	unsigned int freq;
+-	int i, best = -1;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		freq = table[i].frequency;
++	cpufreq_for_each_valid_entry(pos, table) {
++		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return i;
++			return pos - table;
+ 
+ 		if (freq > target_freq) {
+-			best = i;
++			best = pos;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found above target_freq */
+-		if (best == -1)
+-			return i;
++		if (best == table - 1)
++			return pos - table;
+ 
+-		return best;
++		return best - pos;
+ 	}
+ 
+-	return best;
++	return best - pos;
+ }
+ 
+ /* Works only on sorted freq-tables */
+@@ -700,28 +700,28 @@ static inline int cpufreq_table_find_index_ah(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
++	struct cpufreq_frequency_table *pos, *best = table - 1;
+ 	unsigned int freq;
+-	int i, best = -1;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		freq = table[i].frequency;
++	cpufreq_for_each_valid_entry(pos, table) {
++		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return i;
++			return pos - table;
+ 
+ 		if (freq < target_freq) {
+-			best = i;
++			best = pos;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found below target_freq */
+-		if (best == -1)
+-			return i;
++		if (best == table - 1)
++			return pos - table;
+ 
+-		return best;
++		return best - table;
+ 	}
+ 
+-	return best;
++	return best - table;
+ }
+ 
+ /* Find highest freq at or below target in a table in descending order */
+@@ -729,19 +729,19 @@ static inline int cpufreq_table_find_index_dh(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
++	struct cpufreq_frequency_table *pos, *best = table - 1;
+ 	unsigned int freq;
+-	int i, best = -1;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		freq = table[i].frequency;
++	cpufreq_for_each_valid_entry(pos, table) {
++		freq = pos->frequency;
+ 
+ 		if (freq <= target_freq)
+-			return i;
++			return pos - table;
+ 
+-		best = i;
++		best = pos;
+ 	}
+ 
+-	return best;
++	return best - table;
+ }
+ 
+ /* Works only on sorted freq-tables */
+@@ -761,32 +761,32 @@ static inline int cpufreq_table_find_index_ac(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
++	struct cpufreq_frequency_table *pos, *best = table - 1;
+ 	unsigned int freq;
+-	int i, best = -1;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		freq = table[i].frequency;
++	cpufreq_for_each_valid_entry(pos, table) {
++		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return i;
++			return pos - table;
+ 
+ 		if (freq < target_freq) {
+-			best = i;
++			best = pos;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found below target_freq */
+-		if (best == -1)
+-			return i;
++		if (best == table - 1)
++			return pos - table;
+ 
+ 		/* Choose the closest freq */
+-		if (target_freq - table[best].frequency > freq - target_freq)
+-			return i;
++		if (target_freq - best->frequency > freq - target_freq)
++			return pos - table;
+ 
+-		return best;
++		return best - table;
+ 	}
+ 
+-	return best;
++	return best - table;
+ }
+ 
+ /* Find closest freq to target in a table in descending order */
+@@ -794,32 +794,32 @@ static inline int cpufreq_table_find_index_dc(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpufreq_frequency_table *table = policy->freq_table;
++	struct cpufreq_frequency_table *pos, *best = table - 1;
+ 	unsigned int freq;
+-	int i, best = -1;
+ 
+-	for (i = 0; table[i].frequency != CPUFREQ_TABLE_END; i++) {
+-		freq = table[i].frequency;
++	cpufreq_for_each_valid_entry(pos, table) {
++		freq = pos->frequency;
+ 
+ 		if (freq == target_freq)
+-			return i;
++			return pos - table;
+ 
+ 		if (freq > target_freq) {
+-			best = i;
++			best = pos;
+ 			continue;
+ 		}
+ 
+ 		/* No freq found above target_freq */
+-		if (best == -1)
+-			return i;
++		if (best == table - 1)
++			return pos - table;
+ 
+ 		/* Choose the closest freq */
+-		if (table[best].frequency - target_freq > target_freq - freq)
+-			return i;
++		if (best->frequency - target_freq > target_freq - freq)
++			return pos - table;
+ 
+-		return best;
++		return best - table;
+ 	}
+ 
+-	return best;
++	return best - table;
+ }
+ 
+ /* Works only on sorted freq-tables */
 -- 
-viresh
+2.7.1.410.g6faf27b
+
