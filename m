@@ -1,254 +1,48 @@
-From: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
-Subject: Re: [PATCH 2/2] power/reset: at91-poweroff: timely shitdown LPDDR
- memories
-Date: Wed, 12 Oct 2016 14:48:27 +0200
-Message-ID: <CACh+v5NCxPb_U8HOeczHicCD-Wp8BqBzvc1LtCzmEXZ74Cgshw@mail.gmail.com>
-References: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
- <20161007163427.11454-3-alexandre.belloni@free-electrons.com>
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH] cpufreq: CPPC: Correct desired_perf calculation
+Date: Wed, 12 Oct 2016 09:36:34 -0600
+Message-ID: <507da442-1193-3b51-cae2-78779a90bb17@codeaurora.org>
+References: <1476220320-19685-1-git-send-email-hotran@apm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161007163427.11454-3-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:60382 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752704AbcJLPgh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2016 11:36:37 -0400
+In-Reply-To: <1476220320-19685-1-git-send-email-hotran@apm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hoan Tran <hotran@apm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Al Stone <ahs3@redhat.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lho@apm.com, Duc Dang <dhdang@apm.com>
 
-2016-10-07 18:34 GMT+02:00 Alexandre Belloni
-<alexandre.belloni@free-electrons.com>:
-> LPDDR memories can only handle up to 400 uncontrolled power off. Ensure the
-> proper power off sequence is used before shutting down the platform.
+Hi Hoan,
+
+On 10/11/2016 3:12 PM, Hoan Tran wrote:
+> The desired_perf is an abstract performance number. Its value should
+> be in the range of [lowest perf, highest perf] of CPPC.
+> The correct calculation is
+>   desired_perf = freq * cppc_highest_perf / cppc_dmi_max_khz
 >
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> Signed-off-by: Hoan Tran <hotran@apm.com>
 > ---
->  drivers/power/reset/at91-poweroff.c      | 52 +++++++++++++++++++++++++++++++-
->  drivers/power/reset/at91-sama5d2_shdwc.c | 48 ++++++++++++++++++++++++++++-
->  2 files changed, 98 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/cppc_cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/drivers/power/reset/at91-poweroff.c b/drivers/power/reset/at91-poweroff.c
-> index e9e24df35f26..bf97390e6cd7 100644
-> --- a/drivers/power/reset/at91-poweroff.c
-> +++ b/drivers/power/reset/at91-poweroff.c
-> @@ -14,9 +14,12 @@
->  #include <linux/io.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> +#include <linux/of_address.h>
->  #include <linux/platform_device.h>
->  #include <linux/printk.h>
->
-> +#include <soc/at91/at91sam9_ddrsdr.h>
-> +
->  #define AT91_SHDW_CR   0x00            /* Shut Down Control Register */
->  #define AT91_SHDW_SHDW         BIT(0)                  /* Shut Down command */
->  #define AT91_SHDW_KEY          (0xa5 << 24)            /* KEY Password */
-> @@ -50,6 +53,7 @@ static const char *shdwc_wakeup_modes[] = {
->
->  static void __iomem *at91_shdwc_base;
->  static struct clk *sclk;
-> +static void __iomem *mpddrc_base;
->
->  static void __init at91_wakeup_status(void)
->  {
-> @@ -73,6 +77,28 @@ static void at91_poweroff(void)
->         writel(AT91_SHDW_KEY | AT91_SHDW_SHDW, at91_shdwc_base + AT91_SHDW_CR);
->  }
->
-> +static void at91_lpddr_poweroff(void)
-> +{
-> +       asm volatile(
-> +               /* Align to cache lines */
-> +               ".balign 32\n\t"
-> +
-> +               "       ldr     r6, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
-At first sight, it looks useless. I assume it's used to preload the
-TLB before the LPDDR is turned off.
-A comment to explain why this line is useful would prevent its removal.
-> +
-> +               /* Power down SDRAM0 */
-> +               "       str     %1, [%0, #" __stringify(AT91_DDRSDRC_LPR) "]\n\t"
-> +               /* Shutdown CPU */
-> +               "       str     %3, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
-> +
-> +               "       b       .\n\t"
-> +               :
-> +               : "r" (mpddrc_base),
-> +                 "r" cpu_to_le32(AT91_DDRSDRC_LPDDR2_PWOFF),
-> +                 "r" (at91_shdwc_base),
-> +                 "r" cpu_to_le32(AT91_SHDW_KEY | AT91_SHDW_SHDW)
-> +               : "r0");
-> +}
-> +
->  static int at91_poweroff_get_wakeup_mode(struct device_node *np)
->  {
->         const char *pm;
-> @@ -124,6 +150,8 @@ static void at91_poweroff_dt_set_wakeup_mode(struct platform_device *pdev)
->  static int __init at91_poweroff_probe(struct platform_device *pdev)
->  {
->         struct resource *res;
-> +       struct device_node *np;
-> +       u32 ddr_type;
->         int ret;
->
->         res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> @@ -150,12 +178,29 @@ static int __init at91_poweroff_probe(struct platform_device *pdev)
->
->         pm_power_off = at91_poweroff;
->
-> +       np = of_find_compatible_node(NULL, NULL, "atmel,sama5d3-ddramc");
-> +       if (!np)
-> +               return 0;
-> +
-> +       mpddrc_base = of_iomap(np, 0);
-> +       of_node_put(np);
-> +
-> +       if (!mpddrc_base)
-> +               return 0;
-> +
-> +       ddr_type = readl(mpddrc_base + AT91_DDRSDRC_MDR) & AT91_DDRSDRC_MD;
-> +       if ((ddr_type == AT91_DDRSDRC_MD_LPDDR2) ||
-> +           (ddr_type == AT91_DDRSDRC_MD_LPDDR3))
-Souldn't there be something like "pm_power_off = at91_lpddr_poweroff;" here ?
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 1b2f28f..ab1d4b7 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -84,7 +84,7 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
+>  
+>  	cpu = all_cpu_data[policy->cpu];
+>  
+> -	cpu->perf_ctrls.desired_perf = (u64)target_freq * policy->max / cppc_dmi_max_khz;
+> +	cpu->perf_ctrls.desired_perf = (u64)target_freq * cpu->perf_caps.highest_perf / cppc_dmi_max_khz;
+The patch looks good, I suppose we can add a small optimization. We can do a simple check
+to see if the newly computed desired_perf is same as old one, If it is same we can just return
+here instead of calling cppc_set_perf with same desired_perf value.
 
-Jean-Jacques
-
-> +       else
-> +               iounmap(mpddrc_base);
-> +
->         return 0;
->  }
->
->  static int __exit at91_poweroff_remove(struct platform_device *pdev)
->  {
-> -       if (pm_power_off == at91_poweroff)
-> +       if (pm_power_off == at91_poweroff ||
-> +           pm_power_off == at91_lpddr_poweroff)
->                 pm_power_off = NULL;
->
->         clk_disable_unprepare(sclk);
-> @@ -163,6 +208,11 @@ static int __exit at91_poweroff_remove(struct platform_device *pdev)
->         return 0;
->  }
->
-> +static const struct of_device_id at91_ramc_of_match[] = {
-> +       { .compatible = "atmel,sama5d3-ddramc", },
-> +       { /* sentinel */ }
-> +};
-> +
->  static const struct of_device_id at91_poweroff_of_match[] = {
->         { .compatible = "atmel,at91sam9260-shdwc", },
->         { .compatible = "atmel,at91sam9rl-shdwc", },
-> diff --git a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
-> index 8a5ac9706c9c..5736f360b374 100644
-> --- a/drivers/power/reset/at91-sama5d2_shdwc.c
-> +++ b/drivers/power/reset/at91-sama5d2_shdwc.c
-> @@ -22,9 +22,12 @@
->  #include <linux/io.h>
->  #include <linux/module.h>
->  #include <linux/of.h>
-> +#include <linux/of_address.h>
->  #include <linux/platform_device.h>
->  #include <linux/printk.h>
->
-> +#include <soc/at91/at91sam9_ddrsdr.h>
-> +
->  #define SLOW_CLOCK_FREQ        32768
->
->  #define AT91_SHDW_CR   0x00            /* Shut Down Control Register */
-> @@ -75,6 +78,7 @@ struct shdwc {
->   */
->  static struct shdwc *at91_shdwc;
->  static struct clk *sclk;
-> +static void __iomem *mpddrc_base;
->
->  static const unsigned long long sdwc_dbc_period[] = {
->         0, 3, 32, 512, 4096, 32768,
-> @@ -108,6 +112,28 @@ static void at91_poweroff(void)
->                at91_shdwc->at91_shdwc_base + AT91_SHDW_CR);
->  }
->
-> +static void at91_lpddr_poweroff(void)
-> +{
-> +       asm volatile(
-> +               /* Align to cache lines */
-> +               ".balign 32\n\t"
-> +
-> +               "       ldr     r6, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
-> +
-> +               /* Power down SDRAM0 */
-> +               "       str     %1, [%0, #" __stringify(AT91_DDRSDRC_LPR) "]\n\t"
-> +               /* Shutdown CPU */
-> +               "       str     %3, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
-> +
-> +               "       b       .\n\t"
-> +               :
-> +               : "r" (mpddrc_base),
-> +                 "r" cpu_to_le32(AT91_DDRSDRC_LPDDR2_PWOFF),
-> +                 "r" (at91_shdwc->at91_shdwc_base),
-> +                 "r" cpu_to_le32(AT91_SHDW_KEY | AT91_SHDW_SHDW)
-> +               : "r0");
-> +}
-> +
->  static u32 at91_shdwc_debouncer_value(struct platform_device *pdev,
->                                       u32 in_period_us)
->  {
-> @@ -212,6 +238,8 @@ static int __init at91_shdwc_probe(struct platform_device *pdev)
->  {
->         struct resource *res;
->         const struct of_device_id *match;
-> +       struct device_node *np;
-> +       u32 ddr_type;
->         int ret;
->
->         if (!pdev->dev.of_node)
-> @@ -249,6 +277,23 @@ static int __init at91_shdwc_probe(struct platform_device *pdev)
->
->         pm_power_off = at91_poweroff;
->
-> +       np = of_find_compatible_node(NULL, NULL, "atmel,sama5d3-ddramc");
-> +       if (!np)
-> +               return 0;
-> +
-> +       mpddrc_base = of_iomap(np, 0);
-> +       of_node_put(np);
-> +
-> +       if (!mpddrc_base)
-> +               return 0;
-> +
-> +       ddr_type = readl(mpddrc_base + AT91_DDRSDRC_MDR) & AT91_DDRSDRC_MD;
-> +       if ((ddr_type == AT91_DDRSDRC_MD_LPDDR2) ||
-> +           (ddr_type == AT91_DDRSDRC_MD_LPDDR3))
-> +               pm_power_off = at91_lpddr_poweroff;
-> +       else
-> +               iounmap(mpddrc_base);
-> +
->         return 0;
->  }
->
-> @@ -256,7 +301,8 @@ static int __exit at91_shdwc_remove(struct platform_device *pdev)
->  {
->         struct shdwc *shdw = platform_get_drvdata(pdev);
->
-> -       if (pm_power_off == at91_poweroff)
-> +       if (pm_power_off == at91_poweroff ||
-> +           pm_power_off == at91_lpddr_poweroff)
->                 pm_power_off = NULL;
->
->         /* Reset values to disable wake-up features  */
-> --
-> 2.9.3
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Thanks,
+Prashanth
