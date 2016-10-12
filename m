@@ -1,34 +1,42 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Wed, 12 Oct 2016 18:03:05 +0000
-Message-ID: <bug-176411-137361-h3gqq0YrRe@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Piotr Luc <piotr.luc@intel.com>
+Subject: [PATCH] powercap / RAPL: Add Knights Mill CPUID
+Date: Wed, 12 Oct 2016 20:28:34 +0200
+Message-ID: <20161012182834.3701-1-piotr.luc@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:45844 "EHLO mail.kernel.org"
+Received: from mga11.intel.com ([192.55.52.93]:16360 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932454AbcJLSDQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 12 Oct 2016 14:03:16 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id AAE1A202BE
-        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 18:03:07 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id 332E32034A
-        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 18:03:05 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+        id S933921AbcJLSaq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Oct 2016 14:30:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+Add Knights Mill (KNM) to the list of CPUIDs supported by intel_rapl
 
---- Comment #20 from Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> ---
-I used same kernel config with 4.8 on Arch Linux on CPU model as yours. I
-couldn't reproduce. So we need to add debug patches.
-So start with patch in comment #19.
+Signed-off-by: Piotr Luc <piotr.luc@intel.com>
+Reviewed-by: Dave Hansen <dave.hansen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+---
+Depends-on: x86/cpu/intel: Add Knights Mill to Intel family
+https://lkml.kernel.org/r/20161012180520.30976-1-piotr.luc () intel ! com
 
+ drivers/powercap/intel_rapl.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index fbab29d..6a58ff7 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1160,6 +1160,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
+ 	RAPL_CPU(INTEL_FAM6_ATOM_DENVERTON,	rapl_defaults_core),
+ 
+ 	RAPL_CPU(INTEL_FAM6_XEON_PHI_KNL,	rapl_defaults_hsw_server),
++	RAPL_CPU(INTEL_FAM6_XEON_PHI_KNM,	rapl_defaults_hsw_server),
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+2.10.1
+
