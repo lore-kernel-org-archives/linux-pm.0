@@ -1,57 +1,39 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / devfreq: Skip status update on uninitialized previous_freq
-Date: Wed, 12 Oct 2016 22:11:09 +0200
-Message-ID: <1528210.2n5m7HzmGy@vostro.rjw.lan>
-References: <1475152596-7892-1-git-send-email-tjakobi@math.uni-bielefeld.de> <CAJ0PZbSOrkdNM4c0qhkboMU5JmyHLCcnw0wKA54JJruSxWqU5g@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 177171] Reduced frequency window for conservative governor
+Date: Wed, 12 Oct 2016 20:05:30 +0000
+Message-ID: <bug-177171-137361-EG3FMdFXWd@https.bugzilla.kernel.org/>
+References: <bug-177171-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48151 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755972AbcJLUEZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2016 16:04:25 -0400
-In-Reply-To: <CAJ0PZbSOrkdNM4c0qhkboMU5JmyHLCcnw0wKA54JJruSxWqU5g@mail.gmail.com>
+Received: from mail.kernel.org ([198.145.29.136]:60480 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753968AbcJLUFe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 12 Oct 2016 16:05:34 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id C51A92020F
+        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 20:05:32 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id 7A5A420212
+        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 20:05:30 +0000 (UTC)
+In-Reply-To: <bug-177171-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@gmail.com
-Cc: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Linux PM list <linux-pm@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+To: linux-pm@vger.kernel.org
 
-On Friday, September 30, 2016 11:09:34 PM MyungJoo Ham wrote:
-> On Thu, Sep 29, 2016 at 9:36 PM, Tobias Jakobi
-> <tjakobi@math.uni-bielefeld.de> wrote:
-> > In case devfreq->previous_freq is still uninitialized in
-> > devfreq_update_status(), i.e. it has value '0', the lookups in
-> > that function fail, eventually leading to some error message:
-> > [    3.041292] devfreq bus_dmc: Couldn't update frequency transition information.
-> >
-> > Just skip the statup update in this situation.
-> >
-> > Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-> > ---
-> >  drivers/devfreq/devfreq.c | 4 ++++
-> >  1 file changed, 4 insertions(+)
-> >
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index 478006b..1bb300f 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > @@ -137,6 +137,10 @@ static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
-> >
-> >         cur_time = jiffies;
-> >
-> > +       /* Immediately exit if previous_freq is not initialized yet. */
-> > +       if (!devfreq->previous_freq)
-> > +               goto out;
-> > +
-> 
-> Thanks!
-> 
-> 
-> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+https://bugzilla.kernel.org/show_bug.cgi?id=177171
 
-Applied.
+Rafael J. Wysocki <rjw@rjwysocki.net> changed:
 
-Thanks,
-Rafael
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|ASSIGNED                    |RESOLVED
+         Resolution|---                         |PATCH_ALREADY_AVAILABLE
 
+--- Comment #9 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+Patch submitted: https://patchwork.kernel.org/patch/9373743/
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
