@@ -1,435 +1,343 @@
-From: Markus Mayer <markus.mayer@broadcom.com>
-Subject: Re: [PATCH v4 3/3] cpufreq: brcmstb-avs-cpufreq: add debugfs support
-Date: Wed, 12 Oct 2016 15:17:15 -0700
-Message-ID: <CAGt4E5sXPcNvN0A29qVw6DuoqDE8-fztZ3tMvUbtySn19b1q2w@mail.gmail.com>
-References: <1476310376-32699-1-git-send-email-mmayer@broadcom.com> <1476310376-32699-4-git-send-email-mmayer@broadcom.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [Update][PATCH 1/2] cpufreq: intel_pstate: Per CPU P-State limits
+Date: Thu, 13 Oct 2016 00:26:15 +0200
+Message-ID: <3832699.WyNH3AWCH1@vostro.rjw.lan>
+References: <1476299241-87924-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f178.google.com ([209.85.223.178]:34162 "EHLO
-        mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752159AbcJLWRS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2016 18:17:18 -0400
-Received: by mail-io0-f178.google.com with SMTP id r30so65866314ioi.1
-        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 15:17:17 -0700 (PDT)
-In-Reply-To: <1476310376-32699-4-git-send-email-mmayer@broadcom.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62312 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S932937AbcJLWTa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2016 18:19:30 -0400
+In-Reply-To: <1476299241-87924-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <code@mmayer.net>, Markus Mayer <mmayer@broadcom.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
 
-On 12 October 2016 at 15:12, Markus Mayer <mmayer@broadcom.com> wrote:
-> From: Markus Mayer <code@mmayer.net>
+Hi,
 
-Ugh. Missed that. In case this version gets applied, would you mind
-fixing the author address while applying (so they all say Broadcom)?
+On Wednesday, October 12, 2016 12:07:21 PM Srinivas Pandruvada wrote:
+> Intel P-State offers two interface to set performance limits:
+> - Intel P-State sysfs
+> 	/sys/devices/system/cpu/intel_pstate/max_perf_pct
+> 	/sys/devices/system/cpu/intel_pstate/min_perf_pct
+> - cpufreq
+> 	/sys/devices/system/cpu/cpu*/cpufreq/scaling_max_freq
+> 	/sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq
+> 
+> In the current implementation both of the above methods, change limits to
+> every CPU in the system, even if cpufreq interface offers per CPU controls.
+> 
+> This change gives some clarity to these interfaces and fixes cpufreq sysfs
+> interface to only impact the CPU on which operation is done (When possible
+> by the CPU architecture and also need to consider hyperthreading)
+> 
+> To be precise:
+> - Intel P-State sysfs is for placing global limits for all CPUs
+> - The cpufreq sysfs for individual CPU is to place limits on each CPU,
+> which are constrained by global limits. So If the global limit is
+> to reduce max_perf_pct to 80%, the individual CPU can't exceed 80%
+> of performance, but each CPU can add more restrictive limit
+> (E.g. say 60% here). Same rule applies to min_perf_pct. Each CPU
+> can request more than min_perf_pct as a limit value.
 
-> In order to aid debugging, we add a debugfs interface to the driver
-> that allows direct interaction with the AVS co-processor.
->
-> The debugfs interface provides a means for reading all and writing some
-> of the mailbox registers directly from the shell prompt and enables a
-> user to execute the communications protocol between ARM CPU and AVS CPU
-> step-by-step.
->
-> This interface should be used for debugging purposes only.
->
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/Kconfig.arm           |  10 ++
->  drivers/cpufreq/brcmstb-avs-cpufreq.c | 323 +++++++++++++++++++++++++++++++++-
->  2 files changed, 332 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index d4e3795..43f261e 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -23,6 +23,16 @@ config ARM_BRCMSTB_AVS_CPUFREQ
->
->           Say Y, if you have a Broadcom SoC with AVS support for DFS or DVFS.
->
-> +config ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
-> +       bool "Broadcom STB AVS CPUfreq driver sysfs debug capability"
-> +       depends on ARM_BRCMSTB_AVS_CPUFREQ
-> +       help
-> +         Enabling this option turns on debug support via sysfs under
-> +         /sys/kernel/debug/brcmstb-avs-cpufreq. It is possible to read all and
-> +         write some AVS mailbox registers through sysfs entries.
-> +
-> +         If in doubt, say N.
-> +
->  config ARM_DT_BL_CPUFREQ
->         tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
->         depends on ARM_BIG_LITTLE_CPUFREQ && OF
-> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> index 4415fa0..b761d54 100644
-> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> @@ -49,6 +49,13 @@
->  #include <linux/platform_device.h>
->  #include <linux/semaphore.h>
->
-> +#ifdef CONFIG_ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
-> +#include <linux/ctype.h>
-> +#include <linux/debugfs.h>
-> +#include <linux/slab.h>
-> +#include <linux/uaccess.h>
-> +#endif
-> +
->  /* Max number of arguments AVS calls take */
->  #define AVS_MAX_CMD_ARGS       4
->  /*
-> @@ -175,11 +182,88 @@ struct private_data {
->         void __iomem *base;
->         void __iomem *avs_intr_base;
->         struct device *dev;
-> +#ifdef CONFIG_ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
-> +       struct dentry *debugfs;
-> +#endif
->         struct completion done;
->         struct semaphore sem;
->         struct pmap pmap;
+I have a couple of comments to the details, but let me start with a high-level view.
+
+I would do this quite differently.  There is quite a bit of a headache with
+keeping the global settings (intel_pstate/max(min)_perf_pct) and the per-policy
+scaling_max(min)_freq in sync and I'm not sure this really is necessary.  
+Moreover, all of these updates are asynchronous with respect to the scheduler
+callback anyway, so there are races this synchronization between the settings
+doesn't cover.  IMO, it would be sufficient to combine the two in
+intel_pstate_get_min_max() only where the limits to apply for the given CPU are
+computed.
+
+So if limits->max_sysfs_perf is there (in addition to or even instead of
+limits->max_sysfs_pct), intel_pstate_get_min_max() can be something like:
+
+static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
+{
+	int max_pstate = cpu->pstate.turbo_pstate;
+	int32_t min_perf, max_perf;
+
+	max_pstate = limits->no_turbo || limits->turbo_disabled ?
+		cpu->pstate.max_pstate : cpu->pstate.turbo_pstate;
+
+	min_perf = max(limits->min_sysfs_perf, cpu->min_perf);
+	max_perf = min(limits->max_sysfs_perf, cpu->max_perf);
+	
+	/*
+	 * performance can be limited by user through sysfs, by cpufreq
+	 * policy, or by cpu specific default values determined through
+	 * experimentation.
+	 */
+	*max = clamp_t(int, fp_toint(max_pstate * max_perf),
+			cpu->pstate.min_pstate, cpu->pstate.turbo_pstate);
+
+	*min = clamp_t(int, fp_toint(max_pstate * limits->min_perf),
+			cpu->pstate.min_pstate, max_pstate);
+}
+
+and there's no reason why different CPUs (cpufreq policies) should affect each
+other.
+
+All of the code will become much simpler then AFAICS.
+
+> 
+>  drivers/cpufreq/intel_pstate.c | 361 +++++++++++++++++++++++++++++------------
+>  1 file changed, 257 insertions(+), 104 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 1c7b91c..d49fe21 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -193,6 +193,24 @@ struct _pid {
+>   * @prev_cummulative_iowait: IO Wait time difference from last and
+>   *			current sample
+>   * @sample:		Storage for storing last Sample data
+> + * @max_perf:		This is a scaled value between 0 to 255 for
+> + *			max_perf_pct. This value is used to limit
+> + *			max pstate for this CPU
+> + * @min_perf:		This is a scaled value between 0 to 255 for
+> + *			min_perf_pct. This value is used to limit
+> + *			min pstate for this CPU
+> + * @prev_max_perf:	Last max_perf value
+> + * @prev_min_perf:	Last min perf value
+> + * @max_policy_pct:	The maximum performance in percentage enforced by
+> + *			cpufreq setpolicy interface for this CPU
+> + * @max_policy_pct:	The minimum performance in percentage enforced by
+> + *			cpufreq setpolicy interface for this CPU
+
+@min_policy_pct:
+
+> + * @max_perf_pct:	Effective maximum performance limit in percentage, this
+> + *			is minimum of either limits enforced by cpufreq policy
+> + *			or limits from user set limits via intel_pstate sysfs
+> + * @min_perf_pct:	Effective minimum performance limit in percentage, this
+> + *			is maximum of either limits enforced by cpufreq policy
+> + *			or limits from user set limits via intel_pstate sysfs
+>   * @acpi_perf_data:	Stores ACPI perf information read from _PSS
+>   * @valid_pss_table:	Set to true for valid ACPI _PSS entries found
+>   *
+> @@ -215,6 +233,14 @@ struct cpudata {
+>  	u64	prev_tsc;
+>  	u64	prev_cummulative_iowait;
+>  	struct sample sample;
+> +	int32_t max_perf;
+> +	int32_t min_perf;
+> +	int32_t prev_max_perf;
+> +	int32_t prev_min_perf;
+> +	int max_policy_pct;
+> +	int min_policy_pct;
+> +	int max_perf_pct;
+> +	int min_perf_pct;
+>  #ifdef CONFIG_ACPI
+>  	struct acpi_processor_performance acpi_perf_data;
+>  	bool valid_pss_table;
+> @@ -289,6 +315,9 @@ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
+>  static struct pstate_adjust_policy pid_params __read_mostly;
+>  static struct pstate_funcs pstate_funcs __read_mostly;
+>  static int hwp_active __read_mostly;
+> +static DEFINE_MUTEX(perf_limits_lock);
+> +static int system_policy_max_perf;
+> +static int system_policy_min_perf;
+>  
+>  #ifdef CONFIG_ACPI
+>  static bool acpi_ppc;
+> @@ -300,63 +329,31 @@ static bool acpi_ppc;
+>   * @turbo_disabled:	Platform turbo status either from msr
+>   *			MSR_IA32_MISC_ENABLE or when maximum available pstate
+>   *			matches the maximum turbo pstate
+> - * @max_perf_pct:	Effective maximum performance limit in percentage, this
+> - *			is minimum of either limits enforced by cpufreq policy
+> - *			or limits from user set limits via intel_pstate sysfs
+> - * @min_perf_pct:	Effective minimum performance limit in percentage, this
+> - *			is maximum of either limits enforced by cpufreq policy
+> - *			or limits from user set limits via intel_pstate sysfs
+> - * @max_perf:		This is a scaled value between 0 to 255 for max_perf_pct
+> - *			This value is used to limit max pstate
+> - * @min_perf:		This is a scaled value between 0 to 255 for min_perf_pct
+> - *			This value is used to limit min pstate
+> - * @max_policy_pct:	The maximum performance in percentage enforced by
+> - *			cpufreq setpolicy interface
+>   * @max_sysfs_pct:	The maximum performance in percentage enforced by
+> - *			intel pstate sysfs interface
+> - * @min_policy_pct:	The minimum performance in percentage enforced by
+> - *			cpufreq setpolicy interface
+> + *			intel pstate sysfs interface for all CPUs
+>   * @min_sysfs_pct:	The minimum performance in percentage enforced by
+> - *			intel pstate sysfs interface
+> + *			intel pstate sysfs interface for all CPUs
+>   *
+>   * Storage for user and policy defined limits.
+>   */
+>  struct perf_limits {
+>  	int no_turbo;
+>  	int turbo_disabled;
+> -	int max_perf_pct;
+> -	int min_perf_pct;
+> -	int32_t max_perf;
+> -	int32_t min_perf;
+> -	int max_policy_pct;
+>  	int max_sysfs_pct;
+> -	int min_policy_pct;
+>  	int min_sysfs_pct;
 >  };
->
-> +#ifdef CONFIG_ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
+>  
+>  static struct perf_limits performance_limits = {
+>  	.no_turbo = 0,
+>  	.turbo_disabled = 0,
+> -	.max_perf_pct = 100,
+> -	.max_perf = int_tofp(1),
+> -	.min_perf_pct = 100,
+> -	.min_perf = int_tofp(1),
+> -	.max_policy_pct = 100,
+>  	.max_sysfs_pct = 100,
+> -	.min_policy_pct = 0,
+>  	.min_sysfs_pct = 0,
+>  };
+>  
+>  static struct perf_limits powersave_limits = {
+>  	.no_turbo = 0,
+>  	.turbo_disabled = 0,
+> -	.max_perf_pct = 100,
+> -	.max_perf = int_tofp(1),
+> -	.min_perf_pct = 0,
+> -	.min_perf = 0,
+> -	.max_policy_pct = 100,
+>  	.max_sysfs_pct = 100,
+> -	.min_policy_pct = 0,
+>  	.min_sysfs_pct = 0,
+>  };
+>  
+> @@ -569,12 +566,12 @@ static void intel_pstate_hwp_set(const struct cpumask *cpumask)
+>  		range = hw_max - hw_min;
+>  
+>  		rdmsrl_on_cpu(cpu, MSR_HWP_REQUEST, &value);
+> -		adj_range = limits->min_perf_pct * range / 100;
+> +		adj_range = all_cpu_data[cpu]->min_perf_pct * range / 100;
+>  		min = hw_min + adj_range;
+>  		value &= ~HWP_MIN_PERF(~0L);
+>  		value |= HWP_MIN_PERF(min);
+>  
+> -		adj_range = limits->max_perf_pct * range / 100;
+> +		adj_range = all_cpu_data[cpu]->max_perf_pct * range / 100;
+>  		max = hw_min + adj_range;
+>  		if (limits->no_turbo) {
+>  			hw_max = HWP_GUARANTEED_PERF(cap);
+
+I'd change this as I said in the beginning.
+
+> @@ -654,12 +651,6 @@ static void __init intel_pstate_debug_expose_params(void)
+>  /************************** debugfs end ************************/
+>  
+>  /************************** sysfs begin ************************/
+> -#define show_one(file_name, object)					\
+> -	static ssize_t show_##file_name					\
+> -	(struct kobject *kobj, struct attribute *attr, char *buf)	\
+> -	{								\
+> -		return sprintf(buf, "%u\n", limits->object);		\
+> -	}
+>  
+
+And then this can stay as is I think.
+
+>  static ssize_t show_turbo_pct(struct kobject *kobj,
+>  				struct attribute *attr, char *buf)
+> @@ -726,27 +717,126 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+>  	return count;
+>  }
+>  
+> +/*
+> + * Find the maximum and minimum performance as a percentage based
+> + * on limits placed on individual CPUs. Since threads can migrate
+> + * to different CPUs, the ground rules are:
+> + * - The max performance is the CPU with least performance, since that
+> + * is what can be be most constrained max performance limit.
+> + * - The min performance is the CPU with the max limit on performance,
+> + * since that is what can be be most constrained min performance limit.
+> + */
+
+Generally, if you add a comment to a function, there's no reason why it should
+not be a proper kerneldoc.
+
+> +static void get_max_min_perf(int *max_perf, int *min_perf)
+> +{
+> +	int cpu_index;
 > +
-> +enum debugfs_format {
-> +       DEBUGFS_NORMAL,
-> +       DEBUGFS_FLOAT,
-> +       DEBUGFS_REV,
-> +};
+> +	mutex_lock(&perf_limits_lock);
 > +
-> +struct debugfs_data {
-> +       struct debugfs_entry *entry;
-> +       struct private_data *priv;
-> +};
+> +	/*
+> +	 * If there is no set_policy() or offline cpu called after last
+> +	 * calculation, don't need to calculate min/max
+> +	 */
+> +	if (system_policy_max_perf && system_policy_min_perf)
+> +		goto set_perf_val;
 > +
-> +struct debugfs_entry {
-> +       char *name;
-> +       u32 offset;
-> +       fmode_t mode;
-> +       enum debugfs_format format;
-> +};
+> +	system_policy_max_perf = limits->max_sysfs_pct;
+> +	system_policy_min_perf = limits->min_sysfs_pct;
 > +
-> +#define DEBUGFS_ENTRY(name, mode, format)      { \
-> +       #name, AVS_MBOX_##name, mode, format \
+> +	for_each_online_cpu(cpu_index) {
+
+Iterating over online CPUs generally requires CPU online/offline to be locked.
+
+Otherwise the CPU you are dealing with at the moment may go away from under you.
+
+> +		struct cpudata *cpu = all_cpu_data[cpu_index];
+> +
+> +		if (system_policy_max_perf > cpu->max_perf_pct)
+> +			system_policy_max_perf = cpu->max_perf_pct;
+> +
+> +		if (system_policy_min_perf < cpu->min_perf_pct)
+> +			system_policy_min_perf = cpu->min_perf_pct;
+> +	}
+> +
+> +set_perf_val:
+> +	*min_perf = system_policy_min_perf;
+> +	*max_perf = system_policy_max_perf;
+> +
+> +	mutex_unlock(&perf_limits_lock);
 > +}
 > +
 > +/*
-> + * These are used for debugfs only. Otherwise we use AVS_MBOX_PARAM() directly.
+> + * Invalidate max/min sysfs limits: this will force recalculation during next
+> + * sysfs [max|min]perf_pct read/writes. Must be called with perf_limit_lock
+> + * mutex held.
 > + */
-> +#define AVS_MBOX_PARAM1                AVS_MBOX_PARAM(0)
-> +#define AVS_MBOX_PARAM2                AVS_MBOX_PARAM(1)
-> +#define AVS_MBOX_PARAM3                AVS_MBOX_PARAM(2)
-> +#define AVS_MBOX_PARAM4                AVS_MBOX_PARAM(3)
-> +
-> +/*
-> + * This table stores the name, access permissions and offset for each hardware
-> + * register and is used to generate debugfs entries.
-> + */
-> +static struct debugfs_entry debugfs_entries[] = {
-> +       DEBUGFS_ENTRY(COMMAND, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(STATUS, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(VOLTAGE0, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(TEMP0, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(PV0, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(MV0, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(PARAM1, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(PARAM2, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(PARAM3, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(PARAM4, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(REVISION, 0, DEBUGFS_REV),
-> +       DEBUGFS_ENTRY(PSTATE, 0, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(HEARTBEAT, 0, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(MAGIC, S_IWUSR, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(SIGMA_HVT, 0, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(SIGMA_SVT, 0, DEBUGFS_NORMAL),
-> +       DEBUGFS_ENTRY(VOLTAGE1, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(TEMP1, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(PV1, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(MV1, 0, DEBUGFS_FLOAT),
-> +       DEBUGFS_ENTRY(FREQUENCY, 0, DEBUGFS_NORMAL),
-> +};
-> +
-> +static int brcm_avs_target_index(struct cpufreq_policy *, unsigned int);
-> +
-> +static char *__strtolower(char *s)
+> +static void invalidate_policy_perf_limits(void)
 > +{
-> +       char *p;
-> +
-> +       for (p = s; *p; p++)
-> +               *p = tolower(*p);
-> +
-> +       return s;
+> +	system_policy_max_perf = 0;
+> +	system_policy_min_perf = 0;
 > +}
 > +
-> +#endif /* CONFIG_ARM_BRCMSTB_AVS_CPUFREQ_DEBUG */
-> +
->  static void __iomem *__map_region(const char *name)
->  {
->         struct device_node *np;
-> @@ -432,6 +516,238 @@ brcm_avs_get_freq_table(struct device *dev, struct private_data *priv)
->         return table;
->  }
->
-> +#ifdef CONFIG_ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
-> +
-> +#define MANT(x)        (unsigned int)(abs((x)) / 1000)
-> +#define FRAC(x)        (unsigned int)(abs((x)) - abs((x)) / 1000 * 1000)
-> +
-> +static int brcm_avs_debug_show(struct seq_file *s, void *data)
+> +static ssize_t show_max_perf_pct(struct kobject *kobj,
+> +				 struct attribute *attr, char *buf)
 > +{
-> +       struct debugfs_data *dbgfs = s->private;
-> +       void __iomem *base;
-> +       u32 val, offset;
+> +	int max_perf, min_perf;
 > +
-> +       if (!dbgfs) {
-> +               seq_puts(s, "No device pointer\n");
-> +               return 0;
-> +       }
+> +	get_max_min_perf(&max_perf, &min_perf);
 > +
-> +       base = dbgfs->priv->base;
-> +       offset = dbgfs->entry->offset;
-> +       val = readl(base + offset);
-> +       switch (dbgfs->entry->format) {
-> +       case DEBUGFS_NORMAL:
-> +               seq_printf(s, "%u\n", val);
-> +               break;
-> +       case DEBUGFS_FLOAT:
-> +               seq_printf(s, "%d.%03d\n", MANT(val), FRAC(val));
-> +               break;
-> +       case DEBUGFS_REV:
-> +               seq_printf(s, "%c.%c.%c.%c\n", (val >> 24 & 0xff),
-> +                          (val >> 16 & 0xff), (val >> 8 & 0xff),
-> +                          val & 0xff);
-> +               break;
-> +       }
-> +       seq_printf(s, "0x%08x\n", val);
-> +
-> +       return 0;
+> +	return sprintf(buf, "%d\n", max_perf);
 > +}
 > +
-> +#undef MANT
-> +#undef FRAC
-> +
-> +static ssize_t brcm_avs_seq_write(struct file *file, const char __user *buf,
-> +                                 size_t size, loff_t *ppos)
+> +static ssize_t show_min_perf_pct(struct kobject *kobj,
+> +				 struct attribute *attr, char *buf)
 > +{
-> +       struct seq_file *s = file->private_data;
-> +       struct debugfs_data *dbgfs = s->private;
-> +       struct private_data *priv = dbgfs->priv;
-> +       void __iomem *base, *avs_intr_base;
-> +       bool use_issue_command = false;
-> +       unsigned long val, offset;
-> +       char str[128];
-> +       int ret;
-> +       char *str_ptr = str;
+> +	int max_perf, min_perf;
 > +
-> +       if (size >= sizeof(str))
-> +               return -E2BIG;
+> +	get_max_min_perf(&max_perf, &min_perf);
 > +
-> +       memset(str, 0, sizeof(str));
-> +       ret = copy_from_user(str, buf, size);
-> +       if (ret)
-> +               return ret;
-> +
-> +       base = priv->base;
-> +       avs_intr_base = priv->avs_intr_base;
-> +       offset = dbgfs->entry->offset;
-> +       /*
-> +        * Special case writing to "command" entry only: if the string starts
-> +        * with a 'c', we use the driver's __issue_avs_command() function.
-> +        * Otherwise, we perform a raw write. This should allow testing of raw
-> +        * access as well as using the higher level function. (Raw access
-> +        * doesn't clear the firmware return status after issuing the command.)
-> +        */
-> +       if (str_ptr[0] == 'c' && offset == AVS_MBOX_COMMAND) {
-> +               use_issue_command = true;
-> +               str_ptr++;
-> +       }
-> +       if (kstrtoul(str_ptr, 0, &val) != 0)
-> +               return -EINVAL;
-> +
-> +       /*
-> +        * Setting the P-state is a special case. We need to update the CPU
-> +        * frequency we report.
-> +        */
-> +       if (val == AVS_CMD_SET_PSTATE) {
-> +               struct cpufreq_policy *policy;
-> +               unsigned int pstate;
-> +
-> +               policy = cpufreq_cpu_get(smp_processor_id());
-> +               /* Read back the P-state we are about to set */
-> +               pstate = readl(base + AVS_MBOX_PARAM(0));
-> +               if (use_issue_command) {
-> +                       ret = brcm_avs_target_index(policy, pstate);
-> +                       return ret ? ret : size;
-> +               }
-> +               policy->cur = policy->freq_table[pstate].frequency;
-> +       }
-> +
-> +       if (use_issue_command) {
-> +               ret = __issue_avs_command(priv, val, false, NULL);
-> +       } else {
-> +               /* Locking here is not perfect, but is only for debug. */
-> +               ret = down_interruptible(&priv->sem);
-> +               if (ret)
-> +                       return ret;
-> +
-> +               writel(val, base + offset);
-> +               /* We have to wake up the firmware to process a command. */
-> +               if (offset == AVS_MBOX_COMMAND)
-> +                       writel(AVS_CPU_L2_INT_MASK,
-> +                              avs_intr_base + AVS_CPU_L2_SET0);
-> +               up(&priv->sem);
-> +       }
-> +
-> +       return ret ? ret : size;
+> +	return sprintf(buf, "%d\n", min_perf);
 > +}
-> +
-> +static struct debugfs_entry *__find_debugfs_entry(const char *name)
-> +{
-> +       int i;
-> +
-> +       for (i = 0; i < ARRAY_SIZE(debugfs_entries); i++)
-> +               if (strcasecmp(debugfs_entries[i].name, name) == 0)
-> +                       return &debugfs_entries[i];
-> +
-> +       return NULL;
-> +}
-> +
-> +static int brcm_avs_debug_open(struct inode *inode, struct file *file)
-> +{
-> +       struct debugfs_data *data;
-> +       fmode_t fmode;
-> +       int ret;
-> +
-> +       /*
-> +        * seq_open(), which is called by single_open(), clears "write" access.
-> +        * We need write access to some files, so we preserve our access mode
-> +        * and restore it.
-> +        */
-> +       fmode = file->f_mode;
-> +       /*
-> +        * Check access permissions even for root. We don't want to be writing
-> +        * to read-only registers. Access for regular users has already been
-> +        * checked by the VFS layer.
-> +        */
-> +       if ((fmode & FMODE_WRITER) && !(inode->i_mode & S_IWUSR))
-> +               return -EACCES;
-> +
-> +       data = kmalloc(sizeof(*data), GFP_KERNEL);
-> +       if (!data)
-> +               return -ENOMEM;
-> +       /*
-> +        * We use the same file system operations for all our debug files. To
-> +        * produce specific output, we look up the file name upon opening a
-> +        * debugfs entry and map it to a memory offset. This offset is then used
-> +        * in the generic "show" function to read a specific register.
-> +        */
-> +       data->entry = __find_debugfs_entry(file->f_path.dentry->d_iname);
-> +       data->priv = inode->i_private;
-> +
-> +       ret = single_open(file, brcm_avs_debug_show, data);
-> +       if (ret)
-> +               kfree(data);
-> +       file->f_mode = fmode;
-> +
-> +       return ret;
-> +}
-> +
-> +static int brcm_avs_debug_release(struct inode *inode, struct file *file)
-> +{
-> +       struct seq_file *seq_priv = file->private_data;
-> +       struct debugfs_data *data = seq_priv->private;
-> +
-> +       kfree(data);
-> +       return single_release(inode, file);
-> +}
-> +
-> +static const struct file_operations brcm_avs_debug_ops = {
-> +       .open           = brcm_avs_debug_open,
-> +       .read           = seq_read,
-> +       .write          = brcm_avs_seq_write,
-> +       .llseek         = seq_lseek,
-> +       .release        = brcm_avs_debug_release,
-> +};
-> +
-> +static void brcm_avs_cpufreq_debug_init(struct platform_device *pdev)
-> +{
-> +       struct private_data *priv = platform_get_drvdata(pdev);
-> +       struct dentry *dir;
-> +       int i;
-> +
-> +       if (!priv)
-> +               return;
-> +
-> +       dir = debugfs_create_dir(BRCM_AVS_CPUFREQ_NAME, NULL);
-> +       if (IS_ERR_OR_NULL(dir))
-> +               return;
-> +       priv->debugfs = dir;
-> +
-> +       for (i = 0; i < ARRAY_SIZE(debugfs_entries); i++) {
-> +               /*
-> +                * The DEBUGFS_ENTRY macro generates uppercase strings. We
-> +                * convert them to lowercase before creating the debugfs
-> +                * entries.
-> +                */
-> +               char *entry = __strtolower(debugfs_entries[i].name);
-> +               fmode_t mode = debugfs_entries[i].mode;
-> +
-> +               if (!debugfs_create_file(entry, S_IFREG | S_IRUGO | mode,
-> +                                        dir, priv, &brcm_avs_debug_ops)) {
-> +                       priv->debugfs = NULL;
-> +                       debugfs_remove_recursive(dir);
-> +                       break;
-> +               }
-> +       }
-> +}
-> +
-> +static void brcm_avs_cpufreq_debug_exit(struct platform_device *pdev)
-> +{
-> +       struct private_data *priv = platform_get_drvdata(pdev);
-> +
-> +       if (priv && priv->debugfs) {
-> +               debugfs_remove_recursive(priv->debugfs);
-> +               priv->debugfs = NULL;
-> +       }
-> +}
-> +
-> +#else
-> +
-> +static void brcm_avs_cpufreq_debug_init(struct platform_device *pdev) {}
-> +static void brcm_avs_cpufreq_debug_exit(struct platform_device *pdev) {}
-> +
-> +#endif /* CONFIG_ARM_BRCMSTB_AVS_CPUFREQ_DEBUG */
-> +
->  /*
->   * To ensure the right firmware is running we need to
->   *    - check the MAGIC matches what we expect
-> @@ -694,8 +1010,11 @@ static int brcm_avs_cpufreq_probe(struct platform_device *pdev)
->                 return ret;
->
->         brcm_avs_driver.driver_data = pdev;
-> +       ret = cpufreq_register_driver(&brcm_avs_driver);
-> +       if (!ret)
-> +               brcm_avs_cpufreq_debug_init(pdev);
->
-> -       return cpufreq_register_driver(&brcm_avs_driver);
-> +       return ret;
->  }
->
->  static int brcm_avs_cpufreq_remove(struct platform_device *pdev)
-> @@ -707,6 +1026,8 @@ static int brcm_avs_cpufreq_remove(struct platform_device *pdev)
->         if (ret)
->                 return ret;
->
-> +       brcm_avs_cpufreq_debug_exit(pdev);
-> +
->         priv = platform_get_drvdata(pdev);
->         iounmap(priv->base);
->         iounmap(priv->avs_intr_base);
-> --
-> 2.7.4
->
+
+>From the above two we can simply return the last value written to them IMO.
+
+That would be less confusing to users than returning some effective value
+depending on the per-policy settings.
+
+Thanks,
+Rafael
+
