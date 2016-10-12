@@ -1,56 +1,55 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Add Knights Mill CPUID
-Date: Wed, 12 Oct 2016 21:39:24 +0200
-Message-ID: <1991911.AIWBrncZ9n@vostro.rjw.lan>
-References: <20161012182550.2102-1-piotr.luc@intel.com>
+Subject: Re: [PATCH v2 1/2] PM / devfreq: exynos-nocp: Select REGMAP_MMIO
+Date: Wed, 12 Oct 2016 22:08:28 +0200
+Message-ID: <4986321.Rq86MiW5qg@vostro.rjw.lan>
+References: <1474805638-30407-1-git-send-email-axel.lin@ingics.com> <9785239.FWYofzirS3@vostro.rjw.lan> <CAJ0PZbRCBeqbixQikCbc1F_AwGRHsCWEnh7MTYP3=zZ2LWEZBA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161012182550.2102-1-piotr.luc@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Piotr Luc <piotr.luc@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJ0PZbRCBeqbixQikCbc1F_AwGRHsCWEnh7MTYP3=zZ2LWEZBA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@gmail.com
+Cc: Axel Lin <axel.lin@ingics.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 12, 2016 08:25:50 PM Piotr Luc wrote:
-> Add Knights Mill (KNM) to the list of CPUIDs supported by intel_pstate.
+On Friday, September 30, 2016 10:46:04 PM MyungJoo Ham wrote:
+> On Thu, Sep 29, 2016 at 9:29 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Sunday, September 25, 2016 08:13:57 PM Axel Lin wrote:
+> >> This driver uses devm_regmap_init_mmio(), so select REGMAP_MMIO to avoid
+> >> build failure.
+> >>
+> >> Signed-off-by: Axel Lin <axel.lin@ingics.com>
+> >> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> >> ---
+> >> v2: fix typo in commit log and also add Chanwoo's Ack.
+> >> This one is a build fix, I think it should be for v4.8.
+> >>  drivers/devfreq/event/Kconfig | 1 +
+> >>  1 file changed, 1 insertion(+)
+> >>
+> >> diff --git a/drivers/devfreq/event/Kconfig b/drivers/devfreq/event/Kconfig
+> >> index 0fdae86..cd94980 100644
+> >> --- a/drivers/devfreq/event/Kconfig
+> >> +++ b/drivers/devfreq/event/Kconfig
+> >> @@ -17,6 +17,7 @@ config DEVFREQ_EVENT_EXYNOS_NOCP
+> >>       tristate "EXYNOS NoC (Network On Chip) Probe DEVFREQ event Driver"
+> >>       depends on ARCH_EXYNOS || COMPILE_TEST
+> >>       select PM_OPP
+> >> +     select REGMAP_MMIO
+> >>       help
+> >>         This add the devfreq-event driver for Exynos SoC. It provides NoC
+> >>         (Network on Chip) Probe counters to measure the bandwidth of AXI bus.
+> >>
+> >
+> > MyungJoo, I can apply this one and the [2/2] directly.  Should I do that?
+> >
+> > Thanks,
+> > Rafael
 > 
-> Signed-off-by: Piotr Luc <piotr.luc@intel.com>
-> Reviewed-by: Dave Hansen <dave.hansen@intel.com>
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
-> Depends-on: x86/cpu/intel: Add Knights Mill to Intel family
-> https://lkml.kernel.org/r/20161012180520.30976-1-piotr.luc () intel ! com
+> 
+> Yes, sure. Those two fixes look good. Thanks.
 
-First, putting broken URLs into patch tags doesn't really help.
-
-Second, please send all of these patches as a series where the first
-patch makes the change the rest depends on.  That would make them easier to
-handle.
-
-> 
->  drivers/cpufreq/intel_pstate.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index be9eade..4240aff 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1367,6 +1367,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
->  	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP,	core_params),
->  	ICPU(INTEL_FAM6_BROADWELL_XEON_D,	core_params),
->  	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_params),
-> +	ICPU(INTEL_FAM6_XEON_PHI_KNM,		knl_params),
->  	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_params),
->  	{}
->  };
-> 
+OK, applied.
 
 Thanks,
 Rafael
