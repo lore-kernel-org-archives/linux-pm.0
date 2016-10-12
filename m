@@ -1,118 +1,56 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: conservative: Fix next frequency selection
-Date: Wed, 12 Oct 2016 21:47:03 +0200
-Message-ID: <5054177.pbJ46HCkrN@vostro.rjw.lan>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Add Knights Mill CPUID
+Date: Wed, 12 Oct 2016 21:39:24 +0200
+Message-ID: <1991911.AIWBrncZ9n@vostro.rjw.lan>
+References: <20161012182550.2102-1-piotr.luc@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51039 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755915AbcJLTky (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 12 Oct 2016 15:40:54 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161012182550.2102-1-piotr.luc@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Piotr Luc <piotr.luc@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Aleksey Rybalkin <aleksey@rybalkin.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wednesday, October 12, 2016 08:25:50 PM Piotr Luc wrote:
+> Add Knights Mill (KNM) to the list of CPUIDs supported by intel_pstate.
+> 
+> Signed-off-by: Piotr Luc <piotr.luc@intel.com>
+> Reviewed-by: Dave Hansen <dave.hansen@intel.com>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+> Depends-on: x86/cpu/intel: Add Knights Mill to Intel family
+> https://lkml.kernel.org/r/20161012180520.30976-1-piotr.luc () intel ! com
 
-Commit d352cf47d93e (cpufreq: conservative: Do not use transition
-notifications) overlooked the case when the "frequency step" used
-by the conservative governor is small relative to the distances
-between the available frequencies and broke the algorithm by
-using policy->cur instead of the previously requested frequency
-when computing the next one.
+First, putting broken URLs into patch tags doesn't really help.
 
-As a result, the governor may not be able to go outside of a narrow
-range between two consecutive available frequencies.
+Second, please send all of these patches as a series where the first
+patch makes the change the rest depends on.  That would make them easier to
+handle.
 
-Fix the problem by making the governor save the previously requested
-frequency and select the next one relative that value (unless it is
-out of range, in which case policy->cur will be used instead).
+> 
+>  drivers/cpufreq/intel_pstate.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index be9eade..4240aff 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1367,6 +1367,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+>  	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP,	core_params),
+>  	ICPU(INTEL_FAM6_BROADWELL_XEON_D,	core_params),
+>  	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_params),
+> +	ICPU(INTEL_FAM6_XEON_PHI_KNM,		knl_params),
+>  	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_params),
+>  	{}
+>  };
+> 
 
-Fixes: d352cf47d93e (cpufreq: conservative: Do not use transition notifications)
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=177171
-Reported-and-tested-by: Aleksey Rybalkin <aleksey@rybalkin.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq_conservative.c |   19 ++++++++++++++++---
- 1 file changed, 16 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-pm/drivers/cpufreq/cpufreq_conservative.c
-@@ -17,6 +17,7 @@
- struct cs_policy_dbs_info {
- 	struct policy_dbs_info policy_dbs;
- 	unsigned int down_skip;
-+	unsigned int requested_freq;
- };
- 
- static inline struct cs_policy_dbs_info *to_dbs_info(struct policy_dbs_info *policy_dbs)
-@@ -61,6 +62,7 @@ static unsigned int cs_dbs_timer(struct
- {
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
-+	unsigned int requested_freq = dbs_info->requested_freq;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
- 	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
- 	unsigned int load = dbs_update(policy);
-@@ -72,10 +74,16 @@ static unsigned int cs_dbs_timer(struct
- 	if (cs_tuners->freq_step == 0)
- 		goto out;
- 
-+	/*
-+	 * If requested_freq is out of range, it is likely that the limits
-+	 * changed in the meantime, so fall back to current frequency in that
-+	 * case.
-+	 */
-+	if (requested_freq > policy->max || requested_freq < policy->min)
-+		requested_freq = policy->cur;
-+
- 	/* Check for frequency increase */
- 	if (load > dbs_data->up_threshold) {
--		unsigned int requested_freq = policy->cur;
--
- 		dbs_info->down_skip = 0;
- 
- 		/* if we are already at full speed then break out early */
-@@ -83,8 +91,11 @@ static unsigned int cs_dbs_timer(struct
- 			goto out;
- 
- 		requested_freq += get_freq_target(cs_tuners, policy);
-+		if (requested_freq > policy->max)
-+			requested_freq = policy->max;
- 
- 		__cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_H);
-+		dbs_info->requested_freq = requested_freq;
- 		goto out;
- 	}
- 
-@@ -95,7 +106,7 @@ static unsigned int cs_dbs_timer(struct
- 
- 	/* Check for frequency decrease */
- 	if (load < cs_tuners->down_threshold) {
--		unsigned int freq_target, requested_freq = policy->cur;
-+		unsigned int freq_target;
- 		/*
- 		 * if we cannot reduce the frequency anymore, break out early
- 		 */
-@@ -109,6 +120,7 @@ static unsigned int cs_dbs_timer(struct
- 			requested_freq = policy->min;
- 
- 		__cpufreq_driver_target(policy, requested_freq, CPUFREQ_RELATION_L);
-+		dbs_info->requested_freq = requested_freq;
- 	}
- 
-  out:
-@@ -287,6 +299,7 @@ static void cs_start(struct cpufreq_poli
- 	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy->governor_data);
- 
- 	dbs_info->down_skip = 0;
-+	dbs_info->requested_freq = policy->cur;
- }
- 
- static struct dbs_governor cs_governor = {
-
+Thanks,
+Rafael
