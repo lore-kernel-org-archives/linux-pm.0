@@ -1,43 +1,41 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 2/3] cpufreq: brcmstb-avs-cpufreq: AVS CPUfreq driver
- for Broadcom STB SoCs
-Date: Wed, 12 Oct 2016 11:08:42 +0530
-Message-ID: <20161012053842.GF19385@vireshk-i7>
-References: <1475882487-2155-1-git-send-email-mmayer@broadcom.com>
- <1475882487-2155-3-git-send-email-mmayer@broadcom.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH 6/6] cpufreq: pxa: convert to clock API
+Date: Wed, 12 Oct 2016 08:22:30 +0200
+Message-ID: <87mvia6q8p.fsf@belgarion.home>
+References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
+        <1476130149-31834-7-git-send-email-robert.jarzmik@free.fr>
+        <20161012023601.GC19385@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1475882487-2155-3-git-send-email-mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Cc: "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20161012023601.GC19385@vireshk-i7> (Viresh Kumar's message of
+        "Wed, 12 Oct 2016 08:06:01 +0530")
+Sender: linux-clk-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-10-16, 16:21, Markus Mayer wrote:
-> +static int brcm_avs_cpufreq_exit(struct cpufreq_policy *policy)
-> +{
-> +	struct private_data *priv = policy->driver_data;
-> +
-> +	iounmap(priv->base);
-> +	iounmap(priv->avs_intr_base);
-> +
-> +	return 0;
-> +}
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-Shouldn't the above be done in the below routine instead ?
+> On 10-10-16, 22:09, Robert Jarzmik wrote:
+>> As the clock settings have been introduced into the clock pxa drivers,
+>> which are now available to change the CPU clock by themselves, remove
+>> the clock handling from this driver, and rely on pxa clock drivers.
+>> 
+>> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+>> ---
+>>  drivers/cpufreq/pxa2xx-cpufreq.c | 191 ++++++++-------------------------------
+>>  1 file changed, 39 insertions(+), 152 deletions(-)
+>
+> As you mentioned in the previous patch, why can't you use cpufreq-dt
+> driver now and delete this one ?
 
-> +static int brcm_avs_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	platform_set_drvdata(pdev, NULL);
-> +
-> +	return cpufreq_unregister_driver(&brcm_avs_driver);
-> +}
+PXA architecture have both legacy platform_data based configurations and new
+devicetree based ones.
+
+I don't think cpufreq-dt can handle the legacy platform_data ones, can it ?
+
+Cheers.
 
 -- 
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Robert
