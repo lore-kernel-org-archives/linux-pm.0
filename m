@@ -1,94 +1,44 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH 2/2] power/reset: at91-poweroff: timely shitdown LPDDR
- memories
-Date: Thu, 13 Oct 2016 15:47:10 +0200
-Message-ID: <20161013134710.rbvsiyu6ala673g4@piout.net>
-References: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
- <20161007163427.11454-3-alexandre.belloni@free-electrons.com>
- <CACh+v5NCxPb_U8HOeczHicCD-Wp8BqBzvc1LtCzmEXZ74Cgshw@mail.gmail.com>
- <20161013110317.ee6by6njrvs53ztx@piout.net>
- <CACh+v5PgwXsCoMROO+Vftx8bbhTXP1V-JdZmdwWJ0tgOUW1Axw@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
+Date: Thu, 13 Oct 2016 14:32:44 +0000
+Message-ID: <bug-176411-137361-bDxekNSJJx@https.bugzilla.kernel.org/>
+References: <bug-176411-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CACh+v5PgwXsCoMROO+Vftx8bbhTXP1V-JdZmdwWJ0tgOUW1Axw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
-Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:40786 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755887AbcJMOmZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Oct 2016 10:42:25 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id BF298203E9
+        for <linux-pm@vger.kernel.org>; Thu, 13 Oct 2016 14:32:45 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id C0754203DC
+        for <linux-pm@vger.kernel.org>; Thu, 13 Oct 2016 14:32:44 +0000 (UTC)
+In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On 13/10/2016 at 14:27:15 +0200, Jean-Jacques Hiblot wrote :
-> 2016-10-13 13:03 GMT+02:00 Alexandre Belloni
-> <alexandre.belloni@free-electrons.com>:
-> > On 12/10/2016 at 14:48:27 +0200, Jean-Jacques Hiblot wrote :
-> >> > +static void at91_lpddr_poweroff(void)
-> >> > +{
-> >> > +       asm volatile(
-> >> > +               /* Align to cache lines */
-> >> > +               ".balign 32\n\t"
-> >> > +
-> >> > +               "       ldr     r6, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
-> >> At first sight, it looks useless. I assume it's used to preload the
-> >> TLB before the LPDDR is turned off.
-> >> A comment to explain why this line is useful would prevent its removal.
-> >
-> > Yes, this is the case. I can add a comment.
-> >
-> > Anyway, I would prefer the whole thing to run from SRAM, as a PIE
-> > instead of relying on the cache.
-> 
-> Instead of copying into the SRAM, you can make the cache reliable by
-> preloading it, much like the TLB.
-> LDI is probably not available for most of atmel's SOC, so the only way
-> I can think of, is to execute code from the targeted area. here is an
-> example:
-> +               /*
-> +                * Jump to the end of the sequence to preload instruction cache
-> +                * It only works because the sequence is short enough not to
-> +                * sit accross more than 2 cache lines
-> +                */
-> +               "       b end_of_sequence\n\t"
-> +               "start_of_sequence:\n\t"
-> +
->                 /* Power down SDRAM0 */
->                 "       str     %1, [%0, #"
-> __stringify(AT91_DDRSDRC_LPR) "]\n\t"
->                 /* Shutdown CPU */
->                 "       str     %3, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
-> 
->                 "       b       .\n\t"
-> +
-> +               /*
-> +                * we're now 100% sure that the code to shutdown the LPDDR and
-> +                * the CPU is in cache, go back to do the actual job
-> +                */
-> +               "end_of_sequence:\n\t"
-> +               "       b start_of_sequence\n\t"
->                 :
-> 
+https://bugzilla.kernel.org/show_bug.cgi?id=176411
 
-I don't think this is necessary. By aligning the instructions properly,
-we are already sure the whole code is loaded into the cache.
+--- Comment #21 from Mike Lui <mike.d.lui@gmail.com> ---
+comment #20 leads to believe this is an issue not with my CPU, but instead with
+my other hardware configuration.
 
-My plan is to get rid of the assembly and use PIE so it is written in C
-and we can properly separate the RAM stuff in the ddrc driver.
+I went into my BIOS (UEFI?) on my MSI X99A SLI PLUS and changed 3 settings I
+must have set a while back:
+  - disabled on-board OC'ing
+  - disabled intel c-states
+  - enabled turbo-boost
 
-The mpddrc driver could load its shutdown function in SRAM. The reset
-controller driver would load the reset function in SRAM and the shutdown
-controller would load the poweroff function in SRAM. It would e quite
-cleaner than what we have here.
+After this the issues in comment #1 are no longer present.
+
+Should this be marked as resolved, or should this still be considered a bug,
+for such a corner case?
 
 -- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+You are receiving this mail because:
+You are the assignee for the bug.
