@@ -1,44 +1,37 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Thu, 13 Oct 2016 14:32:44 +0000
-Message-ID: <bug-176411-137361-bDxekNSJJx@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
+From: "Luc, Piotr" <Piotr.Luc@intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Add Knights Mill CPUID
+Date: Thu, 13 Oct 2016 14:48:28 +0000
+Message-ID: <1476369859.27971.11.camel@intel.com>
+References: <20161012182550.2102-1-piotr.luc@intel.com>
+         <1991911.AIWBrncZ9n@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:40786 "EHLO mail.kernel.org"
+Received: from mga03.intel.com ([134.134.136.65]:59200 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755887AbcJMOmZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Oct 2016 10:42:25 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id BF298203E9
-        for <linux-pm@vger.kernel.org>; Thu, 13 Oct 2016 14:32:45 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id C0754203DC
-        for <linux-pm@vger.kernel.org>; Thu, 13 Oct 2016 14:32:44 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
+        id S1752745AbcJMOsv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Oct 2016 10:48:51 -0400
+In-Reply-To: <1991911.AIWBrncZ9n@vostro.rjw.lan>
+Content-Language: en-US
+Content-ID: <29199195E6B0594698F27DA5BB4A9657@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lenb@kernel.org" <lenb@kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
-
---- Comment #21 from Mike Lui <mike.d.lui@gmail.com> ---
-comment #20 leads to believe this is an issue not with my CPU, but instead with
-my other hardware configuration.
-
-I went into my BIOS (UEFI?) on my MSI X99A SLI PLUS and changed 3 settings I
-must have set a while back:
-  - disabled on-board OC'ing
-  - disabled intel c-states
-  - enabled turbo-boost
-
-After this the issues in comment #1 are no longer present.
-
-Should this be marked as resolved, or should this still be considered a bug,
-for such a corner case?
-
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+T24gV2VkLCAyMDE2LTEwLTEyIGF0IDIxOjM5ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
+ZToNCj4gT24gV2VkbmVzZGF5LCBPY3RvYmVyIDEyLCAyMDE2IDA4OjI1OjUwIFBNIFBpb3RyIEx1
+YyB3cm90ZToNCj4gPiANCj4gPiAtLS0NCj4gPiBEZXBlbmRzLW9uOiB4ODYvY3B1L2ludGVsOiBB
+ZGQgS25pZ2h0cyBNaWxsIHRvIEludGVsIGZhbWlseQ0KPiA+IGh0dHBzOi8vbGttbC5rZXJuZWwu
+b3JnL3IvMjAxNjEwMTIxODA1MjAuMzA5NzYtMS1waW90ci5sdWMgKCkgaW50ZWwNCj4gPiAhIGNv
+bQ0KPiANCj4gRmlyc3QsIHB1dHRpbmcgYnJva2VuIFVSTHMgaW50byBwYXRjaCB0YWdzIGRvZXNu
+J3QgcmVhbGx5IGhlbHAuDQoNCk9LLCB3aXRoIGEgc2VyaWVzIHRoZSBsaW5rIGlzIG5vdCBuZWVk
+ZWQuIEkgd2lsbCByZWZlciB0byBhIHBhdGNoDQppbnNpZGUgdGhlIHNlcmllcy4NCg0KPiANCj4g
+U2Vjb25kLCBwbGVhc2Ugc2VuZCBhbGwgb2YgdGhlc2UgcGF0Y2hlcyBhcyBhIHNlcmllcyB3aGVy
+ZSB0aGUgZmlyc3QNCj4gcGF0Y2ggbWFrZXMgdGhlIGNoYW5nZSB0aGUgcmVzdCBkZXBlbmRzIG9u
+LsKgwqBUaGF0IHdvdWxkIG1ha2UgdGhlbQ0KPiBlYXNpZXIgdG8NCj4gaGFuZGxlLg0KPiANCkkg
+c2VlLiBJIGp1c3Qgd29uZGVyIGlmIEkgc2hvdWxkIHNlbmQgdGhlIGVudGlyZSBzZXJpZXMgdG8g
+YWxsDQptYWludGFpbmVycyB0aGF0IG1haW50YWluIGluZGl2aWR1YWwgbW9kdWxlcy9maWxlcyBv
+ciBzb21laG93IGxpbWl0DQonVE8nIHJlY2lwaWVudHMgb25seSB0byB0aGVpciBtb2R1bGVzLsKg
+DQpJcyBhbnkgZ29vZCBtZXRob2QgdG8gaXQgY29ycmVjdGx5Pw0KDQpUaGFua3MsDQpQaW90cg==
