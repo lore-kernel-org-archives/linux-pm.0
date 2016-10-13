@@ -1,86 +1,107 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v7 2/8] power: add power sequence library
-Date: Thu, 13 Oct 2016 09:22:16 +0800
-Message-ID: <20161013012216.GA8114@b29397-desktop>
-References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
- <1474342607-27512-3-git-send-email-peter.chen@nxp.com>
- <4691591.qnCGxrEkrZ@phil>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Update][PATCH 1/2] cpufreq: intel_pstate: Per CPU P-State limits
+Date: Thu, 13 Oct 2016 02:55:00 +0200
+Message-ID: <CAJZ5v0iV2i-bxJBVWAPkBzwaZRHCcDN0aajq_U-p=2voNtC04g@mail.gmail.com>
+References: <1476299241-87924-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+ <3832699.WyNH3AWCH1@vostro.rjw.lan> <1476314165.59335.137.camel@linux.intel.com>
+ <CAJZ5v0gOqjE_FD+AQQ8fpbnnm7cbjaft8Dw1vCjF3r3_Y5wCSQ@mail.gmail.com>
+ <CAJZ5v0hWeNwf9ZNmKVo9MebjsFyN-XNQ9oBjuMD6=L=4VTG-Yg@mail.gmail.com> <1476319510.30002.14.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4691591.qnCGxrEkrZ@phil>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:36256 "EHLO
+        mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755307AbcJMEiR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 00:38:17 -0400
+Received: by mail-lf0-f42.google.com with SMTP id b75so114312008lfg.3
+        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 21:38:15 -0700 (PDT)
+In-Reply-To: <1476319510.30002.14.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
 
-On Wed, Oct 12, 2016 at 12:30:29PM +0200, Heiko Stuebner wrote:
-> Hi,
-> 
-> Am Dienstag, 20. September 2016, 11:36:41 CEST schrieb Peter Chen:
-> > We have an well-known problem that the device needs to do some power
-> > sequence before it can be recognized by related host, the typical
-> > example like hard-wired mmc devices and usb devices.
-> > 
-> > This power sequence is hard to be described at device tree and handled by
-> > related host driver, so we have created a common power sequence
-> > library to cover this requirement. The core code has supplied
-> > some common helpers for host driver, and individual power sequence
-> > libraries handle kinds of power sequence for devices.
-> > 
-> > pwrseq_generic is intended for general purpose of power sequence, which
-> > handles gpios and clocks currently, and can cover regulator and pinctrl
-> > in future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > if only one power sequence is needed, else call of_pwrseq_on_list
-> > /of_pwrseq_off_list instead (eg, USB hub driver).
-> >
-> > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> > Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> 
-> first of all, glad to see this move forward. I've only some qualms with the 
-> static number of allocated power sequences below.
-> 
+On Thu, Oct 13, 2016 at 2:45 AM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Thu, 2016-10-13 at 02:34 +0200, Rafael J. Wysocki wrote:
+>> On Thu, Oct 13, 2016 at 2:16 AM, Rafael J. Wysocki <rafael@kernel.org
+>> > wrote:
+>> >
+>> > On Thu, Oct 13, 2016 at 1:16 AM, Srinivas Pandruvada
+>> > <srinivas.pandruvada@linux.intel.com> wrote:
+>> > >
+>> > > Hi,
+>> > >
+>> > > On Thu, 2016-10-13 at 00:26 +0200, Rafael J. Wysocki wrote:
+>> > >
+>> > > [...]
+>> > >
+>> > > >
+>> > > >
+>> > > > I have a couple of comments to the details, but let me start
+>> > > > with a
+>> > > > high-level view.
+>> > > > I would do this quite differently.  There is quite a bit of a
+>> > > > headache with
+>> > > > keeping the global settings (intel_pstate/max(min)_perf_pct)
+>> > > > and the
+>> > > > per-policy
+>> > > > scaling_max(min)_freq in sync and I'm not sure this really is
+>> > > > necessary.
+>> > > > Moreover, all of these updates are asynchronous with respect to
+>> > > > the
+>> > > > scheduler
+>> > > > callback anyway, so there are races this synchronization
+>> > > > between the
+>> > > > settings
+>> > > > doesn't cover.  IMO, it would be sufficient to combine the two
+>> > > > in
+>> > > > intel_pstate_get_min_max() only where the limits to apply for
+>> > > > the
+>> > > > given CPU are
+>> > > > computed.
+>> > > >
+>> > > > So if limits->max_sysfs_perf is there (in addition to or even
+>> > > > instead
+>> > > > of
+>> > > > limits->max_sysfs_pct), intel_pstate_get_min_max() can be
+>> > > > something
+>> > > > like:
+>> > > Idea is to preserve current functionality.
+>> > >
+>> > > The problem with approach is that limits are changed via cpufreq
+>> > > sysfs,
+>> > > the intel_pstate sysfs doesn't reflect that. This is the value it
+>> > > is
+>> > > displaying currently so keeping the same functionality.
+>> > >
+>> > > Currently we know from Intel P-state sysfs the limited
+>> > > performance
+>> > > value irrespective of which sysfs did. So I don't want to break
+>> > > this
+>> > > behavior (There are tools reading intel_pstate sysfs for current
+>> > > limits
+>> > > to get to next quickly to meet thermal deadline, also cpufreq
+>> > > sysfs
+>> > > limits can change without tools knowledge by say thermal or _PPC,
+>> > > so
+>> > > the intel P-state sysfs is a common place now).
+>> > Sigh.  OK
+>> >
+>> > Why don't we update the effective min and max (stored in static
+>> > variables) when (a) the global sysfs is written to and (b) on
+>> > updates
+>> > via ->set_policy()?
+>> Bad idea.
+>>
+>> But it looks like the effective min and max only need to be computed
+>> in the "show" routines before returning them.
+>
+> The other place is just to check error during set max/min_perf_pct via
+> sysfs. Want to avoid store bad limits stored.
 
-Thanks for commenting it, the preallocate way is not a good way, but I
-can't find suitable way. See below comments.
+I wouldn't do that this way, because what is written may become
+relevant when the per-policy values are updated.
 
-> > +static int __init pwrseq_generic_register(void)
-> > +{
-> > +	struct pwrseq_generic *pwrseq_gen;
-> > +	int i;
-> > +
-> > +	for (i = 0; i < CONFIG_PWRSEQ_GENERIC_INSTANCE_NUMBER; i++) {
-> > +		pwrseq_gen = kzalloc(sizeof(*pwrseq_gen), GFP_KERNEL);
-> > +		if (!pwrseq_gen)
-> > +			return -ENOMEM;
-> > +
-> > +		pwrseq_gen->pwrseq.pwrseq_of_match_table = generic_id_table;
-> > +		pwrseq_gen->pwrseq.get = pwrseq_generic_get;
-> > +		pwrseq_gen->pwrseq.on = pwrseq_generic_on;
-> > +		pwrseq_gen->pwrseq.off = pwrseq_generic_off;
-> > +		pwrseq_gen->pwrseq.put = pwrseq_generic_put;
-> > +		pwrseq_gen->pwrseq.free = pwrseq_generic_free;
-> > +
-> > +		pwrseq_register(&pwrseq_gen->pwrseq);
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +postcore_initcall(pwrseq_generic_register)
-> 
-> I see that you need to have it preallocated for the compatible matching, but 
-> wouldn't it also work to either just register the type and allocate 
-> dynamically or otherwise just allocate a new spare everytime 
-> pwrseq_generic_get() picks up the previous spare?
-
-Before compatible matching, the host driver doesn't know which pwrseq type
-for its child node, then doesn't know which pwrseq instance needs to be
-allocated. From dts, we don't know which pwrseq type for the node.
-
--- 
-
-Best Regards,
-Peter Chen
+Thanks,
+Rafael
