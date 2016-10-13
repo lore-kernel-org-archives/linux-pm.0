@@ -1,26 +1,21 @@
 From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [RESEND PATCH 01/11] EDAC, sb_edac: Use Intel family processor
- macros
-Date: Fri, 14 Oct 2016 00:01:19 +0200
-Message-ID: <20161013220119.jwo52lhvrvuqzgm2@pd.tnic>
+Subject: Re: [RESEND PATCH 05/11] EDAC, sb_edac: Add Knights Mill CPUID
+Date: Fri, 14 Oct 2016 00:04:25 +0200
+Message-ID: <20161013220425.gt2rjobgc2x4tvug@pd.tnic>
 References: <20161013153105.2517-1-piotr.luc@intel.com>
- <20161013153105.2517-2-piotr.luc@intel.com>
+ <20161013153105.2517-6-piotr.luc@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:41396 "EHLO mail.skyhub.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750926AbcJMWBY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 13 Oct 2016 18:01:24 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161013153105.2517-2-piotr.luc@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20161013153105.2517-6-piotr.luc@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Piotr Luc <piotr.luc@intel.com>
 Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Luck, Tony" <tony.luck@intel.com>, "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 13, 2016 at 05:30:55PM +0200, Piotr Luc wrote:
-> Use macros of Intel processor families instead of raw numbers.
+On Thu, Oct 13, 2016 at 05:30:59PM +0200, Piotr Luc wrote:
+> Add Knights Mill (KNM) to the list of CPUIDs supported by sb_edac.
 > 
 > Signed-off-by: Piotr Luc <piotr.luc@intel.com>
 > Reviewed-by: Dave Hansen <dave.hansen@intel.com>
@@ -32,45 +27,29 @@ On Thu, Oct 13, 2016 at 05:30:55PM +0200, Piotr Luc wrote:
 > Cc: "Luck, Tony" <tony.luck@intel.com>
 > Cc: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
 > ---
->  drivers/edac/sb_edac.c | 13 +++++++------
->  1 file changed, 7 insertions(+), 6 deletions(-)
+> This patch depends on [PATCH 03/11] x86/cpu/intel: Add Knights Mill 
+> to Intel family
+> 
+>  drivers/edac/sb_edac.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
 > diff --git a/drivers/edac/sb_edac.c b/drivers/edac/sb_edac.c
-> index ce0067b..90564bc 100644
+> index 90564bc..3ffc737 100644
 > --- a/drivers/edac/sb_edac.c
 > +++ b/drivers/edac/sb_edac.c
-> @@ -23,6 +23,7 @@
->  #include <linux/math64.h>
->  #include <linux/mod_devicetable.h>
->  #include <asm/cpu_device_id.h>
-> +#include <asm/intel-family.h>
->  #include <asm/processor.h>
->  #include <asm/mce.h>
->  
-> @@ -3366,12 +3367,12 @@ fail0:
->  	{ X86_VENDOR_INTEL, 6, model, 0, (unsigned long)&table }
->  
->  static const struct x86_cpu_id sbridge_cpuids[] = {
-> -	ICPU(0x2d, pci_dev_descr_sbridge_table),	/* SANDY_BRIDGE */
-> -	ICPU(0x3e, pci_dev_descr_ibridge_table),	/* IVY_BRIDGE */
-> -	ICPU(0x3f, pci_dev_descr_haswell_table),	/* HASWELL */
-> -	ICPU(0x4f, pci_dev_descr_broadwell_table),	/* BROADWELL */
-> -	ICPU(0x56, pci_dev_descr_broadwell_table),	/* BROADWELL-DE */
-> -	ICPU(0x57, pci_dev_descr_knl_table),		/* KNIGHTS_LANDING */
-> +	ICPU(INTEL_FAM6_SANDYBRIDGE_X, pci_dev_descr_sbridge_table),
-> +	ICPU(INTEL_FAM6_IVYBRIDGE_X, pci_dev_descr_ibridge_table),
-> +	ICPU(INTEL_FAM6_HASWELL_X, pci_dev_descr_haswell_table),
-> +	ICPU(INTEL_FAM6_BROADWELL_X, pci_dev_descr_broadwell_table),
-> +	ICPU(INTEL_FAM6_BROADWELL_XEON_D, pci_dev_descr_broadwell_table),
-> +	ICPU(INTEL_FAM6_XEON_PHI_KNL, pci_dev_descr_knl_table),
+> @@ -3373,6 +3373,7 @@ static const struct x86_cpu_id sbridge_cpuids[] = {
+>  	ICPU(INTEL_FAM6_BROADWELL_X, pci_dev_descr_broadwell_table),
+>  	ICPU(INTEL_FAM6_BROADWELL_XEON_D, pci_dev_descr_broadwell_table),
+>  	ICPU(INTEL_FAM6_XEON_PHI_KNL, pci_dev_descr_knl_table),
+> +	ICPU(INTEL_FAM6_XEON_PHI_KNM, pci_dev_descr_knl_table),
 >  	{ }
 >  };
 >  MODULE_DEVICE_TABLE(x86cpu, sbridge_cpuids);
-> --
+> -- 
 
-I took Dave's patch here, instead:
+Acked-by: Borislav Petkov <bp@suse.de>
 
-https://lkml.kernel.org/r/20160929204321.9FAE5F84@viggo.jf.intel.com
+for whichever tree it goes through.
 
 -- 
 Regards/Gruss,
