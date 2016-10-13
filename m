@@ -1,59 +1,57 @@
-From: Hoan Tran <hotran@apm.com>
-Subject: [PATCH v2] cpufreq: CPPC: Correct desired_perf calculation
-Date: Thu, 13 Oct 2016 10:33:35 -0700
-Message-ID: <1476380015-21001-1-git-send-email-hotran@apm.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RESEND PATCH 06/11] cpufreq: intel_pstate: Add Knights Mill
+ CPUID
+Date: Thu, 13 Oct 2016 10:51:59 -0700
+Message-ID: <1476381119.114531.61.camel@linux.intel.com>
+References: <20161013153105.2517-1-piotr.luc@intel.com>
+         <20161013153105.2517-7-piotr.luc@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:35021 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934248AbcJMRmF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 13:42:05 -0400
-Received: by mail-pf0-f175.google.com with SMTP id s8so37900013pfj.2
-        for <linux-pm@vger.kernel.org>; Thu, 13 Oct 2016 10:40:47 -0700 (PDT)
+Received: from mga02.intel.com ([134.134.136.20]:59956 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934461AbcJMR5u (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 13 Oct 2016 13:57:50 -0400
+In-Reply-To: <20161013153105.2517-7-piotr.luc@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, pprakash@codeaurora.org, Al Stone <ahs3@redhat.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lho@apm.com, Duc Dang <dhdang@apm.com>, Hoan Tran <hotran@apm.com>
+To: Piotr Luc <piotr.luc@intel.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Doug Thompson <dougthompson@xmission.com>, Borislav Petkov <bp@alien8.de>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 
-The desired_perf is an abstract performance number. Its value should
-be in the range of [lowest perf, highest perf] of CPPC.
-The correct calculation is
-  desired_perf = freq * cppc_highest_perf / cppc_dmi_max_khz
+On Thu, 2016-10-13 at 17:31 +0200, Piotr Luc wrote:
+> Add Knights Mill (KNM) to the list of CPUIDs supported by
+> intel_pstate.
+> 
+> Signed-off-by: Piotr Luc <piotr.luc@intel.com>
+> Reviewed-by: Dave Hansen <dave.hansen@intel.com>
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
 
-And cppc_cpufreq_set_target() returns if desired_perf is exactly
-the same with the old perf.
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Signed-off-by: Hoan Tran <hotran@apm.com>
----
-v2
- * Return if desired_perf is the same with the old one (Prashanth's suggestion)
-
-
- drivers/cpufreq/cppc_cpufreq.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 1b2f28f..4852d9e 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -80,11 +80,17 @@ static int cppc_cpufreq_set_target(struct cpufreq_policy *policy,
- {
- 	struct cppc_cpudata *cpu;
- 	struct cpufreq_freqs freqs;
-+	u32 desired_perf;
- 	int ret = 0;
- 
- 	cpu = all_cpu_data[policy->cpu];
- 
--	cpu->perf_ctrls.desired_perf = (u64)target_freq * policy->max / cppc_dmi_max_khz;
-+	desired_perf = (u64)target_freq * cpu->perf_caps.highest_perf / cppc_dmi_max_khz;
-+	/* Return if it is exactly the same perf */
-+	if (desired_perf == cpu->perf_ctrls.desired_perf)
-+		return ret;
-+
-+	cpu->perf_ctrls.desired_perf = desired_perf;
- 	freqs.old = policy->cur;
- 	freqs.new = target_freq;
- 
--- 
-1.9.1
-
+> ---
+> This patch depends on [PATCH 03/11] x86/cpu/intel: Add Knights Mill 
+> to Intel family
+> 
+>  drivers/cpufreq/intel_pstate.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index be9eade..4240aff 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1367,6 +1367,7 @@ static const struct x86_cpu_id
+> intel_pstate_cpu_ids[] = {
+>  	ICPU(INTEL_FAM6_SKYLAKE_DESKTOP,	core_params),
+>  	ICPU(INTEL_FAM6_BROADWELL_XEON_D,	core_params),
+>  	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_params),
+> +	ICPU(INTEL_FAM6_XEON_PHI_KNM,		knl_params),
+>  	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_params),
+>  	{}
+>  };
