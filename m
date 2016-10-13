@@ -1,66 +1,57 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v7 2/8] power: add power sequence library
-Date: Thu, 13 Oct 2016 16:57:39 +0800
-Message-ID: <20161013085739.GA19151@b29397-desktop>
-References: <1474342607-27512-1-git-send-email-peter.chen@nxp.com>
- <4691591.qnCGxrEkrZ@phil>
- <20161013012216.GA8114@b29397-desktop>
- <10186696.bBGEe05eC7@phil>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH 2/2] power/reset: at91-poweroff: timely shitdown LPDDR
+ memories
+Date: Thu, 13 Oct 2016 13:03:17 +0200
+Message-ID: <20161013110317.ee6by6njrvs53ztx@piout.net>
+References: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
+ <20161007163427.11454-3-alexandre.belloni@free-electrons.com>
+ <CACh+v5NCxPb_U8HOeczHicCD-Wp8BqBzvc1LtCzmEXZ74Cgshw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pa0-f66.google.com ([209.85.220.66]:33417 "EHLO
-        mail-pa0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752553AbcJMI6H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 04:58:07 -0400
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <10186696.bBGEe05eC7@phil>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CACh+v5NCxPb_U8HOeczHicCD-Wp8BqBzvc1LtCzmEXZ74Cgshw@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
+Cc: linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com, dwmw3@infradead.org, k.kozlowski@samsung.com, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org
 
-On Thu, Oct 13, 2016 at 09:04:42AM +0200, Heiko Stuebner wrote:
-> > > > +static int __init pwrseq_generic_register(void)
-> > > > +{
-> > > > +	struct pwrseq_generic *pwrseq_gen;
-> > > > +	int i;
-> > > > +
-> > > > +	for (i = 0; i < CONFIG_PWRSEQ_GENERIC_INSTANCE_NUMBER; i++) {
-> > > > +		pwrseq_gen = kzalloc(sizeof(*pwrseq_gen), GFP_KERNEL);
-> > > > +		if (!pwrseq_gen)
-> > > > +			return -ENOMEM;
-> > > > +
-> > > > +		pwrseq_gen->pwrseq.pwrseq_of_match_table = generic_id_table;
-> > > > +		pwrseq_gen->pwrseq.get = pwrseq_generic_get;
-> > > > +		pwrseq_gen->pwrseq.on = pwrseq_generic_on;
-> > > > +		pwrseq_gen->pwrseq.off = pwrseq_generic_off;
-> > > > +		pwrseq_gen->pwrseq.put = pwrseq_generic_put;
-> > > > +		pwrseq_gen->pwrseq.free = pwrseq_generic_free;
-> > > > +
-> > > > +		pwrseq_register(&pwrseq_gen->pwrseq);
-> > > > +	}
-> > > > +
-> > > > +	return 0;
-> > > > +}
-> > > > +postcore_initcall(pwrseq_generic_register)
-> > > 
-> > > I see that you need to have it preallocated for the compatible matching,
-> > > but wouldn't it also work to either just register the type and allocate
-> > > dynamically or otherwise just allocate a new spare everytime
-> > > pwrseq_generic_get() picks up the previous spare?
-> > 
-> > Before compatible matching, the host driver doesn't know which pwrseq type
-> > for its child node, then doesn't know which pwrseq instance needs to be
-> > allocated. From dts, we don't know which pwrseq type for the node.
+On 12/10/2016 at 14:48:27 +0200, Jean-Jacques Hiblot wrote :
+> > +static void at91_lpddr_poweroff(void)
+> > +{
+> > +       asm volatile(
+> > +               /* Align to cache lines */
+> > +               ".balign 32\n\t"
+> > +
+> > +               "       ldr     r6, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
+> At first sight, it looks useless. I assume it's used to preload the
+> TLB before the LPDDR is turned off.
+> A comment to explain why this line is useful would prevent its removal.
+
+Yes, this is the case. I can add a comment.
+
+Anyway, I would prefer the whole thing to run from SRAM, as a PIE
+instead of relying on the cache.
+
+> > +       ddr_type = readl(mpddrc_base + AT91_DDRSDRC_MDR) & AT91_DDRSDRC_MD;
+> > +       if ((ddr_type == AT91_DDRSDRC_MD_LPDDR2) ||
+> > +           (ddr_type == AT91_DDRSDRC_MD_LPDDR3))
+> Souldn't there be something like "pm_power_off = at91_lpddr_poweroff;" here ?
 > 
-> yes, that is why I was suggesting allocating one (or two) here in 
-> pwrseq_generic_register() and every time pwrseq_generic_get() grabs the last 
-> free sequence instance, you allocate a new free spare one in that function.
 
-Good idea.
+Indeed
+
 
 -- 
-
-Best Regards,
-Peter Chen
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
