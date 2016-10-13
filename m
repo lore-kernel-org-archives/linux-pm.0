@@ -1,54 +1,65 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Add Knights Mill CPUID
-Date: Thu, 13 Oct 2016 23:48:19 +0200
-Message-ID: <1780433.ynzyL9V08i@vostro.rjw.lan>
-References: <20161012182550.2102-1-piotr.luc@intel.com> <1991911.AIWBrncZ9n@vostro.rjw.lan> <1476369859.27971.11.camel@intel.com>
+Subject: Re: [RESEND PATCH 00/11] Add Knights Mill CPU ID
+Date: Thu, 13 Oct 2016 23:56:39 +0200
+Message-ID: <1692747.lfetUOsc0x@vostro.rjw.lan>
+References: <20161013153105.2517-1-piotr.luc@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45495 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755022AbcJMVnH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 17:43:07 -0400
-In-Reply-To: <1476369859.27971.11.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161013153105.2517-1-piotr.luc@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Piotr Luc <piotr.luc@intel.com>, Jacob Pan Jun <jacob.jun.pan@linux.intel.com>, Len Brown <len.brown@intel.com>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Doug Thompson <dougthompson@xmission.com>, Borislav Petkov <bp@alien8.de>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Luc, Piotr" <Piotr.Luc@intel.com>
-Cc: "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "lenb@kernel.org" <lenb@kernel.org>
 
-On Thursday, October 13, 2016 02:48:28 PM Luc, Piotr wrote:
-> On Wed, 2016-10-12 at 21:39 +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, October 12, 2016 08:25:50 PM Piotr Luc wrote:
-> > > 
-> > > ---
-> > > Depends-on: x86/cpu/intel: Add Knights Mill to Intel family
-> > > https://lkml.kernel.org/r/20161012180520.30976-1-piotr.luc () intel
-> > > ! com
-> > 
-> > First, putting broken URLs into patch tags doesn't really help.
+On Thursday, October 13, 2016 05:30:54 PM Piotr Luc wrote:
+> Resending patches related to KNM CPU ID in one patchset for
+> more convenient pick up.
 > 
-> OK, with a series the link is not needed. I will refer to a patch
-> inside the series.
+> This series of patches enables support for Knights Mill (KNM).
 > 
-> > 
-> > Second, please send all of these patches as a series where the first
-> > patch makes the change the rest depends on.  That would make them
-> > easier to
-> > handle.
-> > 
-> I see. I just wonder if I should send the entire series to all
-> maintainers that maintain individual modules/files or somehow limit
-> 'TO' recipients only to their modules. 
-> Is any good method to it correctly?
+> First two patches improve code style by replacing raw numbers
+> of CPUID with descriptive macros of processor names.
+> 
+> The third one introduces KNM CPU ID to Intel family.
+> 
+> The other patches add KNM CPU ID to several modules and depend on
+> the third one. Because KNM is closely related to Knights Landing (KNL)
+> it reuses KNL code.
+> The turbostat patch (tools/power turbostat: Use Intel family processor
+> macros) comes in v2 with fixed compilation (missed including of
+> intel-family.h).
+> 
+> Regards,
+> Piotr
+> 
+> Piotr Luc (11):
+>   EDAC, sb_edac: Use Intel family processor macros
+>   tools/power turbostat: Use Intel family processor macros
+>   x86/cpu/intel: Add Knights Mill to Intel family
+>   x86/intel_idle: Add Knights Mill CPUID
+>   EDAC, sb_edac: Add Knights Mill CPUID
+>   cpufreq: intel_pstate: Add Knights Mill CPUID
+>   perf/x86/intel: Add Knights Mill CPUID
+>   perf/x86/intel/rapl: Add Knights Mill CPUID
+>   perf/x86/intel/uncore: Add Knights Mill CPUID
+>   powercap / RAPL: Add Knights Mill CPUID
+>   tools/power turbostat: enable turbostat to support Knights Mill (KNM)
+> 
+>  arch/x86/events/intel/core.c          |   3 +-
+>  arch/x86/events/intel/rapl.c          |   1 +
+>  arch/x86/events/intel/uncore.c        |   1 +
+>  arch/x86/include/asm/intel-family.h   |   1 +
+>  drivers/cpufreq/intel_pstate.c        |   1 +
+>  drivers/edac/sb_edac.c                |  14 +-
+>  drivers/idle/intel_idle.c             |   1 +
+>  drivers/powercap/intel_rapl.c         |   1 +
+>  tools/power/x86/turbostat/Makefile    |   3 +-
+>  tools/power/x86/turbostat/turbostat.c | 250 ++++++++++++++++++----------------
+>  10 files changed, 147 insertions(+), 129 deletions(-)
 
-The To: list should be possibly short.  I would just send it To: x86@kernel.org
-and put the other addresses into the CC list.
-
-Generally speaking, CCs of the entire series should go to all of the relevant
-maintainers (so they have a chance to respond to your patches in the context of
-the series) though.
+Len, Jacob, any problems with any of the patches in this series?
 
 Thanks,
 Rafael
-
