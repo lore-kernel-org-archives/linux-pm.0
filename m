@@ -1,127 +1,97 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Thu, 13 Oct 2016 16:58:54 +0200
-Message-ID: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f47.google.com ([209.85.215.47]:35029 "EHLO
-        mail-lf0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752909AbcJMO7h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 10:59:37 -0400
-Received: by mail-lf0-f47.google.com with SMTP id l131so101677857lfl.2
-        for <linux-pm@vger.kernel.org>; Thu, 13 Oct 2016 07:59:13 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Jean-Jacques Hiblot <jjhiblot@traphandler.com>
+Subject: Re: [PATCH 2/2] power/reset: at91-poweroff: timely shitdown LPDDR
+ memories
+Date: Thu, 13 Oct 2016 17:04:06 +0200
+Message-ID: <CACh+v5OH4WdMPFiui3q-QDx7s5JrGPxZ8Mc9fJux54hiZV9+fQ@mail.gmail.com>
+References: <20161007163427.11454-1-alexandre.belloni@free-electrons.com>
+ <20161007163427.11454-3-alexandre.belloni@free-electrons.com>
+ <CACh+v5NCxPb_U8HOeczHicCD-Wp8BqBzvc1LtCzmEXZ74Cgshw@mail.gmail.com>
+ <20161013110317.ee6by6njrvs53ztx@piout.net>
+ <CACh+v5PgwXsCoMROO+Vftx8bbhTXP1V-JdZmdwWJ0tgOUW1Axw@mail.gmail.com>
+ <20161013134710.rbvsiyu6ala673g4@piout.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20161013134710.rbvsiyu6ala673g4@piout.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Jean-Jacques Hiblot <jjhiblot@traphandler.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>
 
-When the pm_runtime_force_suspend|resume() helpers were invented, we still
-had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
-
-To make sure these helpers worked for all combinations and without
-introducing too much of complexity, the device was always resumed in
-pm_runtime_force_resume().
-
-More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
-unset, we needed to resume the device as the subsystem/driver couldn't
-rely on using runtime PM to do it.
-
-As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
-removed this combination, of using CONFIG_PM_SLEEP without the earlier
-CONFIG_PM_RUNTIME.
-
-For this reason we can now rely on the subsystem/driver to use runtime PM
-to resume the device, instead of forcing that to be done in all cases. In
-other words, let's defer the runtime resume to a later point when it's
-actually needed.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
-
-Changes in v3:
-	- Updated to take care of parent-child relations.
-	- Improved comment in the code and updated text in a function header
-	to better describe the changes.
-
-This patch has earlier been sent standalone, but also as a part of series. In
-the end it turned out the solution needed some improvement to take care of
-parent-child relations, as reported by Geert [1].
-
-Geert, I would really appreciate if you could help out testing to make sure the
-reported issue is fixed.
-
-[1]
-https://patches.linaro.org/patch/67940/
-
----
-
- drivers/base/power/runtime.c | 35 ++++++++++++++++++++++++++++++-----
- 1 file changed, 30 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index e097d35..f662267 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1478,6 +1478,16 @@ int pm_runtime_force_suspend(struct device *dev)
- 	if (ret)
- 		goto err;
- 
-+	/*
-+	 * Increase the runtime PM usage count for the device's parent, in case
-+	 * when we find the device being used when system suspend was invoked.
-+	 * This informs pm_runtime_force_resume() to resume the parent
-+	 * immediately, which is needed to be able to resume its children,
-+	 * when not deferring the resume to be managed via runtime PM.
-+	 */
-+	if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
-+		pm_runtime_get_noresume(dev->parent);
-+
- 	pm_runtime_set_suspended(dev);
- 	return 0;
- err:
-@@ -1487,16 +1497,20 @@ err:
- EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
- 
- /**
-- * pm_runtime_force_resume - Force a device into resume state.
-+ * pm_runtime_force_resume - Force a device into resume state if needed.
-  * @dev: Device to resume.
-  *
-  * Prior invoking this function we expect the user to have brought the device
-  * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-- * those actions and brings the device into full power. We update the runtime PM
-- * status and re-enables runtime PM.
-+ * those actions and brings the device into full power, if it is expected to be
-+ * used on system resume. To distinguish that, we check whether the runtime PM
-+ * usage count is greater than 1 (the PM core increases the usage count in the
-+ * system PM prepare phase), as that indicates a real user (such as a subsystem,
-+ * driver, userspace, etc.) is using it. If that is the case, the device is
-+ * expected to be used on system resume as well, so then we resume it. In the
-+ * other case, we defer the resume to be managed via runtime PM.
-  *
-- * Typically this function may be invoked from a system resume callback to make
-- * sure the device is put into full power state.
-+ * Typically this function may be invoked from a system resume callback.
-  */
- int pm_runtime_force_resume(struct device *dev)
- {
-@@ -1513,6 +1527,17 @@ int pm_runtime_force_resume(struct device *dev)
- 	if (!pm_runtime_status_suspended(dev))
- 		goto out;
- 
-+	/*
-+	 * Decrease the parent's runtime PM usage count, if we increased it
-+	 * during system suspend in pm_runtime_force_suspend().
-+	*/
-+	if (atomic_read(&dev->power.usage_count) > 1) {
-+		if (dev->parent)
-+			pm_runtime_put_noidle(dev->parent);
-+	} else {
-+		goto out;
-+	}
-+
- 	ret = pm_runtime_set_active(dev);
- 	if (ret)
- 		goto out;
--- 
-1.9.1
-
+2016-10-13 15:47 GMT+02:00 Alexandre Belloni
+<alexandre.belloni@free-electrons.com>:
+> On 13/10/2016 at 14:27:15 +0200, Jean-Jacques Hiblot wrote :
+>> 2016-10-13 13:03 GMT+02:00 Alexandre Belloni
+>> <alexandre.belloni@free-electrons.com>:
+>> > On 12/10/2016 at 14:48:27 +0200, Jean-Jacques Hiblot wrote :
+>> >> > +static void at91_lpddr_poweroff(void)
+>> >> > +{
+>> >> > +       asm volatile(
+>> >> > +               /* Align to cache lines */
+>> >> > +               ".balign 32\n\t"
+>> >> > +
+>> >> > +               "       ldr     r6, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
+>> >> At first sight, it looks useless. I assume it's used to preload the
+>> >> TLB before the LPDDR is turned off.
+>> >> A comment to explain why this line is useful would prevent its removal.
+>> >
+>> > Yes, this is the case. I can add a comment.
+>> >
+>> > Anyway, I would prefer the whole thing to run from SRAM, as a PIE
+>> > instead of relying on the cache.
+>>
+>> Instead of copying into the SRAM, you can make the cache reliable by
+>> preloading it, much like the TLB.
+>> LDI is probably not available for most of atmel's SOC, so the only way
+>> I can think of, is to execute code from the targeted area. here is an
+>> example:
+>> +               /*
+>> +                * Jump to the end of the sequence to preload instruction cache
+>> +                * It only works because the sequence is short enough not to
+>> +                * sit accross more than 2 cache lines
+>> +                */
+>> +               "       b end_of_sequence\n\t"
+>> +               "start_of_sequence:\n\t"
+>> +
+>>                 /* Power down SDRAM0 */
+>>                 "       str     %1, [%0, #"
+>> __stringify(AT91_DDRSDRC_LPR) "]\n\t"
+>>                 /* Shutdown CPU */
+>>                 "       str     %3, [%2, #" __stringify(AT91_SHDW_CR) "]\n\t"
+>>
+>>                 "       b       .\n\t"
+>> +
+>> +               /*
+>> +                * we're now 100% sure that the code to shutdown the LPDDR and
+>> +                * the CPU is in cache, go back to do the actual job
+>> +                */
+>> +               "end_of_sequence:\n\t"
+>> +               "       b start_of_sequence\n\t"
+>>                 :
+>>
+>
+> I don't think this is necessary. By aligning the instructions properly,
+> we are already sure the whole code is loaded into the cache.
+right I didn't see the align directive.
+>
+> My plan is to get rid of the assembly and use PIE so it is written in C
+> and we can properly separate the RAM stuff in the ddrc driver.
+>
+> The mpddrc driver could load its shutdown function in SRAM. The reset
+> controller driver would load the reset function in SRAM and the shutdown
+> controller would load the poweroff function in SRAM. It would e quite
+> cleaner than what we have here.
+>
+> --
+> Alexandre Belloni, Free Electrons
+> Embedded Linux and Kernel engineering
+> http://free-electrons.com
