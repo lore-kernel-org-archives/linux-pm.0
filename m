@@ -1,107 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Update][PATCH 1/2] cpufreq: intel_pstate: Per CPU P-State limits
-Date: Thu, 13 Oct 2016 02:55:00 +0200
-Message-ID: <CAJZ5v0iV2i-bxJBVWAPkBzwaZRHCcDN0aajq_U-p=2voNtC04g@mail.gmail.com>
-References: <1476299241-87924-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <3832699.WyNH3AWCH1@vostro.rjw.lan> <1476314165.59335.137.camel@linux.intel.com>
- <CAJZ5v0gOqjE_FD+AQQ8fpbnnm7cbjaft8Dw1vCjF3r3_Y5wCSQ@mail.gmail.com>
- <CAJZ5v0hWeNwf9ZNmKVo9MebjsFyN-XNQ9oBjuMD6=L=4VTG-Yg@mail.gmail.com> <1476319510.30002.14.camel@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/8] PM / OPP: Manage supply's voltage/current in a
+ separate structure
+Date: Thu, 13 Oct 2016 11:12:11 +0530
+Message-ID: <20161013054211.GA2991@vireshk-i7>
+References: <cover.1475581665.git.viresh.kumar@linaro.org>
+ <c225f2c1cb64e392c72bc981eafa06f1a6c9edf3.1475581665.git.viresh.kumar@linaro.org>
+ <57FEA7F2.3070604@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f42.google.com ([209.85.215.42]:36256 "EHLO
-        mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755307AbcJMEiR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 00:38:17 -0400
-Received: by mail-lf0-f42.google.com with SMTP id b75so114312008lfg.3
-        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 21:38:15 -0700 (PDT)
-In-Reply-To: <1476319510.30002.14.camel@linux.intel.com>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:34087 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755163AbcJMFnx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Oct 2016 01:43:53 -0400
+Received: by mail-pf0-f180.google.com with SMTP id r16so6346534pfg.1
+        for <linux-pm@vger.kernel.org>; Wed, 12 Oct 2016 22:42:16 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <57FEA7F2.3070604@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, broonie@kernel.org
 
-On Thu, Oct 13, 2016 at 2:45 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Thu, 2016-10-13 at 02:34 +0200, Rafael J. Wysocki wrote:
->> On Thu, Oct 13, 2016 at 2:16 AM, Rafael J. Wysocki <rafael@kernel.org
->> > wrote:
->> >
->> > On Thu, Oct 13, 2016 at 1:16 AM, Srinivas Pandruvada
->> > <srinivas.pandruvada@linux.intel.com> wrote:
->> > >
->> > > Hi,
->> > >
->> > > On Thu, 2016-10-13 at 00:26 +0200, Rafael J. Wysocki wrote:
->> > >
->> > > [...]
->> > >
->> > > >
->> > > >
->> > > > I have a couple of comments to the details, but let me start
->> > > > with a
->> > > > high-level view.
->> > > > I would do this quite differently.  There is quite a bit of a
->> > > > headache with
->> > > > keeping the global settings (intel_pstate/max(min)_perf_pct)
->> > > > and the
->> > > > per-policy
->> > > > scaling_max(min)_freq in sync and I'm not sure this really is
->> > > > necessary.
->> > > > Moreover, all of these updates are asynchronous with respect to
->> > > > the
->> > > > scheduler
->> > > > callback anyway, so there are races this synchronization
->> > > > between the
->> > > > settings
->> > > > doesn't cover.  IMO, it would be sufficient to combine the two
->> > > > in
->> > > > intel_pstate_get_min_max() only where the limits to apply for
->> > > > the
->> > > > given CPU are
->> > > > computed.
->> > > >
->> > > > So if limits->max_sysfs_perf is there (in addition to or even
->> > > > instead
->> > > > of
->> > > > limits->max_sysfs_pct), intel_pstate_get_min_max() can be
->> > > > something
->> > > > like:
->> > > Idea is to preserve current functionality.
->> > >
->> > > The problem with approach is that limits are changed via cpufreq
->> > > sysfs,
->> > > the intel_pstate sysfs doesn't reflect that. This is the value it
->> > > is
->> > > displaying currently so keeping the same functionality.
->> > >
->> > > Currently we know from Intel P-state sysfs the limited
->> > > performance
->> > > value irrespective of which sysfs did. So I don't want to break
->> > > this
->> > > behavior (There are tools reading intel_pstate sysfs for current
->> > > limits
->> > > to get to next quickly to meet thermal deadline, also cpufreq
->> > > sysfs
->> > > limits can change without tools knowledge by say thermal or _PPC,
->> > > so
->> > > the intel P-state sysfs is a common place now).
->> > Sigh.  OK
->> >
->> > Why don't we update the effective min and max (stored in static
->> > variables) when (a) the global sysfs is written to and (b) on
->> > updates
->> > via ->set_policy()?
->> Bad idea.
->>
->> But it looks like the effective min and max only need to be computed
->> in the "show" routines before returning them.
->
-> The other place is just to check error during set max/min_perf_pct via
-> sysfs. Want to avoid store bad limits stored.
+On 12-10-16, 16:15, Dave Gerlach wrote:
+> >  /**
+> >+ * struct dev_pm_opp_supply - Power supply voltage/current values
+> >+ * @u_volt:	Target voltage in microvolts corresponding to this OPP
+> >+ * @u_volt_min:	Minimum voltage in microvolts corresponding to thisq OPP
+> >+ * @u_volt_max:	Maximum voltage in microvolts corresponding to this OPP
+> >+ * @u_amp:	Maximum current drawn by the device in microamperes
+> >+ *
+> >+ * This structure stores the voltage/current values for a single power supply.
+> >+ */
+> >+struct dev_pm_opp_supply {
+> >+	unsigned long u_volt;
+> >+	unsigned long u_volt_min;
+> >+	unsigned long u_volt_max;
+> >+	unsigned long u_amp;
+> >+};
+> >+
+> >+/**
+> 
+> This needs to move to include/linux/pm_opp.h, does it not? We need access to
+> the actual voltage values from outside of the OPP core if we are going to be
+> setting regulators from the platform provided opp_set_rate callback
+> described in patch 7.
 
-I wouldn't do that this way, because what is written may become
-relevant when the per-policy values are updated.
+Yes, will do in V2.
 
-Thanks,
-Rafael
+-- 
+viresh
