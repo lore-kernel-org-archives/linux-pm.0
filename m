@@ -1,32 +1,35 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: [patch] power: supply: lp8788: remove an unneeded NULL check
-Date: Fri, 14 Oct 2016 10:33:28 +0300
-Message-ID: <20161014073328.GC15168@mwanda>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 02/11] tools/power turbostat: Use Intel family processor
+ macros
+Date: Fri, 14 Oct 2016 13:56:36 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1610141354090.11707@nanos>
+References: <20161013153105.2517-1-piotr.luc@intel.com> <20161013153105.2517-3-piotr.luc@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Milo Kim <milo.kim@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:60188 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754366AbcJNL74 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Oct 2016 07:59:56 -0400
+In-Reply-To: <20161013153105.2517-3-piotr.luc@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Piotr Luc <piotr.luc@intel.com>
+Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Thompson <dougthompson@xmission.com>, Borislav Petkov <bp@alien8.de>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-We checked that "pdata->chg_params" is non-NULL earlier in this function
-so when we add "i" to it, it's still non-NULL.
+On Thu, 13 Oct 2016, Piotr Luc wrote:
+> +	case INTEL_FAM6_NEHALEM_EP:		/* Core i7, Xeon 5500 series - Bloomfield, Gainstown NHM-EP */
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+What's the point of keeping all those comments around?
 
-diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply/lp8788-charger.c
-index 7321b72..509e2b3 100644
---- a/drivers/power/supply/lp8788-charger.c
-+++ b/drivers/power/supply/lp8788-charger.c
-@@ -384,9 +384,6 @@ static int lp8788_update_charger_params(struct platform_device *pdev,
- 	for (i = 0; i < pdata->num_chg_params; i++) {
- 		param = pdata->chg_params + i;
- 
--		if (!param)
--			continue;
--
- 		if (lp8788_is_valid_charger_register(param->addr)) {
- 			ret = lp8788_write_byte(lp, param->addr, param->val);
- 			if (ret)
+> +	case INTEL_FAM6_SANDYBRIDGE:		/* SNB */
+
+Especialy those, which are completely useless?
+
+The defines are there to be self explaining and the extra verbose
+information should be in the header file defining the macros and not in the
+source code.
+
+Thanks,
+
+	tglx
