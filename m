@@ -1,214 +1,136 @@
-From: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH 1/2] power: reset: Add qcom reboot mode driver
-Date: Fri, 14 Oct 2016 10:41:57 +0800
-Message-ID: <54841aee-34ec-2776-e802-9e36d12e77c2@rock-chips.com>
-References: <1476410823-8912-1-git-send-email-xiaogang@codeaurora.org>
+From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Subject: [PATCH v8 0/8] power: add power sequence library
+Date: Fri, 14 Oct 2016 10:59:47 +0800
+Message-ID: <1476413995-20361-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1476410823-8912-1-git-send-email-xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Xiaogang Cui <xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Chris Brand <chris.brand-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>, Moritz Fischer <moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Xiaogang:
+Hi all,
 
+This is a follow-up for my last power sequence framework patch set [1].
+According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+power sequence instances will be added at postcore_initcall, the match
+criteria is compatible string first, if the compatible string is not
+matched between dts and library, it will try to use generic power sequence.
+	 
+The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+if only one power sequence instance is needed, for more power sequences
+are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
 
-On 2016年10月14日 10:02, Xiaogang Cui wrote:
-> This is a initial version so it's very similar with syscon
-> reboot mode driver. We will add more functionalities in the
-> further after dependency is ready.
->
-> Signed-off-by: Xiaogang Cui <xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> ---
+In future, if there are special power sequence requirements, the special
+power sequence library can be created.
 
-     As your commit messages said, "it's very similar with syscon reboot 
-mode driver", so maybe we can try to reuse the syscon reboot mode 
-driver, and extend your new function on it.
->   .../bindings/power_supply/qcom-reboot-mode.txt     |  23 +++++
->   drivers/power/reset/Kconfig                        |  10 ++
->   drivers/power/reset/Makefile                       |   1 +
->   drivers/power/reset/qcom-reboot-mode.c             | 109 +++++++++++++++++++++
->   4 files changed, 143 insertions(+)
->   create mode 100644 Documentation/devicetree/bindings/power_supply/qcom-reboot-mode.txt
->   create mode 100644 drivers/power/reset/qcom-reboot-mode.c
->
-> diff --git a/Documentation/devicetree/bindings/power_supply/qcom-reboot-mode.txt b/Documentation/devicetree/bindings/power_supply/qcom-reboot-mode.txt
-> new file mode 100644
-> index 0000000..8b33592
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power_supply/qcom-reboot-mode.txt
-> @@ -0,0 +1,23 @@
-> +Qualcomm Reboot Mode Driver
-> +
-> +Qualcomm reboot mode driver based on reboot mode framework to update
-> +SPMI specific bits.
-> +
-> +Required Properties:
-> +-compatible: "qcom,reboot-mode"
-> +-offset: offset of the SPMI reboot mode register
-> +
-> +Optional Properties:
-> +-mask: mask of reboot mode
-> +-mode-xxx: magic of reboot mode
-> +
-> +Example:
-> +	qcom,reboot-mode@88f {
-> +		compatible = "qcom,reboot-mode";
-> +		offset = <0x88f>;
-> +		mode-normal = <0x00>;
-> +		mode-recovery = <0x04>;
-> +		mode-bootloader = <0x08>;
-> +		mode-rtc = <0x0C>;
-> +	};
-> +
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index c74c3f6..bdcf6d3f 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -208,5 +208,15 @@ config SYSCON_REBOOT_MODE
->   	  register, then the bootloader can read it to take different
->   	  action according to the mode.
->   
-> +config QCOM_REBOOT_MODE
-> +	tristate "Qualcomm reboot mode driver"
-> +	depends on MFD_SPMI_PMIC
-> +	select REBOOT_MODE
-> +	help
-> +	  Say y here will enable Qualcomm reboot mode driver. This will
-> +	  get reboot mode arguments and store it in SPMI PMIC register,
-> +	  then the bootloader can read it to take different action
-> +	  according to the mode.
-> +
->   endif
->   
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index 1be307c..06e010f 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -24,3 +24,4 @@ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
->   obj-$(CONFIG_POWER_RESET_ZX) += zx-reboot.o
->   obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
->   obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
-> +obj-$(CONFIG_QCOM_REBOOT_MODE) += qcom-reboot-mode.o
-> diff --git a/drivers/power/reset/qcom-reboot-mode.c b/drivers/power/reset/qcom-reboot-mode.c
-> new file mode 100644
-> index 0000000..37bb635
-> --- /dev/null
-> +++ b/drivers/power/reset/qcom-reboot-mode.c
-> @@ -0,0 +1,109 @@
-> +/* Copyright (c) 2016, The Linux Foundation. All rights reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 and
-> + * only version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
-> +
-> +#include <linux/init.h>
-> +#include <linux/module.h>
-> +#include <linux/kernel.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reboot.h>
-> +#include <linux/regmap.h>
-> +#include "reboot-mode.h"
-> +
-> +struct qcom_reboot_mode {
-> +	struct regmap *map;
-> +	struct reboot_mode_driver reboot;
-> +	u32 offset;
-> +	u32 mask;
-> +};
-> +
-> +static int qcom_reboot_mode_write(struct reboot_mode_driver *reboot,
-> +				    unsigned int magic)
-> +{
-> +	struct qcom_reboot_mode *qrm;
-> +	int ret;
-> +
-> +	qrm = container_of(reboot, struct qcom_reboot_mode, reboot);
-> +
-> +	/* update reboot magic */
-> +	ret = regmap_update_bits(qrm->map, qrm->offset, qrm->mask, magic);
-> +	if (ret < 0) {
-> +		dev_err(reboot->dev, "Failed to update reboot mode bits\n");
-> +		return ret;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int qcom_reboot_mode_probe(struct platform_device *pdev)
-> +{
-> +	struct qcom_reboot_mode *qrm;
-> +	struct device *dev = &pdev->dev;
-> +	int ret;
-> +
-> +	qrm = devm_kzalloc(&pdev->dev, sizeof(*qrm), GFP_KERNEL);
-> +	if (!qrm)
-> +		return -ENOMEM;
-> +
-> +	qrm->reboot.dev = dev;
-> +	qrm->reboot.write = qcom_reboot_mode_write;
-> +	qrm->mask = 0xffffffff;
-> +
-> +	qrm->map = dev_get_regmap(dev->parent, NULL);
-> +	if (IS_ERR_OR_NULL(qrm->map))
-> +		return -EINVAL;
-> +
-> +	if (of_property_read_u32(dev->of_node, "offset", &qrm->offset))
-> +		return -EINVAL;
-> +
-> +	of_property_read_u32(dev->of_node, "mask", &qrm->mask);
-> +
-> +	ret = reboot_mode_register(&qrm->reboot);
-> +	if (ret)
-> +		dev_err(dev, "Failed to register reboot mode\n");
-> +
-> +	dev_set_drvdata(dev, qrm);
-> +	return ret;
-> +}
-> +
-> +static int qcom_reboot_mode_remove(struct platform_device *pdev)
-> +{
-> +	struct qcom_reboot_mode *qrm;
-> +
-> +	qrm = dev_get_drvdata(&pdev->dev);
-> +	return reboot_mode_unregister(&qrm->reboot);
-> +}
-> +
-> +static const struct of_device_id of_qcom_reboot_mode_match[] = {
-> +	{ .compatible = "qcom,reboot-mode" },
-> +	{}
-> +};
-> +MODULE_DEVICE_TABLE(of, of_qcom_reboot_mode_match);
-> +
-> +static struct platform_driver qcom_reboot_mode_driver = {
-> +	.probe = qcom_reboot_mode_probe,
-> +	.remove = qcom_reboot_mode_remove,
-> +	.driver = {
-> +		.name = "qcom-reboot-mode",
-> +		.of_match_table = of_match_ptr(of_qcom_reboot_mode_match),
-> +	},
-> +};
-> +
-> +static int __init qcom_reboot_mode_init(void)
-> +{
-> +	return platform_driver_register(&qcom_reboot_mode_driver);
-> +}
-> +device_initcall(qcom_reboot_mode_init);
-> +
-> +MODULE_DESCRIPTION("QCOM Reboot Mode Driver");
-> +MODULE_LICENSE("GPL v2");
+This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+two hot-plug devices to simulate this use case, the related binding
+change is updated at patch [1/6], The udoo board changes were tested
+using my last power sequence patch set.[3]
 
+Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+need to power on itself before it can be found by ULPI bus.
+
+[1] http://www.spinics.net/lists/linux-usb/msg142755.html
+[2] http://www.spinics.net/lists/linux-usb/msg143106.html
+[3] http://www.spinics.net/lists/linux-usb/msg142815.html
+
+Changes for v8:
+- Allocate one extra pwrseq instance if pwrseq_get has succeed, it can avoid
+  preallocate instances problem which the number of instance is decided at
+  compile time, thanks for Heiko Stuebner's suggestion [Patch 2/8]
+- Delete pwrseq_compatible_sample.c which is the demo purpose to show compatible
+  match method. [Patch 2/8]
+- Add Maciej S. Szmigiero's tested-by. [Patch 7/8]
+
+Changes for v7:
+- Create kinds of power sequence instance at postcore_initcall, and match
+  the instance with node using compatible string, the beneit of this is
+  the host driver doesn't need to consider which pwrseq instance needs
+  to be used, and pwrseq core will match it, however, it eats some memories
+  if less power sequence instances are used. [Patch 2/8]
+- Add pwrseq_compatible_sample.c to test match pwrseq using device_id. [Patch 2/8]
+- Fix the comments Vaibhav Hiremath adds for error path for clock and do not
+  use device_node for parameters at pwrseq_on. [Patch 2/8]
+- Simplify the caller to use power sequence, follows Alan's commnets [Patch 4/8]
+- Tested three pwrseq instances together using both specific compatible string and
+  generic libraries.
+
+Changes for v6:
+- Add Matthias Kaehlcke's Reviewed-by and Tested-by. (patch [2/6])
+- Change chipidea core of_node assignment for coming user. (patch [5/6])
+- Applies Joshua Clayton's three dts changes for two boards,
+  the USB device's reg has only #address-cells, but without #size-cells.
+
+Changes for v5:
+- Delete pwrseq_register/pwrseq_unregister, which is useless currently
+- Fix the linker error when the pwrseq user is compiled as module
+
+Changes for v4:
+- Create the patch on next-20160722 
+- Fix the of_node is not NULL after chipidea driver is unbinded [Patch 5/6]
+- Using more friendly wait method for reset gpio [Patch 2/6]
+- Support multiple input clocks [Patch 2/6]
+- Add Rob Herring's ack for DT changes
+- Add Joshua Clayton's Tested-by
+
+Changes for v3:
+- Delete "power-sequence" property at binding-doc, and change related code
+  at both library and user code.
+- Change binding-doc example node name with Rob's comments
+- of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
+  add additional code request gpio with proper gpio flags
+- Add Philipp Zabel's Ack and MAINTAINER's entry
+
+Changes for v2:
+- Delete "pwrseq" prefix and clock-names for properties at dt binding
+- Should use structure not but its pointer for kzalloc
+- Since chipidea core has no of_node, let core's of_node equals glue
+  layer's at core's probe
+
+Joshua Clayton (2):
+  ARM: dts: imx6qdl: Enable usb node children with <reg>
+  ARM: dts: imx6q-evi: Fix onboard hub reset line
+
+Peter Chen (6):
+  binding-doc: power: pwrseq-generic: add binding doc for generic power
+    sequence library
+  power: add power sequence library
+  binding-doc: usb: usb-device: add optional properties for power
+    sequence
+  usb: core: add power sequence handling for USB devices
+  usb: chipidea: let chipidea core device of_node equal's glue layer
+    device of_node
+  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+
+ .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 ++++++
+ .../devicetree/bindings/usb/usb-device.txt         |  10 +-
+ MAINTAINERS                                        |   9 +
+ arch/arm/boot/dts/imx6q-evi.dts                    |  25 +--
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++-
+ arch/arm/boot/dts/imx6qdl.dtsi                     |   6 +
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/pwrseq/Kconfig                       |  19 ++
+ drivers/power/pwrseq/Makefile                      |   2 +
+ drivers/power/pwrseq/core.c                        | 191 +++++++++++++++++++++
+ drivers/power/pwrseq/pwrseq_generic.c              | 183 ++++++++++++++++++++
+ drivers/usb/chipidea/core.c                        |  27 ++-
+ drivers/usb/core/hub.c                             |  41 ++++-
+ drivers/usb/core/hub.h                             |   1 +
+ include/linux/power/pwrseq.h                       |  72 ++++++++
+ 16 files changed, 621 insertions(+), 41 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+ create mode 100644 drivers/power/pwrseq/Kconfig
+ create mode 100644 drivers/power/pwrseq/Makefile
+ create mode 100644 drivers/power/pwrseq/core.c
+ create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+ create mode 100644 include/linux/power/pwrseq.h
+
+-- 
+2.7.4
 
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
