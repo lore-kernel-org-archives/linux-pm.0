@@ -1,43 +1,41 @@
-From: Prashanth Prakash <pprakash@codeaurora.org>
-Subject: [PATCH] cpufreq/CPPC: Add MODULE_DEVICE_TABLE for cppc_cpufreq driver
-Date: Fri, 14 Oct 2016 12:00:23 -0600
-Message-ID: <1476468023-6917-1-git-send-email-pprakash@codeaurora.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 177171] Reduced frequency window for conservative governor
+Date: Fri, 14 Oct 2016 23:43:54 +0000
+Message-ID: <bug-177171-137361-XR7AIScVAi@https.bugzilla.kernel.org/>
+References: <bug-177171-137361@https.bugzilla.kernel.org/>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:48370 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751337AbcJNSAq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Oct 2016 14:00:46 -0400
+Received: from mail.kernel.org ([198.145.29.136]:36968 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751425AbcJNXxE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Oct 2016 19:53:04 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 9A60720439
+        for <linux-pm@vger.kernel.org>; Fri, 14 Oct 2016 23:43:56 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id A48982042B
+        for <linux-pm@vger.kernel.org>; Fri, 14 Oct 2016 23:43:54 +0000 (UTC)
+In-Reply-To: <bug-177171-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Hoan Tran <hotran@apm.com>, Christopher Covington <cov@codeaurora.org>, Al Stone <ahs3@redhat.com>, Prashanth Prakash <pprakash@codeaurora.org>
 
-MODULE_DEVICE_TABLE is added so that CPPC cpufreq module can be
-automatically loaded when we have a acpi processor device with
-"ACPI0007" hid.
+https://bugzilla.kernel.org/show_bug.cgi?id=177171
 
-Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+Rafael J. Wysocki <rjw@rjwysocki.net> changed:
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 4852d9e..e82bb3c 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -247,3 +247,10 @@ MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
- MODULE_LICENSE("GPL");
- 
- late_initcall(cppc_cpufreq_init);
-+
-+static const struct acpi_device_id cppc_acpi_ids[] = {
-+	{ACPI_PROCESSOR_DEVICE_HID, },
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(acpi, cppc_acpi_ids);
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+             Status|RESOLVED                    |CLOSED
+         Resolution|PATCH_ALREADY_AVAILABLE     |CODE_FIX
+
+--- Comment #10 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
+Merged as commit abb6627910a1e783c8e034b35b7c80e5e7f98f41:
+
+http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=pm&id=abb6627910a1e783c8e034b35b7c80e5e7f98f41
+
 -- 
-Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
-
+You are receiving this mail because:
+You are the assignee for the bug.
