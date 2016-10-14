@@ -1,82 +1,105 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] power: reset: Add qcom reboot mode driver
-Date: Fri, 14 Oct 2016 15:15:16 +0200
-Message-ID: <20161014131516.bkyi3tsx2nhqfyhm@earth>
-References: <1476410823-8912-1-git-send-email-xiaogang@codeaurora.org>
- <54841aee-34ec-2776-e802-9e36d12e77c2@rock-chips.com>
- <9c8d80ce39a10274da06e99735944ffa@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] More power management updates for v4.9-rc1
+Date: Fri, 14 Oct 2016 15:26:24 +0200
+Message-ID: <CAJZ5v0j6kvykKPaucTC2kX1PB70s3mAy-HvB3NrHYK9ipJC6Hw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="oupzpfgts3fmfvym"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <9c8d80ce39a10274da06e99735944ffa-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
-Cc: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Chris Brand <chris.brand-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>, Moritz Fischer <moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Linus,
 
---oupzpfgts3fmfvym
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please pull from the tag
 
-Hi,
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-extra-4.9-rc1
 
-On Fri, Oct 14, 2016 at 11:06:14AM +0800, xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org wrote:
-> =E5=9C=A8 2016-10-14 10:41=EF=BC=8CAndy Yan =E5=86=99=E9=81=93=EF=BC=9A
-> > On 2016=E5=B9=B410=E6=9C=8814=E6=97=A5 10:02, Xiaogang Cui wrote:
-> > > This is a initial version so it's very similar with syscon
-> > > reboot mode driver. We will add more functionalities in the
-> > > further after dependency is ready.
-> > >=20
-> > > Signed-off-by: Xiaogang Cui <xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-> > > ---
-> >=20
-> > As your commit messages said, "it's very similar with syscon
-> > reboot mode driver", so maybe we can try to reuse the syscon
-> > reboot mode driver, and extend your new function on it.
->=20
-> Since it will heavily depend on Qualcomm qpnp and download mode
-> driver. I prefer to add a new driver for this.
+with top-most commit 383731d98e768e15f4a8d69ae87957b933323ed7
 
-So use syscon driver until then. In its current state is more
-or less a copy of syscon driver with s/syscon/qcom/g. I will
-not queue that.
+ Merge branches 'pm-cpufreq' and 'pm-devfreq'
 
-Just add a more specific compatible value in addition to the
-syscon one:
+on top of commit 08895a8b6b06ed2323cd97a36ee40a116b3db8ed
 
-compatible =3D "qcom,reboot-mode", "syscon-reboot-mode";
+ Merge tag 'pm-4.9-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
 
-Then syscon driver is used and if something more complex
-is required later we can easily switch to it.
+to receive additional power management updates for v4.9-rc1.
 
--- Sebastian
+This includes a couple of fixes for cpufreq regressions introduced
+in 4.8, a rework of the intel_pstate algorithm used on Atom processors
+(that took some time to test) plus a fix and a couple of cleanups in
+that driver, a CPPC cpufreq driver fix, and a some devfreq fixes and
+cleanups (core and exynos-nocp).
 
---oupzpfgts3fmfvym
-Content-Type: application/pgp-signature; name="signature.asc"
+Specifics:
 
------BEGIN PGP SIGNATURE-----
+ - Fix two cpufreq regressions causing undesirable changes in
+   behavior to appear (one in the core and one in the conservative
+   governor) introduced during the 4.8 cycle (Aaro Koskinen, Rafael
+   Wysocki).
 
-iQIcBAABCgAGBQJYANphAAoJENju1/PIO/qaKwkP/juhatAbBGpmsf3rX4CnBa8s
-qAvN4iSuBb+oY3V0Dd/ZfeKHMxBlG3H95HHCqm3iHYMTQdD51SsPOVTfz2UTcUDt
-ds7/N4Hvs0pgICisnHadNQ1HPt/FBMc0hgGxlxgYMjZnhmp2uDAURJpPtFU/e/wx
-zVrtmxPdCTI7UpFpfLlItaPWPleDDJ+dueEhXQgrjnWHuyyC1QPFdo5jkAofFn6e
-ivFjSNxq7b7RiebdBuhvGAPAqUmTbLhKrZEFZlqf/3DsPnp0tfSi+u4xnuTZ4SzD
-6/MeL7VGZIBu+lU+Zouxva4LpaZSZaDVYgZlvsVb5D+5MKbZMf8At51opFGn9uAV
-r4w7Ohx4evNogimzacwXKvu0N/DfUN+xW+NQlKcIo+J+dzbs7m28rKwNbAcE0YIL
-xgJD1dZRFBrzYu1NnhFFLH+G1Va/xo1IvSH4acccol0ueXTd3iaoiuErYs59PqpO
-IipFfH9woLZAvLoStDgOjmTcoPBF18oN1nwNQW+H6drFuU0d6cr7JN5djhHvw1Ua
-SrPpRUe0AwVTR6/uvgS2PIoKnbb3i+YaRZr//4Mx7dvmj5BYXr1FWzTxTuK6mKlg
-mvS8YudfmvYQMUVzGmWrVb+NOgi7gCfFERtHBZ4Z75qEJ3cAlwk+Otwn4tjxtK+b
-knqlwyD1Nc6gnW624AVg
-=pBAM
------END PGP SIGNATURE-----
+ - Fix the way the intel_pstate driver accesses MSRs related to the
+   hardware-managed P-states (HWP) feature during the initialization
+   which currently is unsafe and may cause the processor to generate
+   a general protection fault (Srinivas Pandruvada).
 
---oupzpfgts3fmfvym--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ - Rework the intel_pstate's P-state selection algorithm used on Atom
+   processors to avoid known problems with the current one and to
+   make the computation more straightforward, which also happens to
+   improve performance in multiple benchmarks a bit (Rafael Wysocki).
+
+ - Improve two comments in the intel_pstate driver (Rafael Wysocki).
+
+ - Fix the desired performance computation in the CPPC cpufreq driver
+   (Hoan Tran).
+
+ - Fix the devfreq core to avoid printing misleading error messages
+   in some cases (Tobias Jakobi).
+
+ - Fix the error code path in devfreq_add_device() to use proper
+   locking around list modifications (Axel Lin).
+
+ - Fix a build failure and remove a couple of redundant updates of
+   variables in the exynos-nocp devfreq driver (Axel Lin).
+
+Thanks!
+
+---------------
+
+Aaro Koskinen (1):
+      cpufreq: skip invalid entries when searching the frequency
+
+Axel Lin (3):
+      PM / devfreq: exynos-nocp: Select REGMAP_MMIO
+      PM / devfreq: exynos-nocp: Remove redundant code
+      PM / devfreq: Add proper locking around list_del()
+
+Hoan Tran (1):
+      cpufreq: CPPC: Correct desired_perf calculation
+
+Rafael J. Wysocki (4):
+      cpufreq: intel_pstate: Clarify comment in
+get_target_pstate_use_performance()
+      cpufreq: intel_pstate: Proportional algorithm for Atom
+      cpufreq: intel_pstate: Fix struct pstate_adjust_policy kerneldoc
+      cpufreq: conservative: Fix next frequency selection
+
+Srinivas Pandruvada (1):
+      cpufreq: intel_pstate: Fix unsafe HWP MSR access
+
+Tobias Jakobi (1):
+      PM / devfreq: Skip status update on uninitialized previous_freq
+
+---------------
+
+ drivers/cpufreq/cppc_cpufreq.c         |   8 ++-
+ drivers/cpufreq/cpufreq_conservative.c |  19 +++++-
+ drivers/cpufreq/intel_pstate.c         |  43 ++++++++++----
+ drivers/devfreq/devfreq.c              |   8 ++-
+ drivers/devfreq/event/Kconfig          |   1 +
+ drivers/devfreq/event/exynos-nocp.c    |   3 -
+ include/linux/cpufreq.h                | 104 ++++++++++++++++-----------------
+ 7 files changed, 115 insertions(+), 71 deletions(-)
