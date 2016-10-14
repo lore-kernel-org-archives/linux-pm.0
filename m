@@ -1,43 +1,56 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v3 8/8] PM / doc: Update device documentation for devices in IRQ safe PM domains
-Date: Fri, 14 Oct 2016 10:47:56 -0700
-Message-ID: <1476467276-75094-9-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v3 4/8] PM / Domains: Save the fwnode in genpd_power_state
+Date: Fri, 14 Oct 2016 10:47:52 -0700
+Message-ID: <1476467276-75094-5-git-send-email-lina.iyer@linaro.org>
 References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:36194 "EHLO
+        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754919AbcJNRsL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Oct 2016 13:48:11 -0400
+Received: by mail-pf0-f177.google.com with SMTP id e6so52417648pfk.3
+        for <linux-pm@vger.kernel.org>; Fri, 14 Oct 2016 10:48:11 -0700 (PDT)
 In-Reply-To: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Update documentation to reflect the changes made to support IRQ safe PM
-domains.
+Save the fwnode for the genpd state in the state node. PM Domain clients
+may use the fwnode to read in the platform specific domain state
+properties and associate them with the state.
 
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- Documentation/power/devices.txt | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/base/power/domain.c | 1 +
+ include/linux/pm_domain.h   | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
-index 8ba6625..0401b53 100644
---- a/Documentation/power/devices.txt
-+++ b/Documentation/power/devices.txt
-@@ -607,7 +607,14 @@ individually.  Instead, a set of devices sharing a power resource can be put
- into a low-power state together at the same time by turning off the shared
- power resource.  Of course, they also need to be put into the full-power state
- together, by turning the shared power resource on.  A set of devices with this
--property is often referred to as a power domain.
-+property is often referred to as a power domain. A power domain may also be
-+nested inside another power domain.
-+
-+Devices and PM domains may be defined as IRQ-safe, if they can be powered
-+on/off even when the IRQs are disabled. An IRQ-safe device in a domain will
-+disallow power management on the domain, unless the domain is also defined as
-+IRQ-safe. The restriction this framework imposes on the parent domain of an
-+IRQ-safe domain is that it must also be defined as IRQ-safe.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 9af75ba..1a6073aa 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1956,6 +1956,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
  
- Support for power domains is provided through the pm_domain field of struct
- device.  This field is a pointer to an object of type struct dev_pm_domain,
+ 	genpd_state->power_on_latency_ns = 1000 * exit_latency;
+ 	genpd_state->power_off_latency_ns = 1000 * entry_latency;
++	genpd_state->fwnode = &state_node->fwnode;
+ 
+ 	return 0;
+ }
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b489496..6a89881 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -39,6 +39,7 @@ struct genpd_power_state {
+ 	s64 power_off_latency_ns;
+ 	s64 power_on_latency_ns;
+ 	s64 residency_ns;
++	struct fwnode_handle *fwnode;
+ };
+ 
+ struct generic_pm_domain {
 -- 
 2.7.4
+
