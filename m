@@ -1,56 +1,43 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v3 4/8] PM / Domains: Save the fwnode in genpd_power_state
-Date: Fri, 14 Oct 2016 10:47:52 -0700
-Message-ID: <1476467276-75094-5-git-send-email-lina.iyer@linaro.org>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
+From: Prashanth Prakash <pprakash@codeaurora.org>
+Subject: [PATCH] cpufreq/CPPC: Add MODULE_DEVICE_TABLE for cppc_cpufreq driver
+Date: Fri, 14 Oct 2016 12:00:23 -0600
+Message-ID: <1476468023-6917-1-git-send-email-pprakash@codeaurora.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:36194 "EHLO
-        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754919AbcJNRsL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Oct 2016 13:48:11 -0400
-Received: by mail-pf0-f177.google.com with SMTP id e6so52417648pfk.3
-        for <linux-pm@vger.kernel.org>; Fri, 14 Oct 2016 10:48:11 -0700 (PDT)
-In-Reply-To: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:48370 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751337AbcJNSAq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Oct 2016 14:00:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Hoan Tran <hotran@apm.com>, Christopher Covington <cov@codeaurora.org>, Al Stone <ahs3@redhat.com>, Prashanth Prakash <pprakash@codeaurora.org>
 
-Save the fwnode for the genpd state in the state node. PM Domain clients
-may use the fwnode to read in the platform specific domain state
-properties and associate them with the state.
+MODULE_DEVICE_TABLE is added so that CPPC cpufreq module can be
+automatically loaded when we have a acpi processor device with
+"ACPI0007" hid.
 
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
 ---
- drivers/base/power/domain.c | 1 +
- include/linux/pm_domain.h   | 1 +
- 2 files changed, 2 insertions(+)
+ drivers/cpufreq/cppc_cpufreq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 9af75ba..1a6073aa 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1956,6 +1956,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+index 4852d9e..e82bb3c 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -247,3 +247,10 @@ MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
+ MODULE_LICENSE("GPL");
  
- 	genpd_state->power_on_latency_ns = 1000 * exit_latency;
- 	genpd_state->power_off_latency_ns = 1000 * entry_latency;
-+	genpd_state->fwnode = &state_node->fwnode;
- 
- 	return 0;
- }
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index b489496..6a89881 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -39,6 +39,7 @@ struct genpd_power_state {
- 	s64 power_off_latency_ns;
- 	s64 power_on_latency_ns;
- 	s64 residency_ns;
-+	struct fwnode_handle *fwnode;
- };
- 
- struct generic_pm_domain {
+ late_initcall(cppc_cpufreq_init);
++
++static const struct acpi_device_id cppc_acpi_ids[] = {
++	{ACPI_PROCESSOR_DEVICE_HID, },
++	{}
++};
++
++MODULE_DEVICE_TABLE(acpi, cppc_acpi_ids);
 -- 
-2.7.4
+Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
 
