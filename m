@@ -1,63 +1,28 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v8 3/8] binding-doc: usb: usb-device: add optional properties
- for power sequence
-Date: Fri, 14 Oct 2016 10:59:50 +0800
-Message-ID: <1476413995-20361-4-git-send-email-peter.chen@nxp.com>
-References: <1476413995-20361-1-git-send-email-peter.chen@nxp.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 0/3] Broadcom STB AVS CPUfreq driver
+Date: Fri, 14 Oct 2016 08:32:04 +0530
+Message-ID: <20161014030204.GG2991@vireshk-i7>
+References: <1476310376-32699-1-git-send-email-mmayer@broadcom.com>
+ <20161013054506.GB2991@vireshk-i7>
+ <CAJZ5v0hT-gJuOnODkBJPKYVzqyc=bj685RDw=hqgAiFaoEzCug@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1476413995-20361-1-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, dbaryshkov@gmail.com
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, stephen.boyd@linaro.org, oscar@naiandei.net, heiko@sntech.de, pawel.moll@arm.com, linux-pm@vger.kernel.org, Peter Chen <peter.chen@nxp.com>, s.hauer@pengutronix.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, troy.kisky@boundarydevices.com, vaibhav.hiremath@linaro.org, stillcompiling@gmail.com, arnd@arndb.de, p.zabel@pengutronix.de, festevam@gmail.com, mka@chromium.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hT-gJuOnODkBJPKYVzqyc=bj685RDw=hqgAiFaoEzCug-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add optional properties for power sequence.
+On 13-10-16, 14:49, Rafael J. Wysocki wrote:
+> I gess patch [1/3] needs some ACKs from the DT bindings maintainers?
 
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
- Documentation/devicetree/bindings/usb/usb-device.txt | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+It would be better if we get one..
 
-diff --git a/Documentation/devicetree/bindings/usb/usb-device.txt b/Documentation/devicetree/bindings/usb/usb-device.txt
-index 1c35e7b..3661dd2 100644
---- a/Documentation/devicetree/bindings/usb/usb-device.txt
-+++ b/Documentation/devicetree/bindings/usb/usb-device.txt
-@@ -13,6 +13,10 @@ Required properties:
- - reg: the port number which this device is connecting to, the range
-   is 1-31.
- 
-+Optional properties:
-+power sequence properties, see
-+Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt for detail
-+
- Example:
- 
- &usb1 {
-@@ -21,8 +25,12 @@ Example:
- 	#address-cells = <1>;
- 	#size-cells = <0>;
- 
--	hub: genesys@1 {
-+	genesys: hub@1 {
- 		compatible = "usb5e3,608";
- 		reg = <1>;
-+
-+		clocks = <&clks IMX6SX_CLK_CKO>;
-+		reset-gpios = <&gpio4 5 GPIO_ACTIVE_LOW>; /* hub reset pin */
-+		reset-duration-us = <10>;
- 	};
- }
 -- 
-2.7.4
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
