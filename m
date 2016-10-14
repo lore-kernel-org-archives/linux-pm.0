@@ -1,36 +1,48 @@
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: [PATCH 0/3] thermal: Fix module autoload for drivers
-Date: Fri, 14 Oct 2016 11:34:59 -0300
-Message-ID: <1476455702-21748-1-git-send-email-javier@osg.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:57009
-        "EHLO s-opensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751576AbcJNOfR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Oct 2016 10:35:17 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/3] thermal: max77620: Fix module autoload
+Date: Fri, 14 Oct 2016 11:35:00 -0300
+Message-ID: <1476455702-21748-2-git-send-email-javier@osg.samsung.com>
+References: <1476455702-21748-1-git-send-email-javier@osg.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1476455702-21748-1-git-send-email-javier@osg.samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Marc Gonzalez <marc_gonzalez@sigmadesigns.com>, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Hello,
+If the driver is built as a module, autoload won't work because the module
+alias information is not filled. So user-space can't match the registered
+device with the corresponding module.
 
-This small series contains trivial fixes to allow modules to be autoloaded
-when its correspoinding thermal device is registered.
+Export the module alias information using the MODULE_DEVICE_TABLE() macro.
 
-Best regards,
-Javier
+Before this patch:
 
+$ modinfo drivers/thermal/max77620_thermal.ko | grep alias
+$
 
-Javier Martinez Canillas (3):
-  thermal: max77620: Fix module autoload
-  thermal: tango: Fix module autoload
-  thermal: db8500: Fix module autoload
+After this patch:
 
- drivers/thermal/db8500_thermal.c   | 1 +
+$ modinfo drivers/thermal/max77620_thermal.ko | grep alias
+alias:          platform:max77620-thermal
+
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+---
+
  drivers/thermal/max77620_thermal.c | 1 +
- drivers/thermal/tango_thermal.c    | 1 +
- 3 files changed, 3 insertions(+)
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/thermal/max77620_thermal.c b/drivers/thermal/max77620_thermal.c
+index 83905ff46e40..e9a1fe342760 100644
+--- a/drivers/thermal/max77620_thermal.c
++++ b/drivers/thermal/max77620_thermal.c
+@@ -149,6 +149,7 @@ static struct platform_device_id max77620_thermal_devtype[] = {
+ 	{ .name = "max77620-thermal", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(platform, max77620_thermal_devtype);
+ 
+ static struct platform_driver max77620_thermal_driver = {
+ 	.driver = {
 -- 
 2.7.4
-
