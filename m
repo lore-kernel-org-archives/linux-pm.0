@@ -1,58 +1,82 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: RE: [PATCH V1 05/10] thermal: da9062/61: Thermal junction
- temperature monitoring driver
-Date: Fri, 14 Oct 2016 13:07:59 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CCE3443@SW-EX-MBX02.diasemi.com>
-References: <cover.1475743411.git.stwiss.opensource@diasemi.com>
- <b5ce58ca00f7ab30a025d24083549241f135b0e9.1475743411.git.stwiss.opensource@diasemi.com>
- <3bc9fd76-2885-b07a-9df8-7802b7535da2@ti.com>
- <6ED8E3B22081A4459DAC7699F3695FB7018CCE2815@SW-EX-MBX02.diasemi.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] power: reset: Add qcom reboot mode driver
+Date: Fri, 14 Oct 2016 15:15:16 +0200
+Message-ID: <20161014131516.bkyi3tsx2nhqfyhm@earth>
+References: <1476410823-8912-1-git-send-email-xiaogang@codeaurora.org>
+ <54841aee-34ec-2776-e802-9e36d12e77c2@rock-chips.com>
+ <9c8d80ce39a10274da06e99735944ffa@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6ED8E3B22081A4459DAC7699F3695FB7018CCE2815@SW-EX-MBX02.diasemi.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="oupzpfgts3fmfvym"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <9c8d80ce39a10274da06e99735944ffa-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Cc: Andy Yan <andy.yan-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nicolas Ferre <nicolas.ferre-AIFe0yeh4nAAvxtiuMwx3w@public.gmane.org>, Chris Brand <chris.brand-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Richard Weinberger <richard-/L3Ra7n9ekc@public.gmane.org>, Moritz Fischer <moritz.fischer-+aYTwkv1SeIAvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, open list <linux-kernel-u79uwXL29TY@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-An update.
 
-On: 07 October 2016 18:49, Steve Twiss wrote:
-> On 07 October 2016 06:29, Keerthy [mailto:a0393675@ti.com] wrote:
-> > On Thursday 06 October 2016 02:13 PM, Steve Twiss wrote:
-> > > From: Steve Twiss <stwiss.opensource@diasemi.com>
-[...]
-> > > +static const struct da9062_thermal_config da9062_config = {
-> > > +	.name = "da9062-thermal",
-> > > +};
-> > > +
-> > > +static const struct da9062_thermal_config da9061_config = {
-> > > +	.name = "da9061-thermal",
-> > > +};
-> > > +
-> > > +static const struct of_device_id da9062_compatible_reg_id_table[] = {
-> > > +	{ .compatible = "dlg,da9062-thermal", .data = &da9062_config },
-> > > +	{ .compatible = "dlg,da9061-thermal", .data = &da9061_config },
-> >
-> > Two separate compatible values. Do you have anything different apart
-> > from the name? Why use 2 compatibles when there is absolutely no
-> > difference?
-> 
-> Yes.
-> This was a comment for the watchdog device driver as well. My concern was having
-> multiple devices (61 and 62) in the same system -- and allowing the driver to report
-> the hardware difference.
-> 
-> There is discussion going on about this in other threads. Not certain of the
-> final outcome yet, apart from my existing proposal should be changed.
+--oupzpfgts3fmfvym
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-An answer to this came from comments by Dmitry Torokhov and Guenter Roeck, who
-suggested this: https://lkml.org/lkml/2016/10/7/641
+Hi,
 
-I will take a look at this for V2.
+On Fri, Oct 14, 2016 at 11:06:14AM +0800, xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org wrote:
+> =E5=9C=A8 2016-10-14 10:41=EF=BC=8CAndy Yan =E5=86=99=E9=81=93=EF=BC=9A
+> > On 2016=E5=B9=B410=E6=9C=8814=E6=97=A5 10:02, Xiaogang Cui wrote:
+> > > This is a initial version so it's very similar with syscon
+> > > reboot mode driver. We will add more functionalities in the
+> > > further after dependency is ready.
+> > >=20
+> > > Signed-off-by: Xiaogang Cui <xiaogang-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> > > ---
+> >=20
+> > As your commit messages said, "it's very similar with syscon
+> > reboot mode driver", so maybe we can try to reuse the syscon
+> > reboot mode driver, and extend your new function on it.
+>=20
+> Since it will heavily depend on Qualcomm qpnp and download mode
+> driver. I prefer to add a new driver for this.
 
-Regards,
-Steve
+So use syscon driver until then. In its current state is more
+or less a copy of syscon driver with s/syscon/qcom/g. I will
+not queue that.
+
+Just add a more specific compatible value in addition to the
+syscon one:
+
+compatible =3D "qcom,reboot-mode", "syscon-reboot-mode";
+
+Then syscon driver is used and if something more complex
+is required later we can easily switch to it.
+
+-- Sebastian
+
+--oupzpfgts3fmfvym
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCgAGBQJYANphAAoJENju1/PIO/qaKwkP/juhatAbBGpmsf3rX4CnBa8s
+qAvN4iSuBb+oY3V0Dd/ZfeKHMxBlG3H95HHCqm3iHYMTQdD51SsPOVTfz2UTcUDt
+ds7/N4Hvs0pgICisnHadNQ1HPt/FBMc0hgGxlxgYMjZnhmp2uDAURJpPtFU/e/wx
+zVrtmxPdCTI7UpFpfLlItaPWPleDDJ+dueEhXQgrjnWHuyyC1QPFdo5jkAofFn6e
+ivFjSNxq7b7RiebdBuhvGAPAqUmTbLhKrZEFZlqf/3DsPnp0tfSi+u4xnuTZ4SzD
+6/MeL7VGZIBu+lU+Zouxva4LpaZSZaDVYgZlvsVb5D+5MKbZMf8At51opFGn9uAV
+r4w7Ohx4evNogimzacwXKvu0N/DfUN+xW+NQlKcIo+J+dzbs7m28rKwNbAcE0YIL
+xgJD1dZRFBrzYu1NnhFFLH+G1Va/xo1IvSH4acccol0ueXTd3iaoiuErYs59PqpO
+IipFfH9woLZAvLoStDgOjmTcoPBF18oN1nwNQW+H6drFuU0d6cr7JN5djhHvw1Ua
+SrPpRUe0AwVTR6/uvgS2PIoKnbb3i+YaRZr//4Mx7dvmj5BYXr1FWzTxTuK6mKlg
+mvS8YudfmvYQMUVzGmWrVb+NOgi7gCfFERtHBZ4Z75qEJ3cAlwk+Otwn4tjxtK+b
+knqlwyD1Nc6gnW624AVg
+=pBAM
+-----END PGP SIGNATURE-----
+
+--oupzpfgts3fmfvym--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
