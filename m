@@ -1,45 +1,57 @@
-From: Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
 Subject: Re: [PATCH v2 0/4] PXA cpufreq conversion to clock API
-Date: Sat, 15 Oct 2016 21:34:21 +0100
-Message-ID: <20161015203421.GG1041@n2100.armlinux.org.uk>
+Date: Sat, 15 Oct 2016 23:17:08 +0200
+Message-ID: <87oa2l5n3f.fsf@belgarion.home>
 References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+        <20161015203421.GG1041@n2100.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1476561450-28407-1-git-send-email-robert.jarzmik-GANU6spQydw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
-Cc: Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp03.smtpout.orange.fr ([80.12.242.125]:20436 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750919AbcJOVRN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Oct 2016 17:17:13 -0400
+In-Reply-To: <20161015203421.GG1041@n2100.armlinux.org.uk> (Russell King's
+        message of "Sat, 15 Oct 2016 21:34:21 +0100")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-On Sat, Oct 15, 2016 at 09:57:26PM +0200, Robert Jarzmik wrote:
-> Hi,
-> 
-> This serie is a preparation to shift the cpufreq of pxa2xx platforms to clocks
-> API.
-> 
-> The first 3 patches are review and merge material :
->  - patch 1/4 for Viresh and Rafael
->  - patches 2/4 and 3/4 for me
-> 
-> The 4th on is for review but not merge, as the clock changes must be fully
-> reviewed and go in first as a prequisite
+Russell King - ARM Linux <linux@armlinux.org.uk> writes:
 
-Have you tested whether this patch set results in functional cpufreq
-support - looking at drivers/clk/pxa, the CPU clock is read-only -
-it can't be used to change the clock rate.  So, I very much doubt this
-has been functionally tested.
+> On Sat, Oct 15, 2016 at 09:57:26PM +0200, Robert Jarzmik wrote:
+>> Hi,
+>> 
+>> This serie is a preparation to shift the cpufreq of pxa2xx platforms to clocks
+>> API.
+>> 
+>> The first 3 patches are review and merge material :
+>>  - patch 1/4 for Viresh and Rafael
+>>  - patches 2/4 and 3/4 for me
+>> 
+>> The 4th on is for review but not merge, as the clock changes must be fully
+>> reviewed and go in first as a prequisite
+>
+> Have you tested whether this patch set results in functional cpufreq
+> support - looking at drivers/clk/pxa, the CPU clock is read-only -
+> it can't be used to change the clock rate.  So, I very much doubt this
+> has been functionally tested.
 
-Don't forget that changing the CPU clock rate needs other changes
-(like the memory clock rate) so all that code you're removing in
-patch 4 (which does the actual clock change) needs to go somewhere.
+Oh yes I did, on lubbock and mainstone ... but this requires another patchset
+under review, here :
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1247123.html
+
+> Don't forget that changing the CPU clock rate needs other changes
+> (like the memory clock rate) so all that code you're removing in
+> patch 4 (which does the actual clock change) needs to go somewhere.
+Sure, here :
+https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1247130.html
+
+I would have been wiser to quote these URLs instead of speaking of "clock
+changes must be fully review and go in first as a prequisite".
+
+Cheers.
 
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Robert
