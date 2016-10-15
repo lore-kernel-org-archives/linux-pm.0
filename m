@@ -1,35 +1,51 @@
 From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH 6/6] cpufreq: pxa: convert to clock API
-Date: Sat, 15 Oct 2016 21:42:26 +0200
-Message-ID: <87wph95rh9.fsf@belgarion.home>
-References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
-        <1476130149-31834-7-git-send-email-robert.jarzmik@free.fr>
-        <20161012023601.GC19385@vireshk-i7> <87mvia6q8p.fsf@belgarion.home>
-        <20161012063247.GH19385@vireshk-i7> <87insy6kdq.fsf@belgarion.home>
-        <20161012084044.GK19385@vireshk-i7> <87eg3l755x.fsf@belgarion.home>
+Subject: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for
+ device-tree
+Date: Sat, 15 Oct 2016 21:57:27 +0200
+Message-ID: <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
+References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <87eg3l755x.fsf@belgarion.home> (Robert Jarzmik's message of
-        "Wed, 12 Oct 2016 21:12:26 +0200")
-Sender: linux-clk-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Robert Jarzmik <robert.jarzmik@free.fr> writes:
+For device-tree based pxa25x and pxa27x platforms, cpufreq-dt driver is
+doing the job as well as pxa2xx-cpufreq, so add these platforms to the
+compatibility list.
 
->> In that case, what about making this driver depends_on !CONFIG_OF ? So
->> that the DT users don't use it anymore.
-> Good idea, let me try it.
-> I'll see if it actually works before make another iteration of this patch.
+This won't work for legacy non device-tree platforms where
+pxa2xx-cpufreq is still required.
 
-Okay, it works all right.
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-I'll split out this patch into several others, and make their review
-independently of the clock serie.
-
-Cheers.
-
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 0bb44d5b5df4..356825b5c9b8 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -32,6 +32,8 @@ static const struct of_device_id machines[] __initconst = {
+ 	{ .compatible = "fsl,imx7d", },
+ 
+ 	{ .compatible = "marvell,berlin", },
++	{ .compatible = "marvell,pxa250", },
++	{ .compatible = "marvell,pxa270", },
+ 
+ 	{ .compatible = "samsung,exynos3250", },
+ 	{ .compatible = "samsung,exynos4210", },
 -- 
-Robert
+2.1.4
