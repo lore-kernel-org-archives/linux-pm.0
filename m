@@ -1,41 +1,48 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 177171] Reduced frequency window for conservative governor
-Date: Fri, 14 Oct 2016 23:43:54 +0000
-Message-ID: <bug-177171-137361-XR7AIScVAi@https.bugzilla.kernel.org/>
-References: <bug-177171-137361@https.bugzilla.kernel.org/>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [problem on 32-bit systems] changing the type of clk_rate to "long long"?
+Date: Sat, 15 Oct 2016 11:55:38 +0900
+Message-ID: <CAK7LNAQL=G7hkVDgcGCM60Lq4Omx25-qb=TkXUKOO2CzeargTg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:36968 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751425AbcJNXxE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Oct 2016 19:53:04 -0400
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 9A60720439
-        for <linux-pm@vger.kernel.org>; Fri, 14 Oct 2016 23:43:56 +0000 (UTC)
-Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
-        by mail.kernel.org (Postfix) with ESMTP id A48982042B
-        for <linux-pm@vger.kernel.org>; Fri, 14 Oct 2016 23:43:54 +0000 (UTC)
-In-Reply-To: <bug-177171-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-clk <linux-clk@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=177171
+Hi.
 
-Rafael J. Wysocki <rjw@rjwysocki.net> changed:
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|RESOLVED                    |CLOSED
-         Resolution|PATCH_ALREADY_AVAILABLE     |CODE_FIX
+When I was testing my clk driver + generic cpufreq driver,
+I was hit by a problem.
 
---- Comment #10 from Rafael J. Wysocki <rjw@rjwysocki.net> ---
-Merged as commit abb6627910a1e783c8e034b35b7c80e5e7f98f41:
 
-http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=pm&id=abb6627910a1e783c8e034b35b7c80e5e7f98f41
+Everything worked fine on my 64-bit SoCs,
+but not on 32-bit SoCs.
+
+
+I found the cause of the problem was
+that the type of clk_rate is "long".
+
+It is long enough on 64-bit systems,
+but only 32-bit wide on 32-bit systems.
+
+
+The CPU clocks on my SoCs
+are derived from a 2.4GHz PLL.
+
+
+The .round_rate() callback tries to return 2400000000,
+but it does not fit in a signed 32-bit-wide variable
+and it is treated as -1894967296, which is an error.
+
+
+In order to handle clock frequency safely,
+shall we use "long long" instead?
+(It is guaranteed to have 64-bit width)
+
+
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+Best Regards
+Masahiro Yamada
