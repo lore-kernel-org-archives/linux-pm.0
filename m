@@ -1,20 +1,16 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v7 REPOST 7/9] arm64, dts: add Juno r2 cpu capacity-dmips-mhz information
-Date: Mon, 17 Oct 2016 16:46:48 +0100
-Message-ID: <20161017154650.18779-8-juri.lelli@arm.com>
+Subject: [PATCH v7 REPOST 6/9] arm64, dts: add Juno r1 cpu capacity-dmips-mhz information
+Date: Mon, 17 Oct 2016 16:46:47 +0100
+Message-ID: <20161017154650.18779-7-juri.lelli@arm.com>
 References: <20161017154650.18779-1-juri.lelli@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:36846 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935367AbcJQPsH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 17 Oct 2016 11:48:07 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161017154650.18779-1-juri.lelli@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jon Medhurst <tixy@linaro.org>, Olof Johansson <olof@lixom.net>, Robin Murphy <robin.murphy@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Add Juno r2 cpu capacity-dmips-mhz information.
+Add Juno r1 cpu capacity-dmips-mhz information.
 
 Cc: Rob Herring <robh+dt@kernel.org>
 Cc: Pawel Moll <pawel.moll@arm.com>
@@ -31,32 +27,28 @@ Cc: Olof Johansson <olof@lixom.net>
 Cc: Robin Murphy <robin.murphy@arm.com>
 Cc: devicetree@vger.kernel.org
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
 ---
-
-Changes from v4:
-  - new patch since Juno r2 dt has been merged
 
 Changes from v6:
-  - s/bindings// in changelog
+  - new patch as per off-line discussion with Sudeep
 ---
- arch/arm64/boot/dts/arm/juno-r2.dts | 6 ++++++
+ arch/arm64/boot/dts/arm/juno-r1.dts | 6 ++++++
  1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/arm/juno-r2.dts b/arch/arm64/boot/dts/arm/juno-r2.dts
-index 007be826efce..614fc9227943 100644
---- a/arch/arm64/boot/dts/arm/juno-r2.dts
-+++ b/arch/arm64/boot/dts/arm/juno-r2.dts
+diff --git a/arch/arm64/boot/dts/arm/juno-r1.dts b/arch/arm64/boot/dts/arm/juno-r1.dts
+index 123a58b29cbd..3be8a3ef671c 100644
+--- a/arch/arm64/boot/dts/arm/juno-r1.dts
++++ b/arch/arm64/boot/dts/arm/juno-r1.dts
 @@ -90,6 +90,7 @@
- 			next-level-cache = <&A72_L2>;
+ 			next-level-cache = <&A57_L2>;
  			clocks = <&scpi_dvfs 0>;
  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
 +			capacity-dmips-mhz = <1024>;
  		};
  
- 		A72_1: cpu@1 {
+ 		A57_1: cpu@1 {
 @@ -100,6 +101,7 @@
- 			next-level-cache = <&A72_L2>;
+ 			next-level-cache = <&A57_L2>;
  			clocks = <&scpi_dvfs 0>;
  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
 +			capacity-dmips-mhz = <1024>;
@@ -67,7 +59,7 @@ index 007be826efce..614fc9227943 100644
  			next-level-cache = <&A53_L2>;
  			clocks = <&scpi_dvfs 1>;
  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <485>;
++			capacity-dmips-mhz = <578>;
  		};
  
  		A53_1: cpu@101 {
@@ -75,7 +67,7 @@ index 007be826efce..614fc9227943 100644
  			next-level-cache = <&A53_L2>;
  			clocks = <&scpi_dvfs 1>;
  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <485>;
++			capacity-dmips-mhz = <578>;
  		};
  
  		A53_2: cpu@102 {
@@ -83,7 +75,7 @@ index 007be826efce..614fc9227943 100644
  			next-level-cache = <&A53_L2>;
  			clocks = <&scpi_dvfs 1>;
  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <485>;
++			capacity-dmips-mhz = <578>;
  		};
  
  		A53_3: cpu@103 {
@@ -91,10 +83,9 @@ index 007be826efce..614fc9227943 100644
  			next-level-cache = <&A53_L2>;
  			clocks = <&scpi_dvfs 1>;
  			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <485>;
++			capacity-dmips-mhz = <578>;
  		};
  
- 		A72_L2: l2-cache0 {
+ 		A57_L2: l2-cache0 {
 -- 
 2.10.0
-
