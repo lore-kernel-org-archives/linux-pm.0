@@ -1,54 +1,34 @@
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: [PATCH 3/4] power: reset: syscon-reboot-mode: Fix module autoload
-Date: Mon, 17 Oct 2016 15:36:14 -0300
-Message-ID: <1476729375-17526-4-git-send-email-javier@osg.samsung.com>
-References: <1476729375-17526-1-git-send-email-javier@osg.samsung.com>
+Subject: [PATCH 0/2] power: supply: Fix module autoload for some platform drivers
+Date: Mon, 17 Oct 2016 16:13:34 -0300
+Message-ID: <1476731616-23995-1-git-send-email-javier@osg.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:37081
+Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:37315
         "EHLO s-opensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754447AbcJQSgd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Oct 2016 14:36:33 -0400
-In-Reply-To: <1476729375-17526-1-git-send-email-javier@osg.samsung.com>
+        with ESMTP id S934666AbcJQTNs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Oct 2016 15:13:48 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
 
-If the driver is built as a module, autoload won't work because the module
-alias information is not filled. So user-space can't match the registered
-device with the corresponding module.
+Hello Sebastian,
 
-Export the module alias information using the MODULE_DEVICE_TABLE() macro.
+I noticed that module autoload won't be working for some of the power
+supply platform drivers. This patch series contains fixes for these.
 
-Before this patch:
+Best regards,
+Javier
 
-$ modinfo drivers/power/reset/syscon-reboot-mode.ko | grep alias
-$
 
-After this patch:
+Javier Martinez Canillas (2):
+  power: supply: max8997_charger: Fix module autoload
+  power: supply: axp288_fuel_gauge: Fix module autoload
 
-$ modinfo drivers/power/reset/syscon-reboot-mode.ko | grep alias
-alias:          of:N*T*Csyscon-reboot-modeC*
-alias:          of:N*T*Csyscon-reboot-mode
+ drivers/power/supply/axp288_fuel_gauge.c | 1 +
+ drivers/power/supply/max8997_charger.c   | 1 +
+ 2 files changed, 2 insertions(+)
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
----
-
- drivers/power/reset/syscon-reboot-mode.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/power/reset/syscon-reboot-mode.c b/drivers/power/reset/syscon-reboot-mode.c
-index 1ecb51d67149..c8c371b285b1 100644
---- a/drivers/power/reset/syscon-reboot-mode.c
-+++ b/drivers/power/reset/syscon-reboot-mode.c
-@@ -74,6 +74,7 @@ static const struct of_device_id syscon_reboot_mode_of_match[] = {
- 	{ .compatible = "syscon-reboot-mode" },
- 	{}
- };
-+MODULE_DEVICE_TABLE(of, syscon_reboot_mode_of_match);
- 
- static struct platform_driver syscon_reboot_mode_driver = {
- 	.probe = syscon_reboot_mode_probe,
 -- 
 2.7.4
 
