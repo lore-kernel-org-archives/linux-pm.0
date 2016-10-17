@@ -1,256 +1,326 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v7 REPOST 2/9] arm: parse cpu capacity-dmips-mhz from DT
-Date: Mon, 17 Oct 2016 16:46:43 +0100
-Message-ID: <20161017154650.18779-3-juri.lelli@arm.com>
+Subject: [PATCH v7 REPOST 1/9] Documentation: arm: define DT cpu capacity-dmips-mhz bindings
+Date: Mon, 17 Oct 2016 16:46:42 +0100
+Message-ID: <20161017154650.18779-2-juri.lelli@arm.com>
 References: <20161017154650.18779-1-juri.lelli@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:36754 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935265AbcJQPrt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 17 Oct 2016 11:47:49 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161017154650.18779-1-juri.lelli@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Olof Johansson <olof@lixom.net>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Paul Walmsley <paul@pwsan.com>, Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>
+List-Id: linux-pm@vger.kernel.org
 
-With the introduction of cpu capacity-dmips-mhz bindings, CPU capacities
-can now be calculated from values extracted from DT and information
-coming from cpufreq. Add parsing of DT information at boot time, and
-complement it with cpufreq information. We keep code that can produce
-same information, based on different DT properties and hard-coded
-values, as fall-back for backward compatibility.
+ARM systems may be configured to have cpus with different power/performance
+characteristics within the same chip. In this case, additional information
+has to be made available to the kernel (the scheduler in particular) for it
+to be aware of such differences and take decisions accordingly.
 
-Caveat: the information provided by this patch will start to be used in
-the future. We need to #define arch_scale_cpu_capacity to something
-provided in arch, so that scheduler's default implementation (which gets
-used if arch_scale_cpu_capacity is not defined) is overwritten.
+Therefore, this patch aims at standardizing cpu capacities device tree
+bindings for ARM platforms. Bindings define cpu capacity-dmips-mhz
+parameter, to allow operating systems to retrieve such information from
+the device tree and initialize related kernel structures, paving the way
+for common code in the kernel to deal with heterogeneity.
 
-Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
+Cc: Kumar Gala <galak@codeaurora.org>
+Cc: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Paul Walmsley <paul@pwsan.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Chen-Yu Tsai <wens@csie.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+Acked-by: Rob Herring <robh@kernel.org>
 Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 ---
 
 Changes from v1:
-  - normalize w.r.t. highest capacity found in DT
-  - bailout conditions (all-or-nothing)
+ - removed section regarding capacity-scale
+ - added information regarding normalization
 
 Changes from v4:
-  - parsing modified to reflect change in binding (capacity-dmips-mhz)
+ - binding changed to capacity-dmips-mhz
+ - sections and changelod updated accordingly
 
 Changes from v5:
-  - allocate raw_capacity array with kcalloc()
-  - pr_err() only for partial capacity information
-
-Changes from v6:
-  - use cpuinfo.max_freq instead of policy->max
-  - add delayed work to unregister cpufreq notifier
+ - addressed Mark and Vincent comments
 ---
- arch/arm/kernel/topology.c | 156 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 155 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/arm/cpu-capacity.txt       | 236 +++++++++++++++++++++
+ Documentation/devicetree/bindings/arm/cpus.txt     |  10 +
+ 2 files changed, 246 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/cpu-capacity.txt
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index ec279d161b32..18bb0474f7ec 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -21,6 +21,7 @@
- #include <linux/of.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-+#include <linux/cpufreq.h>
- 
- #include <asm/cputype.h>
- #include <asm/topology.h>
-@@ -78,6 +79,144 @@ static unsigned long *__cpu_capacity;
- #define cpu_capacity(cpu)	__cpu_capacity[cpu]
- 
- static unsigned long middle_capacity = 1;
-+static bool cap_from_dt = true;
-+static u32 *raw_capacity;
-+static bool cap_parsing_failed;
-+static u32 capacity_scale;
+diff --git a/Documentation/devicetree/bindings/arm/cpu-capacity.txt b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+new file mode 100644
+index 000000000000..7809fbe0cdb7
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/cpu-capacity.txt
+@@ -0,0 +1,236 @@
++==========================================
++ARM CPUs capacity bindings
++==========================================
 +
-+static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
-+{
-+	int ret = 1;
-+	u32 cpu_capacity;
++==========================================
++1 - Introduction
++==========================================
 +
-+	if (cap_parsing_failed)
-+		return !ret;
++ARM systems may be configured to have cpus with different power/performance
++characteristics within the same chip. In this case, additional information has
++to be made available to the kernel for it to be aware of such differences and
++take decisions accordingly.
 +
-+	ret = of_property_read_u32(cpu_node,
-+				   "capacity-dmips-mhz",
-+				   &cpu_capacity);
-+	if (!ret) {
-+		if (!raw_capacity) {
-+			raw_capacity = kcalloc(num_possible_cpus(),
-+					       sizeof(*raw_capacity),
-+					       GFP_KERNEL);
-+			if (!raw_capacity) {
-+				pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
-+				cap_parsing_failed = true;
-+				return !ret;
-+			}
-+		}
-+		capacity_scale = max(cpu_capacity, capacity_scale);
-+		raw_capacity[cpu] = cpu_capacity;
-+		pr_debug("cpu_capacity: %s cpu_capacity=%u (raw)\n",
-+			cpu_node->full_name, raw_capacity[cpu]);
-+	} else {
-+		if (raw_capacity) {
-+			pr_err("cpu_capacity: missing %s raw capacity\n",
-+				cpu_node->full_name);
-+			pr_err("cpu_capacity: partial information: fallback to 1024 for all CPUs\n");
-+		}
-+		cap_parsing_failed = true;
-+		kfree(raw_capacity);
-+	}
++==========================================
++2 - CPU capacity definition
++==========================================
 +
-+	return !ret;
-+}
++CPU capacity is a number that provides the scheduler information about CPUs
++heterogeneity. Such heterogeneity can come from micro-architectural differences
++(e.g., ARM big.LITTLE systems) or maximum frequency at which CPUs can run
++(e.g., SMP systems with multiple frequency domains). Heterogeneity in this
++context is about differing performance characteristics; this binding tries to
++capture a first-order approximation of the relative performance of CPUs.
 +
-+static void normalize_cpu_capacity(void)
-+{
-+	u64 capacity;
-+	int cpu;
++CPU capacities are obtained by running a suitable benchmark. This binding makes
++no guarantees on the validity or suitability of any particular benchmark, the
++final capacity should, however, be:
 +
-+	if (!raw_capacity || cap_parsing_failed)
-+		return;
++* A "single-threaded" or CPU affine benchmark
++* Divided by the running frequency of the CPU executing the benchmark
++* Not subject to dynamic frequency scaling of the CPU
 +
-+	pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
-+	for_each_possible_cpu(cpu) {
-+		capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
-+			/ capacity_scale;
-+		set_capacity_scale(cpu, capacity);
-+		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
-+			cpu, arch_scale_cpu_capacity(NULL, cpu));
-+	}
-+}
++For the time being we however advise usage of the Dhrystone benchmark. What
++above thus becomes:
 +
-+#ifdef CONFIG_CPU_FREQ
-+static cpumask_var_t cpus_to_visit;
-+static bool cap_parsing_done;
-+static void parsing_done_workfn(struct work_struct *work);
-+static DECLARE_WORK(parsing_done_work, parsing_done_workfn);
++CPU capacities are obtained by running the Dhrystone benchmark on each CPU at
++max frequency (with caches enabled). The obtained DMIPS score is then divided
++by the frequency (in MHz) at which the benchmark has been run, so that
++DMIPS/MHz are obtained.  Such values are then normalized w.r.t. the highest
++score obtained in the system.
 +
-+static int
-+init_cpu_capacity_callback(struct notifier_block *nb,
-+			   unsigned long val,
-+			   void *data)
-+{
-+	struct cpufreq_policy *policy = data;
-+	int cpu;
++==========================================
++3 - capacity-dmips-mhz
++==========================================
 +
-+	if (cap_parsing_failed || cap_parsing_done)
-+		return 0;
++capacity-dmips-mhz is an optional cpu node [1] property: u32 value
++representing CPU capacity expressed in normalized DMIPS/MHz. At boot time, the
++maximum frequency available to the cpu is then used to calculate the capacity
++value internally used by the kernel.
 +
-+	switch (val) {
-+	case CPUFREQ_NOTIFY:
-+		pr_debug("cpu_capacity: init cpu capacity for CPUs [%*pbl] (to_visit=%*pbl)\n",
-+				cpumask_pr_args(policy->related_cpus),
-+				cpumask_pr_args(cpus_to_visit));
-+		cpumask_andnot(cpus_to_visit,
-+			       cpus_to_visit,
-+			       policy->related_cpus);
-+		for_each_cpu(cpu, policy->related_cpus) {
-+			raw_capacity[cpu] = arch_scale_cpu_capacity(NULL, cpu) *
-+					    policy->cpuinfo.max_freq / 1000UL;
-+			capacity_scale = max(raw_capacity[cpu], capacity_scale);
-+		}
-+		if (cpumask_empty(cpus_to_visit)) {
-+			normalize_cpu_capacity();
-+			kfree(raw_capacity);
-+			pr_debug("cpu_capacity: parsing done\n");
-+			cap_parsing_done = true;
-+			schedule_work(&parsing_done_work);
-+		}
-+	}
-+	return 0;
-+}
++capacity-dmips-mhz property is all-or-nothing: if it is specified for a cpu
++node, it has to be specified for every other cpu nodes, or the system will
++fall back to the default capacity value for every CPU. If cpufreq is not
++available, final capacities are calculated by directly using capacity-dmips-
++mhz values (normalized w.r.t. the highest value found while parsing the DT).
 +
-+static struct notifier_block init_cpu_capacity_notifier = {
-+	.notifier_call = init_cpu_capacity_callback,
++===========================================
++4 - Examples
++===========================================
++
++Example 1 (ARM 64-bit, 6-cpu system, two clusters):
++capacities-dmips-mhz are scaled w.r.t. 1024 (cpu@0 and cpu@1)
++supposing cluster0@max-freq=1100 and custer1@max-freq=850,
++final capacities are 1024 for cluster0 and 446 for cluster1
++
++cpus {
++	#address-cells = <2>;
++	#size-cells = <0>;
++
++	cpu-map {
++		cluster0 {
++			core0 {
++				cpu = <&A57_0>;
++			};
++			core1 {
++				cpu = <&A57_1>;
++			};
++		};
++
++		cluster1 {
++			core0 {
++				cpu = <&A53_0>;
++			};
++			core1 {
++				cpu = <&A53_1>;
++			};
++			core2 {
++				cpu = <&A53_2>;
++			};
++			core3 {
++				cpu = <&A53_3>;
++			};
++		};
++	};
++
++	idle-states {
++		entry-method = "arm,psci";
++
++		CPU_SLEEP_0: cpu-sleep-0 {
++			compatible = "arm,idle-state";
++			arm,psci-suspend-param = <0x0010000>;
++			local-timer-stop;
++			entry-latency-us = <100>;
++			exit-latency-us = <250>;
++			min-residency-us = <150>;
++		};
++
++		CLUSTER_SLEEP_0: cluster-sleep-0 {
++			compatible = "arm,idle-state";
++			arm,psci-suspend-param = <0x1010000>;
++			local-timer-stop;
++			entry-latency-us = <800>;
++			exit-latency-us = <700>;
++			min-residency-us = <2500>;
++		};
++	};
++
++	A57_0: cpu@0 {
++		compatible = "arm,cortex-a57","arm,armv8";
++		reg = <0x0 0x0>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A57_L2>;
++		clocks = <&scpi_dvfs 0>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity-dmips-mhz = <1024>;
++	};
++
++	A57_1: cpu@1 {
++		compatible = "arm,cortex-a57","arm,armv8";
++		reg = <0x0 0x1>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A57_L2>;
++		clocks = <&scpi_dvfs 0>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity-dmips-mhz = <1024>;
++	};
++
++	A53_0: cpu@100 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x100>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity-dmips-mhz = <578>;
++	};
++
++	A53_1: cpu@101 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x101>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity-dmips-mhz = <578>;
++	};
++
++	A53_2: cpu@102 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x102>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity-dmips-mhz = <578>;
++	};
++
++	A53_3: cpu@103 {
++		compatible = "arm,cortex-a53","arm,armv8";
++		reg = <0x0 0x103>;
++		device_type = "cpu";
++		enable-method = "psci";
++		next-level-cache = <&A53_L2>;
++		clocks = <&scpi_dvfs 1>;
++		cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
++		capacity-dmips-mhz = <578>;
++	};
++
++	A57_L2: l2-cache0 {
++		compatible = "cache";
++	};
++
++	A53_L2: l2-cache1 {
++		compatible = "cache";
++	};
 +};
 +
-+static int __init register_cpufreq_notifier(void)
-+{
-+	if (cap_parsing_failed)
-+		return -EINVAL;
++Example 2 (ARM 32-bit, 4-cpu system, two clusters,
++	   cpus 0,1@1GHz, cpus 2,3@500MHz):
++capacities-dmips-mhz are scaled w.r.t. 2 (cpu@0 and cpu@1), this means that first
++cpu@0 and cpu@1 are twice fast than cpu@2 and cpu@3 (at the same frequency)
 +
-+	if (!alloc_cpumask_var(&cpus_to_visit, GFP_KERNEL)) {
-+		pr_err("cpu_capacity: failed to allocate memory for cpus_to_visit\n");
-+		return -ENOMEM;
-+	}
-+	cpumask_copy(cpus_to_visit, cpu_possible_mask);
++cpus {
++	#address-cells = <1>;
++	#size-cells = <0>;
 +
-+	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
-+					 CPUFREQ_POLICY_NOTIFIER);
-+}
-+core_initcall(register_cpufreq_notifier);
++	cpu0: cpu@0 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0>;
++		capacity-dmips-mhz = <2>;
++	};
 +
-+static void parsing_done_workfn(struct work_struct *work)
-+{
-+	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
-+					 CPUFREQ_POLICY_NOTIFIER);
-+}
++	cpu1: cpu@1 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <1>;
++		capacity-dmips-mhz = <2>;
++	};
 +
-+#else
-+static int __init free_raw_capacity(void)
-+{
-+	kfree(raw_capacity);
++	cpu2: cpu@2 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0x100>;
++		capacity-dmips-mhz = <1>;
++	};
 +
-+	return 0;
-+}
-+core_initcall(free_raw_capacity);
-+#endif
++	cpu3: cpu@3 {
++		device_type = "cpu";
++		compatible = "arm,cortex-a15";
++		reg = <0x101>;
++		capacity-dmips-mhz = <1>;
++	};
++};
++
++===========================================
++5 - References
++===========================================
++
++[1] ARM Linux Kernel documentation - CPUs bindings
++    Documentation/devicetree/bindings/arm/cpus.txt
+diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+index e6782d50cbcd..c1dcf4cade2e 100644
+--- a/Documentation/devicetree/bindings/arm/cpus.txt
++++ b/Documentation/devicetree/bindings/arm/cpus.txt
+@@ -241,6 +241,14 @@ nodes to be present and contain the properties described below.
+ 			# List of phandles to idle state nodes supported
+ 			  by this cpu [3].
  
- /*
-  * Iterate all CPUs' descriptor in DT and compute the efficiency
-@@ -99,6 +238,12 @@ static void __init parse_dt_topology(void)
- 	__cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
- 				 GFP_NOWAIT);
- 
-+	cn = of_find_node_by_path("/cpus");
-+	if (!cn) {
-+		pr_err("No CPU information found in DT\n");
-+		return;
-+	}
++	- capacity-dmips-mhz
++		Usage: Optional
++		Value type: <u32>
++		Definition:
++			# u32 value representing CPU capacity [3] in
++			  DMIPS/MHz, relative to highest capacity-dmips-mhz
++			  in the system.
 +
- 	for_each_possible_cpu(cpu) {
- 		const u32 *rate;
- 		int len;
-@@ -110,6 +255,13 @@ static void __init parse_dt_topology(void)
- 			continue;
- 		}
- 
-+		if (parse_cpu_capacity(cn, cpu)) {
-+			of_node_put(cn);
-+			continue;
-+		}
-+
-+		cap_from_dt = false;
-+
- 		for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
- 			if (of_device_is_compatible(cn, cpu_eff->compatible))
- 				break;
-@@ -151,6 +303,8 @@ static void __init parse_dt_topology(void)
- 		middle_capacity = ((max_capacity / 3)
- 				>> (SCHED_CAPACITY_SHIFT-1)) + 1;
- 
-+	if (cap_from_dt && !cap_parsing_failed)
-+		normalize_cpu_capacity();
- }
- 
- /*
-@@ -160,7 +314,7 @@ static void __init parse_dt_topology(void)
-  */
- static void update_cpu_capacity(unsigned int cpu)
- {
--	if (!cpu_capacity(cpu))
-+	if (!cpu_capacity(cpu) || cap_from_dt)
- 		return;
- 
- 	set_capacity_scale(cpu, cpu_capacity(cpu) / middle_capacity);
+ 	- rockchip,pmu
+ 		Usage: optional for systems that have an "enable-method"
+ 		       property value of "rockchip,rk3066-smp"
+@@ -464,3 +472,5 @@ cpus {
+ [2] arm/msm/qcom,kpss-acc.txt
+ [3] ARM Linux kernel documentation - idle states bindings
+     Documentation/devicetree/bindings/arm/idle-states.txt
++[3] ARM Linux kernel documentation - cpu capacity bindings
++    Documentation/devicetree/bindings/arm/cpu-capacity.txt
 -- 
 2.10.0
-
