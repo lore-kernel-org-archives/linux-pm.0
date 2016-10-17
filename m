@@ -1,103 +1,52 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v7 REPOST 5/9] arm64, dts: add Juno cpu capacity-dmips-mhz information
-Date: Mon, 17 Oct 2016 16:46:46 +0100
-Message-ID: <20161017154650.18779-6-juri.lelli@arm.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v7 REPOST 0/9] CPUs capacity information for heterogeneous
+ systems
+Date: Mon, 17 Oct 2016 17:39:22 +0100
+Message-ID: <66c7bbfd-ec3f-ff43-9a06-ae644d9ee9d9@arm.com>
 References: <20161017154650.18779-1-juri.lelli@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:36802 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:38748 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935339AbcJQPsF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 17 Oct 2016 11:48:05 -0400
+        id S1753126AbcJQQj0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Oct 2016 12:39:26 -0400
 In-Reply-To: <20161017154650.18779-1-juri.lelli@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Liviu Dudau <Liviu.Dudau@arm.com>, Arnd Bergmann <arnd@arndb.de>, Jon Medhurst <tixy@linaro.org>, Olof Johansson <olof@lixom.net>, Robin Murphy <robin.murphy@arm.com>
+To: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org
 
-Add Juno cpu capacity-dmips-mhz information.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Ian Campbell <ijc+devicetree@hellion.org.uk>
-Cc: Kumar Gala <galak@codeaurora.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Cc: Liviu Dudau <Liviu.Dudau@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Jon Medhurst <tixy@linaro.org>
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Robin Murphy <robin.murphy@arm.com>
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-Acked-by: Sudeep Holla <sudeep.holla@arm.com>
----
 
-Changes from v1:
-  - capacity-scale removed
+On 17/10/16 16:46, Juri Lelli wrote:
+> Hi all,
+>
+> this is a repost of version 7 of "CPUs capacity information for heterogeneous
+> systems" patchset [1] (please refer to previous postings to get some context).
+> I only added Juno r1 dts, as discussed off-line with Sudeep meanwhile (no code
+> changes at all, so that's why I'm saying this is a repost).
+>
+> I'm reposting as I didn't receive any comment (despite pinging people) on the
+> original v7 posting (apart from Vincent acking patches 2 and 4, thanks!). I
+> then waited until merge window for 4.9 was closed.
+>
+> I'm thus now assuming that everybody is OK with the patches and that they can
+> be queued for 4.10 (we certainly need this plumbing at this point). Please
+> speak if my assumption is wrong (and provide feedback! :).
+> Otherwise I'm going to:
+>
+>  - use Russell's patching system for patches 2 and 8
+>  - ask Sudeep to pull patches 3,5,6 and 7
 
-Changes from v4:
-  - binding changed to capacity-dmips-mhz
+I have applied 3 to [1] and 5,6,7 to [2]. Let me know if things change
+and you want me to drop them with some cosmetic subject change and
+updated changelog.
 
-Changes from v6:
-  - s/bindings// in changelog
----
- arch/arm64/boot/dts/arm/juno.dts | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/arm64/boot/dts/arm/juno.dts b/arch/arm64/boot/dts/arm/juno.dts
-index a7270eff6939..6b4135e9cfe5 100644
---- a/arch/arm64/boot/dts/arm/juno.dts
-+++ b/arch/arm64/boot/dts/arm/juno.dts
-@@ -90,6 +90,7 @@
- 			next-level-cache = <&A57_L2>;
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <1024>;
- 		};
- 
- 		A57_1: cpu@1 {
-@@ -100,6 +101,7 @@
- 			next-level-cache = <&A57_L2>;
- 			clocks = <&scpi_dvfs 0>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <1024>;
- 		};
- 
- 		A53_0: cpu@100 {
-@@ -110,6 +112,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A53_1: cpu@101 {
-@@ -120,6 +123,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A53_2: cpu@102 {
-@@ -130,6 +134,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A53_3: cpu@103 {
-@@ -140,6 +145,7 @@
- 			next-level-cache = <&A53_L2>;
- 			clocks = <&scpi_dvfs 1>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
-+			capacity-dmips-mhz = <578>;
- 		};
- 
- 		A57_L2: l2-cache0 {
 -- 
-2.10.0
+Regards,
+Sudeep
 
+[1] git.kernel.org/sudeep.holla/linux/h/vexpress-dt/for-next
+[2] git.kernel.org/sudeep.holla/linux/h/juno-dt/for-next
