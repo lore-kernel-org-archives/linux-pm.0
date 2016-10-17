@@ -1,116 +1,40 @@
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: [PATCH] thermal: intel_pch_thermal: Support skylake PCH 100 series thermal
-Date: Tue, 18 Oct 2016 06:44:38 +0900
-Message-ID: <87pomyd515.fsf@mail.parknet.co.jp>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 177761] [Oops] IP: [<ffffffffa017472d>]
+ acpi_cpufreq_target+0x5d/0x240 [acpi_cpufreq]
+Date: Mon, 17 Oct 2016 23:36:43 +0000
+Message-ID: <bug-177761-137361-UeyRd36K1p@https.bugzilla.kernel.org/>
+References: <bug-177761-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.parknet.co.jp ([210.171.160.6]:48261 "EHLO
-        mail.parknet.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754624AbcJQWPS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Oct 2016 18:15:18 -0400
+Received: from mail.kernel.org ([198.145.29.136]:36292 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934325AbcJQXgs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Oct 2016 19:36:48 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id 5E931202EC
+        for <linux-pm@vger.kernel.org>; Mon, 17 Oct 2016 23:36:46 +0000 (UTC)
+Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
+        by mail.kernel.org (Postfix) with ESMTP id 3501220219
+        for <linux-pm@vger.kernel.org>; Mon, 17 Oct 2016 23:36:44 +0000 (UTC)
+In-Reply-To: <bug-177761-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
+https://bugzilla.kernel.org/show_bug.cgi?id=177761
 
-Using registers are compatible with current driver.
+Rafael J. Wysocki <rjw@rjwysocki.net> changed:
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
- drivers/thermal/intel_pch_thermal.c |   48 +++++++++++++++++++++--------------
- 1 file changed, 30 insertions(+), 18 deletions(-)
-
-diff -puN drivers/thermal/intel_pch_thermal.c~intel_pch_thermal-cleanup drivers/thermal/intel_pch_thermal.c
---- linux/drivers/thermal/intel_pch_thermal.c~intel_pch_thermal-cleanup	2016-10-18 05:41:58.576845111 +0900
-+++ linux-hirofumi/drivers/thermal/intel_pch_thermal.c	2016-10-18 05:57:52.391883794 +0900
-@@ -220,32 +220,39 @@ static struct thermal_zone_device_ops tz
- 	.get_trip_temp = pch_get_trip_temp,
- };
- 
-+enum board_ids {
-+	board_wpt,
-+	board_skl,
-+};
-+
-+static const struct board_info {
-+	const char *name;
-+	const struct pch_dev_ops *ops;
-+} board_info[] = {
-+	[board_wpt] = {
-+		.name = "pch_wildcat_point",
-+		.ops = &pch_dev_ops_wpt,
-+	},
-+	[board_skl] = {
-+		.name = "pch_skylake",
-+		.ops = &pch_dev_ops_wpt,
-+	},
-+};
- 
- static int intel_pch_thermal_probe(struct pci_dev *pdev,
- 				   const struct pci_device_id *id)
- {
-+	enum board_ids board_id = id->driver_data;
-+	const struct board_info *bi = &board_info[board_id];
- 	struct pch_thermal_device *ptd;
- 	int err;
- 	int nr_trips;
--	char *dev_name;
- 
- 	ptd = devm_kzalloc(&pdev->dev, sizeof(*ptd), GFP_KERNEL);
- 	if (!ptd)
- 		return -ENOMEM;
- 
--	switch (pdev->device) {
--	case PCH_THERMAL_DID_WPT:
--		ptd->ops = &pch_dev_ops_wpt;
--		dev_name = "pch_wildcat_point";
--		break;
--	case PCH_THERMAL_DID_SKL:
--		ptd->ops = &pch_dev_ops_wpt;
--		dev_name = "pch_skylake";
--		break;
--	default:
--		dev_err(&pdev->dev, "unknown pch thermal device\n");
--		return -ENODEV;
--	}
-+	ptd->ops = bi->ops;
- 
- 	pci_set_drvdata(pdev, ptd);
- 	ptd->pdev = pdev;
-@@ -273,11 +280,11 @@ static int intel_pch_thermal_probe(struc
- 	if (err)
- 		goto error_cleanup;
- 
--	ptd->tzd = thermal_zone_device_register(dev_name, nr_trips, 0, ptd,
-+	ptd->tzd = thermal_zone_device_register(bi->name, nr_trips, 0, ptd,
- 						&tzd_ops, NULL, 0, 0);
- 	if (IS_ERR(ptd->tzd)) {
- 		dev_err(&pdev->dev, "Failed to register thermal zone %s\n",
--			dev_name);
-+			bi->name);
- 		err = PTR_ERR(ptd->tzd);
- 		goto error_cleanup;
- 	}
-@@ -322,8 +329,13 @@ static int intel_pch_thermal_resume(stru
- }
- 
- static struct pci_device_id intel_pch_thermal_id[] = {
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_WPT) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_SKL) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_WPT),
-+	  .driver_data = board_wpt, },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_SKL),
-+	  .driver_data = board_skl, },
-+	/* skylake PCH 100 series */
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0xa131),
-+	  .driver_data = board_skl, },
- 	{ 0, },
- };
- MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
-_
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |rjw@rjwysocki.net
+          Component|Power-Processor             |cpufreq
+           Assignee|acpi_power-processor@kernel |linux-pm@vger.kernel.org
+                   |-bugs.osdl.org              |
+            Product|ACPI                        |Power Management
 
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+You are receiving this mail because:
+You are the assignee for the bug.
