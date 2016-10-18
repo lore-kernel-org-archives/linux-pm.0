@@ -1,120 +1,58 @@
 From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH] PM / AVS: SmartReflex: add in missing white space in error message text
-Date: Tue, 18 Oct 2016 14:05:57 -0700
-Message-ID: <7hk2d59xl6.fsf@baylibre.com>
-References: <20160912111455.29881-1-colin.king@canonical.com>
+Subject: Re: [PATCH] PM / AVS: rockchip-io: make the log more consistent
+Date: Tue, 18 Oct 2016 14:14:18 -0700
+Message-ID: <7heg3d9x79.fsf@baylibre.com>
+References: <1476103462-7559-1-git-send-email-shawn.lin@rock-chips.com>
+        <1883054.D2Rm2X9N2G@phil>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20160912111455.29881-1-colin.king@canonical.com> (Colin King's
-        message of "Mon, 12 Sep 2016 12:14:55 +0100")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Colin King <colin.king@canonical.com>
-Cc: Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35846 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752265AbcJRVOU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Oct 2016 17:14:20 -0400
+Received: by mail-pf0-f175.google.com with SMTP id e6so2726876pfk.3
+        for <linux-pm@vger.kernel.org>; Tue, 18 Oct 2016 14:14:20 -0700 (PDT)
+In-Reply-To: <1883054.D2Rm2X9N2G@phil> (Heiko Stuebner's message of "Mon, 10
+        Oct 2016 22:15:50 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Shawn Lin <shawn.lin@rock-chips.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Heiko Stuebner <heiko@sntech.de>
 
-Colin King <colin.king@canonical.com> writes:
+Heiko Stuebner <heiko@sntech.de> writes:
 
-> From: Colin Ian King <colin.king@canonical.com>
+> Am Montag, 10. Oktober 2016, 20:44:22 CEST schrieb Shawn Lin:
+>> When testing SD hotplug automatically, I got bunch of
+>> useless log like this:
+>> 
+>> [  588.357838] mmc0: card 0007 removed
+>> [  589.492664] rockchip-iodomain ff770000.syscon:io-domains: Setting to
+>> 3300000 done [  589.500698] vccio_sd: ramp_delay not set
+>> [  589.504817] rockchip-iodomain ff770000.syscon:io-domains: Setting to
+>> 3300000 done [  589.669705] rockchip-iodomain ff770000.syscon:io-domains:
+>> Setting to 3300000 done [  589.677593] vccio_sd: ramp_delay not set
+>> [  589.681581] rockchip-iodomain ff770000.syscon:io-domains: Setting to
+>> 1800000 done [  590.032820] dwmmc_rockchip ff0c0000.dwmmc: Successfully
+>> tuned phase to 140 [  590.039725] mmc0: new ultra high speed SDR50 SDHC
+>> card at address 0007 [  590.046641] mmcblk0: mmc0:0007 SD32G 29.3 GiB
+>> [  590.052163]  mmcblk0: p1
+>> 
+>> Moreover the code is intent to print the 'uV' for debug but
+>> later print it using dev_info. It looks more like to me that
+>> it should be the real intention of the code. Anyway, let's
+>> mark this verbose log as debug message.
+>> 
+>> Signed-off-by: Shawn Lin <shawn.lin@rock-chips.com>
 >
-> Several line wrapped literal strings are missing white spaces, add the
-> whitespace to fix this.
+> reducing the amount of logs, especially for information not generally needed 
+> looks sane
 >
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/power/avs/smartreflex.c | 20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
+> Reviewed-by: Heiko Stuebner <heiko@sntech.de>
 
-This patch duplicates work that was already done in commit
-10He2cdeaa1232d (PM / AVS: SmartReflex: Neaten logging)
+Acked-by: Kevin Hilman <khilman@baylibre.com>
 
-Please rebase/resubmit if there are cleanups still missing.
+Rafael, feel free to apply directly as a fix for v4.9-rc, or wait for
+v4.10 if you prefer.
 
 Kevin
-
-> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
-> index db9973b..40f46a8 100644
-> --- a/drivers/power/avs/smartreflex.c
-> +++ b/drivers/power/avs/smartreflex.c
-> @@ -225,8 +224,7 @@ static int sr_late_init(struct omap_sr *sr_info)
->  
->  error:
->  	list_del(&sr_info->node);
-> -	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering"
-> -		"interrupt handler. Smartreflex will"
-> +	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering interrupt handler. Smartreflex will "
->  		"not function as desired\n", __func__);
->  
->  	return ret;
-> @@ -387,7 +386,7 @@ int sr_configure_errgen(struct omap_sr *sr)
->  		vpboundint_st = ERRCONFIG_VPBOUNDINTST_V2;
->  		break;
->  	default:
-> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
-> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
->  			"module without specifying the ip\n", __func__);
->  		return -EINVAL;
->  	}
-> @@ -440,7 +439,7 @@ int sr_disable_errgen(struct omap_sr *sr)
->  		vpboundint_st = ERRCONFIG_VPBOUNDINTST_V2;
->  		break;
->  	default:
-> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
-> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
->  			"module without specifying the ip\n", __func__);
->  		return -EINVAL;
->  	}
-> @@ -504,7 +503,7 @@ int sr_configure_minmax(struct omap_sr *sr)
->  		senp_shift = SRCONFIG_SENPENABLE_V2_SHIFT;
->  		break;
->  	default:
-> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
-> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
->  			"module without specifying the ip\n", __func__);
->  		return -EINVAL;
->  	}
-> @@ -537,7 +536,7 @@ int sr_configure_minmax(struct omap_sr *sr)
->  			IRQENABLE_MCUBOUNDSINT | IRQENABLE_MCUDISABLEACKINT);
->  		break;
->  	default:
-> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
-> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
->  			"module without specifying the ip\n", __func__);
->  		return -EINVAL;
->  	}
-> @@ -571,7 +570,7 @@ int sr_enable(struct omap_sr *sr, unsigned long volt)
->  	volt_data = omap_voltage_get_voltdata(sr->voltdm, volt);
->  
->  	if (IS_ERR(volt_data)) {
-> -		dev_warn(&sr->pdev->dev, "%s: Unable to get voltage table"
-> +		dev_warn(&sr->pdev->dev, "%s: Unable to get voltage table "
->  			"for nominal voltage %ld\n", __func__, volt);
->  		return PTR_ERR(volt_data);
->  	}
-> @@ -704,7 +703,7 @@ void omap_sr_enable(struct voltagedomain *voltdm)
->  		return;
->  
->  	if (!sr_class || !(sr_class->enable) || !(sr_class->configure)) {
-> -		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
-> +		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
->  			"registered\n", __func__);
->  		return;
->  	}
-> @@ -736,7 +735,7 @@ void omap_sr_disable(struct voltagedomain *voltdm)
->  		return;
->  
->  	if (!sr_class || !(sr_class->disable)) {
-> -		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
-> +		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
->  			"registered\n", __func__);
->  		return;
->  	}
-> @@ -768,7 +767,7 @@ void omap_sr_disable_reset_volt(struct voltagedomain *voltdm)
->  		return;
->  
->  	if (!sr_class || !(sr_class->disable)) {
-> -		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
-> +		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
->  			"registered\n", __func__);
->  		return;
->  	}
