@@ -1,59 +1,48 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: [PATCH/RESEND] thermal: qcom-spmi: Treat reg property as a single cell
-Date: Tue, 18 Oct 2016 16:40:19 -0700
-Message-ID: <20161018234019.5489-1-sboyd@codeaurora.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Ivan T . Ivanov" <iivanov.xz@gmail.com>
+Subject: Re: [PATCH 5/6] clk: pxa: transfer CPU clock setting from
+ pxa2xx-cpufreq
+Date: Tue, 18 Oct 2016 16:48:55 -0700
+Message-ID: <20161018234855.GO8871@codeaurora.org>
+References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
+ <1476130149-31834-6-git-send-email-robert.jarzmik@free.fr>
+ <87zim23zw3.fsf@belgarion.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <87zim23zw3.fsf@belgarion.home>
+Sender: linux-clk-owner@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We only read the first element of the reg property to figure out
-the offset of the temperature sensor inside the PMIC.
-Furthermore, we want to remove the second element in DT, so just
-don't read the second element so that probe keeps working if we
-change the DT in the future.
+On 10/18, Robert Jarzmik wrote:
+> Robert Jarzmik <robert.jarzmik@free.fr> writes:
+> 
+> > This is the initial stage to transfer the pxa25x and pxa27x CPU clocks
+> > handling from cpufreq to the clock API. More precisely, the clocks
+> > transferred are :
+> >  - cpll : core pll, known also as the CPU core turbo frequency
+> >  - core : core, known also as the CPU actual frequency, being either the
+> >           CPU core turbo frequency or the CPU core run frequency
+> >
+> > This transfer is a prequel to shrink the code in pxa2xx-cpufreq.c, so
+> > that it can become, at least in devicetree builds, the casual cpufreq-dt
+> > driver.
+> 
+> Hi Michael and Stephen,
+> 
+> I'm planing on sending a v2 next week with minor corrections, mostly in the data
+> tables (pxa25x_freqs and pxa27x_freqs), as testing prooved some values were wrong.
+> 
+> If you want me modify this serie, will you have time to review for next week or
+> should I delay the v2 posting ?
+> 
 
-Cc: Ivan T. Ivanov <iivanov.xz@gmail.com>
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
----
+No need to delay. clk patches look fine with a quick glance. It
+would be really neat if we could make cpufreq-dt work without DT.
+What's blocking that? OPP tables?
 
-This was sent in January of this year but hasn't been picked up.
-
- drivers/thermal/qcom-spmi-temp-alarm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-index 819c6d5d7aa7..f50241962ad2 100644
---- a/drivers/thermal/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -200,7 +200,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	struct qpnp_tm_chip *chip;
- 	struct device_node *node;
- 	u8 type, subtype;
--	u32 res[2];
-+	u32 res;
- 	int ret, irq;
- 
- 	node = pdev->dev.of_node;
-@@ -215,7 +215,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	if (!chip->map)
- 		return -ENXIO;
- 
--	ret = of_property_read_u32_array(node, "reg", res, 2);
-+	ret = of_property_read_u32(node, "reg", &res);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -228,7 +228,7 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
- 		return PTR_ERR(chip->adc);
- 
--	chip->base = res[0];
-+	chip->base = res;
- 
- 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
- 	if (ret < 0) {
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 a Linux Foundation Collaborative Project
