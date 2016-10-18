@@ -1,58 +1,56 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: how to enable suspend to ram for arm-64 bits
-Date: Tue, 18 Oct 2016 11:59:31 +0100
-Message-ID: <95484b8f-58de-3588-ac91-5ec21e66ab05@arm.com>
-References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
- <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
- <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
- <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
- <20161018100002.GA4347@xo-6d-61-c0.localdomain>
- <20161018104539.GB15639@leverpostej>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for
+ device-tree
+Date: Tue, 18 Oct 2016 17:08:35 +0530
+Message-ID: <20161018113835.GB11471@vireshk-i7>
+References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+ <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57240 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752107AbcJRK7e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Oct 2016 06:59:34 -0400
-In-Reply-To: <20161018104539.GB15639@leverpostej>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1476561450-28407-2-git-send-email-robert.jarzmik-GANU6spQydw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
+Cc: Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, yoma sophian <sophian.yoma@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
+On 15-10-16, 21:57, Robert Jarzmik wrote:
+> For device-tree based pxa25x and pxa27x platforms, cpufreq-dt driver is
+> doing the job as well as pxa2xx-cpufreq, so add these platforms to the
+> compatibility list.
+> 
+> This won't work for legacy non device-tree platforms where
+> pxa2xx-cpufreq is still required.
+> 
+> Signed-off-by: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 0bb44d5b5df4..356825b5c9b8 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -32,6 +32,8 @@ static const struct of_device_id machines[] __initconst = {
+>  	{ .compatible = "fsl,imx7d", },
+>  
+>  	{ .compatible = "marvell,berlin", },
+> +	{ .compatible = "marvell,pxa250", },
+> +	{ .compatible = "marvell,pxa270", },
+>  
+>  	{ .compatible = "samsung,exynos3250", },
+>  	{ .compatible = "samsung,exynos4210", },
 
+Isn't there a race between cpufreq-dt and the platform driver to
+register first ?
 
-On 18/10/16 11:45, Mark Rutland wrote:
-> On Tue, Oct 18, 2016 at 12:00:02PM +0200, Pavel Machek wrote:
->>>> b. in arm64, if some platform has its own suspend flow,  couldn't it
->>>> adopts arm/match-xxx to register its own global suspend method?
->>>
->>> No, PSCI is highly recommended.
->>
->> Relying on firmware for suspend on x86 was a great disaster, lets not repeat
->> that mistake. arm32 has better powermanagement than x86 ever will (see Nokia N900
->> for example) -- feel free to copy that code from arm32.
->
-> Quite frankly, copying hundreds of lines of board-specific code
-> (including assembly that won't compile) is unlikely to help.
->
-> So far arm64 requires well-defined, standard, reusable interfaces (e.g.
-> PSCI). That cleanly separates concerns (e.g. anyone can implement the
-> backend without mandatory changes to the kernel), and keeps things
-> maintainable.
->
-> ARM publishes and maintains the ARM Trusted Firmware [1], which anyone
-> can use and build atop of. It's open source (three-clause BSD with DCO),
-> and accepts board ports. You can have a completely open stack,
-> regardless of whether part of that stack is firmware.
->
-
-I think you missed to add the link[1]
+Also, it seems that atleast the next two patches are required before
+applying this? You need to fix the order if that is the case.
 
 -- 
-Regards,
-Sudeep
-
-[1] https://github.com/ARM-software/arm-trusted-firmware
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
