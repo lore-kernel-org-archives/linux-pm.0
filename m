@@ -1,145 +1,72 @@
 From: Stephen Boyd <stephen.boyd@linaro.org>
-Subject: [PATCH v5 2/2] power: qcom_smbb: Add otg regulator for control of vbus
-Date: Mon, 17 Oct 2016 17:42:51 -0700
-Message-ID: <20161018004251.28733-3-stephen.boyd@linaro.org>
+Subject: [PATCH v5 1/2] dt-binding: power: Add otg regulator binding
+Date: Mon, 17 Oct 2016 17:42:50 -0700
+Message-ID: <20161018004251.28733-2-stephen.boyd@linaro.org>
 References: <20161018004251.28733-1-stephen.boyd@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:35693 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934991AbcJRAm4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Oct 2016 20:42:56 -0400
+Received: by mail-pf0-f176.google.com with SMTP id s8so85227793pfj.2
+        for <linux-pm@vger.kernel.org>; Mon, 17 Oct 2016 17:42:55 -0700 (PDT)
 In-Reply-To: <20161018004251.28733-1-stephen.boyd@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: "Bird, Tim" <Tim.Bird@sonymobile.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, Bjorn Andersson <bjorn.andersson@linaro.org>, Andy Gross <andy.gross@linaro.org>, Tim Bird <tim.bird@sonymobile.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: "Bird, Tim" <Tim.Bird@sonymobile.com>
 
-Add a regulator to control the OTG chargepath switch.  This
-is used by USB code to control VBUS direction - out for host mode
-on the OTG port, and in for charging mode.
+Add a binding for the regulator which controls the OTG chargepath switch.
+The OTG switch gets its power from pm8941_5vs1, and that should be
+expressed as a usb_otg_in-supply property in the DT node for the
+charger driver.  The regulator name is "otg-vbus".
 
 Signed-off-by: Tim Bird <tim.bird@sonymobile.com>
 Acked-by: Bjorn Andersson <bjorn.andersson@sonymobile.com>
 Reviewed-by: Andy Gross <andy.gross@linaro.org>
-[stephen.boyd@linaro.org: Fix supply name, constify ops, drop
-machine.h and of_regulator.h includes]
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Stephen Boyd <stephen.boyd@linaro.org>
 ---
- drivers/power/supply/qcom_smbb.c | 70 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 70 insertions(+)
+ .../devicetree/bindings/power/supply/qcom_smbb.txt    | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/drivers/power/supply/qcom_smbb.c b/drivers/power/supply/qcom_smbb.c
-index b5896ba2a602..5bdde6108c12 100644
---- a/drivers/power/supply/qcom_smbb.c
-+++ b/drivers/power/supply/qcom_smbb.c
-@@ -35,6 +35,7 @@
- #include <linux/regmap.h>
- #include <linux/slab.h>
- #include <linux/extcon.h>
-+#include <linux/regulator/driver.h>
+diff --git a/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt b/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
+index 65b88fac854b..06f8a5ddb68e 100644
+--- a/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
++++ b/Documentation/devicetree/bindings/power/supply/qcom_smbb.txt
+@@ -105,6 +105,22 @@ PROPERTIES
+                regulation must be done externally to fully comply with
+                the JEITA safety guidelines if this flag is set.
  
- #define SMBB_CHG_VMAX		0x040
- #define SMBB_CHG_VSAFE		0x041
-@@ -72,6 +73,8 @@
- #define BTC_CTRL_HOT_EXT_N	BIT(0)
- 
- #define SMBB_USB_IMAX		0x344
-+#define SMBB_USB_OTG_CTL	0x348
-+#define OTG_CTL_EN		BIT(0)
- #define SMBB_USB_ENUM_TIMER_STOP 0x34e
- #define ENUM_TIMER_STOP		BIT(0)
- #define SMBB_USB_SEC_ACCESS	0x3d0
-@@ -125,6 +128,9 @@ struct smbb_charger {
- 	struct power_supply *dc_psy;
- 	struct power_supply *bat_psy;
- 	struct regmap *regmap;
++- usb_otg_in-supply:
++  Usage: optional
++  Value type: <phandle>
++  Description: Reference to the regulator supplying power to the USB_OTG_IN
++               pin.
 +
-+	struct regulator_desc otg_rdesc;
-+	struct regulator_dev *otg_reg;
++child nodes:
++- otg-vbus:
++  Usage: optional
++  Description: This node defines a regulator used to control the direction
++               of VBUS voltage - specifically: whether to supply voltage
++               to VBUS for host mode operation of the OTG port, or allow
++               input voltage from external VBUS for charging.  In the
++               hardware, the supply for this regulator comes from
++               usb_otg_in-supply.
++
+ EXAMPLE
+ charger@1000 {
+        compatible = "qcom,pm8941-charger";
+@@ -128,4 +144,7 @@ charger@1000 {
+ 
+        qcom,fast-charge-current-limit = <1000000>;
+        qcom,dc-charge-current-limit = <1000000>;
++       usb_otg_in-supply = <&pm8941_5vs1>;
++
++       otg-vbus {};
  };
- 
- static const unsigned int smbb_usb_extcon_cable[] = {
-@@ -787,12 +793,56 @@ static const struct power_supply_desc dc_psy_desc = {
- 	.property_is_writeable = smbb_charger_writable_property,
- };
- 
-+static int smbb_chg_otg_enable(struct regulator_dev *rdev)
-+{
-+	struct smbb_charger *chg = rdev_get_drvdata(rdev);
-+	int rc;
-+
-+	rc = regmap_update_bits(chg->regmap, chg->addr + SMBB_USB_OTG_CTL,
-+				OTG_CTL_EN, OTG_CTL_EN);
-+	if (rc)
-+		dev_err(chg->dev, "failed to update OTG_CTL\n");
-+	return rc;
-+}
-+
-+static int smbb_chg_otg_disable(struct regulator_dev *rdev)
-+{
-+	struct smbb_charger *chg = rdev_get_drvdata(rdev);
-+	int rc;
-+
-+	rc = regmap_update_bits(chg->regmap, chg->addr + SMBB_USB_OTG_CTL,
-+				OTG_CTL_EN, 0);
-+	if (rc)
-+		dev_err(chg->dev, "failed to update OTG_CTL\n");
-+	return rc;
-+}
-+
-+static int smbb_chg_otg_is_enabled(struct regulator_dev *rdev)
-+{
-+	struct smbb_charger *chg = rdev_get_drvdata(rdev);
-+	unsigned int value = 0;
-+	int rc;
-+
-+	rc = regmap_read(chg->regmap, chg->addr + SMBB_USB_OTG_CTL, &value);
-+	if (rc)
-+		dev_err(chg->dev, "failed to read OTG_CTL\n");
-+
-+	return !!(value & OTG_CTL_EN);
-+}
-+
-+static const struct regulator_ops smbb_chg_otg_ops = {
-+	.enable = smbb_chg_otg_enable,
-+	.disable = smbb_chg_otg_disable,
-+	.is_enabled = smbb_chg_otg_is_enabled,
-+};
-+
- static int smbb_charger_probe(struct platform_device *pdev)
- {
- 	struct power_supply_config bat_cfg = {};
- 	struct power_supply_config usb_cfg = {};
- 	struct power_supply_config dc_cfg = {};
- 	struct smbb_charger *chg;
-+	struct regulator_config config = { };
- 	int rc, i;
- 
- 	chg = devm_kzalloc(&pdev->dev, sizeof(*chg), GFP_KERNEL);
-@@ -905,6 +955,26 @@ static int smbb_charger_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+	/*
-+	 * otg regulator is used to control VBUS voltage direction
-+	 * when USB switches between host and gadget mode
-+	 */
-+	chg->otg_rdesc.id = -1;
-+	chg->otg_rdesc.name = "otg-vbus";
-+	chg->otg_rdesc.ops = &smbb_chg_otg_ops;
-+	chg->otg_rdesc.owner = THIS_MODULE;
-+	chg->otg_rdesc.type = REGULATOR_VOLTAGE;
-+	chg->otg_rdesc.supply_name = "usb-otg-in";
-+	chg->otg_rdesc.of_match = "otg-vbus";
-+
-+	config.dev = &pdev->dev;
-+	config.driver_data = chg;
-+
-+	chg->otg_reg = devm_regulator_register(&pdev->dev, &chg->otg_rdesc,
-+					       &config);
-+	if (IS_ERR(chg->otg_reg))
-+		return PTR_ERR(chg->otg_reg);
-+
- 	chg->jeita_ext_temp = of_property_read_bool(pdev->dev.of_node,
- 			"qcom,jeita-extended-temp-range");
- 
 -- 
 2.10.0.297.gf6727b0
+
