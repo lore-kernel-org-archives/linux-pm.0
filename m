@@ -1,56 +1,96 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: 4.8.1 regression with cpufreq governors
-Date: Tue, 18 Oct 2016 23:10:19 +0200
-Message-ID: <2549240.nvakNXlyKF@vostro.rjw.lan>
-References: <20161018004606.GA5559@comcast.net>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH v2] thermal: intel_pch_thermal: Support skylake PCH 100
+ series thermal
+Date: Tue, 18 Oct 2016 21:04:34 +0000
+Message-ID: <1476824673.132953.57.camel@intel.com>
+References: <87pomyd515.fsf@mail.parknet.co.jp>
+         <1476813814.132953.50.camel@intel.com> <87eg3dctaj.fsf@mail.parknet.co.jp>
+         <1476821756.132953.56.camel@intel.com> <8760opcr4y.fsf@mail.parknet.co.jp>
+         <871szdcr0u.fsf_-_@mail.parknet.co.jp>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161018004606.GA5559@comcast.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tim Walberg <twalberg@comcast.net>
-Cc: linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:63827 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934161AbcJRVEh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Oct 2016 17:04:37 -0400
+In-Reply-To: <871szdcr0u.fsf_-_@mail.parknet.co.jp>
+Content-Language: en-US
+Content-ID: <3BFE19C4482D0E43922E17270FE1AE02@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Monday, October 17, 2016 07:46:06 PM Tim Walberg wrote:
-> May or may not be related to similar reports, but here's what I've just observed
-> on my system. Built a stock kernel from tags/v4.8.1, relevant cpufreq bits:
-> 
-> CONFIG_ACPI_CPU_FREQ_PSS=y
-> CONFIG_CPU_FREQ=y
-> CONFIG_CPU_FREQ_GOV_ATTR_SET=y
-> CONFIG_CPU_FREQ_GOV_COMMON=y
-> CONFIG_CPU_FREQ_STAT=y
-> CONFIG_CPU_FREQ_STAT_DETAILS=y
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-> CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
-> # CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL is not set
-> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-> CONFIG_CPU_FREQ_GOV_USERSPACE=m
-> CONFIG_CPU_FREQ_GOV_ONDEMAND=m
-> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-> CONFIG_CPU_FREQ_GOV_SCHEDUTIL=m
-> # CONFIG_X86_PCC_CPUFREQ is not set
-> CONFIG_X86_ACPI_CPUFREQ=m
-> CONFIG_X86_ACPI_CPUFREQ_CPB=y
-> 
-> 
-> Conservative is set as default governer, yet when boot completes, all CPUs are
-> pegged at the highest frequency. Changing governor to powersave knocks them all
-> down to the lowest available frequency. Putting them back on conservative (or
-> ondemand) results in no change in frequency, despite generating load. Switching
-> to performance of course kicks them back up to high frequency. Basically, the
-> governors don't seem to be ... governing.
-
-The "convervative" governor issue seems to be the one fixed recently
-(http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=pm-cpufreq&id=abb6627910a1e783c8e034b35b7c80e5e7f98f41).
-
-I'm not sure why "ondemand" behaves incorrectly for you though.
-
-Thanks,
-Rafael
+T24gV2VkLCAyMDE2LTEwLTE5IGF0IDA1OjU5ICswOTAwLCBPR0FXQSBIaXJvZnVtaSB3cm90ZToN
+Cj4gVGhpcyBwYXRjaCB1c2VzIC5kcml2ZXJfZGF0YSBhbmQgYm9hcmRfaW5mb1tdIHRvIG1ha2Ug
+cGVyIHBjaSBkZXZpY2UNCj4gYmVoYXZpb3IgdGFibGUgKG5hbWUgYW5kIG9wcyksIGluc3RlYWQg
+b2YgYWRkaW5nIHRoZSBjb2RlIGZvciBlYWNoDQo+IHBjaQ0KPiBkZXZpY2UgaW4gc3dpdGNoLWNh
+c2UuIFRoaXMgd2lsbCBtYWtlIGVhc2llciB0byBhZGQgbmV3IHBjaSBkZXZpY2UNCj4gaWRzLg0K
+PiANCj4gVGhlbiB0aGlzIGFkZHMgbmV3IGRldmljZSBpZCBhY3R1YWxseSBmb3Igc2t5bGFrZSBQ
+Q0ggMTAwIHNlcmllcw0KPiAodXNpbmcgcmVnaXN0ZXJzIGFyZSBjb21wYXRpYmxlIHdpdGggY3Vy
+cmVudGx5IGRyaXZlciwgc28gbm8gbmVlZCB0bw0KPiBjaGFuZ2UgZXhjZXB0IGFkZGluZyBkZXZp
+Y2UgaWQgdG8gdGFibGUpLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogT0dBV0EgSGlyb2Z1bWkgPGhp
+cm9mdW1pQG1haWwucGFya25ldC5jby5qcD4NClJldmlld2VkLWJ5OiBTcmluaXZhcyBQYW5kcnV2
+YWRhIDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT4NCg0KPiAtLS0NCj4gDQo+
+IMKgZHJpdmVycy90aGVybWFsL2ludGVsX3BjaF90aGVybWFsLmMgfMKgwqDCoDQ4ICsrKysrKysr
+KysrKysrKysrKysrKy0tDQo+IC0tLS0tLS0tLS0tLQ0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAzMCBp
+bnNlcnRpb25zKCspLCAxOCBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLXB1TiBkcml2ZXJzL3Ro
+ZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuY35pbnRlbF9wY2hfdGhlcm1hbC0NCj4gY2xlYW51cCBk
+cml2ZXJzL3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYw0KPiAtLS0gbGludXgvZHJpdmVycy90
+aGVybWFsL2ludGVsX3BjaF90aGVybWFsLmN+aW50ZWxfcGNoX3RoZXJtYWwtDQo+IGNsZWFudXAJ
+MjAxNi0xMC0xOCAwNjowMjowNy40Njk4MzE4NzQgKzA5MDANCj4gKysrIGxpbnV4LWhpcm9mdW1p
+L2RyaXZlcnMvdGhlcm1hbC9pbnRlbF9wY2hfdGhlcm1hbC5jCTIwMTYtDQo+IDEwLTE5IDA1OjEz
+OjM5LjAyODY3MjU3OSArMDkwMA0KPiBAQCAtMjYsNiArMjYsNyBAQA0KPiDCoC8qIEludGVsIFBD
+SCB0aGVybWFsIERldmljZSBJRHMgKi8NCj4gwqAjZGVmaW5lIFBDSF9USEVSTUFMX0RJRF9XUFQJ
+MHg5Q0E0IC8qIFdpbGRjYXQgUG9pbnQgKi8NCj4gwqAjZGVmaW5lIFBDSF9USEVSTUFMX0RJRF9T
+S0wJMHg5RDMxIC8qIFNreWxha2UgUENIICovDQo+ICsjZGVmaW5lIFBDSF9USEVSTUFMX0RJRF9T
+S0xfSAkweEExMzEgLyogU2t5bGFrZSBQQ0ggMTAwDQo+IHNlcmllcyAqLw0KPiDCoA0KPiDCoC8q
+IFdpbGRjYXQgUG9pbnQtTFDCoMKgUENIIFRoZXJtYWwgcmVnaXN0ZXJzICovDQo+IMKgI2RlZmlu
+ZSBXUFRfVEVNUAkweDAwMDAJLyogVGVtcGVyYXR1cmUgKi8NCj4gQEAgLTIyMCwzMiArMjIxLDM5
+IEBAIHN0YXRpYyBzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZV9vcHMgdHoNCj4gwqAJLmdldF90
+cmlwX3RlbXAgPSBwY2hfZ2V0X3RyaXBfdGVtcCwNCj4gwqB9Ow0KPiDCoA0KPiArZW51bSBib2Fy
+ZF9pZHMgew0KPiArCWJvYXJkX3dwdCwNCj4gKwlib2FyZF9za2wsDQo+ICt9Ow0KPiArDQo+ICtz
+dGF0aWMgY29uc3Qgc3RydWN0IGJvYXJkX2luZm8gew0KPiArCWNvbnN0IGNoYXIgKm5hbWU7DQo+
+ICsJY29uc3Qgc3RydWN0IHBjaF9kZXZfb3BzICpvcHM7DQo+ICt9IGJvYXJkX2luZm9bXSA9IHsN
+Cj4gKwlbYm9hcmRfd3B0XSA9IHsNCj4gKwkJLm5hbWUgPSAicGNoX3dpbGRjYXRfcG9pbnQiLA0K
+PiArCQkub3BzID0gJnBjaF9kZXZfb3BzX3dwdCwNCj4gKwl9LA0KPiArCVtib2FyZF9za2xdID0g
+ew0KPiArCQkubmFtZSA9ICJwY2hfc2t5bGFrZSIsDQo+ICsJCS5vcHMgPSAmcGNoX2Rldl9vcHNf
+d3B0LA0KPiArCX0sDQo+ICt9Ow0KPiDCoA0KPiDCoHN0YXRpYyBpbnQgaW50ZWxfcGNoX3RoZXJt
+YWxfcHJvYmUoc3RydWN0IHBjaV9kZXYgKnBkZXYsDQo+IMKgCQkJCcKgwqDCoGNvbnN0IHN0cnVj
+dCBwY2lfZGV2aWNlX2lkICppZCkNCj4gwqB7DQo+ICsJZW51bSBib2FyZF9pZHMgYm9hcmRfaWQg
+PSBpZC0+ZHJpdmVyX2RhdGE7DQo+ICsJY29uc3Qgc3RydWN0IGJvYXJkX2luZm8gKmJpID0gJmJv
+YXJkX2luZm9bYm9hcmRfaWRdOw0KPiDCoAlzdHJ1Y3QgcGNoX3RoZXJtYWxfZGV2aWNlICpwdGQ7
+DQo+IMKgCWludCBlcnI7DQo+IMKgCWludCBucl90cmlwczsNCj4gLQljaGFyICpkZXZfbmFtZTsN
+Cj4gwqANCj4gwqAJcHRkID0gZGV2bV9remFsbG9jKCZwZGV2LT5kZXYsIHNpemVvZigqcHRkKSwg
+R0ZQX0tFUk5FTCk7DQo+IMKgCWlmICghcHRkKQ0KPiDCoAkJcmV0dXJuIC1FTk9NRU07DQo+IMKg
+DQo+IC0Jc3dpdGNoIChwZGV2LT5kZXZpY2UpIHsNCj4gLQljYXNlIFBDSF9USEVSTUFMX0RJRF9X
+UFQ6DQo+IC0JCXB0ZC0+b3BzID0gJnBjaF9kZXZfb3BzX3dwdDsNCj4gLQkJZGV2X25hbWUgPSAi
+cGNoX3dpbGRjYXRfcG9pbnQiOw0KPiAtCQlicmVhazsNCj4gLQljYXNlIFBDSF9USEVSTUFMX0RJ
+RF9TS0w6DQo+IC0JCXB0ZC0+b3BzID0gJnBjaF9kZXZfb3BzX3dwdDsNCj4gLQkJZGV2X25hbWUg
+PSAicGNoX3NreWxha2UiOw0KPiAtCQlicmVhazsNCj4gLQlkZWZhdWx0Og0KPiAtCQlkZXZfZXJy
+KCZwZGV2LT5kZXYsICJ1bmtub3duIHBjaCB0aGVybWFsIGRldmljZVxuIik7DQo+IC0JCXJldHVy
+biAtRU5PREVWOw0KPiAtCX0NCj4gKwlwdGQtPm9wcyA9IGJpLT5vcHM7DQo+IMKgDQo+IMKgCXBj
+aV9zZXRfZHJ2ZGF0YShwZGV2LCBwdGQpOw0KPiDCoAlwdGQtPnBkZXYgPSBwZGV2Ow0KPiBAQCAt
+MjczLDExICsyODEsMTEgQEAgc3RhdGljIGludCBpbnRlbF9wY2hfdGhlcm1hbF9wcm9iZShzdHJ1
+Yw0KPiDCoAlpZiAoZXJyKQ0KPiDCoAkJZ290byBlcnJvcl9jbGVhbnVwOw0KPiDCoA0KPiAtCXB0
+ZC0+dHpkID0gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcihkZXZfbmFtZSwgbnJfdHJpcHMs
+DQo+IDAsIHB0ZCwNCj4gKwlwdGQtPnR6ZCA9IHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIo
+YmktPm5hbWUsIG5yX3RyaXBzLA0KPiAwLCBwdGQsDQo+IMKgCQkJCQkJJnR6ZF9vcHMsIE5VTEws
+IDAsDQo+IDApOw0KPiDCoAlpZiAoSVNfRVJSKHB0ZC0+dHpkKSkgew0KPiDCoAkJZGV2X2Vycigm
+cGRldi0+ZGV2LCAiRmFpbGVkIHRvIHJlZ2lzdGVyIHRoZXJtYWwgem9uZQ0KPiAlc1xuIiwNCj4g
+LQkJCWRldl9uYW1lKTsNCj4gKwkJCWJpLT5uYW1lKTsNCj4gwqAJCWVyciA9IFBUUl9FUlIocHRk
+LT50emQpOw0KPiDCoAkJZ290byBlcnJvcl9jbGVhbnVwOw0KPiDCoAl9DQo+IEBAIC0zMjIsOCAr
+MzMwLDEyIEBAIHN0YXRpYyBpbnQgaW50ZWxfcGNoX3RoZXJtYWxfcmVzdW1lKHN0cnUNCj4gwqB9
+DQo+IMKgDQo+IMKgc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIGludGVsX3BjaF90aGVybWFs
+X2lkW10gPSB7DQo+IC0JeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSF9USEVS
+TUFMX0RJRF9XUFQpIH0sDQo+IC0JeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBD
+SF9USEVSTUFMX0RJRF9TS0wpIH0sDQo+ICsJeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5U
+RUwsIFBDSF9USEVSTUFMX0RJRF9XUFQpLA0KPiArCcKgwqAuZHJpdmVyX2RhdGEgPSBib2FyZF93
+cHQsIH0sDQo+ICsJeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSF9USEVSTUFM
+X0RJRF9TS0wpLA0KPiArCcKgwqAuZHJpdmVyX2RhdGEgPSBib2FyZF9za2wsIH0sDQo+ICsJeyBQ
+Q0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSF9USEVSTUFMX0RJRF9TS0xfSCksDQo+
+ICsJwqDCoC5kcml2ZXJfZGF0YSA9IGJvYXJkX3NrbCwgfSwNCj4gwqAJeyAwLCB9LA0KPiDCoH07
+DQo+IMKgTU9EVUxFX0RFVklDRV9UQUJMRShwY2ksIGludGVsX3BjaF90aGVybWFsX2lkKTsNCj4g
+Xw0KPiA=
