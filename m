@@ -1,66 +1,42 @@
-From: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
-Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for device-tree
-Date: Tue, 18 Oct 2016 17:35:39 +0200
-Message-ID: <87r37d4qlw.fsf@belgarion.home>
-References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
-        <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
-        <20161018113835.GB11471@vireshk-i7>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH] thermal: intel_pch_thermal: Support skylake PCH 100
+ series thermal
+Date: Tue, 18 Oct 2016 18:03:36 +0000
+Message-ID: <1476813814.132953.50.camel@intel.com>
+References: <87pomyd515.fsf@mail.parknet.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161018113835.GB11471@vireshk-i7> (Viresh Kumar's message of
-        "Tue, 18 Oct 2016 17:08:35 +0530")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:28061 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1034141AbcJRSDi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Oct 2016 14:03:38 -0400
+In-Reply-To: <87pomyd515.fsf@mail.parknet.co.jp>
+Content-Language: en-US
+Content-ID: <752A10B5861BE740AE6A826353B915EE@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
-
-> On 15-10-16, 21:57, Robert Jarzmik wrote:
->> For device-tree based pxa25x and pxa27x platforms, cpufreq-dt driver is
->> doing the job as well as pxa2xx-cpufreq, so add these platforms to the
->> compatibility list.
->> 
->> This won't work for legacy non device-tree platforms where
->> pxa2xx-cpufreq is still required.
->> 
->> Signed-off-by: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
->> ---
->>  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
->>  1 file changed, 2 insertions(+)
->> 
->> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
->> index 0bb44d5b5df4..356825b5c9b8 100644
->> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
->> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
->> @@ -32,6 +32,8 @@ static const struct of_device_id machines[] __initconst = {
->>  	{ .compatible = "fsl,imx7d", },
->>  
->>  	{ .compatible = "marvell,berlin", },
->> +	{ .compatible = "marvell,pxa250", },
->> +	{ .compatible = "marvell,pxa270", },
->>  
->>  	{ .compatible = "samsung,exynos3250", },
->>  	{ .compatible = "samsung,exynos4210", },
->
-> Isn't there a race between cpufreq-dt and the platform driver to
-> register first ?
-Ah, could you be more specific about the race you're talking of ?
-
-My understanding was that cpufreq-dt-platdev does create the device, and
-cpufreq-dt is a driver for it, so there is no race but a direct relationship
-AFAIU.
-
-> Also, it seems that atleast the next two patches are required before
-> applying this? You need to fix the order if that is the case.
-Ok, as you wish, let it become number 3 and (2, 3) become (1, 2).
-
-Cheers.
-
--- 
-Robert
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+T24gVHVlLCAyMDE2LTEwLTE4IGF0IDA2OjQ0ICswOTAwLCBPR0FXQSBIaXJvZnVtaSB3cm90ZToN
+Cj4gVXNpbmcgcmVnaXN0ZXJzIGFyZSBjb21wYXRpYmxlIHdpdGggY3VycmVudCBkcml2ZXIuDQpU
+aGlzIGRlc2NyaXB0aW9uIGlzIG5vdCBlbm91Z2guIFdpdGhvdXQgZ29pbmcgdGhyb3VnaCB0aGUg
+d2hvbGUgY29kZSwgSQ0Kd2FzIG5vdCBhYmxlIHRvIGZpbmQgb3V0IHdoYXQgdGhpcyBwYXRjaCBp
+cyBkb2luZy4NCg0KQmFzaWNhbGx5IHlvdSB3YW50IHRvIHRpZSB0aGUgdGhlbWFsX3pvbmUgbmFt
+ZSBhbmQgZGV2aWNlIG9wZXJhdGlvbnMgdG8NCmEgYm9hcmQsIHJhdGhlciB0aGFuIHRvIFBDSSBk
+ZXZpY2VzIGlkcy4gSW4gdGhpcyB3YXkgbXVsdGlwbGUgUENJIGlkcw0KZm9yIHRoZSBzYW1lIGJv
+YXJkIGNhbiBiZSBhY2NvdW50ZWQgZm9yLg0KDQpBbHNvIG5lZWQgdG8gY29uc2lkZXIgYW5vdGhl
+ciBwYXRjaCBzZW50IHRvIG1haWxpbmcgbGlzdCBmb3Igc3VwcG9ydGluZw0KSGFzd2VsbCBQQ0gu
+DQoNCk9uZSBjb21tZW50IGJlbG93IGluIHRoZSBjb2RlLg0KDQpbLi4uXQ0KwqANCj4gwqBzdGF0
+aWMgc3RydWN0IHBjaV9kZXZpY2VfaWQgaW50ZWxfcGNoX3RoZXJtYWxfaWRbXSA9IHsNCj4gLQl7
+IFBDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwgUENIX1RIRVJNQUxfRElEX1dQVCkgfSwN
+Cj4gLQl7IFBDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwgUENIX1RIRVJNQUxfRElEX1NL
+TCkgfSwNCj4gKwl7IFBDSV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwgUENIX1RIRVJNQUxf
+RElEX1dQVCksDQo+ICsJwqDCoC5kcml2ZXJfZGF0YSA9IGJvYXJkX3dwdCwgfSwNCj4gKwl7IFBD
+SV9ERVZJQ0UoUENJX1ZFTkRPUl9JRF9JTlRFTCwgUENIX1RIRVJNQUxfRElEX1NLTCksDQo+ICsJ
+wqDCoC5kcml2ZXJfZGF0YSA9IGJvYXJkX3NrbCwgfSwNCj4gKwkvKiBza3lsYWtlIFBDSCAxMDAg
+c2VyaWVzICovDQo+ICsJeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIDB4YTEzMSks
+DQpDaGFuZ2UgYTEzMSB0byBhIGRlZmluZSAoUENIX1RIRVJNQUxfRElEX1NLTF9IKQ0KDQpUaGFu
+a3MsDQpTcmluaXZhcw0K
