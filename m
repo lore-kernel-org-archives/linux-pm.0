@@ -1,96 +1,120 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH v2] thermal: intel_pch_thermal: Support skylake PCH 100
- series thermal
-Date: Tue, 18 Oct 2016 21:04:34 +0000
-Message-ID: <1476824673.132953.57.camel@intel.com>
-References: <87pomyd515.fsf@mail.parknet.co.jp>
-         <1476813814.132953.50.camel@intel.com> <87eg3dctaj.fsf@mail.parknet.co.jp>
-         <1476821756.132953.56.camel@intel.com> <8760opcr4y.fsf@mail.parknet.co.jp>
-         <871szdcr0u.fsf_-_@mail.parknet.co.jp>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] PM / AVS: SmartReflex: add in missing white space in error message text
+Date: Tue, 18 Oct 2016 14:05:57 -0700
+Message-ID: <7hk2d59xl6.fsf@baylibre.com>
+References: <20160912111455.29881-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:63827 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934161AbcJRVEh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Oct 2016 17:04:37 -0400
-In-Reply-To: <871szdcr0u.fsf_-_@mail.parknet.co.jp>
-Content-Language: en-US
-Content-ID: <3BFE19C4482D0E43922E17270FE1AE02@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20160912111455.29881-1-colin.king@canonical.com> (Colin King's
+        message of "Mon, 12 Sep 2016 12:14:55 +0100")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-T24gV2VkLCAyMDE2LTEwLTE5IGF0IDA1OjU5ICswOTAwLCBPR0FXQSBIaXJvZnVtaSB3cm90ZToN
-Cj4gVGhpcyBwYXRjaCB1c2VzIC5kcml2ZXJfZGF0YSBhbmQgYm9hcmRfaW5mb1tdIHRvIG1ha2Ug
-cGVyIHBjaSBkZXZpY2UNCj4gYmVoYXZpb3IgdGFibGUgKG5hbWUgYW5kIG9wcyksIGluc3RlYWQg
-b2YgYWRkaW5nIHRoZSBjb2RlIGZvciBlYWNoDQo+IHBjaQ0KPiBkZXZpY2UgaW4gc3dpdGNoLWNh
-c2UuIFRoaXMgd2lsbCBtYWtlIGVhc2llciB0byBhZGQgbmV3IHBjaSBkZXZpY2UNCj4gaWRzLg0K
-PiANCj4gVGhlbiB0aGlzIGFkZHMgbmV3IGRldmljZSBpZCBhY3R1YWxseSBmb3Igc2t5bGFrZSBQ
-Q0ggMTAwIHNlcmllcw0KPiAodXNpbmcgcmVnaXN0ZXJzIGFyZSBjb21wYXRpYmxlIHdpdGggY3Vy
-cmVudGx5IGRyaXZlciwgc28gbm8gbmVlZCB0bw0KPiBjaGFuZ2UgZXhjZXB0IGFkZGluZyBkZXZp
-Y2UgaWQgdG8gdGFibGUpLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogT0dBV0EgSGlyb2Z1bWkgPGhp
-cm9mdW1pQG1haWwucGFya25ldC5jby5qcD4NClJldmlld2VkLWJ5OiBTcmluaXZhcyBQYW5kcnV2
-YWRhIDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT4NCg0KPiAtLS0NCj4gDQo+
-IMKgZHJpdmVycy90aGVybWFsL2ludGVsX3BjaF90aGVybWFsLmMgfMKgwqDCoDQ4ICsrKysrKysr
-KysrKysrKysrKysrKy0tDQo+IC0tLS0tLS0tLS0tLQ0KPiDCoDEgZmlsZSBjaGFuZ2VkLCAzMCBp
-bnNlcnRpb25zKCspLCAxOCBkZWxldGlvbnMoLSkNCj4gDQo+IGRpZmYgLXB1TiBkcml2ZXJzL3Ro
-ZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuY35pbnRlbF9wY2hfdGhlcm1hbC0NCj4gY2xlYW51cCBk
-cml2ZXJzL3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYw0KPiAtLS0gbGludXgvZHJpdmVycy90
-aGVybWFsL2ludGVsX3BjaF90aGVybWFsLmN+aW50ZWxfcGNoX3RoZXJtYWwtDQo+IGNsZWFudXAJ
-MjAxNi0xMC0xOCAwNjowMjowNy40Njk4MzE4NzQgKzA5MDANCj4gKysrIGxpbnV4LWhpcm9mdW1p
-L2RyaXZlcnMvdGhlcm1hbC9pbnRlbF9wY2hfdGhlcm1hbC5jCTIwMTYtDQo+IDEwLTE5IDA1OjEz
-OjM5LjAyODY3MjU3OSArMDkwMA0KPiBAQCAtMjYsNiArMjYsNyBAQA0KPiDCoC8qIEludGVsIFBD
-SCB0aGVybWFsIERldmljZSBJRHMgKi8NCj4gwqAjZGVmaW5lIFBDSF9USEVSTUFMX0RJRF9XUFQJ
-MHg5Q0E0IC8qIFdpbGRjYXQgUG9pbnQgKi8NCj4gwqAjZGVmaW5lIFBDSF9USEVSTUFMX0RJRF9T
-S0wJMHg5RDMxIC8qIFNreWxha2UgUENIICovDQo+ICsjZGVmaW5lIFBDSF9USEVSTUFMX0RJRF9T
-S0xfSAkweEExMzEgLyogU2t5bGFrZSBQQ0ggMTAwDQo+IHNlcmllcyAqLw0KPiDCoA0KPiDCoC8q
-IFdpbGRjYXQgUG9pbnQtTFDCoMKgUENIIFRoZXJtYWwgcmVnaXN0ZXJzICovDQo+IMKgI2RlZmlu
-ZSBXUFRfVEVNUAkweDAwMDAJLyogVGVtcGVyYXR1cmUgKi8NCj4gQEAgLTIyMCwzMiArMjIxLDM5
-IEBAIHN0YXRpYyBzdHJ1Y3QgdGhlcm1hbF96b25lX2RldmljZV9vcHMgdHoNCj4gwqAJLmdldF90
-cmlwX3RlbXAgPSBwY2hfZ2V0X3RyaXBfdGVtcCwNCj4gwqB9Ow0KPiDCoA0KPiArZW51bSBib2Fy
-ZF9pZHMgew0KPiArCWJvYXJkX3dwdCwNCj4gKwlib2FyZF9za2wsDQo+ICt9Ow0KPiArDQo+ICtz
-dGF0aWMgY29uc3Qgc3RydWN0IGJvYXJkX2luZm8gew0KPiArCWNvbnN0IGNoYXIgKm5hbWU7DQo+
-ICsJY29uc3Qgc3RydWN0IHBjaF9kZXZfb3BzICpvcHM7DQo+ICt9IGJvYXJkX2luZm9bXSA9IHsN
-Cj4gKwlbYm9hcmRfd3B0XSA9IHsNCj4gKwkJLm5hbWUgPSAicGNoX3dpbGRjYXRfcG9pbnQiLA0K
-PiArCQkub3BzID0gJnBjaF9kZXZfb3BzX3dwdCwNCj4gKwl9LA0KPiArCVtib2FyZF9za2xdID0g
-ew0KPiArCQkubmFtZSA9ICJwY2hfc2t5bGFrZSIsDQo+ICsJCS5vcHMgPSAmcGNoX2Rldl9vcHNf
-d3B0LA0KPiArCX0sDQo+ICt9Ow0KPiDCoA0KPiDCoHN0YXRpYyBpbnQgaW50ZWxfcGNoX3RoZXJt
-YWxfcHJvYmUoc3RydWN0IHBjaV9kZXYgKnBkZXYsDQo+IMKgCQkJCcKgwqDCoGNvbnN0IHN0cnVj
-dCBwY2lfZGV2aWNlX2lkICppZCkNCj4gwqB7DQo+ICsJZW51bSBib2FyZF9pZHMgYm9hcmRfaWQg
-PSBpZC0+ZHJpdmVyX2RhdGE7DQo+ICsJY29uc3Qgc3RydWN0IGJvYXJkX2luZm8gKmJpID0gJmJv
-YXJkX2luZm9bYm9hcmRfaWRdOw0KPiDCoAlzdHJ1Y3QgcGNoX3RoZXJtYWxfZGV2aWNlICpwdGQ7
-DQo+IMKgCWludCBlcnI7DQo+IMKgCWludCBucl90cmlwczsNCj4gLQljaGFyICpkZXZfbmFtZTsN
-Cj4gwqANCj4gwqAJcHRkID0gZGV2bV9remFsbG9jKCZwZGV2LT5kZXYsIHNpemVvZigqcHRkKSwg
-R0ZQX0tFUk5FTCk7DQo+IMKgCWlmICghcHRkKQ0KPiDCoAkJcmV0dXJuIC1FTk9NRU07DQo+IMKg
-DQo+IC0Jc3dpdGNoIChwZGV2LT5kZXZpY2UpIHsNCj4gLQljYXNlIFBDSF9USEVSTUFMX0RJRF9X
-UFQ6DQo+IC0JCXB0ZC0+b3BzID0gJnBjaF9kZXZfb3BzX3dwdDsNCj4gLQkJZGV2X25hbWUgPSAi
-cGNoX3dpbGRjYXRfcG9pbnQiOw0KPiAtCQlicmVhazsNCj4gLQljYXNlIFBDSF9USEVSTUFMX0RJ
-RF9TS0w6DQo+IC0JCXB0ZC0+b3BzID0gJnBjaF9kZXZfb3BzX3dwdDsNCj4gLQkJZGV2X25hbWUg
-PSAicGNoX3NreWxha2UiOw0KPiAtCQlicmVhazsNCj4gLQlkZWZhdWx0Og0KPiAtCQlkZXZfZXJy
-KCZwZGV2LT5kZXYsICJ1bmtub3duIHBjaCB0aGVybWFsIGRldmljZVxuIik7DQo+IC0JCXJldHVy
-biAtRU5PREVWOw0KPiAtCX0NCj4gKwlwdGQtPm9wcyA9IGJpLT5vcHM7DQo+IMKgDQo+IMKgCXBj
-aV9zZXRfZHJ2ZGF0YShwZGV2LCBwdGQpOw0KPiDCoAlwdGQtPnBkZXYgPSBwZGV2Ow0KPiBAQCAt
-MjczLDExICsyODEsMTEgQEAgc3RhdGljIGludCBpbnRlbF9wY2hfdGhlcm1hbF9wcm9iZShzdHJ1
-Yw0KPiDCoAlpZiAoZXJyKQ0KPiDCoAkJZ290byBlcnJvcl9jbGVhbnVwOw0KPiDCoA0KPiAtCXB0
-ZC0+dHpkID0gdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcihkZXZfbmFtZSwgbnJfdHJpcHMs
-DQo+IDAsIHB0ZCwNCj4gKwlwdGQtPnR6ZCA9IHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIo
-YmktPm5hbWUsIG5yX3RyaXBzLA0KPiAwLCBwdGQsDQo+IMKgCQkJCQkJJnR6ZF9vcHMsIE5VTEws
-IDAsDQo+IDApOw0KPiDCoAlpZiAoSVNfRVJSKHB0ZC0+dHpkKSkgew0KPiDCoAkJZGV2X2Vycigm
-cGRldi0+ZGV2LCAiRmFpbGVkIHRvIHJlZ2lzdGVyIHRoZXJtYWwgem9uZQ0KPiAlc1xuIiwNCj4g
-LQkJCWRldl9uYW1lKTsNCj4gKwkJCWJpLT5uYW1lKTsNCj4gwqAJCWVyciA9IFBUUl9FUlIocHRk
-LT50emQpOw0KPiDCoAkJZ290byBlcnJvcl9jbGVhbnVwOw0KPiDCoAl9DQo+IEBAIC0zMjIsOCAr
-MzMwLDEyIEBAIHN0YXRpYyBpbnQgaW50ZWxfcGNoX3RoZXJtYWxfcmVzdW1lKHN0cnUNCj4gwqB9
-DQo+IMKgDQo+IMKgc3RhdGljIHN0cnVjdCBwY2lfZGV2aWNlX2lkIGludGVsX3BjaF90aGVybWFs
-X2lkW10gPSB7DQo+IC0JeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSF9USEVS
-TUFMX0RJRF9XUFQpIH0sDQo+IC0JeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBD
-SF9USEVSTUFMX0RJRF9TS0wpIH0sDQo+ICsJeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5U
-RUwsIFBDSF9USEVSTUFMX0RJRF9XUFQpLA0KPiArCcKgwqAuZHJpdmVyX2RhdGEgPSBib2FyZF93
-cHQsIH0sDQo+ICsJeyBQQ0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSF9USEVSTUFM
-X0RJRF9TS0wpLA0KPiArCcKgwqAuZHJpdmVyX2RhdGEgPSBib2FyZF9za2wsIH0sDQo+ICsJeyBQ
-Q0lfREVWSUNFKFBDSV9WRU5ET1JfSURfSU5URUwsIFBDSF9USEVSTUFMX0RJRF9TS0xfSCksDQo+
-ICsJwqDCoC5kcml2ZXJfZGF0YSA9IGJvYXJkX3NrbCwgfSwNCj4gwqAJeyAwLCB9LA0KPiDCoH07
-DQo+IMKgTU9EVUxFX0RFVklDRV9UQUJMRShwY2ksIGludGVsX3BjaF90aGVybWFsX2lkKTsNCj4g
-Xw0KPiA=
+Colin King <colin.king@canonical.com> writes:
+
+> From: Colin Ian King <colin.king@canonical.com>
+>
+> Several line wrapped literal strings are missing white spaces, add the
+> whitespace to fix this.
+>
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  drivers/power/avs/smartreflex.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+
+This patch duplicates work that was already done in commit
+10He2cdeaa1232d (PM / AVS: SmartReflex: Neaten logging)
+
+Please rebase/resubmit if there are cleanups still missing.
+
+Kevin
+
+> diff --git a/drivers/power/avs/smartreflex.c b/drivers/power/avs/smartreflex.c
+> index db9973b..40f46a8 100644
+> --- a/drivers/power/avs/smartreflex.c
+> +++ b/drivers/power/avs/smartreflex.c
+> @@ -225,8 +224,7 @@ static int sr_late_init(struct omap_sr *sr_info)
+>  
+>  error:
+>  	list_del(&sr_info->node);
+> -	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering"
+> -		"interrupt handler. Smartreflex will"
+> +	dev_err(&sr_info->pdev->dev, "%s: ERROR in registering interrupt handler. Smartreflex will "
+>  		"not function as desired\n", __func__);
+>  
+>  	return ret;
+> @@ -387,7 +386,7 @@ int sr_configure_errgen(struct omap_sr *sr)
+>  		vpboundint_st = ERRCONFIG_VPBOUNDINTST_V2;
+>  		break;
+>  	default:
+> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
+> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+>  			"module without specifying the ip\n", __func__);
+>  		return -EINVAL;
+>  	}
+> @@ -440,7 +439,7 @@ int sr_disable_errgen(struct omap_sr *sr)
+>  		vpboundint_st = ERRCONFIG_VPBOUNDINTST_V2;
+>  		break;
+>  	default:
+> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
+> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+>  			"module without specifying the ip\n", __func__);
+>  		return -EINVAL;
+>  	}
+> @@ -504,7 +503,7 @@ int sr_configure_minmax(struct omap_sr *sr)
+>  		senp_shift = SRCONFIG_SENPENABLE_V2_SHIFT;
+>  		break;
+>  	default:
+> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
+> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+>  			"module without specifying the ip\n", __func__);
+>  		return -EINVAL;
+>  	}
+> @@ -537,7 +536,7 @@ int sr_configure_minmax(struct omap_sr *sr)
+>  			IRQENABLE_MCUBOUNDSINT | IRQENABLE_MCUDISABLEACKINT);
+>  		break;
+>  	default:
+> -		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex"
+> +		dev_err(&sr->pdev->dev, "%s: Trying to Configure smartreflex "
+>  			"module without specifying the ip\n", __func__);
+>  		return -EINVAL;
+>  	}
+> @@ -571,7 +570,7 @@ int sr_enable(struct omap_sr *sr, unsigned long volt)
+>  	volt_data = omap_voltage_get_voltdata(sr->voltdm, volt);
+>  
+>  	if (IS_ERR(volt_data)) {
+> -		dev_warn(&sr->pdev->dev, "%s: Unable to get voltage table"
+> +		dev_warn(&sr->pdev->dev, "%s: Unable to get voltage table "
+>  			"for nominal voltage %ld\n", __func__, volt);
+>  		return PTR_ERR(volt_data);
+>  	}
+> @@ -704,7 +703,7 @@ void omap_sr_enable(struct voltagedomain *voltdm)
+>  		return;
+>  
+>  	if (!sr_class || !(sr_class->enable) || !(sr_class->configure)) {
+> -		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
+> +		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
+>  			"registered\n", __func__);
+>  		return;
+>  	}
+> @@ -736,7 +735,7 @@ void omap_sr_disable(struct voltagedomain *voltdm)
+>  		return;
+>  
+>  	if (!sr_class || !(sr_class->disable)) {
+> -		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
+> +		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
+>  			"registered\n", __func__);
+>  		return;
+>  	}
+> @@ -768,7 +767,7 @@ void omap_sr_disable_reset_volt(struct voltagedomain *voltdm)
+>  		return;
+>  
+>  	if (!sr_class || !(sr_class->disable)) {
+> -		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not"
+> +		dev_warn(&sr->pdev->dev, "%s: smartreflex class driver not "
+>  			"registered\n", __func__);
+>  		return;
+>  	}
