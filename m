@@ -1,153 +1,93 @@
 From: Nishanth Menon <nm@ti.com>
-Subject: [PATCH V4 1/5] Documentation: Add support for TI System Control Interface (TI-SCI) protocol
-Date: Tue, 18 Oct 2016 18:08:33 -0500
-Message-ID: <20161018230837.6515-2-nm@ti.com>
-References: <20161018230837.6515-1-nm@ti.com>
+Subject: [PATCH V4 0/5] firmware: Add support for TI System Control Interface
+ (TI-SCI) protocol driver
+Date: Tue, 18 Oct 2016 18:08:32 -0500
+Message-ID: <20161018230837.6515-1-nm@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from devils.ext.ti.com ([198.47.26.153]:35834 "EHLO
-        devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S938483AbcJRXJq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Oct 2016 19:09:46 -0400
-In-Reply-To: <20161018230837.6515-1-nm@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Tero Kristo <t-kristo@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
-Cc: Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Andrew Davis <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>, Nishanth Menon <nm@ti.com>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Kevin Hilman <khilman@baylibre.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andrew Davis <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-Texas Instrument's System Control Interface (TI-SCI) Message Protocol
-is used in Texas Instrument's System on Chip (SoC) such as those in
-newer SoCs in the keystone processor family starting with K2G.
+Version 4 of the series is basically a rebase to v4.9-rc1, no functional
+changes.
 
-This message protocol is used to communicate between various compute
-or processing entities (such as ARM, DSP etc.) with a central system
-controller entity.
+Texas Instruments' Keystone generation System on Chips (SoC)
+starting with 66AK2G02[1], now include a dedicated SoC System Control
+entity called PMMC(Power Management Micro Controller) in line with
+ARM architecture recommendations. The function of this module is
+to integrate all system operations in a centralized location.
+Communication with the SoC System Control entity from various
+processing units like ARM/DSP occurs over Message Manager hardware
+block.
 
-TI-SCI message protocol provides support for management of various
-hardware entities within the SoC.
+This series adds the base support for TI System Control Interface
+(TI-SCI) protocol[2]. The protocol is built on top of Texas
+Instrument's Message Manager communication mechanism[3].
 
-The message protocol can be found here:
-http://processors.wiki.ti.com/index.php/TISCI
+Overall architecture is very similar to SCPI[4] as follows:
++-------------+   +---------+     +------^-----+
+| TI SCI GENPD|   |TISCI Clk|     |TISCI reset |
++------+------+   +----+----+     +------+-----+
+       |               |                 |
+       |          +----v--------------+  |
+       +----------> TISCI Protocol(*) <--+
+                  +----+--------------+
+                       |
+                   +---v-----------+
+                   | MAILBOX  FWK  |
+                   +---+-----------+
+                       |
+                   +---v-----------+
+                   |  TI MSGMGR    |-> TISCI hardware block
+                   +---------------+
+(*) This series.
 
-Signed-off-by: Nishanth Menon <nm@ti.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
-V4: No change, just picked up Rob's Ack from v3.
 
-V3: https://patchwork.kernel.org/patch/9317825/
+V4 of the series is based off v4.9-rc1 and is also available here:
+https://github.com/nmenon/linux-2.6-playground/commits/upstream/v4.10/tisci-base-v4
+Quick boot test: http://pastebin.ubuntu.com/23346183/
 
- .../devicetree/bindings/arm/keystone/ti,sci.txt    | 81 ++++++++++++++++++++++
- MAINTAINERS                                        |  8 +++
- 2 files changed, 89 insertions(+)
+Changes since v3:
+	- rebase to v4.9-rc1
+	- minor checkpatch fixes
+
+V3: https://lkml.org/lkml/2016/9/6/747
+V2: https://lkml.org/lkml/2016/8/30/273
+V1: https://lkml.org/lkml/2016/8/19/768
+
+Nishanth Menon (5):
+  Documentation: Add support for TI System Control Interface (TI-SCI)
+    protocol
+  firmware: Add basic support for TI System Control Interface (TI-SCI)
+    protocol
+  firmware: ti_sci: Add support for Device control
+  firmware: ti_sci: Add support for Clock control
+  firmware: ti_sci: Add support for reboot core service
+
+ .../devicetree/bindings/arm/keystone/ti,sci.txt    |   81 +
+ MAINTAINERS                                        |   10 +
+ drivers/firmware/Kconfig                           |   15 +
+ drivers/firmware/Makefile                          |    1 +
+ drivers/firmware/ti_sci.c                          | 1991 ++++++++++++++++++++
+ drivers/firmware/ti_sci.h                          |  492 +++++
+ include/linux/soc/ti/ti_sci_protocol.h             |  249 +++
+ 7 files changed, 2839 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+ create mode 100644 drivers/firmware/ti_sci.c
+ create mode 100644 drivers/firmware/ti_sci.h
+ create mode 100644 include/linux/soc/ti/ti_sci_protocol.h
 
-diff --git a/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-new file mode 100644
-index 000000000000..31f5f9a104cc
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-@@ -0,0 +1,81 @@
-+Texas Instruments System Control Interface (TI-SCI) Message Protocol
-+--------------------------------------------------------------------
-+
-+Texas Instrument's processors including those belonging to Keystone generation
-+of processors have separate hardware entity which is now responsible for the
-+management of the System on Chip (SoC) system. These include various system
-+level functions as well.
-+
-+An example of such an SoC is K2G, which contains the system control hardware
-+block called Power Management Micro Controller (PMMC). This hardware block is
-+initialized early into boot process and provides services to Operating Systems
-+on multiple processors including ones running Linux.
-+
-+See http://processors.wiki.ti.com/index.php/TISCI for protocol definition.
-+
-+TI-SCI controller Device Node:
-+=============================
-+
-+The TI-SCI node describes the Texas Instrument's System Controller entity node.
-+This parent node may optionally have additional children nodes which describe
-+specific functionality such as clocks, power domain, reset or additional
-+functionality as may be required for the SoC. This hierarchy also describes the
-+relationship between the TI-SCI parent node to the child node.
-+
-+Required properties:
-+-------------------
-+- compatible: should be "ti,k2g-sci"
-+- mbox-names:
-+	"rx" - Mailbox corresponding to receive path
-+	"tx" - Mailbox corresponding to transmit path
-+
-+- mboxes: Mailboxes corresponding to the mbox-names. Each value of the mboxes
-+	  property should contain a phandle to the mailbox controller device
-+	  node and an args specifier that will be the phandle to the intended
-+	  sub-mailbox child node to be used for communication.
-+
-+See Documentation/devicetree/bindings/mailbox/mailbox.txt for more details
-+about the generic mailbox controller and client driver bindings. Also see
-+Documentation/devicetree/bindings/mailbox/ti,message-manager.txt for typical
-+controller that is used to communicate with this System controllers.
-+
-+Optional Properties:
-+-------------------
-+- reg-names:
-+	debug_messages - Map the Debug message region
-+- reg:  register space corresponding to the debug_messages
-+- ti,system-reboot-controller: If system reboot can be triggered by SoC reboot
-+
-+Example (K2G):
-+-------------
-+	pmmc: pmmc {
-+		compatible = "ti,k2g-sci";
-+		mbox-names = "rx", "tx";
-+		mboxes= <&msgmgr &msgmgr_proxy_pmmc_rx>,
-+			<&msgmgr &msgmgr_proxy_pmmc_tx>;
-+		reg-names = "debug_messages";
-+		reg = <0x02921800 0x800>;
-+	};
-+
-+
-+TI-SCI Client Device Node:
-+=========================
-+
-+Client nodes are maintained as children of the relevant TI-SCI device node.
-+
-+Example (K2G):
-+-------------
-+	pmmc: pmmc {
-+		compatible = "ti,k2g-sci";
-+		...
-+
-+		my_clk_node: clk_node {
-+			...
-+			...
-+		};
-+
-+		my_pd_node: pd_node {
-+			...
-+			...
-+		};
-+	};
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 1cd38a7e0064..2bafadf5747a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11883,6 +11883,14 @@ S:	Maintained
- F:	arch/xtensa/
- F:	drivers/irqchip/irq-xtensa-*
- 
-+Texas Instruments' System Control Interface (TISCI) Protocol Driver
-+M:	Nishanth Menon <nm@ti.com>
-+M:	Tero Kristo <t-kristo@ti.com>
-+M:	Santosh Shilimkar <ssantosh@kernel.org>
-+L:	linux-arm-kernel@lists.infradead.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
-+
- THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
- M:	Hans Verkuil <hverkuil@xs4all.nl>
- L:	linux-media@vger.kernel.org
 -- 
 2.10.0
-
