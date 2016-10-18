@@ -1,52 +1,68 @@
 From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for
- device-tree
-Date: Tue, 18 Oct 2016 17:08:35 +0530
-Message-ID: <20161018113835.GB11471@vireshk-i7>
+Subject: Re: [PATCH v2 2/4] ARM: dts: pxa: add pxa25x cpu operating points
+Date: Tue, 18 Oct 2016 17:09:44 +0530
+Message-ID: <20161018113944.GC11471@vireshk-i7>
 References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
- <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
+ <1476561450-28407-3-git-send-email-robert.jarzmik@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1476561450-28407-2-git-send-email-robert.jarzmik-GANU6spQydw@public.gmane.org>
+In-Reply-To: <1476561450-28407-3-git-send-email-robert.jarzmik-GANU6spQydw@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
 Cc: Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 On 15-10-16, 21:57, Robert Jarzmik wrote:
-> For device-tree based pxa25x and pxa27x platforms, cpufreq-dt driver is
-> doing the job as well as pxa2xx-cpufreq, so add these platforms to the
-> compatibility list.
-> 
-> This won't work for legacy non device-tree platforms where
-> pxa2xx-cpufreq is still required.
+> Add the relevant data taken from the PXA 25x Electrical, Mechanical, and
+> Thermal Specfication. This will be input data for cpufreq-dt driver.
 > 
 > Signed-off-by: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
 > ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  arch/arm/boot/dts/pxa25x.dtsi | 25 +++++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 0bb44d5b5df4..356825b5c9b8 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -32,6 +32,8 @@ static const struct of_device_id machines[] __initconst = {
->  	{ .compatible = "fsl,imx7d", },
->  
->  	{ .compatible = "marvell,berlin", },
-> +	{ .compatible = "marvell,pxa250", },
-> +	{ .compatible = "marvell,pxa270", },
->  
->  	{ .compatible = "samsung,exynos3250", },
->  	{ .compatible = "samsung,exynos4210", },
+> diff --git a/arch/arm/boot/dts/pxa25x.dtsi b/arch/arm/boot/dts/pxa25x.dtsi
+> index 0d1e012178c4..16b4e8bad4a5 100644
+> --- a/arch/arm/boot/dts/pxa25x.dtsi
+> +++ b/arch/arm/boot/dts/pxa25x.dtsi
+> @@ -89,4 +89,29 @@
+>  		clocks = <&clktimer>;
+>  		status = "okay";
+>  	};
+> +
+> +	pxa250_opp_table: opp_table0 {
+> +		compatible = "operating-points-v2";
+> +
+> +		opp@99500 {
 
-Isn't there a race between cpufreq-dt and the platform driver to
-register first ?
+We have been keeping the values in ^^^ same as the values present
+below. Any specific reason for making it different here ?
 
-Also, it seems that atleast the next two patches are required before
-applying this? You need to fix the order if that is the case.
+> +			opp-hz = /bits/ 64 <99532800>;
+> +			opp-microvolt = <950000 1000000 1650000>;
+> +			clock-latency-ns = <20>;
+> +		};
+> +		opp@199100 {
+> +			opp-hz = /bits/ 64 <199065600>;
+> +			opp-microvolt = <1000000 950000 1650000>;
+> +			clock-latency-ns = <20>;
+> +		};
+> +		opp@298600 {
+> +			opp-hz = /bits/ 64 <298598400>;
+> +			opp-microvolt = <1100000 1045000 1650000>;
+> +			clock-latency-ns = <20>;
+> +		};
+> +		opp@398100 {
+> +			opp-hz = /bits/ 64 <398131200>;
+> +			opp-microvolt = <1300000 1235000 1650000>;
+> +			clock-latency-ns = <20>;
+> +		};
+> +	};
+>  };
+> -- 
+> 2.1.4
 
 -- 
 viresh
