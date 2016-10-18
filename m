@@ -1,123 +1,38 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH 4/4] x86, hotplug: Use hlt instead of mwait when resuming
- from hibernation
-Date: Mon, 17 Oct 2016 18:21:31 -0700
-Message-ID: <CALCETrXKRLtBtrscjv9CPJRV8S26V9+czrnpw2SspscLdH+_aA@mail.gmail.com>
-References: <cover.1466844557.git.yu.c.chen@intel.com> <CAJZ5v0hrzfoFujSbuys+ESoj8W=JEh3uxyqgixpSLdSzpAP9Qg@mail.gmail.com>
- <CALCETrXauZrOGEwSRHnZcacG0Sg-7M3=FNabciFddqXSXhEiyQ@mail.gmail.com> <5043511.oEoyyYpIsu@vostro.rjw.lan>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH] mfd: axp20x-i2c: Add i2c-ids to fix module auto-loading
+Date: Tue, 18 Oct 2016 13:25:01 +0800
+Message-ID: <CAGb2v67iQikSHcwS15VmSC6fNMVG9Zya9fz6C6b5+wW43rPZfw@mail.gmail.com>
+References: <20161005155112.13774-1-hdegoede@redhat.com> <20161005155112.13774-2-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f46.google.com ([209.85.213.46]:35365 "EHLO
-        mail-vk0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1758103AbcJRBVw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Oct 2016 21:21:52 -0400
-Received: by mail-vk0-f46.google.com with SMTP id q126so146065285vkd.2
-        for <linux-pm@vger.kernel.org>; Mon, 17 Oct 2016 18:21:52 -0700 (PDT)
-In-Reply-To: <5043511.oEoyyYpIsu@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20161005155112.13774-2-hdegoede@redhat.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dennis Gilmore <dennis@ausil.us>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Andy Lutomirski <luto@kernel.org>, Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Len Brown <lenb@kernel.org>, Peter Zijlstra <peterz@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Borislav Petkov <bp@suse.de>, Pavel Machek <pavel@ucw.cz>, Brian Gerst <brgerst@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Varun Koyyalagunta <cpudebug@centtech.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Borislav Petkov <bp@alien8.de>
 
-On Mon, Oct 17, 2016 at 5:30 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Sunday, October 16, 2016 09:50:23 AM Andy Lutomirski wrote:
->> On Sat, Oct 8, 2016 at 3:31 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> > On Fri, Oct 7, 2016 at 9:47 PM, Andy Lutomirski <luto@kernel.org> wrote:
->> >> On 06/25/2016 09:19 AM, Chen Yu wrote:
->> >>>
->> >>> Here's the story of what the problem is, why this
->> >>> happened, and why this patch looks like this:
->> >>>
->> >>> Stress test from Varun Koyyalagunta reports that, the
->> >>> nonboot CPU would hang occasionally, when resuming from
->> >>> hibernation. Further investigation shows that, the precise
->> >>> stage when nonboot CPU hangs, is the time when the nonboot
->> >>> CPU been woken up incorrectly, and tries to monitor the
->> >>> mwait_ptr for the second time, then an exception is
->> >>> triggered due to illegal vaddr access, say, something like,
->> >>> 'Unable to handler kernel address of 0xffff8800ba800010...'
->> >>>
->> >>> Further investigation shows that, the exception is caused
->> >>> by accessing a page without PRESENT flag, because the pte entry
->> >>> for this vaddr is zero. Here's the scenario how this problem
->> >>> happens: Page table for direct mapping is allocated dynamically
->> >>> by kernel_physical_mapping_init, it is possible that in the
->> >>> resume process, when the boot CPU is trying to write back pages
->> >>> to their original address, and just right to writes to the monitor
->> >>> mwait_ptr then wakes up one of the nonboot CPUs, since the page
->> >>> table currently used by the nonboot CPU might not the same as it
->> >>> is before the hibernation, an exception might occur due to
->> >>> inconsistent page table.
->> >>>
->> >>> First try is to get rid of this problem by changing the monitor
->> >>> address from task.flag to zero page, because one one would write
->> >>> to zero page. But this still have problem because of ping-pong
->> >>> wake up situation in mwait_play_dead:
->> >>>
->> >>> One possible implementation of a clflush is a read-invalidate snoop,
->> >>> which is what a store might look like, so cflush might break the mwait.
->> >>>
->> >>> 1. CPU1 wait at zero page
->> >>> 2. CPU2 cflush zero page, wake CPU1 up, then CPU2 waits at zero page
->> >>> 3. CPU1 is woken up, and invoke cflush zero page, thus wake up CPU2 again.
->> >>> then the nonboot CPUs never sleep for long.
->> >>>
->> >>> So it's better to monitor different address for each
->> >>> nonboot CPUs, however since there is only one zero page, at most:
->> >>> PAGE_SIZE/L1_CACHE_LINE CPUs are satisfied, which is usually 64
->> >>> on a x86_64, apparently it's not enough for servers, maybe more
->> >>> zero pages are required.
->> >>>
->> >>> So choose the solution as Brian suggested, to put the nonboot CPUs
->> >>> into hlt before resuming. But Rafael has mentioned that, if some of
->> >>> the CPUs have already been offline before hibernation, then the problem
->> >>> is still there. So this patch tries to kick the already offline CPUs woken
->> >>> up and fall into hlt, and then put the rest online CPUs into hlt.
->> >>> In this way, all the nonboot CPUs will wait at a safe state,
->> >>> without touching any memory during s/r. (It's not safe to modify
->> >>> mwait_play_dead, because once previous offline CPUs are woken up,
->> >>> it will either access text code, whose page table is not safe anymore
->> >>> across hibernation, due to:
->> >>> Commit ab76f7b4ab23 ("x86/mm: Set NX on gap between __ex_table and
->> >>> rodata").
->> >>>
->> >>
->> >> I realize I'm extremely late to the party, but I must admit that I don't get
->> >> it.  Sure, hibernation resume can spuriously wake the non-boot CPU, but at
->> >> some point it has to wake up for real.
->> >
->> > You mean during resume?  We reinit from scratch then.
->> >
->> >> What ensures that the text it was
->> >> running (native_play_dead or whatever) is still there when it wakes up?
->> >>
->> >> Or does the hibernation resume code actually send the remote CPU an
->> >> INIT-SIPI sequence a la wakeup_secondary_cpu_via_init()?
->> >
->> > That's what happens AFAICS.
->> >
->> >> If so, this seems
->> >> a bit odd to me.  Shouldn't we kick the CPU all the way to the wait-for-SIPI
->> >> state rather than getting it to play dead via hlt or mwait?
->> >
->> > We could do that.  It would be a bit cleaner than using the "hlt play
->> > dead" thing, but the practical difference would be very small (if
->> > observable at all).
->>
->> Probably true.  It might be worth changing the "hlt" path to something like:
->>
->> asm volatile ("hlt");
->> WARN(1, "CPU woke directly from halt-for-resume -- should have been
->> woken by SIPI\n");
+On Wed, Oct 5, 2016 at 11:51 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> The i2c subsys does not load modules by compatible, only by
+> i2c-id, with e.g. a modalias of: "i2c:axp209".
 >
-> The visibility of that warning would be sort of limited, though, because the
-> only case it might show up is when the system went belly up due to an unhandled
-> page fault.
+> Populate the axp20x_i2c_id[] table with supported ids, so that
+> module auto-loading will work.
+>
+> Reported-by: Dennis Gilmore <dennis@ausil.us>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Righto.
+Acked-by: Chen-Yu Tsai <wens@csie.org>
 
-Maybe at least add a comment that the hlt isn't intended to ever
-resume on the next instruction?
+Even though axp20x-i2c seems to be the only "DT only" i2c client,
+would it make sense to add DT-based module autoloading to the i2c
+core?
 
---Andy
+This also made me realize we probably don't have module auto-loading
+for sunxi-rsb either.
+
+Both should be doable with Stephen Boyd's "of: device: Export
+of_device_{get_modalias, uvent_modalias} to modules" patch.
+
+Regards
+ChenYu
