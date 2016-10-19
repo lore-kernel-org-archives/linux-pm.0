@@ -1,19 +1,16 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: how to enable suspend to ram for arm-64 bits
-Date: Wed, 19 Oct 2016 14:11:45 +0100
-Message-ID: <20161019131145.GA11036@leverpostej>
-References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
- <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
- <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
- <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
- <20161018100002.GA4347@xo-6d-61-c0.localdomain>
- <20161018104539.GB15639@leverpostej> <20161019094227.GB1461@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 2/4] ARM: dts: pxa: add pxa25x cpu operating points
+Date: Wed, 19 Oct 2016 19:21:17 +0530
+Message-ID: <20161019135117.GF11471@vireshk-i7>
+References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+ <1476561450-28407-3-git-send-email-robert.jarzmik@free.fr>
+ <20161018113944.GC11471@vireshk-i7> <87vawp4qv0.fsf@belgarion.home>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20161019094227.GB1461@amd>
+In-Reply-To: <87vawp4qv0.fsf@belgarion.home>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,66 +20,47 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-pm@vger.kernel.org, yoma sophian <sophian.yoma@gmail.com>, linux-arm-kernel@lists.infradead.org, Sudeep Holla <sudeep.holla@arm.com>
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 19, 2016 at 11:42:27AM +0200, Pavel Machek wrote:
-> On Tue 2016-10-18 11:45:39, Mark Rutland wrote:
-
-> Either the lowlevel suspend code is stable and bug free, and then
-> having that code is not a problem.
-
-This ignores the cost of maintaining that code. Kernel APIs change over
-time, and no code is ever completely stable, even if at one point in
-time it happens to be bug-free.
-
-> Or the lowlevel suspend code is complex enough to contain some bugs,
-> and in such case it is better to debug and update it with kernel.
-
-It is better for that code to be debuggable and updateable. That is not
-the same as being part of the kernel.
- 
-> > ARM publishes and maintains the ARM Trusted Firmware [1], which anyone
-> > can use and build atop of. It's open source (three-clause BSD with DCO),
-> > and accepts board ports. You can have a completely open stack,
-> > regardless of whether part of that stack is firmware.
+On 18-10-16, 17:30, Robert Jarzmik wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
 > 
-> If something is called "Trusted", it is not trustworthy.
+> > On 15-10-16, 21:57, Robert Jarzmik wrote:
+> >> Add the relevant data taken from the PXA 25x Electrical, Mechanical, and
+> >> Thermal Specfication. This will be input data for cpufreq-dt driver.
+> >> 
+> >> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> >> ---
+> >>  arch/arm/boot/dts/pxa25x.dtsi | 25 +++++++++++++++++++++++++
+> >>  1 file changed, 25 insertions(+)
+> >> 
+> >> diff --git a/arch/arm/boot/dts/pxa25x.dtsi b/arch/arm/boot/dts/pxa25x.dtsi
+> >> index 0d1e012178c4..16b4e8bad4a5 100644
+> >> --- a/arch/arm/boot/dts/pxa25x.dtsi
+> >> +++ b/arch/arm/boot/dts/pxa25x.dtsi
+> >> @@ -89,4 +89,29 @@
+> >>  		clocks = <&clktimer>;
+> >>  		status = "okay";
+> >>  	};
+> >> +
+> >> +	pxa250_opp_table: opp_table0 {
+> >> +		compatible = "operating-points-v2";
+> >> +
+> >> +		opp@99500 {
+> >
+> > We have been keeping the values in ^^^ same as the values present
+> > below. Any specific reason for making it different here ?
+> No, that's a good comment, I'll change that.
+> 
+> I wrote this incrementaly, first the node, then the opp-hz. Then I realized that
+> the source crystal, at 3.8684 MHz didn't provide a round 99.5 MHz core clock,
+> but a 99.5328 MHz clock.
+> 
+> Anyway, I'll change that ... let's say into opp@99533 in this case ?
 
-Certainly we shouldn't blindly trust anything.
+Just write the whole value 99532800.
 
-I object to ATF being called "not trustworthy"; the aims of the project
-are certainly not dishonest.
-
-> BSD is better than closed source, but it also means that you will not
-> get the sources from your hw vendor.
-
-That depends on your hardware vendor, as always. There are a number of
-platform ports in the upstream ATF repo.
-
-It's also worth considering that a number of 32-bit arm parts require
-closed firmware (as far as I can tell, including the N900).
-
-> Being separate module means it will be never updated.
-
-That's certainly not true as a blanket statement. The Juno FW (including
-an open-source UEFI!) is periodically updated, and mechanisms like
-UpdateCapsule() should make this easier in future.
-
-> Being separate module means it will be hard to debug, in area where
-> debugging is already pretty hard.
-
-It can be harder, yes. There are also benefits, given the same code can
-be tested on a variety of platforms.
-
-> Can it do advanced stuff like deep powersaving on N900 idle?
-
-Sorry, I don't know precisely what you're referring to.
-
-It can do things like shutting down entire CPU clusters (and IIRC
-associated interconnect) when all relevant CPUs are idle, if that's what
-you mean.
-
-Thanks,
-Mark.
+-- 
+viresh
