@@ -1,64 +1,136 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 0/9] PCIe port PM: high gloss polish & hotplug support
+Subject: [PATCH 9/9] PCI: pciehp: Add runtime PM support for PCIe hotplug
+ ports
 Date: Wed, 19 Oct 2016 16:07:13 +0200
-Message-ID: <cover.1476875113.git.lukas@wunner.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:54261 "EHLO
-        mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932504AbcJSOMa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:12:30 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Message-ID: <1f66f01ec1406ca76f578c02b218003fad3853e5.1476875113.git.lukas@wunner.de>
+References: <cover.1476875113.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Linux v4.8 added support to runtime suspend PCIe ports to D3hot.
+Linux 4.8 added support for runtime suspending PCIe ports to D3hot with
+commit 006d44e49a25 ("PCI: Add runtime PM support for PCIe ports"), but
+excluded hotplug ports.  Those are now afforded runtime PM by the
+present commit.
 
-Patches 1 to 6 of this series apply high gloss polish to that code to
-speed it up, reduce its size and improve its readability.  None of these
-patches should result in a functional change.  (And they didn't in my
-tests.)
+Hotplug ports require a few extra considerations:
 
-Patches 7 and 8 are cleanups / refactorings for acpiphp.  They're prep
-work for patch 9 and likewise shouldn't cause a functional change.
+- The configuration space of the port remains accessible in D3hot, so
+  all the functions to read or modify the Slot Status and Slot Control
+  registers need not be modified.  Even turning on slot power doesn't
+  seem to require the port to be in D0, at least the PCIe spec doesn't
+  say so and I confirmed that by testing with a Thunderbolt controller.
 
-Patch 9 extends runtime PM support to hotplug ports.
+- However D0 is required to access devices on the subordinate bus.  This
+  happens in pciehp_check_link_status() and pciehp_configure_device()
+  (both called from board_added()) and in pciehp_unconfigure_device()
+  (called from remove_board()), so acquire a runtime PM ref for their
+  invocation.
 
+- The hotplug port stays active as long as it has active children.  If
+  all hotplugged devices below the port runtime suspend, the port is
+  allowed to runtime suspend as well.  Plug and unplug detection
+  continues to work in D3hot.
 
-@Keith Busch: I seem to recall you're working with large arrays of NVMe
-drives connected to native PCIe hotplug ports.  Perhaps you could give
-this series a spin, it might save quite a bit of power.
+- Hotplug interrupts are delivered in-band, so while the hotplug port
+  itself is allowed to go to D3hot, its parent ports must stay in D0 for
+  interrupts to come through.  Add a corresponding restriction to
+  pci_dev_check_d3cold().
 
-To ease reviewing I've pushed this series to GitHub:
-https://github.com/l1k/linux/commits/pcie_port_pm_v1
+- Runtime PM may only be allowed if the hotplug port is handled natively
+  by the OS.  On ACPI systems, the port may alternatively be handled by
+  the firmware and things break if the OS puts the port into D3 behind
+  the firmware's back:  E.g. Thunderbolt hotplug ports on non-Macs are
+  handled by Intel's firmware in System Management Mode and the firmware
+  is known to access devices on the port's subordinate bus without
+  checking first if the port is in D0:
+  https://bugzilla.kernel.org/show_bug.cgi?id=53811
 
-Thanks,
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/hotplug/pciehp_ctrl.c | 6 ++++++
+ drivers/pci/pci.c                 | 9 +++++----
+ 2 files changed, 11 insertions(+), 4 deletions(-)
 
-Lukas
-
-
-Lukas Wunner (9):
-  PCI: Don't acquire ref on parent in pci_bridge_d3_update()
-  PCI: Autosense device removal in pci_bridge_d3_update()
-  PCI: Speed up algorithm in pci_bridge_d3_update()
-  PCI: Activate runtime PM on a PCIe port only if it can suspend
-  PCI: Consolidate conditions to allow runtime PM on PCIe ports
-  PCI: Unfold conditions to block runtime PM on PCIe ports
-  ACPI / hotplug / PCI: Use cached copy of PCI_EXP_SLTCAP_HPC bit
-  ACPI / hotplug / PCI: Make device_is_managed_by_native_pciehp() public
-  PCI: pciehp: Add runtime PM support for PCIe hotplug ports
-
- drivers/pci/bus.c                  |   2 +-
- drivers/pci/hotplug/acpiphp_glue.c |  31 +-----------
- drivers/pci/hotplug/pciehp_ctrl.c  |   6 +++
- drivers/pci/pci-acpi.c             |  24 +++++++++
- drivers/pci/pci.c                  | 101 ++++++++++++++++++-------------------
- drivers/pci/pci.h                  |   4 +-
- drivers/pci/pcie/portdrv_pci.c     |  13 ++---
- drivers/pci/remove.c               |   2 +-
- include/linux/pci_hotplug.h        |   2 +
- 9 files changed, 89 insertions(+), 96 deletions(-)
-
+diff --git a/drivers/pci/hotplug/pciehp_ctrl.c b/drivers/pci/hotplug/pciehp_ctrl.c
+index efe69e8..ffd3fe6 100644
+--- a/drivers/pci/hotplug/pciehp_ctrl.c
++++ b/drivers/pci/hotplug/pciehp_ctrl.c
+@@ -31,6 +31,7 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
+ #include <linux/pci.h>
+ #include "../pci.h"
+ #include "pciehp.h"
+@@ -98,6 +99,7 @@ static int board_added(struct slot *p_slot)
+ 	pciehp_green_led_blink(p_slot);
+ 
+ 	/* Check link training status */
++	pm_runtime_get_sync(&ctrl->pcie->port->dev);
+ 	retval = pciehp_check_link_status(ctrl);
+ 	if (retval) {
+ 		ctrl_err(ctrl, "Failed to check link status\n");
+@@ -118,12 +120,14 @@ static int board_added(struct slot *p_slot)
+ 		if (retval != -EEXIST)
+ 			goto err_exit;
+ 	}
++	pm_runtime_put(&ctrl->pcie->port->dev);
+ 
+ 	pciehp_green_led_on(p_slot);
+ 	pciehp_set_attention_status(p_slot, 0);
+ 	return 0;
+ 
+ err_exit:
++	pm_runtime_put(&ctrl->pcie->port->dev);
+ 	set_slot_off(ctrl, p_slot);
+ 	return retval;
+ }
+@@ -137,7 +141,9 @@ static int remove_board(struct slot *p_slot)
+ 	int retval;
+ 	struct controller *ctrl = p_slot->ctrl;
+ 
++	pm_runtime_get_sync(&ctrl->pcie->port->dev);
+ 	retval = pciehp_unconfigure_device(p_slot);
++	pm_runtime_put(&ctrl->pcie->port->dev);
+ 	if (retval)
+ 		return retval;
+ 
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index f1ddb6b..b10bcca 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2241,13 +2241,10 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ 			return false;
+ 
+ 		/*
+-		 * Hotplug interrupts cannot be delivered if the link is down,
+-		 * so parents of a hotplug port must stay awake. In addition,
+ 		 * Hotplug ports handled by firmware in System Management Mode
+ 		 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
+-		 * For simplicity, disallow in general for now.
+ 		 */
+-		if (bridge->is_hotplug_bridge)
++		if (bridge->is_hotplug_bridge && !pciehp_is_native(bridge))
+ 			return false;
+ 
+ 		if (pci_bridge_d3_force)
+@@ -2283,6 +2280,10 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ 	if (!pci_power_manageable(dev))
+ 		*d3cold_ok = false;
+ 
++	/* Hotplug interrupts cannot be delivered if the link is down. */
++	if (dev->is_hotplug_bridge)
++		*d3cold_ok = false;
++
+ 	return !*d3cold_ok;
+ }
+ 
 -- 
 2.9.3
-
