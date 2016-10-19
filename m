@@ -1,73 +1,38 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 5/6] clk: pxa: transfer CPU clock setting from
- pxa2xx-cpufreq
-Date: Wed, 19 Oct 2016 13:51:28 -0700
-Message-ID: <20161019205128.GE8871@codeaurora.org>
-References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
- <1476130149-31834-6-git-send-email-robert.jarzmik@free.fr>
- <87zim23zw3.fsf@belgarion.home>
- <20161018234855.GO8871@codeaurora.org>
- <877f943xjk.fsf@belgarion.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: [PATCH 0/4] PM / devfreq: Fix module autoload for platform drivers
+Date: Wed, 19 Oct 2016 18:06:23 -0300
+Message-ID: <1476911187-11040-1-git-send-email-javier@osg.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:53106 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S938152AbcJSUvc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 16:51:32 -0400
-Content-Disposition: inline
-In-Reply-To: <877f943xjk.fsf@belgarion.home>
+Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:48269
+        "EHLO s-opensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933233AbcJSVGn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 17:06:43 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Kukjin Kim <kgene@kernel.org>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, linux-samsung-soc@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On 10/19, Robert Jarzmik wrote:
-> Stephen Boyd <sboyd@codeaurora.org> writes:
-> 
-> > On 10/18, Robert Jarzmik wrote:
-> >> Robert Jarzmik <robert.jarzmik@free.fr> writes:
-> >> Hi Michael and Stephen,
-> >> 
-> >> I'm planing on sending a v2 next week with minor corrections, mostly in the data
-> >> tables (pxa25x_freqs and pxa27x_freqs), as testing prooved some values were wrong.
-> >> 
-> >> If you want me modify this serie, will you have time to review for next week or
-> >> should I delay the v2 posting ?
-> >> 
-> >
-> > No need to delay. clk patches look fine with a quick glance. It
-> > would be really neat if we could make cpufreq-dt work without DT.
-> > What's blocking that? OPP tables?
-> 
-> Heu I'm not the author of cpufreq-dt, so I'm not the best to answer.
-> To answer the question "without DT", it depends if you mean "with ACPI" or "with
-> platform_data" or something else.
+Hello,
 
-I mean platform_data mostly. Do you use ACPI with the clk driver?
+I noticed that module autoload won't be working in some of the defreq
+platform drivers. This patch series contains the fixes for these.
 
-> 
-> From what I've seen so far, the missing/blocking points are :
->  - the OPP points definition as you said
+Best regards,
+Javier
 
-Hm.. I thought cpufreq-dt worked with OPP tables populated by
-other code (i.e. platform code).
 
->  - probably same thing for the input power supply / regulator
+Javier Martinez Canillas (4):
+  PM / devfreq: rk3399_dmc: Fix module autoload
+  PM / devfreq: exynos-nocp: Fix module autoload
+  PM / devfreq: rockchip-dfi: Fix module autoload
+  PM / devfreq: exynos-ppmu: Fix module autoload
 
-Regulators should be optional I hope. Do you use regulators in
-your design that has platform_data?
-
->  - the cooling parts probably
->  - and more generaly all the cpufreq-dt is built around device-tree
->  - last point, the name from KConfig, "Generic DT based cpufreq driver"
->    => that strongly suggest it's device-tree only
-> 
-> I'm deeply convinced that Viresh being one of the authors will shed more light
-> on this.
-
-Sure, thanks for the notes.
+ drivers/devfreq/event/exynos-nocp.c  | 1 +
+ drivers/devfreq/event/exynos-ppmu.c  | 1 +
+ drivers/devfreq/event/rockchip-dfi.c | 1 +
+ drivers/devfreq/rk3399_dmc.c         | 1 +
+ 4 files changed, 4 insertions(+)
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.7.4
+
