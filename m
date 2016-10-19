@@ -1,69 +1,157 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 0/5] Functional dependencies between devices
-Date: Wed, 19 Oct 2016 13:57:12 +0200
-Message-ID: <CAJZ5v0iKww_kFSWHoXC30B=f_9s8Cn1t9Y8G23ZPT4F3-ew+xg@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <CGME20161010125153eucas1p2b86325c046d3e0d0b6275abd000ea096@eucas1p2.samsung.com>
- <13957403.ZrB4mMbICz@vostro.rjw.lan> <ef96a88b-240e-17b1-904d-b7a778a999ec@samsung.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Subject: [pm:device-links-test 2/5] core.c:undefined reference to `call_srcu'
+Date: Wed, 19 Oct 2016 21:28:52 +0800
+Message-ID: <201610192148.fG6hvbgH%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ef96a88b-240e-17b1-904d-b7a778a999ec@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Content-Type: multipart/mixed; boundary="wac7ysb48OaltWcw"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:56564 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S943303AbcJSOz3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Oct 2016 10:55:29 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kbuild-all@01.org, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org
 
-On Tue, Oct 18, 2016 at 12:46 PM, Marek Szyprowski
-<m.szyprowski@samsung.com> wrote:
-> Hi Rafael,
->
->
-> On 2016-10-10 14:36, Rafael J. Wysocki wrote:
->>
->> [...]
->>
->> One more update after some conversations during LinuxCon Europe.
->>
->> The main point was to make it possible for device_link_add() to figure out
->> the
->> initial state of the link instead of expecting the caller to provide it
->> which
->> might not be reliable enough in general.
->>
->> In this version device_link_add() takes three arguments, the supplier and
->> consumer pointers and flags and it sets the correct initial state of the
->> link
->> automatically (unless invoked with the "stateless" flag, of course).  The
->> cost
->> is one additional field in struct device (I moved all of the links-related
->> fields in struct device to a separate sub-structure while at it) to track
->> the "driver presence status" of the device (to be used by
->> device_link_add()).
->>
->> In addition to that, the links list walks in the core.c and dd.c code are
->> under the device links mutex now, so the iternal link spinlock is not
->> needed
->> any more and I have renamed symbols to distinguish between flags, link
->> states
->> and device "driver presence statuses".
->>
->> More information is there in the changelogs.
->
->
-> Thanks for the update. This version is indeed easier to use and still works
-> fine
-> with my Exynos IOMMU runtime pm rework. You can keep my:
->
-> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
->
-> I will send updated version of my patchset soon.
 
-Thanks for the testing, much appreciated!
+--wac7ysb48OaltWcw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-The series is in a new branch called "device-links-test" in my tree now:
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git device-links-test
+head:   37c39b84114b777fdd8ed1a7074c7c0674180533
+commit: 5821e59c7551e256b15e164f1c248602f49d1b68 [2/5] driver core: Functional dependencies tracking support
+config: mips-allnoconfig (attached as .config)
+compiler: mips-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+reproduce:
+        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        git checkout 5821e59c7551e256b15e164f1c248602f49d1b68
+        # save the attached .config to linux build tree
+        make.cross ARCH=mips 
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-device-links-test
+All errors (new ones prefixed by >>):
 
-Thanks,
-Rafael
+   drivers/built-in.o: In function `__device_link_del':
+>> core.c:(.text+0x3ae4): undefined reference to `call_srcu'
+   drivers/built-in.o: In function `device_links_read_lock':
+>> (.text+0x3f98): undefined reference to `__srcu_read_lock'
+   drivers/built-in.o: In function `device_links_read_unlock':
+>> (.text+0x3fb4): undefined reference to `__srcu_read_unlock'
+>> drivers/built-in.o:(.data+0x3a8): undefined reference to `process_srcu'
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+--wac7ysb48OaltWcw
+Content-Type: application/gzip
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+
+--wac7ysb48OaltWcw--
