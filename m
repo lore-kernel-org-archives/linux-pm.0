@@ -1,17 +1,11 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: how to enable suspend to ram for arm-64 bits
-Date: Wed, 19 Oct 2016 11:42:27 +0200
-Message-ID: <20161019094227.GB1461@amd>
-References: <CADUS3onCMDThNK2ZwSSjGZhPE0M6cybjgCHJR2wVVeK09GC6ng@mail.gmail.com>
- <06a4f0d7-9022-578d-99e0-ddcde31ed895@arm.com>
- <CADUS3onUDk_=UpRoZy1m0hV1VGZYSf22ea8D10MpDbqJCfTkqw@mail.gmail.com>
- <82ddd0e1-9ecc-5e54-e8ee-86f947fc0ecd@arm.com>
- <20161018100002.GA4347@xo-6d-61-c0.localdomain>
- <20161018104539.GB15639@leverpostej>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH 0/5] Switch to the DT cpufreq policy on the Integrator
+Date: Wed, 19 Oct 2016 11:59:09 +0200
+Message-ID: <1476871154-32243-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8691348144616098884=="
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161018104539.GB15639@leverpostej>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,96 +15,83 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, yoma sophian <sophian.yoma@gmail.com>, linux-arm-kernel@lists.infradead.org, Sudeep Holla <sudeep.holla@arm.com>
+To: "Rafael J . Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Russell King <linux@armlinux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+This switches the ARM Integrator/AP and Integrator/CP to use the
+Device Tree cpufreq policy with its definition of operating points
+using the generic OPP library.
 
---===============8691348144616098884==
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="yEPQxsgoJgBvi8ip"
-Content-Disposition: inline
+The Integrators does not need to control a regulator to switch
+frequency, only a clock. This clock and its device tree bindings
+have been defined in the device tree and merged upstream for v4.9.
 
+This approach provides a little better granularity on the
+Integrator/AP where I defined a few operating points: before
+this change the Integrator would just switch between min speed
+(12 MHz) and max speed (71 MHz). Now it can switch between a
+few arbitrarily chosen OPPs as in the examples below:
 
---yEPQxsgoJgBvi8ip
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following tests were made on the Integrator/AP:
 
-On Tue 2016-10-18 11:45:39, Mark Rutland wrote:
-> On Tue, Oct 18, 2016 at 12:00:02PM +0200, Pavel Machek wrote:
-> > > >b. in arm64, if some platform has its own suspend flow,  couldn't it
-> > > >adopts arm/match-xxx to register its own global suspend method?
-> > >=20
-> > > No, PSCI is highly recommended.
-> >=20
-> > Relying on firmware for suspend on x86 was a great disaster, lets not r=
-epeat
-> > that mistake. arm32 has better powermanagement than x86 ever will (see =
-Nokia N900
-> > for example) -- feel free to copy that code from arm32.
->=20
-> Quite frankly, copying hundreds of lines of board-specific code
-> (including assembly that won't compile) is unlikely to help.
->=20
-> So far arm64 requires well-defined, standard, reusable interfaces (e.g.
-> PSCI). That cleanly separates concerns (e.g. anyone can implement the
-> backend without mandatory changes to the kernel), and keeps things
-> maintainable.
+/sys/devices/system/cpu/cpufreq/policy0 echo ondemand > scaling_governor
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 24000000 Hz
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 24000000 Hz --> 12000000 Hz
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 24000000 Hz
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 24000000 Hz --> 12000000 Hz
 
-Either the lowlevel suspend code is stable and bug free, and then
-having that code is not a problem. Or the lowlevel suspend code is
-complex enough to contain some bugs, and in such case it is better to
-debug and update it with kernel.
+The switch from 12 to 24 MHz is triggered by as little as using the
+command line with the ondemand governor. If we do this:
 
-> ARM publishes and maintains the ARM Trusted Firmware [1], which anyone
-> can use and build atop of. It's open source (three-clause BSD with DCO),
-> and accepts board ports. You can have a completely open stack,
-> regardless of whether part of that stack is firmware.
+yes > /dev/null &
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 36000000 Hz
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 36000000 Hz --> 71000000 Hz
+pkill yes
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 12000000 Hz
 
-If something is called "Trusted", it is not trustworthy.
+So the algorithm is indeed using all the OPPs.
 
-BSD is better than closed source, but it also means that you will not
-get the sources from your hw vendor.
+Also as a confirmation test to make sure performance is affected by the
+speed changes, we set the performance governor and:
 
-Being separate module means it will be never updated.
+echo 12000 > scaling_max_freq
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 12000000 Hz
+time find /sys|sort|uniq > /dev/null
+real    0m 45.51s
+user    0m 11.15s
+sys     0m 26.74s
 
-Being separate module means it will be hard to debug, in area where
-debugging is already pretty hard.
+echo 71000 > scaling_max_freq
+cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 71000000 Hz
+time find /sys|sort|uniq
+ > /dev/null
+real    0m 9.13s
+user    0m 2.35s
+sys     0m 5.50s
 
-Can it do advanced stuff like deep powersaving on N900 idle?
+So it is working.
 
-Just don't do it.
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+If people are happy with this approach and approve of the patches
+I'd like an ACK from the cpufreq people and then merge the whole set
+through ARM SoC.
 
---yEPQxsgoJgBvi8ip
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Linus Walleij (5):
+  cpufreq: enable the DT cpufreq driver on the Integrators
+  ARM: dts: Add Integrator/AP cpus node and operating points
+  ARM: dts: Add Integrator/CP cpus node and operating points
+  ARM: defconfig: turn on the DT cpufreq for Integrator
+  cpufreq: retire the Integrator cpufreq driver
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+ arch/arm/boot/dts/integratorap.dts    |  35 +++++
+ arch/arm/boot/dts/integratorcp.dts    |  26 ++++
+ arch/arm/configs/integrator_defconfig |   1 +
+ drivers/cpufreq/Kconfig.arm           |   8 --
+ drivers/cpufreq/Makefile              |   1 -
+ drivers/cpufreq/cpufreq-dt-platdev.c  |   3 +
+ drivers/cpufreq/integrator-cpufreq.c  | 239 ----------------------------------
+ 7 files changed, 65 insertions(+), 248 deletions(-)
+ delete mode 100644 drivers/cpufreq/integrator-cpufreq.c
 
-iEYEARECAAYFAlgHQAMACgkQMOfwapXb+vI8AwCgtAayrm/l6wLoSn3/lczM2eSv
-G9QAnA/jGiDOPwrLS7OgHLx5aVYKt0JA
-=OT57
------END PGP SIGNATURE-----
-
---yEPQxsgoJgBvi8ip--
-
-
---===============8691348144616098884==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============8691348144616098884==--
+-- 
+2.7.4
