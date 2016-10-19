@@ -1,146 +1,55 @@
-From: Markus Mayer <markus.mayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
-Subject: Re: [PATCH v4 1/3] dt: cpufreq: brcm: New binding document for brcmstb-avs-cpufreq
-Date: Wed, 19 Oct 2016 10:32:47 -0700
-Message-ID: <CAGt4E5seZgCo8MOqTYbFUWO=bsHz6e=EF7-+fqBK-to1MC=ugw@mail.gmail.com>
-References: <1476310376-32699-1-git-send-email-mmayer@broadcom.com>
- <1476310376-32699-2-git-send-email-mmayer@broadcom.com> <20161018133816.hcrvy52a67ig4oco@rob-hp-laptop>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for device-tree
+Date: Wed, 19 Oct 2016 22:06:10 +0200
+Message-ID: <87bmyg3xzh.fsf@belgarion.home>
+References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+        <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
+        <20161018113835.GB11471@vireshk-i7> <87r37d4qlw.fsf@belgarion.home>
+        <20161019135208.GG11471@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161018133816.hcrvy52a67ig4oco@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161019135208.GG11471@vireshk-i7> (Viresh Kumar's message of
+        "Wed, 19 Oct 2016 19:22:08 +0530")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18 October 2016 at 06:38, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Wed, Oct 12, 2016 at 03:12:54PM -0700, Markus Mayer wrote:
->> Add the binding document for the new brcmstb-avs-cpufreq driver.
->>
->> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
->> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> ---
->>  .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     | 76 ++++++++++++++++++++++
->>  MAINTAINERS                                        |  7 ++
->>  2 files changed, 83 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt b/Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
->> new file mode 100644
->> index 0000000..23a2c3d
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
->> @@ -0,0 +1,76 @@
->> +Broadcom STB AVS CPUfreq driver bindings
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+
+>> >> +	{ .compatible = "marvell,pxa250", },
+>> >> +	{ .compatible = "marvell,pxa270", },
+>> >>  
+>> >>  	{ .compatible = "samsung,exynos3250", },
+>> >>  	{ .compatible = "samsung,exynos4210", },
+>> >
+>> > Isn't there a race between cpufreq-dt and the platform driver to
+>> > register first ?
+>> Ah, could you be more specific about the race you're talking of ?
+>> 
+>> My understanding was that cpufreq-dt-platdev does create the device, and
+>> cpufreq-dt is a driver for it, so there is no race but a direct relationship
+>> AFAIU.
 >
-> Bindings describe h/w, not drivers or Linux subsystems.
+> I mean that both the driver may try to register to the cpufreq core if
+> they are both compiled in a single image.
+Euh I still don't follow you. The only driver that can register to the cpufreq
+core is cpufreq-dt.
 
-I can call this "AVS mail box and interrupt register bindings". Would that work?
+Now the only case I see is that there are 2 cpufreq-dt platform_device created
+from cpufreq-dt-platdev. Given that there is only 1 call to
+platform_device_register_data() in it, I don't see how it is possible.
 
->> +========================================
->> +
->> +A total of three DT nodes are required. One node (brcm,avs-cpu-data-mem)
->> +references the mailbox register used to communicate with the AVS CPU[1]. The
->> +second node (brcm,avs-cpu-l2-intr) is required to trigger an interrupt on
->> +the AVS CPU. The interrupt tells the AVS CPU that it needs to process a
->> +command sent to it by a driver. Interrupting the AVS CPU is mandatory for
->> +commands to be processed.
->> +
->> +The interface also requires a reference to the AVS host interrupt controller,
->> +so a driver can react to interrupts generated by the AVS CPU whenever a command
->> +has been processed. See [2] for more information on the brcm,l2-intc node.
->> +
->> +[1] The AVS CPU is an independent co-processor that runs proprietary
->> +firmware. On some SoCs, this firmware supports DFS and DVFS in addition to
->> +Adaptive Voltage Scaling.
->> +
->> +[2] Documentation/devicetree/bindings/interrupt-controller/brcm,l2-intc.txt
->> +
->> +
->> +Node brcm,avs-cpu-data-mem
->> +--------------------------
->> +
->> +Required properties:
->> +- compatible: Sould be one of: brcm,avs-cpu-data-mem,
->> +              brcm,bcm7271-avs-cpu-data-mem or brcm,bcm7268-avs-cpu-data-mem
->
-> This does not match the example. Need to clarify valid combinations and
-> ordering.
+Now if you are worried that 2 cpufreq-dt devices are created, ie. 1 for pxa25x
+and one for pxa27x:
+ - this looks impossible given the cpufreq_dt_platdev_init() code
+ - no device-tree will ever be compatible with both of them, even if a single
+   kernel binary will be compatible with both of them
 
-If I say "must include brcm,avs-cpu-data-mem and should also include
-either brcm,bcm7271-avs-cpu-data-mem or
-brcm,bcm7268-avs-cpu-data-mem", would that be acceptable? Same for the
-other binding below.
+Tell me if this is the information you're looking for.
 
->> +- reg: Specifies base physical address and size of the registers.
->> +- interrupts: The interrupt that the AVS CPU will use to interrupt the host
->> +              when a command completed.
->> +- interrupt-parent: The interrupt controller the above interrupt is routed
->> +                    through.
->> +- interrupt-names: The name of the interrupt used to interrupt the host.
->> +
->> +Optional properties:
->> +- None
->> +
->> +Node brcm,avs-cpu-l2-intr
->> +-------------------------
->> +
->> +Required properties:
->> +- compatible: Sould be one of: brcm,avs-cpu-l2-intr,
->> +              brcm,bcm7271-avs-cpu-l2-intr or brcm,bcm7268-avs-cpu-l2-intr
->
-> ditto.
->
->> +- reg: Specifies base physical address and size of the registers.
->> +
->> +Optional properties:
->> +- None
->> +
->> +
->> +Example
->> +=======
->> +
->> +     avs_host_l2_intc: interrupt-controller@f04d1200 {
->> +             #interrupt-cells = <1>;
->> +             compatible = "brcm,l2-intc";
->> +             interrupt-parent = <&intc>;
->> +             reg = <0xf04d1200 0x48>;
->> +             interrupt-controller;
->> +             interrupts = <0x0 0x19 0x0>;
->> +             interrupt-names = "avs";
->> +     };
->> +
->> +     avs-cpu-data-mem@f04c4000 {
->> +             compatible = "brcm,bcm7271-avs-cpu-data-mem",
->> +                             "brcm,avs-cpu-data-mem";
->> +             reg = <0xf04c4000 0x60>;
->> +             interrupts = <0x1a>;
->> +             interrupt-parent = <&avs_host_l2_intc>;
->> +             interrupt-names = "sw_intr";
->> +     };
->> +
->> +     avs-cpu-l2-intr@f04d1100 {
->> +             compatible = "brcm,bcm7271-avs-cpu-l2-intr",
->> +                             "brcm,avs-cpu-l2-intr";
->> +             reg = <0xf04d1100 0x10>;
->> +     };
->
-> I'm wondering if this would be better described as just 1 node for the
-> AVS cpu? Are there any other functions or resources tied to the cpu
-> beyond your current usage?
+Cheers.
 
-Hm. I thought about this one a bit. brcm,l2-intc is also used
-elsewhere. And all three nodes have different, non-adjacent memory
-addresses (not hugely so, but still). Mapping the entire area covering
-all three registers in one go doesn't seem like a good idea and would
-lead to very odd offsets. Also, while it is not likely for some of the
-registers to get moved around in newer SoCs, I suppose it is possible
-(provided the HW guys have a compelling reason for it). I am by no
-means a DT expert, so if there is a way to cleanly represent this as
-one node, by all means, please let me know.
-
-> Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Robert
