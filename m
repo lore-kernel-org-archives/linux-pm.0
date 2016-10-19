@@ -1,55 +1,67 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for device-tree
-Date: Wed, 19 Oct 2016 22:06:10 +0200
-Message-ID: <87bmyg3xzh.fsf@belgarion.home>
-References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
-        <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
-        <20161018113835.GB11471@vireshk-i7> <87r37d4qlw.fsf@belgarion.home>
-        <20161019135208.GG11471@vireshk-i7>
+From: Tim Walberg <twalberg@comcast.net>
+Subject: Re: 4.8.1 regression with cpufreq governors
+Date: Wed, 19 Oct 2016 15:06:10 -0500
+Message-ID: <20161019200610.GB9047@comcast.net>
+References: <20161018004606.GA5559@comcast.net>
+ <2549240.nvakNXlyKF@vostro.rjw.lan>
+Reply-To: Tim Walberg <twalberg@comcast.net>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161019135208.GG11471@vireshk-i7> (Viresh Kumar's message of
-        "Wed, 19 Oct 2016 19:22:08 +0530")
+Content-Disposition: inline
+In-Reply-To: <2549240.nvakNXlyKF@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Tim Walberg <twalberg@comcast.net>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
+This indeed turned out to be the fix.
 
->> >> +	{ .compatible = "marvell,pxa250", },
->> >> +	{ .compatible = "marvell,pxa270", },
->> >>  
->> >>  	{ .compatible = "samsung,exynos3250", },
->> >>  	{ .compatible = "samsung,exynos4210", },
->> >
->> > Isn't there a race between cpufreq-dt and the platform driver to
->> > register first ?
->> Ah, could you be more specific about the race you're talking of ?
->> 
->> My understanding was that cpufreq-dt-platdev does create the device, and
->> cpufreq-dt is a driver for it, so there is no race but a direct relationship
->> AFAIU.
->
-> I mean that both the driver may try to register to the cpufreq core if
-> they are both compiled in a single image.
-Euh I still don't follow you. The only driver that can register to the cpufreq
-core is cpufreq-dt.
+On 10/18/2016 23:10 +0200, Rafael J. Wysocki wrote:
+>>	On Monday, October 17, 2016 07:46:06 PM Tim Walberg wrote:
+>>	> May or may not be related to similar reports, but here's what I've just observed
+>>	> on my system. Built a stock kernel from tags/v4.8.1, relevant cpufreq bits:
+>>	> 
+>>	> CONFIG_ACPI_CPU_FREQ_PSS=y
+>>	> CONFIG_CPU_FREQ=y
+>>	> CONFIG_CPU_FREQ_GOV_ATTR_SET=y
+>>	> CONFIG_CPU_FREQ_GOV_COMMON=y
+>>	> CONFIG_CPU_FREQ_STAT=y
+>>	> CONFIG_CPU_FREQ_STAT_DETAILS=y
+>>	> # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
+>>	> # CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
+>>	> # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
+>>	> # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
+>>	> CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
+>>	> # CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL is not set
+>>	> CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+>>	> CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+>>	> CONFIG_CPU_FREQ_GOV_USERSPACE=m
+>>	> CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+>>	> CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+>>	> CONFIG_CPU_FREQ_GOV_SCHEDUTIL=m
+>>	> # CONFIG_X86_PCC_CPUFREQ is not set
+>>	> CONFIG_X86_ACPI_CPUFREQ=m
+>>	> CONFIG_X86_ACPI_CPUFREQ_CPB=y
+>>	> 
+>>	> 
+>>	> Conservative is set as default governer, yet when boot completes, all CPUs are
+>>	> pegged at the highest frequency. Changing governor to powersave knocks them all
+>>	> down to the lowest available frequency. Putting them back on conservative (or
+>>	> ondemand) results in no change in frequency, despite generating load. Switching
+>>	> to performance of course kicks them back up to high frequency. Basically, the
+>>	> governors don't seem to be ... governing.
+>>	
+>>	The "convervative" governor issue seems to be the one fixed recently
+>>	(http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=pm-cpufreq&id=abb6627910a1e783c8e034b35b7c80e5e7f98f41).
+>>	
+>>	I'm not sure why "ondemand" behaves incorrectly for you though.
+>>	
+>>	Thanks,
+>>	Rafael
+End of included message
 
-Now the only case I see is that there are 2 cpufreq-dt platform_device created
-from cpufreq-dt-platdev. Given that there is only 1 call to
-platform_device_register_data() in it, I don't see how it is possible.
 
-Now if you are worried that 2 cpufreq-dt devices are created, ie. 1 for pxa25x
-and one for pxa27x:
- - this looks impossible given the cpufreq_dt_platdev_init() code
- - no device-tree will ever be compatible with both of them, even if a single
-   kernel binary will be compatible with both of them
-
-Tell me if this is the information you're looking for.
-
-Cheers.
 
 -- 
-Robert
+twalberg@gmail.com, twalberg@comcast.net
