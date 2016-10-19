@@ -1,42 +1,66 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 0/2] ARM: at91: properly handle LPDDR poweroff
-Date: Wed, 19 Oct 2016 16:07:03 +0200
-Message-ID: <CAMuHMdUnoHPOQeO=oSRkNWbfLGDzZbBZvPFr3dS7TOKPQFcUxQ@mail.gmail.com>
-References: <20161019114420.15213-1-alexandre.belloni@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161019114420.15213-1-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Jean-Jacques Hiblot <jjhiblot@traphandler.com>, Linux PM list <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, Sebastian Reichel <sre@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH 7/9] ACPI / hotplug / PCI: Use cached copy of
+ PCI_EXP_SLTCAP_HPC bit
+Date: Wed, 19 Oct 2016 16:07:13 +0200
+Message-ID: <dbe9c6490001a351fb63bca74e27a454ac13a300.1476875113.git.lukas@wunner.de>
+References: <cover.1476875113.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 19, 2016 at 1:44 PM, Alexandre Belloni
-<alexandre.belloni@free-electrons.com> wrote:
-> LPDDR memories can only handle up to 400 uncontrolled power offs in their
-> life. The proper power off sequence has to be applied before shutting down the
-> SoC.
+We cache the PCI_EXP_SLTCAP_HPC bit in pci_dev->is_hotplug_bridge on
+device probe, so there's no need to read it again when adding the ACPI
+hotplug context.
 
-Interesting. How many boards have been killed during kernelci.org
-operation?
+Here's the call chain to prove that no ordering issue is introduced:
 
-Gr{oetje,eeting}s,
+pci_scan_child_bus [drivers/pci/probe.c]
+  pci_scan_slot
+    pci_scan_single_device
+      pci_scan_device
+        pci_setup_device
+          set_pcie_hotplug_bridge
+            [is_hotplug_bridge bit is set here]
+  pci_scan_bridge
+    pci_add_new_bus
+      pci_alloc_child_bus
+        pcibios_add_bus  [arch/(x86|arm64|ia64)/...]
+          acpi_pci_add_bus [drivers/pci/pci-acpi.c]
+            acpiphp_enumerate_slots [drivers/pci/hotplug/acpiphp_glue.c]
+              acpiphp_add_context
+                device_is_managed_by_native_pciehp
+                  [is_hotplug_bridge bit is queried here]
 
-                        Geert
+No functional change intended.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/hotplug/acpiphp_glue.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index a46b585..b286a56 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -225,14 +225,11 @@ static void acpiphp_post_dock_fixup(struct acpi_device *adev)
+ /* Check whether the PCI device is managed by native PCIe hotplug driver */
+ static bool device_is_managed_by_native_pciehp(struct pci_dev *pdev)
+ {
+-	u32 reg32;
+ 	acpi_handle tmp;
+ 	struct acpi_pci_root *root;
+ 
+ 	/* Check whether the PCIe port supports native PCIe hotplug */
+-	if (pcie_capability_read_dword(pdev, PCI_EXP_SLTCAP, &reg32))
+-		return false;
+-	if (!(reg32 & PCI_EXP_SLTCAP_HPC))
++	if (!pdev->is_hotplug_bridge)
+ 		return false;
+ 
+ 	/*
+-- 
+2.9.3
