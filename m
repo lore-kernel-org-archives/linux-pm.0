@@ -1,89 +1,93 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/5] Switch to the DT cpufreq policy on the Integrator
-Date: Wed, 19 Oct 2016 23:24:21 +0200
-Message-ID: <2560448.5arFO2Mb4U@vostro.rjw.lan>
-References: <1476871154-32243-1-git-send-email-linus.walleij@linaro.org>
+From: Emily Shaffer <emilyshaffer@google.com>
+Subject: [PATCH] cpufreq: powernv: Use node ID in init_chip_info
+Date: Wed, 19 Oct 2016 15:02:38 -0700
+Message-ID: <CAJoAoZmfxs8wwy1XsfN9qzLyf-ifQK-qPE4jeBhnKKzjoHSXmA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54840 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1753195AbcJSVR1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 17:17:27 -0400
-In-Reply-To: <1476871154-32243-1-git-send-email-linus.walleij@linaro.org>
+Received: from mail-it0-f41.google.com ([209.85.214.41]:38033 "EHLO
+        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750763AbcJSWCx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 18:02:53 -0400
+Received: by mail-it0-f41.google.com with SMTP id 66so47061523itl.1
+        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2016 15:02:53 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Russell King <linux@armlinux.org.uk>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 
-On Wednesday, October 19, 2016 11:59:09 AM Linus Walleij wrote:
-> This switches the ARM Integrator/AP and Integrator/CP to use the
-> Device Tree cpufreq policy with its definition of operating points
-> using the generic OPP library.
-> 
-> The Integrators does not need to control a regulator to switch
-> frequency, only a clock. This clock and its device tree bindings
-> have been defined in the device tree and merged upstream for v4.9.
-> 
-> This approach provides a little better granularity on the
-> Integrator/AP where I defined a few operating points: before
-> this change the Integrator would just switch between min speed
-> (12 MHz) and max speed (71 MHz). Now it can switch between a
-> few arbitrarily chosen OPPs as in the examples below:
-> 
-> The following tests were made on the Integrator/AP:
-> 
-> /sys/devices/system/cpu/cpufreq/policy0 echo ondemand > scaling_governor
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 24000000 Hz
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 24000000 Hz --> 12000000 Hz
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 24000000 Hz
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 24000000 Hz --> 12000000 Hz
-> 
-> The switch from 12 to 24 MHz is triggered by as little as using the
-> command line with the ondemand governor. If we do this:
-> 
-> yes > /dev/null &
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 36000000 Hz
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 36000000 Hz --> 71000000 Hz
-> pkill yes
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 12000000 Hz
-> 
-> So the algorithm is indeed using all the OPPs.
-> 
-> Also as a confirmation test to make sure performance is affected by the
-> speed changes, we set the performance governor and:
-> 
-> echo 12000 > scaling_max_freq
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 12000000 Hz
-> time find /sys|sort|uniq > /dev/null
-> real    0m 45.51s
-> user    0m 11.15s
-> sys     0m 26.74s
-> 
-> echo 71000 > scaling_max_freq
-> cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 71000000 Hz
-> time find /sys|sort|uniq
->  > /dev/null
-> real    0m 9.13s
-> user    0m 2.35s
-> sys     0m 5.50s
-> 
-> So it is working.
-> 
-> If people are happy with this approach and approve of the patches
-> I'd like an ACK from the cpufreq people and then merge the whole set
-> through ARM SoC.
-> 
-> Linus Walleij (5):
->   cpufreq: enable the DT cpufreq driver on the Integrators
->   ARM: dts: Add Integrator/AP cpus node and operating points
->   ARM: dts: Add Integrator/CP cpus node and operating points
->   ARM: defconfig: turn on the DT cpufreq for Integrator
->   cpufreq: retire the Integrator cpufreq driver
+Fixed assumption that node_id==chip_id in powernv-cpufreq.c:init_chip_info;
+explicitly use node ID where necessary.
 
-The cpufreq changes look good to me, but Viresh is the expert for the DT stuff.
+Tested: All CPUs report in /sys/devices/system/cpu*/cpufreq/throttle_stats
 
-Thanks,
-Rafael
+Effort: platforms/arch-powerpc
+Google-Bug-Id: 26979978
 
+Signed-off-by: Emily Shaffer <emilyshaffer@google.com>
+Change-Id: I22eb626b32fbb8053b3bbb9c75e677c700d0c2fb
+---
+ drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++------
+ 1 file changed, 21 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c
+b/drivers/cpufreq/powernv-cpufreq.c
+index d3ffde8..3750b58 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -911,32 +911,47 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+
+ static int init_chip_info(void)
+ {
+-       unsigned int chip[256];
++       int rc = 0;
+        unsigned int cpu, i;
+        unsigned int prev_chip_id = UINT_MAX;
++       unsigned int *chip, *node;
++
++       chip = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
++       node = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
++       if (!chip || !node) {
++               rc = -ENOMEM;
++               goto out;
++       }
+
+        for_each_possible_cpu(cpu) {
+                unsigned int id = cpu_to_chip_id(cpu);
+
+                if (prev_chip_id != id) {
+                        prev_chip_id = id;
+-                       chip[nr_chips++] = id;
++                       node[nr_chips] = cpu_to_node(cpu);
++                       chip[nr_chips] = id;
++                       nr_chips++;
+                }
+        }
+
+        chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+-       if (!chips)
+-               return -ENOMEM;
++       if (!chips) {
++               rc = -ENOMEM;
++               goto out;
++       }
+
+        for (i = 0; i < nr_chips; i++) {
+                chips[i].id = chip[i];
+-               cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
++               cpumask_copy(&chips[i].mask, cpumask_of_node(node[i]));
+                INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+                for_each_cpu(cpu, &chips[i].mask)
+                        per_cpu(chip_info, cpu) =  &chips[i];
+        }
+
+-       return 0;
++out:
++       kfree(node);
++       kfree(chip);
++       return rc;
+ }
+
+ static inline void clean_chip_info(void)
+-- 
+2.8.0.rc3.226.g39d4020
