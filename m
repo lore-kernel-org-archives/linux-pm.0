@@ -1,67 +1,82 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 13/14] power: reset: Add Intel PIIX4 poweroff driver
-Date: Wed, 19 Oct 2016 04:52:44 +0200
-Message-ID: <20161019025244.agynpetclhimk3tr@earth>
-References: <20160919234242.23xyy2y3zjvuhate@earth>
- <20160928153056.28719-1-paul.burton@imgtec.com>
+Subject: Re: [PATCH] mfd: axp20x-i2c: Add i2c-ids to fix module auto-loading
+Date: Wed, 19 Oct 2016 04:56:57 +0200
+Message-ID: <20161019025656.564mntn7mt7ei36m@earth>
+References: <20161005155112.13774-1-hdegoede@redhat.com>
+ <20161005155112.13774-2-hdegoede@redhat.com>
+ <20161019025154.rmw56aoh27wbrene@earth>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="3eu5fzwnauerbpg6"
+        protocol="application/pgp-signature"; boundary="3tgrbcy642jlayy4"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:36912 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:37252 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935225AbcJSCwu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Oct 2016 22:52:50 -0400
+        id S932580AbcJSC5B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Oct 2016 22:57:01 -0400
 Content-Disposition: inline
-In-Reply-To: <20160928153056.28719-1-paul.burton@imgtec.com>
+In-Reply-To: <20161019025154.rmw56aoh27wbrene@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Paul Burton <paul.burton@imgtec.com>
-Cc: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Dennis Gilmore <dennis@ausil.us>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
 
---3eu5fzwnauerbpg6
+--3tgrbcy642jlayy4
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Sep 28, 2016 at 04:30:56PM +0100, Paul Burton wrote:
-> Add a driver which allows powering off the system via an Intel PIIX4
-> southbridge, by entering the PIIX4 SOff state. This is useful on the
-> MIPS Malta development board, where it will power down the FPGA based
-> board until its ON/NMI button is pressed, or the QEMU implementation of
-> the MIPS Malta board where it will cause QEMU to exit.
+On Wed, Oct 19, 2016 at 04:51:55AM +0200, Sebastian Reichel wrote:
+> > diff --git a/drivers/mfd/axp20x-i2c.c b/drivers/mfd/axp20x-i2c.c
+> > index b1b8658..d35a5fe 100644
+> > --- a/drivers/mfd/axp20x-i2c.c
+> > +++ b/drivers/mfd/axp20x-i2c.c
+> > @@ -69,10 +69,11 @@ static const struct of_device_id axp20x_i2c_of_matc=
+h[] =3D {
+> >  };
+> >  MODULE_DEVICE_TABLE(of, axp20x_i2c_of_match);
+> > =20
+> > -/*
+> > - * This is useless for OF-enabled devices, but it is needed by I2C sub=
+system
+> > - */
+> >  static const struct i2c_device_id axp20x_i2c_id[] =3D {
+> > +	{ "axp152", 0 },
+> > +	{ "axp202", 0 },
+> > +	{ "axp209", 0 },
+> > +	{ "axp221", 0 },
+> >  	{ },
+> >  };
+> >  MODULE_DEVICE_TABLE(i2c, axp20x_i2c_id);
 >=20
-> Signed-off-by: Paul Burton <paul.burton@imgtec.com>
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-> Cc: David Woodhouse <dwmw2@infradead.org>
-> Cc: linux-pm@vger.kernel.org
+> Thanks, queued.
 
-Thanks, queued.
+My mistake. It should obviously go through mfd. So take this instead:
+
+Acked-By: Sebastian Reichel <sre@kernel.org>
 
 -- Sebastian
 
---3eu5fzwnauerbpg6
+--3tgrbcy642jlayy4
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBt/8AAoJENju1/PIO/qaKngQAISzQ5ysV+Sm8/0fFDv4/ICC
-f69gYtzf3wJvBoP12/3CcbibuxlkQfVl4ADYqEyCSiTbJFUXmw1j4ELeqNcjfjX6
-vNo4lj0qDMZUeOwsQCOJysCsRW0G6qxBd8HBkH3gdT/5UFYYyI8DmhsBtWJw/wgI
-EJ1EJzhv2ZN+BUlBPPrrpPIJMNdhvJmPTZTIUOnZbxHV9ybiR3pHZinzIPIAvnpc
-ijEVqgjKMu8jjeoOzSIQXGzOubCWkyl5hUD9B3LBz4KvUGL4uZa7P6j9oeQBxO2Y
-66Pac+SMWR6VOxcM/qBB37J4nQdyAIdw5+YthtBzy5ShBtE+pwVTIH2ty2pApUy9
-T3uCS2GlSH5CvNH5mvSrAKUk3XKzcnBQREg6BNXD20Wki7vxrUZAE7eZ8ymap2SI
-7tbq7WSz4JtXqWFp+b64TjMGlb6J+lv/RVUkkJ7OMwHdgWlDg9mlCJ7DQpi+JQ8s
-4bJOBno7Wik/yxdMtdnDIJ6nmlmJ3aYt3pfHhvrsgHcLEu/SyHBHTZnrpgSynkbm
-eRCVuHcl4Yij8K/0PRIPELlgZE2EA1H/puFBCbiL5AIMHWnCJQsicVvcc5gxFkFZ
-kO3BDipXGWvSRL9kv9+SgLJEmkZ0tXw2RR/kYQfBPFAWLv+rEJX2SwR2tflAXofx
-80lXFgykTW3LxHhUXwFS
-=5I6j
+iQIcBAABCgAGBQJYBuD4AAoJENju1/PIO/qaLpMP/R4RUbae4zSacpcdXgUeCc/P
+oMuae5gNxXq7tseHtHg3kmE2jQkPz1KDvwTLe5/iURzfa0JWNCmv/DN7AC3nxXKf
+JshmvxRgbVtXF3LmCZO/qAWN2vrya4q33JaVFgm0kPauVBxDaUS6vP8UZOznk/+O
+W3CYyq4P5+4LyY3a1CA+kgSavwAWl/4HOYePPzigKIvT6bjJpZg1WMeLbJqfD62c
+eUSZmxZd1y3KKTxf0sfD9wfwAidL0gwpBclzCRb0LD0Pi4jKG1uV5lKmfy+GWnsy
+2r/w3YyNPbXsbLH51sFQUFuXsEQDSg4Gxmh5lTD7uv2o4PbR4CziKBB7E/yN1Qzj
+pKqWJD4wMMZKUPflccTFZLoGwDp+DgYE6GzUcvL/VMUExjhe9cQAqHZd6uQyKpSl
+Gs3bB5QPTHyKripxuN1kGmdle9JgiwKUbTiMu2Ttw84G88bfEqrj9UGuknrEhSUW
+w0f+lGDeJxc7mSHZrnQFXd536wplrVSo9HpWIu8D7yHhT/ggmNTPTN0qidNl67cV
+iMSpa7Z49J594BMdXUoT8YCAE76YDzrsgFIxHA6s4cKuxWfhV7X9UV4BT3ON20WW
+F8RT+ngj1N+8dJQ2ltXhofUeIuOcnDygxip7bfN61V9HyG7z/deonG/PeQKOU2Eu
+NNCkVaR3cZczFGKOZaMI
+=GJjL
 -----END PGP SIGNATURE-----
 
---3eu5fzwnauerbpg6--
+--3tgrbcy642jlayy4--
