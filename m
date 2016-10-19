@@ -1,72 +1,76 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/2] power: supply: Fix module autoload for some platform
- drivers
-Date: Wed, 19 Oct 2016 05:34:05 +0200
-Message-ID: <20161019033405.hwhafz437hlphokn@earth>
-References: <1476731616-23995-1-git-send-email-javier@osg.samsung.com>
+Subject: Re: [patch] power: supply: lp8788: remove an unneeded NULL check
+Date: Wed, 19 Oct 2016 05:38:03 +0200
+Message-ID: <20161019033803.i4z65zpttyz2asft@earth>
+References: <20161014073328.GC15168@mwanda>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2zpqg22z2niet42p"
+        protocol="application/pgp-signature"; boundary="4vgqxzvu7j25jkdv"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:38874 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:39088 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S964808AbcJSDeK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Oct 2016 23:34:10 -0400
+        id S1752481AbcJSDiI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 18 Oct 2016 23:38:08 -0400
 Content-Disposition: inline
-In-Reply-To: <1476731616-23995-1-git-send-email-javier@osg.samsung.com>
+In-Reply-To: <20161014073328.GC15168@mwanda>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-kernel@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Milo Kim <milo.kim@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
 
---2zpqg22z2niet42p
+--4vgqxzvu7j25jkdv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Javier,
+Hi Dan,
 
-On Mon, Oct 17, 2016 at 04:13:34PM -0300, Javier Martinez Canillas wrote:
-> Hello Sebastian,
+On Fri, Oct 14, 2016 at 10:33:28AM +0300, Dan Carpenter wrote:
+> We checked that "pdata->chg_params" is non-NULL earlier in this function
+> so when we add "i" to it, it's still non-NULL.
 >=20
-> I noticed that module autoload won't be working for some of the power
-> supply platform drivers. This patch series contains fixes for these.
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 >=20
-> Best regards,
-> Javier
->=20
->=20
-> Javier Martinez Canillas (2):
->   power: supply: max8997_charger: Fix module autoload
->   power: supply: axp288_fuel_gauge: Fix module autoload
->=20
->  drivers/power/supply/axp288_fuel_gauge.c | 1 +
->  drivers/power/supply/max8997_charger.c   | 1 +
->  2 files changed, 2 insertions(+)
+> diff --git a/drivers/power/supply/lp8788-charger.c b/drivers/power/supply=
+/lp8788-charger.c
+> index 7321b72..509e2b3 100644
+> --- a/drivers/power/supply/lp8788-charger.c
+> +++ b/drivers/power/supply/lp8788-charger.c
+> @@ -384,9 +384,6 @@ static int lp8788_update_charger_params(struct platfo=
+rm_device *pdev,
+>  	for (i =3D 0; i < pdata->num_chg_params; i++) {
+>  		param =3D pdata->chg_params + i;
+> =20
+> -		if (!param)
+> -			continue;
+> -
+>  		if (lp8788_is_valid_charger_register(param->addr)) {
+>  			ret =3D lp8788_write_byte(lp, param->addr, param->val);
+>  			if (ret)
 
 Thanks, queued.
 
 -- Sebastian
 
---2zpqg22z2niet42p
+--4vgqxzvu7j25jkdv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIcBAABCgAGBQJYBumtAAoJENju1/PIO/qaMhYP+wTOkttlzaYdHYPM4T+499l+
-Rp2Z3H8sB95v3uEgi7jPhRd2GeHcctkDPZHaepOk0POwpb90DX4gJKl1+tknI1Kr
-VUfmSR3W+WPlPdzrJgjl0YwMIpt6NWizI3XsipJppw9436d9lfgELjQrBhvr3gGY
-+6NCXAsPJ9CegeBsyGrE1B0ltnOzRgBzWOV9AzJA3s7CtiNaCgXJSCY0ddNbHBUq
-ESOHOglvsCk1V6koaHuW8ClfdRxOAGhlyVk1m9nN/PIuiKpqFXgl4+dzxoJUmjme
-h8MW9aiHKyUT8dGr+SvPOVOlZp/i3hASTqVRquFAX6UnvBsVFlRNxQh9jYOdZm/6
-mSbXwXC8kvJp23gSGGg9o15PBfq2oY2lhq475xqGEBPofK09v+pnp8sB1+SqHBey
-Jp/pTc5FBWxWxNJz0C0sAshDDss1s+5wcEUjx8gTxXQKgSAf2dmZR38xQq0bzDbb
-GMywO5d9VJbaa1ozQ4VFSkQtPURS8zD09EMUzTZbh2Pa0EwZk7xWJl078LLfGvtS
-nNRmXyu5D1BpbUk6nywZMt4QByJE1ZMHE7rFjXFeEl+ei7cfGpHAiIhlpk2bP05g
-PMv+gRPGE2EYred1ao5kDUcwnN8eazOgRMsTt1UJbLVGjrmD5TuYXcXX6nrVpBi5
-21WJFmxMVmqMnQGTi5CK
-=lhdU
+iQIcBAABCgAGBQJYBuqaAAoJENju1/PIO/qaookP/iod/AD6afe2105jQ3T/U/bR
+YGq314k+nt3Mt6LZ7XeUb4CZGB7OfkIl2KB57DdNTGcniVYkcdV2XwcswhBZ1F7p
+9Mrny6zBO13Zj709/KKrV9VlTRIDuNbje+YJQyOaG2g5O61ugjOU5+btyk6yp1yp
+ijMyTKuEF1lalvz8tLS+XBdTeQONk1jX547HYp9wrIiU7e/eqBxBsvb8hWciZxXX
+vpBPYmEdcamrbY2YXJRtA2pjyecuPmtRqUsC5lNwvQwSjDs3cRiYjuaV9fp98QNa
+0hcM2lvEJ7BhpnHGZRLi3RZZvaP69R6LUMrvWpWsiS0u09p1Ezhy00Z/FxQp6yck
+YthRmkyVzS1Fh/nidV/IJgkmnvvRufq8u8/rhUsxZuFpXkGT4Whlo1k/lGxZl8QH
+R//w0phDSDRYhP+xxqtAFbm4Dw96kRC8BW6+tKSS1nbA5YC1TRTHc1UjwMkVggle
+1Uxm2B32BCPhr30ZtB6vWy33ARmHVC+jrzzEkJHEX/tONIlTSgrmEZjwKyg+tLNI
+ddapxSXxxIwqjsmz3+eZNlfYVxTH0vPE6ovT8Pt9JugQV0ZErd1XH79smFoMFln/
+1QQ+DsD1O+q8xRiI/Vr9myqu59aZdYZaxksifwd49jQdsEQJTC/CTr4d5s+bohJ1
+RXm0mRyESkYGG6ssSbfy
+=SOxR
 -----END PGP SIGNATURE-----
 
---2zpqg22z2niet42p--
+--4vgqxzvu7j25jkdv--
