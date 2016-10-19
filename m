@@ -1,93 +1,138 @@
-From: Emily Shaffer <emilyshaffer@google.com>
-Subject: [PATCH] cpufreq: powernv: Use node ID in init_chip_info
-Date: Wed, 19 Oct 2016 15:02:38 -0700
-Message-ID: <CAJoAoZmfxs8wwy1XsfN9qzLyf-ifQK-qPE4jeBhnKKzjoHSXmA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f41.google.com ([209.85.214.41]:38033 "EHLO
-        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750763AbcJSWCx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 18:02:53 -0400
-Received: by mail-it0-f41.google.com with SMTP id 66so47061523itl.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2016 15:02:53 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Sinan Kaya <okaya@codeaurora.org>
+Subject: [PATCH V4 2/3] Revert "ACPI,PCI,IRQ: remove SCI penalize function"
+Date: Wed, 19 Oct 2016 18:21:03 -0400
+Message-ID: <1476915664-27231-3-git-send-email-okaya@codeaurora.org>
+References: <1476915664-27231-1-git-send-email-okaya@codeaurora.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1476915664-27231-1-git-send-email-okaya@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com
+Cc: linux-pci@vger.kernel.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, wim@djo.tudelft.nl, Sinan Kaya <okaya@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 
-Fixed assumption that node_id==chip_id in powernv-cpufreq.c:init_chip_info;
-explicitly use node ID where necessary.
+The SCI penalize function was removed in two steps (first refactor
+and then remove) and these changes are reverted here in one go.
 
-Tested: All CPUs report in /sys/devices/system/cpu*/cpufreq/throttle_stats
+The commit 103544d86976 ("ACPI,PCI,IRQ: reduce resource requirements")
+refactored the original code so that SCI penalty is calculated dynamically
+by the time get_penalty function is called. That change is partially
+reverted here, specifically for the SCI IRQ alone.
 
-Effort: platforms/arch-powerpc
-Google-Bug-Id: 26979978
+The SCI penalize function was finally dropped by commit 9e5ed6d1fb87
+("ACPI,PCI,IRQ: remove SCI penalize function") that replaced the old SCI
+penalty API with penalty calculation carried out dynamically and based
+on the acpi_gbl_FADT.sci_interrupt value.
 
-Signed-off-by: Emily Shaffer <emilyshaffer@google.com>
-Change-Id: I22eb626b32fbb8053b3bbb9c75e677c700d0c2fb
+However, that new algorithm relies on the accurate setting of IRQ
+types and that doesn't happen early enough on some platforms which
+leads to incorrect penalty assignments for PCI IRQs.  In those cases,
+irq_get_trigger_type() returns incorrect values for the IRQs in
+question, because they have not been registered yet by the time the
+penalties are calculated.
+
+To fix this problem, we only need to fix the penalty for the SCI interrupt.
+It seems better to add a single "sci_penalty" variable, set it to
+PIRQ_PENALTY_PCI_USING if it's level/low or PIRQ_PENALTY_ISA_ALWAYS
+otherwise, and add "sci_penalty" in when appropriate.  That should fix it
+for *any* SCI IRQ, not just those less than 256, and we don't have to add
+these extra penalty table entries that are all unused (except possibly for
+one entry if we have an SCI in the 16-255 range).
+
+For this reason, revert commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI
+penalize function") completely to restore the correct behavior.
+
+Link: https://lkml.org/lkml/2016/10/4/283
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Fixes: commit 103544d86976 ("ACPI,PCI,IRQ: reduce resource requirements")
+Fixes: commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI penalize function")
 ---
- drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++------
- 1 file changed, 21 insertions(+), 6 deletions(-)
+ arch/x86/kernel/acpi/boot.c |  1 +
+ drivers/acpi/pci_link.c     | 30 +++++++++++++++---------------
+ include/linux/acpi.h        |  1 +
+ 3 files changed, 17 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c
-b/drivers/cpufreq/powernv-cpufreq.c
-index d3ffde8..3750b58 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -911,32 +911,47 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
-
- static int init_chip_info(void)
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 90d84c3..0ffd26e 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+ 
+ 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+ 
+ 	/*
+ 	 * stash over-ride to indicate we've been here
+diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+index 4f37938..294b190 100644
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -87,6 +87,7 @@ struct acpi_pci_link {
+ 
+ static LIST_HEAD(acpi_link_list);
+ static DEFINE_MUTEX(acpi_link_lock);
++static int sci_irq = -1, sci_penalty;
+ 
+ /* --------------------------------------------------------------------------
+                             PCI Link Device Management
+@@ -496,25 +497,13 @@ static int acpi_irq_get_penalty(int irq)
  {
--       unsigned int chip[256];
-+       int rc = 0;
-        unsigned int cpu, i;
-        unsigned int prev_chip_id = UINT_MAX;
-+       unsigned int *chip, *node;
-+
-+       chip = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
-+       node = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
-+       if (!chip || !node) {
-+               rc = -ENOMEM;
-+               goto out;
-+       }
-
-        for_each_possible_cpu(cpu) {
-                unsigned int id = cpu_to_chip_id(cpu);
-
-                if (prev_chip_id != id) {
-                        prev_chip_id = id;
--                       chip[nr_chips++] = id;
-+                       node[nr_chips] = cpu_to_node(cpu);
-+                       chip[nr_chips] = id;
-+                       nr_chips++;
-                }
-        }
-
-        chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
--       if (!chips)
--               return -ENOMEM;
-+       if (!chips) {
-+               rc = -ENOMEM;
-+               goto out;
-+       }
-
-        for (i = 0; i < nr_chips; i++) {
-                chips[i].id = chip[i];
--               cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
-+               cpumask_copy(&chips[i].mask, cpumask_of_node(node[i]));
-                INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
-                for_each_cpu(cpu, &chips[i].mask)
-                        per_cpu(chip_info, cpu) =  &chips[i];
-        }
-
--       return 0;
-+out:
-+       kfree(node);
-+       kfree(chip);
-+       return rc;
+ 	int penalty = 0;
+ 
+-	/*
+-	* Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
+-	* with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
+-	* use for PCI IRQs.
+-	*/
+-	if (irq == acpi_gbl_FADT.sci_interrupt) {
+-		u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
+-
+-		if (type != IRQ_TYPE_LEVEL_LOW)
+-			penalty += PIRQ_PENALTY_ISA_ALWAYS;
+-		else
+-			penalty += PIRQ_PENALTY_PCI_USING;
+-	}
++	if (irq == sci_irq)
++		penalty += sci_penalty;
+ 
+ 	if (irq < ACPI_MAX_ISA_IRQS)
+ 		return penalty + acpi_isa_irq_penalty[irq];
+ 
+-	penalty += acpi_irq_pci_sharing_penalty(irq);
+-	return penalty;
++	return penalty + acpi_irq_pci_sharing_penalty(irq);
  }
-
- static inline void clean_chip_info(void)
+ 
+ int __init acpi_irq_penalty_init(void)
+@@ -881,6 +870,17 @@ bool acpi_isa_irq_available(int irq)
+ 		    acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
+ }
+ 
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
++{
++	sci_irq = irq;
++
++	if (trigger == ACPI_MADT_TRIGGER_LEVEL &&
++	    polarity == ACPI_MADT_POLARITY_ACTIVE_LOW)
++		sci_penalty = PIRQ_PENALTY_PCI_USING;
++	else
++		sci_penalty = PIRQ_PENALTY_ISA_ALWAYS;
++}
++
+ /*
+  * Over-ride default table to reserve additional IRQs for use by ISA
+  * e.g. acpi_irq_isa=5
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index c5eaf2f..67d1d3e 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -318,6 +318,7 @@ struct pci_dev;
+ int acpi_pci_irq_enable (struct pci_dev *dev);
+ void acpi_penalize_isa_irq(int irq, int active);
+ bool acpi_isa_irq_available(int irq);
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+ void acpi_pci_irq_disable (struct pci_dev *dev);
+ 
+ extern int ec_read(u8 addr, u8 *val);
 -- 
-2.8.0.rc3.226.g39d4020
+1.9.1
