@@ -1,54 +1,69 @@
-From: Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
-Subject: [PATCH 1/2] power_supply: Add OF bindings documentation for max14656_charger_detector
-Date: Wed, 19 Oct 2016 18:04:48 +0200
-Message-ID: <1476893089-7233-1-git-send-email-akurz@blala.de>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH 6/9] PCI: Unfold conditions to block runtime PM on PCIe ports
+Date: Wed, 19 Oct 2016 16:07:13 +0200
+Message-ID: <ba2f9f322b4aeea1aeb01f98a2eda8efe055494f.1476875113.git.lukas@wunner.de>
+References: <cover.1476875113.git.lukas@wunner.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.hostsharing.net ([176.9.242.54]:44325 "EHLO
+        mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S938895AbcJSORa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:17:30 -0400
+In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-Signed-off-by: Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
+The conditions to block D3 on parent ports are currently condensed into
+a single expression in pci_dev_check_d3cold().  Upcoming commits will
+add further conditions for hotplug ports, making this expression fairly
+large and impenetrable.  Unfold the conditions to maintain readability
+when they are amended.
+
+No functional change intended.
+
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- .../bindings/power_supply/maxim,max14656.txt       | 25 ++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power_supply/maxim,max14656.txt
+ drivers/pci/pci.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power_supply/maxim,max14656.txt b/Documentation/devicetree/bindings/power_supply/maxim,max14656.txt
-new file mode 100644
-index 0000000..e03e85a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power_supply/maxim,max14656.txt
-@@ -0,0 +1,25 @@
-+Maxim MAX14656 / AL32 USB Charger Detector
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index a19056e..f1ddb6b 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2270,19 +2270,20 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ {
+ 	bool *d3cold_ok = data;
+-	bool no_d3cold;
+ 
+-	/*
+-	 * The device needs to be allowed to go D3cold and if it is wake
+-	 * capable to do so from D3cold.
+-	 */
+-	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
+-		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
+-		!pci_power_manageable(dev);
++	/* The device needs to be allowed to go D3cold. */
++	if (dev->no_d3cold || !dev->d3cold_allowed)
++		*d3cold_ok = false;
 +
-+Required properties :
-+- compatible : "maxim,max14656";
-+- reg: i2c slave address
-+- interrupt-parent: the phandle for the interrupt controller
-+- interrupts: interrupt line
-+
-+Example:
-+
-+&i2c2 {
-+	clock-frequency = <50000>;
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_i2c2>;
-+	status = "okay";
-+
-+	max14656@35 {
-+		compatible = "maxim,max14656";
-+		reg = <0x35>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_charger_detect>;
-+		interrupt-parent = <&gpio6>;
-+		interrupts = <26 IRQ_TYPE_LEVEL_HIGH>;
-+	};
-+};
++	/* If it is wakeup capable it must be able to do so from D3cold. */
++	if (device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold))
++		*d3cold_ok = false;
+ 
+-	*d3cold_ok = !no_d3cold;
++	/* If it is a bridge it must be allowed to go to D3. */
++	if (!pci_power_manageable(dev))
++		*d3cold_ok = false;
+ 
+-	return no_d3cold;
++	return !*d3cold_ok;
+ }
+ 
+ /*
 -- 
-2.1.4
+2.9.3
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
