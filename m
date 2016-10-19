@@ -1,57 +1,71 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH 5/6] clk: pxa: transfer CPU clock setting from pxa2xx-cpufreq
-Date: Wed, 19 Oct 2016 22:15:43 +0200
-Message-ID: <877f943xjk.fsf@belgarion.home>
-References: <1476130149-31834-1-git-send-email-robert.jarzmik@free.fr>
-        <1476130149-31834-6-git-send-email-robert.jarzmik@free.fr>
-        <87zim23zw3.fsf@belgarion.home> <20161018234855.GO8871@codeaurora.org>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH v2 0/4] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Wed, 19 Oct 2016 15:33:43 -0500
+Message-ID: <20161019203347.17893-1-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp01.smtpout.orange.fr ([80.12.242.123]:36855 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753152AbcJSUPs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 16:15:48 -0400
-In-Reply-To: <20161018234855.GO8871@codeaurora.org> (Stephen Boyd's message of
-        "Tue, 18 Oct 2016 16:48:55 -0700")
+Received: from arroyo.ext.ti.com ([198.47.19.12]:47693 "EHLO arroyo.ext.ti.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S941389AbcJSUeq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Oct 2016 16:34:46 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>
 
-Stephen Boyd <sboyd@codeaurora.org> writes:
+Hi,
+This is v2 of the series to add support for TI SCI PM Domains. v1 of
+the series can be found here [1]. Several things have changed since v1:
 
-> On 10/18, Robert Jarzmik wrote:
->> Robert Jarzmik <robert.jarzmik@free.fr> writes:
->> Hi Michael and Stephen,
->> 
->> I'm planing on sending a v2 next week with minor corrections, mostly in the data
->> tables (pxa25x_freqs and pxa27x_freqs), as testing prooved some values were wrong.
->> 
->> If you want me modify this serie, will you have time to review for next week or
->> should I delay the v2 posting ?
->> 
->
-> No need to delay. clk patches look fine with a quick glance. It
-> would be really neat if we could make cpufreq-dt work without DT.
-> What's blocking that? OPP tables?
+- New patch to add a void *data to struct generic_pm_domain_data to
+  allow to store per device data associated with a genpd
+- From v1, squash patch 1 and 2 to introduce docs and dt-bindings in
+  one patch based on comment from Ulf
+- Fix some grammar errors in Documentation
+- Based on comments from Ulf, rework actual genpd implementation to
+  avoid creating one genpd per device and instead use device start/stop
+  hooks provided as part of genpd to control device state based on pm_runtime
+  implementation. Also make use of new of_genpd_add_provider_simple API
+  introduced by Jon Hunter and do not provide custom of_xlate to genpd core,
+  instead registering devices as they probe through attach_dev hook provided
+  by genpd framework.
 
-Heu I'm not the author of cpufreq-dt, so I'm not the best to answer.
-To answer the question "without DT", it depends if you mean "with ACPI" or "with
-platform_data" or something else.
+Most of the changes were motivated by the comments from Ulf Hannson on v1 that we
+should not use a 1-to-1 genpd to device mapping. The new approach allows us to
+create a single genpd and store information about each device as they attach to
+the genpd. Then the device start/stop hooks for that genpd leverage the
+per-device data to control power states over the TI SCI protocol.
 
->From what I've seen so far, the missing/blocking points are :
- - the OPP points definition as you said
- - probably same thing for the input power supply / regulator
- - the cooling parts probably
- - and more generaly all the cpufreq-dt is built around device-tree
- - last point, the name from KConfig, "Generic DT based cpufreq driver"
-   => that strongly suggest it's device-tree only
+This driver makes use of the ti_sci driver sent here [2] by Nishanth Menon and
+applies on top of his series on v4.9-rc1.
 
-I'm deeply convinced that Viresh being one of the authors will shed more light
-on this.
+Regards,
+Dave
 
-Cheers.
+[1] http://www.spinics.net/lists/arm-kernel/msg525204.html
+[2] http://www.spinics.net/lists/arm-kernel/msg536851.html
+
+Dave Gerlach (4):
+  PM / Domains: Add generic data pointer to genpd data struct
+  dt-bindings: Add TI SCI PM Domains
+  soc: ti: Add ti_sci_pm_domains driver
+  ARM: keystone: Drop PM domain support for k2g
+
+ .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  54 ++++++
+ MAINTAINERS                                        |   3 +
+ arch/arm/mach-keystone/Kconfig                     |   1 +
+ arch/arm/mach-keystone/pm_domain.c                 |   4 +-
+ drivers/soc/ti/Kconfig                             |  12 ++
+ drivers/soc/ti/Makefile                            |   1 +
+ drivers/soc/ti/ti_sci_pm_domains.c                 | 198 +++++++++++++++++++++
+ include/dt-bindings/genpd/k2g.h                    |  90 ++++++++++
+ include/linux/pm_domain.h                          |   1 +
+ 9 files changed, 363 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+ create mode 100644 drivers/soc/ti/ti_sci_pm_domains.c
+ create mode 100644 include/dt-bindings/genpd/k2g.h
 
 -- 
-Robert
+2.9.3
+
