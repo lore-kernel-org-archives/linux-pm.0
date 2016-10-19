@@ -1,18 +1,25 @@
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: [PATCH 1/4] PM / devfreq: rk3399_dmc: Fix module autoload
-Date: Wed, 19 Oct 2016 18:06:24 -0300
-Message-ID: <1476911187-11040-2-git-send-email-javier@osg.samsung.com>
+Subject: [PATCH 2/4] PM / devfreq: exynos-nocp: Fix module autoload
+Date: Wed, 19 Oct 2016 18:06:25 -0300
+Message-ID: <1476911187-11040-3-git-send-email-javier@osg.samsung.com>
 References: <1476911187-11040-1-git-send-email-javier@osg.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:48278
-        "EHLO s-opensource.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933233AbcJSVGp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 17:06:45 -0400
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1476911187-11040-1-git-send-email-javier@osg.samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
 If the driver is built as a module, autoload won't work because the module
 alias information is not filled. So user-space can't match the registered
@@ -22,33 +29,32 @@ Export the module alias information using the MODULE_DEVICE_TABLE() macro.
 
 Before this patch:
 
-$ modinfo drivers/devfreq/rk3399_dmc.ko | grep alias
+$ modinfo drivers/devfreq/event/exynos-nocp.ko | grep alias
 $
 
 After this patch:
 
-$ modinfo drivers/devfreq/rk3399_dmc.ko | grep alias
-alias:          of:N*T*Crockchip,rk3399-dmcC*
-alias:          of:N*T*Crockchip,rk3399-dmc
+$ modinfo drivers/devfreq/event/exynos-nocp.ko | grep alias
+alias:          of:N*T*Csamsung,exynos5420-nocpC*
+alias:          of:N*T*Csamsung,exynos5420-nocp
 
 Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 ---
 
- drivers/devfreq/rk3399_dmc.c | 1 +
+ drivers/devfreq/event/exynos-nocp.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index e24b73d66659..77bd9d02e870 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -454,6 +454,7 @@ static const struct of_device_id rk3399dmc_devfreq_of_match[] = {
- 	{ .compatible = "rockchip,rk3399-dmc" },
- 	{ },
+diff --git a/drivers/devfreq/event/exynos-nocp.c b/drivers/devfreq/event/exynos-nocp.c
+index 49e712aca0c1..5c3e7b11e8a6 100644
+--- a/drivers/devfreq/event/exynos-nocp.c
++++ b/drivers/devfreq/event/exynos-nocp.c
+@@ -190,6 +190,7 @@ static const struct of_device_id exynos_nocp_id_match[] = {
+ 	{ .compatible = "samsung,exynos5420-nocp", },
+ 	{ /* sentinel */ },
  };
-+MODULE_DEVICE_TABLE(of, rk3399dmc_devfreq_of_match);
++MODULE_DEVICE_TABLE(of, exynos_nocp_id_match);
  
- static struct platform_driver rk3399_dmcfreq_driver = {
- 	.probe	= rk3399_dmcfreq_probe,
+ static struct regmap_config exynos_nocp_regmap_config = {
+ 	.reg_bits = 32,
 -- 
 2.7.4
-
