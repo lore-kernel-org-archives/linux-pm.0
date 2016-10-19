@@ -1,69 +1,64 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 6/9] PCI: Unfold conditions to block runtime PM on PCIe ports
+Subject: [PATCH 0/9] PCIe port PM: high gloss polish & hotplug support
 Date: Wed, 19 Oct 2016 16:07:13 +0200
-Message-ID: <ba2f9f322b4aeea1aeb01f98a2eda8efe055494f.1476875113.git.lukas@wunner.de>
-References: <cover.1476875113.git.lukas@wunner.de>
+Message-ID: <cover.1476875113.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.hostsharing.net ([176.9.242.54]:44325 "EHLO
+Received: from mailout3.hostsharing.net ([176.9.242.54]:54261 "EHLO
         mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S938895AbcJSORa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:17:30 -0400
-In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
+        with ESMTP id S932504AbcJSOMa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:12:30 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-The conditions to block D3 on parent ports are currently condensed into
-a single expression in pci_dev_check_d3cold().  Upcoming commits will
-add further conditions for hotplug ports, making this expression fairly
-large and impenetrable.  Unfold the conditions to maintain readability
-when they are amended.
+Linux v4.8 added support to runtime suspend PCIe ports to D3hot.
 
-No functional change intended.
+Patches 1 to 6 of this series apply high gloss polish to that code to
+speed it up, reduce its size and improve its readability.  None of these
+patches should result in a functional change.  (And they didn't in my
+tests.)
 
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- drivers/pci/pci.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+Patches 7 and 8 are cleanups / refactorings for acpiphp.  They're prep
+work for patch 9 and likewise shouldn't cause a functional change.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index a19056e..f1ddb6b 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2270,19 +2270,20 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
- static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
- {
- 	bool *d3cold_ok = data;
--	bool no_d3cold;
- 
--	/*
--	 * The device needs to be allowed to go D3cold and if it is wake
--	 * capable to do so from D3cold.
--	 */
--	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
--		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
--		!pci_power_manageable(dev);
-+	/* The device needs to be allowed to go D3cold. */
-+	if (dev->no_d3cold || !dev->d3cold_allowed)
-+		*d3cold_ok = false;
-+
-+	/* If it is wakeup capable it must be able to do so from D3cold. */
-+	if (device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold))
-+		*d3cold_ok = false;
- 
--	*d3cold_ok = !no_d3cold;
-+	/* If it is a bridge it must be allowed to go to D3. */
-+	if (!pci_power_manageable(dev))
-+		*d3cold_ok = false;
- 
--	return no_d3cold;
-+	return !*d3cold_ok;
- }
- 
- /*
+Patch 9 extends runtime PM support to hotplug ports.
+
+
+@Keith Busch: I seem to recall you're working with large arrays of NVMe
+drives connected to native PCIe hotplug ports.  Perhaps you could give
+this series a spin, it might save quite a bit of power.
+
+To ease reviewing I've pushed this series to GitHub:
+https://github.com/l1k/linux/commits/pcie_port_pm_v1
+
+Thanks,
+
+Lukas
+
+
+Lukas Wunner (9):
+  PCI: Don't acquire ref on parent in pci_bridge_d3_update()
+  PCI: Autosense device removal in pci_bridge_d3_update()
+  PCI: Speed up algorithm in pci_bridge_d3_update()
+  PCI: Activate runtime PM on a PCIe port only if it can suspend
+  PCI: Consolidate conditions to allow runtime PM on PCIe ports
+  PCI: Unfold conditions to block runtime PM on PCIe ports
+  ACPI / hotplug / PCI: Use cached copy of PCI_EXP_SLTCAP_HPC bit
+  ACPI / hotplug / PCI: Make device_is_managed_by_native_pciehp() public
+  PCI: pciehp: Add runtime PM support for PCIe hotplug ports
+
+ drivers/pci/bus.c                  |   2 +-
+ drivers/pci/hotplug/acpiphp_glue.c |  31 +-----------
+ drivers/pci/hotplug/pciehp_ctrl.c  |   6 +++
+ drivers/pci/pci-acpi.c             |  24 +++++++++
+ drivers/pci/pci.c                  | 101 ++++++++++++++++++-------------------
+ drivers/pci/pci.h                  |   4 +-
+ drivers/pci/pcie/portdrv_pci.c     |  13 ++---
+ drivers/pci/remove.c               |   2 +-
+ include/linux/pci_hotplug.h        |   2 +
+ 9 files changed, 89 insertions(+), 96 deletions(-)
+
 -- 
 2.9.3
 
