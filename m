@@ -1,64 +1,108 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [RESEND PATCH 05/11] EDAC, sb_edac: Add Knights Mill CPUID
-Date: Wed, 19 Oct 2016 12:38:44 +0200
-Message-ID: <20161019103844.e2mrcp7rm7tvssj3@pd.tnic>
-References: <20161013153105.2517-1-piotr.luc@intel.com>
- <20161013153105.2517-6-piotr.luc@intel.com>
- <20161013220425.gt2rjobgc2x4tvug@pd.tnic>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161013220425.gt2rjobgc2x4tvug@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Piotr Luc <piotr.luc@intel.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Thompson <dougthompson@xmission.com>, linux-edac@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Luck, Tony" <tony.luck@intel.com>, "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH 3/9] PCI: Speed up algorithm in pci_bridge_d3_update()
+Date: Wed, 19 Oct 2016 16:07:13 +0200
+Message-ID: <a859eaee9f0188db46990e8003afcb6b714f99e4.1476875113.git.lukas@wunner.de>
+References: <cover.1476875113.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 14, 2016 at 12:04:25AM +0200, Borislav Petkov wrote:
-> On Thu, Oct 13, 2016 at 05:30:59PM +0200, Piotr Luc wrote:
-> > Add Knights Mill (KNM) to the list of CPUIDs supported by sb_edac.
-> > 
-> > Signed-off-by: Piotr Luc <piotr.luc@intel.com>
-> > Reviewed-by: Dave Hansen <dave.hansen@intel.com>
-> > Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
-> > Cc: Doug Thompson <dougthompson@xmission.com>
-> > Cc: Borislav Petkov <bp@alien8.de>
-> > Cc: linux-edac@vger.kernel.org
-> > Cc: linux-kernel@vger.kernel.org
-> > Cc: "Luck, Tony" <tony.luck@intel.com>
-> > Cc: "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
-> > ---
-> > This patch depends on [PATCH 03/11] x86/cpu/intel: Add Knights Mill 
-> > to Intel family
-> > 
-> >  drivers/edac/sb_edac.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/edac/sb_edac.c b/drivers/edac/sb_edac.c
-> > index 90564bc..3ffc737 100644
-> > --- a/drivers/edac/sb_edac.c
-> > +++ b/drivers/edac/sb_edac.c
-> > @@ -3373,6 +3373,7 @@ static const struct x86_cpu_id sbridge_cpuids[] = {
-> >  	ICPU(INTEL_FAM6_BROADWELL_X, pci_dev_descr_broadwell_table),
-> >  	ICPU(INTEL_FAM6_BROADWELL_XEON_D, pci_dev_descr_broadwell_table),
-> >  	ICPU(INTEL_FAM6_XEON_PHI_KNL, pci_dev_descr_knl_table),
-> > +	ICPU(INTEL_FAM6_XEON_PHI_KNM, pci_dev_descr_knl_table),
-> >  	{ }
-> >  };
-> >  MODULE_DEVICE_TABLE(x86cpu, sbridge_cpuids);
-> > -- 
-> 
-> Acked-by: Borislav Petkov <bp@suse.de>
-> 
-> for whichever tree it goes through.
+After a device has been added, removed or had its D3cold attributes
+changed, we recheck whether its parent bridge may runtime suspend to
+D3hot with pci_bridge_d3_update().
 
-As discussed yesterday, it goes through my tree.
+The most naive algorithm would be to iterate over the bridge's
+children and check if any of them are blocking D3.
 
-Thus, applied, thanks.
+The function already tries to be a bit smarter than that by first
+checking the device that was changed.  If this device already blocks D3
+on the bridge, then walking over all the other children can be skipped.
+A drawback of this approach is that if the device is *not* blocking D3,
+it will be checked a second time by pci_walk_bus().  But that's cheap
+and is outweighed by the performance gain of potentially skipping
+pci_walk_bus() altogether.
 
+The algorithm can be optimized further by taking into account if D3 is
+currently allowed for the bridge, as shown in the following truth table:
+
+(a)  remove &&  bridge_d3:  D3 is currently allowed for the bridge and
+                            removing one of its children won't change
+                            that.  No action necessary.
+(b)  remove && !bridge_d3:  D3 may now be allowed for the bridge if the
+                            removed child was the only one blocking it.
+                            Check all its siblings to verify that.
+(c) !remove &&  bridge_d3:  D3 may now be disallowed but this can only
+                            be caused by the added/changed child, not
+                            any of its siblings.  Check only that single
+                            device.
+(d) !remove && !bridge_d3:  D3 may now be allowed for the bridge if the
+                            changed child was the only one blocking it.
+                            Check all its siblings to verify that.
+                            By checking beforehand if the changed child
+                            is blocking D3, we may be able to skip
+                            checking its siblings.
+
+Currently we do not special-case option (a) and in case of option (c) we
+gratuitously call pci_walk_bus().  Speed up the algorithm by adding
+these optimizations.  Reword the comments a bit in an attempt to improve
+clarity.
+
+No functional change intended.
+
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pci.c | 28 ++++++++++++++++++++--------
+ 1 file changed, 20 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index c12fae7..bc60f2c 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2293,20 +2293,32 @@ void pci_bridge_d3_update(struct pci_dev *dev)
+ 		return;
+ 
+ 	/*
+-	 * If the device is removed we do not care about its D3cold
+-	 * capabilities.
++	 * If D3 is currently allowed for the bridge, removing one of its
++	 * children won't change that.
++	 */
++	if (remove && bridge->bridge_d3)
++		return;
++
++	/*
++	 * If D3 is currently allowed for the bridge and a child is added or
++	 * changed, disallowance of D3 can only be caused by that child, so
++	 * we only need to check that single device, not any of its siblings.
++	 *
++	 * If D3 is currently not allowed for the bridge, checking the device
++	 * first may allow us to skip checking its siblings.
+ 	 */
+ 	if (!remove)
+ 		pci_dev_check_d3cold(dev, &d3cold_ok);
+ 
+-	if (d3cold_ok) {
+-		/*
+-		 * We need to go through all children to find out if all of
+-		 * them can still go to D3cold.
+-		 */
++	/*
++	 * If D3 is currently not allowed for the bridge, this may be caused
++	 * either by the device being changed/removed or any of its siblings,
++	 * so we need to go through all children to find out if one of them
++	 * continues to block D3.
++	 */
++	if (d3cold_ok && !bridge->bridge_d3)
+ 		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
+ 			     &d3cold_ok);
+-	}
+ 
+ 	if (bridge->bridge_d3 != d3cold_ok) {
+ 		bridge->bridge_d3 = d3cold_ok;
 -- 
-Regards/Gruss,
-    Boris.
-
-ECO tip #101: Trim your mails when you reply.
+2.9.3
