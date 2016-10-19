@@ -1,7 +1,7 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 4/5] ARM: defconfig: turn on the DT cpufreq for Integrator
-Date: Wed, 19 Oct 2016 11:59:13 +0200
-Message-ID: <1476871154-32243-5-git-send-email-linus.walleij@linaro.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 0/5] Switch to the DT cpufreq policy on the Integrator
+Date: Wed, 19 Oct 2016 12:14:24 +0200
+Message-ID: <6720864.e2sjvVVhdQ@wuerfel>
 References: <1476871154-32243-1-git-send-email-linus.walleij@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -17,35 +17,25 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J . Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, Viresh Kumar <viresh.kumar@linaro.org>, Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The Integrators are now migrated to handle the CPUfreq
-scaling using the generic devicetree CPUfreq driver using the
-common clock framework and have the required device tree
-modifications, so turn off the old driver and turn on the new
-generic driver.
+On Wednesday, October 19, 2016 11:59:09 AM CEST Linus Walleij wrote:
+> 
+> If people are happy with this approach and approve of the patches
+> I'd like an ACK from the cpufreq people and then merge the whole set
+> through ARM SoC.
+> 
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King <linux@armlinux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- arch/arm/configs/integrator_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+I don't see any hard dependency here, so I'd suggest to merge the
+two cpufreq patches through the subsystem tree, and the ARM patches
+through arm-soc.
 
-diff --git a/arch/arm/configs/integrator_defconfig b/arch/arm/configs/integrator_defconfig
-index 869faae67201..69cb8f1efcea 100644
---- a/arch/arm/configs/integrator_defconfig
-+++ b/arch/arm/configs/integrator_defconfig
-@@ -26,6 +26,7 @@ CONFIG_CPU_FREQ=y
- CONFIG_CPU_FREQ_GOV_POWERSAVE=y
- CONFIG_CPU_FREQ_GOV_USERSPACE=y
- CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-+CONFIG_CPUFREQ_DT=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
--- 
-2.7.4
+The patches look fine.
+
+Removing the custom driver of course means that we break machines
+with old .dtb files, so we could consider leaving the driver in
+place, but probably there is no need for integrator.
+
+	Arnd
