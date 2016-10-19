@@ -1,70 +1,165 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 4.8.1 regression with cpufreq governors
-Date: Wed, 19 Oct 2016 19:36:08 +0530
-Message-ID: <20161019140608.GA11766@vireshk-i7>
-References: <20161018004606.GA5559@comcast.net>
- <2549240.nvakNXlyKF@vostro.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH 2/9] PCI: Autosense device removal in pci_bridge_d3_update()
+Date: Wed, 19 Oct 2016 16:07:13 +0200
+Message-ID: <bae5458c8288c0ee1ede1c16b41f47e5cbf6e77b.1476875113.git.lukas@wunner.de>
+References: <cover.1476875113.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:33834 "EHLO
-        mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755784AbcJSOLi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:11:38 -0400
-Received: by mail-pf0-f182.google.com with SMTP id r16so17050992pfg.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2016 07:11:38 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <2549240.nvakNXlyKF@vostro.rjw.lan>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:37233 "EHLO
+        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S938725AbcJSOOa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:14:30 -0400
+In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Tim Walberg <twalberg@comcast.net>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-On 18-10-16, 23:10, Rafael J. Wysocki wrote:
-> On Monday, October 17, 2016 07:46:06 PM Tim Walberg wrote:
-> > May or may not be related to similar reports, but here's what I've just observed
-> > on my system. Built a stock kernel from tags/v4.8.1, relevant cpufreq bits:
-> > 
-> > CONFIG_ACPI_CPU_FREQ_PSS=y
-> > CONFIG_CPU_FREQ=y
-> > CONFIG_CPU_FREQ_GOV_ATTR_SET=y
-> > CONFIG_CPU_FREQ_GOV_COMMON=y
-> > CONFIG_CPU_FREQ_STAT=y
-> > CONFIG_CPU_FREQ_STAT_DETAILS=y
-> > # CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE is not set
-> > # CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
-> > # CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-> > # CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-> > CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE=y
-> > # CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL is not set
-> > CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
-> > CONFIG_CPU_FREQ_GOV_POWERSAVE=m
-> > CONFIG_CPU_FREQ_GOV_USERSPACE=m
-> > CONFIG_CPU_FREQ_GOV_ONDEMAND=m
-> > CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-> > CONFIG_CPU_FREQ_GOV_SCHEDUTIL=m
-> > # CONFIG_X86_PCC_CPUFREQ is not set
-> > CONFIG_X86_ACPI_CPUFREQ=m
-> > CONFIG_X86_ACPI_CPUFREQ_CPB=y
-> > 
-> > 
-> > Conservative is set as default governer, yet when boot completes, all CPUs are
-> > pegged at the highest frequency. Changing governor to powersave knocks them all
-> > down to the lowest available frequency. Putting them back on conservative (or
-> > ondemand) results in no change in frequency, despite generating load. Switching
-> > to performance of course kicks them back up to high frequency. Basically, the
-> > governors don't seem to be ... governing.
-> 
-> The "convervative" governor issue seems to be the one fixed recently
-> (http://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/commit/?h=pm-cpufreq&id=abb6627910a1e783c8e034b35b7c80e5e7f98f41).
-> 
-> I'm not sure why "ondemand" behaves incorrectly for you though.
+The algorithm to update the flag indicating whether a bridge may go to
+D3 makes a few optimizations based on whether the update was caused by
+the removal of a device on the one hand, versus the addition of a device
+or the change of its D3cold flags on the other hand.
 
-@Tim: Can you please try this as well:
+The information whether the update pertains to a removal is currently
+passed in by the caller, but the function may as well determine that
+itself by examining the device in question, thereby allowing for a
+considerable simplification and reduction of the code.
 
-https://marc.info/?l=linux-kernel&m=147624218132250&w=2
+Out of several options to determine removal, I've chosen the function
+device_is_registered() because it's cheap:  It merely returns the
+dev->kobj.state_in_sysfs flag.  That flag is set through device_add()
+when the root bus is scanned and cleared through device_remove().
+The call to pci_bridge_d3_update() happens after each of these calls,
+respectively, so the ordering is correct.
 
-Subject: [PATCH V2] cpufreq: skip invalid entries when searching the frequency
+No functional change intended.
 
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/bus.c    |  2 +-
+ drivers/pci/pci.c    | 35 +++++------------------------------
+ drivers/pci/pci.h    |  3 +--
+ drivers/pci/remove.c |  2 +-
+ 4 files changed, 8 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index c288e5a..bc56cf1 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -320,7 +320,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+ 	pci_fixup_device(pci_fixup_final, dev);
+ 	pci_create_sysfs_dev_files(dev);
+ 	pci_proc_attach_device(dev);
+-	pci_bridge_d3_device_changed(dev);
++	pci_bridge_d3_update(dev);
+ 
+ 	dev->match_driver = true;
+ 	retval = device_attach(&dev->dev);
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 6e0c399..c12fae7 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2277,14 +2277,14 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ /*
+  * pci_bridge_d3_update - Update bridge D3 capabilities
+  * @dev: PCI device which is changed
+- * @remove: Is the device being removed
+  *
+  * Update upstream bridge PM capabilities accordingly depending on if the
+  * device PM configuration was changed or the device is being removed.  The
+  * change is also propagated upstream.
+  */
+-static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
++void pci_bridge_d3_update(struct pci_dev *dev)
+ {
++	bool remove = !device_is_registered(&dev->dev);
+ 	struct pci_dev *bridge;
+ 	bool d3cold_ok = true;
+ 
+@@ -2311,36 +2311,11 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
+ 	if (bridge->bridge_d3 != d3cold_ok) {
+ 		bridge->bridge_d3 = d3cold_ok;
+ 		/* Propagate change to upstream bridges */
+-		pci_bridge_d3_update(bridge, false);
++		pci_bridge_d3_update(bridge);
+ 	}
+ }
+ 
+ /**
+- * pci_bridge_d3_device_changed - Update bridge D3 capabilities on change
+- * @dev: PCI device that was changed
+- *
+- * If a device is added or its PM configuration, such as is it allowed to
+- * enter D3cold, is changed this function updates upstream bridge PM
+- * capabilities accordingly.
+- */
+-void pci_bridge_d3_device_changed(struct pci_dev *dev)
+-{
+-	pci_bridge_d3_update(dev, false);
+-}
+-
+-/**
+- * pci_bridge_d3_device_removed - Update bridge D3 capabilities on remove
+- * @dev: PCI device being removed
+- *
+- * Function updates upstream bridge PM capabilities based on other devices
+- * still left on the bus.
+- */
+-void pci_bridge_d3_device_removed(struct pci_dev *dev)
+-{
+-	pci_bridge_d3_update(dev, true);
+-}
+-
+-/**
+  * pci_d3cold_enable - Enable D3cold for device
+  * @dev: PCI device to handle
+  *
+@@ -2352,7 +2327,7 @@ void pci_d3cold_enable(struct pci_dev *dev)
+ {
+ 	if (dev->no_d3cold) {
+ 		dev->no_d3cold = false;
+-		pci_bridge_d3_device_changed(dev);
++		pci_bridge_d3_update(dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(pci_d3cold_enable);
+@@ -2369,7 +2344,7 @@ void pci_d3cold_disable(struct pci_dev *dev)
+ {
+ 	if (!dev->no_d3cold) {
+ 		dev->no_d3cold = true;
+-		pci_bridge_d3_device_changed(dev);
++		pci_bridge_d3_update(dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(pci_d3cold_disable);
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 4518562..27048bb 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -85,8 +85,7 @@ void pci_pm_init(struct pci_dev *dev);
+ void pci_ea_init(struct pci_dev *dev);
+ void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+ void pci_free_cap_save_buffers(struct pci_dev *dev);
+-void pci_bridge_d3_device_changed(struct pci_dev *dev);
+-void pci_bridge_d3_device_removed(struct pci_dev *dev);
++void pci_bridge_d3_update(struct pci_dev *dev);
+ 
+ static inline void pci_wakeup_event(struct pci_dev *dev)
+ {
+diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+index f9357e0..73a03d3 100644
+--- a/drivers/pci/remove.c
++++ b/drivers/pci/remove.c
+@@ -40,7 +40,7 @@ static void pci_destroy_dev(struct pci_dev *dev)
+ 	list_del(&dev->bus_list);
+ 	up_write(&pci_bus_sem);
+ 
+-	pci_bridge_d3_device_removed(dev);
++	pci_bridge_d3_update(dev);
+ 	pci_free_resources(dev);
+ 	put_device(&dev->dev);
+ }
 -- 
-viresh
+2.9.3
+
