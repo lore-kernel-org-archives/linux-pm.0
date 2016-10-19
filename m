@@ -1,139 +1,407 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Subject: [pm:device-links-test 2/5] drivers/built-in.o:undefined reference to
- `process_srcu'
-Date: Wed, 19 Oct 2016 20:35:22 +0800
-Message-ID: <201610192020.aOaAg9XS%fengguang.wu@intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="YZ5djTAD1cGYuMQK"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: kbuild-all@01.org, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org
+From: Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
+Subject: [PATCH 2/2] power_supply: Add support for MAX14656 USB charger detector
+Date: Wed, 19 Oct 2016 18:04:49 +0200
+Message-ID: <1476893089-7233-2-git-send-email-akurz@blala.de>
+References: <1476893089-7233-1-git-send-email-akurz@blala.de>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1476893089-7233-1-git-send-email-akurz-3EoFODjbY6Q@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+The MAX14656 USB charger detector, also known as "AL32" is used to detect
+the presence and capabilities of attached USB chargers. The device is
+attached via I2C plus one interrupt line to signalize events.
 
---YZ5djTAD1cGYuMQK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The device can be found in LG smartphones like LS665 and LS770, compatible
+devices are present in 4th/5th generation Amazon Kindle readers referenced
+in source code packages as "Maxim AL32".
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git device-links-test
-head:   37c39b84114b777fdd8ed1a7074c7c0674180533
-commit: 5821e59c7551e256b15e164f1c248602f49d1b68 [2/5] driver core: Functional dependencies tracking support
-config: parisc-allnoconfig (attached as .config)
-compiler: hppa-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        git checkout 5821e59c7551e256b15e164f1c248602f49d1b68
-        # save the attached .config to linux build tree
-        make.cross ARCH=parisc 
+The initial version of this driver has been extracted from LG source code
+package LGLS665_Android_Lollipop_LS665ZV3, enriched with information from
+the Kindle_src_4.1.3 source code package and adapted to the current power
+class sysfs interface. Non-Standard Apple chargers which the device may
+detect are mapped to the USB Battery Charging Specification Revision 1.2
+class USB_DCP.
 
-All errors (new ones prefixed by >>):
-
-   drivers/built-in.o: In function `__device_link_del':
-   drivers/base/core.o:(.text.__device_link_del+0x48): undefined reference to `call_srcu'
-   drivers/built-in.o: In function `device_links_read_lock':
-   (.text.device_links_read_lock+0x10): undefined reference to `__srcu_read_lock'
-   drivers/built-in.o: In function `device_links_read_unlock':
-   (.text.device_links_read_unlock+0x14): undefined reference to `__srcu_read_unlock'
->> drivers/built-in.o:(.data.rel+0x4c): undefined reference to `process_srcu'
-
+Signed-off-by: Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/power/supply/Kconfig                     |  10 +
+ drivers/power/supply/Makefile                    |   1 +
+ drivers/power/supply/max14656_charger_detector.c | 326 +++++++++++++++++++++++
+ 3 files changed, 337 insertions(+)
+ create mode 100644 drivers/power/supply/max14656_charger_detector.c
 
---YZ5djTAD1cGYuMQK
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 76806a0..58d5ec4 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -370,6 +370,16 @@ config CHARGER_MAX14577
+ 	  Say Y to enable support for the battery charger control sysfs and
+ 	  platform data of MAX14577/77836 MUICs.
+ 
++config CHARGER_DETECTOR_MAX14656
++	tristate "Maxim MAX14656 USB charger detector"
++	depends on I2C
++	depends on OF
++	help
++	  Say Y to enable support for the Maxim MAX14656 USB charger detector.
++	  The device is compliant with the USB Battery Charging Specification
++	  Revision 1.2 and can be found e.g. in Kindle 4/5th generation
++	  readers and certain LG devices.
++
+ config CHARGER_MAX77693
+ 	tristate "Maxim MAX77693 battery charger driver"
+ 	depends on MFD_MAX77693
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 36c599d..a703ef0 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -58,6 +58,7 @@ obj-$(CONFIG_CHARGER_LP8788)	+= lp8788-charger.o
+ obj-$(CONFIG_CHARGER_GPIO)	+= gpio-charger.o
+ obj-$(CONFIG_CHARGER_MANAGER)	+= charger-manager.o
+ obj-$(CONFIG_CHARGER_MAX14577)	+= max14577_charger.o
++obj-$(CONFIG_CHARGER_DETECTOR_MAX14656)	+= max14656_charger_detector.o
+ obj-$(CONFIG_CHARGER_MAX77693)	+= max77693_charger.o
+ obj-$(CONFIG_CHARGER_MAX8997)	+= max8997_charger.o
+ obj-$(CONFIG_CHARGER_MAX8998)	+= max8998_charger.o
+diff --git a/drivers/power/supply/max14656_charger_detector.c b/drivers/power/supply/max14656_charger_detector.c
+new file mode 100644
+index 0000000..2fd73e1
+--- /dev/null
++++ b/drivers/power/supply/max14656_charger_detector.c
+@@ -0,0 +1,326 @@
++/*
++ * Maxim MAX14656 / AL32 USB Charger Detector driver
++ *
++ * Copyright (C) 2014 LG Electronics, Inc
++ * Copyright (C) 2016 Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
++ *
++ * Components from Maxim AL32 Charger detection Driver for MX50 Yoshi Board
++ * Copyright (C) Amazon Technologies Inc. All rights reserved.
++ * Manish Lachwani (lachwani-5pgARqJGfcHQT0dZR+AlfA@public.gmane.org)
++ *
++ * This package is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ */
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/delay.h>
++#include <linux/i2c.h>
++#include <linux/interrupt.h>
++#include <linux/slab.h>
++#include <linux/gpio.h>
++#include <linux/of_gpio.h>
++#include <linux/of_device.h>
++#include <linux/workqueue.h>
++#include <linux/power_supply.h>
++
++#define MAX14656_MANUFACTURER	"Maxim Integrated"
++#define MAX14656_NAME		"max14656"
++
++#define MAX14656_DEVICE_ID	0x00
++#define MAX14656_INTERRUPT_1	0x01
++#define MAX14656_INTERRUPT_2	0x02
++#define MAX14656_STATUS_1	0x03
++#define MAX14656_STATUS_2	0x04
++#define MAX14656_INTMASK_1	0x05
++#define MAX14656_INTMASK_2	0x06
++#define MAX14656_CONTROL_1	0x07
++#define MAX14656_CONTROL_2	0x08
++#define MAX14656_CONTROL_3	0x09
++
++#define DEVICE_VENDOR_MASK	0xf0
++#define DEVICE_REV_MASK		0x0f
++#define INT_EN_REG_MASK		BIT(4)
++#define CHG_TYPE_INT_MASK	BIT(0)
++#define STATUS1_VB_VALID_MASK	BIT(4)
++#define STATUS1_CHG_TYPE_MASK	0xf
++#define INT1_DCD_TIMEOUT_MASK	BIT(7)
++#define CONTROL1_DEFAULT	0x0d
++#define CONTROL1_INT_EN		BIT(4)
++#define CONTROL1_INT_ACTIVE_HIGH	BIT(5)
++#define CONTROL1_EDGE		BIT(7)
++#define CONTROL2_DEFAULT	0x8e
++#define CONTROL2_ADC_EN		BIT(0)
++#define CONTROL3_DEFAULT	0x8d
++
++enum max14656_chg_type {
++	MAX14656_NO_CHARGER	= 0,
++	MAX14656_SDP_CHARGER,
++	MAX14656_CDP_CHARGER,
++	MAX14656_DCP_CHARGER,
++	MAX14656_APPLE_500MA_CHARGER,
++	MAX14656_APPLE_1A_CHARGER,
++	MAX14656_APPLE_2A_CHARGER,
++	MAX14656_SPECIAL_500MA_CHARGER,
++	MAX14656_APPLE_12W,
++	MAX14656_CHARGER_LAST
++};
++
++static const struct max14656_chg_type_props {
++	enum power_supply_type type;
++} chg_type_props[] = {
++	{ POWER_SUPPLY_TYPE_UNKNOWN },
++	{ POWER_SUPPLY_TYPE_USB },
++	{ POWER_SUPPLY_TYPE_USB_CDP },
++	{ POWER_SUPPLY_TYPE_USB_DCP },
++	{ POWER_SUPPLY_TYPE_USB_DCP },
++	{ POWER_SUPPLY_TYPE_USB_DCP },
++	{ POWER_SUPPLY_TYPE_USB_DCP },
++	{ POWER_SUPPLY_TYPE_USB_DCP },
++	{ POWER_SUPPLY_TYPE_USB },
++};
++
++struct max14656_chip {
++	struct i2c_client	*client;
++	struct power_supply	*detect_psy;
++	struct power_supply_desc psy_desc;
++	struct delayed_work	irq_work;
++
++	int irq;
++	int online;
++};
++
++static int max14656_read_reg(struct i2c_client *client, int reg, u8 *val)
++{
++	s32 ret;
++
++	ret = i2c_smbus_read_byte_data(client, reg);
++	if (ret < 0) {
++		dev_err(&client->dev,
++			"i2c read fail: can't read from %02x: %d\n",
++			reg, ret);
++		return ret;
++	}
++	*val = ret;
++	return 0;
++}
++
++static int max14656_write_reg(struct i2c_client *client, int reg, u8 val)
++{
++	s32 ret;
++
++	ret = i2c_smbus_write_byte_data(client, reg, val);
++	if (ret < 0) {
++		dev_err(&client->dev,
++			"i2c write fail: can't write %02x to %02x: %d\n",
++			val, reg, ret);
++		return ret;
++	}
++	return 0;
++}
++
++static int max14656_read_block_reg(struct i2c_client *client, u8 reg,
++				  u8 length, u8 *val)
++{
++	int ret;
++
++	ret = i2c_smbus_read_i2c_block_data(client, reg, length, val);
++	if (ret < 0) {
++		dev_err(&client->dev, "failed to block read reg 0x%x: %d\n",
++				reg, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++#define        REG_TOTAL_NUM   5
++static void max14656_irq_worker(struct work_struct *work)
++{
++	struct max14656_chip *chip =
++		container_of(work, struct max14656_chip, irq_work.work);
++
++	u8 buf[REG_TOTAL_NUM];
++	u8 chg_type;
++	int ret = 0;
++
++	ret = max14656_read_block_reg(chip->client, MAX14656_DEVICE_ID,
++				      REG_TOTAL_NUM, buf);
++
++	if ((buf[MAX14656_STATUS_1] & STATUS1_VB_VALID_MASK) &&
++		(buf[MAX14656_STATUS_1] & STATUS1_CHG_TYPE_MASK)) {
++		chg_type = buf[MAX14656_STATUS_1] & STATUS1_CHG_TYPE_MASK;
++		if (chg_type < MAX14656_CHARGER_LAST)
++			chip->psy_desc.type = chg_type_props[chg_type].type;
++		else
++			chip->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
++		chip->online = 1;
++	} else {
++		chip->online = 0;
++		chip->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
++	}
++
++	power_supply_changed(chip->detect_psy);
++}
++
++static irqreturn_t max14656_irq(int irq, void *dev_id)
++{
++	struct max14656_chip *chip = dev_id;
++
++	schedule_delayed_work(&chip->irq_work, msecs_to_jiffies(100));
++
++	return IRQ_HANDLED;
++}
++
++static int max14656_hw_init(struct max14656_chip *chip)
++{
++	uint8_t val = 0;
++	uint8_t rev;
++	struct i2c_client *client = chip->client;
++
++	if (max14656_read_reg(client, MAX14656_DEVICE_ID, &val))
++		return -ENODEV;
++
++	if ((val & DEVICE_VENDOR_MASK) != 0x20) {
++		dev_err(&client->dev, "wrong vendor ID %d\n",
++			((val & DEVICE_VENDOR_MASK) >> 4));
++		return -ENODEV;
++	}
++	rev = val & DEVICE_REV_MASK;
++
++	/* Turn on ADC_EN */
++	if (max14656_write_reg(client, MAX14656_CONTROL_2, CONTROL2_ADC_EN))
++		return -EINVAL;
++
++	/* turn on interrupts and low power mode */
++	if (max14656_write_reg(client, MAX14656_CONTROL_1,
++		CONTROL1_DEFAULT |
++		CONTROL1_INT_EN |
++		CONTROL1_INT_ACTIVE_HIGH |
++		CONTROL1_EDGE))
++		return -EINVAL;
++
++	if (max14656_write_reg(client, MAX14656_INTMASK_1, 0x3))
++		return -EINVAL;
++
++	if (max14656_write_reg(client, MAX14656_INTMASK_2, 0x1))
++		return -EINVAL;
++
++	dev_info(&client->dev, "detected revision %d\n", rev);
++	return 0;
++}
++
++static int max14656_get_property(struct power_supply *psy,
++			    enum power_supply_property psp,
++			    union power_supply_propval *val)
++{
++	struct max14656_chip *chip = power_supply_get_drvdata(psy);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = chip->online;
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = MAX14656_NAME;
++		break;
++	case POWER_SUPPLY_PROP_MANUFACTURER:
++		val->strval = MAX14656_MANUFACTURER;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static enum power_supply_property max14656_battery_props[] = {
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_MANUFACTURER,
++};
++
++static int max14656_probe(struct i2c_client *client,
++			  const struct i2c_device_id *id)
++{
++	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
++	struct device *dev = &client->dev;
++	struct power_supply_config psy_cfg = {};
++	struct max14656_chip *chip;
++	int irq = client->irq;
++	int ret = 0;
++
++	if (irq <= 0) {
++		dev_err(dev, "invalid irq number: %d\n", irq);
++		return -ENODEV;
++	}
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA)) {
++		dev_err(dev, "No support for SMBUS_BYTE_DATA\n");
++		return -ENODEV;
++	}
++
++	chip = devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
++	if (!chip)
++		return -ENOMEM;
++
++	psy_cfg.drv_data = chip;
++	chip->client = client;
++	chip->online = 0;
++	chip->psy_desc.name = MAX14656_NAME;
++	chip->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
++	chip->psy_desc.properties = max14656_battery_props;
++	chip->psy_desc.num_properties = ARRAY_SIZE(max14656_battery_props);
++	chip->psy_desc.get_property = max14656_get_property;
++	chip->irq = irq;
++
++	ret = max14656_hw_init(chip);
++	if (ret)
++		return -ENODEV;
++
++	INIT_DELAYED_WORK(&chip->irq_work, max14656_irq_worker);
++
++	ret = devm_request_irq(dev, chip->irq, max14656_irq,
++			       IRQF_TRIGGER_FALLING,
++			       MAX14656_NAME, chip);
++	if (ret) {
++		dev_err(dev, "request_irq %d failed\n", chip->irq);
++		return -EINVAL;
++	}
++	enable_irq_wake(chip->irq);
++
++	chip->detect_psy = devm_power_supply_register(dev,
++		       &chip->psy_desc, &psy_cfg);
++	if (IS_ERR(chip->detect_psy)) {
++		dev_err(dev, "power_supply_register failed\n");
++		return -EINVAL;
++	}
++
++	schedule_delayed_work(&chip->irq_work, msecs_to_jiffies(2000));
++
++	return 0;
++}
++
++static const struct i2c_device_id max14656_id[] = {
++	{ "max14656", 0 },
++	{}
++};
++
++static const struct of_device_id max14656_match_table[] = {
++	{ .compatible = "maxim,max14656", },
++	{}
++};
++
++static struct i2c_driver max14656_i2c_driver = {
++	.driver = {
++		.name	= "max14656",
++		.owner	= THIS_MODULE,
++		.of_match_table = max14656_match_table,
++	},
++	.probe		= max14656_probe,
++	.id_table	= max14656_id,
++};
++module_i2c_driver(max14656_i2c_driver);
++
++MODULE_DESCRIPTION("MAX14656 USB charger detector");
++MODULE_LICENSE("GPL v2");
+-- 
+2.1.4
 
-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
-jnwKPwAA
-
---YZ5djTAD1cGYuMQK--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
