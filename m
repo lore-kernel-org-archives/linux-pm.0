@@ -1,43 +1,33 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH 1/9] PCI: Don't acquire ref on parent in
- pci_bridge_d3_update()
+Subject: [PATCH 5/9] PCI: Consolidate conditions to allow runtime PM on PCIe
+ ports
 Date: Wed, 19 Oct 2016 16:07:13 +0200
-Message-ID: <4d439f68d1f746d94215971891e0ed74fd1b2776.1476875113.git.lukas@wunner.de>
+Message-ID: <338878168cb4f704f8f642041da00e71653afd17.1476875113.git.lukas@wunner.de>
 References: <cover.1476875113.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:57433 "EHLO
+Received: from mailout1.hostsharing.net ([83.223.95.204]:57613 "EHLO
         mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S941151AbcJSOQ6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:16:58 -0400
+        with ESMTP id S941157AbcJSORD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 10:17:03 -0400
 In-Reply-To: <cover.1476875113.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-This function is always called with an existing pci_dev struct, which
-holds a reference on the pci_bus struct it resides on, which in turn
-holds a reference on pci_bus->bridge, which is the pci_dev's parent.
+The conditions to allow runtime PM on PCIe ports are currently spread
+across two different files:  The condition relating to hotplug ports is
+located in portdrv_pci.c whereas all other conditions are located in
+pci.c.
 
-Hence there's no need to acquire an additional ref on the parent.
+Consolidate all conditions in a single place in pci.c, thus making it
+easier to follow the logic and amend conditions down the road.
 
-More specifically, the pci_dev exists until pci_destroy_dev() drops the
-final reference on it, so all calls to pci_bridge_d3_update() must be
-finished before that.  It is arguably the caller's responsibility to
-ensure that it doesn't call pci_bridge_d3_update() with a pci_dev that
-might suddenly disappear, but in any case the existing callers are all
-safe:
-
-- The call in pci_destroy_dev() happens before the call to put_device().
-- The call in pci_bus_add_device() is synchronized with pci_destroy_dev()
-  using pci_lock_rescan_remove().
-- The calls to pci_d3cold_disable() from the xhci and nouveau drivers
-  are safe because a ref on the pci_dev is held as long as it's bound to
-  a driver.
-- The calls to pci_d3cold_enable() / pci_d3cold_disable() when modifying
-  the sysfs "d3cold_allowed" entry are also safe because kernfs_drain()
-  waits for existing sysfs users to finish before removing the entry,
-  and pci_destroy_dev() is called way after that.
+Note that the condition relating to hotplug ports is inserted *before*
+the condition relating to the "pcie_port_pm=force" command line option,
+so runtime PM is not afforded to hotplug ports even if this option is
+given.  That's exactly how the code behaved up until now.  If this is
+not desired, the ordering of the conditions can simply be reversed.
 
 No functional change intended.
 
@@ -45,30 +35,62 @@ Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
 Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/pci/pci.c              | 11 +++++++++++
+ drivers/pci/pcie/portdrv_pci.c | 12 ++----------
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index ba34907..6e0c399 100644
+index 854d185..a19056e 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -2292,7 +2292,6 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
- 	if (!bridge || !pci_bridge_d3_possible(bridge))
- 		return;
+@@ -2239,6 +2239,17 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ 	case PCI_EXP_TYPE_DOWNSTREAM:
+ 		if (pci_bridge_d3_disable)
+ 			return false;
++
++		/*
++		 * Hotplug interrupts cannot be delivered if the link is down,
++		 * so parents of a hotplug port must stay awake. In addition,
++		 * Hotplug ports handled by firmware in System Management Mode
++		 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
++		 * For simplicity, disallow in general for now.
++		 */
++		if (bridge->is_hotplug_bridge)
++			return false;
++
+ 		if (pci_bridge_d3_force)
+ 			return true;
  
--	pci_dev_get(bridge);
- 	/*
- 	 * If the device is removed we do not care about its D3cold
- 	 * capabilities.
-@@ -2314,8 +2313,6 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
- 		/* Propagate change to upstream bridges */
- 		pci_bridge_d3_update(bridge, false);
- 	}
--
--	pci_dev_put(bridge);
- }
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index 1ae712c..8aa3f14 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -150,15 +150,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
  
- /**
+ 	pci_save_state(dev);
+ 
+-	/*
+-	 * Prevent runtime PM if the port is advertising support for PCIe
+-	 * hotplug.  Otherwise the BIOS hotplug SMI code might not be able
+-	 * to enumerate devices behind this port properly (the port is
+-	 * powered down preventing all config space accesses to the
+-	 * subordinate devices).  We can't be sure for native PCIe hotplug
+-	 * either so prevent that as well.
+-	 */
+-	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
++	if (pci_bridge_d3_possible(dev)) {
+ 		/*
+ 		 * Keep the port resumed 100ms to make sure things like
+ 		 * config space accesses from userspace (lspci) will not
+@@ -176,7 +168,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 
+ static void pcie_portdrv_remove(struct pci_dev *dev)
+ {
+-	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
++	if (pci_bridge_d3_possible(dev)) {
+ 		pm_runtime_forbid(&dev->dev);
+ 		pm_runtime_get_noresume(&dev->dev);
+ 		pm_runtime_dont_use_autosuspend(&dev->dev);
 -- 
 2.9.3
 
