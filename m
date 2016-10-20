@@ -1,172 +1,224 @@
 From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v6 1/9] sched: Extend scheduler's asym packing
-Date: Thu, 20 Oct 2016 14:59:55 -0700
-Message-ID: <c3bf1c59ee56dad1dc20ad3b3c06c166abb7a57e.1477000078.git.tim.c.chen@linux.intel.com>
+Subject: [PATCH v6 5/9] x86/sysctl: Add sysctl for ITMT scheduling feature
+Date: Thu, 20 Oct 2016 14:59:59 -0700
+Message-ID: <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>
 References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <cover.1477000078.git.tim.c.chen@linux.intel.com>
 In-Reply-To: <cover.1477000078.git.tim.c.chen@linux.intel.com>
 References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-We generalize the scheduler's asym packing to provide an ordering
-of the cpu beyond just the cpu number.  This allows the use of the
-ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
-sched domain. The preference is defined with the cpu priority
-given by arch_asym_cpu_priority(cpu).
+Intel Turbo Boost Max Technology 3.0 (ITMT) feature
+allows some cores to be boosted to higher turbo
+frequency than others.
 
-We also record the most preferred cpu in a sched group when
-we build the cpu's capacity for fast lookup of preferred cpu
-during load balancing.
+Add /proc/sys/kernel/sched_itmt_enabled so operator
+can enable/disable scheduling of tasks that favor cores
+with higher turbo boost frequency potential.
+
+By default, system that is ITMT capable and single
+socket has this feature turned on.  It is more likely
+to be lightly loaded and operates in Turbo range.
+
+When there is a change in the ITMT scheduling operation
+desired, a rebuild of the sched domain is initiated
+so the scheduler can set up sched domains with appropriate
+flag to enable/disable ITMT scheduling operations.
 
 Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- include/linux/sched.h |  2 ++
- kernel/sched/core.c   | 15 +++++++++++++++
- kernel/sched/fair.c   | 35 ++++++++++++++++++++++++-----------
- kernel/sched/sched.h  |  6 ++++++
- 4 files changed, 47 insertions(+), 11 deletions(-)
+ arch/x86/include/asm/topology.h |   7 ++-
+ arch/x86/kernel/itmt.c          | 110 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 114 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 348f51b..75d96d6 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1057,6 +1057,8 @@ static inline int cpu_numa_flags(void)
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index a73fb80..46ebdd1 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -155,23 +155,26 @@ extern bool x86_topology_update;
+ #include <asm/percpu.h>
+ 
+ DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
++extern unsigned int __read_mostly sysctl_sched_itmt_enabled;
+ 
+ /* Interface to set priority of a cpu */
+ void sched_set_itmt_core_prio(int prio, int core_cpu);
+ 
+ /* Interface to notify scheduler that system supports ITMT */
+-void sched_set_itmt_support(void);
++int sched_set_itmt_support(void);
+ 
+ /* Interface to notify scheduler that system revokes ITMT support */
+ void sched_clear_itmt_support(void);
+ 
+ #else /* CONFIG_SCHED_ITMT */
+ 
++#define sysctl_sched_itmt_enabled	0
+ static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
+ {
  }
- #endif
+-static inline void sched_set_itmt_support(void)
++static inline int sched_set_itmt_support(void)
+ {
++	return 0;
+ }
+ static inline void sched_clear_itmt_support(void)
+ {
+diff --git a/arch/x86/kernel/itmt.c b/arch/x86/kernel/itmt.c
+index 63c9b3e..e999e6e 100644
+--- a/arch/x86/kernel/itmt.c
++++ b/arch/x86/kernel/itmt.c
+@@ -34,6 +34,67 @@ DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
+ /* Boolean to track if system has ITMT capabilities */
+ static bool __read_mostly sched_itmt_capable;
  
-+int arch_asym_cpu_priority(int cpu);
-+
- struct sched_domain_attr {
- 	int relax_domain_level;
- };
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 94732d1..4465410 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6307,7 +6307,22 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
- 	WARN_ON(!sg);
- 
- 	do {
-+		int cpu, max_cpu = -1;
-+
- 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
-+
-+		if (!(sd->flags & SD_ASYM_PACKING))
-+			goto next;
-+
-+		for_each_cpu(cpu, sched_group_cpus(sg)) {
-+			if (max_cpu < 0)
-+				max_cpu = cpu;
-+			else if (sched_asym_prefer(cpu, max_cpu))
-+				max_cpu = cpu;
-+		}
-+		sg->asym_prefer_cpu = max_cpu;
-+
-+next:
- 		sg = sg->next;
- 	} while (sg != sd->groups);
- 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 2d4ad72..f50e4d7 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -100,6 +100,16 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
-  */
- unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
- 
-+#ifdef CONFIG_SMP
 +/*
-+ * For asym packing, by default the lower numbered cpu has higher priority.
++ * Boolean to control whether we want to move processes to cpu capable
++ * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
++ * Technology 3.0.
++ *
++ * It can be set via /proc/sys/kernel/sched_itmt_enabled
 + */
-+int __weak arch_asym_cpu_priority(int cpu)
-+{
-+	return -cpu;
-+}
-+#endif
++unsigned int __read_mostly sysctl_sched_itmt_enabled;
 +
- #ifdef CONFIG_CFS_BANDWIDTH
- /*
-  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
-@@ -7101,16 +7111,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
- 	if (env->idle == CPU_NOT_IDLE)
- 		return true;
- 	/*
--	 * ASYM_PACKING needs to move all the work to the lowest
--	 * numbered CPUs in the group, therefore mark all groups
--	 * higher than ourself as busy.
-+	 * ASYM_PACKING needs to move all the work to the highest
-+	 * prority CPUs in the group, therefore mark all groups
-+	 * of lower priority than ourself as busy.
- 	 */
--	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
-+	if (sgs->sum_nr_running &&
-+	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
- 		if (!sds->busiest)
- 			return true;
- 
--		/* Prefer to move from highest possible cpu's work */
--		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
-+		/* Prefer to move from lowest priority cpu's work */
-+		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
-+				      sg->asym_prefer_cpu))
- 			return true;
- 	}
- 
-@@ -7262,8 +7274,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
- 	if (!sds->busiest)
- 		return 0;
- 
--	busiest_cpu = group_first_cpu(sds->busiest);
--	if (env->dst_cpu > busiest_cpu)
-+	busiest_cpu = sds->busiest->asym_prefer_cpu;
-+	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
- 		return 0;
- 
- 	env->imbalance = DIV_ROUND_CLOSEST(
-@@ -7601,10 +7613,11 @@ static int need_active_balance(struct lb_env *env)
- 
- 		/*
- 		 * ASYM_PACKING needs to force migrate tasks from busy but
--		 * higher numbered CPUs in order to pack all tasks in the
--		 * lowest numbered CPUs.
-+		 * lower priority CPUs in order to pack all tasks in the
-+		 * highest priority CPUs.
- 		 */
--		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
-+		if ((sd->flags & SD_ASYM_PACKING) &&
-+		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
- 			return 1;
- 	}
- 
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 055f935..cd3d413 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -539,6 +539,11 @@ struct dl_rq {
- 
- #ifdef CONFIG_SMP
- 
-+static inline bool sched_asym_prefer(int a, int b)
++static int sched_itmt_update_handler(struct ctl_table *table, int write,
++			      void __user *buffer, size_t *lenp, loff_t *ppos)
 +{
-+	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++	int ret;
++	unsigned int old_sysctl;
++
++	mutex_lock(&itmt_update_mutex);
++
++	if (!sched_itmt_capable) {
++		mutex_unlock(&itmt_update_mutex);
++		return -EINVAL;
++	}
++
++	old_sysctl = sysctl_sched_itmt_enabled;
++	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
++
++	if (!ret && write && old_sysctl != sysctl_sched_itmt_enabled) {
++		x86_topology_update = true;
++		rebuild_sched_domains();
++	}
++
++	mutex_unlock(&itmt_update_mutex);
++
++	return ret;
 +}
 +
- /*
-  * We add the notion of a root-domain which will be used to define per-domain
-  * variables. Each exclusive cpuset essentially defines an island domain by
-@@ -905,6 +910,7 @@ struct sched_group {
++static unsigned int zero;
++static unsigned int one = 1;
++static struct ctl_table itmt_kern_table[] = {
++	{
++		.procname	= "sched_itmt_enabled",
++		.data		= &sysctl_sched_itmt_enabled,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= sched_itmt_update_handler,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
++	{}
++};
++
++static struct ctl_table itmt_root_table[] = {
++	{
++		.procname	= "kernel",
++		.mode		= 0555,
++		.child		= itmt_kern_table,
++	},
++	{}
++};
++
++static struct ctl_table_header *itmt_sysctl_header;
++
+ /**
+  * sched_set_itmt_support() - Indicate platform supports ITMT
+  *
+@@ -45,14 +106,44 @@ static bool __read_mostly sched_itmt_capable;
+  *
+  * This must be done only after sched_set_itmt_core_prio
+  * has been called to set the cpus' priorities.
++ * It must not be called with cpu hot plug lock
++ * held as we need to acquire the lock to rebuild sched domains
++ * later.
++ *
++ * Return: 0 on success
+  */
+-void sched_set_itmt_support(void)
++int sched_set_itmt_support(void)
+ {
+ 	mutex_lock(&itmt_update_mutex);
  
- 	unsigned int group_weight;
- 	struct sched_group_capacity *sgc;
-+	int asym_prefer_cpu;		/* cpu of highest priority in group */
++	if (sched_itmt_capable) {
++		mutex_unlock(&itmt_update_mutex);
++		return 0;
++	}
++
++	itmt_sysctl_header = register_sysctl_table(itmt_root_table);
++	if (!itmt_sysctl_header) {
++		mutex_unlock(&itmt_update_mutex);
++		return -ENOMEM;
++	}
++
+ 	sched_itmt_capable = true;
  
- 	/*
- 	 * The CPUs this group covers.
++	/*
++	 * ITMT capability automatically enables ITMT
++	 * scheduling for small systems (single node).
++	 */
++	if (topology_num_packages() == 1)
++		sysctl_sched_itmt_enabled = 1;
++
++	if (sysctl_sched_itmt_enabled) {
++		x86_topology_update = true;
++		rebuild_sched_domains();
++	}
++
+ 	mutex_unlock(&itmt_update_mutex);
++
++	return 0;
+ }
+ 
+ /**
+@@ -61,13 +152,30 @@ void sched_set_itmt_support(void)
+  * This function is used by the OS to indicate that it has
+  * revoked the platform's support of ITMT feature.
+  *
++ * It must not be called with cpu hot plug lock
++ * held as we need to acquire the lock to rebuild sched domains
++ * later.
+  */
+ void sched_clear_itmt_support(void)
+ {
+ 	mutex_lock(&itmt_update_mutex);
+ 
++	if (!sched_itmt_capable) {
++		mutex_unlock(&itmt_update_mutex);
++		return;
++	}
+ 	sched_itmt_capable = false;
+ 
++	if (itmt_sysctl_header)
++		unregister_sysctl_table(itmt_sysctl_header);
++
++	if (sysctl_sched_itmt_enabled) {
++		/* disable sched_itmt if we are no longer ITMT capable */
++		sysctl_sched_itmt_enabled = 0;
++		x86_topology_update = true;
++		rebuild_sched_domains();
++	}
++
+ 	mutex_unlock(&itmt_update_mutex);
+ }
+ 
 -- 
 2.5.5
+
