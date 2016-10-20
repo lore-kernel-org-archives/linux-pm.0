@@ -1,112 +1,175 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [4.9-rc1] Build-time 2x slower
-Date: Thu, 20 Oct 2016 16:51:11 +0200
-Message-ID: <1987803.InoJn4cnZD@vostro.rjw.lan>
-References: <CA+icZUWJfbY28yQDhPRGc0_-jO42CJyyp_mgX_RGLqywhTQpaw@mail.gmail.com> <1774714.42MJfCaf0o@vostro.rjw.lan> <CA+icZUWz4dq7veef90goQQW0LTmuJQQTuHHCtNjb3=TuVLCEKg@mail.gmail.com>
+From: Ritesh Harjani <riteshh@codeaurora.org>
+Subject: Re: [PATCH v4] mmc: sdhci-msm: Add pm_runtime and system PM support
+Date: Thu, 20 Oct 2016 20:20:16 +0530
+Message-ID: <d7801576-e2b3-13a3-df8d-e203a628a445@codeaurora.org>
+References: <20161018101624.27946-1-pramod.gurav@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51274 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S933400AbcJTOoP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 10:44:15 -0400
-In-Reply-To: <CA+icZUWz4dq7veef90goQQW0LTmuJQQTuHHCtNjb3=TuVLCEKg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161018101624.27946-1-pramod.gurav@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@linaro.org>, ulf.hansson@linaro.org, adrian.hunter@intel.com, linux-mmc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sedat.dilek@gmail.com
-Cc: =?ISO-8859-1?Q?J=F6rg?= Otte <jrg.otte@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Michal Marek <mmarek@suse.com>, Ming Lei <tom.leiming@gmail.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thursday, October 20, 2016 04:38:39 PM Sedat Dilek wrote:
-> On Thu, Oct 20, 2016 at 4:32 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Thursday, October 20, 2016 04:20:44 PM Sedat Dilek wrote:
-> >> On Thu, Oct 20, 2016 at 1:15 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> > On Thursday, October 20, 2016 09:41:34 AM Sedat Dilek wrote:
-> >> >> On Wed, Oct 19, 2016 at 10:55 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> >> > On Wednesday, October 19, 2016 06:59:35 PM Jörg Otte wrote:
-> >> >> >> 2016-10-19 17:29 GMT+02:00 Linus Torvalds <torvalds@linux-foundation.org>:
-> >> >> >> > On Wed, Oct 19, 2016 at 4:07 AM, Jörg Otte <jrg.otte@gmail.com> wrote:
-> >> >> >> >>
-> >> >> >> >> Additional info: I usally use schedutil governor.
-> >> >> >> >> If I switch to performance governor problems go away.
-> >> >> >> >> Maybe a cpufreq problem?
-> >> >> >> >
-> >> >> >> > Oh, I completely misread the original bug report, and then didn't read
-> >> >> >> > your confirmation email right.
-> >> >> >> >
-> >> >> >> > I thought you had a slower build of the different kernels (when
-> >> >> >> > building on the same kernel), and that the _build_ itself had slowed
-> >> >> >> > down for some reason. But you're actually saying that doing the _same_
-> >> >> >> > build actually takes longer when running on 4.9-rc1.
-> >> >> >>
-> >> >> >> Exactly!
-> >> >> >>
-> >> >> >> Btw: ondemand governor is also good.
-> >> >> >>
-> >> >> >> > There are a few small cpufreq changes there in between commit
-> >> >> >> > 29fbff8698fc (that you reported was fine - please tell me I got _that_
-> >> >> >> > right, at least?) and 4.9-rc1.
-> >> >> >>
-> >> >> >> Perfect! That's what I mean.
-> >> >> >>
-> >> >> >> > Adding Rafael to the cc.
-> >> >> >> >
-> >> >> >> > That said, none of them look all that likely to me. It *would* be good
-> >> >> >> > if you could bisect it a bit (perhaps not fully, but a couple of
-> >> >> >> > bisection steps to narrow down what area it is).
-> >> >> >>
-> >> >> >> I try that tomorrow.
-> >> >> >
-> >> >> > Well, please try commit ef98988ba369 (Merge tag 'pm-extra-4.9-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm) which is the
-> >> >> > merge introducing the late cpufreq changes.  If the issue is there, please
-> >> >> > try to revert commit 899bb6642f2a (cpufreq: skip invalid entries when searching
-> >> >> > the frequency) which is the only cpufreq one that may matter for the schedutil
-> >> >> > governor (and I have one fix for that commit queued up already).
-> >> >> >
-> >> >>
-> >> >> Is "cpufreq: fix overflow in cpufreq_table_find_index_dl()" the fix
-> >> >> you are speaking of?
-> >> >>
-> >> >> Fixes: 899bb6642f2a (cpufreq: skip invalid entries when searching the frequency)
-> >> >
-> >> > Yes.
-> >> >
-> >> >> If yes, can you add a hint in the commit message describing the impact
-> >> >> like here a slow-down of building a linux-kernel.
-> >> >> With a reference to this ML-thread?
-> >> >
-> >> > I will if that turns out to be the case.
-> >> >
-> >>
-> >> I have tried the revert and the patch from Sergey Senozhatsk pending
-> >> in linux-pm.git#linux-next.
-> >> Both fixes the issue for me.
-> >
-> > OK, thanks for the confirmation!
-> >
-> >> Feel free to give appropriate credits and many thanks to Jörg.
-> >>
-> >> I tried 'make -j3' in my last build and it was approx. 5mins faster in
-> >> my customized setup.
-> >> Will switch back to 2 parallel-make-jobs - it's safer for me.
-> >>
-> >> Can you explain why this issue was not seen when building under Linux v4.8.x?
-> >> [1] says...
-> >> Cc: 4.8+ <stable@vger.kernel.org> # 4.8+
-> >
-> > The commit in question might not make it into 4.8.y yet.
-> >
-> 
-> It's a bit terrifying to see these impacts of schedutil cpufreq-governor.
-> 
-> Do you have a test-case or how do you test with / for schedutil?
+Hi Pramod,
 
-In the same way as for the other governors: run a bunch of workloads and
-see if there's any impact on the execution times etc.
+Thanks for this patch. Few minor comments.
 
-And of course schedutil was not the only thing affected in this case
-quite obviously which you can see from the fix changelog.
+I have tested your patch on db410c and 8996 based internal platform and 
+it works fine.
 
-Thanks,
-Rafael
 
+On 10/18/2016 3:46 PM, Pramod Gurav wrote:
+> Provides runtime PM callbacks to enable and disable clock resources
+> when idle. Also support system PM callbacks to be called during system
+> suspend and resume.
+>
+> Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
+> ---
+>
+> Tested on DB410C.
+>
+> Changes in v4:
+> - Remove calls to sdhci_runtime_resume_host/sdhci_runtime_suspend_host
+>   from runtime callbacks as sdhc msm controller is capable of restoring
+>   it's register values after clocks are disabled and re-enabled.
+>
+> Changes in v3:
+> - Added CONFIG_PM around runtime pm function.
+> - Replaced msm suspend/resume with generic function directly
+> - Use SET_SYSTEM_SLEEP_PM_OPS instead of late version
+>
+> Changes in v2:
+> - Moved pm_rutime enabling before adding host
+> - Handled pm_rutime in remove
+> - Changed runtime handling with reference from sdhci-of-at91.c
+>
+>  drivers/mmc/host/sdhci-msm.c | 66 +++++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 65 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
+> index 8ef44a2a..33ec809 100644
+> --- a/drivers/mmc/host/sdhci-msm.c
+> +++ b/drivers/mmc/host/sdhci-msm.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/of_device.h>
+>  #include <linux/delay.h>
+>  #include <linux/mmc/mmc.h>
+> +#include <linux/pm_runtime.h>
+>  #include <linux/slab.h>
+>
+>  #include "sdhci-pltfm.h"
+> @@ -658,12 +659,26 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+>  		goto clk_disable;
+>  	}
+>
+> +	pm_runtime_get_noresume(&pdev->dev);
+> +	pm_runtime_set_active(&pdev->dev);
+> +	pm_runtime_enable(&pdev->dev);
+> +	pm_runtime_set_autosuspend_delay(&pdev->dev, 50);
+Use a macro MSM_MMC_AUTOSUSPEND_DELAY_MS instead of using 50 directly here.
+
+> +	pm_runtime_use_autosuspend(&pdev->dev);
+> +
+>  	ret = sdhci_add_host(host);
+>  	if (ret)
+> -		goto clk_disable;
+> +		goto pm_runtime_disable;
+> +
+> +	platform_set_drvdata(pdev, host);
+No need to set platform_set_drvdata here. sdhci_pltfm_init will do it 
+anyways.
+
+> +
+pm_runtime_mark_last_busy(&pdev->dev) can be added here.
+> +	pm_runtime_put_autosuspend(&pdev->dev);
+>
+>  	return 0;
+>
+> +pm_runtime_disable:
+> +	pm_runtime_disable(&pdev->dev);
+> +	pm_runtime_set_suspended(&pdev->dev);
+> +	pm_runtime_put_noidle(&pdev->dev);
+>  clk_disable:
+>  	clk_disable_unprepare(msm_host->clk);
+>  pclk_disable:
+> @@ -685,6 +700,11 @@ static int sdhci_msm_remove(struct platform_device *pdev)
+>  		    0xffffffff);
+>
+>  	sdhci_remove_host(host, dead);
+> +
+> +	pm_runtime_get_sync(&pdev->dev);
+> +	pm_runtime_disable(&pdev->dev);
+> +	pm_runtime_put_noidle(&pdev->dev);
+> +
+>  	clk_disable_unprepare(msm_host->clk);
+>  	clk_disable_unprepare(msm_host->pclk);
+>  	if (!IS_ERR(msm_host->bus_clk))
+> @@ -693,12 +713,56 @@ static int sdhci_msm_remove(struct platform_device *pdev)
+>  	return 0;
+>  }
+>
+> +#ifdef CONFIG_PM
+> +static int sdhci_msm_runtime_suspend(struct device *dev)
+> +{
+> +	struct sdhci_host *host = dev_get_drvdata(dev);
+> +	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+> +	struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
+> +
+> +	clk_disable_unprepare(msm_host->clk);
+> +	clk_disable_unprepare(msm_host->pclk);
+> +
+> +	return 0;
+> +}
+> +
+> +static int sdhci_msm_runtime_resume(struct device *dev)
+> +{
+> +	struct sdhci_host *host = dev_get_drvdata(dev);
+> +	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+> +	struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
+> +	int ret;
+> +
+> +	ret = clk_prepare_enable(msm_host->clk);
+> +	if (ret) {
+> +		dev_err(dev, "clk_enable failed: %d\n", ret);
+dev_err(dev, "clk enable failed for core_clk: %d\n", ret);
+
+> +		return ret;
+> +	}
+> +	ret = clk_prepare_enable(msm_host->pclk);
+> +	if (ret) {
+> +		dev_err(dev, "clk_enable failed: %d\n", ret);
+dev_err(dev, "clk enable failed for iface_clk: %d\n", ret);
+
+> +		clk_disable_unprepare(msm_host->clk);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static const struct dev_pm_ops sdhci_msm_pm_ops = {
+> +	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+> +					pm_runtime_force_resume)
+> +	SET_RUNTIME_PM_OPS(sdhci_msm_runtime_suspend, sdhci_msm_runtime_resume,
+> +				NULL)
+> +};
+> +
+>  static struct platform_driver sdhci_msm_driver = {
+>  	.probe = sdhci_msm_probe,
+>  	.remove = sdhci_msm_remove,
+>  	.driver = {
+>  		   .name = "sdhci_msm",
+>  		   .of_match_table = sdhci_msm_dt_match,
+> +		   .pm = &sdhci_msm_pm_ops,
+>  	},
+>  };
+>
+>
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
