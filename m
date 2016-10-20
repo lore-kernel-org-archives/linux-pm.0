@@ -1,28 +1,85 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 0/2] PID debugfs files
-Date: Thu, 20 Oct 2016 13:37:04 -0700
-Message-ID: <1476995826-15536-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Set P-state upfront in performance mode
+Date: Thu, 20 Oct 2016 23:19:46 +0200
+Message-ID: <CAJZ5v0hcV9gNfgwX+5RZWc6NbqEfnhwaFJSRDJJ=sApJM2_pKQ@mail.gmail.com>
+References: <1724762.8Kf4o5e5cm@vostro.rjw.lan> <1476987764.5666.29.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:21280 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755189AbcJTUhU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 20 Oct 2016 16:37:20 -0400
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:33474 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754069AbcJTVTt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 17:19:49 -0400
+In-Reply-To: <1476987764.5666.29.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-When PID is not used don't present PID parameters to tune.
-Also update documentation.
+On Thu, Oct 20, 2016 at 8:22 PM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Wed, 2016-10-19 at 02:57 +0200, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>
+> [...]
+>
+>> +     if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+>> +             /*
+>> +              * NOHZ_FULL CPUs need this as the governor callback
+>> may not
+>> +              * be invoked on them.
+>> +              */
+>> +             intel_pstate_clear_update_util_hook(policy->cpu);
+>> +             intel_pstate_max_within_limits(cpu);
+>> +     }
+>> +
+>
+> Can we move this to intel_pstate_set_performance_limits
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index a6ffd79..d0fd73e 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1543,6 +1543,13 @@ static void
+> intel_pstate_set_performance_limits(struct perf_limits *limits)
+>         limits->max_sysfs_pct = 100;
+>         limits->min_policy_pct = 0;
+>         limits->min_sysfs_pct = 0;
+> +
+> +       /*
+> +        * NOHZ_FULL CPUs need this as the governor callback may not
+> +        * be invoked on them.
+> +        */
+> +       intel_pstate_clear_update_util_hook(policy->cpu);
+> +       intel_pstate_max_within_limits(cpu);
+>  }
+>
+>  static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+> @@ -1599,15 +1606,6 @@ static int intel_pstate_set_policy(struct
+> cpufreq_policy *policy)
+>         limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
+>
+>   out:
+> -       if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
+> -               /*
+> -                * NOHZ_FULL CPUs need this as the governor callback
+> may not
+> -                * be invoked on them.
+> -                */
+> -               intel_pstate_clear_update_util_hook(policy->cpu);
+> -               intel_pstate_max_within_limits(cpu);
+> -       }
+> -
+>         intel_pstate_set_update_util_hook(policy->cpu);
+>
+>         intel_pstate_hwp_set_policy(policy);
 
-Srinivas Pandruvada (2):
-  cpufreq: intel_pstate: Remove PID debugfs when not used
-  Documentation: intel_pstate: PID tuning is not always available
+Not really, because the policy->max < policy->cpuinfo.max_freq case
+needs to be covered too.
 
- Documentation/cpu-freq/intel-pstate.txt | 9 +++++----
- drivers/cpufreq/intel_pstate.c          | 4 +++-
- 2 files changed, 8 insertions(+), 5 deletions(-)
+At least I don't see why it shouldn't be covered.
 
--- 
-2.7.4
-
+Thanks,
+Rafael
