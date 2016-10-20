@@ -1,65 +1,48 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v6 3/9] x86/topology: Define x86's arch_update_cpu_topology
-Date: Thu, 20 Oct 2016 14:59:57 -0700
-Message-ID: <64b30e9319d3ad00a8e67f6c68ff927b8112f753.1477000078.git.tim.c.chen@linux.intel.com>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-In-Reply-To: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
-Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.9-rc2
+Date: Fri, 21 Oct 2016 00:08:29 +0200
+Message-ID: <CAJZ5v0hvQK+Tnb04Npj3KjhNPaXzyFVBgCh8haBi5zHu_mAV4A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:34130 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753788AbcJTWIb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 18:08:31 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-The scheduler calls arch_update_cpu_topology() to check whether the
-scheduler domains have to be rebuilt.
+Hi Linus,
 
-So far x86 has no requirement for this, but the upcoming ITMT support
-makes this necessary.
+Please pull from the tag
 
-Request the rebuild when the x86 internal update flag is set.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.9-rc2
 
-Suggested-by: Morten Rasmussen <morten.rasmussen@arm.com>
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- arch/x86/include/asm/topology.h |  1 +
- arch/x86/kernel/smpboot.c       | 11 +++++++++++
- 2 files changed, 12 insertions(+)
+with top-most commit 350d32395bee1a21deec504a253b336e20d9f35a
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 3e95dfc..323f61f 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -149,4 +149,5 @@ struct pci_bus;
- int x86_pci_root_bus_node(int bus);
- void x86_pci_root_bus_resources(int bus, struct list_head *resources);
- 
-+extern bool x86_topology_update;
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 4234e52..ebd2655 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -109,6 +109,17 @@ static bool logical_packages_frozen __read_mostly;
- /* Maximum number of SMT threads on any online core */
- int __max_smt_threads __read_mostly;
- 
-+/* Flag to indicate if a complete sched domain rebuild is required */
-+bool x86_topology_update;
-+
-+int arch_update_cpu_topology(void)
-+{
-+	int retval = x86_topology_update;
-+
-+	x86_topology_update = false;
-+	return retval;
-+}
-+
- static inline void smpboot_setup_warm_reset_vector(unsigned long start_eip)
- {
- 	unsigned long flags;
--- 
-2.5.5
+ Merge branch 'pm-cpufreq'
 
+on top of commit 1001354ca34179f3db924eb66672442a173147dc
+
+ Linux 4.9-rc1
+
+to receive an urgent power management fix for v4.9-rc2.
+
+This fixes pointer arithmetic mess-up in the cpufreq core introduced
+by one of recent commits and leading to all kinds of breakage from
+kernel crashes to incorrect governor decisions (Sergey Senozhatsky).
+
+Thanks!
+
+---------------
+
+Sergey Senozhatsky (1):
+      cpufreq: fix overflow in cpufreq_table_find_index_dl()
+
+---------------
+
+ include/linux/cpufreq.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
