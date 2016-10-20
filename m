@@ -1,96 +1,112 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 1/8] PM / OPP: Reword binding supporting multiple regulators per device
-Date: Thu, 20 Oct 2016 14:14:55 +0530
-Message-ID: <891ef8705e13dff331a3135647f4c18f88402a12.1476952750.git.viresh.kumar@linaro.org>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v5 0/5] Functional dependencies between devices
+Date: Thu, 20 Oct 2016 12:21:53 +0200
+Message-ID: <a49cc8aa-84fe-5752-efdc-113a116e588d@samsung.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <CGME20161010125153eucas1p2b86325c046d3e0d0b6275abd000ea096@eucas1p2.samsung.com>
+ <13957403.ZrB4mMbICz@vostro.rjw.lan>
+ <ef96a88b-240e-17b1-904d-b7a778a999ec@samsung.com>
+ <CAJZ5v0iKww_kFSWHoXC30B=f_9s8Cn1t9Y8G23ZPT4F3-ew+xg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
+In-reply-to: <CAJZ5v0iKww_kFSWHoXC30B=f_9s8Cn1t9Y8G23ZPT4F3-ew+xg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-On certain platforms (like TI), DVFS for a single device (CPU) requires
-configuring multiple power supplies.
+Hi Rafael,
 
-The OPP bindings already contains binding and example to explain this
-case, but it isn't sufficient. For example, there is no way for the code
-parsing these bindings to know which voltage values belong to which
-power supply. Also its not possible to know the order in which the
-supplies need to be configured while switching OPPs.
 
-This patch tries to clarify on those details and does some minor changes
-as well.
+On 2016-10-19 13:57, Rafael J. Wysocki wrote:
+> On Tue, Oct 18, 2016 at 12:46 PM, Marek Szyprowski
+> <m.szyprowski@samsung.com> wrote:
+>> On 2016-10-10 14:36, Rafael J. Wysocki wrote:
+>>> [...]
+>>>
+>>> One more update after some conversations during LinuxCon Europe.
+>>>
+>>> The main point was to make it possible for device_link_add() to figure out
+>>> the
+>>> initial state of the link instead of expecting the caller to provide it
+>>> which
+>>> might not be reliable enough in general.
+>>>
+>>> In this version device_link_add() takes three arguments, the supplier and
+>>> consumer pointers and flags and it sets the correct initial state of the
+>>> link
+>>> automatically (unless invoked with the "stateless" flag, of course).  The
+>>> cost
+>>> is one additional field in struct device (I moved all of the links-related
+>>> fields in struct device to a separate sub-structure while at it) to track
+>>> the "driver presence status" of the device (to be used by
+>>> device_link_add()).
+>>>
+>>> In addition to that, the links list walks in the core.c and dd.c code are
+>>> under the device links mutex now, so the iternal link spinlock is not
+>>> needed
+>>> any more and I have renamed symbols to distinguish between flags, link
+>>> states
+>>> and device "driver presence statuses".
+>>>
+>>> More information is there in the changelogs.
+>> Thanks for the update. This version is indeed easier to use and still works
+>> fine
+>> with my Exynos IOMMU runtime pm rework. You can keep my:
+>>
+>> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>>
+>> I will send updated version of my patchset soon.
+> Thanks for the testing, much appreciated!
+>
+> The series is in a new branch called "device-links-test" in my tree now:
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+> device-links-test
 
-Note that the bindings do not specify the order in which the regulators
-need to be programmed and the order in which the entries are added for
-the supplies.
+While working on integrating IOMMU deferred probing patches I found a bug,
+which has been introduced in v4 of device dependency patchset (v3 worked
+fine in this area, v5 also contains this bug). The following fixup is
+needed to properly create links with DL_FLAG_PM_RUNTIME flag set during
+consumer device probing:
 
-The user of the bindings (like the kernel) shall know these details
-already and the DT is responsible to supply only the readings for the
-regulators.
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Date: Thu, 20 Oct 2016 12:12:14 +0200
+Subject: [PATCH] driver core: fix runtime pm state for
+  DEVICE_LINK_CONSUMER_PROBE links
 
-Cc: Mark Brown <broonie@kernel.org>
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Rob Herring <robh@kernel.org>
+If link is added during consumer probe with DL_FLAG_PM_RUNTIME flag set,
+the code will do additional pm_runtime_put() on the supplier after
+finishing consumer probing. This will break runtime pm operation for
+the supplier device. To solve this issue, enforce additional call to
+pm_runtime_get_sync() on the supplier device while creating such link.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 25 +++++++++++++++++--------
- 1 file changed, 17 insertions(+), 8 deletions(-)
+  drivers/base/core.c | 3 +++
+  1 file changed, 3 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index ee91cbdd95ee..af476df510f1 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -86,8 +86,13 @@ properties.
-   Single entry is for target voltage and three entries are for <target min max>
-   voltages.
- 
--  Entries for multiple regulators must be present in the same order as
--  regulators are specified in device's DT node.
-+  Entries for multiple regulators shall be provided in the same field separated
-+  by angular brackets <>. The OPP binding doesn't provide any provisions to
-+  relate the values to their power supplies or the order in which the supplies
-+  need to be configured.
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 48bc5a362f7d..d4cc285a1df7 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -217,6 +217,9 @@ struct device_link *device_link_add(struct device 
+*consumer,
+          }
+      }
+
++    if (flags & DL_FLAG_PM_RUNTIME && status == DL_STATE_CONSUMER_PROBE)
++        pm_runtime_get_sync(supplier);
 +
-+  Entries for all regulators shall be of the same size, i.e. either all use a
-+  single value or triplets.
- 
- - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
-   the above opp-microvolt property, but allows multiple voltage ranges to be
-@@ -104,10 +109,12 @@ properties.
- 
-   Should only be set if opp-microvolt is set for the OPP.
- 
--  Entries for multiple regulators must be present in the same order as
--  regulators are specified in device's DT node. If this property isn't required
--  for few regulators, then this should be marked as zero for them. If it isn't
--  required for any regulator, then this property need not be present.
-+  Entries for multiple regulators shall be provided in the same field separated
-+  by angular brackets <>. If current values aren't required for a regulator,
-+  then it shall be filled with 0. If current values aren't required for any of
-+  the regulators, then this field is not required. The OPP binding doesn't
-+  provide any provisions to relate the values to their power supplies or the
-+  order in which the supplies need to be configured.
- 
- - opp-microamp-<name>: Named opp-microamp property. Similar to
-   opp-microvolt-<name> property, but for microamp instead.
-@@ -386,10 +393,12 @@ Example 4: Handling multiple regulators
- / {
- 	cpus {
- 		cpu@0 {
--			compatible = "arm,cortex-a7";
-+			compatible = "vendor,cpu-type";
- 			...
- 
--			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
-+			vcc0-supply = <&cpu_supply0>;
-+			vcc1-supply = <&cpu_supply1>;
-+			vcc2-supply = <&cpu_supply2>;
- 			operating-points-v2 = <&cpu0_opp_table>;
- 		};
- 	};
+      /*
+       * Move the consumer and all of the devices depending on it to the end
+       * of dpm_list and the devices_kset list.
 -- 
-2.7.1.410.g6faf27b
+1.9.1
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
