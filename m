@@ -1,50 +1,67 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: Re: [RESEND][PATCHv2] cpupower: Correct return type of
- cpu_power_is_cpu_online in cpufreq
-Date: Thu, 20 Oct 2016 13:42:49 +0530
-Message-ID: <331512cb-ccfb-a9eb-fea8-501fa333920c@linux.vnet.ibm.com>
-References: <1476917632-7831-1-git-send-email-labbott@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:44158 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1753785AbcJTIM6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 04:12:58 -0400
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id u9K8AXoo060704
-        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 04:12:57 -0400
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 266t6d83hy-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 04:12:56 -0400
-Received: from localhost
-        by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-        Thu, 20 Oct 2016 18:12:54 +1000
-In-Reply-To: <1476917632-7831-1-git-send-email-labbott@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/8] PM / OPP: Multiple regulator support
+Date: Thu, 20 Oct 2016 14:14:54 +0530
+Message-ID: <cover.1476952750.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Laura Abbott <labbott@redhat.com>, Thomas Renninger <trenn@suse.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
+Hi,
 
+Some platforms (like TI) have complex DVFS configuration for CPU
+devices, where multiple regulators are required to be configured to
+change DVFS state of the device. This was explained well by Nishanth
+earlier [1].
 
-On 10/20/2016 04:23 AM, Laura Abbott wrote:
-> When converting to a shared library in ac5a181d065d ("cpupower: Add
-> cpuidle parts into library"), cpu_freq_cpu_exists was converted to
-> cpupower_is_cpu_online. cpu_req_cpu_exists returned 0 on success and
-> -ENOSYS on failure whereas cpupower_is_cpu_online returns 1 on success.
-> Check for the correct return value in cpufreq-set.
-> 
-> See https://bugzilla.redhat.com/show_bug.cgi?id=1374212
-> 
-> Fixes: ac5a181d065d ("cpupower: Add cpuidle parts into library")
-> Reported-by: Julian Seward <jseward@acm.org>
-> Signed-off-by: Laura Abbott <labbott@redhat.com>
-> ---
-> v2: Drop another redundant cpupower_is_cpu_online
+Some thoughts went into it few months back but then it all got lost. I
+am trying to get that back on track with this thread.
 
-Reviewed-by:Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+One of the major complaints around multiple regulators case was that the
+DT isn't responsible in any way to represent the ordering in which
+multiple supplies need to be programmed, before or after frequency
+change. It was considered in this patch and such information is left to
+the platform specific OPP driver now, which can register its own
+opp_set_rate() callback with the OPP core and the OPP core will then
+call it during DVFS.
 
+The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
+and code to pass values for multiple regulators and verified that they
+are all properly read by the kernel (using debugfs interface).
+
+Though more testing on real (TI) platforms would be useful.
+
+This is rebased over: linux-next branch in the PM tree.
+
+V1->V2:
+- Ack from Rob for 1st patch
+- Moved the supplies structure to pm_opp.h (Dave)
+- Fixed an compilation warning.
+
+--
+viresh
+
+[1] https://marc.info/?l=linux-pm&m=145684495832764&w=2
+
+Viresh Kumar (8):
+  PM / OPP: Reword binding supporting multiple regulators per device
+  PM / OPP: Don't use OPP structure outside of rcu protected section
+  PM / OPP: Manage supply's voltage/current in a separate structure
+  PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
+  PM / OPP: Add infrastructure to manage multiple regulators
+  PM / OPP: Separate out _generic_opp_set_rate()
+  PM / OPP: Allow platform specific custom opp_set_rate() callbacks
+  PM / OPP: Don't WARN on multiple calls to dev_pm_opp_set_regulators()
+
+ Documentation/devicetree/bindings/opp/opp.txt |  25 +-
+ drivers/base/power/opp/core.c                 | 501 ++++++++++++++++++++------
+ drivers/base/power/opp/debugfs.c              |  48 ++-
+ drivers/base/power/opp/of.c                   | 104 ++++--
+ drivers/base/power/opp/opp.h                  |  20 +-
+ drivers/cpufreq/cpufreq-dt.c                  |   9 +-
+ include/linux/pm_opp.h                        |  49 ++-
+ 7 files changed, 574 insertions(+), 182 deletions(-)
+
+-- 
+2.7.1.410.g6faf27b
