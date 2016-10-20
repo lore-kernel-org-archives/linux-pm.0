@@ -1,9 +1,9 @@
 From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v5 1/7] iommu/exynos: Remove excessive, useless debug
-Date: Thu, 20 Oct 2016 09:22:47 +0200
-Message-ID: <1476948173-21093-2-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH v5 2/7] iommu/exynos: Remove dead code
+Date: Thu, 20 Oct 2016 09:22:48 +0200
+Message-ID: <1476948173-21093-3-git-send-email-m.szyprowski@samsung.com>
 References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
-	<CGME20161020072331eucas1p1af7dc7270b0b19168b949f3416eda474@eucas1p1.samsung.com>
+	<CGME20161020072332eucas1p1d980c1659979bd5bc2918bfc9d40a415@eucas1p1.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -22,27 +22,153 @@ To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76
 Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Remove excessive, useless debug about skipping TLB invalidation, which
-is a normal situation when more aggressive power management is enabled.
+__sysmmu_enable/disable functions were designed to do ref-count based
+operations, but current code always calls them only once, so the code for
+checking the conditions and invalid conditions can be simply removed
+without any influence to the driver operation.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 ---
- drivers/iommu/exynos-iommu.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/iommu/exynos-iommu.c | 65 ++++++++++++--------------------------------
+ 1 file changed, 17 insertions(+), 48 deletions(-)
 
 diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 30808e91b775..8ba0d6049a63 100644
+index 8ba0d6049a63..4056228b8e5f 100644
 --- a/drivers/iommu/exynos-iommu.c
 +++ b/drivers/iommu/exynos-iommu.c
-@@ -578,9 +578,6 @@ static void sysmmu_tlb_invalidate_entry(struct sysmmu_drvdata *data,
- 			sysmmu_unblock(data);
- 		}
- 		clk_disable(data->clk_master);
--	} else {
--		dev_dbg(data->master,
--			"disabled. Skipping TLB invalidation @ %#x\n", iova);
+@@ -460,9 +460,6 @@ static bool __sysmmu_disable(struct sysmmu_drvdata *data)
+ 		__sysmmu_disable_nocount(data);
+ 
+ 		dev_dbg(data->sysmmu, "Disabled\n");
+-	} else  {
+-		dev_dbg(data->sysmmu, "%d times left to disable\n",
+-					data->activations);
  	}
+ 
  	spin_unlock_irqrestore(&data->lock, flags);
+@@ -508,29 +505,18 @@ static void __sysmmu_enable_nocount(struct sysmmu_drvdata *data)
+ static int __sysmmu_enable(struct sysmmu_drvdata *data, phys_addr_t pgtable,
+ 			   struct exynos_iommu_domain *domain)
+ {
+-	int ret = 0;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&data->lock, flags);
+ 	if (set_sysmmu_active(data)) {
+ 		data->pgtable = pgtable;
+ 		data->domain = domain;
+-
+ 		__sysmmu_enable_nocount(data);
+-
+ 		dev_dbg(data->sysmmu, "Enabled\n");
+-	} else {
+-		ret = (pgtable == data->pgtable) ? 1 : -EBUSY;
+-
+-		dev_dbg(data->sysmmu, "already enabled\n");
+ 	}
+-
+-	if (WARN_ON(ret < 0))
+-		set_sysmmu_inactive(data); /* decrement count */
+-
+ 	spin_unlock_irqrestore(&data->lock, flags);
+ 
+-	return ret;
++	return 0;
  }
+ 
+ static void sysmmu_tlb_invalidate_flpdcache(struct sysmmu_drvdata *data,
+@@ -793,8 +779,8 @@ static void exynos_iommu_domain_free(struct iommu_domain *iommu_domain)
+ 	spin_lock_irqsave(&domain->lock, flags);
+ 
+ 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
+-		if (__sysmmu_disable(data))
+-			data->master = NULL;
++		__sysmmu_disable(data);
++		data->master = NULL;
+ 		list_del_init(&data->domain_node);
+ 	}
+ 
+@@ -829,31 +815,23 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
+ 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
+ 	struct sysmmu_drvdata *data, *next;
+ 	unsigned long flags;
+-	bool found = false;
+ 
+ 	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
+ 		return;
+ 
+ 	spin_lock_irqsave(&domain->lock, flags);
+ 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
+-		if (data->master == dev) {
+-			if (__sysmmu_disable(data)) {
+-				data->master = NULL;
+-				list_del_init(&data->domain_node);
+-			}
+-			pm_runtime_put(data->sysmmu);
+-			found = true;
+-		}
++		__sysmmu_disable(data);
++		data->master = NULL;
++		list_del_init(&data->domain_node);
++		pm_runtime_put(data->sysmmu);
+ 	}
+ 	spin_unlock_irqrestore(&domain->lock, flags);
+ 
+ 	owner->domain = NULL;
+ 
+-	if (found)
+-		dev_dbg(dev, "%s: Detached IOMMU with pgtable %pa\n",
+-					__func__, &pagetable);
+-	else
+-		dev_err(dev, "%s: No IOMMU is attached\n", __func__);
++	dev_dbg(dev, "%s: Detached IOMMU with pgtable %pa\n", __func__,
++		&pagetable);
+ }
+ 
+ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+@@ -864,7 +842,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+ 	struct sysmmu_drvdata *data;
+ 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
+ 	unsigned long flags;
+-	int ret = -ENODEV;
+ 
+ 	if (!has_sysmmu(dev))
+ 		return -ENODEV;
+@@ -874,27 +851,19 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+ 
+ 	list_for_each_entry(data, &owner->controllers, owner_node) {
+ 		pm_runtime_get_sync(data->sysmmu);
+-		ret = __sysmmu_enable(data, pagetable, domain);
+-		if (ret >= 0) {
+-			data->master = dev;
++		__sysmmu_enable(data, pagetable, domain);
++		data->master = dev;
+ 
+-			spin_lock_irqsave(&domain->lock, flags);
+-			list_add_tail(&data->domain_node, &domain->clients);
+-			spin_unlock_irqrestore(&domain->lock, flags);
+-		}
+-	}
+-
+-	if (ret < 0) {
+-		dev_err(dev, "%s: Failed to attach IOMMU with pgtable %pa\n",
+-					__func__, &pagetable);
+-		return ret;
++		spin_lock_irqsave(&domain->lock, flags);
++		list_add_tail(&data->domain_node, &domain->clients);
++		spin_unlock_irqrestore(&domain->lock, flags);
+ 	}
+ 
+ 	owner->domain = iommu_domain;
+-	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa %s\n",
+-		__func__, &pagetable, (ret == 0) ? "" : ", again");
++	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
++		&pagetable);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static sysmmu_pte_t *alloc_lv2entry(struct exynos_iommu_domain *domain,
 -- 
 1.9.1
