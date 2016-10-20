@@ -1,67 +1,65 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/8] PM / OPP: Multiple regulator support
-Date: Thu, 20 Oct 2016 14:14:54 +0530
-Message-ID: <cover.1476952750.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 2/8] PM / OPP: Don't use OPP structure outside of rcu protected section
+Date: Thu, 20 Oct 2016 14:14:56 +0530
+Message-ID: <7a0754e64236db2a977c6a6402c222fea6dc866d.1476952750.git.viresh.kumar@linaro.org>
+References: <cover.1476952750.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
+References: <cover.1476952750.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The OPP structure must not be used out of the rcu protected section.
+Cache the values to be used in separate variables instead.
 
-Some platforms (like TI) have complex DVFS configuration for CPU
-devices, where multiple regulators are required to be configured to
-change DVFS state of the device. This was explained well by Nishanth
-earlier [1].
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/opp/core.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Some thoughts went into it few months back but then it all got lost. I
-am trying to get that back on track with this thread.
-
-One of the major complaints around multiple regulators case was that the
-DT isn't responsible in any way to represent the ordering in which
-multiple supplies need to be programmed, before or after frequency
-change. It was considered in this patch and such information is left to
-the platform specific OPP driver now, which can register its own
-opp_set_rate() callback with the OPP core and the OPP core will then
-call it during DVFS.
-
-The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
-and code to pass values for multiple regulators and verified that they
-are all properly read by the kernel (using debugfs interface).
-
-Though more testing on real (TI) platforms would be useful.
-
-This is rebased over: linux-next branch in the PM tree.
-
-V1->V2:
-- Ack from Rob for 1st patch
-- Moved the supplies structure to pm_opp.h (Dave)
-- Fixed an compilation warning.
-
---
-viresh
-
-[1] https://marc.info/?l=linux-pm&m=145684495832764&w=2
-
-Viresh Kumar (8):
-  PM / OPP: Reword binding supporting multiple regulators per device
-  PM / OPP: Don't use OPP structure outside of rcu protected section
-  PM / OPP: Manage supply's voltage/current in a separate structure
-  PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
-  PM / OPP: Add infrastructure to manage multiple regulators
-  PM / OPP: Separate out _generic_opp_set_rate()
-  PM / OPP: Allow platform specific custom opp_set_rate() callbacks
-  PM / OPP: Don't WARN on multiple calls to dev_pm_opp_set_regulators()
-
- Documentation/devicetree/bindings/opp/opp.txt |  25 +-
- drivers/base/power/opp/core.c                 | 501 ++++++++++++++++++++------
- drivers/base/power/opp/debugfs.c              |  48 ++-
- drivers/base/power/opp/of.c                   | 104 ++++--
- drivers/base/power/opp/opp.h                  |  20 +-
- drivers/cpufreq/cpufreq-dt.c                  |   9 +-
- include/linux/pm_opp.h                        |  49 ++-
- 7 files changed, 574 insertions(+), 182 deletions(-)
-
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 4c7c6da7a989..056527a3fb4e 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -584,6 +584,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	struct clk *clk;
+ 	unsigned long freq, old_freq;
+ 	unsigned long u_volt, u_volt_min, u_volt_max;
++	unsigned long old_u_volt, old_u_volt_min, old_u_volt_max;
+ 	int ret;
+ 
+ 	if (unlikely(!target_freq)) {
+@@ -633,6 +634,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 		return ret;
+ 	}
+ 
++	if (IS_ERR(old_opp)) {
++		old_u_volt = 0;
++	} else {
++		old_u_volt = old_opp->u_volt;
++		old_u_volt_min = old_opp->u_volt_min;
++		old_u_volt_max = old_opp->u_volt_max;
++	}
++
+ 	u_volt = opp->u_volt;
+ 	u_volt_min = opp->u_volt_min;
+ 	u_volt_max = opp->u_volt_max;
+@@ -677,9 +686,10 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 			__func__, old_freq);
+ restore_voltage:
+ 	/* This shouldn't harm even if the voltages weren't updated earlier */
+-	if (!IS_ERR(old_opp))
+-		_set_opp_voltage(dev, reg, old_opp->u_volt,
+-				 old_opp->u_volt_min, old_opp->u_volt_max);
++	if (old_u_volt) {
++		_set_opp_voltage(dev, reg, old_u_volt, old_u_volt_min,
++				 old_u_volt_max);
++	}
+ 
+ 	return ret;
+ }
 -- 
 2.7.1.410.g6faf27b
