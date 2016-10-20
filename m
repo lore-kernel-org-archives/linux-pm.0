@@ -1,34 +1,48 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v3] PM / OPP: fix debug/error messages in
- dev_pm_opp_of_get_sharing_cpus()
-Date: Thu, 20 Oct 2016 12:18:58 -0700
-Message-ID: <20161020191858.GC26139@codeaurora.org>
-References: <1476947569-23552-1-git-send-email-yamada.masahiro@socionext.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1476947569-23552-1-git-send-email-yamada.masahiro@socionext.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/2] Documentation: intel_pstate: PID tuning is not always available
+Date: Thu, 20 Oct 2016 13:37:06 -0700
+Message-ID: <1476995826-15536-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+References: <1476995826-15536-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga07.intel.com ([134.134.136.100]:13746 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755335AbcJTUhW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 20 Oct 2016 16:37:22 -0400
+In-Reply-To: <1476995826-15536-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 10/20, Masahiro Yamada wrote:
-> These log messages are wrong because _of_get_opp_desc_node() returns
-> an operating-points-v2 node.
-> 
-> Commit a6eed752f5fb ("PM / OPP: passing NULL to PTR_ERR()") fixed
-> static checker warnings, and reworded the messages at the same time
-> (but the latter was not mentioned in the git-log).
-> 
-> Restore the correct messages.
-> 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
+PID tuning is not available when the get_target_pstate_use_cpu_load()
+is used to calculate target_state. So update the documentation.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ Documentation/cpu-freq/intel-pstate.txt | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
+diff --git a/Documentation/cpu-freq/intel-pstate.txt b/Documentation/cpu-freq/intel-pstate.txt
+index e6bd1e6..5528d6d 100644
+--- a/Documentation/cpu-freq/intel-pstate.txt
++++ b/Documentation/cpu-freq/intel-pstate.txt
+@@ -122,11 +122,12 @@ will run at is selected by the processor itself.
+ 
+ Tuning Intel P-State driver
+ 
+-When HWP mode is not used, debugfs files have also been added to allow the
+-tuning of the internal governor algorithm. These files are located at
+-/sys/kernel/debug/pstate_snb/. The algorithm uses a PID (Proportional
+-Integral Derivative) controller. The PID tunable parameters are:
++When the performance can be tuned using PID (Proportional Integral
++Derivative) controller, debugfs files are provided for adjusting performance.
++They are presented under:
++/sys/kernel/debug/pstate_snb/
+ 
++The PID tunable parameters are:
+       deadband
+       d_gain_pct
+       i_gain_pct
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.7.4
+
