@@ -1,18 +1,18 @@
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH] PM / OPP: fix debug/error messages in dev_pm_opp_of_get_sharing_cpus()
-Date: Thu, 20 Oct 2016 15:53:56 +0900
-Message-ID: <1476946436-27425-1-git-send-email-yamada.masahiro@socionext.com>
+Subject: [PATCH v2] PM / OPP: fix debug/error messages in dev_pm_opp_of_get_sharing_cpus()
+Date: Thu, 20 Oct 2016 15:59:56 +0900
+Message-ID: <1476946796-27698-1-git-send-email-yamada.masahiro@socionext.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from conuserg-10.nifty.com ([210.131.2.77]:55919 "EHLO
-        conuserg-10.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753391AbcJTGwM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 02:52:12 -0400
+Received: from conuserg-12.nifty.com ([210.131.2.79]:22655 "EHLO
+        conuserg-12.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750785AbcJTG6D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 02:58:03 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
 
-These comments are wrong because _of_get_opp_desc_node() returns
+These log messages are wrong because _of_get_opp_desc_node() returns
 an operating-points-v2 node.
 
 Commit a6eed752f5fb ("PM / OPP: passing NULL to PTR_ERR()") fixed
@@ -24,6 +24,10 @@ message string, so the function name would not carry much value.
 
 Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
+
+Changes in v2:
+  - Reword git-log slightly
+     comments -> log messages
 
  drivers/base/power/opp/of.c | 5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
