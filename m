@@ -1,31 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: 4.8.1 regression with cpufreq governors
-Date: Thu, 20 Oct 2016 08:59:30 +0530
-Message-ID: <20161020032930.GC11766@vireshk-i7>
-References: <20161018004606.GA5559@comcast.net>
- <2549240.nvakNXlyKF@vostro.rjw.lan>
- <20161019200610.GB9047@comcast.net>
+Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for
+ device-tree
+Date: Thu, 20 Oct 2016 09:04:35 +0530
+Message-ID: <20161020033435.GD11766@vireshk-i7>
+References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+ <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
+ <20161018113835.GB11471@vireshk-i7>
+ <87r37d4qlw.fsf@belgarion.home>
+ <20161019135208.GG11471@vireshk-i7>
+ <87bmyg3xzh.fsf@belgarion.home>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:33733 "EHLO
-        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753630AbcJTD3e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Oct 2016 23:29:34 -0400
-Received: by mail-pf0-f177.google.com with SMTP id 128so27343997pfz.0
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2016 20:29:34 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161019200610.GB9047@comcast.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <87bmyg3xzh.fsf@belgarion.home>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tim Walberg <twalberg@comcast.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>
 
-On 19-10-16, 15:06, Tim Walberg wrote:
-> This indeed turned out to be the fix.
+On 19-10-16, 22:06, Robert Jarzmik wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> 
+> >> >> +	{ .compatible = "marvell,pxa250", },
+> >> >> +	{ .compatible = "marvell,pxa270", },
+> >> >>  
+> >> >>  	{ .compatible = "samsung,exynos3250", },
+> >> >>  	{ .compatible = "samsung,exynos4210", },
+> >> >
+> >> > Isn't there a race between cpufreq-dt and the platform driver to
+> >> > register first ?
+> >> Ah, could you be more specific about the race you're talking of ?
+> >> 
+> >> My understanding was that cpufreq-dt-platdev does create the device, and
+> >> cpufreq-dt is a driver for it, so there is no race but a direct relationship
+> >> AFAIU.
+> >
+> > I mean that both the driver may try to register to the cpufreq core if
+> > they are both compiled in a single image.
+> Euh I still don't follow you. The only driver that can register to the cpufreq
+> core is cpufreq-dt.
 
-Really? How can this fix the ondemand governor thing?
-
-Or is it that Ondemand never broke ?
+I was wondering on what will happen if both cpufreq-dt and your pxa2xx-cpufreq
+driver are present in the same kernel image. In that case the init routines of
+both of them will try to call cpufreq_register_driver().
 
 -- 
 viresh
