@@ -1,124 +1,99 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 0/5] Functional dependencies between devices
-Date: Thu, 20 Oct 2016 14:54:56 +0200
-Message-ID: <CAJZ5v0ivT5eAPvg_NWtU+o0GrghwJMEdvPiLxt8m3C6BU5=nrw@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <CGME20161010125153eucas1p2b86325c046d3e0d0b6275abd000ea096@eucas1p2.samsung.com>
- <13957403.ZrB4mMbICz@vostro.rjw.lan> <ef96a88b-240e-17b1-904d-b7a778a999ec@samsung.com>
- <CAJZ5v0iKww_kFSWHoXC30B=f_9s8Cn1t9Y8G23ZPT4F3-ew+xg@mail.gmail.com> <a49cc8aa-84fe-5752-efdc-113a116e588d@samsung.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH V1 05/10] thermal: da9062/61: Thermal junction
+ temperature monitoring driver
+Date: Thu, 20 Oct 2016 13:02:31 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CCE4535@SW-EX-MBX02.diasemi.com>
+References: <cover.1475743411.git.stwiss.opensource@diasemi.com>
+ <b5ce58ca00f7ab30a025d24083549241f135b0e9.1475743411.git.stwiss.opensource@diasemi.com>
+ <3bc9fd76-2885-b07a-9df8-7802b7535da2@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a49cc8aa-84fe-5752-efdc-113a116e588d@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <3bc9fd76-2885-b07a-9df8-7802b7535da2@ti.com>
+Content-Language: en-US
+Sender: linux-input-owner@vger.kernel.org
+To: Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On  07 October 2016 06:29 Keerthy wrote:
 
-On Thu, Oct 20, 2016 at 12:21 PM, Marek Szyprowski
-<m.szyprowski@samsung.com> wrote:
-> Hi Rafael,
->
->
-> On 2016-10-19 13:57, Rafael J. Wysocki wrote:
->>
->> On Tue, Oct 18, 2016 at 12:46 PM, Marek Szyprowski
->> <m.szyprowski@samsung.com> wrote:
->>>
->>> On 2016-10-10 14:36, Rafael J. Wysocki wrote:
->>>>
->>>> [...]
->>>>
->>>> One more update after some conversations during LinuxCon Europe.
->>>>
->>>> The main point was to make it possible for device_link_add() to figure
->>>> out
->>>> the
->>>> initial state of the link instead of expecting the caller to provide it
->>>> which
->>>> might not be reliable enough in general.
->>>>
->>>> In this version device_link_add() takes three arguments, the supplier
->>>> and
->>>> consumer pointers and flags and it sets the correct initial state of the
->>>> link
->>>> automatically (unless invoked with the "stateless" flag, of course).
->>>> The
->>>> cost
->>>> is one additional field in struct device (I moved all of the
->>>> links-related
->>>> fields in struct device to a separate sub-structure while at it) to
->>>> track
->>>> the "driver presence status" of the device (to be used by
->>>> device_link_add()).
->>>>
->>>> In addition to that, the links list walks in the core.c and dd.c code
->>>> are
->>>> under the device links mutex now, so the iternal link spinlock is not
->>>> needed
->>>> any more and I have renamed symbols to distinguish between flags, link
->>>> states
->>>> and device "driver presence statuses".
->>>>
->>>> More information is there in the changelogs.
->>>
->>> Thanks for the update. This version is indeed easier to use and still
->>> works
->>> fine
->>> with my Exynos IOMMU runtime pm rework. You can keep my:
->>>
->>> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>>
->>> I will send updated version of my patchset soon.
->>
->> Thanks for the testing, much appreciated!
->>
->> The series is in a new branch called "device-links-test" in my tree now:
->>
->> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
->> device-links-test
->
->
-> While working on integrating IOMMU deferred probing patches I found a bug,
-> which has been introduced in v4 of device dependency patchset (v3 worked
-> fine in this area, v5 also contains this bug). The following fixup is
-> needed to properly create links with DL_FLAG_PM_RUNTIME flag set during
-> consumer device probing:
->
-> From: Marek Szyprowski <m.szyprowski@samsung.com>
-> Date: Thu, 20 Oct 2016 12:12:14 +0200
-> Subject: [PATCH] driver core: fix runtime pm state for
->  DEVICE_LINK_CONSUMER_PROBE links
->
-> If link is added during consumer probe with DL_FLAG_PM_RUNTIME flag set,
-> the code will do additional pm_runtime_put() on the supplier after
-> finishing consumer probing. This will break runtime pm operation for
-> the supplier device. To solve this issue, enforce additional call to
-> pm_runtime_get_sync() on the supplier device while creating such link.
->
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
->  drivers/base/core.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 48bc5a362f7d..d4cc285a1df7 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -217,6 +217,9 @@ struct device_link *device_link_add(struct device
-> *consumer,
->          }
->      }
->
-> +    if (flags & DL_FLAG_PM_RUNTIME && status == DL_STATE_CONSUMER_PROBE)
-> +        pm_runtime_get_sync(supplier);
-> +
+> On Thursday 06 October 2016 02:13 PM, Steve Twiss wrote:
+> > From: Steve Twiss <stwiss.opensource@diasemi.com>
+> > 
+> > +static int da9062_thermal_probe(struct platform_device *pdev)
+> > +{
+> > +	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
+> > +	struct da9062_thermal *thermal;
+> > +	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
+> > +	const struct of_device_id *match;
+> > +	int ret = 0;
+> > +
+> > +	match = of_match_node(da9062_compatible_reg_id_table,
+> > +			      pdev->dev.of_node);
+> > +	if (!match)
+> > +		return -ENXIO;
+> > +
+> > +	if (pdev->dev.of_node) {
+> > +		if (!of_property_read_u32(pdev->dev.of_node,
+> > +					"dlg,tjunc-temp-polling-period-ms",
+> > +					&pp_tmp)) {
+> > +			if (pp_tmp < DA9062_MIN_POLLING_MS_PERIOD ||
+> > +				pp_tmp > DA9062_MAX_POLLING_MS_PERIOD)
+> > +				pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
+> > +		}
+> > +
+> > +		dev_dbg(&pdev->dev,
+> > +			 "TJUNC temp polling period set at %d ms\n",
+> > +			 pp_tmp);
+> > +	}
+> > +
+> > +	thermal = devm_kzalloc(&pdev->dev, sizeof(struct da9062_thermal),
+> > +			     GFP_KERNEL);
+> > +	if (!thermal) {
+> > +		ret = -ENOMEM;
+> > +		goto err;
+> > +	}
+> > +
+> > +	thermal->config = match->data;
+> > +
+> > +	INIT_DELAYED_WORK(&thermal->work, da9062_thermal_poll_on);
+> > +	mutex_init(&thermal->lock);
+> 
+> thermal_zone_device_register itself does
+> INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
+> 
+> refer: drivers/thermal/thermal_core.c
+> 
+> It does a periodic monitoring of the temperature as well. Do you really
+> want to have an additional work for monitoring temperature in your
+> driver also?
 
-Good catch!
+The thermal triggering mechanism is interrupt based and happens when the
+temperature rises above a given threshold level. The component cannot
+return an exact temperature, it only has knowledge if the temperature is
+above or below a given threshold value. A status bit must be polled to
+detect when the temperature falls below that threshold level again.
 
-I'd prefer to do this slightly differently, though, so I'll send an
-update of the runtime PM patch with this folded in shortly.
+If I was to use the core's polling_delay it would request get_temp() every
+x milliseconds. This would work: I could test the status bit to decide if
+the temperature was above or below the threshold, and enable or disable the
+interrupt accordingly. But during normal operation, when the temperature
+is in the normal range, I would be polling through I2C every x milliseconds
+instead of just waiting for an IRQ trigger event before starting my polling
+operations to detect when the temperature level fell below the threshold.
 
-Thanks,
-Rafael
+Since an over-temperature is supposed to be a very rare event, I decided to
+go with the IRQ based trigger and then kick-off a separate work-queue to
+poll the status bit and detect when the temperature dropped below the
+threshold level. This seemed a more efficient way of handling this.
+
+I have looked through thermal core, and there doesn't seem to be an obvious
+way of toggling on/off thermal core polling when I need to poll the
+temperature through get_temp(). So, I was going to stick with this method for
+PATCH V2.
+
+Regards,
+Steve
+
