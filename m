@@ -1,251 +1,96 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/8] PM / OPP: Manage supply's voltage/current in a separate structure
-Date: Thu, 20 Oct 2016 14:14:57 +0530
-Message-ID: <c72b9c35354165160d7d605de288e91b66180ce7.1476952750.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/8] PM / OPP: Reword binding supporting multiple regulators per device
+Date: Thu, 20 Oct 2016 14:14:55 +0530
+Message-ID: <891ef8705e13dff331a3135647f4c18f88402a12.1476952750.git.viresh.kumar@linaro.org>
 References: <cover.1476952750.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:34652 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934310AbcJTIp1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 04:45:27 -0400
-Received: by mail-pf0-f178.google.com with SMTP id r16so32536325pfg.1
-        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 01:45:27 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
 References: <cover.1476952750.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This is a preparatory step for multiple regulator per device support.
-Move the voltage/current variables to a new structure.
+On certain platforms (like TI), DVFS for a single device (CPU) requires
+configuring multiple power supplies.
 
+The OPP bindings already contains binding and example to explain this
+case, but it isn't sufficient. For example, there is no way for the code
+parsing these bindings to know which voltage values belong to which
+power supply. Also its not possible to know the order in which the
+supplies need to be configured while switching OPPs.
+
+This patch tries to clarify on those details and does some minor changes
+as well.
+
+Note that the bindings do not specify the order in which the regulators
+need to be programmed and the order in which the entries are added for
+the supplies.
+
+The user of the bindings (like the kernel) shall know these details
+already and the DT is responsible to supply only the readings for the
+regulators.
+
+Cc: Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/base/power/opp/core.c    | 44 +++++++++++++++++++++-------------------
- drivers/base/power/opp/debugfs.c |  8 ++++----
- drivers/base/power/opp/of.c      | 18 ++++++++--------
- drivers/base/power/opp/opp.h     | 27 ++++++++++++++++--------
- 4 files changed, 55 insertions(+), 42 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 056527a3fb4e..8d6006151c9a 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -112,7 +112,7 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- 	if (IS_ERR_OR_NULL(tmp_opp))
- 		pr_err("%s: Invalid parameters\n", __func__);
- 	else
--		v = tmp_opp->u_volt;
-+		v = tmp_opp->supply.u_volt;
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index ee91cbdd95ee..af476df510f1 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -86,8 +86,13 @@ properties.
+   Single entry is for target voltage and three entries are for <target min max>
+   voltages.
  
- 	return v;
- }
-@@ -246,10 +246,10 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
- 		if (!opp->available)
- 			continue;
- 
--		if (opp->u_volt_min < min_uV)
--			min_uV = opp->u_volt_min;
--		if (opp->u_volt_max > max_uV)
--			max_uV = opp->u_volt_max;
-+		if (opp->supply.u_volt_min < min_uV)
-+			min_uV = opp->supply.u_volt_min;
-+		if (opp->supply.u_volt_max > max_uV)
-+			max_uV = opp->supply.u_volt_max;
- 	}
- 
- 	rcu_read_unlock();
-@@ -637,14 +637,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	if (IS_ERR(old_opp)) {
- 		old_u_volt = 0;
- 	} else {
--		old_u_volt = old_opp->u_volt;
--		old_u_volt_min = old_opp->u_volt_min;
--		old_u_volt_max = old_opp->u_volt_max;
-+		old_u_volt = old_opp->supply.u_volt;
-+		old_u_volt_min = old_opp->supply.u_volt_min;
-+		old_u_volt_max = old_opp->supply.u_volt_max;
- 	}
- 
--	u_volt = opp->u_volt;
--	u_volt_min = opp->u_volt_min;
--	u_volt_max = opp->u_volt_max;
-+	u_volt = opp->supply.u_volt;
-+	u_volt_min = opp->supply.u_volt_min;
-+	u_volt_max = opp->supply.u_volt_max;
- 
- 	reg = opp_table->regulator;
- 
-@@ -957,10 +957,11 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- 	struct regulator *reg = opp_table->regulator;
- 
- 	if (!IS_ERR(reg) &&
--	    !regulator_is_supported_voltage(reg, opp->u_volt_min,
--					    opp->u_volt_max)) {
-+	    !regulator_is_supported_voltage(reg, opp->supply.u_volt_min,
-+					    opp->supply.u_volt_max)) {
- 		pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
--			__func__, opp->u_volt_min, opp->u_volt_max);
-+			__func__, opp->supply.u_volt_min,
-+			opp->supply.u_volt_max);
- 		return false;
- 	}
- 
-@@ -993,11 +994,12 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 
- 		/* Duplicate OPPs */
- 		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
--			 __func__, opp->rate, opp->u_volt, opp->available,
--			 new_opp->rate, new_opp->u_volt, new_opp->available);
-+			 __func__, opp->rate, opp->supply.u_volt,
-+			 opp->available, new_opp->rate, new_opp->supply.u_volt,
-+			 new_opp->available);
- 
--		return opp->available && new_opp->u_volt == opp->u_volt ?
--			0 : -EEXIST;
-+		return opp->available &&
-+		       new_opp->supply.u_volt == opp->supply.u_volt ? 0 : -EEXIST;
- 	}
- 
- 	new_opp->opp_table = opp_table;
-@@ -1064,9 +1066,9 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 	/* populate the opp table */
- 	new_opp->rate = freq;
- 	tol = u_volt * opp_table->voltage_tolerance_v1 / 100;
--	new_opp->u_volt = u_volt;
--	new_opp->u_volt_min = u_volt - tol;
--	new_opp->u_volt_max = u_volt + tol;
-+	new_opp->supply.u_volt = u_volt;
-+	new_opp->supply.u_volt_min = u_volt - tol;
-+	new_opp->supply.u_volt_max = u_volt + tol;
- 	new_opp->available = true;
- 	new_opp->dynamic = dynamic;
- 
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
-index ef1ae6b52042..c897676ca35f 100644
---- a/drivers/base/power/opp/debugfs.c
-+++ b/drivers/base/power/opp/debugfs.c
-@@ -63,16 +63,16 @@ int opp_debug_create_one(struct dev_pm_opp *opp, struct opp_table *opp_table)
- 	if (!debugfs_create_ulong("rate_hz", S_IRUGO, d, &opp->rate))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_volt_target", S_IRUGO, d, &opp->u_volt))
-+	if (!debugfs_create_ulong("u_volt_target", S_IRUGO, d, &opp->supply.u_volt))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_volt_min", S_IRUGO, d, &opp->u_volt_min))
-+	if (!debugfs_create_ulong("u_volt_min", S_IRUGO, d, &opp->supply.u_volt_min))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_volt_max", S_IRUGO, d, &opp->u_volt_max))
-+	if (!debugfs_create_ulong("u_volt_max", S_IRUGO, d, &opp->supply.u_volt_max))
- 		return -ENOMEM;
- 
--	if (!debugfs_create_ulong("u_amp", S_IRUGO, d, &opp->u_amp))
-+	if (!debugfs_create_ulong("u_amp", S_IRUGO, d, &opp->supply.u_amp))
- 		return -ENOMEM;
- 
- 	if (!debugfs_create_ulong("clock_latency_ns", S_IRUGO, d,
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 5552211e6fcd..b7fcd0a1b58b 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -148,14 +148,14 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 		return -EINVAL;
- 	}
- 
--	opp->u_volt = microvolt[0];
-+	opp->supply.u_volt = microvolt[0];
- 
- 	if (count == 1) {
--		opp->u_volt_min = opp->u_volt;
--		opp->u_volt_max = opp->u_volt;
-+		opp->supply.u_volt_min = opp->supply.u_volt;
-+		opp->supply.u_volt_max = opp->supply.u_volt;
- 	} else {
--		opp->u_volt_min = microvolt[1];
--		opp->u_volt_max = microvolt[2];
-+		opp->supply.u_volt_min = microvolt[1];
-+		opp->supply.u_volt_max = microvolt[2];
- 	}
- 
- 	/* Search for "opp-microamp-<name>" */
-@@ -173,7 +173,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
- 	}
- 
- 	if (prop && !of_property_read_u32(opp->np, name, &val))
--		opp->u_amp = val;
-+		opp->supply.u_amp = val;
- 
- 	return 0;
- }
-@@ -303,9 +303,9 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	mutex_unlock(&opp_table_lock);
- 
- 	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu\n",
--		 __func__, new_opp->turbo, new_opp->rate, new_opp->u_volt,
--		 new_opp->u_volt_min, new_opp->u_volt_max,
--		 new_opp->clock_latency_ns);
-+		 __func__, new_opp->turbo, new_opp->rate,
-+		 new_opp->supply.u_volt, new_opp->supply.u_volt_min,
-+		 new_opp->supply.u_volt_max, new_opp->clock_latency_ns);
- 
- 	/*
- 	 * Notify the changes in the availability of the operable
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index fabd5ca1a083..1bda0d35c486 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -47,6 +47,22 @@ extern struct list_head opp_tables;
-  */
- 
- /**
-+ * struct dev_pm_opp_supply - Power supply voltage/current values
-+ * @u_volt:	Target voltage in microvolts corresponding to this OPP
-+ * @u_volt_min:	Minimum voltage in microvolts corresponding to this OPP
-+ * @u_volt_max:	Maximum voltage in microvolts corresponding to this OPP
-+ * @u_amp:	Maximum current drawn by the device in microamperes
-+ *
-+ * This structure stores the voltage/current values for a single power supply.
-+ */
-+struct dev_pm_opp_supply {
-+	unsigned long u_volt;
-+	unsigned long u_volt_min;
-+	unsigned long u_volt_max;
-+	unsigned long u_amp;
-+};
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. The OPP binding doesn't provide any provisions to
++  relate the values to their power supplies or the order in which the supplies
++  need to be configured.
 +
-+/**
-  * struct dev_pm_opp - Generic OPP description structure
-  * @node:	opp table node. The nodes are maintained throughout the lifetime
-  *		of boot. It is expected only an optimal set of OPPs are
-@@ -61,10 +77,7 @@ extern struct list_head opp_tables;
-  * @turbo:	true if turbo (boost) OPP
-  * @suspend:	true if suspend OPP
-  * @rate:	Frequency in hertz
-- * @u_volt:	Target voltage in microvolts corresponding to this OPP
-- * @u_volt_min:	Minimum voltage in microvolts corresponding to this OPP
-- * @u_volt_max:	Maximum voltage in microvolts corresponding to this OPP
-- * @u_amp:	Maximum current drawn by the device in microamperes
-+ * @supply:	Power supply voltage/current values
-  * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
-  *		frequency from any other OPP's frequency.
-  * @opp_table:	points back to the opp_table struct this opp belongs to
-@@ -83,10 +96,8 @@ struct dev_pm_opp {
- 	bool suspend;
- 	unsigned long rate;
++  Entries for all regulators shall be of the same size, i.e. either all use a
++  single value or triplets.
  
--	unsigned long u_volt;
--	unsigned long u_volt_min;
--	unsigned long u_volt_max;
--	unsigned long u_amp;
-+	struct dev_pm_opp_supply supply;
-+
- 	unsigned long clock_latency_ns;
+ - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
+   the above opp-microvolt property, but allows multiple voltage ranges to be
+@@ -104,10 +109,12 @@ properties.
  
- 	struct opp_table *opp_table;
+   Should only be set if opp-microvolt is set for the OPP.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node. If this property isn't required
+-  for few regulators, then this should be marked as zero for them. If it isn't
+-  required for any regulator, then this property need not be present.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. If current values aren't required for a regulator,
++  then it shall be filled with 0. If current values aren't required for any of
++  the regulators, then this field is not required. The OPP binding doesn't
++  provide any provisions to relate the values to their power supplies or the
++  order in which the supplies need to be configured.
+ 
+ - opp-microamp-<name>: Named opp-microamp property. Similar to
+   opp-microvolt-<name> property, but for microamp instead.
+@@ -386,10 +393,12 @@ Example 4: Handling multiple regulators
+ / {
+ 	cpus {
+ 		cpu@0 {
+-			compatible = "arm,cortex-a7";
++			compatible = "vendor,cpu-type";
+ 			...
+ 
+-			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
++			vcc0-supply = <&cpu_supply0>;
++			vcc1-supply = <&cpu_supply1>;
++			vcc2-supply = <&cpu_supply2>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 	};
 -- 
 2.7.1.410.g6faf27b
-
