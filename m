@@ -1,99 +1,73 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: RE: [PATCH V1 05/10] thermal: da9062/61: Thermal junction
- temperature monitoring driver
-Date: Thu, 20 Oct 2016 13:02:31 +0000
-Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CCE4535@SW-EX-MBX02.diasemi.com>
-References: <cover.1475743411.git.stwiss.opensource@diasemi.com>
- <b5ce58ca00f7ab30a025d24083549241f135b0e9.1475743411.git.stwiss.opensource@diasemi.com>
- <3bc9fd76-2885-b07a-9df8-7802b7535da2@ti.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v4] mmc: sdhci-msm: Add pm_runtime and system PM support
+Date: Thu, 20 Oct 2016 16:08:36 +0300
+Message-ID: <e203153c-da0a-d450-3471-9d0dabf0a2ed@linaro.org>
+References: <20161018101624.27946-1-pramod.gurav@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <3bc9fd76-2885-b07a-9df8-7802b7535da2@ti.com>
-Content-Language: en-US
-Sender: linux-input-owner@vger.kernel.org
-To: Keerthy <a0393675@ti.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <20161018101624.27946-1-pramod.gurav@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Pramod Gurav <pramod.gurav@linaro.org>, ulf.hansson@linaro.org, adrian.hunter@intel.com, linux-mmc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org, riteshh@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On  07 October 2016 06:29 Keerthy wrote:
+Hi Pramod,
 
-> On Thursday 06 October 2016 02:13 PM, Steve Twiss wrote:
-> > From: Steve Twiss <stwiss.opensource@diasemi.com>
-> > 
-> > +static int da9062_thermal_probe(struct platform_device *pdev)
-> > +{
-> > +	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
-> > +	struct da9062_thermal *thermal;
-> > +	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-> > +	const struct of_device_id *match;
-> > +	int ret = 0;
-> > +
-> > +	match = of_match_node(da9062_compatible_reg_id_table,
-> > +			      pdev->dev.of_node);
-> > +	if (!match)
-> > +		return -ENXIO;
-> > +
-> > +	if (pdev->dev.of_node) {
-> > +		if (!of_property_read_u32(pdev->dev.of_node,
-> > +					"dlg,tjunc-temp-polling-period-ms",
-> > +					&pp_tmp)) {
-> > +			if (pp_tmp < DA9062_MIN_POLLING_MS_PERIOD ||
-> > +				pp_tmp > DA9062_MAX_POLLING_MS_PERIOD)
-> > +				pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-> > +		}
-> > +
-> > +		dev_dbg(&pdev->dev,
-> > +			 "TJUNC temp polling period set at %d ms\n",
-> > +			 pp_tmp);
-> > +	}
-> > +
-> > +	thermal = devm_kzalloc(&pdev->dev, sizeof(struct da9062_thermal),
-> > +			     GFP_KERNEL);
-> > +	if (!thermal) {
-> > +		ret = -ENOMEM;
-> > +		goto err;
-> > +	}
-> > +
-> > +	thermal->config = match->data;
-> > +
-> > +	INIT_DELAYED_WORK(&thermal->work, da9062_thermal_poll_on);
-> > +	mutex_init(&thermal->lock);
-> 
-> thermal_zone_device_register itself does
-> INIT_DELAYED_WORK(&(tz->poll_queue), thermal_zone_device_check);
-> 
-> refer: drivers/thermal/thermal_core.c
-> 
-> It does a periodic monitoring of the temperature as well. Do you really
-> want to have an additional work for monitoring temperature in your
-> driver also?
+Thanks for the patch!
 
-The thermal triggering mechanism is interrupt based and happens when the
-temperature rises above a given threshold level. The component cannot
-return an exact temperature, it only has knowledge if the temperature is
-above or below a given threshold value. A status bit must be polled to
-detect when the temperature falls below that threshold level again.
+On 10/18/2016 01:16 PM, Pramod Gurav wrote:
+> Provides runtime PM callbacks to enable and disable clock resources
+> when idle. Also support system PM callbacks to be called during system
+> suspend and resume.
+>
+> Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
+> ---
+>
+> Tested on DB410C.
+>
 
-If I was to use the core's polling_delay it would request get_temp() every
-x milliseconds. This would work: I could test the status bit to decide if
-the temperature was above or below the threshold, and enable or disable the
-interrupt accordingly. But during normal operation, when the temperature
-is in the normal range, I would be polling through I2C every x milliseconds
-instead of just waiting for an IRQ trigger event before starting my polling
-operations to detect when the temperature level fell below the threshold.
+[..]
 
-Since an over-temperature is supposed to be a very rare event, I decided to
-go with the IRQ based trigger and then kick-off a separate work-queue to
-poll the status bit and detect when the temperature dropped below the
-threshold level. This seemed a more efficient way of handling this.
+> +static int sdhci_msm_runtime_resume(struct device *dev)
+> +{
+> +	struct sdhci_host *host = dev_get_drvdata(dev);
+> +	struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
+> +	struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
+> +	int ret;
+> +
+> +	ret = clk_prepare_enable(msm_host->clk);
+> +	if (ret) {
+> +		dev_err(dev, "clk_enable failed: %d\n", ret);
+> +		return ret;
+> +	}
+> +	ret = clk_prepare_enable(msm_host->pclk);
+> +	if (ret) {
+> +		dev_err(dev, "clk_enable failed: %d\n", ret);
 
-I have looked through thermal core, and there doesn't seem to be an obvious
-way of toggling on/off thermal core polling when I need to poll the
-temperature through get_temp(). So, I was going to stick with this method for
-PATCH V2.
+Nit: Maybe mention in the prints which clock failed - core or peripheral.
 
-Regards,
-Steve
+> +		clk_disable_unprepare(msm_host->clk);
+> +		return ret;
+> +	}
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static const struct dev_pm_ops sdhci_msm_pm_ops = {
+> +	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+> +					pm_runtime_force_resume)
 
+Nit: Please align with the parenthesis.
+
+> +	SET_RUNTIME_PM_OPS(sdhci_msm_runtime_suspend, sdhci_msm_runtime_resume,
+> +				NULL)
+
+Ditto.
+
+Reviewed-by: Georgi Djakov <georgi.djakov@linaro.org>
+
+BR,
+Georgi
