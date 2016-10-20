@@ -1,92 +1,98 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v5 4/7] iommu/exynos: Set master device once on boot
-Date: Thu, 20 Oct 2016 09:22:50 +0200
-Message-ID: <1476948173-21093-5-git-send-email-m.szyprowski@samsung.com>
-References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161020072333eucas1p25b638379091939f10b3c9eb5d89a031e@eucas1p2.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v5 0/7] Exynos IOMMU: proper runtime PM support (use device
+	dependencies)
+Date: Thu, 20 Oct 2016 09:22:46 +0200
+Message-ID: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
+References: <CGME20161020072330eucas1p2b09ad8d091171edbac9449815fdc0fb7@eucas1p2.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-To avoid possible races, set master device pointer in each SYSMMU
-controller once on boot. Suspend/resume callbacks now properly relies on
-the configured iommu domain to enable or disable SYSMMU controller.
-While changing the code, also update the sleep debug messages and make
-them conditional.
+Hello,
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- drivers/iommu/exynos-iommu.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+This is another update of the patchset for adding proper runtime PM
+support to Exynos IOMMU driver. This has been achieved by using recently
+introduced device links, which lets SYSMMU controller's runtime PM to
+follow master's device runtime PM state (the device which actually
+performs DMA transaction). The main idea behind this solution is an
+observation that any DMA activity from master device can be done only
+when master device is active, thus when master device is suspended
+SYSMMU controller device can also be suspended.
 
-diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index f45b274513cc..28e570b53672 100644
---- a/drivers/iommu/exynos-iommu.c
-+++ b/drivers/iommu/exynos-iommu.c
-@@ -600,10 +600,12 @@ static int exynos_sysmmu_suspend(struct device *dev)
- 	struct sysmmu_drvdata *data = dev_get_drvdata(dev);
- 	struct device *master = data->master;
- 
--	dev_dbg(dev, "suspend\n");
- 	if (master) {
--		__sysmmu_disable(data);
- 		pm_runtime_put(dev);
-+		if (data->domain) {
-+			dev_dbg(data->sysmmu, "saving state\n");
-+			__sysmmu_disable(data);
-+		}
- 	}
- 	return 0;
- }
-@@ -613,10 +615,12 @@ static int exynos_sysmmu_resume(struct device *dev)
- 	struct sysmmu_drvdata *data = dev_get_drvdata(dev);
- 	struct device *master = data->master;
- 
--	dev_dbg(dev, "resume\n");
- 	if (master) {
- 		pm_runtime_get_sync(dev);
--		__sysmmu_enable(data);
-+		if (data->domain) {
-+			dev_dbg(data->sysmmu, "restoring state\n");
-+			__sysmmu_enable(data);
-+		}
- 	}
- 	return 0;
- }
-@@ -730,7 +734,6 @@ static void exynos_iommu_domain_free(struct iommu_domain *iommu_domain)
- 		__sysmmu_disable(data);
- 		data->pgtable = 0;
- 		data->domain = NULL;
--		data->master = NULL;
- 		list_del_init(&data->domain_node);
- 	}
- 
-@@ -772,7 +775,6 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
- 	spin_lock_irqsave(&domain->lock, flags);
- 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
- 		__sysmmu_disable(data);
--		data->master = NULL;
- 		data->pgtable = 0;
- 		data->domain = NULL;
- 		list_del_init(&data->domain_node);
-@@ -806,7 +808,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
- 		data->domain = domain;
- 		pm_runtime_get_sync(data->sysmmu);
- 		__sysmmu_enable(data);
--		data->master = dev;
- 
- 		spin_lock_irqsave(&domain->lock, flags);
- 		list_add_tail(&data->domain_node, &domain->clients);
-@@ -1192,6 +1193,7 @@ static int exynos_iommu_of_xlate(struct device *dev,
- 	}
- 
- 	list_add_tail(&data->owner_node, &owner->controllers);
-+	data->master = dev;
- 	return 0;
- }
- 
+This patchset solves the problem of all power domains being always
+enabled. It happened, because all SYSMMU controllers (which belongs to
+the same domains) are permanently kept active, because existing driver
+was simplified and kept SYSMMU device active all the time after
+initialization and attaching to the master device.
+
+Patch requires fifth version of Rafeal's "Functional dependencies
+between devices" patchset, which is available here:
+http://www.mail-archive.com/linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org/msg1246897.html
+or as git branch:
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git device-links-test
+
+If one wants to test this patchset, I've provided a branch with all needed
+patches (a small fix for Exynos4 FIMC-IS DTS is still needed):
+https://git.linaro.org/people/marek.szyprowski/linux-srpol.git v4.9-iommu-pm-v5
+
+Patches are based on vanilla v4.9-rc1 kernel with Rafael's device
+dependencies v5 patchset applied.
+
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+
+
+Changelog:
+v5:
+- split main patch into several small changes for easier review (requested
+  by Luis Rodriquez)
+- fixed usage of runtime_pm_active, now it is guarded by pm_runtime_get_noresume()
+  and pm_runtime_put() pair
+
+v4: http://www.mail-archive.com/linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org/msg1241601.html
+- rebased on top of v4 of device dependencies/links patchset, what resolved
+  system hang on reboot
+
+v3: http://www.spinics.net/lists/linux-samsung-soc/msg55256.html
+- rebased on top of latest device dependencies/links patchset
+- added proper locking between runtime pm, iommu_attach/detach and sysmmu
+  enable/disable(added per iommu owner device's rpm lock)
+
+v2: http://www.spinics.net/lists/arm-kernel/msg512082.html
+- replaced PM notifiers with generic device dependencies/links developed
+  by Rafael J. Wysocki
+
+v1: http://www.spinics.net/lists/arm-kernel/msg509600.html
+- initial version
+
+
+Patch summary:
+
+Marek Szyprowski (7):
+  iommu/exynos: Remove excessive, useless debug
+  iommu/exynos: Remove dead code
+  iommu/exynos: Simplify internal enable/disable functions
+  iommu/exynos: Set master device once on boot
+  iommu/exynos: Rework and fix internal locking
+  iommu/exynos: Add runtime pm support
+  iommu/exynos: Use device dependency links to control runtime pm
+
+ drivers/iommu/exynos-iommu.c | 230 ++++++++++++++++++-------------------------
+ 1 file changed, 95 insertions(+), 135 deletions(-)
+
 -- 
 1.9.1
