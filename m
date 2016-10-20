@@ -1,395 +1,80 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH v5 4/5] PM / runtime: Use device links
-Date: Thu, 20 Oct 2016 15:17 +0200
-Message-ID: <1535556.dKcXk7P617@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan> <2563815.4ofD0vayAU@vostro.rjw.lan>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH 6/9] PCI: Unfold conditions to block runtime PM on PCIe
+ ports
+Date: Thu, 20 Oct 2016 17:18:10 +0300
+Message-ID: <20161020141810.GM24289@lahna.fi.intel.com>
+References: <cover.1476875113.git.lukas@wunner.de>
+ <ba2f9f322b4aeea1aeb01f98a2eda8efe055494f.1476875113.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2563815.4ofD0vayAU@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:4448 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934018AbcJTOSP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 20 Oct 2016 10:18:15 -0400
+Content-Disposition: inline
+In-Reply-To: <ba2f9f322b4aeea1aeb01f98a2eda8efe055494f.1476875113.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Oct 19, 2016 at 04:07:13PM +0200, Lukas Wunner wrote:
+> The conditions to block D3 on parent ports are currently condensed into
+> a single expression in pci_dev_check_d3cold().  Upcoming commits will
+> add further conditions for hotplug ports, making this expression fairly
+> large and impenetrable.  Unfold the conditions to maintain readability
+> when they are amended.
+> 
+> No functional change intended.
 
-Modify the runtime PM framework to use device links to ensure that
-supplier devices will not be suspended if any of their consumer
-devices are active.
+This actually results a functional change because now all the conditions
+are evaluated whereas previosly it bailed out immediately when the
+condition was true ;-)
 
-The idea is to reference count suppliers on the consumer's resume
-and drop references to them on its suspend.  The information on
-whether or not the supplier has been reference counted by the
-consumer's (runtime) resume is stored in a new field (rpm_active)
-in the link object for each link.
+Not that it matters here.
 
-It may be necessary to clean up those references when the
-supplier is unbinding and that's why the links whose status is
-DEVICE_LINK_SUPPLIER_UNBIND are skipped by the runtime suspend
-and resume code.
-
-The above means that if the consumer device is probed in the
-runtime-active state, the supplier has to be resumed and reference
-counted by device_link_add() so the code works as expected on its
-(runtime) suspend.  There is a new flag, DEVICE_LINK_RPM_ACTIVE,
-to tell device_link_add() about that (in which case the caller
-is responsible for making sure that the consumer really will
-be runtime-active when runtime PM is enabled for it).
-
-The other new link flag, DEVICE_LINK_PM_RUNTIME, tells the core
-whether or not the link should be used for runtime PM at all.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-As Marek noticed, it is necessary to balance the pm_runtime_put() done by
-the core on the supplier if the link is added during consumer probe.
-
----
- drivers/base/core.c          |   27 +++++++
- drivers/base/dd.c            |    3 
- drivers/base/power/runtime.c |  157 +++++++++++++++++++++++++++++++++++++++++--
- include/linux/device.h       |    6 +
- include/linux/pm_runtime.h   |    6 +
- 5 files changed, 193 insertions(+), 6 deletions(-)
-
-Index: linux-pm/drivers/base/core.c
-===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -117,6 +117,14 @@ static int device_reorder_to_tail(struct
-  * @supplier: Supplier end of the link.
-  * @flags: Link flags.
-  *
-+ * The caller is responsible for the proper synchronization of the link creation
-+ * with runtime PM.  First, setting the DL_FLAG_PM_RUNTIME flag will cause the
-+ * runtime PM framework to take the link into account.  Second, if the
-+ * DL_FLAG_RPM_ACTIVE flag is set in addition to it, the supplier devices will
-+ * be forced into the active metastate and reference-counted upon the creation
-+ * of the link.  If DL_FLAG_PM_RUNTIME is not set, DL_FLAG_RPM_ACTIVE will be
-+ * ignored.
-+ *
-  * If the DL_FLAG_AUTOREMOVE is set, the link will be removed automatically
-  * when the consumer device driver unbinds from it.  The combination of both
-  * DL_FLAG_AUTOREMOVE and DL_FLAG_STATELESS set is invalid and will cause NULL
-@@ -158,10 +166,19 @@ struct device_link *device_link_add(stru
- 		if (link->consumer == consumer)
- 			goto out;
- 
--	link = kmalloc(sizeof(*link), GFP_KERNEL);
-+	link = kzalloc(sizeof(*link), GFP_KERNEL);
- 	if (!link)
- 		goto out;
- 
-+	if ((flags & DL_FLAG_PM_RUNTIME) && (flags & DL_FLAG_RPM_ACTIVE)) {
-+		if (pm_runtime_get_sync(supplier) < 0) {
-+			pm_runtime_put_noidle(supplier);
-+			kfree(link);
-+			link = NULL;
-+			goto out;
-+		}
-+		link->rpm_active = true;
-+	}
- 	get_device(supplier);
- 	link->supplier = supplier;
- 	INIT_LIST_HEAD(&link->s_node);
-@@ -178,6 +195,14 @@ struct device_link *device_link_add(stru
- 		case DL_DEV_DRIVER_BOUND:
- 			switch (consumer->links.status) {
- 			case DL_DEV_PROBING:
-+				/*
-+				 * Balance the decrementation of the supplier's
-+				 * runtime PM usage counter after consumer probe
-+				 * in driver_probe_device().
-+				 */
-+				if (flags & DL_FLAG_PM_RUNTIME)
-+					pm_runtime_get_sync(supplier);
-+
- 				link->status = DL_STATE_CONSUMER_PROBE;
- 				break;
- 			case DL_DEV_DRIVER_BOUND:
-Index: linux-pm/drivers/base/dd.c
-===================================================================
---- linux-pm.orig/drivers/base/dd.c
-+++ linux-pm/drivers/base/dd.c
-@@ -498,6 +498,7 @@ int driver_probe_device(struct device_dr
- 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
- 		 drv->bus->name, __func__, dev_name(dev), drv->name);
- 
-+	pm_runtime_get_suppliers(dev);
- 	if (dev->parent)
- 		pm_runtime_get_sync(dev->parent);
- 
-@@ -508,6 +509,7 @@ int driver_probe_device(struct device_dr
- 	if (dev->parent)
- 		pm_runtime_put(dev->parent);
- 
-+	pm_runtime_put_suppliers(dev);
- 	return ret;
- }
- 
-@@ -791,6 +793,7 @@ static void __device_release_driver(stru
- 		}
- 
- 		pm_runtime_get_sync(dev);
-+		pm_runtime_clean_up_links(dev);
- 
- 		driver_sysfs_remove(dev);
- 
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -12,6 +12,8 @@
- #include <linux/pm_runtime.h>
- #include <linux/pm_wakeirq.h>
- #include <trace/events/rpm.h>
-+
-+#include "../base.h"
- #include "power.h"
- 
- typedef int (*pm_callback_t)(struct device *);
-@@ -258,6 +260,42 @@ static int rpm_check_suspend_allowed(str
- 	return retval;
- }
- 
-+static int rpm_get_suppliers(struct device *dev)
-+{
-+	struct device_link *link;
-+
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
-+		int retval;
-+
-+		if (!(link->flags & DL_FLAG_PM_RUNTIME))
-+			continue;
-+
-+		if (READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND ||
-+		    link->rpm_active)
-+			continue;
-+
-+		retval = pm_runtime_get_sync(link->supplier);
-+		if (retval < 0) {
-+			pm_runtime_put_noidle(link->supplier);
-+			return retval;
-+		}
-+		link->rpm_active = true;
-+	}
-+	return 0;
-+}
-+
-+static void rpm_put_suppliers(struct device *dev)
-+{
-+	struct device_link *link;
-+
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
-+		if (link->rpm_active &&
-+		    READ_ONCE(link->status) != DL_STATE_SUPPLIER_UNBIND) {
-+			pm_runtime_put(link->supplier);
-+			link->rpm_active = false;
-+		}
-+}
-+
- /**
-  * __rpm_callback - Run a given runtime PM callback for a given device.
-  * @cb: Runtime PM callback to run.
-@@ -266,19 +304,55 @@ static int rpm_check_suspend_allowed(str
- static int __rpm_callback(int (*cb)(struct device *), struct device *dev)
- 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
--	int retval;
-+	int retval, idx;
- 
--	if (dev->power.irq_safe)
-+	if (dev->power.irq_safe) {
- 		spin_unlock(&dev->power.lock);
--	else
-+	} else {
- 		spin_unlock_irq(&dev->power.lock);
- 
-+		/*
-+		 * Resume suppliers if necessary.
-+		 *
-+		 * The device's runtime PM status cannot change until this
-+		 * routine returns, so it is safe to read the status outside of
-+		 * the lock.
-+		 */
-+		if (dev->power.runtime_status == RPM_RESUMING) {
-+			idx = device_links_read_lock();
-+
-+			retval = rpm_get_suppliers(dev);
-+			if (retval)
-+				goto fail;
-+
-+			device_links_read_unlock(idx);
-+		}
-+	}
-+
- 	retval = cb(dev);
- 
--	if (dev->power.irq_safe)
-+	if (dev->power.irq_safe) {
- 		spin_lock(&dev->power.lock);
--	else
-+	} else {
-+		/*
-+		 * If the device is suspending and the callback has returned
-+		 * success, drop the usage counters of the suppliers that have
-+		 * been reference counted on its resume.
-+		 *
-+		 * Do that if resume fails too.
-+		 */
-+		if ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
-+		    || (dev->power.runtime_status == RPM_RESUMING && retval)) {
-+			idx = device_links_read_lock();
-+
-+ fail:
-+			rpm_put_suppliers(dev);
-+
-+			device_links_read_unlock(idx);
-+		}
-+
- 		spin_lock_irq(&dev->power.lock);
-+	}
- 
- 	return retval;
- }
-@@ -1447,6 +1521,79 @@ void pm_runtime_remove(struct device *de
- }
- 
- /**
-+ * pm_runtime_clean_up_links - Prepare links to consumers for driver removal.
-+ * @dev: Device whose driver is going to be removed.
-+ *
-+ * Check links from this device to any consumers and if any of them have active
-+ * runtime PM references to the device, drop the usage counter of the device
-+ * (once per link).
-+ *
-+ * Links with the DL_FLAG_STATELESS flag set are ignored.
-+ *
-+ * Since the device is guaranteed to be runtime-active at the point this is
-+ * called, nothing else needs to be done here.
-+ *
-+ * Moreover, this is called after device_links_busy() has returned 'false', so
-+ * the status of each link is guaranteed to be DL_STATE_SUPPLIER_UNBIND and
-+ * therefore rpm_active can't be manipulated concurrently.
-+ */
-+void pm_runtime_clean_up_links(struct device *dev)
-+{
-+	struct device_link *link;
-+	int idx;
-+
-+	idx = device_links_read_lock();
-+
-+	list_for_each_entry_rcu(link, &dev->links.consumers, s_node) {
-+		if (link->flags & DL_FLAG_STATELESS)
-+			continue;
-+
-+		if (link->rpm_active) {
-+			pm_runtime_put_noidle(dev);
-+			link->rpm_active = false;
-+		}
-+	}
-+
-+	device_links_read_unlock(idx);
-+}
-+
-+/**
-+ * pm_runtime_get_suppliers - Resume and reference-count supplier devices.
-+ * @dev: Consumer device.
-+ */
-+void pm_runtime_get_suppliers(struct device *dev)
-+{
-+	struct device_link *link;
-+	int idx;
-+
-+	idx = device_links_read_lock();
-+
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
-+		if (link->flags & DL_FLAG_PM_RUNTIME)
-+			pm_runtime_get_sync(link->supplier);
-+
-+	device_links_read_unlock(idx);
-+}
-+
-+/**
-+ * pm_runtime_put_suppliers - Drop references to supplier devices.
-+ * @dev: Consumer device.
-+ */
-+void pm_runtime_put_suppliers(struct device *dev)
-+{
-+	struct device_link *link;
-+	int idx;
-+
-+	idx = device_links_read_lock();
-+
-+	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
-+		if (link->flags & DL_FLAG_PM_RUNTIME)
-+			pm_runtime_put(link->supplier);
-+
-+	device_links_read_unlock(idx);
-+}
-+
-+/**
-  * pm_runtime_force_suspend - Force a device into suspend state if needed.
-  * @dev: Device to suspend.
-  *
-Index: linux-pm/include/linux/device.h
-===================================================================
---- linux-pm.orig/include/linux/device.h
-+++ linux-pm/include/linux/device.h
-@@ -729,9 +729,13 @@ enum device_link_state {
-  *
-  * STATELESS: The core won't track the presence of supplier/consumer drivers.
-  * AUTOREMOVE: Remove this link automatically on consumer driver unbind.
-+ * PM_RUNTIME: If set, the runtime PM framework will use this link.
-+ * RPM_ACTIVE: Run pm_runtime_get_sync() on the supplier during link creation.
-  */
- #define DL_FLAG_STATELESS	(1 << 0)
- #define DL_FLAG_AUTOREMOVE	(1 << 1)
-+#define DL_FLAG_PM_RUNTIME	(1 << 2)
-+#define DL_FLAG_RPM_ACTIVE	(1 << 3)
- 
- /**
-  * struct device_link - Device link representation.
-@@ -741,6 +745,7 @@ enum device_link_state {
-  * @c_node: Hook to the consumer device's list of links to suppliers.
-  * @status: The state of the link (with respect to the presence of drivers).
-  * @flags: Link flags.
-+ * @rpm_active: Whether or not the consumer device is runtime-PM-active.
-  * @rcu_head: An RCU head to use for deferred execution of SRCU callbacks.
-  */
- struct device_link {
-@@ -750,6 +755,7 @@ struct device_link {
- 	struct list_head c_node;
- 	enum device_link_state status;
- 	u32 flags;
-+	bool rpm_active;
- 	struct rcu_head rcu_head;
- };
- 
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -55,6 +55,9 @@ extern unsigned long pm_runtime_autosusp
- extern void pm_runtime_update_max_time_suspended(struct device *dev,
- 						 s64 delta_ns);
- extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
-+extern void pm_runtime_clean_up_links(struct device *dev);
-+extern void pm_runtime_get_suppliers(struct device *dev);
-+extern void pm_runtime_put_suppliers(struct device *dev);
- 
- static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
- {
-@@ -186,6 +189,9 @@ static inline unsigned long pm_runtime_a
- 				struct device *dev) { return 0; }
- static inline void pm_runtime_set_memalloc_noio(struct device *dev,
- 						bool enable){}
-+static inline void pm_runtime_clean_up_links(struct device *dev) {}
-+static inline void pm_runtime_get_suppliers(struct device *dev) {}
-+static inline void pm_runtime_put_suppliers(struct device *dev) {}
- 
- #endif /* !CONFIG_PM */
- 
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  drivers/pci/pci.c | 21 +++++++++++----------
+>  1 file changed, 11 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index a19056e..f1ddb6b 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -2270,19 +2270,20 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+>  static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+>  {
+>  	bool *d3cold_ok = data;
+> -	bool no_d3cold;
+>  
+> -	/*
+> -	 * The device needs to be allowed to go D3cold and if it is wake
+> -	 * capable to do so from D3cold.
+> -	 */
+> -	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
+> -		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
+> -		!pci_power_manageable(dev);
+> +	/* The device needs to be allowed to go D3cold. */
+> +	if (dev->no_d3cold || !dev->d3cold_allowed)
+> +		*d3cold_ok = false;
+> +
+> +	/* If it is wakeup capable it must be able to do so from D3cold. */
+> +	if (device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold))
+> +		*d3cold_ok = false;
+>  
+> -	*d3cold_ok = !no_d3cold;
+> +	/* If it is a bridge it must be allowed to go to D3. */
+> +	if (!pci_power_manageable(dev))
+> +		*d3cold_ok = false;
+>  
+> -	return no_d3cold;
+> +	return !*d3cold_ok;
+>  }
+>  
+>  /*
+> -- 
+> 2.9.3
