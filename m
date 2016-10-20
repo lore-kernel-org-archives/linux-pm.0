@@ -1,81 +1,65 @@
 From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v6 6/9] x86/sched: Add SD_ASYM_PACKING flags to x86 ITMT CPU
-Date: Thu, 20 Oct 2016 15:00:00 -0700
-Message-ID: <c16ed9d548c346a1e0f65402f9e46376cfc6346f.1477000078.git.tim.c.chen@linux.intel.com>
+Subject: [PATCH v6 3/9] x86/topology: Define x86's arch_update_cpu_topology
+Date: Thu, 20 Oct 2016 14:59:57 -0700
+Message-ID: <64b30e9319d3ad00a8e67f6c68ff927b8112f753.1477000078.git.tim.c.chen@linux.intel.com>
 References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <cover.1477000078.git.tim.c.chen@linux.intel.com>
 In-Reply-To: <cover.1477000078.git.tim.c.chen@linux.intel.com>
 References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Some Intel cores in a package can be boosted to a higher turbo frequency
-with ITMT 3.0 technology. The scheduler can use the asymmetric packing
-feature to move tasks to the more capable cores.
+The scheduler calls arch_update_cpu_topology() to check whether the
+scheduler domains have to be rebuilt.
 
-If ITMT is enabled, add SD_ASYM_PACKING flag to the thread and core
-sched domains to enable asymmetric packing.
+So far x86 has no requirement for this, but the upcoming ITMT support
+makes this necessary.
 
+Request the rebuild when the x86 internal update flag is set.
+
+Suggested-by: Morten Rasmussen <morten.rasmussen@arm.com>
 Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- arch/x86/kernel/smpboot.c | 28 ++++++++++++++++++++++++----
- 1 file changed, 24 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/topology.h |  1 +
+ arch/x86/kernel/smpboot.c       | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
 
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 3e95dfc..323f61f 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -149,4 +149,5 @@ struct pci_bus;
+ int x86_pci_root_bus_node(int bus);
+ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
+ 
++extern bool x86_topology_update;
+ #endif /* _ASM_X86_TOPOLOGY_H */
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index ebd2655..ed14225 100644
+index 4234e52..ebd2655 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -487,22 +487,42 @@ static bool match_die(struct cpuinfo_x86 *c, struct cpuinfo_x86 *o)
- 	return false;
- }
+@@ -109,6 +109,17 @@ static bool logical_packages_frozen __read_mostly;
+ /* Maximum number of SMT threads on any online core */
+ int __max_smt_threads __read_mostly;
  
-+#if defined(CONFIG_SCHED_SMT) || defined(CONFIG_SCHED_MC)
-+static inline int x86_sched_itmt_flags(void)
++/* Flag to indicate if a complete sched domain rebuild is required */
++bool x86_topology_update;
++
++int arch_update_cpu_topology(void)
 +{
-+	return sysctl_sched_itmt_enabled ? SD_ASYM_PACKING : 0;
++	int retval = x86_topology_update;
++
++	x86_topology_update = false;
++	return retval;
 +}
 +
-+#ifdef CONFIG_SCHED_MC
-+static int x86_core_flags(void)
-+{
-+	return cpu_core_flags() | x86_sched_itmt_flags();
-+}
-+#endif
-+#ifdef CONFIG_SCHED_SMT
-+static int x86_smt_flags(void)
-+{
-+	return cpu_smt_flags() | x86_sched_itmt_flags();
-+}
-+#endif
-+#endif
-+
- static struct sched_domain_topology_level x86_numa_in_package_topology[] = {
- #ifdef CONFIG_SCHED_SMT
--	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
-+	{ cpu_smt_mask, x86_smt_flags, SD_INIT_NAME(SMT) },
- #endif
- #ifdef CONFIG_SCHED_MC
--	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
-+	{ cpu_coregroup_mask, x86_core_flags, SD_INIT_NAME(MC) },
- #endif
- 	{ NULL, },
- };
- 
- static struct sched_domain_topology_level x86_topology[] = {
- #ifdef CONFIG_SCHED_SMT
--	{ cpu_smt_mask, cpu_smt_flags, SD_INIT_NAME(SMT) },
-+	{ cpu_smt_mask, x86_smt_flags, SD_INIT_NAME(SMT) },
- #endif
- #ifdef CONFIG_SCHED_MC
--	{ cpu_coregroup_mask, cpu_core_flags, SD_INIT_NAME(MC) },
-+	{ cpu_coregroup_mask, x86_core_flags, SD_INIT_NAME(MC) },
- #endif
- 	{ cpu_cpu_mask, SD_INIT_NAME(DIE) },
- 	{ NULL, },
+ static inline void smpboot_setup_warm_reset_vector(unsigned long start_eip)
+ {
+ 	unsigned long flags;
 -- 
 2.5.5
+
