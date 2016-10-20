@@ -1,88 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/5] Switch to the DT cpufreq policy on the Integrator
-Date: Thu, 20 Oct 2016 10:17:42 +0530
-Message-ID: <20161020044742.GK11766@vireshk-i7>
-References: <1476871154-32243-1-git-send-email-linus.walleij@linaro.org>
- <20161020042012.GI11766@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:34531 "EHLO
-        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933266AbcJTErp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 00:47:45 -0400
-Received: by mail-pf0-f180.google.com with SMTP id r16so28586759pfg.1
-        for <linux-pm@vger.kernel.org>; Wed, 19 Oct 2016 21:47:45 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20161020042012.GI11766@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [PATCH] PM / OPP: make _of_get_opp_desc_node a static function
+Date: Thu, 20 Oct 2016 15:44:53 +0900
+Message-ID: <1476945893-26998-1-git-send-email-yamada.masahiro@socionext.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Russell King <linux@armlinux.org.uk>
 
-On 20-10-16, 09:50, Viresh Kumar wrote:
-> On 19-10-16, 11:59, Linus Walleij wrote:
-> > This switches the ARM Integrator/AP and Integrator/CP to use the
-> > Device Tree cpufreq policy with its definition of operating points
-> > using the generic OPP library.
-> > 
-> > The Integrators does not need to control a regulator to switch
-> > frequency, only a clock. This clock and its device tree bindings
-> > have been defined in the device tree and merged upstream for v4.9.
-> > 
-> > This approach provides a little better granularity on the
-> > Integrator/AP where I defined a few operating points: before
-> > this change the Integrator would just switch between min speed
-> > (12 MHz) and max speed (71 MHz). Now it can switch between a
-> > few arbitrarily chosen OPPs as in the examples below:
-> > 
-> > The following tests were made on the Integrator/AP:
-> > 
-> > /sys/devices/system/cpu/cpufreq/policy0 echo ondemand > scaling_governor
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 24000000 Hz
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 24000000 Hz --> 12000000 Hz
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 24000000 Hz
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 24000000 Hz --> 12000000 Hz
-> > 
-> > The switch from 12 to 24 MHz is triggered by as little as using the
-> > command line with the ondemand governor. If we do this:
-> > 
-> > yes > /dev/null &
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 36000000 Hz
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 36000000 Hz --> 71000000 Hz
-> > pkill yes
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 12000000 Hz
-> > 
-> > So the algorithm is indeed using all the OPPs.
-> > 
-> > Also as a confirmation test to make sure performance is affected by the
-> > speed changes, we set the performance governor and:
-> > 
-> > echo 12000 > scaling_max_freq
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 71000000 Hz --> 12000000 Hz
-> > time find /sys|sort|uniq > /dev/null
-> > real    0m 45.51s
-> > user    0m 11.15s
-> > sys     0m 26.74s
-> > 
-> > echo 71000 > scaling_max_freq
-> > cpu cpu0: dev_pm_opp_set_rate: switching OPP: 12000000 Hz --> 71000000 Hz
-> > time find /sys|sort|uniq
-> >  > /dev/null
-> > real    0m 9.13s
-> > user    0m 2.35s
-> > sys     0m 5.50s
-> > 
-> > So it is working.
-> > 
-> > If people are happy with this approach and approve of the patches
-> > I'd like an ACK from the cpufreq people and then merge the whole set
-> > through ARM SoC.
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Since commit f47b72a15a96 ("PM / OPP: Move CONFIG_OF dependent code
+in a separate file"), this function is defined and called only in
+drivers/base/power/opp/of.c .
 
-Integrator is an UP, right? Otherwise you may want to use operating-points-v2
-bindings instead.
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
 
+ drivers/base/power/opp/of.c  | 2 +-
+ drivers/base/power/opp/opp.h | 1 -
+ 2 files changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 5552211..6480137 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -198,7 +198,7 @@ void dev_pm_opp_of_remove_table(struct device *dev)
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+ 
+ /* Returns opp descriptor node for a device, caller must do of_node_put() */
+-struct device_node *_of_get_opp_desc_node(struct device *dev)
++static struct device_node *_of_get_opp_desc_node(struct device *dev)
+ {
+ 	/*
+ 	 * TODO: Support for multiple OPP tables.
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index fabd5ca..96cd30a 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -190,7 +190,6 @@ struct opp_table {
+ /* Routines internal to opp core */
+ struct opp_table *_find_opp_table(struct device *dev);
+ struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_table);
+-struct device_node *_of_get_opp_desc_node(struct device *dev);
+ void _dev_pm_opp_remove_table(struct device *dev, bool remove_all);
+ struct dev_pm_opp *_allocate_opp(struct device *dev, struct opp_table **opp_table);
+ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *opp_table);
 -- 
-viresh
+1.9.1
