@@ -1,71 +1,144 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] PM / OPP: fix debug/error messages in
- dev_pm_opp_of_get_sharing_cpus()
-Date: Thu, 20 Oct 2016 12:30:56 +0530
-Message-ID: <20161020070056.GM11766@vireshk-i7>
-References: <1476946796-27698-1-git-send-email-yamada.masahiro@socionext.com>
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: powernv: Use node ID in init_chip_info
+Date: Thu, 20 Oct 2016 12:33:56 +0530
+Message-ID: <c113a5cb-6043-e1d0-ccfd-81871d65a1ab@linux.vnet.ibm.com>
+References: <CAJoAoZmfxs8wwy1XsfN9qzLyf-ifQK-qPE4jeBhnKKzjoHSXmA@mail.gmail.com>
+ <20161020035951.GH11766@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36816 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751194AbcJTHBA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 03:01:00 -0400
-Received: by mail-pf0-f174.google.com with SMTP id e6so30831315pfk.3
-        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 00:01:00 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1476946796-27698-1-git-send-email-yamada.masahiro@socionext.com>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:52226 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750951AbcJTHE0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Oct 2016 03:04:26 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id u9K74IXi031859
+        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 03:04:25 -0400
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 266mej2s15-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 03:04:22 -0400
+Received: from localhost
+        by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+        Thu, 20 Oct 2016 17:04:09 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+        by d23dlp03.au.ibm.com (Postfix) with ESMTP id 986DD3578058
+        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 18:04:07 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+        by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id u9K747de17825950
+        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 18:04:07 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+        by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id u9K7468T000474
+        for <linux-pm@vger.kernel.org>; Thu, 20 Oct 2016 18:04:07 +1100
+In-Reply-To: <20161020035951.GH11766@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
+To: Emily Shaffer <emilyshaffer@google.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, rjw@rjwysocki.net, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org, akshay.adiga@linux.vnet.ibm.com, ego@linux.vnet.ibm.com
 
-On 20-10-16, 15:59, Masahiro Yamada wrote:
-> These log messages are wrong because _of_get_opp_desc_node() returns
-> an operating-points-v2 node.
-> 
-> Commit a6eed752f5fb ("PM / OPP: passing NULL to PTR_ERR()") fixed
-> static checker warnings, and reworded the messages at the same time
-> (but the latter was not mentioned in the git-log).
-> 
-> Restore the correct messages, dropping __func__.  We can grep the
-> message string, so the function name would not carry much value.
-> 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
-> 
-> Changes in v2:
->   - Reword git-log slightly
->      comments -> log messages
-> 
->  drivers/base/power/opp/of.c | 5 ++---
->  1 file changed, 2 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-> index 6480137..92e6d53 100644
-> --- a/drivers/base/power/opp/of.c
-> +++ b/drivers/base/power/opp/of.c
-> @@ -562,7 +562,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
->  	/* Get OPP descriptor node */
->  	np = _of_get_opp_desc_node(cpu_dev);
->  	if (!np) {
-> -		dev_dbg(cpu_dev, "%s: Couldn't find cpu_dev node.\n", __func__);
-> +		dev_dbg(cpu_dev, "Couldn't find opp node.\n");
->  		return -ENOENT;
->  	}
->  
-> @@ -587,8 +587,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
->  		/* Get OPP descriptor node */
->  		tmp_np = _of_get_opp_desc_node(tcpu_dev);
->  		if (!tmp_np) {
-> -			dev_err(tcpu_dev, "%s: Couldn't find tcpu_dev node.\n",
-> -				__func__);
-> +			dev_err(tcpu_dev, "Couldn't find opp node.\n");
+Hi,
 
-The error messages are very generic and it can get tricky to grep for them in
-the source code..
+On 10/20/2016 09:29 AM, Viresh Kumar wrote:
+> + few IBM guys who have been working on this.
+> 
+> On 19-10-16, 15:02, Emily Shaffer wrote:
+>> Fixed assumption that node_id==chip_id in powernv-cpufreq.c:init_chip_info;
+>> explicitly use node ID where necessary.
 
-I would prefer keeping function name in the print message.
+Thanks for the bug fix. I agree that the node-ids should not be assumed to be
+always be equal to chip-ids. But I think it would be better to get rid of
+cpumask_of_node() as it has problems when the powernv-cpufreq driver is
+initialized with offline cpus, like reported in the post below.
+https://patchwork.kernel.org/patch/8887591/
+(^^ This should also solve the node_id=chip_id problem)
 
--- 
-viresh
+Since throttle stats are common for all cpus in the chip, so we are better of
+not using cpumask_of_node() instead define something like cpumask_of_chip()
+where the driver doesn't have to compute chip cpumask.
+
+Thanks and Regards,
+Shilpa
+
+>>
+>> Tested: All CPUs report in /sys/devices/system/cpu*/cpufreq/throttle_stats
+>>
+>> Effort: platforms/arch-powerpc
+>> Google-Bug-Id: 26979978
+> 
+> Is this relevant upstream?
+> 
+>>
+>> Signed-off-by: Emily Shaffer <emilyshaffer@google.com>
+>> Change-Id: I22eb626b32fbb8053b3bbb9c75e677c700d0c2fb
+> 
+> Gerrit id isn't required for upstream..
+> 
+>> ---
+>>  drivers/cpufreq/powernv-cpufreq.c | 27 +++++++++++++++++++++------
+>>  1 file changed, 21 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c
+>> b/drivers/cpufreq/powernv-cpufreq.c
+>> index d3ffde8..3750b58 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -911,32 +911,47 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>>
+>>  static int init_chip_info(void)
+>>  {
+>> -       unsigned int chip[256];
+>> +       int rc = 0;
+>>         unsigned int cpu, i;
+>>         unsigned int prev_chip_id = UINT_MAX;
+>> +       unsigned int *chip, *node;
+>> +
+>> +       chip = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
+>> +       node = kcalloc(num_possible_cpus(), sizeof(unsigned int), GFP_KERNEL);
+>> +       if (!chip || !node) {
+>> +               rc = -ENOMEM;
+>> +               goto out;
+>> +       }
+>>
+>>         for_each_possible_cpu(cpu) {
+>>                 unsigned int id = cpu_to_chip_id(cpu);
+>>
+>>                 if (prev_chip_id != id) {
+>>                         prev_chip_id = id;
+>> -                       chip[nr_chips++] = id;
+>> +                       node[nr_chips] = cpu_to_node(cpu);
+>> +                       chip[nr_chips] = id;
+>> +                       nr_chips++;
+>>                 }
+>>         }
+>>
+>>         chips = kcalloc(nr_chips, sizeof(struct chip), GFP_KERNEL);
+>> -       if (!chips)
+>> -               return -ENOMEM;
+>> +       if (!chips) {
+>> +               rc = -ENOMEM;
+>> +               goto out;
+>> +       }
+>>
+>>         for (i = 0; i < nr_chips; i++) {
+>>                 chips[i].id = chip[i];
+>> -               cpumask_copy(&chips[i].mask, cpumask_of_node(chip[i]));
+>> +               cpumask_copy(&chips[i].mask, cpumask_of_node(node[i]));
+>>                 INIT_WORK(&chips[i].throttle, powernv_cpufreq_work_fn);
+>>                 for_each_cpu(cpu, &chips[i].mask)
+>>                         per_cpu(chip_info, cpu) =  &chips[i];
+>>         }
+>>
+>> -       return 0;
+>> +out:
+>> +       kfree(node);
+>> +       kfree(chip);
+>> +       return rc;
+>>  }
+>>
+>>  static inline void clean_chip_info(void)
+>> -- 
+>> 2.8.0.rc3.226.g39d4020
+> 
+
