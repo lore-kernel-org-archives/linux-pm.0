@@ -1,103 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3 0/8] PM / Domains: DT support for domain idle states &
- atomic PM domains
-Date: Fri, 21 Oct 2016 15:09:38 +0200
-Message-ID: <CAJZ5v0iKyVMBLjjTipNTj-ekXhKrK6Uj5fauM8a7R3GaSdD7-Q@mail.gmail.com>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFpQwOkXUk8wT6sZ-Ad4XpTnyodK5m24fYJ3P+1QtS0XOA@mail.gmail.com>
- <20161020224432.GB72940@linaro.org> <CAJZ5v0iKuSWr8xVha7HZ764z+Xk_urP1XFVV-VZ5+JQTuSj-bw@mail.gmail.com>
- <20161021013326.GA50423@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 2/2] cpuidle: governors: Move the files to the upper
+ directory
+Date: Fri, 21 Oct 2016 15:09:53 +0200
+Message-ID: <20161021130953.GB1636@mai>
+References: <1475652794-4486-1-git-send-email-daniel.lezcano@linaro.org>
+ <1475652794-4486-2-git-send-email-daniel.lezcano@linaro.org>
+ <CAJZ5v0jSqucMXyM7d9K2V0XA_i3kX=cF8ir-41bLgJYKJ27UGQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20161021013326.GA50423@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f51.google.com ([209.85.215.51]:35899 "EHLO
+        mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933165AbcJUNJ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 09:09:59 -0400
+Received: by mail-lf0-f51.google.com with SMTP id b75so142379379lfg.3
+        for <linux-pm@vger.kernel.org>; Fri, 21 Oct 2016 06:09:58 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jSqucMXyM7d9K2V0XA_i3kX=cF8ir-41bLgJYKJ27UGQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Fri, Oct 21, 2016 at 3:33 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
-> On Fri, Oct 21 2016 at 16:48 -0600, Rafael J. Wysocki wrote:
->>
->> On Fri, Oct 21, 2016 at 12:44 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
->>>
->>> On Mon, Oct 17 2016 at 01:30 -0600, Ulf Hansson wrote:
->>>>
->>>>
->>>> On 14 October 2016 at 19:47, Lina Iyer <lina.iyer@linaro.org> wrote:
->>>>>
->>>>>
->>>>> Hi all,
->>>>>
->>>>> Changes since v2 [3] -
->>>>> - Addressed review comments from v2.
->>>>>         - domain-idle-states documentation updated
->>>>>         - fixed compiler issues with imx driver
->>>>>         - minor code change in pm_domains.c
->>>>> - The series is available at [4].
->>>>>
->>>>> Changes since v1 [2] -
->>>>> - Addressed review comments from v1.
->>>>>         - Fixes around dynamic allocation of genpd states
->>>>>         - Used OF method for iterating phandles
->>>>>         - Updated documentation, examples
->>>>>         - Rename state variable (provider -> fwnode)
->>>>> - The series is available at [3].
->>>>>
->>>>> The changes from [1] are -
->>>>> - Allocating memory for domain idle states dynamically
->>>>> - Conform to naming conventions for internal and exported genpd
->>>>> functions
->>>>> - DT binding example for domain-idle-state
->>>>> - Use fwnode instead of of_node
->>>>> - Handle atomic case for removal of PM Domain
->>>>> - Rebase on top of Rafael's pm/genpd tree
->>>>>
->>>>> Thanks,
->>>>> Lina
->>>>>
->>>>> Lina Iyer (8):
->>>>>   PM / Domains: Make genpd state allocation dynamic
->>>>>   PM / Domain: Add residency property to genpd states
->>>>>   PM / Domains: Allow domain power states to be read from DT
->>>>>   PM / Domains: Save the fwnode in genpd_power_state
->>>>>   dt/bindings: Update binding for PM domain idle states
->>>>>   PM / Domains: Abstract genpd locking
->>>>>   PM / Domains: Support IRQ safe PM domains
->>>>>   PM / doc: Update device documentation for devices in IRQ safe PM
->>>>>     domains
->>>>>
->>>>>  .../devicetree/bindings/power/power_domain.txt     |  43 +++
->>>>>  Documentation/power/devices.txt                    |   9 +-
->>>>>  arch/arm/mach-imx/gpc.c                            |  17 +-
->>>>>  drivers/base/power/domain.c                        | 358
->>>>> +++++++++++++++++----
->>>>>  include/linux/pm_domain.h                          |  28 +-
->>>>>  5 files changed, 383 insertions(+), 72 deletions(-)
->>>>>
->>>>
->>>> Rafael, Lina,
->>>>
->>>> This looks good to me! Unless any other objections, I suggest to apply
->>>> this to get it tested in linux-next.
->>>>
->>>> Kind regards
->>>> Uffe
->>>>
->>> Rafael,
->>>
->>> If there are no objections, could you pick this patch for linux-next?
->>
->>
->> It is in my queue, but not at the top yet.
->>
-> Thank you Rafael.
+On Fri, Oct 21, 2016 at 02:47:22PM +0200, Rafael J. Wysocki wrote:
+> On Wed, Oct 5, 2016 at 9:33 AM, Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+> > Currently the different governors are stored in the subdir
+> > 'governors'. That is not a problem.
+> >
+> > However, that forces to declare some private structure in the
+> > include/linux/cpuidle.h header because these governor files
+> > don't have access to the private 'cpuidle.h' located in
+> > drivers/cpuidle.
+> >
+> > Instead of having the governors in the separate directory, move
+> > them along with the drivers and prefix them with 'governor-',
+> > that allows to do a proper cleanup in the cpuidle headers.
+> 
+> While I'm not particularly against this change, I'm sort of wondering
+> about the reason.
+> 
+> What in particular would be wrong with doing
+> 
+> #include "../cpuidle.h"
+> 
+> in a governor .c file?
 
-OK, I'm queuing up patches [1-7/8] as I don't see anything
-particularly objectionable in them.
+Hi Rafael,
 
-The documentation one needs some more work, however, and I've sent
-comments on that one already.
+there is nothing wrong by doing this relative inclusion. It is an alternative
+to the proposed patch. I personally don't like relative inclusion but it is
+a matter of taste and I am perfectly fine to resend the patch by just moving
+the structure to the private header and change the inclusion.
 
-Thanks,
-Rafael
+On the other side, the cpufreq susbsytem has all the governors along with the
+drivers in the same directory, so perhaps it makes sense to have a similar files
+organization.
+
+Actually, I'm fine with both approaches. Up to you to decide.
+
+  -- Daniel
