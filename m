@@ -1,60 +1,52 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v3 8/8] PM / doc: Update device documentation for devices
- in IRQ safe PM domains
-Date: Fri, 21 Oct 2016 09:23:13 -0600
-Message-ID: <20161021152313.GC72940@linaro.org>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
- <1476467276-75094-9-git-send-email-lina.iyer@linaro.org>
- <CAJZ5v0hP9QNSqU053keCgY-LEGAyOiOT_vuUK71Oa6i3f7pycg@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: [PATCH] PM / Suspend: Fix missing KERN_CONT for suspend message
+Date: Fri, 21 Oct 2016 16:24:09 +0100
+Message-ID: <1477063449-24530-1-git-send-email-jonathanh@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hP9QNSqU053keCgY-LEGAyOiOT_vuUK71Oa6i3f7pycg@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm@vger.kernel.org, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:9498 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S935077AbcJUPYR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 11:24:17 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jon Hunter <jonathanh@nvidia.com>
 
-On Fri, Oct 21 2016 at 07:07 -0600, Rafael J. Wysocki wrote:
->On Fri, Oct 14, 2016 at 7:47 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
->> Update documentation to reflect the changes made to support IRQ safe PM
->> domains.
->>
->> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  Documentation/power/devices.txt | 9 ++++++++-
->>  1 file changed, 8 insertions(+), 1 deletion(-)
->>
->> diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
->> index 8ba6625..0401b53 100644
->> --- a/Documentation/power/devices.txt
->> +++ b/Documentation/power/devices.txt
->> @@ -607,7 +607,14 @@ individually.  Instead, a set of devices sharing a power resource can be put
->>  into a low-power state together at the same time by turning off the shared
->>  power resource.  Of course, they also need to be put into the full-power state
->>  together, by turning the shared power resource on.  A set of devices with this
->> -property is often referred to as a power domain.
->> +property is often referred to as a power domain. A power domain may also be
->> +nested inside another power domain.
->> +
->> +Devices and PM domains may be defined as IRQ-safe, if they can be powered
->> +on/off even when the IRQs are disabled. An IRQ-safe device in a domain will
->> +disallow power management on the domain, unless the domain is also defined as
->> +IRQ-safe. The restriction this framework imposes on the parent domain of an
->> +IRQ-safe domain is that it must also be defined as IRQ-safe.
->
->I would put this paragraph below, before the last paragraph in the section.
->
-OK.
+Commit 4bcc595ccd80 ("printk: reinstate KERN_CONT for printing
+continuation lines") exposed a missing KERN_CONT from one of the
+messages shown on entering suspend. With v4.9-rc1, the 'done.' shown
+after syncing the filesystems no longer appears as a continuation but
+a new message with its own timestamp.
 
->Also I suppose that a domain should only be defined as "IRQ-safe" if
->all of the devices in it are "IRQ-safe" (or there will be problems at
->least in principle).  If that is the case, it should be stated clearly
->in the paragraph you are adding as well.
->
-Will add.
+[    9.259566] PM: Syncing filesystems ... [    9.264119] done.
 
-Thanks,
-Lina
+Fix this by adding the KERN_CONT log level for the 'done.' part of the
+message seen after syncing filesystems. While we are at it, convert
+these suspend printks to pr_info and pr_cont, respectively.
+
+Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+---
+ kernel/power/suspend.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index 1e7f5da648d9..6ccb08f57fcb 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -498,9 +498,9 @@ static int enter_state(suspend_state_t state)
+ 
+ #ifndef CONFIG_SUSPEND_SKIP_SYNC
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+-	printk(KERN_INFO "PM: Syncing filesystems ... ");
++	pr_info("PM: Syncing filesystems ... ");
+ 	sys_sync();
+-	printk("done.\n");
++	pr_cont("done.\n");
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, false);
+ #endif
+ 
+-- 
+1.9.1
+
