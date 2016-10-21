@@ -1,54 +1,34 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] PM / Domains: Restrict "samsung,power-domain" checks to ARCH_EXYNOS
-Date: Fri, 21 Oct 2016 13:34:16 +0200
-Message-ID: <1477049656-27535-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH 1/4] PM / Runtime: Remove the exported function pm_children_suspended()
+Date: Fri, 21 Oct 2016 14:20:01 +0200
+Message-ID: <CACRpkdY093tX09tQZoXn0pt5MAF9yjwrtbidcBFBEopB-Wp8TQ@mail.gmail.com>
+References: <1476728221-26530-1-git-send-email-ulf.hansson@linaro.org> <1476728221-26530-2-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f174.google.com ([209.85.220.174]:35062 "EHLO
+        mail-qk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932685AbcJUMUD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 08:20:03 -0400
+Received: by mail-qk0-f174.google.com with SMTP id z190so148529629qkc.2
+        for <linux-pm@vger.kernel.org>; Fri, 21 Oct 2016 05:20:02 -0700 (PDT)
+In-Reply-To: <1476728221-26530-2-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Currently the generic PM Domain code code checks for the presence of
-both (generic) "power-domains" and (Samsung Exynos legacy)
-"samsung,power-domain" properties in all device tree nodes representing
-devices.
+On Mon, Oct 17, 2016 at 8:16 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 
-There are two issues with this:
-  1. This imposes a small boot-time penalty on all platforms using DT,
-  2. Platform-specific checks do not really belong in core framework
-     code.
+> The exported function pm_children_suspended() has only one caller, which is
+> the runtime PM internal function, rpm_check_suspend_allowed().
+>
+> Let's clean-up this code, by removing pm_children_suspended() altogether
+> and instead do the one-liner check directly in rpm_check_suspend_allowed().
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-While moving the check from platform-agnostic code to Samsung-specific
-code is non-trivial, the runtime overhead can be restricted to kernels
-including support for 32-bit Samsung Exynos platforms.
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-"samsung,power-domain" was only ever used in:
-  - arch/arm/boot/dts/exynos4415.dtsi: Unused?
-  - arch/arm/boot/dts/exynos3250.dtsi: CONFIG_ARCH_EXYNOS3
-  - arch/arm/boot/dts/exynos4.dtsi:    CONFIG_ARCH_EXYNOS4
-  - arch/arm/boot/dts/exynos4x12.dtsi: CONFIG_ARCH_EXYNOS4
-				       exynos4212.dtsi is unused?
-  - arch/arm/boot/dts/exynos5250.dtsi: CONFIG_ARCH_EXYNOS5
-  - arch/arm/boot/dts/exynos5420.dtsi: CONFIG_ARCH_EXYNOS5
----
- drivers/base/power/domain.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e023066e421547c5..d94d6a4b9b527108 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -1853,7 +1853,8 @@ int genpd_dev_pm_attach(struct device *dev)
- 	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
- 					"#power-domain-cells", 0, &pd_args);
- 	if (ret < 0) {
--		if (ret != -ENOENT)
-+		if (ret != -ENOENT || !IS_ENABLED(CONFIG_ARCH_EXYNOS) ||
-+		    IS_ENABLED(CONFIG_64BIT))
- 			return ret;
- 
- 		/*
--- 
-1.9.1
+Yours,
+Linus Walleij
