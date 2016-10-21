@@ -1,54 +1,86 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2 0/8] PM / OPP: Multiple regulator support
-Date: Fri, 21 Oct 2016 15:39:33 +0200
-Message-ID: <CAJZ5v0jNJBDKq+ccHKRA6JGAOXV0qT0-k1mwAcBkCv-7JtzACw@mail.gmail.com>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] PM / Domains: Restrict "samsung,power-domain" checks to
+ ARCH_EXYNOS
+Date: Fri, 21 Oct 2016 16:58:03 +0300
+Message-ID: <20161021135803.GB3289@kozik-lap>
+References: <1477049656-27535-1-git-send-email-geert+renesas@glider.be>
+ <CAJZ5v0iOQyCwCuMBVcJjX1mMHFb=NkfXFf6yBNdswRw1HMYC=Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f67.google.com ([209.85.215.67]:32967 "EHLO
-        mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933131AbcJUNjg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 09:39:36 -0400
-In-Reply-To: <cover.1476952750.git.viresh.kumar@linaro.org>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:32931 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754584AbcJUN6J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 09:58:09 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iOQyCwCuMBVcJjX1mMHFb=NkfXFf6yBNdswRw1HMYC=Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Dave Gerlach <d-gerlach@ti.com>, Mark Brown <broonie@kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, q@kozik-lap
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>
 
-On Thu, Oct 20, 2016 at 10:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi,
->
-> Some platforms (like TI) have complex DVFS configuration for CPU
-> devices, where multiple regulators are required to be configured to
-> change DVFS state of the device. This was explained well by Nishanth
-> earlier [1].
->
-> Some thoughts went into it few months back but then it all got lost. I
-> am trying to get that back on track with this thread.
->
-> One of the major complaints around multiple regulators case was that the
-> DT isn't responsible in any way to represent the ordering in which
-> multiple supplies need to be programmed, before or after frequency
-> change. It was considered in this patch and such information is left to
-> the platform specific OPP driver now, which can register its own
-> opp_set_rate() callback with the OPP core and the OPP core will then
-> call it during DVFS.
->
-> The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
-> and code to pass values for multiple regulators and verified that they
-> are all properly read by the kernel (using debugfs interface).
->
-> Though more testing on real (TI) platforms would be useful.
->
-> This is rebased over: linux-next branch in the PM tree.
->
-> V1->V2:
-> - Ack from Rob for 1st patch
-> - Moved the supplies structure to pm_opp.h (Dave)
-> - Fixed an compilation warning.
+On Fri, Oct 21, 2016 at 02:29:05PM +0200, Rafael J. Wysocki wrote:
+> On Fri, Oct 21, 2016 at 1:34 PM, Geert Uytterhoeven
+> <geert+renesas@glider.be> wrote:
+> > Currently the generic PM Domain code code checks for the presence of
+> > both (generic) "power-domains" and (Samsung Exynos legacy)
+> > "samsung,power-domain" properties in all device tree nodes representing
+> > devices.
+> >
+> > There are two issues with this:
+> >   1. This imposes a small boot-time penalty on all platforms using DT,
+> >   2. Platform-specific checks do not really belong in core framework
+> >      code.
+> >
+> > While moving the check from platform-agnostic code to Samsung-specific
+> > code is non-trivial, the runtime overhead can be restricted to kernels
+> > including support for 32-bit Samsung Exynos platforms.
+> >
+> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > ---
+> > "samsung,power-domain" was only ever used in:
+> >   - arch/arm/boot/dts/exynos4415.dtsi: Unused?
+> >   - arch/arm/boot/dts/exynos3250.dtsi: CONFIG_ARCH_EXYNOS3
+> >   - arch/arm/boot/dts/exynos4.dtsi:    CONFIG_ARCH_EXYNOS4
+> >   - arch/arm/boot/dts/exynos4x12.dtsi: CONFIG_ARCH_EXYNOS4
+> >                                        exynos4212.dtsi is unused?
+> >   - arch/arm/boot/dts/exynos5250.dtsi: CONFIG_ARCH_EXYNOS5
+> >   - arch/arm/boot/dts/exynos5420.dtsi: CONFIG_ARCH_EXYNOS5
+> > ---
+> >  drivers/base/power/domain.c | 3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index e023066e421547c5..d94d6a4b9b527108 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -1853,7 +1853,8 @@ int genpd_dev_pm_attach(struct device *dev)
+> >         ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
+> >                                         "#power-domain-cells", 0, &pd_args);
+> >         if (ret < 0) {
+> > -               if (ret != -ENOENT)
+> > +               if (ret != -ENOENT || !IS_ENABLED(CONFIG_ARCH_EXYNOS) ||
+> 
+> Please don't check things like CONFIG_ARCH_EXYNOS in the core.
+> 
+> If you need to put checks like that here, there is a design problem somewhere.
+> 
+> And imagine someone 5 years ahead from now looking at this code and
+> wondering why on Earth the check is here.
 
-I need somebody from the OPP camp to review patches [2-8/8] for me.
+I don't find the argument of performance penalty such important but for
+the sake of design, the samsung-specific code could be moved to
+drivers/soc/samsung/pm_domains.c, called "legacy_pm_parse" and exported
+through a header. Thus with !ARCH_EXYNOS that would be 'static inline
+{}'.  However that is not a nice solution - there will be still
+direct call to platform-specific code in the core. I am not sure if it
+is worth the effort.
 
-Thanks,
-Rafael
+The samsung,power-domain was made deprecated (although not explicitly)
+in January 2015 (0da658704136 ("ARM: dts: convert to generic power
+domain bindings for exynos DT")) so how about:
+1. Printing a dev_warn() about usage of deprecated bindings.
+2. Complete removal in January 2017?
+
+Best regards,
+Krzysztof
