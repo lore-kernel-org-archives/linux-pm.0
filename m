@@ -1,51 +1,93 @@
-From: Axel Lin <axel.lin@ingics.com>
-Subject: [RESEND][PATCH 2/2] PM / devfreq: exynos-ppmu: Remove unused mutex from struct exynos_ppmu
-Date: Fri, 21 Oct 2016 09:09:09 +0800
-Message-ID: <1477012149-9928-2-git-send-email-axel.lin@ingics.com>
-References: <1477012149-9928-1-git-send-email-axel.lin@ingics.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1477012149-9928-1-git-send-email-axel.lin@ingics.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Axel Lin <axel.lin@ingics.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v3 0/8] PM / Domains: DT support for domain idle states &
+ atomic PM domains
+Date: Thu, 20 Oct 2016 19:33:26 -0600
+Message-ID: <20161021013326.GA50423@linaro.org>
+References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFpQwOkXUk8wT6sZ-Ad4XpTnyodK5m24fYJ3P+1QtS0XOA@mail.gmail.com>
+ <20161020224432.GB72940@linaro.org>
+ <CAJZ5v0iKuSWr8xVha7HZ764z+Xk_urP1XFVV-VZ5+JQTuSj-bw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iKuSWr8xVha7HZ764z+Xk_urP1XFVV-VZ5+JQTuSj-bw@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-The mutex is not used at all, remove it.
+On Fri, Oct 21 2016 at 16:48 -0600, Rafael J. Wysocki wrote:
+>On Fri, Oct 21, 2016 at 12:44 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> On Mon, Oct 17 2016 at 01:30 -0600, Ulf Hansson wrote:
+>>>
+>>> On 14 October 2016 at 19:47, Lina Iyer <lina.iyer@linaro.org> wrote:
+>>>>
+>>>> Hi all,
+>>>>
+>>>> Changes since v2 [3] -
+>>>> - Addressed review comments from v2.
+>>>>         - domain-idle-states documentation updated
+>>>>         - fixed compiler issues with imx driver
+>>>>         - minor code change in pm_domains.c
+>>>> - The series is available at [4].
+>>>>
+>>>> Changes since v1 [2] -
+>>>> - Addressed review comments from v1.
+>>>>         - Fixes around dynamic allocation of genpd states
+>>>>         - Used OF method for iterating phandles
+>>>>         - Updated documentation, examples
+>>>>         - Rename state variable (provider -> fwnode)
+>>>> - The series is available at [3].
+>>>>
+>>>> The changes from [1] are -
+>>>> - Allocating memory for domain idle states dynamically
+>>>> - Conform to naming conventions for internal and exported genpd functions
+>>>> - DT binding example for domain-idle-state
+>>>> - Use fwnode instead of of_node
+>>>> - Handle atomic case for removal of PM Domain
+>>>> - Rebase on top of Rafael's pm/genpd tree
+>>>>
+>>>> Thanks,
+>>>> Lina
+>>>>
+>>>> Lina Iyer (8):
+>>>>   PM / Domains: Make genpd state allocation dynamic
+>>>>   PM / Domain: Add residency property to genpd states
+>>>>   PM / Domains: Allow domain power states to be read from DT
+>>>>   PM / Domains: Save the fwnode in genpd_power_state
+>>>>   dt/bindings: Update binding for PM domain idle states
+>>>>   PM / Domains: Abstract genpd locking
+>>>>   PM / Domains: Support IRQ safe PM domains
+>>>>   PM / doc: Update device documentation for devices in IRQ safe PM
+>>>>     domains
+>>>>
+>>>>  .../devicetree/bindings/power/power_domain.txt     |  43 +++
+>>>>  Documentation/power/devices.txt                    |   9 +-
+>>>>  arch/arm/mach-imx/gpc.c                            |  17 +-
+>>>>  drivers/base/power/domain.c                        | 358
+>>>> +++++++++++++++++----
+>>>>  include/linux/pm_domain.h                          |  28 +-
+>>>>  5 files changed, 383 insertions(+), 72 deletions(-)
+>>>>
+>>>
+>>> Rafael, Lina,
+>>>
+>>> This looks good to me! Unless any other objections, I suggest to apply
+>>> this to get it tested in linux-next.
+>>>
+>>> Kind regards
+>>> Uffe
+>>>
+>> Rafael,
+>>
+>> If there are no objections, could you pick this patch for linux-next?
+>
+>It is in my queue, but not at the top yet.
+>
+Thank you Rafael.
 
-Signed-off-by: Axel Lin <axel.lin@ingics.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
----
-This patch was sent on https://patchwork.kernel.org/patch/9341097/
- drivers/devfreq/event/exynos-ppmu.c | 3 ---
- 1 file changed, 3 deletions(-)
+-- Lina
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index f55cf0e..251692b 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -15,7 +15,6 @@
- #include <linux/io.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
- #include <linux/of_address.h>
- #include <linux/platform_device.h>
- #include <linux/suspend.h>
-@@ -34,7 +33,6 @@ struct exynos_ppmu {
- 	unsigned int num_events;
- 
- 	struct device *dev;
--	struct mutex lock;
- 
- 	struct exynos_ppmu_data ppmu;
- };
-@@ -463,7 +461,6 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
- 	if (!info)
- 		return -ENOMEM;
- 
--	mutex_init(&info->lock);
- 	info->dev = &pdev->dev;
- 
- 	/* Parse dt data to get resource */
--- 
-2.7.4
+>Thanks,
+>Rafael
