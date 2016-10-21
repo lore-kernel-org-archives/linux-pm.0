@@ -1,55 +1,182 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Restrict "samsung,power-domain" checks to ARCH_EXYNOS
-Date: Fri, 21 Oct 2016 16:39:19 +0200
-Message-ID: <CAMuHMdU5OoQtSKw3xCgWMEFa2wJpfwMpd3oFq3=j8zcpbxOhHw@mail.gmail.com>
-References: <1477049656-27535-1-git-send-email-geert+renesas@glider.be>
- <CAJZ5v0iOQyCwCuMBVcJjX1mMHFb=NkfXFf6yBNdswRw1HMYC=Q@mail.gmail.com>
- <CGME20161021135818eucas1p265318ff4b1c4c83b52162ee5e59e40a3@eucas1p2.samsung.com>
- <20161021135803.GB3289@kozik-lap> <96efd5b7-5f62-8146-13de-44b5ff7dd496@samsung.com>
- <cb15013d-9694-b27c-dd5e-8c916c2e9fb7@osg.samsung.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH V4 2/3] Revert "ACPI,PCI,IRQ: remove SCI penalize
+ function"
+Date: Fri, 21 Oct 2016 09:45:35 -0500
+Message-ID: <20161021144535.GB877@localhost>
+References: <1476915664-27231-1-git-send-email-okaya@codeaurora.org>
+ <1476915664-27231-3-git-send-email-okaya@codeaurora.org>
+ <20161021015814.GC31044@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <cb15013d-9694-b27c-dd5e-8c916c2e9fb7@osg.samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, q@kozik-lap.samsung.com, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:59854 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934097AbcJUOpn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Oct 2016 10:45:43 -0400
+Content-Disposition: inline
+In-Reply-To: <20161021015814.GC31044@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sinan Kaya <okaya@codeaurora.org>
+Cc: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com, Len Brown <len.brown@intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, agross@codeaurora.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-msm@vger.kernel.org, wim@djo.tudelft.nl, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 
-Hi Javier,
+On Thu, Oct 20, 2016 at 08:58:14PM -0500, Bjorn Helgaas wrote:
+> On Wed, Oct 19, 2016 at 06:21:03PM -0400, Sinan Kaya wrote:
+> > The SCI penalize function was removed in two steps (first refactor
+> > and then remove) and these changes are reverted here in one go.
+> > 
+> > The commit 103544d86976 ("ACPI,PCI,IRQ: reduce resource requirements")
+> > refactored the original code so that SCI penalty is calculated dynamically
+> > by the time get_penalty function is called. That change is partially
+> > reverted here, specifically for the SCI IRQ alone.
+> > 
+> > The SCI penalize function was finally dropped by commit 9e5ed6d1fb87
+> > ("ACPI,PCI,IRQ: remove SCI penalize function") that replaced the old SCI
+> > penalty API with penalty calculation carried out dynamically and based
+> > on the acpi_gbl_FADT.sci_interrupt value.
+> > 
+> > However, that new algorithm relies on the accurate setting of IRQ
+> > types and that doesn't happen early enough on some platforms which
+> > leads to incorrect penalty assignments for PCI IRQs.  In those cases,
+> > irq_get_trigger_type() returns incorrect values for the IRQs in
+> > question, because they have not been registered yet by the time the
+> > penalties are calculated.
+> > 
+> > To fix this problem, we only need to fix the penalty for the SCI interrupt.
+> > It seems better to add a single "sci_penalty" variable, set it to
+> > PIRQ_PENALTY_PCI_USING if it's level/low or PIRQ_PENALTY_ISA_ALWAYS
+> > otherwise, and add "sci_penalty" in when appropriate.  That should fix it
+> > for *any* SCI IRQ, not just those less than 256, and we don't have to add
+> > these extra penalty table entries that are all unused (except possibly for
+> > one entry if we have an SCI in the 16-255 range).
+> > 
+> > For this reason, revert commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI
+> > penalize function") completely to restore the correct behavior.
+> 
+> I like this patch fine, except for the changelog.  I don't think it's
+> useful to describe this as a revert and give all the historical
+> details.  I think the important part is something like this:
+> 
+>   We previously used irq_get_trigger_type(irq) to help compute the
+>   penalty for the SCI, but that depends on the SCI having been
+>   registered already.  Add acpi_penalize_sci_irq() so platforms can
+>   tell us the SCI IRQ, trigger, and polarity so we can compute the
+>   penalty even before the SCI has been registered.
 
-On Fri, Oct 21, 2016 at 4:18 PM, Javier Martinez Canillas
-<javier@osg.samsung.com> wrote:
-> On 10/21/2016 11:14 AM, Sylwester Nawrocki wrote:
->> On 10/21/2016 03:58 PM, Krzysztof Kozlowski wrote:
->>> The samsung,power-domain was made deprecated (although not explicitly)
->>> in January 2015 (0da658704136 ("ARM: dts: convert to generic power
->>> domain bindings for exynos DT")) so how about:
->>> 1. Printing a dev_warn() about usage of deprecated bindings.
->>> 2. Complete removal in January 2017?
->>
->> I doubt anyone will ever use new mainline kernel with older dts/dtb
->> so IMHO it makes sense to queue a patch removing support for the
->> deprecated compatible just now and don't bother with a warning.
->>
->
-> FWIW I agree with you. I don't know of any Exynos machine that ships a DT
-> as read-only. Even consumer devices like the Exynos Chromebooks use a FIT
-> image (kernel + FDT bundled), so the DT can always be updated.
->
-> Removing the support for the deprecated property sound sensible to me.
+Thanks for the pointer [1] to the issues around
+acpi_penalize_sci_irq() being called before kmalloc() is available.
+That begs the question of exactly *why* we need
+acpi_penalize_sci_irq() so early -- I doubt we actually need to handle
+SCIs that early, and obviously we don't need to look up penalties that
+early (because we only look them up when enabling interrupt links,
+which happens much later).
 
-I'm happy to hear that!
+[1] http://marc.info/?l=linux-acpi&m=145580159209240&w=2)
 
-Thanks!
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Gr{oetje,eeting}s,
+Wait a minute, I still have a question here: what about other ACPI
+arches (ia64, arm64)?  Don't they need to call acpi_penalize_sci_irq()
+somewhere?
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> > ---
+> >  arch/x86/kernel/acpi/boot.c |  1 +
+> >  drivers/acpi/pci_link.c     | 30 +++++++++++++++---------------
+> >  include/linux/acpi.h        |  1 +
+> >  3 files changed, 17 insertions(+), 15 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> > index 90d84c3..0ffd26e 100644
+> > --- a/arch/x86/kernel/acpi/boot.c
+> > +++ b/arch/x86/kernel/acpi/boot.c
+> > @@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+> >  		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+> >  
+> >  	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
+> > +	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+> >  
+> >  	/*
+> >  	 * stash over-ride to indicate we've been here
+> > diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+> > index 4f37938..294b190 100644
+> > --- a/drivers/acpi/pci_link.c
+> > +++ b/drivers/acpi/pci_link.c
+> > @@ -87,6 +87,7 @@ struct acpi_pci_link {
+> >  
+> >  static LIST_HEAD(acpi_link_list);
+> >  static DEFINE_MUTEX(acpi_link_lock);
+> > +static int sci_irq = -1, sci_penalty;
+> >  
+> >  /* --------------------------------------------------------------------------
+> >                              PCI Link Device Management
+> > @@ -496,25 +497,13 @@ static int acpi_irq_get_penalty(int irq)
+> >  {
+> >  	int penalty = 0;
+> >  
+> > -	/*
+> > -	* Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
+> > -	* with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
+> > -	* use for PCI IRQs.
+> > -	*/
+> > -	if (irq == acpi_gbl_FADT.sci_interrupt) {
+> > -		u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
+> > -
+> > -		if (type != IRQ_TYPE_LEVEL_LOW)
+> > -			penalty += PIRQ_PENALTY_ISA_ALWAYS;
+> > -		else
+> > -			penalty += PIRQ_PENALTY_PCI_USING;
+> > -	}
+> > +	if (irq == sci_irq)
+> > +		penalty += sci_penalty;
+> >  
+> >  	if (irq < ACPI_MAX_ISA_IRQS)
+> >  		return penalty + acpi_isa_irq_penalty[irq];
+> >  
+> > -	penalty += acpi_irq_pci_sharing_penalty(irq);
+> > -	return penalty;
+> > +	return penalty + acpi_irq_pci_sharing_penalty(irq);
+> >  }
+> >  
+> >  int __init acpi_irq_penalty_init(void)
+> > @@ -881,6 +870,17 @@ bool acpi_isa_irq_available(int irq)
+> >  		    acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
+> >  }
+> >  
+> > +void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
+> > +{
+> > +	sci_irq = irq;
+> > +
+> > +	if (trigger == ACPI_MADT_TRIGGER_LEVEL &&
+> > +	    polarity == ACPI_MADT_POLARITY_ACTIVE_LOW)
+> > +		sci_penalty = PIRQ_PENALTY_PCI_USING;
+> > +	else
+> > +		sci_penalty = PIRQ_PENALTY_ISA_ALWAYS;
+> > +}
+> > +
+> >  /*
+> >   * Over-ride default table to reserve additional IRQs for use by ISA
+> >   * e.g. acpi_irq_isa=5
+> > diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> > index c5eaf2f..67d1d3e 100644
+> > --- a/include/linux/acpi.h
+> > +++ b/include/linux/acpi.h
+> > @@ -318,6 +318,7 @@ struct pci_dev;
+> >  int acpi_pci_irq_enable (struct pci_dev *dev);
+> >  void acpi_penalize_isa_irq(int irq, int active);
+> >  bool acpi_isa_irq_available(int irq);
+> > +void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+> >  void acpi_pci_irq_disable (struct pci_dev *dev);
+> >  
+> >  extern int ec_read(u8 addr, u8 *val);
+> > -- 
+> > 1.9.1
+> > 
+> > 
+> > _______________________________________________
+> > linux-arm-kernel mailing list
+> > linux-arm-kernel@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
