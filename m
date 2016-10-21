@@ -1,53 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/8] PM / OPP: Multiple regulator support
-Date: Fri, 21 Oct 2016 21:10:45 +0530
-Message-ID: <CAKohpon8f-7ppaFsb+wZH4Dj527HXRF73E8taYN9QfcojjJa3g@mail.gmail.com>
-References: <cover.1476952750.git.viresh.kumar@linaro.org> <CAJZ5v0jNJBDKq+ccHKRA6JGAOXV0qT0-k1mwAcBkCv-7JtzACw@mail.gmail.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Subject: Re: [PATCH V4 2/3] Revert "ACPI,PCI,IRQ: remove SCI penalize
+ function"
+Date: Fri, 21 Oct 2016 09:13:06 -0700
+Message-ID: <2a824792-486a-6251-4931-c5cc6fd67978@codeaurora.org>
+References: <1476915664-27231-1-git-send-email-okaya@codeaurora.org>
+ <1476915664-27231-3-git-send-email-okaya@codeaurora.org>
+ <20161021015814.GC31044@localhost> <20161021144535.GB877@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jNJBDKq+ccHKRA6JGAOXV0qT0-k1mwAcBkCv-7JtzACw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Dave Gerlach <d-gerlach@ti.com>, Mark Brown <broonie@kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20161021144535.GB877@localhost>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com, Len Brown <len.brown@intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, agross@codeaurora.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-msm@vger.kernel.org, wim@djo.tudelft.nl, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21 October 2016 at 19:09, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Oct 20, 2016 at 10:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> Hi,
->>
->> Some platforms (like TI) have complex DVFS configuration for CPU
->> devices, where multiple regulators are required to be configured to
->> change DVFS state of the device. This was explained well by Nishanth
->> earlier [1].
->>
->> Some thoughts went into it few months back but then it all got lost. I
->> am trying to get that back on track with this thread.
->>
->> One of the major complaints around multiple regulators case was that the
->> DT isn't responsible in any way to represent the ordering in which
->> multiple supplies need to be programmed, before or after frequency
->> change. It was considered in this patch and such information is left to
->> the platform specific OPP driver now, which can register its own
->> opp_set_rate() callback with the OPP core and the OPP core will then
->> call it during DVFS.
->>
->> The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
->> and code to pass values for multiple regulators and verified that they
->> are all properly read by the kernel (using debugfs interface).
->>
->> Though more testing on real (TI) platforms would be useful.
->>
->> This is rebased over: linux-next branch in the PM tree.
->>
->> V1->V2:
->> - Ack from Rob for 1st patch
->> - Moved the supplies structure to pm_opp.h (Dave)
->> - Fixed an compilation warning.
->
-> I need somebody from the OPP camp to review patches [2-8/8] for me.
+On 10/21/2016 7:45 AM, Bjorn Helgaas wrote:
+> [1] http://marc.info/?l=linux-acpi&m=145580159209240&w=2)
+> 
+>> > Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> Wait a minute, I still have a question here: what about other ACPI
+> arches (ia64, arm64)?  Don't they need to call acpi_penalize_sci_irq()
+> somewhere?
+> 
 
-Sure, I have already asked Stephen yesterday to do that.
+ACPI ARM64 architecture implements reduced ACPI profile which doesn't
+have GED object. Instead, ARM64 architecture uses onchip peripherals
+for similar functionality. If there is a need to signal interrupts,
+this is done by ACPI Notify in ASL or if absolutely needed using
+ACPI Generic Event Device (GED).
 
---
-viresh
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
