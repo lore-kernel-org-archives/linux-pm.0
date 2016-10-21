@@ -1,47 +1,32 @@
-From: Chenhui Zhao <chenhui.zhao@nxp.com>
-Subject: [PATCH] cpuidle: remove cpu_pm calls when entering a idle state
-Date: Fri, 21 Oct 2016 17:32:57 +0800
-Message-ID: <1477042377-13485-1-git-send-email-chenhui.zhao@nxp.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpuidle: remove cpu_pm calls when entering a idle state
+Date: Fri, 21 Oct 2016 10:59:49 +0100
+Message-ID: <CAPKp9ubMekLZ_GsMjtVg04BqDuDtQ5cW1WH=jkQEsgyMvb2fCw@mail.gmail.com>
+References: <1477042377-13485-1-git-send-email-chenhui.zhao@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-dm3nam03on0065.outbound.protection.outlook.com ([104.47.41.65]:31840
-        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S932469AbcJUJsF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Oct 2016 05:48:05 -0400
+Received: from mail-qt0-f175.google.com ([209.85.216.175]:33363 "EHLO
+        mail-qt0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750884AbcJUJ7v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 05:59:51 -0400
+In-Reply-To: <1477042377-13485-1-git-send-email-chenhui.zhao@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rjw@rjwysocki.net, daniel.lezcano@linaro.org, linux-kernel@vger.kernel.org
-Cc: z.chenhui@gmail.com, Chenhui Zhao <chenhui.zhao@nxp.com>
+To: Chenhui Zhao <chenhui.zhao@nxp.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, open list <linux-kernel@vger.kernel.org>, z.chenhui@gmail.com, Sudeep Holla <sudeep.holla@arm.com>
 
-The functions, cpu_pm_enter and cpu_pm_exit, assume that CPU would
-be reset when entering and exiting a idle state. If that is not the
-case, they would cause issue.
+Hi Chenhui,
 
-Signed-off-by: Chenhui Zhao <chenhui.zhao@nxp.com>
----
- include/linux/cpuidle.h | 7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+On Fri, Oct 21, 2016 at 10:32 AM, Chenhui Zhao <chenhui.zhao@nxp.com> wrote:
+> The functions, cpu_pm_enter and cpu_pm_exit, assume that CPU would
+> be reset when entering and exiting a idle state. If that is not the
+> case, they would cause issue.
+>
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index bb31373..063af89 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -261,12 +261,7 @@ static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
- 		return idx;					\
- 	}							\
- 								\
--	__ret = cpu_pm_enter();					\
--	if (!__ret) {						\
--		__ret = low_level_idle_enter(idx);		\
--		cpu_pm_exit();					\
--	}							\
--								\
-+	__ret = low_level_idle_enter(idx);			\
- 	__ret ? -1 : idx;					\
- })
- 
--- 
-1.9.1
+So are you OK to break all the states that would be reset ?
+This is not a proper solution. Can you provide more details on the issue
+you are facing ? What platform ? which idle states ? and so on..
 
+Regards,
+Sudeep
