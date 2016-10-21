@@ -1,178 +1,175 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5] mmc: sdhci-msm: Add pm_runtime and system PM support
-Date: Fri, 21 Oct 2016 10:22:20 +0200
-Message-ID: <CAPDyKFpp7LA-6YmqnmrZYi+3_NBj7x_EY8frpDuO7-mfNF4hWA@mail.gmail.com>
-References: <20161021064204.10889-1-pramod.gurav@linaro.org>
+Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Fri, 21 Oct 2016 10:26:14 +0200
+Message-ID: <CAPDyKFpSECXGwiHZ0uCu-DpWMreb=54WrAbHj7HWmbKtepnarw@mail.gmail.com>
+References: <CGME20161013145916eucas1p1b93e63340fe16491a1d53d6e8d9a5f93@eucas1p1.samsung.com>
+ <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org> <dbcc7a8c-162c-1d0d-1411-02eff67d98c9@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <20161021064204.10889-1-pramod.gurav@linaro.org>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Pramod Gurav <pramod.gurav@linaro.org>
-Cc: Adrian Hunter <adrian.hunter@intel.com>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Harjani Ritesh <riteshh@codeaurora.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f45.google.com ([209.85.215.45]:35312 "EHLO
+        mail-lf0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753294AbcJUI0S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 04:26:18 -0400
+Received: by mail-lf0-f45.google.com with SMTP id l131so127025599lfl.2
+        for <linux-pm@vger.kernel.org>; Fri, 21 Oct 2016 01:26:18 -0700 (PDT)
+In-Reply-To: <dbcc7a8c-162c-1d0d-1411-02eff67d98c9@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 21 October 2016 at 08:42, Pramod Gurav <pramod.gurav@linaro.org> wrote:
-> Provides runtime PM callbacks to enable and disable clock resources
-> when idle. Also support system PM callbacks to be called during system
-> suspend and resume.
+On 18 October 2016 at 12:32, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+> Hi Ulf,
 >
-> Reviewed-by: Ritesh Harjani <riteshh@codeaurora.org>
-> Reviewed-by: Georgi Djakov <georgi.djakov@linaro.org>
-> Tested-by: Ritesh Harjani <riteshh@codeaurora.org>
-> Signed-off-by: Pramod Gurav <pramod.gurav@linaro.org>
+>
+> On 2016-10-13 16:58, Ulf Hansson wrote:
+>>
+>> When the pm_runtime_force_suspend|resume() helpers were invented, we still
+>> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+>>
+>> To make sure these helpers worked for all combinations and without
+>> introducing too much of complexity, the device was always resumed in
+>> pm_runtime_force_resume().
+>>
+>> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+>> unset, we needed to resume the device as the subsystem/driver couldn't
+>> rely on using runtime PM to do it.
+>>
+>> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+>> removed this combination, of using CONFIG_PM_SLEEP without the earlier
+>> CONFIG_PM_RUNTIME.
+>>
+>> For this reason we can now rely on the subsystem/driver to use runtime PM
+>> to resume the device, instead of forcing that to be done in all cases. In
+>> other words, let's defer the runtime resume to a later point when it's
+>> actually needed.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+>
+> I wasn't aware that You are working on this feature. I had it on my todo
+> list,
+> because it was a waste of power to always wake up all devices in resume from
+> sleep. Your change solves this issue and it works fine with my use cases. :)
+> You can add my:
+>
+> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>
+> I've tested it together with my Exynos IOMMU runtime pm rework and Rafael's
+> device dependency patchset (needed for my rework).
 
-Thanks, applied for next!
+Great news, thanks for helping out testing!
 
 Kind regards
 Uffe
 
-> ---
-> Tested on DB410C.
 >
-> Changes in v5:
-> - Added pm_runtime_mark_last_busy in probe before calling autosuspend
-> - included clock names in error logs
-> - Used micro instead of constant for autosuspend delay
-> - Removed platform_set_drvdata in probe as sdhci_pltfm_init does it.
-> - Aligned PM ops structure with the parenthesis
 >
-> Changes in v4:
-> - Remove calls to sdhci_runtime_resume_host/sdhci_runtime_suspend_host
->   from runtime callbacks as sdhc msm controller is capable of restoring
->   it's register values after clocks are disabled and re-enabled.
+>> ---
+>>
+>> Changes in v3:
+>>         - Updated to take care of parent-child relations.
+>>         - Improved comment in the code and updated text in a function
+>> header
+>>         to better describe the changes.
+>>
+>> This patch has earlier been sent standalone, but also as a part of series.
+>> In
+>> the end it turned out the solution needed some improvement to take care of
+>> parent-child relations, as reported by Geert [1].
+>>
+>> Geert, I would really appreciate if you could help out testing to make
+>> sure the
+>> reported issue is fixed.
+>>
+>> [1]
+>> https://patches.linaro.org/patch/67940/
+>>
+>> ---
+>>
+>>   drivers/base/power/runtime.c | 35 ++++++++++++++++++++++++++++++-----
+>>   1 file changed, 30 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+>> index e097d35..f662267 100644
+>> --- a/drivers/base/power/runtime.c
+>> +++ b/drivers/base/power/runtime.c
+>> @@ -1478,6 +1478,16 @@ int pm_runtime_force_suspend(struct device *dev)
+>>         if (ret)
+>>                 goto err;
+>>   +     /*
+>> +        * Increase the runtime PM usage count for the device's parent, in
+>> case
+>> +        * when we find the device being used when system suspend was
+>> invoked.
+>> +        * This informs pm_runtime_force_resume() to resume the parent
+>> +        * immediately, which is needed to be able to resume its children,
+>> +        * when not deferring the resume to be managed via runtime PM.
+>> +        */
+>> +       if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
+>> +               pm_runtime_get_noresume(dev->parent);
+>> +
+>>         pm_runtime_set_suspended(dev);
+>>         return 0;
+>>   err:
+>> @@ -1487,16 +1497,20 @@ err:
+>>   EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
+>>     /**
+>> - * pm_runtime_force_resume - Force a device into resume state.
+>> + * pm_runtime_force_resume - Force a device into resume state if needed.
+>>    * @dev: Device to resume.
+>>    *
+>>    * Prior invoking this function we expect the user to have brought the
+>> device
+>>    * into low power state by a call to pm_runtime_force_suspend(). Here we
+>> reverse
+>> - * those actions and brings the device into full power. We update the
+>> runtime PM
+>> - * status and re-enables runtime PM.
+>> + * those actions and brings the device into full power, if it is expected
+>> to be
+>> + * used on system resume. To distinguish that, we check whether the
+>> runtime PM
+>> + * usage count is greater than 1 (the PM core increases the usage count
+>> in the
+>> + * system PM prepare phase), as that indicates a real user (such as a
+>> subsystem,
+>> + * driver, userspace, etc.) is using it. If that is the case, the device
+>> is
+>> + * expected to be used on system resume as well, so then we resume it. In
+>> the
+>> + * other case, we defer the resume to be managed via runtime PM.
+>>    *
+>> - * Typically this function may be invoked from a system resume callback
+>> to make
+>> - * sure the device is put into full power state.
+>> + * Typically this function may be invoked from a system resume callback.
+>>    */
+>>   int pm_runtime_force_resume(struct device *dev)
+>>   {
+>> @@ -1513,6 +1527,17 @@ int pm_runtime_force_resume(struct device *dev)
+>>         if (!pm_runtime_status_suspended(dev))
+>>                 goto out;
+>>   +     /*
+>> +        * Decrease the parent's runtime PM usage count, if we increased
+>> it
+>> +        * during system suspend in pm_runtime_force_suspend().
+>> +       */
+>> +       if (atomic_read(&dev->power.usage_count) > 1) {
+>> +               if (dev->parent)
+>> +                       pm_runtime_put_noidle(dev->parent);
+>> +       } else {
+>> +               goto out;
+>> +       }
+>> +
+>>         ret = pm_runtime_set_active(dev);
+>>         if (ret)
+>>                 goto out;
 >
-> Changes in v3:
-> - Added CONFIG_PM around runtime pm function.
-> - Replaced msm suspend/resume with generic function directly
-> - Use SET_SYSTEM_SLEEP_PM_OPS instead of late version
 >
-> Changes in v2:
-> - Moved pm_rutime enabling before adding host
-> - Handled pm_rutime in remove
-> - Changed runtime handling with reference from sdhci-of-at91.c
->
->  drivers/mmc/host/sdhci-msm.c | 68 +++++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 67 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
-> index 8ef44a2a..795f16f 100644
-> --- a/drivers/mmc/host/sdhci-msm.c
-> +++ b/drivers/mmc/host/sdhci-msm.c
-> @@ -18,6 +18,7 @@
->  #include <linux/of_device.h>
->  #include <linux/delay.h>
->  #include <linux/mmc/mmc.h>
-> +#include <linux/pm_runtime.h>
->  #include <linux/slab.h>
->
->  #include "sdhci-pltfm.h"
-> @@ -68,6 +69,7 @@
->  #define CMUX_SHIFT_PHASE_SHIFT 24
->  #define CMUX_SHIFT_PHASE_MASK  (7 << CMUX_SHIFT_PHASE_SHIFT)
->
-> +#define MSM_MMC_AUTOSUSPEND_DELAY_MS   50
->  struct sdhci_msm_host {
->         struct platform_device *pdev;
->         void __iomem *core_mem; /* MSM SDCC mapped address */
-> @@ -658,12 +660,26 @@ static int sdhci_msm_probe(struct platform_device *pdev)
->                 goto clk_disable;
->         }
->
-> +       pm_runtime_get_noresume(&pdev->dev);
-> +       pm_runtime_set_active(&pdev->dev);
-> +       pm_runtime_enable(&pdev->dev);
-> +       pm_runtime_set_autosuspend_delay(&pdev->dev,
-> +                                        MSM_MMC_AUTOSUSPEND_DELAY_MS);
-> +       pm_runtime_use_autosuspend(&pdev->dev);
-> +
->         ret = sdhci_add_host(host);
->         if (ret)
-> -               goto clk_disable;
-> +               goto pm_runtime_disable;
-> +
-> +       pm_runtime_mark_last_busy(&pdev->dev);
-> +       pm_runtime_put_autosuspend(&pdev->dev);
->
->         return 0;
->
-> +pm_runtime_disable:
-> +       pm_runtime_disable(&pdev->dev);
-> +       pm_runtime_set_suspended(&pdev->dev);
-> +       pm_runtime_put_noidle(&pdev->dev);
->  clk_disable:
->         clk_disable_unprepare(msm_host->clk);
->  pclk_disable:
-> @@ -685,6 +701,11 @@ static int sdhci_msm_remove(struct platform_device *pdev)
->                     0xffffffff);
->
->         sdhci_remove_host(host, dead);
-> +
-> +       pm_runtime_get_sync(&pdev->dev);
-> +       pm_runtime_disable(&pdev->dev);
-> +       pm_runtime_put_noidle(&pdev->dev);
-> +
->         clk_disable_unprepare(msm_host->clk);
->         clk_disable_unprepare(msm_host->pclk);
->         if (!IS_ERR(msm_host->bus_clk))
-> @@ -693,12 +714,57 @@ static int sdhci_msm_remove(struct platform_device *pdev)
->         return 0;
->  }
->
-> +#ifdef CONFIG_PM
-> +static int sdhci_msm_runtime_suspend(struct device *dev)
-> +{
-> +       struct sdhci_host *host = dev_get_drvdata(dev);
-> +       struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-> +       struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
-> +
-> +       clk_disable_unprepare(msm_host->clk);
-> +       clk_disable_unprepare(msm_host->pclk);
-> +
-> +       return 0;
-> +}
-> +
-> +static int sdhci_msm_runtime_resume(struct device *dev)
-> +{
-> +       struct sdhci_host *host = dev_get_drvdata(dev);
-> +       struct sdhci_pltfm_host *pltfm_host = sdhci_priv(host);
-> +       struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
-> +       int ret;
-> +
-> +       ret = clk_prepare_enable(msm_host->clk);
-> +       if (ret) {
-> +               dev_err(dev, "clk_enable failed for core_clk: %d\n", ret);
-> +               return ret;
-> +       }
-> +       ret = clk_prepare_enable(msm_host->pclk);
-> +       if (ret) {
-> +               dev_err(dev, "clk_enable failed for iface_clk: %d\n", ret);
-> +               clk_disable_unprepare(msm_host->clk);
-> +               return ret;
-> +       }
-> +
-> +       return 0;
-> +}
-> +#endif
-> +
-> +static const struct dev_pm_ops sdhci_msm_pm_ops = {
-> +       SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-> +                               pm_runtime_force_resume)
-> +       SET_RUNTIME_PM_OPS(sdhci_msm_runtime_suspend,
-> +                          sdhci_msm_runtime_resume,
-> +                          NULL)
-> +};
-> +
->  static struct platform_driver sdhci_msm_driver = {
->         .probe = sdhci_msm_probe,
->         .remove = sdhci_msm_remove,
->         .driver = {
->                    .name = "sdhci_msm",
->                    .of_match_table = sdhci_msm_dt_match,
-> +                  .pm = &sdhci_msm_pm_ops,
->         },
->  };
->
+> Best regards
 > --
-> 2.9.3
+> Marek Szyprowski, PhD
+> Samsung R&D Institute Poland
 >
