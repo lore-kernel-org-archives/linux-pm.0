@@ -1,59 +1,60 @@
-From: Robert Jarzmik <robert.jarzmik-GANU6spQydw@public.gmane.org>
-Subject: Re: [PATCH v2 1/4] cpufreq: pxa: use generic platdev driver for device-tree
-Date: Fri, 21 Oct 2016 17:17:49 +0200
-Message-ID: <87insl3f4y.fsf@belgarion.home>
-References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
-        <1476561450-28407-2-git-send-email-robert.jarzmik@free.fr>
-        <20161018113835.GB11471@vireshk-i7> <87r37d4qlw.fsf@belgarion.home>
-        <20161019135208.GG11471@vireshk-i7> <87bmyg3xzh.fsf@belgarion.home>
-        <20161020033435.GD11766@vireshk-i7>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v3 8/8] PM / doc: Update device documentation for devices
+ in IRQ safe PM domains
+Date: Fri, 21 Oct 2016 09:23:13 -0600
+Message-ID: <20161021152313.GC72940@linaro.org>
+References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
+ <1476467276-75094-9-git-send-email-lina.iyer@linaro.org>
+ <CAJZ5v0hP9QNSqU053keCgY-LEGAyOiOT_vuUK71Oa6i3f7pycg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161020033435.GD11766@vireshk-i7> (Viresh Kumar's message of
-        "Thu, 20 Oct 2016 09:04:35 +0530")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Daniel Mack <daniel-cYrQPVfZoowdnm+yROfE0A@public.gmane.org>, Haojian Zhuang <haojian.zhuang-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hP9QNSqU053keCgY-LEGAyOiOT_vuUK71Oa6i3f7pycg@mail.gmail.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, linux-arm-msm@vger.kernel.org, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
-
-> On 19-10-16, 22:06, Robert Jarzmik wrote:
->> Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
->> 
->> >> >> +	{ .compatible = "marvell,pxa250", },
->> >> >> +	{ .compatible = "marvell,pxa270", },
->> >> >>  
->> >> >>  	{ .compatible = "samsung,exynos3250", },
->> >> >>  	{ .compatible = "samsung,exynos4210", },
->> >> >
->> >> > Isn't there a race between cpufreq-dt and the platform driver to
->> >> > register first ?
->> >> Ah, could you be more specific about the race you're talking of ?
->> >> 
->> >> My understanding was that cpufreq-dt-platdev does create the device, and
->> >> cpufreq-dt is a driver for it, so there is no race but a direct relationship
->> >> AFAIU.
->> >
->> > I mean that both the driver may try to register to the cpufreq core if
->> > they are both compiled in a single image.
->> Euh I still don't follow you. The only driver that can register to the cpufreq
->> core is cpufreq-dt.
+On Fri, Oct 21 2016 at 07:07 -0600, Rafael J. Wysocki wrote:
+>On Fri, Oct 14, 2016 at 7:47 PM, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> Update documentation to reflect the changes made to support IRQ safe PM
+>> domains.
+>>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  Documentation/power/devices.txt | 9 ++++++++-
+>>  1 file changed, 8 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+>> index 8ba6625..0401b53 100644
+>> --- a/Documentation/power/devices.txt
+>> +++ b/Documentation/power/devices.txt
+>> @@ -607,7 +607,14 @@ individually.  Instead, a set of devices sharing a power resource can be put
+>>  into a low-power state together at the same time by turning off the shared
+>>  power resource.  Of course, they also need to be put into the full-power state
+>>  together, by turning the shared power resource on.  A set of devices with this
+>> -property is often referred to as a power domain.
+>> +property is often referred to as a power domain. A power domain may also be
+>> +nested inside another power domain.
+>> +
+>> +Devices and PM domains may be defined as IRQ-safe, if they can be powered
+>> +on/off even when the IRQs are disabled. An IRQ-safe device in a domain will
+>> +disallow power management on the domain, unless the domain is also defined as
+>> +IRQ-safe. The restriction this framework imposes on the parent domain of an
+>> +IRQ-safe domain is that it must also be defined as IRQ-safe.
 >
-> I was wondering on what will happen if both cpufreq-dt and your pxa2xx-cpufreq
-> driver are present in the same kernel image. In that case the init routines of
-> both of them will try to call cpufreq_register_driver().
-Right.
+>I would put this paragraph below, before the last paragraph in the section.
+>
+OK.
 
-In my case, cpufreq-dt comes first, and wins.
-pxa_cpu_init() calls cpufreq_register_driver() and returns -EEXIST.
+>Also I suppose that a domain should only be defined as "IRQ-safe" if
+>all of the devices in it are "IRQ-safe" (or there will be problems at
+>least in principle).  If that is the case, it should be stated clearly
+>in the paragraph you are adding as well.
+>
+Will add.
 
-Cheers.
-
--- 
-Robert
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Lina
