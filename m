@@ -1,93 +1,170 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v3 0/8] PM / Domains: DT support for domain idle states &
- atomic PM domains
-Date: Thu, 20 Oct 2016 19:33:26 -0600
-Message-ID: <20161021013326.GA50423@linaro.org>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
- <CAPDyKFpQwOkXUk8wT6sZ-Ad4XpTnyodK5m24fYJ3P+1QtS0XOA@mail.gmail.com>
- <20161020224432.GB72940@linaro.org>
- <CAJZ5v0iKuSWr8xVha7HZ764z+Xk_urP1XFVV-VZ5+JQTuSj-bw@mail.gmail.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH V4 2/3] Revert "ACPI,PCI,IRQ: remove SCI penalize
+ function"
+Date: Thu, 20 Oct 2016 20:58:14 -0500
+Message-ID: <20161021015814.GC31044@localhost>
+References: <1476915664-27231-1-git-send-email-okaya@codeaurora.org>
+ <1476915664-27231-3-git-send-email-okaya@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iKuSWr8xVha7HZ764z+Xk_urP1XFVV-VZ5+JQTuSj-bw@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
+In-Reply-To: <1476915664-27231-3-git-send-email-okaya@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sinan Kaya <okaya@codeaurora.org>
+Cc: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com, Len Brown <len.brown@intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, agross@codeaurora.org, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-msm@vger.kernel.org, wim@djo.tudelft.nl, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 21 2016 at 16:48 -0600, Rafael J. Wysocki wrote:
->On Fri, Oct 21, 2016 at 12:44 AM, Lina Iyer <lina.iyer@linaro.org> wrote:
->> On Mon, Oct 17 2016 at 01:30 -0600, Ulf Hansson wrote:
->>>
->>> On 14 October 2016 at 19:47, Lina Iyer <lina.iyer@linaro.org> wrote:
->>>>
->>>> Hi all,
->>>>
->>>> Changes since v2 [3] -
->>>> - Addressed review comments from v2.
->>>>         - domain-idle-states documentation updated
->>>>         - fixed compiler issues with imx driver
->>>>         - minor code change in pm_domains.c
->>>> - The series is available at [4].
->>>>
->>>> Changes since v1 [2] -
->>>> - Addressed review comments from v1.
->>>>         - Fixes around dynamic allocation of genpd states
->>>>         - Used OF method for iterating phandles
->>>>         - Updated documentation, examples
->>>>         - Rename state variable (provider -> fwnode)
->>>> - The series is available at [3].
->>>>
->>>> The changes from [1] are -
->>>> - Allocating memory for domain idle states dynamically
->>>> - Conform to naming conventions for internal and exported genpd functions
->>>> - DT binding example for domain-idle-state
->>>> - Use fwnode instead of of_node
->>>> - Handle atomic case for removal of PM Domain
->>>> - Rebase on top of Rafael's pm/genpd tree
->>>>
->>>> Thanks,
->>>> Lina
->>>>
->>>> Lina Iyer (8):
->>>>   PM / Domains: Make genpd state allocation dynamic
->>>>   PM / Domain: Add residency property to genpd states
->>>>   PM / Domains: Allow domain power states to be read from DT
->>>>   PM / Domains: Save the fwnode in genpd_power_state
->>>>   dt/bindings: Update binding for PM domain idle states
->>>>   PM / Domains: Abstract genpd locking
->>>>   PM / Domains: Support IRQ safe PM domains
->>>>   PM / doc: Update device documentation for devices in IRQ safe PM
->>>>     domains
->>>>
->>>>  .../devicetree/bindings/power/power_domain.txt     |  43 +++
->>>>  Documentation/power/devices.txt                    |   9 +-
->>>>  arch/arm/mach-imx/gpc.c                            |  17 +-
->>>>  drivers/base/power/domain.c                        | 358
->>>> +++++++++++++++++----
->>>>  include/linux/pm_domain.h                          |  28 +-
->>>>  5 files changed, 383 insertions(+), 72 deletions(-)
->>>>
->>>
->>> Rafael, Lina,
->>>
->>> This looks good to me! Unless any other objections, I suggest to apply
->>> this to get it tested in linux-next.
->>>
->>> Kind regards
->>> Uffe
->>>
->> Rafael,
->>
->> If there are no objections, could you pick this patch for linux-next?
->
->It is in my queue, but not at the top yet.
->
-Thank you Rafael.
+On Wed, Oct 19, 2016 at 06:21:03PM -0400, Sinan Kaya wrote:
+> The SCI penalize function was removed in two steps (first refactor
+> and then remove) and these changes are reverted here in one go.
+> 
+> The commit 103544d86976 ("ACPI,PCI,IRQ: reduce resource requirements")
+> refactored the original code so that SCI penalty is calculated dynamically
+> by the time get_penalty function is called. That change is partially
+> reverted here, specifically for the SCI IRQ alone.
+> 
+> The SCI penalize function was finally dropped by commit 9e5ed6d1fb87
+> ("ACPI,PCI,IRQ: remove SCI penalize function") that replaced the old SCI
+> penalty API with penalty calculation carried out dynamically and based
+> on the acpi_gbl_FADT.sci_interrupt value.
+> 
+> However, that new algorithm relies on the accurate setting of IRQ
+> types and that doesn't happen early enough on some platforms which
+> leads to incorrect penalty assignments for PCI IRQs.  In those cases,
+> irq_get_trigger_type() returns incorrect values for the IRQs in
+> question, because they have not been registered yet by the time the
+> penalties are calculated.
+> 
+> To fix this problem, we only need to fix the penalty for the SCI interrupt.
+> It seems better to add a single "sci_penalty" variable, set it to
+> PIRQ_PENALTY_PCI_USING if it's level/low or PIRQ_PENALTY_ISA_ALWAYS
+> otherwise, and add "sci_penalty" in when appropriate.  That should fix it
+> for *any* SCI IRQ, not just those less than 256, and we don't have to add
+> these extra penalty table entries that are all unused (except possibly for
+> one entry if we have an SCI in the 16-255 range).
+> 
+> For this reason, revert commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI
+> penalize function") completely to restore the correct behavior.
 
--- Lina
+I like this patch fine, except for the changelog.  I don't think it's
+useful to describe this as a revert and give all the historical
+details.  I think the important part is something like this:
 
->Thanks,
->Rafael
+  We previously used irq_get_trigger_type(irq) to help compute the
+  penalty for the SCI, but that depends on the SCI having been
+  registered already.  Add acpi_penalize_sci_irq() so platforms can
+  tell us the SCI IRQ, trigger, and polarity so we can compute the
+  penalty even before the SCI has been registered.
+
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+
+> Link: https://lkml.org/lkml/2016/10/4/283
+> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+> Fixes: commit 103544d86976 ("ACPI,PCI,IRQ: reduce resource requirements")
+> Fixes: commit 9e5ed6d1fb87 ("ACPI,PCI,IRQ: remove SCI penalize function")
+
+"commit" is redundant; it's sufficient to say:
+
+  Fixes: 103544d86976 ("ACPI,PCI,IRQ: reduce resource requirements")
+
+In fact, I don't think you really need to include "commit" in the
+reference to 9e5ed6d1fb87 above either.
+
+> ---
+>  arch/x86/kernel/acpi/boot.c |  1 +
+>  drivers/acpi/pci_link.c     | 30 +++++++++++++++---------------
+>  include/linux/acpi.h        |  1 +
+>  3 files changed, 17 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index 90d84c3..0ffd26e 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+>  		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+>  
+>  	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
+> +	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+>  
+>  	/*
+>  	 * stash over-ride to indicate we've been here
+> diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+> index 4f37938..294b190 100644
+> --- a/drivers/acpi/pci_link.c
+> +++ b/drivers/acpi/pci_link.c
+> @@ -87,6 +87,7 @@ struct acpi_pci_link {
+>  
+>  static LIST_HEAD(acpi_link_list);
+>  static DEFINE_MUTEX(acpi_link_lock);
+> +static int sci_irq = -1, sci_penalty;
+>  
+>  /* --------------------------------------------------------------------------
+>                              PCI Link Device Management
+> @@ -496,25 +497,13 @@ static int acpi_irq_get_penalty(int irq)
+>  {
+>  	int penalty = 0;
+>  
+> -	/*
+> -	* Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
+> -	* with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
+> -	* use for PCI IRQs.
+> -	*/
+> -	if (irq == acpi_gbl_FADT.sci_interrupt) {
+> -		u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
+> -
+> -		if (type != IRQ_TYPE_LEVEL_LOW)
+> -			penalty += PIRQ_PENALTY_ISA_ALWAYS;
+> -		else
+> -			penalty += PIRQ_PENALTY_PCI_USING;
+> -	}
+> +	if (irq == sci_irq)
+> +		penalty += sci_penalty;
+>  
+>  	if (irq < ACPI_MAX_ISA_IRQS)
+>  		return penalty + acpi_isa_irq_penalty[irq];
+>  
+> -	penalty += acpi_irq_pci_sharing_penalty(irq);
+> -	return penalty;
+> +	return penalty + acpi_irq_pci_sharing_penalty(irq);
+>  }
+>  
+>  int __init acpi_irq_penalty_init(void)
+> @@ -881,6 +870,17 @@ bool acpi_isa_irq_available(int irq)
+>  		    acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
+>  }
+>  
+> +void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
+> +{
+> +	sci_irq = irq;
+> +
+> +	if (trigger == ACPI_MADT_TRIGGER_LEVEL &&
+> +	    polarity == ACPI_MADT_POLARITY_ACTIVE_LOW)
+> +		sci_penalty = PIRQ_PENALTY_PCI_USING;
+> +	else
+> +		sci_penalty = PIRQ_PENALTY_ISA_ALWAYS;
+> +}
+> +
+>  /*
+>   * Over-ride default table to reserve additional IRQs for use by ISA
+>   * e.g. acpi_irq_isa=5
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index c5eaf2f..67d1d3e 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -318,6 +318,7 @@ struct pci_dev;
+>  int acpi_pci_irq_enable (struct pci_dev *dev);
+>  void acpi_penalize_isa_irq(int irq, int active);
+>  bool acpi_isa_irq_available(int irq);
+> +void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+>  void acpi_pci_irq_disable (struct pci_dev *dev);
+>  
+>  extern int ec_read(u8 addr, u8 *val);
+> -- 
+> 1.9.1
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
