@@ -1,76 +1,64 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 2/2] cpuidle: governors: Move the files to the upper
- directory
-Date: Fri, 21 Oct 2016 15:25:23 +0200
-Message-ID: <20161021132523.GC1636@mai>
-References: <1475652794-4486-1-git-send-email-daniel.lezcano@linaro.org>
- <1475652794-4486-2-git-send-email-daniel.lezcano@linaro.org>
- <CAJZ5v0jSqucMXyM7d9K2V0XA_i3kX=cF8ir-41bLgJYKJ27UGQ@mail.gmail.com>
- <20161021130953.GB1636@mai>
- <CAJZ5v0hiQSXQ8XZkHWVCwD33cymTQ9kQ9nPotw1RxRgHg-9zrQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 0/4] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Fri, 21 Oct 2016 15:28:57 +0200
+Message-ID: <CAJZ5v0jvyZGw9ZohRGLzJ+en2XpgWc4OTnaVK5hvpTvWsCovDw@mail.gmail.com>
+References: <20161019203347.17893-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f172.google.com ([209.85.216.172]:34474 "EHLO
-        mail-qt0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932941AbcJUNZ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 09:25:27 -0400
-Received: by mail-qt0-f172.google.com with SMTP id q7so86494994qtq.1
-        for <linux-pm@vger.kernel.org>; Fri, 21 Oct 2016 06:25:26 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hiQSXQ8XZkHWVCwD33cymTQ9kQ9nPotw1RxRgHg-9zrQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161019203347.17893-1-d-gerlach-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Fri, Oct 21, 2016 at 03:22:18PM +0200, Rafael J. Wysocki wrote:
-> On Fri, Oct 21, 2016 at 3:09 PM, Daniel Lezcano
-> <daniel.lezcano@linaro.org> wrote:
-> > On Fri, Oct 21, 2016 at 02:47:22PM +0200, Rafael J. Wysocki wrote:
-> >> On Wed, Oct 5, 2016 at 9:33 AM, Daniel Lezcano
-> >> <daniel.lezcano@linaro.org> wrote:
-> >> > Currently the different governors are stored in the subdir
-> >> > 'governors'. That is not a problem.
-> >> >
-> >> > However, that forces to declare some private structure in the
-> >> > include/linux/cpuidle.h header because these governor files
-> >> > don't have access to the private 'cpuidle.h' located in
-> >> > drivers/cpuidle.
-> >> >
-> >> > Instead of having the governors in the separate directory, move
-> >> > them along with the drivers and prefix them with 'governor-',
-> >> > that allows to do a proper cleanup in the cpuidle headers.
-> >>
-> >> While I'm not particularly against this change, I'm sort of wondering
-> >> about the reason.
-> >>
-> >> What in particular would be wrong with doing
-> >>
-> >> #include "../cpuidle.h"
-> >>
-> >> in a governor .c file?
-> >
-> > Hi Rafael,
-> >
-> > there is nothing wrong by doing this relative inclusion. It is an alternative
-> > to the proposed patch. I personally don't like relative inclusion but it is
-> > a matter of taste and I am perfectly fine to resend the patch by just moving
-> > the structure to the private header and change the inclusion.
-> >
-> > On the other side, the cpufreq susbsytem has all the governors along with the
-> > drivers in the same directory, so perhaps it makes sense to have a similar files
-> > organization.
-> >
-> > Actually, I'm fine with both approaches. Up to you to decide.
-> 
-> I'm thinking let's keep the code where it is in case people depend on
-> the current location somehow (ie. have patches out of the tree or
-> similar).  We can still move it later if need be.
+On Wed, Oct 19, 2016 at 10:33 PM, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+> Hi,
+> This is v2 of the series to add support for TI SCI PM Domains. v1 of
+> the series can be found here [1]. Several things have changed since v1:
+>
+> - New patch to add a void *data to struct generic_pm_domain_data to
+>   allow to store per device data associated with a genpd
+> - From v1, squash patch 1 and 2 to introduce docs and dt-bindings in
+>   one patch based on comment from Ulf
+> - Fix some grammar errors in Documentation
+> - Based on comments from Ulf, rework actual genpd implementation to
+>   avoid creating one genpd per device and instead use device start/stop
+>   hooks provided as part of genpd to control device state based on pm_runtime
+>   implementation. Also make use of new of_genpd_add_provider_simple API
+>   introduced by Jon Hunter and do not provide custom of_xlate to genpd core,
+>   instead registering devices as they probe through attach_dev hook provided
+>   by genpd framework.
+>
+> Most of the changes were motivated by the comments from Ulf Hannson on v1 that we
+> should not use a 1-to-1 genpd to device mapping. The new approach allows us to
+> create a single genpd and store information about each device as they attach to
+> the genpd. Then the device start/stop hooks for that genpd leverage the
+> per-device data to control power states over the TI SCI protocol.
+>
+> This driver makes use of the ti_sci driver sent here [2] by Nishanth Menon and
+> applies on top of his series on v4.9-rc1.
+>
+> Regards,
+> Dave
+>
+> [1] http://www.spinics.net/lists/arm-kernel/msg525204.html
+> [2] http://www.spinics.net/lists/arm-kernel/msg536851.html
+>
+> Dave Gerlach (4):
+>   PM / Domains: Add generic data pointer to genpd data struct
+>   dt-bindings: Add TI SCI PM Domains
+>   soc: ti: Add ti_sci_pm_domains driver
+>   ARM: keystone: Drop PM domain support for k2g
 
-Ok, I will resend the patch [2/2] by moving the structure from the exported header
-to the private header and add the relative inclusion path.
+If I'm to apply this at one point, ACKs are required from Ulf/Kevin,
+the appropriate platform maintainers, and the DT bindings people.
+Also it should be applicable on top of the LInus' tree for me to apply
+it.
 
-Thanks.
-
-  -- Daniel
+Thanks,
+Rafael
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
