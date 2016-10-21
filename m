@@ -1,136 +1,171 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH v2 2/4] dt-bindings: Add TI SCI PM Domains
-Date: Fri, 21 Oct 2016 14:49:41 -0500
-Message-ID: <7f4754bb-7ded-6ce3-9558-a45b0d2b3888@ti.com>
-References: <20161019203347.17893-1-d-gerlach@ti.com>
- <20161019203347.17893-3-d-gerlach@ti.com> <7heg39pmgb.fsf@baylibre.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 3/3] thermal/intel_powerclamp: Convert to CPU hotplug
+ state
+Date: Fri, 21 Oct 2016 13:21:18 -0700
+Message-ID: <20161021132118.4239af86@jacob-builder>
+References: <1476707572-32215-1-git-send-email-pmladek@suse.com>
+        <1476707572-32215-4-git-send-email-pmladek@suse.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from arroyo.ext.ti.com ([198.47.19.12]:33643 "EHLO arroyo.ext.ti.com"
+Received: from mga04.intel.com ([192.55.52.120]:16705 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751839AbcJUTuz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Oct 2016 15:50:55 -0400
-In-Reply-To: <7heg39pmgb.fsf@baylibre.com>
+        id S1755942AbcJUUTj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Oct 2016 16:19:39 -0400
+In-Reply-To: <1476707572-32215-4-git-send-email-pmladek@suse.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>
+To: Petr Mladek <pmladek@suse.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
 
-Hi,
-On 10/21/2016 01:48 PM, Kevin Hilman wrote:
-> Dave Gerlach <d-gerlach@ti.com> writes:
->
->> Add a generic power domain implementation, TI SCI PM Domains, that
->> will hook into the genpd framework and allow the TI SCI protocol to
->> control device power states.
->>
->> Also, provide macros representing each device index as understood
->> by TI SCI to be used in the device node power-domain references.
->> These are identifiers for the K2G devices managed by the PMMC.
->>
->> Signed-off-by: Nishanth Menon <nm@ti.com>
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->> ---
->>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 54 +++++++++++++
->>  MAINTAINERS                                        |  2 +
->>  include/dt-bindings/genpd/k2g.h                    | 90 ++++++++++++++++++++++
->>  3 files changed, 146 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>  create mode 100644 include/dt-bindings/genpd/k2g.h
->>
->> diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->> new file mode 100644
->> index 000000000000..32f38a349656
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->> @@ -0,0 +1,54 @@
->> +Texas Instruments TI-SCI Generic Power Domain
->> +---------------------------------------------
->> +
->> +Some TI SoCs contain a system controller (like the PMMC, etc...) that is
->> +responsible for controlling the state of the IPs that are present.
->> +Communication between the host processor running an OS and the system
->> +controller happens through a protocol known as TI-SCI [1]. This pm domain
->> +implementation plugs into the generic pm domain framework and makes use of
->> +the TI SCI protocol power on and off each device when needed.
->> +
->> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
->> +
->> +PM Domain Node
->> +==============
->> +The PM domain node represents the global PM domain managed by the PMMC,
->> +which in this case is the single implementation as documented by the generic
->> +PM domain bindings in Documentation/devicetree/bindings/power/power_domain.txt.
->> +
->> +Required Properties:
->> +--------------------
->> +- compatible: should be "ti,sci-pm-domain"
->> +- #power-domain-cells: Must be 0.
->> +- ti,sci: Phandle to the TI SCI device to use for managing the devices.
->>
->> +Example:
->> +--------------------
->> +k2g_pds: k2g_pds {
->
-> should use generic name like "power-contoller", e.g. k2g_pds: power-controller
+On Mon, 17 Oct 2016 14:32:52 +0200
+Petr Mladek <pmladek@suse.com> wrote:
 
-Ok, that makes more sense.
+> From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> 
+Hi Sebastian,
+I applied this patchset on 4.9-rc1 and run some cpu online/offline
+loops test while injecting idle, e.g. 25%. I got system hang after a
+few cycles. Still looking into root cause.
 
->
->> +        compatible = "ti,sci-pm-domain";
->> +        #power-domain-cells = <0>;
->> +        ti,sci = <&pmmc>;
->> +};
->> +
->> +PM Domain Consumers
->> +===================
->> +Hardware blocks that require SCI control over their state must provide
->> +a reference to the sci-pm-domain they are part of and a unique device
->> +specific ID that identifies the device.
->> +
->> +Required Properties:
->> +--------------------
->> +- power-domains: phandle pointing to the corresponding PM domain node.
->> +- ti,sci-id: index representing the device id to be passed oevr SCI to
->> +	     be used for device control.
->
-> This ID doesn't look right.
->
-> Why not use #power-domain-cells = <1> and pass the index in the DT? ...
->
->> +See dt-bindings/genpd/k2g.h for the list of valid identifiers for k2g.
->> +
->> +Example:
->> +--------------------
->> +uart0: serial@02530c00 {
->> +	compatible = "ns16550a";
->> +	...
->> +	power-domains = <&k2g_pds>;
->> +	ti,sci-id = <K2G_DEV_UART0>;
->
-> ... like this:
->
-> 	power-domains = <&k2g_pds K2G_DEV_UART0>;
+Thanks,
 
-That's how I did it in version one actually. I was able to define my own 
-xlate function to parse the phandle and get that index, but Ulf pointed 
-me to this series by Jon Hunter [1] that simplified genpd providers and 
-dropped the concept of adding your own xlate. This locks the onecell 
-approach to using a fixed static array of genpds that get indexed into 
-(without passing the index to the provider, just the genpd that's looked 
-up), which doesn't fit our usecase, as we don't want a 1 to 1 genpd to 
-device mapping based on the comments provided in v1. Now we just use the 
-genpd device attach/detach hooks to parse the sci-id and then use it in 
-the genpd device start/stop hooks.
+Jacob
+> This is a conversation to the new hotplug state machine with
+> the difference that CPU_DEAD becomes CPU_PREDOWN.
+> 
+> At the same time it makes the handling of the two states symmetrical.
+> stop_power_clamp_worker() is called unconditionally and the
+> controversial error message is removed.
+> 
+> Finally, the hotplug state callbacks are removed after the
+> powerclamping is stopped to avoid a potential race.
+> 
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> [pmladek@suse.com: Fixed the possible race in powerclamp_exit()]
+> Signed-off-by: Petr Mladek <pmladek@suse.com>
+> ---
+>  drivers/thermal/intel_powerclamp.c | 69
+> +++++++++++++++++++------------------- 1 file changed, 35
+> insertions(+), 34 deletions(-)
+> 
+> diff --git a/drivers/thermal/intel_powerclamp.c
+> b/drivers/thermal/intel_powerclamp.c index a94f7c849a4e..390e50b97324
+> 100644 --- a/drivers/thermal/intel_powerclamp.c
+> +++ b/drivers/thermal/intel_powerclamp.c
+> @@ -622,43 +622,35 @@ static void end_power_clamp(void)
+>  	}
+>  }
+>  
+> -static int powerclamp_cpu_callback(struct notifier_block *nfb,
+> -				unsigned long action, void *hcpu)
+> +static int powerclamp_cpu_online(unsigned int cpu)
+>  {
+> -	unsigned long cpu = (unsigned long)hcpu;
+> +	if (clamping == false)
+> +		return 0;
+> +	start_power_clamp_worker(cpu);
+> +	/* prefer BSP as controlling CPU */
+> +	if (cpu == 0) {
+> +		control_cpu = 0;
+> +		smp_mb();
+> +	}
+> +	return 0;
+> +}
+>  
+> -	if (false == clamping)
+> -		goto exit_ok;
+> +static int powerclamp_cpu_predown(unsigned int cpu)
+> +{
+> +	if (clamping == false)
+> +		return 0;
+>  
+> -	switch (action) {
+> -	case CPU_ONLINE:
+> -		start_power_clamp_worker(cpu);
+> -		/* prefer BSP as controlling CPU */
+> -		if (cpu == 0) {
+> -			control_cpu = 0;
+> -			smp_mb();
+> -		}
+> -		break;
+> -	case CPU_DEAD:
+> -		if (test_bit(cpu, cpu_clamping_mask)) {
+> -			pr_err("cpu %lu dead but powerclamping
+> thread is not\n",
+> -				cpu);
+> -			stop_power_clamp_worker(cpu);
+> -		}
+> -		if (cpu == control_cpu) {
+> -			control_cpu = smp_processor_id();
+> -			smp_mb();
+> -		}
+> -	}
+> +	stop_power_clamp_worker(cpu);
+> +	if (cpu != control_cpu)
+> +		return 0;
+>  
+> -exit_ok:
+> -	return NOTIFY_OK;
+> +	control_cpu = cpumask_first(cpu_online_mask);
+> +	if (control_cpu == cpu)
+> +		control_cpu = cpumask_next(cpu, cpu_online_mask);
+> +	smp_mb();
+> +	return 0;
+>  }
+>  
+> -static struct notifier_block powerclamp_cpu_notifier = {
+> -	.notifier_call = powerclamp_cpu_callback,
+> -};
+> -
+>  static int powerclamp_get_max_state(struct thermal_cooling_device
+> *cdev, unsigned long *state)
+>  {
+> @@ -788,6 +780,8 @@ static inline void
+> powerclamp_create_debug_files(void)
+> debugfs_remove_recursive(debug_dir); }
+>  
+> +static enum cpuhp_state hp_state;
+> +
+>  static int __init powerclamp_init(void)
+>  {
+>  	int retval;
+> @@ -805,7 +799,14 @@ static int __init powerclamp_init(void)
+>  
+>  	/* set default limit, maybe adjusted during runtime based on
+> feedback */ window_size = 2;
+> -	register_hotcpu_notifier(&powerclamp_cpu_notifier);
+> +	retval = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
+> +
+> "thermal/intel_powerclamp:online",
+> +					   powerclamp_cpu_online,
+> +					   powerclamp_cpu_predown);
+> +	if (retval < 0)
+> +		goto exit_free;
+> +
+> +	hp_state = retval;
+>  
+>  	worker_data = alloc_percpu(struct powerclamp_worker_data);
+>  	if (!worker_data) {
+> @@ -830,7 +831,7 @@ static int __init powerclamp_init(void)
+>  exit_free_thread:
+>  	free_percpu(worker_data);
+>  exit_unregister:
+> -	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
+> +	cpuhp_remove_state_nocalls(hp_state);
+>  exit_free:
+>  	kfree(cpu_clamping_mask);
+>  	return retval;
+> @@ -839,8 +840,8 @@ static int __init powerclamp_init(void)
+>  
+>  static void __exit powerclamp_exit(void)
+>  {
+> -	unregister_hotcpu_notifier(&powerclamp_cpu_notifier);
+>  	end_power_clamp();
+> +	cpuhp_remove_state_nocalls(hp_state);
+>  	free_percpu(worker_data);
+>  	thermal_cooling_device_unregister(cooling_dev);
+>  	kfree(cpu_clamping_mask);
 
-Regards,
-Dave
-
-[1] http://www.spinics.net/lists/arm-kernel/msg524151.html
-
->
-> Kevin
->
-
+[Jacob Pan]
