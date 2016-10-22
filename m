@@ -1,64 +1,87 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC][PATCH] cpufreq: intel_pstate: Use cpu load based algorithm for PM_MOBILE
-Date: Fri, 21 Oct 2016 18:31:25 -0700
-Message-ID: <1477099885-6697-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:14083 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755463AbcJVBfi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Oct 2016 21:35:38 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: joeyli <jlee@suse.com>
+Subject: Re: [PATCH][v12] PM / hibernate: Verify the consistent of e820
+ memory map by md5 digest
+Date: Sat, 22 Oct 2016 11:03:02 +0800
+Message-ID: <20161022030302.GB26548@linux-rxt1.site>
+References: <1476951292-19619-1-git-send-email-yu.c.chen@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1476951292-19619-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-pm@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Denys Vlasenko <dvlasenk@redhat.com>, Dan Williams <dan.j.williams@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Use get_target_pstate_use_cpu_load() to calculate target P-State for
-devices, which uses preferred power management profile as PM_MOBILE
-in ACPI FADT.
-This may help in resolving some thermal issues caused by low sustained
-cpu bound workloads. The current algorithm tend to over provision in this
-case as it doesn't look at the CPU busyness.
+Hi Chen Yu,
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-If some wants to look at test results, email me. I can't attach
-pdf document here.
+On Thu, Oct 20, 2016 at 04:14:52PM +0800, Chen Yu wrote:
+> On some platforms, there is occasional panic triggered when
+> trying to resume from hibernation, a typical panic looks like:
+> 
+> "BUG: unable to handle kernel paging request at ffff880085894000
+> IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
+> 
+> Investigation carried out by Lee Chun-Yi shows that this is because
+> e820 map has been changed by BIOS across hibernation, and one
+> of the page frames from suspend kernel is right located in restore
+> kernel's unmapped region, so panic comes out when accessing unmapped
+> kernel address.
+> 
+> In order to expose this issue earlier, the md5 hash of e820 map
+> is passed from suspend kernel to restore kernel, and the restore
+> kernel will terminate the resume process once it finds the md5
+> hash are not the same.
+> 
+> As the format of image header has been modified, the magic number
+> should also be adjusted as kernels with the same RESTORE_MAGIC have
+> to use the same header format and interpret all of the fields in
+> it in the same way.
+> 
+> If the suspend kernel is built without md5 support, and the restore
+> kernel has md5 support, then the latter will bypass the check process.
+> Vice versa the restore kernel will bypass the check if it does not
+> support md5 operation.
+> 
+> Note:
+> 1. Without this patch applied, it is possible that BIOS has
+>    provided an inconsistent memory map, but the resume kernel is still
+>    able to restore the image anyway(e.g, E820_RAM region is the superset
+>    of the previous one), although the system might be unstable. So this
+>    patch tries to treat any inconsistent e820 as illegal.
+> 
+> 2. Another case is, this patch replies on comparing the e820_saved, but
+>    currently the e820_save might not be strictly the same across
+>    hibernation, even if BIOS has provided consistent e820 map - In
+>    theory mptable might modify the BIOS-provided e820_saved dynamically
+>    in early_reserve_e820_mpc_new, which would allocate a buffer from
+>    E820_RAM, and marks it from E820_RAM to E820_RESERVED).
+>    This is a potential and rare case we need to deal with in OS in
+>    the future.
+> 
+> Suggested-by: Pavel Machek <pavel@ucw.cz>
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Lee Chun-Yi <jlee@suse.com>
+> Cc: Borislav Petkov <bp@alien8.de>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Denys Vlasenko <dvlasenk@redhat.com>
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
- drivers/cpufreq/intel_pstate.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+Please feel free to add:
+	Reviewed-by: Lee, Chun-Yi <jlee@suse.com>
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index d9a0196..637536d8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1746,6 +1746,19 @@ static void __init copy_pid_params(struct pstate_adjust_policy *policy)
- 	pid_params.setpoint = policy->setpoint;
- }
- 
-+#ifdef CONFIG_ACPI
-+static void intel_pstate_use_acpi_profile(void)
-+{
-+	if (acpi_gbl_FADT.preferred_profile == PM_MOBILE)
-+		pstate_funcs.get_target_pstate =
-+				get_target_pstate_use_cpu_load;
-+}
-+#else
-+static void intel_pstate_use_acpi_profile(struct pstate_funcs *funcs)
-+{
-+}
-+#endif
-+
- static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
- {
- 	pstate_funcs.get_max   = funcs->get_max;
-@@ -1757,6 +1770,7 @@ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
- 	pstate_funcs.get_vid   = funcs->get_vid;
- 	pstate_funcs.get_target_pstate = funcs->get_target_pstate;
- 
-+	intel_pstate_use_acpi_profile();
- }
- 
- #ifdef CONFIG_ACPI
--- 
-2.5.5
+> ---
+> v12:
+>  - Adding more user-friendly warnings when md5 confliction
+>    is detected.
+>    Use the actual e820_save size instead of the whole struct e820map
+>    to generate the md5.
+>    Use AHASH_REQUEST_ON_STACK as suggested by Denys Vlasenko.
 
+
+Thanks
+Joey Lee 
