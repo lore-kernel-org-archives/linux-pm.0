@@ -1,51 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 4/4] Documentation: kernel parameters: per core P-State control
-Date: Sat, 22 Oct 2016 03:28:15 +0200
-Message-ID: <1893073.Z6Px2pTx1l@vostro.rjw.lan>
-References: <1477066466-22367-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1477066466-22367-5-git-send-email-srinivas.pandruvada@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [RFC][PATCH] cpufreq: intel_pstate: Use cpu load based algorithm for PM_MOBILE
+Date: Fri, 21 Oct 2016 18:31:25 -0700
+Message-ID: <1477099885-6697-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48238 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755463AbcJVBVU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Oct 2016 21:21:20 -0400
-In-Reply-To: <1477066466-22367-5-git-send-email-srinivas.pandruvada@linux.intel.com>
+Received: from mga04.intel.com ([192.55.52.120]:14083 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755463AbcJVBfi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Oct 2016 21:35:38 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Friday, October 21, 2016 09:14:26 AM Srinivas Pandruvada wrote:
-> Additional command line control to enable per core performance
-> control.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  Documentation/kernel-parameters.txt | 3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 37babf9..e216f6e 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1780,6 +1780,9 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  			Description Table, specifies preferred power management
->  			profile as "Enterprise Server" or "Performance Server",
->  			then this feature is turned on by default.
-> +		per_cpu_perf_limits
-> +			Allow per core P-State performance control limits using
-> +			cpufreq sysfs interface
+Use get_target_pstate_use_cpu_load() to calculate target P-State for
+devices, which uses preferred power management profile as PM_MOBILE
+in ACPI FADT.
+This may help in resolving some thermal issues caused by low sustained
+cpu bound workloads. The current algorithm tend to over provision in this
+case as it doesn't look at the CPU busyness.
 
-I'd say "per-logical-CPU" rather than "per core" to avoid confusion of cores
-vs HW threads.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+If some wants to look at test results, email me. I can't attach
+pdf document here.
 
->  
->  	intremap=	[X86-64, Intel-IOMMU]
->  			on	enable Interrupt Remapping (default)
-> 
+ drivers/cpufreq/intel_pstate.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index d9a0196..637536d8 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1746,6 +1746,19 @@ static void __init copy_pid_params(struct pstate_adjust_policy *policy)
+ 	pid_params.setpoint = policy->setpoint;
+ }
+ 
++#ifdef CONFIG_ACPI
++static void intel_pstate_use_acpi_profile(void)
++{
++	if (acpi_gbl_FADT.preferred_profile == PM_MOBILE)
++		pstate_funcs.get_target_pstate =
++				get_target_pstate_use_cpu_load;
++}
++#else
++static void intel_pstate_use_acpi_profile(struct pstate_funcs *funcs)
++{
++}
++#endif
++
+ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ {
+ 	pstate_funcs.get_max   = funcs->get_max;
+@@ -1757,6 +1770,7 @@ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_vid   = funcs->get_vid;
+ 	pstate_funcs.get_target_pstate = funcs->get_target_pstate;
+ 
++	intel_pstate_use_acpi_profile();
+ }
+ 
+ #ifdef CONFIG_ACPI
+-- 
+2.5.5
 
