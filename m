@@ -1,33 +1,75 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 0/5] Switch to the DT cpufreq policy on the Integrator
-Date: Mon, 24 Oct 2016 21:28:19 +0200
-Message-ID: <CACRpkdZvUh0Z0kxu+WmvwqH3kuaOxaP1Cgxv0WUE2PT-eLs62w@mail.gmail.com>
-References: <1476871154-32243-1-git-send-email-linus.walleij@linaro.org> <6720864.e2sjvVVhdQ@wuerfel>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 1/2] power: bq27xxx_battery: add configurable
+ poll_interval by sysfs
+Date: Mon, 24 Oct 2016 21:51:51 +0200
+Message-ID: <20161024195151.GA5989@amd>
+References: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
+ <1474083775-30185-2-git-send-email-matt@ranostay.consulting>
+ <20161007184910.GF19976@amd>
+ <CAKzfze95nJMcRU2=FivDa72MX4P0md1VoWbUjUnt-75Vs_ektQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f178.google.com ([209.85.216.178]:33849 "EHLO
-        mail-qt0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753745AbcJXT2V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 15:28:21 -0400
-Received: by mail-qt0-f178.google.com with SMTP id q7so133894706qtq.1
-        for <linux-pm@vger.kernel.org>; Mon, 24 Oct 2016 12:28:21 -0700 (PDT)
-In-Reply-To: <6720864.e2sjvVVhdQ@wuerfel>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAKzfze95nJMcRU2=FivDa72MX4P0md1VoWbUjUnt-75Vs_ektQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Matt Ranostay <mranostay@gmail.com>
+Cc: "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matt Ranostay <matt@ranostay.consulting>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@sisk.pl>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>
 
-On Wed, Oct 19, 2016 at 12:14 PM, Arnd Bergmann <arnd@arndb.de> wrote:
 
-> I don't see any hard dependency here, so I'd suggest to merge the
-> two cpufreq patches through the subsystem tree, and the ARM patches
-> through arm-soc.
+--jRHKVT23PllUwdXP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-That's right, Viresh can you merge patches 1 and 5 to the
-cpufreq tree please?
+On Sun 2016-10-23 20:08:22, Matt Ranostay wrote:
+> On Fri, Oct 7, 2016 at 11:49 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> > On Fri 2016-09-16 20:42:54, Matt Ranostay wrote:
+> >> Allow the poll_interval to be runtime configurable via an sysfs entry.
+> >> This is needed for udev control of the poll interval.
+> >>
+> >> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> >
+> > working mail address would be nice here.
+> >
+> > sysfs files should be documented.
+> >
+>=20
+> Ok can do in next revision
+>=20
+> > Also... what is it good for?
+> >
+> > Do you have a device that needs non-standard interval?
+>=20
+> Basically we need to have the ability to dynamically change the
+> intervals. So closer to a battery drain we need to up the reporting
+> intervals.
 
-I will funnel patches 2, 3 and 4 to ARM SoC.
+Umm, there seems to be mechanism there to change that already...?
 
-Yours,
-Linus Walleij
+static const struct kernel_param_ops param_ops_poll_interval =3D {
+        .get =3D param_get_uint,
+ 	.set =3D poll_interval_param_set,
+};
+	=09
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--jRHKVT23PllUwdXP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlgOZlcACgkQMOfwapXb+vJBAwCgnHbPM3ldQK0K5AyMNeZ/x5Ho
+KTEAnifLNg/lsONu130scoJ+auUES1kF
+=/OWm
+-----END PGP SIGNATURE-----
+
+--jRHKVT23PllUwdXP--
