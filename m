@@ -1,54 +1,92 @@
-From: "Luc, Piotr" <Piotr.Luc@intel.com>
-Subject: Re: [RESEND PATCH 00/11] Add Knights Mill CPU ID
-Date: Mon, 24 Oct 2016 16:13:42 +0000
-Message-ID: <1477325307.3927.28.camel@intel.com>
-References: <20161013153105.2517-1-piotr.luc@intel.com>
-         <1692747.lfetUOsc0x@vostro.rjw.lan>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v3 [fix]] PM / doc: Update device documentation for
+ devices in IRQ safe PM domains
+Date: Mon, 24 Oct 2016 10:16:05 -0600
+Message-ID: <20161024161605.GD72940@linaro.org>
+References: <20161021152313.GC72940@linaro.org>
+ <1477090375-13814-1-git-send-email-lina.iyer@linaro.org>
+ <1900178.E2KGyKAlTm@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:2328 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752030AbcJXQNs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Oct 2016 12:13:48 -0400
-In-Reply-To: <1692747.lfetUOsc0x@vostro.rjw.lan>
-Content-Language: en-US
-Content-ID: <8E6B024DCCAEC049A71D957D550A94C0@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1900178.E2KGyKAlTm@vostro.rjw.lan>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: "Brown, Len" <len.brown@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mchehab@kernel.org" <mchehab@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "dougthompson@xmission.com" <dougthompson@xmission.com>, "hpa@zytor.com" <hpa@zytor.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "mingo@redhat.com" <mingo@redhat.com>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "bp@alien8.de" <bp@alien8.de>, "lenb@kernel.org" <lenb@kernel.org>, "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>
 
-T24gVGh1LCAyMDE2LTEwLTEzIGF0IDIzOjU2ICswMjAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90
-ZToNCj4gT24gVGh1cnNkYXksIE9jdG9iZXIgMTMsIDIwMTYgMDU6MzA6NTQgUE0gUGlvdHIgTHVj
-IHdyb3RlOg0KPiA+IA0KPiA+IFBpb3RyIEx1YyAoMTEpOg0KPiA+IMKgIEVEQUMsIHNiX2VkYWM6
-IFVzZSBJbnRlbCBmYW1pbHkgcHJvY2Vzc29yIG1hY3Jvcw0KPiA+IMKgIHRvb2xzL3Bvd2VyIHR1
-cmJvc3RhdDogVXNlIEludGVsIGZhbWlseSBwcm9jZXNzb3IgbWFjcm9zDQo+ID4gwqAgeDg2L2Nw
-dS9pbnRlbDogQWRkIEtuaWdodHMgTWlsbCB0byBJbnRlbCBmYW1pbHkNCj4gPiDCoCB4ODYvaW50
-ZWxfaWRsZTogQWRkIEtuaWdodHMgTWlsbCBDUFVJRA0KPiA+IMKgIEVEQUMsIHNiX2VkYWM6IEFk
-ZCBLbmlnaHRzIE1pbGwgQ1BVSUQNCj4gPiDCoCBjcHVmcmVxOiBpbnRlbF9wc3RhdGU6IEFkZCBL
-bmlnaHRzIE1pbGwgQ1BVSUQNCj4gPiDCoCBwZXJmL3g4Ni9pbnRlbDogQWRkIEtuaWdodHMgTWls
-bCBDUFVJRA0KPiA+IMKgIHBlcmYveDg2L2ludGVsL3JhcGw6IEFkZCBLbmlnaHRzIE1pbGwgQ1BV
-SUQNCj4gPiDCoCBwZXJmL3g4Ni9pbnRlbC91bmNvcmU6IEFkZCBLbmlnaHRzIE1pbGwgQ1BVSUQN
-Cj4gPiDCoCBwb3dlcmNhcCAvIFJBUEw6IEFkZCBLbmlnaHRzIE1pbGwgQ1BVSUQNCj4gPiDCoCB0
-b29scy9wb3dlciB0dXJib3N0YXQ6IGVuYWJsZSB0dXJib3N0YXQgdG8gc3VwcG9ydCBLbmlnaHRz
-IE1pbGwNCj4gPiAoS05NKQ0KPiA+IA0KPiA+IMKgYXJjaC94ODYvZXZlbnRzL2ludGVsL2NvcmUu
-Y8KgwqDCoMKgwqDCoMKgwqDCoMKgfMKgwqDCoDMgKy0NCj4gPiDCoGFyY2gveDg2L2V2ZW50cy9p
-bnRlbC9yYXBsLmPCoMKgwqDCoMKgwqDCoMKgwqDCoHzCoMKgwqAxICsNCj4gPiDCoGFyY2gveDg2
-L2V2ZW50cy9pbnRlbC91bmNvcmUuY8KgwqDCoMKgwqDCoMKgwqB8wqDCoMKgMSArDQo+ID4gwqBh
-cmNoL3g4Ni9pbmNsdWRlL2FzbS9pbnRlbC1mYW1pbHkuaMKgwqDCoHzCoMKgwqAxICsNCj4gPiDC
-oGRyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuY8KgwqDCoMKgwqDCoMKgwqB8wqDCoMKgMSAr
-DQo+ID4gwqBkcml2ZXJzL2VkYWMvc2JfZWRhYy5jwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqB8wqDCoDE0ICstDQo+ID4gwqBkcml2ZXJzL2lkbGUvaW50ZWxfaWRsZS5jwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqB8wqDCoMKgMSArDQo+ID4gwqBkcml2ZXJzL3Bvd2VyY2FwL2ludGVs
-X3JhcGwuY8KgwqDCoMKgwqDCoMKgwqDCoHzCoMKgwqAxICsNCj4gPiDCoHRvb2xzL3Bvd2VyL3g4
-Ni90dXJib3N0YXQvTWFrZWZpbGXCoMKgwqDCoHzCoMKgwqAzICstDQo+ID4gwqB0b29scy9wb3dl
-ci94ODYvdHVyYm9zdGF0L3R1cmJvc3RhdC5jIHwgMjUwICsrKysrKysrKysrKysrKysrKy0tDQo+
-ID4gLS0tLS0tLS0tLS0tLS0NCj4gPiDCoDEwIGZpbGVzIGNoYW5nZWQsIDE0NyBpbnNlcnRpb25z
-KCspLCAxMjkgZGVsZXRpb25zKC0pDQo+IA0KPiBMZW4sIEphY29iLCBhbnkgcHJvYmxlbXMgd2l0
-aCBhbnkgb2YgdGhlIHBhdGNoZXMgaW4gdGhpcyBzZXJpZXM/DQo+IA0KPiBUaGFua3MsDQo+IFJh
-ZmFlbA0KDQpIaQ0KDQpJIHdvbmRlciBpZiB5b3UgY291bGQgc2hhcmUgd2l0aCBtZSB3aGF0IEkg
-bmVlZCB0byBkbyBtb3JlIHRvIG1ha2UgdGhlDQpwYXRjaGVzIGJlIGFjY2VwdGVkPw0KRG8gSSBu
-ZWVkIHRvIHJlc2VuZCB0aGUgb25lcyB0aGF0IGFyZW4ndCBhY2NlcHRlZCB5ZXQ/DQoNClJlZ2Fy
-ZHMsDQpQaW90cg0K
+On Sat, Oct 22 2016 at 18:19 -0600, Rafael J. Wysocki wrote:
+>On Friday, October 21, 2016 03:52:55 PM Lina Iyer wrote:
+>> Update documentation to reflect the changes made to support IRQ safe PM
+>> domains.
+>>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>> Changes since v3:
+>> - Moved para to the end of the section
+>> - Added clause for all IRQ safe devices in a domain
+>> - Cleanup explanation of nested domains
+>> ---
+>>  Documentation/power/devices.txt | 11 ++++++++++-
+>>  1 file changed, 10 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+>> index 8ba6625..9218ce6 100644
+>> --- a/Documentation/power/devices.txt
+>> +++ b/Documentation/power/devices.txt
+>> @@ -607,7 +607,9 @@ individually.  Instead, a set of devices sharing a power resource can be put
+>>  into a low-power state together at the same time by turning off the shared
+>>  power resource.  Of course, they also need to be put into the full-power state
+>>  together, by turning the shared power resource on.  A set of devices with this
+>> -property is often referred to as a power domain.
+>> +property is often referred to as a power domain. A power domain may also be
+>> +nested inside another power domain. The nested domain is referred to as the
+>> +sub-domain of the parent domain.
+>>
+>>  Support for power domains is provided through the pm_domain field of struct
+>>  device.  This field is a pointer to an object of type struct dev_pm_domain,
+>> @@ -629,6 +631,13 @@ support for power domains into subsystem-level callbacks, for example by
+>>  modifying the platform bus type.  Other platforms need not implement it or take
+>>  it into account in any way.
+>>
+>> +Devices and PM domains may be defined as IRQ-safe, if they can be powered
+>> +on/off even when the IRQs are disabled.
+>
+>What IRQ-safe means for devices is that their runtime PM callbacks may be
+>invoked with interrupts disabled on the local CPU.  I guess the meaning of
+>IRQ-safe for PM domains is analogous, but the above isn't precise enough to me.
+>
+>> An IRQ-safe device in a domain will
+>> +disallow power management on the domain, unless the domain is also defined as
+>> +IRQ-safe. In other words, a domain containing all IRQ-safe devices must also
+>> +be defined as IRQ-safe. Another restriction this framework imposes on the
+>> +parent domain of an IRQ-safe domain is that the parent domain must also be
+>> +defined as IRQ-safe.
+>
+>What about this:
+>
+>"Devices may be defined as IRQ-safe which indicates to the PM core that their
+>runtime PM callbacks may be invoked with disabled interrupts (see
+>Documentation/power/runtime_pm.txt for more information).  If an IRQ-safe
+>device belongs to a PM domain, the runtime PM of the domain will be disallowed,
+>unless the domain itself is defined as IRQ-safe.  However, a PM domain can only
+>be defined as IRQ-safe if all of the devices in it are IRQ-safe. 
+>
+This is correct. But the last line may need a bit of modification. If
+all devices in a PM domain are IRQ-safe and the domain is NOT, then it
+it is a valid combination just that the domain would never do runtime
+PM.
+
+> Moreover, if
+>an IRQ-safe domain has a parent domain, the runtime PM of the parent is only
+>allowed if the parent itself is IRQ-safe too with the additional restriction
+>that all child domains of an IRQ-safe parent must also be IRQ-safe."
+>
+>Does it actually reflect what the code does?
+>
+Yes, this precisely reflects the code.
+
+Thanks,
+Lina
