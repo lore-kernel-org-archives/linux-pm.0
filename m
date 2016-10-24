@@ -1,109 +1,95 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] cpufreq: intel_pstate: Always set max P-state in performance mode
-Date: Mon, 24 Oct 2016 23:13:21 +0200
-Message-ID: <4054311.5ikcasqymj@vostro.rjw.lan>
-References: <1490845.P5jEmYeGuo@vostro.rjw.lan>
+Subject: Re: [PATCH v3 [fix]] PM / doc: Update device documentation for devices in IRQ safe PM domains
+Date: Mon, 24 Oct 2016 23:22:46 +0200
+Message-ID: <3700155.5AlzjeyN5H@vostro.rjw.lan>
+References: <20161021152313.GC72940@linaro.org> <1900178.E2KGyKAlTm@vostro.rjw.lan> <20161024161605.GD72940@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1490845.P5jEmYeGuo@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42926 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1752186AbcJXVPo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 17:15:44 -0400
+In-Reply-To: <20161024161605.GD72940@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, October 24, 2016 10:16:05 AM Lina Iyer wrote:
+> On Sat, Oct 22 2016 at 18:19 -0600, Rafael J. Wysocki wrote:
+> >On Friday, October 21, 2016 03:52:55 PM Lina Iyer wrote:
+> >> Update documentation to reflect the changes made to support IRQ safe PM
+> >> domains.
+> >>
+> >> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> >> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >> ---
+> >> Changes since v3:
+> >> - Moved para to the end of the section
+> >> - Added clause for all IRQ safe devices in a domain
+> >> - Cleanup explanation of nested domains
+> >> ---
+> >>  Documentation/power/devices.txt | 11 ++++++++++-
+> >>  1 file changed, 10 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/Documentation/power/devices.txt b/Documentation/power/devices.txt
+> >> index 8ba6625..9218ce6 100644
+> >> --- a/Documentation/power/devices.txt
+> >> +++ b/Documentation/power/devices.txt
+> >> @@ -607,7 +607,9 @@ individually.  Instead, a set of devices sharing a power resource can be put
+> >>  into a low-power state together at the same time by turning off the shared
+> >>  power resource.  Of course, they also need to be put into the full-power state
+> >>  together, by turning the shared power resource on.  A set of devices with this
+> >> -property is often referred to as a power domain.
+> >> +property is often referred to as a power domain. A power domain may also be
+> >> +nested inside another power domain. The nested domain is referred to as the
+> >> +sub-domain of the parent domain.
+> >>
+> >>  Support for power domains is provided through the pm_domain field of struct
+> >>  device.  This field is a pointer to an object of type struct dev_pm_domain,
+> >> @@ -629,6 +631,13 @@ support for power domains into subsystem-level callbacks, for example by
+> >>  modifying the platform bus type.  Other platforms need not implement it or take
+> >>  it into account in any way.
+> >>
+> >> +Devices and PM domains may be defined as IRQ-safe, if they can be powered
+> >> +on/off even when the IRQs are disabled.
+> >
+> >What IRQ-safe means for devices is that their runtime PM callbacks may be
+> >invoked with interrupts disabled on the local CPU.  I guess the meaning of
+> >IRQ-safe for PM domains is analogous, but the above isn't precise enough to me.
+> >
+> >> An IRQ-safe device in a domain will
+> >> +disallow power management on the domain, unless the domain is also defined as
+> >> +IRQ-safe. In other words, a domain containing all IRQ-safe devices must also
+> >> +be defined as IRQ-safe. Another restriction this framework imposes on the
+> >> +parent domain of an IRQ-safe domain is that the parent domain must also be
+> >> +defined as IRQ-safe.
+> >
+> >What about this:
+> >
+> >"Devices may be defined as IRQ-safe which indicates to the PM core that their
+> >runtime PM callbacks may be invoked with disabled interrupts (see
+> >Documentation/power/runtime_pm.txt for more information).  If an IRQ-safe
+> >device belongs to a PM domain, the runtime PM of the domain will be disallowed,
+> >unless the domain itself is defined as IRQ-safe.  However, a PM domain can only
+> >be defined as IRQ-safe if all of the devices in it are IRQ-safe. 
+> >
+> This is correct. But the last line may need a bit of modification. If
+> all devices in a PM domain are IRQ-safe and the domain is NOT, then it
+> it is a valid combination just that the domain would never do runtime
+> PM.
 
-The only times at which intel_pstate checks the policy set for
-a given CPU is the initialization of that CPU and updates of its
-policy settings from cpufreq when intel_pstate_set_policy() is
-invoked.
+That doesn't contradict the last sentence of mine above.  I guess what you mean
+is that having a non-IRQ-safe device in an IRQ-safe domain is a valid
+configuration.  I wonder how it works then. :-)
 
-That is insufficient, however, because intel_pstate uses the same
-P-state selection function for all CPUs regardless of the policy
-setting for each of them and the P-state limits are shared between
-them.  Thus if the policy is set to "performance" for a particular
-CPU, it may not behave as expected if the cpufreq settings are
-changed subsequently for another CPU.
+In any case, what about changing that sentence to something like:
 
-That can be easily demonstrated by writing "performance" to
-scaling_governor for all CPUs and then switching it to "powersave"
-for one of them in which case all of the CPUs will behave as though
-their scaling_governor were all "powersave" (even though the policy
-still appears to be "performance" for the remaining CPUs).
+"However, it only makes sense to define a PM domain as IRQ-safe if all devices
+in it are IRQ-safe."
 
-Fix this problem by modifying intel_pstate_adjust_busy_pstate() to
-always set the P-state to the maximum allowed by the current limits
-for all CPUs whose policy is set to "performance".
+Thanks,
+Rafael
 
-Note that it still is recommended to always change the policy setting
-in the same way for all CPUs even with this fix applied to avoid
-confusion.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-v1 -> v2: Changelog update.
-
----
- drivers/cpufreq/intel_pstate.c |   11 ++++++++---
- 1 file changed, 8 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -179,6 +179,7 @@ struct _pid {
- /**
-  * struct cpudata -	Per CPU instance data storage
-  * @cpu:		CPU number for this instance data
-+ * @policy:		CPUFreq policy value
-  * @update_util:	CPUFreq utility callback information
-  * @update_util_set:	CPUFreq utility callback is set
-  * @iowait_boost:	iowait-related boost fraction
-@@ -201,6 +202,7 @@ struct _pid {
- struct cpudata {
- 	int cpu;
- 
-+	unsigned int policy;
- 	struct update_util_data update_util;
- 	bool   update_util_set;
- 
-@@ -1331,7 +1333,8 @@ static inline void intel_pstate_adjust_b
- 
- 	from = cpu->pstate.current_pstate;
- 
--	target_pstate = pstate_funcs.get_target_pstate(cpu);
-+	target_pstate = cpu->policy == CPUFREQ_POLICY_PERFORMANCE ?
-+		cpu->pstate.turbo_pstate : pstate_funcs.get_target_pstate(cpu);
- 
- 	intel_pstate_update_pstate(cpu, target_pstate);
- 
-@@ -1498,6 +1501,8 @@ static int intel_pstate_set_policy(struc
- 		 policy->cpuinfo.max_freq, policy->max);
- 
- 	cpu = all_cpu_data[policy->cpu];
-+	cpu->policy = policy->policy;
-+
- 	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate &&
- 	    policy->max < policy->cpuinfo.max_freq &&
- 	    policy->max > cpu->pstate.max_pstate * cpu->pstate.scaling) {
-@@ -1505,7 +1510,7 @@ static int intel_pstate_set_policy(struc
- 		policy->max = policy->cpuinfo.max_freq;
- 	}
- 
--	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
-+	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		limits = &performance_limits;
- 		if (policy->max >= policy->cpuinfo.max_freq) {
- 			pr_debug("set performance\n");
-@@ -1541,7 +1546,7 @@ static int intel_pstate_set_policy(struc
- 	limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
- 
-  out:
--	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
-+	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		/*
- 		 * NOHZ_FULL CPUs need this as the governor callback may not
- 		 * be invoked on them.
