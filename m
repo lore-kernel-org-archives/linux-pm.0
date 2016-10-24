@@ -1,77 +1,48 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v3 3/8] PM / Domains: Allow domain power states to be
- read from DT
-Date: Mon, 24 Oct 2016 10:48:46 -0600
-Message-ID: <20161024164846.GE72940@linaro.org>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
- <1476467276-75094-4-git-send-email-lina.iyer@linaro.org>
- <6ed96121-5040-474d-2d71-7927e8567c50@arm.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 3/3] thermal/intel_powerclamp: Convert to CPU hotplug
+ state
+Date: Mon, 24 Oct 2016 09:55:29 -0700
+Message-ID: <20161024095529.2b1855b4@icelake>
+References: <1476707572-32215-1-git-send-email-pmladek@suse.com>
+        <1476707572-32215-4-git-send-email-pmladek@suse.com>
+        <20161021132118.4239af86@jacob-builder>
+        <20161024154807.GQ23809@pathway.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <6ed96121-5040-474d-2d71-7927e8567c50@arm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Marc Titinger <mtitinger+renesas@baylibre.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161024154807.GQ23809@pathway.suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Sudeep,
+On Mon, 24 Oct 2016 17:48:07 +0200
+Petr Mladek <pmladek@suse.com> wrote:
 
-On Mon, Oct 24 2016 at 07:39 -0600, Sudeep Holla wrote:
->
->
->On 14/10/16 18:47, Lina Iyer wrote:
->>This patch allows domains to define idle states in the DT. SoC's can
->>define domain idle states in DT using the "domain-idle-states" property
->>of the domain provider. Add API to read the idle states from DT that can
->>be set in the genpd object.
->>
->>This patch is based on the original patch by Marc Titinger.
->>
->>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>---
->> drivers/base/power/domain.c | 94 +++++++++++++++++++++++++++++++++++++++++++++
->> include/linux/pm_domain.h   |  8 ++++
->> 2 files changed, 102 insertions(+)
->>
->>diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>index 37ab7f1..9af75ba 100644
->>--- a/drivers/base/power/domain.c
->>+++ b/drivers/base/power/domain.c
->>@@ -1916,6 +1916,100 @@ out:
->> 	return ret ? -EPROBE_DEFER : 0;
->> }
->> EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->>+
->>+static const struct of_device_id idle_state_match[] = {
->>+	{ .compatible = "arm,idle-state", },
->>+	{ }
->>+};
->>+
->
->I still think it's better to have another compatible to serve this
->purpose. We don't want to end up creating genpd domains just because
->they are "arm,idle-state" compatible IMO ?
->
->I agree you can prevent it checking for OSC mode support in the
->firmware. But I want to understand if you have any strong reasons for
->avoiding that approach.
->
-Why are you still held up with OSI/PC PSCI modes? I repeat again this
-series is not about any of that, it is just about PM domains. PM domains
-have idle states and the idle-state description is similar in definition
-to arm,idle-state and therefore uses the same compatible. There is no
-point re-defining something that already exists in the kernel.
+> On Fri 2016-10-21 13:21:18, Jacob Pan wrote:
+> > On Mon, 17 Oct 2016 14:32:52 +0200
+> > Petr Mladek <pmladek@suse.com> wrote:
+> > 
+> > > From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> > > 
+> > Hi Sebastian,
+> > I applied this patchset on 4.9-rc1 and run some cpu online/offline
+> > loops test while injecting idle, e.g. 25%. I got system hang after a
+> > few cycles. Still looking into root cause.
+> 
+> You might need the patch
+> ("sched/fair: Fix sched domains NULL deference in
+> select_idle_sibling()") from linux-tip, see
+> https://lkml.kernel.org/r/tip-9cfb38a7ba5a9c27c1af8093fb1af4b699c0a441@git.kernel.org
+> 
+> I have mentioned it in the cover letter. I am sorry if it was not
+> visible enough.
+Thanks for point it out again, I missed it.
 
-I was able to find the original thread, where we discussed this [1].
+Now rc2 has this fix so I tried again cpuhp seems to work well now.
 
-I suggest, you read about PM domains and its idle states and understand
-this series in the context of PM domains.
-
-Thanks,
-Lina
-
-[1]. http://www.serverphorums.com/read.php?12,1303996
+However, I found suspend to ram does not work with this patchset. Have
+you  tested it with "echo mem > /sys/power/state" while doing idle
+injection?
+It fails to enter s3 on my system.
