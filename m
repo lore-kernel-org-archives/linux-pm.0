@@ -1,102 +1,107 @@
-From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
-	control runtime pm
-Date: Mon, 24 Oct 2016 07:30:12 +0200
-Message-ID: <7a69ca4e-e276-1bdc-edf2-b881a91f820a@samsung.com>
-References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
-	<CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
-	<1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
-	<001e01d22d12$d2a4e990$77eebcb0$@codeaurora.org>
+From: <kgbok.kezyhumh@murad.com>
+Subject: (unknown)
+Date: Mon, 24 Oct 2016 05:59:14 -0000
+Message-ID: <147728875462.13761.10393312252937350840@bhn.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-reply-to: <001e01d22d12$d2a4e990$77eebcb0$@codeaurora.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Sricharan <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: 'Tomeu Vizoso' <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, 'Kevin Hilman' <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, 'Greg Kroah-Hartman' <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, 'Mark Brown' <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "'Rafael J. Wysocki'" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, 'Tomasz Figa' <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, 'Krzysztof Kozlowski' <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, 'Inki Dae' <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, 'Tobias Jakobi' <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "'Luis R. Rodriguez'" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, 'Kukjin Kim' <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, 'Lukas Wunner' <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Content-Type: application/zip; name="EMAIL_60424_linux-pm.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 75-112-74-74.biz.bhn.net ([75.112.74.74]:2536 "HELO bhn.net"
+        rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
+        id S1750714AbcJXF7T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Oct 2016 01:59:19 -0400
+Subject: 
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Hi Sricharan,
-
-
-On 2016-10-23 11:49, Sricharan wrote:
-> Hi Marek,
->> This patch uses recently introduced device dependency links to track the
->> runtime pm state of the master's device. This way each SYSMMU controller
->> is set to runtime active only when its master's device is active and can
->> restore or save its state instead of being activated all the time when
->> attached to the given master device. This way SYSMMU controllers no longer
->> prevents respective power domains to be turned off when master's device
->> is not being used.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> ---
->> drivers/iommu/exynos-iommu.c | 16 ++++++++--------
->> 1 file changed, 8 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
->> index 5e6d7bbf9b70..59b4f2ce4f5f 100644
->> --- a/drivers/iommu/exynos-iommu.c
->> +++ b/drivers/iommu/exynos-iommu.c
->> @@ -781,10 +781,6 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
->> 	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
->> 		return;
->>
->> -	list_for_each_entry(data, &owner->controllers, owner_node) {
->> -		pm_runtime_put_sync(data->sysmmu);
->> -	}
->> -
->> 	mutex_lock(&owner->rpm_lock);
->>
->> 	list_for_each_entry(data, &owner->controllers, owner_node) {
->> @@ -848,10 +844,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
->>
->> 	mutex_unlock(&owner->rpm_lock);
->>
->> -	list_for_each_entry(data, &owner->controllers, owner_node) {
->> -		pm_runtime_get_sync(data->sysmmu);
->> -	}
->> -
->> 	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
->> 		&pagetable);
->>
->> @@ -1232,6 +1224,14 @@ static int exynos_iommu_of_xlate(struct device *dev,
->>
->> 	list_add_tail(&data->owner_node, &owner->controllers);
->> 	data->master = dev;
->> +
->> +	/*
->> +	 * SYSMMU will be runtime activated via device link (dependency) to its
->> +	 * master device, so there are no direct calls to pm_runtime_get/put
->> +	 * in this driver.
->> +	 */
->> +	device_link_add(dev, data->sysmmu, DL_FLAG_PM_RUNTIME);
->> +
->    So in the case of master with multiple sids, this would be called multiple times
->    for the same master ?
-
-I don't know what is "multiple sids" case, but if given SYSMMU master 
-device (supplier)
-has multiple SYSMMU controllers (consumers), then links will be created 
-for each SYSMMU
-controller. Please note that this code is based on vanilla v4.9-rc1, 
-which calls
-of_xlate() callback only once for every iommu for given master device. 
-Your IOMMU
-deferred probe patches change this, but I already posted a fix for 
-Exynos IOMMU driver
-to handle such case.
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+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
