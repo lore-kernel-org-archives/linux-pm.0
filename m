@@ -1,42 +1,57 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v3 3/8] PM / Domains: Allow domain power states to be read
- from DT
-Date: Mon, 24 Oct 2016 18:41:00 +0100
-Message-ID: <cfcee5ef-3845-d5e4-424b-dc635bab5a2f@arm.com>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
- <1476467276-75094-4-git-send-email-lina.iyer@linaro.org>
- <6ed96121-5040-474d-2d71-7927e8567c50@arm.com>
- <20161024164846.GE72940@linaro.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V7 2/6] thermal: bcm2835: add thermal driver for bcm2835
+ soc
+Date: Mon, 24 Oct 2016 20:25:56 +0200 (CEST)
+Message-ID: <1190898538.120930.02d69662-0b1a-447d-9c29-782aec7a1189.open-xchange@email.1und1.de>
+References: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org>
+ <1474446227-1147-3-git-send-email-kernel@martin.sperl.org>
+ <87twczg27x.fsf@eliezer.anholt.net>
+ <eaff4043-5a62-da2d-cee1-9962b8c4783a@i2se.com>
+ <87eg35snvg.fsf@eliezer.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20161024164846.GE72940@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Marc Titinger <mtitinger+renesas@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.187]:55120 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S936135AbcJXS0v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 14:26:51 -0400
+In-Reply-To: <87eg35snvg.fsf@eliezer.anholt.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>
+Cc: Will Deacon <will.deacon@arm.com>, Lee Jones <lee@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@arm.linux.org.uk>, Zhang Rui <rui.zhang@intel.com>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <mark.rutland@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
+> Eric Anholt <eric@anholt.net> hat am 24. Oktober 2016 um 18:38 geschrieben:
+> 
+> 
+> Stefan Wahren <stefan.wahren@i2se.com> writes:
+> 
+> > Hi Martin,
+> >
+> > Am 28.09.2016 um 23:10 schrieb Eric Anholt:
+> >> kernel@martin.sperl.org writes:
+> >>
+> >>> From: Martin Sperl <kernel@martin.sperl.org>
+> >>>
+> >>> Add basic thermal driver for bcm2835 SOC.
+> >>>
+> >>> This driver currently relies on the firmware setting up the
+> >>> tsense HW block and does not set it up itself.
+> >>>
+> >>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> >>> Acked-by: Eric Anholt <eric@anholt.net>
+> >>> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+> >> What's the status of merging this one?  I'd like to merge the other
+> >> patches.
+> >
+> > i think it's necessary to rebase the whole series. Maybe we could get it
+> > into 4.10.
+> 
+> Why would it need to be rebased?  The status, as far as I know, is that
+> we're still waiting for the subsystem maintainer to respond.
 
+Since at least this patch won't apply anymore, but feedback from maintainer is
+still good :-)
 
-On 24/10/16 17:48, Lina Iyer wrote:
-> Hi Sudeep,
-
-[..]
-
->
-> I was able to find the original thread, where we discussed this [1].
->
-> [1]. http://www.serverphorums.com/read.php?12,1303996
->
-
-I went through the discussion and that's valid discussion and I agree.
-But what am looking for is backward compatibility and not exactly same
-as the discussion and I agree that can be solved in different way.
-
-I just feel that's one easily way to solve such issues. I am open to
-suggestions.
-
--- 
-Regards,
-Sudeep
+Sorry for this impatience, but i'm afraid that we possibly miss 4.10.
