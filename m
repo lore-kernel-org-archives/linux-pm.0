@@ -1,57 +1,27 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH V7 2/6] thermal: bcm2835: add thermal driver for bcm2835
- soc
-Date: Mon, 24 Oct 2016 20:25:56 +0200 (CEST)
-Message-ID: <1190898538.120930.02d69662-0b1a-447d-9c29-782aec7a1189.open-xchange@email.1und1.de>
-References: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org>
- <1474446227-1147-3-git-send-email-kernel@martin.sperl.org>
- <87twczg27x.fsf@eliezer.anholt.net>
- <eaff4043-5a62-da2d-cee1-9962b8c4783a@i2se.com>
- <87eg35snvg.fsf@eliezer.anholt.net>
+From: Andy Gross <andy.gross@linaro.org>
+Subject: Re: [PATCH/RESEND] thermal: qcom-spmi: Treat reg property as a
+ single cell
+Date: Mon, 24 Oct 2016 14:27:25 -0500
+Message-ID: <20161024192725.GI3145@hector.attlocal.net>
+References: <20161018234019.5489-1-sboyd@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.187]:55120 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S936135AbcJXS0v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 14:26:51 -0400
-In-Reply-To: <87eg35snvg.fsf@eliezer.anholt.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161018234019.5489-1-sboyd@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Ivan T . Ivanov" <iivanov.xz@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>
-Cc: Will Deacon <will.deacon@arm.com>, Lee Jones <lee@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@arm.linux.org.uk>, Zhang Rui <rui.zhang@intel.com>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <mark.rutland@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-> Eric Anholt <eric@anholt.net> hat am 24. Oktober 2016 um 18:38 geschrieben:
+On Tue, Oct 18, 2016 at 04:40:19PM -0700, Stephen Boyd wrote:
+> We only read the first element of the reg property to figure out
+> the offset of the temperature sensor inside the PMIC.
+> Furthermore, we want to remove the second element in DT, so just
+> don't read the second element so that probe keeps working if we
+> change the DT in the future.
 > 
-> 
-> Stefan Wahren <stefan.wahren@i2se.com> writes:
-> 
-> > Hi Martin,
-> >
-> > Am 28.09.2016 um 23:10 schrieb Eric Anholt:
-> >> kernel@martin.sperl.org writes:
-> >>
-> >>> From: Martin Sperl <kernel@martin.sperl.org>
-> >>>
-> >>> Add basic thermal driver for bcm2835 SOC.
-> >>>
-> >>> This driver currently relies on the firmware setting up the
-> >>> tsense HW block and does not set it up itself.
-> >>>
-> >>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-> >>> Acked-by: Eric Anholt <eric@anholt.net>
-> >>> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
-> >> What's the status of merging this one?  I'd like to merge the other
-> >> patches.
-> >
-> > i think it's necessary to rebase the whole series. Maybe we could get it
-> > into 4.10.
-> 
-> Why would it need to be rebased?  The status, as far as I know, is that
-> we're still waiting for the subsystem maintainer to respond.
+> Cc: Ivan T. Ivanov <iivanov.xz@gmail.com>
+> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Since at least this patch won't apply anymore, but feedback from maintainer is
-still good :-)
-
-Sorry for this impatience, but i'm afraid that we possibly miss 4.10.
+Reviewed-by: Andy Gross <andy.gross@linaro.org>
