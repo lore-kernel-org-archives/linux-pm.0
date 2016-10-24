@@ -1,36 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 0/9] PM / Domains: DT support for domain idle states & atomic PM domains
-Date: Tue, 25 Oct 2016 00:30:18 +0200
-Message-ID: <2068597.AeryDFjO6y@vostro.rjw.lan>
-References: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
+From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH V2 1/8] PM / OPP: Reword binding supporting multiple
+ regulators per device
+Date: Mon, 24 Oct 2016 15:48:52 -0700
+Message-ID: <20161024224852.GQ26139@codeaurora.org>
+References: <cover.1476952750.git.viresh.kumar@linaro.org>
+ <891ef8705e13dff331a3135647f4c18f88402a12.1476952750.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:43999 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S940962AbcJXWXR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 18:23:17 -0400
-In-Reply-To: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <891ef8705e13dff331a3135647f4c18f88402a12.1476952750.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
 
-On Monday, October 24, 2016 03:20:59 PM Lina Iyer wrote:
-> Hi all,
+On 10/20, Viresh Kumar wrote:
+> On certain platforms (like TI), DVFS for a single device (CPU) requires
+> configuring multiple power supplies.
 > 
-> Changes since v3 [5] -
-> - Added "domain-idle-state" compatible to arm/idle-states.txt
-> - Updated documentation for defining PM domain idle states
-> - Updated documentation for devices and PM domains.
-> - Updated code to look for "domain-idle-state" instead of "arm,idle-state" compatible.
-> - The series is available at [6].
+> The OPP bindings already contains binding and example to explain this
+> case, but it isn't sufficient. For example, there is no way for the code
+> parsing these bindings to know which voltage values belong to which
+> power supply. Also its not possible to know the order in which the
+> supplies need to be configured while switching OPPs.
+> 
+> This patch tries to clarify on those details and does some minor changes
+> as well.
+> 
+> Note that the bindings do not specify the order in which the regulators
+> need to be programmed and the order in which the entries are added for
+> the supplies.
+> 
+> The user of the bindings (like the kernel) shall know these details
+> already and the DT is responsible to supply only the readings for the
+> regulators.
+> 
+> Cc: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> ---
 
-Is this the series I've already queued up?
+Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 
-If so, can you please send a delta patch only with a proper changelog?
-
-Thanks,
-Rafael
-
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
