@@ -1,143 +1,60 @@
-From: Matt Ranostay <mranostay@gmail.com>
-Subject: Re: [PATCH 1/2] power: bq27xxx_battery: add configurable
- poll_interval by sysfs
-Date: Sun, 23 Oct 2016 20:08:22 -0700
-Message-ID: <CAKzfze95nJMcRU2=FivDa72MX4P0md1VoWbUjUnt-75Vs_ektQ@mail.gmail.com>
-References: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
- <1474083775-30185-2-git-send-email-matt@ranostay.consulting> <20161007184910.GF19976@amd>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2 4/4] cpufreq: pxa: convert to clock API
+Date: Mon, 24 Oct 2016 09:03:41 +0530
+Message-ID: <20161024033341.GA24749@vireshk-i7>
+References: <1476561450-28407-1-git-send-email-robert.jarzmik@free.fr>
+ <1476561450-28407-5-git-send-email-robert.jarzmik@free.fr>
+ <20161018114025.GD11471@vireshk-i7>
+ <877f902hh6.fsf@belgarion.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161007184910.GF19976@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matt Ranostay <matt@ranostay.consulting>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:33470 "EHLO
+        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755702AbcJXDdq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Oct 2016 23:33:46 -0400
+Received: by mail-pf0-f177.google.com with SMTP id 128so90090832pfz.0
+        for <linux-pm@vger.kernel.org>; Sun, 23 Oct 2016 20:33:46 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <877f902hh6.fsf@belgarion.home>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Oct 7, 2016 at 11:49 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Fri 2016-09-16 20:42:54, Matt Ranostay wrote:
->> Allow the poll_interval to be runtime configurable via an sysfs entry.
->> This is needed for udev control of the poll interval.
->>
->> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
->
-> working mail address would be nice here.
->
-> sysfs files should be documented.
->
+On 22-10-16, 23:37, Robert Jarzmik wrote:
+> Viresh Kumar <viresh.kumar@linaro.org> writes:
+> 
+> > On 15-10-16, 21:57, Robert Jarzmik wrote:
+> >> As the clock settings have been introduced into the clock pxa drivers,
+> >> which are now available to change the CPU clock by themselves, remove
+> >> the clock handling from this driver, and rely on pxa clock drivers.
+> >> 
+> >> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+> >> ---
+> >> Since v1: added !OF Kconfig dependency
+> >> ---
+> >>  drivers/cpufreq/Kconfig.arm      |   2 +-
+> >>  drivers/cpufreq/pxa2xx-cpufreq.c | 191 ++++++++-------------------------------
+> >>  2 files changed, 40 insertions(+), 153 deletions(-)
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Okay, after some more testing, I'd like to remove the !OF for next iteration.
+> The reason is that I have a usecase where I have a single kernel image with
+> devictree support (ie CONFIG_OF=y), but with support for both devicetree and
+> legacy platforms. In this case, a platform such as lubbock can boot :
+>  - with devicetree
+>  - with legacy arch/arm/mach-pxa/lubbock.c
+> 
+> In this kernel, the !OF Kconfig prevents the legacy version from working, as
+> pxa2xx-cpufreq is descarded even if it is needed in the legacy version.
+> 
+> Therefore, I'd like to respin without this !OF.
 
-Ok can do in next revision
+I imagined this case last week as well :)
 
-> Also... what is it good for?
->
-> Do you have a device that needs non-standard interval?
+No issues.
 
-Basically we need to have the ability to dynamically change the
-intervals. So closer to a battery drain we need to up the reporting
-intervals.
-
-Thanks,
-
-Matt
-
->                                                                         Pavel
->
->> ---
->>  drivers/power/supply/bq27xxx_battery.c | 48 +++++++++++++++++++++++++++++++++-
->>  1 file changed, 47 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index 3f57dd54803a..955424e10ae2 100644
->> --- a/drivers/power/supply/bq27xxx_battery.c
->> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -395,6 +395,36 @@ module_param(poll_interval, uint, 0644);
->>  MODULE_PARM_DESC(poll_interval,
->>                "battery poll interval in seconds - 0 disables polling");
->>
->> +
->> +static ssize_t show_poll_interval(struct device *dev,
->> +                               struct device_attribute *attr, char *buf)
->> +{
->> +     return sprintf(buf, "%d\n", poll_interval);
->> +}
->> +
->> +static ssize_t store_poll_interval(struct device *dev,
->> +                                struct device_attribute *attr,
->> +                                const char *buf, size_t size)
->> +{
->> +     struct bq27xxx_device_info *di = dev_get_drvdata(dev);
->> +     int tmp = poll_interval;
->> +
->> +     if (sscanf(buf, "%d\n", &poll_interval) != 1)
->> +             return -EINVAL;
->> +
->> +     if (poll_interval < 0)
->> +             return -EINVAL;
->> +
->> +     if (tmp != poll_interval) {
->> +             cancel_delayed_work_sync(&di->work);
->> +             schedule_delayed_work(&di->work, 0);
->> +     }
->> +
->> +     return size;
->> +}
->> +
->> +static DEVICE_ATTR(poll_interval, 0644, show_poll_interval, store_poll_interval);
->> +
->>  /*
->>   * Common code for BQ27xxx devices
->>   */
->> @@ -946,6 +976,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>  {
->>       struct power_supply_desc *psy_desc;
->>       struct power_supply_config psy_cfg = { .drv_data = di, };
->> +     int ret;
->>
->>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>       mutex_init(&di->lock);
->> @@ -961,11 +992,19 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>       psy_desc->num_properties = bq27xxx_battery_props[di->chip].size;
->>       psy_desc->get_property = bq27xxx_battery_get_property;
->>       psy_desc->external_power_changed = bq27xxx_external_power_changed;
->> +     dev_set_drvdata(di->dev, di);
->> +
->> +     ret = sysfs_create_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
->> +     if (ret) {
->> +             dev_err(di->dev, "failed to register poll_interval sysfs entry");
->> +             return ret;
->> +     }
->>
->>       di->bat = power_supply_register_no_ws(di->dev, psy_desc, &psy_cfg);
->>       if (IS_ERR(di->bat)) {
->>               dev_err(di->dev, "failed to register battery\n");
->> -             return PTR_ERR(di->bat);
->> +             ret = PTR_ERR(di->bat);
->> +             goto err_out;
->>       }
->>
->>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
->> @@ -973,6 +1012,11 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>       bq27xxx_battery_update(di);
->>
->>       return 0;
->> +
->> +err_out:
->> +     sysfs_remove_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
->> +
->> +     return ret;
->>  }
->>  EXPORT_SYMBOL_GPL(bq27xxx_battery_setup);
->>
->> @@ -988,6 +1032,8 @@ void bq27xxx_battery_teardown(struct bq27xxx_device_info *di)
->>
->>       cancel_delayed_work_sync(&di->work);
->>
->> +     sysfs_remove_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
->> +
->>       power_supply_unregister(di->bat);
->>
->>       mutex_destroy(&di->lock);
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-- 
+viresh
