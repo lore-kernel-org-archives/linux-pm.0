@@ -1,38 +1,31 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v4 0/9] PM / Domains: DT support for domain idle states &
- atomic PM domains
-Date: Mon, 24 Oct 2016 17:05:02 -0600
-Message-ID: <20161024230502.GH72940@linaro.org>
-References: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
- <2068597.AeryDFjO6y@vostro.rjw.lan>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 4/8] PM / OPP: Pass struct dev_pm_opp_supply to
+ _set_opp_voltage()
+Date: Mon, 24 Oct 2016 16:14:53 -0700
+Message-ID: <20161024231453.GS26139@codeaurora.org>
+References: <cover.1476952750.git.viresh.kumar@linaro.org>
+ <5f5f81da4b9773854fba72359cb911d2660e2957.1476952750.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2068597.AeryDFjO6y@vostro.rjw.lan>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
+In-Reply-To: <5f5f81da4b9773854fba72359cb911d2660e2957.1476952750.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 25 2016 at 16:23 -0600, Rafael J. Wysocki wrote:
->On Monday, October 24, 2016 03:20:59 PM Lina Iyer wrote:
->> Hi all,
->>
->> Changes since v3 [5] -
->> - Added "domain-idle-state" compatible to arm/idle-states.txt
->> - Updated documentation for defining PM domain idle states
->> - Updated documentation for devices and PM domains.
->> - Updated code to look for "domain-idle-state" instead of "arm,idle-state" compatible.
->> - The series is available at [6].
->
->Is this the series I've already queued up?
->
-Yes. It is the update to the series that you already queued up.
+On 10/20, Viresh Kumar wrote:
+> Pass the entire supply structure instead of all of its fields.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
->If so, can you please send a delta patch only with a proper changelog?
->
-Sure. Will do that.
+This patch should be combined with the previous one. I'm still
+not sure if it even makes sense to do this though. Do we really
+have to make duplicate "OPP snapshot" structures just because of
+how OPPs use RCU?
 
-Thanks,
-Lina
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
