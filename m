@@ -1,92 +1,56 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH v4 5/9] dt-bindings: Update binding for PM domain idle states
-Date: Mon, 24 Oct 2016 15:21:04 -0700
-Message-ID: <1477347668-41901-6-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH v4 6/9] PM / Domains: Save the fwnode in genpd_power_state
+Date: Mon, 24 Oct 2016 15:21:05 -0700
+Message-ID: <1477347668-41901-7-git-send-email-lina.iyer@linaro.org>
 References: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:33292 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965705AbcJXWV2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 18:21:28 -0400
+Received: by mail-pf0-f173.google.com with SMTP id 128so106325478pfz.0
+        for <linux-pm@vger.kernel.org>; Mon, 24 Oct 2016 15:21:28 -0700 (PDT)
 In-Reply-To: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Marc Titinger <mtitinger+renesas@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
 
-Update DT bindings to describe idle states of PM domains.
+Save the fwnode for the genpd state in the state node. PM Domain clients
+may use the fwnode to read in the platform specific domain state
+properties and associate them with the state.
 
-This patch is based on the original patch by Marc Titinger.
-
-Cc: <devicetree@vger.kernel.org>
-Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- .../devicetree/bindings/power/power_domain.txt     | 44 ++++++++++++++++++++++
- 1 file changed, 44 insertions(+)
+ drivers/base/power/domain.c | 1 +
+ include/linux/pm_domain.h   | 1 +
+ 2 files changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 025b5e7..3c926b5 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -29,6 +29,16 @@ Optional properties:
-    specified by this binding. More details about power domain specifier are
-    available in the next section.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 0e59f1d..f056c80 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1956,6 +1956,7 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
  
-+- domain-idle-states : A phandle of an idle-state that shall be soaked into a
-+                generic domain power state. The idle state definitions must be
-+                compatible with "domain-idle-state" as well as
-+                "arm,idle-state" as defined in [1].
-+  The domain-idle-state property reflects the idle state of this PM domain and
-+  not the idle states of the devices or sub-domains in the PM domain. Devices
-+  and sub-domains have their own idle-states independent of the parent
-+  domain's idle states. In the absence of this property, the domain would be
-+  considered as capable of being powered-on or powered-off.
-+
- Example:
+ 	genpd_state->power_on_latency_ns = 1000 * exit_latency;
+ 	genpd_state->power_off_latency_ns = 1000 * entry_latency;
++	genpd_state->fwnode = &state_node->fwnode;
  
- 	power: power-controller@12340000 {
-@@ -59,6 +69,38 @@ The nodes above define two power controllers: 'parent' and 'child'.
- Domains created by the 'child' power controller are subdomains of '0' power
- domain provided by the 'parent' power controller.
+ 	return 0;
+ }
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index b489496..6a89881 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -39,6 +39,7 @@ struct genpd_power_state {
+ 	s64 power_off_latency_ns;
+ 	s64 power_on_latency_ns;
+ 	s64 residency_ns;
++	struct fwnode_handle *fwnode;
+ };
  
-+Example 3:
-+	parent: power-controller@12340000 {
-+		compatible = "foo,power-controller";
-+		reg = <0x12340000 0x1000>;
-+		#power-domain-cells = <0>;
-+		domain-idle-states = <&DOMAIN_RET>, <&DOMAIN_PWR_DN>;
-+	};
-+
-+	child: power-controller@12341000 {
-+		compatible = "foo,power-controller";
-+		reg = <0x12341000 0x1000>;
-+		power-domains = <&parent 0>;
-+		#power-domain-cells = <0>;
-+		domain-idle-states = <&DOMAIN_PWR_DN>;
-+	};
-+
-+	DOMAIN_RET: state@0 {
-+		compatible =  "domain-idle-state", "arm,idle-state";
-+		reg = <0x0>;
-+		entry-latency-us = <1000>;
-+		exit-latency-us = <2000>;
-+		min-residency-us = <10000>;
-+	};
-+
-+	DOMAIN_PWR_DN: state@1 {
-+		compatible =  "domain-idle-state", "arm,idle-state";
-+		reg = <0x1>;
-+		entry-latency-us = <5000>;
-+		exit-latency-us = <8000>;
-+		min-residency-us = <7000>;
-+	};
-+
- ==PM domain consumers==
- 
- Required properties:
-@@ -76,3 +118,5 @@ Example:
- The node above defines a typical PM domain consumer device, which is located
- inside a PM domain with index 0 of a power controller represented by a node
- with the label "power".
-+
-+[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+ struct generic_pm_domain {
 -- 
 2.7.4
+
