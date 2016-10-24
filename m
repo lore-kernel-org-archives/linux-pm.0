@@ -1,95 +1,143 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH V2 0/8] PM / OPP: Multiple regulator support
-Date: Sun, 23 Oct 2016 20:08:02 -0500
-Message-ID: <41a8b4a1-94d3-e086-a328-495f69815d1c@ti.com>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
- <CAJZ5v0jNJBDKq+ccHKRA6JGAOXV0qT0-k1mwAcBkCv-7JtzACw@mail.gmail.com>
- <CAKohpon8f-7ppaFsb+wZH4Dj527HXRF73E8taYN9QfcojjJa3g@mail.gmail.com>
+From: Matt Ranostay <mranostay@gmail.com>
+Subject: Re: [PATCH 1/2] power: bq27xxx_battery: add configurable
+ poll_interval by sysfs
+Date: Sun, 23 Oct 2016 20:08:22 -0700
+Message-ID: <CAKzfze95nJMcRU2=FivDa72MX4P0md1VoWbUjUnt-75Vs_ektQ@mail.gmail.com>
+References: <1474083775-30185-1-git-send-email-matt@ranostay.consulting>
+ <1474083775-30185-2-git-send-email-matt@ranostay.consulting> <20161007184910.GF19976@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKohpon8f-7ppaFsb+wZH4Dj527HXRF73E8taYN9QfcojjJa3g@mail.gmail.com>
+In-Reply-To: <20161007184910.GF19976@amd>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Mark Brown <broonie@kernel.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Andrew F . Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Matt Ranostay <matt@ranostay.consulting>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On 10/21/2016 10:40 AM, Viresh Kumar wrote:
-> On 21 October 2016 at 19:09, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Thu, Oct 20, 2016 at 10:44 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->>> Hi,
->>>
->>> Some platforms (like TI) have complex DVFS configuration for CPU
->>> devices, where multiple regulators are required to be configured to
->>> change DVFS state of the device. This was explained well by Nishanth
->>> earlier [1].
->>>
->>> Some thoughts went into it few months back but then it all got lost. I
->>> am trying to get that back on track with this thread.
->>>
->>> One of the major complaints around multiple regulators case was that the
->>> DT isn't responsible in any way to represent the ordering in which
->>> multiple supplies need to be programmed, before or after frequency
->>> change. It was considered in this patch and such information is left to
->>> the platform specific OPP driver now, which can register its own
->>> opp_set_rate() callback with the OPP core and the OPP core will then
->>> call it during DVFS.
->>>
->>> The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
->>> and code to pass values for multiple regulators and verified that they
->>> are all properly read by the kernel (using debugfs interface).
->>>
->>> Though more testing on real (TI) platforms would be useful.
->>>
->>> This is rebased over: linux-next branch in the PM tree.
->>>
->>> V1->V2:
->>> - Ack from Rob for 1st patch
->>> - Moved the supplies structure to pm_opp.h (Dave)
->>> - Fixed an compilation warning.
+On Fri, Oct 7, 2016 at 11:49 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Fri 2016-09-16 20:42:54, Matt Ranostay wrote:
+>> Allow the poll_interval to be runtime configurable via an sysfs entry.
+>> This is needed for udev control of the poll interval.
 >>
->> I need somebody from the OPP camp to review patches [2-8/8] for me.
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 >
-> Sure, I have already asked Stephen yesterday to do that.
+> working mail address would be nice here.
+>
+> sysfs files should be documented.
+>
 
-Overall this series looks good to me apart from a few small things. Most 
-importantly I was able to get a working implementation using two 
-regulators on ti dra7xx platform with proper sequencing built on top of 
-this series. We have cpu regulator and Adaptive body bias (abb) 
-regulator that must be scaled in a certain order before or after clock 
-scaling and I was able to implement a rough custom set_rate to perform 
-this and ran some dvfs stress tests that all worked fine.
+Ok can do in next revision
 
-First comment, I think the platform specific set_rate is a good place to 
-hook in for adaptive voltage scaling as well. I was able to implement TI 
-Class0 AVS in the same code by using the requested transition voltage as 
-a reference and programming AVS voltage using that, along with scaling 
-the additional regulators in sequence (the original multi regulator 
-functionality). I would think some people would want to use this even 
-with single regulator platforms, no? cpufreq-dt works as is for that, we 
-just swap out the regulators.
+> Also... what is it good for?
+>
+> Do you have a device that needs non-standard interval?
 
-This raises some concerns about dependencies/probe sequencing. Right now 
-we just need to make sure the cpufreq-dt driver probes after we have 
-called _set_regulators, but if our platform code fails cpufreq-dt 
-currently will treat this as no regulator needed for the platform and 
-operate without one, which will likely hang the system. Is there a good 
-way to to guarantee this doesn't happen? My main concern is that if we 
-plan to provide a platform specific set-rate function, we should have a 
-way to indicate this and prevent things from progressing if it isn't yet 
-ready.
+Basically we need to have the ability to dynamically change the
+intervals. So closer to a battery drain we need to up the reporting
+intervals.
 
-Again, overall I think it solves the multi regulator problem, and it 
-works well for AVS as well. For the series:
+Thanks,
 
-Tested-by: Dave Gerlach <d-gerlach@ti.com>
+Matt
 
-Regards,
-Dave
-
+>                                                                         Pavel
+>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c | 48 +++++++++++++++++++++++++++++++++-
+>>  1 file changed, 47 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index 3f57dd54803a..955424e10ae2 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -395,6 +395,36 @@ module_param(poll_interval, uint, 0644);
+>>  MODULE_PARM_DESC(poll_interval,
+>>                "battery poll interval in seconds - 0 disables polling");
+>>
+>> +
+>> +static ssize_t show_poll_interval(struct device *dev,
+>> +                               struct device_attribute *attr, char *buf)
+>> +{
+>> +     return sprintf(buf, "%d\n", poll_interval);
+>> +}
+>> +
+>> +static ssize_t store_poll_interval(struct device *dev,
+>> +                                struct device_attribute *attr,
+>> +                                const char *buf, size_t size)
+>> +{
+>> +     struct bq27xxx_device_info *di = dev_get_drvdata(dev);
+>> +     int tmp = poll_interval;
+>> +
+>> +     if (sscanf(buf, "%d\n", &poll_interval) != 1)
+>> +             return -EINVAL;
+>> +
+>> +     if (poll_interval < 0)
+>> +             return -EINVAL;
+>> +
+>> +     if (tmp != poll_interval) {
+>> +             cancel_delayed_work_sync(&di->work);
+>> +             schedule_delayed_work(&di->work, 0);
+>> +     }
+>> +
+>> +     return size;
+>> +}
+>> +
+>> +static DEVICE_ATTR(poll_interval, 0644, show_poll_interval, store_poll_interval);
+>> +
+>>  /*
+>>   * Common code for BQ27xxx devices
+>>   */
+>> @@ -946,6 +976,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>  {
+>>       struct power_supply_desc *psy_desc;
+>>       struct power_supply_config psy_cfg = { .drv_data = di, };
+>> +     int ret;
+>>
+>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>       mutex_init(&di->lock);
+>> @@ -961,11 +992,19 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>       psy_desc->num_properties = bq27xxx_battery_props[di->chip].size;
+>>       psy_desc->get_property = bq27xxx_battery_get_property;
+>>       psy_desc->external_power_changed = bq27xxx_external_power_changed;
+>> +     dev_set_drvdata(di->dev, di);
+>> +
+>> +     ret = sysfs_create_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
+>> +     if (ret) {
+>> +             dev_err(di->dev, "failed to register poll_interval sysfs entry");
+>> +             return ret;
+>> +     }
+>>
+>>       di->bat = power_supply_register_no_ws(di->dev, psy_desc, &psy_cfg);
+>>       if (IS_ERR(di->bat)) {
+>>               dev_err(di->dev, "failed to register battery\n");
+>> -             return PTR_ERR(di->bat);
+>> +             ret = PTR_ERR(di->bat);
+>> +             goto err_out;
+>>       }
+>>
+>>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>> @@ -973,6 +1012,11 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>       bq27xxx_battery_update(di);
+>>
+>>       return 0;
+>> +
+>> +err_out:
+>> +     sysfs_remove_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
+>> +
+>> +     return ret;
+>>  }
+>>  EXPORT_SYMBOL_GPL(bq27xxx_battery_setup);
+>>
+>> @@ -988,6 +1032,8 @@ void bq27xxx_battery_teardown(struct bq27xxx_device_info *di)
+>>
+>>       cancel_delayed_work_sync(&di->work);
+>>
+>> +     sysfs_remove_file(&di->dev->kobj, &dev_attr_poll_interval.attr);
+>> +
+>>       power_supply_unregister(di->bat);
+>>
+>>       mutex_destroy(&di->lock);
 >
 > --
-> viresh
->
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
