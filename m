@@ -1,110 +1,129 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/8] PM / OPP: Multiple regulator support
-Date: Mon, 24 Oct 2016 09:56:59 +0530
-Message-ID: <20161024042659.GD24749@vireshk-i7>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
- <CAJZ5v0jNJBDKq+ccHKRA6JGAOXV0qT0-k1mwAcBkCv-7JtzACw@mail.gmail.com>
- <CAKohpon8f-7ppaFsb+wZH4Dj527HXRF73E8taYN9QfcojjJa3g@mail.gmail.com>
- <41a8b4a1-94d3-e086-a328-495f69815d1c@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Sinan Kaya <okaya@codeaurora.org>
+Subject: [PATCH V5 2/3] ACPI: pci_link: penalize SCI correctly
+Date: Mon, 24 Oct 2016 00:31:31 -0400
+Message-ID: <1477283492-26657-3-git-send-email-okaya@codeaurora.org>
+References: <1477283492-26657-1-git-send-email-okaya@codeaurora.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <41a8b4a1-94d3-e086-a328-495f69815d1c@ti.com>
+In-Reply-To: <1477283492-26657-1-git-send-email-okaya@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Mark Brown <broonie@kernel.org>
+To: linux-acpi@vger.kernel.org, rjw@rjwysocki.net, bhelgaas@google.com, ravikanth.nalla@hpe.com, linux@rainbow-software.org, timur@codeaurora.org, cov@codeaurora.org, jcm@redhat.com, alex.williamson@redhat.com
+Cc: net147@gmail.com, linux-pci@vger.kernel.org, agross@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, wim@djo.tudelft.nl, Sinan Kaya <okaya@codeaurora.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 23-10-16, 20:08, Dave Gerlach wrote:
-> Overall this series looks good to me apart from a few small things. Most
-> importantly I was able to get a working implementation using two regulators
-> on ti dra7xx platform with proper sequencing built on top of this series. We
-> have cpu regulator and Adaptive body bias (abb) regulator that must be
-> scaled in a certain order before or after clock scaling and I was able to
-> implement a rough custom set_rate to perform this and ran some dvfs stress
-> tests that all worked fine.
+Ondrej reported that IRQs stopped working in v4.7 on several
+platforms.  A typical scenario, from Ondrej's VT82C694X/694X, is:
 
-Thanks for testing it buddy.
+ACPI: Using PIC for interrupt routing
+ACPI: PCI Interrupt Link [LNKA] (IRQs 1 3 4 5 6 7 10 *11 12 14 15)
+ACPI: No IRQ available for PCI Interrupt Link [LNKA]
+8139too 0000:00:0f.0: PCI INT A: no GSI
 
-> First comment, I think the platform specific set_rate is a good place to
-> hook in for adaptive voltage scaling as well. I was able to implement TI
-> Class0 AVS in the same code by using the requested transition voltage as a
-> reference and programming AVS voltage using that, along with scaling the
-> additional regulators in sequence (the original multi regulator
-> functionality). 
+We're using PIC routing, so acpi_irq_balance == 0, and LNKA is already
+active at IRQ 11. In that case, acpi_pci_link_allocate() only tries
+to use the active IRQ (IRQ 11) which also happens to be the SCI.
 
-Hmm, interesting..
+We should penalize the SCI by PIRQ_PENALTY_PCI_USING, but
+irq_get_trigger_type(11) returns something other than
+IRQ_TYPE_LEVEL_LOW, so we penalize it by PIRQ_PENALTY_ISA_ALWAYS
+instead, which makes acpi_pci_link_allocate() assume the IRQ isn't
+available and give up.
 
-> I would think some people would want to use this even with
-> single regulator platforms, no?
+Add acpi_penalize_sci_irq() so platforms can tell us the SCI IRQ,
+trigger, and polarity directly and we don't have to depend on
+irq_get_trigger_type().
 
-Maybe, but I would like to see such user code first. It may be possible to
-handle much of AVS stuff in core so that everyone isn't required to do it.
-
-> This raises some concerns about dependencies/probe sequencing. Right now we
-> just need to make sure the cpufreq-dt driver probes after we have called
-> _set_regulators, but if our platform code fails cpufreq-dt currently will
-> treat this as no regulator needed for the platform and operate without one,
-> which will likely hang the system. Is there a good way to to guarantee this
-> doesn't happen? My main concern is that if we plan to provide a platform
-> specific set-rate function, we should have a way to indicate this and
-> prevent things from progressing if it isn't yet ready.
-> 
-> Again, overall I think it solves the multi regulator problem, and it works
-> well for AVS as well. For the series:
-> 
-> Tested-by: Dave Gerlach <d-gerlach@ti.com>
-
-Thanks.
-
-For the concern you shared about, does the below patch fix it ? I will include
-that in V3 then.
-
--------------------------8<-------------------------
-
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Mon, 24 Oct 2016 09:45:30 +0530
-Subject: [PATCH] PM / OPP: Don't assume platform doesn't have regulators
-
-If the regulators aren't set explicitly by the platform, the OPP core
-assumes that the platform doesn't have any regulator and uses the
-clk-only callback.
-
-If the platform failed to register a regulator with the core, then this
-can turn out to be a dangerous assumption as the OPP core will try to
-change clk without changing regulators.
-
-Handle that properly by making sure that the DT didn't had any entries
-for supply voltages as well.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Link: http://lkml.kernel.org/r/201609251512.05657.linux@rainbow-software.org
+Reported-by: Ondrej Zary <linux@rainbow-software.org>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ arch/x86/kernel/acpi/boot.c |  1 +
+ drivers/acpi/pci_link.c     | 30 +++++++++++++++---------------
+ include/linux/acpi.h        |  1 +
+ 3 files changed, 17 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index b69908b74ed6..fb4250532180 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -737,7 +737,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 90d84c3..0ffd26e 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -453,6 +453,7 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
  
- 	/* Only frequency scaling */
- 	if (!regulators) {
--		rcu_read_unlock();
-+		/*
-+		 * DT contained supply ratings? Consider platform failed to set
-+		 * regulators.
-+		 */
-+		if (unlikely(opp->supplies[0].u_volt)) {
-+			rcu_read_unlock();
-+			dev_err(dev, "%s: Regulator not registered with OPP core\n",
-+				__func__);
-+			return -EINVAL;
-+		}
+ 	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+ 
+ 	/*
+ 	 * stash over-ride to indicate we've been here
+diff --git a/drivers/acpi/pci_link.c b/drivers/acpi/pci_link.c
+index 6229b02..74bf96e 100644
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -87,6 +87,7 @@ struct acpi_pci_link {
+ 
+ static LIST_HEAD(acpi_link_list);
+ static DEFINE_MUTEX(acpi_link_lock);
++static int sci_irq = -1, sci_penalty;
+ 
+ /* --------------------------------------------------------------------------
+                             PCI Link Device Management
+@@ -496,25 +497,13 @@ static int acpi_irq_get_penalty(int irq)
+ {
+ 	int penalty = 0;
+ 
+-	/*
+-	* Penalize IRQ used by ACPI SCI. If ACPI SCI pin attributes conflict
+-	* with PCI IRQ attributes, mark ACPI SCI as ISA_ALWAYS so it won't be
+-	* use for PCI IRQs.
+-	*/
+-	if (irq == acpi_gbl_FADT.sci_interrupt) {
+-		u32 type = irq_get_trigger_type(irq) & IRQ_TYPE_SENSE_MASK;
+-
+-		if (type != IRQ_TYPE_LEVEL_LOW)
+-			penalty += PIRQ_PENALTY_ISA_ALWAYS;
+-		else
+-			penalty += PIRQ_PENALTY_PCI_USING;
+-	}
++	if (irq == sci_irq)
++		penalty += sci_penalty;
+ 
+ 	if (irq < ACPI_MAX_ISA_IRQS)
+ 		return penalty + acpi_isa_irq_penalty[irq];
+ 
+-	penalty += acpi_irq_pci_sharing_penalty(irq);
+-	return penalty;
++	return penalty + acpi_irq_pci_sharing_penalty(irq);
+ }
+ 
+ int __init acpi_irq_penalty_init(void)
+@@ -881,6 +870,17 @@ bool acpi_isa_irq_available(int irq)
+ 		    acpi_irq_get_penalty(irq) < PIRQ_PENALTY_ISA_ALWAYS);
+ }
+ 
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity)
++{
++	sci_irq = irq;
 +
- 		return _generic_opp_set_rate_clk_only(dev, clk, old_freq, freq);
- 	}
++	if (trigger == ACPI_MADT_TRIGGER_LEVEL &&
++	    polarity == ACPI_MADT_POLARITY_ACTIVE_LOW)
++		sci_penalty = PIRQ_PENALTY_PCI_USING;
++	else
++		sci_penalty = PIRQ_PENALTY_ISA_ALWAYS;
++}
++
+ /*
+  * Over-ride default table to reserve additional IRQs for use by ISA
+  * e.g. acpi_irq_isa=5
+diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+index c5eaf2f..67d1d3e 100644
+--- a/include/linux/acpi.h
++++ b/include/linux/acpi.h
+@@ -318,6 +318,7 @@ struct pci_dev;
+ int acpi_pci_irq_enable (struct pci_dev *dev);
+ void acpi_penalize_isa_irq(int irq, int active);
+ bool acpi_isa_irq_available(int irq);
++void acpi_penalize_sci_irq(int irq, int trigger, int polarity);
+ void acpi_pci_irq_disable (struct pci_dev *dev);
  
+ extern int ec_read(u8 addr, u8 *val);
 -- 
-viresh
+1.9.1
