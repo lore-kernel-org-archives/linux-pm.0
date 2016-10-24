@@ -1,108 +1,47 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
- control runtime pm
-Date: Mon, 24 Oct 2016 14:39:15 +0200
-Message-ID: <bff28d5b-3b39-a5bb-b381-2d7626566a2d@samsung.com>
-References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
- <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
- <001e01d22d12$d2a4e990$77eebcb0$@codeaurora.org>
- <7a69ca4e-e276-1bdc-edf2-b881a91f820a@samsung.com>
- <004a01d22df2$45ecd450$d1c67cf0$@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH][v12] PM / hibernate: Verify the consistent of e820 memory
+ map by md5 digest
+Date: Mon, 24 Oct 2016 15:07:24 +0200
+Message-ID: <CAJZ5v0hinH8AxarFAyDx_B7-kN_P8VBHCz4hUjTaB1wzqfjxZQ@mail.gmail.com>
+References: <1476951292-19619-1-git-send-email-yu.c.chen@intel.com>
+ <20161022030302.GB26548@linux-rxt1.site> <20161023080122.GA25889@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:40263 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934997AbcJXMj0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 08:39:26 -0400
-In-reply-to: <004a01d22df2$45ecd450$d1c67cf0$@codeaurora.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34548 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934917AbcJXNH0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 09:07:26 -0400
+In-Reply-To: <20161023080122.GA25889@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sricharan <sricharan@codeaurora.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org
-Cc: 'Tomeu Vizoso' <tomeu.vizoso@collabora.com>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Kevin Hilman' <khilman@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Tomasz Figa' <tomasz.figa@gmail.com>, 'Krzysztof Kozlowski' <krzk@kernel.org>, 'Inki Dae' <inki.dae@samsung.com>, 'Tobias Jakobi' <tjakobi@math.uni-bielefeld.de>, "'Luis R. Rodriguez'" <mcgrof@kernel.org>, 'Kukjin Kim' <kgene@kernel.org>, 'Mark Brown' <broonie@kernel.org>, 'Lukas Wunner' <lukas@wunner.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: joeyli <jlee@suse.com>, Chen Yu <yu.c.chen@intel.com>, Linux PM <linux-pm@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Denys Vlasenko <dvlasenk@redhat.com>, Dan Williams <dan.j.williams@intel.com>
 
-Hi Sricharan,
+On Sun, Oct 23, 2016 at 10:01 AM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> > 2. Another case is, this patch replies on comparing the e820_saved, but
+>> >    currently the e820_save might not be strictly the same across
+>> >    hibernation, even if BIOS has provided consistent e820 map - In
+>> >    theory mptable might modify the BIOS-provided e820_saved dynamically
+>> >    in early_reserve_e820_mpc_new, which would allocate a buffer from
+>> >    E820_RAM, and marks it from E820_RAM to E820_RESERVED).
+>> >    This is a potential and rare case we need to deal with in OS in
+>> >    the future.
+>> >
+>> > Suggested-by: Pavel Machek <pavel@ucw.cz>
+>> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+>
+> Rafael, can we get this merged? 12 versions is a bit too much..
 
+We can, if there are no more comments.
 
-On 2016-10-24 14:29, Sricharan wrote:
->>>> This patch uses recently introduced device dependency links to track the
->>>> runtime pm state of the master's device. This way each SYSMMU controller
->>>> is set to runtime active only when its master's device is active and can
->>>> restore or save its state instead of being activated all the time when
->>>> attached to the given master device. This way SYSMMU controllers no longer
->>>> prevents respective power domains to be turned off when master's device
->>>> is not being used.
->>>>
->>>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>>> ---
->>>> drivers/iommu/exynos-iommu.c | 16 ++++++++--------
->>>> 1 file changed, 8 insertions(+), 8 deletions(-)
->>>>
->>>> diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
->>>> index 5e6d7bbf9b70..59b4f2ce4f5f 100644
->>>> --- a/drivers/iommu/exynos-iommu.c
->>>> +++ b/drivers/iommu/exynos-iommu.c
->>>> @@ -781,10 +781,6 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
->>>> 	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
->>>> 		return;
->>>>
->>>> -	list_for_each_entry(data, &owner->controllers, owner_node) {
->>>> -		pm_runtime_put_sync(data->sysmmu);
->>>> -	}
->>>> -
->>>> 	mutex_lock(&owner->rpm_lock);
->>>>
->>>> 	list_for_each_entry(data, &owner->controllers, owner_node) {
->>>> @@ -848,10 +844,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
->>>>
->>>> 	mutex_unlock(&owner->rpm_lock);
->>>>
->>>> -	list_for_each_entry(data, &owner->controllers, owner_node) {
->>>> -		pm_runtime_get_sync(data->sysmmu);
->>>> -	}
->>>> -
->>>> 	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
->>>> 		&pagetable);
->>>>
->>>> @@ -1232,6 +1224,14 @@ static int exynos_iommu_of_xlate(struct device *dev,
->>>>
->>>> 	list_add_tail(&data->owner_node, &owner->controllers);
->>>> 	data->master = dev;
->>>> +
->>>> +	/*
->>>> +	 * SYSMMU will be runtime activated via device link (dependency) to its
->>>> +	 * master device, so there are no direct calls to pm_runtime_get/put
->>>> +	 * in this driver.
->>>> +	 */
->>>> +	device_link_add(dev, data->sysmmu, DL_FLAG_PM_RUNTIME);
->>>> +
->>>     So in the case of master with multiple sids, this would be called multiple times
->>>     for the same master ?
->> I don't know what is "multiple sids" case, but if given SYSMMU master
->> device (supplier)
->> has multiple SYSMMU controllers (consumers), then links will be created
->> for each SYSMMU
->> controller. Please note that this code is based on vanilla v4.9-rc1,
->> which calls
->> of_xlate() callback only once for every iommu for given master device.
->> Your IOMMU
->> deferred probe patches change this, but I already posted a fix for
->> Exynos IOMMU driver
->> to handle such case.
->   By multiple sids, i meant iommus = <&phandle sid1 sid2 .. sidn> case,
->   so xlate would be called multiples for the same master without deferred
->   probing also. But the fix that you showed on the other thread would work
->   here as well or maybe if you dont have masters with multiple sids you wont
->   have any issues as well.
+It actually doesn't matter how many revisions of the patch there are
+as long as it isn't ready ...
 
-Exynos SYSMMU driver always use "#iommu-cells = <0>", so it doesn't support
-multiple sids. However there is a case with 2 SYSMMU controllers attached
-to the same master device: "iommus = <&sysmmu_mfc_l>, <&sysmmu_mfc_r>;".
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+Thanks,
+Rafael
