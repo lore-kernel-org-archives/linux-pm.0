@@ -1,68 +1,132 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Bug 181381] New: Resume from suspend no longer works on Thinkpad X240
-Date: Mon, 24 Oct 2016 22:42:23 +0200
-Message-ID: <36039093.FNOp46uvm2@vostro.rjw.lan>
-References: <bug-181381-76231@https.bugzilla.kernel.org/>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v3 3/8] PM / Domains: Allow domain power states to be
+ read from DT
+Date: Mon, 24 Oct 2016 15:00:35 -0600
+Message-ID: <20161024210035.GF72940@linaro.org>
+References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
+ <1476467276-75094-4-git-send-email-lina.iyer@linaro.org>
+ <6ed96121-5040-474d-2d71-7927e8567c50@arm.com>
+ <20161024164846.GE72940@linaro.org>
+ <12435f67-bcb6-33b5-4399-f4f628f70be8@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60140 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1753274AbcJXUfV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 16:35:21 -0400
-In-Reply-To: <bug-181381-76231@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <12435f67-bcb6-33b5-4399-f4f628f70be8@arm.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Marc Titinger <mtitinger+renesas@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
-To: bugzilla-daemon@bugzilla.kernel.org, Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: steinar+kernel@gunderson.no, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thorsten Leemhuis <regressions@leemhuis.info>
 
-On Monday, October 24, 2016 08:28:18 PM bugzilla-daemon@bugzilla.kernel.org wrote:
-> https://bugzilla.kernel.org/show_bug.cgi?id=181381
-> 
->             Bug ID: 181381
->            Summary: Resume from suspend no longer works on Thinkpad X240
->            Product: Power Management
->            Version: 2.5
->     Kernel Version: 4.9.0-rc1
->           Hardware: All
->                 OS: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Hibernation/Suspend
->           Assignee: rjw@rjwysocki.net
->           Reporter: steinar+kernel@gunderson.no
->                 CC: jarkko.sakkinen@linux.intel.com
->         Regression: No
-> 
-> Hi,
-> 
-> I have a Thinkpad X240, which suspends (to RAM) and resumes just fine with
-> 4.7.4. However, in 4.9.0-rc1, it completely refuses to resume; when I try to
-> press the power button to resume it from sleep, it just ignores the request
-> completely and keeps pulsing the light.
-> 
-> bisect gives the following culprit:
-> 
-> commit 0c541332231e7957f23013e37f3720db33e7804c
-> Author: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-> Date:   Fri Jun 17 13:12:20 2016 +0200
-> 
->     tpm: use tpm_pcr_read_dev() in tpm_do_selftest()
-> 
->     Instead of a ad-hoc protocol message construction it is better to
->     call tpm_pcr_read_dev().
-> 
->     Signed-off-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
->     Reviewed-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-> 
-> I haven't tried 4.9.0-rc2, because that just hangs directly off of GRUB from
-> me.
+On Mon, Oct 24 2016 at 11:27 -0600, Sudeep Holla wrote:
+>
+>
+>On 24/10/16 17:48, Lina Iyer wrote:
+>>Hi Sudeep,
+>>
+>>On Mon, Oct 24 2016 at 07:39 -0600, Sudeep Holla wrote:
+>>>
+>>>
+>>>On 14/10/16 18:47, Lina Iyer wrote:
+>>>>This patch allows domains to define idle states in the DT. SoC's can
+>>>>define domain idle states in DT using the "domain-idle-states" property
+>>>>of the domain provider. Add API to read the idle states from DT that can
+>>>>be set in the genpd object.
+>>>>
+>>>>This patch is based on the original patch by Marc Titinger.
+>>>>
+>>>>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>>>>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>>>>---
+>>>>drivers/base/power/domain.c | 94
+>>>>+++++++++++++++++++++++++++++++++++++++++++++
+>>>>include/linux/pm_domain.h   |  8 ++++
+>>>>2 files changed, 102 insertions(+)
+>>>>
+>>>>diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>>>index 37ab7f1..9af75ba 100644
+>>>>--- a/drivers/base/power/domain.c
+>>>>+++ b/drivers/base/power/domain.c
+>>>>@@ -1916,6 +1916,100 @@ out:
+>>>>    return ret ? -EPROBE_DEFER : 0;
+>>>>}
+>>>>EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+>>>>+
+>>>>+static const struct of_device_id idle_state_match[] = {
+>>>>+    { .compatible = "arm,idle-state", },
+>>>>+    { }
+>>>>+};
+>>>>+
+>>>
+>>>I still think it's better to have another compatible to serve this
+>>>purpose. We don't want to end up creating genpd domains just because
+>>>they are "arm,idle-state" compatible IMO ?
+>>>
+>>>I agree you can prevent it checking for OSC mode support in the
+>>>firmware. But I want to understand if you have any strong reasons for
+>>>avoiding that approach.
+>>>
+>>Why are you still held up with OSI/PC PSCI modes?
+>
+>I am just pointing that out to make sure you are not defining these
+>DT bindings with just QCOM platform and OSC in consideration.
+>
+>I am thinking about how can it be used/extended in other use-cases.
+>
+>>I repeat again this
+>>series is not about any of that, it is just about PM domains.
+>
+>I completely understand that, no argument on that. What I worry is that
+>if a system(in future) represents this power domains and domain idles
+>states and doesn't want to create a genpd, do we have to handle it
+>differently or even the way your CPUidle series would do or can we say
+>those states need to specify that they are compatible with the new
+>feature(the one being added in this series) with a new compatible.
+>I prefer the latter than the former to avoid all possible workarounds
+>in future.
+>
+>>PM domains
+>>have idle states and the idle-state description is similar in definition
+>>to arm,idle-state and therefore uses the same compatible. There is no
+>>point re-defining something that already exists in the kernel.
+>>
+>
+>Yes I understand that but "arm,idle-states" were not defined with this
+>feature in mind and hence I am bit worried if it could cause any issue
+>especially if deprecate cpu-idle-states and move to this model
+>completely. I really don't like this mix and hence I am raising the
+>concern here. I am trying to ease that migration.
+>
+>>I was able to find the original thread, where we discussed this [1].
+>>
+>>I suggest, you read about PM domains and its idle states and understand
+>>this series in the context of PM domains.
+>>
+>
+>Sure, will do that. Thanks for pointing that out. But the concern I am
+>raising is entirely different. I am asking if this re-use will cause any
+>issue in future as pointed out above.
+>
+>I re-iterate that I understand this series is independent of the CPUIdle
+>and hence asking why not make it completely independent by just adding
+>the new compatible.
+>
+>I am *not asking to redefine something completely*. What I am saying is
+>*just* to add new compatible that may(for cpu devices)/may not(for
+>other/non-CPU devices) be used along with "arm,idle-state".
+>
+I am fine with that, as long as the compatible string is an alternate
+for "arm,idle-state" it shouldn't be a problem.
 
-Jarkko, Jason, any chance to have a look at this?
+Any recommendations?
 
 Thanks,
-Rafael
+Lina
 
+>I may be too paranoid here but I think that's safer. It helps to skip
+>creating of genpd if required for some domains as I had explained before.
+>
+>-- 
+>Regards,
+>Sudeep
