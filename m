@@ -1,133 +1,130 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH v2 2/4] dt-bindings: Add TI SCI PM Domains
-Date: Mon, 24 Oct 2016 10:00:10 -0700
-Message-ID: <7h1sz51y3p.fsf@baylibre.com>
-References: <20161019203347.17893-1-d-gerlach@ti.com>
-        <20161019203347.17893-3-d-gerlach@ti.com>
-        <7heg39pmgb.fsf@baylibre.com>
-        <7f4754bb-7ded-6ce3-9558-a45b0d2b3888@ti.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v3 3/8] PM / Domains: Allow domain power states to be read
+ from DT
+Date: Mon, 24 Oct 2016 18:27:30 +0100
+Message-ID: <12435f67-bcb6-33b5-4399-f4f628f70be8@arm.com>
+References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
+ <1476467276-75094-4-git-send-email-lina.iyer@linaro.org>
+ <6ed96121-5040-474d-2d71-7927e8567c50@arm.com>
+ <20161024164846.GE72940@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7f4754bb-7ded-6ce3-9558-a45b0d2b3888@ti.com> (Dave Gerlach's
-        message of "Fri, 21 Oct 2016 14:49:41 -0500")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20161024164846.GE72940@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, khilman@kernel.org, rjw@rjwysocki.net, Marc Titinger <mtitinger+renesas@baylibre.com>, brendan.jackman@arm.com, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Dave Gerlach <d-gerlach@ti.com> writes:
 
-> Hi,
-> On 10/21/2016 01:48 PM, Kevin Hilman wrote:
->> Dave Gerlach <d-gerlach@ti.com> writes:
+
+On 24/10/16 17:48, Lina Iyer wrote:
+> Hi Sudeep,
+>
+> On Mon, Oct 24 2016 at 07:39 -0600, Sudeep Holla wrote:
 >>
->>> Add a generic power domain implementation, TI SCI PM Domains, that
->>> will hook into the genpd framework and allow the TI SCI protocol to
->>> control device power states.
+>>
+>> On 14/10/16 18:47, Lina Iyer wrote:
+>>> This patch allows domains to define idle states in the DT. SoC's can
+>>> define domain idle states in DT using the "domain-idle-states" property
+>>> of the domain provider. Add API to read the idle states from DT that can
+>>> be set in the genpd object.
 >>>
->>> Also, provide macros representing each device index as understood
->>> by TI SCI to be used in the device node power-domain references.
->>> These are identifiers for the K2G devices managed by the PMMC.
+>>> This patch is based on the original patch by Marc Titinger.
 >>>
->>> Signed-off-by: Nishanth Menon <nm@ti.com>
->>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>>> Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 >>> ---
->>>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 54 +++++++++++++
->>>  MAINTAINERS                                        |  2 +
->>>  include/dt-bindings/genpd/k2g.h                    | 90 ++++++++++++++++++++++
->>>  3 files changed, 146 insertions(+)
->>>  create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>>  create mode 100644 include/dt-bindings/genpd/k2g.h
+>>> drivers/base/power/domain.c | 94
+>>> +++++++++++++++++++++++++++++++++++++++++++++
+>>> include/linux/pm_domain.h   |  8 ++++
+>>> 2 files changed, 102 insertions(+)
 >>>
->>> diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>> new file mode 100644
->>> index 000000000000..32f38a349656
->>> --- /dev/null
->>> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>> @@ -0,0 +1,54 @@
->>> +Texas Instruments TI-SCI Generic Power Domain
->>> +---------------------------------------------
+>>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>>> index 37ab7f1..9af75ba 100644
+>>> --- a/drivers/base/power/domain.c
+>>> +++ b/drivers/base/power/domain.c
+>>> @@ -1916,6 +1916,100 @@ out:
+>>>     return ret ? -EPROBE_DEFER : 0;
+>>> }
+>>> EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
 >>> +
->>> +Some TI SoCs contain a system controller (like the PMMC, etc...) that is
->>> +responsible for controlling the state of the IPs that are present.
->>> +Communication between the host processor running an OS and the system
->>> +controller happens through a protocol known as TI-SCI [1]. This pm domain
->>> +implementation plugs into the generic pm domain framework and makes use of
->>> +the TI SCI protocol power on and off each device when needed.
->>> +
->>> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
->>> +
->>> +PM Domain Node
->>> +==============
->>> +The PM domain node represents the global PM domain managed by the PMMC,
->>> +which in this case is the single implementation as documented by the generic
->>> +PM domain bindings in Documentation/devicetree/bindings/power/power_domain.txt.
->>> +
->>> +Required Properties:
->>> +--------------------
->>> +- compatible: should be "ti,sci-pm-domain"
->>> +- #power-domain-cells: Must be 0.
->>> +- ti,sci: Phandle to the TI SCI device to use for managing the devices.
->>>
->>> +Example:
->>> +--------------------
->>> +k2g_pds: k2g_pds {
->>
->> should use generic name like "power-contoller", e.g. k2g_pds: power-controller
->
-> Ok, that makes more sense.
->
->>
->>> +        compatible = "ti,sci-pm-domain";
->>> +        #power-domain-cells = <0>;
->>> +        ti,sci = <&pmmc>;
+>>> +static const struct of_device_id idle_state_match[] = {
+>>> +    { .compatible = "arm,idle-state", },
+>>> +    { }
 >>> +};
 >>> +
->>> +PM Domain Consumers
->>> +===================
->>> +Hardware blocks that require SCI control over their state must provide
->>> +a reference to the sci-pm-domain they are part of and a unique device
->>> +specific ID that identifies the device.
->>> +
->>> +Required Properties:
->>> +--------------------
->>> +- power-domains: phandle pointing to the corresponding PM domain node.
->>> +- ti,sci-id: index representing the device id to be passed oevr SCI to
->>> +	     be used for device control.
 >>
->> This ID doesn't look right.
+>> I still think it's better to have another compatible to serve this
+>> purpose. We don't want to end up creating genpd domains just because
+>> they are "arm,idle-state" compatible IMO ?
 >>
->> Why not use #power-domain-cells = <1> and pass the index in the DT? ...
+>> I agree you can prevent it checking for OSC mode support in the
+>> firmware. But I want to understand if you have any strong reasons for
+>> avoiding that approach.
 >>
->>> +See dt-bindings/genpd/k2g.h for the list of valid identifiers for k2g.
->>> +
->>> +Example:
->>> +--------------------
->>> +uart0: serial@02530c00 {
->>> +	compatible = "ns16550a";
->>> +	...
->>> +	power-domains = <&k2g_pds>;
->>> +	ti,sci-id = <K2G_DEV_UART0>;
->>
->> ... like this:
->>
->> 	power-domains = <&k2g_pds K2G_DEV_UART0>;
+> Why are you still held up with OSI/PC PSCI modes?
+
+I am just pointing that out to make sure you are not defining these
+DT bindings with just QCOM platform and OSC in consideration.
+
+I am thinking about how can it be used/extended in other use-cases.
+
+> I repeat again this
+> series is not about any of that, it is just about PM domains.
+
+I completely understand that, no argument on that. What I worry is that
+if a system(in future) represents this power domains and domain idles
+states and doesn't want to create a genpd, do we have to handle it
+differently or even the way your CPUidle series would do or can we say
+those states need to specify that they are compatible with the new
+feature(the one being added in this series) with a new compatible.
+I prefer the latter than the former to avoid all possible workarounds
+in future.
+
+> PM domains
+> have idle states and the idle-state description is similar in definition
+> to arm,idle-state and therefore uses the same compatible. There is no
+> point re-defining something that already exists in the kernel.
 >
-> That's how I did it in version one actually. I was able to define my
-> own xlate function to parse the phandle and get that index, but Ulf
-> pointed me to this series by Jon Hunter [1] that simplified genpd
-> providers and dropped the concept of adding your own xlate. This locks
-> the onecell approach to using a fixed static array of genpds that get
-> indexed into (without passing the index to the provider, just the
-> genpd that's looked up), which doesn't fit our usecase, as we don't
-> want a 1 to 1 genpd to device mapping based on the comments provided
-> in v1. Now we just use the genpd device attach/detach hooks to parse
-> the sci-id and then use it in the genpd device start/stop hooks.
 
-Ah, right.  I remember now.  This approach allows you to use a single
-genpd as discussed earlier.
+Yes I understand that but "arm,idle-states" were not defined with this
+feature in mind and hence I am bit worried if it could cause any issue
+especially if deprecate cpu-idle-states and move to this model
+completely. I really don't like this mix and hence I am raising the
+concern here. I am trying to ease that migration.
 
-Makes sense now, suggestion retracted.
+> I was able to find the original thread, where we discussed this [1].
+>
+> I suggest, you read about PM domains and its idle states and understand
+> this series in the context of PM domains.
+>
 
-Kevin
+Sure, will do that. Thanks for pointing that out. But the concern I am
+raising is entirely different. I am asking if this re-use will cause any
+issue in future as pointed out above.
+
+I re-iterate that I understand this series is independent of the CPUIdle
+and hence asking why not make it completely independent by just adding
+the new compatible.
+
+I am *not asking to redefine something completely*. What I am saying is
+*just* to add new compatible that may(for cpu devices)/may not(for
+other/non-CPU devices) be used along with "arm,idle-state".
+
+I may be too paranoid here but I think that's safer. It helps to skip
+creating of genpd if required for some domains as I had explained before.
+
+-- 
+Regards,
+Sudeep
