@@ -1,64 +1,38 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 2/8] PM / OPP: Don't use OPP structure outside of rcu
- protected section
-Date: Mon, 24 Oct 2016 15:52:38 -0700
-Message-ID: <20161024225238.GR26139@codeaurora.org>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
- <7a0754e64236db2a977c6a6402c222fea6dc866d.1476952750.git.viresh.kumar@linaro.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH v4 0/9] PM / Domains: DT support for domain idle states &
+ atomic PM domains
+Date: Mon, 24 Oct 2016 17:05:02 -0600
+Message-ID: <20161024230502.GH72940@linaro.org>
+References: <1477347668-41901-1-git-send-email-lina.iyer@linaro.org>
+ <2068597.AeryDFjO6y@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <7a0754e64236db2a977c6a6402c222fea6dc866d.1476952750.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
+In-Reply-To: <2068597.AeryDFjO6y@vostro.rjw.lan>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 10/20, Viresh Kumar wrote:
-> The OPP structure must not be used out of the rcu protected section.
-> Cache the values to be used in separate variables instead.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tue, Oct 25 2016 at 16:23 -0600, Rafael J. Wysocki wrote:
+>On Monday, October 24, 2016 03:20:59 PM Lina Iyer wrote:
+>> Hi all,
+>>
+>> Changes since v3 [5] -
+>> - Added "domain-idle-state" compatible to arm/idle-states.txt
+>> - Updated documentation for defining PM domain idle states
+>> - Updated documentation for devices and PM domains.
+>> - Updated code to look for "domain-idle-state" instead of "arm,idle-state" compatible.
+>> - The series is available at [6].
+>
+>Is this the series I've already queued up?
+>
+Yes. It is the update to the series that you already queued up.
 
-Was this found by visual inspection or through some static
-checker? Just curious.
+>If so, can you please send a delta patch only with a proper changelog?
+>
+Sure. Will do that.
 
-> @@ -633,6 +634,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->  		return ret;
->  	}
->  
-> +	if (IS_ERR(old_opp)) {
-> +		old_u_volt = 0;
-> +	} else {
-> +		old_u_volt = old_opp->u_volt;
-> +		old_u_volt_min = old_opp->u_volt_min;
-> +		old_u_volt_max = old_opp->u_volt_max;
-> +	}
-> +
->  	u_volt = opp->u_volt;
->  	u_volt_min = opp->u_volt_min;
->  	u_volt_max = opp->u_volt_max;
-> @@ -677,9 +686,10 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->  			__func__, old_freq);
->  restore_voltage:
->  	/* This shouldn't harm even if the voltages weren't updated earlier */
-> -	if (!IS_ERR(old_opp))
-> -		_set_opp_voltage(dev, reg, old_opp->u_volt,
-> -				 old_opp->u_volt_min, old_opp->u_volt_max);
-> +	if (old_u_volt) {
-
-What if old_u_volt == 0 is valid? We could have another variable
-like 'valid' or something that we use to figure out if we should
-set values instead. Then this isn't a potential pitfall.
-
-> +		_set_opp_voltage(dev, reg, old_u_volt, old_u_volt_min,
-> +				 old_u_volt_max);
-> +	}
->  
->  	return ret;
->  }
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Thanks,
+Lina
