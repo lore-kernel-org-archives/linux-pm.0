@@ -1,132 +1,109 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH v3 3/8] PM / Domains: Allow domain power states to be
- read from DT
-Date: Mon, 24 Oct 2016 15:00:35 -0600
-Message-ID: <20161024210035.GF72940@linaro.org>
-References: <1476467276-75094-1-git-send-email-lina.iyer@linaro.org>
- <1476467276-75094-4-git-send-email-lina.iyer@linaro.org>
- <6ed96121-5040-474d-2d71-7927e8567c50@arm.com>
- <20161024164846.GE72940@linaro.org>
- <12435f67-bcb6-33b5-4399-f4f628f70be8@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2] cpufreq: intel_pstate: Always set max P-state in performance mode
+Date: Mon, 24 Oct 2016 23:13:21 +0200
+Message-ID: <4054311.5ikcasqymj@vostro.rjw.lan>
+References: <1490845.P5jEmYeGuo@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <12435f67-bcb6-33b5-4399-f4f628f70be8@arm.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Marc Titinger <mtitinger+renesas@baylibre.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1490845.P5jEmYeGuo@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 24 2016 at 11:27 -0600, Sudeep Holla wrote:
->
->
->On 24/10/16 17:48, Lina Iyer wrote:
->>Hi Sudeep,
->>
->>On Mon, Oct 24 2016 at 07:39 -0600, Sudeep Holla wrote:
->>>
->>>
->>>On 14/10/16 18:47, Lina Iyer wrote:
->>>>This patch allows domains to define idle states in the DT. SoC's can
->>>>define domain idle states in DT using the "domain-idle-states" property
->>>>of the domain provider. Add API to read the idle states from DT that can
->>>>be set in the genpd object.
->>>>
->>>>This patch is based on the original patch by Marc Titinger.
->>>>
->>>>Signed-off-by: Marc Titinger <mtitinger+renesas@baylibre.com>
->>>>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>>Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
->>>>---
->>>>drivers/base/power/domain.c | 94
->>>>+++++++++++++++++++++++++++++++++++++++++++++
->>>>include/linux/pm_domain.h   |  8 ++++
->>>>2 files changed, 102 insertions(+)
->>>>
->>>>diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>>>index 37ab7f1..9af75ba 100644
->>>>--- a/drivers/base/power/domain.c
->>>>+++ b/drivers/base/power/domain.c
->>>>@@ -1916,6 +1916,100 @@ out:
->>>>    return ret ? -EPROBE_DEFER : 0;
->>>>}
->>>>EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->>>>+
->>>>+static const struct of_device_id idle_state_match[] = {
->>>>+    { .compatible = "arm,idle-state", },
->>>>+    { }
->>>>+};
->>>>+
->>>
->>>I still think it's better to have another compatible to serve this
->>>purpose. We don't want to end up creating genpd domains just because
->>>they are "arm,idle-state" compatible IMO ?
->>>
->>>I agree you can prevent it checking for OSC mode support in the
->>>firmware. But I want to understand if you have any strong reasons for
->>>avoiding that approach.
->>>
->>Why are you still held up with OSI/PC PSCI modes?
->
->I am just pointing that out to make sure you are not defining these
->DT bindings with just QCOM platform and OSC in consideration.
->
->I am thinking about how can it be used/extended in other use-cases.
->
->>I repeat again this
->>series is not about any of that, it is just about PM domains.
->
->I completely understand that, no argument on that. What I worry is that
->if a system(in future) represents this power domains and domain idles
->states and doesn't want to create a genpd, do we have to handle it
->differently or even the way your CPUidle series would do or can we say
->those states need to specify that they are compatible with the new
->feature(the one being added in this series) with a new compatible.
->I prefer the latter than the former to avoid all possible workarounds
->in future.
->
->>PM domains
->>have idle states and the idle-state description is similar in definition
->>to arm,idle-state and therefore uses the same compatible. There is no
->>point re-defining something that already exists in the kernel.
->>
->
->Yes I understand that but "arm,idle-states" were not defined with this
->feature in mind and hence I am bit worried if it could cause any issue
->especially if deprecate cpu-idle-states and move to this model
->completely. I really don't like this mix and hence I am raising the
->concern here. I am trying to ease that migration.
->
->>I was able to find the original thread, where we discussed this [1].
->>
->>I suggest, you read about PM domains and its idle states and understand
->>this series in the context of PM domains.
->>
->
->Sure, will do that. Thanks for pointing that out. But the concern I am
->raising is entirely different. I am asking if this re-use will cause any
->issue in future as pointed out above.
->
->I re-iterate that I understand this series is independent of the CPUIdle
->and hence asking why not make it completely independent by just adding
->the new compatible.
->
->I am *not asking to redefine something completely*. What I am saying is
->*just* to add new compatible that may(for cpu devices)/may not(for
->other/non-CPU devices) be used along with "arm,idle-state".
->
-I am fine with that, as long as the compatible string is an alternate
-for "arm,idle-state" it shouldn't be a problem.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Any recommendations?
+The only times at which intel_pstate checks the policy set for
+a given CPU is the initialization of that CPU and updates of its
+policy settings from cpufreq when intel_pstate_set_policy() is
+invoked.
 
-Thanks,
-Lina
+That is insufficient, however, because intel_pstate uses the same
+P-state selection function for all CPUs regardless of the policy
+setting for each of them and the P-state limits are shared between
+them.  Thus if the policy is set to "performance" for a particular
+CPU, it may not behave as expected if the cpufreq settings are
+changed subsequently for another CPU.
 
->I may be too paranoid here but I think that's safer. It helps to skip
->creating of genpd if required for some domains as I had explained before.
->
->-- 
->Regards,
->Sudeep
+That can be easily demonstrated by writing "performance" to
+scaling_governor for all CPUs and then switching it to "powersave"
+for one of them in which case all of the CPUs will behave as though
+their scaling_governor were all "powersave" (even though the policy
+still appears to be "performance" for the remaining CPUs).
+
+Fix this problem by modifying intel_pstate_adjust_busy_pstate() to
+always set the P-state to the maximum allowed by the current limits
+for all CPUs whose policy is set to "performance".
+
+Note that it still is recommended to always change the policy setting
+in the same way for all CPUs even with this fix applied to avoid
+confusion.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v1 -> v2: Changelog update.
+
+---
+ drivers/cpufreq/intel_pstate.c |   11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -179,6 +179,7 @@ struct _pid {
+ /**
+  * struct cpudata -	Per CPU instance data storage
+  * @cpu:		CPU number for this instance data
++ * @policy:		CPUFreq policy value
+  * @update_util:	CPUFreq utility callback information
+  * @update_util_set:	CPUFreq utility callback is set
+  * @iowait_boost:	iowait-related boost fraction
+@@ -201,6 +202,7 @@ struct _pid {
+ struct cpudata {
+ 	int cpu;
+ 
++	unsigned int policy;
+ 	struct update_util_data update_util;
+ 	bool   update_util_set;
+ 
+@@ -1331,7 +1333,8 @@ static inline void intel_pstate_adjust_b
+ 
+ 	from = cpu->pstate.current_pstate;
+ 
+-	target_pstate = pstate_funcs.get_target_pstate(cpu);
++	target_pstate = cpu->policy == CPUFREQ_POLICY_PERFORMANCE ?
++		cpu->pstate.turbo_pstate : pstate_funcs.get_target_pstate(cpu);
+ 
+ 	intel_pstate_update_pstate(cpu, target_pstate);
+ 
+@@ -1498,6 +1501,8 @@ static int intel_pstate_set_policy(struc
+ 		 policy->cpuinfo.max_freq, policy->max);
+ 
+ 	cpu = all_cpu_data[policy->cpu];
++	cpu->policy = policy->policy;
++
+ 	if (cpu->pstate.max_pstate_physical > cpu->pstate.max_pstate &&
+ 	    policy->max < policy->cpuinfo.max_freq &&
+ 	    policy->max > cpu->pstate.max_pstate * cpu->pstate.scaling) {
+@@ -1505,7 +1510,7 @@ static int intel_pstate_set_policy(struc
+ 		policy->max = policy->cpuinfo.max_freq;
+ 	}
+ 
+-	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
++	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
+ 		limits = &performance_limits;
+ 		if (policy->max >= policy->cpuinfo.max_freq) {
+ 			pr_debug("set performance\n");
+@@ -1541,7 +1546,7 @@ static int intel_pstate_set_policy(struc
+ 	limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
+ 
+  out:
+-	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
++	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
+ 		/*
+ 		 * NOHZ_FULL CPUs need this as the governor callback may not
+ 		 * be invoked on them.
