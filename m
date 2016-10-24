@@ -1,18 +1,18 @@
 From: "Sricharan" <sricharan@codeaurora.org>
-Subject: RE: [PATCH v5 6/7] iommu/exynos: Add runtime pm support
-Date: Mon, 24 Oct 2016 17:45:13 +0530
-Message-ID: <004701d22df0$4b34acf0$e19e06d0$@codeaurora.org>
-References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com> <CGME20161020072335eucas1p209675d6fbf39e5045281e8023fa9d234@eucas1p2.samsung.com> <1476948173-21093-7-git-send-email-m.szyprowski@samsung.com> <000701d22c28$2da381d0$88ea8570$@codeaurora.org> <91601a86-253a-3fe8-85e1-a8c55a2ceb09@samsung.com>
+Subject: RE: [PATCH v5 7/7] iommu/exynos: Use device dependency links to control runtime pm
+Date: Mon, 24 Oct 2016 17:59:24 +0530
+Message-ID: <004a01d22df2$45ecd450$d1c67cf0$@codeaurora.org>
+References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com> <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com> <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com> <001e01d22d12$d2a4e990$77eebcb0$@codeaurora.org> <7a69ca4e-e276-1bdc-edf2-b881a91f820a@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain;
         charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:41479 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:44746 "EHLO
         smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757081AbcJXMP1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 08:15:27 -0400
-In-Reply-To: <91601a86-253a-3fe8-85e1-a8c55a2ceb09@samsung.com>
+        with ESMTP id S934818AbcJXM3f (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Oct 2016 08:29:35 -0400
+In-Reply-To: <7a69ca4e-e276-1bdc-edf2-b881a91f820a@samsung.com>
 Content-Language: en-us
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -21,64 +21,76 @@ Cc: 'Tomeu Vizoso' <tomeu.vizoso@collabora.com>, 'Bartlomiej Zolnierkiewicz' <b.
 
 Hi Marek,
 
->Hi Sricharan
->
->
->On 2016-10-22 07:50, Sricharan wrote:
->>
->>> This patch adds runtime pm implementation, which is based on previous
->>> suspend/resume code. SYSMMU controller is now being enabled/disabled mainly
->> > from the runtime pm callbacks. System sleep callbacks relies on generic
->>> pm_runtime_force_suspend/pm_runtime_force_resume helpers. To ensure
->>> internal state consistency, additional lock for runtime pm transitions
->>> was introduced.
+>>> This patch uses recently introduced device dependency links to track the
+>>> runtime pm state of the master's device. This way each SYSMMU controller
+>>> is set to runtime active only when its master's device is active and can
+>>> restore or save its state instead of being activated all the time when
+>>> attached to the given master device. This way SYSMMU controllers no longer
+>>> prevents respective power domains to be turned off when master's device
+>>> is not being used.
 >>>
 >>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 >>> ---
->>> drivers/iommu/exynos-iommu.c | 45 +++++++++++++++++++++++++++++++++++---------
->>> 1 file changed, 36 insertions(+), 9 deletions(-)
+>>> drivers/iommu/exynos-iommu.c | 16 ++++++++--------
+>>> 1 file changed, 8 insertions(+), 8 deletions(-)
 >>>
 >>> diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
->>> index a959443e6f33..5e6d7bbf9b70 100644
+>>> index 5e6d7bbf9b70..59b4f2ce4f5f 100644
 >>> --- a/drivers/iommu/exynos-iommu.c
 >>> +++ b/drivers/iommu/exynos-iommu.c
->>> @@ -206,6 +206,7 @@ struct sysmmu_fault_info {
->>> struct exynos_iommu_owner {
->>> 	struct list_head controllers;	/* list of sysmmu_drvdata.owner_node */
->>> 	struct iommu_domain *domain;	/* domain this device is attached */
->>> +	struct mutex rpm_lock;		/* for runtime pm of all sysmmus */
->>> };
+>>> @@ -781,10 +781,6 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
+>>> 	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
+>>> 		return;
 >>>
->>> /*
->>> @@ -594,40 +595,46 @@ static int __init exynos_sysmmu_probe(struct platform_device *pdev)
->>> 	return 0;
->>> }
+>>> -	list_for_each_entry(data, &owner->controllers, owner_node) {
+>>> -		pm_runtime_put_sync(data->sysmmu);
+>>> -	}
+>>> -
+>>> 	mutex_lock(&owner->rpm_lock);
 >>>
->>> -#ifdef CONFIG_PM_SLEEP
->>> -static int exynos_sysmmu_suspend(struct device *dev)
->>> +static int __maybe_unused exynos_sysmmu_suspend(struct device *dev)
->>> {
->>> 	struct sysmmu_drvdata *data = dev_get_drvdata(dev);
->>> 	struct device *master = data->master;
+>>> 	list_for_each_entry(data, &owner->controllers, owner_node) {
+>>> @@ -848,10 +844,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
 >>>
->>> 	if (master) {
->>> -		pm_runtime_put(dev);
->>> +		struct exynos_iommu_owner *owner = master->archdata.iommu;
+>>> 	mutex_unlock(&owner->rpm_lock);
+>>>
+>>> -	list_for_each_entry(data, &owner->controllers, owner_node) {
+>>> -		pm_runtime_get_sync(data->sysmmu);
+>>> -	}
+>>> -
+>>> 	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
+>>> 		&pagetable);
+>>>
+>>> @@ -1232,6 +1224,14 @@ static int exynos_iommu_of_xlate(struct device *dev,
+>>>
+>>> 	list_add_tail(&data->owner_node, &owner->controllers);
+>>> 	data->master = dev;
 >>> +
->>> +		mutex_lock(&owner->rpm_lock);
->> More of a device link question,
->> To understand, i see that with device link + runtime, the supplier
->> callbacks are not called for irqsafe clients, even if supplier is irqsafe.
->> Why so ?
+>>> +	/*
+>>> +	 * SYSMMU will be runtime activated via device link (dependency) to its
+>>> +	 * master device, so there are no direct calls to pm_runtime_get/put
+>>> +	 * in this driver.
+>>> +	 */
+>>> +	device_link_add(dev, data->sysmmu, DL_FLAG_PM_RUNTIME);
+>>> +
+>>    So in the case of master with multiple sids, this would be called multiple times
+>>    for the same master ?
 >
->Frankly I didn't care about irqsafe runtime pm, because there is no such
->need
->for Exynos platform and its drivers. Exynos power domain driver also doesn't
->support irqsafe mode.
-  ok, i asked this because, i was doing the same thing for arm-smmu driver
-   and thought that when we depend on device-link for doing the runtime pm,
-   then it might not work for irqsafe master. Probably i can ask this on device link
-    series post.
+>I don't know what is "multiple sids" case, but if given SYSMMU master
+>device (supplier)
+>has multiple SYSMMU controllers (consumers), then links will be created
+>for each SYSMMU
+>controller. Please note that this code is based on vanilla v4.9-rc1,
+>which calls
+>of_xlate() callback only once for every iommu for given master device.
+>Your IOMMU
+>deferred probe patches change this, but I already posted a fix for
+>Exynos IOMMU driver
+>to handle such case.
+      By multiple sids, i meant iommus = <&phandle sid1 sid2 .. sidn> case,
+      so xlate would be called multiples for the same master without deferred
+       probing also. But the fix that you showed on the other thread would work
+       here as well or maybe if you dont have masters with multiple sids you wont
+      have any issues as well.
 
 Regards,
  Sricharan
