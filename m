@@ -1,76 +1,42 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V2 4/8] PM / OPP: Pass struct dev_pm_opp_supply to
- _set_opp_voltage()
-Date: Tue, 25 Oct 2016 13:26:00 -0700
-Message-ID: <20161025202600.GX26139@codeaurora.org>
-References: <cover.1476952750.git.viresh.kumar@linaro.org>
- <5f5f81da4b9773854fba72359cb911d2660e2957.1476952750.git.viresh.kumar@linaro.org>
- <20161024231453.GS26139@codeaurora.org>
- <20161025034554.GB9162@vireshk-i7>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 3/4] dt-bindings: Update domain-idle-state binding to use correct compatibles
+Date: Tue, 25 Oct 2016 13:49:34 -0700
+Message-ID: <7hh980taqp.fsf@baylibre.com>
+References: <1477409199-52182-1-git-send-email-lina.iyer@linaro.org>
+        <1477409199-52182-4-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:34434 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751592AbcJYU0C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2016 16:26:02 -0400
-Content-Disposition: inline
-In-Reply-To: <20161025034554.GB9162@vireshk-i7>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:36633 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754481AbcJYUtg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2016 16:49:36 -0400
+Received: by mail-pf0-f170.google.com with SMTP id e6so125111312pfk.3
+        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2016 13:49:36 -0700 (PDT)
+In-Reply-To: <1477409199-52182-4-git-send-email-lina.iyer@linaro.org> (Lina
+        Iyer's message of "Tue, 25 Oct 2016 08:26:38 -0700")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>
 
-On 10/25, Viresh Kumar wrote:
-> On 24-10-16, 16:14, Stephen Boyd wrote:
-> > On 10/20, Viresh Kumar wrote:
-> > > Pass the entire supply structure instead of all of its fields.
-> > > 
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > 
-> > This patch should be combined with the previous one.
-> 
-> I think it is a fair to do this separately as this is a completely different
-> logical change.
+Lina Iyer <lina.iyer@linaro.org> writes:
 
-Let's agree to disagree.
+> Update domain-idle-state binding to use "domain-idle-state" compatible
+> from Documentation/devicetree/bindings/arm/idle-states.txt.
+>
+> Cc: <devicetree@vger.kernel.org>
+> Cc: Rob Herring <robh@kernel.org>
+> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/power/power_domain.txt | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 
-> 
-> > I'm still
-> > not sure if it even makes sense to do this though.
-> 
-> :)
-> 
-> > Do we really
-> > have to make duplicate "OPP snapshot" structures just because of
-> > how OPPs use RCU?
-> 
-> I agree. With RCU, yes this change is probably required. But I am not sure if
-> RCU fits that well to OPP core anymore. A rw-lock may be much easier to help.
-> 
+With no current users for this, I don't see the point of adding a
+compatible now.
 
-For things like AVS we'll probably want to do that, although it's
-sort of funny because replacing RCU with rw-locks is the opposite
-direction most people go. With AVS we would be updating the
-voltage(s) in use for the current OPP, and we would want that
-update to block any OPP transition until the voltage is adjusted.
-I don't know how we would do that with RCU very well. Plus, RCU
-is for reader heavy things, but we mostly have one or two
-readers.
+IMO, this should wait and be added with the identified user we can
+discuss it then.
 
-I guess it's ok for now to do all this copying, but it feels like
-we'll need to undo a large portion of it later with things like
-AVS. Or at least we'll be doing copies for almost no reason
-because we'll want to hold the read lock across the whole OPP
-transition. I was going to suggest we pass around information
-about what we want to grab from the RCU protected data
-structures, think index of regulator, etc. and then have small
-RCU read-side critical sections to grab that info during the OPP
-transition but I'm not sure that's any better. It might be worse
-because the OPP could change during the OPP transition and we
-could be using half of the old and half of the new data.
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Kevin
