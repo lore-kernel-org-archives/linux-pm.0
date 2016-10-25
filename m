@@ -1,85 +1,48 @@
-From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH 3/4] dt-bindings: Update domain-idle-state binding to use
- correct compatibles
-Date: Tue, 25 Oct 2016 17:52:36 +0100
-Message-ID: <21245968-30ff-a55a-7130-8439097ee8f4@arm.com>
-References: <1477409199-52182-1-git-send-email-lina.iyer@linaro.org>
- <1477409199-52182-4-git-send-email-lina.iyer@linaro.org>
- <383a62dd-b4d7-f764-baf1-ff73691b3cbc@arm.com>
- <20161025162440.GA48977@linaro.org>
+From: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH v2 0/4] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Tue, 25 Oct 2016 10:02:39 -0700
+Message-ID: <7hr374uztc.fsf@baylibre.com>
+References: <20161019203347.17893-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161025162440.GA48977-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <20161019203347.17893-1-d-gerlach-l0cyMroinI0@public.gmane.org> (Dave Gerlach's message
+        of "Wed, 19 Oct 2016 15:33:43 -0500")
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, brendan.jackman-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> writes:
 
-
-On 25/10/16 17:24, Lina Iyer wrote:
-> On Tue, Oct 25 2016 at 09:59 -0600, Sudeep Holla wrote:
->>
->>
->> On 25/10/16 16:26, Lina Iyer wrote:
->>> Update domain-idle-state binding to use "domain-idle-state" compatible
->>> from Documentation/devicetree/bindings/arm/idle-states.txt.
->>>
->>> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
->>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->>> Suggested-by: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
->>> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>> ---
->>> Documentation/devicetree/bindings/power/power_domain.txt | 9 +++++----
->>> 1 file changed, 5 insertions(+), 4 deletions(-)
->>>
->>> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt
->>> b/Documentation/devicetree/bindings/power/power_domain.txt
->>> index e165036..6fb53a3 100644
->>> --- a/Documentation/devicetree/bindings/power/power_domain.txt
->>> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>> @@ -30,8 +30,9 @@ Optional properties:
->>>    available in the next section.
->>>
->>> - domain-idle-states : A phandle of an idle-state that shall be
->>> soaked into a
->>> -                generic domain power state. The idle state
->>> definitions are
->>> -                compatible with arm,idle-state specified in [1].
->>> +                generic domain power state. The idle state
->>> definitions must be
->>> +                compatible with "domain-idle-state"
->>
->> I would reword the below a bit different so that it's flexible to be
->> reused without "arm,idle-state".
->>
->>> as well as
->>> +                "arm,idle-state" as defined in [1].
->>
->> 'Idle states that are "arm,idle-state" compatible are generally
->> "domain-idle-state" compatible as well if it's a PM domain.'
->>
-> I believe we should have both compatible strings. Per [1], any CPU that
-> follows the idle state compatible *must* have "arm,idle-state" as a
-> compatible.
-
-Yes that's implicit for a CPU device. But generic power domain bindings
-should not have that explicitly as it *can be* used for non CPU device.
-
-> Since we are re-using the same compatible, its only correct
-> that we retain what is already spec'd up in [1] and in addition provide
-> this new compatible.
+> Hi,
+> This is v2 of the series to add support for TI SCI PM Domains. v1 of
+> the series can be found here [1]. Several things have changed since v1:
 >
+> - New patch to add a void *data to struct generic_pm_domain_data to
+>   allow to store per device data associated with a genpd
+> - From v1, squash patch 1 and 2 to introduce docs and dt-bindings in
+>   one patch based on comment from Ulf
+> - Fix some grammar errors in Documentation
+> - Based on comments from Ulf, rework actual genpd implementation to
+>   avoid creating one genpd per device and instead use device start/stop
+>   hooks provided as part of genpd to control device state based on pm_runtime
+>   implementation. Also make use of new of_genpd_add_provider_simple API
+>   introduced by Jon Hunter and do not provide custom of_xlate to genpd core,
+>   instead registering devices as they probe through attach_dev hook provided
+>   by genpd framework.
+>
+> Most of the changes were motivated by the comments from Ulf Hannson on v1 that we
+> should not use a 1-to-1 genpd to device mapping. The new approach allows us to
+> create a single genpd and store information about each device as they attach to
+> the genpd. Then the device start/stop hooks for that genpd leverage the
+> per-device data to control power states over the TI SCI protocol.
+>
+> This driver makes use of the ti_sci driver sent here [2] by Nishanth Menon and
+> applies on top of his series on v4.9-rc1.
 
-Yes [1] applies for *CPUs only* while this applies for *any device* and
-*any power domain*, so I would drop *must have* "arm,idle-state" here
-to keep this generic based on my understanding on how compatibles work.
+Reviewed-by: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
 
--- 
-Regards,
-Sudeep
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
