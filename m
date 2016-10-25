@@ -1,56 +1,51 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v3 0/2] ARM: at91: properly handle LPDDR poweroff
-Date: Tue, 25 Oct 2016 11:37:57 +0200
-Message-ID: <20161025093759.20913-1-alexandre.belloni@free-electrons.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 1/4] PM / Domains: Add generic data pointer to genpd
+ data struct
+Date: Tue, 25 Oct 2016 11:48:02 +0200
+Message-ID: <CAPDyKFr=afF5w8jeV+1VCNGiav5SXSf6Cxu3OOmzYzOuu2RjPA@mail.gmail.com>
+References: <20161019203347.17893-1-d-gerlach@ti.com> <20161019203347.17893-2-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Jean-Jacques Hiblot <jjhiblot@traphandler.com>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161019203347.17893-2-d-gerlach-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 19 October 2016 at 22:33, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+> Add a void *data pointer to struct generic_pm_domain_data. Because this
+> exists for each device associated with a genpd it will allow us to
+> assign per-device data if needed on a platform for control of that
+> specific device.
+>
+> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 
-This patch set improves LPDDR support on SoCs using the Atmel MPDDR controller.
+Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-LPDDR memories can only handle up to 400 uncontrolled power offs in their
-life. The proper power off sequence has to be applied before shutting down the
-SoC.
+Kind regards
+Uffe
 
-I'm not too happy with the code duplication but this is a design choice
-that has been made before because both shutdown controllers are really
-different apart from the shutdown itself.
-
-I guess it is still better than slowly killing the LPDDR.
-
-Changes in v3:
- - removed COMPILE_TEST for sama5d2_shdwc as it is now ARM specific
-
-Changes in v2:
- - Fix typos
- - Add a comment for the dummy read access of AT91_SHDW_CR
- - Properly set up pm_power_off in at91_poweroff_probe()
-
-
-Alexandre Belloni (2):
-  ARM: at91: define LPDDR types
-  power/reset: at91-poweroff: timely shutdown LPDDR memories
-
- drivers/power/reset/Kconfig              |  2 +-
- drivers/power/reset/at91-poweroff.c      | 54 +++++++++++++++++++++++++++++++-
- drivers/power/reset/at91-sama5d2_shdwc.c | 49 ++++++++++++++++++++++++++++-
- include/soc/at91/at91sam9_ddrsdr.h       |  3 ++
- 4 files changed, 105 insertions(+), 3 deletions(-)
-
--- 
-2.9.3
+> ---
+>  include/linux/pm_domain.h | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index a09fe5c009c8..9c0a897fe605 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -105,6 +105,7 @@ struct generic_pm_domain_data {
+>         struct pm_domain_data base;
+>         struct gpd_timing_data td;
+>         struct notifier_block nb;
+> +       void *data;
+>  };
+>
+>  #ifdef CONFIG_PM_GENERIC_DOMAINS
+> --
+> 2.9.3
+>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
