@@ -1,92 +1,38 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 6/9] PCI: Unfold conditions to block runtime PM on PCIe
- ports
-Date: Tue, 25 Oct 2016 07:28:32 +0200
-Message-ID: <20161025052832.GA5630@wunner.de>
-References: <cover.1476875113.git.lukas@wunner.de>
- <ba2f9f322b4aeea1aeb01f98a2eda8efe055494f.1476875113.git.lukas@wunner.de>
- <20161020141810.GM24289@lahna.fi.intel.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 177761] [Oops] IP: [<ffffffffa017472d>]
+ acpi_cpufreq_target+0x5d/0x240 [acpi_cpufreq]
+Date: Tue, 25 Oct 2016 06:46:21 +0000
+Message-ID: <bug-177761-137361-d3adMttX7U@https.bugzilla.kernel.org/>
+References: <bug-177761-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:35095 "EHLO
-        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757365AbcJYF1y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2016 01:27:54 -0400
-Content-Disposition: inline
-In-Reply-To: <20161020141810.GM24289@lahna.fi.intel.com>
+Received: from mail.kernel.org ([198.145.29.136]:36284 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932299AbcJYGqZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Oct 2016 02:46:25 -0400
+Received: from mail.kernel.org (localhost [127.0.0.1])
+        by mail.kernel.org (Postfix) with ESMTP id A429C202EC
+        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2016 06:46:23 +0000 (UTC)
+Received: from bugzilla1.web.kernel.org (bugzilla1.web.kernel.org [172.20.200.51])
+        by mail.kernel.org (Postfix) with ESMTP id 88F8A202A1
+        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2016 06:46:21 +0000 (UTC)
+In-Reply-To: <bug-177761-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
+To: linux-pm@vger.kernel.org
 
-On Thu, Oct 20, 2016 at 05:18:10PM +0300, Mika Westerberg wrote:
-> On Wed, Oct 19, 2016 at 04:07:13PM +0200, Lukas Wunner wrote:
-> > The conditions to block D3 on parent ports are currently condensed into
-> > a single expression in pci_dev_check_d3cold().  Upcoming commits will
-> > add further conditions for hotplug ports, making this expression fairly
-> > large and impenetrable.  Unfold the conditions to maintain readability
-> > when they are amended.
-> > 
-> > No functional change intended.
-> 
-> This actually results a functional change because now all the conditions
-> are evaluated whereas previosly it bailed out immediately when the
-> condition was true ;-)
+https://bugzilla.kernel.org/show_bug.cgi?id=177761
 
-You're right. That's a step backward, good catch.
+--- Comment #4 from JianhongYin <yin-jianhong@163.com> ---
+(In reply to Len Brown from comment #3)
+> patch above is in 4.9-rc2, please test that release and let us know if this
+> issue goes away or is still a problem.
 
-I've reworked this commit to restore the old behaviour and will respin
-after some more testing and comparing disassembler output.
+test is running ...
+waiting result
 
-Thanks!
-
-Lukas
-
-> 
-> Not that it matters here.
-> 
-> > Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > ---
-> >  drivers/pci/pci.c | 21 +++++++++++----------
-> >  1 file changed, 11 insertions(+), 10 deletions(-)
-> > 
-> > diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> > index a19056e..f1ddb6b 100644
-> > --- a/drivers/pci/pci.c
-> > +++ b/drivers/pci/pci.c
-> > @@ -2270,19 +2270,20 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
-> >  static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
-> >  {
-> >  	bool *d3cold_ok = data;
-> > -	bool no_d3cold;
-> >  
-> > -	/*
-> > -	 * The device needs to be allowed to go D3cold and if it is wake
-> > -	 * capable to do so from D3cold.
-> > -	 */
-> > -	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
-> > -		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
-> > -		!pci_power_manageable(dev);
-> > +	/* The device needs to be allowed to go D3cold. */
-> > +	if (dev->no_d3cold || !dev->d3cold_allowed)
-> > +		*d3cold_ok = false;
-> > +
-> > +	/* If it is wakeup capable it must be able to do so from D3cold. */
-> > +	if (device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold))
-> > +		*d3cold_ok = false;
-> >  
-> > -	*d3cold_ok = !no_d3cold;
-> > +	/* If it is a bridge it must be allowed to go to D3. */
-> > +	if (!pci_power_manageable(dev))
-> > +		*d3cold_ok = false;
-> >  
-> > -	return no_d3cold;
-> > +	return !*d3cold_ok;
-> >  }
-> >  
-> >  /*
-> > -- 
-> > 2.9.3
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
