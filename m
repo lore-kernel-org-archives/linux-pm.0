@@ -1,78 +1,104 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 0/9] PM / OPP: Multiple regulator support
-Date: Wed, 26 Oct 2016 12:02:55 +0530
-Message-ID: <cover.1477463128.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple regulators per device
+Date: Wed, 26 Oct 2016 12:02:56 +0530
+Message-ID: <28119b44689921f3c3cc00be49bff2bb99b32162.1477463128.git.viresh.kumar@linaro.org>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:33666 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753099AbcJZGdp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 02:33:45 -0400
+Received: by mail-pf0-f180.google.com with SMTP id 197so10028048pfu.0
+        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2016 23:33:44 -0700 (PDT)
+In-Reply-To: <cover.1477463128.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1477463128.git.viresh.kumar@linaro.org>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org
 
-Hi,
+On certain platforms (like TI), DVFS for a single device (CPU) requires
+configuring multiple power supplies.
 
-Some platforms (like TI) have complex DVFS configuration for CPU
-devices, where multiple regulators are required to be configured to
-change DVFS state of the device. This was explained well by Nishanth
-earlier [1].
+The OPP bindings already contains binding and example to explain this
+case, but it isn't sufficient. For example, there is no way for the code
+parsing these bindings to know which voltage values belong to which
+power supply. Also its not possible to know the order in which the
+supplies need to be configured while switching OPPs.
 
-One of the major complaints around multiple regulators case was that the
-DT isn't responsible in any way to represent the ordering in which
-multiple supplies need to be programmed, before or after frequency
-change. It was considered in this patch and such information is left to
-the platform specific OPP driver now, which can register its own
-opp_set_rate() callback with the OPP core and the OPP core will then
-call it during DVFS.
+This patch tries to clarify on those details and does some minor changes
+as well.
 
-The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
-and code to pass values for multiple regulators and verified that they
-are all properly read by the kernel (using debugfs interface).
+Note that the bindings do not specify the order in which the regulators
+need to be programmed and the order in which the entries are added for
+the supplies.
 
-Dave Gerlach has already tested it on the real TI platforms and it works
-well for him.
+The user of the bindings (like the kernel) shall know these details
+already and the DT is responsible to supply only the readings for the
+regulators.
 
-This is rebased over: linux-next branch in the PM tree.
+Cc: Mark Brown <broonie@kernel.org>
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
 
-V2->V3:
-- The last patch is new
-- Removed a debug leftover pr_info() message
-- Renamed few names as s/set_rate/set_opp
-- Removed a TODO comment (as it is done now with this series)
-- created struct for min_uV and max_uV
-- kerneldoc comments for structures in pm_opp.h
-- s/const char */const char * const
-- use kasprintf()
-- Some more minor reformatting
-- More Ack/RBY tags added
-
-V1->V2:
-- Ack from Rob for 1st patch
-- Moved the supplies structure to pm_opp.h (Dave)
-- Fixed an compilation warning.
-
---
-viresh
-
-[1] https://marc.info/?l=linux-pm&m=145684495832764&w=2
-
-Viresh Kumar (9):
-  PM / OPP: Reword binding supporting multiple regulators per device
-  PM / OPP: Don't use OPP structure outside of rcu protected section
-  PM / OPP: Manage supply's voltage/current in a separate structure
-  PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
-  PM / OPP: Add infrastructure to manage multiple regulators
-  PM / OPP: Separate out _generic_opp_set_rate()
-  PM / OPP: Allow platform specific custom set_opp() callbacks
-  PM / OPP: Don't WARN on multiple calls to dev_pm_opp_set_regulators()
-  PM / OPP: Don't assume platform doesn't have regulators
-
- Documentation/devicetree/bindings/opp/opp.txt |  25 +-
- drivers/base/power/opp/core.c                 | 510 ++++++++++++++++++++------
- drivers/base/power/opp/debugfs.c              |  52 ++-
- drivers/base/power/opp/of.c                   | 105 ++++--
- drivers/base/power/opp/opp.h                  |  20 +-
- drivers/cpufreq/cpufreq-dt.c                  |   9 +-
- include/linux/pm_opp.h                        |  67 +++-
- 7 files changed, 605 insertions(+), 183 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index ee91cbdd95ee..af476df510f1 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -86,8 +86,13 @@ properties.
+   Single entry is for target voltage and three entries are for <target min max>
+   voltages.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. The OPP binding doesn't provide any provisions to
++  relate the values to their power supplies or the order in which the supplies
++  need to be configured.
++
++  Entries for all regulators shall be of the same size, i.e. either all use a
++  single value or triplets.
+ 
+ - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
+   the above opp-microvolt property, but allows multiple voltage ranges to be
+@@ -104,10 +109,12 @@ properties.
+ 
+   Should only be set if opp-microvolt is set for the OPP.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node. If this property isn't required
+-  for few regulators, then this should be marked as zero for them. If it isn't
+-  required for any regulator, then this property need not be present.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. If current values aren't required for a regulator,
++  then it shall be filled with 0. If current values aren't required for any of
++  the regulators, then this field is not required. The OPP binding doesn't
++  provide any provisions to relate the values to their power supplies or the
++  order in which the supplies need to be configured.
+ 
+ - opp-microamp-<name>: Named opp-microamp property. Similar to
+   opp-microvolt-<name> property, but for microamp instead.
+@@ -386,10 +393,12 @@ Example 4: Handling multiple regulators
+ / {
+ 	cpus {
+ 		cpu@0 {
+-			compatible = "arm,cortex-a7";
++			compatible = "vendor,cpu-type";
+ 			...
+ 
+-			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
++			vcc0-supply = <&cpu_supply0>;
++			vcc1-supply = <&cpu_supply1>;
++			vcc2-supply = <&cpu_supply2>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 	};
 -- 
 2.7.1.410.g6faf27b
+
