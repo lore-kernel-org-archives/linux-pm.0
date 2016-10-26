@@ -1,36 +1,28 @@
-From: Santosh Shilimkar <santosh.shilimkar@oracle.com>
-Subject: Re: [PATCH V4 0/5] firmware: Add support for TI System Control
- Interface (TI-SCI) protocol driver
-Date: Wed, 26 Oct 2016 12:56:06 -0700
-Message-ID: <45f55012-f027-51d1-bdf1-6fa1950f59ed@oracle.com>
-References: <20161018230837.6515-1-nm@ti.com>
- <2694e4b5-20d5-f590-c6a6-55ff4cb8c16b@ti.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 1/2] power_supply: Add OF bindings documentation for
+ max14656_charger_detector
+Date: Wed, 26 Oct 2016 16:43:40 -0500
+Message-ID: <20161026214340.rbi5tjhqzqug2g44@rob-hp-laptop>
+References: <1476893089-7233-1-git-send-email-akurz@blala.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aserp1040.oracle.com ([141.146.126.69]:36113 "EHLO
-        aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932910AbcJZT4z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 15:56:55 -0400
-In-Reply-To: <2694e4b5-20d5-f590-c6a6-55ff4cb8c16b@ti.com>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35848 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933344AbcJZVnm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 17:43:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1476893089-7233-1-git-send-email-akurz@blala.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tero Kristo <t-kristo@ti.com>, Nishanth Menon <nm@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
-Cc: Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Andrew Davis <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>
+To: Alexander Kurz <akurz@blala.de>
+Cc: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, linux-pm@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org
 
-On 10/25/2016 10:34 AM, Tero Kristo wrote:
-> On 19/10/16 02:08, Nishanth Menon wrote:
->> Version 4 of the series is basically a rebase to v4.9-rc1, no functional
->> changes.
->
-> Hi,
->
-> Any final comments on this series, or shall I send a pull-req forward?
-> Very minimal changes compared to v3 so should be good to go imo.
->
-The patchset looks fine to me from brief scan so please Go from
-my side at least for the pull request.
+On Wed, Oct 19, 2016 at 06:04:48PM +0200, Alexander Kurz wrote:
+> Signed-off-by: Alexander Kurz <akurz@blala.de>
+> ---
+>  .../bindings/power_supply/maxim,max14656.txt       | 25 ++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power_supply/maxim,max14656.txt
 
-Regards,
-Santosh
+Acked-by: Rob Herring <robh@kernel.org>
