@@ -1,69 +1,150 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v6 1/9] sched: Extend scheduler's asym packing
-Date: Wed, 26 Oct 2016 20:23:48 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1610262012330.5013@nanos>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com>  <c3bf1c59ee56dad1dc20ad3b3c06c166abb7a57e.1477000078.git.tim.c.chen@linux.intel.com>  <alpine.DEB.2.20.1610261226540.4983@nanos> <1477505446.2680.29.camel@linux.intel.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH V2 08/10] watchdog: da9062/61: watchdog driver
+Date: Wed, 26 Oct 2016 11:59:26 -0700
+Message-ID: <20161026185926.GA16142@roeck-us.net>
+References: <cover.1477501000.git.stwiss.opensource@diasemi.com>
+ <ecd0c36a9e1766e327b54afa6bf986e64890b881.1477501000.git.stwiss.opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-797078632-1477506230=:5013"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:41294 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751129AbcJZS00 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 14:26:26 -0400
-In-Reply-To: <1477505446.2680.29.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-input-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <ecd0c36a9e1766e327b54afa6bf986e64890b881.1477501000.git.stwiss.opensource@diasemi.com>
+Sender: linux-input-owner@vger.kernel.org
+To: Steve Twiss <stwiss.opensource@diasemi.com>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Wim Van Sebroeck <wim@iguana.be>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---8323329-797078632-1477506230=:5013
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 26 Oct 2016, Tim Chen wrote:
-> On Wed, 2016-10-26 at 12:27 +0200, Thomas Gleixner wrote:
-> > On Thu, 20 Oct 2016, Tim Chen wrote:
-> > 
-> > > 
-> > > We generalize the scheduler's asym packing to provide an ordering
-> > > of the cpu beyond just the cpu number.  This allows the use of the
-> > > ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
-> > > sched domain. The preference is defined with the cpu priority
-> > > given by arch_asym_cpu_priority(cpu).
-> > > 
-> > > We also record the most preferred cpu in a sched group when
-> > > we build the cpu's capacity for fast lookup of preferred cpu
-> > > during load balancing.
-> > > 
-> > > Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-> > > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > This SOB-chain is bogus. Same for all other patches.
-> > 
+On Wed, Oct 26, 2016 at 05:56:39PM +0100, Steve Twiss wrote:
+> From: Steve Twiss <stwiss.opensource@diasemi.com>
 > 
-> I am the primary author of the patch so I have my sign-off on top.  There
-> were also much internal discussions/reviews between myself, Peter and Srinivas,
-> before we post the first version of this patch.
-> I incorporated their inputs into the patch and added their sign-offs.  
+> The of_device_id match array is added to support "dlg,da9062-watchdog"
+> as a valid .compatible string.
 > 
-> Can you be more explicit on why you think the sign-offs here are bogus?
+> The watchdog_info structure is linked to this device tree compatible
+> string in the .data section. Extra code is added into the probe function to
+> search-for and assign this match data.
+> 
+> This patch now assumes the use of a DA9062 fallback compatible string for
+> the DTS to pick up the DA9062 device driver for use with the DA9061
+> watchdog hardware.
+> 
+> Copyright header is updated to add DA9061 in its description and the module
+> description macro is extended to include DA9061.
+> 
+> Kconfig is updated to reflect support for DA9061/62.
+> 
+> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+> 
+> ---
+> This patch applies against linux-next and v4.8
+> 
+> v1 -> v2
+>  - Patch renamed from [PATCH V1 04/10] to [PATCH V2 08/10] -- these
+>    changes were made to fix checkpatch warnings caused by the patch
+>    set dependency order
+>  - Removal of the DA9061 compatible entries for this device driver.
+>  - Additional explanation in the patch description for the use of a
+>    fall-back compatible DTS string
+> 
+> Guenter,
+> 
+> Alterations have been made in accordance with the previous e-mail thread
+> on the use of compatible strings: https://lkml.org/lkml/2016/10/7/641
+> This patch now assumes the use of a fallback compatible string in the DTS.
+> Of the form: compatible = "dlg,da9061-watchdog", "dlg,da9062-watchdog";
+> 
+> Regards,
+> Steve Twiss, Dialog Semiconductor Ltd.
+> 
+> 
+>  drivers/watchdog/Kconfig      |  4 ++--
+>  drivers/watchdog/da9062_wdt.c | 18 +++++++++++++++---
+>  2 files changed, 17 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> index 1bffe00..d6b4088 100644
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -104,11 +104,11 @@ config DA9063_WATCHDOG
+>  	  This driver can be built as a module. The module name is da9063_wdt.
+>  
+>  config DA9062_WATCHDOG
+> -	tristate "Dialog DA9062 Watchdog"
+> +	tristate "Dialog DA9062/61 Watchdog"
+>  	depends on MFD_DA9062
+>  	select WATCHDOG_CORE
+>  	help
+> -	  Support for the watchdog in the DA9062 PMIC.
+> +	  Support for the watchdog in the DA9062 and DA9061 PMICs.
+>  
+>  	  This driver can be built as a module. The module name is da9062_wdt.
+>  
+> diff --git a/drivers/watchdog/da9062_wdt.c b/drivers/watchdog/da9062_wdt.c
+> index 7386111..4b20b7a 100644
+> --- a/drivers/watchdog/da9062_wdt.c
+> +++ b/drivers/watchdog/da9062_wdt.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * da9062_wdt.c - WDT device driver for DA9062
+> + * Watchdog device driver for DA9062 and DA9061 PMICs
+>   * Copyright (C) 2015  Dialog Semiconductor Ltd.
+>   *
+>   * This program is free software; you can redistribute it and/or
+> @@ -188,23 +188,34 @@ static const struct watchdog_ops da9062_watchdog_ops = {
+>  	.set_timeout = da9062_wdt_set_timeout,
+>  };
+>  
+> +static const struct of_device_id da9062_compatible_id_table[] = {
+> +	{ .compatible = "dlg,da9062-watchdog", .data = &da9062_watchdog_info },
+> +	{ },
+> +};
+> +
+>  static int da9062_wdt_probe(struct platform_device *pdev)
+>  {
+>  	int ret;
+>  	struct da9062 *chip;
+>  	struct da9062_watchdog *wdt;
+> +	const struct of_device_id *match;
+>  
+>  	chip = dev_get_drvdata(pdev->dev.parent);
+>  	if (!chip)
+>  		return -EINVAL;
+>  
+> +	match = of_match_node(da9062_compatible_id_table,
+> +			      pdev->dev.of_node);
+> +	if (!match)
+> +		return -ENXIO;
+> +
+>  	wdt = devm_kzalloc(&pdev->dev, sizeof(*wdt), GFP_KERNEL);
+>  	if (!wdt)
+>  		return -ENOMEM;
+>  
+>  	wdt->hw = chip;
+>  
+> -	wdt->wdtdev.info = &da9062_watchdog_info;
+> +	wdt->wdtdev.info = (const struct watchdog_info *)match->data;
 
-Because SOB chains document the way a patch takes from the author to the
-kernel. The above says:
+I don't see why you would need match->data or of_match_node above.
 
-You authored the patch and sent it to Peter who sent it to Srinivas. So how
-does it end up sent from you in my inbox?
+Guenter
 
-We have no formal tag for co developed patches, but it's common practice to
-either acknowledge contributions from others in free text form or use a
-non-documented tag like 'Co-developed-by:' or 'Co-authored-by:'.
-
-Thanks,
-
-	tglx
-
-
---8323329-797078632-1477506230=:5013--
+>  	wdt->wdtdev.ops = &da9062_watchdog_ops;
+>  	wdt->wdtdev.min_timeout = DA9062_WDT_MIN_TIMEOUT;
+>  	wdt->wdtdev.max_timeout = DA9062_WDT_MAX_TIMEOUT;
+> @@ -244,11 +255,12 @@ static struct platform_driver da9062_wdt_driver = {
+>  	.remove = da9062_wdt_remove,
+>  	.driver = {
+>  		.name = "da9062-watchdog",
+> +		.of_match_table = da9062_compatible_id_table,
+>  	},
+>  };
+>  module_platform_driver(da9062_wdt_driver);
+>  
+>  MODULE_AUTHOR("S Twiss <stwiss.opensource@diasemi.com>");
+> -MODULE_DESCRIPTION("WDT device driver for Dialog DA9062");
+> +MODULE_DESCRIPTION("WDT device driver for Dialog DA9062 and DA9061");
+>  MODULE_LICENSE("GPL");
+>  MODULE_ALIAS("platform:da9062-watchdog");
+> -- 
+> end-of-patch for PATCH V2
+> 
