@@ -1,57 +1,97 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v6 5/9] x86/sysctl: Add sysctl for ITMT scheduling
- feature
-Date: Wed, 26 Oct 2016 10:23:32 -0700
-Message-ID: <1477502612.2680.9.camel@linux.intel.com>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-         <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>
-         <alpine.DEB.2.20.1610261231250.4983@nanos>
-         <20161026112502.GB3117@twins.programming.kicks-ass.net>
-         <alpine.DEB.2.20.1610261322580.4983@nanos>
+From: <piwet_sokolow@wp.pl>
+Subject: 422160809 linux-pm
+Date: Wed, 26 Oct 2016 17:24:35 -0000
+Message-ID: <147750267597.5995.3233002682804530682@hinet.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1610261322580.4983@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: application/zip; name="INFO_7678_linux-pm.zip"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 36-224-117-133.dynamic-ip.hinet.net ([36.224.117.133]:45464
+        "HELO hinet.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with SMTP id S1754137AbcJZRYn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 13:24:43 -0400
+Content-Disposition: attachment
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-On Wed, 2016-10-26 at 13:24 +0200, Thomas Gleixner wrote:
-> On Wed, 26 Oct 2016, Peter Zijlstra wrote:
-> > 
-> > On Wed, Oct 26, 2016 at 12:49:36PM +0200, Thomas Gleixner wrote:
-> > 
-> > > 
-> > > > 
-> > > > +	/*
-> > > > +	 * ITMT capability automatically enables ITMT
-> > > > +	 * scheduling for small systems (single node).
-> > > > +	 */
-> > > > +	if (topology_num_packages() == 1)
-> > > > +		sysctl_sched_itmt_enabled = 1;
-> > > I really hate this. This is policy and the kernel should not impose
-> > > policy. Why would I like to have this enforced on my single socket XEON
-> > > server?
-> > So this really wants to be enabled by default; otherwise nobody will use
-> > this, and it really does help single threaded workloads.
-> Fair enough. Then this wants to be documented.
->  
-> > 
-> > There were reservations on the multi-socket case of ITMT, maybe it would
-> > help to spell those out in great detail here. That is, have the comment
-> > explain the policy instead of simply stating what the code does (which
-> > is always bad comment policy, you can read the code just fine).
-> What is the objection for multi sockets? If it improves the behaviour then
-> why would this be a bad thing for multi sockets?
-
-For multi-socket (server system), it is much more likely that they will
-have multiple cpus in a socket busy and not run in turbo mode. So the extra
-work in migrating the workload to the one with extra headroom will
-not make use of those headroom in that scenario.  I will update the comment
-to reflect this policy.
-
-See also our previous discussions: http://lkml.iu.edu/hypermail/linux/kernel/1609.1/03381.html
-
-Tim
+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
