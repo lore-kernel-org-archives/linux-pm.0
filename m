@@ -1,53 +1,53 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: Re: [PATCH v6 1/9] sched: Extend scheduler's asym packing
-Date: Wed, 26 Oct 2016 11:10:46 -0700
-Message-ID: <1477505446.2680.29.camel@linux.intel.com>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
-         <c3bf1c59ee56dad1dc20ad3b3c06c166abb7a57e.1477000078.git.tim.c.chen@linux.intel.com>
-         <alpine.DEB.2.20.1610261226540.4983@nanos>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v6 5/9] x86/sysctl: Add sysctl for ITMT scheduling
+ feature
+Date: Wed, 26 Oct 2016 20:09:54 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1610262000410.5013@nanos>
+References: <cover.1477000078.git.tim.c.chen@linux.intel.com>  <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>  <alpine.DEB.2.20.1610261231250.4983@nanos>  <20161026112502.GB3117@twins.programming.kicks-ass.net>
+ <alpine.DEB.2.20.1610261322580.4983@nanos> <1477502612.2680.9.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:8893 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1757156AbcJZSLB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 26 Oct 2016 14:11:01 -0400
-In-Reply-To: <alpine.DEB.2.20.1610261226540.4983@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; BOUNDARY="8323329-942364751-1477505397=:5013"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1477502612.2680.9.camel@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Wed, 2016-10-26 at 12:27 +0200, Thomas Gleixner wrote:
-> On Thu, 20 Oct 2016, Tim Chen wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--8323329-942364751-1477505397=:5013
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 26 Oct 2016, Tim Chen wrote:
+> On Wed, 2016-10-26 at 13:24 +0200, Thomas Gleixner wrote:
+> > > There were reservations on the multi-socket case of ITMT, maybe it would
+> > > help to spell those out in great detail here. That is, have the comment
+> > > explain the policy instead of simply stating what the code does (which
+> > > is always bad comment policy, you can read the code just fine).
+> > What is the objection for multi sockets? If it improves the behaviour then
+> > why would this be a bad thing for multi sockets?
 > 
-> > 
-> > We generalize the scheduler's asym packing to provide an ordering
-> > of the cpu beyond just the cpu number.  This allows the use of the
-> > ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
-> > sched domain. The preference is defined with the cpu priority
-> > given by arch_asym_cpu_priority(cpu).
-> > 
-> > We also record the most preferred cpu in a sched group when
-> > we build the cpu's capacity for fast lookup of preferred cpu
-> > during load balancing.
-> > 
-> > Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
-> > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-> > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> This SOB-chain is bogus. Same for all other patches.
-> 
+> For multi-socket (server system), it is much more likely that they will
+> have multiple cpus in a socket busy and not run in turbo mode. So the extra
+> work in migrating the workload to the one with extra headroom will
+> not make use of those headroom in that scenario.  I will update the comment
+> to reflect this policy.
 
-I am the primary author of the patch so I have my sign-off on top.  There
-were also much internal discussions/reviews between myself, Peter and Srinivas,
-before we post the first version of this patch.
-I incorporated their inputs into the patch and added their sign-offs.  
+So on a single socket server system the extra work does not matter, right?
+Don't tell me that single socket server systems are irrelevant. Intel is
+actively promoting single socket CPUs, like XEON D, for high densitiy
+servers...
 
-Can you be more explicit on why you think the sign-offs here are bogus?
+Instead of handwaving arguments I prefer a proper analysis of what the
+overhead is and why it is not a good thing for loaded servers in general.
 
-Thanks.
+Then instead of slapping half baken heuristics into the code, we should sit
+down and think a bit harder about it.
 
-Tim
+Thanks,
 
-  
+	tglx
+--8323329-942364751-1477505397=:5013--
