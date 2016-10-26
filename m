@@ -1,41 +1,61 @@
 From: Lee Jones <lee.jones@linaro.org>
 Subject: Re: [PATCH] mfd: axp20x-i2c: Add i2c-ids to fix module auto-loading
-Date: Wed, 26 Oct 2016 15:00:54 +0100
-Message-ID: <20161026140054.GE13127@dell>
+Date: Wed, 26 Oct 2016 15:01:52 +0100
+Message-ID: <20161026140152.GF13127@dell>
 References: <20161005155112.13774-1-hdegoede@redhat.com>
  <20161005155112.13774-2-hdegoede@redhat.com>
- <CAGb2v67iQikSHcwS15VmSC6fNMVG9Zya9fz6C6b5+wW43rPZfw@mail.gmail.com>
- <bbd16837-a260-b574-1b1a-1bede038e3de@redhat.com>
- <20161024100938.GI14477@dell>
- <20161024101659.GA1440@katana>
- <20161024103428.GA8574@dell>
- <20161024104747.GC1440@katana>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:35597 "EHLO
+        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753294AbcJZN7U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 09:59:20 -0400
+Received: by mail-wm0-f44.google.com with SMTP id e69so32513663wmg.0
+        for <linux-pm@vger.kernel.org>; Wed, 26 Oct 2016 06:59:20 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20161024104747.GC1440@katana>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, Sebastian Reichel <sre@kernel.org>, Dennis Gilmore <dennis@ausil.us>, Maxime Ripard <maxime.ripard@free-electrons.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-i2c@vger.kernel.org
+In-Reply-To: <20161005155112.13774-2-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Dennis Gilmore <dennis@ausil.us>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Mon, 24 Oct 2016, Wolfram Sang wrote:
+On Wed, 05 Oct 2016, Hans de Goede wrote:
 
+> The i2c subsys does not load modules by compatible, only by
+> i2c-id, with e.g. a modalias of: "i2c:axp209".
 > 
-> > I was under the impression it was all but ready.
+> Populate the axp20x_i2c_id[] table with supported ids, so that
+> module auto-loading will work.
 > 
-> Then, I would have applied it.
-> 
-> > What are you waiting on?
-> 
-> Lee, I don't want to explain it *again*. Please re-read Kieran's last
-> attempt.
+> Reported-by: Dennis Gilmore <dennis@ausil.us>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>  drivers/mfd/axp20x-i2c.c | 7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
 
-I met with Kieran.  He's submitted a new version.
+Applied (for now), thanks.
 
-Here's hoping! ;)
+> diff --git a/drivers/mfd/axp20x-i2c.c b/drivers/mfd/axp20x-i2c.c
+> index b1b8658..d35a5fe 100644
+> --- a/drivers/mfd/axp20x-i2c.c
+> +++ b/drivers/mfd/axp20x-i2c.c
+> @@ -69,10 +69,11 @@ static const struct of_device_id axp20x_i2c_of_match[] = {
+>  };
+>  MODULE_DEVICE_TABLE(of, axp20x_i2c_of_match);
+>  
+> -/*
+> - * This is useless for OF-enabled devices, but it is needed by I2C subsystem
+> - */
+>  static const struct i2c_device_id axp20x_i2c_id[] = {
+> +	{ "axp152", 0 },
+> +	{ "axp202", 0 },
+> +	{ "axp209", 0 },
+> +	{ "axp221", 0 },
+>  	{ },
+>  };
+>  MODULE_DEVICE_TABLE(i2c, axp20x_i2c_id);
 
 -- 
 Lee Jones
