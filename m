@@ -1,54 +1,67 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 2/2] scsi: ufs: Use the resource-managed function to add
- devfreq device
-Date: Wed, 26 Oct 2016 16:38:18 +0900
-Message-ID: <1477467498-27145-1-git-send-email-cw00.choi@samsung.com>
-References: <1477467350-27059-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-scsi-owner@vger.kernel.org>
-In-reply-to: <1477467350-27059-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-scsi-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 3/4] dt-bindings: Update domain-idle-state binding to use
+ correct compatibles
+Date: Wed, 26 Oct 2016 09:57:35 +0100
+Message-ID: <68dc67d1-b443-f7b1-6229-0ac54e403d61@arm.com>
+References: <1477409199-52182-1-git-send-email-lina.iyer@linaro.org>
+ <1477409199-52182-4-git-send-email-lina.iyer@linaro.org>
+ <7hh980taqp.fsf@baylibre.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <7hh980taqp.fsf@baylibre.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Kevin Hilman <khilman@baylibre.com>, Lina Iyer <lina.iyer@linaro.org>
+Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-pm@vger.kernel.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, rjw@rjwysocki.net, brendan.jackman@arm.com, Sudeep Holla <sudeep.holla@arm.com>, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch uses the resource-managed to add the devfreq device.
-This function will make it easy to handle the devfreq device.
 
-- struct devfreq *devm_devfreq_add_device(struct device *dev,
-				  struct devfreq_dev_profile *profile,
-				  const char *governor_name,
-				  void *data);
-Cc: Vinayak Holikatti <vinholikatti@gmail.com>
-Cc: James E.J. Bottomley <jejb@linux.vnet.ibm.com>
-Cc: Martin K. Petersen <martin.petersen@oracle.com>
-Cc: linux-scsi@vger.kernel.org
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/scsi/ufs/ufshcd.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
-index f08d41a2d70b..e639071fd3a1 100644
---- a/drivers/scsi/ufs/ufshcd.c
-+++ b/drivers/scsi/ufs/ufshcd.c
-@@ -6198,8 +6198,6 @@ void ufshcd_remove(struct ufs_hba *hba)
- 	scsi_host_put(hba->host);
- 
- 	ufshcd_exit_clk_gating(hba);
--	if (ufshcd_is_clkscaling_enabled(hba))
--		devfreq_remove_device(hba->devfreq);
- 	ufshcd_hba_exit(hba);
- }
- EXPORT_SYMBOL_GPL(ufshcd_remove);
-@@ -6495,7 +6493,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
- 	}
- 
- 	if (ufshcd_is_clkscaling_enabled(hba)) {
--		hba->devfreq = devfreq_add_device(dev, &ufs_devfreq_profile,
-+		hba->devfreq = devm_devfreq_add_device(dev, &ufs_devfreq_profile,
- 						   "simple_ondemand", NULL);
- 		if (IS_ERR(hba->devfreq)) {
- 			dev_err(hba->dev, "Unable to register with devfreq %ld\n",
+On 25/10/16 21:49, Kevin Hilman wrote:
+> Lina Iyer <lina.iyer@linaro.org> writes:
+>
+>> Update domain-idle-state binding to use "domain-idle-state" compatible
+>> from Documentation/devicetree/bindings/arm/idle-states.txt.
+>>
+>> Cc: <devicetree@vger.kernel.org>
+>> Cc: Rob Herring <robh@kernel.org>
+>> Suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+>> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> ---
+>>  Documentation/devicetree/bindings/power/power_domain.txt | 9 +++++----
+>>  1 file changed, 5 insertions(+), 4 deletions(-)
+>
+> With no current users for this, I don't see the point of adding a
+> compatible now.
+>
+> IMO, this should wait and be added with the identified user we can
+> discuss it then.
+>
+
+No, IMO it needs to be used for the proposed SoC idle/genpd solution.
+
+I understand the nodes that are "arm,idle-state" compatible can be used
+for this new SoC hierarchical idle management, but it was never defined
+for that use originally. So this new feature must be advertised by the 
+firmware with the presence of "domain-idle-state".
+
+Yes we might have other ways to detect that but I have already seen that 
+broken on the reference platform, so we need alternate/DT way to specify 
+that.
+
+Not all existing "arm,idle-state" compatible nodes will be capable of
+supporting this new SoC idle feature. It's just better and safer for a
+new feature getting added that relies on DT to have a new compatible.
+
 -- 
-1.9.1
-
+Regards,
+Sudeep
