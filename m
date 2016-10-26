@@ -1,43 +1,106 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: [PATCH] cpufreq: dt: add Socionext UniPhier SoCs support
-Date: Thu, 27 Oct 2016 01:41:33 +0900
-Message-ID: <1477500093-12796-1-git-send-email-yamada.masahiro@socionext.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from conuserg-08.nifty.com ([210.131.2.75]:31478 "EHLO
-        conuserg-08.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751685AbcJZQmM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 12:42:12 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH V2 03/10] Documentation: devicetree: thermal: da9062/61 TJUNC
+ temperature binding
+Date: Wed, 26 Oct 2016 17:56:37 +0100
+Message-ID: <d8c986e39bafc2b8a1c5c23e722f61cdd021e9be.1477501000.git.stwiss.opensource@diasemi.com>
+References: <cover.1477501000.git.stwiss.opensource@diasemi.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1477501000.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 
-Add compatible strings for Pro5, PXs2, LD6b, LD11, LD20 SoCs to use
-the generic cpufreq driver.
+From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Device tree binding information for DA9062 and DA9061 thermal junction
+temperature monitor.
+
+Binding descriptions for the DA9061 and DA9062 thermal TJUNC supervisor
+device driver, using a single THERMAL_TRIP_HOT trip-wire and allowing for
+a configurable polling period for over-temperature polling.
+
+Signed-off-by: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+
 ---
+This patch applies against linux-next and v4.8
 
- drivers/cpufreq/cpufreq-dt-platdev.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+v1 -> v2
+ - Patch renamed from [PATCH V1 08/10] to [PATCH V2 03/10] -- these
+   changes were made to fix checkpatch warnings caused by the patch
+   set dependency order
+ - A second example for DA9061 is provided to highlight the use of a
+   fall-back compatible option for the DA9062 watchdog driver
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 7126762..f3c9a0e 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -72,6 +72,12 @@
+Hi,
+
+This patch depends on acceptance of the main code for the thermal device
+driver:
+  [PATCH V2 09/10] thermal: da9061: TJUNC temperature driver 
+
+The previous [PATCH V1 08/10] was acked-by: Rob Herring, however this has
+not been added because changes have been made to add a new binding
+example. This describes the use of DA9061.
+This addition was made after alterations to the device driver meant that a
+fall-back compatible string could reuse the DA9062 device driver.
  
- 	{ .compatible = "sigma,tango4" },
- 
-+	{ .compatible = "socionext,uniphier-pro5", },
-+	{ .compatible = "socionext,uniphier-pxs2", },
-+	{ .compatible = "socionext,uniphier-ld6b", },
-+	{ .compatible = "socionext,uniphier-ld11", },
-+	{ .compatible = "socionext,uniphier-ld20", },
+Regards,
+Steve Twiss, Dialog Semiconductor Ltd.
+
+
+ .../devicetree/bindings/thermal/da9062-thermal.txt | 37 ++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/da9062-thermal.txt
+
+diff --git a/Documentation/devicetree/bindings/thermal/da9062-thermal.txt b/Documentation/devicetree/bindings/thermal/da9062-thermal.txt
+new file mode 100644
+index 0000000..fb207ff
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/da9062-thermal.txt
+@@ -0,0 +1,37 @@
++* Dialog DA9062/61 TJUNC Thermal Module
 +
- 	{ .compatible = "ti,am33xx", },
- 	{ .compatible = "ti,dra7", },
- 	{ .compatible = "ti,omap2", },
++This module is part of the DA9061/DA9062. For more details about entire
++DA9062 and DA9061 chips see Documentation/devicetree/bindings/mfd/da9062.txt
++
++Junction temperature thermal module uses an interrupt signal to identify
++high THERMAL_TRIP_HOT temperatures for the PMIC device.
++
++Required properties:
++
++- compatible: should be one of:
++        dlg,da9061-thermal
++        dlg,da9062-thermal
++
++Optional properties:
++
++- dlg,tjunc-temp-polling-period-ms : Specify the polling period, measured
++    in milliseconds, between thermal zone device update checks.
++
++Example: DA9061
++
++	pmic0: da9062@58 {
++		thermal {
++			compatible = "dlg,da9062-thermal";
++			dlg,tjunc-temp-polling-period-ms = <3000>;
++		};
++	};
++
++Example: DA9061 using a fall-back compatible for the DA9062 onkey driver
++
++	pmic0: da9061@58 {
++		thermal {
++			compatible = "dlg,da9061-thermal", "dlg,da9062-thermal";
++			dlg,tjunc-temp-polling-period-ms = <3000>;
++		};
++	};
++
 -- 
-1.9.1
+end-of-patch for PATCH V2
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
