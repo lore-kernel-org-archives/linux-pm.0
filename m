@@ -1,71 +1,72 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v6 5/9] x86/sysctl: Add sysctl for ITMT scheduling
- feature
-Date: Wed, 26 Oct 2016 12:49:36 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1610261231250.4983@nanos>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com> <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>
+From: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+Subject: Re: [Bug 181381] New: Resume from suspend no longer works on
+ Thinkpad X240
+Date: Wed, 26 Oct 2016 13:52:35 +0300
+Message-ID: <20161026105235.fb5l733zqdwonl4k@intel.com>
+References: <bug-181381-76231@https.bugzilla.kernel.org/>
+ <36039093.FNOp46uvm2@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <36039093.FNOp46uvm2@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: bugzilla-daemon@bugzilla.kernel.org, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>, steinar+kernel@gunderson.no, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thorsten Leemhuis <regressions@leemhuis.info>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 20 Oct 2016, Tim Chen wrote:
-> +static int sched_itmt_update_handler(struct ctl_table *table, int write,
-> +			      void __user *buffer, size_t *lenp, loff_t *ppos)
+On Mon, Oct 24, 2016 at 10:42:23PM +0200, Rafael J. Wysocki wrote:
+> On Monday, October 24, 2016 08:28:18 PM bugzilla-daemon@bugzilla.kernel.org wrote:
+> > https://bugzilla.kernel.org/show_bug.cgi?id=181381
+> > 
+> >             Bug ID: 181381
+> >            Summary: Resume from suspend no longer works on Thinkpad X240
+> >            Product: Power Management
+> >            Version: 2.5
+> >     Kernel Version: 4.9.0-rc1
+> >           Hardware: All
+> >                 OS: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: normal
+> >           Priority: P1
+> >          Component: Hibernation/Suspend
+> >           Assignee: rjw@rjwysocki.net
+> >           Reporter: steinar+kernel@gunderson.no
+> >                 CC: jarkko.sakkinen@linux.intel.com
+> >         Regression: No
+> > 
+> > Hi,
+> > 
+> > I have a Thinkpad X240, which suspends (to RAM) and resumes just fine with
+> > 4.7.4. However, in 4.9.0-rc1, it completely refuses to resume; when I try to
+> > press the power button to resume it from sleep, it just ignores the request
+> > completely and keeps pulsing the light.
+> > 
+> > bisect gives the following culprit:
+> > 
+> > commit 0c541332231e7957f23013e37f3720db33e7804c
+> > Author: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> > Date:   Fri Jun 17 13:12:20 2016 +0200
+> > 
+> >     tpm: use tpm_pcr_read_dev() in tpm_do_selftest()
+> > 
+> >     Instead of a ad-hoc protocol message construction it is better to
+> >     call tpm_pcr_read_dev().
+> > 
+> >     Signed-off-by: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
+> >     Reviewed-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> > 
+> > I haven't tried 4.9.0-rc2, because that just hangs directly off of GRUB from
+> > me.
+> 
+> Jarkko, Jason, any chance to have a look at this?
 
-Please align the arguments proper
+I've fixed this a while ago but the pull request is still on hold:
 
-static int
-sched_itmt_update_handler(struct ctl_table *table, int write,
-			  void __user *buffer, size_t *lenp, loff_t *ppos)
+http://www.spinics.net/lists/kernel/msg2356176.html 
 
-> +{
-> +	int ret;
-> +	unsigned int old_sysctl;
+> Thanks,
+> Rafael
 
-	unsigned int old_sysctl;
-	int ret;
-
-Please. It's way simpler to read.
-
-> -void sched_set_itmt_support(void)
-> +int sched_set_itmt_support(void)
->  {
->  	mutex_lock(&itmt_update_mutex);
->  
-> +	if (sched_itmt_capable) {
-> +		mutex_unlock(&itmt_update_mutex);
-> +		return 0;
-> +	}
-> +
-> +	itmt_sysctl_header = register_sysctl_table(itmt_root_table);
-> +	if (!itmt_sysctl_header) {
-> +		mutex_unlock(&itmt_update_mutex);
-> +		return -ENOMEM;
-> +	}
-> +
->  	sched_itmt_capable = true;
->  
-> +	/*
-> +	 * ITMT capability automatically enables ITMT
-> +	 * scheduling for small systems (single node).
-> +	 */
-> +	if (topology_num_packages() == 1)
-> +		sysctl_sched_itmt_enabled = 1;
-
-I really hate this. This is policy and the kernel should not impose
-policy. Why would I like to have this enforced on my single socket XEON
-server?
-
-> +	if (sysctl_sched_itmt_enabled) {
-
-Why would sysctl_sched_itmt_enabled be true at this point, aside of the
-above policy imposement?
-
-Thanks,
-
-	tglx
+/Jarkko
