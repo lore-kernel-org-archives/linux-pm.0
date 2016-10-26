@@ -1,131 +1,36 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: [PATCH 4/9] ASoC: wm9713: add ac97 new bus support
-Date: Wed, 26 Oct 2016 21:41:42 +0200
-Message-ID: <1477510907-23495-5-git-send-email-robert.jarzmik@free.fr>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+From: Santosh Shilimkar <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH V4 0/5] firmware: Add support for TI System Control
+ Interface (TI-SCI) protocol driver
+Date: Wed, 26 Oct 2016 12:56:06 -0700
+Message-ID: <45f55012-f027-51d1-bdf1-6fa1950f59ed@oracle.com>
+References: <20161018230837.6515-1-nm@ti.com>
+ <2694e4b5-20d5-f590-c6a6-55ff4cb8c16b@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp07.smtpout.orange.fr ([80.12.242.129]:42244 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755348AbcJZTti (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 15:49:38 -0400
-In-Reply-To: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+Received: from aserp1040.oracle.com ([141.146.126.69]:36113 "EHLO
+        aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932910AbcJZT4z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 15:56:55 -0400
+In-Reply-To: <2694e4b5-20d5-f590-c6a6-55ff4cb8c16b@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
+To: Tero Kristo <t-kristo@ti.com>, Nishanth Menon <nm@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
+Cc: Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Andrew Davis <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>
 
-Add support for the new ac97 bus model, where devices are automatically
-discovered on AC-Links.
+On 10/25/2016 10:34 AM, Tero Kristo wrote:
+> On 19/10/16 02:08, Nishanth Menon wrote:
+>> Version 4 of the series is basically a rebase to v4.9-rc1, no functional
+>> changes.
+>
+> Hi,
+>
+> Any final comments on this series, or shall I send a pull-req forward?
+> Very minimal changes compared to v3 so should be good to go imo.
+>
+The patchset looks fine to me from brief scan so please Go from
+my side at least for the pull request.
 
-Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
----
- sound/soc/codecs/Kconfig  |  3 ++-
- sound/soc/codecs/wm9713.c | 37 ++++++++++++++++++++++++++-----------
- 2 files changed, 28 insertions(+), 12 deletions(-)
-
-diff --git a/sound/soc/codecs/Kconfig b/sound/soc/codecs/Kconfig
-index c67667bb970f..c5871a299cfc 100644
---- a/sound/soc/codecs/Kconfig
-+++ b/sound/soc/codecs/Kconfig
-@@ -202,7 +202,7 @@ config SND_SOC_ALL_CODECS
- 	select SND_SOC_WM9090 if I2C
- 	select SND_SOC_WM9705 if SND_SOC_AC97_BUS
- 	select SND_SOC_WM9712 if SND_SOC_AC97_BUS
--	select SND_SOC_WM9713 if SND_SOC_AC97_BUS
-+	select SND_SOC_WM9713 if (SND_SOC_AC97_BUS || SND_SOC_AC97_BUS_NEW)
-         help
-           Normally ASoC codec drivers are only built if a machine driver which
-           uses them is also built since they are only usable with a machine
-@@ -1061,6 +1061,7 @@ config SND_SOC_WM9712
- config SND_SOC_WM9713
- 	tristate
- 	select REGMAP_AC97
-+	select AC97_BUS_COMPAT if AC97_BUS_NEW
- 
- # Amp
- config SND_SOC_LM4857
-diff --git a/sound/soc/codecs/wm9713.c b/sound/soc/codecs/wm9713.c
-index e4301ddb1b84..2163232855cb 100644
---- a/sound/soc/codecs/wm9713.c
-+++ b/sound/soc/codecs/wm9713.c
-@@ -17,12 +17,15 @@
- 
- #include <linux/init.h>
- #include <linux/slab.h>
-+#include <linux/mfd/wm97xx.h>
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/regmap.h>
- #include <sound/core.h>
- #include <sound/pcm.h>
- #include <sound/ac97_codec.h>
-+#include <sound/ac97/codec.h>
-+#include <sound/ac97/compat.h>
- #include <sound/initval.h>
- #include <sound/pcm_params.h>
- #include <sound/tlv.h>
-@@ -38,6 +41,7 @@ struct wm9713_priv {
- 	u32 pll_in; /* PLL input frequency */
- 	unsigned int hp_mixer[2];
- 	struct mutex lock;
-+	struct wm97xx_platform_data *mfd_pdata;
- };
- 
- #define HPL_MIXER 0
-@@ -1207,15 +1211,21 @@ static int wm9713_soc_probe(struct snd_soc_codec *codec)
- 	struct wm9713_priv *wm9713 = snd_soc_codec_get_drvdata(codec);
- 	struct regmap *regmap;
- 
--	wm9713->ac97 = snd_soc_new_ac97_codec(codec, WM9713_VENDOR_ID,
--		WM9713_VENDOR_ID_MASK);
--	if (IS_ERR(wm9713->ac97))
--		return PTR_ERR(wm9713->ac97);
--
--	regmap = regmap_init_ac97(wm9713->ac97, &wm9713_regmap_config);
--	if (IS_ERR(regmap)) {
--		snd_soc_free_ac97_codec(wm9713->ac97);
--		return PTR_ERR(regmap);
-+	if (wm9713->mfd_pdata) {
-+		wm9713->ac97 = wm9713->mfd_pdata->ac97;
-+		regmap = wm9713->mfd_pdata->regmap;
-+	} else {
-+#ifdef CONFIG_SND_SOC_AC97_BUS
-+		wm9713->ac97 = snd_soc_new_ac97_codec(codec, WM9713_VENDOR_ID,
-+						      WM9713_VENDOR_ID_MASK);
-+		if (IS_ERR(wm9713->ac97))
-+			return PTR_ERR(wm9713->ac97);
-+		regmap = regmap_init_ac97(wm9713->ac97, &wm9713_regmap_config);
-+		if (IS_ERR(regmap)) {
-+			snd_soc_free_ac97_codec(wm9713->ac97);
-+			return PTR_ERR(regmap);
-+		}
-+#endif
- 	}
- 
- 	snd_soc_codec_init_regmap(codec, regmap);
-@@ -1230,8 +1240,12 @@ static int wm9713_soc_remove(struct snd_soc_codec *codec)
- {
- 	struct wm9713_priv *wm9713 = snd_soc_codec_get_drvdata(codec);
- 
--	snd_soc_codec_exit_regmap(codec);
--	snd_soc_free_ac97_codec(wm9713->ac97);
-+	if (!wm9713->mfd_pdata) {
-+		snd_soc_codec_exit_regmap(codec);
-+#ifdef CONFIG_SND_SOC_AC97_BUS
-+		snd_soc_free_ac97_codec(wm9713->ac97);
-+#endif
-+	}
- 	return 0;
- }
- 
-@@ -1262,6 +1276,7 @@ static int wm9713_probe(struct platform_device *pdev)
- 
- 	mutex_init(&wm9713->lock);
- 
-+	wm9713->mfd_pdata = dev_get_platdata(&pdev->dev);
- 	platform_set_drvdata(pdev, wm9713);
- 
- 	return snd_soc_register_codec(&pdev->dev,
--- 
-2.1.4
-
+Regards,
+Santosh
