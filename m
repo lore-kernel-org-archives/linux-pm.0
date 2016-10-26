@@ -1,194 +1,100 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 4/4] PM / Runtime: Don't allow to suspend a device with an
- active child
-Date: Tue, 25 Oct 2016 23:31:17 +0200
-Message-ID: <CAPDyKFoxSiCrfbWRGpSxpwYuL_5okARjqum25nZVe0KyOg_QYg@mail.gmail.com>
-References: <1476728221-26530-1-git-send-email-ulf.hansson@linaro.org>
- <1476728221-26530-5-git-send-email-ulf.hansson@linaro.org> <CAMuHMdX4Si0pfZ0cnZU=KC+kHK0bJiLcArqLLaU1Rw7-zZ0bsA@mail.gmail.com>
+From: <eumann@t-online.de>
+Subject: (unknown)
+Date: Wed, 26 Oct 2016 00:20:28 -0000
+Message-ID: <147744122831.1125.3423933153625532049@redewsp.com.br>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: application/zip; name="EMAIL_82365_linux-pm.zip"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f42.google.com ([74.125.82.42]:36648 "EHLO
-        mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756224AbcJYVbU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2016 17:31:20 -0400
-Received: by mail-wm0-f42.google.com with SMTP id b80so188083475wme.1
-        for <linux-pm@vger.kernel.org>; Tue, 25 Oct 2016 14:31:19 -0700 (PDT)
-In-Reply-To: <CAMuHMdX4Si0pfZ0cnZU=KC+kHK0bJiLcArqLLaU1Rw7-zZ0bsA@mail.gmail.com>
+Received: from 28-109-99-138.redewsp.com.br ([138.99.109.28]:48453 "HELO
+        redewsp.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with SMTP id S1756968AbcJZAUg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Oct 2016 20:20:36 -0400
+Subject: 
+Content-Disposition: attachment
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: linux-pm@vger.kernel.org
 
-On 25 October 2016 at 15:59, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
->
-> On Mon, Oct 17, 2016 at 8:17 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> When resuming a device in __pm_runtime_set_status(), the prerequisite is
->> that its parent must already be active, else an error code is returned and
->> the device's status remains suspended.
->>
->> When suspending a device there is no similar constraints being validated.
->> Let's change this to make the behaviour consistent, by not allowing to
->> suspend a device with an active child, unless it has been explicitly set to
->> ignore its children.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> This is now commit 8b1107b85efd78c in pm/linux-next.
->
-> This breaks resume from s2ram on r8a73a4/ape6evm and sh73a0/kzm9g, where the
-> smsc911x Ethernet is connected to an external bus, whose clock is controlled
-> through Runtime PM and the simple-pm-bus driver.
->
-> Reverting this commit fixes the issue.
-
-Geert, thanks again for testing and reporting. I believe this problem
-is directly related to what you reported for another patch [1] as
-well.
-
-Can you please try out this rather trivial patch to the Ethernet
-driver (smsc911x), to see if that solves the problem(s).
-
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Date: Tue, 25 Oct 2016 23:11:51 +0200
-Subject: [PATCH] net: smsc911x: Synchronize the runtime PM status during
- system suspend
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/net/ethernet/smsc/smsc911x.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/net/ethernet/smsc/smsc911x.c
-b/drivers/net/ethernet/smsc/smsc911x.c
-index e9b8579..65fca9c 100644
---- a/drivers/net/ethernet/smsc/smsc911x.c
-+++ b/drivers/net/ethernet/smsc/smsc911x.c
-@@ -2584,6 +2584,9 @@ static int smsc911x_suspend(struct device *dev)
-                PMT_CTRL_PM_MODE_D1_ | PMT_CTRL_WOL_EN_ |
-                PMT_CTRL_ED_EN_ | PMT_CTRL_PME_EN_);
-
-+       pm_runtime_disable(dev);
-+       pm_runtime_set_suspended(dev);
-+
-        return 0;
- }
-
-@@ -2593,6 +2596,9 @@ static int smsc911x_resume(struct device *dev)
-        struct smsc911x_data *pdata = netdev_priv(ndev);
-        unsigned int to = 100;
-
-+       pm_runtime_enable(dev);
-+       pm_runtime_resume(dev);
-+
-        /* Note 3.11 from the datasheet:
-         *      "When the LAN9220 is in a power saving state, a write of any
-         *       data to the BYTE_TEST register will wake-up the device."
---
-1.9.1
-
-Kind regards
-Uffe
-
-[1]
-https://patchwork.kernel.org/patch/9375061/
-
->
->> ---
->>  drivers/base/power/runtime.c | 12 +++++++++++-
->>  1 file changed, 11 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index f47a345..6f946a3 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -1028,7 +1028,17 @@ int __pm_runtime_set_status(struct device *dev, unsigned int status)
->>                 goto out_set;
->>
->>         if (status == RPM_SUSPENDED) {
->> -               /* It always is possible to set the status to 'suspended'. */
->> +               /*
->> +                * It is invalid to suspend a device with an active child,
->> +                * unless it has been set to ignore its children.
->> +                */
->> +               if (!dev->power.ignore_children &&
->> +                       atomic_read(&dev->power.child_count)) {
->> +                       dev_err(dev, "runtime PM trying to suspend device but active child\n");
->> +                       error = -EBUSY;
->> +                       goto out;
->> +               }
->> +
->>                 if (parent) {
->>                         atomic_add_unless(&parent->power.child_count, -1, 0);
->>                         notify_parent = !parent->power.ignore_children;
->
-> Kernel output difference, with some additional debug info:
->
-> | --- GOOD 2016-10-25 15:46:19.669597124 +0200
-> | +++ BAD  2016-10-25 15:48:15.201596869 +0200
-> | @@ -5,24 +5,71 @@ Freezing remaining freezable tasks ... (
-> |  PM: Suspending system (mem)
-> |  cpg_div6_clock_disable: sdhi1ck
-> |  cpg_div6_clock_disable: sdhi0ck
-> | -PM: suspend of devices complete after 22.777 msecs
-> | -PM: late suspend of devices complete after 7.302 msecs
-> | +PM: suspend of devices complete after 22.932 msecs
-> | +PM: late suspend of devices complete after 7.311 msecs
-> |  cpg_div6_clock_disable: mmc0
-> |  cpg_div6_clock_disable: zb
->
-> pm_clk disables the clock of fec10000.bus.
->
-> | +simple-pm-bus fec10000.bus: runtime PM trying to suspend device but
-> active child
->
-> Suspend is aborted with -EBUSY, but zb stays disabled.
->
-> |  rmobile_pd_power_down: a3sp
-> | -PM: noirq suspend of devices complete after 18.424 msecs
-> | +PM: noirq suspend of devices complete after 26.937 msecs
-> |  Disabling non-boot CPUs ...
-> | -Suspended for 7.196 seconds
-> | +Suspended for 2.579 seconds
-> |  rmobile_pd_power_up: a3sp
-> | -cpg_div6_clock_enable: zb
->
-> pm_clk doesn't enable the clock of fec10000.bus.
-> (since it thinks it's still suspended?)
->
-> |  cpg_div6_clock_enable: sdhi0ck
-> |  cpg_div6_clock_enable: sdhi1ck
-> |  cpg_div6_clock_enable: mmc0
-> | -PM: noirq resume of devices complete after 134.580 msecs
-> | -PM: early resume of devices complete after 6.084 msecs
-> | -PM: resume of devices complete after 21.846 msecs
-> | -PM: Finishing wakeup.
-> | -Restarting tasks ... cpg_div6_clock_disable: mmc0
-> | -done.
-> | +PM: noirq resume of devices complete after 128.014 msecs
-> | +PM: early resume of devices complete after 6.121 msecs
-> | +Unhandled fault: imprecise external abort (0x1406) at 0x00000000
-> | +pgd = ee748000
-> | +[00000000] *pgd=7fc42835
-> | +Internal error: : 1406 [#1] SMP ARM
-> | +CPU: 0 PID: 1087 Comm: s2ram Not tainted
-> 4.9.0-rc2-ape6evm-01959-g90550a414a6a6cd3-dirty #505
-> | +Hardware name: Generic R8A73A4 (Flattened Device Tree)
-> | +task: ee47a340 task.stack: ee686000
-> | +PC is at smsc911x_resume+0x6c/0xbc
-> | +LR is at smsc911x_resume+0x6c/0xbc
->
-> smsc911x_resume() tries to access the smsc911x while the bus clock zb is
-> not enabled.
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+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
+]
