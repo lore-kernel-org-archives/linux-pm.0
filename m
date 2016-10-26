@@ -1,17 +1,16 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v6 5/9] x86/sysctl: Add sysctl for ITMT scheduling
- feature
-Date: Wed, 26 Oct 2016 20:11:23 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1610262010420.5013@nanos>
-References: <cover.1477000078.git.tim.c.chen@linux.intel.com>  <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>  <alpine.DEB.2.20.1610261251550.4983@nanos> <1477505006.2680.25.camel@linux.intel.com>
+Subject: Re: [PATCH v6 1/9] sched: Extend scheduler's asym packing
+Date: Wed, 26 Oct 2016 20:23:48 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1610262012330.5013@nanos>
+References: <cover.1477000078.git.tim.c.chen@linux.intel.com>  <c3bf1c59ee56dad1dc20ad3b3c06c166abb7a57e.1477000078.git.tim.c.chen@linux.intel.com>  <alpine.DEB.2.20.1610261226540.4983@nanos> <1477505446.2680.29.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; BOUNDARY="8323329-664602524-1477505485=:5013"
+Content-Type: multipart/mixed; BOUNDARY="8323329-797078632-1477506230=:5013"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:41249 "EHLO
+Received: from Galois.linutronix.de ([146.0.238.70]:41294 "EHLO
         Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932906AbcJZSN6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 14:13:58 -0400
-In-Reply-To: <1477505006.2680.25.camel@linux.intel.com>
+        with ESMTP id S1751129AbcJZS00 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 14:26:26 -0400
+In-Reply-To: <1477505446.2680.29.camel@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tim Chen <tim.c.chen@linux.intel.com>
@@ -20,23 +19,51 @@ Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vg
   This message is in MIME format.  The first part should be readable text,
   while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323329-664602524-1477505485=:5013
+--8323329-797078632-1477506230=:5013
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 
 On Wed, 26 Oct 2016, Tim Chen wrote:
-
-> On Wed, 2016-10-26 at 12:52 +0200, Thomas Gleixner wrote:
+> On Wed, 2016-10-26 at 12:27 +0200, Thomas Gleixner wrote:
 > > On Thu, 20 Oct 2016, Tim Chen wrote:
+> > 
 > > > 
-> > >  
-> > > +	if (itmt_sysctl_header)
-> > > +		unregister_sysctl_table(itmt_sysctl_header);
-> > What sets itmt_sysctl_header to NULL?
+> > > We generalize the scheduler's asym packing to provide an ordering
+> > > of the cpu beyond just the cpu number.  This allows the use of the
+> > > ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+> > > sched domain. The preference is defined with the cpu priority
+> > > given by arch_asym_cpu_priority(cpu).
+> > > 
+> > > We also record the most preferred cpu in a sched group when
+> > > we build the cpu's capacity for fast lookup of preferred cpu
+> > > during load balancing.
+> > > 
+> > > Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+> > > Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> > > Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> > This SOB-chain is bogus. Same for all other patches.
 > > 
 > 
-> If the registration of the itmt sysctl table has failed, it will
-> be NULL.
+> I am the primary author of the patch so I have my sign-off on top.  There
+> were also much internal discussions/reviews between myself, Peter and Srinivas,
+> before we post the first version of this patch.
+> I incorporated their inputs into the patch and added their sign-offs.  
+> 
+> Can you be more explicit on why you think the sign-offs here are bogus?
 
-And what clears it _AFTER_ the deregistration? Nothing, AFAICT.
---8323329-664602524-1477505485=:5013--
+Because SOB chains document the way a patch takes from the author to the
+kernel. The above says:
+
+You authored the patch and sent it to Peter who sent it to Srinivas. So how
+does it end up sent from you in my inbox?
+
+We have no formal tag for co developed patches, but it's common practice to
+either acknowledge contributions from others in free text form or use a
+non-documented tag like 'Co-developed-by:' or 'Co-authored-by:'.
+
+Thanks,
+
+	tglx
+
+
+--8323329-797078632-1477506230=:5013--
