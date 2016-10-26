@@ -1,64 +1,128 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH] mfd: axp20x-i2c: Add i2c-ids to fix module auto-loading
-Date: Wed, 26 Oct 2016 15:01:52 +0100
-Message-ID: <20161026140152.GF13127@dell>
-References: <20161005155112.13774-1-hdegoede@redhat.com>
- <20161005155112.13774-2-hdegoede@redhat.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: [PATCH 1/2] ARM: dts: uniphier: add CPU clocks and OPP table for Pro5
+ SoC
+Date: Thu, 27 Oct 2016 01:37:38 +0900
+Message-ID: <1477499859-12415-1-git-send-email-yamada.masahiro@socionext.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:35597 "EHLO
-        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753294AbcJZN7U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 09:59:20 -0400
-Received: by mail-wm0-f44.google.com with SMTP id e69so32513663wmg.0
-        for <linux-pm@vger.kernel.org>; Wed, 26 Oct 2016 06:59:20 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20161005155112.13774-2-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Masahiro Yamada <yamada.masahiro@socionext.com>, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Dennis Gilmore <dennis@ausil.us>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, 05 Oct 2016, Hans de Goede wrote:
+Add a CPU clock to every CPU node and a CPU OPP table to use the
+generic cpufreq driver.
 
-> The i2c subsys does not load modules by compatible, only by
-> i2c-id, with e.g. a modalias of: "i2c:axp209".
-> 
-> Populate the axp20x_i2c_id[] table with supported ids, so that
-> module auto-loading will work.
-> 
-> Reported-by: Dennis Gilmore <dennis@ausil.us>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
->  drivers/mfd/axp20x-i2c.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
 
-Applied (for now), thanks.
+ arch/arm/boot/dts/uniphier-pro5.dtsi | 74 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 74 insertions(+)
 
-> diff --git a/drivers/mfd/axp20x-i2c.c b/drivers/mfd/axp20x-i2c.c
-> index b1b8658..d35a5fe 100644
-> --- a/drivers/mfd/axp20x-i2c.c
-> +++ b/drivers/mfd/axp20x-i2c.c
-> @@ -69,10 +69,11 @@ static const struct of_device_id axp20x_i2c_of_match[] = {
->  };
->  MODULE_DEVICE_TABLE(of, axp20x_i2c_of_match);
->  
-> -/*
-> - * This is useless for OF-enabled devices, but it is needed by I2C subsystem
-> - */
->  static const struct i2c_device_id axp20x_i2c_id[] = {
-> +	{ "axp152", 0 },
-> +	{ "axp202", 0 },
-> +	{ "axp209", 0 },
-> +	{ "axp221", 0 },
->  	{ },
->  };
->  MODULE_DEVICE_TABLE(i2c, axp20x_i2c_id);
-
+diff --git a/arch/arm/boot/dts/uniphier-pro5.dtsi b/arch/arm/boot/dts/uniphier-pro5.dtsi
+index 5357ea9..5bd6068 100644
+--- a/arch/arm/boot/dts/uniphier-pro5.dtsi
++++ b/arch/arm/boot/dts/uniphier-pro5.dtsi
+@@ -56,16 +56,90 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <0>;
++			clocks = <&sys_clk 32>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&l2>;
++			operating-points-v2 = <&cpu_opp>;
+ 		};
+ 
+ 		cpu@1 {
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a9";
+ 			reg = <1>;
++			clocks = <&sys_clk 32>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&l2>;
++			operating-points-v2 = <&cpu_opp>;
++		};
++	};
++
++	cpu_opp: opp_table {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@100000000 {
++			opp-hz = /bits/ 64 <100000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@116667000 {
++			opp-hz = /bits/ 64 <116667000>;
++			clock-latency-ns = <300>;
++		};
++		opp@150000000 {
++			opp-hz = /bits/ 64 <150000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@175000000 {
++			opp-hz = /bits/ 64 <175000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@200000000 {
++			opp-hz = /bits/ 64 <200000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@233334000 {
++			opp-hz = /bits/ 64 <233334000>;
++			clock-latency-ns = <300>;
++		};
++		opp@300000000 {
++			opp-hz = /bits/ 64 <300000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@350000000 {
++			opp-hz = /bits/ 64 <350000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@400000000 {
++			opp-hz = /bits/ 64 <400000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@466667000 {
++			opp-hz = /bits/ 64 <466667000>;
++			clock-latency-ns = <300>;
++		};
++		opp@600000000 {
++			opp-hz = /bits/ 64 <600000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@700000000 {
++			opp-hz = /bits/ 64 <700000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@800000000 {
++			opp-hz = /bits/ 64 <800000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@933334000 {
++			opp-hz = /bits/ 64 <933334000>;
++			clock-latency-ns = <300>;
++		};
++		opp@1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			clock-latency-ns = <300>;
++		};
++		opp@1400000000 {
++			opp-hz = /bits/ 64 <1400000000>;
++			clock-latency-ns = <300>;
+ 		};
+ 	};
+ 
 -- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+1.9.1
