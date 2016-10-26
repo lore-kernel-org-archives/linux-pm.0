@@ -1,71 +1,57 @@
-From: Subhash Jadavani <subhashj@codeaurora.org>
-Subject: Re: [PATCH 2/2] scsi: ufs: Use the resource-managed function to add
- devfreq device
-Date: Wed, 26 Oct 2016 10:23:03 -0700
-Message-ID: <5742aac5e4d5e4c550a7c073047e2426@codeaurora.org>
-References: <1477467350-27059-1-git-send-email-cw00.choi@samsung.com>
- <1477467498-27145-1-git-send-email-cw00.choi@samsung.com>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v6 5/9] x86/sysctl: Add sysctl for ITMT scheduling
+ feature
+Date: Wed, 26 Oct 2016 10:23:32 -0700
+Message-ID: <1477502612.2680.9.camel@linux.intel.com>
+References: <cover.1477000078.git.tim.c.chen@linux.intel.com>
+         <b3f648c2c4cd36b6a043239bee8437a2060c0ac4.1477000078.git.tim.c.chen@linux.intel.com>
+         <alpine.DEB.2.20.1610261231250.4983@nanos>
+         <20161026112502.GB3117@twins.programming.kicks-ass.net>
+         <alpine.DEB.2.20.1610261322580.4983@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1477467498-27145-1-git-send-email-cw00.choi@samsung.com>
+In-Reply-To: <alpine.DEB.2.20.1610261322580.4983@nanos>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, linux-scsi-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2016-10-26 00:38, Chanwoo Choi wrote:
-> This patch uses the resource-managed to add the devfreq device.
-> This function will make it easy to handle the devfreq device.
-> 
-> - struct devfreq *devm_devfreq_add_device(struct device *dev,
-> 				  struct devfreq_dev_profile *profile,
-> 				  const char *governor_name,
-> 				  void *data);
-> Cc: Vinayak Holikatti <vinholikatti@gmail.com>
-> Cc: James E.J. Bottomley <jejb@linux.vnet.ibm.com>
-> Cc: Martin K. Petersen <martin.petersen@oracle.com>
-> Cc: linux-scsi@vger.kernel.org
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  drivers/scsi/ufs/ufshcd.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
-> index f08d41a2d70b..e639071fd3a1 100644
-> --- a/drivers/scsi/ufs/ufshcd.c
-> +++ b/drivers/scsi/ufs/ufshcd.c
-> @@ -6198,8 +6198,6 @@ void ufshcd_remove(struct ufs_hba *hba)
->  	scsi_host_put(hba->host);
-> 
->  	ufshcd_exit_clk_gating(hba);
-> -	if (ufshcd_is_clkscaling_enabled(hba))
-> -		devfreq_remove_device(hba->devfreq);
->  	ufshcd_hba_exit(hba);
->  }
->  EXPORT_SYMBOL_GPL(ufshcd_remove);
-> @@ -6495,7 +6493,7 @@ int ufshcd_init(struct ufs_hba *hba, void
-> __iomem *mmio_base, unsigned int irq)
->  	}
-> 
->  	if (ufshcd_is_clkscaling_enabled(hba)) {
-> -		hba->devfreq = devfreq_add_device(dev, &ufs_devfreq_profile,
-> +		hba->devfreq = devm_devfreq_add_device(dev, &ufs_devfreq_profile,
->  						   "simple_ondemand", NULL);
->  		if (IS_ERR(hba->devfreq)) {
->  			dev_err(hba->dev, "Unable to register with devfreq %ld\n",
+On Wed, 2016-10-26 at 13:24 +0200, Thomas Gleixner wrote:
+> On Wed, 26 Oct 2016, Peter Zijlstra wrote:
+> > 
+> > On Wed, Oct 26, 2016 at 12:49:36PM +0200, Thomas Gleixner wrote:
+> > 
+> > > 
+> > > > 
+> > > > +	/*
+> > > > +	 * ITMT capability automatically enables ITMT
+> > > > +	 * scheduling for small systems (single node).
+> > > > +	 */
+> > > > +	if (topology_num_packages() == 1)
+> > > > +		sysctl_sched_itmt_enabled = 1;
+> > > I really hate this. This is policy and the kernel should not impose
+> > > policy. Why would I like to have this enforced on my single socket XEON
+> > > server?
+> > So this really wants to be enabled by default; otherwise nobody will use
+> > this, and it really does help single threaded workloads.
+> Fair enough. Then this wants to be documented.
+>  
+> > 
+> > There were reservations on the multi-socket case of ITMT, maybe it would
+> > help to spell those out in great detail here. That is, have the comment
+> > explain the policy instead of simply stating what the code does (which
+> > is always bad comment policy, you can read the code just fine).
+> What is the objection for multi sockets? If it improves the behaviour then
+> why would this be a bad thing for multi sockets?
 
-This change looks good to me but this will have merge conflicts if this 
-gets in after my patch series "	[PATCH v1 00/11] scsi: ufs: bug fixes 
-patch series #1" (due to "[PATCH v1 06/11] scsi: ufs: suspend clock 
-scaling for failed runtime_resume"). so if you can, please pull in my 
-patch series and rebase your change on top of it and send it out again.
+For multi-socket (server system), it is much more likely that they will
+have multiple cpus in a socket busy and not run in turbo mode. So the extra
+work in migrating the workload to the one with extra headroom will
+not make use of those headroom in that scenario.  I will update the comment
+to reflect this policy.
 
-Thanks,
-Subhash
+See also our previous discussions: http://lkml.iu.edu/hypermail/linux/kernel/1609.1/03381.html
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Tim
