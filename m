@@ -1,14 +1,14 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 1/2] PM / devfreq: rk3399_dmc: Use the resource-managed
- function to add devfreq dev
-Date: Wed, 26 Oct 2016 16:35:49 +0900
-Message-ID: <1477467350-27059-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 2/2] scsi: ufs: Use the resource-managed function to add
+ devfreq device
+Date: Wed, 26 Oct 2016 16:38:18 +0900
+Message-ID: <1477467498-27145-1-git-send-email-cw00.choi@samsung.com>
 References: <1477467350-27059-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-scsi-owner@vger.kernel.org>
 In-reply-to: <1477467350-27059-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-scsi-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, cpgs@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 This patch uses the resource-managed to add the devfreq device.
@@ -18,24 +18,37 @@ This function will make it easy to handle the devfreq device.
 				  struct devfreq_dev_profile *profile,
 				  const char *governor_name,
 				  void *data);
-
+Cc: Vinayak Holikatti <vinholikatti@gmail.com>
+Cc: James E.J. Bottomley <jejb@linux.vnet.ibm.com>
+Cc: Martin K. Petersen <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/rk3399_dmc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/ufs/ufshcd.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index e24b73d66659..3f8f4381cd4a 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -436,7 +436,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
+index f08d41a2d70b..e639071fd3a1 100644
+--- a/drivers/scsi/ufs/ufshcd.c
++++ b/drivers/scsi/ufs/ufshcd.c
+@@ -6198,8 +6198,6 @@ void ufshcd_remove(struct ufs_hba *hba)
+ 	scsi_host_put(hba->host);
  
- 	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
+ 	ufshcd_exit_clk_gating(hba);
+-	if (ufshcd_is_clkscaling_enabled(hba))
+-		devfreq_remove_device(hba->devfreq);
+ 	ufshcd_hba_exit(hba);
+ }
+ EXPORT_SYMBOL_GPL(ufshcd_remove);
+@@ -6495,7 +6493,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
+ 	}
  
--	data->devfreq = devfreq_add_device(dev,
-+	data->devfreq = devm_devfreq_add_device(dev,
- 					   &rk3399_devfreq_dmc_profile,
- 					   "simple_ondemand",
- 					   &data->ondemand_data);
+ 	if (ufshcd_is_clkscaling_enabled(hba)) {
+-		hba->devfreq = devfreq_add_device(dev, &ufs_devfreq_profile,
++		hba->devfreq = devm_devfreq_add_device(dev, &ufs_devfreq_profile,
+ 						   "simple_ondemand", NULL);
+ 		if (IS_ERR(hba->devfreq)) {
+ 			dev_err(hba->dev, "Unable to register with devfreq %ld\n",
 -- 
 1.9.1
+
