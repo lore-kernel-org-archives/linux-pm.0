@@ -1,70 +1,44 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v5 0/5] Functional dependencies between devices
-Date: Thu, 27 Oct 2016 17:32:52 +0200
-Message-ID: <20161027153252.GA26705@kroah.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <13957403.ZrB4mMbICz@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Discussion] Performance levels of power domains
+Date: Thu, 27 Oct 2016 13:58:08 +0530
+Message-ID: <20161027082808.GD10423@vireshk-i7>
+References: <CAKohpokwTOZbbRP4XRV1jPoQ=gKxD2UKBYSXcZe8iBgDnr9-BQ@mail.gmail.com>
+ <7hvawfq6kh.fsf@baylibre.com>
+ <20161027034638.GA10423@vireshk-i7>
+ <CAKfTPtDD=nGiOno9z2q3pcgQFB8RJwTb1fSmOZJRPZEy0Et8DA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:33252 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1030284AbcJ0Pdr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 11:33:47 -0400
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:33819 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S936192AbcJ0PfF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 11:35:05 -0400
+Received: by mail-pf0-f180.google.com with SMTP id n85so20042036pfi.1
+        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 08:35:05 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <13957403.ZrB4mMbICz@vostro.rjw.lan>
+In-Reply-To: <CAKfTPtDD=nGiOno9z2q3pcgQFB8RJwTb1fSmOZJRPZEy0Et8DA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@kernel.org>
 
-On Mon, Oct 10, 2016 at 02:36:31PM +0200, Rafael J. Wysocki wrote:
-> Hi Everyone,
-> 
-> > On Thursday, September 08, 2016 11:25:44 PM Rafael J. Wysocki wrote:
-> > 
-> 
-> [cut]
-> 
-> > 
-> > Time for another update. :-)
-> > 
-> > Fewer changes this time, mostly to address issues found by Lukas and Marek.
-> > 
-> > The most significant one is to make device_link_add() cope with the case
-> > when
-> > the consumer device has not been registered yet when it is called.  The
-> > supplier device still is required to be registered and the function will
-> > return NULL if that is not the case.
-> > 
-> > Another significant change is in patch [4/5] that now makes the core apply
-> > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
-> > probing of a consumer one (in analogy with the parent).
-> 
-> One more update after some conversations during LinuxCon Europe.
-> 
-> The main point was to make it possible for device_link_add() to figure out the
-> initial state of the link instead of expecting the caller to provide it which
-> might not be reliable enough in general.
-> 
-> In this version device_link_add() takes three arguments, the supplier and
-> consumer pointers and flags and it sets the correct initial state of the link
-> automatically (unless invoked with the "stateless" flag, of course).  The cost
-> is one additional field in struct device (I moved all of the links-related
-> fields in struct device to a separate sub-structure while at it) to track
-> the "driver presence status" of the device (to be used by device_link_add()).
-> 
-> In addition to that, the links list walks in the core.c and dd.c code are
-> under the device links mutex now, so the iternal link spinlock is not needed
-> any more and I have renamed symbols to distinguish between flags, link states
-> and device "driver presence statuses".
-> 
-> More information is there in the changelogs.
+On 27-10-16, 09:17, Vincent Guittot wrote:
+> The M3 core takes only care of the voltage but not the clock ?
 
-First off, thanks so much for doing this work, it's been needed for a
-long time.  It all looks good, and I've added it to my testing tree to
-give the 0-day bot some fun with it for a day or so.
+Yes. The is handled normally.
 
-thanks,
+> Just to be sure to understand the problem:
+> -There is no real voltage value but instead an opaque index that has
+> to be used with frequency instead of a voltage.
+> -This index is used by the M3 core to set voltages but M3 core doesn't
+> set the clock which is managed by Linux.
+> -The M3 core takes only one index input for the whole voltage domain
+> and Linux must aggregate the constraints (with probably a max policy)
+> of all devices that belong this domain
+> 
+> Am i missing something ?
 
-greg k-h
+No. All matches to my understanding of the problem.
+
+-- 
+viresh
