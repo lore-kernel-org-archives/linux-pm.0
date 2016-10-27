@@ -1,38 +1,80 @@
-From: Tero Kristo <t-kristo@ti.com>
-Subject: Re: [PATCH V4 0/5] firmware: Add support for TI System Control
- Interface (TI-SCI) protocol driver
-Date: Thu, 27 Oct 2016 20:46:30 +0300
-Message-ID: <f51516ba-9539-78ca-1d40-585ece047ea0@ti.com>
-References: <20161018230837.6515-1-nm@ti.com>
- <2694e4b5-20d5-f590-c6a6-55ff4cb8c16b@ti.com> <m260odhjcb.fsf@baylibre.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] net: smsc911x: Synchronize the runtime PM status during
+ system suspend
+Date: Thu, 27 Oct 2016 19:47:45 +0200
+Message-ID: <CAPDyKFo6zJ0oM26cjEVDW-vhRdTiGYyJM3QwVxDiKdG7=qzKfw@mail.gmail.com>
+References: <1477567434-5128-1-git-send-email-ulf.hansson@linaro.org>
+ <CAMuHMdUbU07t2kB6J0rSOiOTbDkegP73FAAEenViuDjQUFE-Jg@mail.gmail.com>
+ <CAPDyKFprWcita5sbdwTqbdi2CMW4gx7_UB7+kMd9R2rqXdcALQ@mail.gmail.com> <CAMuHMdV_aybcUGu+g-8uNj5k1MtoyJ5s8CfujC+iJrxs7h5eAA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:53550 "EHLO comal.ext.ti.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934200AbcJ0RrL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Oct 2016 13:47:11 -0400
-In-Reply-To: <m260odhjcb.fsf@baylibre.com>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:36157 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964808AbcJ0Rrr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 13:47:47 -0400
+Received: by mail-wm0-f52.google.com with SMTP id b80so48798357wme.1
+        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 10:47:47 -0700 (PDT)
+In-Reply-To: <CAMuHMdV_aybcUGu+g-8uNj5k1MtoyJ5s8CfujC+iJrxs7h5eAA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Nishanth Menon <nm@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Andrew Davis <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Steve Glendinning <steve.glendinning@shawell.net>
 
-On 27/10/16 19:01, Kevin Hilman wrote:
-> Tero Kristo <t-kristo@ti.com> writes:
+On 27 October 2016 at 13:54, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf,
 >
->> On 19/10/16 02:08, Nishanth Menon wrote:
->>> Version 4 of the series is basically a rebase to v4.9-rc1, no functional
->>> changes.
+> On Thu, Oct 27, 2016 at 1:53 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 27 October 2016 at 13:41, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>> On Thu, Oct 27, 2016 at 1:23 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> The smsc911c driver puts its device into low power state when entering
+>>>> system suspend. Although it doesn't update the device's runtime PM status
+>>>> to RPM_SUSPENDED, which causes problems for a parent device.
+>>>>
+>>>> In particular, when the runtime PM status of the parent is requested to be
+>>>> updated to RPM_SUSPENDED, the runtime PM core prevent this, because it's
+>>>> forbidden to runtime suspend a device, which has an active child.
+>>>>
+>>>> Fix this by updating the runtime PM status of the smsc911x device to
+>>>> RPM_SUSPENDED during system suspend. In system resume, let's reverse that
+>>>> action by runtime resuming the device and thus also the parent.
+>>>
+>>> Thanks for your patch!
+>>>
+>>> The changelog sounds quite innocent, but this does fix a system crash
+>>> during resume from s2ram.
+>>>
+>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>>>> Cc: Steve Glendinning <steve.glendinning@shawell.net>
+>>>> Fixes: 8b1107b85efd ("PM / Runtime: Don't allow to suspend a device with an active child")
+>>>
+>>> While the abovementioned commit made the problem visible, the root cause
+>>> was present before, right?
 >>
->> Any final comments on this series, or shall I send a pull-req forward?
->> Very minimal changes compared to v3 so should be good to go imo.
+>> Yes.
+>>
+>>>> ---
+>>>>
+>>>> Note that the commit this change fixes is currently queued for 4.10 via
+>>>> Rafael's linux-pm tree. So this fix should go via that tree as well.
+>>>
+>>> Alternatively, this could go in in v4.9 to avoid the problem from ever
+>>> appearing in upstream?
+>>
+>> Makes perfect sense! In that case we should remove the fixes tag.
+>>
+>> Rafael, can you pick this up for 4.9 rc[n]?
 >
-> Not a comment on the series, but a question on TI-SCI.
->
-> Will the uC firmware be open like it was on AM335x?
+> Actually I was thinking about DaveM and the network tree instead.
 
-Currently it seems like it will be closed. :(
+Well, that would work as well.
 
--Tero
+Although, perhaps it becomes easier if Rafael deals with this, as it
+gives him better control of when below change also can go in.
+https://patchwork.kernel.org/patch/9375061
+
+Rafael, please tell what you prefer?
+
+Kind regards
+Uffe
