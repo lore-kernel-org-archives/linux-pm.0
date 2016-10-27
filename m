@@ -1,88 +1,63 @@
 From: Vincent Guittot <vincent.guittot@linaro.org>
 Subject: Re: [Discussion] Performance levels of power domains
-Date: Thu, 27 Oct 2016 09:13:42 +0200
-Message-ID: <CAKfTPtCe_PwOpDH=qrhHLzh=EV7ZFV=z_AsqtwCm7jDpTQDy-w@mail.gmail.com>
+Date: Thu, 27 Oct 2016 09:17:55 +0200
+Message-ID: <CAKfTPtDD=nGiOno9z2q3pcgQFB8RJwTb1fSmOZJRPZEy0Et8DA@mail.gmail.com>
 References: <CAKohpokwTOZbbRP4XRV1jPoQ=gKxD2UKBYSXcZe8iBgDnr9-BQ@mail.gmail.com>
- <7hvawfq6kh.fsf@baylibre.com>
+ <7hvawfq6kh.fsf@baylibre.com> <20161027034638.GA10423@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f44.google.com ([74.125.82.44]:36063 "EHLO
-        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932605AbcJ0HOE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 03:14:04 -0400
-Received: by mail-wm0-f44.google.com with SMTP id b80so14343313wme.1
-        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 00:14:04 -0700 (PDT)
-In-Reply-To: <7hvawfq6kh.fsf@baylibre.com>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:37470 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750748AbcJ0HSW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 03:18:22 -0400
+Received: by mail-wm0-f52.google.com with SMTP id 140so13416144wmv.0
+        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 00:18:21 -0700 (PDT)
+In-Reply-To: <20161027034638.GA10423@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@baylibre.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@kernel.org>
 
-On 26 October 2016 at 21:00, Kevin Hilman <khilman@baylibre.com> wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
+On 27 October 2016 at 05:46, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 26-10-16, 12:00, Kevin Hilman wrote:
+>> Yes.  As I've suggested to qcom/linaro folks (off-list discussions), I
 >
->> Hi Guys,
->>
->> I wanted to involve you guys to get a discussion going
->> for a problem we want to solve, and so this mail.
->>
->>
->> Platform details:
->>
->> Some of the Qualcom SoCs have the option to configure
->> the performance level of their Power Domains. The performance
->> levels are identified by integer values (lets say 0-9, 0 being the lowest).
->>
->> Another M3 core handles the *real* voltage scaling based on the input
->> received (from software) in terms of these performance levels. The M3
->> core translates the levels into a range of voltages (corners) and selects
->> the right one by itself.
->>
->> Software needs to provide the performance level for the entire domain
->> to the M3 core and so software also needs to handle performance requests
->> from all the devices that lie in the domain X and find a Performance Level P,
->> which can satisfy all the devices (normally the highest requrested level).
->>
->>
->> Problem statement:
->>
->> As we aren't dealing with Voltages here, we can't really get the benefits
->> of the Regulators framework. The regulators are managed internally
->> by the M3 core. All we need is a way for software to comeout with inputs
->> for the M3 core.
->>
->> The OPP framework can be used to include performance levels for
->> each OPP (frequency) entry.
->>
->> But what framework can be used to select performance level of power
->> domains ?
->>
->> By name, power-domain or genpd looks to be the right choice, but until
->> now it is only managing power-on and power-off of devices and domains.
+> No one told me this story :)
 >
-> genpd has also recently been extended to support multiple states, though
-> those are still idle states, not active (performance) states.
+>> think extending genpd to handle performance states is a logical
+>> extension.  Otherwise, you will be (re)inventing something that looks an
+>> awful lot like genpd anyways.
 >
->> Should we extend that (along with runtime PM), or do something else?
+> I completely agree. Runtime PM and genpd look to be the perfect
+> placeholder for such stuff. I actually tried to convince Ulf yesterday
+> on this and he wasn't sure if it will ever get accepted upstream and
+> that's when I started this thread :)
 >
-> Yes.  As I've suggested to qcom/linaro folks (off-list discussions), I
-> think extending genpd to handle performance states is a logical
-> extension.  Otherwise, you will be (re)inventing something that looks an
-> awful lot like genpd anyways.
+>> The other related framework is per-device PM QoS which could be used to
+>> set constraints on specific devices, and the genpd governors would then
+>> be responsible for looking at the constraints and changing states as
+>> needed.
+>
+> I am not sure if genpd governors are also background governors like
+> cpufreq, but we need to make sure that the voltage is raised after the
+> function requesting a change returns, so that the clk rate can be
+> increased then.
 
-I think that we are mixing 2 different topics. This one is about
-setting the voltage of shared voltage domain whereas the scaling bus
-topic, that we also discuss with Kevin, includes path, throughput and
-routing aspects, which are the intricate part of the discussion
+The M3 core takes only care of the voltage but not the clock ?
 
-That being said, I agreed that generic power domain could be a natural
-place to select running level and not only the idle one.
+Just to be sure to understand the problem:
+-There is no real voltage value but instead an opaque index that has
+to be used with frequency instead of a voltage.
+-This index is used by the M3 core to set voltages but M3 core doesn't
+set the clock which is managed by Linux.
+-The M3 core takes only one index input for the whole voltage domain
+and Linux must aggregate the constraints (with probably a max policy)
+of all devices that belong this domain
 
+Am i missing something ?
+
+Vincent
 >
-> The other related framework is per-device PM QoS which could be used to
-> set constraints on specific devices, and the genpd governors would then
-> be responsible for looking at the constraints and changing states as
-> needed.
->
-> Kevin
+> --
+> viresh
