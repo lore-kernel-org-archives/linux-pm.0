@@ -1,79 +1,37 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
- fails to start
-Date: Thu, 27 Oct 2016 09:06:00 +0900
-Message-ID: <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
-References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
- <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFtSRVNFTkRdW1BBVENIIDIvMl0gUE0gLyBkZXZmcmVx?=
+ =?UTF-8?B?OiBleHlub3MtcHBtdTogUmVtb3ZlIHVudXNlZCBtdXRleCBm?=
+ =?UTF-8?B?cm9tIHN0cnVjdCBleHlub3NfcHBtdQ==?=
+Date: Thu, 27 Oct 2016 00:29:01 +0000
+Message-ID: <52112573.489887.1477528141808.JavaMail.weblogic@ep2ml103c>
+References: <1477012149-9928-1-git-send-email-axel.lin@ingics.com>
+ <CGME20161021010940epcas1p1bf0feb2d8401d44adbcbd7f399d30f64@epcas1p1.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:33932 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932332AbcJ0AGD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Oct 2016 20:06:03 -0400
-In-reply-to: <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/related;
+ boundary="----=_Part_489886_556071931.1477528141808"
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: =?UTF-8?B?QXhlbCBMaW4=?= <axel.lin@ingics.com>, =?UTF-8?B?UmFmYWVsIEogLiBXeXNvY2tp?= <rafael.j.wysocki@intel.com>
+Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?bGludXgtc2Ftc3VuZy1zb2NAdmdlci5rZXJuZWwub3Jn?= <linux-samsung-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+------=_Part_489886_556071931.1477528141808
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-On 2016년 10월 27일 04:17, Saravana Kannan wrote:
-> If the new governor fails to start, switch back to old governor so that the
-> devfreq state is not left in some weird limbo.
-> 
-> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
-> ---
-> * Fix NULL deref for real this time.
-> * Addressed some style preferences.
-> 
->  drivers/devfreq/devfreq.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index bf3ea76..77c41a5 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  	struct devfreq *df = to_devfreq(dev);
->  	int ret;
->  	char str_governor[DEVFREQ_NAME_LEN + 1];
-> -	struct devfreq_governor *governor;
-> +	const struct devfreq_governor *governor, *prev_governor;
->  
->  	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->  	if (ret != 1)
-> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  			goto out;
->  		}
->  	}
-> +	prev_governor = df->governor;
->  	df->governor = governor;
->  	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
->  	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-> -	if (ret)
-> +	if (ret) {
->  		dev_warn(dev, "%s: Governor %s not started(%d)\n",
->  			 __func__, df->governor->name, ret);
-> +		if (prev_governor) {
-
-I think that prev_governor is always set. You don't need to check it.
-Why do check it?
-
-> +			df->governor = prev_governor;
-> +			strncpy(df->governor_name, prev_governor->name,
-> +				DEVFREQ_NAME_LEN);
-> +			df->governor->event_handler(df, DEVFREQ_GOV_START,
-> +						    NULL);
-> +		}
-> +	}
->  out:
->  	mutex_unlock(&devfreq_list_lock);
->  
-> 
-
--- 
-Best Regards,
-Chanwoo Choi
+PiAtLS0tLS0tLS0gT3JpZ2luYWwgTWVzc2FnZSAtLS0tLS0tLS0NCj4gU2VuZGVyIDogQXhlbCBM
+aW4gPGF4ZWwubGluQGluZ2ljcy5jb20+DQo+IERhdGUgOiAyMDE2LTEwLTIxIDEwOjA5IChHTVQr
+OSkNCj4gVGl0bGUgOiBbUkVTRU5EXVtQQVRDSCAyLzJdIFBNIC8gZGV2ZnJlcTogZXh5bm9zLXBw
+bXU6IFJlbW92ZSB1bnVzZWQgbXV0ZXggZnJvbSBzdHJ1Y3QgZXh5bm9zX3BwbXUNCj4gIA0KPiBU
+aGUgbXV0ZXggaXMgbm90IHVzZWQgYXQgYWxsLCByZW1vdmUgaXQuDQo+IA0KPiBTaWduZWQtb2Zm
+LWJ5OiBBeGVsIExpbiA8YXhlbC5saW5AaW5naWNzLmNvbT4NCj4gQWNrZWQtYnk6IENoYW53b28g
+Q2hvaSA8Y3cwMC5jaG9pQHNhbXN1bmcuY29tPg0KDQpBY2tlZC1ieTogTXl1bmdKb28gSGFtIDxt
+eXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCkJvdGggcGF0Y2hlcyBhcmUgc3RhY2tlZCBpbiBm
+b3ItNC45LXJjIGJyYW5jaC4NCg0KDQpUaGFua3MuDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCj4g
+LS0tDQo+IA0KPiBUaGlzIHBhdGNoIHdhcyBzZW50IG9uIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5l
+bC5vcmcvcGF0Y2gvOTM0MTA5Ny8NCj4gIGRyaXZlcnMvZGV2ZnJlcS9ldmVudC9leHlub3MtcHBt
+dS5jIHwgMyAtLS0NCj4gIDEgZmlsZSBjaGFuZ2VkLCAzIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvZGV2ZnJlcS9ldmVudC9leHlub3MtcHBtdS5jIGIvZHJpdmVycy9k
+ZXZmcmVxL2V2ZW50L2V4eW5vcy1wcG11LmMNCj4gDQo=
+------=_Part_489886_556071931.1477528141808--
