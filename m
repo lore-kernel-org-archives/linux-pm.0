@@ -1,40 +1,116 @@
-From: Tero Kristo <t-kristo@ti.com>
-Subject: Re: [PATCH V4 0/5] firmware: Add support for TI System Control
- Interface (TI-SCI) protocol driver
-Date: Thu, 27 Oct 2016 20:47:08 +0300
-Message-ID: <be63a086-85b3-2b00-3aec-29c589102d43@ti.com>
-References: <20161018230837.6515-1-nm@ti.com>
- <2694e4b5-20d5-f590-c6a6-55ff4cb8c16b@ti.com>
- <45f55012-f027-51d1-bdf1-6fa1950f59ed@oracle.com>
+From: ville.syrjala@linux.intel.com
+Subject: [PATCH] intel_idle: Don't use on Lenovo Ideapad S10-3t
+Date: Thu, 27 Oct 2016 21:10:14 +0300
+Message-ID: <1477591814-10985-1-git-send-email-ville.syrjala@linux.intel.com>
+References: <1446499360-31984-1-git-send-email-ville.syrjala@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from comal.ext.ti.com ([198.47.26.152]:53580 "EHLO comal.ext.ti.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934036AbcJ0Rro (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Oct 2016 13:47:44 -0400
-In-Reply-To: <45f55012-f027-51d1-bdf1-6fa1950f59ed@oracle.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1446499360-31984-1-git-send-email-ville.syrjala@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <len.brown@intel.com>
+Cc: feng.tang@intel.com, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Santosh Shilimkar <santosh.shilimkar@oracle.com>, Nishanth Menon <nm@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>
-Cc: Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Andrew Davis <afd@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Russ Dill <Russ.Dill@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh@kernel.org>, Kevin Hilman <khilman@baylibre.com>
 
-On 26/10/16 22:56, Santosh Shilimkar wrote:
-> On 10/25/2016 10:34 AM, Tero Kristo wrote:
->> On 19/10/16 02:08, Nishanth Menon wrote:
->>> Version 4 of the series is basically a rebase to v4.9-rc1, no functional
->>> changes.
->>
->> Hi,
->>
->> Any final comments on this series, or shall I send a pull-req forward?
->> Very minimal changes compared to v3 so should be good to go imo.
->>
-> The patchset looks fine to me from brief scan so please Go from
-> my side at least for the pull request.
+From: Ville Syrjälä <ville.syrjala@linux.intel.com>
 
-Queued for 4.10, pull request sent also. Thanks.
+Lenovo Ideapad S10-3t hangs coming out of S3 with intel_idle.
+The two workaround that seem to help are "intel_idle.max_cstate=0"
+or "nohz=off highres=off".
 
--Tero
+At a first glance quirk_tigerpoint_bm_sts() seemed promising, but
+even when moved to early_resume it didn't do anything.
 
+I have no idea what's wrong here, so let's just disable intel_idle
+for these machines using a DMI match.
+
+I sent this patch originally about one year ago, at which time I was
+asked to file a bug, which I did [1], which was mostly a waste of time
+since no one actually did anything to fix the problem. In the
+meantime even acpi-idle got broken and then fixed again [2], so at
+least there's still a working alternative. As intel_idle has never
+worked on this machine, and it looks like no one has any real
+intention to fix it, I'm going to suggest *again* that we simply
+disable intel_idle on this machine and get on with life.
+
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=107151
+[2] https://lkml.org/lkml/2016/5/11/238
+
+Cc: feng.tang@intel.com
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: "Srivatsa S. Bhat" <srivatsa@mit.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Oleg Nesterov <oleg@redhat.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul Turner <pjt@google.com>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-acpi@vger.kernel.org
+Signed-off-by: Ville Syrjälä <ville.syrjala@linux.intel.com>
+---
+ drivers/idle/intel_idle.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 4466a2f969d7..db81b27f6250 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -59,6 +59,7 @@
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
+ #include <linux/moduleparam.h>
++#include <linux/dmi.h>
+ #include <asm/cpu_device_id.h>
+ #include <asm/intel-family.h>
+ #include <asm/mwait.h>
+@@ -1089,6 +1090,25 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	{}
+ };
+ 
++static int intel_idle_disable_callback(const struct dmi_system_id *id)
++{
++	pr_debug(PREFIX "problematic system (%s), disabling\n", id->ident);
++	return 1;
++}
++
++static const struct dmi_system_id intel_idle_disable_dmi[] = {
++	{
++		/* Lenovo Ideapad S10-3t, hangs coming out of S3 */
++		.callback = intel_idle_disable_callback,
++		.ident = "Lenovo Ideapad S10-3t",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
++			DMI_MATCH(DMI_PRODUCT_VERSION, "Lenovo Ideapad S10-3t"),
++		},
++	},
++	{}
++};
++
+ /*
+  * intel_idle_probe()
+  */
+@@ -1121,6 +1141,9 @@ static int __init intel_idle_probe(void)
+ 	    !mwait_substates)
+ 			return -ENODEV;
+ 
++	if (dmi_check_system(intel_idle_disable_dmi))
++		return -ENODEV;
++
+ 	pr_debug(PREFIX "MWAIT substates: 0x%x\n", mwait_substates);
+ 
+ 	icpu = (const struct idle_cpu *)id->driver_data;
+-- 
+2.7.4
