@@ -1,61 +1,36 @@
-From: Petr Mladek <pmladek@suse.com>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Subject: Re: [PATCH 3/3] thermal/intel_powerclamp: Convert to CPU hotplug
  state
-Date: Thu, 27 Oct 2016 16:53:48 +0200
-Message-ID: <20161027145348.GV23809@pathway.suse.cz>
+Date: Thu, 27 Oct 2016 17:17:26 +0200
+Message-ID: <20161027151726.s2uavcnnbtjvmboq@linutronix.de>
 References: <1476707572-32215-1-git-send-email-pmladek@suse.com>
  <1476707572-32215-4-git-send-email-pmladek@suse.com>
  <20161021132118.4239af86@jacob-builder>
  <20161024154807.GQ23809@pathway.suse.cz>
  <20161024095529.2b1855b4@icelake>
+ <20161027145348.GV23809@pathway.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:44083 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S943381AbcJ0PSP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 11:18:15 -0400
 Content-Disposition: inline
-In-Reply-To: <20161024095529.2b1855b4@icelake>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20161027145348.GV23809@pathway.suse.cz>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon 2016-10-24 09:55:29, Jacob Pan wrote:
-> On Mon, 24 Oct 2016 17:48:07 +0200
-> Petr Mladek <pmladek@suse.com> wrote:
+On 2016-10-27 16:53:48 [+0200], Petr Mladek wrote:
 > 
-> > On Fri 2016-10-21 13:21:18, Jacob Pan wrote:
-> > > On Mon, 17 Oct 2016 14:32:52 +0200
-> > > Petr Mladek <pmladek@suse.com> wrote:
-> > > 
-> > > > From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> > > > 
-> > > Hi Sebastian,
-> > > I applied this patchset on 4.9-rc1 and run some cpu online/offline
-> > > loops test while injecting idle, e.g. 25%. I got system hang after a
-> > > few cycles. Still looking into root cause.
-> > 
-> > You might need the patch
-> > ("sched/fair: Fix sched domains NULL deference in
-> > select_idle_sibling()") from linux-tip, see
-> > https://lkml.kernel.org/r/tip-9cfb38a7ba5a9c27c1af8093fb1af4b699c0a441@git.kernel.org
-> > 
-> > I have mentioned it in the cover letter. I am sorry if it was not
-> > visible enough.
-> Thanks for point it out again, I missed it.
-> 
-> Now rc2 has this fix so I tried again cpuhp seems to work well now.
-> 
-> However, I found suspend to ram does not work with this patchset. Have
-> you  tested it with "echo mem > /sys/power/state" while doing idle
-> injection?
-> It fails to enter s3 on my system.
+> In each case, I wonder if the problem is caused by the conversion
+> to the kthread worker or by the CPU hotplug state conversion.
 
-Hmm, I haven't tested the system suspend. I am sorry but I am snowed
-under some other tasks this week and will be on the Plumbers
-conference the next week. I hope that I will have some time to look
-at it then.
+drop the hotplug patch and you will see.
 
-In each case, I wonder if the problem is caused by the conversion
-to the kthread worker or by the CPU hotplug state conversion.
+> Best Regards,
+> Petr
 
-Best Regards,
-Petr
+Sebastian
