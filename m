@@ -1,76 +1,109 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] net: smsc911x: Synchronize the runtime PM status during
- system suspend
-Date: Thu, 27 Oct 2016 13:54:47 +0200
-Message-ID: <CAMuHMdV_aybcUGu+g-8uNj5k1MtoyJ5s8CfujC+iJrxs7h5eAA@mail.gmail.com>
-References: <1477567434-5128-1-git-send-email-ulf.hansson@linaro.org>
- <CAMuHMdUbU07t2kB6J0rSOiOTbDkegP73FAAEenViuDjQUFE-Jg@mail.gmail.com> <CAPDyKFprWcita5sbdwTqbdi2CMW4gx7_UB7+kMd9R2rqXdcALQ@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [Discussion] Performance levels of power domains
+Date: Thu, 27 Oct 2016 13:46:41 +0200
+Message-ID: <CAPDyKFrO6VxnfnG7ragPj80auWPJWMmfRABwsNnCg3U4gGCR4g@mail.gmail.com>
+References: <CAKohpokwTOZbbRP4XRV1jPoQ=gKxD2UKBYSXcZe8iBgDnr9-BQ@mail.gmail.com>
+ <7hvawfq6kh.fsf@baylibre.com> <CAJZ5v0jPeauJGpQfr1VjDo1Z-Xd6UT4_4QLeso_CSEtB4zyaag@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f171.google.com ([209.85.216.171]:36628 "EHLO
-        mail-qt0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S942804AbcJ0Oa2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 10:30:28 -0400
-In-Reply-To: <CAPDyKFprWcita5sbdwTqbdi2CMW4gx7_UB7+kMd9R2rqXdcALQ@mail.gmail.com>
+Received: from mail-lf0-f41.google.com ([209.85.215.41]:36414 "EHLO
+        mail-lf0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S942162AbcJ0Omc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 10:42:32 -0400
+Received: by mail-lf0-f41.google.com with SMTP id b75so33443606lfg.3
+        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 07:42:31 -0700 (PDT)
+In-Reply-To: <CAJZ5v0jPeauJGpQfr1VjDo1Z-Xd6UT4_4QLeso_CSEtB4zyaag@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Steve Glendinning <steve.glendinning@shawell.net>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Kevin Hilman <khilman@baylibre.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@kernel.org>
 
-Hi Ulf,
-
-On Thu, Oct 27, 2016 at 1:53 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 27 October 2016 at 13:41, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Thu, Oct 27, 2016 at 1:23 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> The smsc911c driver puts its device into low power state when entering
->>> system suspend. Although it doesn't update the device's runtime PM status
->>> to RPM_SUSPENDED, which causes problems for a parent device.
+On 27 October 2016 at 12:11, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Oct 26, 2016 at 9:00 PM, Kevin Hilman <khilman@baylibre.com> wrote:
+>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>>
+>>> Hi Guys,
 >>>
->>> In particular, when the runtime PM status of the parent is requested to be
->>> updated to RPM_SUSPENDED, the runtime PM core prevent this, because it's
->>> forbidden to runtime suspend a device, which has an active child.
+>>> I wanted to involve you guys to get a discussion going
+>>> for a problem we want to solve, and so this mail.
 >>>
->>> Fix this by updating the runtime PM status of the smsc911x device to
->>> RPM_SUSPENDED during system suspend. In system resume, let's reverse that
->>> action by runtime resuming the device and thus also the parent.
->>
->> Thanks for your patch!
->>
->> The changelog sounds quite innocent, but this does fix a system crash
->> during resume from s2ram.
->>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
->>> Cc: Steve Glendinning <steve.glendinning@shawell.net>
->>> Fixes: 8b1107b85efd ("PM / Runtime: Don't allow to suspend a device with an active child")
->>
->> While the abovementioned commit made the problem visible, the root cause
->> was present before, right?
->
-> Yes.
->
->>> ---
 >>>
->>> Note that the commit this change fixes is currently queued for 4.10 via
->>> Rafael's linux-pm tree. So this fix should go via that tree as well.
+>>> Platform details:
+>>>
+>>> Some of the Qualcom SoCs have the option to configure
+>>> the performance level of their Power Domains. The performance
+>>> levels are identified by integer values (lets say 0-9, 0 being the lowest).
+>>>
+>>> Another M3 core handles the *real* voltage scaling based on the input
+>>> received (from software) in terms of these performance levels. The M3
+>>> core translates the levels into a range of voltages (corners) and selects
+>>> the right one by itself.
+>>>
+>>> Software needs to provide the performance level for the entire domain
+>>> to the M3 core and so software also needs to handle performance requests
+>>> from all the devices that lie in the domain X and find a Performance Level P,
+>>> which can satisfy all the devices (normally the highest requrested level).
+>>>
+>>>
+>>> Problem statement:
+>>>
+>>> As we aren't dealing with Voltages here, we can't really get the benefits
+>>> of the Regulators framework. The regulators are managed internally
+>>> by the M3 core. All we need is a way for software to comeout with inputs
+>>> for the M3 core.
+>>>
+>>> The OPP framework can be used to include performance levels for
+>>> each OPP (frequency) entry.
+>>>
+>>> But what framework can be used to select performance level of power
+>>> domains ?
+>>>
+>>> By name, power-domain or genpd looks to be the right choice, but until
+>>> now it is only managing power-on and power-off of devices and domains.
 >>
->> Alternatively, this could go in in v4.9 to avoid the problem from ever
->> appearing in upstream?
+>> genpd has also recently been extended to support multiple states, though
+>> those are still idle states, not active (performance) states.
+>>
+>>> Should we extend that (along with runtime PM), or do something else?
+>>
+>> Yes.  As I've suggested to qcom/linaro folks (off-list discussions), I
+>> think extending genpd to handle performance states is a logical
+>> extension.  Otherwise, you will be (re)inventing something that looks an
+>> awful lot like genpd anyways.
 >
-> Makes perfect sense! In that case we should remove the fixes tag.
+> On the Intel side we also have a mechanism to tell the processor about
+> the power/performance preference and it would be good to have a common
+> way to do it on all platforms and genpd doesn't look like a
+> particularly good place for that.
+
+One thing that would be interesting to know is where the
+power/performance preference "voting" can be done. Is that in also in
+the separate processor or is that a job for the kernel?
+
 >
-> Rafael, can you pick this up for 4.9 rc[n]?
+>> The other related framework is per-device PM QoS which could be used to
+>> set constraints on specific devices, and the genpd governors would then
+>> be responsible for looking at the constraints and changing states as
+>> needed.
 
-Actually I was thinking about DaveM and the network tree instead.
+I guess dev PM QoS could be extended to cover performance preferences
+as well, but at the same time that framework is about dealing with
+idle - not performance.
 
-Gr{oetje,eeting}s,
+Perhaps the OPP framework might be better place? One could also think
+of extending this to support "OPP PM domains"...
 
-                        Geert
+>
+> Right.
+>
+> Let's talk about this at the LPC.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Yes, count me in!
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+>
+> Thanks,
+> Rafael
+
+Kind regards
+Uffe
