@@ -1,54 +1,61 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] net: smsc911x: Synchronize the runtime PM status during
- system suspend
-Date: Thu, 27 Oct 2016 13:41:14 +0200
-Message-ID: <CAMuHMdUbU07t2kB6J0rSOiOTbDkegP73FAAEenViuDjQUFE-Jg@mail.gmail.com>
-References: <1477567434-5128-1-git-send-email-ulf.hansson@linaro.org>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH 3/3] thermal/intel_powerclamp: Convert to CPU hotplug
+ state
+Date: Thu, 27 Oct 2016 16:53:48 +0200
+Message-ID: <20161027145348.GV23809@pathway.suse.cz>
+References: <1476707572-32215-1-git-send-email-pmladek@suse.com>
+ <1476707572-32215-4-git-send-email-pmladek@suse.com>
+ <20161021132118.4239af86@jacob-builder>
+ <20161024154807.GQ23809@pathway.suse.cz>
+ <20161024095529.2b1855b4@icelake>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <netdev-owner@vger.kernel.org>
-In-Reply-To: <1477567434-5128-1-git-send-email-ulf.hansson@linaro.org>
-Sender: netdev-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Steve Glendinning <steve.glendinning@shawell.net>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161024095529.2b1855b4@icelake>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+On Mon 2016-10-24 09:55:29, Jacob Pan wrote:
+> On Mon, 24 Oct 2016 17:48:07 +0200
+> Petr Mladek <pmladek@suse.com> wrote:
+> 
+> > On Fri 2016-10-21 13:21:18, Jacob Pan wrote:
+> > > On Mon, 17 Oct 2016 14:32:52 +0200
+> > > Petr Mladek <pmladek@suse.com> wrote:
+> > > 
+> > > > From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> > > > 
+> > > Hi Sebastian,
+> > > I applied this patchset on 4.9-rc1 and run some cpu online/offline
+> > > loops test while injecting idle, e.g. 25%. I got system hang after a
+> > > few cycles. Still looking into root cause.
+> > 
+> > You might need the patch
+> > ("sched/fair: Fix sched domains NULL deference in
+> > select_idle_sibling()") from linux-tip, see
+> > https://lkml.kernel.org/r/tip-9cfb38a7ba5a9c27c1af8093fb1af4b699c0a441@git.kernel.org
+> > 
+> > I have mentioned it in the cover letter. I am sorry if it was not
+> > visible enough.
+> Thanks for point it out again, I missed it.
+> 
+> Now rc2 has this fix so I tried again cpuhp seems to work well now.
+> 
+> However, I found suspend to ram does not work with this patchset. Have
+> you  tested it with "echo mem > /sys/power/state" while doing idle
+> injection?
+> It fails to enter s3 on my system.
 
-On Thu, Oct 27, 2016 at 1:23 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The smsc911c driver puts its device into low power state when entering
-> system suspend. Although it doesn't update the device's runtime PM status
-> to RPM_SUSPENDED, which causes problems for a parent device.
->
-> In particular, when the runtime PM status of the parent is requested to be
-> updated to RPM_SUSPENDED, the runtime PM core prevent this, because it's
-> forbidden to runtime suspend a device, which has an active child.
->
-> Fix this by updating the runtime PM status of the smsc911x device to
-> RPM_SUSPENDED during system suspend. In system resume, let's reverse that
-> action by runtime resuming the device and thus also the parent.
+Hmm, I haven't tested the system suspend. I am sorry but I am snowed
+under some other tasks this week and will be on the Plumbers
+conference the next week. I hope that I will have some time to look
+at it then.
 
-Thanks for your patch!
+In each case, I wonder if the problem is caused by the conversion
+to the kthread worker or by the CPU hotplug state conversion.
 
-The changelog sounds quite innocent, but this does fix a system crash
-during resume from s2ram.
-
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Cc: Steve Glendinning <steve.glendinning@shawell.net>
-> Fixes: 8b1107b85efd ("PM / Runtime: Don't allow to suspend a device with an active child")
-
-While the abovementioned commit made the problem visible, the root cause
-was present before, right?
-
-> ---
->
-> Note that the commit this change fixes is currently queued for 4.10 via
-> Rafael's linux-pm tree. So this fix should go via that tree as well.
-
-Alternatively, this could go in in v4.9 to avoid the problem from ever
-appearing in upstream?
-
-Gr{oetje,eeting}s,
-
-                        Geert
+Best Regards,
+Petr
