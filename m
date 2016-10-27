@@ -1,94 +1,70 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [Discussion] Performance levels of power domains
-Date: Thu, 27 Oct 2016 10:24:02 -0700
-Message-ID: <m2shrhemdp.fsf@baylibre.com>
-References: <CAKohpokwTOZbbRP4XRV1jPoQ=gKxD2UKBYSXcZe8iBgDnr9-BQ@mail.gmail.com>
-        <7hvawfq6kh.fsf@baylibre.com>
-        <CAJZ5v0jPeauJGpQfr1VjDo1Z-Xd6UT4_4QLeso_CSEtB4zyaag@mail.gmail.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
+ calls to hotplugged cpu")]
+Date: Thu, 27 Oct 2016 20:28:53 +0300
+Message-ID: <20161027172852.GE4617@intel.com>
+References: <20160511133406.GC4329@intel.com>
+ <20160516193910.GL4329@intel.com>
+ <573BA5E2.5040506@intel.com>
+ <20160518072424.GU4329@intel.com>
+ <20160526183207.GX4329@intel.com>
+ <CAJZ5v0in8YwMBgLd6=KgGVc-f2yVvutOJG_u05OKLK7_EzN0yQ@mail.gmail.com>
+ <20160531072650.GP4329@intel.com>
+ <20160713145425.GB4329@intel.com>
+ <CA++bM2sLMDLdeyLd_gpknTj+Y5xMk261SvivU5YxTnL0jRZovA@mail.gmail.com>
+ <20160809172057.GZ4329@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:34133 "EHLO
-        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752633AbcJ0RYT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 13:24:19 -0400
-Received: by mail-pf0-f170.google.com with SMTP id n85so21427754pfi.1
-        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 10:24:04 -0700 (PDT)
-In-Reply-To: <CAJZ5v0jPeauJGpQfr1VjDo1Z-Xd6UT4_4QLeso_CSEtB4zyaag@mail.gmail.com>
-        (Rafael J. Wysocki's message of "Thu, 27 Oct 2016 12:11:24 +0200")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20160809172057.GZ4329@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Feng Tang <feng.79.tang@gmail.com>
+Cc: feng.tang@intel.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@int>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@kernel.org>
 
-"Rafael J. Wysocki" <rafael@kernel.org> writes:
+On Tue, Aug 09, 2016 at 08:20:57PM +0300, Ville Syrjälä wrote:
+> On Thu, Jul 14, 2016 at 04:29:42PM +0800, Feng Tang wrote:
+> > if you only want it to work, you can try an old patch
+> > https://bugzilla.kernel.org/attachment.cgi?id=76071 from a similar bug
+> > https://bugzilla.kernel.org/show_bug.cgi?id=41932
+> > 
+> > Alistair Buxton confirmed it work for 3.18 at least
+> > https://bugzilla.kernel.org/show_bug.cgi?id=107151#c16
+> 
+> That patch is a bit too ripe by now. Would need a fresh squeezed one.
 
-> On Wed, Oct 26, 2016 at 9:00 PM, Kevin Hilman <khilman@baylibre.com> wrote:
->> Viresh Kumar <viresh.kumar@linaro.org> writes:
->>
->>> Hi Guys,
->>>
->>> I wanted to involve you guys to get a discussion going
->>> for a problem we want to solve, and so this mail.
->>>
->>>
->>> Platform details:
->>>
->>> Some of the Qualcom SoCs have the option to configure
->>> the performance level of their Power Domains. The performance
->>> levels are identified by integer values (lets say 0-9, 0 being the lowest).
->>>
->>> Another M3 core handles the *real* voltage scaling based on the input
->>> received (from software) in terms of these performance levels. The M3
->>> core translates the levels into a range of voltages (corners) and selects
->>> the right one by itself.
->>>
->>> Software needs to provide the performance level for the entire domain
->>> to the M3 core and so software also needs to handle performance requests
->>> from all the devices that lie in the domain X and find a Performance Level P,
->>> which can satisfy all the devices (normally the highest requrested level).
->>>
->>>
->>> Problem statement:
->>>
->>> As we aren't dealing with Voltages here, we can't really get the benefits
->>> of the Regulators framework. The regulators are managed internally
->>> by the M3 core. All we need is a way for software to comeout with inputs
->>> for the M3 core.
->>>
->>> The OPP framework can be used to include performance levels for
->>> each OPP (frequency) entry.
->>>
->>> But what framework can be used to select performance level of power
->>> domains ?
->>>
->>> By name, power-domain or genpd looks to be the right choice, but until
->>> now it is only managing power-on and power-off of devices and domains.
->>
->> genpd has also recently been extended to support multiple states, though
->> those are still idle states, not active (performance) states.
->>
->>> Should we extend that (along with runtime PM), or do something else?
->>
->> Yes.  As I've suggested to qcom/linaro folks (off-list discussions), I
->> think extending genpd to handle performance states is a logical
->> extension.  Otherwise, you will be (re)inventing something that looks an
->> awful lot like genpd anyways.
->
-> On the Intel side we also have a mechanism to tell the processor about
-> the power/performance preference and it would be good to have a common
-> way to do it on all platforms and genpd doesn't look like a
-> particularly good place for that.
->
->> The other related framework is per-device PM QoS which could be used to
->> set constraints on specific devices, and the genpd governors would then
->> be responsible for looking at the constraints and changing states as
->> needed.
->
-> Right.
->
-> Let's talk about this at the LPC.
+Since no one else bothered to refresh the patch I did it myself:
 
-Sounds good.
+diff --git a/kernel/time/tick-broadcast.c b/kernel/time/tick-broadcast.c
+index f6aae7977824..d73d094a8972 100644
+--- a/kernel/time/tick-broadcast.c
++++ b/kernel/time/tick-broadcast.c
+@@ -657,8 +657,16 @@ static void tick_handle_oneshot_broadcast(struct clock_event_device *dev)
+ 	 * - There are pending events on sleeping CPUs which were not
+ 	 * in the event mask
+ 	 */
+-	if (next_event.tv64 != KTIME_MAX)
++	if (next_event.tv64 != KTIME_MAX) {
++		s64 delta = next_event.tv64 - now.tv64;
++
++		if (delta >= 10000000000) {
++			printk(KERN_CRIT "%s(): The delta is big: %lld\n", __func__, delta);
++			next_event.tv64 = now.tv64 + 3000000000;
++		}
++
+ 		tick_broadcast_set_event(dev, next_cpu, next_event);
++	}
+ 
+ 	raw_spin_unlock(&tick_broadcast_lock);
 
-Kevin
+Unfortunately it doesn't do anything for me.
+
+The fortunate thing is that acpi-idle has magically been fixed in the
+meantime, so I can at least go back to using that one and have working
+S3.
+
+-- 
+Ville Syrjälä
+Intel OTC
