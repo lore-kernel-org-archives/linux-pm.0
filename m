@@ -1,74 +1,94 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child suspend_{noirq,late} fails
-Date: Thu, 27 Oct 2016 09:05:34 -0700
-Message-ID: <1477584334-39956-1-git-send-email-briannorris@chromium.org>
-References: <1476923170-111986-2-git-send-email-briannorris@chromium.org>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [Discussion] Performance levels of power domains
+Date: Thu, 27 Oct 2016 10:24:02 -0700
+Message-ID: <m2shrhemdp.fsf@baylibre.com>
+References: <CAKohpokwTOZbbRP4XRV1jPoQ=gKxD2UKBYSXcZe8iBgDnr9-BQ@mail.gmail.com>
+        <7hvawfq6kh.fsf@baylibre.com>
+        <CAJZ5v0jPeauJGpQfr1VjDo1Z-Xd6UT4_4QLeso_CSEtB4zyaag@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36835 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S942012AbcJ0QFu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 12:05:50 -0400
-Received: by mail-pf0-f174.google.com with SMTP id e6so20334511pfk.3
-        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 09:05:50 -0700 (PDT)
-In-Reply-To: <1476923170-111986-2-git-send-email-briannorris@chromium.org>
+Received: from mail-pf0-f170.google.com ([209.85.192.170]:34133 "EHLO
+        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752633AbcJ0RYT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Oct 2016 13:24:19 -0400
+Received: by mail-pf0-f170.google.com with SMTP id n85so21427754pfi.1
+        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 10:24:04 -0700 (PDT)
+In-Reply-To: <CAJZ5v0jPeauJGpQfr1VjDo1Z-Xd6UT4_4QLeso_CSEtB4zyaag@mail.gmail.com>
+        (Rafael J. Wysocki's message of "Thu, 27 Oct 2016 12:11:24 +0200")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pm@vger.kernel.org, Chuansheng Liu <chuansheng.liu@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Brian Norris <briannorris@chromium.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Mark Brown <broonie@kernel.org>
 
-Consider two devices, A and B, where B is a child of A, and B utilizes
-asynchronous suspend (it does not matter whether A is sync or async). If
-B fails to suspend_noirq() or suspend_late(), or is interrupted by a
-wakeup (pm_wakeup_pending()), then it aborts and sets the async_error
-variable. However, device A does not (immediately) check the async_error
-variable; it may continue to run its own suspend_noirq()/suspend_late()
-callback. This is bad.
+"Rafael J. Wysocki" <rafael@kernel.org> writes:
 
-We can resolve this problem by checking the async_error flag after
-waiting for children to suspend, using the same logic for the noirq and
-late suspend cases as we already do for __device_suspend().
+> On Wed, Oct 26, 2016 at 9:00 PM, Kevin Hilman <khilman@baylibre.com> wrote:
+>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>>
+>>> Hi Guys,
+>>>
+>>> I wanted to involve you guys to get a discussion going
+>>> for a problem we want to solve, and so this mail.
+>>>
+>>>
+>>> Platform details:
+>>>
+>>> Some of the Qualcom SoCs have the option to configure
+>>> the performance level of their Power Domains. The performance
+>>> levels are identified by integer values (lets say 0-9, 0 being the lowest).
+>>>
+>>> Another M3 core handles the *real* voltage scaling based on the input
+>>> received (from software) in terms of these performance levels. The M3
+>>> core translates the levels into a range of voltages (corners) and selects
+>>> the right one by itself.
+>>>
+>>> Software needs to provide the performance level for the entire domain
+>>> to the M3 core and so software also needs to handle performance requests
+>>> from all the devices that lie in the domain X and find a Performance Level P,
+>>> which can satisfy all the devices (normally the highest requrested level).
+>>>
+>>>
+>>> Problem statement:
+>>>
+>>> As we aren't dealing with Voltages here, we can't really get the benefits
+>>> of the Regulators framework. The regulators are managed internally
+>>> by the M3 core. All we need is a way for software to comeout with inputs
+>>> for the M3 core.
+>>>
+>>> The OPP framework can be used to include performance levels for
+>>> each OPP (frequency) entry.
+>>>
+>>> But what framework can be used to select performance level of power
+>>> domains ?
+>>>
+>>> By name, power-domain or genpd looks to be the right choice, but until
+>>> now it is only managing power-on and power-off of devices and domains.
+>>
+>> genpd has also recently been extended to support multiple states, though
+>> those are still idle states, not active (performance) states.
+>>
+>>> Should we extend that (along with runtime PM), or do something else?
+>>
+>> Yes.  As I've suggested to qcom/linaro folks (off-list discussions), I
+>> think extending genpd to handle performance states is a logical
+>> extension.  Otherwise, you will be (re)inventing something that looks an
+>> awful lot like genpd anyways.
+>
+> On the Intel side we also have a mechanism to tell the processor about
+> the power/performance preference and it would be good to have a common
+> way to do it on all platforms and genpd doesn't look like a
+> particularly good place for that.
+>
+>> The other related framework is per-device PM QoS which could be used to
+>> set constraints on specific devices, and the genpd governors would then
+>> be responsible for looking at the constraints and changing states as
+>> needed.
+>
+> Right.
+>
+> Let's talk about this at the LPC.
 
-It's easy to observe this erroneous behavior by, for example, forcing a
-device to sleep a bit in its suspend_noirq() (to ensure the parent is
-waiting for the child to complete), then return an error, and watch the
-parent suspend_noirq() still get called. (Or similarly, fake a wakeup
-event at the right (or is it wrong?) time.)
+Sounds good.
 
-Fixes: de377b397272 ("PM / sleep: Asynchronous threads for suspend_late")
-Fixes: 28b6fd6e3779 ("PM / sleep: Asynchronous threads for suspend_noirq")
-Reported-by: Jeffy Chen <jeffy.chen@rock-chips.com>
-Signed-off-by: Brian Norris <briannorris@chromium.org>
-Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
-v2: s/early/late/ in commit message
-
- drivers/base/power/main.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index c58563581345..eaf6b53463a5 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 
- 	dpm_wait_for_children(dev, async);
- 
-+	if (async_error)
-+		goto Complete;
-+
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
- 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
-@@ -1187,6 +1190,9 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 
- 	dpm_wait_for_children(dev, async);
- 
-+	if (async_error)
-+		goto Complete;
-+
- 	if (dev->pm_domain) {
- 		info = "late power domain ";
- 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
--- 
-2.8.0.rc3.226.g39d4020
-
+Kevin
