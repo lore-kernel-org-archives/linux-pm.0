@@ -1,59 +1,74 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 0/9] PCIe port PM: high gloss polish & hotplug support
+Subject: [PATCH v2 1/9] PCI: Don't acquire ref on parent in
+ pci_bridge_d3_update()
 Date: Fri, 28 Oct 2016 10:52:06 +0200
-Message-ID: <cover.1477611126.git.lukas@wunner.de>
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
+Message-ID: <f77a60b00b35103587335b06f4791135426e0bcb.1477611126.git.lukas@wunner.de>
+References: <cover.1477611126.git.lukas@wunner.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:34073 "EHLO
+        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756127AbcJ1Iwe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Oct 2016 04:52:34 -0400
+In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-Respin of this series to polish the runtime PM support for PCIe ports
-that was added with v4.8, and extend it to native hotplug ports:
+This function is always called with an existing pci_dev struct, which
+holds a reference on the pci_bus struct it resides on, which in turn
+holds a reference on pci_bus->bridge, which is the pci_dev's parent.
 
-- All patches have been reviewed by Rafael, patches 1 to 8 have been
-  tested by Mika.  (Thanks a lot!)
+Hence there's no need to acquire an additional ref on the parent.
 
-- Patch 6 ("PCI: Unfold conditions to block runtime PM on PCIe ports")
-  contains a minor change relative to v1 wherein the function returns
-  as soon as a single condition evaluates to true.  (Instead of
-  needlessly evaluating all the remaining conditions.)
+More specifically, the pci_dev exists until pci_destroy_dev() drops the
+final reference on it, so all calls to pci_bridge_d3_update() must be
+finished before that.  It is arguably the caller's responsibility to
+ensure that it doesn't call pci_bridge_d3_update() with a pci_dev that
+might suddenly disappear, but in any case the existing callers are all
+safe:
 
-- Patch 9 was rebased to accommodate to this change but is otherwise
-  the same as before.
+- The call in pci_destroy_dev() happens before the call to put_device().
+- The call in pci_bus_add_device() is synchronized with pci_destroy_dev()
+  using pci_lock_rescan_remove().
+- The calls to pci_d3cold_disable() from the xhci and nouveau drivers
+  are safe because a ref on the pci_dev is held as long as it's bound to
+  a driver.
+- The calls to pci_d3cold_enable() / pci_d3cold_disable() when modifying
+  the sysfs "d3cold_allowed" entry are also safe because kernfs_drain()
+  waits for existing sysfs users to finish before removing the entry,
+  and pci_destroy_dev() is called way after that.
 
-As usual I've pushed the series to GitHub to ease reviewing/fetching:
-https://github.com/l1k/linux/commits/pcie_port_pm_v2
+No functional change intended.
 
-Link to v1:
-http://www.spinics.net/lists/linux-pci/msg55347.html
+Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pci.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Thanks,
-
-Lukas
-
-
-Lukas Wunner (9):
-  PCI: Don't acquire ref on parent in pci_bridge_d3_update()
-  PCI: Autosense device removal in pci_bridge_d3_update()
-  PCI: Speed up algorithm in pci_bridge_d3_update()
-  PCI: Activate runtime PM on a PCIe port only if it can suspend
-  PCI: Consolidate conditions to allow runtime PM on PCIe ports
-  PCI: Unfold conditions to block runtime PM on PCIe ports
-  ACPI / hotplug / PCI: Use cached copy of PCI_EXP_SLTCAP_HPC bit
-  ACPI / hotplug / PCI: Make device_is_managed_by_native_pciehp() public
-  PCI: pciehp: Add runtime PM support for PCIe hotplug ports
-
- drivers/pci/bus.c                  |   2 +-
- drivers/pci/hotplug/acpiphp_glue.c |  31 +-----------
- drivers/pci/hotplug/pciehp_ctrl.c  |   6 +++
- drivers/pci/pci-acpi.c             |  24 +++++++++
- drivers/pci/pci.c                  | 100 ++++++++++++++++++-------------------
- drivers/pci/pci.h                  |   4 +-
- drivers/pci/pcie/portdrv_pci.c     |  13 ++---
- drivers/pci/remove.c               |   2 +-
- include/linux/pci_hotplug.h        |   2 +
- 9 files changed, 88 insertions(+), 96 deletions(-)
-
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index ba34907..6e0c399 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2292,7 +2292,6 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
+ 	if (!bridge || !pci_bridge_d3_possible(bridge))
+ 		return;
+ 
+-	pci_dev_get(bridge);
+ 	/*
+ 	 * If the device is removed we do not care about its D3cold
+ 	 * capabilities.
+@@ -2314,8 +2313,6 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
+ 		/* Propagate change to upstream bridges */
+ 		pci_bridge_d3_update(bridge, false);
+ 	}
+-
+-	pci_dev_put(bridge);
+ }
+ 
+ /**
 -- 
 2.9.3
+
