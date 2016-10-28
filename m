@@ -1,57 +1,71 @@
-From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2 06/10] regulator: da9061: BUCK and LDO regulator driver
-Date: Fri, 28 Oct 2016 18:59:18 +0100
-Message-ID: <20161028175918.tb4ntnelofse7kjf@sirena.org.uk>
-References: <cover.1477501000.git.stwiss.opensource@diasemi.com>
- <c8529abdbe8a07ac0d7b09ab24fad73ab56116be.1477501000.git.stwiss.opensource@diasemi.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
+ calls to hotplugged cpu")]
+Date: Fri, 28 Oct 2016 20:58:41 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1610282049500.5053@nanos>
+References: <20160531072650.GP4329@intel.com> <20160713145425.GB4329@intel.com> <CA++bM2sLMDLdeyLd_gpknTj+Y5xMk261SvivU5YxTnL0jRZovA@mail.gmail.com> <20160809172057.GZ4329@intel.com> <20161027172852.GE4617@intel.com> <alpine.DEB.2.20.1610272035180.4913@nanos>
+ <20161027192006.GF4617@intel.com> <alpine.DEB.2.20.1610272122510.4913@nanos> <20161027203745.GH4617@intel.com> <alpine.DEB.2.20.1610272238390.4913@nanos> <20161028155603.GI4617@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="7qsjzthrt7pfq7qy"
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <c8529abdbe8a07ac0d7b09ab24fad73ab56116be.1477501000.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: multipart/mixed; BOUNDARY="8323329-621006073-1477681124=:5053"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161028155603.GI4617@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?ISO-8859-15?Q?Ville_Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Cc: Feng Tang <feng.79.tang@gmail.com>, feng.tang@intel.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel>
 List-Id: linux-pm@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---7qsjzthrt7pfq7qy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--8323329-621006073-1477681124=:5053
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-On Wed, Oct 26, 2016 at 05:56:38PM +0100, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
->=20
-> Regulator support for the DA9061 is added into the DA9062 regulator drive=
-r.
-> =20
-> The regulators for DA9061 differ from those of DA9062.
-> A new DA9061 enumeration list for the LDOs and Bucks supported by this
-> device is added. Regulator information added: the old regulator
-> information for DA9062 is renamed from local_regulator_info[] to
-> local_da9062_regulator_info[] and a new array is added to support
-> local_da9061_regulator_info[].
+On Fri, 28 Oct 2016, Ville Syrjälä wrote:
+> On Thu, Oct 27, 2016 at 10:41:18PM +0200, Thomas Gleixner wrote:
+> > On Thu, 27 Oct 2016, Ville Syrjälä wrote:
+> > > On Thu, Oct 27, 2016 at 09:25:05PM +0200, Thomas Gleixner wrote:
+> > > > So it would be interesting whether that hunk in resume_broadcast() is
+> > > > sufficient.
+> > > 
+> > > So far it looks like the answer is yes.
+> > > 
+> > > Looks to be about 5 seconds slower than acpi-idle in resuming, but
+> > > I suppose that's not all that surprising ;)
+> > 
+> > Well, set it to 1msec then. If that works reliably then we really can do
+> > that unconditionally. There is no harm in firing a useless timer during
+> > resume once.
+> 
+> I narrowed down the required timeout, and looks like 25ms is the
+> minimum that works. With 24ms I already started to have failures. So
+> maybe just bump it up by an order of magnitude to 250ms for some
+> safety margin?
 
-Acked-by: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Sure, but what puzzles me is that we need a timeout that big. What happens
+between broadcast_resume() and broadcast_resume() + 25ms?
 
---7qsjzthrt7pfq7qy
-Content-Type: application/pgp-signature; name="signature.asc"
+IOW, what is the event/resume function which we need to bridge. We should
+really try to track than down.
 
------BEGIN PGP SIGNATURE-----
+You might try to enable function tracing and do a tracing_off() when that
+25ms timeout fires.
 
-iQEcBAABCAAGBQJYE5H2AAoJECTWi3JdVIfQVxkH/jkLzUk7fRE29zqArap+RyWE
-pjNSKx51EbFFtj84+HxyQAaVq8gEh9g2X6SGh/fBGb752qyYwdJPIGCS/+2eMVZO
-OpIT3J2jF/Ur4WR7+zm8Uwfe0uXj+xLEI8Se0kZa23Bwmrz0ghLb57SODoGlLDma
-rXqe7rNpQg9N5wovZGsg/Jc8j1M4bwzSyPmJRVAfDlQ4rt16+DshORLaZtfRE//Q
-QHmxZzMOeC1CngeAZBqfI3CH1YOPvG2xn7ghu4LWDRiK48sZMVCT25c9SuPF5cow
-UGXwTUGCRWOSNcJeW4/PDpVikEKo/Y91QY+6hCk4jLzhM+kniMh5IRk8nH72tBM=
-=Ad0J
------END PGP SIGNATURE-----
+Something like 
 
---7qsjzthrt7pfq7qy--
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	stop_trace = true;
+
+in broadcast_resume() and then in the broadcast timer function:
+
+	if (stop_trace) {
+		stop_trace = false;
+		tracing_off();
+	}
+
+Then when the machine is up read the trace, compress and upload it
+somewhere or send it in private mail if it's not that big.
+
+Thanks,
+
+	tglx
+--8323329-621006073-1477681124=:5053--
