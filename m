@@ -1,57 +1,161 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [Discussion] Performance levels of power domains
-Date: Fri, 28 Oct 2016 09:52:51 +0100
-Message-ID: <b87ccdfe-e9f6-d3d4-236a-1eea7f25ac5b@arm.com>
-References: <CAKohpokwTOZbbRP4XRV1jPoQ=gKxD2UKBYSXcZe8iBgDnr9-BQ@mail.gmail.com>
- <af9ab13a-6f77-5abe-e17f-c7dd6efa6d7e@arm.com>
- <20161026111642.GM9162@vireshk-i7>
- <c11971ea-59aa-690a-95a3-d645ebb0074a@arm.com>
- <20161028002202.GM26139@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:54018 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753081AbcJ1Iwz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Oct 2016 04:52:55 -0400
-In-Reply-To: <20161028002202.GM26139@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v2 2/9] PCI: Autosense device removal in
+ pci_bridge_d3_update()
+Date: Fri, 28 Oct 2016 10:52:06 +0200
+Message-ID: <74fa6b7b83da600be59789cce7193c6436630e1d.1477611126.git.lukas@wunner.de>
+References: <cover.1477611126.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>, Georgi Djakov <georgi.djakov@linaro.org>, Bjorn Andersson <bjorn.andersson@linaro.org>
 
+The algorithm to update the flag indicating whether a bridge may go to
+D3 makes a few optimizations based on whether the update was caused by
+the removal of a device on the one hand, versus the addition of a device
+or the change of its D3cold flags on the other hand.
 
+The information whether the update pertains to a removal is currently
+passed in by the caller, but the function may as well determine that
+itself by examining the device in question, thereby allowing for a
+considerable simplification and reduction of the code.
 
-On 28/10/16 01:22, Stephen Boyd wrote:
-> On 10/26, Sudeep Holla wrote:
->>
->>
->> On 26/10/16 12:16, Viresh Kumar wrote:
->>> On 26-10-16, 12:09, Sudeep Holla wrote:
->>
->> [...]
->>
->>>> I am mainly interested as there are efforts to standardize these
->>>> communication with M3 and there's WIP protocol development[1]. It would
->>>> be good to see if this user-case is also considered.
->>>
->>> What do you mean by that ?
->>
->> Basically I wanted to know more details so that such system are also
->> considered(I agree it may not have any impact on the protocol at all,
->> but still good to consider them) when designing this new SCMI protocol.
->>
->
-> There are a couple different wire protocols used to communicate
-> with the RPM on these platforms. The first one is at
-> drivers/mfd/qcom_rpm.c, and the second one is at
-> drivers/soc/qcom/smd-rpm.c. Bjorn upstreamed these drivers based
-> on the codeaurora sources.
->
+Out of several options to determine removal, I've chosen the function
+device_is_registered() because it's cheap:  It merely returns the
+dev->kobj.state_in_sysfs flag.  That flag is set through device_add()
+when the root bus is scanned and cleared through device_remove().
+The call to pci_bridge_d3_update() happens after each of these calls,
+respectively, so the ordering is correct.
 
-Thanks for information Stephen, I will have a look.
+No functional change intended.
 
+Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/bus.c    |  2 +-
+ drivers/pci/pci.c    | 35 +++++------------------------------
+ drivers/pci/pci.h    |  3 +--
+ drivers/pci/remove.c |  2 +-
+ 4 files changed, 8 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+index c288e5a..bc56cf1 100644
+--- a/drivers/pci/bus.c
++++ b/drivers/pci/bus.c
+@@ -320,7 +320,7 @@ void pci_bus_add_device(struct pci_dev *dev)
+ 	pci_fixup_device(pci_fixup_final, dev);
+ 	pci_create_sysfs_dev_files(dev);
+ 	pci_proc_attach_device(dev);
+-	pci_bridge_d3_device_changed(dev);
++	pci_bridge_d3_update(dev);
+ 
+ 	dev->match_driver = true;
+ 	retval = device_attach(&dev->dev);
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 6e0c399..c12fae7 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2277,14 +2277,14 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ /*
+  * pci_bridge_d3_update - Update bridge D3 capabilities
+  * @dev: PCI device which is changed
+- * @remove: Is the device being removed
+  *
+  * Update upstream bridge PM capabilities accordingly depending on if the
+  * device PM configuration was changed or the device is being removed.  The
+  * change is also propagated upstream.
+  */
+-static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
++void pci_bridge_d3_update(struct pci_dev *dev)
+ {
++	bool remove = !device_is_registered(&dev->dev);
+ 	struct pci_dev *bridge;
+ 	bool d3cold_ok = true;
+ 
+@@ -2311,36 +2311,11 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
+ 	if (bridge->bridge_d3 != d3cold_ok) {
+ 		bridge->bridge_d3 = d3cold_ok;
+ 		/* Propagate change to upstream bridges */
+-		pci_bridge_d3_update(bridge, false);
++		pci_bridge_d3_update(bridge);
+ 	}
+ }
+ 
+ /**
+- * pci_bridge_d3_device_changed - Update bridge D3 capabilities on change
+- * @dev: PCI device that was changed
+- *
+- * If a device is added or its PM configuration, such as is it allowed to
+- * enter D3cold, is changed this function updates upstream bridge PM
+- * capabilities accordingly.
+- */
+-void pci_bridge_d3_device_changed(struct pci_dev *dev)
+-{
+-	pci_bridge_d3_update(dev, false);
+-}
+-
+-/**
+- * pci_bridge_d3_device_removed - Update bridge D3 capabilities on remove
+- * @dev: PCI device being removed
+- *
+- * Function updates upstream bridge PM capabilities based on other devices
+- * still left on the bus.
+- */
+-void pci_bridge_d3_device_removed(struct pci_dev *dev)
+-{
+-	pci_bridge_d3_update(dev, true);
+-}
+-
+-/**
+  * pci_d3cold_enable - Enable D3cold for device
+  * @dev: PCI device to handle
+  *
+@@ -2352,7 +2327,7 @@ void pci_d3cold_enable(struct pci_dev *dev)
+ {
+ 	if (dev->no_d3cold) {
+ 		dev->no_d3cold = false;
+-		pci_bridge_d3_device_changed(dev);
++		pci_bridge_d3_update(dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(pci_d3cold_enable);
+@@ -2369,7 +2344,7 @@ void pci_d3cold_disable(struct pci_dev *dev)
+ {
+ 	if (!dev->no_d3cold) {
+ 		dev->no_d3cold = true;
+-		pci_bridge_d3_device_changed(dev);
++		pci_bridge_d3_update(dev);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(pci_d3cold_disable);
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 4518562..27048bb 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -85,8 +85,7 @@ void pci_pm_init(struct pci_dev *dev);
+ void pci_ea_init(struct pci_dev *dev);
+ void pci_allocate_cap_save_buffers(struct pci_dev *dev);
+ void pci_free_cap_save_buffers(struct pci_dev *dev);
+-void pci_bridge_d3_device_changed(struct pci_dev *dev);
+-void pci_bridge_d3_device_removed(struct pci_dev *dev);
++void pci_bridge_d3_update(struct pci_dev *dev);
+ 
+ static inline void pci_wakeup_event(struct pci_dev *dev)
+ {
+diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+index f9357e0..73a03d3 100644
+--- a/drivers/pci/remove.c
++++ b/drivers/pci/remove.c
+@@ -40,7 +40,7 @@ static void pci_destroy_dev(struct pci_dev *dev)
+ 	list_del(&dev->bus_list);
+ 	up_write(&pci_bus_sem);
+ 
+-	pci_bridge_d3_device_removed(dev);
++	pci_bridge_d3_update(dev);
+ 	pci_free_resources(dev);
+ 	put_device(&dev->dev);
+ }
 -- 
-Regards,
-Sudeep
+2.9.3
