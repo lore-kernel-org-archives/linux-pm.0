@@ -1,91 +1,70 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 5/9] PCI: Consolidate conditions to allow runtime PM on
- PCIe ports
+Subject: [PATCH v2 6/9] PCI: Unfold conditions to block runtime PM on PCIe
+ ports
 Date: Fri, 28 Oct 2016 10:52:06 +0200
-Message-ID: <3adde3ae2d6350fed9ad8b484bdd1344adce2cc5.1477611126.git.lukas@wunner.de>
+Message-ID: <93166ee4923958b9a0c0a023af5f21a4fed437a2.1477611126.git.lukas@wunner.de>
 References: <cover.1477611126.git.lukas@wunner.de>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:54011 "EHLO
+        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S935654AbcJ1Iya (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Oct 2016 04:54:30 -0400
 In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-The conditions to allow runtime PM on PCIe ports are currently spread
-across two different files:  The condition relating to hotplug ports is
-located in portdrv_pci.c whereas all other conditions are located in
-pci.c.
-
-Consolidate all conditions in a single place in pci.c, thus making it
-easier to follow the logic and amend conditions down the road.
-
-Note that the condition relating to hotplug ports is inserted *before*
-the condition relating to the "pcie_port_pm=force" command line option,
-so runtime PM is not afforded to hotplug ports even if this option is
-given.  That's exactly how the code behaved up until now.  If this is
-not desired, the ordering of the conditions can simply be reversed.
+The conditions to block D3 on parent ports are currently condensed into
+a single expression in pci_dev_check_d3cold().  Upcoming commits will
+add further conditions for hotplug ports, making this expression fairly
+large and impenetrable.  Unfold the conditions to maintain readability
+when they are amended.
 
 No functional change intended.
 
-Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c              | 11 +++++++++++
- drivers/pci/pcie/portdrv_pci.c | 12 ++----------
- 2 files changed, 13 insertions(+), 10 deletions(-)
+ drivers/pci/pci.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 854d185..a19056e 100644
+index a19056e..d0e6de0 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -2239,6 +2239,17 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
- 	case PCI_EXP_TYPE_DOWNSTREAM:
- 		if (pci_bridge_d3_disable)
- 			return false;
-+
-+		/*
-+		 * Hotplug interrupts cannot be delivered if the link is down,
-+		 * so parents of a hotplug port must stay awake. In addition,
-+		 * Hotplug ports handled by firmware in System Management Mode
-+		 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
-+		 * For simplicity, disallow in general for now.
-+		 */
-+		if (bridge->is_hotplug_bridge)
-+			return false;
-+
- 		if (pci_bridge_d3_force)
- 			return true;
- 
-diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
-index 1ae712c..8aa3f14 100644
---- a/drivers/pci/pcie/portdrv_pci.c
-+++ b/drivers/pci/pcie/portdrv_pci.c
-@@ -150,15 +150,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
- 
- 	pci_save_state(dev);
+@@ -2270,19 +2270,20 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ {
+ 	bool *d3cold_ok = data;
+-	bool no_d3cold;
  
 -	/*
--	 * Prevent runtime PM if the port is advertising support for PCIe
--	 * hotplug.  Otherwise the BIOS hotplug SMI code might not be able
--	 * to enumerate devices behind this port properly (the port is
--	 * powered down preventing all config space accesses to the
--	 * subordinate devices).  We can't be sure for native PCIe hotplug
--	 * either so prevent that as well.
+-	 * The device needs to be allowed to go D3cold and if it is wake
+-	 * capable to do so from D3cold.
 -	 */
--	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
-+	if (pci_bridge_d3_possible(dev)) {
- 		/*
- 		 * Keep the port resumed 100ms to make sure things like
- 		 * config space accesses from userspace (lspci) will not
-@@ -176,7 +168,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+-	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
+-		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
+-		!pci_power_manageable(dev);
++	if (/* The device needs to be allowed to go D3cold ... */
++	    dev->no_d3cold || !dev->d3cold_allowed ||
++
++	    /* ... and if it is wakeup capable to do so from D3cold. */
++	    (device_may_wakeup(&dev->dev) &&
++	     !pci_pme_capable(dev, PCI_D3cold)) ||
++
++	    /* If it is a bridge it must be allowed to go to D3. */
++	    !pci_power_manageable(dev))
  
- static void pcie_portdrv_remove(struct pci_dev *dev)
- {
--	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
-+	if (pci_bridge_d3_possible(dev)) {
- 		pm_runtime_forbid(&dev->dev);
- 		pm_runtime_get_noresume(&dev->dev);
- 		pm_runtime_dont_use_autosuspend(&dev->dev);
+-	*d3cold_ok = !no_d3cold;
++		*d3cold_ok = false;
+ 
+-	return no_d3cold;
++	return !*d3cold_ok;
+ }
+ 
+ /*
 -- 
 2.9.3
+
