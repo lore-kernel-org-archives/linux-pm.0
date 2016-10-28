@@ -1,70 +1,72 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 6/9] PCI: Unfold conditions to block runtime PM on PCIe
- ports
+Subject: [PATCH v2 7/9] ACPI / hotplug / PCI: Use cached copy of
+ PCI_EXP_SLTCAP_HPC bit
 Date: Fri, 28 Oct 2016 10:52:06 +0200
-Message-ID: <93166ee4923958b9a0c0a023af5f21a4fed437a2.1477611126.git.lukas@wunner.de>
+Message-ID: <cc74b62ca37389d863aeae1573208a2be240b837.1477611126.git.lukas@wunner.de>
 References: <cover.1477611126.git.lukas@wunner.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:54011 "EHLO
+Received: from mailout1.hostsharing.net ([83.223.95.204]:57925 "EHLO
         mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S935654AbcJ1Iya (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Oct 2016 04:54:30 -0400
+        with ESMTP id S937911AbcJ1Iyw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Oct 2016 04:54:52 -0400
 In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-The conditions to block D3 on parent ports are currently condensed into
-a single expression in pci_dev_check_d3cold().  Upcoming commits will
-add further conditions for hotplug ports, making this expression fairly
-large and impenetrable.  Unfold the conditions to maintain readability
-when they are amended.
+We cache the PCI_EXP_SLTCAP_HPC bit in pci_dev->is_hotplug_bridge on
+device probe, so there's no need to read it again when adding the ACPI
+hotplug context.
+
+Here's the call chain to prove that no ordering issue is introduced:
+
+pci_scan_child_bus [drivers/pci/probe.c]
+  pci_scan_slot
+    pci_scan_single_device
+      pci_scan_device
+        pci_setup_device
+          set_pcie_hotplug_bridge
+            [is_hotplug_bridge bit is set here]
+  pci_scan_bridge
+    pci_add_new_bus
+      pci_alloc_child_bus
+        pcibios_add_bus  [arch/(x86|arm64|ia64)/...]
+          acpi_pci_add_bus [drivers/pci/pci-acpi.c]
+            acpiphp_enumerate_slots [drivers/pci/hotplug/acpiphp_glue.c]
+              acpiphp_add_context
+                device_is_managed_by_native_pciehp
+                  [is_hotplug_bridge bit is queried here]
 
 No functional change intended.
 
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c | 21 +++++++++++----------
- 1 file changed, 11 insertions(+), 10 deletions(-)
+ drivers/pci/hotplug/acpiphp_glue.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index a19056e..d0e6de0 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2270,19 +2270,20 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
- static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+index a46b585..b286a56 100644
+--- a/drivers/pci/hotplug/acpiphp_glue.c
++++ b/drivers/pci/hotplug/acpiphp_glue.c
+@@ -225,14 +225,11 @@ static void acpiphp_post_dock_fixup(struct acpi_device *adev)
+ /* Check whether the PCI device is managed by native PCIe hotplug driver */
+ static bool device_is_managed_by_native_pciehp(struct pci_dev *pdev)
  {
- 	bool *d3cold_ok = data;
--	bool no_d3cold;
+-	u32 reg32;
+ 	acpi_handle tmp;
+ 	struct acpi_pci_root *root;
  
--	/*
--	 * The device needs to be allowed to go D3cold and if it is wake
--	 * capable to do so from D3cold.
--	 */
--	no_d3cold = dev->no_d3cold || !dev->d3cold_allowed ||
--		(device_may_wakeup(&dev->dev) && !pci_pme_capable(dev, PCI_D3cold)) ||
--		!pci_power_manageable(dev);
-+	if (/* The device needs to be allowed to go D3cold ... */
-+	    dev->no_d3cold || !dev->d3cold_allowed ||
-+
-+	    /* ... and if it is wakeup capable to do so from D3cold. */
-+	    (device_may_wakeup(&dev->dev) &&
-+	     !pci_pme_capable(dev, PCI_D3cold)) ||
-+
-+	    /* If it is a bridge it must be allowed to go to D3. */
-+	    !pci_power_manageable(dev))
+ 	/* Check whether the PCIe port supports native PCIe hotplug */
+-	if (pcie_capability_read_dword(pdev, PCI_EXP_SLTCAP, &reg32))
+-		return false;
+-	if (!(reg32 & PCI_EXP_SLTCAP_HPC))
++	if (!pdev->is_hotplug_bridge)
+ 		return false;
  
--	*d3cold_ok = !no_d3cold;
-+		*d3cold_ok = false;
- 
--	return no_d3cold;
-+	return !*d3cold_ok;
- }
- 
- /*
+ 	/*
 -- 
 2.9.3
 
