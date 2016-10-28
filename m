@@ -1,128 +1,130 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: protect limits variable
-Date: Fri, 28 Oct 2016 10:44:52 -0700
-Message-ID: <1477676692-20262-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC PATCH] cpufreq: intel_pstate: Synchronize sysfs limits
+Date: Fri, 28 Oct 2016 10:46:02 -0700
+Message-ID: <1477676762-20416-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:59631 "EHLO mga09.intel.com"
+Received: from mga05.intel.com ([192.55.52.43]:65449 "EHLO mga05.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756354AbcJ1RpH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Oct 2016 13:45:07 -0400
+        id S1756354AbcJ1RqF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 28 Oct 2016 13:46:05 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rjw@rjwysocki.net
 Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-The limits variable gets modified from intel_pstate sysfs and also gets
-modified from cpufreq sysfs. So protect with a mutex to keep data
-integrity, when they are getting modified from multiple threads.
+When user sets some limits using Intel P-State sysfs, they are not
+reflected in the cpufreq policy scaling_max_freq and scaling_min_freq.
+This change updates the cpufreq policy of each CPU, when user sets
+limits via Intel P-State sysfs.
+
+For example:
+root@stn1]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+100
+root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+2800000
+
+Now limit the max performance
+root@stn1]# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+This change now is also changed the scaling_max_freq
+root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+2240000
+
+But there is a side effect of this change for the users who use both
+methods to limit interchangeably. For example if user sets limit via
+Intel P-State sysfs and try to change via cpufreq sysfs, then they can
+only set limit which constrains more. For example in the above example,
+user can't set any frequency above 2240000 from cpufreq sysfs, they can
+set less than that as long as this is more than scaling_min_freq.
+To set above, the max limit need to changed via Intel P-State sysfs,
+which created this constraint.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/cpufreq/intel_pstate.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 43 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8e7390b..0837175 100644
+index 0837175..1bfc1b3 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -373,6 +373,8 @@ static struct perf_limits *limits = &performance_limits;
- static struct perf_limits *limits = &powersave_limits;
- #endif
- 
-+static DEFINE_MUTEX(intel_pstate_limits_lock);
-+
- #ifdef CONFIG_ACPI
- 
- static bool intel_pstate_get_ppc_enable_status(void)
-@@ -730,14 +732,19 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 	if (ret != 1)
- 		return -EINVAL;
- 
-+	mutex_lock(&intel_pstate_limits_lock);
-+
- 	update_turbo_state();
- 	if (limits->turbo_disabled) {
- 		pr_warn("Turbo disabled by BIOS or unavailable on processor\n");
-+		mutex_unlock(&intel_pstate_limits_lock);
- 		return -EPERM;
- 	}
- 
- 	limits->no_turbo = clamp_t(int, input, 0, 1);
- 
-+	mutex_unlock(&intel_pstate_limits_lock);
-+
- 	if (hwp_active)
- 		intel_pstate_hwp_set_online_cpus();
- 
-@@ -754,6 +761,8 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
- 	if (ret != 1)
- 		return -EINVAL;
- 
-+	mutex_lock(&intel_pstate_limits_lock);
-+
- 	limits->max_sysfs_pct = clamp_t(int, input, 0 , 100);
- 	limits->max_perf_pct = min(limits->max_policy_pct,
- 				   limits->max_sysfs_pct);
-@@ -763,6 +772,8 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
- 				   limits->max_perf_pct);
- 	limits->max_perf = div_fp(limits->max_perf_pct, 100);
- 
-+	mutex_unlock(&intel_pstate_limits_lock);
-+
- 	if (hwp_active)
- 		intel_pstate_hwp_set_online_cpus();
+@@ -751,6 +751,18 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
  	return count;
-@@ -778,6 +789,8 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- 	if (ret != 1)
- 		return -EINVAL;
- 
-+	mutex_lock(&intel_pstate_limits_lock);
-+
- 	limits->min_sysfs_pct = clamp_t(int, input, 0 , 100);
- 	limits->min_perf_pct = max(limits->min_policy_pct,
- 				   limits->min_sysfs_pct);
-@@ -787,6 +800,8 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- 				   limits->min_perf_pct);
- 	limits->min_perf = div_fp(limits->min_perf_pct, 100);
- 
-+	mutex_unlock(&intel_pstate_limits_lock);
-+
- 	if (hwp_active)
- 		intel_pstate_hwp_set_online_cpus();
- 	return count;
-@@ -1528,6 +1543,7 @@ static void intel_pstate_clear_update_util_hook(unsigned int cpu)
- 
- static void intel_pstate_set_performance_limits(struct perf_limits *limits)
- {
-+	mutex_lock(&intel_pstate_limits_lock);
- 	limits->no_turbo = 0;
- 	limits->turbo_disabled = 0;
- 	limits->max_perf_pct = 100;
-@@ -1538,11 +1554,15 @@ static void intel_pstate_set_performance_limits(struct perf_limits *limits)
- 	limits->max_sysfs_pct = 100;
- 	limits->min_policy_pct = 0;
- 	limits->min_sysfs_pct = 0;
-+	mutex_unlock(&intel_pstate_limits_lock);
  }
  
- static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
- 					    struct perf_limits *limits)
++static void update_cpufreq_policies(void)
++{
++	int cpu;
++
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
++		if (all_cpu_data[cpu])
++			cpufreq_update_policy(cpu);
++	}
++	put_online_cpus();
++}
++
+ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 				  const char *buf, size_t count)
  {
-+
-+	mutex_lock(&intel_pstate_limits_lock);
-+
- 	limits->max_policy_pct = DIV_ROUND_UP(policy->max * 100,
- 					      policy->cpuinfo.max_freq);
- 	limits->max_policy_pct = clamp_t(int, limits->max_policy_pct, 0, 100);
-@@ -1572,6 +1592,8 @@ static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
- 	limits->max_perf = div_fp(limits->max_perf_pct, 100);
- 	limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
+@@ -776,6 +788,9 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
  
-+	mutex_unlock(&intel_pstate_limits_lock);
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set_online_cpus();
 +
- 	pr_debug("cpu:%d max_perf_pct:%d min_perf_pct:%d\n", policy->cpu,
- 		 limits->max_perf_pct, limits->min_perf_pct);
++	update_cpufreq_policies();
++
+ 	return count;
  }
+ 
+@@ -804,6 +819,9 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+ 
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set_online_cpus();
++
++	update_cpufreq_policies();
++
+ 	return count;
+ }
+ 
+@@ -1745,6 +1763,28 @@ static struct cpufreq_driver intel_pstate_driver = {
+ 	.name		= "intel_pstate",
+ };
+ 
++static int cpufreq_intel_pstate_notifier(struct notifier_block *nb,
++					 unsigned long event, void *data)
++{
++	struct cpufreq_policy *policy = data;
++	int max_freq, min_freq;
++
++	/* When per-CPU limits are used, sysfs limits can't be set */
++	if (per_cpu_limits)
++		return NOTIFY_OK;
++
++	max_freq = policy->cpuinfo.max_freq * limits->max_sysfs_pct / 100;
++	min_freq = policy->cpuinfo.max_freq * limits->min_sysfs_pct / 100;
++
++	cpufreq_verify_within_limits(policy, min_freq, max_freq);
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block intel_pstate_cpufreq_notifier_block = {
++	.notifier_call = cpufreq_intel_pstate_notifier,
++};
++
+ static int no_load __initdata;
+ static int no_hwp __initdata;
+ static int hwp_only __initdata;
+@@ -1959,6 +1999,9 @@ static int __init intel_pstate_init(void)
+ 	if (hwp_active)
+ 		pr_info("HWP enabled\n");
+ 
++	cpufreq_register_notifier(&intel_pstate_cpufreq_notifier_block,
++				  CPUFREQ_POLICY_NOTIFIER);
++
+ 	return rc;
+ out:
+ 	get_online_cpus();
 -- 
 2.7.4
 
