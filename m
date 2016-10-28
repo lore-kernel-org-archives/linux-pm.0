@@ -1,8 +1,8 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 8/9] ACPI / hotplug / PCI: Make
- device_is_managed_by_native_pciehp() public
+Subject: [PATCH v2 9/9] PCI: pciehp: Add runtime PM support for PCIe hotplug
+ ports
 Date: Fri, 28 Oct 2016 10:52:06 +0200
-Message-ID: <be3453a6110c483d0fd3d413ae4c04a3fd44537a.1477611126.git.lukas@wunner.de>
+Message-ID: <9446dafe4972a42873b5712a9fc17f3e46bdece9.1477611126.git.lukas@wunner.de>
 References: <cover.1477611126.git.lukas@wunner.de>
 Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
@@ -11,140 +11,127 @@ To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-We're about to add runtime PM of hotplug ports, but we need to restrict
-it to ports that are handled natively by the OS:  If they're handled by
-the firmware (which is the case for Thunderbolt on non-Macs), things
-would break if the OS put the ports into D3hot behind the firmware's
-back.
+Linux 4.8 added support for runtime suspending PCIe ports to D3hot with
+commit 006d44e49a25 ("PCI: Add runtime PM support for PCIe ports"), but
+excluded hotplug ports.  Those are now afforded runtime PM by the
+present commit.
 
-To determine if a hotplug port is handled natively, one has to walk up
-from the port to the root bridge and check the cached _OSC Control Field
-for the value of the "PCI Express Native Hot Plug control" bit.  There's
-already a function to do that, device_is_managed_by_native_pciehp(),
-but it's private to drivers/pci/hotplug/acpiphp_glue.c and only compiled
-in if CONFIG_HOTPLUG_PCI_ACPI is enabled.
+Hotplug ports require a few extra considerations:
 
-Make it public and move it to drivers/pci/pci-acpi.c, so that it is
-available in the more general CONFIG_ACPI case.
+- The configuration space of the port remains accessible in D3hot, so
+  all the functions to read or modify the Slot Status and Slot Control
+  registers need not be modified.  Even turning on slot power doesn't
+  seem to require the port to be in D0, at least the PCIe spec doesn't
+  say so and I confirmed that by testing with a Thunderbolt controller.
 
-The function contains a check if the device in question is a hotplug
-port and returns false if it's not.  The caller we're going to add
-doesn't need this as it only calls the function if it actually *is* a
-hotplug port.  Move the check out of the function into the single
-existing caller.
+- However D0 is required to access devices on the subordinate bus.  This
+  happens in pciehp_check_link_status() and pciehp_configure_device()
+  (both called from board_added()) and in pciehp_unconfigure_device()
+  (called from remove_board()), so acquire a runtime PM ref for their
+  invocation.
 
-Give the function a shorter name and add some kerneldoc and polish.
+- The hotplug port stays active as long as it has active children.  If
+  all hotplugged devices below the port runtime suspend, the port is
+  allowed to runtime suspend as well.  Plug and unplug detection
+  continues to work in D3hot.
 
-No functional change intended.
+- Hotplug interrupts are delivered in-band, so while the hotplug port
+  itself is allowed to go to D3hot, its parent ports must stay in D0 for
+  interrupts to come through.  Add a corresponding restriction to
+  pci_dev_check_d3cold().
 
-Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+- Runtime PM may only be allowed if the hotplug port is handled natively
+  by the OS.  On ACPI systems, the port may alternatively be handled by
+  the firmware and things break if the OS puts the port into D3 behind
+  the firmware's back:  E.g. Thunderbolt hotplug ports on non-Macs are
+  handled by Intel's firmware in System Management Mode and the firmware
+  is known to access devices on the port's subordinate bus without
+  checking first if the port is in D0:
+  https://bugzilla.kernel.org/show_bug.cgi?id=53811
+
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
 Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/hotplug/acpiphp_glue.c | 28 +---------------------------
- drivers/pci/pci-acpi.c             | 24 ++++++++++++++++++++++++
- include/linux/pci_hotplug.h        |  2 ++
- 3 files changed, 27 insertions(+), 27 deletions(-)
+ drivers/pci/hotplug/pciehp_ctrl.c |  6 ++++++
+ drivers/pci/pci.c                 | 10 +++++-----
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index b286a56..5ed2dca 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -222,32 +222,6 @@ static void acpiphp_post_dock_fixup(struct acpi_device *adev)
- 	acpiphp_let_context_go(context);
+diff --git a/drivers/pci/hotplug/pciehp_ctrl.c b/drivers/pci/hotplug/pciehp_ctrl.c
+index efe69e8..ffd3fe6 100644
+--- a/drivers/pci/hotplug/pciehp_ctrl.c
++++ b/drivers/pci/hotplug/pciehp_ctrl.c
+@@ -31,6 +31,7 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
++#include <linux/pm_runtime.h>
+ #include <linux/pci.h>
+ #include "../pci.h"
+ #include "pciehp.h"
+@@ -98,6 +99,7 @@ static int board_added(struct slot *p_slot)
+ 	pciehp_green_led_blink(p_slot);
+ 
+ 	/* Check link training status */
++	pm_runtime_get_sync(&ctrl->pcie->port->dev);
+ 	retval = pciehp_check_link_status(ctrl);
+ 	if (retval) {
+ 		ctrl_err(ctrl, "Failed to check link status\n");
+@@ -118,12 +120,14 @@ static int board_added(struct slot *p_slot)
+ 		if (retval != -EEXIST)
+ 			goto err_exit;
+ 	}
++	pm_runtime_put(&ctrl->pcie->port->dev);
+ 
+ 	pciehp_green_led_on(p_slot);
+ 	pciehp_set_attention_status(p_slot, 0);
+ 	return 0;
+ 
+ err_exit:
++	pm_runtime_put(&ctrl->pcie->port->dev);
+ 	set_slot_off(ctrl, p_slot);
+ 	return retval;
  }
+@@ -137,7 +141,9 @@ static int remove_board(struct slot *p_slot)
+ 	int retval;
+ 	struct controller *ctrl = p_slot->ctrl;
  
--/* Check whether the PCI device is managed by native PCIe hotplug driver */
--static bool device_is_managed_by_native_pciehp(struct pci_dev *pdev)
--{
--	acpi_handle tmp;
--	struct acpi_pci_root *root;
--
--	/* Check whether the PCIe port supports native PCIe hotplug */
--	if (!pdev->is_hotplug_bridge)
--		return false;
--
--	/*
--	 * Check whether native PCIe hotplug has been enabled for
--	 * this PCIe hierarchy.
--	 */
--	tmp = acpi_find_root_bridge_handle(pdev);
--	if (!tmp)
--		return false;
--	root = acpi_pci_find_root(tmp);
--	if (!root)
--		return false;
--	if (!(root->osc_control_set & OSC_PCI_EXPRESS_NATIVE_HP_CONTROL))
--		return false;
--
--	return true;
--}
--
- /**
-  * acpiphp_add_context - Add ACPIPHP context to an ACPI device object.
-  * @handle: ACPI handle of the object to add a context to.
-@@ -331,7 +305,7 @@ static acpi_status acpiphp_add_context(acpi_handle handle, u32 lvl, void *data,
- 	 * expose slots to user space in those cases.
- 	 */
- 	if ((acpi_pci_check_ejectable(pbus, handle) || is_dock_device(adev))
--	    && !(pdev && device_is_managed_by_native_pciehp(pdev))) {
-+	    && !(pdev && pdev->is_hotplug_bridge && pciehp_is_native(pdev))) {
- 		unsigned long long sun;
- 		int retval;
++	pm_runtime_get_sync(&ctrl->pcie->port->dev);
+ 	retval = pciehp_unconfigure_device(p_slot);
++	pm_runtime_put(&ctrl->pcie->port->dev);
+ 	if (retval)
+ 		return retval;
  
-diff --git a/drivers/pci/pci-acpi.c b/drivers/pci/pci-acpi.c
-index d966d47..ed3daa8 100644
---- a/drivers/pci/pci-acpi.c
-+++ b/drivers/pci/pci-acpi.c
-@@ -294,6 +294,30 @@ int pci_get_hp_params(struct pci_dev *dev, struct hotplug_params *hpp)
- EXPORT_SYMBOL_GPL(pci_get_hp_params);
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index d0e6de0..0759ef6 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -2241,13 +2241,10 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ 			return false;
  
- /**
-+ * pciehp_is_native - Check whether a hotplug port is handled by the OS
-+ * @pdev: Hotplug port to check
-+ *
-+ * Walk up from @pdev to the host bridge, obtain its cached _OSC Control Field
-+ * and return the value of the "PCI Express Native Hot Plug control" bit.
-+ * On failure to obtain the _OSC Control Field return %false.
-+ */
-+bool pciehp_is_native(struct pci_dev *pdev)
-+{
-+	struct acpi_pci_root *root;
-+	acpi_handle handle;
+ 		/*
+-		 * Hotplug interrupts cannot be delivered if the link is down,
+-		 * so parents of a hotplug port must stay awake. In addition,
+ 		 * Hotplug ports handled by firmware in System Management Mode
+ 		 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
+-		 * For simplicity, disallow in general for now.
+ 		 */
+-		if (bridge->is_hotplug_bridge)
++		if (bridge->is_hotplug_bridge && !pciehp_is_native(bridge))
+ 			return false;
+ 
+ 		if (pci_bridge_d3_force)
+@@ -2279,7 +2276,10 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ 	     !pci_pme_capable(dev, PCI_D3cold)) ||
+ 
+ 	    /* If it is a bridge it must be allowed to go to D3. */
+-	    !pci_power_manageable(dev))
++	    !pci_power_manageable(dev) ||
 +
-+	handle = acpi_find_root_bridge_handle(pdev);
-+	if (!handle)
-+		return false;
-+
-+	root = acpi_pci_find_root(handle);
-+	if (!root)
-+		return false;
-+
-+	return root->osc_control_set & OSC_PCI_EXPRESS_NATIVE_HP_CONTROL;
-+}
-+
-+/**
-  * pci_acpi_wake_bus - Root bus wakeup notification fork function.
-  * @work: Work item to handle.
-  */
-diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
-index 8c78950..2e855af 100644
---- a/include/linux/pci_hotplug.h
-+++ b/include/linux/pci_hotplug.h
-@@ -176,6 +176,7 @@ struct hotplug_params {
- #ifdef CONFIG_ACPI
- #include <linux/acpi.h>
- int pci_get_hp_params(struct pci_dev *dev, struct hotplug_params *hpp);
-+bool pciehp_is_native(struct pci_dev *pdev);
- int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags);
- int acpi_pci_check_ejectable(struct pci_bus *pbus, acpi_handle handle);
- int acpi_pci_detect_ejectable(acpi_handle handle);
-@@ -185,5 +186,6 @@ static inline int pci_get_hp_params(struct pci_dev *dev,
- {
- 	return -ENODEV;
- }
-+static inline bool pciehp_is_native(struct pci_dev *pdev) { return true; }
- #endif
- #endif
++	    /* Hotplug interrupts cannot be delivered if the link is down. */
++	    dev->is_hotplug_bridge)
+ 
+ 		*d3cold_ok = false;
+ 
 -- 
 2.9.3
