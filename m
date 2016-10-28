@@ -1,7 +1,8 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 3/9] PCI: Speed up algorithm in pci_bridge_d3_update()
+Subject: [PATCH v2 5/9] PCI: Consolidate conditions to allow runtime PM on
+ PCIe ports
 Date: Fri, 28 Oct 2016 10:52:06 +0200
-Message-ID: <91d06bdc4b76f7386a4ad8a5b521e1e1d7fde150.1477611126.git.lukas@wunner.de>
+Message-ID: <3adde3ae2d6350fed9ad8b484bdd1344adce2cc5.1477611126.git.lukas@wunner.de>
 References: <cover.1477611126.git.lukas@wunner.de>
 Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
@@ -10,45 +11,19 @@ To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-After a device has been added, removed or had its D3cold attributes
-changed, we recheck whether its parent bridge may runtime suspend to
-D3hot with pci_bridge_d3_update().
+The conditions to allow runtime PM on PCIe ports are currently spread
+across two different files:  The condition relating to hotplug ports is
+located in portdrv_pci.c whereas all other conditions are located in
+pci.c.
 
-The most naive algorithm would be to iterate over the bridge's
-children and check if any of them are blocking D3.
+Consolidate all conditions in a single place in pci.c, thus making it
+easier to follow the logic and amend conditions down the road.
 
-The function already tries to be a bit smarter than that by first
-checking the device that was changed.  If this device already blocks D3
-on the bridge, then walking over all the other children can be skipped.
-A drawback of this approach is that if the device is *not* blocking D3,
-it will be checked a second time by pci_walk_bus().  But that's cheap
-and is outweighed by the performance gain of potentially skipping
-pci_walk_bus() altogether.
-
-The algorithm can be optimized further by taking into account if D3 is
-currently allowed for the bridge, as shown in the following truth table:
-
-(a)  remove &&  bridge_d3:  D3 is currently allowed for the bridge and
-                            removing one of its children won't change
-                            that.  No action necessary.
-(b)  remove && !bridge_d3:  D3 may now be allowed for the bridge if the
-                            removed child was the only one blocking it.
-                            Check all its siblings to verify that.
-(c) !remove &&  bridge_d3:  D3 may now be disallowed but this can only
-                            be caused by the added/changed child, not
-                            any of its siblings.  Check only that single
-                            device.
-(d) !remove && !bridge_d3:  D3 may now be allowed for the bridge if the
-                            changed child was the only one blocking it.
-                            Check all its siblings to verify that.
-                            By checking beforehand if the changed child
-                            is blocking D3, we may be able to skip
-                            checking its siblings.
-
-Currently we do not special-case option (a) and in case of option (c) we
-gratuitously call pci_walk_bus().  Speed up the algorithm by adding
-these optimizations.  Reword the comments a bit in an attempt to improve
-clarity.
+Note that the condition relating to hotplug ports is inserted *before*
+the condition relating to the "pcie_port_pm=force" command line option,
+so runtime PM is not afforded to hotplug ports even if this option is
+given.  That's exactly how the code behaved up until now.  If this is
+not desired, the ordering of the conditions can simply be reversed.
 
 No functional change intended.
 
@@ -56,53 +31,61 @@ Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c | 28 ++++++++++++++++++++--------
- 1 file changed, 20 insertions(+), 8 deletions(-)
+ drivers/pci/pci.c              | 11 +++++++++++
+ drivers/pci/pcie/portdrv_pci.c | 12 ++----------
+ 2 files changed, 13 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index c12fae7..bc60f2c 100644
+index 854d185..a19056e 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -2293,20 +2293,32 @@ void pci_bridge_d3_update(struct pci_dev *dev)
- 		return;
- 
- 	/*
--	 * If the device is removed we do not care about its D3cold
--	 * capabilities.
-+	 * If D3 is currently allowed for the bridge, removing one of its
-+	 * children won't change that.
-+	 */
-+	if (remove && bridge->bridge_d3)
-+		return;
+@@ -2239,6 +2239,17 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ 	case PCI_EXP_TYPE_DOWNSTREAM:
+ 		if (pci_bridge_d3_disable)
+ 			return false;
 +
-+	/*
-+	 * If D3 is currently allowed for the bridge and a child is added or
-+	 * changed, disallowance of D3 can only be caused by that child, so
-+	 * we only need to check that single device, not any of its siblings.
-+	 *
-+	 * If D3 is currently not allowed for the bridge, checking the device
-+	 * first may allow us to skip checking its siblings.
- 	 */
- 	if (!remove)
- 		pci_dev_check_d3cold(dev, &d3cold_ok);
++		/*
++		 * Hotplug interrupts cannot be delivered if the link is down,
++		 * so parents of a hotplug port must stay awake. In addition,
++		 * Hotplug ports handled by firmware in System Management Mode
++		 * may not be put into D3 by the OS (Thunderbolt on non-Macs).
++		 * For simplicity, disallow in general for now.
++		 */
++		if (bridge->is_hotplug_bridge)
++			return false;
++
+ 		if (pci_bridge_d3_force)
+ 			return true;
  
--	if (d3cold_ok) {
--		/*
--		 * We need to go through all children to find out if all of
--		 * them can still go to D3cold.
--		 */
-+	/*
-+	 * If D3 is currently not allowed for the bridge, this may be caused
-+	 * either by the device being changed/removed or any of its siblings,
-+	 * so we need to go through all children to find out if one of them
-+	 * continues to block D3.
-+	 */
-+	if (d3cold_ok && !bridge->bridge_d3)
- 		pci_walk_bus(bridge->subordinate, pci_dev_check_d3cold,
- 			     &d3cold_ok);
--	}
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index 1ae712c..8aa3f14 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -150,15 +150,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
  
- 	if (bridge->bridge_d3 != d3cold_ok) {
- 		bridge->bridge_d3 = d3cold_ok;
+ 	pci_save_state(dev);
+ 
+-	/*
+-	 * Prevent runtime PM if the port is advertising support for PCIe
+-	 * hotplug.  Otherwise the BIOS hotplug SMI code might not be able
+-	 * to enumerate devices behind this port properly (the port is
+-	 * powered down preventing all config space accesses to the
+-	 * subordinate devices).  We can't be sure for native PCIe hotplug
+-	 * either so prevent that as well.
+-	 */
+-	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
++	if (pci_bridge_d3_possible(dev)) {
+ 		/*
+ 		 * Keep the port resumed 100ms to make sure things like
+ 		 * config space accesses from userspace (lspci) will not
+@@ -176,7 +168,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 
+ static void pcie_portdrv_remove(struct pci_dev *dev)
+ {
+-	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
++	if (pci_bridge_d3_possible(dev)) {
+ 		pm_runtime_forbid(&dev->dev);
+ 		pm_runtime_get_noresume(&dev->dev);
+ 		pm_runtime_dont_use_autosuspend(&dev->dev);
 -- 
 2.9.3
