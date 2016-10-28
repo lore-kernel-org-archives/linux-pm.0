@@ -1,8 +1,8 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v2 2/9] PCI: Autosense device removal in
- pci_bridge_d3_update()
+Subject: [PATCH v2 4/9] PCI: Activate runtime PM on a PCIe port only if it can
+ suspend
 Date: Fri, 28 Oct 2016 10:52:06 +0200
-Message-ID: <74fa6b7b83da600be59789cce7193c6436630e1d.1477611126.git.lukas@wunner.de>
+Message-ID: <f2fc212d4c75a2e3f3b8162976b15881da57dfb1.1477611126.git.lukas@wunner.de>
 References: <cover.1477611126.git.lukas@wunner.de>
 Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
@@ -11,22 +11,19 @@ To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas
 Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The algorithm to update the flag indicating whether a bridge may go to
-D3 makes a few optimizations based on whether the update was caused by
-the removal of a device on the one hand, versus the addition of a device
-or the change of its D3cold flags on the other hand.
+Currently pcie_portdrv_probe() activates runtime PM on a PCIe port even
+if it will never actually suspend because the BIOS is too old or the
+"pcie_port_pm=off" option was specified on the kernel command line.
 
-The information whether the update pertains to a removal is currently
-passed in by the caller, but the function may as well determine that
-itself by examining the device in question, thereby allowing for a
-considerable simplification and reduction of the code.
+A few CPU cycles can be saved by not activating runtime PM at all in
+these cases, because rpm_idle() and rpm_suspend() will bail out right
+at the beginning when calling rpm_check_suspend_allowed(), instead of
+carrying out various locking and assignments, invoking rpm_callback(),
+getting back -EBUSY and rolling everything back.
 
-Out of several options to determine removal, I've chosen the function
-device_is_registered() because it's cheap:  It merely returns the
-dev->kobj.state_in_sysfs flag.  That flag is set through device_add()
-when the root bus is scanned and cleared through device_remove().
-The call to pci_bridge_d3_update() happens after each of these calls,
-respectively, so the ordering is correct.
+The conditions checked in pci_bridge_d3_possible() are all static, they
+never change during uptime of the system, hence it's safe to call this
+to determine if runtime PM should be activated.
 
 No functional change intended.
 
@@ -34,128 +31,65 @@ Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/bus.c    |  2 +-
- drivers/pci/pci.c    | 35 +++++------------------------------
- drivers/pci/pci.h    |  3 +--
- drivers/pci/remove.c |  2 +-
- 4 files changed, 8 insertions(+), 34 deletions(-)
+ drivers/pci/pci.c              | 2 +-
+ drivers/pci/pci.h              | 1 +
+ drivers/pci/pcie/portdrv_pci.c | 5 +++--
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
-index c288e5a..bc56cf1 100644
---- a/drivers/pci/bus.c
-+++ b/drivers/pci/bus.c
-@@ -320,7 +320,7 @@ void pci_bus_add_device(struct pci_dev *dev)
- 	pci_fixup_device(pci_fixup_final, dev);
- 	pci_create_sysfs_dev_files(dev);
- 	pci_proc_attach_device(dev);
--	pci_bridge_d3_device_changed(dev);
-+	pci_bridge_d3_update(dev);
- 
- 	dev->match_driver = true;
- 	retval = device_attach(&dev->dev);
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 6e0c399..c12fae7 100644
+index bc60f2c..854d185 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -2277,14 +2277,14 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
- /*
-  * pci_bridge_d3_update - Update bridge D3 capabilities
-  * @dev: PCI device which is changed
-- * @remove: Is the device being removed
-  *
-  * Update upstream bridge PM capabilities accordingly depending on if the
-  * device PM configuration was changed or the device is being removed.  The
-  * change is also propagated upstream.
+@@ -2226,7 +2226,7 @@ void pci_config_pm_runtime_put(struct pci_dev *pdev)
+  * This function checks if it is possible to move the bridge to D3.
+  * Currently we only allow D3 for recent enough PCIe ports.
   */
--static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
-+void pci_bridge_d3_update(struct pci_dev *dev)
+-static bool pci_bridge_d3_possible(struct pci_dev *bridge)
++bool pci_bridge_d3_possible(struct pci_dev *bridge)
  {
-+	bool remove = !device_is_registered(&dev->dev);
- 	struct pci_dev *bridge;
- 	bool d3cold_ok = true;
+ 	unsigned int year;
  
-@@ -2311,36 +2311,11 @@ static void pci_bridge_d3_update(struct pci_dev *dev, bool remove)
- 	if (bridge->bridge_d3 != d3cold_ok) {
- 		bridge->bridge_d3 = d3cold_ok;
- 		/* Propagate change to upstream bridges */
--		pci_bridge_d3_update(bridge, false);
-+		pci_bridge_d3_update(bridge);
- 	}
- }
- 
- /**
-- * pci_bridge_d3_device_changed - Update bridge D3 capabilities on change
-- * @dev: PCI device that was changed
-- *
-- * If a device is added or its PM configuration, such as is it allowed to
-- * enter D3cold, is changed this function updates upstream bridge PM
-- * capabilities accordingly.
-- */
--void pci_bridge_d3_device_changed(struct pci_dev *dev)
--{
--	pci_bridge_d3_update(dev, false);
--}
--
--/**
-- * pci_bridge_d3_device_removed - Update bridge D3 capabilities on remove
-- * @dev: PCI device being removed
-- *
-- * Function updates upstream bridge PM capabilities based on other devices
-- * still left on the bus.
-- */
--void pci_bridge_d3_device_removed(struct pci_dev *dev)
--{
--	pci_bridge_d3_update(dev, true);
--}
--
--/**
-  * pci_d3cold_enable - Enable D3cold for device
-  * @dev: PCI device to handle
-  *
-@@ -2352,7 +2327,7 @@ void pci_d3cold_enable(struct pci_dev *dev)
- {
- 	if (dev->no_d3cold) {
- 		dev->no_d3cold = false;
--		pci_bridge_d3_device_changed(dev);
-+		pci_bridge_d3_update(dev);
- 	}
- }
- EXPORT_SYMBOL_GPL(pci_d3cold_enable);
-@@ -2369,7 +2344,7 @@ void pci_d3cold_disable(struct pci_dev *dev)
- {
- 	if (!dev->no_d3cold) {
- 		dev->no_d3cold = true;
--		pci_bridge_d3_device_changed(dev);
-+		pci_bridge_d3_update(dev);
- 	}
- }
- EXPORT_SYMBOL_GPL(pci_d3cold_disable);
 diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 4518562..27048bb 100644
+index 27048bb..ffffef3 100644
 --- a/drivers/pci/pci.h
 +++ b/drivers/pci/pci.h
-@@ -85,8 +85,7 @@ void pci_pm_init(struct pci_dev *dev);
+@@ -85,6 +85,7 @@ void pci_pm_init(struct pci_dev *dev);
  void pci_ea_init(struct pci_dev *dev);
  void pci_allocate_cap_save_buffers(struct pci_dev *dev);
  void pci_free_cap_save_buffers(struct pci_dev *dev);
--void pci_bridge_d3_device_changed(struct pci_dev *dev);
--void pci_bridge_d3_device_removed(struct pci_dev *dev);
-+void pci_bridge_d3_update(struct pci_dev *dev);
++bool pci_bridge_d3_possible(struct pci_dev *dev);
+ void pci_bridge_d3_update(struct pci_dev *dev);
  
  static inline void pci_wakeup_event(struct pci_dev *dev)
- {
-diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
-index f9357e0..73a03d3 100644
---- a/drivers/pci/remove.c
-+++ b/drivers/pci/remove.c
-@@ -40,7 +40,7 @@ static void pci_destroy_dev(struct pci_dev *dev)
- 	list_del(&dev->bus_list);
- 	up_write(&pci_bus_sem);
+diff --git a/drivers/pci/pcie/portdrv_pci.c b/drivers/pci/pcie/portdrv_pci.c
+index 79327cc..1ae712c 100644
+--- a/drivers/pci/pcie/portdrv_pci.c
++++ b/drivers/pci/pcie/portdrv_pci.c
+@@ -19,6 +19,7 @@
+ #include <linux/dmi.h>
+ #include <linux/pci-aspm.h>
  
--	pci_bridge_d3_device_removed(dev);
-+	pci_bridge_d3_update(dev);
- 	pci_free_resources(dev);
- 	put_device(&dev->dev);
- }
++#include "../pci.h"
+ #include "portdrv.h"
+ #include "aer/aerdrv.h"
+ 
+@@ -157,7 +158,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 	 * subordinate devices).  We can't be sure for native PCIe hotplug
+ 	 * either so prevent that as well.
+ 	 */
+-	if (!dev->is_hotplug_bridge) {
++	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
+ 		/*
+ 		 * Keep the port resumed 100ms to make sure things like
+ 		 * config space accesses from userspace (lspci) will not
+@@ -175,7 +176,7 @@ static int pcie_portdrv_probe(struct pci_dev *dev,
+ 
+ static void pcie_portdrv_remove(struct pci_dev *dev)
+ {
+-	if (!dev->is_hotplug_bridge) {
++	if (pci_bridge_d3_possible(dev) && !dev->is_hotplug_bridge) {
+ 		pm_runtime_forbid(&dev->dev);
+ 		pm_runtime_get_noresume(&dev->dev);
+ 		pm_runtime_dont_use_autosuspend(&dev->dev);
 -- 
 2.9.3
