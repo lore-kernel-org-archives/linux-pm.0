@@ -1,50 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 1/3] PM / OPP: Expose _of_get_opp_desc_node as
- dev_pm_opp API
-Date: Fri, 28 Oct 2016 09:35:07 +0530
-Message-ID: <20161028040507.GJ10423@vireshk-i7>
-References: <20161027214131.1725-1-d-gerlach@ti.com>
- <20161027214131.1725-2-d-gerlach@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:35482 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751644AbcJ1EFK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Oct 2016 00:05:10 -0400
-Received: by mail-pf0-f178.google.com with SMTP id s8so29637829pfj.2
-        for <linux-pm@vger.kernel.org>; Thu, 27 Oct 2016 21:05:10 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20161027214131.1725-2-d-gerlach@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: [PATCH v2 0/9] PCIe port PM: high gloss polish & hotplug support
+Date: Fri, 28 Oct 2016 10:52:06 +0200
+Message-ID: <cover.1477611126.git.lukas@wunner.de>
+Return-path: <linux-pci-owner@vger.kernel.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>
 
-On 27-10-16, 16:41, Dave Gerlach wrote:
-> Move _of_get_opp_desc_node into include/linux/pm_opp.h and rename it
-> dev_pm_opp_of_get_opp_desc_node to allow other drivers, such as platform
-> OPP and cpufreq drivers, to make use of it.
-> 
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
->  drivers/base/power/opp/of.c  | 8 ++++----
->  drivers/base/power/opp/opp.h | 1 -
->  include/linux/pm_opp.h       | 6 ++++++
->  3 files changed, 10 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-> index 5552211e6fcd..215f5a538c78 100644
-> --- a/drivers/base/power/opp/of.c
-> +++ b/drivers/base/power/opp/of.c
-> @@ -198,7 +198,7 @@ void dev_pm_opp_of_remove_table(struct device *dev)
->  EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
->  
->  /* Returns opp descriptor node for a device, caller must do of_node_put() */
-> -struct device_node *_of_get_opp_desc_node(struct device *dev)
-> +struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
+Respin of this series to polish the runtime PM support for PCIe ports
+that was added with v4.8, and extend it to native hotplug ports:
 
-Export as well ?
+- All patches have been reviewed by Rafael, patches 1 to 8 have been
+  tested by Mika.  (Thanks a lot!)
+
+- Patch 6 ("PCI: Unfold conditions to block runtime PM on PCIe ports")
+  contains a minor change relative to v1 wherein the function returns
+  as soon as a single condition evaluates to true.  (Instead of
+  needlessly evaluating all the remaining conditions.)
+
+- Patch 9 was rebased to accommodate to this change but is otherwise
+  the same as before.
+
+As usual I've pushed the series to GitHub to ease reviewing/fetching:
+https://github.com/l1k/linux/commits/pcie_port_pm_v2
+
+Link to v1:
+http://www.spinics.net/lists/linux-pci/msg55347.html
+
+Thanks,
+
+Lukas
+
+
+Lukas Wunner (9):
+  PCI: Don't acquire ref on parent in pci_bridge_d3_update()
+  PCI: Autosense device removal in pci_bridge_d3_update()
+  PCI: Speed up algorithm in pci_bridge_d3_update()
+  PCI: Activate runtime PM on a PCIe port only if it can suspend
+  PCI: Consolidate conditions to allow runtime PM on PCIe ports
+  PCI: Unfold conditions to block runtime PM on PCIe ports
+  ACPI / hotplug / PCI: Use cached copy of PCI_EXP_SLTCAP_HPC bit
+  ACPI / hotplug / PCI: Make device_is_managed_by_native_pciehp() public
+  PCI: pciehp: Add runtime PM support for PCIe hotplug ports
+
+ drivers/pci/bus.c                  |   2 +-
+ drivers/pci/hotplug/acpiphp_glue.c |  31 +-----------
+ drivers/pci/hotplug/pciehp_ctrl.c  |   6 +++
+ drivers/pci/pci-acpi.c             |  24 +++++++++
+ drivers/pci/pci.c                  | 100 ++++++++++++++++++-------------------
+ drivers/pci/pci.h                  |   4 +-
+ drivers/pci/pcie/portdrv_pci.c     |  13 ++---
+ drivers/pci/remove.c               |   2 +-
+ include/linux/pci_hotplug.h        |   2 +
+ 9 files changed, 88 insertions(+), 96 deletions(-)
 
 -- 
-viresh
+2.9.3
