@@ -1,42 +1,106 @@
-From: Wei Yongjun <weiyj.lk@gmail.com>
-Subject: [PATCH -next] i7300_idle: fix typo in parameter description
-Date: Sat, 29 Oct 2016 15:11:31 +0000
-Message-ID: <1477753891-1841-1-git-send-email-weiyj.lk@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34147 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751147AbcJ2PLt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Oct 2016 11:11:49 -0400
-Received: by mail-pf0-f196.google.com with SMTP id u84so4140948pfj.1
-        for <linux-pm@vger.kernel.org>; Sat, 29 Oct 2016 08:11:49 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH 00/15] use permission-specific DEVICE_ATTR variants
+Date: Sat, 29 Oct 2016 21:36:54 +0200
+Message-ID: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: netdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org, linux-pm@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-atm-general@lists.sourceforge.net
 List-Id: linux-pm@vger.kernel.org
-To: Andy Henroid <andrew.d.henroid@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-From: Wei Yongjun <weiyongjun1@huawei.com>
 
-Fix typo in parameter description.
+Use DEVICE_ATTR_RO etc. for read only attributes etc.  This simplifies the
+source code, improves readbility, and reduces the chance of
+inconsistencies.
 
-Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+The complete semantic patch is as follows:
+(http://coccinelle.lip6.fr/)
+
+// <smpl>
+@ro@
+declarer name DEVICE_ATTR;
+identifier x,x_show;
+@@
+
+DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
+
+@wo@
+declarer name DEVICE_ATTR;
+identifier x,x_store;
+@@
+
+DEVICE_ATTR(x, \(0200\|S_IWUSR\), NULL, x_store);
+
+@rw@
+declarer name DEVICE_ATTR;
+identifier x,x_show,x_store;
+@@
+
+DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
+
+@script:ocaml@
+x << ro.x;
+x_show << ro.x_show;
+@@
+
+if not (x^"_show" = x_show) then Coccilib.include_match false
+
+@script:ocaml@
+x << wo.x;
+x_store << wo.x_store;
+@@
+
+if not (x^"_store" = x_store) then Coccilib.include_match false
+
+@script:ocaml@
+x << rw.x;
+x_show << rw.x_show;
+x_store << rw.x_store;
+@@
+
+if not (x^"_show" = x_show && x^"_store" = x_store)
+then Coccilib.include_match false
+
+@@
+declarer name DEVICE_ATTR_RO;
+identifier ro.x,ro.x_show;
+@@
+
+- DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
++ DEVICE_ATTR_RO(x);
+
+@@
+declarer name DEVICE_ATTR_WO;
+identifier wo.x,wo.x_store;
+@@
+
+- DEVICE_ATTR(x, \(0200\|S_IWUSR\), NULL, x_store);
++ DEVICE_ATTR_WO(x);
+
+@@
+declarer name DEVICE_ATTR_RW;
+identifier rw.x,rw.x_show,rw.x_store;
+@@
+
+- DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
++ DEVICE_ATTR_RW(x);
+// </smpl>
+
 ---
- drivers/idle/i7300_idle.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
-index 9a104e5..b570560 100644
---- a/drivers/idle/i7300_idle.c
-+++ b/drivers/idle/i7300_idle.c
-@@ -44,7 +44,7 @@ MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
- 
- static int forceload;
- module_param_named(forceload, forceload, uint, 0644);
--MODULE_PARM_DESC(debug, "Enable driver testing on unvalidated i5000");
-+MODULE_PARM_DESC(forceload, "Enable driver testing on unvalidated i5000");
- 
- #define dprintk(fmt, arg...) \
- 	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
-
+ arch/mips/txx9/generic/7segled.c                  |    4 ++--
+ arch/powerpc/kernel/iommu.c                       |    3 +--
+ arch/tile/kernel/sysfs.c                          |   14 +++++++-------
+ drivers/atm/solos-pci.c                           |    2 +-
+ drivers/pci/pcie/aspm.c                           |    4 ++--
+ drivers/power/supply/wm8350_power.c               |    2 +-
+ drivers/ptp/ptp_sysfs.c                           |    2 +-
+ drivers/thermal/int340x_thermal/int3400_thermal.c |    2 +-
+ drivers/thermal/thermal_hwmon.c                   |    2 +-
+ drivers/tty/nozomi.c                              |    4 ++--
+ drivers/usb/wusbcore/dev-sysfs.c                  |    6 +++---
+ drivers/usb/wusbcore/wusbhc.c                     |   13 +++++--------
+ drivers/video/fbdev/wm8505fb.c                    |    2 +-
+ sound/soc/omap/mcbsp.c                            |    4 ++--
+ sound/soc/soc-dapm.c                              |    2 +-
+ 15 files changed, 31 insertions(+), 35 deletions(-)
