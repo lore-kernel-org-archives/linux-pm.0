@@ -1,106 +1,42 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [Bug] ARM: mxs: STI: console can't wake up from freeze
-Date: Sat, 29 Oct 2016 13:44:14 +0200 (CEST)
-Message-ID: <1709157673.85170.1cb53b4d-2805-48ea-aef1-dd282306d108.open-xchange@email.1und1.de>
-References: <315017958.66634.5d4fc19c-31cd-4900-8613-af4cadec5da4.open-xchange@email.1und1.de>
- <20161023133134.GI1041@n2100.armlinux.org.uk>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH -next] i7300_idle: fix typo in parameter description
+Date: Sat, 29 Oct 2016 15:11:31 +0000
+Message-ID: <1477753891-1841-1-git-send-email-weiyj.lk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([217.72.192.74]:59740 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750748AbcJ2LpI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Oct 2016 07:45:08 -0400
-In-Reply-To: <20161023133134.GI1041@n2100.armlinux.org.uk>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34147 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751147AbcJ2PLt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Oct 2016 11:11:49 -0400
+Received: by mail-pf0-f196.google.com with SMTP id u84so4140948pfj.1
+        for <linux-pm@vger.kernel.org>; Sat, 29 Oct 2016 08:11:49 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, joerg.krause@embedded.rocks, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Fabio Estevam <fabio.estevam@nxp.com>
+To: Andy Henroid <andrew.d.henroid@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-Hi Russell,
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
-> Russell King - ARM Linux <linux@armlinux.org.uk> hat am 23. Oktober 2016 um
-> 15:31 geschrieben:
-> 
-> 
-> On Sun, Oct 23, 2016 at 11:19:26AM +0200, Stefan Wahren wrote:
-> > Hi,
-> > 
-> > i'm faced with the issue that on i.MX28 the console is unable to wake up
-> > from
-> > freeze ( suspend to idle). I tested it with Linux 4.9-rc1, 4.8 and 3.18 (
-> > cmdline has
-> > no_console_suspend=1 ) and also with a i.MX23 with the same result. The
-> > suspend
-> > seems to work, but there is no reaction to the console after the freeze
-> > except
-> > an hung task warning after some time:
-> 
-> I bet if you remove "no_console_suspend" (it's not =1) then it'll work.
+Fix typo in parameter description.
 
-unfortunately not:
-
-Setting: no_console_suspend not in cmdline, Debug UART wakeup source enabled
-
-echo mem > /sys/power/state
-
-Result: Able to wakeup via Debug UART
-Expected result: Able to wakeup via Debug UART
-
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 ---
+ drivers/idle/i7300_idle.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Setting: no_console_suspend not in cmdline, Debug UART wakeup source enabled
+diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
+index 9a104e5..b570560 100644
+--- a/drivers/idle/i7300_idle.c
++++ b/drivers/idle/i7300_idle.c
+@@ -44,7 +44,7 @@ MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
+ 
+ static int forceload;
+ module_param_named(forceload, forceload, uint, 0644);
+-MODULE_PARM_DESC(debug, "Enable driver testing on unvalidated i5000");
++MODULE_PARM_DESC(forceload, "Enable driver testing on unvalidated i5000");
+ 
+ #define dprintk(fmt, arg...) \
+ 	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
 
-echo freeze > /sys/power/state
-
-Result: Unable to wakeup via Debug UART (no hung task warning)
-Expected result: Able to wakeup via Debug UART
-
----
-
-Setting: no_console_suspend in cmdline, Debug UART as wakeup source enabled
-
-echo mem > /sys/power/state
-
-Result: Able to wakeup via Debug UART
-Expected result: Able to wakeup via Debug UART
-
----
-
-Setting: no_console_suspend in cmdline, Debug UART as wake source enabled
-
-echo freeze > /sys/power/state
-
-Result: Unable to wakeup via Debug UART (hung task warning after some minutes)
-Expected result: Able to wakeup Debug via UART
-
----
-
-Setting: no_console_suspend in cmdline, Debug UART as wake source disabled
-
-echo mem > /sys/power/state
-
-Result: Able to wakeup via Debug UART
-Expected result: Able to wakeup via Debug UART
-
----
-
-Setting: no_console_suspend in cmdline, Debug UART as wake source disabled
-
-echo freeze > /sys/power/state
-
-Result: Unable to wakeup via UART (hung task warning after some minutes)
-Expected result: Able to wakeup via Debug UART
-
----
-
-Here some more relevant information about the setup:
-
-The console is operating on Debug UART which is a ARM PL011. The following
-kernel configs are set:
-
-CONFIG_PM_SLEEP=y
-CONFIG_SUSPEND=y
-CONFIG_SUSPEND_FREEZER=y
-CONFIG_PM=y
