@@ -1,31 +1,65 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / Suspend: Fix missing KERN_CONT for suspend message
-Date: Sat, 27 Aug 2016 09:33:09 +0200
-Message-ID: <20160827073308.GA13190@xo-6d-61-c0.localdomain>
-References: <1477063449-24530-1-git-send-email-jonathanh@nvidia.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.9-rc3
+Date: Sat, 29 Oct 2016 02:57:37 +0200
+Message-ID: <CAJZ5v0iBcPOX652dUe7+MNRXYOT5RYj6SRhOQUzu3UAFQdKBdg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1477063449-24530-1-git-send-email-jonathanh@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2016-10-21 16:24:09, Jon Hunter wrote:
-> Commit 4bcc595ccd80 ("printk: reinstate KERN_CONT for printing
-> continuation lines") exposed a missing KERN_CONT from one of the
-> messages shown on entering suspend. With v4.9-rc1, the 'done.' shown
-> after syncing the filesystems no longer appears as a continuation but
-> a new message with its own timestamp.
-> 
-> [    9.259566] PM: Syncing filesystems ... [    9.264119] done.
-> 
-> Fix this by adding the KERN_CONT log level for the 'done.' part of the
-> message seen after syncing filesystems. While we are at it, convert
-> these suspend printks to pr_info and pr_cont, respectively.
-> 
-> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+Hi Linus,
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.9-rc3
+
+with top-most commit 8b2ada27dc1045e8191673bf769a1136ce8a0127
+
+ Merge branches 'pm-cpufreq-fixes' and 'pm-sleep-fixes'
+
+on top of commit 07d9a380680d1c0eb51ef87ff2eab5c994949e69
+
+ Linux 4.9-rc2
+
+to receive power management fixes for v4.9-rc3.
+
+These fix two intel_pstate issues related to the way it works when
+the scaling_governor sysfs attribute is set to "performance" and
+fix up messages in the system suspend core code.
+
+Specifics:
+
+ - Fix a missing KERN_CONT in a system suspend message by converting
+   the affected code to using pr_info() and pr_cont() instead of the
+   "raw" printk() (Jon Hunter).
+
+ - Make intel_pstate set the CPU P-state from its .set_policy()
+   callback when the scaling_governor sysfs attribute is set to
+   "performance" so that it interacts with NOHZ_FULL more
+   predictably which was the case before 4.7 (Rafael Wysocki).
+
+ - Make intel_pstate always request the maximum allowed P-state when
+   the scaling_governor sysfs attribute is set to "performance" to
+   prevent it from effectively ingoring that setting is some
+   situations (Rafael Wysocki).
+
+Thanks!
+
+---------------
+
+Jon Hunter (1):
+      PM / suspend: Fix missing KERN_CONT for suspend message
+
+Rafael J. Wysocki (2):
+      cpufreq: intel_pstate: Set P-state upfront in performance mode
+      cpufreq: intel_pstate: Always set max P-state in performance mode
+
+---------------
+
+ drivers/cpufreq/intel_pstate.c | 38 ++++++++++++++++++++++++++++++++------
+ kernel/power/suspend.c         |  4 ++--
+ 2 files changed, 34 insertions(+), 8 deletions(-)
