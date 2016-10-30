@@ -1,162 +1,87 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Resend][PATCH v6 5/5] PM / runtime: Optimize the use of device links
-Date: Sun, 30 Oct 2016 17:32:43 +0100
-Message-ID: <4532235.M9ZOiUL2WF@vostro.rjw.lan>
+Subject: [Resend][PATCH v6 1/5] driver core: Add a wrapper around __device_release_driver()
+Date: Sun, 30 Oct 2016 17:29:35 +0100
+Message-ID: <2685245.AVXM0tKKn5@vostro.rjw.lan>
 References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <11468990.WB1J8sxXpS@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54865 "HELO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with SMTP id S1757041AbcJ3QZ4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Oct 2016 12:25:56 -0400
 In-Reply-To: <11468990.WB1J8sxXpS@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: 
 
-If the device has no links to suppliers that should be used for
-runtime PM (links with DEVICE_LINK_PM_RUNTIME set), there is no
-reason to walk the list of suppliers for that device during
-runtime suspend and resume.
+Add an internal wrapper around __device_release_driver() that will
+acquire device locks and do the necessary checks before calling it.
 
-Add a simple mechanism to detect that case and possibly avoid the
-extra unnecessary overhead.
+The next patch will make use of it.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/base/core.c          |   20 +++++++++++++-------
- drivers/base/power/runtime.c |   23 ++++++++++++++++++++---
- include/linux/pm.h           |    1 +
- include/linux/pm_runtime.h   |    4 ++++
- 4 files changed, 38 insertions(+), 10 deletions(-)
+ drivers/base/dd.c |   30 ++++++++++++++++++------------
+ 1 file changed, 18 insertions(+), 12 deletions(-)
 
-Index: linux-pm/drivers/base/core.c
+Index: linux-pm/drivers/base/dd.c
 ===================================================================
---- linux-pm.orig/drivers/base/core.c
-+++ linux-pm/drivers/base/core.c
-@@ -205,14 +205,17 @@ struct device_link *device_link_add(stru
- 	if (!link)
- 		goto out;
- 
--	if ((flags & DL_FLAG_PM_RUNTIME) && (flags & DL_FLAG_RPM_ACTIVE)) {
--		if (pm_runtime_get_sync(supplier) < 0) {
--			pm_runtime_put_noidle(supplier);
--			kfree(link);
--			link = NULL;
--			goto out;
-+	if (flags & DL_FLAG_PM_RUNTIME) {
-+		if (flags & DL_FLAG_RPM_ACTIVE) {
-+			if (pm_runtime_get_sync(supplier) < 0) {
-+				pm_runtime_put_noidle(supplier);
-+				kfree(link);
-+				link = NULL;
-+				goto out;
-+			}
-+			link->rpm_active = true;
- 		}
--		link->rpm_active = true;
-+		pm_runtime_new_link(consumer);
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -811,6 +811,22 @@ static void __device_release_driver(stru
  	}
- 	get_device(supplier);
- 	link->supplier = supplier;
-@@ -296,6 +299,9 @@ static void __device_link_del(struct dev
- 	dev_info(link->consumer, "Dropping the link to %s\n",
- 		 dev_name(link->supplier));
- 
-+	if (link->flags & DL_FLAG_PM_RUNTIME)
-+		pm_runtime_drop_link(link->consumer);
-+
- 	list_del_rcu(&link->s_node);
- 	list_del_rcu(&link->c_node);
- 	call_srcu(&device_links_srcu, &link->rcu_head, __device_link_free_srcu);
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -305,6 +305,7 @@ static int __rpm_callback(int (*cb)(stru
- 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
- {
- 	int retval, idx;
-+	bool use_links = dev->power.links_count > 0;
- 
- 	if (dev->power.irq_safe) {
- 		spin_unlock(&dev->power.lock);
-@@ -318,7 +319,7 @@ static int __rpm_callback(int (*cb)(stru
- 		 * routine returns, so it is safe to read the status outside of
- 		 * the lock.
- 		 */
--		if (dev->power.runtime_status == RPM_RESUMING) {
-+		if (use_links && dev->power.runtime_status == RPM_RESUMING) {
- 			idx = device_links_read_lock();
- 
- 			retval = rpm_get_suppliers(dev);
-@@ -341,8 +342,9 @@ static int __rpm_callback(int (*cb)(stru
- 		 *
- 		 * Do that if resume fails too.
- 		 */
--		if ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
--		    || (dev->power.runtime_status == RPM_RESUMING && retval)) {
-+		if (use_links
-+		    && ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
-+		    || (dev->power.runtime_status == RPM_RESUMING && retval))) {
- 			idx = device_links_read_lock();
- 
-  fail:
-@@ -1593,6 +1595,21 @@ void pm_runtime_put_suppliers(struct dev
- 	device_links_read_unlock(idx);
  }
  
-+void pm_runtime_new_link(struct device *dev)
++static void device_release_driver_internal(struct device *dev,
++					   struct device_driver *drv,
++					   struct device *parent)
 +{
-+	spin_lock_irq(&dev->power.lock);
-+	dev->power.links_count++;
-+	spin_unlock_irq(&dev->power.lock);
-+}
++	if (parent)
++		device_lock(parent);
 +
-+void pm_runtime_drop_link(struct device *dev)
-+{
-+	spin_lock_irq(&dev->power.lock);
-+	WARN_ON(dev->power.links_count == 0);
-+	dev->power.links_count--;
-+	spin_unlock_irq(&dev->power.lock);
++	device_lock(dev);
++	if (!drv || drv == dev->driver)
++		__device_release_driver(dev);
++
++	device_unlock(dev);
++	if (parent)
++		device_unlock(parent);
 +}
 +
  /**
-  * pm_runtime_force_suspend - Force a device into suspend state if needed.
-  * @dev: Device to suspend.
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -597,6 +597,7 @@ struct dev_pm_info {
- 	unsigned int		use_autosuspend:1;
- 	unsigned int		timer_autosuspends:1;
- 	unsigned int		memalloc_noio:1;
-+	unsigned int		links_count;
- 	enum rpm_request	request;
- 	enum rpm_status		runtime_status;
- 	int			runtime_error;
-Index: linux-pm/include/linux/pm_runtime.h
-===================================================================
---- linux-pm.orig/include/linux/pm_runtime.h
-+++ linux-pm/include/linux/pm_runtime.h
-@@ -58,6 +58,8 @@ extern void pm_runtime_set_memalloc_noio
- extern void pm_runtime_clean_up_links(struct device *dev);
- extern void pm_runtime_get_suppliers(struct device *dev);
- extern void pm_runtime_put_suppliers(struct device *dev);
-+extern void pm_runtime_new_link(struct device *dev);
-+extern void pm_runtime_drop_link(struct device *dev);
+  * device_release_driver - manually detach device from driver.
+  * @dev: device.
+@@ -825,9 +841,7 @@ void device_release_driver(struct device
+ 	 * within their ->remove callback for the same device, they
+ 	 * will deadlock right here.
+ 	 */
+-	device_lock(dev);
+-	__device_release_driver(dev);
+-	device_unlock(dev);
++	device_release_driver_internal(dev, NULL, NULL);
+ }
+ EXPORT_SYMBOL_GPL(device_release_driver);
  
- static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
- {
-@@ -192,6 +194,8 @@ static inline void pm_runtime_set_memall
- static inline void pm_runtime_clean_up_links(struct device *dev) {}
- static inline void pm_runtime_get_suppliers(struct device *dev) {}
- static inline void pm_runtime_put_suppliers(struct device *dev) {}
-+static inline void pm_runtime_new_link(struct device *dev) {}
-+static inline void pm_runtime_drop_link(struct device *dev) {}
- 
- #endif /* !CONFIG_PM */
- 
+@@ -852,15 +866,7 @@ void driver_detach(struct device_driver
+ 		dev = dev_prv->device;
+ 		get_device(dev);
+ 		spin_unlock(&drv->p->klist_devices.k_lock);
+-
+-		if (dev->parent)	/* Needed for USB */
+-			device_lock(dev->parent);
+-		device_lock(dev);
+-		if (dev->driver == drv)
+-			__device_release_driver(dev);
+-		device_unlock(dev);
+-		if (dev->parent)
+-			device_unlock(dev->parent);
++		device_release_driver_internal(dev, drv, dev->parent);
+ 		put_device(dev);
+ 	}
+ }
