@@ -1,71 +1,162 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v6 0/5] Functional dependencies between devices
-Date: Sun, 30 Oct 2016 17:22:13 +0100
-Message-ID: <11468990.WB1J8sxXpS@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+Subject: [Resend][PATCH v6 5/5] PM / runtime: Optimize the use of device links
+Date: Sun, 30 Oct 2016 17:32:43 +0100
+Message-ID: <4532235.M9ZOiUL2WF@vostro.rjw.lan>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <11468990.WB1J8sxXpS@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+In-Reply-To: <11468990.WB1J8sxXpS@vostro.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: 
 
-Let me quote from the previous intro messages for this series first:
+If the device has no links to suppliers that should be used for
+runtime PM (links with DEVICE_LINK_PM_RUNTIME set), there is no
+reason to walk the list of suppliers for that device during
+runtime suspend and resume.
 
-> > Time for another update. :-)
-> > 
-> > Fewer changes this time, mostly to address issues found by Lukas and
-> > Marek.
-> > 
-> > The most significant one is to make device_link_add() cope with the case
-> > when
-> > the consumer device has not been registered yet when it is called.  The
-> > supplier device still is required to be registered and the function will
-> > return NULL if that is not the case.
-> > 
-> > Another significant change is in patch [4/5] that now makes the core apply
-> > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
-> > probing of a consumer one (in analogy with the parent).
-> 
-> One more update after some conversations during LinuxCon Europe.
-> 
-> The main point was to make it possible for device_link_add() to figure out
-> the initial state of the link instead of expecting the caller to provide it
-> which might not be reliable enough in general.
-> 
-> In this version device_link_add() takes three arguments, the supplier and
-> consumer pointers and flags and it sets the correct initial state of the
-> link automatically (unless invoked with the "stateless" flag, of course).
-> The cost is one additional field in struct device (I moved all of the
-> links-related fields in struct device to a separate sub-structure while at
-> it) to track the "driver presence status" of the device (to be used by
-> device_link_add()).
-> 
-> In addition to that, the links list walks in the core.c and dd.c code are
-> under the device links mutex now, so the iternal link spinlock is not needed
-> any more and I have renamed symbols to distinguish between flags, link
-> states and device "driver presence statuses".
+Add a simple mechanism to detect that case and possibly avoid the
+extra unnecessary overhead.
 
-The most significant change in this revision with respect to the previous one is
-related to the fact that SRCU is not available on some architectures, so the
-code falls back to using an RW semaphore for synchronization if SRCU is not
-there.  Fortunately, the code changes needed for that turned out to be quite
-straightforward and confined to the second patch.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/core.c          |   20 +++++++++++++-------
+ drivers/base/power/runtime.c |   23 ++++++++++++++++++++---
+ include/linux/pm.h           |    1 +
+ include/linux/pm_runtime.h   |    4 ++++
+ 4 files changed, 38 insertions(+), 10 deletions(-)
 
-Apart from this, the flags are defined using BIT(x) now (instead of open coding
-the latter in the flag definitions).
-
-Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
-trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
-[2/5].
-
-FWIW, I've run the series through 0-day which has not reported any problems
-with it.
-
-Thanks,
-Rafael
+Index: linux-pm/drivers/base/core.c
+===================================================================
+--- linux-pm.orig/drivers/base/core.c
++++ linux-pm/drivers/base/core.c
+@@ -205,14 +205,17 @@ struct device_link *device_link_add(stru
+ 	if (!link)
+ 		goto out;
+ 
+-	if ((flags & DL_FLAG_PM_RUNTIME) && (flags & DL_FLAG_RPM_ACTIVE)) {
+-		if (pm_runtime_get_sync(supplier) < 0) {
+-			pm_runtime_put_noidle(supplier);
+-			kfree(link);
+-			link = NULL;
+-			goto out;
++	if (flags & DL_FLAG_PM_RUNTIME) {
++		if (flags & DL_FLAG_RPM_ACTIVE) {
++			if (pm_runtime_get_sync(supplier) < 0) {
++				pm_runtime_put_noidle(supplier);
++				kfree(link);
++				link = NULL;
++				goto out;
++			}
++			link->rpm_active = true;
+ 		}
+-		link->rpm_active = true;
++		pm_runtime_new_link(consumer);
+ 	}
+ 	get_device(supplier);
+ 	link->supplier = supplier;
+@@ -296,6 +299,9 @@ static void __device_link_del(struct dev
+ 	dev_info(link->consumer, "Dropping the link to %s\n",
+ 		 dev_name(link->supplier));
+ 
++	if (link->flags & DL_FLAG_PM_RUNTIME)
++		pm_runtime_drop_link(link->consumer);
++
+ 	list_del_rcu(&link->s_node);
+ 	list_del_rcu(&link->c_node);
+ 	call_srcu(&device_links_srcu, &link->rcu_head, __device_link_free_srcu);
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -305,6 +305,7 @@ static int __rpm_callback(int (*cb)(stru
+ 	__releases(&dev->power.lock) __acquires(&dev->power.lock)
+ {
+ 	int retval, idx;
++	bool use_links = dev->power.links_count > 0;
+ 
+ 	if (dev->power.irq_safe) {
+ 		spin_unlock(&dev->power.lock);
+@@ -318,7 +319,7 @@ static int __rpm_callback(int (*cb)(stru
+ 		 * routine returns, so it is safe to read the status outside of
+ 		 * the lock.
+ 		 */
+-		if (dev->power.runtime_status == RPM_RESUMING) {
++		if (use_links && dev->power.runtime_status == RPM_RESUMING) {
+ 			idx = device_links_read_lock();
+ 
+ 			retval = rpm_get_suppliers(dev);
+@@ -341,8 +342,9 @@ static int __rpm_callback(int (*cb)(stru
+ 		 *
+ 		 * Do that if resume fails too.
+ 		 */
+-		if ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
+-		    || (dev->power.runtime_status == RPM_RESUMING && retval)) {
++		if (use_links
++		    && ((dev->power.runtime_status == RPM_SUSPENDING && !retval)
++		    || (dev->power.runtime_status == RPM_RESUMING && retval))) {
+ 			idx = device_links_read_lock();
+ 
+  fail:
+@@ -1593,6 +1595,21 @@ void pm_runtime_put_suppliers(struct dev
+ 	device_links_read_unlock(idx);
+ }
+ 
++void pm_runtime_new_link(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	dev->power.links_count++;
++	spin_unlock_irq(&dev->power.lock);
++}
++
++void pm_runtime_drop_link(struct device *dev)
++{
++	spin_lock_irq(&dev->power.lock);
++	WARN_ON(dev->power.links_count == 0);
++	dev->power.links_count--;
++	spin_unlock_irq(&dev->power.lock);
++}
++
+ /**
+  * pm_runtime_force_suspend - Force a device into suspend state if needed.
+  * @dev: Device to suspend.
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -597,6 +597,7 @@ struct dev_pm_info {
+ 	unsigned int		use_autosuspend:1;
+ 	unsigned int		timer_autosuspends:1;
+ 	unsigned int		memalloc_noio:1;
++	unsigned int		links_count;
+ 	enum rpm_request	request;
+ 	enum rpm_status		runtime_status;
+ 	int			runtime_error;
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -58,6 +58,8 @@ extern void pm_runtime_set_memalloc_noio
+ extern void pm_runtime_clean_up_links(struct device *dev);
+ extern void pm_runtime_get_suppliers(struct device *dev);
+ extern void pm_runtime_put_suppliers(struct device *dev);
++extern void pm_runtime_new_link(struct device *dev);
++extern void pm_runtime_drop_link(struct device *dev);
+ 
+ static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
+ {
+@@ -192,6 +194,8 @@ static inline void pm_runtime_set_memall
+ static inline void pm_runtime_clean_up_links(struct device *dev) {}
+ static inline void pm_runtime_get_suppliers(struct device *dev) {}
+ static inline void pm_runtime_put_suppliers(struct device *dev) {}
++static inline void pm_runtime_new_link(struct device *dev) {}
++static inline void pm_runtime_drop_link(struct device *dev) {}
+ 
+ #endif /* !CONFIG_PM */
+ 
