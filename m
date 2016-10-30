@@ -1,64 +1,51 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 06/15] thermal: int340x_thermal: use permission-specific DEVICE_ATTR variants
-Date: Sat, 29 Oct 2016 21:37:00 +0200
-Message-ID: <1477769829-22230-7-git-send-email-Julia.Lawall@lip6.fr>
-References: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: kernel-janitors@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Borislav Petkov <bp@alien8.de>
+Subject: [PATCH] idle/i7300: Add CONFIG_PCI dependency
+Date: Sun, 30 Oct 2016 12:42:28 +0100
+Message-ID: <20161030114228.24114-1-bp@alien8.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.skyhub.de ([78.46.96.112]:37260 "EHLO mail.skyhub.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751905AbcJ3Lmc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 30 Oct 2016 07:42:32 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andy Henroid <andrew.d.henroid@intel.com>, linux-pm@vger.kernel.org
 
-Use DEVICE_ATTR_RW for read-write attributes.  This simplifies the
-source code, improves readbility, and reduces the chance of
-inconsistencies.
+From: Borislav Petkov <bp@suse.de>
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+... in order to fix this randconfig build warning:
 
-// <smpl>
-@rw@
-declarer name DEVICE_ATTR;
-identifier x,x_show,x_store;
-@@
+  drivers/idle/i7300_idle.c: In function ‘i7300_idle_stop’:
+  ./include/asm-generic/bug.h:117:24: warning: ‘got_ctl’ is used uninitialized in this function [-Wuninitialized]
+    int __ret_warn_once = !!(condition);   \
+                          ^
+  drivers/idle/i7300_idle.c:415:5: note: ‘got_ctl’ was declared here
+    u8 got_ctl;
+       ^
 
-DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
-
-@script:ocaml@
-x << rw.x;
-x_show << rw.x_show;
-x_store << rw.x_store;
-@@
-
-if not (x^"_show" = x_show && x^"_store" = x_store)
-then Coccilib.include_match false
-
-@@
-declarer name DEVICE_ATTR_RW;
-identifier rw.x,rw.x_show,rw.x_store;
-@@
-
-- DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
-+ DEVICE_ATTR_RW(x);
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: Andy Henroid <andrew.d.henroid@intel.com>
+Cc: linux-pm@vger.kernel.org
 ---
- drivers/thermal/int340x_thermal/int3400_thermal.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/idle/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index 5836e55..9413c4a 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -96,7 +96,7 @@ static ssize_t current_uuid_store(struct device *dev,
- 	return -EINVAL;
- }
- 
--static DEVICE_ATTR(current_uuid, 0644, current_uuid_show, current_uuid_store);
-+static DEVICE_ATTR_RW(current_uuid);
- static DEVICE_ATTR_RO(available_uuids);
- static struct attribute *uuid_attrs[] = {
- 	&dev_attr_available_uuids.attr,
+diff --git a/drivers/idle/Kconfig b/drivers/idle/Kconfig
+index 4732dfc15447..c11ee3e657a6 100644
+--- a/drivers/idle/Kconfig
++++ b/drivers/idle/Kconfig
+@@ -18,6 +18,7 @@ config I7300_IDLE_IOAT_CHANNEL
+ config I7300_IDLE
+ 	tristate "Intel chipset idle memory power saving driver"
+ 	select I7300_IDLE_IOAT_CHANNEL
++	depends on CONFIG_PCI
+ 	help
+ 	  Enable memory power savings when idle with certain Intel server
+ 	  chipsets. The chipset must have I/O AT support, such as the
+-- 
+2.10.0
+
