@@ -1,78 +1,135 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
-Date: Sun, 30 Oct 2016 17:40:36 +0100
-Message-ID: <3608562.cb5YkXLsMf@vostro.rjw.lan>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <11468990.WB1J8sxXpS@vostro.rjw.lan>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH v7 REPOST 8/9] arm: add sysfs cpu_capacity attribute
+Date: Sun, 30 Oct 2016 20:45:51 +0000
+Message-ID: <20161030204551.GM1041@n2100.armlinux.org.uk>
+References: <20161017154650.18779-1-juri.lelli@arm.com>
+ <20161017154650.18779-9-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11468990.WB1J8sxXpS@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:47522 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752479AbcJ3UqC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Oct 2016 16:46:02 -0400
+Content-Disposition: inline
+In-Reply-To: <20161017154650.18779-9-juri.lelli@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org
 
-On Sunday, October 30, 2016 05:22:13 PM Rafael J. Wysocki wrote:
-> Hi,
-> 
-> Let me quote from the previous intro messages for this series first:
-> 
-> > > Time for another update. :-)
-> > > 
-> > > Fewer changes this time, mostly to address issues found by Lukas and
-> > > Marek.
-> > > 
-> > > The most significant one is to make device_link_add() cope with the case
-> > > when
-> > > the consumer device has not been registered yet when it is called.  The
-> > > supplier device still is required to be registered and the function will
-> > > return NULL if that is not the case.
-> > > 
-> > > Another significant change is in patch [4/5] that now makes the core apply
-> > > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
-> > > probing of a consumer one (in analogy with the parent).
-> > 
-> > One more update after some conversations during LinuxCon Europe.
-> > 
-> > The main point was to make it possible for device_link_add() to figure out
-> > the initial state of the link instead of expecting the caller to provide it
-> > which might not be reliable enough in general.
-> > 
-> > In this version device_link_add() takes three arguments, the supplier and
-> > consumer pointers and flags and it sets the correct initial state of the
-> > link automatically (unless invoked with the "stateless" flag, of course).
-> > The cost is one additional field in struct device (I moved all of the
-> > links-related fields in struct device to a separate sub-structure while at
-> > it) to track the "driver presence status" of the device (to be used by
-> > device_link_add()).
-> > 
-> > In addition to that, the links list walks in the core.c and dd.c code are
-> > under the device links mutex now, so the iternal link spinlock is not needed
-> > any more and I have renamed symbols to distinguish between flags, link
-> > states and device "driver presence statuses".
-> 
-> The most significant change in this revision with respect to the previous one is
-> related to the fact that SRCU is not available on some architectures, so the
-> code falls back to using an RW semaphore for synchronization if SRCU is not
-> there.  Fortunately, the code changes needed for that turned out to be quite
-> straightforward and confined to the second patch.
-> 
-> Apart from this, the flags are defined using BIT(x) now (instead of open coding
-> the latter in the flag definitions).
-> 
-> Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
-> trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
-> [2/5].
-> 
-> FWIW, I've run the series through 0-day which has not reported any problems
-> with it.
+On Mon, Oct 17, 2016 at 04:46:49PM +0100, Juri Lelli wrote:
+> +#ifdef CONFIG_PROC_SYSCTL
+> +#include <asm/cpu.h>
+> +#include <linux/string.h>
 
-BTW, the series is available from the device-links-test branch in my tree:
+Include files at the top of the file please.  No need to ifdef them.
+They're sorted alphabetically, so new additions should be alphabetical.
+(That's a general rule - if something is already alphabetical, do not
+make it non-alphabetical.)
 
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git device-links-test
+> +static ssize_t show_cpu_capacity(struct device *dev,
+> +				 struct device_attribute *attr,
+> +				 char *buf)
+> +{
+> +	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> +	ssize_t rc;
+> +	int cpunum = cpu->dev.id;
+> +	unsigned long capacity = arch_scale_cpu_capacity(NULL, cpunum);
+> +
+> +	rc = sprintf(buf, "%lu\n", capacity);
+> +
+> +	return rc;
 
-in case someone wants to try it out.
+Way too many lines for such a simple function.  This can be simplified
+to just:
 
-Thanks,
-Rafael
+	struct cpu *cpu = container_of(dev, struct cpu, dev);
+
+	return sprintf(buf, "%lu\n", arch_scale_cpu_capacity(NULL, cpu->dev.id);
+
+If you don't like the last line ending on column 79, then feel free to
+break it across two lines after the format string.
+
+> +}
+> +
+> +static ssize_t store_cpu_capacity(struct device *dev,
+> +				  struct device_attribute *attr,
+> +				  const char *buf,
+> +				  size_t count)
+> +{
+> +	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> +	int this_cpu = cpu->dev.id, i;
+> +	unsigned long new_capacity;
+> +	ssize_t ret;
+> +
+> +	if (count) {
+> +		char *p = (char *) buf;
+> +
+> +		ret = kstrtoul(p, 0, &new_capacity);
+
+Unnecessary cast - kstrtoul takes a const char pointer, and in any case
+it's really bad form to cast away the "const-ness" of any pointer.  So,
+just:
+
+	if (count) {
+		ret = kstrtoul(buf, 0, &new_capacity);
+
+should work just fine.
+
+> +		if (ret)
+> +			return ret;
+> +		if (new_capacity > SCHED_CAPACITY_SCALE)
+> +			return -EINVAL;
+> +
+> +		mutex_lock(&cpu_scale_mutex);
+> +		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
+> +			set_capacity_scale(i, new_capacity);
+> +		mutex_unlock(&cpu_scale_mutex);
+> +	}
+> +
+> +	return count;
+> +}
+> +
+> +static DEVICE_ATTR(cpu_capacity,
+> +		   0644,
+> +		   show_cpu_capacity,
+> +		   store_cpu_capacity);
+
+There's a move to use the named DEVICE_ATTR_RW() for this kind of thing,
+it'll want the functions named xxx_show() and xxx_store().  I see
+there's some recent patches to do this conversion across the kernel, so
+this should probably be done before submission.
+
+> +
+> +static int register_cpu_capacity_sysctl(void)
+> +{
+> +	int i;
+> +	struct device *cpu;
+> +
+> +	for_each_possible_cpu(i) {
+> +		cpu = get_cpu_device(i);
+> +		if (!cpu) {
+> +			pr_err("%s: too early to get CPU%d device!\n",
+> +			       __func__, i);
+> +			continue;
+> +		}
+> +		device_create_file(cpu, &dev_attr_cpu_capacity);
+> +	}
+> +
+> +	return 0;
+> +}
+> +late_initcall(register_cpu_capacity_sysctl);
+
+Hmm, this is really weird.  topology_init() in arch/arm/kernel/setup.c
+is where these devices get created, and they're created at
+subsys_initcall() time.  By that point, the list of possible CPUs has
+to be static, it's not going to change.  I don't see why this has to be
+done at late_initcall() - and since topology.c will be linked after
+setup.c, I don't see why it shouldn't be at subsys_initcall() level to
+follow on after topology_init().
+
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
