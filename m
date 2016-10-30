@@ -1,75 +1,78 @@
-From: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH] idle/i7300: Add CONFIG_PCI dependency
-Date: Sun, 30 Oct 2016 17:32:47 +0100
-Message-ID: <20161030163247.l5nj4b52un3nef6z@pd.tnic>
-References: <20161030114228.24114-1-bp@alien8.de>
- <1e525299-ffb2-4031-a215-c9407c22a312@infradead.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
+Date: Sun, 30 Oct 2016 17:40:36 +0100
+Message-ID: <3608562.cb5YkXLsMf@vostro.rjw.lan>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <11468990.WB1J8sxXpS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.skyhub.de ([78.46.96.112]:56004 "EHLO mail.skyhub.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756704AbcJ3Qcv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 30 Oct 2016 12:32:51 -0400
-Content-Disposition: inline
-In-Reply-To: <1e525299-ffb2-4031-a215-c9407c22a312@infradead.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <11468990.WB1J8sxXpS@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Andy Henroid <andrew.d.henroid@intel.com>, linux-pm@vger.kernel.org
 
-On Sun, Oct 30, 2016 at 07:54:44AM -0700, Randy Dunlap wrote:
-> 	depends on PCI
-> (no CONFIG_ prefix)
+On Sunday, October 30, 2016 05:22:13 PM Rafael J. Wysocki wrote:
+> Hi,
+> 
+> Let me quote from the previous intro messages for this series first:
+> 
+> > > Time for another update. :-)
+> > > 
+> > > Fewer changes this time, mostly to address issues found by Lukas and
+> > > Marek.
+> > > 
+> > > The most significant one is to make device_link_add() cope with the case
+> > > when
+> > > the consumer device has not been registered yet when it is called.  The
+> > > supplier device still is required to be registered and the function will
+> > > return NULL if that is not the case.
+> > > 
+> > > Another significant change is in patch [4/5] that now makes the core apply
+> > > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
+> > > probing of a consumer one (in analogy with the parent).
+> > 
+> > One more update after some conversations during LinuxCon Europe.
+> > 
+> > The main point was to make it possible for device_link_add() to figure out
+> > the initial state of the link instead of expecting the caller to provide it
+> > which might not be reliable enough in general.
+> > 
+> > In this version device_link_add() takes three arguments, the supplier and
+> > consumer pointers and flags and it sets the correct initial state of the
+> > link automatically (unless invoked with the "stateless" flag, of course).
+> > The cost is one additional field in struct device (I moved all of the
+> > links-related fields in struct device to a separate sub-structure while at
+> > it) to track the "driver presence status" of the device (to be used by
+> > device_link_add()).
+> > 
+> > In addition to that, the links list walks in the core.c and dd.c code are
+> > under the device links mutex now, so the iternal link spinlock is not needed
+> > any more and I have renamed symbols to distinguish between flags, link
+> > states and device "driver presence statuses".
+> 
+> The most significant change in this revision with respect to the previous one is
+> related to the fact that SRCU is not available on some architectures, so the
+> code falls back to using an RW semaphore for synchronization if SRCU is not
+> there.  Fortunately, the code changes needed for that turned out to be quite
+> straightforward and confined to the second patch.
+> 
+> Apart from this, the flags are defined using BIT(x) now (instead of open coding
+> the latter in the flag definitions).
+> 
+> Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
+> trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
+> [2/5].
+> 
+> FWIW, I've run the series through 0-day which has not reported any problems
+> with it.
 
-Whoops!
+BTW, the series is available from the device-links-test branch in my tree:
 
-Thanks. FWIW, it didn't fire even with "depends on CONFIG_PCI" anymore.
-Didn't investigate why though...
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git device-links-test
 
----
-From: Borislav Petkov <bp@suse.de>
-Date: Sun, 30 Oct 2016 14:39:28 +0100
-Subject: [PATCH] idle/i7300: Add CONFIG_PCI dependency
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+in case someone wants to try it out.
 
-... in order to fix this randconfig build warning:
-
-  drivers/idle/i7300_idle.c: In function ‘i7300_idle_stop’:
-  ./include/asm-generic/bug.h:117:24: warning: ‘got_ctl’ is used uninitialized in this function [-Wuninitialized]
-    int __ret_warn_once = !!(condition);   \
-                          ^
-  drivers/idle/i7300_idle.c:415:5: note: ‘got_ctl’ was declared here
-    u8 got_ctl;
-       ^
-
-Signed-off-by: Borislav Petkov <bp@suse.de>
-Cc: Andy Henroid <andrew.d.henroid@intel.com>
-Cc: linux-pm@vger.kernel.org
----
- drivers/idle/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/idle/Kconfig b/drivers/idle/Kconfig
-index 4732dfc15447..a066fca3688f 100644
---- a/drivers/idle/Kconfig
-+++ b/drivers/idle/Kconfig
-@@ -18,6 +18,7 @@ config I7300_IDLE_IOAT_CHANNEL
- config I7300_IDLE
- 	tristate "Intel chipset idle memory power saving driver"
- 	select I7300_IDLE_IOAT_CHANNEL
-+	depends on PCI
- 	help
- 	  Enable memory power savings when idle with certain Intel server
- 	  chipsets. The chipset must have I/O AT support, such as the
--- 
-2.10.0
-
--- 
-Regards/Gruss,
-    Boris.
-
-ECO tip #101: Trim your mails when you reply.
+Thanks,
+Rafael
