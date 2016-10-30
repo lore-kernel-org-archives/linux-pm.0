@@ -1,60 +1,60 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH] idle/i7300: Add CONFIG_PCI dependency
-Date: Sun, 30 Oct 2016 07:54:44 -0700
-Message-ID: <1e525299-ffb2-4031-a215-c9407c22a312@infradead.org>
-References: <20161030114228.24114-1-bp@alien8.de>
+From: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 03/15] wm8350_power: use permission-specific DEVICE_ATTR
+ variants
+Date: Sun, 30 Oct 2016 15:03:05 +0000
+Message-ID: <20161030150305.GB1575@localhost.localdomain>
+References: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1477769829-22230-4-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([198.137.202.9]:55248 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750813AbcJ3Oyq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Oct 2016 10:54:46 -0400
-In-Reply-To: <20161030114228.24114-1-bp@alien8.de>
+Received: from mx0a-001ae601.pphosted.com ([67.231.149.25]:58604 "EHLO
+        mx0b-001ae601.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1756626AbcJ3PDS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Oct 2016 11:03:18 -0400
+Content-Disposition: inline
+In-Reply-To: <1477769829-22230-4-git-send-email-Julia.Lawall@lip6.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, LKML <linux-kernel@vger.kernel.org>
-Cc: Andy Henroid <andrew.d.henroid@intel.com>, linux-pm@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Sebastian Reichel <sre@kernel.org>, kernel-janitors@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10/30/16 04:42, Borislav Petkov wrote:
-> From: Borislav Petkov <bp@suse.de>
+On Sat, Oct 29, 2016 at 09:36:57PM +0200, Julia Lawall wrote:
+> Use DEVICE_ATTR_RO for read only attributes.  This simplifies the source
+> code, improves readbility, and reduces the chance of inconsistencies.
 > 
-> ... in order to fix this randconfig build warning:
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
 > 
->   drivers/idle/i7300_idle.c: In function ‘i7300_idle_stop’:
->   ./include/asm-generic/bug.h:117:24: warning: ‘got_ctl’ is used uninitialized in this function [-Wuninitialized]
->     int __ret_warn_once = !!(condition);   \
->                           ^
->   drivers/idle/i7300_idle.c:415:5: note: ‘got_ctl’ was declared here
->     u8 got_ctl;
->        ^
+> // <smpl>
+> @ro@
+> declarer name DEVICE_ATTR;
+> identifier x,x_show;
+> @@
 > 
-> Signed-off-by: Borislav Petkov <bp@suse.de>
-> Cc: Andy Henroid <andrew.d.henroid@intel.com>
-> Cc: linux-pm@vger.kernel.org
+> DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
+> 
+> @script:ocaml@
+> x << ro.x;
+> x_show << ro.x_show;
+> @@
+> 
+> if not (x^"_show" = x_show) then Coccilib.include_match false
+> 
+> @@
+> declarer name DEVICE_ATTR_RO;
+> identifier ro.x,ro.x_show;
+> @@
+> 
+> - DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
+> + DEVICE_ATTR_RO(x);
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
 > ---
->  drivers/idle/Kconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/idle/Kconfig b/drivers/idle/Kconfig
-> index 4732dfc15447..c11ee3e657a6 100644
-> --- a/drivers/idle/Kconfig
-> +++ b/drivers/idle/Kconfig
-> @@ -18,6 +18,7 @@ config I7300_IDLE_IOAT_CHANNEL
->  config I7300_IDLE
->  	tristate "Intel chipset idle memory power saving driver"
->  	select I7300_IDLE_IOAT_CHANNEL
-> +	depends on CONFIG_PCI
 
-	depends on PCI
-(no CONFIG_ prefix)
+Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com> 
 
->  	help
->  	  Enable memory power savings when idle with certain Intel server
->  	  chipsets. The chipset must have I/O AT support, such as the
-> 
-
-
--- 
-~Randy
+Thanks,
+Charles
