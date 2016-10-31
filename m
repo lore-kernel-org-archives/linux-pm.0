@@ -1,53 +1,94 @@
-From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v3 1/3] PM / OPP: Expose _of_get_opp_desc_node as
- dev_pm_opp API
-Date: Mon, 31 Oct 2016 16:03:27 -0500
-Message-ID: <a8a4253a-8558-c10f-817e-7cd6975b82ce@ti.com>
-References: <20161027214131.1725-1-d-gerlach@ti.com>
- <20161027214131.1725-2-d-gerlach@ti.com> <20161028040507.GJ10423@vireshk-i7>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH V7 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Mon, 31 Oct 2016 14:06:20 -0700
+Message-ID: <87h97sut2r.fsf@eliezer.anholt.net>
+References: <1474446227-1147-1-git-send-email-kernel@martin.sperl.org> <1474446227-1147-3-git-send-email-kernel@martin.sperl.org> <87twczg27x.fsf@eliezer.anholt.net> <eaff4043-5a62-da2d-cee1-9962b8c4783a@i2se.com> <87eg35snvg.fsf@eliezer.anholt.net> <1190898538.120930.02d69662-0b1a-447d-9c29-782aec7a1189.open-xchange@email.1und1.de> <1477363675.2298.2.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161028040507.GJ10423@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anholt.net ([50.246.234.109]:44820 "EHLO anholt.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S946883AbcJaVGY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 31 Oct 2016 17:06:24 -0400
+In-Reply-To: <1477363675.2298.2.camel@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Stefan Wahren <stefan.wahren@i2se.com>, kernel@martin.sperl.org
+Cc: Will Deacon <will.deacon@arm.com>, Lee Jones <lee@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Russell King <linux@arm.linux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Mark Rutland <mark.rutland@arm.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org
 
-On 10/27/2016 11:05 PM, Viresh Kumar wrote:
-> On 27-10-16, 16:41, Dave Gerlach wrote:
->> Move _of_get_opp_desc_node into include/linux/pm_opp.h and rename it
->> dev_pm_opp_of_get_opp_desc_node to allow other drivers, such as platform
->> OPP and cpufreq drivers, to make use of it.
->>
->> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
->> ---
->>  drivers/base/power/opp/of.c  | 8 ++++----
->>  drivers/base/power/opp/opp.h | 1 -
->>  include/linux/pm_opp.h       | 6 ++++++
->>  3 files changed, 10 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
->> index 5552211e6fcd..215f5a538c78 100644
->> --- a/drivers/base/power/opp/of.c
->> +++ b/drivers/base/power/opp/of.c
->> @@ -198,7 +198,7 @@ void dev_pm_opp_of_remove_table(struct device *dev)
->>  EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
->>
->>  /* Returns opp descriptor node for a device, caller must do of_node_put() */
->> -struct device_node *_of_get_opp_desc_node(struct device *dev)
->> +struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Zhang Rui <rui.zhang@intel.com> writes:
+
+> On Mon, 2016-10-24 at 20:25 +0200, Stefan Wahren wrote:
+>> >=20
+>> > Eric Anholt <eric@anholt.net> hat am 24. Oktober 2016 um 18:38
+>> > geschrieben:
+>> >=20
+>> >=20
+>> > Stefan Wahren <stefan.wahren@i2se.com> writes:
+>> >=20
+>> > >=20
+>> > > Hi Martin,
+>> > >=20
+>> > > Am 28.09.2016 um 23:10 schrieb Eric Anholt:
+>> > > >=20
+>> > > > kernel@martin.sperl.org writes:
+>> > > >=20
+>> > > > >=20
+>> > > > > From: Martin Sperl <kernel@martin.sperl.org>
+>> > > > >=20
+>> > > > > Add basic thermal driver for bcm2835 SOC.
+>> > > > >=20
+>> > > > > This driver currently relies on the firmware setting up the
+>> > > > > tsense HW block and does not set it up itself.
+>> > > > >=20
+>> > > > > Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+>> > > > > Acked-by: Eric Anholt <eric@anholt.net>
+>> > > > > Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+>> > > > What's the status of merging this one?=C2=A0=C2=A0I'd like to merg=
+e the
+>> > > > other
+>> > > > patches.
+>> > > i think it's necessary to rebase the whole series. Maybe we could
+>> > > get it
+>> > > into 4.10.
+>> > Why would it need to be rebased?=C2=A0=C2=A0The status, as far as I kn=
+ow, is
+>> > that
+>> > we're still waiting for the subsystem maintainer to respond.
+>> Since at least this patch won't apply anymore, but feedback from
+>> maintainer is
+>> still good :-)
+>>=20
+>> Sorry for this impatience, but i'm afraid that we possibly miss 4.10.
 >
-> Export as well ?
+> Eduardo,
 >
+> any comments on this patchset?
 
-Whoops, yes will need to do that. I'll give some time for comments on 
-any other patches before sending v3.
+It's been a month on v7 of this patch.  Can we please merge it?
 
-Thanks,
-Dave
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCgAGBQJYF7JNAAoJELXWKTbR/J7ohu8QAKwyyNVCaNtrNL2vhlBW8yd/
+B2Y9B+ir6M7E5iEQMQkLlQMAFsjAFN2wrBREer9gAwTyHL9P2B9hwtjVifDnzsd7
+MBe3eSqRX4oBuDLWJdaZEcNNmihpoTJjetG3c1YSFuh7vPoUJim10UHSCp6m5AGP
+5L5+np2q4J+57jpsBrBOWWPpOneAXGblzsQOS2RWyw4o7qldTUN82ITnLDEsRjUZ
+FJUebCkYAl/38I3Gafayfyiv4irmSTUDxVKAGMsZAA1nQ/c+lsT1zLEqEqwGKcNj
+kCxzg/YnsLdxw2HFPoSH9BPSGlmSNQjUOjrB0utpZEnCkpP1pk9xwq/4T/YXomoA
+QA2SKcuw/X+JVOmqKYbdD02F8A5A+XkpbzggqqEUuHfSlygyiEcX6XNApRVkQT+3
+k60S6hfDY2aaEA80gpiEWaSn4RyCnN7GiX+UklLSARH4xwFwpXwF9XYqianoc9Mz
+j5V/CnMcGTS/yzlIexLuJPbPenFxkLd8ydPw8cSMOvbDqSqd9jcbd1YCGUGYyA/a
+c1hL1KXP5svK14B3Suodg/zdvxclkJ+kHn4JZkQyTcCHNrRFwa6B7u7/mN4TKv5q
+5JKNkoO+mqTCKkCauOAw47EoVkQQXIpRBvEK/KYujWh3O8vx1lI9cFVHOdXqMlXG
+dzUzTCEGRMwwUFguGtY0
+=QdCr
+-----END PGP SIGNATURE-----
+--=-=-=--
