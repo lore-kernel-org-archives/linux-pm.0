@@ -1,47 +1,75 @@
-From: Markus Mayer <markus.mayer@broadcom.com>
-Subject: Re: [PATCH v5 1/3] dt: cpufreq: brcm: New binding document for brcmstb-avs-cpufreq
-Date: Mon, 31 Oct 2016 09:37:40 -0700
-Message-ID: <CAGt4E5tG7tS7Pxph42-Wu748cB9qSKA-rO7aXX6GSo1+Da5kzw@mail.gmail.com>
-References: <20161027210536.98988-1-code@mmayer.net> <20161027210536.98988-2-code@mmayer.net>
- <20161031054303.thdw4rjslosajyl7@rob-hp-laptop>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
+Date: Mon, 31 Oct 2016 11:47:03 -0600
+Message-ID: <20161031174703.GA25633@kroah.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <11468990.WB1J8sxXpS@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f41.google.com ([209.85.213.41]:36116 "EHLO
-        mail-vk0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S944363AbcJaQhm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2016 12:37:42 -0400
-Received: by mail-vk0-f41.google.com with SMTP id p9so7150696vkd.3
-        for <linux-pm@vger.kernel.org>; Mon, 31 Oct 2016 09:37:41 -0700 (PDT)
-In-Reply-To: <20161031054303.thdw4rjslosajyl7@rob-hp-laptop>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <11468990.WB1J8sxXpS@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Markus Mayer <code@mmayer.net>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 30 October 2016 at 22:43, Rob Herring <robh@kernel.org> wrote:
-> On Thu, Oct 27, 2016 at 02:05:34PM -0700, Markus Mayer wrote:
->> From: Markus Mayer <mmayer@broadcom.com>
->>
->> Add the binding document for the new brcmstb-avs-cpufreq driver.
->>
->> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>  .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     | 78 ++++++++++++++++++++++
->>  MAINTAINERS                                        |  7 ++
->>  2 files changed, 85 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
->
-> I guess if one of the nodes is used elsewhere, combining the nodes
-> doesn't make sense. So:
->
-> Acked-by: Rob Herring <robh@kernel.org>
+On Sun, Oct 30, 2016 at 05:22:13PM +0100, Rafael J. Wysocki wrote:
+> Hi,
+> 
+> Let me quote from the previous intro messages for this series first:
+> 
+> > > Time for another update. :-)
+> > > 
+> > > Fewer changes this time, mostly to address issues found by Lukas and
+> > > Marek.
+> > > 
+> > > The most significant one is to make device_link_add() cope with the case
+> > > when
+> > > the consumer device has not been registered yet when it is called.  The
+> > > supplier device still is required to be registered and the function will
+> > > return NULL if that is not the case.
+> > > 
+> > > Another significant change is in patch [4/5] that now makes the core apply
+> > > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
+> > > probing of a consumer one (in analogy with the parent).
+> > 
+> > One more update after some conversations during LinuxCon Europe.
+> > 
+> > The main point was to make it possible for device_link_add() to figure out
+> > the initial state of the link instead of expecting the caller to provide it
+> > which might not be reliable enough in general.
+> > 
+> > In this version device_link_add() takes three arguments, the supplier and
+> > consumer pointers and flags and it sets the correct initial state of the
+> > link automatically (unless invoked with the "stateless" flag, of course).
+> > The cost is one additional field in struct device (I moved all of the
+> > links-related fields in struct device to a separate sub-structure while at
+> > it) to track the "driver presence status" of the device (to be used by
+> > device_link_add()).
+> > 
+> > In addition to that, the links list walks in the core.c and dd.c code are
+> > under the device links mutex now, so the iternal link spinlock is not needed
+> > any more and I have renamed symbols to distinguish between flags, link
+> > states and device "driver presence statuses".
+> 
+> The most significant change in this revision with respect to the previous one is
+> related to the fact that SRCU is not available on some architectures, so the
+> code falls back to using an RW semaphore for synchronization if SRCU is not
+> there.  Fortunately, the code changes needed for that turned out to be quite
+> straightforward and confined to the second patch.
+> 
+> Apart from this, the flags are defined using BIT(x) now (instead of open coding
+> the latter in the flag definitions).
+> 
+> Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
+> trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
+> [2/5].
+> 
+> FWIW, I've run the series through 0-day which has not reported any problems
+> with it.
 
-Thanks, Rob.
+Great, they are now applied to my tree, thanks again for doing this
+work.
 
-The series, with Acks added, is also available here:
-https://github.com/mmayer/linux/tree/upstream-avs-cpufreq-4.9-v5
-
-Regards,
--Markus
+greg k-h
