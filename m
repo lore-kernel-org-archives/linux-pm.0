@@ -1,34 +1,35 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 1/3] dt: cpufreq: brcm: New binding document for
- brcmstb-avs-cpufreq
-Date: Mon, 31 Oct 2016 00:43:03 -0500
-Message-ID: <20161031054303.thdw4rjslosajyl7@rob-hp-laptop>
-References: <20161027210536.98988-1-code@mmayer.net>
- <20161027210536.98988-2-code@mmayer.net>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH 5/9] ASoC: pxa: switch to new ac97 bus support
+Date: Mon, 31 Oct 2016 09:37:17 +0100
+Message-ID: <87bmy029tu.fsf@belgarion.home>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+        <1477510907-23495-6-git-send-email-robert.jarzmik@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161027210536.98988-2-code@mmayer.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp04.smtpout.orange.fr ([80.12.242.126]:16798 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1762618AbcJaIh0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Oct 2016 04:37:26 -0400
+In-Reply-To: <1477510907-23495-6-git-send-email-robert.jarzmik@free.fr>
+        (Robert Jarzmik's message of "Wed, 26 Oct 2016 21:41:43 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
 
-On Thu, Oct 27, 2016 at 02:05:34PM -0700, Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
-> 
-> Add the binding document for the new brcmstb-avs-cpufreq driver.
-> 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  .../bindings/cpufreq/brcm,stb-avs-cpu-freq.txt     | 78 ++++++++++++++++++++++
->  MAINTAINERS                                        |  7 ++
->  2 files changed, 85 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
+Robert Jarzmik <robert.jarzmik@free.fr> writes:
 
-I guess if one of the nodes is used elsewhere, combining the nodes 
-doesn't make sense. So:
+> Switch to the new ac97 bus support in sound/ac97 instead of the legacy
+> snd_ac97 one.
+>
+> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+I realized this one impacts sound/arm/pxa2xx-ac97.c.
+This deserves a v2, with this patch being split into 2 pieces :
+ - one for pxa2xx-ac97-lib.*
+ - one which will be the true switch to the new ac97 bus.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Cheers.
+
+--
+Robert
