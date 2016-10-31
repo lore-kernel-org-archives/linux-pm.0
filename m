@@ -1,78 +1,28 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Mon, 31 Oct 2016 10:44:41 +0000
-Message-ID: <91b96909-64bc-db72-6da5-556272565091@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <57F5E986.40704@codeaurora.org>
- <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
- <57F60EBE.8010509@codeaurora.org>
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH 00/60] block: support multipage bvec
+Date: Mon, 31 Oct 2016 08:25:19 -0700
+Message-ID: <20161031152519.GA25791@infradead.org>
+References: <1477728600-12938-1-git-send-email-tom.leiming@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <57F60EBE.8010509@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1477728600-12938-1-git-send-email-tom.leiming@gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Al Viro <viro@ZenIV.linux.org.uk>, Andrew Morton <akpm@linux-foundation.org>, Bart Van Assche <bart.vanassche@sandisk.com>, "open list:GFS2 FILE SYSTEM" <cluster-devel@redhat.com>, Coly Li <colyli@suse.de>, Dan Williams <dan.j.williams@intel.com>, "open list:DEVICE-MAPPER  (LVM)" <dm-devel@redhat.com>, "open list:DRBD DRIVER" <drbd-dev@lists.linbit.com>, Eric Wheeler <git@linux.ewheeler.net>, Guoqing Jiang <gqjiang@suse.com>, Hannes Reinecke <hare@suse.com>, Hannes Reinecke <hare@suse.de>, Jiri Kosina <jkosina@suse.cz>, Joe Perches <joe@perches.com>, Johannes Berg <johannes.berg@intel.com>, Johannes Thumshirn <jthumshirn@suse.de>, Keith Busch <keith.busch@in>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rajendra,
+Hi Ming,
 
-On 06/10/16 09:43, Rajendra Nayak wrote:
->
-> On 10/06/2016 01:55 PM, Jon Hunter wrote:
->> Hi Rajendra,
->>
->> On 06/10/16 07:04, Rajendra Nayak wrote:
->>>
->>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
->>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>>> controllers) is partitioned across 3 PM domains which are:
->>>> - XUSBA: Superspeed logic (for USB 3.0)
->>>> - XUSBB: Device controller
->>>> - XUSBC: Host controller
->>>>
->>>> These power domains are not nested and can be powered-up and down
->>>> independently of one another. In practice different scenarios require
->>>> different combinations of the power domains, for example:
->>>> - Superspeed host: XUSBA and XUSBC
->>>> - Superspeed device: XUSBA and XUSBB
->>>>
->>>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>>> domains under the XUSBA, superspeed may not always be used/required and
->>>> so this would keep it on unnecessarily.
->>>
->>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
->>> for a device (which then will *all* be powered on/off together) or does
->>> it also provide for more granular control of these powerdomains?
->>
->> Only to specify multiple power-domains for a device and not the later.
->>
->>> The above statement seems to suggest you would need more granular control
->>> of these powerdomains (like keeping XUSBA off in case superspeed it not
->>> needed) but I can't seem to figure out how you achieve it with this series.
->>
->> It is an interesting point but today we have always kept the superspeed
->> partition on if the device is configured for superspeed regardless of
->> what is actually connected. I will check to see if the h/w would allow
->> us to turn it off if a non-superspeed device is in use but I did not
->> think so.
->>
->> Do you have any interesting use-cases that would make use of this or
->> require other such enhancements?
->
-> We do have atleast a few devices which need to control multiple power domains,
-> I will need to look more to see if any of them can be controlled individually.
-> The downstream code we have models these (powerdomains) as regulators and
-> the drivers hence have individual control on each (specifying multiple -supply's
-> in DT)
+can you send a first patch just doing the obvious cleanups like
+converting to bio_add_page and replacing direct poking into the
+bio with the proper accessors?  That should help reducing the
+actual series to a sane size, and it should also help to cut
+down the Cc list.
 
-Were you able to check to see if you need to have individual control for 
-the power-domains?
-
-Cheers
-Jon
-
--- 
-nvpublic
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
