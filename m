@@ -1,103 +1,84 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 0/3] powernv:stop: Use psscr_val,mask provided by firmware
-Date: Tue, 01 Nov 2016 05:21:05 +0100
-Message-ID: <1960765.Hett9UtH8Z@vostro.rjw.lan>
-References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child suspend_{noirq,late} fails
+Date: Tue, 01 Nov 2016 05:25:39 +0100
+Message-ID: <8017823.VJuZzSqtaY@vostro.rjw.lan>
+References: <1476923170-111986-2-git-send-email-briannorris@chromium.org> <1477584334-39956-1-git-send-email-briannorris@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62561 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46356 "HELO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1752057AbcKAENx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 00:13:53 -0400
-In-Reply-To: <cover.1477556602.git.ego@linux.vnet.ibm.com>
+        by vger.kernel.org with SMTP id S1752538AbcKAES3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 00:18:29 -0400
+In-Reply-To: <1477584334-39956-1-git-send-email-briannorris@chromium.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, skiboot@lists.ozlabs.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pm@vger.kernel.org, Chuansheng Liu <chuansheng.liu@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Thursday, October 27, 2016 02:05:04 PM Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Thursday, October 27, 2016 09:05:34 AM Brian Norris wrote:
+> Consider two devices, A and B, where B is a child of A, and B utilizes
+> asynchronous suspend (it does not matter whether A is sync or async). If
+> B fails to suspend_noirq() or suspend_late(), or is interrupted by a
+> wakeup (pm_wakeup_pending()), then it aborts and sets the async_error
+> variable. However, device A does not (immediately) check the async_error
+> variable; it may continue to run its own suspend_noirq()/suspend_late()
+> callback. This is bad.
 > 
-> Hi,
+> We can resolve this problem by checking the async_error flag after
+> waiting for children to suspend, using the same logic for the noirq and
+> late suspend cases as we already do for __device_suspend().
 > 
-> This is the second iteration of the patchset to use the psscr_val and
-> psscr_mask provided by the firmware for each of the stop states.
+> It's easy to observe this erroneous behavior by, for example, forcing a
+> device to sleep a bit in its suspend_noirq() (to ensure the parent is
+> waiting for the child to complete), then return an error, and watch the
+> parent suspend_noirq() still get called. (Or similarly, fake a wakeup
+> event at the right (or is it wrong?) time.)
 > 
-> The previous version can be found here: 
-> https://lkml.org/lkml/2016/9/29/45
+> Fixes: de377b397272 ("PM / sleep: Asynchronous threads for suspend_late")
+> Fixes: 28b6fd6e3779 ("PM / sleep: Asynchronous threads for suspend_noirq")
+> Reported-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> ---
+> v2: s/early/late/ in commit message
 > 
-> The main changes in this version are:
+>  drivers/base/power/main.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> 1) Add a helper function in powernv-cpuidle.c to help initialize the
->    powernv_states cpuidle table.
-> 
-> 2) Handle the older firmware which populates only the Requested Level
->    (RL) fields of the psscr and psscr_mask in the device tree. This
->    patchset ensures that in the presence of the older firmware, the
->    other fields of PSSCR are initalized to sane default values.
-> 
-> 
-> Synopsis
-> ==========
-> In the current implementation, the code for ISA v3.0 stop
-> implementation has a couple of shortcomings.
-> 
-> a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
->    uses only the RL field from the firmware. While this is not
->    incorrect, since the hand-coded values are legitimate, it is not a
->    very flexible design since the firmware has the capability to
->    communicate these values via the "ibm,cpu-idle-state-psscr" and
->    "ibm,cpu-idle-state-psscr-mask" properties. In case where the
->    firmware provides values for these fields that is different from
->    the hand-coded values, the current code will not work as intended.
-> 
-> b) Due to issue a), the current code assumes that ESL=EC=1 for all the
->    stop states and hence the wakeup from the stop instruction will
->    happen at 0x100, the system-reset vector. However, the ISA v3.0
->    allows the ESL=EC=0 behaviour where the corresponding stop-state
->    loses no state and wakes up from the subsequent instruction. The
->    current code doesn't handle this case.
->    
-> This patch series addresses these issues.
-> 
-> The first patch in the series renames the existing
-> IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
-> the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
-> up at the subsequent instruction.
-> 
-> The second patch adds a helper function in cpuidle-powernv.c for
-> initializing entries of the powernv_states[] table that is passed to
-> the cpu-idle core. This eliminates some of the code duplication in the
-> function that discovers and initializes the stop states.
-> 
-> The third patch in the series fixes issues a) and b) by ensuring that
-> the psscr-value and the psscr-mask provided by the firmware are what
-> will be used to set a particular stop state. It also adds support for
-> handling wake-up from stop states which were entered with ESL=EC=0.
-> 
-> The third patch also handles the older firmware which sets only the
-> Requested Level (RL) field in the psscr and psscr-mask exposed in the
-> device tree. In the presence of such older firmware, this patch will
-> set the default sane values for for remaining PSSCR fields (i.e PSLL,
-> MTL, ESL, EC, and TR).
-> 
-> The skiboot patch populates all the relevant fields in the PSSCR
-> values and the mask for all the stop states can be found here:
-> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-> 
-> The patches are based on top of
-> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
-> 
-> Gautham R. Shenoy (3):
->   powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
->   cpuidle:powernv: Add helper function to populate powernv idle states.
->   powernv: Pass PSSCR value and mask to power9_idle_stop
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index c58563581345..eaf6b53463a5 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+>  
+>  	dpm_wait_for_children(dev, async);
+>  
+> +	if (async_error)
+> +		goto Complete;
+> +
 
-OK
+This is a second chech for async_error in this routine and is the first one
+really needed after adding this?
 
-I need someone to review this for me.
+>  	if (dev->pm_domain) {
+>  		info = "noirq power domain ";
+>  		callback = pm_noirq_op(&dev->pm_domain->ops, state);
+> @@ -1187,6 +1190,9 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>  
+>  	dpm_wait_for_children(dev, async);
+>  
+> +	if (async_error)
+> +		goto Complete;
+> +
+
+Same question.
+
+>  	if (dev->pm_domain) {
+>  		info = "late power domain ";
+>  		callback = pm_late_early_op(&dev->pm_domain->ops, state);
+> 
 
 Thanks,
 Rafael
