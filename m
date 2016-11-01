@@ -1,97 +1,63 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Tue, 1 Nov 2016 22:47:37 +0200
-Message-ID: <20161101204737.GB4617@intel.com>
-References: <CA++bM2sLMDLdeyLd_gpknTj+Y5xMk261SvivU5YxTnL0jRZovA@mail.gmail.com>
- <20160809172057.GZ4329@intel.com>
- <20161027172852.GE4617@intel.com>
- <alpine.DEB.2.20.1610272035180.4913@nanos>
- <20161027192006.GF4617@intel.com>
- <alpine.DEB.2.20.1610272122510.4913@nanos>
- <20161027203745.GH4617@intel.com>
- <alpine.DEB.2.20.1610272238390.4913@nanos>
- <20161028155603.GI4617@intel.com>
- <alpine.DEB.2.20.1610282049500.5053@nanos>
+From: Paul Mackerras <paulus@ozlabs.org>
+Subject: Re: [PATCH v2 2/3] cpuidle:powernv: Add helper function to populate
+ powernv idle states.
+Date: Wed, 2 Nov 2016 08:03:01 +1100
+Message-ID: <20161101210301.GA15949@fergus.ozlabs.ibm.com>
+References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
+ <d7298ac18999f842f6eaf826cf21250503e40890.1477556602.git.ego@linux.vnet.ibm.com>
+ <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:59842 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751487AbcKAUru (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Nov 2016 16:47:50 -0400
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1610282049500.5053@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Oliver O'Halloran <oohall@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, skiboot list <skiboot@lists.ozlabs.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Feng Tang <feng.79.tang@gmail.com>, feng.tang@intel.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel>
 
-On Fri, Oct 28, 2016 at 08:58:41PM +0200, Thomas Gleixner wrote:
-> On Fri, 28 Oct 2016, Ville Syrjälä wrote:
-> > On Thu, Oct 27, 2016 at 10:41:18PM +0200, Thomas Gleixner wrote:
-> > > On Thu, 27 Oct 2016, Ville Syrjälä wrote:
-> > > > On Thu, Oct 27, 2016 at 09:25:05PM +0200, Thomas Gleixner wrote:
-> > > > > So it would be interesting whether that hunk in resume_broadcast() is
-> > > > > sufficient.
-> > > > 
-> > > > So far it looks like the answer is yes.
-> > > > 
-> > > > Looks to be about 5 seconds slower than acpi-idle in resuming, but
-> > > > I suppose that's not all that surprising ;)
-> > > 
-> > > Well, set it to 1msec then. If that works reliably then we really can do
-> > > that unconditionally. There is no harm in firing a useless timer during
-> > > resume once.
-> > 
-> > I narrowed down the required timeout, and looks like 25ms is the
-> > minimum that works. With 24ms I already started to have failures. So
-> > maybe just bump it up by an order of magnitude to 250ms for some
-> > safety margin?
+On Tue, Nov 01, 2016 at 07:32:58PM +1100, Oliver O'Halloran wrote:
+> On Thu, Oct 27, 2016 at 7:35 PM, Gautham R. Shenoy
+> <ego@linux.vnet.ibm.com> wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >
+> > In the current code for powernv_add_idle_states, there is a lot of code
+> > duplication while initializing an idle state in powernv_states table.
+> >
+> > Add an inline helper function to populate the powernv_states[] table for
+> > a given idle state. Invoke this for populating the "Nap", "Fastsleep"
+> > and the stop states in powernv_add_idle_states.
+> >
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  drivers/cpuidle/cpuidle-powernv.c | 82 +++++++++++++++++++++++----------------
+> >  include/linux/cpuidle.h           |  1 +
+> >  2 files changed, 49 insertions(+), 34 deletions(-)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> > index 7fe442c..11b22b9 100644
+> > --- a/drivers/cpuidle/cpuidle-powernv.c
+> > +++ b/drivers/cpuidle/cpuidle-powernv.c
+> > @@ -167,6 +167,28 @@ static int powernv_cpuidle_driver_init(void)
+> >         return 0;
+> >  }
+> >
+> > +static inline void add_powernv_state(int index, const char *name,
+> > +                                    unsigned int flags,
+> > +                                    int (*idle_fn)(struct cpuidle_device *,
+> > +                                                   struct cpuidle_driver *,
+> > +                                                   int),
+> > +                                    unsigned int target_residency,
+> > +                                    unsigned int exit_latency,
+> > +                                    u64 psscr_val)
+> > +{
+> > +       strncpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+> > +       strncpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
+> 
+> If the supplied name is equal to CPUIDLE_NAME_LEN then strncpy() won't
+> terminate the string. The least annoying fix is to memset() the whole
+> structure to zero and set n to CPUIDLE_NAME_LEN - 1.
 
-I left the thing running for the weekend and it failed 26 out of 16057
-times with the 25ms timeout. Looks like it takes ~5 minutes to resume
-when it fails, but eventually it does come back.
+Or he could use strlcpy() instead of strncpy().
 
-> 
-> Sure, but what puzzles me is that we need a timeout that big. What happens
-> between broadcast_resume() and broadcast_resume() + 25ms?
-> 
-> IOW, what is the event/resume function which we need to bridge. We should
-> really try to track than down.
-
-My hunch would be that SMM trap in the DSDT/SSDT since that's where
-things ended up last time I was tracing these resume problems. Though I
-can't recall if that was just with acpi-idle or if intel_idle landed in
-the same spot as well.
-
-I guess I can try to repeat that test tomorrow, or I'll try your function
-tracer method if the other thing fails.
-
-> 
-> You might try to enable function tracing and do a tracing_off() when that
-> 25ms timeout fires.
-> 
-> Something like 
-> 
-> 	stop_trace = true;
-> 
-> in broadcast_resume() and then in the broadcast timer function:
-> 
-> 	if (stop_trace) {
-> 		stop_trace = false;
-> 		tracing_off();
-> 	}
-> 
-> Then when the machine is up read the trace, compress and upload it
-> somewhere or send it in private mail if it's not that big.
-> 
-> Thanks,
-> 
-> 	tglx
-
-
--- 
-Ville Syrjälä
-Intel OTC
+Paul.
