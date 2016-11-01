@@ -1,100 +1,198 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child
- suspend_{noirq,late} fails
-Date: Tue, 1 Nov 2016 00:04:28 -0600
-Message-ID: <CAKdAkRS+uUrx72DLKuyDiUMkKzxMTRXx5Pv1JBky6T8huv4Fhg@mail.gmail.com>
-References: <1476923170-111986-2-git-send-email-briannorris@chromium.org>
- <1477584334-39956-1-git-send-email-briannorris@chromium.org> <8017823.VJuZzSqtaY@vostro.rjw.lan>
+From: "Oliver O'Halloran" <oohall@gmail.com>
+Subject: Re: [PATCH v2 2/3] cpuidle:powernv: Add helper function to populate
+ powernv idle states.
+Date: Tue, 1 Nov 2016 19:32:58 +1100
+Message-ID: <CAOSf1CHZ0_1B28bX9TsaE6vcOaWUwhanQWAN=LKSLoNHK+Jh0A@mail.gmail.com>
+References: <cover.1477556602.git.ego@linux.vnet.ibm.com> <d7298ac18999f842f6eaf826cf21250503e40890.1477556602.git.ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f195.google.com ([209.85.217.195]:36807 "EHLO
-        mail-ua0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1161464AbcKAGEa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 02:04:30 -0400
-In-Reply-To: <8017823.VJuZzSqtaY@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d7298ac18999f842f6eaf826cf21250503e40890.1477556602.git.ego@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, skiboot list <skiboot@lists.ozlabs.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chuansheng Liu <chuansheng.liu@intel.com>
 
-On Mon, Oct 31, 2016 at 10:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, October 27, 2016 09:05:34 AM Brian Norris wrote:
->> Consider two devices, A and B, where B is a child of A, and B utilizes
->> asynchronous suspend (it does not matter whether A is sync or async). If
->> B fails to suspend_noirq() or suspend_late(), or is interrupted by a
->> wakeup (pm_wakeup_pending()), then it aborts and sets the async_error
->> variable. However, device A does not (immediately) check the async_error
->> variable; it may continue to run its own suspend_noirq()/suspend_late()
->> callback. This is bad.
->>
->> We can resolve this problem by checking the async_error flag after
->> waiting for children to suspend, using the same logic for the noirq and
->> late suspend cases as we already do for __device_suspend().
->>
->> It's easy to observe this erroneous behavior by, for example, forcing a
->> device to sleep a bit in its suspend_noirq() (to ensure the parent is
->> waiting for the child to complete), then return an error, and watch the
->> parent suspend_noirq() still get called. (Or similarly, fake a wakeup
->> event at the right (or is it wrong?) time.)
->>
->> Fixes: de377b397272 ("PM / sleep: Asynchronous threads for suspend_late")
->> Fixes: 28b6fd6e3779 ("PM / sleep: Asynchronous threads for suspend_noirq")
->> Reported-by: Jeffy Chen <jeffy.chen@rock-chips.com>
->> Signed-off-by: Brian Norris <briannorris@chromium.org>
->> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->> ---
->> v2: s/early/late/ in commit message
->>
->>  drivers/base/power/main.c | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> index c58563581345..eaf6b53463a5 100644
->> --- a/drivers/base/power/main.c
->> +++ b/drivers/base/power/main.c
->> @@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
->>
->>       dpm_wait_for_children(dev, async);
->>
->> +     if (async_error)
->> +             goto Complete;
->> +
+On Thu, Oct 27, 2016 at 7:35 PM, Gautham R. Shenoy
+<ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 >
-> This is a second chech for async_error in this routine and is the first one
-> really needed after adding this?
+> In the current code for powernv_add_idle_states, there is a lot of code
+> duplication while initializing an idle state in powernv_states table.
+>
+> Add an inline helper function to populate the powernv_states[] table for
+> a given idle state. Invoke this for populating the "Nap", "Fastsleep"
+> and the stop states in powernv_add_idle_states.
+>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle-powernv.c | 82 +++++++++++++++++++++++----------------
+>  include/linux/cpuidle.h           |  1 +
+>  2 files changed, 49 insertions(+), 34 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index 7fe442c..11b22b9 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -167,6 +167,28 @@ static int powernv_cpuidle_driver_init(void)
+>         return 0;
+>  }
+>
+> +static inline void add_powernv_state(int index, const char *name,
+> +                                    unsigned int flags,
+> +                                    int (*idle_fn)(struct cpuidle_device *,
+> +                                                   struct cpuidle_driver *,
+> +                                                   int),
+> +                                    unsigned int target_residency,
+> +                                    unsigned int exit_latency,
+> +                                    u64 psscr_val)
+> +{
+> +       strncpy(powernv_states[index].name, name, CPUIDLE_NAME_LEN);
+> +       strncpy(powernv_states[index].desc, name, CPUIDLE_NAME_LEN);
 
-There is really no point in waiting for children to be suspended if
-error has already been signalled; that's what first check achieves.
-The 2nd check ensures that we abort suspend if any of the children
-failed to suspend.
+If the supplied name is equal to CPUIDLE_NAME_LEN then strncpy() won't
+terminate the string. The least annoying fix is to memset() the whole
+structure to zero and set n to CPUIDLE_NAME_LEN - 1.
 
-I'd say both checks are needed (well, 1st is helpful, 2nd is essential).
+> +       powernv_states[index].flags = flags;
+> +       powernv_states[index].target_residency = target_residency;
+> +       powernv_states[index].exit_latency = exit_latency;
+> +       powernv_states[index].enter = idle_fn;
+> +
+> +       if (idle_fn != stop_loop)
+> +               return;
 
+This can probably be deleted. The nap/sleep loops don't look at the
+psscr setting and you've passed in a dummy value of zero anyway.
+
+> +
+> +       stop_psscr_table[index] = psscr_val;
+> +}
+> +
+>  static int powernv_add_idle_states(void)
+>  {
+>         struct device_node *power_mgt;
+> @@ -236,6 +258,7 @@ static int powernv_add_idle_states(void)
+>                 "ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
 >
->>       if (dev->pm_domain) {
->>               info = "noirq power domain ";
->>               callback = pm_noirq_op(&dev->pm_domain->ops, state);
->> @@ -1187,6 +1190,9 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
->>
->>       dpm_wait_for_children(dev, async);
->>
->> +     if (async_error)
->> +             goto Complete;
->> +
+>         for (i = 0; i < dt_idle_states; i++) {
+> +               unsigned int exit_latency, target_residency;
+>                 /*
+>                  * If an idle state has exit latency beyond
+>                  * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> @@ -244,27 +267,30 @@ static int powernv_add_idle_states(void)
+>                 if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
+>                         continue;
 >
-> Same question.
+> +               exit_latency = ((unsigned int)latency_ns[i]) / 1000;
+> +               target_residency = (!rc) ? ((unsigned int)residency_ns[i]) : 0;
+> +               /*
+> +                * Firmware passes residency values in ns.
+> +                * cpuidle expects it in us.
+> +                */
+> +               target_residency /= 1000;
+> +
+>                 /*
+>                  * Cpuidle accepts exit_latency and target_residency in us.
+
+This comment says the same thing as the one above.
+
+>                  * Use default target_residency values if f/w does not expose it.
+>                  */
+>                 if (flags[i] & OPAL_PM_NAP_ENABLED) {
+> +                       target_residency = 100;
+
+Hmm, the above comment says that we should only use the default value
+for target_residency if firmware hasn't provided a value. Is there a
+reason we always use the hard coded value?
+
+>                         /* Add NAP state */
+> -                       strcpy(powernv_states[nr_idle_states].name, "Nap");
+> -                       strcpy(powernv_states[nr_idle_states].desc, "Nap");
+> -                       powernv_states[nr_idle_states].flags = 0;
+> -                       powernv_states[nr_idle_states].target_residency = 100;
+> -                       powernv_states[nr_idle_states].enter = nap_loop;
+> +                       add_powernv_state(nr_idle_states, "Nap",
+> +                                         CPUIDLE_FLAG_NONE, nap_loop,
+> +                                         target_residency, exit_latency, 0);
+>                 } else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+>                                 !(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> -                       strncpy(powernv_states[nr_idle_states].name,
+> -                               names[i], CPUIDLE_NAME_LEN);
+> -                       strncpy(powernv_states[nr_idle_states].desc,
+> -                               names[i], CPUIDLE_NAME_LEN);
+> -                       powernv_states[nr_idle_states].flags = 0;
+> -
+> -                       powernv_states[nr_idle_states].enter = stop_loop;
+> -                       stop_psscr_table[nr_idle_states] = psscr_val[i];
+> +                       add_powernv_state(nr_idle_states, names[i],
+> +                                         CPUIDLE_FLAG_NONE, stop_loop,
+> +                                         target_residency, exit_latency,
+> +                                         psscr_val[i]);
+>                 }
 >
->>       if (dev->pm_domain) {
->>               info = "late power domain ";
->>               callback = pm_late_early_op(&dev->pm_domain->ops, state);
->>
+>                 /*
+> @@ -274,32 +300,20 @@ static int powernv_add_idle_states(void)
+>  #ifdef CONFIG_TICK_ONESHOT
+>                 if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
+>                         flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
+> +                       target_residency = 300000;
+
+Same comment as above.
+
+>                         /* Add FASTSLEEP state */
+> -                       strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+> -                       strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+> -                       powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+> -                       powernv_states[nr_idle_states].target_residency = 300000;
+> -                       powernv_states[nr_idle_states].enter = fastsleep_loop;
+> +                       add_powernv_state(nr_idle_states, "FastSleep",
+> +                                         CPUIDLE_FLAG_TIMER_STOP,
+> +                                         fastsleep_loop,
+> +                                         target_residency, exit_latency, 0);
+>                 } else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+>                                 (flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> -                       strncpy(powernv_states[nr_idle_states].name,
+> -                               names[i], CPUIDLE_NAME_LEN);
+> -                       strncpy(powernv_states[nr_idle_states].desc,
+> -                               names[i], CPUIDLE_NAME_LEN);
+> -
+> -                       powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+> -                       powernv_states[nr_idle_states].enter = stop_loop;
+> -                       stop_psscr_table[nr_idle_states] = psscr_val[i];
+> +                       add_powernv_state(nr_idle_states, names[i],
+> +                                         CPUIDLE_FLAG_TIMER_STOP, stop_loop,
+> +                                         target_residency, exit_latency,
+> +                                         psscr_val[i]);
+>                 }
+>  #endif
+> -               powernv_states[nr_idle_states].exit_latency =
+> -                               ((unsigned int)latency_ns[i]) / 1000;
+> -
+> -               if (!rc) {
+> -                       powernv_states[nr_idle_states].target_residency =
+> -                               ((unsigned int)residency_ns[i]) / 1000;
+> -               }
+> -
+>                 nr_idle_states++;
+>         }
+>  out:
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index bb31373..c4e10f8 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -62,6 +62,7 @@ struct cpuidle_state {
+>  };
 >
-> Thanks,
-> Rafael
+>  /* Idle State Flags */
+> +#define CPUIDLE_FLAG_NONE       (0x00)
+>  #define CPUIDLE_FLAG_COUPLED   (0x02) /* state applies to multiple cpus */
+>  #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
+>
+> --
+> 1.9.4
 >
 
-Thanks.
+Looks good otherwise.
 
--- 
-Dmitry
+Reviewed-by: Oliver O'Halloran <oohall@gmail.com>
