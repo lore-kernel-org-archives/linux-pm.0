@@ -1,39 +1,42 @@
-From: Russell King <rmk+kernel@armlinux.org.uk>
-Subject: [PATCH] power: ipaq_micro_battery: fix alias
-Date: Tue, 01 Nov 2016 09:59:50 +0000
-Message-ID: <E1c1VrC-0000LC-Jo@rmk-PC.armlinux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+From: Johan Hovold <johan@kernel.org>
+Subject: [PATCH] PM / sleep: fix device reference leak in test_suspend
+Date: Tue,  1 Nov 2016 11:49:56 +0100
+Message-ID: <1477997396-29476-1-git-send-email-johan@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.armlinux.org.uk ([78.32.30.218]:44480 "EHLO
-        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1034822AbcKAJ7y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 05:59:54 -0400
-Content-Disposition: inline
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:36606 "EHLO
+        mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1168617AbcKAKuQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 06:50:16 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>
 
-The alias for the ipaq_micro_battery driver is incorrect, fix it so the
-module can be auto-loaded.
+Make sure to drop the reference taken by class_find_device() after
+opening the rtc device.
 
-Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+Fixes: 77437fd4e61f ("pm: boot time suspend selftest")
+Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/power/supply/ipaq_micro_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/power/suspend_test.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/ipaq_micro_battery.c b/drivers/power/supply/ipaq_micro_battery.c
-index 4af7b770f293..2fa6edd6e8b1 100644
---- a/drivers/power/supply/ipaq_micro_battery.c
-+++ b/drivers/power/supply/ipaq_micro_battery.c
-@@ -313,4 +313,4 @@ module_platform_driver(micro_batt_device_driver);
+diff --git a/kernel/power/suspend_test.c b/kernel/power/suspend_test.c
+index 084452e34a12..bdff5ed57f10 100644
+--- a/kernel/power/suspend_test.c
++++ b/kernel/power/suspend_test.c
+@@ -203,8 +203,10 @@ static int __init test_suspend(void)
  
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("driver for iPAQ Atmel micro battery");
--MODULE_ALIAS("platform:battery-ipaq-micro");
-+MODULE_ALIAS("platform:ipaq-micro-battery");
+ 	/* RTCs have initialized by now too ... can we use one? */
+ 	dev = class_find_device(rtc_class, NULL, NULL, has_wakealarm);
+-	if (dev)
++	if (dev) {
+ 		rtc = rtc_class_open(dev_name(dev));
++		put_device(dev);
++	}
+ 	if (!rtc) {
+ 		printk(warn_no_rtc);
+ 		return 0;
 -- 
-2.1.0
+2.7.3
 
