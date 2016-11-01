@@ -1,74 +1,103 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] net: smsc911x: Synchronize the runtime PM status during system suspend
-Date: Tue, 01 Nov 2016 05:19:25 +0100
-Message-ID: <3305877.UjuP622RYi@vostro.rjw.lan>
-References: <1477567434-5128-1-git-send-email-ulf.hansson@linaro.org> <CAMuHMdUbU07t2kB6J0rSOiOTbDkegP73FAAEenViuDjQUFE-Jg@mail.gmail.com> <CAPDyKFprWcita5sbdwTqbdi2CMW4gx7_UB7+kMd9R2rqXdcALQ@mail.gmail.com>
+Subject: Re: [PATCH v2 0/3] powernv:stop: Use psscr_val,mask provided by firmware
+Date: Tue, 01 Nov 2016 05:21:05 +0100
+Message-ID: <1960765.Hett9UtH8Z@vostro.rjw.lan>
+References: <cover.1477556602.git.ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49184 "HELO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62561 "HELO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1751697AbcKAEMO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 00:12:14 -0400
-In-Reply-To: <CAPDyKFprWcita5sbdwTqbdi2CMW4gx7_UB7+kMd9R2rqXdcALQ@mail.gmail.com>
+        by vger.kernel.org with SMTP id S1752057AbcKAENx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 00:13:53 -0400
+In-Reply-To: <cover.1477556602.git.ego@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Steve Glendinning <steve.glendinning@shawell.net>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, skiboot@lists.ozlabs.org
 
-On Thursday, October 27, 2016 01:53:03 PM Ulf Hansson wrote:
-> On 27 October 2016 at 13:41, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > Hi Ulf,
-> >
-> > On Thu, Oct 27, 2016 at 1:23 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >> The smsc911c driver puts its device into low power state when entering
-> >> system suspend. Although it doesn't update the device's runtime PM status
-> >> to RPM_SUSPENDED, which causes problems for a parent device.
-> >>
-> >> In particular, when the runtime PM status of the parent is requested to be
-> >> updated to RPM_SUSPENDED, the runtime PM core prevent this, because it's
-> >> forbidden to runtime suspend a device, which has an active child.
-> >>
-> >> Fix this by updating the runtime PM status of the smsc911x device to
-> >> RPM_SUSPENDED during system suspend. In system resume, let's reverse that
-> >> action by runtime resuming the device and thus also the parent.
-> >
-> > Thanks for your patch!
-> >
-> > The changelog sounds quite innocent, but this does fix a system crash
-> > during resume from s2ram.
-> >
-> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> >> Cc: Steve Glendinning <steve.glendinning@shawell.net>
-> >> Fixes: 8b1107b85efd ("PM / Runtime: Don't allow to suspend a device with an active child")
-> >
-> > While the abovementioned commit made the problem visible, the root cause
-> > was present before, right?
+On Thursday, October 27, 2016 02:05:04 PM Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
-> Yes.
+> Hi,
 > 
-> >
-> >> ---
-> >>
-> >> Note that the commit this change fixes is currently queued for 4.10 via
-> >> Rafael's linux-pm tree. So this fix should go via that tree as well.
-> >
-> > Alternatively, this could go in in v4.9 to avoid the problem from ever
-> > appearing in upstream?
+> This is the second iteration of the patchset to use the psscr_val and
+> psscr_mask provided by the firmware for each of the stop states.
 > 
-> Makes perfect sense! In that case we should remove the fixes tag.
+> The previous version can be found here: 
+> https://lkml.org/lkml/2016/9/29/45
 > 
-> Rafael, can you pick this up for 4.9 rc[n]?
+> The main changes in this version are:
+> 
+> 1) Add a helper function in powernv-cpuidle.c to help initialize the
+>    powernv_states cpuidle table.
+> 
+> 2) Handle the older firmware which populates only the Requested Level
+>    (RL) fields of the psscr and psscr_mask in the device tree. This
+>    patchset ensures that in the presence of the older firmware, the
+>    other fields of PSSCR are initalized to sane default values.
+> 
+> 
+> Synopsis
+> ==========
+> In the current implementation, the code for ISA v3.0 stop
+> implementation has a couple of shortcomings.
+> 
+> a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
+>    uses only the RL field from the firmware. While this is not
+>    incorrect, since the hand-coded values are legitimate, it is not a
+>    very flexible design since the firmware has the capability to
+>    communicate these values via the "ibm,cpu-idle-state-psscr" and
+>    "ibm,cpu-idle-state-psscr-mask" properties. In case where the
+>    firmware provides values for these fields that is different from
+>    the hand-coded values, the current code will not work as intended.
+> 
+> b) Due to issue a), the current code assumes that ESL=EC=1 for all the
+>    stop states and hence the wakeup from the stop instruction will
+>    happen at 0x100, the system-reset vector. However, the ISA v3.0
+>    allows the ESL=EC=0 behaviour where the corresponding stop-state
+>    loses no state and wakes up from the subsequent instruction. The
+>    current code doesn't handle this case.
+>    
+> This patch series addresses these issues.
+> 
+> The first patch in the series renames the existing
+> IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
+> the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
+> up at the subsequent instruction.
+> 
+> The second patch adds a helper function in cpuidle-powernv.c for
+> initializing entries of the powernv_states[] table that is passed to
+> the cpu-idle core. This eliminates some of the code duplication in the
+> function that discovers and initializes the stop states.
+> 
+> The third patch in the series fixes issues a) and b) by ensuring that
+> the psscr-value and the psscr-mask provided by the firmware are what
+> will be used to set a particular stop state. It also adds support for
+> handling wake-up from stop states which were entered with ESL=EC=0.
+> 
+> The third patch also handles the older firmware which sets only the
+> Requested Level (RL) field in the psscr and psscr-mask exposed in the
+> device tree. In the presence of such older firmware, this patch will
+> set the default sane values for for remaining PSSCR fields (i.e PSLL,
+> MTL, ESL, EC, and TR).
+> 
+> The skiboot patch populates all the relevant fields in the PSSCR
+> values and the mask for all the stop states can be found here:
+> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
+> 
+> The patches are based on top of
+> git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+> 
+> Gautham R. Shenoy (3):
+>   powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+>   cpuidle:powernv: Add helper function to populate powernv idle states.
+>   powernv: Pass PSSCR value and mask to power9_idle_stop
 
-If that is to go into 4.9-rc, it really should go in via the networking tree,
-because there is no PM dependency for it as of today.
+OK
 
-I can rearrange my 4.10 queue to put this one before the runtime PM commit
-exposing the problem in smsc911x, though.
-
-Let me know what you prefer.
+I need someone to review this for me.
 
 Thanks,
 Rafael
