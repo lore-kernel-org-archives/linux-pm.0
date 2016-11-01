@@ -1,40 +1,97 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH 5/9] ASoC: pxa: switch to new ac97 bus support
-Date: Tue, 01 Nov 2016 20:55:10 +0100
-Message-ID: <8737jb0ych.fsf@belgarion.home>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
-        <1477510907-23495-6-git-send-email-robert.jarzmik@free.fr>
-        <87bmy029tu.fsf@belgarion.home>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
+ calls to hotplugged cpu")]
+Date: Tue, 1 Nov 2016 22:47:37 +0200
+Message-ID: <20161101204737.GB4617@intel.com>
+References: <CA++bM2sLMDLdeyLd_gpknTj+Y5xMk261SvivU5YxTnL0jRZovA@mail.gmail.com>
+ <20160809172057.GZ4329@intel.com>
+ <20161027172852.GE4617@intel.com>
+ <alpine.DEB.2.20.1610272035180.4913@nanos>
+ <20161027192006.GF4617@intel.com>
+ <alpine.DEB.2.20.1610272122510.4913@nanos>
+ <20161027203745.GH4617@intel.com>
+ <alpine.DEB.2.20.1610272238390.4913@nanos>
+ <20161028155603.GI4617@intel.com>
+ <alpine.DEB.2.20.1610282049500.5053@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87bmy029tu.fsf@belgarion.home> (Robert Jarzmik's message of
-        "Mon, 31 Oct 2016 09:37:17 +0100")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga11.intel.com ([192.55.52.93]:59842 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751487AbcKAUru (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Nov 2016 16:47:50 -0400
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.20.1610282049500.5053@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Feng Tang <feng.79.tang@gmail.com>, feng.tang@intel.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel>
 
-Robert Jarzmik <robert.jarzmik@free.fr> writes:
+On Fri, Oct 28, 2016 at 08:58:41PM +0200, Thomas Gleixner wrote:
+> On Fri, 28 Oct 2016, Ville Syrjälä wrote:
+> > On Thu, Oct 27, 2016 at 10:41:18PM +0200, Thomas Gleixner wrote:
+> > > On Thu, 27 Oct 2016, Ville Syrjälä wrote:
+> > > > On Thu, Oct 27, 2016 at 09:25:05PM +0200, Thomas Gleixner wrote:
+> > > > > So it would be interesting whether that hunk in resume_broadcast() is
+> > > > > sufficient.
+> > > > 
+> > > > So far it looks like the answer is yes.
+> > > > 
+> > > > Looks to be about 5 seconds slower than acpi-idle in resuming, but
+> > > > I suppose that's not all that surprising ;)
+> > > 
+> > > Well, set it to 1msec then. If that works reliably then we really can do
+> > > that unconditionally. There is no harm in firing a useless timer during
+> > > resume once.
+> > 
+> > I narrowed down the required timeout, and looks like 25ms is the
+> > minimum that works. With 24ms I already started to have failures. So
+> > maybe just bump it up by an order of magnitude to 250ms for some
+> > safety margin?
 
-> Robert Jarzmik <robert.jarzmik@free.fr> writes:
->
->> Switch to the new ac97 bus support in sound/ac97 instead of the legacy
->> snd_ac97 one.
->>
->> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> I realized this one impacts sound/arm/pxa2xx-ac97.c.
-> This deserves a v2, with this patch being split into 2 pieces :
->  - one for pxa2xx-ac97-lib.*
->  - one which will be the true switch to the new ac97 bus.
+I left the thing running for the weekend and it failed 26 out of 16057
+times with the 25ms timeout. Looks like it takes ~5 minutes to resume
+when it fails, but eventually it does come back.
 
-And as another consequence, all pxa ac97 based codecs should be converted. So
-far, machine drivers in sound/soc/pxa/*.c using ac97 all use either wm9705,
-wm9712 or wm9713.
+> 
+> Sure, but what puzzles me is that we need a timeout that big. What happens
+> between broadcast_resume() and broadcast_resume() + 25ms?
+> 
+> IOW, what is the event/resume function which we need to bridge. We should
+> really try to track than down.
 
-Therefore for this patch to be usable, I must also convert wm9705 and wm9712.
+My hunch would be that SMM trap in the DSDT/SSDT since that's where
+things ended up last time I was tracing these resume problems. Though I
+can't recall if that was just with acpi-idle or if intel_idle landed in
+the same spot as well.
 
-Cheers.
+I guess I can try to repeat that test tomorrow, or I'll try your function
+tracer method if the other thing fails.
+
+> 
+> You might try to enable function tracing and do a tracing_off() when that
+> 25ms timeout fires.
+> 
+> Something like 
+> 
+> 	stop_trace = true;
+> 
+> in broadcast_resume() and then in the broadcast timer function:
+> 
+> 	if (stop_trace) {
+> 		stop_trace = false;
+> 		tracing_off();
+> 	}
+> 
+> Then when the machine is up read the trace, compress and upload it
+> somewhere or send it in private mail if it's not that big.
+> 
+> Thanks,
+> 
+> 	tglx
+
 
 -- 
-Robert
+Ville Syrjälä
+Intel OTC
