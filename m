@@ -1,193 +1,150 @@
-From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V3 4/9] Documentation: devicetree: mfd: da9062/61 MFD
- binding
-Date: Wed, 2 Nov 2016 14:32:01 +0000
-Message-ID: <20161102143201.GT13127@dell>
-References: <cover.1477929725.git.stwiss.opensource@diasemi.com>
- <502d13b97c67023f2193abfa235e8884eb0ea02f.1477929725.git.stwiss.opensource@diasemi.com>
+From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v3 2/3] Documentation: dt: add bindings for ti-cpufreq
+Date: Wed, 2 Nov 2016 11:03:13 -0500
+Message-ID: <9a185460-a241-4876-2915-6975c57527ca@ti.com>
+References: <20161027214131.1725-1-d-gerlach@ti.com>
+ <20161027214131.1725-3-d-gerlach@ti.com> <20161102035941.GA10786@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <502d13b97c67023f2193abfa235e8884eb0ea02f.1477929725.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161102035941.GA10786@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 31 Oct 2016, Steve Twiss wrote:
+Hi,
+On 11/01/2016 10:59 PM, Viresh Kumar wrote:
+> On 27-10-16, 16:41, Dave Gerlach wrote:
+>> Add the device tree bindings document for the TI CPUFreq/OPP driver
+>> on AM33xx and AM43xx SoCs. The operating-points-v2 binding allows us
+>> to provide an opp-supported-hw property for each OPP to define when
+>> it is available. This driver is responsible for reading and parsing
+>> registers to determine which OPPs can be selectively enabled based
+>> on the specific SoC in use by matching against the opp-supported-hw
+>> data.
+>>
+>> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+>> ---
+>> v2->v3:
+>> - Move ti,syscon-* properties under opp table instead of cpu node, as
+>>   that is a better location for them.
+>> - For the opp table do not use platform specific compatible strings
+>>   but instead a operating-points-v2-ti-cpu
+>>
+>>  .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 132 +++++++++++++++++++++
+>>  1 file changed, 132 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+>> new file mode 100644
+>> index 000000000000..467ad29c75c9
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+>> @@ -0,0 +1,132 @@
+>> +TI CPUFreq and OPP bindings
+>> +================================
+>> +
+>> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
+>> +families support different OPPs depending on the silicon variant in use.
+>> +The ti_cpufreq driver can use revision and an efuse value from the SoC to
+>> +provide the OPP framework with supported hardware information. This is
+>> +used to determine which OPPs from the operating-points-v2 table get enabled
+>> +when it is parsed by the OPP framework.
+>> +
+>> +Required properties:
+>> +--------------------
+>> +In 'cpus' nodes:
+>> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+>> +
+>> +In 'operating-points-v2' table:
+>> +- compatible: Should be 'operating-points-v2-ti-cpu' for am335x, am43xx,
+>> +	      and dra7xx/am57xx SoCs
+>> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
+>> +		   mask, and efuse register shift to get the relevant bits
+>> +		   that describe OPP availability.
+>> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC.
+>> +
+>> +Optional properties:
+>> +--------------------
+>> +For each opp entry in 'operating-points-v2' table:
+>> +- opp-supported-hw: Two bitfields indicating:
+>> +	1. Which revision of the SoC the OPP is supported by
+>> +	2. Which eFuse bits indicate this OPP is available
+>> +
+>> +	A bitwise AND is performed against these values and if any bit
+>> +	matches, the OPP gets enabled. Not providing the property for an
+>> +	entry indicates that an OPP is always supported.
+>> +
+>> +Example:
+>> +--------
+>> +
+>> +/* From arch/arm/boot/dts/am33xx.dtsi */
+>> +cpus {
+>> +	#address-cells = <1>;
+>> +	#size-cells = <0>;
+>> +	cpu@0 {
+>> +		compatible = "arm,cortex-a8";
+>> +		device_type = "cpu";
+>> +		reg = <0>;
+>> +
+>> +		operating-points-v2 = <&cpu0_opp_table>;
+>> +
+>> +		clocks = <&dpll_mpu_ck>;
+>> +		clock-names = "cpu";
+>> +
+>> +		clock-latency = <300000>; /* From omap-cpufreq driver */
+>> +	};
+>> +};
+>> +
+>> +/*
+>> + * cpu0 has different OPPs depending on SoC revision and some on revisions
+>> + * 0x2 and 0x4 have eFuse bits that indicate if they are available or not
+>> + */
+>> +cpu0_opp_table: opp_table0 {
+>> +	compatible = "operating-points-v2-ti-am3352-cpu";
+>> +	ti,syscon-efuse = <&scm_conf 0x7fc 0x1fff 0>;
+>> +	ti,syscon-rev = <&scm_conf 0x600>;
+>> +
+>> +	/*
+>> +	 * The three following nodes are marked with opp-suspend
+>> +	 * because they can not be enabled simultaneously on a
+>> +	 * single SoC.
+>> +	 */
+>> +	opp50@300000000 {
+>> +		opp-hz = /bits/ 64 <300000000>;
+>> +		opp-microvolt = <950000 931000 969000>;
+>> +		opp-supported-hw = <0x06 0x0010>;
+>> +		opp-suspend;
+>> +	};
+>> +
+>> +	opp100@275000000 {
+>> +		opp-hz = /bits/ 64 <275000000>;
+>> +		opp-microvolt = <1100000 1078000 1122000>;
+>> +		opp-supported-hw = <0x01 0x00FF>;
+>> +		opp-suspend;
+>> +	};
+>> +
+>> +	opp100@300000000 {
+>> +		opp-hz = /bits/ 64 <300000000>;
+>> +		opp-microvolt = <1100000 1078000 1122000>;
+>> +		opp-supported-hw = <0x06 0x0020>;
+>> +		opp-suspend;
+>
+> Only one OPP in the table can be marked as suspend OPP.
+>
 
-> From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-> 
-> Extend existing DA9062 binding information to include the DA9061 PMIC for
-> MFD core and regulators.
-> 
-> Add a da9062-onkey link to the existing onkey binding file.
-> 
-> Add a da9062-thermal link to the new temperature monitoring binding file.
-> 
-> Delete the da9062-watchdog section and replace it with a link to the new
-> DA9061/62 binding information file.
-> 
-> Signed-off-by: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-> 
-> ---
-> This patch applies against linux-next and v4.8
-> 
-> v2 -> v3
->  - Patch renamed from [PATCH V2 04/10] to [PATCH V3 4/9]
->  - Ensure binding description concentrates on the device not the
->    device driver
->  - Separate the DA9061 and DA9062 sub-device tables to distinguish
->    the difference between the two devices
->  - Update the commit message to describe this change
->  - Add e-mail information about associated patches from this set
->    without describing them as being explicitly dependent on this
->    binding
-> 
-> v1 -> v2
->  - Patch renamed from [PATCH V1 09/10] to [PATCH V2 04/10] -- these
->    changes were made to fix checkpatch warnings caused by the patch
->    set dependency order
-> 
-> Hi,
-> 
-> Other information:
-> The device driver from this patch set (associated with this binding) is
-> 
-> - [PATCH V3 1/9] mfd: da9061: MFD core support
-> 
-> and also the following binding file changes:
-> 
-> - [PATCH V3 1/9] Binding for onkey
-> - [PATCH V3 2/9] Binding for watchdog
-> - [PATCH V3 3/9] Binding for thermal
-> 
-> Regards,
-> Steve Twiss, Dialog Semiconductor Ltd.
-> 
-> 
->  Documentation/devicetree/bindings/mfd/da9062.txt | 52 ++++++++++++++++++------
->  1 file changed, 40 insertions(+), 12 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/mfd/da9062.txt b/Documentation/devicetree/bindings/mfd/da9062.txt
-> index 38802b5..56491c3 100644
-> --- a/Documentation/devicetree/bindings/mfd/da9062.txt
-> +++ b/Documentation/devicetree/bindings/mfd/da9062.txt
-> @@ -1,22 +1,39 @@
->  * Dialog DA9062 Power Management Integrated Circuit (PMIC)
->  
-> -DA9062 consists of a large and varied group of sub-devices:
-> +Product information for the DA9062 and DA9061 devices can be found here:
-> +- http://www.dialog-semiconductor.com/products/da9062
-> +- http://www.dialog-semiconductor.com/products/da9061
-> +
-> +The DA9062 PMIC consists of:
->  
->  Device                   Supply Names    Description
->  ------                   ------------    -----------
->  da9062-regulator        :               : LDOs & BUCKs
->  da9062-rtc              :               : Real-Time Clock
-> +da9062-onkey            :               : On Key
-> +da9062-watchdog         :               : Watchdog Timer
-> +da9062-thermal          :               : Thermal
-> +
-> +The DA9061 PMIC consists of:
-> +
-> +Device                   Supply Names    Description
-> +------                   ------------    -----------
-> +da9062-regulator        :               : LDOs & BUCKs
-> +da9062-onkey            :               : On Key
->  da9062-watchdog         :               : Watchdog Timer
-> +da9062-thermal          :               : Thermal
->  
->  ======
->  
->  Required properties:
->  
-> -- compatible : Should be "dlg,da9062".
-> +- compatible : Should be
-> +    "dlg,da9062" for DA9062
-> +    "dlg,da9061" for DA9061
->  - reg : Specifies the I2C slave address (this defaults to 0x58 but it can be
->    modified to match the chip's OTP settings).
->  - interrupt-parent : Specifies the reference to the interrupt controller for
-> -  the DA9062.
-> +  the DA9062 or DA9061.
->  - interrupts : IRQ line information.
->  - interrupt-controller
->  
-> @@ -25,8 +42,8 @@ further information on IRQ bindings.
->  
->  Sub-nodes:
->  
-> -- regulators : This node defines the settings for the LDOs and BUCKs. The
-> -  DA9062 regulators are bound using their names listed below:
-> +- regulators : This node defines the settings for the LDOs and BUCKs.
-> +  The DA9062 regulators are bound using their names listed below:
->  
->      buck1    : BUCK_1
->      buck2    : BUCK_2
-> @@ -37,6 +54,16 @@ Sub-nodes:
->      ldo3     : LDO_3
->      ldo4     : LDO_4
->  
-> +  The DA9061 regulators are bound using their names listed below:
-> +
-> +    buck1    : BUCK_1
-> +    buck2    : BUCK_2
-> +    buck3    : BUCK_3
-> +    ldo1     : LDO_1
-> +    ldo2     : LDO_2
-> +    ldo3     : LDO_3
-> +    ldo4     : LDO_4
-> +
->    The component follows the standard regulator framework and the bindings
->    details of individual regulator device can be found in:
->    Documentation/devicetree/bindings/regulator/regulator.txt
-> @@ -46,9 +73,14 @@ Sub-nodes:
->    with the DA9062. There are currently no entries in this binding, however
->    compatible = "dlg,da9062-rtc" should be added if a node is created.
->  
-> -- watchdog: This node defines the settings for the watchdog driver associated
-> -  with the DA9062 PMIC. The compatible = "dlg,da9062-watchdog" should be added
-> -  if a node is created.
-> +
-> +- onkey : See ../input/da9062-onkey.txt
-> +
-> +
-> +- watchdog: See ../watchdog/da9062-watchdog.txt
-> +
-> +
-> +- thermal : See ../thermal/da9062-thermal.txt
+Does that still apply when opp-supported-hw is involved? Based on the 
+comment at the start of the table, those OPPs are all mutually exclusive 
+and will not ever be enabled on the same piece of silicon, they 
+represent the lowest OPP for each of three different supported-hw 
+configurations.
 
-Remove all those extra lines in between.
+Regards,
+Dave
 
->  Example:
-> @@ -64,10 +96,6 @@ Example:
->  			compatible = "dlg,da9062-rtc";
->  		};
->  
-> -		watchdog {
-> -			compatible = "dlg,da9062-watchdog";
-> -		};
-> -
-
-Why don't you include a sub-node per child device and use
-of_platform_populate() to register the devices?
-
-
->  		regulators {
->  			DA9062_BUCK1: buck1 {
->  				regulator-name = "BUCK1";
-
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
 --
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 More majordomo info at  http://vger.kernel.org/majordomo-info.html
