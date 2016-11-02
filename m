@@ -1,150 +1,41 @@
-From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v3 2/3] Documentation: dt: add bindings for ti-cpufreq
-Date: Wed, 2 Nov 2016 11:03:13 -0500
-Message-ID: <9a185460-a241-4876-2915-6975c57527ca@ti.com>
-References: <20161027214131.1725-1-d-gerlach@ti.com>
- <20161027214131.1725-3-d-gerlach@ti.com> <20161102035941.GA10786@vireshk-i7>
+From: Hanjun Guo <hanjun.guo@linaro.org>
+Subject: Re: [PATCH v5 0/5] Functional dependencies between devices
+Date: Thu, 03 Nov 2016 04:55:29 +0800
+Message-ID: <581A52C1.1010907@linaro.org>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan> <5811F0CF.5000204@huawei.com> <20161028093959.GA7889@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161102035941.GA10786@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161028093959.GA7889@wunner.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>, Hanjun Guo <guohanjun@huawei.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-On 11/01/2016 10:59 PM, Viresh Kumar wrote:
-> On 27-10-16, 16:41, Dave Gerlach wrote:
->> Add the device tree bindings document for the TI CPUFreq/OPP driver
->> on AM33xx and AM43xx SoCs. The operating-points-v2 binding allows us
->> to provide an opp-supported-hw property for each OPP to define when
->> it is available. This driver is responsible for reading and parsing
->> registers to determine which OPPs can be selectively enabled based
->> on the specific SoC in use by matching against the opp-supported-hw
->> data.
+On 10/28/2016 05:39 PM, Lukas Wunner wrote:
+> On Thu, Oct 27, 2016 at 08:19:27PM +0800, Hanjun Guo wrote:
+>> I'm trying to using this patch set to solve the functional dependency
+>> between devices and irqchip, which are both ACPI platform devices.
+>> irqchip needs to be probed before the devices connecting to them,
+>> which specifically, it's the mbi-gen support I send out recently:
 >>
->> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
->> ---
->> v2->v3:
->> - Move ti,syscon-* properties under opp table instead of cpu node, as
->>   that is a better location for them.
->> - For the opp table do not use platform specific compatible strings
->>   but instead a operating-points-v2-ti-cpu
+>> https://lkml.org/lkml/2016/10/25/453
 >>
->>  .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 132 +++++++++++++++++++++
->>  1 file changed, 132 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->>
->> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->> new file mode 100644
->> index 000000000000..467ad29c75c9
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
->> @@ -0,0 +1,132 @@
->> +TI CPUFreq and OPP bindings
->> +================================
->> +
->> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
->> +families support different OPPs depending on the silicon variant in use.
->> +The ti_cpufreq driver can use revision and an efuse value from the SoC to
->> +provide the OPP framework with supported hardware information. This is
->> +used to determine which OPPs from the operating-points-v2 table get enabled
->> +when it is parsed by the OPP framework.
->> +
->> +Required properties:
->> +--------------------
->> +In 'cpus' nodes:
->> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
->> +
->> +In 'operating-points-v2' table:
->> +- compatible: Should be 'operating-points-v2-ti-cpu' for am335x, am43xx,
->> +	      and dra7xx/am57xx SoCs
->> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
->> +		   mask, and efuse register shift to get the relevant bits
->> +		   that describe OPP availability.
->> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC.
->> +
->> +Optional properties:
->> +--------------------
->> +For each opp entry in 'operating-points-v2' table:
->> +- opp-supported-hw: Two bitfields indicating:
->> +	1. Which revision of the SoC the OPP is supported by
->> +	2. Which eFuse bits indicate this OPP is available
->> +
->> +	A bitwise AND is performed against these values and if any bit
->> +	matches, the OPP gets enabled. Not providing the property for an
->> +	entry indicates that an OPP is always supported.
->> +
->> +Example:
->> +--------
->> +
->> +/* From arch/arm/boot/dts/am33xx.dtsi */
->> +cpus {
->> +	#address-cells = <1>;
->> +	#size-cells = <0>;
->> +	cpu@0 {
->> +		compatible = "arm,cortex-a8";
->> +		device_type = "cpu";
->> +		reg = <0>;
->> +
->> +		operating-points-v2 = <&cpu0_opp_table>;
->> +
->> +		clocks = <&dpll_mpu_ck>;
->> +		clock-names = "cpu";
->> +
->> +		clock-latency = <300000>; /* From omap-cpufreq driver */
->> +	};
->> +};
->> +
->> +/*
->> + * cpu0 has different OPPs depending on SoC revision and some on revisions
->> + * 0x2 and 0x4 have eFuse bits that indicate if they are available or not
->> + */
->> +cpu0_opp_table: opp_table0 {
->> +	compatible = "operating-points-v2-ti-am3352-cpu";
->> +	ti,syscon-efuse = <&scm_conf 0x7fc 0x1fff 0>;
->> +	ti,syscon-rev = <&scm_conf 0x600>;
->> +
->> +	/*
->> +	 * The three following nodes are marked with opp-suspend
->> +	 * because they can not be enabled simultaneously on a
->> +	 * single SoC.
->> +	 */
->> +	opp50@300000000 {
->> +		opp-hz = /bits/ 64 <300000000>;
->> +		opp-microvolt = <950000 931000 969000>;
->> +		opp-supported-hw = <0x06 0x0010>;
->> +		opp-suspend;
->> +	};
->> +
->> +	opp100@275000000 {
->> +		opp-hz = /bits/ 64 <275000000>;
->> +		opp-microvolt = <1100000 1078000 1122000>;
->> +		opp-supported-hw = <0x01 0x00FF>;
->> +		opp-suspend;
->> +	};
->> +
->> +	opp100@300000000 {
->> +		opp-hz = /bits/ 64 <300000000>;
->> +		opp-microvolt = <1100000 1078000 1122000>;
->> +		opp-supported-hw = <0x06 0x0020>;
->> +		opp-suspend;
+>> But I didn't see an example to do so in this patch set, and seems that
+>> some extra code needs to be added for that purpose, could you give me
+>> some suggestions for how to do that then I can work on and test against
+>> your patch set?
 >
-> Only one OPP in the table can be marked as suspend OPP.
+> If the consumers can detect that there's a consumer on which they depend,
+> you could call device_link_add() from their ->probe hook.
 >
+> Generally the earliest point in time when device links can be added is
+> after device_initialize() has been called for the consumer and device_add()
+> has been called for the supplier.  (At least that's my understanding.)
 
-Does that still apply when opp-supported-hw is involved? Based on the 
-comment at the start of the table, those OPPs are all mutually exclusive 
-and will not ever be enabled on the same piece of silicon, they 
-represent the lowest OPP for each of three different supported-hw 
-configurations.
+Thank you, currently I'm on travailing and will take a deep look to
+see if it works (or adding things on top) on my case.
 
-Regards,
-Dave
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks
+Hanjun
