@@ -1,78 +1,140 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child suspend_{noirq,late} fails
-Date: Wed, 02 Nov 2016 04:51:08 +0100
-Message-ID: <50971906.K6xak2t6Z6@vostro.rjw.lan>
-References: <1476923170-111986-2-git-send-email-briannorris@chromium.org> <8017823.VJuZzSqtaY@vostro.rjw.lan> <CAKdAkRS+uUrx72DLKuyDiUMkKzxMTRXx5Pv1JBky6T8huv4Fhg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 2/3] Documentation: dt: add bindings for ti-cpufreq
+Date: Wed, 2 Nov 2016 09:29:41 +0530
+Message-ID: <20161102035941.GA10786@vireshk-i7>
+References: <20161027214131.1725-1-d-gerlach@ti.com>
+ <20161027214131.1725-3-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54111 "HELO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1751063AbcKBDn5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 23:43:57 -0400
-In-Reply-To: <CAKdAkRS+uUrx72DLKuyDiUMkKzxMTRXx5Pv1JBky6T8huv4Fhg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20161027214131.1725-3-d-gerlach-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chuansheng Liu <chuansheng.liu@intel.com>
 
-On Tuesday, November 01, 2016 12:04:28 AM Dmitry Torokhov wrote:
-> On Mon, Oct 31, 2016 at 10:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > On Thursday, October 27, 2016 09:05:34 AM Brian Norris wrote:
-> >> Consider two devices, A and B, where B is a child of A, and B utilizes
-> >> asynchronous suspend (it does not matter whether A is sync or async). If
-> >> B fails to suspend_noirq() or suspend_late(), or is interrupted by a
-> >> wakeup (pm_wakeup_pending()), then it aborts and sets the async_error
-> >> variable. However, device A does not (immediately) check the async_error
-> >> variable; it may continue to run its own suspend_noirq()/suspend_late()
-> >> callback. This is bad.
-> >>
-> >> We can resolve this problem by checking the async_error flag after
-> >> waiting for children to suspend, using the same logic for the noirq and
-> >> late suspend cases as we already do for __device_suspend().
-> >>
-> >> It's easy to observe this erroneous behavior by, for example, forcing a
-> >> device to sleep a bit in its suspend_noirq() (to ensure the parent is
-> >> waiting for the child to complete), then return an error, and watch the
-> >> parent suspend_noirq() still get called. (Or similarly, fake a wakeup
-> >> event at the right (or is it wrong?) time.)
-> >>
-> >> Fixes: de377b397272 ("PM / sleep: Asynchronous threads for suspend_late")
-> >> Fixes: 28b6fd6e3779 ("PM / sleep: Asynchronous threads for suspend_noirq")
-> >> Reported-by: Jeffy Chen <jeffy.chen@rock-chips.com>
-> >> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> >> Reviewed-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> >> ---
-> >> v2: s/early/late/ in commit message
-> >>
-> >>  drivers/base/power/main.c | 6 ++++++
-> >>  1 file changed, 6 insertions(+)
-> >>
-> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> >> index c58563581345..eaf6b53463a5 100644
-> >> --- a/drivers/base/power/main.c
-> >> +++ b/drivers/base/power/main.c
-> >> @@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
-> >>
-> >>       dpm_wait_for_children(dev, async);
-> >>
-> >> +     if (async_error)
-> >> +             goto Complete;
-> >> +
-> >
-> > This is a second chech for async_error in this routine and is the first one
-> > really needed after adding this?
+On 27-10-16, 16:41, Dave Gerlach wrote:
+> Add the device tree bindings document for the TI CPUFreq/OPP driver
+> on AM33xx and AM43xx SoCs. The operating-points-v2 binding allows us
+> to provide an opp-supported-hw property for each OPP to define when
+> it is available. This driver is responsible for reading and parsing
+> registers to determine which OPPs can be selectively enabled based
+> on the specific SoC in use by matching against the opp-supported-hw
+> data.
 > 
-> There is really no point in waiting for children to be suspended if
-> error has already been signalled; that's what first check achieves.
-> The 2nd check ensures that we abort suspend if any of the children
-> failed to suspend.
+> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+> ---
+> v2->v3:
+> - Move ti,syscon-* properties under opp table instead of cpu node, as
+>   that is a better location for them.
+> - For the opp table do not use platform specific compatible strings
+>   but instead a operating-points-v2-ti-cpu
 > 
-> I'd say both checks are needed (well, 1st is helpful, 2nd is essential).
+>  .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 132 +++++++++++++++++++++
+>  1 file changed, 132 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+> new file mode 100644
+> index 000000000000..467ad29c75c9
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
+> @@ -0,0 +1,132 @@
+> +TI CPUFreq and OPP bindings
+> +================================
+> +
+> +Certain TI SoCs, like those in the am335x, am437x, am57xx, and dra7xx
+> +families support different OPPs depending on the silicon variant in use.
+> +The ti_cpufreq driver can use revision and an efuse value from the SoC to
+> +provide the OPP framework with supported hardware information. This is
+> +used to determine which OPPs from the operating-points-v2 table get enabled
+> +when it is parsed by the OPP framework.
+> +
+> +Required properties:
+> +--------------------
+> +In 'cpus' nodes:
+> +- operating-points-v2: Phandle to the operating-points-v2 table to use.
+> +
+> +In 'operating-points-v2' table:
+> +- compatible: Should be 'operating-points-v2-ti-cpu' for am335x, am43xx,
+> +	      and dra7xx/am57xx SoCs
+> +- ti,syscon-efuse: Syscon phandle, offset to efuse register, efuse register
+> +		   mask, and efuse register shift to get the relevant bits
+> +		   that describe OPP availability.
+> +- ti,syscon-rev: Syscon and offset used to look up revision value on SoC.
+> +
+> +Optional properties:
+> +--------------------
+> +For each opp entry in 'operating-points-v2' table:
+> +- opp-supported-hw: Two bitfields indicating:
+> +	1. Which revision of the SoC the OPP is supported by
+> +	2. Which eFuse bits indicate this OPP is available
+> +
+> +	A bitwise AND is performed against these values and if any bit
+> +	matches, the OPP gets enabled. Not providing the property for an
+> +	entry indicates that an OPP is always supported.
+> +
+> +Example:
+> +--------
+> +
+> +/* From arch/arm/boot/dts/am33xx.dtsi */
+> +cpus {
+> +	#address-cells = <1>;
+> +	#size-cells = <0>;
+> +	cpu@0 {
+> +		compatible = "arm,cortex-a8";
+> +		device_type = "cpu";
+> +		reg = <0>;
+> +
+> +		operating-points-v2 = <&cpu0_opp_table>;
+> +
+> +		clocks = <&dpll_mpu_ck>;
+> +		clock-names = "cpu";
+> +
+> +		clock-latency = <300000>; /* From omap-cpufreq driver */
+> +	};
+> +};
+> +
+> +/*
+> + * cpu0 has different OPPs depending on SoC revision and some on revisions
+> + * 0x2 and 0x4 have eFuse bits that indicate if they are available or not
+> + */
+> +cpu0_opp_table: opp_table0 {
+> +	compatible = "operating-points-v2-ti-am3352-cpu";
+> +	ti,syscon-efuse = <&scm_conf 0x7fc 0x1fff 0>;
+> +	ti,syscon-rev = <&scm_conf 0x600>;
+> +
+> +	/*
+> +	 * The three following nodes are marked with opp-suspend
+> +	 * because they can not be enabled simultaneously on a
+> +	 * single SoC.
+> +	 */
+> +	opp50@300000000 {
+> +		opp-hz = /bits/ 64 <300000000>;
+> +		opp-microvolt = <950000 931000 969000>;
+> +		opp-supported-hw = <0x06 0x0010>;
+> +		opp-suspend;
+> +	};
+> +
+> +	opp100@275000000 {
+> +		opp-hz = /bits/ 64 <275000000>;
+> +		opp-microvolt = <1100000 1078000 1122000>;
+> +		opp-supported-hw = <0x01 0x00FF>;
+> +		opp-suspend;
+> +	};
+> +
+> +	opp100@300000000 {
+> +		opp-hz = /bits/ 64 <300000000>;
+> +		opp-microvolt = <1100000 1078000 1122000>;
+> +		opp-supported-hw = <0x06 0x0020>;
+> +		opp-suspend;
 
-OK, fair enough.
+Only one OPP in the table can be marked as suspend OPP.
 
-Thanks,
-Rafael
-
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
