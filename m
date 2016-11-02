@@ -1,8 +1,7 @@
 From: kernel@martin.sperl.org
-Subject: [PATCH V8 4/6] ARM64: bcm2835: dts: add thermal node to device-tree
- of bcm2837
-Date: Wed,  2 Nov 2016 10:18:24 +0000
-Message-ID: <1478081906-12009-5-git-send-email-kernel@martin.sperl.org>
+Subject: [PATCH V8 5/6] ARM: bcm2835: add thermal driver to default_config
+Date: Wed,  2 Nov 2016 10:18:25 +0000
+Message-ID: <1478081906-12009-6-git-send-email-kernel@martin.sperl.org>
 References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,27 +23,27 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Martin Sperl <kernel@martin.sperl.org>
 
-Add the node for the thermal sensor of the bcm2837-soc
-to the device tree.
+Add the thermal driver to list of compiled modules
+in the default config for bcm2835.
 
 Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+Reviewed-by: Eric Anholt <eric@anholt.net>
 ---
- arch/arm64/boot/dts/broadcom/bcm2837.dtsi | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/arm/configs/bcm2835_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-index 8216bbb..0fc10fd 100644
---- a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-+++ b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-@@ -74,3 +74,9 @@
- 	interrupt-parent = <&local_intc>;
- 	interrupts = <8>;
- };
-+
-+/* enable thermal sensor with the correct compatible property set */
-+&thermal {
-+	compatible = "brcm,bcm2837-thermal";
-+	status = "okay";
-+};
+diff --git a/arch/arm/configs/bcm2835_defconfig b/arch/arm/configs/bcm2835_defconfig
+index 79de828..4b89f4e 100644
+--- a/arch/arm/configs/bcm2835_defconfig
++++ b/arch/arm/configs/bcm2835_defconfig
+@@ -73,6 +73,8 @@ CONFIG_SPI_BCM2835=y
+ CONFIG_SPI_BCM2835AUX=y
+ CONFIG_GPIO_SYSFS=y
+ # CONFIG_HWMON is not set
++CONFIG_THERMAL=y
++CONFIG_BCM2835_THERMAL=y
+ CONFIG_WATCHDOG=y
+ CONFIG_BCM2835_WDT=y
+ CONFIG_DRM=y
 -- 
 2.1.4
