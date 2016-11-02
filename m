@@ -1,7 +1,7 @@
 From: kernel@martin.sperl.org
-Subject: [PATCH V8 5/6] ARM: bcm2835: add thermal driver to default_config
-Date: Wed,  2 Nov 2016 10:18:25 +0000
-Message-ID: <1478081906-12009-6-git-send-email-kernel@martin.sperl.org>
+Subject: [PATCH V8 6/6] ARM64: bcm2835: add thermal driver to default_config
+Date: Wed,  2 Nov 2016 10:18:26 +0000
+Message-ID: <1478081906-12009-7-git-send-email-kernel@martin.sperl.org>
 References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,27 +23,29 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Martin Sperl <kernel@martin.sperl.org>
 
-Add the thermal driver to list of compiled modules
-in the default config for bcm2835.
+Add the thermal driver for bcm2837 to list of compiled modules
+in the default config.
 
 Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-Reviewed-by: Eric Anholt <eric@anholt.net>
----
- arch/arm/configs/bcm2835_defconfig | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm/configs/bcm2835_defconfig b/arch/arm/configs/bcm2835_defconfig
-index 79de828..4b89f4e 100644
---- a/arch/arm/configs/bcm2835_defconfig
-+++ b/arch/arm/configs/bcm2835_defconfig
-@@ -73,6 +73,8 @@ CONFIG_SPI_BCM2835=y
- CONFIG_SPI_BCM2835AUX=y
- CONFIG_GPIO_SYSFS=y
- # CONFIG_HWMON is not set
-+CONFIG_THERMAL=y
+Changelog:
+ V7 -> V8: rebased
+
+---
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index dab2cb0..37b2f0a 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -271,6 +271,7 @@ CONFIG_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
+ CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
+ CONFIG_CPU_THERMAL=y
 +CONFIG_BCM2835_THERMAL=y
+ CONFIG_EXYNOS_THERMAL=y
  CONFIG_WATCHDOG=y
- CONFIG_BCM2835_WDT=y
- CONFIG_DRM=y
--- 
+ CONFIG_RENESAS_WDT=y
+--
 2.1.4
