@@ -1,129 +1,58 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child
- suspend_{noirq,late} fails
-Date: Tue, 1 Nov 2016 22:07:07 -0700
-Message-ID: <20161102050706.GA49402@google.com>
-References: <1476923170-111986-2-git-send-email-briannorris@chromium.org>
- <8017823.VJuZzSqtaY@vostro.rjw.lan>
- <CAKdAkRS+uUrx72DLKuyDiUMkKzxMTRXx5Pv1JBky6T8huv4Fhg@mail.gmail.com>
- <50971906.K6xak2t6Z6@vostro.rjw.lan>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2MSAxLzJdIFBNL2RldmZyZXE6IGFkZCBz?=
+ =?UTF-8?B?dXNwZW5kIGZyZXF1ZW5jeSBzdXBwb3J0?=
+Date: Wed, 02 Nov 2016 06:35:26 +0000
+Message-ID: <422077764.570918.1478068526663.JavaMail.weblogic@ep1ml102b>
+References: <1477990029-11062-1-git-send-email-hl@rock-chips.com>
+ <CGME20161101084721epcas4p471cc74df8b12d042d1fac542e5371db8@epcas4p4.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/related;
+ boundary="----=_Part_570917_223244839.1478068526663"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:36161 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751936AbcKBFHL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Nov 2016 01:07:11 -0400
-Received: by mail-pf0-f181.google.com with SMTP id 189so4613802pfz.3
-        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2016 22:07:11 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <50971906.K6xak2t6Z6@vostro.rjw.lan>
+Received: from mailout4.samsung.com ([203.254.224.34]:60851 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750786AbcKBGfc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Nov 2016 02:35:32 -0400
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OG000XHU4Z5HEA0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 02 Nov 2016 15:35:29 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chuansheng Liu <chuansheng.liu@intel.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: =?UTF-8?B?TGluIEh1YW5n?= <hl@rock-chips.com>
+Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?ZGlhbmRlcnNAY2hyb21pdW0ub3Jn?= <dianders@chromium.org>, =?UTF-8?B?bGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZw==?= <linux-rockchip@lists.infradead.org>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?ZGJhc2Vob3JlQGNocm9taXVtLm9yZw==?= <dbasehore@chromium.org>
 
-+ more genpd folks
+------=_Part_570917_223244839.1478068526663
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-On Wed, Nov 02, 2016 at 04:51:08AM +0100, Rafael J. Wysocki wrote:
-> On Tuesday, November 01, 2016 12:04:28 AM Dmitry Torokhov wrote:
-> > On Mon, Oct 31, 2016 at 10:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Thursday, October 27, 2016 09:05:34 AM Brian Norris wrote:
-> > >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > >> index c58563581345..eaf6b53463a5 100644
-> > >> --- a/drivers/base/power/main.c
-> > >> +++ b/drivers/base/power/main.c
-> > >> @@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
-> > >>
-> > >>       dpm_wait_for_children(dev, async);
-> > >>
-> > >> +     if (async_error)
-> > >> +             goto Complete;
-> > >> +
-> > >
-> > > This is a second chech for async_error in this routine and is the first one
-> > > really needed after adding this?
-> > 
-> > There is really no point in waiting for children to be suspended if
-> > error has already been signalled; that's what first check achieves.
-> > The 2nd check ensures that we abort suspend if any of the children
-> > failed to suspend.
-> > 
-> > I'd say both checks are needed (well, 1st is helpful, 2nd is essential).
-> 
-> OK, fair enough.
-
-Sort of agreed, although I'm still not sure how helpful the 1st one is;
-kinda serves to complicate things, for little real benefit IMO (you
-don't save much time by "not waiting" -- either the child quickly
-notices the same error and complete()'s quickly, or else you're going to
-wait for that child in the end anyway).
-
-I think it's also important to ask why we do this optimization in the
-{late,noirq} cases, but we don't do this in __device_suspend(). As
-demonstrated by the $subject bug, I think we would yield fewer bugs by
-sharing code structure (if not the code itself) among the similar
-phases.
-
-I'm happy for you to take my current patch, of course, but I think some
-further effort on making this consistent might be warranted. Either put
-all of these short-circuit checks after the wait_for_children(), or else
-add the same short-circuit for the missing case (__device_suspend()).
-i.e., this (untested) patch:
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e44944f4be77..2932a5bd892f 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1027,6 +1027,8 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 	TRACE_DEVICE(dev);
- 	TRACE_SUSPEND(0);
- 
-+	dpm_wait_for_children(dev, async);
-+
- 	if (async_error)
- 		goto Complete;
- 
-@@ -1038,8 +1040,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 	if (dev->power.syscore || dev->power.direct_complete)
- 		goto Complete;
- 
--	dpm_wait_for_children(dev, async);
--
- 	if (dev->pm_domain) {
- 		info = "noirq power domain ";
- 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
-@@ -1174,6 +1174,8 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 
- 	__pm_runtime_disable(dev, false);
- 
-+	dpm_wait_for_children(dev, async);
-+
- 	if (async_error)
- 		goto Complete;
- 
-@@ -1185,8 +1187,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 	if (dev->power.syscore || dev->power.direct_complete)
- 		goto Complete;
- 
--	dpm_wait_for_children(dev, async);
--
- 	if (dev->pm_domain) {
- 		info = "late power domain ";
- 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
-
----
-
-I can test this and send it in proper form if that looks preferable.
-
-P.S. To get slightly off-topic here (but speaking of noirq bugs): I
-noticed the genpd code has comments like this scattered all over:
-
- * This function is only called in "noirq" and "syscore" stages of system power
- * transitions, so it need not acquire locks (all of the "noirq" callbacks are
- * executed sequentially, so it is guaranteed that it will never run twice in
- * parallel).
-
-Isn't that no longer true, now that noirq suspend can be asynchronous?
-Maybe we should grep for the phrase "need not acquire locks" throughout
-the kernel, in order to find low-hanging fruit for race conditions :)
+PiBBZGQgc3VzcGVuZCBmcmVxdWVuY3kgc3VwcG9ydCBhbmQgaWYgbmVlZGVkIHNldCBpdCB0bw0K
+PiB0aGUgZnJlcXVlbmN5IG9idGFpbmVkIGZyb20gdGhlIHN1c3BlbmQgb3BwIChjYW4gYmUgZGVm
+aW5lZA0KPiB1c2luZyBvcHAtdjIgYmluZGluZ3MgYW5kIGlzIG9wdGlvbmFsKS4NCj4gDQo+IENo
+YW5nZS1JZDogSWFhMGQzODQ4ZDYzZDljZTAzZjY1ZWE3NmYyNjNlNDY4NWE0YzI5NWUNCj4gU2ln
+bmVkLW9mZi1ieTogTGluIEh1YW5nIDxobEByb2NrLWNoaXBzLmNvbT4NCj4gLS0tDQo+ICBkcml2
+ZXJzL2RldmZyZXEvZGV2ZnJlcS5jIHwgMTcgKysrKysrKysrKysrKysrKy0NCj4gIGluY2x1ZGUv
+bGludXgvZGV2ZnJlcS5oICAgfCAgOSArKysrKysrKysNCj4gIDIgZmlsZXMgY2hhbmdlZCwgMjUg
+aW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+ZGV2ZnJlcS9kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IGluZGV4IGJm
+M2VhNzYuLmQxMTUyZWIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMN
+Cj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiBAQCAtMzY0LDcgKzM2NCwxMCBA
+QCB2b2lkIGRldmZyZXFfbW9uaXRvcl9zdXNwZW5kKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVxKQ0K
+PiAgCQlyZXR1cm47DQo+ICAJfQ0KPiAgDQo+IC0JZGV2ZnJlcV91cGRhdGVfc3RhdHVzKGRldmZy
+ZXEsIGRldmZyZXEtPnByZXZpb3VzX2ZyZXEpOw0KPiArCWlmIChkZXZmcmVxLT5zdXNwZW5kX2Zy
+ZXEpDQo+ICsJCWRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVxLT5zdXNwZW5k
+X2ZyZXEpOw0KPiArCWVsc2UNCj4gKwkJZGV2ZnJlcV91cGRhdGVfc3RhdHVzKGRldmZyZXEsIGRl
+dmZyZXEtPnByZXZpb3VzX2ZyZXEpOw0KDQpUaGlzIGlzIGluY29ycmVjdC4NCg0KZGV2ZnJlcV91
+cGRhdGVfc3RhdHVzIGlzIHRvIHJlY29yZCB0aGUgc3RhdGlzdGljcy4NClRoaXMgY29kZSBpbnRl
+bmRzIHRvIHJlY29yZCB0aGUgY3VycmVudCBzdGF0dXMgYmVmb3JlIGVudGVyaW5nIHN1c3BlbmQ7
+DQp0aHVzIHlvdSBzaG91bGQgbm90IHJlY29yZCAic3VzcGVuZF9mcmVxIiBoZXJlLg0KDQpJZiB5
+b3UgcmVhbGx5IG5lZWQgdG8gcmVjb3JkIHRoZSBmcmVxdWVuY3kgZHVyaW5nIHN1c3BlbmRlZCBz
+dGF0ZQ0KZm9yIHRoZSBzdGF0aXN0aWNzLCB5b3UgbmVlZCB0byBkbyB0aGF0IGF0IHJlc3VtZTsg
+aG93ZXZlciwgSSBvYmplY3QgdG8NCnRoYXQgaWRlYSBlaXRoZXIuDQoNCklmIHlvdSByZWFsbHkg
+d2FudCB0byBzZXQgYSBwcmVkZWZpbmVkIHN1c3BlbmQtdG8tUkFNIG1vZGUgZnJlcXVlbmN5LA0K
+KHByb2JhYmx5IGJlY2F1c2Ugb2YgSFcgaW5zdGFiaWxpdHkgZHVyaW5nIHJlc3VtZSBwcm9jZXNz
+KQ0KeW91IG5lZWQgdG8gdXBkYXRlLCBub3QgdWRwYXRlX3N0YXR1cyAoc3RhdGlzdGljcykuDQoN
+Cg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCg==
+------=_Part_570917_223244839.1478068526663--
