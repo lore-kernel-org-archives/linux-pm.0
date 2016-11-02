@@ -1,80 +1,63 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] net: smsc911x: Synchronize the runtime PM status during
- system suspend
-Date: Wed, 2 Nov 2016 00:53:42 +0100
-Message-ID: <CAPDyKFpVmqNcPPsdSyFU4ZRh4TNHtKhiAEW6TCbf-LU7+3odrQ@mail.gmail.com>
-References: <1477567434-5128-1-git-send-email-ulf.hansson@linaro.org>
- <CAMuHMdUbU07t2kB6J0rSOiOTbDkegP73FAAEenViuDjQUFE-Jg@mail.gmail.com>
- <CAPDyKFprWcita5sbdwTqbdi2CMW4gx7_UB7+kMd9R2rqXdcALQ@mail.gmail.com> <3305877.UjuP622RYi@vostro.rjw.lan>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC/RFT][PATCH] cpufreq: intel_pstate: Generic governors
+ support
+Date: Tue, 01 Nov 2016 17:14:23 -0700
+Message-ID: <1478045663.3655.4.camel@linux.intel.com>
+References: y6MlbaQWmXOXdy6MnbhKiO <001301d23484$7a57fd80$6f07f880$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f51.google.com ([74.125.82.51]:38219 "EHLO
-        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751014AbcKAXxp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Nov 2016 19:53:45 -0400
-Received: by mail-wm0-f51.google.com with SMTP id n67so4170825wme.1
-        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2016 16:53:44 -0700 (PDT)
-In-Reply-To: <3305877.UjuP622RYi@vostro.rjw.lan>
+Received: from mga01.intel.com ([192.55.52.88]:4774 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751802AbcKBAOZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Nov 2016 20:14:25 -0400
+In-Reply-To: <001301d23484$7a57fd80$6f07f880$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>, Linux PM list <linux-pm@vger.kernel.org>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Steve Glendinning <steve.glendinning@shawell.net>
+To: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-On 1 November 2016 at 05:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, October 27, 2016 01:53:03 PM Ulf Hansson wrote:
->> On 27 October 2016 at 13:41, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> > Hi Ulf,
->> >
->> > On Thu, Oct 27, 2016 at 1:23 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> >> The smsc911c driver puts its device into low power state when entering
->> >> system suspend. Although it doesn't update the device's runtime PM status
->> >> to RPM_SUSPENDED, which causes problems for a parent device.
->> >>
->> >> In particular, when the runtime PM status of the parent is requested to be
->> >> updated to RPM_SUSPENDED, the runtime PM core prevent this, because it's
->> >> forbidden to runtime suspend a device, which has an active child.
->> >>
->> >> Fix this by updating the runtime PM status of the smsc911x device to
->> >> RPM_SUSPENDED during system suspend. In system resume, let's reverse that
->> >> action by runtime resuming the device and thus also the parent.
->> >
->> > Thanks for your patch!
->> >
->> > The changelog sounds quite innocent, but this does fix a system crash
->> > during resume from s2ram.
->> >
->> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> >> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
->> >> Cc: Steve Glendinning <steve.glendinning@shawell.net>
->> >> Fixes: 8b1107b85efd ("PM / Runtime: Don't allow to suspend a device with an active child")
->> >
->> > While the abovementioned commit made the problem visible, the root cause
->> > was present before, right?
->>
->> Yes.
->>
->> >
->> >> ---
->> >>
->> >> Note that the commit this change fixes is currently queued for 4.10 via
->> >> Rafael's linux-pm tree. So this fix should go via that tree as well.
->> >
->> > Alternatively, this could go in in v4.9 to avoid the problem from ever
->> > appearing in upstream?
->>
->> Makes perfect sense! In that case we should remove the fixes tag.
->>
->> Rafael, can you pick this up for 4.9 rc[n]?
->
-> If that is to go into 4.9-rc, it really should go in via the networking tree,
-> because there is no PM dependency for it as of today.
->
-> I can rearrange my 4.10 queue to put this one before the runtime PM commit
-> exposing the problem in smsc911x, though.
+On Tue, 2016-11-01 at 14:11 -0700, Doug Smythies wrote:
+> On 2016.10.22 17:17 Rafael J. Wysocki wrote:
+> 
+> > 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > There may be reasons to use generic cpufreq governors (eg.
+> > schedutil)
+> > on Intel platforms instead of the intel_pstate driver's internal
+> > governor.  However, that currently can only be done by disabling
+> > intel_pstate altogether and using the acpi-cpufreq driver instead
+> > of it, which is subject to limitations.
+> > 
+> > First of all, acpi-cpufreq only works on systems where the _PSS
+> > object is present in the ACPI tables for all logical CPUs.  Second,
+> > on those systems acpi-cpufreq will only use frequencies listed by
+> > _PSS which may be suboptimal.  In particular, by convention, the
+> > whole turbo range is represented in _PSS as a single P-state and
+> > the frequency assigned to it is greater by 1 MHz than the greatest
+> > non-turbo frequency listed by _PSS.  That may confuse governors to
+> > use turbo frequencies less frequently which may lead to suboptimal
+> > performance.
+> > 
+> > For this reason, make it possible to use the intel_pstate driver
+> > with generic cpufreq governors as a "normal" cpufreq driver.  That
+> > mode is enforced by adding intel_pstate=passive to the kernel
+> > command line and cannot be disabled at run time.  In that mode,
+> > intel_pstate provides a cpufreq driver interface including
+> > the ->target() and ->fast_switch() callbacks and is listed in
+> > scaling_driver as "intel_cpufreq".
+> 
+> It is not clear to me why users that currently use
+> intel_pstate=disable on the kernel command line would benefit from
+> this change.
+Two reasons I think:
+- We have a big turbo zone, where current acpi-cpufreq can't select any
+target frequency even if controllable.
 
-As we spoked at LPC today, I don't mind if you take care of this
-through your tree.
+- We can still target ACPI-CPPC compatible devices in legacy mode and
+later in non-legacy mode.
 
-Kind regards
-Uffe
+Thanks,
+Srinivas
