@@ -1,58 +1,83 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2MSAxLzJdIFBNL2RldmZyZXE6IGFkZCBz?=
- =?UTF-8?B?dXNwZW5kIGZyZXF1ZW5jeSBzdXBwb3J0?=
-Date: Wed, 02 Nov 2016 06:35:26 +0000
-Message-ID: <422077764.570918.1478068526663.JavaMail.weblogic@ep1ml102b>
-References: <1477990029-11062-1-git-send-email-hl@rock-chips.com>
- <CGME20161101084721epcas4p471cc74df8b12d042d1fac542e5371db8@epcas4p4.samsung.com>
-Reply-To: myungjoo.ham@samsung.com
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
+Date: Wed, 02 Nov 2016 08:58:38 +0100
+Message-ID: <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <11468990.WB1J8sxXpS@vostro.rjw.lan>
+ <CGME20161031174700eucas1p1cf129b22ebd3dc689172e837ac01647e@eucas1p1.samsung.com>
+ <20161031174703.GA25633@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_570917_223244839.1478068526663"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:60851 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750786AbcKBGfc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Nov 2016 02:35:32 -0400
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OG000XHU4Z5HEA0@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 02 Nov 2016 15:35:29 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20161031174703.GA25633@kroah.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Joerg Roedel <joro@8bytes.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?TGluIEh1YW5n?= <hl@rock-chips.com>
-Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?ZGlhbmRlcnNAY2hyb21pdW0ub3Jn?= <dianders@chromium.org>, =?UTF-8?B?bGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZw==?= <linux-rockchip@lists.infradead.org>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?ZGJhc2Vob3JlQGNocm9taXVtLm9yZw==?= <dbasehore@chromium.org>
 
-------=_Part_570917_223244839.1478068526663
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+Hi Greg,
 
-PiBBZGQgc3VzcGVuZCBmcmVxdWVuY3kgc3VwcG9ydCBhbmQgaWYgbmVlZGVkIHNldCBpdCB0bw0K
-PiB0aGUgZnJlcXVlbmN5IG9idGFpbmVkIGZyb20gdGhlIHN1c3BlbmQgb3BwIChjYW4gYmUgZGVm
-aW5lZA0KPiB1c2luZyBvcHAtdjIgYmluZGluZ3MgYW5kIGlzIG9wdGlvbmFsKS4NCj4gDQo+IENo
-YW5nZS1JZDogSWFhMGQzODQ4ZDYzZDljZTAzZjY1ZWE3NmYyNjNlNDY4NWE0YzI5NWUNCj4gU2ln
-bmVkLW9mZi1ieTogTGluIEh1YW5nIDxobEByb2NrLWNoaXBzLmNvbT4NCj4gLS0tDQo+ICBkcml2
-ZXJzL2RldmZyZXEvZGV2ZnJlcS5jIHwgMTcgKysrKysrKysrKysrKysrKy0NCj4gIGluY2x1ZGUv
-bGludXgvZGV2ZnJlcS5oICAgfCAgOSArKysrKysrKysNCj4gIDIgZmlsZXMgY2hhbmdlZCwgMjUg
-aW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-ZGV2ZnJlcS9kZXZmcmVxLmMgYi9kcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jDQo+IGluZGV4IGJm
-M2VhNzYuLmQxMTUyZWIgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMN
-Cj4gKysrIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KPiBAQCAtMzY0LDcgKzM2NCwxMCBA
-QCB2b2lkIGRldmZyZXFfbW9uaXRvcl9zdXNwZW5kKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVxKQ0K
-PiAgCQlyZXR1cm47DQo+ICAJfQ0KPiAgDQo+IC0JZGV2ZnJlcV91cGRhdGVfc3RhdHVzKGRldmZy
-ZXEsIGRldmZyZXEtPnByZXZpb3VzX2ZyZXEpOw0KPiArCWlmIChkZXZmcmVxLT5zdXNwZW5kX2Zy
-ZXEpDQo+ICsJCWRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVxLT5zdXNwZW5k
-X2ZyZXEpOw0KPiArCWVsc2UNCj4gKwkJZGV2ZnJlcV91cGRhdGVfc3RhdHVzKGRldmZyZXEsIGRl
-dmZyZXEtPnByZXZpb3VzX2ZyZXEpOw0KDQpUaGlzIGlzIGluY29ycmVjdC4NCg0KZGV2ZnJlcV91
-cGRhdGVfc3RhdHVzIGlzIHRvIHJlY29yZCB0aGUgc3RhdGlzdGljcy4NClRoaXMgY29kZSBpbnRl
-bmRzIHRvIHJlY29yZCB0aGUgY3VycmVudCBzdGF0dXMgYmVmb3JlIGVudGVyaW5nIHN1c3BlbmQ7
-DQp0aHVzIHlvdSBzaG91bGQgbm90IHJlY29yZCAic3VzcGVuZF9mcmVxIiBoZXJlLg0KDQpJZiB5
-b3UgcmVhbGx5IG5lZWQgdG8gcmVjb3JkIHRoZSBmcmVxdWVuY3kgZHVyaW5nIHN1c3BlbmRlZCBz
-dGF0ZQ0KZm9yIHRoZSBzdGF0aXN0aWNzLCB5b3UgbmVlZCB0byBkbyB0aGF0IGF0IHJlc3VtZTsg
-aG93ZXZlciwgSSBvYmplY3QgdG8NCnRoYXQgaWRlYSBlaXRoZXIuDQoNCklmIHlvdSByZWFsbHkg
-d2FudCB0byBzZXQgYSBwcmVkZWZpbmVkIHN1c3BlbmQtdG8tUkFNIG1vZGUgZnJlcXVlbmN5LA0K
-KHByb2JhYmx5IGJlY2F1c2Ugb2YgSFcgaW5zdGFiaWxpdHkgZHVyaW5nIHJlc3VtZSBwcm9jZXNz
-KQ0KeW91IG5lZWQgdG8gdXBkYXRlLCBub3QgdWRwYXRlX3N0YXR1cyAoc3RhdGlzdGljcykuDQoN
-Cg0KDQoNCkNoZWVycywNCk15dW5nSm9vDQoNCg==
-------=_Part_570917_223244839.1478068526663--
+
+On 2016-10-31 18:47, Greg Kroah-Hartman wrote:
+> On Sun, Oct 30, 2016 at 05:22:13PM +0100, Rafael J. Wysocki wrote:
+>> Let me quote from the previous intro messages for this series first:
+>>
+>>>> Time for another update. :-)
+>>>>
+>>>> Fewer changes this time, mostly to address issues found by Lukas and
+>>>> Marek.
+>>>>
+>>>> The most significant one is to make device_link_add() cope with the case
+>>>> when
+>>>> the consumer device has not been registered yet when it is called.  The
+>>>> supplier device still is required to be registered and the function will
+>>>> return NULL if that is not the case.
+>>>>
+>>>> Another significant change is in patch [4/5] that now makes the core apply
+>>>> pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
+>>>> probing of a consumer one (in analogy with the parent).
+>>> One more update after some conversations during LinuxCon Europe.
+>>>
+>>> The main point was to make it possible for device_link_add() to figure out
+>>> the initial state of the link instead of expecting the caller to provide it
+>>> which might not be reliable enough in general.
+>>>
+>>> In this version device_link_add() takes three arguments, the supplier and
+>>> consumer pointers and flags and it sets the correct initial state of the
+>>> link automatically (unless invoked with the "stateless" flag, of course).
+>>> The cost is one additional field in struct device (I moved all of the
+>>> links-related fields in struct device to a separate sub-structure while at
+>>> it) to track the "driver presence status" of the device (to be used by
+>>> device_link_add()).
+>>>
+>>> In addition to that, the links list walks in the core.c and dd.c code are
+>>> under the device links mutex now, so the iternal link spinlock is not needed
+>>> any more and I have renamed symbols to distinguish between flags, link
+>>> states and device "driver presence statuses".
+>> The most significant change in this revision with respect to the previous one is
+>> related to the fact that SRCU is not available on some architectures, so the
+>> code falls back to using an RW semaphore for synchronization if SRCU is not
+>> there.  Fortunately, the code changes needed for that turned out to be quite
+>> straightforward and confined to the second patch.
+>>
+>> Apart from this, the flags are defined using BIT(x) now (instead of open coding
+>> the latter in the flag definitions).
+>>
+>> Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
+>> trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
+>> [2/5].
+>>
+>> FWIW, I've run the series through 0-day which has not reported any problems
+>> with it.
+> Great, they are now applied to my tree, thanks again for doing this
+> work.
+
+Thanks for merging those patches! Could you provide a stable tag with 
+them, so I can
+ask Joerg to merge my Exynos IOMMU PM patches on top of it via IOMMU tree?
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
