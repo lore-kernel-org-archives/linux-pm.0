@@ -1,61 +1,52 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 3/3] cpufreq: ti: Add cpufreq driver to determine
- available OPPs at runtime
-Date: Wed, 2 Nov 2016 09:33:11 +0530
-Message-ID: <20161102040311.GB10786@vireshk-i7>
-References: <20161027214131.1725-1-d-gerlach@ti.com>
- <20161027214131.1725-4-d-gerlach@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 0/4] PXA cpufreq conversion to clock API
+Date: Wed, 2 Nov 2016 10:15:03 +0530
+Message-ID: <20161102044503.GC10786@vireshk-i7>
+References: <1477943696-23477-1-git-send-email-robert.jarzmik@free.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:34936 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750823AbcKBEpH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Nov 2016 00:45:07 -0400
+Received: by mail-pf0-f176.google.com with SMTP id i88so4234939pfk.2
+        for <linux-pm@vger.kernel.org>; Tue, 01 Nov 2016 21:45:07 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20161027214131.1725-4-d-gerlach-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+In-Reply-To: <1477943696-23477-1-git-send-email-robert.jarzmik@free.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael J Wysocki <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 27-10-16, 16:41, Dave Gerlach wrote:
-> Some TI SoCs, like those in the AM335x, AM437x, DRA7x, and AM57x families,
-> have different OPPs available for the MPU depending on which specific
-> variant of the SoC is in use. This can be determined through use of the
-> revision and an eFuse register present in the silicon. Introduce a
-> ti-cpufreq driver that can read the aformentioned values and provide
-> them as version matching data to the opp framework. Through this the
-> opp-supported-hw dt binding that is part of the operating-points-v2
-> table can be used to indicate availability of OPPs for each device.
+On 31-10-16, 20:54, Robert Jarzmik wrote:
+> Hi,
 > 
-> This driver also creates the "cpufreq-dt" platform_device after passing
-> the version matching data to the OPP framework so that the cpufreq-dt
-> handles the actual cpufreq implementation. Even without the necessary
-> data to pass the version matching data the driver will still create this
-> device to maintain backwards compatibility with operating-points v1
-> tables.
+> This serie is a preparation to shift the cpufreq of pxa2xx platforms to clocks
+> API, next iteration.
 > 
-> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-> ---
-> v2-v3:
->  - Use common ti compatible as described in binding and then match
->    against machine type for platform data.
->  - Use newly exposed dev_pm_opp_of_get_opp_desc_node to get
->    operating-points-v2 table now that properties needed by driver are
->    there.
->  - Parse syscon properties from operating-points-v2 node rather
->    than cpu node.
->  - Do not make ti-cpufreq a module-platform-driver and do not allow
->    building as module.
+> The first 3 patches are review and merge material :
+>  - patch 1/4 for Viresh and Rafael
+>  - patches 2/4 and 3/4 for me
 > 
->  drivers/cpufreq/Kconfig.arm  |  11 ++
->  drivers/cpufreq/Makefile     |   1 +
->  drivers/cpufreq/ti-cpufreq.c | 288 +++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 300 insertions(+)
->  create mode 100644 drivers/cpufreq/ti-cpufreq.c
+> The 4th on is for review but not merge, as the clock changes must be fully
+> reviewed and go in first as a prequisite
+> 
+> Since previous iteration, 2 and 3 were amended per Viresh's suggestion.
+> 
+> Robert Jarzmik (4):
+>   cpufreq: pxa: use generic platdev driver for device-tree
+>   ARM: dts: pxa: add pxa25x cpu operating points
+>   ARM: dts: pxa: add pxa27x cpu operating points
+>   cpufreq: pxa: convert to clock API
+> 
+>  arch/arm/boot/dts/pxa25x.dtsi        |  25 +++++
+>  arch/arm/boot/dts/pxa27x.dtsi        |  40 ++++++++
+>  drivers/cpufreq/cpufreq-dt-platdev.c |   2 +
+>  drivers/cpufreq/pxa2xx-cpufreq.c     | 191 +++++++----------------------------
+>  4 files changed, 106 insertions(+), 152 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
