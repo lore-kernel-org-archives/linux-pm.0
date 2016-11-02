@@ -1,8 +1,8 @@
 From: kernel@martin.sperl.org
-Subject: [PATCH V8 3/6] ARM: bcm2835: dts: add thermal node to device-tree of
- bcm283x
-Date: Wed,  2 Nov 2016 10:18:23 +0000
-Message-ID: <1478081906-12009-4-git-send-email-kernel@martin.sperl.org>
+Subject: [PATCH V8 4/6] ARM64: bcm2835: dts: add thermal node to device-tree
+ of bcm2837
+Date: Wed,  2 Nov 2016 10:18:24 +0000
+Message-ID: <1478081906-12009-5-git-send-email-kernel@martin.sperl.org>
 References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -24,72 +24,27 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Martin Sperl <kernel@martin.sperl.org>
 
-Add the node for the thermal sensor of the bcm2835-soc
+Add the node for the thermal sensor of the bcm2837-soc
 to the device tree.
 
 Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
-Reviewed-by: Eric Anholt <eric@anholt.net>
-Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
-
-Changelog:
-V1 -> V5: generic settings is shared in bcm283x.dtsi, but disabled
-	  moved the compatible string to the SOC specific dtsi
-            for arm and arm64
-V5 -> V6: fix remove 0x prefix from thermal@0x7e212000
-
-Note: there is no arm/boot/dts/bcm2837.dtsi as of now,
-      so the 32-bit rpi3 dt is not modified.
 ---
- arch/arm/boot/dts/bcm2835.dtsi | 6 ++++++
- arch/arm/boot/dts/bcm2836.dtsi | 6 ++++++
- arch/arm/boot/dts/bcm283x.dtsi | 7 +++++++
- 3 files changed, 19 insertions(+)
+ arch/arm64/boot/dts/broadcom/bcm2837.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/arm/boot/dts/bcm2835.dtsi b/arch/arm/boot/dts/bcm2835.dtsi
-index a78759e..0890d97 100644
---- a/arch/arm/boot/dts/bcm2835.dtsi
-+++ b/arch/arm/boot/dts/bcm2835.dtsi
-@@ -23,3 +23,9 @@
- 		};
- 	};
- };
-+
-+/* enable thermal sensor with the correct compatible property set */
-+&thermal {
-+	compatible = "brcm,bcm2835-thermal";
-+	status = "okay";
-+};
-diff --git a/arch/arm/boot/dts/bcm2836.dtsi b/arch/arm/boot/dts/bcm2836.dtsi
-index 9d0651d..519a44f 100644
---- a/arch/arm/boot/dts/bcm2836.dtsi
-+++ b/arch/arm/boot/dts/bcm2836.dtsi
-@@ -76,3 +76,9 @@
+diff --git a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
+index 8216bbb..0fc10fd 100644
+--- a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
++++ b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
+@@ -74,3 +74,9 @@
  	interrupt-parent = <&local_intc>;
  	interrupts = <8>;
  };
 +
 +/* enable thermal sensor with the correct compatible property set */
 +&thermal {
-+	compatible = "brcm,bcm2836-thermal";
++	compatible = "brcm,bcm2837-thermal";
 +	status = "okay";
 +};
-diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
-index 46d46d8..f794a18 100644
---- a/arch/arm/boot/dts/bcm283x.dtsi
-+++ b/arch/arm/boot/dts/bcm283x.dtsi
-@@ -187,6 +187,13 @@
- 			interrupts = <2 14>; /* pwa1 */
- 		};
- 
-+		thermal: thermal@7e212000 {
-+			compatible = "brcm,bcm2835-thermal";
-+			reg = <0x7e212000 0x8>;
-+			clocks = <&clocks BCM2835_CLOCK_TSENS>;
-+			status = "disabled";
-+		};
-+
- 		aux: aux@0x7e215000 {
- 			compatible = "brcm,bcm2835-aux";
- 			#clock-cells = <1>;
 -- 
 2.1.4
