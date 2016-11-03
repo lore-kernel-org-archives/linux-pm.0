@@ -1,28 +1,133 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH v3 3/4] ARM: dts: pxa: add pxa27x cpu operating points
-Date: Wed, 02 Nov 2016 22:54:19 +0100
-Message-ID: <874m3pzgxg.fsf@belgarion.home>
-References: <1477943696-23477-1-git-send-email-robert.jarzmik@free.fr>
-        <1477943696-23477-4-git-send-email-robert.jarzmik@free.fr>
+From: NeilBrown <neilb@suse.com>
+Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Thu, 03 Nov 2016 12:25:42 +1100
+Message-ID: <871sytqrqh.fsf@notabene.neil.brown.name>
+References: <cover.1476780088.git.baolin.wang@linaro.org> <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com> <87k2cttptn.fsf@notabene.neil.brown.name> <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com> <87a8dls7yn.fsf@notabene.neil.brown.name> <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha256; protocol="application/pgp-signature"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1477943696-23477-4-git-send-email-robert.jarzmik@free.fr>
-        (Robert Jarzmik's message of "Mon, 31 Oct 2016 20:54:55 +0100")
+In-Reply-To: <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Mack <daniel@zonque.org>
-Cc: Haojian Zhuang <haojian.zhuang@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rafael J Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Robert Jarzmik <robert.jarzmik@free.fr> writes:
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Add the relevant data taken from the PXA27x Electrical, Mechanical, and
-> Thermal Specfication. This will be input data for cpufreq-dt driver.
+On Tue, Nov 01 2016, Baolin Wang wrote:
+
+
+>> So I won't be responding on this topic any further until I see a genuine
+>> attempt to understand and resolve the inconsistencies with
+>> usb_register_notifier().
 >
-> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> ---
-> Since v2: opp definition amended as per Viresh's comment
-Queued to pxa/dt.
+> Any better solution?
 
---
-Robert
+I'm not sure exactly what you are asking, so I'll assume you are asking
+the question I want to answer :-)
+
+1/ Liase with the extcon developers to resolve the inconsistencies
+  with USB connector types.
+  e.g. current there is both "EXTCON_USB" and "EXTCON_CHG_USB_SDP"
+  which both seem to suggest a standard downstream port.  There is no
+  documentation describing how these relate, and no consistent practice
+  to copy.
+  I suspect the intention is that
+    EXTCON_USB and EXTCON_USB_HOST indicated that data capabilities of
+    the cable, while EXTCON_CHG_USB* indicate the power capabilities of
+    the cable.=20
+    So EXTCON_CHG_USB_SDP should always appear together with EXTCON_USB
+    while EXTCON_CHG_USB_DCP would not, and EXTCON_CHG_USB_ACA
+    would normally appear with EXTCON_USB_HOST (I think).
+  Some drivers follow this model, particularly extcon-max14577.c
+  but it is not consistent.
+
+  This policy should be well documented and possibly existing drivers
+  should be updated to follow it.
+
+  At the same time it would make sense to resolve EXTCON_CHG_USB_SLOW
+  and EXTCON_CHG_USB_FAST.  These names don't mean much.
+  They were recently removed from drivers/power/axp288_charger.c
+  which is good, but are still used in drivers/extcon/extcon-max*
+  Possibly they should be changed to names from the standard, or
+  possibly they should be renamed to identify the current they are
+  expected to provide. e.g. EXTCON_CHG_USB_500MA and EXTCON_CHG_USB_1A
+
+2/ Change all usb phys to register an extcon and to send appropriate
+   notifications.  Many already do, but I don't think it is universal.
+   It is probable that the extcon should be registered using common code
+   instead of each phy driver having its own
+   extcon_get_edev_by_phandle()
+   or whatever.
+   If the usb phy driver needs to look at battery charger registers to
+   know what sort of cable was connected (which I believe is the case
+   for the chips you are interested in), then it should do that.
+
+3/ Currently some USB controllers discover that a cable was connected by
+   listening on an extcon, and some by registering for a usb_notifier
+   (described below) ... though there seem to only be 2 left which do that.
+   Now that all USB phys send connection information via extcon (see 2),
+   the USB controllers should be changed to all find out about the cable
+   using extcon.
+
+4/ struct usb_phy contains:
+        /* for notification of usb_phy_events */
+        struct atomic_notifier_head     notifier;
+
+  This is used inconsistently.  Sometimes the argument passed
+  is NULL, sometimes it is a pointer to 'vbus_draw' - the current
+  limited negotiated via USB, sometimes it is a pointer the the gadget
+  though as far as I can tell, that last one is never used.
+
+  This should be changed to be consistent.  This notifier is no longer
+  needed to tell the USB controller that a cable was connected (extcon
+  now does that, see 3) so it is only used to communicate the
+  'vbus_draw' information.
+  So it should be changed to *only* send a notification when vbus_draw
+  is known, and it should carry that information.
+  This should probably be done in common code, and removed
+  from individual drivers.
+
+5/ Now that all cable connection notifications are sent over extcon and
+   all vbus_draw notifications are sent over the usb_phy notifier, write
+   some support code that a power supply client can use to be told what
+   power is available.
+   e.g. a battery charger driver would call:
+       register_power_client(.....)
+   or similar, providing a phandle (or similar) for the usb phy and a
+   function to call back when the available current changes (or maybe a
+   work_struct containing the function pointer)
+
+   register_power_client() would then register with extcon and separately
+   with the usb_phy notifier.  When the different events arrive it
+   calculates what ranges of currents are expected and calls the
+   call-back function with those details.
+
+6/ Any battery charger that needs to know the available current can now
+   call register_power_client() and get the information delivered.
+
+NeilBrown
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJYGpIWAAoJEDnsnt1WYoG5xiIP/3sO7ZK4dKiXY9NuCcvBIdkp
+di/9S6p3/msqzoa5pFGSmGq4cSW5PBUFviu96BLXopJD+l18YTqySh3iDbyogj3W
+xdhi0TJBw4c+sxdNB+/hGqTSMevnuLsNqLnbyjIjAm+N2YM02X0dFS8fYER3Ojp/
+k764dZW3n5cn3Ipju8QI+6qwfcRSBgr8Cl5/l5WnrIxLyBaW5CMuhTe+k5awdPDL
+/btBa+d7T0mbQHTEKxAZx2NA4ksKE2jXyaAB4NKYGVPGCbTBLD1zBI6tWwrtOhjD
++ceUME4fBolUayxYZFO1Pn/CAwCGU+AOOsH9dY3UCMTY/T01S6fL69wItu3F3jpl
+cXAKRG1miCh/WWnR78VyNo/4q4XofdXEQqAlQVfe/gU1nj3zg+eItZjvGhxi0I6m
+jmfD7pHp67RoxJUAnsMxf3qhFKHT9zx5+NKkMAqbdir3NBI9GCpxDlC2y5GGtnWJ
+J7HvKTCDJX8oHDR66C7wJ+PGftsaUZaA0Iz+NcBhT9WZSXsencK5+qwLGINChIqy
+oEdERN2NHI1+wboeQLQGqwl9jIdHNh36/pVkOVyxd/8Jw7LyNwkNr4dZr8XgU4EW
++n3rasBCf6VrH3QBjtn3aWPjq2J+3IdDsV9SGjMLm3ISisa0h8sZ6HJ29N5mI/iG
+TDX49ZqHITVtFsmKvLb7
+=ja/Q
+-----END PGP SIGNATURE-----
+--=-=-=--
