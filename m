@@ -1,56 +1,183 @@
-From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v7 REPOST 0/9] CPUs capacity information for
- heterogeneous systems
-Date: Thu, 3 Nov 2016 05:37:52 +0000
-Message-ID: <20161103053752.GB16920@e106622-lin>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v7 REPOST 9/9] arm64: add sysfs cpu_capacity attribute
+Date: Thu, 3 Nov 2016 05:40:18 +0000
+Message-ID: <20161103054018.GC16920@e106622-lin>
 References: <20161017154650.18779-1-juri.lelli@arm.com>
- <20161030142246.od5skjzegyp62hma@localhost>
+ <20161017154650.18779-10-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:57238 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751756AbcKCFkC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 3 Nov 2016 01:40:02 -0400
 Content-Disposition: inline
-In-Reply-To: <20161030142246.od5skjzegyp62hma@localhost>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <20161017154650.18779-10-juri.lelli@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org
 
-Hi Catalin,
+Hi,
 
-On 30/10/16 14:22, Catalin Marinas wrote:
-> On Mon, Oct 17, 2016 at 04:46:41PM +0100, Juri Lelli wrote:
-> > I'm thus now assuming that everybody is OK with the patches and that they can
-> > be queued for 4.10 (we certainly need this plumbing at this point). Please
-> > speak if my assumption is wrong (and provide feedback! :).
-> > Otherwise I'm going to:
-> > 
-> >  - use Russell's patching system for patches 2 and 8
-> >  - ask Sudeep to pull patches 3,5,6 and 7
-> >  - ask Catalin/Will to pull patches 1,4 and 9
-> 
-> I'm happy to queue patches 1, 4 and 9 for 4.10 (though it might have
-> been easier for the whole series to go through arm-soc).
-> 
-> > Do you think we might get into trouble splitting the merge process this way?
-> 
-> Probably not. The only minor downside is that I have to grab a new DT
-> for Juno from Sudeep to test the patches. Not an issue, though.
-> 
+small update to be in sync with Russell's comments on arm correspoding
+patch.
 
-Thanks and apologies if merging through different trees generates some
-confusion.
+On 17/10/16 16:46, Juri Lelli wrote:
+> Add a sysfs cpu_capacity attribute with which it is possible to read and
+> write (thus over-writing default values) CPUs capacity. This might be
+> useful in situations where values needs changing after boot.
+> 
+> The new attribute shows up as:
+> 
+>  /sys/devices/system/cpu/cpu*/cpu_capacity
+> 
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> ---
+> 
+> Changes from v5:
+>   - add mutex to protect cpu_scale (as pointed out by Morten off-line)
 
-I updated arm patches to address Russell's comments. I did the same for
-arm64. I'll reply with the updated version, so you can see if it looks
-good to you as well. In case it is OK, I already updated the for-arm64
-branch with the new version:
+--->8---
+>From 17684f3db6d74342da424997badcb3714a1a9e63 Mon Sep 17 00:00:00 2001
+From: Juri Lelli <juri.lelli@arm.com>
+Date: Wed, 14 Oct 2015 12:02:05 +0100
+Subject: [PATCH v7.1 9/9] arm64: add sysfs cpu_capacity attribute
+
+Add a sysfs cpu_capacity attribute with which it is possible to read and
+write (thus over-writing default values) CPUs capacity. This might be
+useful in situations where values needs changing after boot.
+
+The new attribute shows up as:
+
+ /sys/devices/system/cpu/cpu*/cpu_capacity
+
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+---
+
+Changes from v5:
+  - add mutex to protect cpu_scale (as pointed out by Morten off-line)
+
+Changes from v7:
+  - include files moved at top of file
+  - show_cpu_capacity simplified to less lines of code
+  - unnecessary cast removed in store_cpu_capacity
+  - use DEVICE_ATTR_RW() instead of DEVICE_ATTR()
+  - use subsys_initcall instead of late_initcall
+---
+ arch/arm64/kernel/topology.c | 64 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
+
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index b75b0ba2e113..23e9e13bd2aa 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -20,12 +20,15 @@
+ #include <linux/of.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
++#include <linux/string.h>
+ #include <linux/cpufreq.h>
  
- git://linux-arm.org/linux-jl.git upstream/default_caps_for-arm64 
++#include <asm/cpu.h>
+ #include <asm/cputype.h>
+ #include <asm/topology.h>
+ 
+ static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
++static DEFINE_MUTEX(cpu_scale_mutex);
+ 
+ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+ {
+@@ -37,6 +40,65 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+ 	per_cpu(cpu_scale, cpu) = capacity;
+ }
+ 
++#ifdef CONFIG_PROC_SYSCTL
++static ssize_t cpu_capacity_show(struct device *dev,
++				 struct device_attribute *attr,
++				 char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, dev);
++
++	return sprintf(buf, "%lu\n",
++			arch_scale_cpu_capacity(NULL, cpu->dev.id));
++}
++
++static ssize_t cpu_capacity_store(struct device *dev,
++				  struct device_attribute *attr,
++				  const char *buf,
++				  size_t count)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, dev);
++	int this_cpu = cpu->dev.id, i;
++	unsigned long new_capacity;
++	ssize_t ret;
++
++	if (count) {
++		ret = kstrtoul(buf, 0, &new_capacity);
++		if (ret)
++			return ret;
++		if (new_capacity > SCHED_CAPACITY_SCALE)
++			return -EINVAL;
++
++		mutex_lock(&cpu_scale_mutex);
++		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
++			set_capacity_scale(i, new_capacity);
++		mutex_unlock(&cpu_scale_mutex);
++	}
++
++	return count;
++}
++
++static DEVICE_ATTR_RW(cpu_capacity);
++
++static int register_cpu_capacity_sysctl(void)
++{
++	int i;
++	struct device *cpu;
++
++	for_each_possible_cpu(i) {
++		cpu = get_cpu_device(i);
++		if (!cpu) {
++			pr_err("%s: too early to get CPU%d device!\n",
++			       __func__, i);
++			continue;
++		}
++		device_create_file(cpu, &dev_attr_cpu_capacity);
++	}
++
++	return 0;
++}
++subsys_initcall(register_cpu_capacity_sysctl);
++#endif
++
+ static u32 capacity_scale;
+ static u32 *raw_capacity;
+ static bool cap_parsing_failed;
+@@ -87,6 +149,7 @@ static void normalize_cpu_capacity(void)
+ 		return;
+ 
+ 	pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
++	mutex_lock(&cpu_scale_mutex);
+ 	for_each_possible_cpu(cpu) {
+ 		pr_debug("cpu_capacity: cpu=%d raw_capacity=%u\n",
+ 			 cpu, raw_capacity[cpu]);
+@@ -96,6 +159,7 @@ static void normalize_cpu_capacity(void)
+ 		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
+ 			cpu, arch_scale_cpu_capacity(NULL, cpu));
+ 	}
++	mutex_unlock(&cpu_scale_mutex);
+ }
+ 
+ #ifdef CONFIG_CPU_FREQ
+-- 
+2.10.0
 
-Best,
-
-- Juri
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
