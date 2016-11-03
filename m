@@ -1,85 +1,104 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Thu, 3 Nov 2016 14:20:27 +0000
-Message-ID: <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
- <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
- <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
- <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <fd7c8f40-2a9f-b71c-bd11-43ee657441ae-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Markus Mayer <code@mmayer.net>
+Subject: [PATCH] cpufreq: stats: clear statistics
+Date: Thu,  3 Nov 2016 13:46:15 -0700
+Message-ID: <20161103204615.85395-1-code@mmayer.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-out-no.shaw.ca ([64.59.134.12]:37390 "EHLO
+        smtp-out-no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756553AbcKCUrQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Nov 2016 16:47:16 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 
+From: Markus Mayer <mmayer@broadcom.com>
 
-On 11/10/16 10:15, Jon Hunter wrote:
+Allow cpufreq statistics to be cleared by writing anything to
+/sys/.../cpufreq/stats/reset. Reading this new sysfs entry returns
+nothing.
 
-...
+Resetting the statistics can be useful in a test environment (test
+governor, retrieve stats, reset stats, test other governor, etc.). This
+feature is not meant for production use.
 
->>>> Second, another way of seeing this is: Depending on the current
->>>> runtime selected configuration you need to re-configure the PM domain
->>>> topology - but the device would still remain in the same PM domain.
->>>>
->>>> In other words, you would need to remove/add subdomain(s) depending on
->>>> the selected configuration. Would that better reflect the HW?
->>>
->>> I am not 100% sure I follow what you are saying, but ultimately, I would
->>> like to get to ...
->>>
->>>         usb@70090000 {
->>>                 compatible = "nvidia,tegra210-xusb";
->>>                 ...
->>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>         };
->>
->> So, is this really is a proper description of the HW? Isn't it so,
->> that the usb device always resides in one and the same PM domain?
-> 
-> I guess technically, the usbhost controller resides in one partition and
-> the super-speed logic in another. So could the usbhost domain be the
-> primary? Possibly, but the device cannot be probed without both enabled.
-> 
->> Now, depending on the selected speed mode (superspeed) additional
->> logic may needs to be powered on and configured for the usb device to
->> work?
->> Perhaps, one could consider those additional logics as a master/parent
->> PM domain for the usb device's PM domain?
->>
->> Or this is not how the HW works? :-)
-> 
-> It might be possible for this case, but to be honest, the more I think
-> about this, I do wonder if we need to be able to make the framework a
-> lot more flexible for devices that need multiple power-domains. In other
-> words, for devices that use multiple domains allow them to control them
-> similarly to what we do for regulators or clocks. So if there is more
-> than one defined, then the genpd core will not bind the device to the
-> pm-domain and let the driver handle it. This way if you do need more
-> granular control of the pm-domains in the driver you can do whatever you
-> need to.
-> 
-> I know that Rajendra (CC'ed) was looking into whether he had a need to
-> control multiple power-domains individually from within the context of a
-> single device driver.
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
+ drivers/cpufreq/Kconfig         | 10 ++++++++++
+ drivers/cpufreq/cpufreq_stats.c | 32 ++++++++++++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
 
-So Rajendra commented to say that he does not see a need for individual
-control of power-domains for now, but a need for specifying multiple.
-
-One simple option would be to allow users to specify multiple and have
-the genpd core effectively ignore such devices and leave it to the
-driver to configure manually. I have been able to do this for XUSB by
-dynamically adding power-domains to the device.
-
-Let me know if you have any more thoughts on how we can do this.
-
-Cheers
-Jon
-
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index d8b164a..97a458e 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -45,6 +45,16 @@ config CPU_FREQ_STAT_DETAILS
+ 
+ 	  If in doubt, say N.
+ 
++config CPU_FREQ_STAT_RESET
++	bool "Allow reset of CPU frequency transition statistics"
++	depends on CPU_FREQ_STAT
++	help
++	  If enabled, writing to /sys/[...]/cpufreq/stats/reset will reset the
++	  current CPUfreq statistics. This is primarily meant for testing. It
++	  should not be enabled on a production system.
++
++	  If in doubt, say N.
++
+ choice
+ 	prompt "Default CPUFreq governor"
+ 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 06d3abd..e4e1e3e 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -111,6 +111,35 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ cpufreq_freq_attr_ro(trans_table);
+ #endif
+ 
++#ifdef CONFIG_CPU_FREQ_STAT_RESET
++static void cpufreq_stats_clear_table(struct cpufreq_policy *policy)
++{
++	struct cpufreq_stats *stats = policy->stats;
++	unsigned int count = stats->max_state;
++
++	memset(stats->time_in_state, 0, count * sizeof(u64));
++#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
++	memset(stats->trans_table, 0, count * count * sizeof(int));
++#endif
++	stats->last_time = get_jiffies_64();
++	stats->total_trans = 0;
++}
++
++static ssize_t show_reset(struct cpufreq_policy *policy, char *buf)
++{
++	buf[0] = '\0';
++	return 0;
++}
++
++static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
++			   size_t count)
++{
++	cpufreq_stats_clear_table(policy);
++	return count;
++}
++cpufreq_freq_attr_rw(reset);
++#endif
++
+ cpufreq_freq_attr_ro(total_trans);
+ cpufreq_freq_attr_ro(time_in_state);
+ 
+@@ -120,6 +149,9 @@ static struct attribute *default_attrs[] = {
+ #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	&trans_table.attr,
+ #endif
++#ifdef CONFIG_CPU_FREQ_STAT_RESET
++	&reset.attr,
++#endif
+ 	NULL
+ };
+ static struct attribute_group stats_attr_group = {
 -- 
-nvpublic
+2.7.4
+
