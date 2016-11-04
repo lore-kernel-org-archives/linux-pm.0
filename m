@@ -1,114 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: stats: clear statistics
-Date: Fri, 4 Nov 2016 07:42:06 +0530
-Message-ID: <20161104021206.GJ10786@vireshk-i7>
-References: <20161103204615.85395-1-code@mmayer.net>
- <CAJZ5v0gZBvdvuVin8hUzFxckFSJo0uVpLta1HHNFfA1A-roPJg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gZBvdvuVin8hUzFxckFSJo0uVpLta1HHNFfA1A-roPJg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Markus Mayer <code@mmayer.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] cpufreq: powernv: Adding fast_switch for schedutil
+Date: Fri,  4 Nov 2016 10:57:34 +0530
+Message-ID: <1478237255-4258-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:44890 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1757632AbcKDF1t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2016 01:27:49 -0400
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uA45NPQ0001111
+        for <linux-pm@vger.kernel.org>; Fri, 4 Nov 2016 01:27:48 -0400
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 26gexf4vvt-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 04 Nov 2016 01:27:48 -0400
+Received: from localhost
+        by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
+        Fri, 4 Nov 2016 15:27:45 +1000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-On 04-11-16, 01:28, Rafael J. Wysocki wrote:
-> On Thu, Nov 3, 2016 at 9:46 PM, Markus Mayer <code@mmayer.net> wrote:
-> > From: Markus Mayer <mmayer@broadcom.com>
-> >
-> > Allow cpufreq statistics to be cleared by writing anything to
-> > /sys/.../cpufreq/stats/reset. Reading this new sysfs entry returns
-> > nothing.
-> >
-> > Resetting the statistics can be useful in a test environment (test
-> > governor, retrieve stats, reset stats, test other governor, etc.). This
-> > feature is not meant for production use.
-> >
-> > Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> > ---
-> >  drivers/cpufreq/Kconfig         | 10 ++++++++++
-> >  drivers/cpufreq/cpufreq_stats.c | 32 ++++++++++++++++++++++++++++++++
-> >  2 files changed, 42 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> > index d8b164a..97a458e 100644
-> > --- a/drivers/cpufreq/Kconfig
-> > +++ b/drivers/cpufreq/Kconfig
-> > @@ -45,6 +45,16 @@ config CPU_FREQ_STAT_DETAILS
-> >
-> >           If in doubt, say N.
-> >
-> > +config CPU_FREQ_STAT_RESET
-> > +       bool "Allow reset of CPU frequency transition statistics"
-> > +       depends on CPU_FREQ_STAT
-> > +       help
-> > +         If enabled, writing to /sys/[...]/cpufreq/stats/reset will reset the
-> > +         current CPUfreq statistics. This is primarily meant for testing. It
-> > +         should not be enabled on a production system.
-> > +
-> > +         If in doubt, say N.
-> > +
-> >  choice
-> >         prompt "Default CPUFreq governor"
-> >         default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
-> > diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> > index 06d3abd..e4e1e3e 100644
-> > --- a/drivers/cpufreq/cpufreq_stats.c
-> > +++ b/drivers/cpufreq/cpufreq_stats.c
-> > @@ -111,6 +111,35 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
-> >  cpufreq_freq_attr_ro(trans_table);
-> >  #endif
-> >
-> > +#ifdef CONFIG_CPU_FREQ_STAT_RESET
-> > +static void cpufreq_stats_clear_table(struct cpufreq_policy *policy)
-> > +{
-> > +       struct cpufreq_stats *stats = policy->stats;
-> > +       unsigned int count = stats->max_state;
-> > +
-> > +       memset(stats->time_in_state, 0, count * sizeof(u64));
-> > +#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
-> > +       memset(stats->trans_table, 0, count * count * sizeof(int));
-> > +#endif
-> > +       stats->last_time = get_jiffies_64();
-> > +       stats->total_trans = 0;
-> > +}
-> > +
-> > +static ssize_t show_reset(struct cpufreq_policy *policy, char *buf)
-> > +{
-> > +       buf[0] = '\0';
-> > +       return 0;
-> > +}
-> > +
-> > +static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
-> > +                          size_t count)
-> > +{
-> > +       cpufreq_stats_clear_table(policy);
-> > +       return count;
-> > +}
-> > +cpufreq_freq_attr_rw(reset);
-> > +#endif
-> > +
-> >  cpufreq_freq_attr_ro(total_trans);
-> >  cpufreq_freq_attr_ro(time_in_state);
-> >
-> > @@ -120,6 +149,9 @@ static struct attribute *default_attrs[] = {
-> >  #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
-> >         &trans_table.attr,
-> >  #endif
-> > +#ifdef CONFIG_CPU_FREQ_STAT_RESET
-> > +       &reset.attr,
-> > +#endif
-> >         NULL
-> >  };
-> >  static struct attribute_group stats_attr_group = {
-> > --
-> 
-> What would be wrong with adding this unconditionally?
+Adding fast_switch which does light weight operation to
+set the desired pstate.
 
-Absolutely and there is no need to have read permissions for the file. Just make
-it write only.
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index d3ffde8..09a0496 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -752,9 +752,12 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	spin_lock_init(&gpstates->gpstate_lock);
+ 	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
+ 
+-	if (ret < 0)
++	if (ret < 0) {
+ 		kfree(policy->driver_data);
++		return ret;
++	}
+ 
++	policy->fast_switch_possible = true;
+ 	return ret;
+ }
+ 
+@@ -897,6 +900,22 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+ 	del_timer_sync(&gpstates->timer);
+ }
+ 
++static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
++					unsigned int target_freq)
++{
++	int index;
++	struct powernv_smp_call_data freq_data;
++
++	index = cpufreq_table_find_index_dl(policy, target_freq);
++	if (index < 0 || index >= powernv_pstate_info.nr_pstates)
++		return CPUFREQ_ENTRY_INVALID;
++	freq_data.pstate_id = powernv_freqs[index].driver_data;
++	freq_data.gpstate_id = powernv_freqs[index].driver_data;
++	set_pstate(&freq_data);
++
++	return powernv_freqs[index].frequency;
++}
++
+ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.name		= "powernv-cpufreq",
+ 	.flags		= CPUFREQ_CONST_LOOPS,
+@@ -904,6 +923,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+ 	.exit		= powernv_cpufreq_cpu_exit,
+ 	.verify		= cpufreq_generic_frequency_table_verify,
+ 	.target_index	= powernv_cpufreq_target_index,
++	.fast_switch	= powernv_fast_switch,
+ 	.get		= powernv_cpufreq_get,
+ 	.stop_cpu	= powernv_cpufreq_stop_cpu,
+ 	.attr		= powernv_cpu_freq_attr,
 -- 
-viresh
+2.7.4
+
