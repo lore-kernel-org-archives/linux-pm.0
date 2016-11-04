@@ -1,36 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
  kernel build
-Date: Fri, 4 Nov 2016 15:01:05 +0530
-Message-ID: <20161104093105.GE3414@vireshk-i7>
-References: <20161104083849.GA32688@amd>
- <20161104085830.GA4089@amd>
- <20161104091037.GD3414@vireshk-i7>
- <20161104092636.GA30729@amd>
+Date: Fri, 4 Nov 2016 14:05:20 +0000
+Message-ID: <1478268311.26953.17.camel@intel.com>
+References: <20161104083849.GA32688@amd> <20161104085830.GA4089@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:34006 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752152AbcKDJbO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2016 05:31:14 -0400
-Received: by mail-pf0-f174.google.com with SMTP id n85so49067388pfi.1
-        for <linux-pm@vger.kernel.org>; Fri, 04 Nov 2016 02:31:14 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20161104092636.GA30729@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20161104085830.GA4089@amd>
+Content-Language: en-US
+Content-ID: <FFD41C8A2AA20B4791C50AB9CE572644@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, rui.zhang@intel.com, linux-acpi@vger.kernel.org
 
-On 04-11-16, 10:26, Pavel Machek wrote:
-> How would I know if it is thermal capping? There's nothing in dmesg.
-
-I am not sure what code is responsible for doing that in case of x86, maybe
-Rafael and Rui can explain it that better.
-
-But surely it involves userspace in this case as scaling_max_freq is getting
-changed.
-
--- 
-viresh
+T24gRnJpLCAyMDE2LTExLTA0IGF0IDA5OjU4ICswMTAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+
+IE9uIEZyaSAyMDE2LTExLTA0IDA5OjM4OjQ5LCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+ID4gDQo+
+ID4gDQoNClsuLi5dDQoNCj4gPiBXaGF0IGlzIHdvcnNlLCB0aGV5IGdvIHRvIGxvdyBmcmVxdWVu
+Y3kgZXZlbiB3aXRoICJwZXJmb3JtYW5jZSINCj4gZ292ZXJub3Igb24gdjQuOC1yYzE/IQ0KPiAN
+Cj4gcGF2ZWxAZHVvOi9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcSQgc3VkbyBj
+YXQNCj4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1Ki9jcHVmcmVxL2NwdWluZm9fY3VyX2Zy
+ZXEgOyBzdWRvIGNhdA0KPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUqL2NwdWZyZXEvY3B1
+aW5mb19jdXJfZnJlccKgwqA7IHN1ZG8gY2F0DQo+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2Nw
+dSovY3B1ZnJlcS9jcHVpbmZvX2N1cl9mcmVxIDsgc3VkbyBjYXQNCj4gL3N5cy9kZXZpY2VzL3N5
+c3RlbS9jcHUvY3B1Ki9jcHVmcmVxL2NwdWluZm9fY3VyX2ZyZXHCoMKgOyBzdWRvIGNhdA0KPiAv
+c3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUqL2NwdWZyZXEvY3B1aW5mb19jdXJfZnJlccKgwqA7
+IHN1ZG8gY2F0DQo+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdSovY3B1ZnJlcS9jcHVpbmZv
+X2N1cl9mcmVxDQo+IDEwMDAwMDANCj4gMTAwMDAwMA0KPiAxMDAwMDAwDQo+IDEwMDAwMDANCj4g
+MTgzMzAwMA0KPiAxODMzMDAwDQo+IDEwMDAwMDANCj4gMTAwMDAwMA0KPiAxODMzMDAwDQo+IDE4
+MzMwMDANCj4gMTAwMDAwMA0KPiAxMDAwMDAwDQo+IHBhdmVsQGR1bzovc3lzL2RldmljZXMvc3lz
+dGVtL2NwdS9jcHUwL2NwdWZyZXEkIGdyZXAgLWkNCj4gLiAvc3lzL2RldmljZXMvc3lzdGVtL2Nw
+dS9jcHUwL2NwdWZyZXEvKg0KPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEv
+YWZmZWN0ZWRfY3B1czowDQo+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcS9i
+aW9zX2xpbWl0OjEwMDAwMDANCg0KWW91IGFyZSBoYXZpbmcgdGhlcm1hbCBpc3N1ZSwgc28gdGhl
+IEJJT1MgaXMgZm9yY2luZyB0byBsb3dlc3QgcG9zc2libGUNCmZyZXEuIEp1c3QgZm9yIGEgdGVz
+dCBvbmx5LCBib290IGJ5IGFkZGluZyB0byB5b3VyIGtlcm5lbCBjb21tYW5kIGxpbmUNCmR1cmlu
+ZyBib290wqANCnByb2Nlc3Nvci5pZ25vcmVfcHBjPTHCoA0KDQoNCg0KPiBncmVwOiAvc3lzL2Rl
+dmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvY3B1aW5mb19jdXJfZnJlcToNCj4gUGVybWlz
+c2lvbiBkZW5pZWQNCj4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL2NwdWlu
+Zm9fbWF4X2ZyZXE6MTgzMzAwMA0KPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZy
+ZXEvY3B1aW5mb19taW5fZnJlcToxMDAwMDAwDQo+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2Nw
+dTAvY3B1ZnJlcS9jcHVpbmZvX3RyYW5zaXRpb25fbGF0ZW5jeToxMDAwMA0KPiAvc3lzL2Rldmlj
+ZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvZnJlcWRvbWFpbl9jcHVzOjAgMQ0KPiAvc3lzL2Rl
+dmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvcmVsYXRlZF9jcHVzOjANCj4gL3N5cy9kZXZp
+Y2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL3NjYWxpbmdfYXZhaWxhYmxlX2ZyZXF1ZW5jaWVz
+OjE4DQo+IDMzMDAwDQo+IDEzMzMwMDAgMTAwMDAwMA0KPiAvc3lzL2RldmljZXMvc3lzdGVtL2Nw
+dS9jcHUwL2NwdWZyZXEvc2NhbGluZ19hdmFpbGFibGVfZ292ZXJub3JzOmNvbnMNCj4gZXJ2YXRp
+dmUNCj4gcG93ZXJzYXZlIHNjaGVkdXRpbCBvbmRlbWFuZCBwZXJmb3JtYW5jZQ0KPiAvc3lzL2Rl
+dmljZXMvc3lzdGVtL2NwdS9jcHUwL2NwdWZyZXEvc2NhbGluZ19jdXJfZnJlcToxMDAwMDAwDQo+
+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcS9zY2FsaW5nX2RyaXZlcjphY3Bp
+LWNwdWZyZXENCj4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL3NjYWxpbmdf
+Z292ZXJub3I6cGVyZm9ybWFuY2UNCj4gL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVm
+cmVxL3NjYWxpbmdfbWF4X2ZyZXE6MTAwMDAwMA0KPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9j
+cHUwL2NwdWZyZXEvc2NhbGluZ19taW5fZnJlcToxMDAwMDAwDQo+IC9zeXMvZGV2aWNlcy9zeXN0
+ZW0vY3B1L2NwdTAvY3B1ZnJlcS9zY2FsaW5nX3NldHNwZWVkOjx1bnN1cHBvcnRlZD4NCj4gZ3Jl
+cDogL3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxL3N0YXRzOiBJcyBhIGRpcmVj
+dG9yeQ0KPiBwYXZlbEBkdW86L3N5cy9kZXZpY2VzL3N5c3RlbS9jcHUvY3B1MC9jcHVmcmVxJA0K
+PiANCg0KPiBMZXQgbWUgdHJ5IHY0LjktcmMyLi4uIHRoYXQgd29ya3Mgb2sgKGNwdXMgYXQgdGhl
+IGhpZ2ggZnJlcXVlbmN5DQo+IGR1cmluZyB0aGUga2VybmVsIGJ1aWxkKS4gVW5mb3J0dW5hdGVs
+eSB0aGF0IHNlbmRzIG15IGNwdXMgdG8gOTlDDQo+IHRlbXBlcmF0dXJlIHJhbmdlIChhbmQgZXZl
+bnR1YWxseSBmb3JjZXMgZW1lcmdlbmN5IHNodXRkb3duKS4NCg0KVGhpcyB3ZSBoYXZlIHRvIGRl
+YnVnLiBEbyB5b3Ugc2VlIHNhbWUgbGluZSBsaWtlwqANCiINCi9zeXMvZGV2aWNlcy9zeXN0ZW0v
+Y3B1L2NwdTAvY3B1ZnJlcS9iaW9zX2xpbWl0OjEwMDAwMDANCiINCklmIG5vdCB3ZSBuZWVkDQp0
+byBmaW5kIG91dCB3aHkuDQoNCkkgc3VnZ2VzdCBlbnRlciBrZXJuZWwgYnVnemlsbGEuIEkgd2ls
+bCBhZGQgY291cGxlIG9mIG1vcmUgc3VnZ2VzdGlvbiB0byBkZWJ1Zy4NCg0KDQpUaGFua3MsDQpT
+cmluaXZhcw0K
