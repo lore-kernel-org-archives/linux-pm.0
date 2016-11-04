@@ -1,56 +1,107 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: powernv: Use PMSR to verify global and
- local pstate
-Date: Fri, 4 Nov 2016 12:11:32 +0530
-Message-ID: <20161104064132.GB3414@vireshk-i7>
-References: <1478237255-4258-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1478237255-4258-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: v4.8-rc1: thinkpad x60: running at low frequency even during kernel
+ build
+Date: Fri, 4 Nov 2016 09:38:49 +0100
+Message-ID: <20161104083849.GA32688@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="2oS5YaxWCcQjTEyO"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:36601 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934004AbcKDGlg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2016 02:41:36 -0400
-Received: by mail-pf0-f173.google.com with SMTP id 189so46231528pfz.3
-        for <linux-pm@vger.kernel.org>; Thu, 03 Nov 2016 23:41:36 -0700 (PDT)
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57500 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1760644AbcKDIix (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2016 04:38:53 -0400
 Content-Disposition: inline
-In-Reply-To: <1478237255-4258-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>
 
-On 04-11-16, 10:57, Akshay Adiga wrote:
-> As fast_switch may get called in interrupt disable mode, it does not
 
-s/in interrupt disable mode/with interrupts disabled
-s/it does/it may
+--2oS5YaxWCcQjTEyO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> update the global_pstate_info data structure. Hence the global_pstate_info
-> has stale data whenever pstate is updated through fast_swtich().
+Hi!
 
-s/has/may have
-s/swtich/switch
+I'm debugging overheats on v4.9-rc1... which did not seem to happen in
+v4.8-rc1. I'm running basically "nice make -j 3" on kernel... cpus are
+fully loaded.=20
 
-> 
-> So the gpstate_timer can fire after a fast_switch() call has update
+%Cpu(s):  7.5 us, 18.5 sy, 72.6 ni,  0.0 id,  0.0 wa,  0.0 hi,  1.5
+si,  0.0 st
+KiB Mem:   3087096 total,  2993076 used,    94020 free,    52900
+buffers
+KiB Swap:  1681428 total,    60900 used,  1620528 free.  1183664
+cached Mem
 
-s/So the/The
-s/a fast_swtich() call has update/the fast_switch() call has updated
+Still, cpus don't stay on maximum frequency on v4.8-rc1. (I suspect
+that may be why machine does not overheat).
 
-> the pstates to a different value. Hence the timer handler cannot rely
-> on the cached values of local and global pstate and needs to read it
-> from the PMSR. 
-> 
-> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-> 
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 32 ++++++++++++++++++++++----------
->  1 file changed, 22 insertions(+), 10 deletions(-)
+pavel@duo:/data/l/linux$ sudo cat
+/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq ; sudo cat
+/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq  ; sudo cat
+/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq ; sudo cat
+/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq  ; sudo cat
+/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq  ; sudo cat
+/sys/devices/system/cpu/cpu*/cpufreq/cpuinfo_cur_freq
+1833000
+1833000
+1000000
+1000000
+1000000
+1000000
+1833000
+1833000
+1833000
+1833000
+1000000
+1000000
+pavel@duo:/data/l/linux
 
-I am not the best guy to judge the code changes here. Can you please include
-Shilpa and Gautham to the mail chain and get there feedback.
+pavel@duo:/data/l/linux$ grep -i
+=2E /sys/devices/system/cpu/cpu0/cpufreq/*
+/sys/devices/system/cpu/cpu0/cpufreq/affected_cpus:0
+/sys/devices/system/cpu/cpu0/cpufreq/bios_limit:1833000
+grep: /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq:
+Permission denied
+/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq:1833000
+/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq:1000000
+/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_transition_latency:10000
+/sys/devices/system/cpu/cpu0/cpufreq/freqdomain_cpus:0 1
+/sys/devices/system/cpu/cpu0/cpufreq/related_cpus:0
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_frequencies:1833000
+1333000 1000000
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_available_governors:conservati=
+ve
+powersave schedutil ondemand performance
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq:1833000
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver:acpi-cpufreq
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor:ondemand
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq:1833000
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq:1000000
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_setspeed:<unsupported>
+grep: /sys/devices/system/cpu/cpu0/cpufreq/stats: Is a directory
 
--- 
-viresh
+Is that expected behaviour? Any ideas?
+
+Best regards,
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--2oS5YaxWCcQjTEyO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlgcSRkACgkQMOfwapXb+vLO7ACfQENb6t5dCX+sfWtwZT/eAbj0
+ERwAni6JMgNXnzoqWVClUa2NDpYpYq5Y
+=m1jF
+-----END PGP SIGNATURE-----
+
+--2oS5YaxWCcQjTEyO--
