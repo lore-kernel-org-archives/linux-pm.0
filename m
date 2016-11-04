@@ -1,57 +1,94 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
  kernel build
-Date: Fri, 4 Nov 2016 21:13:00 +0000
-Message-ID: <1478293976.1268.15.camel@intel.com>
-References: <20161104083849.GA32688@amd> <20161104085830.GA4089@amd>
-         <1478268311.26953.17.camel@intel.com> <20161104204439.GA2581@amd>
+Date: Fri, 4 Nov 2016 23:16:00 +0100
+Message-ID: <20161104221600.GA7007@amd>
+References: <20161104083849.GA32688@amd>
+ <20161104085830.GA4089@amd>
+ <1478268311.26953.17.camel@intel.com>
+ <20161104204439.GA2581@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <20161104204439.GA2581@amd>
-Content-Language: en-US
-Content-ID: <30A716D1B1E6554FBA2D2EFC91697322@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "pavel@ucw.cz" <pavel@ucw.cz>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ibm-acpi-devel@lists.sourceforge.net" <ibm-acpi-devel@lists.sourceforge.net>, "ibm-acpi@hmh.eng.br" <ibm-acpi@hmh.eng.br>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyMDE2LTExLTA0IGF0IDIxOjQ0ICswMTAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+
-IEhpIQ0KPiANCj4gPiANCj4gPiA+IA0KPiA+ID4gTGV0IG1lIHRyeSB2NC45LXJjMi4uLiB0aGF0
-IHdvcmtzIG9rIChjcHVzIGF0IHRoZSBoaWdoIGZyZXF1ZW5jeQ0KPiA+ID4gZHVyaW5nIHRoZSBr
-ZXJuZWwgYnVpbGQpLiBVbmZvcnR1bmF0ZWx5IHRoYXQgc2VuZHMgbXkgY3B1cyB0byA5OUMNCj4g
-PiA+IHRlbXBlcmF0dXJlIHJhbmdlIChhbmQgZXZlbnR1YWxseSBmb3JjZXMgZW1lcmdlbmN5IHNo
-dXRkb3duKS4NCj4gPiANCj4gPiBUaGlzIHdlIGhhdmUgdG8gZGVidWcuIERvIHlvdSBzZWUgc2Ft
-ZSBsaW5lIGxpa2XCoA0KPiA+ICINCj4gPiAvc3lzL2RldmljZXMvc3lzdGVtL2NwdS9jcHUwL2Nw
-dWZyZXEvYmlvc19saW1pdDoxMDAwMDAwDQo+ID4gIg0KPiA+IElmIG5vdCB3ZSBuZWVkDQo+ID4g
-dG8gZmluZCBvdXQgd2h5Lg0KPiANCj4gSSdkIHByZWZlciBtYWlscyBvdmVyIGJ1Z3ppbGxhIGZv
-ciBub3cuLi4NCj4gDQo+IDQuOS1yYzIgaGFzIGJpb3NfbGltaXQ6DQo+IA0KPiBwYXZlbEBkdW86
-fiQgY2F0IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1ZnJlcS9iaW9zX2xpbWl0DQo+
-IDE4MzMwMDANCj4gDQo+IGFuZCBpdCBoYXMgdGhlcm1hbCB6b25lczoNCj4gDQo+IC9zeXMvZGV2
-aWNlcy92aXJ0dWFsL3RoZXJtYWwvdGhlcm1hbF96b25lMC90cmlwX3BvaW50XzBfdGVtcCAxMjcw
-MDANCj4gL3N5cy9kZXZpY2VzL3ZpcnR1YWwvdGhlcm1hbC90aGVybWFsX3pvbmUwL3RyaXBfcG9p
-bnRfMF90eXBlIGNyaXRpY2FsDQo+IC9zeXMvZGV2aWNlcy92aXJ0dWFsL3RoZXJtYWwvdGhlcm1h
-bF96b25lMS90cmlwX3BvaW50XzBfdGVtcCA5NzAwMA0KPiAvc3lzL2RldmljZXMvdmlydHVhbC90
-aGVybWFsL3RoZXJtYWxfem9uZTEvdHJpcF9wb2ludF8wX3R5cGUgY3JpdGljYWwNCj4gL3N5cy9k
-ZXZpY2VzL3ZpcnR1YWwvdGhlcm1hbC90aGVybWFsX3pvbmUxL3RyaXBfcG9pbnRfMV90ZW1wIDky
-NTAwDQo+IC9zeXMvZGV2aWNlcy92aXJ0dWFsL3RoZXJtYWwvdGhlcm1hbF96b25lMS90cmlwX3Bv
-aW50XzFfdHlwZSBwYXNzaXZlDQo+IA0KSXQgd2lsbCBub3QgYWN0IGlmIHRoZXJlIGlzIG5vIGJp
-bmRpbmcgaW5mb3JtYXRpb24uIERvIHlvdSBoYXZlIG1vcmUNCmZpbGVzIGluIHRoaXMgZm9sZGVy
-Pw0KDQpncmVwIC1yIC4gKiBpbiAvc3lzL2NsYXNzL3RoZXJtYWwgd2lsbCBiZSBoZWxwZnVsLg0K
-DQoNCj4gLi5zbyBpdCBzaG91bGQgc2xvdyBkb3duIENQVSBhdCA5MkMuDQo+IA0KPiBTbyBsZXRz
-IHB1c2ggdGhlIHRlbXBlcmF0dXJlIHVwIGEgYml0Li4uDQo+IA0KPiBzdWRvIHdhdGNoIGNhdCAv
-cHJvYy9hY3BpL2libS90aGVybWFsDQo+IC9zeXMvZGV2aWNlcy9zeXN0ZW0vY3B1L2NwdTAvY3B1
-ZnJlcS9iaW9zX2xpbWl0DQo+IC9zeXMvZGV2aWNlcy92aXJ0dWFsL3RoZXJtYWwvdGhlcm1hbF96
-b25lMS90ZW1wwqDCoC9zeXMvZGV2aWNlcy9zeXN0ZW0vDQo+IGNwdS9jcHUwL2NwdWZyZXEvY3B1
-aW5mb19jdXJfZnJlcQ0KPiANCj4gdGVtcGVyYXR1cmVzOsKgwqDCoDk4IDQ5IC0xMjggODUgMjgg
-LTEyOCAyOCAtMTI4IDQ5IDU4IC0xMjggLTEyOCAtMTI4DQo+IC0xMjggLTEyOCAtMTI4DQo+IDE4
-MzMwMDANCj4gOTUwMDANCj4gMTgzMzAwMA0KPiANCj4gSG1tLiBiaW9zX2xpbWl0IGRvZXMgbm90
-IHNlZW0gdG8gY2hhbmdlLCBldmVuIHdoZW4gdGhlIHRlbXBlcmF0dXJlIGlzDQo+IGNsZWFybHkg
-YWJvdmUgdGhlIHRyaXAgcG9pbnQuIChJdCBpcyBhbHNvIGludGVyZXN0bmcgdGhhdCBhY3BpL2li
-bQ0KPiByZXBvcnRzIGJpZ2dlciB0ZW1wZXJhdHVyZXMgdGhhbg0KPiAvc3lzL2RldmljZXMvdmly
-dHVhbC90aGVybWFsL3RoZXJtYWxfem9uZTEvdGVtcCAuIEkgaGF2ZSBzZWVuIDEwM0MNCj4gdGhl
-cmUuKQ0KUHJvYmFibHkgdGhleSBhcmUgc2hvd2luZyBwYWNrYWdlIGFuZCBjb3JlIHRlbXBlcmF0
-dXJlIG9yIGhhdmUgYQ0KZGlmZmVyZW50IHNhbXBsaW5nIGludGVydmFsLg0KDQpUcnkgZW5hYmxp
-bmcgdGhlcm1hbGQgc2VydmljZSBpbiBEZWJpYW4uIGl0IGhhcyBhY2Nlc3MgdG8gbW9yZSBrbm9i
-cyB0bw0KY29udHJvbCB0aGVybWFscy4NCg0KVGhhbmtzLA0KU3Jpbml2YXMNCg==
+
+--SUOF0GtieIMvvwua
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi!
+
+> I'd prefer mails over bugzilla for now...
+>=20
+> 4.9-rc2 has bios_limit:
+>=20
+> pavel@duo:~$ cat /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+> 1833000
+>=20
+> and it has thermal zones:
+>=20
+> /sys/devices/virtual/thermal/thermal_zone0/trip_point_0_temp 127000
+> /sys/devices/virtual/thermal/thermal_zone0/trip_point_0_type critical
+> /sys/devices/virtual/thermal/thermal_zone1/trip_point_0_temp 97000
+> /sys/devices/virtual/thermal/thermal_zone1/trip_point_0_type critical
+> /sys/devices/virtual/thermal/thermal_zone1/trip_point_1_temp 92500
+> /sys/devices/virtual/thermal/thermal_zone1/trip_point_1_type passive
+>=20
+> ..so it should slow down CPU at 92C.
+>=20
+> So lets push the temperature up a bit...
+>=20
+> sudo watch cat /proc/acpi/ibm/thermal
+> /sys/devices/system/cpu/cpu0/cpufreq/bios_limit
+> /sys/devices/virtual/thermal/thermal_zone1/temp  /sys/devices/system/cpu/=
+cpu0/cpufreq/cpuinfo_cur_freq
+>=20
+> temperatures:   98 49 -128 85 28 -128 28 -128 49 58 -128 -128 -128
+> -128 -128 -128
+> 1833000
+> 95000
+> 1833000
+>=20
+> Hmm. bios_limit does not seem to change, even when the temperature is
+> clearly above the trip point. (It is also interestng that acpi/ibm
+> reports bigger temperatures than
+> /sys/devices/virtual/thermal/thermal_zone1/temp . I have seen 103C
+> there.)
+
+Under v4.8-rc, behaviour is different: bios_limit goes to 1GHz there
+when temperature is around 84C at the thermal zone. That keeps
+ibm/thermal temperatures under 90C, and no "thermal emergency"
+messages in syslog.
+
+So we seem to have thermal or ACPI regression in v4.9-rc3.
+
+Best regards,
+=20
+ 									Pavel
+=20
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--SUOF0GtieIMvvwua
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlgdCKAACgkQMOfwapXb+vJSmwCgvJccP+cC1TZ/cZQ4jVjkrc4F
+9nkAn2Y3+tJziD1CfRCeMF+h6+6RCTTX
+=3j6Q
+-----END PGP SIGNATURE-----
+
+--SUOF0GtieIMvvwua--
