@@ -1,85 +1,96 @@
 From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: [PATCH 1/2] cpufreq: powernv: Adding fast_switch for schedutil
-Date: Fri,  4 Nov 2016 10:57:34 +0530
-Message-ID: <1478237255-4258-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:44890 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1757632AbcKDF1t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Nov 2016 01:27:49 -0400
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uA45NPQ0001111
-        for <linux-pm@vger.kernel.org>; Fri, 4 Nov 2016 01:27:48 -0400
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 26gexf4vvt-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Fri, 04 Nov 2016 01:27:48 -0400
-Received: from localhost
-        by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-        Fri, 4 Nov 2016 15:27:45 +1000
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 2/2] cpufreq: powernv: Use PMSR to verify global and local pstate
+Date: Fri,  4 Nov 2016 10:57:35 +0530
+Message-ID: <1478237255-4258-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1478237255-4258-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1478237255-4258-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Adding fast_switch which does light weight operation to
-set the desired pstate.
+As fast_switch may get called in interrupt disable mode, it does not
+update the global_pstate_info data structure. Hence the global_pstate_info
+has stale data whenever pstate is updated through fast_swtich().
+
+So the gpstate_timer can fire after a fast_switch() call has update
+the pstates to a different value. Hence the timer handler cannot rely
+on the cached values of local and global pstate and needs to read it
+from the PMSR. 
 
 Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+
 ---
- drivers/cpufreq/powernv-cpufreq.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ drivers/cpufreq/powernv-cpufreq.c | 32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index d3ffde8..09a0496 100644
+index 09a0496..57713b5 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -752,9 +752,12 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	spin_lock_init(&gpstates->gpstate_lock);
- 	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
+@@ -592,7 +592,8 @@ void gpstate_timer_handler(unsigned long data)
+ {
+ 	struct cpufreq_policy *policy = (struct cpufreq_policy *)data;
+ 	struct global_pstate_info *gpstates = policy->driver_data;
+-	int gpstate_idx;
++	int gpstate_idx, lpstate_idx;
++	unsigned long val;
+ 	unsigned int time_diff = jiffies_to_msecs(jiffies)
+ 					- gpstates->last_sampled_time;
+ 	struct powernv_smp_call_data freq_data;
+@@ -600,21 +601,36 @@ void gpstate_timer_handler(unsigned long data)
+ 	if (!spin_trylock(&gpstates->gpstate_lock))
+ 		return;
  
--	if (ret < 0)
-+	if (ret < 0) {
- 		kfree(policy->driver_data);
-+		return ret;
++	/*
++	 * If PMCR was last updated was using fast_swtich then
++	 * We may have wrong in gpstate->last_lpstate_idx
++	 * value. Hence, read from PMCR to get correct data.
++	 */
++	val = get_pmspr(SPRN_PMCR);
++	freq_data.gpstate_id = (val >> (56)) & 0xFF;
++	freq_data.pstate_id = (val >> (48)) & 0xFF;
++	if (freq_data.gpstate_id  == freq_data.pstate_id) {
++		reset_gpstates(policy);
++		spin_unlock(&gpstates->gpstate_lock);
++		return;
 +	}
- 
-+	policy->fast_switch_possible = true;
- 	return ret;
- }
- 
-@@ -897,6 +900,22 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- 	del_timer_sync(&gpstates->timer);
- }
- 
-+static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
-+					unsigned int target_freq)
-+{
-+	int index;
-+	struct powernv_smp_call_data freq_data;
 +
-+	index = cpufreq_table_find_index_dl(policy, target_freq);
-+	if (index < 0 || index >= powernv_pstate_info.nr_pstates)
-+		return CPUFREQ_ENTRY_INVALID;
-+	freq_data.pstate_id = powernv_freqs[index].driver_data;
-+	freq_data.gpstate_id = powernv_freqs[index].driver_data;
-+	set_pstate(&freq_data);
-+
-+	return powernv_freqs[index].frequency;
-+}
-+
- static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.name		= "powernv-cpufreq",
- 	.flags		= CPUFREQ_CONST_LOOPS,
-@@ -904,6 +923,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
- 	.exit		= powernv_cpufreq_cpu_exit,
- 	.verify		= cpufreq_generic_frequency_table_verify,
- 	.target_index	= powernv_cpufreq_target_index,
-+	.fast_switch	= powernv_fast_switch,
- 	.get		= powernv_cpufreq_get,
- 	.stop_cpu	= powernv_cpufreq_stop_cpu,
- 	.attr		= powernv_cpu_freq_attr,
+ 	gpstates->last_sampled_time += time_diff;
+ 	gpstates->elapsed_time += time_diff;
+-	freq_data.pstate_id = idx_to_pstate(gpstates->last_lpstate_idx);
+ 
+-	if ((gpstates->last_gpstate_idx == gpstates->last_lpstate_idx) ||
+-	    (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME)) {
++	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+ 		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
+ 		reset_gpstates(policy);
+ 		gpstates->highest_lpstate_idx = gpstate_idx;
+ 	} else {
++		lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+ 		gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
+ 						 gpstates->highest_lpstate_idx,
+-						 gpstates->last_lpstate_idx);
++						 lpstate_idx);
+ 	}
+-
++	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
++	gpstates->last_gpstate_idx = gpstate_idx;
++	gpstates->last_lpstate_idx = lpstate_idx;
+ 	/*
+ 	 * If local pstate is equal to global pstate, rampdown is over
+ 	 * So timer is not required to be queued.
+@@ -622,10 +638,6 @@ void gpstate_timer_handler(unsigned long data)
+ 	if (gpstate_idx != gpstates->last_lpstate_idx)
+ 		queue_gpstate_timer(gpstates);
+ 
+-	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
+-	gpstates->last_gpstate_idx = pstate_to_idx(freq_data.gpstate_id);
+-	gpstates->last_lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+-
+ 	spin_unlock(&gpstates->gpstate_lock);
+ 
+ 	/* Timer may get migrated to a different cpu on cpu hot unplug */
 -- 
 2.7.4
-
