@@ -1,92 +1,61 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
-Date: Sat, 5 Nov 2016 06:10:27 -0600
-Message-ID: <20161105121027.GC5289@kroah.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <11468990.WB1J8sxXpS@vostro.rjw.lan>
- <CGME20161031174700eucas1p1cf129b22ebd3dc689172e837ac01647e@eucas1p1.samsung.com>
- <20161031174703.GA25633@kroah.com>
- <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
+ kernel build
+Date: Sat, 5 Nov 2016 13:22:54 +0100
+Message-ID: <20161105122254.GA10310@amd>
+References: <20161104083849.GA32688@amd>
+ <20161104085830.GA4089@amd>
+ <1478268311.26953.17.camel@intel.com>
+ <20161104204439.GA2581@amd>
+ <20161104221600.GA7007@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:52338 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753822AbcKEMKU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Nov 2016 08:10:20 -0400
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="rwEMma7ioTxnRzrJ"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20161104221600.GA7007@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Joerg Roedel <joro@8bytes.org>
 
-On Wed, Nov 02, 2016 at 08:58:38AM +0100, Marek Szyprowski wrote:
-> Hi Greg,
-> 
-> 
-> On 2016-10-31 18:47, Greg Kroah-Hartman wrote:
-> > On Sun, Oct 30, 2016 at 05:22:13PM +0100, Rafael J. Wysocki wrote:
-> > > Let me quote from the previous intro messages for this series first:
-> > > 
-> > > > > Time for another update. :-)
-> > > > > 
-> > > > > Fewer changes this time, mostly to address issues found by Lukas and
-> > > > > Marek.
-> > > > > 
-> > > > > The most significant one is to make device_link_add() cope with the case
-> > > > > when
-> > > > > the consumer device has not been registered yet when it is called.  The
-> > > > > supplier device still is required to be registered and the function will
-> > > > > return NULL if that is not the case.
-> > > > > 
-> > > > > Another significant change is in patch [4/5] that now makes the core apply
-> > > > > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
-> > > > > probing of a consumer one (in analogy with the parent).
-> > > > One more update after some conversations during LinuxCon Europe.
-> > > > 
-> > > > The main point was to make it possible for device_link_add() to figure out
-> > > > the initial state of the link instead of expecting the caller to provide it
-> > > > which might not be reliable enough in general.
-> > > > 
-> > > > In this version device_link_add() takes three arguments, the supplier and
-> > > > consumer pointers and flags and it sets the correct initial state of the
-> > > > link automatically (unless invoked with the "stateless" flag, of course).
-> > > > The cost is one additional field in struct device (I moved all of the
-> > > > links-related fields in struct device to a separate sub-structure while at
-> > > > it) to track the "driver presence status" of the device (to be used by
-> > > > device_link_add()).
-> > > > 
-> > > > In addition to that, the links list walks in the core.c and dd.c code are
-> > > > under the device links mutex now, so the iternal link spinlock is not needed
-> > > > any more and I have renamed symbols to distinguish between flags, link
-> > > > states and device "driver presence statuses".
-> > > The most significant change in this revision with respect to the previous one is
-> > > related to the fact that SRCU is not available on some architectures, so the
-> > > code falls back to using an RW semaphore for synchronization if SRCU is not
-> > > there.  Fortunately, the code changes needed for that turned out to be quite
-> > > straightforward and confined to the second patch.
-> > > 
-> > > Apart from this, the flags are defined using BIT(x) now (instead of open coding
-> > > the latter in the flag definitions).
-> > > 
-> > > Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
-> > > trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
-> > > [2/5].
-> > > 
-> > > FWIW, I've run the series through 0-day which has not reported any problems
-> > > with it.
-> > Great, they are now applied to my tree, thanks again for doing this
-> > work.
-> 
-> Thanks for merging those patches! Could you provide a stable tag with them,
-> so I can
-> ask Joerg to merge my Exynos IOMMU PM patches on top of it via IOMMU tree?
 
-My trees do not get rebased so you can pull from it directly right now,
-or if you really need a signed tag, I can make one up, but it will not
-be until Monday that I can do that.
+--rwEMma7ioTxnRzrJ
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
+Hi!
 
-greg k-h
+> Under v4.8-rc, behaviour is different: bios_limit goes to 1GHz there
+> when temperature is around 84C at the thermal zone. That keeps
+> ibm/thermal temperatures under 90C, and no "thermal emergency"
+> messages in syslog.
+
+Argh. So v4.9 thermal management does not work.
+
+v4.8 passive thermal management works _too well_, keeping fan at cca
+3200 rpm, far below 3700 rpm it can reach. CPU is getting throttled,
+and fan is not even running at full speed.
+
+I can manually control the fan with thinkpad_acpi.fan_control=3D1... I
+guess I can write some scripts?
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--rwEMma7ioTxnRzrJ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlgdzx4ACgkQMOfwapXb+vLH7gCfT1gCZMR0DDW+pg3HFouXk0Iy
+NxwAn0p9OIs0d075zrirx0w6baKy2/vT
+=miul
+-----END PGP SIGNATURE-----
+
+--rwEMma7ioTxnRzrJ--
