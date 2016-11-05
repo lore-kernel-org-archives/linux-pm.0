@@ -1,89 +1,51 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
  kernel build
-Date: Sat, 5 Nov 2016 15:04:34 +0100
-Message-ID: <20161105140434.GA3755@amd>
-References: <20161104083849.GA32688@amd>
- <20161104085830.GA4089@amd>
- <1478268311.26953.17.camel@intel.com>
- <20161104204439.GA2581@amd>
- <20161104221600.GA7007@amd>
- <1478301649.7947.3.camel@intel.com>
- <20161105132049.GC10310@amd>
- <1478352782.19557.7.camel@intel.com>
- <20161105135313.GB3933@amd>
+Date: Sat, 5 Nov 2016 14:19:13 +0000
+Message-ID: <1478355545.22182.1.camel@intel.com>
+References: <20161104083849.GA32688@amd> <20161104085830.GA4089@amd>
+         <1478268311.26953.17.camel@intel.com> <20161104204439.GA2581@amd>
+         <20161104221600.GA7007@amd> <1478301649.7947.3.camel@intel.com>
+         <20161105132049.GC10310@amd> <1478352782.19557.7.camel@intel.com>
+         <20161105135313.GB3933@amd> <20161105140434.GA3755@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36847 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754215AbcKEOEj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Nov 2016 10:04:39 -0400
-Content-Disposition: inline
-In-Reply-To: <20161105135313.GB3933@amd>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161105140434.GA3755@amd>
+Content-Language: en-US
+Content-ID: <90D3E5104A78D041A7DBAED7458C83B0@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "pavel@ucw.cz" <pavel@ucw.cz>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ibm-acpi-devel@lists.sourceforge.net" <ibm-acpi-devel@lists.sourceforge.net>, "ibm-acpi@hmh.eng.br" <ibm-acpi@hmh.eng.br>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-
---3MwIy2ne0vdjdPXF
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Sat 2016-11-05 14:53:13, Pavel Machek wrote:
-> Hi!
->=20
-> > > Ok, can do, let me recompile and reboot.
-> > >=20
-> > > >=20
-> > > > When temperature limit is reached=A0acpi_processor_ppc_notifier()
-> > > > should
-> > > > be called.
-> > >=20
-> > > No, that's not correct for ACPI passive trip points, is it? If I
-> > > recall correctly, those should be monitored even when temperature is
-> > > below them so that it does not reach them...?
-> > No if BIOS is sending PPC, it will be called. You can try first in 4.8.
-> >=20
-> > Also try
-> >=20
-> > Don't run workload, just on an idle system.
-> >=20
-> > # echo 1 > /sys/class/thermal/cooling_device2/cur_state
-> > monitor the scaling_max_freq, it should reduce
-> >=20
-> > # echo 2 > /sys/class/thermal/cooling_device2/cur_state
-> > monitor the scaling_max_freq, it should reduce
->=20
-> Yes, this seems to work. scaling_max goes to 1.5, then 1.1. Also under
-> load, scaling_max_freq changes. But at that point, we are already
-> around 98C... and bios_limit stays the same all the time in v4.9.
-
-=2E..while in v4.8-rc1, bios limit goes to 1.0 GHz at 90C, and
-temperature just doesn't go above that.
-
-Does it make sense to try with v4.8-final?
-
-Best regards,
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---3MwIy2ne0vdjdPXF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlgd5vIACgkQMOfwapXb+vLCKwCgmZHxamvsCLOBcG6b3dk2kmwL
-xaUAoLPm/uX2MiwGP10ZVn91H7Xz+9Ht
-=n3aK
------END PGP SIGNATURE-----
-
---3MwIy2ne0vdjdPXF--
+T24gU2F0LCAyMDE2LTExLTA1IGF0IDE1OjA0ICswMTAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+
+IE9uIFNhdCAyMDE2LTExLTA1IDE0OjUzOjEzLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+ID4gDQo+
+ID4gSGkhDQo+ID4gDQo+ID4gPiANCj4gPiA+ID4gDQo+ID4gPiA+IE9rLCBjYW4gZG8sIGxldCBt
+ZSByZWNvbXBpbGUgYW5kIHJlYm9vdC4NCj4gPiA+ID4gDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4g
+DQo+ID4gPiA+ID4gV2hlbiB0ZW1wZXJhdHVyZSBsaW1pdCBpcw0KPiA+ID4gPiA+IHJlYWNoZWTC
+oGFjcGlfcHJvY2Vzc29yX3BwY19ub3RpZmllcigpDQo+ID4gPiA+ID4gc2hvdWxkDQo+ID4gPiA+
+ID4gYmUgY2FsbGVkLg0KPiA+ID4gPiANCj4gPiA+ID4gTm8sIHRoYXQncyBub3QgY29ycmVjdCBm
+b3IgQUNQSSBwYXNzaXZlIHRyaXAgcG9pbnRzLCBpcyBpdD8gSWYNCj4gPiA+ID4gSQ0KPiA+ID4g
+PiByZWNhbGwgY29ycmVjdGx5LCB0aG9zZSBzaG91bGQgYmUgbW9uaXRvcmVkIGV2ZW4gd2hlbg0K
+PiA+ID4gPiB0ZW1wZXJhdHVyZSBpcw0KPiA+ID4gPiBiZWxvdyB0aGVtIHNvIHRoYXQgaXQgZG9l
+cyBub3QgcmVhY2ggdGhlbS4uLj8NCj4gPiA+IE5vIGlmIEJJT1MgaXMgc2VuZGluZyBQUEMsIGl0
+IHdpbGwgYmUgY2FsbGVkLiBZb3UgY2FuIHRyeSBmaXJzdA0KPiA+ID4gaW4gNC44Lg0KPiA+ID4g
+DQo+ID4gPiBBbHNvIHRyeQ0KPiA+ID4gDQo+ID4gPiBEb24ndCBydW4gd29ya2xvYWQsIGp1c3Qg
+b24gYW4gaWRsZSBzeXN0ZW0uDQo+ID4gPiANCj4gPiA+ICMgZWNobyAxID4gL3N5cy9jbGFzcy90
+aGVybWFsL2Nvb2xpbmdfZGV2aWNlMi9jdXJfc3RhdGUNCj4gPiA+IG1vbml0b3IgdGhlIHNjYWxp
+bmdfbWF4X2ZyZXEsIGl0IHNob3VsZCByZWR1Y2UNCj4gPiA+IA0KPiA+ID4gIyBlY2hvIDIgPiAv
+c3lzL2NsYXNzL3RoZXJtYWwvY29vbGluZ19kZXZpY2UyL2N1cl9zdGF0ZQ0KPiA+ID4gbW9uaXRv
+ciB0aGUgc2NhbGluZ19tYXhfZnJlcSwgaXQgc2hvdWxkIHJlZHVjZQ0KPiA+IA0KPiA+IFllcywg
+dGhpcyBzZWVtcyB0byB3b3JrLiBzY2FsaW5nX21heCBnb2VzIHRvIDEuNSwgdGhlbiAxLjEuIEFs
+c28NCj4gPiB1bmRlcg0KPiA+IGxvYWQsIHNjYWxpbmdfbWF4X2ZyZXEgY2hhbmdlcy4gQnV0IGF0
+IHRoYXQgcG9pbnQsIHdlIGFyZSBhbHJlYWR5DQo+ID4gYXJvdW5kIDk4Qy4uLiBhbmQgYmlvc19s
+aW1pdCBzdGF5cyB0aGUgc2FtZSBhbGwgdGhlIHRpbWUgaW4gdjQuOS4NCj4gDQo+IC4uLndoaWxl
+IGluIHY0LjgtcmMxLCBiaW9zIGxpbWl0IGdvZXMgdG8gMS4wIEdIeiBhdCA5MEMsIGFuZA0KPiB0
+ZW1wZXJhdHVyZSBqdXN0IGRvZXNuJ3QgZ28gYWJvdmUgdGhhdC4NCj4gDQo+IERvZXMgaXQgbWFr
+ZSBzZW5zZSB0byB0cnkgd2l0aCB2NC44LWZpbmFsPw0KSSBzZW50IHNvbWUgc3VnZ2VzdGlvbiB0
+byB0cnkgaW4gcHJldmlvdXMgZW1haWwgdG8gYWRkIG1vcmUgcHJpbnRzIGFuZA0KZW5hYmxlIGRl
+YnVnIGluIGFjcGktY3B1ZnJlcS4gTGV0J3MgdHJ5IHRoYXQgZmlyc3QuIFdlIG5lZWQgdG8gZml4
+DQphbnl3YXkgZXZlbiBpZiA0LjgtZmluYWwgaGFzIHRoaXMgaXNzdWUuDQoNClRoYW5rcywNClNy
+aW5pdmFzDQoNCg0KPiANCj4gQmVzdCByZWdhcmRzLA0KPiAJCQkJCQkJCVBhdmVs
