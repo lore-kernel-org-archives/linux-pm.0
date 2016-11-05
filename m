@@ -1,75 +1,71 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [Bug] ARM: mxs: STI: console can't wake up from freeze
-Date: Sat, 5 Nov 2016 16:28:37 +0100 (CET)
-Message-ID: <1113068116.152452.34665947-6f6b-41d6-92af-eabcbcb794ea.open-xchange@email.1und1.de>
-References: <315017958.66634.5d4fc19c-31cd-4900-8613-af4cadec5da4.open-xchange@email.1und1.de>
- <20161023133134.GI1041@n2100.armlinux.org.uk>
- <1709157673.85170.1cb53b4d-2805-48ea-aef1-dd282306d108.open-xchange@email.1und1.de>
- <20161031161700.GH1041@n2100.armlinux.org.uk>
- <847975190.29034.38a9c7fa-bdf8-4732-ac8b-cf15c21e3ce8.open-xchange@email.1und1.de>
- <20161101092304.GM1041@n2100.armlinux.org.uk>
- <322177156.158733.9867e3e7-5710-4844-a098-6f44bd852a6d.open-xchange@email.1und1.de>
- <1478345972.2206.15.camel@intel.com>
- <122295766.159553.9867e3e7-5710-4844-a098-6f44bd852a6d.open-xchange@email.1und1.de>
- <20161105130034.GG15759@mai>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
+ kernel build
+Date: Sat, 5 Nov 2016 16:34:18 +0100
+Message-ID: <20161105153418.GA4566@amd>
+References: <20161104085830.GA4089@amd>
+ <1478268311.26953.17.camel@intel.com>
+ <20161104204439.GA2581@amd>
+ <20161104221600.GA7007@amd>
+ <1478301649.7947.3.camel@intel.com>
+ <20161105132049.GC10310@amd>
+ <1478352782.19557.7.camel@intel.com>
+ <20161105135313.GB3933@amd>
+ <20161105140434.GA3755@amd>
+ <1478355545.22182.1.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.134]:59565 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755658AbcKEP3a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Nov 2016 11:29:30 -0400
-In-Reply-To: <20161105130034.GG15759@mai>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="HlL+5n6rz5pIUxbD"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1478355545.22182.1.camel@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ibm-acpi-devel@lists.sourceforge.net" <ibm-acpi-devel@lists.sourceforge.net>, "ibm-acpi@hmh.eng.br" <ibm-acpi@hmh.eng.br>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Russell King - ARM Linux <linux@armlinux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>, joerg.krause@embedded.rocks, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Fabio Estevam <fabio.estevam@nxp.com>
 
-Hi Daniel,
 
-> Daniel Lezcano <daniel.lezcano@linaro.org> hat am 5. November 2016 um 14:00
-> geschrieben:
-> 
-> 
-> On Sat, Nov 05, 2016 at 01:01:26PM +0100, Stefan Wahren wrote:
-> 
-> [ ... ]
-> 
-> > > > CONFIG_SUSPEND=y
-> > > > CONFIG_SUSPEND_FREEZER=y
-> > > > CONFIG_PM=y
-> > > > CONFIG_CPU_IDLE is not set
-> > > 
-> > > hmmm, why not have CONFIG_CPU_IDLE set?
-> > 
-> > I'm using mxs_defconfig which doesn't select the ARM CPU idle. Is this
-> > necessary?
-> 
-> Very likely :) suspend_freezer and cpuidle are tied together.
-> 
-> Moreover, while reading the code, it appears without CONFIG_CPU_IDLE the
-> function cpuidle_idle_call is constantly failing, ending up by having the
-> cpu looping again and again in the idle loop. The function stubs return
-> -ENODEV in the cpuidle's header when CONFIG_CPU_IDLE is not set.
-> 
-> If I'm not wrong the traces should show the cpu actually does never go
-> to suspend. As soon as it enters the state, it should exit immediately
-> without an interrupt event.
-> 
-> Probably there is an inconsistent configuration leaving the kernel with
-> a strange wakeup condition or a race with the short the suspend/resume
-> cycle delay.
-> 
-> First test would be to enable CONFIG_CPU_IDLE.
-> 
-> If it is confirmed, it would be nice to feed bugzilla.
+--HlL+5n6rz5pIUxbD
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-first i tried with CONFIG_CPU_IDLE=Y and then additionally with
-CONFIG_ARM_CPUIDLE=y.
+Hi!
 
-In both cases the issue is still reproducible.
+> > > Yes, this seems to work. scaling_max goes to 1.5, then 1.1. Also
+> > > under
+> > > load, scaling_max_freq changes. But at that point, we are already
+> > > around 98C... and bios_limit stays the same all the time in v4.9.
+> >=20
+> > ...while in v4.8-rc1, bios limit goes to 1.0 GHz at 90C, and
+> > temperature just doesn't go above that.
+> >=20
+> > Does it make sense to try with v4.8-final?
+> I sent some suggestion to try in previous email to add more prints and
+> enable debug in acpi-cpufreq. Let's try that first. We need to fix
+> anyway even if 4.8-final has this issue.
 
-As i wrote in my email before, i added a pr_info() into freeze_wake. But i never
-see the output of this message. So i assume freeze_wake is never called. Again,
-how could this happen?
+Ok, you should have results in your mailbox now. If you want me to do
+some more testing, let me know.
+
+Thanks,
+ 								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--HlL+5n6rz5pIUxbD
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlgd+/oACgkQMOfwapXb+vIZlwCdEYGwvUQVxVgzV3Tov1QFLIlE
+sroAn156vaVz2xWCFGo0tBMqAbrXA5Hq
+=jM+o
+-----END PGP SIGNATURE-----
+
+--HlL+5n6rz5pIUxbD--
