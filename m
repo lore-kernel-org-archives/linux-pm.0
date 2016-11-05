@@ -1,78 +1,50 @@
-From: Pavel Machek <pavel@ucw.cz>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
 Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
  kernel build
-Date: Sat, 5 Nov 2016 14:53:13 +0100
-Message-ID: <20161105135313.GB3933@amd>
-References: <20161104083849.GA32688@amd>
- <20161104085830.GA4089@amd>
- <1478268311.26953.17.camel@intel.com>
- <20161104204439.GA2581@amd>
- <20161104221600.GA7007@amd>
- <1478301649.7947.3.camel@intel.com>
- <20161105132049.GC10310@amd>
- <1478352782.19557.7.camel@intel.com>
+Date: Sat, 5 Nov 2016 13:55:22 +0000
+Message-ID: <1478354115.19557.17.camel@intel.com>
+References: <20161104083849.GA32688@amd> <20161104085830.GA4089@amd>
+         <1478268311.26953.17.camel@intel.com> <20161104204439.GA2581@amd>
+         <20161104221600.GA7007@amd> <1478301649.7947.3.camel@intel.com>
+         <20161105133719.GA3933@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="hHWLQfXTYDoKhP50"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1478352782.19557.7.camel@intel.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161105133719.GA3933@amd>
+Content-Language: en-US
+Content-ID: <ACE17AE67D7682419003C1F7CD3F36B3@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "pavel@ucw.cz" <pavel@ucw.cz>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ibm-acpi-devel@lists.sourceforge.net" <ibm-acpi-devel@lists.sourceforge.net>, "ibm-acpi@hmh.eng.br" <ibm-acpi@hmh.eng.br>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---hHWLQfXTYDoKhP50
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi!
-
-> > Ok, can do, let me recompile and reboot.
-> >=20
-> > >=20
-> > > When temperature limit is reached=A0acpi_processor_ppc_notifier()
-> > > should
-> > > be called.
-> >=20
-> > No, that's not correct for ACPI passive trip points, is it? If I
-> > recall correctly, those should be monitored even when temperature is
-> > below them so that it does not reach them...?
-> No if BIOS is sending PPC, it will be called. You can try first in 4.8.
->=20
-> Also try
->=20
-> Don't run workload, just on an idle system.
->=20
-> # echo 1 > /sys/class/thermal/cooling_device2/cur_state
-> monitor the scaling_max_freq, it should reduce
->=20
-> # echo 2 > /sys/class/thermal/cooling_device2/cur_state
-> monitor the scaling_max_freq, it should reduce
-
-Yes, this seems to work. scaling_max goes to 1.5, then 1.1. Also under
-load, scaling_max_freq changes. But at that point, we are already
-around 98C... and bios_limit stays the same all the time in v4.9.
-
-Best regards,
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---hHWLQfXTYDoKhP50
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlgd5EkACgkQMOfwapXb+vL3EwCgjFc2H7sAenxAmTiZDF64A5di
-0ygAoK+O4/6YjGTwGl2jr6c9aB1IPRhU
-=JLfM
------END PGP SIGNATURE-----
-
---hHWLQfXTYDoKhP50--
+T24gU2F0LCAyMDE2LTExLTA1IGF0IDE0OjM3ICswMTAwLCBQYXZlbCBNYWNoZWsgd3JvdGU6DQo+
+IEhpIQ0KPiANCj4gPiANCj4gPiBbLi4uXQ0KPiA+IA0KPiA+ID4gDQo+ID4gPiBTbyB3ZSBzZWVt
+IHRvIGhhdmUgdGhlcm1hbCBvciBBQ1BJIHJlZ3Jlc3Npb24gaW4gdjQuOS1yYzMuDQo+ID4gPiAN
+Cj4gPiBJdCBpcyBwb3NzaWJsZS4gQ2FuIHlvdSBhZGQgZWl0aGVyIGFkZCBwcmludGsNCj4gPiBp
+bsKgYWNwaV9wcm9jZXNzb3JfcHBjX2hhc19jaGFuZ2VkKCkgb3IgdXNlIGZ0cmFjZSBhbmQgc2Vl
+IGRvIHlvdQ0KPiA+IGdldCB0bw0KPiA+IHRoZXNlIGZ1bmN0aW9ucw0KPiA+IA0KPiA+IGFjcGlf
+cHJvY2Vzc29yX3BwY19pbml0KCkNCj4gPiBhY3BpX3Byb2Nlc3Nvcl9wcGNfaGFzX2NoYW5nZWQo
+KQ0KPiA+IGFjcGlfcHJvY2Vzc29yX3BwY19ub3RpZmllcigpDQo+ID4gDQo+ID4gPw0KPiANCj4g
+WWVzLCB0aGVzZSBzZWVtIHRvIGJlIGNhbGxlZC4gSGVyZSdzIHRoZSBsb2c6DQoNClRyeSB0aGlz
+DQoNCjEuIEVpdGhlciBlbmFibGUgZHluZGVidWcgb3IgYWRkwqANCg0KI2RlZmluZSBERUJVRyAx
+wqANCmF0IHRoZSB0b3Agb2YgYWNwaS1jcHVmcmVxLmMNCg0KDQoyLg0KDQpkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy9hY3BpL3Byb2Nlc3Nvcl9wZXJmbGliLmMNCmIvZHJpdmVycy9hY3BpL3Byb2Nlc3Nv
+cl9wZXJmbGliLmMNCmluZGV4IGJiMDFkZWEuLjYwNzQ5OTUgMTAwNjQ0DQotLS0gYS9kcml2ZXJz
+L2FjcGkvcHJvY2Vzc29yX3BlcmZsaWIuYw0KKysrIGIvZHJpdmVycy9hY3BpL3Byb2Nlc3Nvcl9w
+ZXJmbGliLmMNCkBAIC05NCw5ICs5NCwxNCBAQCBzdGF0aWMgaW50IGFjcGlfcHJvY2Vzc29yX3Bw
+Y19ub3RpZmllcihzdHJ1Y3QNCm5vdGlmaWVyX2Jsb2NrICpuYiwNCsKgDQrCoMKgwqDCoMKgwqDC
+oMKgcHBjID0gKHVuc2lnbmVkIGludClwci0+cGVyZm9ybWFuY2VfcGxhdGZvcm1fbGltaXQ7DQrC
+oA0KK8KgwqDCoMKgwqDCoMKgcHJpbnRrKEtFUk5fRVJSICJwcGMgPSAlZFxuIiwgcHBjKTsNCisN
+CsKgwqDCoMKgwqDCoMKgwqBpZiAocHBjID49IHByLT5wZXJmb3JtYW5jZS0+c3RhdGVfY291bnQp
+DQrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGdvdG8gb3V0Ow0KwqANCivCoMKgwqDC
+oMKgwqDCoHByaW50ayhLRVJOX0VSUiAicHBjID0gJWQgZnJlcS1saW1pdCAlZFxuIiwgcHBjLCBw
+ci0NCj5wZXJmb3JtYW5jZS0+c3RhdGVzW3BwY10uDQorwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjb3JlX2Zy
+ZXF1ZW5jeSAqIDEwMDApOw0KKw0KwqDCoMKgwqDCoMKgwqDCoGNwdWZyZXFfdmVyaWZ5X3dpdGhp
+bl9saW1pdHMocG9saWN5LCAwLA0KwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBwci0+cGVyZm9ybWFuY2UtPnN0
+YXRlc1twcGNdLg0KwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjb3JlX2ZyZXF1ZW5jeSAqIDEwMDApOw0KDQpU
+aGFua3MsDQpTcmluaXZhcw==
