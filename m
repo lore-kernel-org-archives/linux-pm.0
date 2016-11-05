@@ -1,85 +1,69 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: [Bug] ARM: mxs: STI: console can't wake up from freeze
-Date: Sat, 5 Nov 2016 18:05:42 +0000
-Message-ID: <20161105180542.GE1041@n2100.armlinux.org.uk>
-References: <20161023133134.GI1041@n2100.armlinux.org.uk>
- <1709157673.85170.1cb53b4d-2805-48ea-aef1-dd282306d108.open-xchange@email.1und1.de>
- <20161031161700.GH1041@n2100.armlinux.org.uk>
- <847975190.29034.38a9c7fa-bdf8-4732-ac8b-cf15c21e3ce8.open-xchange@email.1und1.de>
- <20161101092304.GM1041@n2100.armlinux.org.uk>
- <322177156.158733.9867e3e7-5710-4844-a098-6f44bd852a6d.open-xchange@email.1und1.de>
- <1478345972.2206.15.camel@intel.com>
- <122295766.159553.9867e3e7-5710-4844-a098-6f44bd852a6d.open-xchange@email.1und1.de>
- <20161105130034.GG15759@mai>
- <1113068116.152452.34665947-6f6b-41d6-92af-eabcbcb794ea.open-xchange@email.1und1.de>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
+ kernel build
+Date: Sat, 5 Nov 2016 16:21:21 -0200
+Message-ID: <20161105182121.GC17290@khazad-dum.debian.net>
+References: <20161104083849.GA32688@amd>
+ <20161104085830.GA4089@amd>
+ <20161104091037.GD3414@vireshk-i7>
+ <20161104092636.GA30729@amd>
+ <20161104093105.GE3414@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.armlinux.org.uk ([78.32.30.218]:56302 "EHLO
-        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752918AbcKESGI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Nov 2016 14:06:08 -0400
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1113068116.152452.34665947-6f6b-41d6-92af-eabcbcb794ea.open-xchange@email.1und1.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20161104093105.GE3414@vireshk-i7>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>, rjw@rjwysocki.net, linux-pm@vger.kernel.org, kernel list <linux-kernel@vger.kernel.org>, rui.zhang@intel.com, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>, joerg.krause@embedded.rocks, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Fabio Estevam <fabio.estevam@nxp.com>
 
-On Sat, Nov 05, 2016 at 04:28:37PM +0100, Stefan Wahren wrote:
-> As i wrote in my email before, i added a pr_info() into freeze_wake.
-> But i never see the output of this message. So i assume freeze_wake
-> is never called. Again, how could this happen?
+On Fri, 04 Nov 2016, Viresh Kumar wrote:
+> On 04-11-16, 10:26, Pavel Machek wrote:
+> > How would I know if it is thermal capping? There's nothing in dmesg.
+> 
+> I am not sure what code is responsible for doing that in case of x86, maybe
+> Rafael and Rui can explain it that better.
+> 
+> But surely it involves userspace in this case as scaling_max_freq is getting
+> changed.
 
-Hmm, so the bit that you're getting stuck on is:
+Note that a X60 might limit the maximum frequency through ACPI when on
+AC *and* its battery is not installed or not in working order.
 
-        wait_event(suspend_freeze_wait_head,
-                   suspend_freeze_state == FREEZE_STATE_WAKE);
+The EC tries to detect the power brick type (65W, 90W), which often
+doesn't work well on non-Lenovo power bricks, and signals the BIOS to
+limit the maximum frequency if it thinks its only power source is a 65W
+power brick.
 
-Now there's two things about this here - it's a non-interruptible wait,
-so I think the hung task detection may trigger on that (I'm not entirely
-sure on that point though, and I don't have time this evening to read
-the code to find out.)
+This behavior would be readly visible by the X60 refusing to reach the
+maximum clock frequency *at all* -- it is a static limit, only removed
+when a sufficiently charged battery becomes available.
 
-The second thing is, that in order to pass this point, something has to
-call freeze_wake().
+This indirect power draw capping should never engage if your battery is
+installed and working, regardless of type and brand of power adapter,
+AFAIK.  I am only mentioning it so that you are aware of this possible
+behavior while debugging.
 
-There's not that many possibilities for that:
 
-$ git grep freeze_wake drivers kernel
-drivers/base/power/wakeup.c:    freeze_wake();
-drivers/base/power/wakeup.c:    freeze_wake();
-kernel/power/suspend.c:void freeze_wake(void)
-kernel/power/suspend.c:EXPORT_SYMBOL_GPL(freeze_wake);
+Anyway, this overheating thinkpad very, very likely needs a hardware
+repair (on top of the kernel bug fixes ;-) ).
 
-One of those is pm_system_wakeup(), the other is wakeup_source_activate()
-via wakeup_source_report_event() via __pm_stay_awake() or
-__pm_wakeup_event().
+Regardless of any kernel/userspace bugs, the X60 was engineered to not
+require thermal capping on reasonable indoor environmental temperature
+ranges.  If it needs the kernel to do something at all to avoid
+overheating just because it has been running at full CPU power, and
+ambient temperature is below 28°C, it very likely has a hardware issue
+(lint on the heatsink/fan, and/or cracked thermal interface between
+heatsink and processor).
 
-Looking at the results of:
-
-$ grep 'pm_wakeup_event\|pm_stay_awake\|pm_system_wakeup' drivers kernel -r
-
-it looks like for freeze support to work, various drivers need to call
-one of these functions.
-
-The iMX serial driver doesn't call any of these functions, so I can't
-see how we'd get past this point - and from that grep you'll see nothing
-in kernel/irq touches any of these functions.
-
-Documentation/power/suspend-and-interrupts.txt does a very poor job
-(which is typical) of describing what the requirements are for
-"suspend-to-idle", it doesn't really say that any of the above
-functions must be called and it doesn't say who's responsible for
-calling these functions.  It does talk about "pm_system_wakeup()"
-for "rare cases".
-
-So my conclusion, based on the poor documentation and the results of
-my greps, is that "freeze" aka "suspend-to-idle" is not supported on
-the majority of hardware, and attempting to use it will result in the
-system locking up in exactly the way you're seeing.
+Every old-style ThinkPad (like the X60) that I have ever seen
+overheating when running at full CPU power (after fan lint was removed)
+in a cool place (say, 26°C), stopped overheating after a heatsink reseat
+and thermal compound replacement (and if you're going to do it, use
+non-shelf-aged Arctic Silver 5 or something better, and "cure" it
+properly -- something rather easy to do on a ThinkPad X60).
 
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+  Henrique Holschuh
