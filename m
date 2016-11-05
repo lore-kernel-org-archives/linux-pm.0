@@ -1,46 +1,85 @@
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: v4.8-rc1: thinkpad x60: running at low frequency even during
- kernel build
-Date: Sat, 5 Nov 2016 16:04:58 -0200
-Message-ID: <20161105180458.GB17290@khazad-dum.debian.net>
-References: <20161104083849.GA32688@amd>
- <20161104085830.GA4089@amd>
- <1478268311.26953.17.camel@intel.com>
- <20161104204439.GA2581@amd>
- <20161104221600.GA7007@amd>
- <1478301649.7947.3.camel@intel.com>
- <20161105133719.GA3933@amd>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [Bug] ARM: mxs: STI: console can't wake up from freeze
+Date: Sat, 5 Nov 2016 18:05:42 +0000
+Message-ID: <20161105180542.GE1041@n2100.armlinux.org.uk>
+References: <20161023133134.GI1041@n2100.armlinux.org.uk>
+ <1709157673.85170.1cb53b4d-2805-48ea-aef1-dd282306d108.open-xchange@email.1und1.de>
+ <20161031161700.GH1041@n2100.armlinux.org.uk>
+ <847975190.29034.38a9c7fa-bdf8-4732-ac8b-cf15c21e3ce8.open-xchange@email.1und1.de>
+ <20161101092304.GM1041@n2100.armlinux.org.uk>
+ <322177156.158733.9867e3e7-5710-4844-a098-6f44bd852a6d.open-xchange@email.1und1.de>
+ <1478345972.2206.15.camel@intel.com>
+ <122295766.159553.9867e3e7-5710-4844-a098-6f44bd852a6d.open-xchange@email.1und1.de>
+ <20161105130034.GG15759@mai>
+ <1113068116.152452.34665947-6f6b-41d6-92af-eabcbcb794ea.open-xchange@email.1und1.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:56302 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752918AbcKESGI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Nov 2016 14:06:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20161105133719.GA3933@amd>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "platform-driver-x86@vger.kernel.org" <platform-driver-x86@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "ibm-acpi-devel@lists.sourceforge.net" <ibm-acpi-devel@lists.sourceforge.net>, "ibm-acpi@hmh.eng.br" <ibm-acpi@hmh.eng.br>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+In-Reply-To: <1113068116.152452.34665947-6f6b-41d6-92af-eabcbcb794ea.open-xchange@email.1und1.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sascha Hauer <kernel@pengutronix.de>, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>, joerg.krause@embedded.rocks, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Fabio Estevam <fabio.estevam@nxp.com>
 
-On Sat, 05 Nov 2016, Pavel Machek wrote:
-> [  825.759661] thinkpad_acpi: THERMAL EMERGENCY: a sensor reports something is extremely hot!
-> [  825.761935] thinkpad_acpi: temperatures (Celsius): 101 49 N/A 78 33 N/A 33 N/A 47 50 N/A N/A N/A N/A N/A N/A
+On Sat, Nov 05, 2016 at 04:28:37PM +0100, Stefan Wahren wrote:
+> As i wrote in my email before, i added a pr_info() into freeze_wake.
+> But i never see the output of this message. So i assume freeze_wake
+> is never called. Again, how could this happen?
 
-Oh boy, that must be the second time in a decade that I see that
-codepath triggering.  It is the second-level alert that the ThinkPad is
-about to catch fire.
+Hmm, so the bit that you're getting stuck on is:
 
-It should have logged a "is too hot!" first-level alert earlier, but
-this depends on the EC and not the driver.  Maybe the temperature raised
-too fast.
+        wait_event(suspend_freeze_wait_head,
+                   suspend_freeze_state == FREEZE_STATE_WAKE);
 
-In Windows, the system would attempt to hibernate or shutdown.  I would
-be quite happy to have thinkpad-acpi trigger such behavior as well,
-patches (or guidance) are welcome ;-)
+Now there's two things about this here - it's a non-interruptible wait,
+so I think the hung task detection may trigger on that (I'm not entirely
+sure on that point though, and I don't have time this evening to read
+the code to find out.)
 
-Anyway, if that temperature goes about 1~2°C higher, the EC should cut
-power to your motherboard.  Apparently, the built-in thermal protection
-clock modulation on the Intel processor is somehow saving your box from
-that forced power-off.
+The second thing is, that in order to pass this point, something has to
+call freeze_wake().
+
+There's not that many possibilities for that:
+
+$ git grep freeze_wake drivers kernel
+drivers/base/power/wakeup.c:    freeze_wake();
+drivers/base/power/wakeup.c:    freeze_wake();
+kernel/power/suspend.c:void freeze_wake(void)
+kernel/power/suspend.c:EXPORT_SYMBOL_GPL(freeze_wake);
+
+One of those is pm_system_wakeup(), the other is wakeup_source_activate()
+via wakeup_source_report_event() via __pm_stay_awake() or
+__pm_wakeup_event().
+
+Looking at the results of:
+
+$ grep 'pm_wakeup_event\|pm_stay_awake\|pm_system_wakeup' drivers kernel -r
+
+it looks like for freeze support to work, various drivers need to call
+one of these functions.
+
+The iMX serial driver doesn't call any of these functions, so I can't
+see how we'd get past this point - and from that grep you'll see nothing
+in kernel/irq touches any of these functions.
+
+Documentation/power/suspend-and-interrupts.txt does a very poor job
+(which is typical) of describing what the requirements are for
+"suspend-to-idle", it doesn't really say that any of the above
+functions must be called and it doesn't say who's responsible for
+calling these functions.  It does talk about "pm_system_wakeup()"
+for "rare cases".
+
+So my conclusion, based on the poor documentation and the results of
+my greps, is that "freeze" aka "suspend-to-idle" is not supported on
+the majority of hardware, and attempting to use it will result in the
+system locking up in exactly the way you're seeing.
 
 -- 
-  Henrique Holschuh
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
