@@ -1,87 +1,52 @@
 From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
-Date: Mon, 7 Nov 2016 22:15:26 +0100
-Message-ID: <20161107211526.GG1764@wotan.suse.de>
+Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
+ support
+Date: Mon, 7 Nov 2016 22:22:50 +0100
+Message-ID: <20161107212250.GH1764@wotan.suse.de>
 References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <11468990.WB1J8sxXpS@vostro.rjw.lan>
- <CGME20161031174700eucas1p1cf129b22ebd3dc689172e837ac01647e@eucas1p1.samsung.com>
- <20161031174703.GA25633@kroah.com>
- <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
+ <13957403.ZrB4mMbICz@vostro.rjw.lan>
+ <2715729.9U1nlcpFb3@vostro.rjw.lan>
+ <20161026111902.GA6447@wunner.de>
+ <20161027152551.GA15718@kroah.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:34715 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751786AbcKGVWw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 7 Nov 2016 16:22:52 -0500
 Content-Disposition: inline
-In-Reply-To: <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Joerg Roedel <joro@8bytes.org>, Jiri Kosina <jkosina@suse.cz>, Jiri Slaby <jslaby@suse.com>, Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>
+In-Reply-To: <20161027152551.GA15718@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Wed, Nov 02, 2016 at 08:58:38AM +0100, Marek Szyprowski wrote:
-> Hi Greg,
+On Thu, Oct 27, 2016 at 05:25:51PM +0200, Greg Kroah-Hartman wrote:
+> On Wed, Oct 26, 2016 at 01:19:02PM +0200, Lukas Wunner wrote:
+> > Hi Rafael,
+> > 
+> > sorry for not responding to v5 of your series earlier, just sending
+> > this out now in the hope that it reaches you before your travels.
+> > 
+> > On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
+> > > - Modify device_links_check_suppliers(), device_links_driver_bound(),
+> > >   device_links_no_driver(), device_links_driver_cleanup(), device_links_busy(),
+> > >   and device_links_unbind_consumers() to walk link lists under device_links_lock
+> > >   (to make the new "driver presence tracking" mechanism work reliably).
+> > 
+> > This change might increase boot time if drivers return -EPROBE_DEFER.
 > 
+> "might"?  Please verify this before guessing....
 > 
-> On 2016-10-31 18:47, Greg Kroah-Hartman wrote:
-> > On Sun, Oct 30, 2016 at 05:22:13PM +0100, Rafael J. Wysocki wrote:
-> > > Let me quote from the previous intro messages for this series first:
-> > > 
-> > > > > Time for another update. :-)
-> > > > > 
-> > > > > Fewer changes this time, mostly to address issues found by Lukas and
-> > > > > Marek.
-> > > > > 
-> > > > > The most significant one is to make device_link_add() cope with the case
-> > > > > when
-> > > > > the consumer device has not been registered yet when it is called.  The
-> > > > > supplier device still is required to be registered and the function will
-> > > > > return NULL if that is not the case.
-> > > > > 
-> > > > > Another significant change is in patch [4/5] that now makes the core apply
-> > > > > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
-> > > > > probing of a consumer one (in analogy with the parent).
-> > > > One more update after some conversations during LinuxCon Europe.
-> > > > 
-> > > > The main point was to make it possible for device_link_add() to figure out
-> > > > the initial state of the link instead of expecting the caller to provide it
-> > > > which might not be reliable enough in general.
-> > > > 
-> > > > In this version device_link_add() takes three arguments, the supplier and
-> > > > consumer pointers and flags and it sets the correct initial state of the
-> > > > link automatically (unless invoked with the "stateless" flag, of course).
-> > > > The cost is one additional field in struct device (I moved all of the
-> > > > links-related fields in struct device to a separate sub-structure while at
-> > > > it) to track the "driver presence status" of the device (to be used by
-> > > > device_link_add()).
-> > > > 
-> > > > In addition to that, the links list walks in the core.c and dd.c code are
-> > > > under the device links mutex now, so the iternal link spinlock is not needed
-> > > > any more and I have renamed symbols to distinguish between flags, link
-> > > > states and device "driver presence statuses".
-> > > The most significant change in this revision with respect to the previous one is
-> > > related to the fact that SRCU is not available on some architectures, so the
-> > > code falls back to using an RW semaphore for synchronization if SRCU is not
-> > > there.  Fortunately, the code changes needed for that turned out to be quite
-> > > straightforward and confined to the second patch.
-> > > 
-> > > Apart from this, the flags are defined using BIT(x) now (instead of open coding
-> > > the latter in the flag definitions).
-> > > 
-> > > Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
-> > > trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
-> > > [2/5].
-> > > 
-> > > FWIW, I've run the series through 0-day which has not reported any problems
-> > > with it.
-> > Great, they are now applied to my tree, thanks again for doing this
-> > work.
-> 
-> Thanks for merging those patches! Could you provide a stable tag with them,
-> so I can
-> ask Joerg to merge my Exynos IOMMU PM patches on top of it via IOMMU tree?
+> And don't make this more complex than needed before actually determining
+> a real issue.
 
-You want these patches to be merged into stable?! This is a whole new set of
-functionality, the patches in no way describe any *fixes* or critical issues,
-why are you saying this is needed? What makes you believe this is a stable
-candidate?
+As clarified by Rafael at Plumbers, this functional dependencies
+framework assumes your driver / subsystem supports deferred probe,
+if it does not support its not clear what will happen....
 
- Luis
+We have no explicit semantics to check if a driver / subsystem
+supports deferred probe.
+
+  Luis
