@@ -1,74 +1,98 @@
 From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] cpufreq: powernv: Use PMSR to verify global and local
- pstate
-Date: Mon, 7 Nov 2016 13:02:10 +0530
-Message-ID: <ce785008-f387-3e3f-243d-5d701fafc572@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] cpufreq: powernv: Adding fast_switch for schedutil
+Date: Mon, 7 Nov 2016 13:02:04 +0530
+Message-ID: <d2bbacea-3401-01ab-0933-f9ed628df502@linux.vnet.ibm.com>
 References: <1478237255-4258-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1478237255-4258-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20161104064132.GB3414@vireshk-i7>
+ <20161104063322.GA3414@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:35939 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751012AbcKGHdQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2016 02:33:16 -0500
-Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uA77SttR029973
-        for <linux-pm@vger.kernel.org>; Mon, 7 Nov 2016 02:32:23 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 26j6v3vkmx-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 07 Nov 2016 02:32:23 -0500
-Received: from localhost
-        by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-        Mon, 7 Nov 2016 17:32:18 +1000
-In-Reply-To: <20161104064132.GB3414@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+In-Reply-To: <20161104063322.GA3414@vireshk-i7>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
 To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: linuxppc-dev@lists.ozlabs.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 Thanks Viresh for taking a look at it.
 
-I will make the mentioned changes in the next version of the patch and
-will add Shilpa and Gautham to the mail chain.
+I will make the mentioned changes in the next version of the patch.
+
 
 Regards
 
 Akshay Adiga
 
 
-On 11/04/2016 12:11 PM, Viresh Kumar wrote:
+On 11/04/2016 12:03 PM, Viresh Kumar wrote:
 > On 04-11-16, 10:57, Akshay Adiga wrote:
->> As fast_switch may get called in interrupt disable mode, it does not
-> s/in interrupt disable mode/with interrupts disabled
-> s/it does/it may
->
->> update the global_pstate_info data structure. Hence the global_pstate_info
->> has stale data whenever pstate is updated through fast_swtich().
-> s/has/may have
-> s/swtich/switch
->
->> So the gpstate_timer can fire after a fast_switch() call has update
-> s/So the/The
-> s/a fast_swtich() call has update/the fast_switch() call has updated
->
->> the pstates to a different value. Hence the timer handler cannot rely
->> on the cached values of local and global pstate and needs to read it
->> from the PMSR.
+>> Adding fast_switch which does light weight operation to
+>> set the desired pstate.
 >>
 >> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
->>
 >> ---
->>   drivers/cpufreq/powernv-cpufreq.c | 32 ++++++++++++++++++++++----------
->>   1 file changed, 22 insertions(+), 10 deletions(-)
-> I am not the best guy to judge the code changes here. Can you please include
-> Shilpa and Gautham to the mail chain and get there feedback.
->
->
->
-
-
+>>   drivers/cpufreq/powernv-cpufreq.c | 22 +++++++++++++++++++++-
+>>   1 file changed, 21 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>> index d3ffde8..09a0496 100644
+>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>> @@ -752,9 +752,12 @@ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>>   	spin_lock_init(&gpstates->gpstate_lock);
+>>   	ret = cpufreq_table_validate_and_show(policy, powernv_freqs);
+>>   
+>> -	if (ret < 0)
+>> +	if (ret < 0) {
+>>   		kfree(policy->driver_data);
+>> +		return ret;
+>> +	}
+>>   
+>> +	policy->fast_switch_possible = true;
+>>   	return ret;
+>>   }
+>>   
+>> @@ -897,6 +900,22 @@ static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
+>>   	del_timer_sync(&gpstates->timer);
+>>   }
+>>   
+>> +static unsigned int powernv_fast_switch(struct cpufreq_policy *policy,
+>> +					unsigned int target_freq)
+>> +{
+>> +	int index;
+>> +	struct powernv_smp_call_data freq_data;
+>> +
+>> +	index = cpufreq_table_find_index_dl(policy, target_freq);
+>> +	if (index < 0 || index >= powernv_pstate_info.nr_pstates)
+>> +		return CPUFREQ_ENTRY_INVALID;
+> I don't think such a check is required at all. It wouldn't happen without a BUG
+> in kernel.
+>> +	freq_data.pstate_id = powernv_freqs[index].driver_data;
+>> +	freq_data.gpstate_id = powernv_freqs[index].driver_data;
+>> +	set_pstate(&freq_data);
+>> +
+>> +	return powernv_freqs[index].frequency;
+>> +}
+>> +
+>>   static struct cpufreq_driver powernv_cpufreq_driver = {
+>>   	.name		= "powernv-cpufreq",
+>>   	.flags		= CPUFREQ_CONST_LOOPS,
+>> @@ -904,6 +923,7 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>>   	.exit		= powernv_cpufreq_cpu_exit,
+>>   	.verify		= cpufreq_generic_frequency_table_verify,
+>>   	.target_index	= powernv_cpufreq_target_index,
+>> +	.fast_switch	= powernv_fast_switch,
+>>   	.get		= powernv_cpufreq_get,
+>>   	.stop_cpu	= powernv_cpufreq_stop_cpu,
+>>   	.attr		= powernv_cpu_freq_attr,
+>> -- 
+>> 2.7.4
