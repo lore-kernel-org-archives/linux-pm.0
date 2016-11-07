@@ -1,132 +1,73 @@
-From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH v3] cpufreq: stats: clear statistics
-Date: Mon,  7 Nov 2016 10:02:23 -0800
-Message-ID: <20161107180223.44536-1-code@mmayer.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-out-so.shaw.ca ([64.59.136.137]:45839 "EHLO
-        smtp-out-so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932411AbcKGSCi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2016 13:02:38 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
+ fails to start
+Date: Mon, 07 Nov 2016 10:57:02 -0800
+Message-ID: <5820CE7E.40802@codeaurora.org>
+References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com> <1477509425-16936-1-git-send-email-skannan@codeaurora.org> <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 
-From: Markus Mayer <mmayer@broadcom.com>
+On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
+> Hi,
+>
+> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
+>> If the new governor fails to start, switch back to old governor so that the
+>> devfreq state is not left in some weird limbo.
+>>
+>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>> ---
+>> * Fix NULL deref for real this time.
+>> * Addressed some style preferences.
+>>
+>>   drivers/devfreq/devfreq.c | 13 +++++++++++--
+>>   1 file changed, 11 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index bf3ea76..77c41a5 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>   	struct devfreq *df = to_devfreq(dev);
+>>   	int ret;
+>>   	char str_governor[DEVFREQ_NAME_LEN + 1];
+>> -	struct devfreq_governor *governor;
+>> +	const struct devfreq_governor *governor, *prev_governor;
+>>
+>>   	ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>   	if (ret != 1)
+>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>   			goto out;
+>>   		}
+>>   	}
+>> +	prev_governor = df->governor;
+>>   	df->governor = governor;
+>>   	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+>>   	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>> -	if (ret)
+>> +	if (ret) {
+>>   		dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>   			 __func__, df->governor->name, ret);
+>> +		if (prev_governor) {
+>
+> I think that prev_governor is always set. You don't need to check it.
+> Why do check it?
 
-Allow CPUfreq statistics to be cleared by writing anything to
-/sys/.../cpufreq/stats/reset.
+Not true. Even higher up in this function, we check if df->governor != 
+NULL. Simple example would be that the default governor passed in while 
+adding the device isn't compiled in.
 
-Signed-off-by: Markus Mayer <mmayer@broadcom.com>
----
 
-Changes since v2:
-    - changed name of write-only macro to cpufreq_freq_attr_wo()
-    - removed "perm" parameter from write-only macro
-    - squashed the two separate commits into a single one
+Thanks,
+Saravana
 
-Changes since v1:
-    - add new cpufreq_freq_attr_wr_perm() macro for write-only
-      attributes (because this is a separate commit, this patch has
-      turned into a series)
-    - remove the Kconfig option, compiling the code unconditionally
-    - remove show_reset()
-    - cpufreq_stats_clear_table() takes a struct cpufreq_stats * as
-      argument rather than a struct cpufreq_policy *
-
- Documentation/cpu-freq/cpufreq-stats.txt |  6 ++++++
- drivers/cpufreq/cpufreq_stats.c          | 22 ++++++++++++++++++++++
- include/linux/cpufreq.h                  |  4 ++++
- 3 files changed, 32 insertions(+)
-
-diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
-index 8d9773f..3c355f6 100644
---- a/Documentation/cpu-freq/cpufreq-stats.txt
-+++ b/Documentation/cpu-freq/cpufreq-stats.txt
-@@ -44,11 +44,17 @@ the stats driver insertion.
- total 0
- drwxr-xr-x  2 root root    0 May 14 16:06 .
- drwxr-xr-x  3 root root    0 May 14 15:58 ..
-+--w-------  1 root root 4096 May 14 16:06 reset
- -r--r--r--  1 root root 4096 May 14 16:06 time_in_state
- -r--r--r--  1 root root 4096 May 14 16:06 total_trans
- -r--r--r--  1 root root 4096 May 14 16:06 trans_table
- --------------------------------------------------------------------------------
- 
-+-  reset
-+Write-only attribute that can be used to reset the stat counters. This can be
-+useful for evaluating system behaviour under different governors without the
-+need for a reboot.
-+
- -  time_in_state
- This gives the amount of time spent in each of the frequencies supported by
- this CPU. The cat output will have "<frequency> <time>" pair in each line, which
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index 06d3abd..ac284e6 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -41,6 +41,18 @@ static int cpufreq_stats_update(struct cpufreq_stats *stats)
- 	return 0;
- }
- 
-+static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
-+{
-+	unsigned int count = stats->max_state;
-+
-+	memset(stats->time_in_state, 0, count * sizeof(u64));
-+#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
-+	memset(stats->trans_table, 0, count * count * sizeof(int));
-+#endif
-+	stats->last_time = get_jiffies_64();
-+	stats->total_trans = 0;
-+}
-+
- static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
- {
- 	return sprintf(buf, "%d\n", policy->stats->total_trans);
-@@ -64,6 +76,14 @@ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
- 	return len;
- }
- 
-+static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
-+			   size_t count)
-+{
-+	/* We don't care what is written to the attribute. */
-+	cpufreq_stats_clear_table(policy->stats);
-+	return count;
-+}
-+
- #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
- static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
- {
-@@ -113,10 +133,12 @@ cpufreq_freq_attr_ro(trans_table);
- 
- cpufreq_freq_attr_ro(total_trans);
- cpufreq_freq_attr_ro(time_in_state);
-+cpufreq_freq_attr_wo(reset);
- 
- static struct attribute *default_attrs[] = {
- 	&total_trans.attr,
- 	&time_in_state.attr,
-+	&reset.attr,
- #ifdef CONFIG_CPU_FREQ_STAT_DETAILS
- 	&trans_table.attr,
- #endif
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 5fa55fc..490573e 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -234,6 +234,10 @@ __ATTR(_name, _perm, show_##_name, NULL)
- static struct freq_attr _name =			\
- __ATTR(_name, 0644, show_##_name, store_##_name)
- 
-+#define cpufreq_freq_attr_wo(_name)		\
-+static struct freq_attr _name =			\
-+__ATTR(_name, 0200, NULL, store_##_name)
-+
- struct global_attr {
- 	struct attribute attr;
- 	ssize_t (*show)(struct kobject *kobj,
 -- 
-2.7.4
-
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
