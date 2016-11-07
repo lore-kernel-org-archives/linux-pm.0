@@ -1,161 +1,104 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
- support
-Date: Mon, 7 Nov 2016 22:39:54 +0100
-Message-ID: <20161107213954.GI1764@wotan.suse.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <13957403.ZrB4mMbICz@vostro.rjw.lan>
- <2715729.9U1nlcpFb3@vostro.rjw.lan>
+From: "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
+	control runtime pm
+Date: Mon, 7 Nov 2016 22:47:47 +0100
+Message-ID: <20161107214747.GJ1764@wotan.suse.de>
+References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
+	<CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
+	<1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:35367 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751367AbcKGVkD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 7 Nov 2016 16:40:03 -0500
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <2715729.9U1nlcpFb3@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1476948173-21093-8-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Andrzej Hajda <a.hajda-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, Mauro Carvalho Chehab <mchehab-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Mark
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Andrzej Hajda <a.hajda@samsung.com>
 
-On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Currently, there is a problem with taking functional dependencies
-> between devices into account.
-> 
-> What I mean by a "functional dependency" is when the driver of device
-> B needs device A to be functional and (generally) its driver to be
-> present in order to work properly.  This has certain consequences
-> for power management (suspend/resume and runtime PM ordering) and
-> shutdown ordering of these devices.  In general, it also implies that
-> the driver of A needs to be working for B to be probed successfully
-> and it cannot be unbound from the device before the B's driver.
-> 
-> Support for representing those functional dependencies between
-> devices is added here to allow the driver core to track them and act
-> on them in certain cases where applicable.
-> 
-> The argument for doing that in the driver core is that there are
-> quite a few distinct use cases involving device dependencies, they
-> are relatively hard to get right in a driver (if one wants to
-> address all of them properly) and it only gets worse if multiplied
-> by the number of drivers potentially needing to do it.
+On Thu, Oct 20, 2016 at 09:22:53AM +0200, Marek Szyprowski wrote:
+> This patch uses recently introduced device dependency links to track the
+> runtime pm state of the master's device. This way each SYSMMU controller
+> is set to runtime active only when its master's device is active and can
+> restore or save its state instead of being activated all the time when
+> attached to the given master device. This way SYSMMU controllers no longer
+> prevents respective power domains to be turned off when master's device
+> is not being used.
 
-How many drivers actually *need this* today for suspend / resume ?
+Its unclear why you need this based on this commit log -- is this
+needed only on platforms that lack ACPI and use device tree ? If so
+why? If this issue is present also on systems that only use ACPI is
+this possibly due to an ACPI firmware bug  or the lack of some semantics
+in ACPI to express ordering in a better way? If the issue is device
+tree related only is this due to the lack of semantics in device tree
+to express some more complex dependency ?
 
-How many of these are because of ACPI firmware bugs rather than
-some other reason ?
-
-Can ACPI somehow be used instead by these devices to address quirks?
-
-> Morever, at
-> least one case (asynchronous system suspend/resume) cannot be handled
-> in a single driver at all, because it requires the driver of A to
-> wait for B to suspend (during system suspend) and the driver of B to
-> wait for A to resume (during system resume).
-
-Why is this all of a sudden a new issue? It seems there is quite a bit of
-frameworks already out there that somehow deal with some sort of device
-ordering / dependencies, and I am curious if they've been addressing some of
-these problems for a while now on their own somehow with their own solutions,
-is that the case? For instance can DAPM the / DRM / Audio component framework
-v4l async solution be used or does it already address some of these concerns ?
-
-> For this reason, represent dependencies between devices as "links",
-> with the help of struct device_link objects each containing pointers
-> to the "linked" devices, a list node for each of them, status
-> information, flags, and an RCU head for synchronization.
-> 
-> Also add two new list heads, representing the lists of links to the
-> devices that depend on the given one (consumers) and to the devices
-> depended on by it (suppliers), and a "driver presence status" field
-> (needed for figuring out initial states of device links) to struct
-> device.
-> 
-> The entire data structure consisting of all of the lists of link
-> objects for all devices is protected by a mutex (for link object
-> addition/removal and for list walks during device driver probing
-> and removal) and by SRCU (for list walking in other case that will
-> be introduced by subsequent change sets).  In addition, each link
-> object has an internal status field whose value reflects whether or
-> not drivers are bound to the devices pointed to by the link or
-> probing/removal of their drivers is in progress etc.  That field
-> is only modified under the device links mutex, but it may be read
-> outside of it in some cases (introduced by subsequent change sets),
-> so modifications of it are annotated with WRITE_ONCE().
-> 
-> New links are added by calling device_link_add() which takes three
-> arguments: pointers to the devices in question and flags.  In
-> particular, if DL_FLAG_STATELESS is set in the flags, the link status
-> is not to be taken into account for this link and the driver core
-> will not manage it.  In turn, if DL_FLAG_AUTOREMOVE is set in the
-> flags, the driver core will remove the link automatically when the
-> consumer device driver unbinds from it.
-> 
-> One of the actions carried out by device_link_add() is to reorder
-> the lists used for device shutdown and system suspend/resume to
-> put the consumer device along with all of its children and all of
-> its consumers (and so on, recursively) to the ends of those lists
-> in order to ensure the right ordering between all of the supplier
-> and consumer devices.
-
-There's no explanation as to why this order is ensured to be
-correct, I think its important to document this. From our discussions
-at Plumbers it seems the order is ensured due to the fact that order
-was already implicitly provided through platform firmware (ACPI
-enumeration is one), adjusting order on the dpm list is just shuffling
-order between consumer / provider, but nothing else. In theory it
-works because in the simple case this should suffice however I
-remain unconvinced that if we have more users of this framework this
-simple algorithm will suffice. Having a test driver or series of
-test drivers that shows this would be good. As it stands there is simply
-an assumption that this is correct, how *strongly* do you feel that
-the order will *always* be correct if this is done and no cycles
-can be added, even if tons of drivers start using this ?
-
-> For this reason, it is not possible to create a link between two
-> devices if the would-be supplier device already depends on the
-> would-be consumer device as either a direct descendant of it or a
-> consumer of one of its direct descendants or one of its consumers
-> and so on.
-> 
-> There are two types of link objects, persistent and non-persistent.
-> The persistent ones stay around until one of the target devices is
-> deleted, while the non-persistent ones are removed automatically when
-> the consumer driver unbinds from its device (ie. they are assumed to
-> be valid only as long as the consumer device has a driver bound to
-> it).  Persistent links are created by default and non-persistent
-> links are created when the DL_FLAG_AUTOREMOVE flag is passed
-> to device_link_add().
-> 
-> Both persistent and non-persistent device links can be deleted
-> with an explicit call to device_link_del().
-> 
-> Links created without the DL_FLAG_STATELESS flag set are managed
-> by the driver core using a simple state machine.  There are 5 states
-> each link can be in: DORMANT (unused), AVAILABLE (the supplier driver
-> is present and functional), CONSUMER_PROBE (the consumer driver is
-> probing), ACTIVE (both supplier and consumer drivers are present and
-> functional), and SUPPLIER_UNBIND (the supplier driver is unbinding).
-> The driver core updates the link state automatically depending on
-> what happens to the linked devices and for each link state specific
-> actions are taken in addition to that.
-> 
-> For example, if the supplier driver unbinds from its device, the
-> driver core will also unbind the drivers of all of its consumers
-> automatically under the assumption that they cannot function
-> properly without the supplier.  Analogously, the driver core will
-> only allow the consumer driver to bind to its device if the
-> supplier driver is present and functional (ie. the link is in
-> the AVAILABLE state).  If that's not the case, it will rely on
-> the existing deferred probing mechanism to wait for the supplier
-> driver to become available.
-
-This assumes drivers and subsystems support deferred probe, is
-there a way to ensure that drivers that use this framework support
-it instead of possibly breaking them if they use this framework ?
+Has there been any review of the existing similar solutions out there
+such as the DRM / audio component framework? Would that help ?
 
   Luis
+
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> ---
+>  drivers/iommu/exynos-iommu.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
+> index 5e6d7bbf9b70..59b4f2ce4f5f 100644
+> --- a/drivers/iommu/exynos-iommu.c
+> +++ b/drivers/iommu/exynos-iommu.c
+> @@ -781,10 +781,6 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
+>  	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
+>  		return;
+>  
+> -	list_for_each_entry(data, &owner->controllers, owner_node) {
+> -		pm_runtime_put_sync(data->sysmmu);
+> -	}
+> -
+>  	mutex_lock(&owner->rpm_lock);
+>  
+>  	list_for_each_entry(data, &owner->controllers, owner_node) {
+> @@ -848,10 +844,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+>  
+>  	mutex_unlock(&owner->rpm_lock);
+>  
+> -	list_for_each_entry(data, &owner->controllers, owner_node) {
+> -		pm_runtime_get_sync(data->sysmmu);
+> -	}
+> -
+>  	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
+>  		&pagetable);
+>  
+> @@ -1232,6 +1224,14 @@ static int exynos_iommu_of_xlate(struct device *dev,
+>  
+>  	list_add_tail(&data->owner_node, &owner->controllers);
+>  	data->master = dev;
+> +
+> +	/*
+> +	 * SYSMMU will be runtime activated via device link (dependency) to its
+> +	 * master device, so there are no direct calls to pm_runtime_get/put
+> +	 * in this driver.
+> +	 */
+> +	device_link_add(dev, data->sysmmu, DL_FLAG_PM_RUNTIME);
+> +
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.9.1
+> 
+> 
+
+-- 
+Luis Rodriguez, SUSE LINUX GmbH
+Maxfeldstrasse 5; D-90409 Nuernberg
