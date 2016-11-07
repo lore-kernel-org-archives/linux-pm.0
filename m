@@ -1,94 +1,87 @@
-From: NeilBrown <neilb@suse.com>
-Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
-Date: Tue, 08 Nov 2016 07:36:32 +1100
-Message-ID: <87a8dbni27.fsf@notabene.neil.brown.name>
-References: <cover.1476780088.git.baolin.wang@linaro.org> <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com> <87k2cttptn.fsf@notabene.neil.brown.name> <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com> <87a8dls7yn.fsf@notabene.neil.brown.name> <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com> <871sytqrqh.fsf@notabene.neil.brown.name> <CAMz4kuJV5wiCpWJF=-YpTf1sjNrOqjc53iRYmGoEQepqtrfUdA@mail.gmail.com>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
+Date: Mon, 7 Nov 2016 22:15:26 +0100
+Message-ID: <20161107211526.GG1764@wotan.suse.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <11468990.WB1J8sxXpS@vostro.rjw.lan>
+ <CGME20161031174700eucas1p1cf129b22ebd3dc689172e837ac01647e@eucas1p1.samsung.com>
+ <20161031174703.GA25633@kroah.com>
+ <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:60102 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751736AbcKGUjw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 7 Nov 2016 15:39:52 -0500
-In-Reply-To: <CAMz4kuJV5wiCpWJF=-YpTf1sjNrOqjc53iRYmGoEQepqtrfUdA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Joerg Roedel <joro@8bytes.org>, Jiri Kosina <jkosina@suse.cz>, Jiri Slaby <jslaby@suse.com>, Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Wed, Nov 02, 2016 at 08:58:38AM +0100, Marek Szyprowski wrote:
+> Hi Greg,
+> 
+> 
+> On 2016-10-31 18:47, Greg Kroah-Hartman wrote:
+> > On Sun, Oct 30, 2016 at 05:22:13PM +0100, Rafael J. Wysocki wrote:
+> > > Let me quote from the previous intro messages for this series first:
+> > > 
+> > > > > Time for another update. :-)
+> > > > > 
+> > > > > Fewer changes this time, mostly to address issues found by Lukas and
+> > > > > Marek.
+> > > > > 
+> > > > > The most significant one is to make device_link_add() cope with the case
+> > > > > when
+> > > > > the consumer device has not been registered yet when it is called.  The
+> > > > > supplier device still is required to be registered and the function will
+> > > > > return NULL if that is not the case.
+> > > > > 
+> > > > > Another significant change is in patch [4/5] that now makes the core apply
+> > > > > pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
+> > > > > probing of a consumer one (in analogy with the parent).
+> > > > One more update after some conversations during LinuxCon Europe.
+> > > > 
+> > > > The main point was to make it possible for device_link_add() to figure out
+> > > > the initial state of the link instead of expecting the caller to provide it
+> > > > which might not be reliable enough in general.
+> > > > 
+> > > > In this version device_link_add() takes three arguments, the supplier and
+> > > > consumer pointers and flags and it sets the correct initial state of the
+> > > > link automatically (unless invoked with the "stateless" flag, of course).
+> > > > The cost is one additional field in struct device (I moved all of the
+> > > > links-related fields in struct device to a separate sub-structure while at
+> > > > it) to track the "driver presence status" of the device (to be used by
+> > > > device_link_add()).
+> > > > 
+> > > > In addition to that, the links list walks in the core.c and dd.c code are
+> > > > under the device links mutex now, so the iternal link spinlock is not needed
+> > > > any more and I have renamed symbols to distinguish between flags, link
+> > > > states and device "driver presence statuses".
+> > > The most significant change in this revision with respect to the previous one is
+> > > related to the fact that SRCU is not available on some architectures, so the
+> > > code falls back to using an RW semaphore for synchronization if SRCU is not
+> > > there.  Fortunately, the code changes needed for that turned out to be quite
+> > > straightforward and confined to the second patch.
+> > > 
+> > > Apart from this, the flags are defined using BIT(x) now (instead of open coding
+> > > the latter in the flag definitions).
+> > > 
+> > > Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
+> > > trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
+> > > [2/5].
+> > > 
+> > > FWIW, I've run the series through 0-day which has not reported any problems
+> > > with it.
+> > Great, they are now applied to my tree, thanks again for doing this
+> > work.
+> 
+> Thanks for merging those patches! Could you provide a stable tag with them,
+> so I can
+> ask Joerg to merge my Exynos IOMMU PM patches on top of it via IOMMU tree?
 
-On Mon, Nov 07 2016, Baolin Wang wrote:
+You want these patches to be merged into stable?! This is a whole new set of
+functionality, the patches in no way describe any *fixes* or critical issues,
+why are you saying this is needed? What makes you believe this is a stable
+candidate?
 
-> On 3 November 2016 at 09:25, NeilBrown <neilb@suse.com> wrote:
->> On Tue, Nov 01 2016, Baolin Wang wrote:
->
-> I agree with your most opinions, but these are optimization.=20
-
-I see them as bug fixes, not optimizations.
-
->                                                              Firstly I
-> think we should upstream the USB charger driver.
-
-I think you missed the point.  The point is that we don't *need* your
-"USB charger driver" because all the infrastructure we need is *already*
-present in the kernel.  It is buggy and not used uniformly, and could
-usefully be polished and improved.  But the structure is already
-present.
-
-If everyone just added new infrastructure when they didn't like, or
-didn't understand, what was already present, the kernel would become
-like the Mad Hatter's tea party, full of dirty dishes.
-
->                                                  What I want to ask is
-> how can we notify power driver if we don't set the
-> usb_register_notifier(), then I think you give the answer is: power
-> driver can register by 'struct usb_phy->notifier'. But why usb phy
-> should notify the power driver how much current should be drawn, and I
-> still think we should notify the current in usb charger driver which
-> is better, and do not need to notify current for power driver in usb
-> phy driver.
-
-I accept that it isn't clear that the phy *should* be involved in
-communicating the negotiated power availability, but nor is it clear
-that it shouldn't.  The power does travel through the physical
-interface, so physically it plays a role.
-
-But more importantly, it already *does* get told (in some cases).
-There is an interface "usb_phy_set_power()" which exists explicitly to
-tell the phy what power has been negotiated.  Given that infrastructure
-exists and works, it make sense to use it.
-
-If you think it is a broken design and should be removed, then fine:
-make a case for that.  Examine the history.  Make sure you know why it
-is there (or make sure that information cannot be found), and then
-present a case as to why it should be removed and replaced with
-something else.  But don't just leave it there and pretend it doesn't
-exist and create something similar-but-different and hope people will
-know why yours is better.  That way lies madness.
-
-NeilBrown
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJYIOXQAAoJEDnsnt1WYoG5OrkQAIydklU1Kr3SX42iw75868+X
-tMZLTDzWZ8mU9uXpkmSv6HZxYmb/2SXv0i4/Z8ugOerT5VP1Wv97L+gg44XZCD0d
-9B7dXLVdOS7O34XWQOcyiBY4rqj42Ljk1gWMp0QXhvxhYZk/YUmMwoWfRnZH1HuC
-Itre2Sci1SNMWY8lXlWTykbTl67KmLuQChHG4EUUem9pcy0SfFwywNJ0UaQLk10S
-Q+MFj0zSD2Hdqbwsx6NAtSEYUXt0Y825LxY2vKEVAScVUkcZEPtMSOWTAPVm5fRc
-vOVlt49Ut+aHwCUHkbw5qYqteexAOb2oVrDXOmdWdVVUqZBrX5RAwv4IGoRr/r+W
-DXZnuJRmGS9ofEc0+v38wCbNV4x4U/OYAm11165zzYsuVeC+vAO4/J3W74K2g8pN
-XFCqChsneIm70Bbi3d2Ei+zedomfkRdUv1Eh/TzJlPrgpPf9ZlphR2HZ1KTdqkG2
-pHXBNWek7mTja6nZ4/WR5D9m8zo+OxjfuM589dEi5bKhRPTB85VdB7G6EwvGv1qp
-k9Kj+rO2YRCV5qb3xwIci9DI70QX/9YdYTkURzW5ImSRyci2cK/rWu7Igq7oQeKB
-O33ncngAQXoi29iuBgmUvUHrmQ2uvzuQaZynp/VFmKVngJ7kunJZqh0lOYFti/bx
-JOlCS08Q/g46rbpn4/Kl
-=Q+aq
------END PGP SIGNATURE-----
---=-=-=--
+ Luis
