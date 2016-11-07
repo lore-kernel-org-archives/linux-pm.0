@@ -1,147 +1,107 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
-Date: Mon, 7 Nov 2016 12:14:28 +0100
-Message-ID: <CAPDyKFoCjf1qSBDWUY_wNx21_78fRrFqcqrFbsSmabzAZJxQAQ@mail.gmail.com>
-References: <1478210075-92045-1-git-send-email-lina.iyer@linaro.org> <1478210075-92045-2-git-send-email-lina.iyer@linaro.org>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
+ calls to hotplugged cpu")]
+Date: Mon, 7 Nov 2016 13:49:37 +0200
+Message-ID: <20161107114937.GX4617@intel.com>
+References: <20160809172057.GZ4329@intel.com>
+ <20161027172852.GE4617@intel.com>
+ <alpine.DEB.2.20.1610272035180.4913@nanos>
+ <20161027192006.GF4617@intel.com>
+ <alpine.DEB.2.20.1610272122510.4913@nanos>
+ <20161027203745.GH4617@intel.com>
+ <alpine.DEB.2.20.1610272238390.4913@nanos>
+ <20161028155603.GI4617@intel.com>
+ <alpine.DEB.2.20.1610282049500.5053@nanos>
+ <20161101204737.GB4617@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:38045 "EHLO
-        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752502AbcKGLOb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2016 06:14:31 -0500
-Received: by mail-wm0-f50.google.com with SMTP id f82so111357647wmf.1
-        for <linux-pm@vger.kernel.org>; Mon, 07 Nov 2016 03:14:30 -0800 (PST)
-In-Reply-To: <1478210075-92045-2-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-arch-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161101204737.GB4617@intel.com>
+Sender: linux-arch-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Feng Tang <feng.79.tang@gmail.com>, feng.tang@intel.com, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-arch@vger.kernel.org, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Linus Torvalds <torvalds@linux-foundation.org>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Rob Herring <robh@kernel.org>
 
-On 3 November 2016 at 22:54, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Re-using idle state definition provided by arm,idle-state for domain
-> idle states creates a lot of confusion and limits further evolution of
-> the domain idle definition. To keep things clear and simple, define a
-> idle states for domain using a new compatible "domain-idle-state".
->
-> Fix existing PM domains code to look for the newly defined compatible.
->
-> Cc: <devicetree@vger.kernel.org>
-> Cc: Rob Herring <robh@kernel.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
->  .../devicetree/bindings/power/power_domain.txt     |  8 +++---
->  drivers/base/power/domain.c                        |  2 +-
->  3 files changed, 38 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
-> new file mode 100644
-> index 0000000..eefc7ed
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
-> @@ -0,0 +1,33 @@
-> +PM Domain Idle State Node:
-> +
-> +A domain idle state node represents the state parameters that will be used to
-> +select the state when there are no active components in the domain.
-> +
-> +The state node has the following parameters -
-> +
-> +- compatible:
-> +       Usage: Required
-> +       Value type: <string>
-> +       Definition: Must be "domain-idle-state".
-> +
-> +- entry-latency-us
-> +       Usage: Required
-> +       Value type: <prop-encoded-array>
-> +       Definition: u32 value representing worst case latency in
-> +                   microseconds required to enter the idle state.
-> +                   The exit-latency-us duration may be guaranteed
-> +                   only after entry-latency-us has passed.
+On Tue, Nov 01, 2016 at 10:47:37PM +0200, Ville Syrjälä wrote:
+> On Fri, Oct 28, 2016 at 08:58:41PM +0200, Thomas Gleixner wrote:
+> > On Fri, 28 Oct 2016, Ville Syrjälä wrote:
+> > > On Thu, Oct 27, 2016 at 10:41:18PM +0200, Thomas Gleixner wrote:
+> > > > On Thu, 27 Oct 2016, Ville Syrjälä wrote:
+> > > > > On Thu, Oct 27, 2016 at 09:25:05PM +0200, Thomas Gleixner wrote:
+> > > > > > So it would be interesting whether that hunk in resume_broadcast() is
+> > > > > > sufficient.
+> > > > > 
+> > > > > So far it looks like the answer is yes.
+> > > > > 
+> > > > > Looks to be about 5 seconds slower than acpi-idle in resuming, but
+> > > > > I suppose that's not all that surprising ;)
+> > > > 
+> > > > Well, set it to 1msec then. If that works reliably then we really can do
+> > > > that unconditionally. There is no harm in firing a useless timer during
+> > > > resume once.
+> > > 
+> > > I narrowed down the required timeout, and looks like 25ms is the
+> > > minimum that works. With 24ms I already started to have failures. So
+> > > maybe just bump it up by an order of magnitude to 250ms for some
+> > > safety margin?
+> 
+> I left the thing running for the weekend and it failed 26 out of 16057
+> times with the 25ms timeout. Looks like it takes ~5 minutes to resume
+> when it fails, but eventually it does come back.
+> 
+> > 
+> > Sure, but what puzzles me is that we need a timeout that big. What happens
+> > between broadcast_resume() and broadcast_resume() + 25ms?
+> > 
+> > IOW, what is the event/resume function which we need to bridge. We should
+> > really try to track than down.
+> 
+> My hunch would be that SMM trap in the DSDT/SSDT since that's where
+> things ended up last time I was tracing these resume problems. Though I
+> can't recall if that was just with acpi-idle or if intel_idle landed in
+> the same spot as well.
+> 
+> I guess I can try to repeat that test tomorrow, or I'll try your function
+> tracer method if the other thing fails.
 
-As we anyway are going to change this, why not use an u64 and have the
-value in ns instead of us?
+I didn't manage to find a lot of time to play around with this, but it
+definitely looks like the SMM trap is the problem here. I repeated my
+pm_trace experiemnts and when it gets stuck it is trying to execute the
+_WAK ACPI method which is where the SMM trap happens.
 
-That should give us better flexibility and I think this would also be
-what Rob would recommend, if I remember earlier similar comments from
-him.
+Maybe the SMM code was written with the expectation of a periodic tick
+or something like that?
 
-> +
-> +- exit-latency-us
-> +       Usage: Required
-> +       Value type: <prop-encoded-array>
-> +       Definition: u32 value representing worst case latency
-> +                   in microseconds required to exit the idle state.
+> 
+> > 
+> > You might try to enable function tracing and do a tracing_off() when that
+> > 25ms timeout fires.
+> > 
+> > Something like 
+> > 
+> > 	stop_trace = true;
+> > 
+> > in broadcast_resume() and then in the broadcast timer function:
+> > 
+> > 	if (stop_trace) {
+> > 		stop_trace = false;
+> > 		tracing_off();
+> > 	}
+> > 
+> > Then when the machine is up read the trace, compress and upload it
+> > somewhere or send it in private mail if it's not that big.
+> > 
+> > Thanks,
+> > 
+> > 	tglx
+> 
+> 
+> -- 
+> Ville Syrjälä
+> Intel OTC
 
-Ditto.
-
-> +
-> +- min-residency-us
-> +       Usage: Required
-> +       Value type: <prop-encoded-array>
-> +       Definition: u32 value representing minimum residency duration
-> +                   in microseconds after which the idle state will yield
-> +                   power benefits after overcoming the overhead in entering
-> +i                  the idle state.
-
-Ditto.
-
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index e165036..723e1ad 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -31,7 +31,7 @@ Optional properties:
->
->  - domain-idle-states : A phandle of an idle-state that shall be soaked into a
->                  generic domain power state. The idle state definitions are
-> -                compatible with arm,idle-state specified in [1].
-> +                compatible with domain-idle-state specified in [1].
->    The domain-idle-state property reflects the idle state of this PM domain and
->    not the idle states of the devices or sub-domains in the PM domain. Devices
->    and sub-domains have their own idle-states independent of the parent
-> @@ -85,7 +85,7 @@ Example 3:
->         };
->
->         DOMAIN_RET: state@0 {
-> -               compatible = "arm,idle-state";
-> +               compatible = "domain-idle-state";
->                 reg = <0x0>;
->                 entry-latency-us = <1000>;
->                 exit-latency-us = <2000>;
-> @@ -93,7 +93,7 @@ Example 3:
->         };
->
->         DOMAIN_PWR_DN: state@1 {
-> -               compatible = "arm,idle-state";
-> +               compatible = "domain-idle-state";
->                 reg = <0x1>;
->                 entry-latency-us = <5000>;
->                 exit-latency-us = <8000>;
-> @@ -118,4 +118,4 @@ The node above defines a typical PM domain consumer device, which is located
->  inside a PM domain with index 0 of a power controller represented by a node
->  with the label "power".
->
-> -[1]. Documentation/devicetree/bindings/arm/idle-states.txt
-> +[1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 661737c..f0bc672 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2048,7 +2048,7 @@ int genpd_dev_pm_attach(struct device *dev)
->  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->
->  static const struct of_device_id idle_state_match[] = {
-> -       { .compatible = "arm,idle-state", },
-> +       { .compatible = "domain-idle-state", },
->         { }
->  };
->
-> --
-> 2.7.4
->
-
-Kind regards
-Uffe
+-- 
+Ville Syrjälä
+Intel OTC
