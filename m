@@ -1,39 +1,64 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: enable the DT cpufreq driver on the
- Integrators
-Date: Mon, 7 Nov 2016 16:21:37 +0100
-Message-ID: <CACRpkdbmaUaQibmTEmORw3mTGLQOfDUwg8zx=wRd3UvFcEtZvg@mail.gmail.com>
-References: <1477380085-6929-1-git-send-email-linus.walleij@linaro.org>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH V3 5/9] mfd: da9061: MFD core support
+Date: Mon, 7 Nov 2016 15:25:00 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CCE7CB6@SW-EX-MBX02.diasemi.com>
+References: <cover.1477929725.git.stwiss.opensource@diasemi.com>
+ <72145ea5055e95d7b6f05168c641927e4f3830d9.1477929725.git.stwiss.opensource@diasemi.com>
+ <20161102142854.GS13127@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1477380085-6929-1-git-send-email-linus.walleij@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Russell King <linux@armlinux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta3.messagelabs.com ([195.245.230.169]:57826 "EHLO
+        mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752918AbcKGPZI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2016 10:25:08 -0500
+In-Reply-To: <20161102142854.GS13127@dell>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 
-On Tue, Oct 25, 2016 at 9:21 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
-
-> This enables the generic DT and OPP-based cpufreq driver on the
-> ARM Integrator/AP and Integrator/CP.
->
-> Cc: Rafael J. Wysocki <rafael@kernel.org>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
-
-Rafael could you merge these two patches so that I can merge the
-corresponding DTS files into the ARM SoC tree?
-
-Yours,
-Linus Walleij
+T24gMDIgTm92ZW1iZXIgMjAxNiAxNDoyOSwgTGVlIEpvbmVzIHdyb3RlOg0KDQo+IE9uIE1vbiwg
+MzEgT2N0IDIwMTYsIFN0ZXZlIFR3aXNzIHdyb3RlOg0KPiA+IEZyb206IFN0ZXZlIFR3aXNzIDxz
+dHdpc3Mub3BlbnNvdXJjZUBkaWFzZW1pLmNvbT4NCj4gPiANCj4gPiBAQCAtNDc1LDcgKzg1NSwy
+NSBAQCBzdGF0aWMgaW50IGRhOTA2Ml9pMmNfcHJvYmUoc3RydWN0IGkyY19jbGllbnQgKmkyYywN
+Cj4gPiAgCQlyZXR1cm4gLUVJTlZBTDsNCj4gPiAgCX0NCj4gPg0KPiA+IC0JY2hpcC0+cmVnbWFw
+ID0gZGV2bV9yZWdtYXBfaW5pdF9pMmMoaTJjLCAmZGE5MDYyX3JlZ21hcF9jb25maWcpOw0KPiA+
+ICsJc3dpdGNoIChjaGlwLT5jaGlwX3R5cGUpIHsNCj4gPiArCWNhc2UoQ09NUEFUX1RZUEVfREE5
+MDYxKToNCj4gPiArCQljZWxsID0gZGE5MDYxX2RldnM7DQo+ID4gKwkJY2VsbF9udW0gPSBBUlJB
+WV9TSVpFKGRhOTA2MV9kZXZzKTsNCj4gPiArCQlpcnFfY2hpcCA9ICZkYTkwNjFfaXJxX2NoaXA7
+DQo+ID4gKwkJY29uZmlnID0gJmRhOTA2MV9yZWdtYXBfY29uZmlnOw0KPiA+ICsJCWJyZWFrOw0K
+PiA+ICsJY2FzZShDT01QQVRfVFlQRV9EQTkwNjIpOg0KPiA+ICsJCWNlbGwgPSBkYTkwNjJfZGV2
+czsNCj4gPiArCQljZWxsX251bSA9IEFSUkFZX1NJWkUoZGE5MDYyX2RldnMpOw0KPiA+ICsJCWly
+cV9jaGlwID0gJmRhOTA2Ml9pcnFfY2hpcDsNCj4gPiArCQljb25maWcgPSAmZGE5MDYyX3JlZ21h
+cF9jb25maWc7DQo+ID4gKwkJYnJlYWs7DQo+ID4gKwlkZWZhdWx0Og0KPiA+ICsJCWRldl9lcnIo
+Y2hpcC0+ZGV2LCAiVW5yZWNvZ25pc2VkIGNoaXAgdHlwZVxuIik7DQo+ID4gKwkJcmV0dXJuIC1F
+Tk9ERVY7DQo+ID4gKwl9DQo+IA0KPiBJIHZlcnkgbXVjaCBkaXNsaWtlIHdoZW4gTUZEIGFuZCBP
+RiBmdW5jdGlvbmFsaXR5IGlzIG1peGVkLg0KPiANCj4gSW4geW91ciBjYXNlIHlvdSBjYW4gdXNl
+IGRhOTA2Ml9nZXRfZGV2aWNlX3R5cGUoKSB0byBkeW5hbWljYWxseQ0KPiBpbnRlcnJvZ2F0ZSB0
+aGUgZGV2aWNlIGFuZCByZWdpc3RlciB1c2luZyB0aGUgY29ycmVjdCBNRkQgY2VsbHMgdGhhdA0K
+PiB3YXkuDQoNCkhpIExlZSwNCg0KSXQncyB0aGUgZGV2aWNlIHRyZWUgdGhhdCBkZWNpZGVzIHdo
+YXQgdGhlIGNoaXAgdHlwZSBpcy4gSXQncyBub3QgY2hpcA0KaW50ZXJyb2dhdGlvbiBpbiB0aGlz
+IGNhc2UuIFRoZSBvcmRlcmluZyBkaWN0YXRlcyB0aGlzIEkgdGhpbms6IHRvIGFjY2VzcyB0aGUN
+CmhhcmR3YXJlIElEIHJlZ2lzdGVyLCBhIHJlZ21hcCBkZWZpbml0aW9uIGlzIG5lZWRlZCBmaXJz
+dC4gQnV0IGJlY2F1c2UgdGhlDQpjb3JyZWN0IEkyQyByZWdpc3RlciBtYXAgcmVxdWlyZXMgYSBr
+bm93bGVkZ2Ugb2Ygd2hhdCBjaGlwIGlzIGJlaW5nIHVzZWQsDQppdCBiZWNvbWVzIGEgY2lyY3Vs
+YXIgZGVwZW5kZW5jeS4NCg0KVG8gc29sdmUgdGhpcyBkZXBlbmRlbmN5LCBJIGRlZmluZSB0aGUg
+Y2hpcCB0eXBlIChEQTkwNjEgb3IgREE5MDYyKSBpbiB0aGUNCmRldmljZSB0cmVlIGFuZCBhc3Np
+Z24gdGhlIGNvcnJlY3QgcmVnbWFwIGZpcnN0IGJlZm9yZSBhY2Nlc3NpbmcgYW55IHJlZ2lzdGVy
+cy4NCg0KPiA+ICsJY2hpcC0+cmVnbWFwID0gZGV2bV9yZWdtYXBfaW5pdF9pMmMoaTJjLCBjb25m
+aWcpOw0KPiA+ICAJaWYgKElTX0VSUihjaGlwLT5yZWdtYXApKSB7DQo+ID4gIAkJcmV0ID0gUFRS
+X0VSUihjaGlwLT5yZWdtYXApOw0KPiA+ICAJCWRldl9lcnIoY2hpcC0+ZGV2LCAiRmFpbGVkIHRv
+IGFsbG9jYXRlIHJlZ2lzdGVyIG1hcDogJWRcbiIsDQo+ID4gQEAgLTQ5Myw3ICs4OTEsNyBAQCBz
+dGF0aWMgaW50IGRhOTA2Ml9pMmNfcHJvYmUoc3RydWN0IGkyY19jbGllbnQgKmkyYywNCj4gPg0K
+PiA+ICAJcmV0ID0gcmVnbWFwX2FkZF9pcnFfY2hpcChjaGlwLT5yZWdtYXAsIGkyYy0+aXJxLA0K
+PiA+ICAJCQlJUlFGX1RSSUdHRVJfTE9XIHwgSVJRRl9PTkVTSE9UIHxJUlFGX1NIQVJFRCwNCj4g
+PiAtCQkJLTEsICZkYTkwNjJfaXJxX2NoaXAsDQo+ID4gKwkJCS0xLCBpcnFfY2hpcCwNCj4gDQo+
+IFdoYXQgaXMgLTE/DQoNCi4uIGl0J3MgYSByZXF1ZXN0IGZvciBhbiBpcnFfYmFzZS4NCmh0dHA6
+Ly9seHIuZnJlZS1lbGVjdHJvbnMuY29tL3NvdXJjZS9rZXJuZWwvaXJxL2lycWRlc2MuYyNMNDc3
+DQoNCklzIHRoZXJlIGEgcmVhc29uIEkgc2hvdWxkbid0IGJlIGRvaW5nIHRoYXQ/DQpUaGVyZSBk
+b2Vzbid0IHNlZW0gdG8gYmUgYSAjZGVmaW5lIGFueXdoZXJlLCBhbmQgdXNpbmcgLTEgc2VlbXMN
+CnRvIGJlIHRoZSBzdGFuZGFyZCBpbiB0aGUga2VybmVsIGF0IHRoZSBtb21lbnQuDQoNClJlZ2Fy
+ZHMsDQpTdGV2ZQ0KDQo=
