@@ -1,102 +1,64 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 06/49] thermal: core: move mode attribute to tz->device.groups
-Date: Mon,  7 Nov 2016 21:08:44 -0800
-Message-ID: <1478581767-7009-7-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 25/49] thermal: core: remove a couple of style issues on helpers
+Date: Mon,  7 Nov 2016 21:09:03 -0800
+Message-ID: <1478581767-7009-26-git-send-email-edubezval@gmail.com>
 References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33006 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752881AbcKHFWt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 00:22:49 -0500
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33095 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753178AbcKHFXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 00:23:03 -0500
 In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Moving mode attribute to tz->device.groups requires the implementation
-of a .is_visible() callback. The condition returned by .is_visible() of
-the mode attribute group is kept the same, we allow the attribute to be
-visible only if ops->get_mode() is set by the thermal driver.
+Reorganizing the code of helper functions to improve
+readability and style, as recommended by checkpatch.pl.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 36 ++++++++++++++++++++++++++++--------
- 1 file changed, 28 insertions(+), 8 deletions(-)
+ drivers/thermal/thermal_core.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index ec15a60..ec8551a 100644
+index fb19021..3a189fd 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1064,6 +1064,7 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+@@ -248,8 +248,9 @@ int get_tz_trend(struct thermal_zone_device *tz, int trip)
+ }
+ EXPORT_SYMBOL(get_tz_trend);
  
-+/* These attributes are unconditionally added to a thermal zone */
- static struct attribute *thermal_zone_dev_attrs[] = {
- 	&dev_attr_type.attr,
- 	&dev_attr_temp.attr,
-@@ -1087,8 +1088,35 @@ static struct attribute_group thermal_zone_attribute_group = {
- 	.attrs = thermal_zone_dev_attrs,
- };
- 
-+/* We expose mode only if .get_mode is present */
-+static struct attribute *thermal_zone_mode_attrs[] = {
-+	&dev_attr_mode.attr,
-+	NULL,
-+};
-+
-+static umode_t thermal_zone_mode_is_visible(struct kobject *kobj,
-+					    struct attribute *attr,
-+					    int attrno)
-+{
-+	struct device *dev = container_of(kobj, struct device, kobj);
-+	struct thermal_zone_device *tz;
-+
-+	tz = container_of(dev, struct thermal_zone_device, device);
-+
-+	if (tz->ops->get_mode)
-+		return attr->mode;
-+
-+	return 0;
-+}
-+
-+static struct attribute_group thermal_zone_mode_attribute_group = {
-+	.attrs = thermal_zone_mode_attrs,
-+	.is_visible = thermal_zone_mode_is_visible,
-+};
-+
- static const struct attribute_group *thermal_zone_attribute_groups[] = {
- 	&thermal_zone_attribute_group,
-+	&thermal_zone_mode_attribute_group,
- 	NULL
- };
- 
-@@ -1932,12 +1960,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+-struct thermal_instance *get_thermal_instance(struct thermal_zone_device *tz,
+-			struct thermal_cooling_device *cdev, int trip)
++struct thermal_instance *
++get_thermal_instance(struct thermal_zone_device *tz,
++		     struct thermal_cooling_device *cdev, int trip)
+ {
+ 	struct thermal_instance *pos = NULL;
+ 	struct thermal_instance *target_instance = NULL;
+@@ -513,7 +514,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 		if (!ret && *temp < crit_temp)
+ 			*temp = tz->emul_temperature;
  	}
- 
- 	/* sys I/F */
--	if (ops->get_mode) {
--		result = device_create_file(&tz->device, &dev_attr_mode);
--		if (result)
--			goto unregister;
--	}
--
- 	result = create_trip_attrs(tz, mask);
- 	if (result)
- 		goto unregister;
-@@ -2054,8 +2076,6 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
- 
- 	thermal_zone_device_set_polling(tz, 0);
- 
--	if (tz->ops->get_mode)
--		device_remove_file(&tz->device, &dev_attr_mode);
- 	remove_trip_attrs(tz);
- 	thermal_set_governor(tz, NULL);
- 
+- 
++
+ 	mutex_unlock(&tz->lock);
+ exit:
+ 	return ret;
+@@ -1192,7 +1193,7 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
+ 	/* Make sure cdev enters the deepest cooling state */
+ 	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
+ 		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
+-				instance->tz->id, instance->target);
++			instance->tz->id, instance->target);
+ 		if (instance->target == THERMAL_NO_TARGET)
+ 			continue;
+ 		if (instance->target > target)
 -- 
 2.1.4
 
