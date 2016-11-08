@@ -1,165 +1,78 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Use PMCR to verify global and
- local pstate
-Date: Tue, 8 Nov 2016 19:28:31 +0530
-Message-ID: <27d0550f-fb46-3828-dc32-4d243a4e75d9@linux.vnet.ibm.com>
-References: <1478504349-14796-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <1478504349-14796-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
- <20161108034020.GD24936@in.ibm.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
+ control runtime pm
+Date: Tue, 8 Nov 2016 16:30:44 +0100
+Message-ID: <20161108153044.GA6983@wunner.de>
+References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
+ <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
+ <20161107214747.GJ1764@wotan.suse.de>
+ <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:35684 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1752174AbcKHN7c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 08:59:32 -0500
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uA8DscdF029186
-        for <linux-pm@vger.kernel.org>; Tue, 8 Nov 2016 08:58:39 -0500
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 26ke799dcm-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 08 Nov 2016 08:58:39 -0500
-Received: from localhost
-        by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
-        Tue, 8 Nov 2016 23:58:36 +1000
-In-Reply-To: <20161108034020.GD24936@in.ibm.com>
+Received: from mailout2.hostsharing.net ([83.223.90.233]:40677 "EHLO
+        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751479AbcKHP3p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 10:29:45 -0500
+Content-Disposition: inline
+In-Reply-To: <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ego@linux.vnet.ibm.com
-Cc: rjw@rjwysocki.net, shilpa.bhat@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>
 
-Thanks gautham for the review.
+On Tue, Nov 08, 2016 at 08:27:12AM +0100, Marek Szyprowski wrote:
+> On 2016-11-07 22:47, Luis R. Rodriguez wrote:
+> > Has there been any review of the existing similar solutions out there
+> > such as the DRM / audio component framework? Would that help ?
+> 
+> Nope, none of that solution deals with runtime pm.
 
-Good point, I have made the macros more generic in the next version as 
-you have mentioned.
+Well, they do.  Hybrid graphics laptops often have an HDA controller
+on the discrete GPU and I assume that's what Luis meant. There's code
+in drivers/gpu/vga/vga_switcheroo.c to make this (only sort of) work:
 
-I will post a separate patch to set pstates using these macros. :)
+* When the GPU is powered up/down, the HDA controller's driver is
+  instructed to pm_runtime_get/put the HDA device (see call to
+  set_audio_state() in vga_switcheroo_set_dynamic_switch()).
 
-On 11/08/2016 09:10 AM, Gautham R Shenoy wrote:
-> On Mon, Nov 07, 2016 at 01:09:09PM +0530, Akshay Adiga wrote:
->> As fast_switch() may get called with interrupt disable mode, we cannot
->> hold a mutex to update the global_pstate_info. So currently, fast_switch()
->> does not update the global_pstate_info and it will end up with stale data
->> whenever pstate is updated through fast_switch().
->>
->> As the gpstate_timer can fire after fast_switch() has updated the pstates,
->> the timer handler cannot rely on the cached values of local and global
->> pstate and needs to read it from the PMCR.
->>
->> Only gpstate_timer_handler() is affected by the stale cached pstate data
->> beacause either fast_switch() or target_index() routines will be called
->> for a given govenor, but gpstate_timer can fire after the governor has
->> changed to schedutil.
->>
->>
->> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
->> ---
->>
->> Changes from v1 :
->> - Corrected Commit message
->> - Type cast pstate values read from PMCR to type s8
->> - Added Macros to get local and global pstates from PMCR
-> Thanks for this. Could you also send a (separate patch) to set the
-> local and global pstates to PMCR in set_pstate?
->
->>
->>   drivers/cpufreq/powernv-cpufreq.c | 34 ++++++++++++++++++++++++----------
->>   1 file changed, 24 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index 4a4380d..bf4bc585 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -42,6 +42,8 @@
->>   #define PMSR_PSAFE_ENABLE	(1UL << 30)
->>   #define PMSR_SPR_EM_DISABLE	(1UL << 31)
->>   #define PMSR_MAX(x)		((x >> 32) & 0xFF)
->> +#define PMCR_LPSTATE(x)		(((x) >> 48) & 0xFF)
->> +#define PMCR_GPSTATE(x)		(((x) >> 56) & 0xFF)
-> You define:
-> #define LPSTATE_SHIFT    48
-> #define GPSTATE_SHIFT    56
->
-> since we can use this in the set_variants.
->
-> Moreover, the LPSTATE, GPSTATE retreival is applicable to both PMCR and PMSR. So
-> could you rename these functions to GET_LPSTATE, GET_GPSTATE.
->
-> Similarly, we might want to have a SET_LPSTATE, SET_GPSTATE and fix
-> the hard coded values that we have in set_pstate.
->
->
->>   #define MAX_RAMP_DOWN_TIME				5120
->>   /*
->> @@ -592,7 +594,8 @@ void gpstate_timer_handler(unsigned long data)
->>   {
->>   	struct cpufreq_policy *policy = (struct cpufreq_policy *)data;
->>   	struct global_pstate_info *gpstates = policy->driver_data;
->> -	int gpstate_idx;
->> +	int gpstate_idx, lpstate_idx;
->> +	unsigned long val;
->>   	unsigned int time_diff = jiffies_to_msecs(jiffies)
->>   					- gpstates->last_sampled_time;
->>   	struct powernv_smp_call_data freq_data;
->> @@ -600,21 +603,36 @@ void gpstate_timer_handler(unsigned long data)
->>   	if (!spin_trylock(&gpstates->gpstate_lock))
->>   		return;
->>
->> +	/*
->> +	 * If PMCR was last updated was using fast_swtich then
->> +	 * We may have wrong in gpstate->last_lpstate_idx
->> +	 * value. Hence, read from PMCR to get correct data.
->> +	 */
->> +	val = get_pmspr(SPRN_PMCR);
->> +	freq_data.gpstate_id = (s8)PMCR_GPSTATE(val);
->> +	freq_data.pstate_id = (s8)PMCR_LPSTATE(val);
->> +	if (freq_data.gpstate_id  == freq_data.pstate_id) {
->> +		reset_gpstates(policy);
->> +		spin_unlock(&gpstates->gpstate_lock);
->> +		return;
->> +	}
->> +
->>   	gpstates->last_sampled_time += time_diff;
->>   	gpstates->elapsed_time += time_diff;
->> -	freq_data.pstate_id = idx_to_pstate(gpstates->last_lpstate_idx);
->>
->> -	if ((gpstates->last_gpstate_idx == gpstates->last_lpstate_idx) ||
->> -	    (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME)) {
->> +	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
->>   		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
->>   		reset_gpstates(policy);
->>   		gpstates->highest_lpstate_idx = gpstate_idx;
->>   	} else {
->> +		lpstate_idx = pstate_to_idx(freq_data.pstate_id);
->>   		gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
->>   						 gpstates->highest_lpstate_idx,
->> -						 gpstates->last_lpstate_idx);
->> +						 lpstate_idx);
->>   	}
->> -
->> +	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
->> +	gpstates->last_gpstate_idx = gpstate_idx;
->> +	gpstates->last_lpstate_idx = lpstate_idx;
->>   	/*
->>   	 * If local pstate is equal to global pstate, rampdown is over
->>   	 * So timer is not required to be queued.
->> @@ -622,10 +640,6 @@ void gpstate_timer_handler(unsigned long data)
->>   	if (gpstate_idx != gpstates->last_lpstate_idx)
->>   		queue_gpstate_timer(gpstates);
->>
->> -	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
->> -	gpstates->last_gpstate_idx = pstate_to_idx(freq_data.gpstate_id);
->> -	gpstates->last_lpstate_idx = pstate_to_idx(freq_data.pstate_id);
->> -
->>   	spin_unlock(&gpstates->gpstate_lock);
->>
->>   	/* Timer may get migrated to a different cpu on cpu hot unplug */
->> -- 
->> 2.5.5
-> Looks good otherwise.
->
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+* When a runtime PM ref is acquired on the HDA device, the
+  GPU is powered up (see vga_switcheroo_runtime_resume_hdmi_audio()).
 
+
+Unfortunately this is all fairly broken, e.g.:
+
+* If a runtime PM ref on the HDA device is held for more than 5 sec
+  (autosuspend delay of the GPU), the GPU will be powered down and
+  the HDA device will become inaccessible, regardless of the runtime
+  PM ref still being held (because vga_switcheroo_set_dynamic_switch()
+  doesn't check the refcount of the HDA device).
+
+* The DRM device is afforded direct-complete but the HDA device is not.
+  If the GPU is handled earlier by dpm_suspend(), then runtime PM will
+  have been disabled on the GPU and thus the HDA device will fail to
+  runtime resume before system sleep.
+
+Rafael's series allows representation of such inter-device dependencies
+in the PM core and can thus replace kludgy and broken "solutions" like
+the one above.
+
+There's one thing that I haven't understood myself though:  In an e-mail
+exchange in September Rafael has argued that the above-mentioned hybrid
+graphics use case "isn't a good [example] IMO.  That clearly is a case
+when two (or more) devices share power resources controlled by a single
+on/off switch.  Which is a clear use case for a PM domain."
+
+The same seems to apply to Marek's SYSMMU use case.  When applying device
+links to SYSMMU or hybrid graphics, we select one of the devices in the
+PM domain as master and have the other one depend on it as slave, i.e.
+a synthetic hierarchical relationship is established.
+
+I've responded to Rafael on September 18 that this can't be solved with
+a struct dev_pm_domain, but haven't received a reply since:
+https://lkml.org/lkml/2016/9/18/103
+
+Thanks,
+
+Lukas
