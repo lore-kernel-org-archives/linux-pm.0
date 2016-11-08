@@ -1,7 +1,7 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 05/49] thermal: core: move emul_temp creation to tz->device.groups
-Date: Mon,  7 Nov 2016 21:08:43 -0800
-Message-ID: <1478581767-7009-6-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 17/49] thermal: core: split policy_store
+Date: Mon,  7 Nov 2016 21:08:55 -0800
+Message-ID: <1478581767-7009-18-git-send-email-edubezval@gmail.com>
 References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
@@ -10,56 +10,92 @@ To: Rui Zhang <rui.zhang@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-emul_temp creation is dependent on a compile time
-condition. Moving to tz->device.groups.
+Similarly to passive_store, policy_store now is split
+between thermal core data structure handling and sysfs handling.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 11 ++++-------
- 1 file changed, 4 insertions(+), 7 deletions(-)
+ drivers/thermal/thermal_core.c | 37 ++++++++++++++++++++++++-------------
+ drivers/thermal/thermal_core.h |  1 +
+ 2 files changed, 25 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 3da4cd3..ec15a60 100644
+index 4e315c9..23f138f 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -1054,6 +1054,7 @@ create_s32_tzp_attr(offset);
-  */
- static DEVICE_ATTR(type, 0444, type_show, NULL);
- static DEVICE_ATTR(temp, 0444, temp_show, NULL);
-+static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
- static DEVICE_ATTR(policy, S_IRUGO | S_IWUSR, policy_show, policy_store);
- static DEVICE_ATTR(available_policies, S_IRUGO, available_policies_show, NULL);
- static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
-@@ -1062,11 +1063,13 @@ static DEVICE_ATTR(sustainable_power, S_IWUSR | S_IRUGO, sustainable_power_show,
- /* These thermal zone device attributes are created based on conditions */
- static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
- static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
--static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
+@@ -757,6 +757,28 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
+ 	mutex_unlock(&thermal_list_lock);
+ }
  
- static struct attribute *thermal_zone_dev_attrs[] = {
- 	&dev_attr_type.attr,
- 	&dev_attr_temp.attr,
-+#if (IS_ENABLED(CONFIG_THERMAL_EMULATION))
-+	&dev_attr_emul_temp.attr,
-+#endif
- 	&dev_attr_policy.attr,
- 	&dev_attr_available_policies.attr,
- 	&dev_attr_sustainable_power.attr,
-@@ -1957,12 +1960,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
- 			goto unregister;
- 	}
++int thermal_zone_device_set_policy(struct thermal_zone_device *tz,
++				   char *policy)
++{
++	struct thermal_governor *gov;
++	int ret = -EINVAL;
++
++	mutex_lock(&thermal_governor_lock);
++	mutex_lock(&tz->lock);
++
++	gov = __find_governor(strim(policy));
++	if (!gov)
++		goto exit;
++
++	ret = thermal_set_governor(tz, gov);
++
++exit:
++	mutex_unlock(&tz->lock);
++	mutex_unlock(&thermal_governor_lock);
++
++	return ret;
++}
++
+ /* sys I/F for thermal zone */
  
--	if (IS_ENABLED(CONFIG_THERMAL_EMULATION)) {
--		result = device_create_file(&tz->device, &dev_attr_emul_temp);
--		if (result)
--			goto unregister;
--	}
+ #define to_thermal_zone(_dev) \
+@@ -1001,27 +1023,16 @@ static ssize_t
+ policy_store(struct device *dev, struct device_attribute *attr,
+ 		    const char *buf, size_t count)
+ {
+-	int ret = -EINVAL;
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+-	struct thermal_governor *gov;
+ 	char name[THERMAL_NAME_LENGTH];
++	int ret;
+ 
+ 	snprintf(name, sizeof(name), "%s", buf);
+ 
+-	mutex_lock(&thermal_governor_lock);
+-	mutex_lock(&tz->lock);
 -
- 	/* Update 'this' zone's governor information */
- 	mutex_lock(&thermal_governor_lock);
+-	gov = __find_governor(strim(name));
+-	if (!gov)
+-		goto exit;
+-
+-	ret = thermal_set_governor(tz, gov);
++	ret = thermal_zone_device_set_policy(tz, name);
+ 	if (!ret)
+ 		ret = count;
  
+-exit:
+-	mutex_unlock(&tz->lock);
+-	mutex_unlock(&thermal_governor_lock);
+ 	return ret;
+ }
+ 
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index a765c75..db65d3b 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -60,6 +60,7 @@ void thermal_zone_device_rebind_exception(struct thermal_zone_device *,
+ 					  const char *, size_t);
+ void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
+ 					  const char *, size_t);
++int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
+ 
+ #ifdef CONFIG_THERMAL_GOV_STEP_WISE
+ int thermal_gov_step_wise_register(void);
 -- 
 2.1.4
