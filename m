@@ -1,92 +1,148 @@
-From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Subject: [PATCH v9 7/8] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
-Date: Tue, 8 Nov 2016 10:51:11 +0800
-Message-ID: <1478573472-29516-8-git-send-email-peter.chen@nxp.com>
-References: <1478573472-29516-1-git-send-email-peter.chen@nxp.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] cpufreq: powernv: Use PMCR to verify global and
+ local pstate
+Date: Tue, 8 Nov 2016 09:10:20 +0530
+Message-ID: <20161108034020.GD24936@in.ibm.com>
+References: <1478504349-14796-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+ <1478504349-14796-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1478573472-29516-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1478504349-14796-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, ego@linux.vnet.ibm.com, shilpa.bhat@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
 
-The current dts describes USB HUB's property at USB controller's
-entry, it is improper. The USB HUB should be the child node
-under USB controller, and power sequence properties are under
-it. Besides, using gpio pinctrl setting for USB2415's reset pin.
 
-Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Signed-off-by: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Tested-by: Maciej S. Szmigiero <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
----
- arch/arm/boot/dts/imx6qdl-udoo.dtsi | 26 ++++++++++++--------------
- 1 file changed, 12 insertions(+), 14 deletions(-)
+On Mon, Nov 07, 2016 at 01:09:09PM +0530, Akshay Adiga wrote:
+> As fast_switch() may get called with interrupt disable mode, we cannot
+> hold a mutex to update the global_pstate_info. So currently, fast_switch()
+> does not update the global_pstate_info and it will end up with stale data
+> whenever pstate is updated through fast_switch().
+> 
+> As the gpstate_timer can fire after fast_switch() has updated the pstates,
+> the timer handler cannot rely on the cached values of local and global
+> pstate and needs to read it from the PMCR.
+> 
+> Only gpstate_timer_handler() is affected by the stale cached pstate data
+> beacause either fast_switch() or target_index() routines will be called
+> for a given govenor, but gpstate_timer can fire after the governor has
+> changed to schedutil.
+> 
+> 
+> Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+> ---
+> 
+> Changes from v1 :
+> - Corrected Commit message
+> - Type cast pstate values read from PMCR to type s8
+> - Added Macros to get local and global pstates from PMCR
 
-diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-index c96c91d..a173de2 100644
---- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
-@@ -9,6 +9,8 @@
-  *
-  */
- 
-+#include <dt-bindings/gpio/gpio.h>
-+
- / {
- 	aliases {
- 		backlight = &backlight;
-@@ -58,17 +60,6 @@
- 		#address-cells = <1>;
- 		#size-cells = <0>;
- 
--		reg_usb_h1_vbus: regulator@0 {
--			compatible = "regulator-fixed";
--			reg = <0>;
--			regulator-name = "usb_h1_vbus";
--			regulator-min-microvolt = <5000000>;
--			regulator-max-microvolt = <5000000>;
--			enable-active-high;
--			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
--			gpio = <&gpio7 12 0>;
--		};
--
- 		reg_panel: regulator@1 {
- 			compatible = "regulator-fixed";
- 			reg = <1>;
-@@ -188,7 +179,7 @@
- 
- 		pinctrl_usbh: usbhgrp {
- 			fsl,pins = <
--				MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x80000000
-+				MX6QDL_PAD_GPIO_17__GPIO7_IO12	0x1b0b0
- 				MX6QDL_PAD_NANDF_CS2__CCM_CLKO2 0x130b0
- 			>;
- 		};
-@@ -259,9 +250,16 @@
- &usbh1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh>;
--	vbus-supply = <&reg_usb_h1_vbus>;
--	clocks = <&clks IMX6QDL_CLK_CKO>;
- 	status = "okay";
-+
-+	usb2415: hub@1 {
-+		compatible = "usb424,2514";
-+		reg = <1>;
-+
-+		clocks = <&clks IMX6QDL_CLK_CKO>;
-+		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-+		reset-duration-us = <3000>;
-+	};
- };
- 
- &usdhc3 {
--- 
-2.7.4
+Thanks for this. Could you also send a (separate patch) to set the
+local and global pstates to PMCR in set_pstate?
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+>  drivers/cpufreq/powernv-cpufreq.c | 34 ++++++++++++++++++++++++----------
+>  1 file changed, 24 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index 4a4380d..bf4bc585 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -42,6 +42,8 @@
+>  #define PMSR_PSAFE_ENABLE	(1UL << 30)
+>  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+>  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
+> +#define PMCR_LPSTATE(x)		(((x) >> 48) & 0xFF)
+> +#define PMCR_GPSTATE(x)		(((x) >> 56) & 0xFF)
+
+You define:
+#define LPSTATE_SHIFT    48
+#define GPSTATE_SHIFT    56
+
+since we can use this in the set_variants.
+
+Moreover, the LPSTATE, GPSTATE retreival is applicable to both PMCR and PMSR. So
+could you rename these functions to GET_LPSTATE, GET_GPSTATE.
+
+Similarly, we might want to have a SET_LPSTATE, SET_GPSTATE and fix
+the hard coded values that we have in set_pstate.
+
+
+> 
+>  #define MAX_RAMP_DOWN_TIME				5120
+>  /*
+> @@ -592,7 +594,8 @@ void gpstate_timer_handler(unsigned long data)
+>  {
+>  	struct cpufreq_policy *policy = (struct cpufreq_policy *)data;
+>  	struct global_pstate_info *gpstates = policy->driver_data;
+> -	int gpstate_idx;
+> +	int gpstate_idx, lpstate_idx;
+> +	unsigned long val;
+>  	unsigned int time_diff = jiffies_to_msecs(jiffies)
+>  					- gpstates->last_sampled_time;
+>  	struct powernv_smp_call_data freq_data;
+> @@ -600,21 +603,36 @@ void gpstate_timer_handler(unsigned long data)
+>  	if (!spin_trylock(&gpstates->gpstate_lock))
+>  		return;
+> 
+> +	/*
+> +	 * If PMCR was last updated was using fast_swtich then
+> +	 * We may have wrong in gpstate->last_lpstate_idx
+> +	 * value. Hence, read from PMCR to get correct data.
+> +	 */
+> +	val = get_pmspr(SPRN_PMCR);
+> +	freq_data.gpstate_id = (s8)PMCR_GPSTATE(val);
+> +	freq_data.pstate_id = (s8)PMCR_LPSTATE(val);
+> +	if (freq_data.gpstate_id  == freq_data.pstate_id) {
+> +		reset_gpstates(policy);
+> +		spin_unlock(&gpstates->gpstate_lock);
+> +		return;
+> +	}
+> +
+>  	gpstates->last_sampled_time += time_diff;
+>  	gpstates->elapsed_time += time_diff;
+> -	freq_data.pstate_id = idx_to_pstate(gpstates->last_lpstate_idx);
+> 
+> -	if ((gpstates->last_gpstate_idx == gpstates->last_lpstate_idx) ||
+> -	    (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME)) {
+> +	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+>  		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
+>  		reset_gpstates(policy);
+>  		gpstates->highest_lpstate_idx = gpstate_idx;
+>  	} else {
+> +		lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+>  		gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
+>  						 gpstates->highest_lpstate_idx,
+> -						 gpstates->last_lpstate_idx);
+> +						 lpstate_idx);
+>  	}
+> -
+> +	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
+> +	gpstates->last_gpstate_idx = gpstate_idx;
+> +	gpstates->last_lpstate_idx = lpstate_idx;
+>  	/*
+>  	 * If local pstate is equal to global pstate, rampdown is over
+>  	 * So timer is not required to be queued.
+> @@ -622,10 +640,6 @@ void gpstate_timer_handler(unsigned long data)
+>  	if (gpstate_idx != gpstates->last_lpstate_idx)
+>  		queue_gpstate_timer(gpstates);
+> 
+> -	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
+> -	gpstates->last_gpstate_idx = pstate_to_idx(freq_data.gpstate_id);
+> -	gpstates->last_lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+> -
+>  	spin_unlock(&gpstates->gpstate_lock);
+> 
+>  	/* Timer may get migrated to a different cpu on cpu hot unplug */
+> -- 
+> 2.5.5
+
+Looks good otherwise.
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> 
