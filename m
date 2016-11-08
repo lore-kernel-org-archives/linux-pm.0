@@ -1,445 +1,192 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 26/49] thermal: core: introduce thermal_helpers.c
-Date: Mon,  7 Nov 2016 21:09:04 -0800
-Message-ID: <1478581767-7009-27-git-send-email-edubezval@gmail.com>
-References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:36403 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753391AbcKHFaN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 00:30:13 -0500
-In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: governor: Don't use 'timer' keyword
+Date: Tue,  8 Nov 2016 11:06:33 +0530
+Message-ID: <915305fe119087769d62a95b8f22a95f9546b4f1.1478583385.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Here we have a simple code organization. This patch moves
-functions that do not need to handle thermal core internal
-data structure to thermal_helpers.c file.
+The earlier implementation of governors used background timers and so
+functions, mutex, etc had 'timer' keyword in their names.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+But that's not true anymore. Replace 'timer' with 'update', as those
+functions, variables are based around updates to frequency.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/thermal/Makefile          |   3 +-
- drivers/thermal/thermal_core.c    | 170 ---------------------------------
- drivers/thermal/thermal_helpers.c | 196 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 198 insertions(+), 171 deletions(-)
- create mode 100644 drivers/thermal/thermal_helpers.c
+ drivers/cpufreq/cpufreq_conservative.c |  4 ++--
+ drivers/cpufreq/cpufreq_governor.c     | 18 +++++++++---------
+ drivers/cpufreq/cpufreq_governor.h     |  4 ++--
+ drivers/cpufreq/cpufreq_ondemand.c     | 15 +++++++--------
+ 4 files changed, 20 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 767c3c9..6a3d7b5 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -3,7 +3,8 @@
- #
- 
- obj-$(CONFIG_THERMAL)		+= thermal_sys.o
--thermal_sys-y			+= thermal_core.o thermal_sysfs.o
-+thermal_sys-y			+= thermal_core.o thermal_sysfs.o \
-+					thermal_helpers.o
- 
- # interface to/from other layers providing sensors
- thermal_sys-$(CONFIG_THERMAL_HWMON)		+= thermal_hwmon.o
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 3a189fd..519aa94 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -230,48 +230,6 @@ static void release_idr(struct idr *idr, struct mutex *lock, int id)
- 		mutex_unlock(lock);
- }
- 
--int get_tz_trend(struct thermal_zone_device *tz, int trip)
--{
--	enum thermal_trend trend;
--
--	if (tz->emul_temperature || !tz->ops->get_trend ||
--	    tz->ops->get_trend(tz, trip, &trend)) {
--		if (tz->temperature > tz->last_temperature)
--			trend = THERMAL_TREND_RAISING;
--		else if (tz->temperature < tz->last_temperature)
--			trend = THERMAL_TREND_DROPPING;
--		else
--			trend = THERMAL_TREND_STABLE;
--	}
--
--	return trend;
--}
--EXPORT_SYMBOL(get_tz_trend);
--
--struct thermal_instance *
--get_thermal_instance(struct thermal_zone_device *tz,
--		     struct thermal_cooling_device *cdev, int trip)
--{
--	struct thermal_instance *pos = NULL;
--	struct thermal_instance *target_instance = NULL;
--
--	mutex_lock(&tz->lock);
--	mutex_lock(&cdev->lock);
--
--	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
--		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
--			target_instance = pos;
--			break;
--		}
--	}
--
--	mutex_unlock(&cdev->lock);
--	mutex_unlock(&tz->lock);
--
--	return target_instance;
--}
--EXPORT_SYMBOL(get_thermal_instance);
--
- static void print_bind_err_msg(struct thermal_zone_device *tz,
- 			struct thermal_cooling_device *cdev, int ret)
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 13475890d792..fa5ece3915a1 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -58,7 +58,7 @@ static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
+  * Any frequency increase takes it to the maximum frequency. Frequency reduction
+  * happens at minimum steps of 5% (default) of maximum frequency
+  */
+-static unsigned int cs_dbs_timer(struct cpufreq_policy *policy)
++static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
  {
-@@ -472,105 +430,6 @@ static void handle_thermal_trip(struct thermal_zone_device *tz, int trip)
- 	monitor_thermal_zone(tz);
- }
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
+@@ -305,7 +305,7 @@ static void cs_start(struct cpufreq_policy *policy)
+ static struct dbs_governor cs_governor = {
+ 	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
+ 	.kobj_type = { .default_attrs = cs_attributes },
+-	.gov_dbs_timer = cs_dbs_timer,
++	.gov_dbs_update = cs_dbs_update,
+ 	.alloc = cs_alloc,
+ 	.free = cs_free,
+ 	.init = cs_init,
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 642dd0f183a8..372947416b75 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -61,7 +61,7 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
+ 	 * entries can't be freed concurrently.
+ 	 */
+ 	list_for_each_entry(policy_dbs, &attr_set->policy_list, list) {
+-		mutex_lock(&policy_dbs->timer_mutex);
++		mutex_lock(&policy_dbs->update_mutex);
+ 		/*
+ 		 * On 32-bit architectures this may race with the
+ 		 * sample_delay_ns read in dbs_update_util_handler(), but that
+@@ -76,7 +76,7 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
+ 		 * taken, so it shouldn't be significant.
+ 		 */
+ 		gov_update_sample_delay(policy_dbs, 0);
+-		mutex_unlock(&policy_dbs->timer_mutex);
++		mutex_unlock(&policy_dbs->update_mutex);
+ 	}
  
--/**
-- * thermal_zone_get_temp() - returns the temperature of a thermal zone
-- * @tz: a valid pointer to a struct thermal_zone_device
-- * @temp: a valid pointer to where to store the resulting temperature.
-- *
-- * When a valid thermal zone reference is passed, it will fetch its
-- * temperature and fill @temp.
-- *
-- * Return: On success returns 0, an error code otherwise
-- */
--int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
--{
--	int ret = -EINVAL;
--	int count;
--	int crit_temp = INT_MAX;
--	enum thermal_trip_type type;
--
--	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
--		goto exit;
--
--	mutex_lock(&tz->lock);
--
--	ret = tz->ops->get_temp(tz, temp);
--
--	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
--		for (count = 0; count < tz->trips; count++) {
--			ret = tz->ops->get_trip_type(tz, count, &type);
--			if (!ret && type == THERMAL_TRIP_CRITICAL) {
--				ret = tz->ops->get_trip_temp(tz, count,
--						&crit_temp);
--				break;
--			}
--		}
--
--		/*
--		 * Only allow emulating a temperature when the real temperature
--		 * is below the critical temperature so that the emulation code
--		 * cannot hide critical conditions.
--		 */
--		if (!ret && *temp < crit_temp)
--			*temp = tz->emul_temperature;
--	}
--
--	mutex_unlock(&tz->lock);
--exit:
--	return ret;
--}
--EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
--
--void thermal_zone_set_trips(struct thermal_zone_device *tz)
--{
--	int low = -INT_MAX;
--	int high = INT_MAX;
--	int trip_temp, hysteresis;
--	int i, ret;
--
--	mutex_lock(&tz->lock);
--
--	if (!tz->ops->set_trips || !tz->ops->get_trip_hyst)
--		goto exit;
--
--	for (i = 0; i < tz->trips; i++) {
--		int trip_low;
--
--		tz->ops->get_trip_temp(tz, i, &trip_temp);
--		tz->ops->get_trip_hyst(tz, i, &hysteresis);
--
--		trip_low = trip_temp - hysteresis;
--
--		if (trip_low < tz->temperature && trip_low > low)
--			low = trip_low;
--
--		if (trip_temp > tz->temperature && trip_temp < high)
--			high = trip_temp;
--	}
--
--	/* No need to change trip points */
--	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
--		goto exit;
--
--	tz->prev_low_trip = low;
--	tz->prev_high_trip = high;
--
--	dev_dbg(&tz->device,
--		"new temperature boundaries: %d < x < %d\n", low, high);
--
--	/*
--	 * Set a temperature window. When this window is left the driver
--	 * must inform the thermal core via thermal_zone_device_update.
--	 */
--	ret = tz->ops->set_trips(tz, low, high);
--	if (ret)
--		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
--
--exit:
--	mutex_unlock(&tz->lock);
--}
--EXPORT_SYMBOL_GPL(thermal_zone_set_trips);
--
- static void update_temperature(struct thermal_zone_device *tz)
+ 	return count;
+@@ -236,9 +236,9 @@ static void dbs_work_handler(struct work_struct *work)
+ 	 * Make sure cpufreq_governor_limits() isn't evaluating load or the
+ 	 * ondemand governor isn't updating the sampling rate in parallel.
+ 	 */
+-	mutex_lock(&policy_dbs->timer_mutex);
+-	gov_update_sample_delay(policy_dbs, gov->gov_dbs_timer(policy));
+-	mutex_unlock(&policy_dbs->timer_mutex);
++	mutex_lock(&policy_dbs->update_mutex);
++	gov_update_sample_delay(policy_dbs, gov->gov_dbs_update(policy));
++	mutex_unlock(&policy_dbs->update_mutex);
+ 
+ 	/* Allow the utilization update handler to queue up more work. */
+ 	atomic_set(&policy_dbs->work_count, 0);
+@@ -348,7 +348,7 @@ static struct policy_dbs_info *alloc_policy_dbs_info(struct cpufreq_policy *poli
+ 		return NULL;
+ 
+ 	policy_dbs->policy = policy;
+-	mutex_init(&policy_dbs->timer_mutex);
++	mutex_init(&policy_dbs->update_mutex);
+ 	atomic_set(&policy_dbs->work_count, 0);
+ 	init_irq_work(&policy_dbs->irq_work, dbs_irq_work);
+ 	INIT_WORK(&policy_dbs->work, dbs_work_handler);
+@@ -367,7 +367,7 @@ static void free_policy_dbs_info(struct policy_dbs_info *policy_dbs,
  {
- 	int temp, ret;
-@@ -1178,35 +1037,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- }
- EXPORT_SYMBOL_GPL(thermal_cooling_device_unregister);
+ 	int j;
  
--void thermal_cdev_update(struct thermal_cooling_device *cdev)
--{
--	struct thermal_instance *instance;
--	unsigned long target = 0;
--
--	mutex_lock(&cdev->lock);
--	/* cooling device is updated*/
--	if (cdev->updated) {
--		mutex_unlock(&cdev->lock);
--		return;
--	}
--
--	/* Make sure cdev enters the deepest cooling state */
--	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
--		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
--			instance->tz->id, instance->target);
--		if (instance->target == THERMAL_NO_TARGET)
--			continue;
--		if (instance->target > target)
--			target = instance->target;
--	}
--	cdev->ops->set_cur_state(cdev, target);
--	cdev->updated = true;
--	mutex_unlock(&cdev->lock);
--	trace_cdev_update(cdev, target);
--	dev_dbg(&cdev->device, "set to state %lu\n", target);
--}
--EXPORT_SYMBOL(thermal_cdev_update);
--
- /**
-  * thermal_notify_framework - Sensor drivers use this API to notify framework
-  * @tz:		thermal zone device
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-new file mode 100644
-index 0000000..dfdba5a
---- /dev/null
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -0,0 +1,196 @@
-+/*
-+ *  thermal_helpers.c - helper functions to handle thermal devices
-+ *
-+ *  Copyright (C) 2016 Eduardo Valentin <edubezval@gmail.com>
-+ *
-+ *  Highly based on original thermal_core.c
-+ *  Copyright (C) 2008 Intel Corp
-+ *  Copyright (C) 2008 Zhang Rui <rui.zhang@intel.com>
-+ *  Copyright (C) 2008 Sujith Thomas <sujith.thomas@intel.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/sysfs.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+
-+#include <trace/events/thermal.h>
-+
-+#include "thermal_core.h"
-+
-+int get_tz_trend(struct thermal_zone_device *tz, int trip)
-+{
-+	enum thermal_trend trend;
-+
-+	if (tz->emul_temperature || !tz->ops->get_trend ||
-+	    tz->ops->get_trend(tz, trip, &trend)) {
-+		if (tz->temperature > tz->last_temperature)
-+			trend = THERMAL_TREND_RAISING;
-+		else if (tz->temperature < tz->last_temperature)
-+			trend = THERMAL_TREND_DROPPING;
-+		else
-+			trend = THERMAL_TREND_STABLE;
-+	}
-+
-+	return trend;
-+}
-+EXPORT_SYMBOL(get_tz_trend);
-+
-+struct thermal_instance *
-+get_thermal_instance(struct thermal_zone_device *tz,
-+		     struct thermal_cooling_device *cdev, int trip)
-+{
-+	struct thermal_instance *pos = NULL;
-+	struct thermal_instance *target_instance = NULL;
-+
-+	mutex_lock(&tz->lock);
-+	mutex_lock(&cdev->lock);
-+
-+	list_for_each_entry(pos, &tz->thermal_instances, tz_node) {
-+		if (pos->tz == tz && pos->trip == trip && pos->cdev == cdev) {
-+			target_instance = pos;
-+			break;
-+		}
-+	}
-+
-+	mutex_unlock(&cdev->lock);
-+	mutex_unlock(&tz->lock);
-+
-+	return target_instance;
-+}
-+EXPORT_SYMBOL(get_thermal_instance);
-+
-+/**
-+ * thermal_zone_get_temp() - returns the temperature of a thermal zone
-+ * @tz: a valid pointer to a struct thermal_zone_device
-+ * @temp: a valid pointer to where to store the resulting temperature.
-+ *
-+ * When a valid thermal zone reference is passed, it will fetch its
-+ * temperature and fill @temp.
-+ *
-+ * Return: On success returns 0, an error code otherwise
-+ */
-+int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
-+{
-+	int ret = -EINVAL;
-+	int count;
-+	int crit_temp = INT_MAX;
-+	enum thermal_trip_type type;
-+
-+	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
-+		goto exit;
-+
-+	mutex_lock(&tz->lock);
-+
-+	ret = tz->ops->get_temp(tz, temp);
-+
-+	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
-+		for (count = 0; count < tz->trips; count++) {
-+			ret = tz->ops->get_trip_type(tz, count, &type);
-+			if (!ret && type == THERMAL_TRIP_CRITICAL) {
-+				ret = tz->ops->get_trip_temp(tz, count,
-+						&crit_temp);
-+				break;
-+			}
-+		}
-+
-+		/*
-+		 * Only allow emulating a temperature when the real temperature
-+		 * is below the critical temperature so that the emulation code
-+		 * cannot hide critical conditions.
-+		 */
-+		if (!ret && *temp < crit_temp)
-+			*temp = tz->emul_temperature;
-+	}
-+
-+	mutex_unlock(&tz->lock);
-+exit:
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
-+
-+void thermal_zone_set_trips(struct thermal_zone_device *tz)
-+{
-+	int low = -INT_MAX;
-+	int high = INT_MAX;
-+	int trip_temp, hysteresis;
-+	int i, ret;
-+
-+	mutex_lock(&tz->lock);
-+
-+	if (!tz->ops->set_trips || !tz->ops->get_trip_hyst)
-+		goto exit;
-+
-+	for (i = 0; i < tz->trips; i++) {
-+		int trip_low;
-+
-+		tz->ops->get_trip_temp(tz, i, &trip_temp);
-+		tz->ops->get_trip_hyst(tz, i, &hysteresis);
-+
-+		trip_low = trip_temp - hysteresis;
-+
-+		if (trip_low < tz->temperature && trip_low > low)
-+			low = trip_low;
-+
-+		if (trip_temp > tz->temperature && trip_temp < high)
-+			high = trip_temp;
-+	}
-+
-+	/* No need to change trip points */
-+	if (tz->prev_low_trip == low && tz->prev_high_trip == high)
-+		goto exit;
-+
-+	tz->prev_low_trip = low;
-+	tz->prev_high_trip = high;
-+
-+	dev_dbg(&tz->device,
-+		"new temperature boundaries: %d < x < %d\n", low, high);
-+
-+	/*
-+	 * Set a temperature window. When this window is left the driver
-+	 * must inform the thermal core via thermal_zone_device_update.
-+	 */
-+	ret = tz->ops->set_trips(tz, low, high);
-+	if (ret)
-+		dev_err(&tz->device, "Failed to set trips: %d\n", ret);
-+
-+exit:
-+	mutex_unlock(&tz->lock);
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_set_trips);
-+
-+void thermal_cdev_update(struct thermal_cooling_device *cdev)
-+{
-+	struct thermal_instance *instance;
-+	unsigned long target = 0;
-+
-+	mutex_lock(&cdev->lock);
-+	/* cooling device is updated*/
-+	if (cdev->updated) {
-+		mutex_unlock(&cdev->lock);
-+		return;
-+	}
-+
-+	/* Make sure cdev enters the deepest cooling state */
-+	list_for_each_entry(instance, &cdev->thermal_instances, cdev_node) {
-+		dev_dbg(&cdev->device, "zone%d->target=%lu\n",
-+			instance->tz->id, instance->target);
-+		if (instance->target == THERMAL_NO_TARGET)
-+			continue;
-+		if (instance->target > target)
-+			target = instance->target;
-+	}
-+	cdev->ops->set_cur_state(cdev, target);
-+	cdev->updated = true;
-+	mutex_unlock(&cdev->lock);
-+	trace_cdev_update(cdev, target);
-+	dev_dbg(&cdev->device, "set to state %lu\n", target);
-+}
-+EXPORT_SYMBOL(thermal_cdev_update);
+-	mutex_destroy(&policy_dbs->timer_mutex);
++	mutex_destroy(&policy_dbs->update_mutex);
+ 
+ 	for_each_cpu(j, policy_dbs->policy->related_cpus) {
+ 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
+@@ -547,10 +547,10 @@ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
+ {
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 
+-	mutex_lock(&policy_dbs->timer_mutex);
++	mutex_lock(&policy_dbs->update_mutex);
+ 	cpufreq_policy_apply_limits(policy);
+ 	gov_update_sample_delay(policy_dbs, 0);
+ 
+-	mutex_unlock(&policy_dbs->timer_mutex);
++	mutex_unlock(&policy_dbs->update_mutex);
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_limits);
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index ef1037e9c92b..9660cc6b4b39 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -85,7 +85,7 @@ struct policy_dbs_info {
+ 	 * Per policy mutex that serializes load evaluation from limit-change
+ 	 * and work-handler.
+ 	 */
+-	struct mutex timer_mutex;
++	struct mutex update_mutex;
+ 
+ 	u64 last_sample_time;
+ 	s64 sample_delay_ns;
+@@ -135,7 +135,7 @@ struct dbs_governor {
+ 	 */
+ 	struct dbs_data *gdbs_data;
+ 
+-	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy);
++	unsigned int (*gov_dbs_update)(struct cpufreq_policy *policy);
+ 	struct policy_dbs_info *(*alloc)(void);
+ 	void (*free)(struct policy_dbs_info *policy_dbs);
+ 	int (*init)(struct dbs_data *dbs_data);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 3a1f49f5f4c6..1e2bd9851fba 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -169,7 +169,7 @@ static void od_update(struct cpufreq_policy *policy)
+ 	}
+ }
+ 
+-static unsigned int od_dbs_timer(struct cpufreq_policy *policy)
++static unsigned int od_dbs_update(struct cpufreq_policy *policy)
+ {
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+@@ -191,7 +191,7 @@ static unsigned int od_dbs_timer(struct cpufreq_policy *policy)
+ 	od_update(policy);
+ 
+ 	if (dbs_info->freq_lo) {
+-		/* Setup timer for SUB_SAMPLE */
++		/* Setup SUB_SAMPLE */
+ 		dbs_info->sample_type = OD_SUB_SAMPLE;
+ 		return dbs_info->freq_hi_delay_us;
+ 	}
+@@ -255,11 +255,11 @@ static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
+ 	list_for_each_entry(policy_dbs, &attr_set->policy_list, list) {
+ 		/*
+ 		 * Doing this without locking might lead to using different
+-		 * rate_mult values in od_update() and od_dbs_timer().
++		 * rate_mult values in od_update() and od_dbs_update().
+ 		 */
+-		mutex_lock(&policy_dbs->timer_mutex);
++		mutex_lock(&policy_dbs->update_mutex);
+ 		policy_dbs->rate_mult = 1;
+-		mutex_unlock(&policy_dbs->timer_mutex);
++		mutex_unlock(&policy_dbs->update_mutex);
+ 	}
+ 
+ 	return count;
+@@ -374,8 +374,7 @@ static int od_init(struct dbs_data *dbs_data)
+ 		dbs_data->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
+ 		/*
+ 		 * In nohz/micro accounting case we set the minimum frequency
+-		 * not depending on HZ, but fixed (very low). The deferred
+-		 * timer might skip some samples if idle/sleeping as needed.
++		 * not depending on HZ, but fixed (very low).
+ 		*/
+ 		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
+ 	} else {
+@@ -415,7 +414,7 @@ static struct od_ops od_ops = {
+ static struct dbs_governor od_dbs_gov = {
+ 	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("ondemand"),
+ 	.kobj_type = { .default_attrs = od_attributes },
+-	.gov_dbs_timer = od_dbs_timer,
++	.gov_dbs_update = od_dbs_update,
+ 	.alloc = od_alloc,
+ 	.free = od_free,
+ 	.init = od_init,
 -- 
-2.1.4
-
+2.7.1.410.g6faf27b
