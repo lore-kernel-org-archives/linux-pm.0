@@ -1,119 +1,66 @@
-From: Lin Huang <hl@rock-chips.com>
-Subject: [PATCH v5] PM/devfreq: add suspend frequency support
-Date: Tue,  8 Nov 2016 18:06:38 +0800
-Message-ID: <1478599598-26015-1-git-send-email-hl@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com
-Cc: cw00.choi@samsung.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Lin Huang <hl@rock-chips.com>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: Re: [PATCH] cpufreq, powernv: Disable preemption while checking CPU
+ throttling state throttling state
+Date: Tue, 8 Nov 2016 13:40:27 +0300
+Message-ID: <CAOJe8K0NKN5Y-E=EKrbb8RnYxS+8Kn=MkCK=Wkva6CWSWJCw_Q@mail.gmail.com>
+References: <1478594159-27719-1-git-send-email-kda@linux-powerpc.org> <20161108085757.GA22024@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:34787 "EHLO
+        mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752148AbcKHKk3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 05:40:29 -0500
+Received: by mail-yw0-f194.google.com with SMTP id l124so6475873ywb.1
+        for <linux-pm@vger.kernel.org>; Tue, 08 Nov 2016 02:40:28 -0800 (PST)
+In-Reply-To: <20161108085757.GA22024@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com, shilpa.bhat@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com
 
-Add suspend frequency support and if needed set it to
-the frequency obtained from the suspend opp (can be defined
-using opp-v2 bindings and is optional).
+On 11/8/16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> +some more folks from IBM.
+>
+> On 08-11-16, 03:35, Denis Kirjanov wrote:
+>>     [   67.700897] BUG: using smp_processor_id() in preemptible [00000000]
+>> code: cat/7343
+>>     [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+>>     [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty
+>> #1
+>>     [   67.701038] Call Trace:
+>>     [   67.701066] [c0000007d25b75b0] [c000000000971378]
+>> .dump_stack+0xe4/0x150 (unreliable)
+>>     [   67.701153] [c0000007d25b7640] [c0000000005162e4]
+>> .check_preemption_disabled+0x134/0x150
+>>     [   67.701238] [c0000007d25b76e0] [c0000000007b63ac]
+>> .powernv_cpufreq_throttle_check+0x2c/0x710
+>>     [   67.701322] [c0000007d25b7790] [c0000000007b6d18]
+>> .powernv_cpufreq_target_index+0x288/0x360
+>>     [   67.701407] [c0000007d25b7870] [c0000000007acee4]
+>> .__cpufreq_driver_target+0x394/0x8c0
+>>     [   67.701491] [c0000007d25b7920] [c0000000007b22ac]
+>> .cpufreq_set+0x7c/0xd0
+>>     [   67.701565] [c0000007d25b79b0] [c0000000007adf50]
+>> .store_scaling_setspeed+0x80/0xc0
+>>     [   67.701650] [c0000007d25b7a40] [c0000000007ae270]
+>> .store+0xa0/0x100
+>>     [   67.701723] [c0000007d25b7ae0] [c0000000003566e8]
+>> .sysfs_kf_write+0x88/0xb0
+>>     [   67.701796] [c0000007d25b7b70] [c0000000003553b8]
+>> .kernfs_fop_write+0x178/0x260
+>>     [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc]
+>> .__vfs_write+0x3c/0x1c0
+>>     [   67.701954] [c0000007d25b7cf0] [c0000000002ad584]
+>> .vfs_write+0xc4/0x230
+>>     [   67.702027] [c0000007d25b7d90] [c0000000002aeef8]
+>> .SyS_write+0x58/0x100
+>>     [   67.702101] [c0000007d25b7e30] [c00000000000bfec]
+>> system_call+0x38/0xfc
+>>
+>
+> We expect some description of the problem here, not just the OPPs
+> dump.
+>
 
-Signed-off-by: Lin Huang <hl@rock-chips.com>
----
-Changes in v2:
-- use update_devfreq() instead devfreq_update_status()
-Changes in v3:
-- fix build error
-Changes in v4:
-- move dev_pm_opp_get_suspend_opp() to devfreq_add_device()
-Changes in v5:
-- delete devfreq_opp_get_suspend_opp() in devfreq.h
-
- drivers/devfreq/devfreq.c                 | 15 +++++++++++++--
- drivers/devfreq/governor_simpleondemand.c |  9 +++++++++
- include/linux/devfreq.h                   |  2 ++
- 3 files changed, 24 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index da72d97..af06891 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -359,7 +359,10 @@ void devfreq_monitor_suspend(struct devfreq *devfreq)
- 		mutex_unlock(&devfreq->lock);
- 		return;
- 	}
--
-+	if (devfreq->suspend_freq) {
-+		update_devfreq(devfreq);
-+		devfreq->suspend_flag = true;
-+	}
- 	devfreq_update_status(devfreq, devfreq->previous_freq);
- 	devfreq->stop_polling = true;
- 	mutex_unlock(&devfreq->lock);
-@@ -390,7 +393,8 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
- 
- 	devfreq->last_stat_updated = jiffies;
- 	devfreq->stop_polling = false;
--
-+	if (devfreq->suspend_freq)
-+		devfreq->suspend_flag = false;
- 	if (devfreq->profile->get_cur_freq &&
- 		!devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq))
- 		devfreq->previous_freq = freq;
-@@ -524,6 +528,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	struct devfreq *devfreq;
- 	struct devfreq_governor *governor;
- 	int err = 0;
-+	struct dev_pm_opp *suspend_opp;
- 
- 	if (!dev || !profile || !governor_name) {
- 		dev_err(dev, "%s: Invalid parameters.\n", __func__);
-@@ -558,6 +563,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->data = data;
- 	devfreq->nb.notifier_call = devfreq_notifier_call;
- 
-+	rcu_read_lock();
-+	suspend_opp = dev_pm_opp_get_suspend_opp(dev);
-+	if (suspend_opp)
-+		devfreq->suspend_freq = dev_pm_opp_get_freq(suspend_opp);
-+	rcu_read_unlock();
-+
- 	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
- 		mutex_unlock(&devfreq->lock);
- 		devfreq_set_freq_table(devfreq);
-diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
-index ae72ba5..84b3ce1 100644
---- a/drivers/devfreq/governor_simpleondemand.c
-+++ b/drivers/devfreq/governor_simpleondemand.c
-@@ -29,6 +29,15 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
- 	struct devfreq_simple_ondemand_data *data = df->data;
- 	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
- 
-+	/*
-+	 * if devfreq in suspend status and have suspend_freq,
-+	 * the frequency need to set to suspend_freq
-+	 */
-+	if (df->suspend_flag) {
-+		*freq =	df->suspend_freq;
-+		return 0;
-+	}
-+
- 	err = devfreq_update_stats(df);
- 	if (err)
- 		return err;
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 98c6993..8567153 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -172,6 +172,7 @@ struct devfreq {
- 	struct delayed_work work;
- 
- 	unsigned long previous_freq;
-+	unsigned long suspend_freq;
- 	struct devfreq_dev_status last_status;
- 
- 	void *data; /* private data for governors */
-@@ -179,6 +180,7 @@ struct devfreq {
- 	unsigned long min_freq;
- 	unsigned long max_freq;
- 	bool stop_polling;
-+	bool suspend_flag;
- 
- 	/* information for device frequency transition */
- 	unsigned int total_trans;
--- 
-2.6.6
+Original link is here: https://patchwork.ozlabs.org/patch/691239/
