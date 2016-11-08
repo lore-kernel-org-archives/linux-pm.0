@@ -1,135 +1,277 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
- support
-Date: Tue, 8 Nov 2016 21:58:24 +0100
-Message-ID: <20161108205824.GA13978@wotan.suse.de>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <13957403.ZrB4mMbICz@vostro.rjw.lan>
- <2715729.9U1nlcpFb3@vostro.rjw.lan>
- <20161026111902.GA6447@wunner.de>
- <20161027152551.GA15718@kroah.com>
- <20161107212250.GH1764@wotan.suse.de>
- <20161108064541.GA13024@kroah.com>
- <20161108192103.GN1764@wotan.suse.de>
- <20161108194335.GA22680@kroah.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [alsa-devel] [PATCH 2/9] ALSA: ac97: add an ac97 bus
+Date: Tue, 08 Nov 2016 22:18:33 +0100
+Message-ID: <87eg2ly8k6.fsf@belgarion.home>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+ <1477510907-23495-3-git-send-email-robert.jarzmik@free.fr>
+ <d57cdfba-da22-652d-3d75-6d1b754cf1d5@metafoo.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:35285 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753889AbcKHU62 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Nov 2016 15:58:28 -0500
-Content-Disposition: inline
-In-Reply-To: <20161108194335.GA22680@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <d57cdfba-da22-652d-3d75-6d1b754cf1d5@metafoo.de> (Lars-Peter
+ Clausen's message of "Tue, 8 Nov 2016 14:37:36 +0100")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lars-Peter Clausen <lars@metafoo.de>
+Cc: alsa-devel@alsa-project.org, patches@opensource.wolfsonmicro.com, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Sebastian Reichel <sre@kernel.org>, Mark Brown <broonie@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, Lee Jones <lee.jones@linaro.org>, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Tue, Nov 08, 2016 at 08:43:35PM +0100, Greg Kroah-Hartman wrote:
-> On Tue, Nov 08, 2016 at 08:21:04PM +0100, Luis R. Rodriguez wrote:
-> > On Tue, Nov 08, 2016 at 07:45:41AM +0100, Greg Kroah-Hartman wrote:
-> > > On Mon, Nov 07, 2016 at 10:22:50PM +0100, Luis R. Rodriguez wrote:
-> > > > We have no explicit semantics to check if a driver / subsystem
-> > > > supports deferred probe.
-> > > 
-> > > Why would we need such a thing?
-> > 
-> > It depends on the impact of a driver/subsystem not properly supporting
-> > deffered probe, if this is no-op then such a need is not critical but
-> > would be good to proactively inform developers / users so they avoid 
-> > its use, if this will cause issues its perhaps best to make this a
-> > no-op through a check. AFAICT reviewing implications of not supporting
-> > deferred probe on drivers/subsytsems for this framework is not clearly
-> > spelled out, if we start considering re-using this framework for probe
-> > ordering I'd hate to see issues come up without this corner case being
-> > concretely considered.
-> 
-> It should not matter to the driver core if a subsystem, or a driver,
-> supports or does not support deferred probe.
+Lars-Peter Clausen <lars@metafoo.de> writes:
 
-That was my impression as well -- however Rafael noted this as an area
-worth highlighting. So perhaps he can elaborate.
+> On 10/26/2016 09:41 PM, Robert Jarzmik wrote:
+>> +#define to_ac97_device(d) container_of(d, struct ac97_codec_device, dev)
+>> +#define to_ac97_driver(d) container_of(d, struct ac97_codec_driver, driver)
+>
+> In my opinion these should be inline functions rather than macros as that
+> generates much more legible compiler errors e.g. in case there is a type
+> mismatch.
+Sure, why not.
 
-But at least as per my notes I do have here Geert Uytterhoeven reminding
-us that:
+>> +struct ac97_codec_driver {
+>> +	struct device_driver	driver;
+>> +	int			(*probe)(struct ac97_codec_device *);
+>> +	int			(*remove)(struct ac97_codec_device *);
+>> +	int			(*suspend)(struct ac97_codec_device *);
+>> +	int			(*resume)(struct ac97_codec_device *);
+>> +	void			(*shutdown)(struct ac97_codec_device *);
+>
+> The suspend, resume and shutdown callbacks are never used. Which is good,
+> since all new frameworks should use dev_pm_ops. Just drop the from the struct.
+Ok.
 
-  "Some drivers / subsystems don’t support deferred probe yet, such failures
-   usually don’t blow up, but cause subtle malfunctioning. Example, an Ethernet
-   phy could not get its interrupt as the primary IRQ chip had not been probed
-   yet, it reverted to polling though. Sub-optimal." [0]
+>> +/**
+>> + * struct ac97_controller - The AC97 controller of the AC-Link
+>> + * @ops:		the AC97 operations.
+>> + * @controllers:	linked list of all existing controllers.
+>> + * @dev:		the device providing the AC97 controller.
+>> + * @slots_available:	the mask of accessible/scanable codecs.
+>> + * @codecs:		the 4 possible AC97 codecs (NULL if none found).
+>> + * @codecs_pdata:	platform_data for each codec (NULL if no pdata).
+>> + *
+>> + * This structure is internal to AC97 bus, and should not be used by the
+>> + * controllers themselves, excepting for using @dev.
+>> + */
+>> +struct ac97_controller {
+>> +	const struct ac97_controller_ops *ops;
+>> +	struct list_head controllers;
+>> +	struct device *dev;
+>
+> I'd make the controller itself a struct dev, rather than just having the
+> pointer to the parent. This is more idiomatic and matches what other
+> subsystems do. It has several advantages, you get proper refcounting of your
+> controller structure, the controller gets its own sysfs directory where the
+> CODECs appear as children, you don't need the manual sysfs attribute
+> creation and removal in ac97_controler_{un,}register().
 
-[0] https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-August/003425.html
+If you mean having "struct device dev" instead of "struct device *dev", it has
+also a drawback : all the legacy platforms have already a probing method, be
+that platform data, device-tree or something else.
 
-This sounds more like the existing deffered probe solution has detrimental
-unexpected effects on some drivers / subsystems -- its not clear *why*, but
-its worth reviewing if there are other drivers and seeing if we need this
-annotation.
+I'm a bit converned about the conversion toll. Maybe I've not understood your
+point fully, so please feel free to explain, with an actual example even better.
 
-> It's a quick and simple solution to a complex problem that works well.
+>> +	void (*wait)(struct ac97_controller *adrv, int slot);
+>> +	void (*init)(struct ac97_controller *adrv, int slot);
+>
+> Neither wait nor init are ever used.
+This is because I've not begun to porting sound/pci/ac97_codec.c into
+sound/ac97.
 
-We all agree. The recent discussions over probe ordering are simply
-optimization considerations -- should the time incurred to use deferred
-probe be X and the time incurred when using an alternative is Y and we
-determine the time Y is < X we have a winning alternative. Part of my
-own big issue with deferred probe is a) its extremely non-deterministic,
-b) it seems some folks have thought about similar problems and we might
-really be able to do better. I'm not convinced that the functional
-dependencies patches are the panacea for probe ordering, and while it
-was not intended for that, some folks are assuming it could be. To really
-vet this prospect we must really consider what other subsystem have done
-and review other alternatives efforts.
+>> +	if ((codec_num < 0) || (codec_num >= AC97_BUS_MAX_CODECS))
+>> +		return ERR_PTR(-ERANGE);
+>
+> I'd make this EINVAL.
+Ok.
 
-> Yes, you can iterate a
-> lot of times, but that's fine, we have time at boot to do that (and
-> really, it is fast.)
+>> +	adev = container_of(dev, struct ac97_codec_device, dev);
+>
+> to_ac97_device()
+Sure.
 
-Deferred probe is left for late_initcall() [1] -- this *assumes* that the
-driver/subsystem can be loaded so late, and as per Andrzej this solution
-isunacceptable/undesirable. So it would be unfair and incorrect to categorize
-all drivers in the same boat, in fact given this lone fact it may be
-worth revisiting the idea I mentioned about a capability aspect to support
-a late deferred probe later. We tend to assume its fine, however it does
-not seem to be the case.
+>> +	codec_name = kasprintf(GFP_KERNEL, "%s:%d", dev_name(ac97_ctrl->dev),
+>> +			       idx);
+>> +	codec->dev.init_name = codec_name;
+>
+> init_name is only for statically allocated devices. Use dev_set_name(dev,
+> ...). No need for kasprintf() either as dev_set_name() takes a format string.
+I'll try again, I seem to remember having tried that and it failed, but I can't
+remember why.
 
-[1] drivers/base/dd.c:late_initcall(deferred_probe_initcall);
+> For this you need to split device_register into device_initialize() and
+> device_add(). But usually that is what you want anyway.
+Let me try again.
 
-> > Furthermore -- how does this framework compare to Andrzej's resource tracking
-> > solution? I confess I have not had a chance yet to review yet but in light of
-> > this question it would be good to know if Andrzej's framework also requires
-> > deferred probe as similar concerns would exist there as well.
-> 
-> I have no idea what "framework" you are talking about here, do you have
-> a pointer to patches?
+>> +	ret = sysfs_create_link(&codec->dev.kobj, &ac97_ctrl->dev->kobj,
+>> +				"ac97_controller");
+>
+> Since the CODEC is a child of the controller this should not be necessary as
+> this just points one directory up. It's like `ln -s .. parent`
+This creates :
+/sys/bus/ac97/devices/pxa2xx-ac97\:0/ac97_controller
 
-I'm surprised given Andrzej did both Cc you on his patches [2] *and* chimed
-in on Rafael's patches to indicate that we likely can integrate PM concerns
-into his own "framework" [3]. There was no resolution to this discussion, however
-its not IMHO sufficient to brush off Andrzej's points in particular because
-Andrzej *is* indicating that his framework:
+Of course as you pointed out, it's a 'ln -s .. parent' like link, but it seems
+to me very unfriendly to have :
+ - /sys/bus/ac97/devices/pxa2xx-ac97\:0/../ac97_operations
+ - while /sys/bus/ac97/devices/ac97_operations doesn't exist (obviously)
 
-- Eliminates deferred probe and resulting late_initcall(), consumer registers
-callbacks informing when given resources (clock, regulator, etc) becomes
-available
-- Properly handle resource disappearance (driver unbind, hotplug)
-- Track resources which are not vital to the device, but can influence behavior
-- Offers simplified resource allocation
-- Can be easily expanded to help with power management
+Mmm, I don't know for this one, my mind is not set, it's a bit hard to tell if
+it's only an unecessary link bringing "comfort", or something usefull.
 
-Granted I have not reviewed this yet but it at least was on my radar, and
-I do believe its worth reviewing this further given the generally expressed
-interest to see if we can have a common framework to address both ordering
-problems, suspend and probe. At a quick glance the "ghost provider" idea
-seems like a rather crazy idea but hey, there may be some goods in there.
+>
+>> +	if (ret)
+>> +		goto err_unregister_device;
+>> +
+>> +	return 0;
+>> +err_unregister_device:
+>> +	put_device(&codec->dev);
+>> +err_free_codec:
+>> +	kfree(codec);
+>
+> Since the struct is reference counted, the freeing is done in the release
+> callback and this leads to a double free.
+A yes in the "goto err_unregister_device" case right, while it's necessary in
+the "goto err_free_codec" case ... I need to rework that a bit.
 
-It was sad both Andrzej and yourself could not attend the complex dependencies
-tracks -- I think it would have been useful. I don't expect us to address a
-resolution to probe ordering immediately -- but I am in the hopes we at least
-can keep an open mind about the similarity of the problems and see if we can
-aim for a clean elegant solution that might help both.
+>> +int snd_ac97_codec_driver_register(struct ac97_codec_driver *drv)
+>> +{
+>> +	int ret;
+>> +
+>> +	drv->driver.bus = &ac97_bus_type;
+>> +
+>> +	ret = driver_register(&drv->driver);
+>> +	if (!ret)
+>> +		ac97_rescan_all_controllers();
+>
+> Rescanning the bus when a new codec driver is registered should not be
+> neccessary. The bus is scanned once when the controller is registered, this
+> creates the device. The device driver core will take care of binding the
+> device to the driver, if the driver is registered after thed evice.
+That's because you suppose the initial scanning found all the ac97 codecs.
+But that's an incomplete vision as a codec might be powered off at that time and
+not seen by the first scanning, while the new scanning will discover it.
 
-[2] https://lwn.net/Articles/625454/
-[3] http://thread.gmane.org/gmane.linux.kernel/2087152
+>> +static int ac97_ctrl_codecs_unregister(struct ac97_controller *ac97_ctrl)
+>> +{
+>> +	int i;
+>> +
+>> +	for (i = 0; i < AC97_BUS_MAX_CODECS; i++)
+>> +		if (ac97_ctrl->codecs[i])
+>> +			put_device(&ac97_ctrl->codecs[i]->dev);
+>
+> This should be device_unregister() to match the device_register() in
+> ac97_codec_add().
+Right.
 
-  Luis
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> +static ssize_t cold_reset_store(struct device *dev,
+>> +				struct device_attribute *attr, const char *buf,
+>> +				size_t len)
+>> +{
+>> +	struct ac97_controller *ac97_ctrl = ac97_ctrl_find(dev);
+>> +
+>> +	if (!dev)
+>> +		return -ENODEV;
+>
+> dev is never NULL here.
+Ok.
+
+> And for the ac97_ctrl there is a race condition. It could be unregistered and
+> freed after ac97_ctrl_find() returned sucessfully, but before ac97_ctrl->ops
+> is used.
+A good catch, the ac97_controllers_mutex is missing.
+
+> Same here.
+Indeed.
+
+>> +
+>> +	ac97_ctrl->ops->warm_reset(ac97_ctrl);
+>> +	return len;
+>> +}
+>> +static DEVICE_ATTR_WO(warm_reset);
+>> +
+>> +static struct attribute *ac97_controller_device_attrs[] = {
+>> +	&dev_attr_cold_reset.attr,
+>> +	&dev_attr_warm_reset.attr,
+>> +	NULL
+>> +};
+>
+> This adds new userspace ABI that is not documented at the moment.
+Very true. And as all userspace interface, it needs to be discussed. If nobody
+complains, I'll add the documentation for next patch round.
+>
+>> +int snd_ac97_controller_register(const struct ac97_controller_ops *ops,
+>> +				 struct device *dev,
+>> +				 unsigned short slots_available,
+>> +				 void **codecs_pdata)
+>
+> In my opinion this should return a handle to a ac97 controller which can
+> then be passed to snd_ac97_controller_unregister(). This is in my opinion
+> the better approach rather than looking up the controller by parent device.
+This is another "legacy drivers" issue.
+
+The legacy driver (the one probed by platform_data or devicetree) doesn't
+necessarily have a private structure to store this ac97_controller pointer. This
+enables an "easier" porting of existing drivers.
+
+>> +/**
+>> + * snd_ac97_controller_unregister - unregister an ac97 controller
+>> + * @dev: the device previously provided to ac97_controller_register()
+>> + *
+>> + * Returns 0 on success, negative upon error
+>
+> Unregister must not be able to fail. Hotunplug is one of the core concepts
+> of the device driver model and there is really nothing that can be done to
+> prevent a device from disappearing, so there is no sensible way of handling
+> the error (and your pxa driver modifications simply ignore it as well).
+>
+> This also means the framework needs to cope with the case where the
+> controller is removed and the CODEC devices are still present. All future
+> operations should return -ENODEV in that case.
+Ah ... that will require a serious modification, and I see your point, so I'll
+prepare this for next patchset.
+>> +static struct bus_type ac97_bus_type = {
+>> +	.name		= "ac97",
+>> +	.dev_attrs	= ac97_dev_attrs,
+>
+> dev_attrs is deprecated in favor of dev_groups (See commit 880ffb5c6).
+Ok.
+
+>> index 000000000000..a835f03744bf
+>> --- /dev/null
+>> +++ b/sound/ac97/codec.c
+>> @@ -0,0 +1,15 @@
+>> +/*
+>> + *  Copyright (C) 2016 Robert Jarzmik <robert.jarzmik@free.fr>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 as
+>> + * published by the Free Software Foundation.
+>> + */
+>> +
+>> +#include <sound/ac97_codec.h>
+>> +#include <sound/ac97/codec.h>
+>> +#include <sound/ac97/controller.h>
+>> +#include <linux/device.h>
+>> +#include <linux/slab.h>
+>> +#include <sound/soc.h>	/* For compat_ac97_* */
+>> +
+>
+> I'm not sure I understand what this file does.
+Ah yes, I'll remove it.
+It's the future conversion of sound/pci/ac97_codec.c, but it's ... empty so far.
+
+Thanks very much for the very detailed review.
+
+-- 
+Robert
