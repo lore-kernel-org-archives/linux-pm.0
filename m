@@ -1,85 +1,81 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Tue, 8 Nov 2016 16:41:33 +0800
-Message-ID: <20161108084133.GA12276@b29397-desktop>
-References: <cover.1476780088.git.baolin.wang@linaro.org>
- <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com>
- <87k2cttptn.fsf@notabene.neil.brown.name>
- <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com>
- <87a8dls7yn.fsf@notabene.neil.brown.name>
- <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
- <871sytqrqh.fsf@notabene.neil.brown.name>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
+ fails to start
+Date: Tue, 08 Nov 2016 18:02:03 +0900
+Message-ID: <5821948B.2010907@samsung.com>
+References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
+ <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
+ <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
+ <5820CE7E.40802@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34506 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753497AbcKHI7e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 03:59:34 -0500
-Content-Disposition: inline
-In-Reply-To: <871sytqrqh.fsf@notabene.neil.brown.name>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <5820CE7E.40802@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neilb@suse.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel>
 
-On Thu, Nov 03, 2016 at 12:25:42PM +1100, NeilBrown wrote:
-> On Tue, Nov 01 2016, Baolin Wang wrote:
-> 
-> 
-> >> So I won't be responding on this topic any further until I see a genuine
-> >> attempt to understand and resolve the inconsistencies with
-> >> usb_register_notifier().
-> >
-> > Any better solution?
-> 
-> I'm not sure exactly what you are asking, so I'll assume you are asking
-> the question I want to answer :-)
-> 
-> 1/ Liase with the extcon developers to resolve the inconsistencies
->   with USB connector types.
->   e.g. current there is both "EXTCON_USB" and "EXTCON_CHG_USB_SDP"
->   which both seem to suggest a standard downstream port.  There is no
->   documentation describing how these relate, and no consistent practice
->   to copy.
->   I suspect the intention is that
->     EXTCON_USB and EXTCON_USB_HOST indicated that data capabilities of
->     the cable, while EXTCON_CHG_USB* indicate the power capabilities of
->     the cable. 
->     So EXTCON_CHG_USB_SDP should always appear together with EXTCON_USB
->     while EXTCON_CHG_USB_DCP would not, and EXTCON_CHG_USB_ACA
->     would normally appear with EXTCON_USB_HOST (I think).
->   Some drivers follow this model, particularly extcon-max14577.c
->   but it is not consistent.
-> 
->   This policy should be well documented and possibly existing drivers
->   should be updated to follow it.
-> 
->   At the same time it would make sense to resolve EXTCON_CHG_USB_SLOW
->   and EXTCON_CHG_USB_FAST.  These names don't mean much.
->   They were recently removed from drivers/power/axp288_charger.c
->   which is good, but are still used in drivers/extcon/extcon-max*
->   Possibly they should be changed to names from the standard, or
->   possibly they should be renamed to identify the current they are
->   expected to provide. e.g. EXTCON_CHG_USB_500MA and EXTCON_CHG_USB_1A
-> 
-> 2/ Change all usb phys to register an extcon and to send appropriate
->    notifications.  Many already do, but I don't think it is universal.
->    It is probable that the extcon should be registered using common code
->    instead of each phy driver having its own
->    extcon_get_edev_by_phandle()
->    or whatever.
->    If the usb phy driver needs to look at battery charger registers to
->    know what sort of cable was connected (which I believe is the case
->    for the chips you are interested in), then it should do that.
+Hi,
 
-Not only USB PHY to register an extcon, but also for the drivers which
-can detect USB charger type, it may be USB controller driver, USB type-c
-driver, pmic driver, and these drivers may not have an extcon device
-since the internal part can finish the vbus detect.
+On 2016년 11월 08일 03:57, Saravana Kannan wrote:
+> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
+>> Hi,
+>>
+>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
+>>> If the new governor fails to start, switch back to old governor so that the
+>>> devfreq state is not left in some weird limbo.
+>>>
+>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>>> ---
+>>> * Fix NULL deref for real this time.
+>>> * Addressed some style preferences.
+>>>
+>>>   drivers/devfreq/devfreq.c | 13 +++++++++++--
+>>>   1 file changed, 11 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>> index bf3ea76..77c41a5 100644
+>>> --- a/drivers/devfreq/devfreq.c
+>>> +++ b/drivers/devfreq/devfreq.c
+>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>       struct devfreq *df = to_devfreq(dev);
+>>>       int ret;
+>>>       char str_governor[DEVFREQ_NAME_LEN + 1];
+>>> -    struct devfreq_governor *governor;
+>>> +    const struct devfreq_governor *governor, *prev_governor;
+>>>
+>>>       ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>>       if (ret != 1)
+>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>               goto out;
+>>>           }
+>>>       }
+>>> +    prev_governor = df->governor;
+>>>       df->governor = governor;
+>>>       strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+>>>       ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>>> -    if (ret)
+>>> +    if (ret) {
+>>>           dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>>                __func__, df->governor->name, ret);
+>>> +        if (prev_governor) {
+>>
+>> I think that prev_governor is always set. You don't need to check it.
+>> Why do check it?
+> 
+> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
 
--- 
+I don't understand. If device is not registered by devfreq_add_device(),
+you don't change the governor by using governor_store().
+
+If you can change the governor through governor_store(),
+it means that the devfreq instance was added without any problem.
+The added devfreq instance must have the sepecific governor
+on df->governor variable.
+
+So, I think that df->governor is always set and then prev_governor is always set.
 
 Best Regards,
-Peter Chen
+Chanwoo Choi
