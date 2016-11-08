@@ -1,15 +1,19 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 1/2] PM / devfreq: rk3399_dmc: Use the resource-managed
- function to add devfreq dev
-Date: Tue, 08 Nov 2016 18:13:27 +0900
-Message-ID: <1478596408-2958-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 2/2] scsi: ufs: Use the resource-managed function to add
+ devfreq device
+Date: Tue, 08 Nov 2016 18:16:59 +0900
+Message-ID: <1478596619-3064-1-git-send-email-cw00.choi@samsung.com>
 References: <1478596408-2958-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:47274 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932751AbcKHJRE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 04:17:04 -0500
 In-reply-to: <1478596408-2958-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, subhashj@codeaurora.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rjw@rjwysocki.net, subhashj@codeaurora.org, cpgs@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Vinayak Holikatti <vinholikatti@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org
 
 This patch uses the resource-managed to add the devfreq device.
 This function will make it easy to handle the devfreq device.
@@ -18,24 +22,37 @@ This function will make it easy to handle the devfreq device.
 				  struct devfreq_dev_profile *profile,
 				  const char *governor_name,
 				  void *data);
-
+Cc: Vinayak Holikatti <vinholikatti@gmail.com>
+Cc: James E.J. Bottomley <jejb@linux.vnet.ibm.com>
+Cc: Martin K. Petersen <martin.petersen@oracle.com>
+Cc: linux-scsi@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/rk3399_dmc.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/scsi/ufs/ufshcd.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-index e24b73d66659..3f8f4381cd4a 100644
---- a/drivers/devfreq/rk3399_dmc.c
-+++ b/drivers/devfreq/rk3399_dmc.c
-@@ -436,7 +436,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+diff --git a/drivers/scsi/ufs/ufshcd.c b/drivers/scsi/ufs/ufshcd.c
+index e491c4bda32f..e8c5ba274830 100644
+--- a/drivers/scsi/ufs/ufshcd.c
++++ b/drivers/scsi/ufs/ufshcd.c
+@@ -6250,8 +6250,6 @@ void ufshcd_remove(struct ufs_hba *hba)
+ 	ufshcd_hba_stop(hba, true);
  
- 	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
+ 	ufshcd_exit_clk_gating(hba);
+-	if (ufshcd_is_clkscaling_enabled(hba))
+-		devfreq_remove_device(hba->devfreq);
+ 	ufshcd_hba_exit(hba);
+ }
+ EXPORT_SYMBOL_GPL(ufshcd_remove);
+@@ -6579,7 +6577,7 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
+ 	}
  
--	data->devfreq = devfreq_add_device(dev,
-+	data->devfreq = devm_devfreq_add_device(dev,
- 					   &rk3399_devfreq_dmc_profile,
- 					   "simple_ondemand",
- 					   &data->ondemand_data);
+ 	if (ufshcd_is_clkscaling_enabled(hba)) {
+-		hba->devfreq = devfreq_add_device(dev, &ufs_devfreq_profile,
++		hba->devfreq = devm_devfreq_add_device(dev, &ufs_devfreq_profile,
+ 						   "simple_ondemand", NULL);
+ 		if (IS_ERR(hba->devfreq)) {
+ 			dev_err(hba->dev, "Unable to register with devfreq %ld\n",
 -- 
 1.9.1
+
