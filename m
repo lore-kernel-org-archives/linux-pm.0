@@ -1,63 +1,49 @@
-From: <zumbalisa@yahoo.com>
-Subject: 33704 linux-pm
-Date: Tue, 08 Nov 2016 16:56:34 -0000
-Message-ID: <147862419432.27180.17466593058169449346@hinet.net>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
+ support
+Date: Tue, 8 Nov 2016 20:21:04 +0100
+Message-ID: <20161108192103.GN1764@wotan.suse.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <13957403.ZrB4mMbICz@vostro.rjw.lan>
+ <2715729.9U1nlcpFb3@vostro.rjw.lan>
+ <20161026111902.GA6447@wunner.de>
+ <20161027152551.GA15718@kroah.com>
+ <20161107212250.GH1764@wotan.suse.de>
+ <20161108064541.GA13024@kroah.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="EMAIL_292762_linux-pm.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 111-251-19-35.dynamic.hinet.net ([111.251.19.35]:45505 "HELO
-        hinet.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-        id S1751180AbcKHQ4l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Nov 2016 11:56:41 -0500
-Content-Disposition: attachment
+Received: from mx2.suse.de ([195.135.220.15]:43624 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753178AbcKHTVI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Nov 2016 14:21:08 -0500
+Content-Disposition: inline
+In-Reply-To: <20161108064541.GA13024@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Andrzej Hajda <a.hajda@samsung.com>
 
-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
+On Tue, Nov 08, 2016 at 07:45:41AM +0100, Greg Kroah-Hartman wrote:
+> On Mon, Nov 07, 2016 at 10:22:50PM +0100, Luis R. Rodriguez wrote:
+> > We have no explicit semantics to check if a driver / subsystem
+> > supports deferred probe.
+> 
+> Why would we need such a thing?
+
+It depends on the impact of a driver/subsystem not properly supporting
+deffered probe, if this is no-op then such a need is not critical but
+would be good to proactively inform developers / users so they avoid 
+its use, if this will cause issues its perhaps best to make this a
+no-op through a check. AFAICT reviewing implications of not supporting
+deferred probe on drivers/subsytsems for this framework is not clearly
+spelled out, if we start considering re-using this framework for probe
+ordering I'd hate to see issues come up without this corner case being
+concretely considered.
+
+Furthermore -- how does this framework compare to Andrzej's resource tracking
+solution? I confess I have not had a chance yet to review yet but in light of
+this question it would be good to know if Andrzej's framework also requires
+deferred probe as similar concerns would exist there as well.
+
+  Luis
