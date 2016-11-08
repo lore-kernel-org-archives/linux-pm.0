@@ -1,97 +1,81 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 2/2][RFC v6] PM / sleep: save/restore RTC time after resumed if pm_trace enabled
-Date: Tue,  8 Nov 2016 17:02:14 +0800
-Message-ID: <3bf82cf55c4f5ce3286f6c3fc0b2b7e4b2e5ded3.1478589736.git.yu.c.chen@intel.com>
-References: <cover.1478589736.git.yu.c.chen@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1478589736.git.yu.c.chen@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: x86@kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <lenb@kernel.org>, John Stultz <john.stultz@linaro.org>, Xunlei Pang <xlpang@redhat.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq, powernv: Disable preemption while checking CPU
+ throttling state throttling state
+Date: Tue, 8 Nov 2016 14:27:57 +0530
+Message-ID: <20161108085757.GA22024@vireshk-i7>
+References: <1478594159-27719-1-git-send-email-kda@linux-powerpc.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:36472 "EHLO
+        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932533AbcKHI6B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 03:58:01 -0500
+Received: by mail-pf0-f178.google.com with SMTP id 189so104521838pfz.3
+        for <linux-pm@vger.kernel.org>; Tue, 08 Nov 2016 00:58:01 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1478594159-27719-1-git-send-email-kda@linux-powerpc.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com, shilpa.bhat@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com
 
-Previously the bogus CMOS RTC sleep time has been ignored if pm_trace
-is enabled, however once the system successfully resumed back,
-any further read to CMOS RTC would return an error. Actually it is
-more user-friendly to bring the system back to normal after resumed.
++some more folks from IBM.
 
-This patch has registered an pm notifier to restore the RTC to the
-value before been overwitten by pm_trace.
+On 08-11-16, 03:35, Denis Kirjanov wrote:
+>     [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+>     [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+>     [   67.701038] Call Trace:
+>     [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+>     [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+>     [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+>     [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+>     [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+>     [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+>     [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+>     [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+>     [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+>     [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+>     [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+>     [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+>     [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+> 
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Len Brown <lenb@kernel.org>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Xunlei Pang <xlpang@redhat.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- drivers/base/power/trace.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+We expect some description of the problem here, not just the OPPs
+dump.
 
-diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
-index aa9109a..1e6c611 100644
---- a/drivers/base/power/trace.c
-+++ b/drivers/base/power/trace.c
-@@ -10,6 +10,7 @@
- #include <linux/pm-trace.h>
- #include <linux/export.h>
- #include <linux/rtc.h>
-+#include <linux/suspend.h>
- 
- #include <linux/mc146818rtc.h>
- 
-@@ -76,6 +77,11 @@
- 
- bool pm_trace_rtc_abused __read_mostly;
- static unsigned int dev_hash_value;
-+struct rtc_time_save {
-+	struct rtc_time time;
-+	atomic_t saved;
-+};
-+static struct rtc_time_save rtc_saved;
- 
- static int set_magic_time(unsigned int user, unsigned int file, unsigned int device)
- {
-@@ -104,6 +110,8 @@ static int set_magic_time(unsigned int user, unsigned int file, unsigned int dev
- 	n /= 24;
- 	time.tm_min = (n % 20) * 3;
- 	n /= 20;
-+	if (!atomic_cmpxchg(&rtc_saved.saved, 0, 1))
-+		mc146818_get_time(&rtc_saved.time);
- 	mc146818_set_time(&time);
- 	pm_trace_rtc_abused = true;
- 	return n ? -1 : 0;
-@@ -240,10 +248,31 @@ int show_trace_dev_match(char *buf, size_t size)
- 	device_pm_unlock();
- 	return ret;
- }
-+static int pm_trace_notify(struct notifier_block *nb,
-+				unsigned long mode, void *_unused)
-+{
-+	switch (mode) {
-+	case PM_POST_HIBERNATION:
-+	case PM_POST_SUSPEND:
-+		if (atomic_cmpxchg(&rtc_saved.saved, 1, 0)) {
-+			mc146818_set_time(&rtc_saved.time);
-+			pm_trace_rtc_abused = false;
-+		}
-+		break;
-+	default:
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block pm_trace_nb = {
-+	.notifier_call = pm_trace_notify,
-+};
- 
- static int early_resume_init(void)
- {
- 	hash_value_early_read = read_magic_time();
-+	register_pm_notifier(&pm_trace_nb);
- 	return 0;
- }
- 
+> Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> ---
+> 
+> drivers/cpufreq/powernv-cpufreq.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index d3ffde8..a84724e 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -647,8 +647,14 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>  	if (unlikely(rebooting) && new_index != get_nominal_index())
+>  		return 0;
+>  
+> -	if (!throttled)
+> +	if (!throttled) {
+> +		/* we don't want to be preempted while
+> +		 * checking if the CPU frequency has been throttled
+> +		 */
+> +		preempt_disable();
+>  		powernv_cpufreq_throttle_check(NULL);
+> +		preempt_enable();
+> +	}
+>  
+>  	cur_msec = jiffies_to_msecs(get_jiffies_64());
+>  
+> -- 
+> 1.8.3.1
+
 -- 
-2.7.4
+viresh
