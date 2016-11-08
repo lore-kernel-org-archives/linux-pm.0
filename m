@@ -1,123 +1,84 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 31/49] thermal: core: move bind_cdev() to where it is used
-Date: Mon,  7 Nov 2016 21:09:09 -0800
-Message-ID: <1478581767-7009-32-git-send-email-edubezval@gmail.com>
+Subject: [PATCHv2 13/49] thermal: core: create tz->device.groups dynamically
+Date: Mon,  7 Nov 2016 21:08:51 -0800
+Message-ID: <1478581767-7009-14-git-send-email-edubezval@gmail.com>
 References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34831 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751062AbcKHF12 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 00:27:28 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rui Zhang <rui.zhang@intel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
-Moving the helper to closer where it is used.
+This is a patch to allow adding groups created dynamically. For now we
+create only the existing group. However, this is a preparation to allow
+creating trip groups, which are determined only when the number of trips
+are known at runtime.
 
 Cc: Zhang Rui <rui.zhang@intel.com>
 Cc: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/thermal/thermal_core.c | 76 +++++++++++++++++++++---------------------
- 1 file changed, 38 insertions(+), 38 deletions(-)
+ drivers/thermal/thermal_core.c | 25 ++++++++++++++++++++++---
+ 1 file changed, 22 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index c121933..e397d88 100644
+index e399ae6..971f033 100644
 --- a/drivers/thermal/thermal_core.c
 +++ b/drivers/thermal/thermal_core.c
-@@ -319,44 +319,6 @@ static void __bind(struct thermal_zone_device *tz, int mask,
- 	}
- }
- 
--static void bind_cdev(struct thermal_cooling_device *cdev)
--{
--	int i, ret;
--	const struct thermal_zone_params *tzp;
--	struct thermal_zone_device *pos = NULL;
--
--	mutex_lock(&thermal_list_lock);
--
--	list_for_each_entry(pos, &thermal_tz_list, node) {
--		if (!pos->tzp && !pos->ops->bind)
--			continue;
--
--		if (pos->ops->bind) {
--			ret = pos->ops->bind(pos, cdev);
--			if (ret)
--				print_bind_err_msg(pos, cdev, ret);
--			continue;
--		}
--
--		tzp = pos->tzp;
--		if (!tzp || !tzp->tbp)
--			continue;
--
--		for (i = 0; i < tzp->num_tbps; i++) {
--			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
--				continue;
--			if (tzp->tbp[i].match(pos, cdev))
--				continue;
--			tzp->tbp[i].cdev = cdev;
--			__bind(pos, tzp->tbp[i].trip_mask, cdev,
--			       tzp->tbp[i].binding_limits,
--			       tzp->tbp[i].weight);
--		}
--	}
--
--	mutex_unlock(&thermal_list_lock);
--}
--
- static void bind_tz(struct thermal_zone_device *tz)
- {
- 	int i, ret;
-@@ -889,6 +851,44 @@ static struct class thermal_class = {
- 	.dev_release = thermal_release,
+@@ -1236,7 +1236,7 @@ static const struct attribute_group *thermal_zone_attribute_groups[] = {
+ 	&thermal_zone_attribute_group,
+ 	&thermal_zone_mode_attribute_group,
+ 	&thermal_zone_passive_attribute_group,
+-	NULL
++	/* This is not NULL terminated as we create the group dynamically */
  };
  
-+static void bind_cdev(struct thermal_cooling_device *cdev)
+ /**
+@@ -1347,6 +1347,25 @@ static void remove_trip_attrs(struct thermal_zone_device *tz)
+ 	kfree(tz->trip_hyst_attrs);
+ }
+ 
++static int thermal_zone_create_device_groups(struct thermal_zone_device *tz)
 +{
-+	int i, ret;
-+	const struct thermal_zone_params *tzp;
-+	struct thermal_zone_device *pos = NULL;
++	const struct attribute_group **groups;
++	int i, size;
 +
-+	mutex_lock(&thermal_list_lock);
++	size = ARRAY_SIZE(thermal_zone_attribute_groups) + 1;
++	/* This also takes care of API requirement to be NULL terminated */
++	groups = kcalloc(size, sizeof(*groups), GFP_KERNEL);
++	if (!groups)
++		return -ENOMEM;
 +
-+	list_for_each_entry(pos, &thermal_tz_list, node) {
-+		if (!pos->tzp && !pos->ops->bind)
-+			continue;
++	for (i = 0; i < size - 1; i++)
++		groups[i] = thermal_zone_attribute_groups[i];
 +
-+		if (pos->ops->bind) {
-+			ret = pos->ops->bind(pos, cdev);
-+			if (ret)
-+				print_bind_err_msg(pos, cdev, ret);
-+			continue;
-+		}
++	tz->device.groups = groups;
 +
-+		tzp = pos->tzp;
-+		if (!tzp || !tzp->tbp)
-+			continue;
-+
-+		for (i = 0; i < tzp->num_tbps; i++) {
-+			if (tzp->tbp[i].cdev || !tzp->tbp[i].match)
-+				continue;
-+			if (tzp->tbp[i].match(pos, cdev))
-+				continue;
-+			tzp->tbp[i].cdev = cdev;
-+			__bind(pos, tzp->tbp[i].trip_mask, cdev,
-+			       tzp->tbp[i].binding_limits,
-+			       tzp->tbp[i].weight);
-+		}
-+	}
-+
-+	mutex_unlock(&thermal_list_lock);
++	return 0;
 +}
 +
- /**
-  * __thermal_cooling_device_register() - register a new thermal cooling device
-  * @np:		a pointer to a device tree node.
+ /* sys I/F for cooling device */
+ #define to_cooling_device(_dev)	\
+ 	container_of(_dev, struct thermal_cooling_device, device)
+@@ -1982,7 +2001,7 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	tz->polling_delay = polling_delay;
+ 
+ 	/* Add nodes that are always present via .groups */
+-	tz->device.groups = thermal_zone_attribute_groups;
++	thermal_zone_create_device_groups(tz);
+ 	/* A new thermal zone needs to be updated anyway. */
+ 	atomic_set(&tz->need_update, 1);
+ 
+@@ -2111,7 +2130,7 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+ 	idr_destroy(&tz->idr);
+ 	mutex_destroy(&tz->lock);
+ 	device_unregister(&tz->device);
+-	return;
++	kfree(tz->device.groups);
+ }
+ EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
+ 
 -- 
 2.1.4
-
