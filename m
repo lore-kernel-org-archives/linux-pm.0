@@ -1,50 +1,51 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 08/49] thermal: core: improve power actor documentation
-Date: Mon,  7 Nov 2016 21:08:46 -0800
-Message-ID: <1478581767-7009-9-git-send-email-edubezval@gmail.com>
-References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:33861 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932094AbcKHIvW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 03:51:22 -0500
-In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH 0/2][RFC v6] Ignore bogus sleep time if pm_trace
+ is enabled
+Date: Tue,  8 Nov 2016 17:00:10 +0800
+Message-ID: <cover.1478589736.git.yu.c.chen@intel.com>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <rtc-linux+bncBDFLXENW3AORBLNEQ3AQKGQEI3VCRDY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Xunlei Pang <xlpang-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Simple improvement on clarity and removal of checkpatch warning
-in the documentation of power actor kernel doc.
+This patch set is based on Thomas's previous solution, to bypass
+the bogus CMOS-RTC sleep time after resumed, thus to avoid damage
+to timekeeping system. The bogus sleep time comes from pm_trace,
+which might use CMOS-RTC for debugging purpose.
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/thermal/thermal_core.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Meanwhile, a solution to save/restore of CMOS-RTC is also proposed to give
+better user experience. 
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index f3d9fe9..3d2adfa 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1206,12 +1206,13 @@ int power_actor_get_min_power(struct thermal_cooling_device *cdev,
- }
- 
- /**
-- * power_actor_set_power() - limit the maximum power that a cooling device can consume
-+ * power_actor_set_power() - limit the maximum power a cooling device consumes
-  * @cdev:	pointer to &thermal_cooling_device
-  * @instance:	thermal instance to update
-  * @power:	the power in milliwatts
-  *
-- * Set the cooling device to consume at most @power milliwatts.
-+ * Set the cooling device to consume at most @power milliwatts. The limit is
-+ * expected to be a cap at the maximum power consumption.
-  *
-  * Return: 0 on success, -EINVAL if the cooling device does not
-  * implement the power actor API or -E* for other failures.
+Chen Yu (2):
+  timekeeping: Ignore the bogus sleep time if pm_trace is enabled
+  PM / sleep: save/restore RTC time after resumed if pm_trace enabled
+
+ arch/x86/kernel/rtc.c       |  9 +++++++++
+ drivers/base/power/trace.c  | 31 +++++++++++++++++++++++++++++++
+ drivers/rtc/rtc-cmos.c      |  7 +++++++
+ include/linux/mc146818rtc.h |  1 +
+ include/linux/pm-trace.h    |  9 ++++++++-
+ 5 files changed, 56 insertions(+), 1 deletion(-)
+
 -- 
-2.1.4
+2.7.4
 
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
