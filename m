@@ -1,174 +1,137 @@
-From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v6 2/7] iommu/exynos: Remove dead code
-Date: Tue, 08 Nov 2016 14:29:19 +0100
-Message-ID: <1478611764-6473-3-git-send-email-m.szyprowski@samsung.com>
-References: <1478611764-6473-1-git-send-email-m.szyprowski@samsung.com>
-	<CGME20161108133015eucas1p234c8c7076bcda5020ae8b78e87a0203d@eucas1p2.samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-reply-to: <1478611764-6473-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>
-Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH v3 2/2] cpufreq: powernv: Use PMCR to verify global and local pstate
+Date: Tue,  8 Nov 2016 19:03:28 +0530
+Message-ID: <1478612008-20703-2-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+References: <1478612008-20703-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:35131 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751243AbcKHNd4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 08:33:56 -0500
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uA8DXoIf000749
+        for <linux-pm@vger.kernel.org>; Tue, 8 Nov 2016 08:33:55 -0500
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 26keg967a0-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 08 Nov 2016 08:33:54 -0500
+Received: from localhost
+        by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
+        Tue, 8 Nov 2016 23:33:51 +1000
+In-Reply-To: <1478612008-20703-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, ego@linux.vnet.ibm.com, shilpa.bhat@linux.vnet.ibm.com, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-__sysmmu_enable/disable functions were designed to do ref-count based
-operations, but current code always calls them only once, so the code for
-checking the conditions and invalid conditions can be simply removed
-without any influence to the driver operation.
+As fast_switch() may get called with interrupt disable mode, we cannot
+hold a mutex to update the global_pstate_info. So currently, fast_switch()
+does not update the global_pstate_info and it will end up with stale data
+whenever pstate is updated through fast_switch().
 
-Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+As the gpstate_timer can fire after fast_switch() has updated the pstates,
+the timer handler cannot rely on the cached values of local and global
+pstate and needs to read it from the PMCR.
+
+Only gpstate_timer_handler() is affected by the stale cached pstate data
+beacause either fast_switch() or target_index() routines will be called
+for a given govenor, but gpstate_timer can fire after the governor has
+changed to schedutil.
+
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/iommu/exynos-iommu.c | 65 ++++++++++++--------------------------------
- 1 file changed, 17 insertions(+), 48 deletions(-)
+Changes from v2 :
+- Added generic macros GET_LPSTATE and GET_GPSTATE
+ instead of making it specific to PMCR.
+Changes from v1 :
+- Corrected Commit message
+- Type cast pstate values read from PMCR to type s8
+- Added Macros to get local and global pstates from PMCR
 
-diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
-index 8ba0d60..4056228 100644
---- a/drivers/iommu/exynos-iommu.c
-+++ b/drivers/iommu/exynos-iommu.c
-@@ -460,9 +460,6 @@ static bool __sysmmu_disable(struct sysmmu_drvdata *data)
- 		__sysmmu_disable_nocount(data);
+ drivers/cpufreq/powernv-cpufreq.c | 36 ++++++++++++++++++++++++++----------
+ 1 file changed, 26 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 4a4380d..c82304b 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -42,6 +42,10 @@
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+ #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+ #define PMSR_MAX(x)		((x >> 32) & 0xFF)
++#define LPSTATE_SHIFT		48
++#define GPSTATE_SHIFT		56
++#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
++#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
  
- 		dev_dbg(data->sysmmu, "Disabled\n");
--	} else  {
--		dev_dbg(data->sysmmu, "%d times left to disable\n",
--					data->activations);
- 	}
- 
- 	spin_unlock_irqrestore(&data->lock, flags);
-@@ -508,29 +505,18 @@ static void __sysmmu_enable_nocount(struct sysmmu_drvdata *data)
- static int __sysmmu_enable(struct sysmmu_drvdata *data, phys_addr_t pgtable,
- 			   struct exynos_iommu_domain *domain)
+ #define MAX_RAMP_DOWN_TIME				5120
+ /*
+@@ -592,7 +596,8 @@ void gpstate_timer_handler(unsigned long data)
  {
--	int ret = 0;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&data->lock, flags);
- 	if (set_sysmmu_active(data)) {
- 		data->pgtable = pgtable;
- 		data->domain = domain;
--
- 		__sysmmu_enable_nocount(data);
--
- 		dev_dbg(data->sysmmu, "Enabled\n");
--	} else {
--		ret = (pgtable == data->pgtable) ? 1 : -EBUSY;
--
--		dev_dbg(data->sysmmu, "already enabled\n");
- 	}
--
--	if (WARN_ON(ret < 0))
--		set_sysmmu_inactive(data); /* decrement count */
--
- 	spin_unlock_irqrestore(&data->lock, flags);
- 
--	return ret;
-+	return 0;
- }
- 
- static void sysmmu_tlb_invalidate_flpdcache(struct sysmmu_drvdata *data,
-@@ -793,8 +779,8 @@ static void exynos_iommu_domain_free(struct iommu_domain *iommu_domain)
- 	spin_lock_irqsave(&domain->lock, flags);
- 
- 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
--		if (__sysmmu_disable(data))
--			data->master = NULL;
-+		__sysmmu_disable(data);
-+		data->master = NULL;
- 		list_del_init(&data->domain_node);
- 	}
- 
-@@ -829,31 +815,23 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
- 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
- 	struct sysmmu_drvdata *data, *next;
- 	unsigned long flags;
--	bool found = false;
- 
- 	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
+ 	struct cpufreq_policy *policy = (struct cpufreq_policy *)data;
+ 	struct global_pstate_info *gpstates = policy->driver_data;
+-	int gpstate_idx;
++	int gpstate_idx, lpstate_idx;
++	unsigned long val;
+ 	unsigned int time_diff = jiffies_to_msecs(jiffies)
+ 					- gpstates->last_sampled_time;
+ 	struct powernv_smp_call_data freq_data;
+@@ -600,21 +605,36 @@ void gpstate_timer_handler(unsigned long data)
+ 	if (!spin_trylock(&gpstates->gpstate_lock))
  		return;
  
- 	spin_lock_irqsave(&domain->lock, flags);
- 	list_for_each_entry_safe(data, next, &domain->clients, domain_node) {
--		if (data->master == dev) {
--			if (__sysmmu_disable(data)) {
--				data->master = NULL;
--				list_del_init(&data->domain_node);
--			}
--			pm_runtime_put(data->sysmmu);
--			found = true;
--		}
-+		__sysmmu_disable(data);
-+		data->master = NULL;
-+		list_del_init(&data->domain_node);
-+		pm_runtime_put(data->sysmmu);
++	/*
++	 * If PMCR was last updated was using fast_swtich then
++	 * We may have wrong in gpstate->last_lpstate_idx
++	 * value. Hence, read from PMCR to get correct data.
++	 */
++	val = get_pmspr(SPRN_PMCR);
++	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
++	freq_data.pstate_id = (s8)GET_LPSTATE(val);
++	if (freq_data.gpstate_id  == freq_data.pstate_id) {
++		reset_gpstates(policy);
++		spin_unlock(&gpstates->gpstate_lock);
++		return;
++	}
++
+ 	gpstates->last_sampled_time += time_diff;
+ 	gpstates->elapsed_time += time_diff;
+-	freq_data.pstate_id = idx_to_pstate(gpstates->last_lpstate_idx);
+ 
+-	if ((gpstates->last_gpstate_idx == gpstates->last_lpstate_idx) ||
+-	    (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME)) {
++	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+ 		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
+ 		reset_gpstates(policy);
+ 		gpstates->highest_lpstate_idx = gpstate_idx;
+ 	} else {
++		lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+ 		gpstate_idx = calc_global_pstate(gpstates->elapsed_time,
+ 						 gpstates->highest_lpstate_idx,
+-						 gpstates->last_lpstate_idx);
++						 lpstate_idx);
  	}
- 	spin_unlock_irqrestore(&domain->lock, flags);
- 
- 	owner->domain = NULL;
- 
--	if (found)
--		dev_dbg(dev, "%s: Detached IOMMU with pgtable %pa\n",
--					__func__, &pagetable);
--	else
--		dev_err(dev, "%s: No IOMMU is attached\n", __func__);
-+	dev_dbg(dev, "%s: Detached IOMMU with pgtable %pa\n", __func__,
-+		&pagetable);
- }
- 
- static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
-@@ -864,7 +842,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
- 	struct sysmmu_drvdata *data;
- 	phys_addr_t pagetable = virt_to_phys(domain->pgtable);
- 	unsigned long flags;
--	int ret = -ENODEV;
- 
- 	if (!has_sysmmu(dev))
- 		return -ENODEV;
-@@ -874,27 +851,19 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
- 
- 	list_for_each_entry(data, &owner->controllers, owner_node) {
- 		pm_runtime_get_sync(data->sysmmu);
--		ret = __sysmmu_enable(data, pagetable, domain);
--		if (ret >= 0) {
--			data->master = dev;
-+		__sysmmu_enable(data, pagetable, domain);
-+		data->master = dev;
- 
--			spin_lock_irqsave(&domain->lock, flags);
--			list_add_tail(&data->domain_node, &domain->clients);
--			spin_unlock_irqrestore(&domain->lock, flags);
--		}
--	}
 -
--	if (ret < 0) {
--		dev_err(dev, "%s: Failed to attach IOMMU with pgtable %pa\n",
--					__func__, &pagetable);
--		return ret;
-+		spin_lock_irqsave(&domain->lock, flags);
-+		list_add_tail(&data->domain_node, &domain->clients);
-+		spin_unlock_irqrestore(&domain->lock, flags);
- 	}
++	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
++	gpstates->last_gpstate_idx = gpstate_idx;
++	gpstates->last_lpstate_idx = lpstate_idx;
+ 	/*
+ 	 * If local pstate is equal to global pstate, rampdown is over
+ 	 * So timer is not required to be queued.
+@@ -622,10 +642,6 @@ void gpstate_timer_handler(unsigned long data)
+ 	if (gpstate_idx != gpstates->last_lpstate_idx)
+ 		queue_gpstate_timer(gpstates);
  
- 	owner->domain = iommu_domain;
--	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa %s\n",
--		__func__, &pagetable, (ret == 0) ? "" : ", again");
-+	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
-+		&pagetable);
+-	freq_data.gpstate_id = idx_to_pstate(gpstate_idx);
+-	gpstates->last_gpstate_idx = pstate_to_idx(freq_data.gpstate_id);
+-	gpstates->last_lpstate_idx = pstate_to_idx(freq_data.pstate_id);
+-
+ 	spin_unlock(&gpstates->gpstate_lock);
  
--	return ret;
-+	return 0;
- }
- 
- static sysmmu_pte_t *alloc_lv2entry(struct exynos_iommu_domain *domain,
+ 	/* Timer may get migrated to a different cpu on cpu hot unplug */
 -- 
-1.9.1
+2.5.5
+
