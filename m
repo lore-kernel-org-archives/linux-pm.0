@@ -1,47 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: stats: clear statistics
-Date: Tue, 8 Nov 2016 09:39:40 +0530
-Message-ID: <20161108040940.GJ21030@vireshk-i7>
-References: <20161107180223.44536-1-code@mmayer.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv2 03/49] thermal: core: group device_create_file() calls that are always created
+Date: Mon,  7 Nov 2016 21:08:41 -0800
+Message-ID: <1478581767-7009-4-git-send-email-edubezval@gmail.com>
+References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161107180223.44536-1-code@mmayer.net>
+In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-11-16, 10:02, Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
-> 
-> Allow CPUfreq statistics to be cleared by writing anything to
-> /sys/.../cpufreq/stats/reset.
-> 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> ---
-> 
-> Changes since v2:
->     - changed name of write-only macro to cpufreq_freq_attr_wo()
->     - removed "perm" parameter from write-only macro
->     - squashed the two separate commits into a single one
-> 
-> Changes since v1:
->     - add new cpufreq_freq_attr_wr_perm() macro for write-only
->       attributes (because this is a separate commit, this patch has
->       turned into a series)
->     - remove the Kconfig option, compiling the code unconditionally
->     - remove show_reset()
->     - cpufreq_stats_clear_table() takes a struct cpufreq_stats * as
->       argument rather than a struct cpufreq_policy *
-> 
->  Documentation/cpu-freq/cpufreq-stats.txt |  6 ++++++
->  drivers/cpufreq/cpufreq_stats.c          | 22 ++++++++++++++++++++++
->  include/linux/cpufreq.h                  |  4 ++++
->  3 files changed, 32 insertions(+)
+Simple code reorganization to group files that are always created
+when registering a thermal zone.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
+---
+ drivers/thermal/thermal_core.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 97f314e..3d43c29 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1921,14 +1921,6 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	}
+ 
+ 	/* sys I/F */
+-	result = device_create_file(&tz->device, &dev_attr_type);
+-	if (result)
+-		goto unregister;
+-
+-	result = device_create_file(&tz->device, &dev_attr_temp);
+-	if (result)
+-		goto unregister;
+-
+ 	if (ops->get_mode) {
+ 		result = device_create_file(&tz->device, &dev_attr_mode);
+ 		if (result)
+@@ -1963,13 +1955,16 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 			goto unregister;
+ 	}
+ 
+-	/* Create policy attribute */
+-	result = device_create_file(&tz->device, &dev_attr_policy);
++	result = device_create_file(&tz->device, &dev_attr_type);
+ 	if (result)
+ 		goto unregister;
+ 
+-	/* Add thermal zone params */
+-	result = create_tzp_attrs(&tz->device);
++	result = device_create_file(&tz->device, &dev_attr_temp);
++	if (result)
++		goto unregister;
++
++	/* Create policy attribute */
++	result = device_create_file(&tz->device, &dev_attr_policy);
+ 	if (result)
+ 		goto unregister;
+ 
+@@ -1978,6 +1973,11 @@ struct thermal_zone_device *thermal_zone_device_register(const char *type,
+ 	if (result)
+ 		goto unregister;
+ 
++	/* Add thermal zone params */
++	result = create_tzp_attrs(&tz->device);
++	if (result)
++		goto unregister;
++
+ 	/* Update 'this' zone's governor information */
+ 	mutex_lock(&thermal_governor_lock);
+ 
 -- 
-viresh
+2.1.4
