@@ -1,192 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: governor: Don't use 'timer' keyword
-Date: Tue,  8 Nov 2016 11:06:33 +0530
-Message-ID: <915305fe119087769d62a95b8f22a95f9546b4f1.1478583385.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv2 47/49] thermal: core: use kzalloc(sizeof(*ptr),...)
+Date: Mon,  7 Nov 2016 21:09:25 -0800
+Message-ID: <1478581767-7009-48-git-send-email-edubezval@gmail.com>
+References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:34989 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753302AbcKHGGD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 01:06:03 -0500
+In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-The earlier implementation of governors used background timers and so
-functions, mutex, etc had 'timer' keyword in their names.
+As a safety check, this patch changes thermal
+core to check for pointer content size, instead of type size,
+while allocating memory.
 
-But that's not true anymore. Replace 'timer' with 'update', as those
-functions, variables are based around updates to frequency.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
- drivers/cpufreq/cpufreq_conservative.c |  4 ++--
- drivers/cpufreq/cpufreq_governor.c     | 18 +++++++++---------
- drivers/cpufreq/cpufreq_governor.h     |  4 ++--
- drivers/cpufreq/cpufreq_ondemand.c     | 15 +++++++--------
- 4 files changed, 20 insertions(+), 21 deletions(-)
+ drivers/thermal/thermal_core.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 13475890d792..fa5ece3915a1 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -58,7 +58,7 @@ static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
-  * Any frequency increase takes it to the maximum frequency. Frequency reduction
-  * happens at minimum steps of 5% (default) of maximum frequency
-  */
--static unsigned int cs_dbs_timer(struct cpufreq_policy *policy)
-+static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
- {
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct cs_policy_dbs_info *dbs_info = to_dbs_info(policy_dbs);
-@@ -305,7 +305,7 @@ static void cs_start(struct cpufreq_policy *policy)
- static struct dbs_governor cs_governor = {
- 	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("conservative"),
- 	.kobj_type = { .default_attrs = cs_attributes },
--	.gov_dbs_timer = cs_dbs_timer,
-+	.gov_dbs_update = cs_dbs_update,
- 	.alloc = cs_alloc,
- 	.free = cs_free,
- 	.init = cs_init,
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 642dd0f183a8..372947416b75 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -61,7 +61,7 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
- 	 * entries can't be freed concurrently.
- 	 */
- 	list_for_each_entry(policy_dbs, &attr_set->policy_list, list) {
--		mutex_lock(&policy_dbs->timer_mutex);
-+		mutex_lock(&policy_dbs->update_mutex);
- 		/*
- 		 * On 32-bit architectures this may race with the
- 		 * sample_delay_ns read in dbs_update_util_handler(), but that
-@@ -76,7 +76,7 @@ ssize_t store_sampling_rate(struct gov_attr_set *attr_set, const char *buf,
- 		 * taken, so it shouldn't be significant.
- 		 */
- 		gov_update_sample_delay(policy_dbs, 0);
--		mutex_unlock(&policy_dbs->timer_mutex);
-+		mutex_unlock(&policy_dbs->update_mutex);
- 	}
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 2db21e5..4f93844 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -674,8 +674,7 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+ 	if (lower > upper || upper > max_state)
+ 		return -EINVAL;
  
- 	return count;
-@@ -236,9 +236,9 @@ static void dbs_work_handler(struct work_struct *work)
- 	 * Make sure cpufreq_governor_limits() isn't evaluating load or the
- 	 * ondemand governor isn't updating the sampling rate in parallel.
- 	 */
--	mutex_lock(&policy_dbs->timer_mutex);
--	gov_update_sample_delay(policy_dbs, gov->gov_dbs_timer(policy));
--	mutex_unlock(&policy_dbs->timer_mutex);
-+	mutex_lock(&policy_dbs->update_mutex);
-+	gov_update_sample_delay(policy_dbs, gov->gov_dbs_update(policy));
-+	mutex_unlock(&policy_dbs->update_mutex);
+-	dev =
+-	    kzalloc(sizeof(struct thermal_instance), GFP_KERNEL);
++	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+ 	if (!dev)
+ 		return -ENOMEM;
+ 	dev->tz = tz;
+@@ -917,7 +916,7 @@ __thermal_cooling_device_register(struct device_node *np,
+ 	    !ops->set_cur_state)
+ 		return ERR_PTR(-EINVAL);
  
- 	/* Allow the utilization update handler to queue up more work. */
- 	atomic_set(&policy_dbs->work_count, 0);
-@@ -348,7 +348,7 @@ static struct policy_dbs_info *alloc_policy_dbs_info(struct cpufreq_policy *poli
- 		return NULL;
+-	cdev = kzalloc(sizeof(struct thermal_cooling_device), GFP_KERNEL);
++	cdev = kzalloc(sizeof(*cdev), GFP_KERNEL);
+ 	if (!cdev)
+ 		return ERR_PTR(-ENOMEM);
  
- 	policy_dbs->policy = policy;
--	mutex_init(&policy_dbs->timer_mutex);
-+	mutex_init(&policy_dbs->update_mutex);
- 	atomic_set(&policy_dbs->work_count, 0);
- 	init_irq_work(&policy_dbs->irq_work, dbs_irq_work);
- 	INIT_WORK(&policy_dbs->work, dbs_work_handler);
-@@ -367,7 +367,7 @@ static void free_policy_dbs_info(struct policy_dbs_info *policy_dbs,
- {
- 	int j;
+@@ -1163,7 +1162,7 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 	if (trips > 0 && (!ops->get_trip_type || !ops->get_trip_temp))
+ 		return ERR_PTR(-EINVAL);
  
--	mutex_destroy(&policy_dbs->timer_mutex);
-+	mutex_destroy(&policy_dbs->update_mutex);
+-	tz = kzalloc(sizeof(struct thermal_zone_device), GFP_KERNEL);
++	tz = kzalloc(sizeof(*tz), GFP_KERNEL);
+ 	if (!tz)
+ 		return ERR_PTR(-ENOMEM);
  
- 	for_each_cpu(j, policy_dbs->policy->related_cpus) {
- 		struct cpu_dbs_info *j_cdbs = &per_cpu(cpu_dbs, j);
-@@ -547,10 +547,10 @@ void cpufreq_dbs_governor_limits(struct cpufreq_policy *policy)
- {
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 
--	mutex_lock(&policy_dbs->timer_mutex);
-+	mutex_lock(&policy_dbs->update_mutex);
- 	cpufreq_policy_apply_limits(policy);
- 	gov_update_sample_delay(policy_dbs, 0);
- 
--	mutex_unlock(&policy_dbs->timer_mutex);
-+	mutex_unlock(&policy_dbs->update_mutex);
- }
- EXPORT_SYMBOL_GPL(cpufreq_dbs_governor_limits);
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index ef1037e9c92b..9660cc6b4b39 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -85,7 +85,7 @@ struct policy_dbs_info {
- 	 * Per policy mutex that serializes load evaluation from limit-change
- 	 * and work-handler.
- 	 */
--	struct mutex timer_mutex;
-+	struct mutex update_mutex;
- 
- 	u64 last_sample_time;
- 	s64 sample_delay_ns;
-@@ -135,7 +135,7 @@ struct dbs_governor {
- 	 */
- 	struct dbs_data *gdbs_data;
- 
--	unsigned int (*gov_dbs_timer)(struct cpufreq_policy *policy);
-+	unsigned int (*gov_dbs_update)(struct cpufreq_policy *policy);
- 	struct policy_dbs_info *(*alloc)(void);
- 	void (*free)(struct policy_dbs_info *policy_dbs);
- 	int (*init)(struct dbs_data *dbs_data);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 3a1f49f5f4c6..1e2bd9851fba 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -169,7 +169,7 @@ static void od_update(struct cpufreq_policy *policy)
- 	}
- }
- 
--static unsigned int od_dbs_timer(struct cpufreq_policy *policy)
-+static unsigned int od_dbs_update(struct cpufreq_policy *policy)
- {
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
-@@ -191,7 +191,7 @@ static unsigned int od_dbs_timer(struct cpufreq_policy *policy)
- 	od_update(policy);
- 
- 	if (dbs_info->freq_lo) {
--		/* Setup timer for SUB_SAMPLE */
-+		/* Setup SUB_SAMPLE */
- 		dbs_info->sample_type = OD_SUB_SAMPLE;
- 		return dbs_info->freq_hi_delay_us;
- 	}
-@@ -255,11 +255,11 @@ static ssize_t store_sampling_down_factor(struct gov_attr_set *attr_set,
- 	list_for_each_entry(policy_dbs, &attr_set->policy_list, list) {
- 		/*
- 		 * Doing this without locking might lead to using different
--		 * rate_mult values in od_update() and od_dbs_timer().
-+		 * rate_mult values in od_update() and od_dbs_update().
- 		 */
--		mutex_lock(&policy_dbs->timer_mutex);
-+		mutex_lock(&policy_dbs->update_mutex);
- 		policy_dbs->rate_mult = 1;
--		mutex_unlock(&policy_dbs->timer_mutex);
-+		mutex_unlock(&policy_dbs->update_mutex);
- 	}
- 
- 	return count;
-@@ -374,8 +374,7 @@ static int od_init(struct dbs_data *dbs_data)
- 		dbs_data->up_threshold = MICRO_FREQUENCY_UP_THRESHOLD;
- 		/*
- 		 * In nohz/micro accounting case we set the minimum frequency
--		 * not depending on HZ, but fixed (very low). The deferred
--		 * timer might skip some samples if idle/sleeping as needed.
-+		 * not depending on HZ, but fixed (very low).
- 		*/
- 		dbs_data->min_sampling_rate = MICRO_FREQUENCY_MIN_SAMPLE_RATE;
- 	} else {
-@@ -415,7 +414,7 @@ static struct od_ops od_ops = {
- static struct dbs_governor od_dbs_gov = {
- 	.gov = CPUFREQ_DBS_GOVERNOR_INITIALIZER("ondemand"),
- 	.kobj_type = { .default_attrs = od_attributes },
--	.gov_dbs_timer = od_dbs_timer,
-+	.gov_dbs_update = od_dbs_update,
- 	.alloc = od_alloc,
- 	.free = od_free,
- 	.init = od_init,
 -- 
-2.7.1.410.g6faf27b
+2.1.4
+
