@@ -1,42 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Resend][PATCH] cpufreq: conservative: Decrease frequency faster
- when the timer deferred
-Date: Tue, 8 Nov 2016 14:02:29 +0530
-Message-ID: <CAKohpo=kbyXvjOYFdOyu6d6x1TP45UWT0kB9eAk3XUXTG5iUpQ@mail.gmail.com>
-References: <076fb177-9cb3-4534-aadb-ebc2190d0751@email.android.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <076fb177-9cb3-4534-aadb-ebc2190d0751@email.android.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH] cpufreq,
+ powernv: Disable preemption while checking CPU throttling state
+ throttling state
+Date: Tue,  8 Nov 2016 03:35:59 -0500
+Message-ID: <1478594159-27719-1-git-send-email-kda@linux-powerpc.org>
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 8 November 2016 at 12:49, Stratos Karafotis <stratosk@semaphore.gr> wrote:
-> I think we shouldn't. That's why the patch first decreases the frequency
-> by n freq steps (where n the number of deferred periods).
-> Then the normal processing takes place.
+    [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+    [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+    [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+    [   67.701038] Call Trace:
+    [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+    [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+    [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+    [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+    [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+    [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+    [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+    [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+    [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+    [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+    [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+    [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+    [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+    [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
 
-The problem that I see is that the new algorithm will reduce the
-frequency even if we are
-on a ramp up phase.
+Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
 
-For example consider this case:
+drivers/cpufreq/powernv-cpufreq.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-- We have a special load running, that runs in bursts. i.e. runs for
-some time, lets the CPU idle
-then and then again runs.
-
-- To run the load properly, we need to ramp up the frequency
-
-- But the new algorithm can make the frequency stagnant in this case.
-i.e. because of the idle
-period you may want to decrease the frequency by delta A and then the
-regular algorithm may
-want to increase it by same delta A.
-
-That's why I was asking to adopt this only in the ramp down path.
-
---
-viresh
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index d3ffde8..a84724e 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -647,8 +647,14 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 	if (unlikely(rebooting) && new_index != get_nominal_index())
+ 		return 0;
+ 
+-	if (!throttled)
++	if (!throttled) {
++		/* we don't want to be preempted while
++		 * checking if the CPU frequency has been throttled
++		 */
++		preempt_disable();
+ 		powernv_cpufreq_throttle_check(NULL);
++		preempt_enable();
++	}
+ 
+ 	cur_msec = jiffies_to_msecs(get_jiffies_64());
+ 
+-- 
+1.8.3.1
