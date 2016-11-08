@@ -1,37 +1,60 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] coredump: fix unfreezable coredumping task
-Date: Mon, 7 Nov 2016 14:26:08 -0800
-Message-ID: <20161107142608.e4fa032b2e32b623663ff2e9@linux-foundation.org>
-References: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFtSRVNFTkQgUEFUQ0ggdjMgMS8yXSBQTS9kZXZmcmVx?=
+ =?UTF-8?B?OiBhZGQgc3VzcGVuZCBmcmVxdWVuY3kgc3VwcG9ydA==?=
+Date: Tue, 08 Nov 2016 02:06:58 +0000
+Message-ID: <960394560.458817.1478570818491.JavaMail.weblogic@ep2ml102b>
+References: <1478500420-22045-1-git-send-email-hl@rock-chips.com>
+ <CGME20161107063403epcas5p4f8d0d95b9a997ca7bf2b2702c3e5d337@epcas5p4.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:42294 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751081AbcKGW0K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Nov 2016 17:26:10 -0500
-In-Reply-To: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/related;
+ boundary="----=_Part_458816_470645723.1478570818491"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?UTF-8?B?TGluIEh1YW5n?= <hl@rock-chips.com>
+Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?ZGlhbmRlcnNAY2hyb21pdW0ub3Jn?= <dianders@chromium.org>, =?UTF-8?B?bGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZw==?= <linux-rockchip@lists.infradead.org>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?ZGJhc2Vob3JlQGNocm9taXVtLm9yZw==?= <dbasehore@chromium.org>, =?UTF-8?B?bGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3Jn?= <linux-arm-kernel@lists.infradead.org>, =?UTF-8?B?bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw==?= <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andrey Ryabinin <aryabinin@virtuozzo.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Oleg Nesterov <oleg@redhat.com>, linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-On Fri, 30 Sep 2016 11:50:34 +0300 Andrey Ryabinin <aryabinin@virtuozzo.com> wrote:
+------=_Part_458816_470645723.1478570818491
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-> It could be not possible to freeze coredumping task when it waits
-> for 'core_state->startup' completion, because threads are frozen
-> in get_signal() before they got a chance to complete 'core_state->startup'.
-> 
-> Use freezer_do_not_count() to tell freezer to ignore coredumping
-> task while it waits for core_state->startup completion.
-> 
-> Signed-off-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
-> Cc: stable@vger.kernel.org
-
-The changelog provides no reason why this patch should be merged into
--stable.  Nor into anything else, really.
-
-Please (as always) provide a full description of the bug's end-user
-visible effects.
-
+PiBBZGQgc3VzcGVuZCBmcmVxdWVuY3kgc3VwcG9ydCBhbmQgaWYgbmVlZGVkIHNldCBpdCB0bw0K
+PiB0aGUgZnJlcXVlbmN5IG9idGFpbmVkIGZyb20gdGhlIHN1c3BlbmQgb3BwIChjYW4gYmUgZGVm
+aW5lZA0KPiB1c2luZyBvcHAtdjIgYmluZGluZ3MgYW5kIGlzIG9wdGlvbmFsKS4NCj4gDQo+IFNp
+Z25lZC1vZmYtYnk6IExpbiBIdWFuZyA8aGxAcm9jay1jaGlwcy5jb20+DQo+IC0tLQ0KPiBDaGFu
+Z2VzIGluIHYyOg0KPiAtIHVzZSB1cGRhdGVfZGV2ZnJlcSgpIGluc3RlYWQgZGV2ZnJlcV91cGRh
+dGVfc3RhdHVzKCkNCj4gQ2hhbmdlcyBpbiB2MzoNCj4gLSBmaXggYnVpbGQgZXJyb3INCj4gDQo+
+ICBkcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jICAgICAgICAgICAgICAgICB8IDE4ICsrKysrKysr
+KysrKysrKystLQ0KPiAgZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3NpbXBsZW9uZGVtYW5kLmMg
+fCAgOSArKysrKysrKysNCj4gIGluY2x1ZGUvbGludXgvZGV2ZnJlcS5oICAgICAgICAgICAgICAg
+ICAgIHwgIDggKysrKysrKysNCj4gIDMgZmlsZXMgY2hhbmdlZCwgMzMgaW5zZXJ0aW9ucygrKSwg
+MiBkZWxldGlvbnMoLSkNCj4gDQo+ICANCltdDQo+ICt2b2lkIGRldmZyZXFfb3BwX2dldF9zdXNw
+ZW5kX29wcChzdHJ1Y3QgZGV2aWNlICpkZXYsIHN0cnVjdCBkZXZmcmVxICpkZXZmcmVxKQ0KPiAr
+ew0KPiArCXN0cnVjdCBkZXZfcG1fb3BwICpzdXNwZW5kX29wcDsNCj4gKw0KPiArCXJjdV9yZWFk
+X2xvY2soKTsNCj4gKwlzdXNwZW5kX29wcCA9IGRldl9wbV9vcHBfZ2V0X3N1c3BlbmRfb3BwKGRl
+dik7DQo+ICsJaWYgKHN1c3BlbmRfb3BwKQ0KPiArCQlkZXZmcmVxLT5zdXNwZW5kX2ZyZXEgPSBk
+ZXZfcG1fb3BwX2dldF9mcmVxKHN1c3BlbmRfb3BwKTsNCj4gKwlyY3VfcmVhZF91bmxvY2soKTsN
+Cj4gK30NCj4gK0VYUE9SVF9TWU1CT0woZGV2ZnJlcV9vcHBfZ2V0X3N1c3BlbmRfb3BwKTsNCj4g
+Kw0KDQpXaHkgZG8gd2UgbmVlZCB0aGlzIGZ1bmN0aW9uPw0KDQpUaGlzIGNvdWxkIGJlIGRvbmUg
+YXQgdGhlIGluaXQgdGltZSAoZGV2ZnJlcV9hZGRfZGV2aWNlKS4NCg0KUGx1cywgd2hlbiBpdCBk
+b2VzIG5vdCBoYXZlIGRldl9wbV9vcHBfZ2V0X3N1c3BlbmRfb3BwKCkgYXZhaWxhYmxlLA0KDQo+
+ICAvKioNCj4gICAqIGRldmZyZXFfcmVnaXN0ZXJfb3BwX25vdGlmaWVyKCkgLSBIZWxwZXIgZnVu
+Y3Rpb24gdG8gZ2V0IGRldmZyZXEgbm90aWZpZWQNCj4gICAqCQkJCSAgIGZvciBhbnkgY2hhbmdl
+cyBpbiB0aGUgT1BQIGF2YWlsYWJpbGl0eQ0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9kZXZmcmVx
+L2dvdmVybm9yX3NpbXBsZW9uZGVtYW5kLmMgYi9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3Jfc2lt
+cGxlb25kZW1hbmQuYw0KPiBpbmRleCBhZTcyYmE1Li5hM2VmZWUwIDEwMDY0NA0KPiAtLS0gYS9k
+cml2ZXJzL2RldmZyZXEvZ292ZXJub3Jfc2ltcGxlb25kZW1hbmQuYw0KPiArKysgYi9kcml2ZXJz
+L2RldmZyZXEvZ292ZXJub3Jfc2ltcGxlb25kZW1hbmQuYw0KPiBAQCAtMjksNiArMjksMTUgQEAg
+c3RhdGljIGludCBkZXZmcmVxX3NpbXBsZV9vbmRlbWFuZF9mdW5jKHN0cnVjdCBkZXZmcmVxICpk
+ZiwNCj4gIAlzdHJ1Y3QgZGV2ZnJlcV9zaW1wbGVfb25kZW1hbmRfZGF0YSAqZGF0YSA9IGRmLT5k
+YXRhOw0KPiAgCXVuc2lnbmVkIGxvbmcgbWF4ID0gKGRmLT5tYXhfZnJlcSkgPyBkZi0+bWF4X2Zy
+ZXEgOiBVSU5UX01BWDsNCj4gIA0KPiArCS8qDQo+ICsJICogaWYgZGV2ZnJlcSBpbiBzdXNwZW5k
+IHN0YXR1cyBhbmQgaGF2ZSBzdXNwZW5kX2ZyZXEsDQo+ICsJICogdGhlIGZyZXF1ZW5jeSBuZWVk
+IHRvIHNldCB0byBzdXNwZW5kX2ZyZXENCj4gKwkgKi8NCj4gKwlpZiAoZGYtPnN0b3BfcG9sbGlu
+ZyAmJiBkZi0+c3VzcGVuZF9mcmVxKSB7DQo+ICsJCSpmcmVxID0JZGYtPnN1c3BlbmRfZnJlcTsN
+Cj4gKwkJcmV0dXJuIDA7DQo+ICsJfQ0KPiArDQoNCldoeSBhcmUgeW91IGFkZGluZyB0aGlzPyAi
+U3RvcCBwb2xsaW5nIiBkb2VzIG5vdCBuZWNlc3NhcmlseSBtZWFuIHRoYXQNCndlIGFyZSBkb2lu
+ZyBzdXNwZW5kLXRvLVJBTS9kaXNrLiBJdCBtYXkgcmVhbGx5IG1lYW4ganVzdCB0byBzdG9wIGF0
+DQp0aGUgY3VycmVudCBmcmVxdWVuY3kuDQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg0K
+------=_Part_458816_470645723.1478570818491--
