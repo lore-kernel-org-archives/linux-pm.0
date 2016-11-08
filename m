@@ -1,78 +1,97 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
- control runtime pm
-Date: Tue, 8 Nov 2016 16:30:44 +0100
-Message-ID: <20161108153044.GA6983@wunner.de>
-References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
- <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
- <20161107214747.GJ1764@wotan.suse.de>
- <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Subject: Re: [PATCH] coredump: fix unfreezable coredumping task
+Date: Tue, 8 Nov 2016 12:36:37 +0300
+Message-ID: <bb7bdfd5-03de-b902-f256-d16b1ddf08ba@virtuozzo.com>
+References: <1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com>
+ <20161107142608.e4fa032b2e32b623663ff2e9@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:40677 "EHLO
-        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751479AbcKHP3p (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 10:29:45 -0500
-Content-Disposition: inline
-In-Reply-To: <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20161107142608.e4fa032b2e32b623663ff2e9@linux-foundation.org>
+Sender: stable-owner@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, Tejun Heo <tj@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Oleg Nesterov <oleg@redhat.com>, linux-pm@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>
 
-On Tue, Nov 08, 2016 at 08:27:12AM +0100, Marek Szyprowski wrote:
-> On 2016-11-07 22:47, Luis R. Rodriguez wrote:
-> > Has there been any review of the existing similar solutions out there
-> > such as the DRM / audio component framework? Would that help ?
+On 11/08/2016 01:26 AM, Andrew Morton wrote:
+> On Fri, 30 Sep 2016 11:50:34 +0300 Andrey Ryabinin <aryabinin@virtuozzo.com> wrote:
 > 
-> Nope, none of that solution deals with runtime pm.
+>> It could be not possible to freeze coredumping task when it waits
+>> for 'core_state->startup' completion, because threads are frozen
+>> in get_signal() before they got a chance to complete 'core_state->startup'.
+>>
+>> Use freezer_do_not_count() to tell freezer to ignore coredumping
+>> task while it waits for core_state->startup completion.
+>>
+>> Signed-off-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
+>> Cc: stable@vger.kernel.org
+> 
+> The changelog provides no reason why this patch should be merged into
+> -stable.  Nor into anything else, really.
+> 
+> Please (as always) provide a full description of the bug's end-user
+> visible effects.
+> 
 
-Well, they do.  Hybrid graphics laptops often have an HDA controller
-on the discrete GPU and I assume that's what Luis meant. There's code
-in drivers/gpu/vga/vga_switcheroo.c to make this (only sort of) work:
+Sorry. Added the following paragraph:
 
-* When the GPU is powered up/down, the HDA controller's driver is
-  instructed to pm_runtime_get/put the HDA device (see call to
-  set_audio_state() in vga_switcheroo_set_dynamic_switch()).
-
-* When a runtime PM ref is acquired on the HDA device, the
-  GPU is powered up (see vga_switcheroo_runtime_resume_hdmi_audio()).
+ Inability to freeze a task during suspend will cause suspend to fail.
+ Also CRIU uses cgroup freezer during dump operation. So with unfreezable
+ task CRIU dump will fail because it wait for transition from 'FREEZING'
+ to 'FROZEN' state which will never happen.
 
 
-Unfortunately this is all fairly broken, e.g.:
+----
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Subject: coredump: fix unfreezable coredumping task
 
-* If a runtime PM ref on the HDA device is held for more than 5 sec
-  (autosuspend delay of the GPU), the GPU will be powered down and
-  the HDA device will become inaccessible, regardless of the runtime
-  PM ref still being held (because vga_switcheroo_set_dynamic_switch()
-  doesn't check the refcount of the HDA device).
+It could be not possible to freeze coredumping task when it waits
+for 'core_state->startup' completion, because threads are frozen
+in get_signal() before they got a chance to complete 'core_state->startup'.
 
-* The DRM device is afforded direct-complete but the HDA device is not.
-  If the GPU is handled earlier by dpm_suspend(), then runtime PM will
-  have been disabled on the GPU and thus the HDA device will fail to
-  runtime resume before system sleep.
+Inability to freeze a task during suspend will cause suspend to fail.
+Also CRIU uses cgroup freezer during dump operation. So with unfreezable
+task CRIU dump will fail because it wait for transition from 'FREEZING'
+to 'FROZEN' state which will never happen.
 
-Rafael's series allows representation of such inter-device dependencies
-in the PM core and can thus replace kludgy and broken "solutions" like
-the one above.
+Use freezer_do_not_count() to tell freezer to ignore coredumping
+task while it waits for core_state->startup completion.
 
-There's one thing that I haven't understood myself though:  In an e-mail
-exchange in September Rafael has argued that the above-mentioned hybrid
-graphics use case "isn't a good [example] IMO.  That clearly is a case
-when two (or more) devices share power resources controlled by a single
-on/off switch.  Which is a clear use case for a PM domain."
+Link: http://lkml.kernel.org/r/1475225434-3753-1-git-send-email-aryabinin@virtuozzo.com
+Signed-off-by: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Oleg Nesterov <oleg@redhat.com>
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+ fs/coredump.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-The same seems to apply to Marek's SYSMMU use case.  When applying device
-links to SYSMMU or hybrid graphics, we select one of the devices in the
-PM domain as master and have the other one depend on it as slave, i.e.
-a synthetic hierarchical relationship is established.
-
-I've responded to Rafael on September 18 that this can't be solved with
-a struct dev_pm_domain, but haven't received a reply since:
-https://lkml.org/lkml/2016/9/18/103
-
-Thanks,
-
-Lukas
+diff --git a/fs/coredump.c b/fs/coredump.c
+index 281b768..eb9c92c 100644
+--- a/fs/coredump.c
++++ b/fs/coredump.c
+@@ -1,6 +1,7 @@
+ #include <linux/slab.h>
+ #include <linux/file.h>
+ #include <linux/fdtable.h>
++#include <linux/freezer.h>
+ #include <linux/mm.h>
+ #include <linux/stat.h>
+ #include <linux/fcntl.h>
+@@ -423,7 +424,9 @@ static int coredump_wait(int exit_code, struct core_state *core_state)
+ 	if (core_waiters > 0) {
+ 		struct core_thread *ptr;
+ 
++		freezer_do_not_count();
+ 		wait_for_completion(&core_state->startup);
++		freezer_count();
+ 		/*
+ 		 * Wait for all the threads to become inactive, so that
+ 		 * all the thread context (extended register state, like
+-- 
