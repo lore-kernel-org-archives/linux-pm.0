@@ -1,70 +1,50 @@
-From: Denis Kirjanov <kda@linux-powerpc.org>
-Subject: [PATCH] cpufreq,
- powernv: Disable preemption while checking CPU throttling state
- throttling state
-Date: Tue,  8 Nov 2016 03:35:59 -0500
-Message-ID: <1478594159-27719-1-git-send-email-kda@linux-powerpc.org>
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: Denis Kirjanov <kda@linux-powerpc.org>, linuxppc-dev@lists.ozlabs.org, linux-pm@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [PATCHv2 08/49] thermal: core: improve power actor documentation
+Date: Mon,  7 Nov 2016 21:08:46 -0800
+Message-ID: <1478581767-7009-9-git-send-email-edubezval@gmail.com>
+References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:33861 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932094AbcKHIvW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 03:51:22 -0500
+In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-    [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
-    [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
-    [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
-    [   67.701038] Call Trace:
-    [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
-    [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
-    [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
-    [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
-    [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
-    [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
-    [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
-    [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
-    [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
-    [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
-    [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
-    [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
-    [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
-    [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+Simple improvement on clarity and removal of checkpatch warning
+in the documentation of power actor kernel doc.
 
-Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
 ---
+ drivers/thermal/thermal_core.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-drivers/cpufreq/powernv-cpufreq.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index d3ffde8..a84724e 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -647,8 +647,14 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 	if (unlikely(rebooting) && new_index != get_nominal_index())
- 		return 0;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index f3d9fe9..3d2adfa 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1206,12 +1206,13 @@ int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+ }
  
--	if (!throttled)
-+	if (!throttled) {
-+		/* we don't want to be preempted while
-+		 * checking if the CPU frequency has been throttled
-+		 */
-+		preempt_disable();
- 		powernv_cpufreq_throttle_check(NULL);
-+		preempt_enable();
-+	}
- 
- 	cur_msec = jiffies_to_msecs(get_jiffies_64());
- 
+ /**
+- * power_actor_set_power() - limit the maximum power that a cooling device can consume
++ * power_actor_set_power() - limit the maximum power a cooling device consumes
+  * @cdev:	pointer to &thermal_cooling_device
+  * @instance:	thermal instance to update
+  * @power:	the power in milliwatts
+  *
+- * Set the cooling device to consume at most @power milliwatts.
++ * Set the cooling device to consume at most @power milliwatts. The limit is
++ * expected to be a cap at the maximum power consumption.
+  *
+  * Return: 0 on success, -EINVAL if the cooling device does not
+  * implement the power actor API or -E* for other failures.
 -- 
-1.8.3.1
+2.1.4
+
