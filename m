@@ -1,47 +1,96 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [PATCHv2 15/49] thermal: core: remove unnecessary device_remove() calls
-Date: Mon,  7 Nov 2016 21:08:53 -0800
-Message-ID: <1478581767-7009-16-git-send-email-edubezval@gmail.com>
-References: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:33406 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750724AbcKHGSh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 01:18:37 -0500
-In-Reply-To: <1478581767-7009-1-git-send-email-edubezval@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v6 0/5] Functional dependencies between devices
+Date: Tue, 08 Nov 2016 07:36:45 +0100
+Message-ID: <23e4a2bd-41d4-5e14-9539-2acf326dd534@samsung.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <11468990.WB1J8sxXpS@vostro.rjw.lan>
+ <CGME20161031174700eucas1p1cf129b22ebd3dc689172e837ac01647e@eucas1p1.samsung.com>
+ <20161031174703.GA25633@kroah.com>
+ <b314e9ba-a43e-ee54-fab1-84374a003b87@samsung.com>
+ <20161107211526.GG1764@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20161107211526.GG1764@wotan.suse.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Joerg Roedel <joro@8bytes.org>, Jiri Kosina <jkosina@suse.cz>, Jiri Slaby <jslaby@suse.com>, Andrzej Hajda <a.hajda@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>
 List-Id: linux-pm@vger.kernel.org
-To: Rui Zhang <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Given that cdevs sysfs properties are already registered using
-the dev.groups, there is no need to explicitly call device_remove()
-for each property.
+Hi Luis,
 
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Eduardo Valentin <edubezval@gmail.com>
----
- drivers/thermal/thermal_core.c | 5 -----
- 1 file changed, 5 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index b1d6de9..6100ae7 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1876,11 +1876,6 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
- 
- 	mutex_unlock(&thermal_list_lock);
- 
--	if (cdev->type[0])
--		device_remove_file(&cdev->device, &dev_attr_cdev_type);
--	device_remove_file(&cdev->device, &dev_attr_max_state);
--	device_remove_file(&cdev->device, &dev_attr_cur_state);
--
- 	release_idr(&thermal_cdev_idr, &thermal_idr_lock, cdev->id);
- 	device_unregister(&cdev->device);
- 	return;
+On 2016-11-07 22:15, Luis R. Rodriguez wrote:
+> On Wed, Nov 02, 2016 at 08:58:38AM +0100, Marek Szyprowski wrote:
+>> On 2016-10-31 18:47, Greg Kroah-Hartman wrote:
+>>> On Sun, Oct 30, 2016 at 05:22:13PM +0100, Rafael J. Wysocki wrote:
+>>>> Let me quote from the previous intro messages for this series first:
+>>>>
+>>>>>> Time for another update. :-)
+>>>>>>
+>>>>>> Fewer changes this time, mostly to address issues found by Lukas and
+>>>>>> Marek.
+>>>>>>
+>>>>>> The most significant one is to make device_link_add() cope with the case
+>>>>>> when
+>>>>>> the consumer device has not been registered yet when it is called.  The
+>>>>>> supplier device still is required to be registered and the function will
+>>>>>> return NULL if that is not the case.
+>>>>>>
+>>>>>> Another significant change is in patch [4/5] that now makes the core apply
+>>>>>> pm_runtime_get_sync()/pm_runtime_put() to supplier devices around the
+>>>>>> probing of a consumer one (in analogy with the parent).
+>>>>> One more update after some conversations during LinuxCon Europe.
+>>>>>
+>>>>> The main point was to make it possible for device_link_add() to figure out
+>>>>> the initial state of the link instead of expecting the caller to provide it
+>>>>> which might not be reliable enough in general.
+>>>>>
+>>>>> In this version device_link_add() takes three arguments, the supplier and
+>>>>> consumer pointers and flags and it sets the correct initial state of the
+>>>>> link automatically (unless invoked with the "stateless" flag, of course).
+>>>>> The cost is one additional field in struct device (I moved all of the
+>>>>> links-related fields in struct device to a separate sub-structure while at
+>>>>> it) to track the "driver presence status" of the device (to be used by
+>>>>> device_link_add()).
+>>>>>
+>>>>> In addition to that, the links list walks in the core.c and dd.c code are
+>>>>> under the device links mutex now, so the iternal link spinlock is not needed
+>>>>> any more and I have renamed symbols to distinguish between flags, link
+>>>>> states and device "driver presence statuses".
+>>>> The most significant change in this revision with respect to the previous one is
+>>>> related to the fact that SRCU is not available on some architectures, so the
+>>>> code falls back to using an RW semaphore for synchronization if SRCU is not
+>>>> there.  Fortunately, the code changes needed for that turned out to be quite
+>>>> straightforward and confined to the second patch.
+>>>>
+>>>> Apart from this, the flags are defined using BIT(x) now (instead of open coding
+>>>> the latter in the flag definitions).
+>>>>
+>>>> Updated is mostly patch [2/5].  Patches [1,3,5/5] have not changed (except for
+>>>> trivial rebasing) and patch [4/5] needed to be refreshed on top of the modified
+>>>> [2/5].
+>>>>
+>>>> FWIW, I've run the series through 0-day which has not reported any problems
+>>>> with it.
+>>> Great, they are now applied to my tree, thanks again for doing this
+>>> work.
+>> Thanks for merging those patches! Could you provide a stable tag with them,
+>> so I can
+>> ask Joerg to merge my Exynos IOMMU PM patches on top of it via IOMMU tree?
+> You want these patches to be merged into stable?! This is a whole new set of
+> functionality, the patches in no way describe any *fixes* or critical issues,
+> why are you saying this is needed? What makes you believe this is a stable
+> candidate?
+
+I don't want to merge those patches to stale kernel release. By 'stable 
+tag' I just
+meant something that can be pulled by Joerg to have a base for my Exynos 
+IOMMU
+patches.
+
+Best regards
 -- 
-2.1.4
-
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
