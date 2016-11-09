@@ -1,56 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Resend][PATCH] cpufreq: conservative: Decrease frequency faster
- when the timer deferred
-Date: Wed, 9 Nov 2016 11:25:37 +0530
-Message-ID: <20161109055537.GA5544@vireshk-i7>
-References: <076fb177-9cb3-4534-aadb-ebc2190d0751@email.android.com>
- <CAKohpo=kbyXvjOYFdOyu6d6x1TP45UWT0kB9eAk3XUXTG5iUpQ@mail.gmail.com>
- <5ea3831e-7743-d39f-1f02-96c915cc757e@semaphore.gr>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
+ calls to hotplugged cpu")]
+Date: Tue, 8 Nov 2016 22:08:37 -0800
+Message-ID: <CA+55aFyOSHrP0--+dNB0qcoCumTP4KUd6g=2Jt3WUw_W6o+aRg@mail.gmail.com>
+References: <20160809172057.GZ4329@intel.com> <20161027172852.GE4617@intel.com>
+ <alpine.DEB.2.20.1610272035180.4913@nanos> <20161027192006.GF4617@intel.com>
+ <alpine.DEB.2.20.1610272122510.4913@nanos> <20161027203745.GH4617@intel.com>
+ <alpine.DEB.2.20.1610272238390.4913@nanos> <20161028155603.GI4617@intel.com>
+ <alpine.DEB.2.20.1610282049500.5053@nanos> <20161101204737.GB4617@intel.com> <20161109035418.GA18246@shbuild888>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5ea3831e-7743-d39f-1f02-96c915cc757e@semaphore.gr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20161109035418.GA18246@shbuild888>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Feng Tang <feng.tang@intel.com>
+Cc: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Feng Tang <feng.79.tang@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Paul Turner <pjt@google.com>, Linux
 List-Id: linux-pm@vger.kernel.org
 
-On 08-11-16, 21:25, Stratos Karafotis wrote:
-> But this is the supposed behaviour of conservative governor. We want
-> the CPU to increase the frequency in steps. The patch just resets
-> the frequency to a lower frequency in case of idle.
-> 
-> For argument's sake, let's assume that the governor timer is never
-> deferred and runs every sampling period even on completely idle CPU.
+On Tue, Nov 8, 2016 at 7:54 PM, Feng Tang <feng.tang@intel.com> wrote:
+> On Wed, Nov 02, 2016 at 04:47:37AM +0800, Ville Syrj=C3=A4l=C3=A4 wrote:
+>>
+>> I left the thing running for the weekend and it failed 26 out of 16057
+>> times with the 25ms timeout. Looks like it takes ~5 minutes to resume
+>> when it fails, but eventually it does come back.
+>
+> Just came back from a travel. Yes, the 5 minutes delay may be due to the
+> expiration of the HPET timer, counting from 0 to 0xffffffff for a 13M
+> frequencey HPET takes about 300 seconds. After resume, it seems nobody
+> arms it so my old patch forces to arm one event.
 
-There are no timers now :)
+Ville, what happens if you disable HPET? Can you force the TSC with
+"clocksource=3Dtsc" or "tsc=3Dreliable". Does resume work reliably then?
 
-> And let's assume, for example, a burst load that runs every 100ms
-> for 20ms. The default sampling rate is also 20ms.
-> What would conservative do in case of that burst load? It would
-> increase the frequency by one freq step after 20ms and then it would
-> decrease the frequency 4 times by one frequency step. Most probably
-> on the next burst load, the CPU will run on min frequency.
-> 
-> I agree that maybe this is not ideal for performance but maybe this is
-> how we want conservative governor to work (lazily increase and decrease
-> frequency).
+Or is this one of the CPU's where tsc just doesn't work?
 
-Idle periods are already accounted for while calculating system load by legacy
-governors.
-
-And the more and more I think about this, I am inclined towards your patch.
-Maybe in a bit different form and commit log.
-
-If we see how the governors were written initially, there were no deferred
-timers. And so even if CPUs were idle, we will wake up to adjust the step.
-
-Even if we want to make the behavior similar to that, then also we should
-account of missed sampling periods both while decreasing or increasing
-frequencies.
-
-@Rafael: What do you think ?
-
--- 
-viresh
+              Linus
