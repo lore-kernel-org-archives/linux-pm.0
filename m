@@ -1,37 +1,97 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V3 4/9] Documentation: devicetree: mfd: da9062/61 MFD
- binding
-Date: Wed, 9 Nov 2016 12:24:44 -0600
-Message-ID: <20161109182444.tqo2lv3u7p4rk5io@rob-hp-laptop>
-References: <cover.1477929725.git.stwiss.opensource@diasemi.com>
- <502d13b97c67023f2193abfa235e8884eb0ea02f.1477929725.git.stwiss.opensource@diasemi.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH] drivers: cpuidle: assign enter_freeze to same as enter
+ callback function
+Date: Wed, 9 Nov 2016 18:39:25 +0000
+Message-ID: <20161109183925.GA19565@red-moon>
+References: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:33176 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752870AbcKISi1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 9 Nov 2016 13:38:27 -0500
 Content-Disposition: inline
-In-Reply-To: <502d13b97c67023f2193abfa235e8884eb0ea02f.1477929725.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Andy Gross <andy.gross@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Mon, Oct 31, 2016 at 04:02:03PM +0000, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+On Wed, Nov 09, 2016 at 05:43:30PM +0000, Sudeep Holla wrote:
+> enter_freeze() callback is expected atleast to do the same as enter()
+> but it has to guarantee that interrupts aren't enabled at any point
+> in its execution, as the tick is frozen.
 > 
-> Extend existing DA9062 binding information to include the DA9061 PMIC for
-> MFD core and regulators.
+> CPUs execute ->enter_freeze with the local tick or entire timekeeping
+> suspended, so it must not re-enable interrupts at any point (even
+> temporarily) or attempt to change states of clock event devices.
 > 
-> Add a da9062-onkey link to the existing onkey binding file.
+> It will be called when the system goes to suspend-to-idle and will
+> reduce power usage because CPUs won't be awaken for unnecessary IRQs
+> (i.e. woken up only on IRQs from "wakeup sources")
 > 
-> Add a da9062-thermal link to the new temperature monitoring binding file.
+> Since for all the states that have CPUIDLE_FLAG_TIMER_STOP flag set,
+> local tick is stopped, we can reuse the same code for both the enter()
+> and enter_freeze() callbacks. Only "coupled" cpuidle mechanism enables
+> interrupts and doing that with timekeeping suspended is generally not
+> safe. Since this generic DT based idle driver doesn't support "coupled"
+> states, it is safe to assume that the interrupts are not re-enabled.
 > 
-> Delete the da9062-watchdog section and replace it with a link to the new
-> DA9061/62 binding information file.
+> This patch assign enter_freeze to same as enter callback function which
+> helps to save power without any intermittent spurious wakeups from
+> suspend-to-idle.
 > 
-> Signed-off-by: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpuidle/dt_idle_states.c | 11 ++++++++++-
+>  1 file changed, 10 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
+> index a5c111b67f37..5a087d108475 100644
+> --- a/drivers/cpuidle/dt_idle_states.c
+> +++ b/drivers/cpuidle/dt_idle_states.c
+> @@ -79,8 +79,17 @@ static int init_state_node(struct cpuidle_state *idle_state,
+>  		desc = state_node->name;
+> 
+>  	idle_state->flags = 0;
+> -	if (of_property_read_bool(state_node, "local-timer-stop"))
+> +	if (of_property_read_bool(state_node, "local-timer-stop")) {
+>  		idle_state->flags |= CPUIDLE_FLAG_TIMER_STOP;
+> +		/*
+> +		 * CPUIDLE_FLAG_TIMER_STOP guarantees that the local tick is
+> +		 * stopped and since this is not a "coupled" state interrupts
+> +		 * won't be enabled when it exits allowing the tick to be
+> +		 * frozen safely. So enter() can be also enter_freeze()
+> +		 * callback.
+> +		 */
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I do not think that represents a guarantee for enter_freeze() to be
+functional, we can initialize enter_freeze() with a function that
+does _not_ enable IRQs while executing, it has not much to do with
+the local timer losing HW state.
+
+I would just init the enter_freeze() pointer and be done with that,
+adding code to check whether the idle back-end enables IRQs when it
+enters idle is a major PITA that really is not worth the hassle and
+apart from coupled C-states (which we do not support in DT as you said)
+I can't find another example (and on top of that it is not even
+something we can solve through DT since it is not a property of the idle
+state but more related to its kernel implementation).
+
+If we wanted to do it _properly_ we have to add an arch hook to check
+if the given idle state enter function back-end, ie cpu_ops on ARM64 or
+or cpuidle_ops on ARM, enables IRQs while executing, I would honestly
+avoid it but comments are nonetheless welcome.
+
+Thanks for putting it together,
+Lorenzo
+
+> +		idle_state->enter_freeze = match_id->data;
+> +	}
+>  	/*
+>  	 * TODO:
+>  	 *	replace with kstrdup and pointer assignment when name
+> --
+> 2.7.4
+> 
