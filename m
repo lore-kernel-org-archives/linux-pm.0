@@ -1,45 +1,102 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2MiAyLzJdIHNjc2k6IHVmczogVXNlIHRo?=
- =?UTF-8?B?ZSByZXNvdXJjZS1tYW5hZ2VkIGZ1bmN0aW9uIHRvIGFkZCBk?=
- =?UTF-8?B?ZXZmcmVxIGRldmljZQ==?=
-Date: Wed, 09 Nov 2016 01:26:53 +0000
-Message-ID: <975286531.612379.1478654813444.JavaMail.weblogic@ep2ml103c>
-References: <1478596408-2958-1-git-send-email-cw00.choi@samsung.com>
- <CGME20161108091702epcas5p4779c47d7341e22697e7e49dd2f91ae0b@epcas5p4.samsung.com>
-Reply-To: myungjoo.ham@samsung.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
+ fails to start
+Date: Wed, 09 Nov 2016 10:33:15 +0900
+Message-ID: <58227CDB.6050907@samsung.com>
+References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
+ <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
+ <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
+ <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com>
+ <58223AF1.2030605@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_612378_857543764.1478654813444"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:60351 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751802AbcKIB04 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 20:26:56 -0500
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OGC02WHSPCU6J00@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 09 Nov 2016 10:26:54 +0900 (KST)
+Received: from mailout1.samsung.com ([203.254.224.24]:44823 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750724AbcKIBdS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 20:33:18 -0500
+In-reply-to: <58223AF1.2030605@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>
-Cc: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?c3ViaGFzaGpAY29kZWF1cm9yYS5vcmc=?= <subhashj@codeaurora.org>, =?UTF-8?B?Y3BncyAu?= <cpgs@samsung.com>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw==?= <linux-kernel@vger.kernel.org>, =?UTF-8?B?VmluYXlhayBIb2xpa2F0dGk=?= <vinholikatti@gmail.com>, =?UTF-8?B?SmFtZXMgRS5KLiBCb3R0b21sZXk=?= <jejb@linux.vnet.ibm.com>, =?UTF-8?B?TWFydGluIEsuIFBldGVyc2Vu?= <martin.petersen@oracle.com>, =?UTF-8?B?bGludXgtc2NzaUB2Z2VyLmtlcm5lbC5vcmc=?= <linux-scsi@vger.kernel.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-------=_Part_612378_857543764.1478654813444
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+On 2016년 11월 09일 05:52, Saravana Kannan wrote:
+> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
+>> Hi,
+>>
+>> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
+>>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
+>>>> Hi,
+>>>>
+>>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
+>>>>> If the new governor fails to start, switch back to old governor so that the
+>>>>> devfreq state is not left in some weird limbo.
+>>>>>
+>>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>>>>> ---
+>>>>> * Fix NULL deref for real this time.
+>>>>> * Addressed some style preferences.
+>>>>>
+>>>>>    drivers/devfreq/devfreq.c | 13 +++++++++++--
+>>>>>    1 file changed, 11 insertions(+), 2 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>>> index bf3ea76..77c41a5 100644
+>>>>> --- a/drivers/devfreq/devfreq.c
+>>>>> +++ b/drivers/devfreq/devfreq.c
+>>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>>        struct devfreq *df = to_devfreq(dev);
+>>>>>        int ret;
+>>>>>        char str_governor[DEVFREQ_NAME_LEN + 1];
+>>>>> -    struct devfreq_governor *governor;
+>>>>> +    const struct devfreq_governor *governor, *prev_governor;
+>>>>>
+>>>>>        ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>>>>        if (ret != 1)
+>>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>>                goto out;
+>>>>>            }
+>>>>>        }
+>>>>> +    prev_governor = df->governor;
+>>>>>        df->governor = governor;
+>>>>>        strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+>>>>>        ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>>>>> -    if (ret)
+>>>>> +    if (ret) {
+>>>>>            dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>>>>                 __func__, df->governor->name, ret);
+>>>>> +        if (prev_governor) {
+>>>>
+>>>> I think that prev_governor is always set. You don't need to check it.
+>>>> Why do check it?
+>>>
+>>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
+>>
+>> I don't understand. If device is not registered by devfreq_add_device(),
+>> you don't change the governor by using governor_store().
+>>
+>> If you can change the governor through governor_store(),
+>> it means that the devfreq instance was added without any problem.
+>> The added devfreq instance must have the sepecific governor
+>> on df->governor variable.
+>>
+>> So, I think that df->governor is always set and then prev_governor is always set.
+> 
+> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
 
-PiBUaGlzIHBhdGNoIHVzZXMgdGhlIHJlc291cmNlLW1hbmFnZWQgdG8gYWRkIHRoZSBkZXZmcmVx
-IGRldmljZS4NCj4gVGhpcyBmdW5jdGlvbiB3aWxsIG1ha2UgaXQgZWFzeSB0byBoYW5kbGUgdGhl
-IGRldmZyZXEgZGV2aWNlLg0KPiANCj4gLSBzdHJ1Y3QgZGV2ZnJlcSAqZGV2bV9kZXZmcmVxX2Fk
-ZF9kZXZpY2Uoc3RydWN0IGRldmljZSAqZGV2LA0KPiAJCQkJICBzdHJ1Y3QgZGV2ZnJlcV9kZXZf
-cHJvZmlsZSAqcHJvZmlsZSwNCj4gCQkJCSAgY29uc3QgY2hhciAqZ292ZXJub3JfbmFtZSwNCj4g
-CQkJCSAgdm9pZCAqZGF0YSk7DQo+IENjOiBWaW5heWFrIEhvbGlrYXR0aSA8dmluaG9saWthdHRp
-QGdtYWlsLmNvbT4NCj4gQ2M6IEphbWVzIEUuSi4gQm90dG9tbGV5IDxqZWpiQGxpbnV4LnZuZXQu
-aWJtLmNvbT4NCj4gQ2M6IE1hcnRpbiBLLiBQZXRlcnNlbiA8bWFydGluLnBldGVyc2VuQG9yYWNs
-ZS5jb20+DQo+IENjOiBsaW51eC1zY3NpQHZnZXIua2VybmVsLm9yZw0KPiBTaWduZWQtb2ZmLWJ5
-OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4NCg0KQWNrZWQtYnk6IE15dW5n
-Sm9vIEhhbSA8bXl1bmdqb28uaGFtQHNhbXN1bmcuY29tPg0KDQo+IC0tLQ0KPiAgZHJpdmVycy9z
-Y3NpL3Vmcy91ZnNoY2QuYyB8IDQgKy0tLQ0KPiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9u
-KCspLCAzIGRlbGV0aW9ucygtKQ0KPiANCg==
-------=_Part_612378_857543764.1478654813444--
+If governor is not present during devfreq_add_device(),
+the devfreq instance is not able to register the devfreq framework.
+So, the user never touch the sysfs[1] to change the governor
+because the sysfs[1] is not created by devfreq framework.
+[1] /sys/class/devfreq/[device name]/governor
+
+In summary, if governor is not present during devfreq_add_device(),
+the devfreq framework doesn't create tye sysfs[1] for governor.
+
+The user-space never change the governor through sysfs[1]
+because there is no any sysfs entry[1].
+
+Best Regards,
+Chanwoo Choi
