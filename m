@@ -1,38 +1,81 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Tue, 8 Nov 2016 22:08:37 -0800
-Message-ID: <CA+55aFyOSHrP0--+dNB0qcoCumTP4KUd6g=2Jt3WUw_W6o+aRg@mail.gmail.com>
-References: <20160809172057.GZ4329@intel.com> <20161027172852.GE4617@intel.com>
- <alpine.DEB.2.20.1610272035180.4913@nanos> <20161027192006.GF4617@intel.com>
- <alpine.DEB.2.20.1610272122510.4913@nanos> <20161027203745.GH4617@intel.com>
- <alpine.DEB.2.20.1610272238390.4913@nanos> <20161028155603.GI4617@intel.com>
- <alpine.DEB.2.20.1610282049500.5053@nanos> <20161101204737.GB4617@intel.com> <20161109035418.GA18246@shbuild888>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
+ support
+Date: Wed, 9 Nov 2016 07:45:01 +0100
+Message-ID: <20161109064501.GA5252@kroah.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <13957403.ZrB4mMbICz@vostro.rjw.lan>
+ <2715729.9U1nlcpFb3@vostro.rjw.lan>
+ <20161026111902.GA6447@wunner.de>
+ <20161027152551.GA15718@kroah.com>
+ <20161107212250.GH1764@wotan.suse.de>
+ <20161108064541.GA13024@kroah.com>
+ <20161108192103.GN1764@wotan.suse.de>
+ <20161108194335.GA22680@kroah.com>
+ <20161108205824.GA13978@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20161109035418.GA18246@shbuild888>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Feng Tang <feng.tang@intel.com>
-Cc: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, Feng Tang <feng.79.tang@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Paul Turner <pjt@google.com>, Linux
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:44102 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751176AbcKIGox (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 01:44:53 -0500
+Content-Disposition: inline
+In-Reply-To: <20161108205824.GA13978@wotan.suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Andrzej Hajda <a.hajda@samsung.com>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On Tue, Nov 8, 2016 at 7:54 PM, Feng Tang <feng.tang@intel.com> wrote:
-> On Wed, Nov 02, 2016 at 04:47:37AM +0800, Ville Syrj=C3=A4l=C3=A4 wrote:
->>
->> I left the thing running for the weekend and it failed 26 out of 16057
->> times with the 25ms timeout. Looks like it takes ~5 minutes to resume
->> when it fails, but eventually it does come back.
->
-> Just came back from a travel. Yes, the 5 minutes delay may be due to the
-> expiration of the HPET timer, counting from 0 to 0xffffffff for a 13M
-> frequencey HPET takes about 300 seconds. After resume, it seems nobody
-> arms it so my old patch forces to arm one event.
+On Tue, Nov 08, 2016 at 09:58:24PM +0100, Luis R. Rodriguez wrote:
+> > > Furthermore -- how does this framework compare to Andrzej's resource tracking
+> > > solution? I confess I have not had a chance yet to review yet but in light of
+> > > this question it would be good to know if Andrzej's framework also requires
+> > > deferred probe as similar concerns would exist there as well.
+> > 
+> > I have no idea what "framework" you are talking about here, do you have
+> > a pointer to patches?
+> 
+> I'm surprised given Andrzej did both Cc you on his patches [2] *and* chimed
+> in on Rafael's patches to indicate that we likely can integrate PM concerns
+> into his own "framework" [3]. There was no resolution to this discussion, however
+> its not IMHO sufficient to brush off Andrzej's points in particular because
+> Andrzej *is* indicating that his framework:
 
-Ville, what happens if you disable HPET? Can you force the TSC with
-"clocksource=3Dtsc" or "tsc=3Dreliable". Does resume work reliably then?
+Dude, those patches were from 2014!  I can't remember patches people
+sent to me a month ago...
 
-Or is this one of the CPU's where tsc just doesn't work?
+> - Eliminates deferred probe and resulting late_initcall(), consumer registers
+> callbacks informing when given resources (clock, regulator, etc) becomes
+> available
+> - Properly handle resource disappearance (driver unbind, hotplug)
+> - Track resources which are not vital to the device, but can influence behavior
+> - Offers simplified resource allocation
+> - Can be easily expanded to help with power management
+> 
+> Granted I have not reviewed this yet but it at least was on my radar, and
+> I do believe its worth reviewing this further given the generally expressed
+> interest to see if we can have a common framework to address both ordering
+> problems, suspend and probe. At a quick glance the "ghost provider" idea
+> seems like a rather crazy idea but hey, there may be some goods in there.
 
-              Linus
+>From what I remember, and I could be totally wrong, these patches were
+way too complex and required that every subsystem change their
+interfaces.  That's not going to work out well, but read the email
+threads for the details...
+
+> It was sad both Andrzej and yourself could not attend the complex dependencies
+> tracks -- I think it would have been useful.
+
+Sometimes real-life gets in the way of work, sorry :(
+
+> I don't expect us to address a
+> resolution to probe ordering immediately -- but I am in the hopes we at least
+> can keep an open mind about the similarity of the problems and see if we can
+> aim for a clean elegant solution that might help both.
+
+I'll always review patches of what people come up with.
+
+thanks,
+
+greg k-h
