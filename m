@@ -1,94 +1,119 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 2/3] cpuidle: allow setting deepest idle
-Date: Wed,  9 Nov 2016 11:05:11 -0800
-Message-ID: <1478718312-12847-3-git-send-email-jacob.jun.pan@linux.intel.com>
-References: <1478718312-12847-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
+ fails to start
+Date: Wed, 09 Nov 2016 12:34:08 -0800
+Message-ID: <58238840.90802@codeaurora.org>
+References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com> <1477509425-16936-1-git-send-email-skannan@codeaurora.org> <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com> <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com> <58223AF1.2030605@codeaurora.org> <58227CDB.6050907@samsung.com> <58228B9E.2090108@samsung.com> <58228C10.3070502@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:59248 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753252AbcKITHE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 9 Nov 2016 14:07:04 -0500
-In-Reply-To: <1478718312-12847-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:45196 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751420AbcKIUeK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 15:34:10 -0500
+In-Reply-To: <58228C10.3070502@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Petr Mladek <pmladek@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-When idle injection is used to cap power, we need to override
-governor's choice of idle states. This patch allows caller to select
-the deepest idle state on a CPU therefore achieve the maximum
-potential power saving.
+On 11/08/2016 06:38 PM, Chanwoo Choi wrote:
+> On 2016년 11월 09일 11:36, Chanwoo Choi wrote:
+>> Hi,
+>>
+>> On 2016년 11월 09일 10:33, Chanwoo Choi wrote:
+>>> On 2016년 11월 09일 05:52, Saravana Kannan wrote:
+>>>> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
+>>>>> Hi,
+>>>>>
+>>>>> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
+>>>>>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
+>>>>>>> Hi,
+>>>>>>>
+>>>>>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
+>>>>>>>> If the new governor fails to start, switch back to old governor so that the
+>>>>>>>> devfreq state is not left in some weird limbo.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>>>>>>>> ---
+>>>>>>>> * Fix NULL deref for real this time.
+>>>>>>>> * Addressed some style preferences.
+>>>>>>>>
+>>>>>>>>     drivers/devfreq/devfreq.c | 13 +++++++++++--
+>>>>>>>>     1 file changed, 11 insertions(+), 2 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>>>>>> index bf3ea76..77c41a5 100644
+>>>>>>>> --- a/drivers/devfreq/devfreq.c
+>>>>>>>> +++ b/drivers/devfreq/devfreq.c
+>>>>>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>>>>>         struct devfreq *df = to_devfreq(dev);
+>>>>>>>>         int ret;
+>>>>>>>>         char str_governor[DEVFREQ_NAME_LEN + 1];
+>>>>>>>> -    struct devfreq_governor *governor;
+>>>>>>>> +    const struct devfreq_governor *governor, *prev_governor;
+>>>>>>>>
+>>>>>>>>         ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>>>>>>>         if (ret != 1)
+>>>>>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>>>>>                 goto out;
+>>>>>>>>             }
+>>>>>>>>         }
+>>>>>>>> +    prev_governor = df->governor;
+>>>>>>>>         df->governor = governor;
+>>>>>>>>         strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+>>>>>>>>         ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>>>>>>>> -    if (ret)
+>>>>>>>> +    if (ret) {
+>>>>>>>>             dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>>>>>>>                  __func__, df->governor->name, ret);
+>>>>>>>> +        if (prev_governor) {
+>>>>>>>
+>>>>>>> I think that prev_governor is always set. You don't need to check it.
+>>>>>>> Why do check it?
+>>>>>>
+>>>>>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
+>>>>>
+>>>>> I don't understand. If device is not registered by devfreq_add_device(),
+>>>>> you don't change the governor by using governor_store().
+>>>>>
+>>>>> If you can change the governor through governor_store(),
+>>>>> it means that the devfreq instance was added without any problem.
+>>>>> The added devfreq instance must have the sepecific governor
+>>>>> on df->governor variable.
+>>>>>
+>>>>> So, I think that df->governor is always set and then prev_governor is always set.
+>>>>
+>>>> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
+>>>
+>>> If governor is not present during devfreq_add_device(),
+>>> the devfreq instance is not able to register the devfreq framework.
+>>> So, the user never touch the sysfs[1] to change the governor
+>>> because the sysfs[1] is not created by devfreq framework.
+>>> [1] /sys/class/devfreq/[device name]/governor
+>>>
+>>> In summary, if governor is not present during devfreq_add_device(),
+>>> the devfreq framework doesn't create tye sysfs[1] for governor.
+>>>
+>>> The user-space never change the governor through sysfs[1]
+>>> because there is no any sysfs entry[1].
+>>
+>> I checked the code of devfreq_add_device().
+>> As you mentioned, if there is no governor,
+>> devfreq_add_device() don't pass wihtout calling the devfreq->governor->even_handler().
+>
+> Wrong expression / don't pass -> pass
+>
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/cpuidle/cpuidle.c | 12 ++++++++++++
- include/linux/cpuidle.h   |  4 +++-
- kernel/sched/idle.c       |  3 +++
- 3 files changed, 18 insertions(+), 1 deletion(-)
+I think it's correct as is. Just because the governor isn't there (or 
+hasn't registered yet) doesn't mean the device add should fail.
 
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index c73207a..9ad45b3 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -97,6 +97,18 @@ static int find_deepest_state(struct cpuidle_driver *drv,
- 	return ret;
- }
- 
-+/* Set the current cpu to use the deepest idle state, override governors */
-+void cpuidle_use_deepest_state(bool enable)
-+{
-+	struct cpuidle_device *dev;
-+
-+	preempt_disable();
-+	dev = cpuidle_get_device();
-+	dev->use_deepest_state = enable;
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(cpuidle_use_deepest_state);
-+
- #ifdef CONFIG_SUSPEND
- /**
-  * cpuidle_find_deepest_state - Find the deepest available idle state.
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index bb31373..7f93c63 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -74,6 +74,7 @@ struct cpuidle_state {
- struct cpuidle_device {
- 	unsigned int		registered:1;
- 	unsigned int		enabled:1;
-+	unsigned int		use_deepest_state:1;
- 	unsigned int		cpu;
- 
- 	int			last_residency;
-@@ -192,11 +193,12 @@ static inline struct cpuidle_driver *cpuidle_get_cpu_driver(
- static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }
- #endif
- 
--#if defined(CONFIG_CPU_IDLE) && defined(CONFIG_SUSPEND)
-+#if defined(CONFIG_CPU_IDLE)
- extern int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
- 				      struct cpuidle_device *dev);
- extern int cpuidle_enter_freeze(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev);
-+extern void cpuidle_use_deepest_state(bool enable);
- #else
- static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
- 					     struct cpuidle_device *dev)
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index ffd9a83..fc65147 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -173,6 +173,9 @@ static void cpuidle_idle_call(void)
- 
- 		next_state = cpuidle_find_deepest_state(drv, dev);
- 		call_cpuidle(drv, dev, next_state);
-+	} else if (dev->use_deepest_state) {
-+			next_state = cpuidle_find_deepest_state(drv, dev);
-+			call_cpuidle(drv, dev, next_state);
- 	} else {
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
+That aside, do you care to ack this patch for the way the code is currently?
+
+-Saravana
+
 -- 
-1.9.1
-
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
