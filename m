@@ -1,81 +1,47 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Wed, 9 Nov 2016 09:33:16 +0800
-Message-ID: <20161109013316.GA27425@b29397-desktop>
-References: <cover.1476780088.git.baolin.wang@linaro.org>
- <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com>
- <87k2cttptn.fsf@notabene.neil.brown.name>
- <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com>
- <87a8dls7yn.fsf@notabene.neil.brown.name>
- <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
- <871sytqrqh.fsf@notabene.neil.brown.name>
- <20161108084133.GA12276@b29397-desktop>
- <87vavxn1v7.fsf@notabene.neil.brown.name>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?W1BBVENIXSBQTSAvIGRldmZyZXE6IGNvcnJlY3QgY29tbWVu?=
+ =?UTF-8?B?dCB0eXBvLg==?=
+Date: Wed, 09 Nov 2016 01:39:21 +0000
+Message-ID: <698260245.615933.1478655561574.JavaMail.weblogic@ep2ml103c>
+References: <CGME20161109013921epcms1p7e3a7f9daf4899a395dc0e73b1aa762df@epcms1p7>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87vavxn1v7.fsf@notabene.neil.brown.name>
-Sender: linux-kernel-owner@vger.kernel.org
-To: NeilBrown <neilb@suse.com>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel>
+Content-Type: multipart/related;
+ boundary="----=_Part_615932_803607004.1478655561574"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:37471 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751677AbcKIBjd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 20:39:33 -0500
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+ by mailout1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OGC01IP7PXVHT50@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 09 Nov 2016 10:39:31 +0900 (KST)
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.70])
+ by     epcas1p3.samsung.com (KnoxPortal)
+ with ESMTP id  20161109013931epcas1p350bb3702622adce592d0383d77a216bd~FPWhemSEh2480424804epcas1p3I
+        for <linux-pm@vger.kernel.org>; Wed,  9 Nov 2016 01:39:31 +0000 (GMT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
 
-On Wed, Nov 09, 2016 at 07:38:36AM +1100, NeilBrown wrote:
-> On Tue, Nov 08 2016, Peter Chen wrote:
-> 
-> > On Thu, Nov 03, 2016 at 12:25:42PM +1100, NeilBrown wrote:
-> >> 
-> >> 
-> >> 
-> >> 2/ Change all usb phys to register an extcon and to send appropriate
-> >>    notifications.  Many already do, but I don't think it is universal.
-> >>    It is probable that the extcon should be registered using common code
-> >>    instead of each phy driver having its own
-> >>    extcon_get_edev_by_phandle()
-> >>    or whatever.
-> >>    If the usb phy driver needs to look at battery charger registers to
-> >>    know what sort of cable was connected (which I believe is the case
-> >>    for the chips you are interested in), then it should do that.
-> >
-> > Not only USB PHY to register an extcon, but also for the drivers which
-> > can detect USB charger type, it may be USB controller driver, USB type-c
-> > driver, pmic driver, and these drivers may not have an extcon device
-> > since the internal part can finish the vbus detect.
-> 
-> Can you point to an example of the sort of hardware/driver you are
-> referring to, preferably in the mainline kernel.  Concrete examples make
-> this sort of thing much easier to understand.
-> 
+------=_Part_615932_803607004.1478655561574
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Eg, the nxp/fsl USB charger detector part, the register used to begin
-the detection is in USB controller register region, and we also need to
-use controller register to pull up dp to begin the secondary detect.
-
-Since there is no USB charger framework, the code is not in mainline.
-It finished an upstream version based on patch set in this thread [1]
-
-Some SoCs uses chipidea IP doesn't need to use extcon to detect plugging
-in/out, since the vbus pin connects to SoC's vbus pin.
-
-The pmic has abilities to charger detection, eg, drivers/mfd/axp20x.c
-and drivers/extcon/extcon-axp288.c.
-
-> I think I would argue that if some piece of hardware can detect the USB
-> charger type, then that piece of hardware is part of the "USB PHY", even
-> if the hardware manufacturer has chosen to partition the register set in
-> a way which doesn't make that obvious.
-
-I agree with that the charger detect hardware is in the USB PHY part,
-but some USB PHY's control is integrated in USB controller (eg, some
-controller uses drivers/usb/phy/phy-generic.c as its PHY driver), so
-we have to use controller register to finish some PHY function, eg
-charger detection.
-
-[1] https://www.spinics.net/lists/linux-usb/msg139425.html
-
--- 
-
-Best Regards,
-Peter Chen
+DQpUaGUgZnVuY3Rpb24gbmFtZSBpbiB0aGUgY29tbWVudCB3YXMgaW5jb3JyZWN0Lg0KDQpTaWdu
+ZWQtb2ZmLWJ5OiBNeXVuZ0pvbyBIYW0gPG15dW5nam9vLmhhbUBzYW1zdW5nLmNvbT4NCi0tLQ0K
+IGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgfCAyICstDQogMSBmaWxlIGNoYW5nZWQsIDEgaW5z
+ZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEv
+ZGV2ZnJlcS5jIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYw0KaW5kZXggYmYzZWE3Ni4uYTMy
+NDgwMSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMNCisrKyBiL2RyaXZl
+cnMvZGV2ZnJlcS9kZXZmcmVxLmMNCkBAIC04NTAsNyArODUwLDcgQEAgaW50IGRldmZyZXFfYWRk
+X2dvdmVybm9yKHN0cnVjdCBkZXZmcmVxX2dvdmVybm9yICpnb3Zlcm5vcikNCiBFWFBPUlRfU1lN
+Qk9MKGRldmZyZXFfYWRkX2dvdmVybm9yKTsNCiANCiAvKioNCi0gKiBkZXZmcmVxX3JlbW92ZV9k
+ZXZpY2UoKSAtIFJlbW92ZSBkZXZmcmVxIGZlYXR1cmUgZnJvbSBhIGRldmljZS4NCisgKiBkZXZm
+cmVxX3JlbW92ZV9nb3Zlcm5vcigpIC0gUmVtb3ZlIGRldmZyZXEgZmVhdHVyZSBmcm9tIGEgZGV2
+aWNlLg0KICAqIEBnb3Zlcm5vcjoJdGhlIGRldmZyZXEgZ292ZXJub3IgdG8gYmUgcmVtb3ZlZA0K
+ICAqLw0KIGludCBkZXZmcmVxX3JlbW92ZV9nb3Zlcm5vcihzdHJ1Y3QgZGV2ZnJlcV9nb3Zlcm5v
+ciAqZ292ZXJub3IpDQotLSANCjEuOS4xDQoNCg==
+------=_Part_615932_803607004.1478655561574--
