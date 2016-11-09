@@ -1,159 +1,107 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [alsa-devel] [PATCH 2/9] ALSA: ac97: add an ac97 bus
-Date: Wed, 09 Nov 2016 22:27:37 +0100
-Message-ID: <87mvh8uywm.fsf@belgarion.home>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
-        <1477510907-23495-3-git-send-email-robert.jarzmik@free.fr>
-        <d57cdfba-da22-652d-3d75-6d1b754cf1d5@metafoo.de>
-        <87eg2ly8k6.fsf@belgarion.home>
-        <5ae15e01-eaaf-4996-27ec-1179041c0268@metafoo.de>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [PATCH v6 7/7] iommu/exynos: Use device dependency links to
+ control runtime pm
+Date: Thu, 10 Nov 2016 00:31:26 +0100
+Message-ID: <20161109233126.GM13978@wotan.suse.de>
+References: <1478611764-6473-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20161108133019eucas1p1be275492ba670030324a164320866008@eucas1p1.samsung.com>
+ <1478611764-6473-8-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp01.smtpout.orange.fr ([80.12.242.123]:17150 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751062AbcKIV14 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 16:27:56 -0500
-In-Reply-To: <5ae15e01-eaaf-4996-27ec-1179041c0268@metafoo.de> (Lars-Peter
-        Clausen's message of "Wed, 9 Nov 2016 14:11:50 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1478611764-6473-8-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>
 List-Id: linux-pm@vger.kernel.org
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Lars-Peter Clausen <lars@metafoo.de> writes:
+On Tue, Nov 08, 2016 at 02:29:24PM +0100, Marek Szyprowski wrote:
+> This patch uses recently introduced device dependency links to track the
+> runtime pm state of the master's device. The goal is to let SYSMMU
+> controller device's runtime PM to follow the runtime PM state of the
+> respective master's device. This way each SYSMMU controller is active
+> only when its master's device is active and can properly restore or save
+> its state instead on runtime PM transition of master's device.
+> This approach replaces old behavior, when SYSMMU controller was set to
+> runtime active once after attaching to the master device. In the new
+> approach SYSMMU controllers no longer prevents respective power domains
+> to be turned off when master's device is not being used.
+> 
+> The dependency links also enforces proper order of suspending/restoring
+> devices during system sleep transition, so there is no more need to use
+> LATE_SYSTEM_SLEEP_PM_OPS-based workaround for ensuring that SYSMMUs are
+> suspended after their master devices.
 
-> On 11/08/2016 10:18 PM, Robert Jarzmik wrote:
->>> I'd make the controller itself a struct dev, rather than just having the
->>> pointer to the parent. This is more idiomatic and matches what other
->>> subsystems do. It has several advantages, you get proper refcounting of your
->>> controller structure, the controller gets its own sysfs directory where the
->>> CODECs appear as children, you don't need the manual sysfs attribute
->>> creation and removal in ac97_controler_{un,}register().
->> 
->> If you mean having "struct device dev" instead of "struct device *dev", it has
->> also a drawback : all the legacy platforms have already a probing method, be
->> that platform data, device-tree or something else.
->> 
->> I'm a bit converned about the conversion toll. Maybe I've not understood your
->> point fully, so please feel free to explain, with an actual example even better.
->
-> This would be a struct device that is not bound to a driver, but just acts
-> as a shell for the controller and places it inside the device hierarchy. You
-> get reference counting and other management functions as well as a
-> consistent naming scheme. E.g. you can call the devices ac97c%d (or
-> something similar) and then call the CODEC ac97c%d.%d.
-Let me think about it.
-If I get you right, the device model would be, from a parenthood point of view:
-             pxa2xx_ac97 (platform_device)
-                  ^
-                  |
-             ac97_controller.dev (device, son of pxa2xx_ac97)
-                 / \
-                /   \
-               /     \
-              /       \
-             /         \
-         wm97xx-core  codec2     (sons ac97_controller.dev)
+Patches 1-6 seems reasonable to me, however in so far as this patch is
+concerned I'd appreaciate if you and Rafael can reply to Lukas Wunner's
+questions.
 
-I have already the device hierarchy AFAIK, created in ac97_codec_add(). I'm
-still failing to see the difference, as the refcounting is already used. The
-only additional thing I see is the introduction of an intermediate
-ac97_controller.dev which is refcounted.
+  Luis
 
-In current model, pxa2xx_ac97 refcount is incremented for each codec device. In
-the one you propose, pxa2xx_ac97 will be 1 refcounted (maybe 2 actually), and
-ac97_controller.dev will be refcounted for each codec. This ac97_controller.dev
-will be a spiritual twin of spi_master/i2c_adapter.
-
-As I said, I must think about it and find which value is brought by this
-additionnal layer.
-
-As for the name change, I must check if this breaks the sound machine files, and
-their dai_link structures (ex: mioa701_wm9713.c, structure mioa701_dai). In a
-former state of this patchset I had changed the device names, ie. wm9713-codec
-became pxa2xx-ac97.0, and the my machine file became broken.
-
-> This is how most frameworks implementing some kind of control bus are
-> structured in the Linux kernel. E.g. take a look at I2C or SPI.
-I will.
-
->>>> +	ret = sysfs_create_link(&codec->dev.kobj, &ac97_ctrl->dev->kobj,
->>>> +				"ac97_controller");
->>>
->>> Since the CODEC is a child of the controller this should not be necessary as
->>> this just points one directory up. It's like `ln -s .. parent`
->> This creates :
->> /sys/bus/ac97/devices/pxa2xx-ac97\:0/ac97_controller
->> 
->> Of course as you pointed out, it's a 'ln -s .. parent' like link, but it seems
->> to me very unfriendly to have :
->>  - /sys/bus/ac97/devices/pxa2xx-ac97\:0/../ac97_operations
->>  - while /sys/bus/ac97/devices/ac97_operations doesn't exist (obviously)
->> 
->> Mmm, I don't know for this one, my mind is not set, it's a bit hard to tell if
->> it's only an unecessary link bringing "comfort", or something usefull.
->
-> It is additional ABI and we do not have this for any other bus either (e.g.
-> you don't see a backlink for a I2C or SPI device to the parent). In my
-> opinion for the sake of keeping things consistent and simple we should not
-> add this.
-Fair enough.
-
->>>> +int snd_ac97_codec_driver_register(struct ac97_codec_driver *drv)
->>>> +{
->>>> +	int ret;
->>>> +
->>>> +	drv->driver.bus = &ac97_bus_type;
->>>> +
->>>> +	ret = driver_register(&drv->driver);
->>>> +	if (!ret)
->>>> +		ac97_rescan_all_controllers();
->>>
->>> Rescanning the bus when a new codec driver is registered should not be
->>> neccessary. The bus is scanned once when the controller is registered, this
->>> creates the device. The device driver core will take care of binding the
->>> device to the driver, if the driver is registered after thed evice.
->> That's because you suppose the initial scanning found all the ac97 codecs.
->> But that's an incomplete vision as a codec might be powered off at that time and
->> not seen by the first scanning, while the new scanning will discover it.
->
-> But why would the device become suddenly visible when the driver is
-> registered. This seems to be an as arbitrary point in time as any other.
-Because in the meantime, a regulator or something else provided power to the
-AC97 IP, or a clock, and it can answer to requests after that.
-
-And another point if that the clock of controller might be provided by the AC97
-codec, and the scan will only succeed once the codec is actually providing this
-clock, which it might do only once the module_init() is done.
-
-> Also consider that when you build a driver as a module, the module will
-> typically only be auto-loaded after the device has been detected, based on
-> the device ID. On the other hand, if the driver is built-in driver
-> registration will happen either before or shortly after the controller
-> registration.
-> If there is the expectation that the AC97 CODEC might randomly appear on the
-> bus, the core should periodically scan the bus.
-Power wise a periodical scan doesn't look good, at all.
-
-More globally, I don't see if there is an actual issue we're trying to address
-here, ie. that the rescan is a bug, or if it's more an "Occam's razor"
-discussion ?
-
->>> In my opinion this should return a handle to a ac97 controller which can
->>> then be passed to snd_ac97_controller_unregister(). This is in my opinion
->>> the better approach rather than looking up the controller by parent device.
->> This is another "legacy drivers" issue.
->> 
->> The legacy driver (the one probed by platform_data or devicetree) doesn't
->> necessarily have a private structure to store this ac97_controller pointer.
->
-> I might be missing something, but I'm not convinced by this. Can you point
-> me to such a legacy driver where you think this would not work?
-The first one that popped out:
- - hac_soc_platform_probe()
-
-Cheers.
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/iommu/exynos-iommu.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
+> index 5e6d7bb..4b05a15 100644
+> --- a/drivers/iommu/exynos-iommu.c
+> +++ b/drivers/iommu/exynos-iommu.c
+> @@ -633,8 +633,8 @@ static int __maybe_unused exynos_sysmmu_resume(struct device *dev)
+>  
+>  static const struct dev_pm_ops sysmmu_pm_ops = {
+>  	SET_RUNTIME_PM_OPS(exynos_sysmmu_suspend, exynos_sysmmu_resume, NULL)
+> -	SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+> -				     pm_runtime_force_resume)
+> +	SET_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
+> +				pm_runtime_force_resume)
+>  };
+>  
+>  static const struct of_device_id sysmmu_of_match[] __initconst = {
+> @@ -781,10 +781,6 @@ static void exynos_iommu_detach_device(struct iommu_domain *iommu_domain,
+>  	if (!has_sysmmu(dev) || owner->domain != iommu_domain)
+>  		return;
+>  
+> -	list_for_each_entry(data, &owner->controllers, owner_node) {
+> -		pm_runtime_put_sync(data->sysmmu);
+> -	}
+> -
+>  	mutex_lock(&owner->rpm_lock);
+>  
+>  	list_for_each_entry(data, &owner->controllers, owner_node) {
+> @@ -848,10 +844,6 @@ static int exynos_iommu_attach_device(struct iommu_domain *iommu_domain,
+>  
+>  	mutex_unlock(&owner->rpm_lock);
+>  
+> -	list_for_each_entry(data, &owner->controllers, owner_node) {
+> -		pm_runtime_get_sync(data->sysmmu);
+> -	}
+> -
+>  	dev_dbg(dev, "%s: Attached IOMMU with pgtable %pa\n", __func__,
+>  		&pagetable);
+>  
+> @@ -1232,6 +1224,14 @@ static int exynos_iommu_of_xlate(struct device *dev,
+>  
+>  	list_add_tail(&data->owner_node, &owner->controllers);
+>  	data->master = dev;
+> +
+> +	/*
+> +	 * SYSMMU will be runtime activated via device link (dependency) to its
+> +	 * master device, so there are no direct calls to pm_runtime_get/put
+> +	 * in this driver.
+> +	 */
+> +	device_link_add(dev, data->sysmmu, DL_FLAG_PM_RUNTIME);
+> +
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.9.1
+> 
+> 
 
 -- 
-Robert
+Luis Rodriguez, SUSE LINUX GmbH
+Maxfeldstrasse 5; D-90409 Nuernberg
