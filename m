@@ -1,102 +1,81 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
- fails to start
-Date: Wed, 09 Nov 2016 10:33:15 +0900
-Message-ID: <58227CDB.6050907@samsung.com>
-References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
- <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
- <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
- <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com>
- <58223AF1.2030605@codeaurora.org>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Wed, 9 Nov 2016 09:33:16 +0800
+Message-ID: <20161109013316.GA27425@b29397-desktop>
+References: <cover.1476780088.git.baolin.wang@linaro.org>
+ <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com>
+ <87k2cttptn.fsf@notabene.neil.brown.name>
+ <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com>
+ <87a8dls7yn.fsf@notabene.neil.brown.name>
+ <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
+ <871sytqrqh.fsf@notabene.neil.brown.name>
+ <20161108084133.GA12276@b29397-desktop>
+ <87vavxn1v7.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:44823 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750724AbcKIBdS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 20:33:18 -0500
-In-reply-to: <58223AF1.2030605@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <87vavxn1v7.fsf@notabene.neil.brown.name>
+Sender: linux-kernel-owner@vger.kernel.org
+To: NeilBrown <neilb@suse.com>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2016년 11월 09일 05:52, Saravana Kannan wrote:
-> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
->> Hi,
->>
->> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
->>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
->>>> Hi,
->>>>
->>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
->>>>> If the new governor fails to start, switch back to old governor so that the
->>>>> devfreq state is not left in some weird limbo.
->>>>>
->>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->>>>> ---
->>>>> * Fix NULL deref for real this time.
->>>>> * Addressed some style preferences.
->>>>>
->>>>>    drivers/devfreq/devfreq.c | 13 +++++++++++--
->>>>>    1 file changed, 11 insertions(+), 2 deletions(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>> index bf3ea76..77c41a5 100644
->>>>> --- a/drivers/devfreq/devfreq.c
->>>>> +++ b/drivers/devfreq/devfreq.c
->>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>        struct devfreq *df = to_devfreq(dev);
->>>>>        int ret;
->>>>>        char str_governor[DEVFREQ_NAME_LEN + 1];
->>>>> -    struct devfreq_governor *governor;
->>>>> +    const struct devfreq_governor *governor, *prev_governor;
->>>>>
->>>>>        ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->>>>>        if (ret != 1)
->>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>                goto out;
->>>>>            }
->>>>>        }
->>>>> +    prev_governor = df->governor;
->>>>>        df->governor = governor;
->>>>>        strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
->>>>>        ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>>>> -    if (ret)
->>>>> +    if (ret) {
->>>>>            dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>>>>                 __func__, df->governor->name, ret);
->>>>> +        if (prev_governor) {
->>>>
->>>> I think that prev_governor is always set. You don't need to check it.
->>>> Why do check it?
->>>
->>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
->>
->> I don't understand. If device is not registered by devfreq_add_device(),
->> you don't change the governor by using governor_store().
->>
->> If you can change the governor through governor_store(),
->> it means that the devfreq instance was added without any problem.
->> The added devfreq instance must have the sepecific governor
->> on df->governor variable.
->>
->> So, I think that df->governor is always set and then prev_governor is always set.
+On Wed, Nov 09, 2016 at 07:38:36AM +1100, NeilBrown wrote:
+> On Tue, Nov 08 2016, Peter Chen wrote:
 > 
-> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
+> > On Thu, Nov 03, 2016 at 12:25:42PM +1100, NeilBrown wrote:
+> >> 
+> >> 
+> >> 
+> >> 2/ Change all usb phys to register an extcon and to send appropriate
+> >>    notifications.  Many already do, but I don't think it is universal.
+> >>    It is probable that the extcon should be registered using common code
+> >>    instead of each phy driver having its own
+> >>    extcon_get_edev_by_phandle()
+> >>    or whatever.
+> >>    If the usb phy driver needs to look at battery charger registers to
+> >>    know what sort of cable was connected (which I believe is the case
+> >>    for the chips you are interested in), then it should do that.
+> >
+> > Not only USB PHY to register an extcon, but also for the drivers which
+> > can detect USB charger type, it may be USB controller driver, USB type-c
+> > driver, pmic driver, and these drivers may not have an extcon device
+> > since the internal part can finish the vbus detect.
+> 
+> Can you point to an example of the sort of hardware/driver you are
+> referring to, preferably in the mainline kernel.  Concrete examples make
+> this sort of thing much easier to understand.
+> 
 
-If governor is not present during devfreq_add_device(),
-the devfreq instance is not able to register the devfreq framework.
-So, the user never touch the sysfs[1] to change the governor
-because the sysfs[1] is not created by devfreq framework.
-[1] /sys/class/devfreq/[device name]/governor
+Eg, the nxp/fsl USB charger detector part, the register used to begin
+the detection is in USB controller register region, and we also need to
+use controller register to pull up dp to begin the secondary detect.
 
-In summary, if governor is not present during devfreq_add_device(),
-the devfreq framework doesn't create tye sysfs[1] for governor.
+Since there is no USB charger framework, the code is not in mainline.
+It finished an upstream version based on patch set in this thread [1]
 
-The user-space never change the governor through sysfs[1]
-because there is no any sysfs entry[1].
+Some SoCs uses chipidea IP doesn't need to use extcon to detect plugging
+in/out, since the vbus pin connects to SoC's vbus pin.
+
+The pmic has abilities to charger detection, eg, drivers/mfd/axp20x.c
+and drivers/extcon/extcon-axp288.c.
+
+> I think I would argue that if some piece of hardware can detect the USB
+> charger type, then that piece of hardware is part of the "USB PHY", even
+> if the hardware manufacturer has chosen to partition the register set in
+> a way which doesn't make that obvious.
+
+I agree with that the charger detect hardware is in the USB PHY part,
+but some USB PHY's control is integrated in USB controller (eg, some
+controller uses drivers/usb/phy/phy-generic.c as its PHY driver), so
+we have to use controller register to finish some PHY function, eg
+charger detection.
+
+[1] https://www.spinics.net/lists/linux-usb/msg139425.html
+
+-- 
 
 Best Regards,
-Chanwoo Choi
+Peter Chen
