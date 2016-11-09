@@ -1,134 +1,113 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
- fails to start
-Date: Wed, 09 Nov 2016 11:38:08 +0900
-Message-ID: <58228C10.3070502@samsung.com>
-References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
- <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
- <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
- <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com>
- <58223AF1.2030605@codeaurora.org> <58227CDB.6050907@samsung.com>
- <58228B9E.2090108@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:41524 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751091AbcKICjE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Nov 2016 21:39:04 -0500
-In-reply-to: <58228B9E.2090108@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lin Huang <hl@rock-chips.com>
+Subject: [PATCH v6] PM/devfreq: add suspend frequency support
+Date: Wed,  9 Nov 2016 11:37:45 +0800
+Message-ID: <1478662665-6357-1-git-send-email-hl@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com
+Cc: cw00.choi@samsung.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Lin Huang <hl@rock-chips.com>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2016년 11월 09일 11:36, Chanwoo Choi wrote:
-> Hi,
-> 
-> On 2016년 11월 09일 10:33, Chanwoo Choi wrote:
->> On 2016년 11월 09일 05:52, Saravana Kannan wrote:
->>> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
->>>> Hi,
->>>>
->>>> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
->>>>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
->>>>>> Hi,
->>>>>>
->>>>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
->>>>>>> If the new governor fails to start, switch back to old governor so that the
->>>>>>> devfreq state is not left in some weird limbo.
->>>>>>>
->>>>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->>>>>>> ---
->>>>>>> * Fix NULL deref for real this time.
->>>>>>> * Addressed some style preferences.
->>>>>>>
->>>>>>>    drivers/devfreq/devfreq.c | 13 +++++++++++--
->>>>>>>    1 file changed, 11 insertions(+), 2 deletions(-)
->>>>>>>
->>>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>>>> index bf3ea76..77c41a5 100644
->>>>>>> --- a/drivers/devfreq/devfreq.c
->>>>>>> +++ b/drivers/devfreq/devfreq.c
->>>>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>>>        struct devfreq *df = to_devfreq(dev);
->>>>>>>        int ret;
->>>>>>>        char str_governor[DEVFREQ_NAME_LEN + 1];
->>>>>>> -    struct devfreq_governor *governor;
->>>>>>> +    const struct devfreq_governor *governor, *prev_governor;
->>>>>>>
->>>>>>>        ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->>>>>>>        if (ret != 1)
->>>>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>>>                goto out;
->>>>>>>            }
->>>>>>>        }
->>>>>>> +    prev_governor = df->governor;
->>>>>>>        df->governor = governor;
->>>>>>>        strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
->>>>>>>        ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>>>>>> -    if (ret)
->>>>>>> +    if (ret) {
->>>>>>>            dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>>>>>>                 __func__, df->governor->name, ret);
->>>>>>> +        if (prev_governor) {
->>>>>>
->>>>>> I think that prev_governor is always set. You don't need to check it.
->>>>>> Why do check it?
->>>>>
->>>>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
->>>>
->>>> I don't understand. If device is not registered by devfreq_add_device(),
->>>> you don't change the governor by using governor_store().
->>>>
->>>> If you can change the governor through governor_store(),
->>>> it means that the devfreq instance was added without any problem.
->>>> The added devfreq instance must have the sepecific governor
->>>> on df->governor variable.
->>>>
->>>> So, I think that df->governor is always set and then prev_governor is always set.
->>>
->>> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
->>
->> If governor is not present during devfreq_add_device(),
->> the devfreq instance is not able to register the devfreq framework.
->> So, the user never touch the sysfs[1] to change the governor
->> because the sysfs[1] is not created by devfreq framework.
->> [1] /sys/class/devfreq/[device name]/governor
->>
->> In summary, if governor is not present during devfreq_add_device(),
->> the devfreq framework doesn't create tye sysfs[1] for governor.
->>
->> The user-space never change the governor through sysfs[1]
->> because there is no any sysfs entry[1].
-> 
-> I checked the code of devfreq_add_device().
-> As you mentioned, if there is no governor,
-> devfreq_add_device() don't pass wihtout calling the devfreq->governor->even_handler().
+Add suspend frequency support and if needed set it to
+the frequency obtained from the suspend opp (can be defined
+using opp-v2 bindings and is optional).
 
-Wrong expression / don't pass -> pass
+Signed-off-by: Lin Huang <hl@rock-chips.com>
+---
+Changes in v2:
+- use update_devfreq() instead devfreq_update_status()
+Changes in v3:
+- fix build error
+Changes in v4:
+- move dev_pm_opp_get_suspend_opp() to devfreq_add_device()
+Changes in v5:
+- delete devfreq_opp_get_suspend_opp() in devfreq.h
+Changes in v6:
+- return to use stop_polling check suspend status
 
-Regards,
-Chanwoo Choi
+ drivers/devfreq/devfreq.c                 | 14 +++++++++++---
+ drivers/devfreq/governor_simpleondemand.c |  9 +++++++++
+ include/linux/devfreq.h                   |  1 +
+ 3 files changed, 21 insertions(+), 3 deletions(-)
 
-> 
-> I discussed this issue with Myungjoo Ham (devfreq maintainer).
-> It is bug of devfreq_add_device(). I'll fix this issue.
-> 
-> Best Regards,
-> Chanwoo Choi
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> 
-
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index da72d97..cfa64a0 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -359,9 +359,11 @@ void devfreq_monitor_suspend(struct devfreq *devfreq)
+ 		mutex_unlock(&devfreq->lock);
+ 		return;
+ 	}
+-
+-	devfreq_update_status(devfreq, devfreq->previous_freq);
+ 	devfreq->stop_polling = true;
++	if (devfreq->suspend_freq)
++		update_devfreq(devfreq);
++	else
++		devfreq_update_status(devfreq, devfreq->previous_freq);
+ 	mutex_unlock(&devfreq->lock);
+ 	cancel_delayed_work_sync(&devfreq->work);
+ }
+@@ -390,7 +392,6 @@ void devfreq_monitor_resume(struct devfreq *devfreq)
+ 
+ 	devfreq->last_stat_updated = jiffies;
+ 	devfreq->stop_polling = false;
+-
+ 	if (devfreq->profile->get_cur_freq &&
+ 		!devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq))
+ 		devfreq->previous_freq = freq;
+@@ -524,6 +525,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	struct devfreq *devfreq;
+ 	struct devfreq_governor *governor;
+ 	int err = 0;
++	struct dev_pm_opp *suspend_opp;
+ 
+ 	if (!dev || !profile || !governor_name) {
+ 		dev_err(dev, "%s: Invalid parameters.\n", __func__);
+@@ -558,6 +560,12 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->data = data;
+ 	devfreq->nb.notifier_call = devfreq_notifier_call;
+ 
++	rcu_read_lock();
++	suspend_opp = dev_pm_opp_get_suspend_opp(dev);
++	if (suspend_opp)
++		devfreq->suspend_freq = dev_pm_opp_get_freq(suspend_opp);
++	rcu_read_unlock();
++
+ 	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
+ 		mutex_unlock(&devfreq->lock);
+ 		devfreq_set_freq_table(devfreq);
+diff --git a/drivers/devfreq/governor_simpleondemand.c b/drivers/devfreq/governor_simpleondemand.c
+index ae72ba5..b82f089 100644
+--- a/drivers/devfreq/governor_simpleondemand.c
++++ b/drivers/devfreq/governor_simpleondemand.c
+@@ -29,6 +29,15 @@ static int devfreq_simple_ondemand_func(struct devfreq *df,
+ 	struct devfreq_simple_ondemand_data *data = df->data;
+ 	unsigned long max = (df->max_freq) ? df->max_freq : UINT_MAX;
+ 
++	/*
++	 * if devfreq in suspend status and have suspend_freq,
++	 * the frequency need to set to suspend_freq
++	 */
++	if (df->stop_polling) {
++		*freq =	df->suspend_freq;
++		return 0;
++	}
++
+ 	err = devfreq_update_stats(df);
+ 	if (err)
+ 		return err;
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 98c6993..517e394 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -172,6 +172,7 @@ struct devfreq {
+ 	struct delayed_work work;
+ 
+ 	unsigned long previous_freq;
++	unsigned long suspend_freq;
+ 	struct devfreq_dev_status last_status;
+ 
+ 	void *data; /* private data for governors */
 -- 
-Best Regards,
-Chanwoo Choi
+2.6.6
