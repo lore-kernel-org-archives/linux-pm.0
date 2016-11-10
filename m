@@ -1,82 +1,61 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 2/2] iommu/exynos: Add proper runtime pm support
-Date: Thu, 10 Nov 2016 01:36:29 +0100
-Message-ID: <CAJZ5v0iEZNsjzb4sxzG39UzNYuiqQErD5diE7WmdBKqQM9_S1g@mail.gmail.com>
-References: <1475136751-31340-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20160929081240eucas1p231c1ab5c5936886cbec6bc3f5267c940@eucas1p2.samsung.com>
- <1475136751-31340-3-git-send-email-m.szyprowski@samsung.com>
- <20161006173756.GK3296@wotan.suse.de> <87aeb58b-bda0-93c5-e51d-ab9be0b9d518@samsung.com>
- <20161108221437.GC13978@wotan.suse.de> <9cf5829a-baac-9297-b231-17212d0195b1@samsung.com>
+Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking support
+Date: Thu, 10 Nov 2016 01:43:38 +0100
+Message-ID: <CAJZ5v0goccDKSkSAj8+v+PG2gt7ESJuUSbyY8YuW7OwCS_KHXg@mail.gmail.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan>
+ <2715729.9U1nlcpFb3@vostro.rjw.lan> <20161026111902.GA6447@wunner.de>
+ <20161027152551.GA15718@kroah.com> <20161107212250.GH1764@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9cf5829a-baac-9297-b231-17212d0195b1@samsung.com>
+In-Reply-To: <20161107212250.GH1764@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, =?UTF-8?Q?Krzysztof_Koz=C5=82owski?= <k.kozlowski.k@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lar
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 9, 2016 at 4:07 PM, Marek Szyprowski
-<m.szyprowski@samsung.com> wrote:
-> Hi Luis,
->
->
-> On 2016-11-08 23:14, Luis R. Rodriguez wrote:
+On Mon, Nov 7, 2016 at 10:22 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> On Thu, Oct 27, 2016 at 05:25:51PM +0200, Greg Kroah-Hartman wrote:
+>> On Wed, Oct 26, 2016 at 01:19:02PM +0200, Lukas Wunner wrote:
+>> > Hi Rafael,
+>> >
+>> > sorry for not responding to v5 of your series earlier, just sending
+>> > this out now in the hope that it reaches you before your travels.
+>> >
+>> > On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
+>> > > - Modify device_links_check_suppliers(), device_links_driver_bound(),
+>> > >   device_links_no_driver(), device_links_driver_cleanup(), device_links_busy(),
+>> > >   and device_links_unbind_consumers() to walk link lists under device_links_lock
+>> > >   (to make the new "driver presence tracking" mechanism work reliably).
+>> >
+>> > This change might increase boot time if drivers return -EPROBE_DEFER.
 >>
->> On Mon, Oct 10, 2016 at 03:32:06PM +0200, Marek Szyprowski wrote:
->>>
->>> Hi Luis
->>>
->>>
->>> On 2016-10-06 19:37, Luis R. Rodriguez wrote:
->>>>
->>>> On Thu, Sep 29, 2016 at 10:12:31AM +0200, Marek Szyprowski wrote:
->>>>>
->>>>> This patch uses recently introduced device links to track the runtime
->>>>> pm
->>>>> state of the master's device. This way each SYSMMU controller is
->>>>> runtime
->>>>> activated when its master's device is active
->>>>
->>>> instead of?
->>>
->>> instead of keeping SYSMMU controller runtime active all the time.
+>> "might"?  Please verify this before guessing....
 >>
->> I thought Rafael's work was for suspend/resume, not for runtime suspend.
->> Is it for both ?
+>> And don't make this more complex than needed before actually determining
+>> a real issue.
 >
->
-> Yes, it solves both problems, although the suspend/resume was easy to
-> workaround just by using LATE_SLEEP_OPS.
+> As clarified by Rafael at Plumbers, this functional dependencies
+> framework assumes your driver / subsystem supports deferred probe,
 
-Right, but that's just in this particular case, because the dependency
-chain is of length 2. :-)
+It isn't particularly clear what you mean by "support" here.
 
-If you had a longer chain, you might in theory use  the _noirq() stage
-somehow, but that has limitations.
+I guess that you mean that it will allow the ->probe callback to be
+invoked for multiple times for the same device/driver combination
+without issues.  If that's the case, the way the new code uses
+-EPROBE_DEFER doesn't interfere with this, because it will not invoke
+the ->probe callbacks for consumers at all until their (required)
+suppliers are ready.
 
->> Because as far as I can tell this was painted to help
->> with suspend/resume ?
+> if it does not support its not clear what will happen....
 
-It helps with three things, (async) suspend/resume, runtime PM and
-shutdown (that last part is the hardest to figure out).  The ordering
-in which all of these are carried out is analogous and cannot be
-determined correctly by the device registration ordering itself in
-general (which has been a known fact for years, but some localized
-workarounds were put in some places to work around that).
+I don't see any problems here, but if you see any, please just say
+what they are.
 
-Moreover, even if the list ordering (of dpm_list, for instance) is
-correct, it still doesn't guarantee the right ordering of actions that
-are carried out asynchronously.  They are all started in the list
-order, but they may be running in parallel with each other and
-complete at different times.  For this reason, there needs to be a way
-to ensure that, say, the suspend operations for consumer devices
-complete before their suppliers will become unavailable and so on.
+> We have no explicit semantics to check if a driver / subsystem
+> supports deferred probe.
 
-Both runtime PM and system suspend/resume have this problem.  It is
-not present in the system shutdown case, but it still helps to get a
-correct list ordering (ie. such that won't cause supplier devices to
-be shut down before their consumers) in this case too.
+That's correct, but then do we need it?
 
 Thanks,
 Rafael
