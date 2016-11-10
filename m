@@ -1,144 +1,109 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking support
-Date: Thu, 10 Nov 2016 09:14:32 +0200
-Message-ID: <2305706.WydXUuMppH@avalon>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <CAJZ5v0goccDKSkSAj8+v+PG2gt7ESJuUSbyY8YuW7OwCS_KHXg@mail.gmail.com> <CAB=NE6Xdu5AniWsaJGf3pbYCydahwkStqBV+2xbc8S-Zw+2qiA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAB=NE6Xdu5AniWsaJGf3pbYCydahwkStqBV+2xbc8S-Zw+2qiA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v3 0/3] powernv:stop: Use psscr_val,mask provided by firmware
+Date: Thu, 10 Nov 2016 13:24:19 +0530
+Message-ID: <cover.1478760806.git.ego__7840.76183704219$1478764513$gmane$org@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:35368 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751664AbcKJHyk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 02:54:40 -0500
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uAA7sIVX033931
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 02:54:40 -0500
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 26mk9uc9af-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 02:54:39 -0500
+Received: from localhost
+        by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Thu, 10 Nov 2016 00:54:39 -0700
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org>, linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org>, skiboot"@lists.ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Hi Luis,
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On Wednesday 09 Nov 2016 16:59:30 Luis R. Rodriguez wrote:
-> On Wed, Nov 9, 2016 at 4:43 PM, Rafael J. Wysocki wrote:
-> > On Mon, Nov 7, 2016 at 10:22 PM, Luis R. Rodriguez wrote:
-> >> On Thu, Oct 27, 2016 at 05:25:51PM +0200, Greg Kroah-Hartman wrote=
-:
-> >>> On Wed, Oct 26, 2016 at 01:19:02PM +0200, Lukas Wunner wrote:
-> >>>> Hi Rafael,
-> >>>>=20
-> >>>> sorry for not responding to v5 of your series earlier, just send=
-ing
-> >>>> this out now in the hope that it reaches you before your travels=
-.
-> >>>>=20
-> >>>> On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrot=
-e:
-> >>>>> - Modify device_links_check_suppliers(),
-> >>>>> device_links_driver_bound(),
-> >>>>>=20
-> >>>>>   device_links_no_driver(), device_links_driver_cleanup(),
-> >>>>>   device_links_busy(), and device_links_unbind_consumers() to w=
-alk
-> >>>>>   link lists under device_links_lock (to make the new "driver
-> >>>>>   presence tracking" mechanism work reliably).
-> >>>>
-> >>>> This change might increase boot time if drivers return -EPROBE_D=
-EFER.
-> >>>=20
-> >>> "might"?  Please verify this before guessing....
-> >>>=20
-> >>> And don't make this more complex than needed before actually dete=
-rmining
-> >>> a real issue.
-> >>=20
-> >> As clarified by Rafael at Plumbers, this functional dependencies
-> >> framework assumes your driver / subsystem supports deferred probe,=
+This is the third iteration of the patchset to use the psscr_val and
+psscr_mask provided by the firmware for each of the stop states.
 
-> >=20
-> > It isn't particularly clear what you mean by "support" here.
->=20
-> I noted some folks had reported issues, and you acknowledged that if
-> deferred probe was used in some drivers and if this created an issue
-> the same issue would be seen with this framework. AFAICT there are tw=
-o
-> possible issues to consider:
->=20
-> 1) the one Geert Uytterhoeven noted. Again I'll note what he had ment=
-ioned
-> [0].
->=20
->   "Some drivers / subsystems don=E2=80=99t support deferred probe yet=
-, such failures
-> usually don=E2=80=99t blow up, but cause subtle malfunctioning. Examp=
-le, an
-> Ethernet phy could not get its interrupt as the primary IRQ chip had =
-not
-> been probed yet, it reverted to polling though. Sub-optimal." [0]
->=20
-> [0]
-> https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-Augu=
-st/003
-> 425.html
->=20
-> Geert can you provide more details?
+The previous version can be found here:
 
-This is a more global issue. In many cases drivers depend on optional=20=
+[v2]: https://lkml.org/lkml/2016/10/27/143
+[v1]: https://lkml.org/lkml/2016/9/29/45
 
-resources. They are able to operate in a degraded mode (reduced feature=
- set,=20
-reduced performances, ...) when those resources are not present. They c=
-an=20
-easily determine at probe time whether those resources are present, but=
- have=20
-no way to know, in case they're absent, whether they will be present at=
- some=20
-point in the near future (due to another driver probing the device prov=
-iding=20
-the resource for instance) or if they will never be present (for instan=
-ce=20
-because the required driver is missing). In the first case it would mak=
-e sense=20
-to defer probe, in the latter case deferring probe forever for missing=20=
+This version fixes a couple of bugs pertaining to strncpy and
+initialization of the target-residency values of nap and sleep
+which were pointed out by Paul and Oliver in the earlier version.
 
-optional resources would prevent the device from being probed successfu=
-lly at=20
-all.
+Synopsis
+==========
+In the current implementation, the code for ISA
+v3.0 stop implementation has a couple of shortcomings.
 
-The functional dependencies tracking patch series isn't meant to addres=
-s this=20
-issue. I can imagine a framework that would notify drivers of optional=20=
+a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
+   uses only the RL field from the firmware. While this is not
+   incorrect, since the hand-coded values are legitimate, it is not a
+   very flexible design since the firmware has the capability to
+   communicate these values via the "ibm,cpu-idle-state-psscr" and
+   "ibm,cpu-idle-state-psscr-mask" properties. In case where the
+   firmware provides values for these fields that is different from
+   the hand-coded values, the current code will not work as intended.
 
-resource availability after probe time, but it would come at a high cos=
-t for=20
-drivers as switching between modes of operation at runtime based on the=
-=20
-availability of such resources would be way more complex than a mechani=
-sm=20
-based on probe deferral.
+b) Due to issue a), the current code assumes that ESL=EC=1 for all the
+   stop states and hence the wakeup from the stop instruction will
+   happen at 0x100, the system-reset vector. However, the ISA v3.0
+   allows the ESL=EC=0 behaviour where the corresponding stop-state
+   loses no state and wakes up from the subsequent instruction. The
+   current code doesn't handle this case.
+   
+This patch series addresses these issues.
 
-> 2) Since deferred probe relies on late_initcall() if your driver must=
+The first patch in the series renames the existing
+IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
+the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
+up at the subsequent instruction.
 
-> load earlier than this deferred probe can create an issue. Andrzej ha=
-d
-> you identified a driver that ran into this and had issues ? If not
-> this seems like a semantics thing we should consider in extending the=
+The second patch adds a helper function in cpuidle-powernv.c for
+initializing entries of the powernv_states[] table that is passed to
+the cpu-idle core. This eliminates some of the code duplication in the
+function that discovers and initializes the stop states.
 
-> documentation for drivers so that driver writers are aware of this
-> limitation. I would suppose candidates for this would be anything not=
+The third patch in the series fixes issues a) and b) by ensuring that
+the psscr-value and the psscr-mask provided by the firmware are what
+will be used to set a particular stop state. It also adds support for
+handling wake-up from stop states which were entered with ESL=EC=0.
 
-> using module_init() or late_initcall() on their inits and have a
-> probe.
->=20
-> >> if it does not support its not clear what will happen....
-> >=20
-> > I don't see any problems here, but if you see any, please just say
-> > what they are.
-> >=20
-> >> We have no explicit semantics to check if a driver / subsystem
-> >> supports deferred probe.
-> >=20
-> > That's correct, but then do we need it?
->=20
-> We can determine this by reviewing the two items above.
+The third patch also handles the older firmware which sets only the
+Requested Level (RL) field in the psscr and psscr-mask exposed in the
+device tree. In the presence of such older firmware, this patch will
+set the default sane values for for remaining PSSCR fields (i.e PSLL,
+MTL, ESL, EC, and TR).
 
---=20
-Regards,
+The skiboot patch populates all the relevant fields in the PSSCR
+values and the mask for all the stop states can be found here:
+https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
 
-Laurent Pinchart
+The patches are based on top of
+git://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes
+
+Gautham R. Shenoy (3):
+  powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+  cpuidle:powernv: Add helper function to populate powernv idle states.
+  powernv: Pass PSSCR value and mask to power9_idle_stop
+
+ arch/powerpc/include/asm/cpuidle.h       |  42 +++++++++++-
+ arch/powerpc/include/asm/processor.h     |   3 +-
+ arch/powerpc/kernel/exceptions-64s.S     |   6 +-
+ arch/powerpc/kernel/idle_book3s.S        |  41 +++++++-----
+ arch/powerpc/platforms/powernv/idle.c    |  81 ++++++++++++++++++----
+ arch/powerpc/platforms/powernv/powernv.h |   3 +-
+ arch/powerpc/platforms/powernv/smp.c     |  14 ++--
+ drivers/cpuidle/cpuidle-powernv.c        | 111 +++++++++++++++++++------------
+ include/linux/cpuidle.h                  |   1 +
+ 9 files changed, 219 insertions(+), 83 deletions(-)
+
+-- 
+1.9.4
+
