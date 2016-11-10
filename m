@@ -1,7 +1,7 @@
 From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v7 7/8] acpi: bus: Set _OSC for diverse core support
-Date: Thu, 10 Nov 2016 14:36:39 -0800
-Message-ID: <30b355f2d26746edfdb1ab298f1febebaf035f40.1478805832.git.tim.c.chen@linux.intel.com>
+Subject: [PATCH v7 6/8] acpi: bus: Enable HWP CPPC objects
+Date: Thu, 10 Nov 2016 14:36:38 -0800
+Message-ID: <9057cbebaf57a98a3118a0d0376fc4bf352b260d.1478805832.git.tim.c.chen@linux.intel.com>
 References: <cover.1478805832.git.tim.c.chen@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1478805832.git.tim.c.chen@linux.intel.com>
@@ -14,44 +14,36 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Set the OSC_SB_CPC_DIVERSE_HIGH_SUPPORT (bit 12) to enable diverse
-core support.
+Need to set platform wide _OSC bits to enable CPPC and CPPC version 2.
+If platform supports CPPC, then BIOS exposes CPPC tables.
 
-This is required to inform BIOS the support of Intel Turbo Boost Max
-Technology 3.0 feature.
+The primary reason to enable CPPC support is to get the maximum
+performance of each CPU to check and enable Intel Turbo Boost Max
+Technology 3.0 (ITMT).
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 ---
- drivers/acpi/bus.c   | 3 +++
- include/linux/acpi.h | 1 +
- 2 files changed, 4 insertions(+)
+ drivers/acpi/bus.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 2f381ba..806db0d 100644
+index 56190d0..2f381ba 100644
 --- a/drivers/acpi/bus.c
 +++ b/drivers/acpi/bus.c
-@@ -338,6 +338,9 @@ static void acpi_bus_osc_support(void)
- 	}
- #endif
+@@ -331,6 +331,13 @@ static void acpi_bus_osc_support(void)
+ 	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_HOTPLUG_OST_SUPPORT;
+ 	capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_PCLPI_SUPPORT;
  
-+	if (IS_ENABLED(CONFIG_SCHED_ITMT))
-+		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_DIVERSE_HIGH_SUPPORT;
++#ifdef CONFIG_X86
++	if (boot_cpu_has(X86_FEATURE_HWP)) {
++		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_SUPPORT;
++		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPCV2_SUPPORT;
++	}
++#endif
 +
  	if (!ghes_disable)
  		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_APEI_SUPPORT;
  	if (ACPI_FAILURE(acpi_get_handle(NULL, "\\_SB", &handle)))
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 689a8b9..639fc63 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -469,6 +469,7 @@ acpi_status acpi_run_osc(acpi_handle handle, struct acpi_osc_context *context);
- #define OSC_SB_CPCV2_SUPPORT			0x00000040
- #define OSC_SB_PCLPI_SUPPORT			0x00000080
- #define OSC_SB_OSLPI_SUPPORT			0x00000100
-+#define OSC_SB_CPC_DIVERSE_HIGH_SUPPORT		0x00001000
- 
- extern bool osc_sb_apei_support_acked;
- extern bool osc_pc_lpi_support_confirmed;
 -- 
 2.5.5
