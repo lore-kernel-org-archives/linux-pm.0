@@ -1,55 +1,49 @@
-From: John Stultz <john.stultz@linaro.org>
-Subject: Re: [PATCH][RFC v7] timekeeping: Ignore the bogus sleep time if
- pm_trace is enabled
-Date: Thu, 10 Nov 2016 10:26:09 -0800
-Message-ID: <CALAqxLXVaVWBTNs2w-4t6wNsPukQu40wgVcM9B9zudv2KL682Q@mail.gmail.com>
-References: <1478753753-24650-1-git-send-email-yu.c.chen@intel.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
+Date: Thu, 10 Nov 2016 10:49:10 -0800
+Message-ID: <20161110184910.GA135921@google.com>
+References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
+ <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f181.google.com ([209.85.161.181]:34994 "EHLO
-        mail-yw0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755465AbcKJS0K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 13:26:10 -0500
-Received: by mail-yw0-f181.google.com with SMTP id i145so157095234ywg.2
-        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 10:26:10 -0800 (PST)
-In-Reply-To: <1478753753-24650-1-git-send-email-yu.c.chen@intel.com>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:34482 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933704AbcKJStO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 13:49:14 -0500
+Received: by mail-pf0-f181.google.com with SMTP id n85so150629098pfi.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 10:49:13 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, lkml <linux-kernel@vger.kernel.org>, "rtc-linux@googlegroups.com" <rtc-linux@googlegroups.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Xunlei Pang <xlpang@redhat.com>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
 
-On Wed, Nov 9, 2016 at 8:55 PM, Chen Yu <yu.c.chen@intel.com> wrote:
-> Previously we encountered some memory overflow issues due to
-> the bogus sleep time brought by inconsistent rtc, which is
-> triggered when pm_trace is enabled, and we have fixed it
-> in recent kernel. However it's improper in the first place
-> to call __timekeeping_inject_sleeptime() in case that pm_trace
-> is enabled simply because that "hash" time value will wreckage
-> the timekeeping subsystem.
->
-> This patch is originally written by Thomas, which would bypass
-> the bogus rtc interval when pm_trace is enabled.
-> Meanwhile, if system succeed to resume back with pm_trace set, the
-> users are warned to adjust the bogus rtc either by ntp-date or rdate,
-> by resetting pm_trace_rtc_abused to false, otherwise above tools might
-> not work as expected.
->
-> Originally-from: Thomas Gleixner <tglx@linutronix.de>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: John Stultz <john.stultz@linaro.org>
-> Cc: Xunlei Pang <xlpang@redhat.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+On Thu, Nov 10, 2016 at 10:13:55AM -0800, Dmitry Torokhov wrote:
+> On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
+> > It's important that user space can figure out what device woke the
+> > system from suspend -- e.g., for debugging, or for implementing
+> > conditional wake behavior. Dedicated wakeup IRQs don't currently do
+> > that.
+> >
+> > Let's report the event (pm_wakeup_event()) and also allow drivers to
+> > synchronize with these events in their resume path (hence, disable_irq()
+> > instead of disable_irq_nosync()).
+> 
+> Hmm, dev_pm_disable_wake_irq() is called from
+> rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
+> disable interrupts. Dropping _nosync() feels dangerous.
 
+Indeed. So how do you suggest we get sane wakeup reports? Every device
+or bus that's going to use the dedicated wake APIs has to
+synchronize_irq() [1] in their resume() routine? Seems like an odd
+implementation detail to have to remember (and therefore most drivers
+will get it wrong).
 
-Looks ok to me. I'm queueing it up for testing.  If no one objects
-(and I don't see any issues) I'll merge it to my tree and push it to
--tip through Thomas.
+Brian
 
-thanks
--john
+[1] Or maybe at least create a helper API that will extract the
+dedicated wake IRQ number and do the synchronize_irq() for us, so
+drivers don't have to stash this separately (or poke at
+dev->power.wakeirq->irq) for no good reason.
