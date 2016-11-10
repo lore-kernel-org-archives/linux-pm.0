@@ -1,96 +1,121 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
- control runtime pm
-Date: Thu, 10 Nov 2016 01:05:42 +0100
-Message-ID: <CAJZ5v0g_UX_==q7JMRZfE=1COpFu28Z8NN1W_TpJ2sa7U79hKw@mail.gmail.com>
-References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
- <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
- <20161107214747.GJ1764@wotan.suse.de> <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
- <20161108153044.GA6983@wunner.de> <20161109235526.GN13978@wotan.suse.de>
+Subject: Re: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child
+ suspend_{noirq,late} fails
+Date: Thu, 10 Nov 2016 01:08:56 +0100
+Message-ID: <CAJZ5v0hpcH2-UYtFC5kPc1n-O40fTPwzoCgbboOqfYMOGDXj7Q@mail.gmail.com>
+References: <1476923170-111986-2-git-send-email-briannorris@chromium.org>
+ <8017823.VJuZzSqtaY@vostro.rjw.lan> <CAKdAkRS+uUrx72DLKuyDiUMkKzxMTRXx5Pv1JBky6T8huv4Fhg@mail.gmail.com>
+ <50971906.K6xak2t6Z6@vostro.rjw.lan> <20161102050706.GA49402@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161109235526.GN13978@wotan.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:36805 "EHLO
+        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751427AbcKJAI5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 19:08:57 -0500
+In-Reply-To: <20161102050706.GA49402@google.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chuansheng Liu <chuansheng.liu@intel.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Thu, Nov 10, 2016 at 12:55 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
-> On Tue, Nov 08, 2016 at 04:30:44PM +0100, Lukas Wunner wrote:
->> On Tue, Nov 08, 2016 at 08:27:12AM +0100, Marek Szyprowski wrote:
->> > On 2016-11-07 22:47, Luis R. Rodriguez wrote:
->> > > Has there been any review of the existing similar solutions out there
->> > > such as the DRM / audio component framework? Would that help ?
+On Wed, Nov 2, 2016 at 6:07 AM, Brian Norris <briannorris@chromium.org> wrote:
+> + more genpd folks
+>
+> On Wed, Nov 02, 2016 at 04:51:08AM +0100, Rafael J. Wysocki wrote:
+>> On Tuesday, November 01, 2016 12:04:28 AM Dmitry Torokhov wrote:
+>> > On Mon, Oct 31, 2016 at 10:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > > On Thursday, October 27, 2016 09:05:34 AM Brian Norris wrote:
+>> > >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> > >> index c58563581345..eaf6b53463a5 100644
+>> > >> --- a/drivers/base/power/main.c
+>> > >> +++ b/drivers/base/power/main.c
+>> > >> @@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+>> > >>
+>> > >>       dpm_wait_for_children(dev, async);
+>> > >>
+>> > >> +     if (async_error)
+>> > >> +             goto Complete;
+>> > >> +
+>> > >
+>> > > This is a second chech for async_error in this routine and is the first one
+>> > > really needed after adding this?
 >> >
->> > Nope, none of that solution deals with runtime pm.
+>> > There is really no point in waiting for children to be suspended if
+>> > error has already been signalled; that's what first check achieves.
+>> > The 2nd check ensures that we abort suspend if any of the children
+>> > failed to suspend.
+>> >
+>> > I'd say both checks are needed (well, 1st is helpful, 2nd is essential).
 >>
->> Well, they do.  Hybrid graphics laptops often have an HDA controller
->> on the discrete GPU and I assume that's what Luis meant. There's code
->> in drivers/gpu/vga/vga_switcheroo.c to make this (only sort of) work:
->>
->> * When the GPU is powered up/down, the HDA controller's driver is
->>   instructed to pm_runtime_get/put the HDA device (see call to
->>   set_audio_state() in vga_switcheroo_set_dynamic_switch()).
->>
->> * When a runtime PM ref is acquired on the HDA device, the
->>   GPU is powered up (see vga_switcheroo_runtime_resume_hdmi_audio()).
->>
->>
->> Unfortunately this is all fairly broken, e.g.:
->>
->> * If a runtime PM ref on the HDA device is held for more than 5 sec
->>   (autosuspend delay of the GPU), the GPU will be powered down and
->>   the HDA device will become inaccessible, regardless of the runtime
->>   PM ref still being held (because vga_switcheroo_set_dynamic_switch()
->>   doesn't check the refcount of the HDA device).
->>
->> * The DRM device is afforded direct-complete but the HDA device is not.
->>   If the GPU is handled earlier by dpm_suspend(), then runtime PM will
->>   have been disabled on the GPU and thus the HDA device will fail to
->>   runtime resume before system sleep.
->>
->> Rafael's series allows representation of such inter-device dependencies
->> in the PM core and can thus replace kludgy and broken "solutions" like
->> the one above.
->>
->> There's one thing that I haven't understood myself though:  In an e-mail
->> exchange in September Rafael has argued that the above-mentioned hybrid
->> graphics use case "isn't a good [example] IMO.  That clearly is a case
->> when two (or more) devices share power resources controlled by a single
->> on/off switch.  Which is a clear use case for a PM domain."
->>
->> The same seems to apply to Marek's SYSMMU use case.  When applying device
->> links to SYSMMU or hybrid graphics, we select one of the devices in the
->> PM domain as master and have the other one depend on it as slave, i.e.
->> a synthetic hierarchical relationship is established.
->>
->> I've responded to Rafael on September 18 that this can't be solved with
->> a struct dev_pm_domain, but haven't received a reply since:
->> https://lkml.org/lkml/2016/9/18/103
+>> OK, fair enough.
 >
-> Rafael note:
+> Sort of agreed, although I'm still not sure how helpful the 1st one is;
+> kinda serves to complicate things, for little real benefit IMO (you
+> don't save much time by "not waiting" -- either the child quickly
+> notices the same error and complete()'s quickly, or else you're going to
+> wait for that child in the end anyway).
 >
-> The one he asked here.
+> I think it's also important to ask why we do this optimization in the
+> {late,noirq} cases, but we don't do this in __device_suspend(). As
+> demonstrated by the $subject bug, I think we would yield fewer bugs by
+> sharing code structure (if not the code itself) among the similar
+> phases.
+>
+> I'm happy for you to take my current patch, of course, but I think some
+> further effort on making this consistent might be warranted. Either put
+> all of these short-circuit checks after the wait_for_children(), or else
+> add the same short-circuit for the missing case (__device_suspend()).
+> i.e., this (untested) patch:
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e44944f4be77..2932a5bd892f 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1027,6 +1027,8 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+>         TRACE_DEVICE(dev);
+>         TRACE_SUSPEND(0);
+>
+> +       dpm_wait_for_children(dev, async);
+> +
+>         if (async_error)
+>                 goto Complete;
+>
+> @@ -1038,8 +1040,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+>         if (dev->power.syscore || dev->power.direct_complete)
+>                 goto Complete;
+>
+> -       dpm_wait_for_children(dev, async);
+> -
+>         if (dev->pm_domain) {
+>                 info = "noirq power domain ";
+>                 callback = pm_noirq_op(&dev->pm_domain->ops, state);
+> @@ -1174,6 +1174,8 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>
+>         __pm_runtime_disable(dev, false);
+>
+> +       dpm_wait_for_children(dev, async);
+> +
+>         if (async_error)
+>                 goto Complete;
+>
+> @@ -1185,8 +1187,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+>         if (dev->power.syscore || dev->power.direct_complete)
+>                 goto Complete;
+>
+> -       dpm_wait_for_children(dev, async);
+> -
+>         if (dev->pm_domain) {
+>                 info = "late power domain ";
+>                 callback = pm_late_early_op(&dev->pm_domain->ops, state);
+>
+> ---
+>
+> I can test this and send it in proper form if that looks preferable.
 
-OK, so please see the message I've just sent. :-)
+It does to me as per the discussion at the LPC.
 
-The bottom line is that there may be multiple ways to approach a
-problem like this and which of them works best really depends on the
-particular case.
-
-You seem to be thinking that the device links infrastructure may not
-be necessary after all if there are other ways to address the problems
-it is intended for, but those other ways may still be less viable
-practically due to the complexity involved and similar.  Also they may
-lead to code duplication in different places that try to address those
-problems in a similar fashion, but slightly differently.
-
-All this is about providing people with reasonably straightforward and
-common ways to deal with certain class of problems showing up in
-multiple places.  It is not about getting the driver probe ordering
-right magically in one go.
+Are you still going to submit it?
 
 Thanks,
 Rafael
