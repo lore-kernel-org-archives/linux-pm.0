@@ -1,109 +1,120 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] timers: Fix timer inaccuracy
-Date: Thu, 10 Nov 2016 11:07:51 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1611101039540.3501@nanos>
-References: <1478684203-11966-1-git-send-email-joonwoop@codeaurora.org> <alpine.DEB.2.20.1611091045040.3501@nanos> <53b2d275-23f2-9ee2-7bde-e441659cf885@codeaurora.org>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH] drivers: cpuidle: assign enter_freeze to same as enter
+ callback function
+Date: Thu, 10 Nov 2016 11:28:03 +0100
+Message-ID: <CAKfTPtDSwcEP6ViLjMBFs590mOsmafWqMRzkYZDJtJ=2tx0s6A@mail.gmail.com>
+References: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com>
+ <20161109183925.GA19565@red-moon> <c6f986a7-5a00-7a4f-bdb3-db783f585b3e@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:60936 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752771AbcKJKKb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 05:10:31 -0500
-In-Reply-To: <53b2d275-23f2-9ee2-7bde-e441659cf885@codeaurora.org>
+Received: from mail-yw0-f180.google.com ([209.85.161.180]:34486 "EHLO
+        mail-yw0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754863AbcKJK2Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 05:28:25 -0500
+Received: by mail-yw0-f180.google.com with SMTP id t125so233722718ywc.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 02:28:24 -0800 (PST)
+In-Reply-To: <c6f986a7-5a00-7a4f-bdb3-db783f585b3e@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joonwoo Park <joonwoop@codeaurora.org>
-Cc: John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Andy Gross <andy.gross@linaro.org>
 
-On Wed, 9 Nov 2016, Joonwoo Park wrote:
-> On 11/09/2016 01:56 AM, Thomas Gleixner wrote:
-> > That's simply wrong. We guarantee that the timer sleeps for at least a
-> > jiffy. So in case of the first wheel we _must_ increment by one simply
-> > because the next jiffie might be immanent and not doing so would expire the
-> > timer early.
-> > 
-> > The wheel is not meant to be accurate at all and I really don't want an
-> > extra conditional in that path just to make it accurate for some expiry
-> > values. That's a completely pointless exercise.
-> 
-> I understand it's not meant to provide much of accuracy and also don't really
-> care about accuracy of sporadic timer aim and fire.
-> What I'm worried about is case that relies on periodic timer with relatively
-> short interval.
-> If you see bus scaling driver function devfreq_monitor() in
-> drivers/devfreq/devfreq.c, it polls hardware every configured interval by
-> using deferrable delayed work.  I'm not quite familiar with bus scaling so
-> cc'ing linux-pm.
+On 9 November 2016 at 19:48, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+>
+> On 09/11/16 18:39, Lorenzo Pieralisi wrote:
+>>
+>> On Wed, Nov 09, 2016 at 05:43:30PM +0000, Sudeep Holla wrote:
+>>>
+>>> enter_freeze() callback is expected atleast to do the same as enter()
+>>> but it has to guarantee that interrupts aren't enabled at any point
+>>> in its execution, as the tick is frozen.
+>>>
+>>> CPUs execute ->enter_freeze with the local tick or entire timekeeping
+>>> suspended, so it must not re-enable interrupts at any point (even
+>>> temporarily) or attempt to change states of clock event devices.
+>>>
+>>> It will be called when the system goes to suspend-to-idle and will
+>>> reduce power usage because CPUs won't be awaken for unnecessary IRQs
+>>> (i.e. woken up only on IRQs from "wakeup sources")
+>>>
+>>> Since for all the states that have CPUIDLE_FLAG_TIMER_STOP flag set,
+>>> local tick is stopped, we can reuse the same code for both the enter()
+>>> and enter_freeze() callbacks. Only "coupled" cpuidle mechanism enables
+>>> interrupts and doing that with timekeeping suspended is generally not
+>>> safe. Since this generic DT based idle driver doesn't support "coupled"
+>>> states, it is safe to assume that the interrupts are not re-enabled.
+>>>
+>>> This patch assign enter_freeze to same as enter callback function which
+>>> helps to save power without any intermittent spurious wakeups from
+>>> suspend-to-idle.
+>>>
+>>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>>> ---
+>>>  drivers/cpuidle/dt_idle_states.c | 11 ++++++++++-
+>>>  1 file changed, 10 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/cpuidle/dt_idle_states.c
+>>> b/drivers/cpuidle/dt_idle_states.c
+>>> index a5c111b67f37..5a087d108475 100644
+>>> --- a/drivers/cpuidle/dt_idle_states.c
+>>> +++ b/drivers/cpuidle/dt_idle_states.c
+>>> @@ -79,8 +79,17 @@ static int init_state_node(struct cpuidle_state
+>>> *idle_state,
+>>>                 desc = state_node->name;
+>>>
+>>>         idle_state->flags = 0;
+>>> -       if (of_property_read_bool(state_node, "local-timer-stop"))
+>>> +       if (of_property_read_bool(state_node, "local-timer-stop")) {
+>>>                 idle_state->flags |= CPUIDLE_FLAG_TIMER_STOP;
+>>> +               /*
+>>> +                * CPUIDLE_FLAG_TIMER_STOP guarantees that the local tick
+>>> is
+>>> +                * stopped and since this is not a "coupled" state
+>>> interrupts
+>>> +                * won't be enabled when it exits allowing the tick to be
+>>> +                * frozen safely. So enter() can be also enter_freeze()
+>>> +                * callback.
+>>> +                */
+>>
+>>
+>> I do not think that represents a guarantee for enter_freeze() to be
+>> functional, we can initialize enter_freeze() with a function that
+>> does _not_ enable IRQs while executing, it has not much to do with
+>> the local timer losing HW state.
+>>
+>
+> I agree, and I didn't mean that with the above comment. But reading
+> again, I see your point.
+>
+>> I would just init the enter_freeze() pointer and be done with that,
+>> adding code to check whether the idle back-end enables IRQs when it
+>> enters idle is a major PITA that really is not worth the hassle and
+>> apart from coupled C-states (which we do not support in DT as you said)
+>> I can't find another example (and on top of that it is not even
+>> something we can solve through DT since it is not a property of the idle
+>> state but more related to its kernel implementation).
+>>
+>
+> Makes sense, I was just trying to avoid setting for a state like
+> CPU/Cluster retention but I agree, we need not do that.
 
-So you are not familiar with that and therefor use it as an argument for a
-potential problem. Pretty scientific approach.
+I agree with Lorenzo and would prefer to keep it simple
 
-You already mentioned the keyword: DEFERRABLE, which is designed to be
-inaccurate.
- 
-> My guess is that ever since we have timer refactoring, above driver is polling
-> every configured jiffy + 1 most of time.
+Regards,
+Vincent
 
-Sure, guess work is the right approach here.
-
-> When CONFIG_HZ_100=y and the interval is 1, polling will be happening every
-> 20ms rather than configured 10ms which is 100% later than ideal.
-
-The wheel guarantees that the timer sleeps at least 1 jiffie and this can
-only be done by adding one jiffie simply because:
-
-CPU 0	   	CPU 1
-		mod_timer(jiffies + 1)
-timer irq
-jiffies++	queue_timer
-		timer_irq
-		expire timer
-
-So this timer expired exactly a few micro seconds after arming and therefor
-violates the guarantee of firing not before the specified interval.
-
-So depending on when you arm the timer the expiry is going to be:
-
-   1 jiffie <= expiry <= 2 jiffies
-
-If you disable high resolution timers then your user space program using
-nanosleep will have exactly the same behaviour.
-
-And this is the only sane behaviour you can expect from timers: To not
-expire early.
-
-Every user must cope with late expiry anyway as there is no guarantee that
-the task is scheduled right away. Neither is there a guarantee that the
-softirq (it might be deferred to ksoftirqd) invokes the callback on time.
-
-The timer wheel is optimized for enqueue/dequeue speed and implicit
-batching. Making it artificial accurate for one particular case is just
-adding pointless overhead and aside of that it's going to violate the valid
-assumption that a 1 jiffie sleep is going to sleep at least 1 jiffie.
-
-> If that kind of drivers want to run periodic polling at similar level of
-> accuracy like pre v4.8, each drivers have to switch to hrtimer but there are
-> problems apart from the fact there is no nicely written deferred processing
-> mechanism like workqueue with hrtimer -
-> 1) there is no deferrable hrtimer.
-> 2) hrtimer has more overhead more than low res timer, especially hrtimer will
-> fire interrupt for individual timer lists which will cause power impact.
-
-Deferrable timers shouldn't have been invented in the first place and yes,
-they are not going to happen on hrtimers, quite the contrary, I'm working
-on eliminating them completely.
- 
-> It also makes sense to me that queued timer especially with long delay is
-> tolerable to inaccuracy especially when most of them got canceled prior to its
-> expiry time.
-> But by drivers which use timer as polling mechanism which never cancel it,
-> IMHO this behaviour change could be a regression.
-
-When you can come up with a real regression caused by the rework and not
-just some handwaving theories then we can revisit that, but until then it's
-going to stay as is.
-
-Thanks,
-
-	tglx
+>
+>> If we wanted to do it _properly_ we have to add an arch hook to check
+>> if the given idle state enter function back-end, ie cpu_ops on ARM64 or
+>> or cpuidle_ops on ARM, enables IRQs while executing, I would honestly
+>> avoid it but comments are nonetheless welcome.
+>>
+>
+> Yes, that's may be unnecessary addition of some code when we can do it
+> in simple ways, but I am open to suggestions.
+>
+> --
+> Regards,
+> Sudeep
