@@ -1,64 +1,54 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Thu, 10 Nov 2016 10:13:55 -0800
-Message-ID: <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
-References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
+From: Andy Gross <andy.gross@linaro.org>
+Subject: Re: [PATCH v2] drivers: cpuidle: assign enter_freeze to same as enter
+ callback function
+Date: Thu, 10 Nov 2016 12:18:43 -0600
+Message-ID: <CAPBZ5Qc+JPPdamROi-x9ocrGgAJrLF=Nf2-odqzDg0ZHPAtqww@mail.gmail.com>
+References: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com> <1478787873-18180-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ua0-f173.google.com ([209.85.217.173]:33880 "EHLO
+        mail-ua0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752508AbcKJSSp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 13:18:45 -0500
+Received: by mail-ua0-f173.google.com with SMTP id 51so208006560uai.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 10:18:44 -0800 (PST)
+In-Reply-To: <1478787873-18180-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
-> It's important that user space can figure out what device woke the
-> system from suspend -- e.g., for debugging, or for implementing
-> conditional wake behavior. Dedicated wakeup IRQs don't currently do
-> that.
+On 10 November 2016 at 08:24, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> enter_freeze() callback is expected atleast to do the same as enter()
+> but it has to guarantee that interrupts aren't enabled at any point
+> in its execution, as the tick is frozen.
 >
-> Let's report the event (pm_wakeup_event()) and also allow drivers to
-> synchronize with these events in their resume path (hence, disable_irq()
-> instead of disable_irq_nosync()).
+> CPUs execute ->enter_freeze with the local tick or entire timekeeping
+> suspended, so it must not re-enable interrupts at any point (even
+> temporarily) or attempt to change states of clock event devices.
+>
+> It will be called when the system goes to suspend-to-idle and will
+> reduce power usage because CPUs won't be awaken for unnecessary IRQs
+> (i.e. woken up only on IRQs from "wakeup sources")
+>
+> We can reuse the same code for both the enter() and enter_freeze()
+> callbacks as along as they don't re-enable interrupts. Only "coupled"
+> cpuidle mechanism enables interrupts and doing that with timekeeping
+> suspended is generally not safe.
+>
+> Since this generic DT based idle driver doesn't support "coupled"
+> states, it is safe to assume that the interrupts are not re-enabled.
+>
+> This patch assign enter_freeze to same as enter callback function which
+> helps to save power without any intermittent spurious wakeups from
+> suspend-to-idle.
+>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Hmm, dev_pm_disable_wake_irq() is called from
-rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
-disable interrupts. Dropping _nosync() feels dangerous.
-
->
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> ---
->  drivers/base/power/wakeirq.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
-> index 0d77cd6fd8d1..c35b2db1194c 100644
-> --- a/drivers/base/power/wakeirq.c
-> +++ b/drivers/base/power/wakeirq.c
-> @@ -139,6 +139,8 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
->         struct wake_irq *wirq = _wirq;
->         int res;
->
-> +       pm_wakeup_event(wirq->dev, 0);
-> +
->         /* We don't want RPM_ASYNC or RPM_NOWAIT here */
->         res = pm_runtime_resume(wirq->dev);
->         if (res < 0)
-> @@ -240,7 +242,7 @@ void dev_pm_disable_wake_irq(struct device *dev)
->         struct wake_irq *wirq = dev->power.wakeirq;
->
->         if (wirq && wirq->dedicated_irq)
-> -               disable_irq_nosync(wirq->irq);
-> +               disable_irq(wirq->irq);
->  }
->  EXPORT_SYMBOL_GPL(dev_pm_disable_wake_irq);
->
-> --
-> 2.8.0.rc3.226.g39d4020
->
+Tested this on a Qualcomm 410c dragonboard.  Worked great.  Thanks for
+the patch!
 
 
-
--- 
-Dmitry
+Tested-by: Andy Gross <andy.gross@linaro.org>
