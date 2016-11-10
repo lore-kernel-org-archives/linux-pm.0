@@ -1,65 +1,45 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v2] drivers: cpuidle: assign enter_freeze to same as enter callback function
-Date: Thu, 10 Nov 2016 14:24:33 +0000
-Message-ID: <1478787873-18180-1-git-send-email-sudeep.holla@arm.com>
-References: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Andy Gross <andy.gross@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH -next] cpufreq: brcmstb-avs-cpufreq: make symbol brcm_avs_cpufreq_attr static
+Date: Thu, 10 Nov 2016 15:19:05 +0000
+Message-ID: <1478791145-21137-1-git-send-email-weiyj.lk@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34500 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934010AbcKJPTW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 10:19:22 -0500
+Received: by mail-pf0-f196.google.com with SMTP id y68so4558535pfb.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 07:19:22 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Markus Mayer <mmayer@broadcom.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-enter_freeze() callback is expected atleast to do the same as enter()
-but it has to guarantee that interrupts aren't enabled at any point
-in its execution, as the tick is frozen.
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
-CPUs execute ->enter_freeze with the local tick or entire timekeeping
-suspended, so it must not re-enable interrupts at any point (even
-temporarily) or attempt to change states of clock event devices.
+Fixes the following sparse warning:
 
-It will be called when the system goes to suspend-to-idle and will
-reduce power usage because CPUs won't be awaken for unnecessary IRQs
-(i.e. woken up only on IRQs from "wakeup sources")
+drivers/cpufreq/brcmstb-avs-cpufreq.c:982:18: warning:
+ symbol 'brcm_avs_cpufreq_attr' was not declared. Should it be static?
 
-We can reuse the same code for both the enter() and enter_freeze()
-callbacks as along as they don't re-enable interrupts. Only "coupled"
-cpuidle mechanism enables interrupts and doing that with timekeeping
-suspended is generally not safe.
-
-Since this generic DT based idle driver doesn't support "coupled"
-states, it is safe to assume that the interrupts are not re-enabled.
-
-This patch assign enter_freeze to same as enter callback function which
-helps to save power without any intermittent spurious wakeups from
-suspend-to-idle.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 ---
- drivers/cpuidle/dt_idle_states.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v1->v2:
-	- Dropped checking and using only states with CPUIDLE_FLAG_TIMER_STOP
-	  enabled.
+diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+index b761d54..4fda623 100644
+--- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
++++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+@@ -979,7 +979,7 @@ cpufreq_freq_attr_ro(brcm_avs_pmap);
+ cpufreq_freq_attr_ro(brcm_avs_voltage);
+ cpufreq_freq_attr_ro(brcm_avs_frequency);
+ 
+-struct freq_attr *brcm_avs_cpufreq_attr[] = {
++static struct freq_attr *brcm_avs_cpufreq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	&brcm_avs_pstate,
+ 	&brcm_avs_mode,
 
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-index a5c111b67f37..ffca4fc0061d 100644
---- a/drivers/cpuidle/dt_idle_states.c
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -38,6 +38,12 @@ static int init_state_node(struct cpuidle_state *idle_state,
- 	 * state enter function.
- 	 */
- 	idle_state->enter = match_id->data;
-+	/*
-+	 * Since this is not a "coupled" state, it's safe to assume interrupts
-+	 * won't be enabled when it exits allowing the tick to be frozen
-+	 * safely. So enter() can be also enter_freeze() callback.
-+	 */
-+	idle_state->enter_freeze = match_id->data;
-
- 	err = of_property_read_u32(state_node, "wakeup-latency-us",
- 				   &idle_state->exit_latency);
---
-2.7.4
