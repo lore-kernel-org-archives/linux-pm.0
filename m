@@ -1,60 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple
- regulators per device
-Date: Thu, 10 Nov 2016 23:39:40 +0530
-Message-ID: <20161110180940.GD11670@vireshk-i7>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <28119b44689921f3c3cc00be49bff2bb99b32162.1477463128.git.viresh.kumar@linaro.org>
- <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
- <20161110040440.GA11670@vireshk-i7>
- <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
+Date: Thu, 10 Nov 2016 10:13:55 -0800
+Message-ID: <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
+References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
+In-Reply-To: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, devicetree@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-11-16, 16:36, Mark Brown wrote:
-> On Thu, Nov 10, 2016 at 09:34:40AM +0530, Viresh Kumar wrote:
-> > On 09-11-16, 14:58, Mark Brown wrote:
-> > > On Wed, Oct 26, 2016 at 12:02:56PM +0530, Viresh Kumar wrote:
-> 
-> > > > +  Entries for multiple regulators shall be provided in the same field separated
-> > > > +  by angular brackets <>. The OPP binding doesn't provide any provisions to
-> > > > +  relate the values to their power supplies or the order in which the supplies
-> > > > +  need to be configured.
-> 
-> > > I don't understand how this works.  If we have an unordered list of
-> > > values to set for regulators how will we make sense of them?
-> 
-> > The platform driver is responsible to identify the order and pass it on to the
-> > OPP core. And the platform driver needs to have that hard coded.
-> 
-> That *really* should be in the binding.
+On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
+> It's important that user space can figure out what device woke the
+> system from suspend -- e.g., for debugging, or for implementing
+> conditional wake behavior. Dedicated wakeup IRQs don't currently do
+> that.
+>
+> Let's report the event (pm_wakeup_event()) and also allow drivers to
+> synchronize with these events in their resume path (hence, disable_irq()
+> instead of disable_irq_nosync()).
 
-Okay, how do you suggest doing that? Will a property like supply-names
-in the OPP table be fine? Like this:
+Hmm, dev_pm_disable_wake_irq() is called from
+rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
+disable interrupts. Dropping _nosync() feels dangerous.
 
-@@ -369,13 +378,16 @@ Example 4: Handling multiple regulators
-                        compatible = "arm,cortex-a7";
-                        ...
- 
--                       cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
-+                       vcc0-supply = <&cpu_supply0>;
-+                       vcc1-supply = <&cpu_supply1>;
-+                       vcc2-supply = <&cpu_supply2>;
-                        operating-points-v2 = <&cpu0_opp_table>;
-                };
-        };
- 
-        cpu0_opp_table: opp_table0 {
-                compatible = "operating-points-v2";
-+               supply-names = "vcc0", "vcc1", "vcc2";
-                opp-shared;
+>
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> ---
+>  drivers/base/power/wakeirq.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+> index 0d77cd6fd8d1..c35b2db1194c 100644
+> --- a/drivers/base/power/wakeirq.c
+> +++ b/drivers/base/power/wakeirq.c
+> @@ -139,6 +139,8 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
+>         struct wake_irq *wirq = _wirq;
+>         int res;
+>
+> +       pm_wakeup_event(wirq->dev, 0);
+> +
+>         /* We don't want RPM_ASYNC or RPM_NOWAIT here */
+>         res = pm_runtime_resume(wirq->dev);
+>         if (res < 0)
+> @@ -240,7 +242,7 @@ void dev_pm_disable_wake_irq(struct device *dev)
+>         struct wake_irq *wirq = dev->power.wakeirq;
+>
+>         if (wirq && wirq->dedicated_irq)
+> -               disable_irq_nosync(wirq->irq);
+> +               disable_irq(wirq->irq);
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_disable_wake_irq);
+>
+> --
+> 2.8.0.rc3.226.g39d4020
+>
+
+
 
 -- 
-viresh
+Dmitry
