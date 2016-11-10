@@ -1,68 +1,91 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
-Date: Wed, 9 Nov 2016 17:19:33 -0800
-Message-ID: <20161110011933.GW16026@codeaurora.org>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <20161102045100.GD10786@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:55998 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751157AbcKJBTf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 20:19:35 -0500
-Content-Disposition: inline
-In-Reply-To: <20161102045100.GD10786@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+From: Brian Norris <briannorris@chromium.org>
+Subject: [PATCH v3] PM / sleep: don't suspend parent when async child suspend_{noirq,late} fails
+Date: Wed,  9 Nov 2016 17:21:08 -0800
+Message-ID: <1478740868-55269-1-git-send-email-briannorris@chromium.org>
+References: <1477584334-39956-1-git-send-email-briannorris@chromium.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1477584334-39956-1-git-send-email-briannorris@chromium.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pm@vger.kernel.org, Chuansheng Liu <chuansheng.liu@intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Brian Norris <briannorris@chromium.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
 
-On 11/02, Viresh Kumar wrote:
-> On 26-10-16, 12:02, Viresh Kumar wrote:
-> > Hi,
-> > 
-> > Some platforms (like TI) have complex DVFS configuration for CPU
-> > devices, where multiple regulators are required to be configured to
-> > change DVFS state of the device. This was explained well by Nishanth
-> > earlier [1].
-> > 
-> > One of the major complaints around multiple regulators case was that the
-> > DT isn't responsible in any way to represent the ordering in which
-> > multiple supplies need to be programmed, before or after frequency
-> > change. It was considered in this patch and such information is left to
-> > the platform specific OPP driver now, which can register its own
-> > opp_set_rate() callback with the OPP core and the OPP core will then
-> > call it during DVFS.
-> > 
-> > The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
-> > and code to pass values for multiple regulators and verified that they
-> > are all properly read by the kernel (using debugfs interface).
-> > 
-> > Dave Gerlach has already tested it on the real TI platforms and it works
-> > well for him.
-> > 
-> > This is rebased over: linux-next branch in the PM tree.
-> > 
-> > V2->V3:
-> > - The last patch is new
-> > - Removed a debug leftover pr_info() message
-> > - Renamed few names as s/set_rate/set_opp
-> > - Removed a TODO comment (as it is done now with this series)
-> > - created struct for min_uV and max_uV
-> > - kerneldoc comments for structures in pm_opp.h
-> > - s/const char */const char * const
-> > - use kasprintf()
-> > - Some more minor reformatting
-> > - More Ack/RBY tags added
-> 
-> @Stephen: Can you please provide further comments or Acks ?
-> 
+Consider two devices, A and B, where B is a child of A, and B utilizes
+asynchronous suspend (it does not matter whether A is sync or async). If
+B fails to suspend_noirq() or suspend_late(), or is interrupted by a
+wakeup (pm_wakeup_pending()), then it aborts and sets the async_error
+variable. However, device A does not (immediately) check the async_error
+variable; it may continue to run its own suspend_noirq()/suspend_late()
+callback. This is bad.
 
-Where did we end up on the topic of RCU usage in OPP? I'd rather
-we figure that out before investing more time in reviewing code
-that we may end up completely rewriting in the future.
+We can resolve this problem by doing our error and wakeup checking
+(particularly, for the async_error flag) after waiting for children to
+suspend, instead of before. This also helps align the logic for the noirq and
+late suspend cases with the logic in __device_suspend().
 
+It's easy to observe this erroneous behavior by, for example, forcing a
+device to sleep a bit in its suspend_noirq() (to ensure the parent is
+waiting for the child to complete), then return an error, and watch the
+parent suspend_noirq() still get called. (Or similarly, fake a wakeup
+event at the right (or is it wrong?) time.)
+
+Fixes: de377b397272 ("PM / sleep: Asynchronous threads for suspend_late")
+Fixes: 28b6fd6e3779 ("PM / sleep: Asynchronous threads for suspend_noirq")
+Reported-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+Signed-off-by: Brian Norris <briannorris@chromium.org>
+---
+v2: s/early/late/ in commit message
+
+v3:
+ * drop patch 1, as the callback-printing is unrelated, semi-controversial, and
+   might break existing (but poor -- c'mon, since when do tools get to rely on
+   kernel messages?) tools
+ * do all error checking after dpm_wait_for_children() -- this helps make
+   things consistent and reduces duplication.
+ * drop Dmitry's Reviewed-by, since the patch changed enough
+
+ drivers/base/power/main.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index c58563581345..57a8ca4bc8ab 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1027,6 +1027,8 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+ 	TRACE_DEVICE(dev);
+ 	TRACE_SUSPEND(0);
+ 
++	dpm_wait_for_children(dev, async);
++
+ 	if (async_error)
+ 		goto Complete;
+ 
+@@ -1038,8 +1040,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
+ 	if (dev->power.syscore || dev->power.direct_complete)
+ 		goto Complete;
+ 
+-	dpm_wait_for_children(dev, async);
+-
+ 	if (dev->pm_domain) {
+ 		info = "noirq power domain ";
+ 		callback = pm_noirq_op(&dev->pm_domain->ops, state);
+@@ -1174,6 +1174,8 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 
+ 	__pm_runtime_disable(dev, false);
+ 
++	dpm_wait_for_children(dev, async);
++
+ 	if (async_error)
+ 		goto Complete;
+ 
+@@ -1185,8 +1187,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 	if (dev->power.syscore || dev->power.direct_complete)
+ 		goto Complete;
+ 
+-	dpm_wait_for_children(dev, async);
+-
+ 	if (dev->pm_domain) {
+ 		info = "late power domain ";
+ 		callback = pm_late_early_op(&dev->pm_domain->ops, state);
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.8.0.rc3.226.g39d4020
