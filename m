@@ -1,121 +1,128 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 2/2] PM / sleep: don't suspend parent when async child
- suspend_{noirq,late} fails
-Date: Thu, 10 Nov 2016 01:08:56 +0100
-Message-ID: <CAJZ5v0hpcH2-UYtFC5kPc1n-O40fTPwzoCgbboOqfYMOGDXj7Q@mail.gmail.com>
-References: <1476923170-111986-2-git-send-email-briannorris@chromium.org>
- <8017823.VJuZzSqtaY@vostro.rjw.lan> <CAKdAkRS+uUrx72DLKuyDiUMkKzxMTRXx5Pv1JBky6T8huv4Fhg@mail.gmail.com>
- <50971906.K6xak2t6Z6@vostro.rjw.lan> <20161102050706.GA49402@google.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
+ fails to start
+Date: Thu, 10 Nov 2016 09:10:41 +0900
+Message-ID: <5823BB01.3090502@samsung.com>
+References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
+ <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
+ <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
+ <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com>
+ <58223AF1.2030605@codeaurora.org> <58227CDB.6050907@samsung.com>
+ <58228B9E.2090108@samsung.com> <58228C10.3070502@samsung.com>
+ <58238840.90802@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:36805 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751427AbcKJAI5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 19:08:57 -0500
-In-Reply-To: <20161102050706.GA49402@google.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:53479 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753779AbcKJAKo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 19:10:44 -0500
+In-reply-to: <58238840.90802@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Brian Norris <computersforpeace@gmail.com>, Jeffy Chen <jeffy.chen@rock-chips.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chuansheng Liu <chuansheng.liu@intel.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Nov 2, 2016 at 6:07 AM, Brian Norris <briannorris@chromium.org> wrote:
-> + more genpd folks
->
-> On Wed, Nov 02, 2016 at 04:51:08AM +0100, Rafael J. Wysocki wrote:
->> On Tuesday, November 01, 2016 12:04:28 AM Dmitry Torokhov wrote:
->> > On Mon, Oct 31, 2016 at 10:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > > On Thursday, October 27, 2016 09:05:34 AM Brian Norris wrote:
->> > >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> > >> index c58563581345..eaf6b53463a5 100644
->> > >> --- a/drivers/base/power/main.c
->> > >> +++ b/drivers/base/power/main.c
->> > >> @@ -1040,6 +1040,9 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
->> > >>
->> > >>       dpm_wait_for_children(dev, async);
->> > >>
->> > >> +     if (async_error)
->> > >> +             goto Complete;
->> > >> +
->> > >
->> > > This is a second chech for async_error in this routine and is the first one
->> > > really needed after adding this?
->> >
->> > There is really no point in waiting for children to be suspended if
->> > error has already been signalled; that's what first check achieves.
->> > The 2nd check ensures that we abort suspend if any of the children
->> > failed to suspend.
->> >
->> > I'd say both checks are needed (well, 1st is helpful, 2nd is essential).
+Hi,
+
+On 2016년 11월 10일 05:34, Saravana Kannan wrote:
+> On 11/08/2016 06:38 PM, Chanwoo Choi wrote:
+>> On 2016년 11월 09일 11:36, Chanwoo Choi wrote:
+>>> Hi,
+>>>
+>>> On 2016년 11월 09일 10:33, Chanwoo Choi wrote:
+>>>> On 2016년 11월 09일 05:52, Saravana Kannan wrote:
+>>>>> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
+>>>>>>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
+>>>>>>>> Hi,
+>>>>>>>>
+>>>>>>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
+>>>>>>>>> If the new governor fails to start, switch back to old governor so that the
+>>>>>>>>> devfreq state is not left in some weird limbo.
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
+>>>>>>>>> ---
+>>>>>>>>> * Fix NULL deref for real this time.
+>>>>>>>>> * Addressed some style preferences.
+>>>>>>>>>
+>>>>>>>>>     drivers/devfreq/devfreq.c | 13 +++++++++++--
+>>>>>>>>>     1 file changed, 11 insertions(+), 2 deletions(-)
+>>>>>>>>>
+>>>>>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>>>>>>>> index bf3ea76..77c41a5 100644
+>>>>>>>>> --- a/drivers/devfreq/devfreq.c
+>>>>>>>>> +++ b/drivers/devfreq/devfreq.c
+>>>>>>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>>>>>>         struct devfreq *df = to_devfreq(dev);
+>>>>>>>>>         int ret;
+>>>>>>>>>         char str_governor[DEVFREQ_NAME_LEN + 1];
+>>>>>>>>> -    struct devfreq_governor *governor;
+>>>>>>>>> +    const struct devfreq_governor *governor, *prev_governor;
+>>>>>>>>>
+>>>>>>>>>         ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
+>>>>>>>>>         if (ret != 1)
+>>>>>>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>>>>>>>                 goto out;
+>>>>>>>>>             }
+>>>>>>>>>         }
+>>>>>>>>> +    prev_governor = df->governor;
+>>>>>>>>>         df->governor = governor;
+>>>>>>>>>         strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+>>>>>>>>>         ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
+>>>>>>>>> -    if (ret)
+>>>>>>>>> +    if (ret) {
+>>>>>>>>>             dev_warn(dev, "%s: Governor %s not started(%d)\n",
+>>>>>>>>>                  __func__, df->governor->name, ret);
+>>>>>>>>> +        if (prev_governor) {
+>>>>>>>>
+>>>>>>>> I think that prev_governor is always set. You don't need to check it.
+>>>>>>>> Why do check it?
+>>>>>>>
+>>>>>>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
+>>>>>>
+>>>>>> I don't understand. If device is not registered by devfreq_add_device(),
+>>>>>> you don't change the governor by using governor_store().
+>>>>>>
+>>>>>> If you can change the governor through governor_store(),
+>>>>>> it means that the devfreq instance was added without any problem.
+>>>>>> The added devfreq instance must have the sepecific governor
+>>>>>> on df->governor variable.
+>>>>>>
+>>>>>> So, I think that df->governor is always set and then prev_governor is always set.
+>>>>>
+>>>>> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
+>>>>
+>>>> If governor is not present during devfreq_add_device(),
+>>>> the devfreq instance is not able to register the devfreq framework.
+>>>> So, the user never touch the sysfs[1] to change the governor
+>>>> because the sysfs[1] is not created by devfreq framework.
+>>>> [1] /sys/class/devfreq/[device name]/governor
+>>>>
+>>>> In summary, if governor is not present during devfreq_add_device(),
+>>>> the devfreq framework doesn't create tye sysfs[1] for governor.
+>>>>
+>>>> The user-space never change the governor through sysfs[1]
+>>>> because there is no any sysfs entry[1].
+>>>
+>>> I checked the code of devfreq_add_device().
+>>> As you mentioned, if there is no governor,
+>>> devfreq_add_device() don't pass wihtout calling the devfreq->governor->even_handler().
 >>
->> OK, fair enough.
->
-> Sort of agreed, although I'm still not sure how helpful the 1st one is;
-> kinda serves to complicate things, for little real benefit IMO (you
-> don't save much time by "not waiting" -- either the child quickly
-> notices the same error and complete()'s quickly, or else you're going to
-> wait for that child in the end anyway).
->
-> I think it's also important to ask why we do this optimization in the
-> {late,noirq} cases, but we don't do this in __device_suspend(). As
-> demonstrated by the $subject bug, I think we would yield fewer bugs by
-> sharing code structure (if not the code itself) among the similar
-> phases.
->
-> I'm happy for you to take my current patch, of course, but I think some
-> further effort on making this consistent might be warranted. Either put
-> all of these short-circuit checks after the wait_for_children(), or else
-> add the same short-circuit for the missing case (__device_suspend()).
-> i.e., this (untested) patch:
->
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index e44944f4be77..2932a5bd892f 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1027,6 +1027,8 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
->         TRACE_DEVICE(dev);
->         TRACE_SUSPEND(0);
->
-> +       dpm_wait_for_children(dev, async);
-> +
->         if (async_error)
->                 goto Complete;
->
-> @@ -1038,8 +1040,6 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
->         if (dev->power.syscore || dev->power.direct_complete)
->                 goto Complete;
->
-> -       dpm_wait_for_children(dev, async);
-> -
->         if (dev->pm_domain) {
->                 info = "noirq power domain ";
->                 callback = pm_noirq_op(&dev->pm_domain->ops, state);
-> @@ -1174,6 +1174,8 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
->
->         __pm_runtime_disable(dev, false);
->
-> +       dpm_wait_for_children(dev, async);
-> +
->         if (async_error)
->                 goto Complete;
->
-> @@ -1185,8 +1187,6 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
->         if (dev->power.syscore || dev->power.direct_complete)
->                 goto Complete;
->
-> -       dpm_wait_for_children(dev, async);
-> -
->         if (dev->pm_domain) {
->                 info = "late power domain ";
->                 callback = pm_late_early_op(&dev->pm_domain->ops, state);
->
-> ---
->
-> I can test this and send it in proper form if that looks preferable.
+>> Wrong expression / don't pass -> pass
+>>
+> 
+> I think it's correct as is. Just because the governor isn't there (or hasn't registered yet) doesn't mean the device add should fail.
+> 
+> That aside, do you care to ack this patch for the way the code is currently?
 
-It does to me as per the discussion at the LPC.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Are you still going to submit it?
+After fixing the bug of devfreq_add_device(),
+I'll remove the unneeded 'if statement' of prev_governor in governor_store. 
 
-Thanks,
-Rafael
+Best Regards,
+Chanwoo Choi
