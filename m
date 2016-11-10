@@ -1,84 +1,75 @@
-From: Joonwoo Park <joonwoop@codeaurora.org>
-Subject: Re: [PATCH] timers: Fix timer inaccuracy
-Date: Wed, 9 Nov 2016 17:32:33 -0800
-Message-ID: <53b2d275-23f2-9ee2-7bde-e441659cf885@codeaurora.org>
-References: <1478684203-11966-1-git-send-email-joonwoop@codeaurora.org>
- <alpine.DEB.2.20.1611091045040.3501@nanos>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 5/8] PM / OPP: Add infrastructure to manage multiple
+ regulators
+Date: Wed, 9 Nov 2016 17:37:00 -0800
+Message-ID: <20161110013700.GX16026@codeaurora.org>
+References: <cover.1476952750.git.viresh.kumar@linaro.org>
+ <32c1feabb59b1f00e1cefde606e3ec7ef738ac12.1476952750.git.viresh.kumar@linaro.org>
+ <20161025164953.GT26139@codeaurora.org>
+ <20161026060512.GI9162@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1611091045040.3501@nanos>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:35346 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754586AbcKJBhC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 20:37:02 -0500
+Content-Disposition: inline
+In-Reply-To: <20161026060512.GI9162@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
 
+On 10/26, Viresh Kumar wrote:
+> On 25-10-16, 09:49, Stephen Boyd wrote:
+> > On 10/20, Viresh Kumar wrote:
+> > > diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> > > index 37fad2eb0f47..45c70ce07864 100644
+> > > --- a/drivers/base/power/opp/core.c
+> > > +++ b/drivers/base/power/opp/core.c
+> > > @@ -235,21 +237,44 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
+> > >  		return 0;
+> > >  	}
+> > >  
+> > > -	reg = opp_table->regulator;
+> > > -	if (IS_ERR(reg)) {
+> > > +	count = opp_table->regulator_count;
+> > > +
+> > > +	if (!count) {
+> > >  		/* Regulator may not be required for device */
+> > >  		rcu_read_unlock();
+> > >  		return 0;
+> > >  	}
+> > >  
+> > > -	list_for_each_entry_rcu(opp, &opp_table->opp_list, node) {
+> > > -		if (!opp->available)
+> > > -			continue;
+> > > +	size = count * sizeof(*regulators);
+> > > +	regulators = kmemdup(opp_table->regulators, size, GFP_KERNEL);
+> > 
+> > How do we allocate under RCU? Doesn't that spit out big warnings?
+> 
+> That doesn't. I even tried enabling several locking debug config options.
 
+Please read RCU documentation. From rcu_read_lock() function
+documentation:
 
-On 11/09/2016 01:56 AM, Thomas Gleixner wrote:
-> On Wed, 9 Nov 2016, Joonwoo Park wrote:
->
->> When a new timer list enqueued into the time wheel, array index
->> for the given expiry time is:
->>
->>   expires = (expires + LVL_GRAN(lvl)) >> LVL_SHIFT(lvl);
->>   idx = LVL_OFFS(lvl) + (expires & LVL_MASK);
->>
->> The granularity of the expiry time level is being added to the index
->> in order to fire the timer after its expiry time for the case when
->> the timer cannot fire at the exact time because of each level's
->> granularity.  However current index calculation also increases index
->> of timer list even if the timer can fire at exact time.  Consequently
->> timers which can fire at exact time including all in the first level
->> of bucket fire with one jiffy delay at present.
->>
->> Fix such inaccuracy by adding granularity of expiry time level only
->> when a given timer cannot fire at exact time.
->
-> That's simply wrong. We guarantee that the timer sleeps for at least a
-> jiffy. So in case of the first wheel we _must_ increment by one simply
-> because the next jiffie might be immanent and not doing so would expire the
-> timer early.
->
-> The wheel is not meant to be accurate at all and I really don't want an
-> extra conditional in that path just to make it accurate for some expiry
-> values. That's a completely pointless exercise.
+ In non-preemptible RCU implementations (TREE_RCU and TINY_RCU),
+ it is illegal to block while in an RCU read-side critical section.
+ In preemptible RCU implementations (TREE_PREEMPT_RCU) in CONFIG_PREEMPT
+ kernel builds, RCU read-side critical sections may be preempted,
+ but explicit blocking is illegal.  Finally, in preemptible RCU
+ implementations in real-time (with -rt patchset) kernel builds, RCU
+ read-side critical sections may be preempted and they may also block, but
+ only when acquiring spinlocks that are subject to priority inheritance.
 
-I understand it's not meant to provide much of accuracy and also don't 
-really care about accuracy of sporadic timer aim and fire.
-What I'm worried about is case that relies on periodic timer with 
-relatively short interval.
-If you see bus scaling driver function devfreq_monitor() in 
-drivers/devfreq/devfreq.c, it polls hardware every configured interval 
-by using deferrable delayed work.  I'm not quite familiar with bus 
-scaling so cc'ing linux-pm.
+I suppose that in certain configurations it will warn and in
+others it won't. I thought lockdep would always complain though,
+so that's sad it doesn't. At least in some implementations of RCU
+rcu_read_lock() is the same as preempt_disable(), which basically
+means no sleeping calls like GFP_KERNEL allocations.
 
-My guess is that ever since we have timer refactoring, above driver is 
-polling every configured jiffy + 1 most of time.
-When CONFIG_HZ_100=y and the interval is 1, polling will be happening 
-every 20ms rather than configured 10ms which is 100% later than ideal.
-
-If that kind of drivers want to run periodic polling at similar level of 
-accuracy like pre v4.8, each drivers have to switch to hrtimer but there 
-are problems apart from the fact there is no nicely written deferred 
-processing mechanism like workqueue with hrtimer -
-1) there is no deferrable hrtimer.
-2) hrtimer has more overhead more than low res timer, especially hrtimer 
-will fire interrupt for individual timer lists which will cause power 
-impact.
-
-It also makes sense to me that queued timer especially with long delay 
-is tolerable to inaccuracy especially when most of them got canceled 
-prior to its expiry time.
-But by drivers which use timer as polling mechanism which never cancel 
-it, IMHO this behaviour change could be a regression.
-
-Thanks,
-Joonwoo
-
->
-> Thanks,
->
-> 	tglx
->
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
