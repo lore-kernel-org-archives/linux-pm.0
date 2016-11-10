@@ -1,86 +1,89 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking support
-Date: Thu, 10 Nov 2016 09:46:42 +0100
-Message-ID: <CAMuHMdVDUE3=0e580JMorae3-vXxL2m7k28CHQZQuXe13OzZNw@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan>
- <2715729.9U1nlcpFb3@vostro.rjw.lan> <20161026111902.GA6447@wunner.de>
- <20161027152551.GA15718@kroah.com> <20161107212250.GH1764@wotan.suse.de>
- <CAJZ5v0goccDKSkSAj8+v+PG2gt7ESJuUSbyY8YuW7OwCS_KHXg@mail.gmail.com> <CAB=NE6Xdu5AniWsaJGf3pbYCydahwkStqBV+2xbc8S-Zw+2qiA@mail.gmail.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Thu, 10 Nov 2016 17:42:01 +0800
+Message-ID: <CAMz4ku+qY4U7=v5nEBEdPTjwki8j10jYbQuokz785NEy5SzYmg@mail.gmail.com>
+References: <cover.1476780088.git.baolin.wang@linaro.org> <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com>
+ <87k2cttptn.fsf@notabene.neil.brown.name> <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com>
+ <87a8dls7yn.fsf@notabene.neil.brown.name> <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
+ <871sytqrqh.fsf@notabene.neil.brown.name> <CAMz4kuJV5wiCpWJF=-YpTf1sjNrOqjc53iRYmGoEQepqtrfUdA@mail.gmail.com>
+ <87a8dbni27.fsf@notabene.neil.brown.name>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:33320 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751582AbcKJIqo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 03:46:44 -0500
-In-Reply-To: <CAB=NE6Xdu5AniWsaJGf3pbYCydahwkStqBV+2xbc8S-Zw+2qiA@mail.gmail.com>
+Received: from mail-yw0-f171.google.com ([209.85.161.171]:32930 "EHLO
+        mail-yw0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754409AbcKJJmD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 04:42:03 -0500
+Received: by mail-yw0-f171.google.com with SMTP id r204so233499468ywb.0
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 01:42:02 -0800 (PST)
+In-Reply-To: <87a8dbni27.fsf@notabene.neil.brown.name>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>
+To: NeilBrown <neilb@suse.com>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>
 
-On Thu, Nov 10, 2016 at 1:59 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrot=
-e:
-> On Wed, Nov 9, 2016 at 4:43 PM, Rafael J. Wysocki <rafael@kernel.org> wro=
-te:
->> On Mon, Nov 7, 2016 at 10:22 PM, Luis R. Rodriguez <mcgrof@kernel.org> w=
-rote:
->>> As clarified by Rafael at Plumbers, this functional dependencies
->>> framework assumes your driver / subsystem supports deferred probe,
+Hi
+
+On 8 November 2016 at 04:36, NeilBrown <neilb@suse.com> wrote:
+> On Mon, Nov 07 2016, Baolin Wang wrote:
+>
+>> On 3 November 2016 at 09:25, NeilBrown <neilb@suse.com> wrote:
+>>> On Tue, Nov 01 2016, Baolin Wang wrote:
 >>
->> It isn't particularly clear what you mean by "support" here.
+>> I agree with your most opinions, but these are optimization.
 >
-> I noted some folks had reported issues, and you acknowledged that if
-> deferred probe was used in some drivers and if this created an issue
-> the same issue would be seen with this framework. AFAICT there are two
-> possible issues to consider:
+> I see them as bug fixes, not optimizations.
 >
-> 1) the one Geert Uytterhoeven noted. Again I'll note what he had mentione=
-d [0].
+>>                                                              Firstly I
+>> think we should upstream the USB charger driver.
 >
->   "Some drivers / subsystems don=E2=80=99t support deferred probe yet, su=
-ch failures
->    usually don=E2=80=99t blow up, but cause subtle malfunctioning. Exampl=
-e, an Ethernet
->    phy could not get its interrupt as the primary IRQ chip had not been p=
-robed
->    yet, it reverted to polling though. Sub-optimal." [0]
+> I think you missed the point.  The point is that we don't *need* your
+> "USB charger driver" because all the infrastructure we need is *already*
+> present in the kernel.  It is buggy and not used uniformly, and could
+> usefully be polished and improved.  But the structure is already
+> present.
 >
-> [0] https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-Augu=
-st/003425.html
+> If everyone just added new infrastructure when they didn't like, or
+> didn't understand, what was already present, the kernel would become
+> like the Mad Hatter's tea party, full of dirty dishes.
 >
-> Geert can you provide more details?
+>>                                                  What I want to ask is
+>> how can we notify power driver if we don't set the
+>> usb_register_notifier(), then I think you give the answer is: power
+>> driver can register by 'struct usb_phy->notifier'. But why usb phy
+>> should notify the power driver how much current should be drawn, and I
+>> still think we should notify the current in usb charger driver which
+>> is better, and do not need to notify current for power driver in usb
+>> phy driver.
+>
+> I accept that it isn't clear that the phy *should* be involved in
+> communicating the negotiated power availability, but nor is it clear
+> that it shouldn't.  The power does travel through the physical
+> interface, so physically it plays a role.
+>
+> But more importantly, it already *does* get told (in some cases).
+> There is an interface "usb_phy_set_power()" which exists explicitly to
+> tell the phy what power has been negotiated.  Given that infrastructure
+> exists and works, it make sense to use it.
+>
+> If you think it is a broken design and should be removed, then fine:
+> make a case for that.  Examine the history.  Make sure you know why it
+> is there (or make sure that information cannot be found), and then
+> present a case as to why it should be removed and replaced with
+> something else.  But don't just leave it there and pretend it doesn't
+> exist and create something similar-but-different and hope people will
+> know why yours is better.  That way lies madness.
 
-Issue reported in "of_mdiobus_register_phy() and deferred probe"
-(http://lkml.iu.edu/hypermail/linux/kernel/1510.2/05770.html)
+Like Peter said, it is not only PHY can detect the USB charger type,
+which means there are other places can detect the charger type.
+Second, some controller need to detect the charger type manually which
+USB phy did not support. Third, it did not handle what current should
+be drawn in USB phy. Fourth, we need integrate all charger plugin/out
+event in one framework, not from extcon, maybe type-c in future. In a
+word, we need one standard integration of this feature we need, though
+like you said we should do some clean up or fix to make it better.
 
-Key point is:
-"However, of_mdiobus_register_phy() uses irq_of_parse_and_map(), which plai=
-nly
- ignores EPROBE_DEFER, and it just continues."
-
-At that time, the PHY driver fell back to polling, but as of commit d5c3d84=
-65
-("net: phy: Avoid polling PHY with PHY_IGNORE_INTERRUPTS") that's no longer=
- the
-case, and now the PHY fails to work completely.
-
-Workaround is "[PATCH v2] irqchip/renesas-irqc: Postpone driver initializat=
-ion"
-(https://www.spinics.net/lists/netdev/msg403325.html), which seems to have
-sparked some interest in fixing the issue for good ;-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+-- 
+Baolin.wang
+Best Regards
