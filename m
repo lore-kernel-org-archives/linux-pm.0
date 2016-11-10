@@ -1,82 +1,210 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking support
-Date: Wed, 9 Nov 2016 16:59:30 -0800
-Message-ID: <CAB=NE6Xdu5AniWsaJGf3pbYCydahwkStqBV+2xbc8S-Zw+2qiA@mail.gmail.com>
+Date: Thu, 10 Nov 2016 02:07:26 +0100
+Message-ID: <CAJZ5v0hUh8-X5HpOvr1KfoAPMYWc9x=3-+TTSPMgO4hq-RHypQ@mail.gmail.com>
 References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan>
- <2715729.9U1nlcpFb3@vostro.rjw.lan> <20161026111902.GA6447@wunner.de>
- <20161027152551.GA15718@kroah.com> <20161107212250.GH1764@wotan.suse.de> <CAJZ5v0goccDKSkSAj8+v+PG2gt7ESJuUSbyY8YuW7OwCS_KHXg@mail.gmail.com>
+ <2715729.9U1nlcpFb3@vostro.rjw.lan> <20161107213954.GI1764@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0goccDKSkSAj8+v+PG2gt7ESJuUSbyY8YuW7OwCS_KHXg@mail.gmail.com>
+In-Reply-To: <20161107213954.GI1764@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.co>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Andrzej Hajda <a.hajda@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 9, 2016 at 4:43 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Mon, Nov 7, 2016 at 10:22 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
->> On Thu, Oct 27, 2016 at 05:25:51PM +0200, Greg Kroah-Hartman wrote:
->>> On Wed, Oct 26, 2016 at 01:19:02PM +0200, Lukas Wunner wrote:
->>> > Hi Rafael,
->>> >
->>> > sorry for not responding to v5 of your series earlier, just sending
->>> > this out now in the hope that it reaches you before your travels.
->>> >
->>> > On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
->>> > > - Modify device_links_check_suppliers(), device_links_driver_bound(),
->>> > >   device_links_no_driver(), device_links_driver_cleanup(), device_links_busy(),
->>> > >   and device_links_unbind_consumers() to walk link lists under device_links_lock
->>> > >   (to make the new "driver presence tracking" mechanism work reliably).
->>> >
->>> > This change might increase boot time if drivers return -EPROBE_DEFER.
->>>
->>> "might"?  Please verify this before guessing....
->>>
->>> And don't make this more complex than needed before actually determining
->>> a real issue.
+On Mon, Nov 7, 2016 at 10:39 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->> As clarified by Rafael at Plumbers, this functional dependencies
->> framework assumes your driver / subsystem supports deferred probe,
+>> Currently, there is a problem with taking functional dependencies
+>> between devices into account.
+>>
+>> What I mean by a "functional dependency" is when the driver of device
+>> B needs device A to be functional and (generally) its driver to be
+>> present in order to work properly.  This has certain consequences
+>> for power management (suspend/resume and runtime PM ordering) and
+>> shutdown ordering of these devices.  In general, it also implies that
+>> the driver of A needs to be working for B to be probed successfully
+>> and it cannot be unbound from the device before the B's driver.
+>>
+>> Support for representing those functional dependencies between
+>> devices is added here to allow the driver core to track them and act
+>> on them in certain cases where applicable.
+>>
+>> The argument for doing that in the driver core is that there are
+>> quite a few distinct use cases involving device dependencies, they
+>> are relatively hard to get right in a driver (if one wants to
+>> address all of them properly) and it only gets worse if multiplied
+>> by the number of drivers potentially needing to do it.
 >
-> It isn't particularly clear what you mean by "support" here.
+> How many drivers actually *need this* today for suspend / resume ?
 
-I noted some folks had reported issues, and you acknowledged that if
-deferred probe was used in some drivers and if this created an issue
-the same issue would be seen with this framework. AFAICT there are two
-possible issues to consider:
+Admittedly, I don't have a list, but from discussions I had in the
+past it looked like at least a dozen.
 
-1) the one Geert Uytterhoeven noted. Again I'll note what he had mentioned [0].
+Plus, there is this pesky ACPI _DEP thing that in some cases is
+actually correct and (before this patchest) there is no way to follow
+it (a classical example here is when ACPI power management methods on
+one device are implemented in terms of I2C accesses and require a
+specific I2C controller to be present and functional for the PM of the
+device in question to work, but there are other cases like that).
 
-  "Some drivers / subsystems don’t support deferred probe yet, such failures
-   usually don’t blow up, but cause subtle malfunctioning. Example, an Ethernet
-   phy could not get its interrupt as the primary IRQ chip had not been probed
-   yet, it reverted to polling though. Sub-optimal." [0]
+> How many of these are because of ACPI firmware bugs rather than
+> some other reason ?
 
-[0] https://lists.linuxfoundation.org/pipermail/ksummit-discuss/2016-August/003425.html
+Two things here (as I said elsewhere).  There is the order in which
+operations (eg. async suspend resume of devices during system-wide
+state transitions) are started and there is the order in which they
+are run/completed.  Even if the former is right, the latter still may
+not be correct and there needs to be a generic way to make that
+happen.
 
-Geert can you provide more details?
+The "firmware bugs" above affect the first item and even if it is
+entirely correct (ie. all PM operations for all devices are always
+started in the right order, consumers before suppliers or the other
+way around depending on whether this is suspend or resume), there
+still is the second item to address.
 
-2) Since deferred probe relies on late_initcall() if your driver must
-load earlier than this deferred probe can create an issue. Andrzej had
-you identified a driver that ran into this and had issues ? If not
-this seems like a semantics thing we should consider in extending the
-documentation for drivers so that driver writers are aware of this
-limitation. I would suppose candidates for this would be anything not
-using module_init() or late_initcall() on their inits and have a
-probe.
+Apart from this, even if the information provided by the firmware does
+not lead to a device registration ordering that will produce the
+correct dpm_list ordering (for example), it may still not be clear
+whether or not that's a bug in the firmware.  The device registration
+ordering itself is just not sufficient in general.
 
->> if it does not support its not clear what will happen....
+> Can ACPI somehow be used instead by these devices to address quirks?
 >
-> I don't see any problems here, but if you see any, please just say
-> what they are.
+>> Morever, at
+>> least one case (asynchronous system suspend/resume) cannot be handled
+>> in a single driver at all, because it requires the driver of A to
+>> wait for B to suspend (during system suspend) and the driver of B to
+>> wait for A to resume (during system resume).
 >
->> We have no explicit semantics to check if a driver / subsystem
->> supports deferred probe.
+> Why is this all of a sudden a new issue? It seems there is quite a bit of
+> frameworks already out there that somehow deal with some sort of device
+> ordering / dependencies, and I am curious if they've been addressing some of
+> these problems for a while now on their own somehow with their own solutions,
+> is that the case? For instance can DAPM the / DRM / Audio component framework
+> v4l async solution be used or does it already address some of these concerns ?
+
+None of them don't address all of the problems involved in a
+sufficiently generic way to my knowledge.
+
+>> For this reason, represent dependencies between devices as "links",
+>> with the help of struct device_link objects each containing pointers
+>> to the "linked" devices, a list node for each of them, status
+>> information, flags, and an RCU head for synchronization.
+>>
+>> Also add two new list heads, representing the lists of links to the
+>> devices that depend on the given one (consumers) and to the devices
+>> depended on by it (suppliers), and a "driver presence status" field
+>> (needed for figuring out initial states of device links) to struct
+>> device.
+>>
+>> The entire data structure consisting of all of the lists of link
+>> objects for all devices is protected by a mutex (for link object
+>> addition/removal and for list walks during device driver probing
+>> and removal) and by SRCU (for list walking in other case that will
+>> be introduced by subsequent change sets).  In addition, each link
+>> object has an internal status field whose value reflects whether or
+>> not drivers are bound to the devices pointed to by the link or
+>> probing/removal of their drivers is in progress etc.  That field
+>> is only modified under the device links mutex, but it may be read
+>> outside of it in some cases (introduced by subsequent change sets),
+>> so modifications of it are annotated with WRITE_ONCE().
+>>
+>> New links are added by calling device_link_add() which takes three
+>> arguments: pointers to the devices in question and flags.  In
+>> particular, if DL_FLAG_STATELESS is set in the flags, the link status
+>> is not to be taken into account for this link and the driver core
+>> will not manage it.  In turn, if DL_FLAG_AUTOREMOVE is set in the
+>> flags, the driver core will remove the link automatically when the
+>> consumer device driver unbinds from it.
+>>
+>> One of the actions carried out by device_link_add() is to reorder
+>> the lists used for device shutdown and system suspend/resume to
+>> put the consumer device along with all of its children and all of
+>> its consumers (and so on, recursively) to the ends of those lists
+>> in order to ensure the right ordering between all of the supplier
+>> and consumer devices.
 >
-> That's correct, but then do we need it?
+> There's no explanation as to why this order is ensured to be
+> correct, I think its important to document this.
 
-We can determine this by reviewing the two items above.
+Agreed.  There is a documentation work in progress (started by Lukas).
+We will get to that point.
 
-  Luis
+> From our discussions
+> at Plumbers it seems the order is ensured due to the fact that order
+> was already implicitly provided through platform firmware (ACPI
+> enumeration is one), adjusting order on the dpm list is just shuffling
+> order between consumer / provider, but nothing else.
+
+That basically is the case.
+
+> In theory it
+> works because in the simple case this should suffice however I
+> remain unconvinced that if we have more users of this framework this
+> simple algorithm will suffice. Having a test driver or series of
+> test drivers that shows this would be good. As it stands there is simply
+> an assumption that this is correct, how *strongly* do you feel that
+> the order will *always* be correct if this is done and no cycles
+> can be added, even if tons of drivers start using this ?
+
+Cycles cannot be added because of the way the code works.  It will
+just return NULL from device_link_add() if it detects a cycle (that it
+cannot deal with).
+
+>> For this reason, it is not possible to create a link between two
+>> devices if the would-be supplier device already depends on the
+>> would-be consumer device as either a direct descendant of it or a
+>> consumer of one of its direct descendants or one of its consumers
+>> and so on.
+>>
+>> There are two types of link objects, persistent and non-persistent.
+>> The persistent ones stay around until one of the target devices is
+>> deleted, while the non-persistent ones are removed automatically when
+>> the consumer driver unbinds from its device (ie. they are assumed to
+>> be valid only as long as the consumer device has a driver bound to
+>> it).  Persistent links are created by default and non-persistent
+>> links are created when the DL_FLAG_AUTOREMOVE flag is passed
+>> to device_link_add().
+>>
+>> Both persistent and non-persistent device links can be deleted
+>> with an explicit call to device_link_del().
+>>
+>> Links created without the DL_FLAG_STATELESS flag set are managed
+>> by the driver core using a simple state machine.  There are 5 states
+>> each link can be in: DORMANT (unused), AVAILABLE (the supplier driver
+>> is present and functional), CONSUMER_PROBE (the consumer driver is
+>> probing), ACTIVE (both supplier and consumer drivers are present and
+>> functional), and SUPPLIER_UNBIND (the supplier driver is unbinding).
+>> The driver core updates the link state automatically depending on
+>> what happens to the linked devices and for each link state specific
+>> actions are taken in addition to that.
+>>
+>> For example, if the supplier driver unbinds from its device, the
+>> driver core will also unbind the drivers of all of its consumers
+>> automatically under the assumption that they cannot function
+>> properly without the supplier.  Analogously, the driver core will
+>> only allow the consumer driver to bind to its device if the
+>> supplier driver is present and functional (ie. the link is in
+>> the AVAILABLE state).  If that's not the case, it will rely on
+>> the existing deferred probing mechanism to wait for the supplier
+>> driver to become available.
+>
+> This assumes drivers and subsystems support deferred probe,
+
+No, I don't think so.
+
+Where does that assumption matter, exactly?
+
+> is there a way to ensure that drivers that use this framework support
+> it instead of possibly breaking them if they use this framework ?
+
+The whole driver/device binding tracking thing is not mandatory in the
+first place.  You can just tell the framework to ignore that part and
+just use the links for PM and shutdown.
+
+Thanks,
+Rafael
