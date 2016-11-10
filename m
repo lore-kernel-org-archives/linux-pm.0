@@ -1,210 +1,109 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking support
-Date: Thu, 10 Nov 2016 02:07:26 +0100
-Message-ID: <CAJZ5v0hUh8-X5HpOvr1KfoAPMYWc9x=3-+TTSPMgO4hq-RHypQ@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <13957403.ZrB4mMbICz@vostro.rjw.lan>
- <2715729.9U1nlcpFb3@vostro.rjw.lan> <20161107213954.GI1764@wotan.suse.de>
+From: "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 2/2] iommu/exynos: Add proper runtime pm support
+Date: Thu, 10 Nov 2016 02:15:07 +0100
+Message-ID: <20161110011507.GP13978@wotan.suse.de>
+References: <1475136751-31340-1-git-send-email-m.szyprowski@samsung.com>
+	<CGME20160929081240eucas1p231c1ab5c5936886cbec6bc3f5267c940@eucas1p2.samsung.com>
+	<1475136751-31340-3-git-send-email-m.szyprowski@samsung.com>
+	<20161006173756.GK3296@wotan.suse.de>
+	<87aeb58b-bda0-93c5-e51d-ab9be0b9d518@samsung.com>
+	<20161108221437.GC13978@wotan.suse.de>
+	<9cf5829a-baac-9297-b231-17212d0195b1@samsung.com>
+	<CAJZ5v0iEZNsjzb4sxzG39UzNYuiqQErD5diE7WmdBKqQM9_S1g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161107213954.GI1764@wotan.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Lukas Wunner <lukas@wunner.de>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Andrzej Hajda <a.hajda@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iEZNsjzb4sxzG39UzNYuiqQErD5diE7WmdBKqQM9_S1g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Grant Likely <grant.likely-s3s/WqlpOiPyB63q8FvJNQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>, Mauro Carvalho Chehab <mchehab-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Linux Samsung SoC <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Krzysztof =?utf-8?Q?Koz=C5=82owski?= <k.kozlowski.k-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "open list:AMD IOMMU (AMD-VI)" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, Mark
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 7, 2016 at 10:39 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
-> On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Currently, there is a problem with taking functional dependencies
->> between devices into account.
->>
->> What I mean by a "functional dependency" is when the driver of device
->> B needs device A to be functional and (generally) its driver to be
->> present in order to work properly.  This has certain consequences
->> for power management (suspend/resume and runtime PM ordering) and
->> shutdown ordering of these devices.  In general, it also implies that
->> the driver of A needs to be working for B to be probed successfully
->> and it cannot be unbound from the device before the B's driver.
->>
->> Support for representing those functional dependencies between
->> devices is added here to allow the driver core to track them and act
->> on them in certain cases where applicable.
->>
->> The argument for doing that in the driver core is that there are
->> quite a few distinct use cases involving device dependencies, they
->> are relatively hard to get right in a driver (if one wants to
->> address all of them properly) and it only gets worse if multiplied
->> by the number of drivers potentially needing to do it.
->
-> How many drivers actually *need this* today for suspend / resume ?
+On Thu, Nov 10, 2016 at 01:36:29AM +0100, Rafael J. Wysocki wrote:
+> On Wed, Nov 9, 2016 at 4:07 PM, Marek Szyprowski
+> <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
+> > Hi Luis,
+> >
+> >
+> > On 2016-11-08 23:14, Luis R. Rodriguez wrote:
+> >>
+> >> On Mon, Oct 10, 2016 at 03:32:06PM +0200, Marek Szyprowski wrote:
+> >>>
+> >>> Hi Luis
+> >>>
+> >>>
+> >>> On 2016-10-06 19:37, Luis R. Rodriguez wrote:
+> >>>>
+> >>>> On Thu, Sep 29, 2016 at 10:12:31AM +0200, Marek Szyprowski wrote:
+> >>>>>
+> >>>>> This patch uses recently introduced device links to track the runtime
+> >>>>> pm
+> >>>>> state of the master's device. This way each SYSMMU controller is
+> >>>>> runtime
+> >>>>> activated when its master's device is active
+> >>>>
+> >>>> instead of?
+> >>>
+> >>> instead of keeping SYSMMU controller runtime active all the time.
+> >>
+> >> I thought Rafael's work was for suspend/resume, not for runtime suspend.
+> >> Is it for both ?
+> >
+> >
+> > Yes, it solves both problems, although the suspend/resume was easy to
+> > workaround just by using LATE_SLEEP_OPS.
+> 
+> Right, but that's just in this particular case, because the dependency
+> chain is of length 2. :-)
+> 
+> If you had a longer chain, you might in theory use  the _noirq() stage
+> somehow, but that has limitations.
+> 
+> >> Because as far as I can tell this was painted to help
+> >> with suspend/resume ?
+> 
+> It helps with three things, (async) suspend/resume, runtime PM and
+> shutdown (that last part is the hardest to figure out).  The ordering
+> in which all of these are carried out is analogous and cannot be
+> determined correctly by the device registration ordering itself in
+> general (which has been a known fact for years, but some localized
+> workarounds were put in some places to work around that).
 
-Admittedly, I don't have a list, but from discussions I had in the
-past it looked like at least a dozen.
+Thanks for the clarification, this is due to the implicit sort you
+had explained (and I provided notes for on ksummit-discuss) right?
 
-Plus, there is this pesky ACPI _DEP thing that in some cases is
-actually correct and (before this patchest) there is no way to follow
-it (a classical example here is when ACPI power management methods on
-one device are implemented in terms of I2C accesses and require a
-specific I2C controller to be present and functional for the PM of the
-device in question to work, but there are other cases like that).
+Can you itemize a few of the workarounds that are used today?
+As you clarify below, getting this order of device registration
+correct does not necessarily guarantee devices will wait for their
+provider to be ready.
 
-> How many of these are because of ACPI firmware bugs rather than
-> some other reason ?
+> Moreover, even if the list ordering (of dpm_list, for instance) is
+> correct, it still doesn't guarantee the right ordering of actions that
+> are carried out asynchronously.  They are all started in the list
+> order, but they may be running in parallel with each other and
+> complete at different times.  For this reason, there needs to be a way
+> to ensure that, say, the suspend operations for consumer devices
+> complete before their suppliers will become unavailable and so on.
 
-Two things here (as I said elsewhere).  There is the order in which
-operations (eg. async suspend resume of devices during system-wide
-state transitions) are started and there is the order in which they
-are run/completed.  Even if the former is right, the latter still may
-not be correct and there needs to be a generic way to make that
-happen.
+Thanks this helps as well!
 
-The "firmware bugs" above affect the first item and even if it is
-entirely correct (ie. all PM operations for all devices are always
-started in the right order, consumers before suppliers or the other
-way around depending on whether this is suspend or resume), there
-still is the second item to address.
+> Both runtime PM and system suspend/resume have this problem.  It is
+> not present in the system shutdown case, but it still helps to get a
+> correct list ordering (ie. such that won't cause supplier devices to
+> be shut down before their consumers) in this case too.
 
-Apart from this, even if the information provided by the firmware does
-not lead to a device registration ordering that will produce the
-correct dpm_list ordering (for example), it may still not be clear
-whether or not that's a bug in the firmware.  The device registration
-ordering itself is just not sufficient in general.
+Is the fact that its not on shutdown just because we don't care about
+being sloppy about shutdown ? Shouldn't some devices care about that
+order ?
 
-> Can ACPI somehow be used instead by these devices to address quirks?
->
->> Morever, at
->> least one case (asynchronous system suspend/resume) cannot be handled
->> in a single driver at all, because it requires the driver of A to
->> wait for B to suspend (during system suspend) and the driver of B to
->> wait for A to resume (during system resume).
->
-> Why is this all of a sudden a new issue? It seems there is quite a bit of
-> frameworks already out there that somehow deal with some sort of device
-> ordering / dependencies, and I am curious if they've been addressing some of
-> these problems for a while now on their own somehow with their own solutions,
-> is that the case? For instance can DAPM the / DRM / Audio component framework
-> v4l async solution be used or does it already address some of these concerns ?
-
-None of them don't address all of the problems involved in a
-sufficiently generic way to my knowledge.
-
->> For this reason, represent dependencies between devices as "links",
->> with the help of struct device_link objects each containing pointers
->> to the "linked" devices, a list node for each of them, status
->> information, flags, and an RCU head for synchronization.
->>
->> Also add two new list heads, representing the lists of links to the
->> devices that depend on the given one (consumers) and to the devices
->> depended on by it (suppliers), and a "driver presence status" field
->> (needed for figuring out initial states of device links) to struct
->> device.
->>
->> The entire data structure consisting of all of the lists of link
->> objects for all devices is protected by a mutex (for link object
->> addition/removal and for list walks during device driver probing
->> and removal) and by SRCU (for list walking in other case that will
->> be introduced by subsequent change sets).  In addition, each link
->> object has an internal status field whose value reflects whether or
->> not drivers are bound to the devices pointed to by the link or
->> probing/removal of their drivers is in progress etc.  That field
->> is only modified under the device links mutex, but it may be read
->> outside of it in some cases (introduced by subsequent change sets),
->> so modifications of it are annotated with WRITE_ONCE().
->>
->> New links are added by calling device_link_add() which takes three
->> arguments: pointers to the devices in question and flags.  In
->> particular, if DL_FLAG_STATELESS is set in the flags, the link status
->> is not to be taken into account for this link and the driver core
->> will not manage it.  In turn, if DL_FLAG_AUTOREMOVE is set in the
->> flags, the driver core will remove the link automatically when the
->> consumer device driver unbinds from it.
->>
->> One of the actions carried out by device_link_add() is to reorder
->> the lists used for device shutdown and system suspend/resume to
->> put the consumer device along with all of its children and all of
->> its consumers (and so on, recursively) to the ends of those lists
->> in order to ensure the right ordering between all of the supplier
->> and consumer devices.
->
-> There's no explanation as to why this order is ensured to be
-> correct, I think its important to document this.
-
-Agreed.  There is a documentation work in progress (started by Lukas).
-We will get to that point.
-
-> From our discussions
-> at Plumbers it seems the order is ensured due to the fact that order
-> was already implicitly provided through platform firmware (ACPI
-> enumeration is one), adjusting order on the dpm list is just shuffling
-> order between consumer / provider, but nothing else.
-
-That basically is the case.
-
-> In theory it
-> works because in the simple case this should suffice however I
-> remain unconvinced that if we have more users of this framework this
-> simple algorithm will suffice. Having a test driver or series of
-> test drivers that shows this would be good. As it stands there is simply
-> an assumption that this is correct, how *strongly* do you feel that
-> the order will *always* be correct if this is done and no cycles
-> can be added, even if tons of drivers start using this ?
-
-Cycles cannot be added because of the way the code works.  It will
-just return NULL from device_link_add() if it detects a cycle (that it
-cannot deal with).
-
->> For this reason, it is not possible to create a link between two
->> devices if the would-be supplier device already depends on the
->> would-be consumer device as either a direct descendant of it or a
->> consumer of one of its direct descendants or one of its consumers
->> and so on.
->>
->> There are two types of link objects, persistent and non-persistent.
->> The persistent ones stay around until one of the target devices is
->> deleted, while the non-persistent ones are removed automatically when
->> the consumer driver unbinds from its device (ie. they are assumed to
->> be valid only as long as the consumer device has a driver bound to
->> it).  Persistent links are created by default and non-persistent
->> links are created when the DL_FLAG_AUTOREMOVE flag is passed
->> to device_link_add().
->>
->> Both persistent and non-persistent device links can be deleted
->> with an explicit call to device_link_del().
->>
->> Links created without the DL_FLAG_STATELESS flag set are managed
->> by the driver core using a simple state machine.  There are 5 states
->> each link can be in: DORMANT (unused), AVAILABLE (the supplier driver
->> is present and functional), CONSUMER_PROBE (the consumer driver is
->> probing), ACTIVE (both supplier and consumer drivers are present and
->> functional), and SUPPLIER_UNBIND (the supplier driver is unbinding).
->> The driver core updates the link state automatically depending on
->> what happens to the linked devices and for each link state specific
->> actions are taken in addition to that.
->>
->> For example, if the supplier driver unbinds from its device, the
->> driver core will also unbind the drivers of all of its consumers
->> automatically under the assumption that they cannot function
->> properly without the supplier.  Analogously, the driver core will
->> only allow the consumer driver to bind to its device if the
->> supplier driver is present and functional (ie. the link is in
->> the AVAILABLE state).  If that's not the case, it will rely on
->> the existing deferred probing mechanism to wait for the supplier
->> driver to become available.
->
-> This assumes drivers and subsystems support deferred probe,
-
-No, I don't think so.
-
-Where does that assumption matter, exactly?
-
-> is there a way to ensure that drivers that use this framework support
-> it instead of possibly breaking them if they use this framework ?
-
-The whole driver/device binding tracking thing is not mandatory in the
-first place.  You can just tell the framework to ignore that part and
-just use the links for PM and shutdown.
-
-Thanks,
-Rafael
+  Luis
