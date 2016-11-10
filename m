@@ -1,53 +1,132 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] drivers: cpuidle: assign enter_freeze to same as enter
- callback function
-Date: Thu, 10 Nov 2016 10:34:31 +0000
-Message-ID: <8ab8322f-dcc8-d60e-3839-05ebedb6ffbc@arm.com>
-References: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com>
- <20161109183925.GA19565@red-moon>
- <c6f986a7-5a00-7a4f-bdb3-db783f585b3e@arm.com>
- <CAKfTPtDSwcEP6ViLjMBFs590mOsmafWqMRzkYZDJtJ=2tx0s6A@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [net-next PATCH] amd-xgbe: use __maybe_unused to hide pm functions
+Date: Thu, 10 Nov 2016 11:47:48 +0100
+Message-ID: <3786660.Dsz56fUYtX@wuerfel>
+References: <20161108133802.1716319-1-arnd@arndb.de> <20161109.203251.2242759501432326877.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:45356 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755029AbcKJKed (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Nov 2016 05:34:33 -0500
-In-Reply-To: <CAKfTPtDSwcEP6ViLjMBFs590mOsmafWqMRzkYZDJtJ=2tx0s6A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161109.203251.2242759501432326877.davem@davemloft.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: David Miller <davem@davemloft.net>
+Cc: thomas.lendacky@amd.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kirtika Ruchandani <kirtika.ruchandani@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel <linux-kernel@vger.kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Andy Gross <andy.gross@linaro.org>
 
+On Wednesday, November 9, 2016 8:32:51 PM CET David Miller wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+> Date: Tue,  8 Nov 2016 14:37:32 +0100
+> 
+> > The amd-xgbe ethernet driver hides its suspend/resume functions
+> > in #ifdef CONFIG_PM, but uses SIMPLE_DEV_PM_OPS() to make the
+> > reference conditional on CONFIG_PM_SLEEP, which results in a
+> > warning when PM_SLEEP is not set but PM is:
+> > 
+> > drivers/net/ethernet/amd/xgbe/xgbe-platform.c:553:12: error: 'xgbe_platform_resume' defined but not used [-Werror=unused-function]
+> > drivers/net/ethernet/amd/xgbe/xgbe-platform.c:533:12: error: 'xgbe_platform_suspend' defined but not used [-Werror=unused-function]
+> > 
+> > This removes the incorrect #ifdef and instead uses a __maybe_unused
+> > annotation to let the compiler know it can silently drop
+> > the function definition.
+> > 
+> > Fixes: bd8255d8ba35 ("amd-xgbe: Prepare for supporting PCI devices")
+> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> > ---
+> > I originally submitted this when in March 2016, but the patch has not
+> > yet made it upstream, and the file contents have moved around so
+> > the old patch no longer applied so I'm resending the rebased version
+> > now.
+> 
+> By and large, drivers handle this by using a CONFIG_PM_SLEEP ifdef.
+> 
+> Unless you can make an extremely convincing argument why not to do
+> so here, I'd like you to handle it that way instead.
 
+[adding linux-pm to Cc]
 
-On 10/11/16 10:28, Vincent Guittot wrote:
-> On 9 November 2016 at 19:48, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>
->>
->> On 09/11/16 18:39, Lorenzo Pieralisi wrote:
+The main reason is that everyone gets the #ifdef wrong, I run into
+half a dozen new build regressions with linux-next every week on
+average, the typical problems being:
 
-[..]
+- testing CONFIG_PM_SLEEP instead of CONFIG_PM, leading to an unused
+  function warning
+- testing CONFIG_PM instead of CONFIG_PM_SLEEP, leading to a build
+  failure
+- calling a function outside of the #ifdef only from inside an
+  otherwise correct #ifdef, again leading to an unused function
+  warning
+- causing a warning inside of the #ifdef but only testing if that
+  is disabled, leading to a problem if the macro is set (this is
+  rare these days for CONFIG_PM as that is normally enabled)
 
->>> I would just init the enter_freeze() pointer and be done with that,
->>> adding code to check whether the idle back-end enables IRQs when it
->>> enters idle is a major PITA that really is not worth the hassle and
->>> apart from coupled C-states (which we do not support in DT as you said)
->>> I can't find another example (and on top of that it is not even
->>> something we can solve through DT since it is not a property of the idle
->>> state but more related to its kernel implementation).
->>>
->>
->> Makes sense, I was just trying to avoid setting for a state like
->> CPU/Cluster retention but I agree, we need not do that.
->
-> I agree with Lorenzo and would prefer to keep it simple
->
+Using __maybe_unused avoids all of the above. My plan for the
+long run however is to change the macro to something like
 
-Sure I will respin accordingly.
+#define SET_SYSTEM_SLEEP_PM_OPS(suspend_fn, resume_fn) \
+        .suspend   = IS_ENABLED(CONFIG_PM_SLEEP) ? suspend_fn : NULL, \
+        .resume    = IS_ENABLED(CONFIG_PM_SLEEP) ? resume_fn  : NULL, \
+        .freeze    = IS_ENABLED(CONFIG_PM_SLEEP) ? suspend_fn : NULL, \
+        .thaw      = IS_ENABLED(CONFIG_PM_SLEEP) ? resume_fn  : NULL, \
+        .poweroff  = IS_ENABLED(CONFIG_PM_SLEEP) ? suspend_fn : NULL, \
+        .restore   = IS_ENABLED(CONFIG_PM_SLEEP) ? resume_fn  : NULL, 
 
--- 
-Regards,
-Sudeep
+#define SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+        .runtime_suspend = IS_ENABLED(CONFIG_PM) ? suspend_fn : NULL, \
+        .runtime_resume  = IS_ENABLED(CONFIG_PM) ? resume_fn  : NULL, \
+        .runtime_idle    = IS_ENABLED(CONFIG_PM) ? idle_fn    : NULL,
+
+I just haven't found the energy to start that discussion. With a definition
+like this, we would need neither #ifdef nor __maybe_unused. Unfortunately
+we can't just replace the existing macro while keeping the same name
+because that would break every single user that has the #ifdef.
+
+There was some discussion about that a while ago but no patch was merged
+for it. I think in order to pull this off, we'd have to introduced
+replacements for the existing six macros and change over the ~1000
+existing users before removing the existing definitions:
+
+   202  SET_SYSTEM_SLEEP_PM_OPS
+    14  SET_LATE_SYSTEM_SLEEP_PM_OPS
+    11  SET_NOIRQ_SYSTEM_SLEEP_PM_OPS
+   218  SET_RUNTIME_PM_OPS
+   551  SIMPLE_DEV_PM_OPS
+    12  UNIVERSAL_DEV_PM_OPS
+
+This would of course be a nontrivial amount of work, but it could
+be mostly automated using coccinelle. In files per subsystem,
+this would be
+
+      7 drivers/acpi
+     14 drivers/ata
+     17 drivers/char
+      6 drivers/crypto
+     26 drivers/dma
+      7 drivers/extcon
+      7 drivers/gpio
+     41 drivers/gpu
+     10 drivers/hwmon
+      7 drivers/hwtracing
+     29 drivers/i2c
+     90 drivers/iio
+     37 drivers/media
+     28 drivers/mfd
+     15 drivers/misc
+     52 drivers/mmc
+     11 drivers/mtd
+     67 drivers/net
+     10 drivers/pinctrl
+     19 drivers/platform
+     13 drivers/power
+      7 drivers/pwm
+     44 drivers/rtc
+     46 drivers/spi
+     15 drivers/staging
+     11 drivers/thermal
+     22 drivers/tty
+     37 drivers/usb
+     32 drivers/video
+     15 drivers/watchdog
+     38 sound/pci
+     52 sound/soc
+
+	Arnd
