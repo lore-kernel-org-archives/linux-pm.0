@@ -1,55 +1,77 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
- support
-Date: Thu, 10 Nov 2016 23:40:54 +0100
-Message-ID: <20161110224054.GA10575@kroah.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <CAJZ5v0goccDKSkSAj8+v+PG2gt7ESJuUSbyY8YuW7OwCS_KHXg@mail.gmail.com>
- <CAB=NE6Xdu5AniWsaJGf3pbYCydahwkStqBV+2xbc8S-Zw+2qiA@mail.gmail.com>
- <2305706.WydXUuMppH@avalon>
- <20161110220407.GQ13978@wotan.suse.de>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple
+ regulators per device
+Date: Thu, 10 Nov 2016 14:51:26 -0800
+Message-ID: <20161110225126.GK16026@codeaurora.org>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+ <28119b44689921f3c3cc00be49bff2bb99b32162.1477463128.git.viresh.kumar@linaro.org>
+ <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
+ <20161110040440.GA11670@vireshk-i7>
+ <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
+ <20161110180940.GD11670@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:35688 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753298AbcKJWv2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 17:51:28 -0500
 Content-Disposition: inline
-In-Reply-To: <20161110220407.GQ13978@wotan.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>
+In-Reply-To: <20161110180940.GD11670@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, devicetree@vger.kernel.org
 
-On Thu, Nov 10, 2016 at 11:04:07PM +0100, Luis R. Rodriguez wrote:
-> This is more forward looking, but -- if we had an annotation in Kconfig/turned
-> to a mod info section, or to start off with just a driver MODULE_SUGGESTS() macro
-> to start off with it might suffice for the driver core to request_module()
-> annotated dependencies, such requests could be explicitly suggested as
-> synchronous so init + probe do run together (as-is today), after which it
-> could know that all possible drivers that needed to be loaded should now be
-> loaded. If this sounds plausible to help, do we have drivers where we can
-> test this on? For instance, since the functional dependency framework
-> annotates functional dependencies for consumers/providers for suspend/resume
-> and un time PM could such MODULE_SUGGESTS() annotations be considered on the
-> consumers to suggest the provider drivers so their own probe yields to their
-> providers to try first ?
+On 11/10, Viresh Kumar wrote:
+> On 10-11-16, 16:36, Mark Brown wrote:
+> > On Thu, Nov 10, 2016 at 09:34:40AM +0530, Viresh Kumar wrote:
+> > > On 09-11-16, 14:58, Mark Brown wrote:
+> > > > On Wed, Oct 26, 2016 at 12:02:56PM +0530, Viresh Kumar wrote:
+> > 
+> > > > > +  Entries for multiple regulators shall be provided in the same field separated
+> > > > > +  by angular brackets <>. The OPP binding doesn't provide any provisions to
+> > > > > +  relate the values to their power supplies or the order in which the supplies
+> > > > > +  need to be configured.
+> > 
+> > > > I don't understand how this works.  If we have an unordered list of
+> > > > values to set for regulators how will we make sense of them?
+> > 
+> > > The platform driver is responsible to identify the order and pass it on to the
+> > > OPP core. And the platform driver needs to have that hard coded.
+> > 
+> > That *really* should be in the binding.
+> 
+> Okay, how do you suggest doing that? Will a property like supply-names
+> in the OPP table be fine? Like this:
+> 
+> @@ -369,13 +378,16 @@ Example 4: Handling multiple regulators
+>                         compatible = "arm,cortex-a7";
+>                         ...
+>  
+> -                       cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
+> +                       vcc0-supply = <&cpu_supply0>;
+> +                       vcc1-supply = <&cpu_supply1>;
+> +                       vcc2-supply = <&cpu_supply2>;
+>                         operating-points-v2 = <&cpu0_opp_table>;
+>                 };
+>         };
+>  
+>         cpu0_opp_table: opp_table0 {
+>                 compatible = "operating-points-v2";
+> +               supply-names = "vcc0", "vcc1", "vcc2";
+>                 opp-shared;
+> 
 
-No.
+No. The supply names (and also clock names/index) should be left
+up to the consumer of the OPP table. We don't want to encode any
+sort of details like this between the OPP table and the consumer
+of it in DT because then it seriously couples the OPP table to
+the consumer device. "The binding" in this case that needs to be
+updated is the consumer binding, to indicate that it correlated
+foo-supply and bar-supply to index 0 and 1 of the OPP table
+voltages.
 
-Stop.
-
-First off, the "driver core" NEVER can "know" if "all possible drivers
-that should be loaded, are loaded.  That way lies madness and
-impossibility.
-
-Secondly, yet-another-section isn't going to help anything here, we
-alredy "suggest" to userspace a bunch of stuff, so we get the needed
-modules loaded, at sometime in the future, if they are around, and
-userspace feels like it.  That's the best we can ever do.
-
-Don't try to make this more difficult than it is please. DEFER works
-today really really well, and it's really really simple.
-Inter-dependancy of modules and devices connected to each other are two
-different things, be careful about this.
-
-thanks,
-
-greg k-h
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
