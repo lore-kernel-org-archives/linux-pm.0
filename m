@@ -1,65 +1,67 @@
 From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V3 9/9] PM / OPP: Don't assume platform doesn't have
- regulators
-Date: Wed, 9 Nov 2016 17:17:28 -0800
-Message-ID: <20161110011728.GV16026@codeaurora.org>
+Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
+Date: Wed, 9 Nov 2016 17:19:33 -0800
+Message-ID: <20161110011933.GW16026@codeaurora.org>
 References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <f1fa8223ab9b9a1183626ec42608ec966a4bc425.1477463128.git.viresh.kumar@linaro.org>
+ <20161102045100.GD10786@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:54986 "EHLO
+Received: from smtp.codeaurora.org ([198.145.29.96]:55998 "EHLO
         smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751644AbcKJBRa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 20:17:30 -0500
+        with ESMTP id S1751157AbcKJBTf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 20:19:35 -0500
 Content-Disposition: inline
-In-Reply-To: <f1fa8223ab9b9a1183626ec42608ec966a4bc425.1477463128.git.viresh.kumar@linaro.org>
+In-Reply-To: <20161102045100.GD10786@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
 
-On 10/26, Viresh Kumar wrote:
-> If the regulators aren't set explicitly by the platform, the OPP core
-> assumes that the platform doesn't have any regulator and uses the
-> clk-only callback.
+On 11/02, Viresh Kumar wrote:
+> On 26-10-16, 12:02, Viresh Kumar wrote:
+> > Hi,
+> > 
+> > Some platforms (like TI) have complex DVFS configuration for CPU
+> > devices, where multiple regulators are required to be configured to
+> > change DVFS state of the device. This was explained well by Nishanth
+> > earlier [1].
+> > 
+> > One of the major complaints around multiple regulators case was that the
+> > DT isn't responsible in any way to represent the ordering in which
+> > multiple supplies need to be programmed, before or after frequency
+> > change. It was considered in this patch and such information is left to
+> > the platform specific OPP driver now, which can register its own
+> > opp_set_rate() callback with the OPP core and the OPP core will then
+> > call it during DVFS.
+> > 
+> > The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
+> > and code to pass values for multiple regulators and verified that they
+> > are all properly read by the kernel (using debugfs interface).
+> > 
+> > Dave Gerlach has already tested it on the real TI platforms and it works
+> > well for him.
+> > 
+> > This is rebased over: linux-next branch in the PM tree.
+> > 
+> > V2->V3:
+> > - The last patch is new
+> > - Removed a debug leftover pr_info() message
+> > - Renamed few names as s/set_rate/set_opp
+> > - Removed a TODO comment (as it is done now with this series)
+> > - created struct for min_uV and max_uV
+> > - kerneldoc comments for structures in pm_opp.h
+> > - s/const char */const char * const
+> > - use kasprintf()
+> > - Some more minor reformatting
+> > - More Ack/RBY tags added
 > 
-> If the platform failed to register a regulator with the core, then this
-> can turn out to be a dangerous assumption as the OPP core will try to
-> change clk without changing regulators.
+> @Stephen: Can you please provide further comments or Acks ?
 > 
-> Handle that properly by making sure that the DT didn't had any entries
 
-s/had/have/
-
-> for supply voltages as well.
-> 
-> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-> index 3298fac01bb0..34cd48dfe89e 100644
-> --- a/drivers/base/power/opp/core.c
-> +++ b/drivers/base/power/opp/core.c
-> @@ -734,7 +734,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
->  
->  	/* Only frequency scaling */
->  	if (!regulators) {
-> -		rcu_read_unlock();
-> +		/*
-> +		 * DT contained supply ratings? Consider platform failed to set
-> +		 * regulators.
-> +		 */
-> +		if (unlikely(opp->supplies[0].u_volt)) {
-> +			rcu_read_unlock();
-> +			dev_err(dev, "%s: Regulator not registered with OPP core\n",
-> +				__func__);
-> +			return -EINVAL;
-> +		}
-> +
-
-Don't we need an rcu_read_unlock() here as well?
-
->  		return _generic_set_opp_clk_only(dev, clk, old_freq, freq);
->  	}
->  
+Where did we end up on the topic of RCU usage in OPP? I'd rather
+we figure that out before investing more time in reviewing code
+that we may end up completely rewriting in the future.
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
