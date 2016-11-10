@@ -1,250 +1,137 @@
 From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v7 3/8] x86: Enable Intel Turbo Boost Max Technology 3.0
-Date: Thu, 10 Nov 2016 14:36:35 -0800
-Message-ID: <773c18de643a452400529a37c0c0ae98d2468829.1478805832.git.tim.c.chen@linux.intel.com>
-References: <cover.1478805832.git.tim.c.chen@linux.intel.com>
+Subject: [PATCH v7 0/8] Support Intel Turbo Boost Max Technology 3.0
+Date: Thu, 10 Nov 2016 14:36:32 -0800
+Message-ID: <cover.1478805832.git.tim.c.chen@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <cover.1478805832.git.tim.c.chen@linux.intel.com>
-In-Reply-To: <cover.1478805832.git.tim.c.chen@linux.intel.com>
-References: <cover.1478805832.git.tim.c.chen@linux.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On platforms supporting Intel Turbo Boost Max Technology 3.0, the maximum
-turbo frequencies of some cores in a CPU package may be higher than for
-the other cores in the same package.  In that case, better performance
-(and possibly lower energy consumption as well) can be achieved by
-making the scheduler prefer to run tasks on the CPUs with higher max
-turbo frequencies.
+With Intel Turbo Boost Max Technology 3.0 (ITMT), single-threaded
+performance is optimized by identifying processor's fastest
+core and running critical workloads on it.
 
-To that end, set up a core priority metric to abstract the core
-preferences based on the maximum turbo frequency.  In that metric,
-the cores with higher maximum turbo frequencies are higher-priority
-than the other cores in the same package and that causes the scheduler
-to favor them when making load-balancing decisions using the asymmertic
-packing approach.  At the same time, the priority of SMT threads with a
-higher CPU number is reduced so as to avoid scheduling tasks on all of
-the threads that belong to a favored core before all of the other cores
-have been given a task to run.
+Refer to:
+http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html
 
-The priority metric will be initialized by the P-state driver with the
-help of the sched_set_itmt_core_prio() function.  The P-state driver
-will also determine whether or not ITMT is supported by the platform
-and will call sched_set_itmt_support() to indicate that.
+This patchset consist of all changes required to support ITMT feature:
+- Use CPPC information in Intel P-State driver to get performance information
+- Scheduler enhancements
+- cppc lib patches (split in to a seprate series)
 
-Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Co-developed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
----
- arch/x86/Kconfig                |   9 +++
- arch/x86/include/asm/topology.h |  28 +++++++++
+This featured can be enabled by writing at runtime
+# echo 1 > /proc/sys/kernel/sched_itmt_enabled
+This featured can be disabled by writing at runtime
+# echo 0 > /proc/sys/kernel/sched_itmt_enabled
+
+Change Log:
+v7:
+1. ITMT3.0 is enabled by default also for multi-socket systems supporting
+the feature.  Remove single socket restriction.  
+2. Add proper ASYM_PACKING check for high priority idle cpu in
+nohz_kick_needed.
+3. Nulling of itmt_sysctl_header after sysctl table
+unregistration.
+4. Minor code format cleanups.
+5. Fix build issue on i386
+
+v6:
+- Split ITMT support control by OS into sched_set_itmt_support and
+sched_clear_itmt_support functions.
+- Return error when we set sysctl_sched_itmt_enabled, if system
+does not support ITMT, or when we cannot create sysctl table entry.
+- Minor code clean up and moving definition of sched_core_priority
+to top of file.
+- Rebase on v4.9-rc1
+
+v5:
+- Simplify intel_pstate for enabling ITMT feature
+- Put x86_sched_itmt_flags related functions under proper
+CONFIG_SCHED_MC/SMT flags
+- Comment to note that rebuild_sched_domain is not needed after updating
+CPU priorities.
+- Define sysctl_sched_itmt_enabled to 0 when ITMT is not used in
+arch/x86/include/asm/topology.h
+- Dropped patch "Fix numa in package topology bug", as this is
+already applied
+
+v4:
+- Split x86 multi-node numa topology bug fix and setting
+of SD_ASYM flag for ITMT topology into 2 patches
+- Split the sysctl changes for ITMT enablement and setting of ITMT
+capability/core priorities into 2 patches.
+- Avoid unnecessary rebuild of sched domains when ITMT sysctl or
+capabilities are updated.
+- Fix missing stub function for topology_max_packages for !SMP case.
+- Rename set_sched_itmt() to sched_set_itmt_support().
+- Various updates to itmt.c to eliminate goto and make logic tighter.
+- Various change logs and comments update.
+- intel_pstate: Split function to process cppc and enable ITMT
+- intel_pstate: Just keep the cppc_perf information till we use CPPC for HWP
+
+v3:
+- Fix race clash when more than one program are enabling/disabling ITMT
+- Remove group_priority_cpu macro to simplify code.
+- Error reported by 0-day for compile issue on ARM
+
+v2
+- The patchset is split into two parts so that CPPC changes can be merged first
+ 1. Only ACPI CPPC changes (It is posted separately)
+ 2. ITMT changes (scheduler and Intel P-State)
+
+- Changes in patch: sched,x86: Enable Turbo Boost Max Technology
+ 1. Use arch_update_cpu_topology to indicate need to completely
+    rebuild sched domain when ITMT related sched domain flags change
+ 2. Enable client (single node) platform capable of ITMT with ITMT
+    scheduling by default
+ 3. Implement arch_asym_cpu_priority to provide the cpu priority
+    value to scheduler for asym packing.
+ 4. Fix a compile bug for i386 architecture.
+
+- Changes in patch: sched: Extend scheduler's asym packing
+ 1. Use arch_asym_cpu_priority() to provide cpu priority
+    value used for asym packing to the scheduler.
+
+- Changes in acpi: bus: Enable HWP CPPC objects and
+  acpi: bus: Set _OSC for diverse core support
+  Minor code cleanup by removing #ifdef
+- Changes in Kconfig for Intel P-State
+  Avoid building CPPC lib for i386 for issue reported by 0-day
+
+- Feature is enabled by default for single socket systems
+
+
+Rafael J. Wysocki (1):
+  cpufreq: intel_pstate: Use CPPC to get max performance
+
+Srinivas Pandruvada (2):
+  acpi: bus: Enable HWP CPPC objects
+  acpi: bus: Set _OSC for diverse core support
+
+Tim Chen (5):
+  sched: Extend scheduler's asym packing
+  x86/topology: Define x86's arch_update_cpu_topology
+  x86: Enable Intel Turbo Boost Max Technology 3.0
+  x86/sysctl: Add sysctl for ITMT scheduling feature
+  x86/sched: Add SD_ASYM_PACKING flags to x86 ITMT CPU
+
+ arch/x86/Kconfig                |   9 ++
+ arch/x86/include/asm/topology.h |  32 ++++++
  arch/x86/kernel/Makefile        |   1 +
- arch/x86/kernel/itmt.c          | 125 ++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 163 insertions(+)
+ arch/x86/kernel/itmt.c          | 231 ++++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/smpboot.c       |  39 ++++++-
+ drivers/acpi/bus.c              |  10 ++
+ drivers/cpufreq/Kconfig.x86     |   1 +
+ drivers/cpufreq/intel_pstate.c  |  56 +++++++++-
+ include/linux/acpi.h            |   1 +
+ include/linux/sched.h           |   4 +
+ kernel/sched/core.c             |  15 +++
+ kernel/sched/fair.c             |  59 +++++++---
+ kernel/sched/sched.h            |   6 ++
+ 13 files changed, 444 insertions(+), 20 deletions(-)
  create mode 100644 arch/x86/kernel/itmt.c
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bada636..25950f0 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -939,6 +939,15 @@ config SCHED_MC
- 	  making when dealing with multi-core CPU chips at a cost of slightly
- 	  increased overhead in some places. If unsure say N here.
- 
-+config SCHED_ITMT
-+	bool "Intel Turbo Boost Max Technology (ITMT) scheduler support"
-+	depends on SCHED_MC && CPU_SUP_INTEL && X86_INTEL_PSTATE
-+	---help---
-+	  ITMT enabled scheduler support improves the CPU scheduler's decision
-+	  to move tasks to cpu core that can be boosted to a higher frequency
-+	  than others. It will have better performance at a cost of slightly
-+	  increased overhead in task migrations. If unsure say N here.
-+
- source "kernel/Kconfig.preempt"
- 
- config UP_LATE_INIT
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index a5ca88a..8ace951 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -147,4 +147,32 @@ int x86_pci_root_bus_node(int bus);
- void x86_pci_root_bus_resources(int bus, struct list_head *resources);
- 
- extern bool x86_topology_update;
-+
-+#ifdef CONFIG_SCHED_ITMT
-+#include <asm/percpu.h>
-+
-+DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-+
-+/* Interface to set priority of a cpu */
-+void sched_set_itmt_core_prio(int prio, int core_cpu);
-+
-+/* Interface to notify scheduler that system supports ITMT */
-+void sched_set_itmt_support(void);
-+
-+/* Interface to notify scheduler that system revokes ITMT support */
-+void sched_clear_itmt_support(void);
-+
-+#else /* CONFIG_SCHED_ITMT */
-+
-+static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
-+{
-+}
-+static inline void sched_set_itmt_support(void)
-+{
-+}
-+static inline void sched_clear_itmt_support(void)
-+{
-+}
-+#endif /* CONFIG_SCHED_ITMT */
-+
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 79076d7..bbd0ebc 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -123,6 +123,7 @@ obj-$(CONFIG_EFI)			+= sysfb_efi.o
- 
- obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
- obj-$(CONFIG_TRACING)			+= tracepoint.o
-+obj-$(CONFIG_SCHED_ITMT)		+= itmt.o
- 
- ifdef CONFIG_FRAME_POINTER
- obj-y					+= unwind_frame.o
-diff --git a/arch/x86/kernel/itmt.c b/arch/x86/kernel/itmt.c
-new file mode 100644
-index 0000000..1bd7221
---- /dev/null
-+++ b/arch/x86/kernel/itmt.c
-@@ -0,0 +1,125 @@
-+/*
-+ * itmt.c: Support Intel Turbo Boost Max Technology 3.0
-+ *
-+ * (C) Copyright 2016 Intel Corporation
-+ * Author: Tim Chen <tim.c.chen@linux.intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ *
-+ * On platforms supporting Intel Turbo Boost Max Technology 3.0, (ITMT),
-+ * the maximum turbo frequencies of some cores in a CPU package may be
-+ * higher than for the other cores in the same package.  In that case,
-+ * better performance can be achieved by making the scheduler prefer
-+ * to run tasks on the CPUs with higher max turbo frequencies.
-+ *
-+ * This file provides functions and data structures for enabling the
-+ * scheduler to favor scheduling on cores can be boosted to a higher
-+ * frequency under ITMT.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpuset.h>
-+#include <asm/mutex.h>
-+#include <linux/sched.h>
-+#include <linux/sysctl.h>
-+#include <linux/nodemask.h>
-+
-+static DEFINE_MUTEX(itmt_update_mutex);
-+DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-+
-+/* Boolean to track if system has ITMT capabilities */
-+static bool __read_mostly sched_itmt_capable;
-+
-+/**
-+ * sched_set_itmt_support() - Indicate platform supports ITMT
-+ *
-+ * This function is used by the OS to indicate to scheduler that the platform
-+ * is capable of supporting the ITMT feature.
-+ *
-+ * The current scheme has the pstate driver detects if the system
-+ * is ITMT capable and call sched_set_itmt_support.
-+ *
-+ * This must be done only after sched_set_itmt_core_prio
-+ * has been called to set the cpus' priorities.
-+ */
-+void sched_set_itmt_support(void)
-+{
-+	mutex_lock(&itmt_update_mutex);
-+
-+	sched_itmt_capable = true;
-+
-+	mutex_unlock(&itmt_update_mutex);
-+}
-+
-+/**
-+ * sched_clear_itmt_support() - Revoke platform's support of ITMT
-+ *
-+ * This function is used by the OS to indicate that it has
-+ * revoked the platform's support of ITMT feature.
-+ *
-+ */
-+void sched_clear_itmt_support(void)
-+{
-+	mutex_lock(&itmt_update_mutex);
-+
-+	sched_itmt_capable = false;
-+
-+	mutex_unlock(&itmt_update_mutex);
-+}
-+
-+int arch_asym_cpu_priority(int cpu)
-+{
-+	return per_cpu(sched_core_priority, cpu);
-+}
-+
-+int arch_asym_max_cpu_and(const struct cpumask *mask1,
-+			  const struct cpumask *mask2)
-+{
-+	int cpu;
-+	int max_priority, max_cpu = nr_cpu_ids;
-+
-+	for_each_cpu_and(cpu, mask1, mask2) {
-+		if (max_cpu == nr_cpu_ids ||
-+		    arch_asym_cpu_priority(cpu) > max_priority) {
-+			max_cpu = cpu;
-+			max_priority = arch_asym_cpu_priority(cpu);
-+		}
-+	}
-+	return max_cpu;
-+}
-+
-+/**
-+ * sched_set_itmt_core_prio() - Set CPU priority based on ITMT
-+ * @prio:	Priority of cpu core
-+ * @core_cpu:	The cpu number associated with the core
-+ *
-+ * The pstate driver will find out the max boost frequency
-+ * and call this function to set a priority proportional
-+ * to the max boost frequency. CPU with higher boost
-+ * frequency will receive higher priority.
-+ *
-+ * No need to rebuild sched domain after updating
-+ * the CPU priorities. The sched domains have no
-+ * dependency on CPU priorities.
-+ */
-+void sched_set_itmt_core_prio(int prio, int core_cpu)
-+{
-+	int cpu, i = 1;
-+
-+	for_each_cpu(cpu, topology_sibling_cpumask(core_cpu)) {
-+		int smt_prio;
-+
-+		/*
-+		 * Ensure that the siblings are moved to the end
-+		 * of the priority chain and only used when
-+		 * all other high priority cpus are out of capacity.
-+		 */
-+		smt_prio = prio * smp_num_siblings / i;
-+		per_cpu(sched_core_priority, cpu) = smt_prio;
-+		i++;
-+	}
-+}
 -- 
 2.5.5
 
