@@ -1,51 +1,78 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] PM / Domains: Fix a warning message
-Date: Thu, 10 Nov 2016 17:33:31 +0100
-Message-ID: <20161110163331.GC28832@amd>
-References: <20161110125215.GA18664@mwanda>
+From: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple
+ regulators per device
+Date: Thu, 10 Nov 2016 16:36:59 +0000
+Message-ID: <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+ <28119b44689921f3c3cc00be49bff2bb99b32162.1477463128.git.viresh.kumar@linaro.org>
+ <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
+ <20161110040440.GA11670@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="ghzN8eJ9Qlbqn3iT"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56269 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934104AbcKJQdl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 11:33:41 -0500
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="3azoxlmqmb3xu2sa"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20161110125215.GA18664@mwanda>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20161110040440.GA11670@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 
 
---ghzN8eJ9Qlbqn3iT
+--3azoxlmqmb3xu2sa
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu 2016-11-10 15:52:15, Dan Carpenter wrote:
-> The first argument of WARN() is the condition, followed by the message.
->=20
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+On Thu, Nov 10, 2016 at 09:34:40AM +0530, Viresh Kumar wrote:
+> On 09-11-16, 14:58, Mark Brown wrote:
+> > On Wed, Oct 26, 2016 at 12:02:56PM +0530, Viresh Kumar wrote:
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+> > > +  Entries for multiple regulators shall be provided in the same field separated
+> > > +  by angular brackets <>. The OPP binding doesn't provide any provisions to
+> > > +  relate the values to their power supplies or the order in which the supplies
+> > > +  need to be configured.
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+> > I don't understand how this works.  If we have an unordered list of
+> > values to set for regulators how will we make sense of them?
 
---ghzN8eJ9Qlbqn3iT
+> The platform driver is responsible to identify the order and pass it on to the
+> OPP core. And the platform driver needs to have that hard coded.
+
+That *really* should be in the binding.  Honestly if the binding is this
+vague I'm not even clear that it's worth documenting these properties at
+this level, might be better to just put the documentation in the
+platform driver bindings.
+
+> > > -			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
+> > > +			vcc0-supply = <&cpu_supply0>;
+> > > +			vcc1-supply = <&cpu_supply1>;
+> > > +			vcc2-supply = <&cpu_supply2>;
+
+> > This change doesn't seem to correspond to the documentation change.
+
+> This rectifies the incorrect binding previously added to the example, which I
+> realized to be incorrect only while attempting to code for it. And so it brings
+> the example on the same state as the documentation now.
+
+Then that should be in a separate patch with a changelog explaining what
+the change is doing.
+
+--3azoxlmqmb3xu2sa
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iEYEARECAAYFAlgkoVsACgkQMOfwapXb+vLa9gCdFfUAil7/xUrv212yznNwQeEJ
-SlsAnA5zcSLRH49JveK1jvBQceyjnPOa
-=VCFk
+iQEcBAABCAAGBQJYJKIqAAoJECTWi3JdVIfQemQIAILA5rK1b7etybj9dj0YLuAb
+Yih9n3gBSy76yFuiWTrmQ8tLjPBq2Z9Ma5+NLPng/M5c09yBj3fQ5jAw6EzEg/6k
+omVxFFKKQ6ZkDGEbqOQKAiuHyh+0whJ+ZS70HQsNTm7R+clNHpO81EZJ1QcyTbCR
+cF8d6ANbPPoGMziqYvtOLYaXIjvbB67/Fr7ZSTvDytJ8He9qbs+8iQRmTYZdM/EX
+xgZyVOe/TS1aMlNLo0JEQ4mKbAndKn+V6YTIVpA8A/nRaFxAvJ/+YVLfzFbLYF1p
+KxdR27B16WfVqV9KAMc2d6bQBUHIkeo/Gbi9r6ALwwQo/uf/ImWxQM8+IewaoPE=
+=VJrz
 -----END PGP SIGNATURE-----
 
---ghzN8eJ9Qlbqn3iT--
+--3azoxlmqmb3xu2sa--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
