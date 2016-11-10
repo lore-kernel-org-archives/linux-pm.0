@@ -1,79 +1,194 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
-Date: Thu, 10 Nov 2016 09:41:50 +0530
-Message-ID: <20161110041150.GB11670@vireshk-i7>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <20161102045100.GD10786@vireshk-i7>
- <20161110011933.GW16026@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC v7] timekeeping: Ignore the bogus sleep time if pm_trace is enabled
+Date: Thu, 10 Nov 2016 12:55:53 +0800
+Message-ID: <1478753753-24650-1-git-send-email-yu.c.chen@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:35987 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751529AbcKJELy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 23:11:54 -0500
-Received: by mail-pf0-f173.google.com with SMTP id 189so138845776pfz.3
-        for <linux-pm@vger.kernel.org>; Wed, 09 Nov 2016 20:11:54 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20161110011933.GW16026@codeaurora.org>
+Received: from mga06.intel.com ([134.134.136.31]:55583 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751644AbcKJErR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 9 Nov 2016 23:47:17 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
+To: linux-pm@vger.kernel.org
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, rtc-linux@googlegroups.com, Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, John Stultz <john.stultz@linaro.org>, Xunlei Pang <xlpang@redhat.com>, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
 
-On 09-11-16, 17:19, Stephen Boyd wrote:
-> On 11/02, Viresh Kumar wrote:
-> > On 26-10-16, 12:02, Viresh Kumar wrote:
-> > > Hi,
-> > > 
-> > > Some platforms (like TI) have complex DVFS configuration for CPU
-> > > devices, where multiple regulators are required to be configured to
-> > > change DVFS state of the device. This was explained well by Nishanth
-> > > earlier [1].
-> > > 
-> > > One of the major complaints around multiple regulators case was that the
-> > > DT isn't responsible in any way to represent the ordering in which
-> > > multiple supplies need to be programmed, before or after frequency
-> > > change. It was considered in this patch and such information is left to
-> > > the platform specific OPP driver now, which can register its own
-> > > opp_set_rate() callback with the OPP core and the OPP core will then
-> > > call it during DVFS.
-> > > 
-> > > The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
-> > > and code to pass values for multiple regulators and verified that they
-> > > are all properly read by the kernel (using debugfs interface).
-> > > 
-> > > Dave Gerlach has already tested it on the real TI platforms and it works
-> > > well for him.
-> > > 
-> > > This is rebased over: linux-next branch in the PM tree.
-> > > 
-> > > V2->V3:
-> > > - The last patch is new
-> > > - Removed a debug leftover pr_info() message
-> > > - Renamed few names as s/set_rate/set_opp
-> > > - Removed a TODO comment (as it is done now with this series)
-> > > - created struct for min_uV and max_uV
-> > > - kerneldoc comments for structures in pm_opp.h
-> > > - s/const char */const char * const
-> > > - use kasprintf()
-> > > - Some more minor reformatting
-> > > - More Ack/RBY tags added
-> > 
-> > @Stephen: Can you please provide further comments or Acks ?
-> > 
-> 
-> Where did we end up on the topic of RCU usage in OPP? I'd rather
-> we figure that out before investing more time in reviewing code
-> that we may end up completely rewriting in the future.
+Previously we encountered some memory overflow issues due to
+the bogus sleep time brought by inconsistent rtc, which is
+triggered when pm_trace is enabled, and we have fixed it
+in recent kernel. However it's improper in the first place
+to call __timekeeping_inject_sleeptime() in case that pm_trace
+is enabled simply because that "hash" time value will wreckage
+the timekeeping subsystem.
 
-We haven't decided anything on that yet and I don't think there is any reason to
-block this series for that. There is lots of existing code that needs to be
-updated if we decide to walk that path and I wouldn't mind a small addition to
-that from this series.
+This patch is originally written by Thomas, which would bypass
+the bogus rtc interval when pm_trace is enabled.
+Meanwhile, if system succeed to resume back with pm_trace set, the
+users are warned to adjust the bogus rtc either by ntp-date or rdate,
+by resetting pm_trace_rtc_abused to false, otherwise above tools might
+not work as expected.
 
-Lots of effort Coding/testing/reviewing has already gone into this work and we
-better get it merged now.
+Originally-from: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Xunlei Pang <xlpang@redhat.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ arch/x86/kernel/rtc.c       |  9 +++++++++
+ drivers/base/power/trace.c  | 27 +++++++++++++++++++++++++++
+ drivers/rtc/rtc-cmos.c      |  7 +++++++
+ include/linux/mc146818rtc.h |  1 +
+ include/linux/pm-trace.h    |  9 ++++++++-
+ 5 files changed, 52 insertions(+), 1 deletion(-)
 
+diff --git a/arch/x86/kernel/rtc.c b/arch/x86/kernel/rtc.c
+index 79c6311c..898383c 100644
+--- a/arch/x86/kernel/rtc.c
++++ b/arch/x86/kernel/rtc.c
+@@ -64,6 +64,15 @@ void mach_get_cmos_time(struct timespec *now)
+ 	unsigned int status, year, mon, day, hour, min, sec, century = 0;
+ 	unsigned long flags;
+ 
++	/*
++	 * If pm trace abused the RTC as storage set the timespec to 0
++	 * which tells the caller that this RTC value is bogus.
++	 */
++	if (!pm_trace_rtc_valid()) {
++		now->tv_sec = now->tv_nsec = 0;
++		return;
++	}
++
+ 	spin_lock_irqsave(&rtc_lock, flags);
+ 
+ 	/*
+diff --git a/drivers/base/power/trace.c b/drivers/base/power/trace.c
+index efec10b..209e214 100644
+--- a/drivers/base/power/trace.c
++++ b/drivers/base/power/trace.c
+@@ -10,6 +10,7 @@
+ #include <linux/pm-trace.h>
+ #include <linux/export.h>
+ #include <linux/rtc.h>
++#include <linux/suspend.h>
+ 
+ #include <linux/mc146818rtc.h>
+ 
+@@ -74,6 +75,9 @@
+ 
+ #define DEVSEED (7919)
+ 
++bool pm_trace_rtc_abused __read_mostly;
++EXPORT_SYMBOL(pm_trace_rtc_abused);
++
+ static unsigned int dev_hash_value;
+ 
+ static int set_magic_time(unsigned int user, unsigned int file, unsigned int device)
+@@ -104,6 +108,7 @@ static int set_magic_time(unsigned int user, unsigned int file, unsigned int dev
+ 	time.tm_min = (n % 20) * 3;
+ 	n /= 20;
+ 	mc146818_set_time(&time);
++	pm_trace_rtc_abused = true;
+ 	return n ? -1 : 0;
+ }
+ 
+@@ -238,10 +243,32 @@ int show_trace_dev_match(char *buf, size_t size)
+ 	device_pm_unlock();
+ 	return ret;
+ }
++static int pm_trace_notify(struct notifier_block *nb,
++				unsigned long mode, void *_unused)
++{
++	switch (mode) {
++	case PM_POST_HIBERNATION:
++	case PM_POST_SUSPEND:
++		if (pm_trace_rtc_abused) {
++			pm_trace_rtc_abused = false;
++			pr_warn("Possible incorrect RTC due to pm_trace,"
++				"please use ntp-date or rdate to reset.\n");
++		}
++		break;
++	default:
++		break;
++	}
++	return 0;
++}
++
++static struct notifier_block pm_trace_nb = {
++	.notifier_call = pm_trace_notify,
++};
+ 
+ static int early_resume_init(void)
+ {
+ 	hash_value_early_read = read_magic_time();
++	register_pm_notifier(&pm_trace_nb);
+ 	return 0;
+ }
+ 
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index dd3d598..3d9aedc 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -191,6 +191,13 @@ static inline void cmos_write_bank2(unsigned char val, unsigned char addr)
+ 
+ static int cmos_read_time(struct device *dev, struct rtc_time *t)
+ {
++	/*
++	 * If pmtrace abused the RTC for storage tell the caller that it is
++	 * unusable.
++	 */
++	if (!pm_trace_rtc_valid())
++		return -EIO;
++
+ 	/* REVISIT:  if the clock has a "century" register, use
+ 	 * that instead of the heuristic in mc146818_get_time().
+ 	 * That'll make Y3K compatility (year > 2070) easy!
+diff --git a/include/linux/mc146818rtc.h b/include/linux/mc146818rtc.h
+index a585b4b..0661af1 100644
+--- a/include/linux/mc146818rtc.h
++++ b/include/linux/mc146818rtc.h
+@@ -16,6 +16,7 @@
+ #include <asm/mc146818rtc.h>		/* register access macros */
+ #include <linux/bcd.h>
+ #include <linux/delay.h>
++#include <linux/pm-trace.h>
+ 
+ #ifdef __KERNEL__
+ #include <linux/spinlock.h>		/* spinlock_t */
+diff --git a/include/linux/pm-trace.h b/include/linux/pm-trace.h
+index ecbde7a..7b78793 100644
+--- a/include/linux/pm-trace.h
++++ b/include/linux/pm-trace.h
+@@ -1,11 +1,17 @@
+ #ifndef PM_TRACE_H
+ #define PM_TRACE_H
+ 
++#include <linux/types.h>
+ #ifdef CONFIG_PM_TRACE
+ #include <asm/pm-trace.h>
+-#include <linux/types.h>
+ 
+ extern int pm_trace_enabled;
++extern bool pm_trace_rtc_abused;
++
++static inline bool pm_trace_rtc_valid(void)
++{
++	return !pm_trace_rtc_abused;
++}
+ 
+ static inline int pm_trace_is_enabled(void)
+ {
+@@ -24,6 +30,7 @@ extern int show_trace_dev_match(char *buf, size_t size);
+ 
+ #else
+ 
++static inline bool pm_trace_rtc_valid(void) { return true; }
+ static inline int pm_trace_is_enabled(void) { return 0; }
+ 
+ #define TRACE_DEVICE(dev) do { } while (0)
 -- 
-viresh
+2.7.4
+
