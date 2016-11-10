@@ -1,128 +1,121 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
- fails to start
-Date: Thu, 10 Nov 2016 09:10:41 +0900
-Message-ID: <5823BB01.3090502@samsung.com>
-References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com>
- <1477509425-16936-1-git-send-email-skannan@codeaurora.org>
- <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com>
- <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com>
- <58223AF1.2030605@codeaurora.org> <58227CDB.6050907@samsung.com>
- <58228B9E.2090108@samsung.com> <58228C10.3070502@samsung.com>
- <58238840.90802@codeaurora.org>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
+ control runtime pm
+Date: Thu, 10 Nov 2016 01:12:10 +0100
+Message-ID: <20161110001210.GO13978@wotan.suse.de>
+References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
+ <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
+ <20161107214747.GJ1764@wotan.suse.de>
+ <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
+ <20161108153044.GA6983@wunner.de>
+ <20161109235526.GN13978@wotan.suse.de>
+ <CAJZ5v0g_UX_==q7JMRZfE=1COpFu28Z8NN1W_TpJ2sa7U79hKw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:53479 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753779AbcKJAKo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Nov 2016 19:10:44 -0500
-In-reply-to: <58238840.90802@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0g_UX_==q7JMRZfE=1COpFu28Z8NN1W_TpJ2sa7U79hKw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Marek Szyprowski <m.szyprowski@samsung.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.d>
 List-Id: linux-pm@vger.kernel.org
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
-
-On 2016년 11월 10일 05:34, Saravana Kannan wrote:
-> On 11/08/2016 06:38 PM, Chanwoo Choi wrote:
->> On 2016년 11월 09일 11:36, Chanwoo Choi wrote:
->>> Hi,
->>>
->>> On 2016년 11월 09일 10:33, Chanwoo Choi wrote:
->>>> On 2016년 11월 09일 05:52, Saravana Kannan wrote:
->>>>> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
->>>>>> Hi,
->>>>>>
->>>>>> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
->>>>>>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
->>>>>>>> Hi,
->>>>>>>>
->>>>>>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
->>>>>>>>> If the new governor fails to start, switch back to old governor so that the
->>>>>>>>> devfreq state is not left in some weird limbo.
->>>>>>>>>
->>>>>>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->>>>>>>>> ---
->>>>>>>>> * Fix NULL deref for real this time.
->>>>>>>>> * Addressed some style preferences.
->>>>>>>>>
->>>>>>>>>     drivers/devfreq/devfreq.c | 13 +++++++++++--
->>>>>>>>>     1 file changed, 11 insertions(+), 2 deletions(-)
->>>>>>>>>
->>>>>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>>>>>> index bf3ea76..77c41a5 100644
->>>>>>>>> --- a/drivers/devfreq/devfreq.c
->>>>>>>>> +++ b/drivers/devfreq/devfreq.c
->>>>>>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>>>>>         struct devfreq *df = to_devfreq(dev);
->>>>>>>>>         int ret;
->>>>>>>>>         char str_governor[DEVFREQ_NAME_LEN + 1];
->>>>>>>>> -    struct devfreq_governor *governor;
->>>>>>>>> +    const struct devfreq_governor *governor, *prev_governor;
->>>>>>>>>
->>>>>>>>>         ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->>>>>>>>>         if (ret != 1)
->>>>>>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>>>>>                 goto out;
->>>>>>>>>             }
->>>>>>>>>         }
->>>>>>>>> +    prev_governor = df->governor;
->>>>>>>>>         df->governor = governor;
->>>>>>>>>         strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
->>>>>>>>>         ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>>>>>>>> -    if (ret)
->>>>>>>>> +    if (ret) {
->>>>>>>>>             dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>>>>>>>>                  __func__, df->governor->name, ret);
->>>>>>>>> +        if (prev_governor) {
->>>>>>>>
->>>>>>>> I think that prev_governor is always set. You don't need to check it.
->>>>>>>> Why do check it?
->>>>>>>
->>>>>>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
->>>>>>
->>>>>> I don't understand. If device is not registered by devfreq_add_device(),
->>>>>> you don't change the governor by using governor_store().
->>>>>>
->>>>>> If you can change the governor through governor_store(),
->>>>>> it means that the devfreq instance was added without any problem.
->>>>>> The added devfreq instance must have the sepecific governor
->>>>>> on df->governor variable.
->>>>>>
->>>>>> So, I think that df->governor is always set and then prev_governor is always set.
->>>>>
->>>>> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
->>>>
->>>> If governor is not present during devfreq_add_device(),
->>>> the devfreq instance is not able to register the devfreq framework.
->>>> So, the user never touch the sysfs[1] to change the governor
->>>> because the sysfs[1] is not created by devfreq framework.
->>>> [1] /sys/class/devfreq/[device name]/governor
->>>>
->>>> In summary, if governor is not present during devfreq_add_device(),
->>>> the devfreq framework doesn't create tye sysfs[1] for governor.
->>>>
->>>> The user-space never change the governor through sysfs[1]
->>>> because there is no any sysfs entry[1].
->>>
->>> I checked the code of devfreq_add_device().
->>> As you mentioned, if there is no governor,
->>> devfreq_add_device() don't pass wihtout calling the devfreq->governor->even_handler().
->>
->> Wrong expression / don't pass -> pass
->>
+On Thu, Nov 10, 2016 at 01:05:42AM +0100, Rafael J. Wysocki wrote:
+> On Thu, Nov 10, 2016 at 12:55 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> > On Tue, Nov 08, 2016 at 04:30:44PM +0100, Lukas Wunner wrote:
+> >> On Tue, Nov 08, 2016 at 08:27:12AM +0100, Marek Szyprowski wrote:
+> >> > On 2016-11-07 22:47, Luis R. Rodriguez wrote:
+> >> > > Has there been any review of the existing similar solutions out there
+> >> > > such as the DRM / audio component framework? Would that help ?
+> >> >
+> >> > Nope, none of that solution deals with runtime pm.
+> >>
+> >> Well, they do.  Hybrid graphics laptops often have an HDA controller
+> >> on the discrete GPU and I assume that's what Luis meant. There's code
+> >> in drivers/gpu/vga/vga_switcheroo.c to make this (only sort of) work:
+> >>
+> >> * When the GPU is powered up/down, the HDA controller's driver is
+> >>   instructed to pm_runtime_get/put the HDA device (see call to
+> >>   set_audio_state() in vga_switcheroo_set_dynamic_switch()).
+> >>
+> >> * When a runtime PM ref is acquired on the HDA device, the
+> >>   GPU is powered up (see vga_switcheroo_runtime_resume_hdmi_audio()).
+> >>
+> >>
+> >> Unfortunately this is all fairly broken, e.g.:
+> >>
+> >> * If a runtime PM ref on the HDA device is held for more than 5 sec
+> >>   (autosuspend delay of the GPU), the GPU will be powered down and
+> >>   the HDA device will become inaccessible, regardless of the runtime
+> >>   PM ref still being held (because vga_switcheroo_set_dynamic_switch()
+> >>   doesn't check the refcount of the HDA device).
+> >>
+> >> * The DRM device is afforded direct-complete but the HDA device is not.
+> >>   If the GPU is handled earlier by dpm_suspend(), then runtime PM will
+> >>   have been disabled on the GPU and thus the HDA device will fail to
+> >>   runtime resume before system sleep.
+> >>
+> >> Rafael's series allows representation of such inter-device dependencies
+> >> in the PM core and can thus replace kludgy and broken "solutions" like
+> >> the one above.
+> >>
+> >> There's one thing that I haven't understood myself though:  In an e-mail
+> >> exchange in September Rafael has argued that the above-mentioned hybrid
+> >> graphics use case "isn't a good [example] IMO.  That clearly is a case
+> >> when two (or more) devices share power resources controlled by a single
+> >> on/off switch.  Which is a clear use case for a PM domain."
+> >>
+> >> The same seems to apply to Marek's SYSMMU use case.  When applying device
+> >> links to SYSMMU or hybrid graphics, we select one of the devices in the
+> >> PM domain as master and have the other one depend on it as slave, i.e.
+> >> a synthetic hierarchical relationship is established.
+> >>
+> >> I've responded to Rafael on September 18 that this can't be solved with
+> >> a struct dev_pm_domain, but haven't received a reply since:
+> >> https://lkml.org/lkml/2016/9/18/103
+> >
+> > Rafael note:
+> >
+> > The one he asked here.
 > 
-> I think it's correct as is. Just because the governor isn't there (or hasn't registered yet) doesn't mean the device add should fail.
+> OK, so please see the message I've just sent. :-)
 > 
-> That aside, do you care to ack this patch for the way the code is currently?
+> The bottom line is that there may be multiple ways to approach a
+> problem like this and which of them works best really depends on the
+> particular case.
+> 
+> You seem to be thinking that the device links infrastructure may not
+> be necessary after all if there are other ways to address the problems
+> it is intended for, but those other ways may still be less viable
+> practically due to the complexity involved and similar.  Also they may
+> lead to code duplication in different places that try to address those
+> problems in a similar fashion, but slightly differently.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+I was not arguing that, I have been suggesting that pre-existing solutions
+should at least be reviewed and considered, if they are sub-par and
+the device links infrastructure is much simpler and provides the same
+solution folks should be alert and consider embracing it. If not and
+its the other way around and we could generalize the others, it should
+mean we could learn from them.
 
-After fixing the bug of devfreq_add_device(),
-I'll remove the unneeded 'if statement' of prev_governor in governor_store. 
+>From what I gather from Plumbers its not clear to me any of this review
+was done, that's all. This leaves a series of open questions about those
+existing solutions.
 
-Best Regards,
-Chanwoo Choi
+> All this is about providing people with reasonably straightforward and
+> common ways to deal with certain class of problems showing up in
+> multiple places.  It is not about getting the driver probe ordering
+> right magically in one go.
+
+Right, I just want us to avoid re-inventing the wheel.
+
+  Luis
+> 
+> Thanks,
+> Rafael
+> 
+
+-- 
+Luis Rodriguez, SUSE LINUX GmbH
+Maxfeldstrasse 5; D-90409 Nuernberg
