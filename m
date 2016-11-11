@@ -1,44 +1,60 @@
-From: Alan Stern <stern@rowland.harvard.edu>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Fri, 11 Nov 2016 16:09:25 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1611111604120.18268-100000@netrider.rowland.org>
-References: <20161111194041.GA111624@google.com>
+Date: Fri, 11 Nov 2016 22:33:17 +0100
+Message-ID: <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
+References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
+ <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
+ <20161110184910.GA135921@google.com> <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
+ <20161111163147.GC7138@atomide.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:50463 "HELO
-        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with SMTP id S934727AbcKKVJ0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 16:09:26 -0500
-In-Reply-To: <20161111194041.GA111624@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161111163147.GC7138@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Fri, 11 Nov 2016, Brian Norris wrote:
+On Fri, Nov 11, 2016 at 5:31 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Rafael J. Wysocki <rafael@kernel.org> [161110 16:06]:
+>> On Thu, Nov 10, 2016 at 7:49 PM, Brian Norris <briannorris@chromium.org> wrote:
+>> > On Thu, Nov 10, 2016 at 10:13:55AM -0800, Dmitry Torokhov wrote:
+>> >> On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
+>> >> > It's important that user space can figure out what device woke the
+>> >> > system from suspend -- e.g., for debugging, or for implementing
+>> >> > conditional wake behavior. Dedicated wakeup IRQs don't currently do
+>> >> > that.
+>> >> >
+>> >> > Let's report the event (pm_wakeup_event()) and also allow drivers to
+>> >> > synchronize with these events in their resume path (hence, disable_irq()
+>> >> > instead of disable_irq_nosync()).
+>> >>
+>> >> Hmm, dev_pm_disable_wake_irq() is called from
+>> >> rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
+>> >> disable interrupts. Dropping _nosync() feels dangerous.
+>> >
+>> > Indeed. So how do you suggest we get sane wakeup reports? Every device
+>> > or bus that's going to use the dedicated wake APIs has to
+>> > synchronize_irq() [1] in their resume() routine? Seems like an odd
+>> > implementation detail to have to remember (and therefore most drivers
+>> > will get it wrong).
+>> >
+>> > Brian
+>> >
+>> > [1] Or maybe at least create a helper API that will extract the
+>> > dedicated wake IRQ number and do the synchronize_irq() for us, so
+>> > drivers don't have to stash this separately (or poke at
+>> > dev->power.wakeirq->irq) for no good reason.
+>>
+>> Well, in the first place, can anyone please refresh my memory on why
+>> it is necessary to call dev_pm_disable_wake_irq() under power.lock?
+>
+> I guess no other reason except we need to manage the wakeirq
+> for rpm_callback(). So we dev_pm_enable_wake_irq() before
+> rpm_callback() in rpm_suspend(), then disable on resume.
 
-> > The wakeup interrupt controller knows something happened earlier,
-> > so maybe it could report that time if queried somehow?
-> 
-> Sort of. We have /sys/power/pm_wakeup_irq already. But it's really less
-> useful to get IRQ-level stats for this, than to get device info. AFAICT,
-> there's no machine-readable association between IRQs and devices; the
-> best you can get is by parsing the names in /proc/interrupts.
-> 
-> Or, if we really want to say that's sufficient, then maybe we should
-> kill all the device-level wakeup stats in sysfs... (Is that what the
-> flamewar was all about? I hope I'm not poking the hornet's nest.)
+But we drop the lock in rpm_callback(), so can't it be moved to where
+the callback is invoked?
 
-If I recall correctly, that flamewar was about the whole idea of what
-caused the system to wake up.  In general, the system does not know
-what caused it to wake up.  All it knows, once it is awake again, is
-what IRQs (or other similar events, such as ACPI GPEs) are pending.  It
-doesn't know which of those events caused it to wake up.  And if 
-multiple devices share the same IRQ line, the PM core won't know which 
-of them raised the IRQ.
-
-Of course, for some purposes this distinction doesn't matter.
-
-Alan Stern
-
+Thanks,
+Rafael
