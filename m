@@ -1,113 +1,100 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v9 2/8] power: add power sequence library
-Date: Fri, 11 Nov 2016 09:53:03 +0800
-Message-ID: <20161111015303.GA12742@b29397-desktop>
-References: <1478573472-29516-1-git-send-email-peter.chen@nxp.com>
- <1478573472-29516-3-git-send-email-peter.chen@nxp.com>
- <CAJZ5v0ioqMqoaJqK0CTXafWRKoohmZSiOWKRgVZ9DR3_8+-YDw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple
+ regulators per device
+Date: Fri, 11 Nov 2016 08:41:20 +0530
+Message-ID: <20161111031120.GE11670@vireshk-i7>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+ <28119b44689921f3c3cc00be49bff2bb99b32162.1477463128.git.viresh.kumar@linaro.org>
+ <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
+ <20161110040440.GA11670@vireshk-i7>
+ <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
+ <20161110180940.GD11670@vireshk-i7>
+ <20161110225126.GK16026@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:36609 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965040AbcKKBxK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 20:53:10 -0500
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:33830 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965808AbcKKDL1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 22:11:27 -0500
+Received: by mail-pf0-f175.google.com with SMTP id n85so3522918pfi.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 19:11:26 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ioqMqoaJqK0CTXafWRKoohmZSiOWKRgVZ9DR3_8+-YDw@mail.gmail.com>
+In-Reply-To: <20161110225126.GK16026@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Chen <peter.chen@nxp.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Heiko Stuebner <heiko@sntech.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, p.zabel@pengutronix.de, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, "open list:ULTRA-WIDEBAND (UWB) SUBSYSTEM:" <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, devicetree@vger.kernel.org
 
-On Fri, Nov 11, 2016 at 02:05:01AM +0100, Rafael J. Wysocki wrote:
-> On Tue, Nov 8, 2016 at 3:51 AM, Peter Chen <peter.chen@nxp.com> wrote:
-> > We have an well-known problem that the device needs to do some power
-> > sequence before it can be recognized by related host, the typical
-> > example like hard-wired mmc devices and usb devices.
-> >
-> > This power sequence is hard to be described at device tree and handled by
-> > related host driver, so we have created a common power sequence
-> > library to cover this requirement. The core code has supplied
-> > some common helpers for host driver, and individual power sequence
-> > libraries handle kinds of power sequence for devices. The pwrseq
-> > librares always need to allocate extra instance for compatible
-> > string match.
-> >
-> > pwrseq_generic is intended for general purpose of power sequence, which
-> > handles gpios and clocks currently, and can cover other controls in
-> > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > if only one power sequence is needed, else call of_pwrseq_on_list
-> > /of_pwrseq_off_list instead (eg, USB hub driver).
-> >
-> > For new power sequence library, it can add its compatible string
-> > to pwrseq_of_match_table, then the pwrseq core will match it with
-> > DT's, and choose this library at runtime.
+On 10-11-16, 14:51, Stephen Boyd wrote:
+> On 11/10, Viresh Kumar wrote:
+> > On 10-11-16, 16:36, Mark Brown wrote:
+> > > On Thu, Nov 10, 2016 at 09:34:40AM +0530, Viresh Kumar wrote:
+> > > > On 09-11-16, 14:58, Mark Brown wrote:
+> > > > > On Wed, Oct 26, 2016 at 12:02:56PM +0530, Viresh Kumar wrote:
+> > > 
+> > > > > > +  Entries for multiple regulators shall be provided in the same field separated
+> > > > > > +  by angular brackets <>. The OPP binding doesn't provide any provisions to
+> > > > > > +  relate the values to their power supplies or the order in which the supplies
+> > > > > > +  need to be configured.
+> > > 
+> > > > > I don't understand how this works.  If we have an unordered list of
+> > > > > values to set for regulators how will we make sense of them?
+> > > 
+> > > > The platform driver is responsible to identify the order and pass it on to the
+> > > > OPP core. And the platform driver needs to have that hard coded.
+> > > 
+> > > That *really* should be in the binding.
+> > 
+> > Okay, how do you suggest doing that? Will a property like supply-names
+> > in the OPP table be fine? Like this:
+> > 
+> > @@ -369,13 +378,16 @@ Example 4: Handling multiple regulators
+> >                         compatible = "arm,cortex-a7";
+> >                         ...
+> >  
+> > -                       cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
+> > +                       vcc0-supply = <&cpu_supply0>;
+> > +                       vcc1-supply = <&cpu_supply1>;
+> > +                       vcc2-supply = <&cpu_supply2>;
+> >                         operating-points-v2 = <&cpu0_opp_table>;
+> >                 };
+> >         };
+> >  
+> >         cpu0_opp_table: opp_table0 {
+> >                 compatible = "operating-points-v2";
+> > +               supply-names = "vcc0", "vcc1", "vcc2";
+> >                 opp-shared;
+> > 
 > 
-> In the first place, please document this stuff better than you have so
-> far.  To a minimum, add kerneldoc comments to all new non-trivial new
-> functions to document what they are for and how they are expected to
-> be used (especially the ones exported to drivers).
-> 
+> No. The supply names (and also clock names/index) should be left
+> up to the consumer of the OPP table. We don't want to encode any
+> sort of details like this between the OPP table and the consumer
+> of it in DT because then it seriously couples the OPP table to
+> the consumer device. "The binding" in this case that needs to be
+> updated is the consumer binding, to indicate that it correlated
+> foo-supply and bar-supply to index 0 and 1 of the OPP table
+> voltages.
 
-Thanks for your comments.
+Are you saying that we shall have a property like this then?
 
-I will add kerneldoc for main APIs.
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index ee91cbdd95ee..733946df2fb8 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -389,7 +389,10 @@ Example 4: Handling multiple regulators
+                        compatible = "arm,cortex-a7";
+                        ...
+ 
+-                       cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
++                       vcc0-supply = <&cpu_supply0>;
++                       vcc1-supply = <&cpu_supply1>;
++                       vcc2-supply = <&cpu_supply2>;
++                       opp-supply-names = "vcc0", "vcc1", "vcc2";
+                        operating-points-v2 = <&cpu0_opp_table>;
+                };
+        };
 
-> Also, is there any guidance available for people who may want to use it?
 
-No doc now, only some guidance in this commit log.
-
-> > +config PWRSEQ_GENERIC
-> > +       bool "Generic power sequence control"
-> > +       depends on OF
-> > +       select POWER_SEQUENCE
-> > +       help
-> > +          It is used for drivers which needs to do power sequence
-> > +          (eg, turn on clock, toggle reset gpio) before the related
-> > +          devices can be found by hardware. This generic one can be
-> > +          used for common power sequence control.
-> 
-> I wouldn't set it up this way.
-> 
-> There are two problems here.
-> 
-> First, say a distro is going to ship a multiplatform generic kernel.
-> How they are going to figure out whether or not to set the new symbol
-> in that kernel?
-> 
-> Second, how users are supposed to know whether or not they will need
-> it even if they build the kernel by themselves?
-> 
-> It would be better IMO to set things up to select the new symbol from
-> places making use of the code depending on it.
-> 
-
-Will change it like below:
-
-#
-# Power Sequence library
-#
-
-menuconfig POWER_SEQUENCE
-	bool "Power sequence control"
-	depends on OF
-	help
-	   It is used for drivers which needs to do power sequence
-	   (eg, turn on clock, toggle reset gpio) before the related
-	   devices can be found by hardware. 
-
-if POWER_SEQUENCE
-
-config PWRSEQ_GENERIC
-	bool "Generic power sequence control"
-	default y
-	help
-	   This is the generic power sequence control library, and is
-	   supposed to support common power sequence usage.
-endif
-
-And the current user usb core will select POWER_SEQUENCE.
 -- 
-
-Best Regards,
-Peter Chen
+viresh
