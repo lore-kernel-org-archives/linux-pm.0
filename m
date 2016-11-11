@@ -1,53 +1,53 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Fri, 11 Nov 2016 22:40:50 +0100
-Message-ID: <CAJZ5v0ipnv_prvGg9LWZk0xz=RA8E84nR3Lq3cqcCpoyCJjxag@mail.gmail.com>
-References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
- <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
- <20161110184910.GA135921@google.com> <20161110204911.GK27724@atomide.com>
- <20161110213038.GA108490@google.com> <20161111164753.GD7138@atomide.com> <20161111194041.GA111624@google.com>
+Subject: Re: [PATCH 1/3] cpufreq: schedutil: enable fast switch earlier
+Date: Fri, 11 Nov 2016 22:52:27 +0100
+Message-ID: <CAJZ5v0jem_tAOJM-zHyQ4kAmF+gmv85E3KnG9M1=1qi6vVQitA@mail.gmail.com>
+References: <cover.1478858983.git.viresh.kumar@linaro.org> <1acfffe798c0371e69ec1171f485499e7b49ed6d.1478858983.git.viresh.kumar@linaro.org>
+ <20161111141952.GJ3117@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161111194041.GA111624@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f172.google.com ([209.85.220.172]:36237 "EHLO
+        mail-qk0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934979AbcKKVxK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 16:53:10 -0500
+In-Reply-To: <20161111141952.GJ3117@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
 
-On Fri, Nov 11, 2016 at 8:40 PM, Brian Norris <briannorris@chromium.org> wrote:
-> On Fri, Nov 11, 2016 at 08:47:54AM -0800, Tony Lindgren wrote:
->> But sounds like the threaded IRQ is not your concern and you mostly
+On Fri, Nov 11, 2016 at 3:19 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Fri, Nov 11, 2016 at 03:52:21PM +0530, Viresh Kumar wrote:
+>> @@ -456,8 +460,6 @@ static int sugov_init(struct cpufreq_policy *policy)
+>>
+>>   out:
+>>       mutex_unlock(&global_tunables_lock);
+>> -
+>> -     cpufreq_enable_fast_switch(policy);
+>>       return 0;
+>>
+>>   fail:
+>> @@ -468,6 +470,10 @@ static int sugov_init(struct cpufreq_policy *policy)
+>>       mutex_unlock(&global_tunables_lock);
+>>
+>>       sugov_policy_free(sg_policy);
+>> +
+>> + disable_fast_switch:
+>> +     cpufreq_disable_fast_switch(policy);
+>> +
+>>       pr_err("initialization failed (error %d)\n", ret);
+>>       return ret;
+>>  }
 >
-> Right, threaded is OK for this; it's not performance critical. It just
-> highlighted the fact that its completion is not synchronized with
-> anything.
->
->> care about getting the right time for the wake up interrupt.
->
-> Not "time", per se, but blame. But that blame is timing related: if it
-> comes after the system finished resuming, then it's useless, since
-> user-space won't know to come back and check later.
->
->> The wakeup interrupt controller knows something happened earlier,
->> so maybe it could report that time if queried somehow?
->
-> Sort of. We have /sys/power/pm_wakeup_irq already. But it's really less
-> useful to get IRQ-level stats for this, than to get device info. AFAICT,
-> there's no machine-readable association between IRQs and devices; the
-> best you can get is by parsing the names in /proc/interrupts.
->
-> Or, if we really want to say that's sufficient, then maybe we should
-> kill all the device-level wakeup stats in sysfs... (Is that what the
-> flamewar was all about? I hope I'm not poking the hornet's nest.)
+> Argh, no indented labels please. Please fix the 3 that snuck in while
+> you're there.
 
-Do you mean the wakeup_* attributes in <device>/power/ ?
+Well, you didn't tell me you didn't like them. :-)
 
-If so, then they are in there, because they were asked for by people
-at the time they were introduced (I can't recall exactly who wanted
-them, though), but if they are not useful to anyone after all (and I
-guess that this is the case), they can just go away as far as I'm
-concerned.
+Anyway, I can fix this up easily enough.
+
+Any other concerns regarding the patch?
 
 Thanks,
 Rafael
