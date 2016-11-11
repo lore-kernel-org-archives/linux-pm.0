@@ -1,49 +1,54 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH V8 0/6] thermal: bcm2835: add thermal driver
-Date: Fri, 11 Nov 2016 09:01:52 -0800
-Message-ID: <87oa1mar27.fsf@eliezer.anholt.net>
-References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha512; protocol="application/pgp-signature"
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH RFT] irqchip: mxs: Enable SKIP_SET_WAKE and MASK_ON_SUSPEND
+Date: Fri, 11 Nov 2016 17:26:48 +0000
+Message-ID: <1478885208-18821-1-git-send-email-stefan.wahren@i2se.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anholt.net ([50.246.234.109]:43286 "EHLO anholt.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933831AbcKKRBz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Nov 2016 12:01:55 -0500
-In-Reply-To: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
+Received: from mout.kundenserver.de ([212.227.17.10]:54031 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934509AbcKKR2l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 12:28:41 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
-Cc: Martin Sperl <kernel@martin.sperl.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Oleksij Rempel <linux@rempel-privat.de>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Marek Vasut <marex@denx.de>, =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <lw@karo-electronics.de>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
 
---=-=-=
-Content-Type: text/plain
+The ICOLL controller doesn't provide any facility to configure the
+wakeup sources. That's the reason why this implementation lacks
+the irq_set_wake implementation. But this prevent us from properly
+entering power management states like "suspend to idle".
 
-kernel@martin.sperl.org writes:
+So enable the flags IRQCHIP_SKIP_SET_WAKE and IRQCHIP_MASK_ON_SUSPEND
+to let the irqchip core allows and handles the power management.
 
-> From: Martin Sperl <kernel@martin.sperl.org>
+This patch has been tested with a MX23 and a MX28 board. Any further
+tests especially with ASM9260 would be appreciated.
 
-Since Eduardo seems to be AFK, I've pulled this series to my -next
-branches.
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+---
+ drivers/irqchip/irq-mxs.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/drivers/irqchip/irq-mxs.c b/drivers/irqchip/irq-mxs.c
+index 1730470..05fa9f7 100644
+--- a/drivers/irqchip/irq-mxs.c
++++ b/drivers/irqchip/irq-mxs.c
+@@ -131,12 +131,16 @@ static void asm9260_unmask_irq(struct irq_data *d)
+ 	.irq_ack = icoll_ack_irq,
+ 	.irq_mask = icoll_mask_irq,
+ 	.irq_unmask = icoll_unmask_irq,
++	.flags = IRQCHIP_MASK_ON_SUSPEND |
++		 IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ static struct irq_chip asm9260_icoll_chip = {
+ 	.irq_ack = icoll_ack_irq,
+ 	.irq_mask = asm9260_mask_irq,
+ 	.irq_unmask = asm9260_unmask_irq,
++	.flags = IRQCHIP_MASK_ON_SUSPEND |
++		 IRQCHIP_SKIP_SET_WAKE,
+ };
+ 
+ asmlinkage void __exception_irq_entry icoll_handle_irq(struct pt_regs *regs)
+-- 
+1.7.9.5
 
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCgAGBQJYJfmAAAoJELXWKTbR/J7oVs0P/0jJ1Z9IFgTDQVmszjxpqKxr
-RtxXYnczg9zaflUVVAoYtWTQ7sAkha+aZ+P9BdIFxytHX1E6A64quIKg/fUv9JWF
-q6nqdCa/IJIJBrSMclKrbC+fAETS1IiUyPgin3mjs2zYI2T73dTi4sLkw/sL2uX6
-xA4FkQ2mD5y/Tp79WE9DQunPfflvln6bK9TFaMzJ+bG7PuMnayena2okVQ2Vdiej
-7c6Ld1MMSmyzLdXoJyOytk1/dGCLwGurZutmose//Chvkjl8SNEhKFDOht3VweLp
-lZ/A/j5B2QIKYrxvoOdlioadISw1WsmvG8DmmOEP7+xVZUZWFNBAAIRTsxNtq0Sh
-O8T91l8Q4LHn+sw/Rj2ch6+ZywNs63TRkBPwviZRfkh0h/opwP5yK3uIGkYrwFzU
-/Q73L2DZjhgBlHY91Kfa4X0puSCKannhRnUJobGUqiksqABQWuSpflnGUYoGbmpv
-fL0IXbHRDwPWf9iGUVBEps/voZaf7RTMIF64blkyaVkXdPJAvyOGHzm9M9nnbYoO
-uB4reVcfga2sBcPgWKghf446hN9o5rcERXUnydQgFf9rD39K5buVZN66cKvgrwgh
-CYnMTbHuFXSdFjzU6OYs04TgB7SkgBsuGGaz2hae9Y96K6kT8ifwtA4BR98TZ8xo
-vmYtMtrkf8AMbvrSXw5i
-=bARk
------END PGP SIGNATURE-----
---=-=-=--
