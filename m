@@ -1,77 +1,44 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Fri, 11 Nov 2016 12:17:52 -0800
-Message-ID: <20161111201751.GH7138@atomide.com>
-References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
- <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
- <20161110184910.GA135921@google.com>
- <20161110204911.GK27724@atomide.com>
- <20161110213038.GA108490@google.com>
- <20161111164753.GD7138@atomide.com>
- <20161111194041.GA111624@google.com>
+Date: Fri, 11 Nov 2016 16:09:25 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1611111604120.18268-100000@netrider.rowland.org>
+References: <20161111194041.GA111624@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from netrider.rowland.org ([192.131.102.5]:50463 "HELO
+        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with SMTP id S934727AbcKKVJ0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 16:09:26 -0500
 In-Reply-To: <20161111194041.GA111624@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, linux-omap@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-* Brian Norris <briannorris@chromium.org> [161111 11:40]:
+On Fri, 11 Nov 2016, Brian Norris wrote:
+
+> > The wakeup interrupt controller knows something happened earlier,
+> > so maybe it could report that time if queried somehow?
 > 
-> BTW, for context, I'm working on using dev_pm_set_dedicated_wake_irq()
-> for a Wifi driver which supports out-of-band (e.g., GPIO-based) wakeup.
-> I see it's used in the I2C core, but the I2C code never actually calls
-> dev_pm_enable_wake_irq(). So while I think I can use this API OK for
-> my Wifi driver (calling dev_pm_{en,dis}able_wake_irq() at system
-> suspend/resume), I'm not sure this will help the I2C case.
+> Sort of. We have /sys/power/pm_wakeup_irq already. But it's really less
+> useful to get IRQ-level stats for this, than to get device info. AFAICT,
+> there's no machine-readable association between IRQs and devices; the
+> best you can get is by parsing the names in /proc/interrupts.
+> 
+> Or, if we really want to say that's sufficient, then maybe we should
+> kill all the device-level wakeup stats in sysfs... (Is that what the
+> flamewar was all about? I hope I'm not poking the hornet's nest.)
 
-OK it's used for that purpose with the SDIO dat1 interrupt for
-omaps. This allows the WLAN to stay on and connected while the
-SoC can hit deeper idle states.
+If I recall correctly, that flamewar was about the whole idea of what
+caused the system to wake up.  In general, the system does not know
+what caused it to wake up.  All it knows, once it is awake again, is
+what IRQs (or other similar events, such as ACPI GPEs) are pending.  It
+doesn't know which of those events caused it to wake up.  And if 
+multiple devices share the same IRQ line, the PM core won't know which 
+of them raised the IRQ.
 
-The calling of dev_pm_enable_wake_irq() happens automagically from
-rpm_suspend() and then it's disabled after rpm_resume().
+Of course, for some purposes this distinction doesn't matter.
 
-> The more I look at this API, the more I'm confused, especially about its
-> seeming dependence on runtime PM.
+Alan Stern
 
-Are you talking about suspend/resume only? If so, see if the
-following snippet from Grygorii helps. Grygorii, care to send it with
-proper description and Signed-off-by if you did not yet do that?
-
-Regards,
-
-Tony
-
-8< ----------------------
---- a/drivers/base/power/wakeirq.c
-+++ b/drivers/base/power/wakeirq.c
-@@ -256,8 +256,12 @@ void dev_pm_arm_wake_irq(struct wake_irq *wirq)
- 	if (!wirq)
- 		return;
- 
--	if (device_may_wakeup(wirq->dev))
-+	if (device_may_wakeup(wirq->dev)) {
-+		if (wirq->dedicated_irq)
-+			enable_irq(wirq->irq);
-+
- 		enable_irq_wake(wirq->irq);
-+	}
- }
- 
- /**
-@@ -272,6 +276,10 @@ void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
- 	if (!wirq)
- 		return;
- 
--	if (device_may_wakeup(wirq->dev))
-+	if (device_may_wakeup(wirq->dev)) {
- 		disable_irq_wake(wirq->irq);
-+
-+		if (wirq->dedicated_irq)
-+			disable_irq_nosync(wirq->irq);
-+	}
- }
