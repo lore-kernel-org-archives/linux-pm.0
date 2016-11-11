@@ -1,148 +1,69 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v9 2/8] power: add power sequence library
-Date: Fri, 11 Nov 2016 02:05:01 +0100
-Message-ID: <CAJZ5v0ioqMqoaJqK0CTXafWRKoohmZSiOWKRgVZ9DR3_8+-YDw@mail.gmail.com>
-References: <1478573472-29516-1-git-send-email-peter.chen@nxp.com> <1478573472-29516-3-git-send-email-peter.chen@nxp.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH][RFC v7] timekeeping: Ignore the bogus sleep
+ time if pm_trace is enabled
+Date: Fri, 11 Nov 2016 02:27:13 +0100
+Message-ID: <2641376.PTl7Fxfrgz@vostro.rjw.lan>
+References: <1478753753-24650-1-git-send-email-yu.c.chen@intel.com> <CALAqxLXVaVWBTNs2w-4t6wNsPukQu40wgVcM9B9zudv2KL682Q@mail.gmail.com>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1478573472-29516-3-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:ULTRA-WIDEBAND (UWB) SUBSYSTEM:" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Sascha Hauer <s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>
+Return-path: <rtc-linux+bncBDDNDZNP7UOBBO5ZSTAQKGQEEGVLV6Y-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <CALAqxLXVaVWBTNs2w-4t6wNsPukQu40wgVcM9B9zudv2KL682Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <x86-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, lkml <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org" <rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, Xunlei Pang <xlpang-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 8, 2016 at 3:51 AM, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org> wrote:
-> We have an well-known problem that the device needs to do some power
-> sequence before it can be recognized by related host, the typical
-> example like hard-wired mmc devices and usb devices.
->
-> This power sequence is hard to be described at device tree and handled by
-> related host driver, so we have created a common power sequence
-> library to cover this requirement. The core code has supplied
-> some common helpers for host driver, and individual power sequence
-> libraries handle kinds of power sequence for devices. The pwrseq
-> librares always need to allocate extra instance for compatible
-> string match.
->
-> pwrseq_generic is intended for general purpose of power sequence, which
-> handles gpios and clocks currently, and can cover other controls in
-> future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> if only one power sequence is needed, else call of_pwrseq_on_list
-> /of_pwrseq_off_list instead (eg, USB hub driver).
->
-> For new power sequence library, it can add its compatible string
-> to pwrseq_of_match_table, then the pwrseq core will match it with
-> DT's, and choose this library at runtime.
+On Thursday, November 10, 2016 10:26:09 AM John Stultz wrote:
+> On Wed, Nov 9, 2016 at 8:55 PM, Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> wrote:
+> > Previously we encountered some memory overflow issues due to
+> > the bogus sleep time brought by inconsistent rtc, which is
+> > triggered when pm_trace is enabled, and we have fixed it
+> > in recent kernel. However it's improper in the first place
+> > to call __timekeeping_inject_sleeptime() in case that pm_trace
+> > is enabled simply because that "hash" time value will wreckage
+> > the timekeeping subsystem.
+> >
+> > This patch is originally written by Thomas, which would bypass
+> > the bogus rtc interval when pm_trace is enabled.
+> > Meanwhile, if system succeed to resume back with pm_trace set, the
+> > users are warned to adjust the bogus rtc either by ntp-date or rdate,
+> > by resetting pm_trace_rtc_abused to false, otherwise above tools might
+> > not work as expected.
+> >
+> > Originally-from: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+> > Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+> > Cc: John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > Cc: Xunlei Pang <xlpang-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> > Cc: Ingo Molnar <mingo-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+> > Cc: Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> > Cc: "H. Peter Anvin" <hpa-YMNOUZJC4hwAvxtiuMwx3w@public.gmane.org>
+> > Cc: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>
+> > Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+> > Signed-off-by: Chen Yu <yu.c.chen-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+> 
+> 
+> Looks ok to me. I'm queueing it up for testing.  If no one objects
+> (and I don't see any issues) I'll merge it to my tree and push it to
+> -tip through Thomas.
 
-In the first place, please document this stuff better than you have so
-far.  To a minimum, add kerneldoc comments to all new non-trivial new
-functions to document what they are for and how they are expected to
-be used (especially the ones exported to drivers).
+No objections here, thanks John!
 
-Also, is there any guidance available for people who may want to use it?
-
-> Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-> Tested-by: Maciej S. Szmigiero <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
-> Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Reviewed-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-> Tested-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-> ---
->  MAINTAINERS                           |   9 ++
->  drivers/power/Kconfig                 |   1 +
->  drivers/power/Makefile                |   1 +
->  drivers/power/pwrseq/Kconfig          |  19 ++++
->  drivers/power/pwrseq/Makefile         |   2 +
->  drivers/power/pwrseq/core.c           | 191 ++++++++++++++++++++++++++++++++++
->  drivers/power/pwrseq/pwrseq_generic.c | 183 ++++++++++++++++++++++++++++++++
->  include/linux/power/pwrseq.h          |  72 +++++++++++++
->  8 files changed, 478 insertions(+)
->  create mode 100644 drivers/power/pwrseq/Kconfig
->  create mode 100644 drivers/power/pwrseq/Makefile
->  create mode 100644 drivers/power/pwrseq/core.c
->  create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
->  create mode 100644 include/linux/power/pwrseq.h
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 1cd38a7..5dab975 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -9612,6 +9612,15 @@ F:       include/linux/pm_*
->  F:     include/linux/powercap.h
->  F:     drivers/powercap/
->
-> +POWER SEQUENCE LIBRARY
-> +M:     Peter Chen <Peter.Chen-3arQi8VN3Tc@public.gmane.org>
-> +T:     git git://git.kernel.org/pub/scm/linux/kernel/git/peter.chen/usb.git
-> +L:     linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> +S:     Maintained
-> +F:     Documentation/devicetree/bindings/power/pwrseq/
-> +F:     drivers/power/pwrseq/
-> +F:     include/linux/power/pwrseq.h/
-> +
->  POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
->  M:     Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->  L:     linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 63454b5..c1bb046 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -1,3 +1,4 @@
->  source "drivers/power/avs/Kconfig"
->  source "drivers/power/reset/Kconfig"
->  source "drivers/power/supply/Kconfig"
-> +source "drivers/power/pwrseq/Kconfig"
-> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-> index ff35c71..7db8035 100644
-> --- a/drivers/power/Makefile
-> +++ b/drivers/power/Makefile
-> @@ -1,3 +1,4 @@
->  obj-$(CONFIG_POWER_AVS)                += avs/
->  obj-$(CONFIG_POWER_RESET)      += reset/
->  obj-$(CONFIG_POWER_SUPPLY)     += supply/
-> +obj-$(CONFIG_POWER_SEQUENCE)   += pwrseq/
-> diff --git a/drivers/power/pwrseq/Kconfig b/drivers/power/pwrseq/Kconfig
-> new file mode 100644
-> index 0000000..3859a67
-> --- /dev/null
-> +++ b/drivers/power/pwrseq/Kconfig
-> @@ -0,0 +1,19 @@
-> +#
-> +# Power Sequence library
-> +#
-> +
-> +config POWER_SEQUENCE
-> +       bool
-> +
-> +menu "Power Sequence Support"
-> +
-> +config PWRSEQ_GENERIC
-> +       bool "Generic power sequence control"
-> +       depends on OF
-> +       select POWER_SEQUENCE
-> +       help
-> +          It is used for drivers which needs to do power sequence
-> +          (eg, turn on clock, toggle reset gpio) before the related
-> +          devices can be found by hardware. This generic one can be
-> +          used for common power sequence control.
-
-I wouldn't set it up this way.
-
-There are two problems here.
-
-First, say a distro is going to ship a multiplatform generic kernel.
-How they are going to figure out whether or not to set the new symbol
-in that kernel?
-
-Second, how users are supposed to know whether or not they will need
-it even if they build the kernel by themselves?
-
-It would be better IMO to set things up to select the new symbol from
-places making use of the code depending on it.
-
-Thanks,
+Cheers,
 Rafael
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
