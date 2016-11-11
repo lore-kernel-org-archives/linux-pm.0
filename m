@@ -1,71 +1,49 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Fri, 11 Nov 2016 08:47:54 -0800
-Message-ID: <20161111164753.GD7138@atomide.com>
-References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
- <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
- <20161110184910.GA135921@google.com>
- <20161110204911.GK27724@atomide.com>
- <20161110213038.GA108490@google.com>
+From: Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH V8 0/6] thermal: bcm2835: add thermal driver
+Date: Fri, 11 Nov 2016 09:01:52 -0800
+Message-ID: <87oa1mar27.fsf@eliezer.anholt.net>
+References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161110213038.GA108490@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from anholt.net ([50.246.234.109]:43286 "EHLO anholt.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933831AbcKKRBz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Nov 2016 12:01:55 -0500
+In-Reply-To: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: Martin Sperl <kernel@martin.sperl.org>
 
-* Brian Norris <briannorris@chromium.org> [161110 13:30]:
-> On Thu, Nov 10, 2016 at 01:49:11PM -0700, Tony Lindgren wrote:
-> > * Brian Norris <briannorris@chromium.org> [161110 11:49]:
-> > > On Thu, Nov 10, 2016 at 10:13:55AM -0800, Dmitry Torokhov wrote:
-> > > > On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
-> > > > > It's important that user space can figure out what device woke the
-> > > > > system from suspend -- e.g., for debugging, or for implementing
-> > > > > conditional wake behavior. Dedicated wakeup IRQs don't currently do
-> > > > > that.
-> > > > >
-> > > > > Let's report the event (pm_wakeup_event()) and also allow drivers to
-> > > > > synchronize with these events in their resume path (hence, disable_irq()
-> > > > > instead of disable_irq_nosync()).
-> > > > 
-> > > > Hmm, dev_pm_disable_wake_irq() is called from
-> > > > rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
-> > > > disable interrupts. Dropping _nosync() feels dangerous.
-> > > 
-> > > Indeed. So how do you suggest we get sane wakeup reports?
-> > 
-> > __pm_wakeup_event() ?
-> 
-> That's not the difficult part. (This patch already uses
-> pm_wakeup_event() correctly. It's in the ISR, and it doesn't get nested
-> within any other lock-holding code, so it should use the non-underscore
-> version, which grabs the lock.)
+--=-=-=
+Content-Type: text/plain
 
-OK, right it's the disable_wake_irq() that takes the lock.
+kernel@martin.sperl.org writes:
 
-> The difficult part is guaranteeing that the wake IRQ gets reported at
-> the appropriate time. It seems highly unlikely that a threaded IRQ like
-> this would take longer than the time for devices to resume, but it's not
-> guaranteed. So the question is where/when/how we call synchronize_irq().
+> From: Martin Sperl <kernel@martin.sperl.org>
 
-Yeah OK.
+Since Eduardo seems to be AFK, I've pulled this series to my -next
+branches.
 
-FYI, the wake up time can be really long as in tens of milliseconds
-in some cases when enabling regulator(s) and before the state is
-restored. Then not using threaded IRQ for the wakeirq will lead
-into extra troubles as that assumes that the consumer devices has
-pm_runtime_irq_safe() set. And having pm_runtime_irq_safe() will
-lead into extra issues in the driver as it permanently blocks the
-consume parent device PM.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-But sounds like the threaded IRQ is not your concern and you mostly
-care about getting the right time for the wake up interrupt.
-The wakeup interrupt controller knows something happened earlier,
-so maybe it could report that time if queried somehow?
+-----BEGIN PGP SIGNATURE-----
 
-Regards,
-
-Tony
+iQIcBAEBCgAGBQJYJfmAAAoJELXWKTbR/J7oVs0P/0jJ1Z9IFgTDQVmszjxpqKxr
+RtxXYnczg9zaflUVVAoYtWTQ7sAkha+aZ+P9BdIFxytHX1E6A64quIKg/fUv9JWF
+q6nqdCa/IJIJBrSMclKrbC+fAETS1IiUyPgin3mjs2zYI2T73dTi4sLkw/sL2uX6
+xA4FkQ2mD5y/Tp79WE9DQunPfflvln6bK9TFaMzJ+bG7PuMnayena2okVQ2Vdiej
+7c6Ld1MMSmyzLdXoJyOytk1/dGCLwGurZutmose//Chvkjl8SNEhKFDOht3VweLp
+lZ/A/j5B2QIKYrxvoOdlioadISw1WsmvG8DmmOEP7+xVZUZWFNBAAIRTsxNtq0Sh
+O8T91l8Q4LHn+sw/Rj2ch6+ZywNs63TRkBPwviZRfkh0h/opwP5yK3uIGkYrwFzU
+/Q73L2DZjhgBlHY91Kfa4X0puSCKannhRnUJobGUqiksqABQWuSpflnGUYoGbmpv
+fL0IXbHRDwPWf9iGUVBEps/voZaf7RTMIF64blkyaVkXdPJAvyOGHzm9M9nnbYoO
+uB4reVcfga2sBcPgWKghf446hN9o5rcERXUnydQgFf9rD39K5buVZN66cKvgrwgh
+CYnMTbHuFXSdFjzU6OYs04TgB7SkgBsuGGaz2hae9Y96K6kT8ifwtA4BR98TZ8xo
+vmYtMtrkf8AMbvrSXw5i
+=bARk
+-----END PGP SIGNATURE-----
+--=-=-=--
