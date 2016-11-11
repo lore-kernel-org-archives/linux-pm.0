@@ -1,100 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple
- regulators per device
-Date: Fri, 11 Nov 2016 08:41:20 +0530
-Message-ID: <20161111031120.GE11670@vireshk-i7>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <28119b44689921f3c3cc00be49bff2bb99b32162.1477463128.git.viresh.kumar@linaro.org>
- <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
- <20161110040440.GA11670@vireshk-i7>
- <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
- <20161110180940.GD11670@vireshk-i7>
- <20161110225126.GK16026@codeaurora.org>
+Subject: Re: [PATCH -next] cpufreq: brcmstb-avs-cpufreq: make symbol
+ brcm_avs_cpufreq_attr static
+Date: Fri, 11 Nov 2016 08:49:41 +0530
+Message-ID: <20161111031941.GF11670@vireshk-i7>
+References: <1478791145-21137-1-git-send-email-weiyj.lk@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:33830 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965808AbcKKDL1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 22:11:27 -0500
-Received: by mail-pf0-f175.google.com with SMTP id n85so3522918pfi.1
-        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 19:11:26 -0800 (PST)
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:35205 "EHLO
+        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965385AbcKKDTp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Nov 2016 22:19:45 -0500
+Received: by mail-pf0-f178.google.com with SMTP id i88so3618812pfk.2
+        for <linux-pm@vger.kernel.org>; Thu, 10 Nov 2016 19:19:45 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20161110225126.GK16026@codeaurora.org>
+In-Reply-To: <1478791145-21137-1-git-send-email-weiyj.lk@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, devicetree@vger.kernel.org
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: Markus Mayer <mmayer@broadcom.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Wei Yongjun <weiyongjun1@huawei.com>, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 10-11-16, 14:51, Stephen Boyd wrote:
-> On 11/10, Viresh Kumar wrote:
-> > On 10-11-16, 16:36, Mark Brown wrote:
-> > > On Thu, Nov 10, 2016 at 09:34:40AM +0530, Viresh Kumar wrote:
-> > > > On 09-11-16, 14:58, Mark Brown wrote:
-> > > > > On Wed, Oct 26, 2016 at 12:02:56PM +0530, Viresh Kumar wrote:
-> > > 
-> > > > > > +  Entries for multiple regulators shall be provided in the same field separated
-> > > > > > +  by angular brackets <>. The OPP binding doesn't provide any provisions to
-> > > > > > +  relate the values to their power supplies or the order in which the supplies
-> > > > > > +  need to be configured.
-> > > 
-> > > > > I don't understand how this works.  If we have an unordered list of
-> > > > > values to set for regulators how will we make sense of them?
-> > > 
-> > > > The platform driver is responsible to identify the order and pass it on to the
-> > > > OPP core. And the platform driver needs to have that hard coded.
-> > > 
-> > > That *really* should be in the binding.
-> > 
-> > Okay, how do you suggest doing that? Will a property like supply-names
-> > in the OPP table be fine? Like this:
-> > 
-> > @@ -369,13 +378,16 @@ Example 4: Handling multiple regulators
-> >                         compatible = "arm,cortex-a7";
-> >                         ...
-> >  
-> > -                       cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
-> > +                       vcc0-supply = <&cpu_supply0>;
-> > +                       vcc1-supply = <&cpu_supply1>;
-> > +                       vcc2-supply = <&cpu_supply2>;
-> >                         operating-points-v2 = <&cpu0_opp_table>;
-> >                 };
-> >         };
-> >  
-> >         cpu0_opp_table: opp_table0 {
-> >                 compatible = "operating-points-v2";
-> > +               supply-names = "vcc0", "vcc1", "vcc2";
-> >                 opp-shared;
-> > 
+On 10-11-16, 15:19, Wei Yongjun wrote:
+> From: Wei Yongjun <weiyongjun1@huawei.com>
 > 
-> No. The supply names (and also clock names/index) should be left
-> up to the consumer of the OPP table. We don't want to encode any
-> sort of details like this between the OPP table and the consumer
-> of it in DT because then it seriously couples the OPP table to
-> the consumer device. "The binding" in this case that needs to be
-> updated is the consumer binding, to indicate that it correlated
-> foo-supply and bar-supply to index 0 and 1 of the OPP table
-> voltages.
+> Fixes the following sparse warning:
+> 
+> drivers/cpufreq/brcmstb-avs-cpufreq.c:982:18: warning:
+>  symbol 'brcm_avs_cpufreq_attr' was not declared. Should it be static?
+> 
+> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> ---
+>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+> index b761d54..4fda623 100644
+> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
+> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+> @@ -979,7 +979,7 @@ cpufreq_freq_attr_ro(brcm_avs_pmap);
+>  cpufreq_freq_attr_ro(brcm_avs_voltage);
+>  cpufreq_freq_attr_ro(brcm_avs_frequency);
+>  
+> -struct freq_attr *brcm_avs_cpufreq_attr[] = {
+> +static struct freq_attr *brcm_avs_cpufreq_attr[] = {
+>  	&cpufreq_freq_attr_scaling_available_freqs,
+>  	&brcm_avs_pstate,
+>  	&brcm_avs_mode,
 
-Are you saying that we shall have a property like this then?
-
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index ee91cbdd95ee..733946df2fb8 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -389,7 +389,10 @@ Example 4: Handling multiple regulators
-                        compatible = "arm,cortex-a7";
-                        ...
- 
--                       cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
-+                       vcc0-supply = <&cpu_supply0>;
-+                       vcc1-supply = <&cpu_supply1>;
-+                       vcc2-supply = <&cpu_supply2>;
-+                       opp-supply-names = "vcc0", "vcc1", "vcc2";
-                        operating-points-v2 = <&cpu0_opp_table>;
-                };
-        };
-
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
