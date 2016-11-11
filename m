@@ -1,77 +1,44 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: Cannot resume after entering WFI or suspend state
-Date: Fri, 11 Nov 2016 14:41:01 +0000
-Message-ID: <3c21a787-178f-9ef9-6c27-9296cb4533b9@arm.com>
-References: <CAMGZvfKPcRbURwuuKtr_TTc1nsn4fUSc6tH6p26CK0ZHdOkkfA@mail.gmail.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [PATCH V2 05/10] mfd: da9061: MFD core support
+Date: Fri, 11 Nov 2016 15:50:12 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CCE9AB0@SW-EX-MBX02.diasemi.com>
+References: <cover.1477501000.git.stwiss.opensource@diasemi.com>
+ <bf02595c2fa32ba0c4311e2d480321b811fc9cf5.1477501000.git.stwiss.opensource@diasemi.com>
+ <20161111103734.GD13638@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44706 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756014AbcKKOlE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Nov 2016 09:41:04 -0500
-In-Reply-To: <CAMGZvfKPcRbURwuuKtr_TTc1nsn4fUSc6tH6p26CK0ZHdOkkfA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161111103734.GD13638@dell>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: amit mahadik <amitmaddy@gmail.com>, linux-pm@lists.linux-foundation.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Amit,
-
-On 11/11/16 06:25, amit mahadik wrote:
-> Hi, I am trying to understand  the Linux Power management Unit
-> framework. I have an ARM Cortex-A9x4 board.
-
-Is this platform upstreamed ? I mean can I look at all the code executed
-in the suspend/resume path ?
-
-> When I enable pm_test or pass initcall_debug parameter through U-boot
-> via bootargs the system goes into (wfi/suspend state) and resumes
-> properly. However, the issue is when I am not using pm_test and
-
-I thought test_suspend=<x> was the command line for that. I don't see
-any code parsing pm_test. Could be your local change ?
-
-> initcall_debug and put my system into WFI/SUSPEND state , it does not
-> resume even if the registered wakeup IRQ is generated.
->
-That's strange an could be timing related.
-
-> Following are my Queries/observations. 1. Reading the log I find that
-> Linux Masks the non-wakeup interrupts. This code was not present in
-> linux 3.4.14.
-
-/me confused. You are using v3.4.* or v4.4.* kernel ? Why are you mixing
-the reference here ?
-
-> 2. I tried to disable IRQCHIP_MASK_ON_SUSPEND flag from irq_chip.
-> Doing so the I was able to resume from wfi state only once.
-
-Unless you understand your IRQ controller and it provide no way to set
-the wake up irq and it's taken care elsewhere in the hardware, you
-should retain that. Which irq driver is this ? again in upstream ?
-
-> After that the system resumed immediately without any interrupt after
-> putting it into wfi state. 3. I tried adding IRQF_NO_SUSPEND flag to
-> the wakeup interrupt and also used enable_irq_wake() function but
-> with no success.
-
-IRQF_NO_SUSPEND is not meant to be used for wakeup purposes. Read the
-documentation, it just makes sure, the interrup is not disabled when
-suspending and doesn't guarantee anything around wakeup source.
-
-> The system does not respond to any interrupts once in wfi/suspend
-> state. 4. I have attached log messages file for reference.
->
-
-It has a new parameter "suspend", so it must have own driver installing
-pm_suspend_ops ? Is that upstream ?
-
-You seem to have lot of custom code which is not in the mainline. It's
-difficult to help you if we don't have all the necessary information on
-your setup.
-
--- 
-Regards,
-Sudeep
+T24gMTEgTm92ZW1iZXIgMjAxNiAxMDozOCwgTGVlIEpvbmVzIHdyb3RlOg0KPiANCj4gPiArc3Rh
+dGljIHN0cnVjdCByZXNvdXJjZSBkYTkwNjFfY29yZV9yZXNvdXJjZXNbXSA9IHsNCj4gPiArCURF
+RklORV9SRVNfTkFNRUQoREE5MDYxX0lSUV9WRERfV0FSTiwgMSwgIlZERF9XQVJOIiwgSU9SRVNP
+VVJDRV9JUlEpLA0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCByZXNvdXJjZSBk
+YTkwNjFfcmVndWxhdG9yc19yZXNvdXJjZXNbXSA9IHsNCj4gPiArCURFRklORV9SRVNfTkFNRUQo
+REE5MDYxX0lSUV9MRE9fTElNLCAxLCAiTERPX0xJTSIsIElPUkVTT1VSQ0VfSVJRKSwNCj4gPiAr
+fTsNCj4gPiArDQo+ID4gK3N0YXRpYyBzdHJ1Y3QgcmVzb3VyY2UgZGE5MDYxX3RoZXJtYWxfcmVz
+b3VyY2VzW10gPSB7DQo+ID4gKwlERUZJTkVfUkVTX05BTUVEKERBOTA2MV9JUlFfVEVNUCwgMSwg
+IlRIRVJNQUwiLCBJT1JFU09VUkNFX0lSUSksDQo+ID4gK307DQo+ID4gKw0KPiA+ICtzdGF0aWMg
+c3RydWN0IHJlc291cmNlIGRhOTA2MV93ZHRfcmVzb3VyY2VzW10gPSB7DQo+ID4gKwlERUZJTkVf
+UkVTX05BTUVEKERBOTA2MV9JUlFfV0RHX1dBUk4sIDEsICJXRF9XQVJOIiwgSU9SRVNPVVJDRV9J
+UlEpLA0KPiA+ICt9Ow0KPiA+ICsNCj4gPiArc3RhdGljIHN0cnVjdCByZXNvdXJjZSBkYTkwNjFf
+b25rZXlfcmVzb3VyY2VzW10gPSB7DQo+ID4gKwlERUZJTkVfUkVTX05BTUVEKERBOTA2MV9JUlFf
+T05LRVksIDEsICJPTktFWSIsIElPUkVTT1VSQ0VfSVJRKSwNCj4gPiArfTsNCj4gDQo+IFRoZXNl
+IHNob3VsZCBhbCBiZTogREVGSU5FX1JFU19JT19OQU1FRCgpDQoNCkhhdmUgYWx0ZXJlZCB0aGVz
+ZSB0byBERUZJTkVfUkVTX0lSUV9OQU1FRCgpDQoNCj4gPiBAQCAtMTQyLDcgKzI1Nyw3IEBAIHN0
+YXRpYyBjb25zdCBzdHJ1Y3QgbWZkX2NlbGwgZGE5MDYyX2RldnNbXSA9IHsNCj4gPiAgCQkubmFt
+ZQkJPSAiZGE5MDYyLXdhdGNoZG9nIiwNCj4gPiAgCQkubnVtX3Jlc291cmNlcwk9IEFSUkFZX1NJ
+WkUoZGE5MDYyX3dkdF9yZXNvdXJjZXMpLA0KPiA+ICAJCS5yZXNvdXJjZXMJPSBkYTkwNjJfd2R0
+X3Jlc291cmNlcywNCj4gPiAtCQkub2ZfY29tcGF0aWJsZSAgPSAiZGxnLGRhOTA2Mi13ZHQiLA0K
+PiA+ICsJCS5vZl9jb21wYXRpYmxlICA9ICJkbGcsZGE5MDYyLXdhdGNoZG9nIiwNCj4gDQo+IFRo
+aXMgc2hvdWxkIGJlIGEgc2VwYXJhdGUgY2hhbmdlLg0KDQpPay4gcmV2ZXJ0ZWQuDQoNCj4gPiBA
+QCAtMjA4LDYgKzMyNCw3IEBAIHN0YXRpYyBpbnQgZGE5MDYyX2dldF9kZXZpY2VfdHlwZShzdHJ1
+Y3QgZGE5MDYyICpjaGlwKQ0KPiA+ICAJCWRldl9lcnIoY2hpcC0+ZGV2LCAiQ2Fubm90IHJlYWQg
+Y2hpcCBJRC5cbiIpOw0KPiA+ICAJCXJldHVybiAtRUlPOw0KPiA+ICAJfQ0KPiA+ICsNCj4gDQo+
+IFNuZWFreSENCg0KUmVtb3ZlZCB0aGUgd2hpdGVzcGFjZS4NCg==
