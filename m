@@ -1,126 +1,76 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH v3] PM / devfreq: Restart previous governor if new governor
- fails to start
-Date: Fri, 11 Nov 2016 15:25:06 -0800
-Message-ID: <58265352.4030708@codeaurora.org>
-References: <CGME20161026191715epcas1p311c2c626563a736e14c83fb0504c099e@epcas1p3.samsung.com> <1477509425-16936-1-git-send-email-skannan@codeaurora.org> <de0f8010-31b2-8cec-f793-393c2199f44d@samsung.com> <5820CE7E.40802@codeaurora.org> <5821948B.2010907@samsung.com> <58223AF1.2030605@codeaurora.org> <58227CDB.6050907@samsung.com> <58228B9E.2090108@samsung.com> <58228C10.3070502@samsung.com> <58238840.90802@codeaurora.org> <5823BB01.3090502@samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
+Date: Sat, 12 Nov 2016 00:34:47 +0100
+Message-ID: <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
+References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
+ <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
+ <20161110184910.GA135921@google.com> <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
+ <20161111163147.GC7138@atomide.com> <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
+ <20161111222911.GL7138@atomide.com> <20161111223234.GM7138@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5823BB01.3090502@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:33913 "EHLO
+        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934163AbcKKXes (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 18:34:48 -0500
+In-Reply-To: <20161111223234.GM7138@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 11/09/2016 04:10 PM, Chanwoo Choi wrote:
-> Hi,
->
-> On 2016년 11월 10일 05:34, Saravana Kannan wrote:
->> On 11/08/2016 06:38 PM, Chanwoo Choi wrote:
->>> On 2016년 11월 09일 11:36, Chanwoo Choi wrote:
->>>> Hi,
->>>>
->>>> On 2016년 11월 09일 10:33, Chanwoo Choi wrote:
->>>>> On 2016년 11월 09일 05:52, Saravana Kannan wrote:
->>>>>> On 11/08/2016 01:02 AM, Chanwoo Choi wrote:
->>>>>>> Hi,
->>>>>>>
->>>>>>> On 2016년 11월 08일 03:57, Saravana Kannan wrote:
->>>>>>>> On 10/26/2016 05:06 PM, Chanwoo Choi wrote:
->>>>>>>>> Hi,
->>>>>>>>>
->>>>>>>>> On 2016년 10월 27일 04:17, Saravana Kannan wrote:
->>>>>>>>>> If the new governor fails to start, switch back to old governor so that the
->>>>>>>>>> devfreq state is not left in some weird limbo.
->>>>>>>>>>
->>>>>>>>>> Signed-off-by: Saravana Kannan <skannan@codeaurora.org>
->>>>>>>>>> ---
->>>>>>>>>> * Fix NULL deref for real this time.
->>>>>>>>>> * Addressed some style preferences.
->>>>>>>>>>
->>>>>>>>>>      drivers/devfreq/devfreq.c | 13 +++++++++++--
->>>>>>>>>>      1 file changed, 11 insertions(+), 2 deletions(-)
->>>>>>>>>>
->>>>>>>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>>>>>>> index bf3ea76..77c41a5 100644
->>>>>>>>>> --- a/drivers/devfreq/devfreq.c
->>>>>>>>>> +++ b/drivers/devfreq/devfreq.c
->>>>>>>>>> @@ -919,7 +919,7 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>>>>>>          struct devfreq *df = to_devfreq(dev);
->>>>>>>>>>          int ret;
->>>>>>>>>>          char str_governor[DEVFREQ_NAME_LEN + 1];
->>>>>>>>>> -    struct devfreq_governor *governor;
->>>>>>>>>> +    const struct devfreq_governor *governor, *prev_governor;
->>>>>>>>>>
->>>>>>>>>>          ret = sscanf(buf, "%" __stringify(DEVFREQ_NAME_LEN) "s", str_governor);
->>>>>>>>>>          if (ret != 1)
->>>>>>>>>> @@ -944,12 +944,21 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->>>>>>>>>>                  goto out;
->>>>>>>>>>              }
->>>>>>>>>>          }
->>>>>>>>>> +    prev_governor = df->governor;
->>>>>>>>>>          df->governor = governor;
->>>>>>>>>>          strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
->>>>>>>>>>          ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
->>>>>>>>>> -    if (ret)
->>>>>>>>>> +    if (ret) {
->>>>>>>>>>              dev_warn(dev, "%s: Governor %s not started(%d)\n",
->>>>>>>>>>                   __func__, df->governor->name, ret);
->>>>>>>>>> +        if (prev_governor) {
->>>>>>>>>
->>>>>>>>> I think that prev_governor is always set. You don't need to check it.
->>>>>>>>> Why do check it?
->>>>>>>>
->>>>>>>> Not true. Even higher up in this function, we check if df->governor != NULL. Simple example would be that the default governor passed in while adding the device isn't compiled in.
->>>>>>>
->>>>>>> I don't understand. If device is not registered by devfreq_add_device(),
->>>>>>> you don't change the governor by using governor_store().
->>>>>>>
->>>>>>> If you can change the governor through governor_store(),
->>>>>>> it means that the devfreq instance was added without any problem.
->>>>>>> The added devfreq instance must have the sepecific governor
->>>>>>> on df->governor variable.
->>>>>>>
->>>>>>> So, I think that df->governor is always set and then prev_governor is always set.
->>>>>>
->>>>>> Read the code more closely. add_device doesn't (and shouldn't) fail if the governor isn't present. After that, the governor could be changed from user space.
->>>>>
->>>>> If governor is not present during devfreq_add_device(),
->>>>> the devfreq instance is not able to register the devfreq framework.
->>>>> So, the user never touch the sysfs[1] to change the governor
->>>>> because the sysfs[1] is not created by devfreq framework.
->>>>> [1] /sys/class/devfreq/[device name]/governor
->>>>>
->>>>> In summary, if governor is not present during devfreq_add_device(),
->>>>> the devfreq framework doesn't create tye sysfs[1] for governor.
->>>>>
->>>>> The user-space never change the governor through sysfs[1]
->>>>> because there is no any sysfs entry[1].
->>>>
->>>> I checked the code of devfreq_add_device().
->>>> As you mentioned, if there is no governor,
->>>> devfreq_add_device() don't pass wihtout calling the devfreq->governor->even_handler().
->>>
->>> Wrong expression / don't pass -> pass
->>>
+On Fri, Nov 11, 2016 at 11:32 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Tony Lindgren <tony@atomide.com> [161111 14:29]:
+>> * Rafael J. Wysocki <rafael@kernel.org> [161111 13:33]:
+>> > On Fri, Nov 11, 2016 at 5:31 PM, Tony Lindgren <tony@atomide.com> wrote:
+>> > > * Rafael J. Wysocki <rafael@kernel.org> [161110 16:06]:
+>> > >> On Thu, Nov 10, 2016 at 7:49 PM, Brian Norris <briannorris@chromium.org> wrote:
+>> > >> > On Thu, Nov 10, 2016 at 10:13:55AM -0800, Dmitry Torokhov wrote:
+>> > >> >> On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
+>> > >> >> > It's important that user space can figure out what device woke the
+>> > >> >> > system from suspend -- e.g., for debugging, or for implementing
+>> > >> >> > conditional wake behavior. Dedicated wakeup IRQs don't currently do
+>> > >> >> > that.
+>> > >> >> >
+>> > >> >> > Let's report the event (pm_wakeup_event()) and also allow drivers to
+>> > >> >> > synchronize with these events in their resume path (hence, disable_irq()
+>> > >> >> > instead of disable_irq_nosync()).
+>> > >> >>
+>> > >> >> Hmm, dev_pm_disable_wake_irq() is called from
+>> > >> >> rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
+>> > >> >> disable interrupts. Dropping _nosync() feels dangerous.
+>> > >> >
+>> > >> > Indeed. So how do you suggest we get sane wakeup reports? Every device
+>> > >> > or bus that's going to use the dedicated wake APIs has to
+>> > >> > synchronize_irq() [1] in their resume() routine? Seems like an odd
+>> > >> > implementation detail to have to remember (and therefore most drivers
+>> > >> > will get it wrong).
+>> > >> >
+>> > >> > Brian
+>> > >> >
+>> > >> > [1] Or maybe at least create a helper API that will extract the
+>> > >> > dedicated wake IRQ number and do the synchronize_irq() for us, so
+>> > >> > drivers don't have to stash this separately (or poke at
+>> > >> > dev->power.wakeirq->irq) for no good reason.
+>> > >>
+>> > >> Well, in the first place, can anyone please refresh my memory on why
+>> > >> it is necessary to call dev_pm_disable_wake_irq() under power.lock?
+>> > >
+>> > > I guess no other reason except we need to manage the wakeirq
+>> > > for rpm_callback(). So we dev_pm_enable_wake_irq() before
+>> > > rpm_callback() in rpm_suspend(), then disable on resume.
+>> >
+>> > But we drop the lock in rpm_callback(), so can't it be moved to where
+>> > the callback is invoked?
 >>
->> I think it's correct as is. Just because the governor isn't there (or hasn't registered yet) doesn't mean the device add should fail.
->>
->> That aside, do you care to ack this patch for the way the code is currently?
+>> Then we're back to patching all the drivers again, no?
 >
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Sorry I misunderstood, yeah that should work if rpm_callback() drops
+> the lock.
 
-Thanks
+It still will not re-enable interrupts if the irq_safe flag is set.  I
+wonder if we really care about this case, though.
 
-> After fixing the bug of devfreq_add_device(),
-> I'll remove the unneeded 'if statement' of prev_governor in governor_store.
->
-
-As mentioned earlier, I don't think it's a bug. It's fine as is.
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Thanks,
+Rafael
