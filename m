@@ -1,177 +1,146 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to SCHED_FIFO task
-Date: Fri, 11 Nov 2016 15:52:22 +0530
-Message-ID: <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
-References: <cover.1478858983.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1478858983.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1478858983.git.viresh.kumar@linaro.org>
-References: <cover.1478858983.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Steve Muckle <smuckle.linux@gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH V2 05/10] mfd: da9061: MFD core support
+Date: Fri, 11 Nov 2016 10:37:34 +0000
+Message-ID: <20161111103734.GD13638@dell>
+References: <cover.1477501000.git.stwiss.opensource@diasemi.com>
+ <bf02595c2fa32ba0c4311e2d480321b811fc9cf5.1477501000.git.stwiss.opensource@diasemi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:33698 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752529AbcKKKes (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 05:34:48 -0500
+Received: by mail-wm0-f52.google.com with SMTP id c184so59181928wmd.0
+        for <linux-pm@vger.kernel.org>; Fri, 11 Nov 2016 02:34:47 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <bf02595c2fa32ba0c4311e2d480321b811fc9cf5.1477501000.git.stwiss.opensource@diasemi.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Steve Twiss <stwiss.opensource@diasemi.com>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>, Zhang Rui <rui.zhang@intel.com>
 
-If slow path frequency changes are conducted in a SCHED_OTHER context
-then they may be delayed for some amount of time, including
-indefinitely, when real time or deadline activity is taking place.
+On Wed, 26 Oct 2016, Steve Twiss wrote:
 
-Move the slow path to a real time kernel thread. In the future the
-thread should be made SCHED_DEADLINE. The RT priority is arbitrarily set
-to 50 for now.
+> From: Steve Twiss <stwiss.opensource@diasemi.com>
+> 
+> MFD support for DA9061 is provided as part of the DA9062 device driver.
+> 
+> The registers header file adds two new chip variant IDs defined in DA9061
+> and DA9062 hardware. The core header file adds new software enumerations
+> for listing the valid DA9061 IRQs and a da9062_compatible_types enumeration
+> for distinguishing between DA9061/62 devices in software.
+> 
+> The core source code adds a new .compatible of_device_id entry. This is
+> extended from DA9062 to support both "dlg,da9061" and "dlg,da9062". The
+> .data entry now holds a reference to the enumerated device type.
+> 
+> A new regmap_irq_chip model is added for DA9061 and this supports the new
+> list of regmap_irq entries. A new mfd_cell da9061_devs[] array lists the
+> new sub system components for DA9061. Support is added for a new DA9061
+> regmap_config which lists the correct readable, writable and volatile
+> ranges for this chip.
+> 
+> The probe function uses the device tree compatible string to switch on the
+> da9062_compatible_types and configure the correct mfd cells, irq chip and
+> regmap config.
+>  
+> Kconfig is updated to reflect support for DA9061 and DA9062 PMICs.
+> 
+> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+> 
+> ---
+> This patch applies against linux-next and v4.8
+> 
+> v1 -> v2
+>  - Patch renamed from [PATCH V1 01/10] to [PATCH V2 05/10] -- these
+>    changes were made to fix checkpatch warnings caused by the patch
+>    set dependency order
+>  - Fixed typo in the commit message "readble" to "readable"
+>  - Removed the explicit cross-check to decide if there is a conflict
+>    between the device tree compatible string and the hardware definition.
+>    This patch assumes the device tree is correctly written and therefore
+>    removes the need for a hardware/DT sanity check.
+>  - Removed extra semicolon in drivers/mfd/da9062-core.c:877
+>  - Re-write compatible entries into numerical order
+> 
+> Lee,
+> 
+> This patch adds support for the DA9061 PMIC. This is done as part of the
+> existing DA9062 device driver by extending the of_device_id match table.
+> This in turn allows new MFD cells, irq chip and regmap definitions to
+> support DA9061.
+> 
+> Regards,
+> Steve Twiss, Dialog Semiconductor Ltd.
+> 
+> 
+>  drivers/mfd/Kconfig                  |   5 +-
+>  drivers/mfd/da9062-core.c            | 427 +++++++++++++++++++++++++++++++++--
+>  include/linux/mfd/da9062/core.h      |  27 ++-
+>  include/linux/mfd/da9062/registers.h |   2 +
+>  4 files changed, 441 insertions(+), 20 deletions(-)
 
-Hackbench results on ARM Exynos, dual core A15 platform for 10
-iterations:
+[...]
 
-$ hackbench -s 100 -l 100 -g 10 -f 20
+> +static struct resource da9061_core_resources[] = {
+> +	DEFINE_RES_NAMED(DA9061_IRQ_VDD_WARN, 1, "VDD_WARN", IORESOURCE_IRQ),
+> +};
+> +
+> +static struct resource da9061_regulators_resources[] = {
+> +	DEFINE_RES_NAMED(DA9061_IRQ_LDO_LIM, 1, "LDO_LIM", IORESOURCE_IRQ),
+> +};
+> +
+> +static struct resource da9061_thermal_resources[] = {
+> +	DEFINE_RES_NAMED(DA9061_IRQ_TEMP, 1, "THERMAL", IORESOURCE_IRQ),
+> +};
+> +
+> +static struct resource da9061_wdt_resources[] = {
+> +	DEFINE_RES_NAMED(DA9061_IRQ_WDG_WARN, 1, "WD_WARN", IORESOURCE_IRQ),
+> +};
+> +
+> +static struct resource da9061_onkey_resources[] = {
+> +	DEFINE_RES_NAMED(DA9061_IRQ_ONKEY, 1, "ONKEY", IORESOURCE_IRQ),
+> +};
 
-Before			After
----------------------------------
-1.808			1.603
-1.847			1.251
-2.229			1.590
-1.952			1.600
-1.947			1.257
-1.925			1.627
-2.694			1.620
-1.258			1.621
-1.919			1.632
-1.250			1.240
+These should al be: DEFINE_RES_IO_NAMED()
 
-Average:
+[...]
 
-1.8829			1.5041
+>  };
+> @@ -142,7 +257,7 @@ static const struct mfd_cell da9062_devs[] = {
+>  		.name		= "da9062-watchdog",
+>  		.num_resources	= ARRAY_SIZE(da9062_wdt_resources),
+>  		.resources	= da9062_wdt_resources,
+> -		.of_compatible  = "dlg,da9062-wdt",
+> +		.of_compatible  = "dlg,da9062-watchdog",
 
-Based on initial work by Steve Muckle.
+This should be a separate change.
 
-Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 62 ++++++++++++++++++++++++++++++++--------
- 1 file changed, 50 insertions(+), 12 deletions(-)
+>  	},
+>  	{
+>  		.name		= "da9062-thermal",
+> @@ -200,7 +315,8 @@ static int da9062_clear_fault_log(struct da9062 *chip)
+>  
+>  static int da9062_get_device_type(struct da9062 *chip)
+>  {
+> -	int device_id, variant_id, variant_mrc;
+> +	int device_id, variant_id, variant_mrc, variant_vrc;
+> +	char *type;
+>  	int ret;
+>  
+>  	ret = regmap_read(chip->regmap, DA9062AA_DEVICE_ID, &device_id);
+> @@ -208,6 +324,7 @@ static int da9062_get_device_type(struct da9062 *chip)
+>  		dev_err(chip->dev, "Cannot read chip ID.\n");
+>  		return -EIO;
+>  	}
+> +
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index ccb2ab89affb..045ce0a4e6d1 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -12,6 +12,7 @@
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
- #include <linux/cpufreq.h>
-+#include <linux/kthread.h>
- #include <linux/slab.h>
- #include <trace/events/power.h>
- 
-@@ -35,8 +36,10 @@ struct sugov_policy {
- 
- 	/* The next fields are only needed if fast switch cannot be used. */
- 	struct irq_work irq_work;
--	struct work_struct work;
-+	struct kthread_work work;
- 	struct mutex work_lock;
-+	struct kthread_worker worker;
-+	struct task_struct *thread;
- 	bool work_in_progress;
- 
- 	bool need_freq_update;
-@@ -291,9 +294,10 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	raw_spin_unlock(&sg_policy->update_lock);
- }
- 
--static void sugov_work(struct work_struct *work)
-+static void sugov_work(struct kthread_work *work)
- {
--	struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
-+	struct sugov_policy *sg_policy =
-+		container_of(work, struct sugov_policy, work);
- 
- 	mutex_lock(&sg_policy->work_lock);
- 	__cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
-@@ -308,7 +312,7 @@ static void sugov_irq_work(struct irq_work *irq_work)
- 	struct sugov_policy *sg_policy;
- 
- 	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
--	schedule_work_on(smp_processor_id(), &sg_policy->work);
-+	kthread_queue_work(&sg_policy->worker, &sg_policy->work);
- }
- 
- /************************** sysfs interface ************************/
-@@ -362,9 +366,23 @@ static struct kobj_type sugov_tunables_ktype = {
- 
- static struct cpufreq_governor schedutil_gov;
- 
-+static void sugov_policy_free(struct sugov_policy *sg_policy)
-+{
-+	if (!sg_policy->policy->fast_switch_enabled) {
-+		kthread_flush_worker(&sg_policy->worker);
-+		kthread_stop(sg_policy->thread);
-+	}
-+
-+	mutex_destroy(&sg_policy->work_lock);
-+	kfree(sg_policy);
-+}
-+
- static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
- {
- 	struct sugov_policy *sg_policy;
-+	struct task_struct *thread;
-+	struct sched_param param = { .sched_priority = 50 };
-+	int ret;
- 
- 	sg_policy = kzalloc(sizeof(*sg_policy), GFP_KERNEL);
- 	if (!sg_policy)
-@@ -372,16 +390,36 @@ static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
- 
- 	sg_policy->policy = policy;
- 	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
--	INIT_WORK(&sg_policy->work, sugov_work);
- 	mutex_init(&sg_policy->work_lock);
- 	raw_spin_lock_init(&sg_policy->update_lock);
--	return sg_policy;
--}
- 
--static void sugov_policy_free(struct sugov_policy *sg_policy)
--{
--	mutex_destroy(&sg_policy->work_lock);
--	kfree(sg_policy);
-+	/* kthread only required for slow path */
-+	if (policy->fast_switch_enabled)
-+		return sg_policy;
-+
-+	kthread_init_work(&sg_policy->work, sugov_work);
-+	kthread_init_worker(&sg_policy->worker);
-+	thread = kthread_create(kthread_worker_fn, &sg_policy->worker,
-+			"sugov:%d", cpumask_first(policy->related_cpus));
-+	if (IS_ERR(thread)) {
-+		mutex_destroy(&sg_policy->work_lock);
-+		kfree(sg_policy);
-+		pr_err("failed to create sugov thread: %ld\n", PTR_ERR(thread));
-+		return NULL;
-+	}
-+	sg_policy->thread = thread;
-+
-+	ret = sched_setscheduler_nocheck(thread, SCHED_FIFO, &param);
-+	if (ret) {
-+		sugov_policy_free(sg_policy);
-+		pr_warn("%s: failed to set SCHED_FIFO\n", __func__);
-+		return NULL;
-+	}
-+
-+	kthread_bind_mask(thread, policy->related_cpus);
-+	wake_up_process(thread);
-+
-+	return sg_policy;
- }
- 
- static struct sugov_tunables *sugov_tunables_alloc(struct sugov_policy *sg_policy)
-@@ -541,7 +579,7 @@ static void sugov_stop(struct cpufreq_policy *policy)
- 	synchronize_sched();
- 
- 	irq_work_sync(&sg_policy->irq_work);
--	cancel_work_sync(&sg_policy->work);
-+	kthread_cancel_work_sync(&sg_policy->work);
- }
- 
- static void sugov_limits(struct cpufreq_policy *policy)
+Sneaky!
+
 -- 
-2.7.1.410.g6faf27b
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
