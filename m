@@ -1,79 +1,56 @@
-From: Markus Mayer <markus.mayer@broadcom.com>
-Subject: Re: [PATCH] cpufreq: brcmstb-cpufreq: CPUfreq driver for older
- Broadcom STB SoCs
-Date: Fri, 11 Nov 2016 11:00:40 -0800
-Message-ID: <CAGt4E5vt1=WhOcnUDm0tEKYkG3BSwLBX8rxwYP=-AE58Db_zww@mail.gmail.com>
-References: <20161110235601.71395-1-code@mmayer.net> <201611111422.fC7e66mg%fengguang.wu@intel.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
+Date: Fri, 11 Nov 2016 11:40:42 -0800
+Message-ID: <20161111194041.GA111624@google.com>
+References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
+ <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
+ <20161110184910.GA135921@google.com>
+ <20161110204911.GK27724@atomide.com>
+ <20161110213038.GA108490@google.com>
+ <20161111164753.GD7138@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f178.google.com ([209.85.217.178]:36008 "EHLO
-        mail-ua0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933664AbcKKTAm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 14:00:42 -0500
-Received: by mail-ua0-f178.google.com with SMTP id b35so20195862uaa.3
-        for <linux-pm@vger.kernel.org>; Fri, 11 Nov 2016 11:00:42 -0800 (PST)
-In-Reply-To: <201611111422.fC7e66mg%fengguang.wu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161111164753.GD7138@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: Markus Mayer <code@mmayer.net>, kbuild-all@01.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 10 November 2016 at 22:14, kbuild test robot <lkp@intel.com> wrote:
-> Hi Markus,
->
-> [auto build test ERROR on pm/linux-next]
-> [also build test ERROR on next-20161110]
-> [cannot apply to v4.9-rc4]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Markus-Mayer/cpufreq-brcmstb-cpufreq-CPUfreq-driver-for-older-Broadcom-STB-SoCs/20161111-075914
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
-> config: arm-allmodconfig (attached as .config)
-> compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=arm
->
-> All errors (new ones prefixed by >>):
->
->>> FATAL: drivers/cpufreq/brcmstb-cpufreq: sizeof(struct platform_device_id)=24 is not a modulo of the size of section __mod_platform__<identifier>_device_table=392.
->>> Fix definition of struct platform_device_id in mod_devicetable.h
+On Fri, Nov 11, 2016 at 08:47:54AM -0800, Tony Lindgren wrote:
+> But sounds like the threaded IRQ is not your concern and you mostly
 
-This is a strange one. It does apply to Rafael's pm-linux/linux-next
-branch when I do it manually. It also builds.
+Right, threaded is OK for this; it's not performance critical. It just
+highlighted the fact that its completion is not synchronized with
+anything.
 
-  CHK     include/config/kernel.release
-  CHK     include/generated/uapi/linux/version.h
-  CHK     include/generated/utsrelease.h
-  CHK     include/generated/timeconst.h
-  CHK     include/generated/bounds.h
-  CHK     include/generated/asm-offsets.h
-  CALL    scripts/checksyscalls.sh
-  CHK     include/generated/compile.h
-  EXPORTS arch/arm/lib/lib-ksyms.o
-  LD      arch/arm/lib/built-in.o
-  CC      drivers/cpufreq/brcmstb-cpufreq.o
-  EXPORTS lib/lib-ksyms.o
-  LD      drivers/cpufreq/built-in.o
-  LD      lib/built-in.o
-  EXPORTS drivers/firmware/efi/libstub/lib-ksyms.o
-  LD      drivers/firmware/efi/libstub/built-in.o
-  LD      drivers/firmware/efi/built-in.o
-  LD      drivers/firmware/built-in.o
-  LD      drivers/built-in.o
-  LD      vmlinux.o
-  MODPOST vmlinux.o
-[...]
+> care about getting the right time for the wake up interrupt.
 
-I used the linux-next branch from here:
-https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git
+Not "time", per se, but blame. But that blame is timing related: if it
+comes after the system finished resuming, then it's useless, since
+user-space won't know to come back and check later.
 
-Regards,
--Markus
+> The wakeup interrupt controller knows something happened earlier,
+> so maybe it could report that time if queried somehow?
 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Sort of. We have /sys/power/pm_wakeup_irq already. But it's really less
+useful to get IRQ-level stats for this, than to get device info. AFAICT,
+there's no machine-readable association between IRQs and devices; the
+best you can get is by parsing the names in /proc/interrupts.
+
+Or, if we really want to say that's sufficient, then maybe we should
+kill all the device-level wakeup stats in sysfs... (Is that what the
+flamewar was all about? I hope I'm not poking the hornet's nest.)
+
+BTW, for context, I'm working on using dev_pm_set_dedicated_wake_irq()
+for a Wifi driver which supports out-of-band (e.g., GPIO-based) wakeup.
+I see it's used in the I2C core, but the I2C code never actually calls
+dev_pm_enable_wake_irq(). So while I think I can use this API OK for
+my Wifi driver (calling dev_pm_{en,dis}able_wake_irq() at system
+suspend/resume), I'm not sure this will help the I2C case.
+
+The more I look at this API, the more I'm confused, especially about its
+seeming dependence on runtime PM.
+
+Brian
