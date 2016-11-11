@@ -1,76 +1,61 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Sat, 12 Nov 2016 00:34:47 +0100
-Message-ID: <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
-References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
- <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
- <20161110184910.GA135921@google.com> <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
- <20161111163147.GC7138@atomide.com> <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
- <20161111222911.GL7138@atomide.com> <20161111223234.GM7138@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Use cpu load based algorithm for mobile class devices
+Date: Fri, 11 Nov 2016 15:47:39 -0800
+Message-ID: <1478908059-56178-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:33913 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934163AbcKKXes (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 18:34:48 -0500
-In-Reply-To: <20161111223234.GM7138@atomide.com>
+Received: from mga03.intel.com ([134.134.136.65]:1532 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933797AbcKKXsV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Nov 2016 18:48:21 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: lenb@kernel.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Fri, Nov 11, 2016 at 11:32 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * Tony Lindgren <tony@atomide.com> [161111 14:29]:
->> * Rafael J. Wysocki <rafael@kernel.org> [161111 13:33]:
->> > On Fri, Nov 11, 2016 at 5:31 PM, Tony Lindgren <tony@atomide.com> wrote:
->> > > * Rafael J. Wysocki <rafael@kernel.org> [161110 16:06]:
->> > >> On Thu, Nov 10, 2016 at 7:49 PM, Brian Norris <briannorris@chromium.org> wrote:
->> > >> > On Thu, Nov 10, 2016 at 10:13:55AM -0800, Dmitry Torokhov wrote:
->> > >> >> On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
->> > >> >> > It's important that user space can figure out what device woke the
->> > >> >> > system from suspend -- e.g., for debugging, or for implementing
->> > >> >> > conditional wake behavior. Dedicated wakeup IRQs don't currently do
->> > >> >> > that.
->> > >> >> >
->> > >> >> > Let's report the event (pm_wakeup_event()) and also allow drivers to
->> > >> >> > synchronize with these events in their resume path (hence, disable_irq()
->> > >> >> > instead of disable_irq_nosync()).
->> > >> >>
->> > >> >> Hmm, dev_pm_disable_wake_irq() is called from
->> > >> >> rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
->> > >> >> disable interrupts. Dropping _nosync() feels dangerous.
->> > >> >
->> > >> > Indeed. So how do you suggest we get sane wakeup reports? Every device
->> > >> > or bus that's going to use the dedicated wake APIs has to
->> > >> > synchronize_irq() [1] in their resume() routine? Seems like an odd
->> > >> > implementation detail to have to remember (and therefore most drivers
->> > >> > will get it wrong).
->> > >> >
->> > >> > Brian
->> > >> >
->> > >> > [1] Or maybe at least create a helper API that will extract the
->> > >> > dedicated wake IRQ number and do the synchronize_irq() for us, so
->> > >> > drivers don't have to stash this separately (or poke at
->> > >> > dev->power.wakeirq->irq) for no good reason.
->> > >>
->> > >> Well, in the first place, can anyone please refresh my memory on why
->> > >> it is necessary to call dev_pm_disable_wake_irq() under power.lock?
->> > >
->> > > I guess no other reason except we need to manage the wakeirq
->> > > for rpm_callback(). So we dev_pm_enable_wake_irq() before
->> > > rpm_callback() in rpm_suspend(), then disable on resume.
->> >
->> > But we drop the lock in rpm_callback(), so can't it be moved to where
->> > the callback is invoked?
->>
->> Then we're back to patching all the drivers again, no?
->
-> Sorry I misunderstood, yeah that should work if rpm_callback() drops
-> the lock.
+Use get_target_pstate_use_cpu_load() to calculate target P-State for
+devices, which uses preferred power management profile as PM_MOBILE
+in ACPI FADT.
+This may help in resolving some thermal issues caused by low sustained
+cpu bound workloads. The current algorithm tend to over provision in this
+case as it doesn't look at the CPU busyness.
 
-It still will not re-enable interrupts if the irq_safe flag is set.  I
-wonder if we really care about this case, though.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-Thanks,
-Rafael
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index eb76073..8f683e2 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1828,6 +1828,19 @@ static void __init copy_pid_params(struct pstate_adjust_policy *policy)
+ 	pid_params.setpoint = policy->setpoint;
+ }
+ 
++#ifdef CONFIG_ACPI
++static void intel_pstate_use_acpi_profile(void)
++{
++	if (acpi_gbl_FADT.preferred_profile == PM_MOBILE)
++		pstate_funcs.get_target_pstate =
++				get_target_pstate_use_cpu_load;
++}
++#else
++static void intel_pstate_use_acpi_profile(struct pstate_funcs *funcs)
++{
++}
++#endif
++
+ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ {
+ 	pstate_funcs.get_max   = funcs->get_max;
+@@ -1839,6 +1852,7 @@ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_vid   = funcs->get_vid;
+ 	pstate_funcs.get_target_pstate = funcs->get_target_pstate;
+ 
++	intel_pstate_use_acpi_profile();
+ }
+ 
+ #ifdef CONFIG_ACPI
+-- 
+2.7.4
+
