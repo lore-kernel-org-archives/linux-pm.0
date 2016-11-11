@@ -1,65 +1,84 @@
-From: Petr Mladek <pmladek@suse.com>
-Subject: Re: [PATCH 3/3] thermal/intel_powerclamp: Convert to CPU hotplug
- state
-Date: Fri, 11 Nov 2016 11:07:13 +0100
-Message-ID: <20161111100713.GF2324@pathway.suse.cz>
-References: <1476707572-32215-1-git-send-email-pmladek@suse.com>
- <1476707572-32215-4-git-send-email-pmladek@suse.com>
- <20161021132118.4239af86@jacob-builder>
- <20161024154807.GQ23809@pathway.suse.cz>
- <20161024095529.2b1855b4@icelake>
- <20161027145348.GV23809@pathway.suse.cz>
- <20161027151726.s2uavcnnbtjvmboq@linutronix.de>
- <20161027132736.2a74c0b6@jacob-builder>
- <20161111093330.GE2324@pathway.suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:33610 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754256AbcKKKHQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Nov 2016 05:07:16 -0500
-Content-Disposition: inline
-In-Reply-To: <20161111093330.GE2324@pathway.suse.cz>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 1/3] cpufreq: schedutil: enable fast switch earlier
+Date: Fri, 11 Nov 2016 15:52:21 +0530
+Message-ID: <1acfffe798c0371e69ec1171f485499e7b49ed6d.1478858983.git.viresh.kumar@linaro.org>
+References: <cover.1478858983.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1478858983.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1478858983.git.viresh.kumar@linaro.org>
+References: <cover.1478858983.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Zhang Rui <rui.zhang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri 2016-11-11 10:33:30, Petr Mladek wrote:
-> Then I tried to revert the conversion to the kthread worker
-> API (2nd patch from this patchset), see below. And it still
-> hangs during the suspend inside
-> 
-> 	powerclamp_cpu_predown()
-> 	  kthread_stop(*percpu_thread);
-> 
-> 
-> Note that both kthread_flush_worker() and kthread_stop()
-> waits until the kthread gets scheduled and do some job.
-> Also note that the kthread is bound to the given CPU.
-> 
-> My guess is that the kthread cannot be scheduled at this stage.
-> I wonder if the CPU is already partially down or that tasks
-> are freezed so that "normal" tasks are not scheduled at
-> this point. I am still trying to understand the code
-> related to suspend, cpu hotplug, and scheduler.
+The fast_switch_enabled flag will be used a bit earlier while converting
+the schedutil governor to use kthread worker.
 
-And yes, the problem seems to be that the kthread is freezed
-so that it could not run. The suspend works when I disable:
+Prepare for that by moving the call to enable it to the beginning of
+sugov_init().
 
-	clamp_thread()
-//	  set_freezable();
-//	  try_to_freeze();
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 17 +++++++++++------
+ 1 file changed, 11 insertions(+), 6 deletions(-)
 
-In fact, we should not need these calls. They are needed only
-when we want to stop the kthread on exact location so that
-it does not produce I/O that would block/break suspend.
-But this is not the case of intel_powerclamp.
-
-I am going to do some more tests and will send a fix. It should
-be enough to remove the KTW_FREEZABLE flag from the
-kthread_create_worker_on_cpu() call.
-
-Best Regards,
-Petr
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 69e06898997d..ccb2ab89affb 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -416,9 +416,13 @@ static int sugov_init(struct cpufreq_policy *policy)
+ 	if (policy->governor_data)
+ 		return -EBUSY;
+ 
++	cpufreq_enable_fast_switch(policy);
++
+ 	sg_policy = sugov_policy_alloc(policy);
+-	if (!sg_policy)
+-		return -ENOMEM;
++	if (!sg_policy) {
++		ret = -ENOMEM;
++		goto disable_fast_switch;
++	}
+ 
+ 	mutex_lock(&global_tunables_lock);
+ 
+@@ -456,8 +460,6 @@ static int sugov_init(struct cpufreq_policy *policy)
+ 
+  out:
+ 	mutex_unlock(&global_tunables_lock);
+-
+-	cpufreq_enable_fast_switch(policy);
+ 	return 0;
+ 
+  fail:
+@@ -468,6 +470,10 @@ static int sugov_init(struct cpufreq_policy *policy)
+ 	mutex_unlock(&global_tunables_lock);
+ 
+ 	sugov_policy_free(sg_policy);
++
++ disable_fast_switch:
++	cpufreq_disable_fast_switch(policy);
++
+ 	pr_err("initialization failed (error %d)\n", ret);
+ 	return ret;
+ }
+@@ -478,8 +484,6 @@ static void sugov_exit(struct cpufreq_policy *policy)
+ 	struct sugov_tunables *tunables = sg_policy->tunables;
+ 	unsigned int count;
+ 
+-	cpufreq_disable_fast_switch(policy);
+-
+ 	mutex_lock(&global_tunables_lock);
+ 
+ 	count = gov_attr_set_put(&tunables->attr_set, &sg_policy->tunables_hook);
+@@ -490,6 +494,7 @@ static void sugov_exit(struct cpufreq_policy *policy)
+ 	mutex_unlock(&global_tunables_lock);
+ 
+ 	sugov_policy_free(sg_policy);
++	cpufreq_disable_fast_switch(policy);
+ }
+ 
+ static int sugov_start(struct cpufreq_policy *policy)
+-- 
+2.7.1.410.g6faf27b
