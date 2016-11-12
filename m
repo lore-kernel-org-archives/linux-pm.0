@@ -1,31 +1,56 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to
- SCHED_FIFO task
-Date: Sat, 12 Nov 2016 10:57:12 +0530
-Message-ID: <CAKohpokXHRBr78st=w=JF-dqLw3gVvZgGnAJ0-X-bZvVXQEPOQ@mail.gmail.com>
-References: <cover.1478858983.git.viresh.kumar@linaro.org> <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
- <CAJZ5v0jODn1gJtTtpTigA=7QwK04wzdFopr-R6GeoSchqgpgiQ@mail.gmail.com> <582670FD.7080203@codeaurora.org>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] timers: Fix timer inaccuracy
+Date: Sat, 12 Nov 2016 12:25:07 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1611121215190.3501@nanos>
+References: <1478684203-11966-1-git-send-email-joonwoop@codeaurora.org> <alpine.DEB.2.20.1611091045040.3501@nanos> <53b2d275-23f2-9ee2-7bde-e441659cf885@codeaurora.org> <alpine.DEB.2.20.1611101039540.3501@nanos> <58267675.9030006@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <582670FD.7080203@codeaurora.org>
+In-Reply-To: <58267675.9030006@codeaurora.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
+Cc: Joonwoo Park <joonwoop@codeaurora.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12 November 2016 at 07:01, Saravana Kannan <skannan@codeaurora.org> wrote:
-> Hold on a sec. I thought during LPC someone (Peter?) made a point that when
-> RT thread run, we should bump the frequency to max?
+On Fri, 11 Nov 2016, Saravana Kannan wrote:
+> On 11/10/2016 02:07 AM, Thomas Gleixner wrote:
+> > Deferrable timers shouldn't have been invented in the first place and yes,
+> > they are not going to happen on hrtimers, quite the contrary, I'm working
+> > on eliminating them completely.
+> 
+> If you do that, how exactly do you propose drivers do periodic polling while
+> the Linux isn't idling, but stop polling when Linux is idle? devfreq is a
+> classic example. devfreq is used in a lot of mobile devices. Across different
+> vendors, devfreq is used for scaling system memory, flash storage, GPU, etc.
+> You are going to kill power if you remove deferrable timers without having an
+> alternate mechanism to solve this requirement.
+> 
+> For example, when you are browsing on your phone and reading something on
+> screen (but not interacting with the device), the CPUs/clusters/caches go idle
+> for long periods (several seconds) of time. If you remove deferrable timers,
+> you are going to force a CPU wake up every 10ms or 50ms or whatever it's
+> configured for.
 
-I wasn't there but AFAIU, this is the case we have currently for the schedutil
-governor. And we (mobile world, Linaro) want to change that it doesn't work
-that well for us. So perhaps it is just the opposite of what you stated.
+I know how all that works, but there are other ways to deal with those
+timers. We had complaints in the past because those timers can be stuck
+forever on a fully idle cpu and that's not a good thing either. The whole
+concept is ill defined or not defined at all, lacks any form of sane
+semantics and was shoved into the kernel w/i much thought. In hindsight I
+should have rejected that deferrable mess 5+ years ago.
+ 
+> > When you can come up with a real regression caused by the rework and not
+> > just some handwaving theories then we can revisit that, but until then it's
+> > going to stay as is.
+> 
+> If the polling interval isn't accurate, the regression isn't so much about the
+> timer being inaccurate, but more so in the fact that it'll take that much
+> longer to react and increase the device frequency. Frame rendering time is
+> 16ms. If you react after 20ms instead of 10ms, that's way past a frame
+> rendering time. System memory frequency matters a lot for frame rendering too.
 
-> So, schedutil is going
-> to trigger schedutil to bump up the frequency to max, right?
+If you need precise timers use hrtimers and not a tick based mechanism,
+it's that simple.
 
-How is that question related to this patch ?
+Thanks,
 
---
-viresh
+	tglx
