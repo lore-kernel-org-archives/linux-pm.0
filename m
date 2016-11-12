@@ -1,129 +1,86 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Synchronize sysfs limits
-Date: Fri, 11 Nov 2016 16:11:35 -0800
-Message-ID: <1478909495-57026-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
+Date: Fri, 11 Nov 2016 16:19:17 -0800
+Message-ID: <20161112001917.GN7138@atomide.com>
+References: <1478801227-65527-1-git-send-email-briannorris@chromium.org>
+ <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
+ <20161110184910.GA135921@google.com>
+ <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
+ <20161111163147.GC7138@atomide.com>
+ <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
+ <20161111222911.GL7138@atomide.com>
+ <20161111223234.GM7138@atomide.com>
+ <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:53077 "EHLO mga09.intel.com"
+Received: from muru.com ([72.249.23.125]:59502 "EHLO muru.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934500AbcKLALj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Nov 2016 19:11:39 -0500
+        id S935171AbcKLATW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Nov 2016 19:19:22 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: lenb@kernel.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-When user sets some limits using Intel P-State sysfs, they are not
-reflected in the cpufreq policy scaling_max_freq and scaling_min_freq.
-This change updates the cpufreq policy of each CPU, when user sets
-limits via Intel P-State sysfs.
+* Rafael J. Wysocki <rafael@kernel.org> [161111 15:35]:
+> On Fri, Nov 11, 2016 at 11:32 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > * Tony Lindgren <tony@atomide.com> [161111 14:29]:
+> >> * Rafael J. Wysocki <rafael@kernel.org> [161111 13:33]:
+> >> > On Fri, Nov 11, 2016 at 5:31 PM, Tony Lindgren <tony@atomide.com> wrote:
+> >> > > * Rafael J. Wysocki <rafael@kernel.org> [161110 16:06]:
+> >> > >> On Thu, Nov 10, 2016 at 7:49 PM, Brian Norris <briannorris@chromium.org> wrote:
+> >> > >> > On Thu, Nov 10, 2016 at 10:13:55AM -0800, Dmitry Torokhov wrote:
+> >> > >> >> On Thu, Nov 10, 2016 at 10:07 AM, Brian Norris <briannorris@chromium.org> wrote:
+> >> > >> >> > It's important that user space can figure out what device woke the
+> >> > >> >> > system from suspend -- e.g., for debugging, or for implementing
+> >> > >> >> > conditional wake behavior. Dedicated wakeup IRQs don't currently do
+> >> > >> >> > that.
+> >> > >> >> >
+> >> > >> >> > Let's report the event (pm_wakeup_event()) and also allow drivers to
+> >> > >> >> > synchronize with these events in their resume path (hence, disable_irq()
+> >> > >> >> > instead of disable_irq_nosync()).
+> >> > >> >>
+> >> > >> >> Hmm, dev_pm_disable_wake_irq() is called from
+> >> > >> >> rpm_suspend()/rpm_resume() that take dev->power.lock spinlock and
+> >> > >> >> disable interrupts. Dropping _nosync() feels dangerous.
+> >> > >> >
+> >> > >> > Indeed. So how do you suggest we get sane wakeup reports? Every device
+> >> > >> > or bus that's going to use the dedicated wake APIs has to
+> >> > >> > synchronize_irq() [1] in their resume() routine? Seems like an odd
+> >> > >> > implementation detail to have to remember (and therefore most drivers
+> >> > >> > will get it wrong).
+> >> > >> >
+> >> > >> > Brian
+> >> > >> >
+> >> > >> > [1] Or maybe at least create a helper API that will extract the
+> >> > >> > dedicated wake IRQ number and do the synchronize_irq() for us, so
+> >> > >> > drivers don't have to stash this separately (or poke at
+> >> > >> > dev->power.wakeirq->irq) for no good reason.
+> >> > >>
+> >> > >> Well, in the first place, can anyone please refresh my memory on why
+> >> > >> it is necessary to call dev_pm_disable_wake_irq() under power.lock?
+> >> > >
+> >> > > I guess no other reason except we need to manage the wakeirq
+> >> > > for rpm_callback(). So we dev_pm_enable_wake_irq() before
+> >> > > rpm_callback() in rpm_suspend(), then disable on resume.
+> >> >
+> >> > But we drop the lock in rpm_callback(), so can't it be moved to where
+> >> > the callback is invoked?
+> >>
+> >> Then we're back to patching all the drivers again, no?
+> >
+> > Sorry I misunderstood, yeah that should work if rpm_callback() drops
+> > the lock.
+> 
+> It still will not re-enable interrupts if the irq_safe flag is set.  I
+> wonder if we really care about this case, though.
 
-For example:
-root@stn1]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-100
-root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-2800000
+We have at least 8250-omap and serial-omap using wakeirqs with
+irq_safe flag set.
 
-Now limit the max performance
-root@stn1]# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-This change now is also changed the scaling_max_freq
-root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-2240000
+Regards,
 
-But there is a side effect of this change for the users who use both
-methods to limit interchangeably. For example if user sets limit via
-Intel P-State sysfs to a lower maximum value and then sets a higher
-maximum value via cpufreq sysfs, then the cpufreq display will show a
-lower maximum value set by the Intel P-State sysfs. But there is no
-change in the effective P-State used, as the driver will always use
-the most constrained limit.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 43 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8f683e2..d8315e3 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -805,6 +805,18 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
- 	return count;
- }
- 
-+static void update_cpufreq_policies(void)
-+{
-+	int cpu;
-+
-+	get_online_cpus();
-+	for_each_online_cpu(cpu) {
-+		if (all_cpu_data[cpu])
-+			cpufreq_update_policy(cpu);
-+	}
-+	put_online_cpus();
-+}
-+
- static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
- 				  const char *buf, size_t count)
- {
-@@ -830,6 +842,9 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
- 
- 	if (hwp_active)
- 		intel_pstate_hwp_set_online_cpus();
-+
-+	update_cpufreq_policies();
-+
- 	return count;
- }
- 
-@@ -858,6 +873,9 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
- 
- 	if (hwp_active)
- 		intel_pstate_hwp_set_online_cpus();
-+
-+	update_cpufreq_policies();
-+
- 	return count;
- }
- 
-@@ -1802,6 +1820,28 @@ static struct cpufreq_driver intel_pstate_driver = {
- 	.name		= "intel_pstate",
- };
- 
-+static int cpufreq_intel_pstate_notifier(struct notifier_block *nb,
-+					 unsigned long event, void *data)
-+{
-+	struct cpufreq_policy *policy = data;
-+	int max_freq, min_freq;
-+
-+	/* When per-CPU limits are used, sysfs limits can't be set */
-+	if (per_cpu_limits)
-+		return NOTIFY_OK;
-+
-+	max_freq = policy->cpuinfo.max_freq * limits->max_sysfs_pct / 100;
-+	min_freq = policy->cpuinfo.max_freq * limits->min_sysfs_pct / 100;
-+
-+	cpufreq_verify_within_limits(policy, min_freq, max_freq);
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block intel_pstate_cpufreq_notifier_block = {
-+	.notifier_call = cpufreq_intel_pstate_notifier,
-+};
-+
- static int no_load __initdata;
- static int no_hwp __initdata;
- static int hwp_only __initdata;
-@@ -2032,6 +2072,9 @@ static int __init intel_pstate_init(void)
- 	if (hwp_active)
- 		pr_info("HWP enabled\n");
- 
-+	cpufreq_register_notifier(&intel_pstate_cpufreq_notifier_block,
-+				  CPUFREQ_POLICY_NOTIFIER);
-+
- 	return rc;
- out:
- 	get_online_cpus();
--- 
-2.7.4
-
+Tony
