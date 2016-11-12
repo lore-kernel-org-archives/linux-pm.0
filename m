@@ -1,132 +1,240 @@
-From: Oleksij Rempel <linux@rempel-privat.de>
-Subject: Re: [PATCH RFT] irqchip: mxs: Enable SKIP_SET_WAKE and MASK_ON_SUSPEND
-Date: Sat, 12 Nov 2016 20:24:01 +0100
-Message-ID: <40c3be7e-08c3-955c-746a-6906160e1e0a@rempel-privat.de>
-References: <1478885208-18821-1-git-send-email-stefan.wahren@i2se.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: [PATCH v2] cpufreq: conservative: Decrease frequency faster when the
+ update deferred
+Date: Sat, 12 Nov 2016 23:04:08 +0200
+Message-ID: <691e286d-249b-e450-2df1-8421d83e6a46@semaphore.gr>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3142525858879874895=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1478885208-18821-1-git-send-email-stefan.wahren@i2se.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Stefan Wahren <stefan.wahren@i2se.com>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Marek Vasut <marex@denx.de>, =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <lw@karo-electronics.de>
-Cc: linux-arm-kernel@lists.infradead.org, Sascha Hauer <kernel@pengutronix.de>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---===============3142525858879874895==
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature";
- boundary="n857cjnomD4uG8GC0NDaBnJseOJm0VOum"
+Conservative governor changes the CPU frequency in steps.
+That means that if a CPU runs at max frequency, it will need several
+sampling periods to return to min frequency when the workload
+is finished.
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---n857cjnomD4uG8GC0NDaBnJseOJm0VOum
-Content-Type: multipart/mixed; boundary="1QPgVPpAmhabVHtlelcW9h4IUF2Jkwx5s";
- protected-headers="v1"
-From: Oleksij Rempel <linux@rempel-privat.de>
-To: Stefan Wahren <stefan.wahren@i2se.com>,
- Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>,
- Marc Zyngier <marc.zyngier@arm.com>, Shawn Guo <shawnguo@kernel.org>,
- Fabio Estevam <fabio.estevam@nxp.com>, Marek Vasut <marex@denx.de>,
- =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <lw@karo-electronics.de>
-Cc: Sascha Hauer <kernel@pengutronix.de>,
- linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Message-ID: <40c3be7e-08c3-955c-746a-6906160e1e0a@rempel-privat.de>
-Subject: Re: [PATCH RFT] irqchip: mxs: Enable SKIP_SET_WAKE and
- MASK_ON_SUSPEND
-References: <1478885208-18821-1-git-send-email-stefan.wahren@i2se.com>
-In-Reply-To: <1478885208-18821-1-git-send-email-stefan.wahren@i2se.com>
+If the update function that calculates the load and target frequency
+is deferred, the governor might need even more time to decrease the
+frequency.
 
---1QPgVPpAmhabVHtlelcW9h4IUF2Jkwx5s
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+This may have impact to power consumption and after all conservative
+should decrease the frequency if there is no workload at every sampling
+rate.
 
-Am 11.11.2016 um 18:26 schrieb Stefan Wahren:
-> The ICOLL controller doesn't provide any facility to configure the
-> wakeup sources. That's the reason why this implementation lacks
-> the irq_set_wake implementation. But this prevent us from properly
-> entering power management states like "suspend to idle".
->=20
-> So enable the flags IRQCHIP_SKIP_SET_WAKE and IRQCHIP_MASK_ON_SUSPEND
-> to let the irqchip core allows and handles the power management.
->=20
-> This patch has been tested with a MX23 and a MX28 board. Any further
-> tests especially with ASM9260 would be appreciated.
+To resolve the above issue calculate the number of sampling periods
+that the update is deferred. Considering that for each sampling period
+conservative should drop the frequency by a freq_step because the
+CPU was idle apply the proper subtraction to requested frequency.
 
-Hi, I wont be able to test this patch on ASM9260 until March.
-Please roll it out, so far it looks ok for me.
+Below, the kernel trace with and without this patch. First an
+intensive workload is applied on a specific CPU. Then the workload
+is removed and the CPU goes to idle.
 
+WITHOUT
 
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> ---
->  drivers/irqchip/irq-mxs.c |    4 ++++
->  1 file changed, 4 insertions(+)
->=20
-> diff --git a/drivers/irqchip/irq-mxs.c b/drivers/irqchip/irq-mxs.c
-> index 1730470..05fa9f7 100644
-> --- a/drivers/irqchip/irq-mxs.c
-> +++ b/drivers/irqchip/irq-mxs.c
-> @@ -131,12 +131,16 @@ static void asm9260_unmask_irq(struct irq_data *d=
-)
->  	.irq_ack =3D icoll_ack_irq,
->  	.irq_mask =3D icoll_mask_irq,
->  	.irq_unmask =3D icoll_unmask_irq,
-> +	.flags =3D IRQCHIP_MASK_ON_SUSPEND |
-> +		 IRQCHIP_SKIP_SET_WAKE,
->  };
-> =20
->  static struct irq_chip asm9260_icoll_chip =3D {
->  	.irq_ack =3D icoll_ack_irq,
->  	.irq_mask =3D asm9260_mask_irq,
->  	.irq_unmask =3D asm9260_unmask_irq,
-> +	.flags =3D IRQCHIP_MASK_ON_SUSPEND |
-> +		 IRQCHIP_SKIP_SET_WAKE,
->  };
-> =20
->  asmlinkage void __exception_irq_entry icoll_handle_irq(struct pt_regs =
-*regs)
->=20
+     <idle>-0     [007] dN..   620.329153: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   620.350857: cpu_frequency: state=1700000 cpu_id=7
+kworker/7:2-556   [007] ....   620.370856: cpu_frequency: state=1900000 cpu_id=7
+kworker/7:2-556   [007] ....   620.390854: cpu_frequency: state=2100000 cpu_id=7
+kworker/7:2-556   [007] ....   620.411853: cpu_frequency: state=2200000 cpu_id=7
+kworker/7:2-556   [007] ....   620.432854: cpu_frequency: state=2400000 cpu_id=7
+kworker/7:2-556   [007] ....   620.453854: cpu_frequency: state=2600000 cpu_id=7
+kworker/7:2-556   [007] ....   620.494856: cpu_frequency: state=2900000 cpu_id=7
+kworker/7:2-556   [007] ....   620.515856: cpu_frequency: state=3100000 cpu_id=7
+kworker/7:2-556   [007] ....   620.536858: cpu_frequency: state=3300000 cpu_id=7
+kworker/7:2-556   [007] ....   620.557857: cpu_frequency: state=3401000 cpu_id=7
+     <idle>-0     [007] d...   669.591363: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   669.591939: cpu_idle: state=4294967295 cpu_id=7
+     <idle>-0     [007] d...   669.591980: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] dN..   669.591989: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   670.201224: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   670.221975: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   670.222016: cpu_frequency: state=3300000 cpu_id=7
+     <idle>-0     [007] d...   670.222026: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   670.234964: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   670.801251: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   671.236046: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   671.236073: cpu_frequency: state=3100000 cpu_id=7
+     <idle>-0     [007] d...   671.236112: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   671.393437: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   671.401277: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   671.404083: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   671.404111: cpu_frequency: state=2900000 cpu_id=7
+     <idle>-0     [007] d...   671.404125: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   671.404974: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   671.501180: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   671.995414: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   671.995459: cpu_frequency: state=2800000 cpu_id=7
+     <idle>-0     [007] d...   671.995469: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   671.996287: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   672.001305: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.078374: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   672.078410: cpu_frequency: state=2600000 cpu_id=7
+     <idle>-0     [007] d...   672.078419: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.158020: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   672.158040: cpu_frequency: state=2400000 cpu_id=7
+     <idle>-0     [007] d...   672.158044: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.160038: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   672.234557: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.237121: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   672.237174: cpu_frequency: state=2100000 cpu_id=7
+     <idle>-0     [007] d...   672.237186: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.237778: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   672.267902: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.269860: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   672.269906: cpu_frequency: state=1900000 cpu_id=7
+     <idle>-0     [007] d...   672.269914: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.271902: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...   672.751342: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...   672.823056: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-556   [007] ....   672.823095: cpu_frequency: state=1600000 cpu_id=7
 
+WITH
 
---=20
-Regards,
-Oleksij
+     <idle>-0     [007] dN..  4380.928009: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-399   [007] ....  4380.949767: cpu_frequency: state=2000000 cpu_id=7
+kworker/7:2-399   [007] ....  4380.969765: cpu_frequency: state=2200000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.009766: cpu_frequency: state=2500000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.029767: cpu_frequency: state=2600000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.049769: cpu_frequency: state=2800000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.069769: cpu_frequency: state=3000000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.089771: cpu_frequency: state=3100000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.109772: cpu_frequency: state=3400000 cpu_id=7
+kworker/7:2-399   [007] ....  4381.129773: cpu_frequency: state=3401000 cpu_id=7
+     <idle>-0     [007] d...  4428.226159: cpu_idle: state=1 cpu_id=7
+     <idle>-0     [007] d...  4428.226176: cpu_idle: state=4294967295 cpu_id=7
+     <idle>-0     [007] d...  4428.226181: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...  4428.227177: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...  4428.551640: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...  4428.649239: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-399   [007] ....  4428.649268: cpu_frequency: state=2800000 cpu_id=7
+     <idle>-0     [007] d...  4428.649278: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...  4428.689856: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...  4428.799542: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...  4428.801683: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-399   [007] ....  4428.801748: cpu_frequency: state=1700000 cpu_id=7
+     <idle>-0     [007] d...  4428.801761: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...  4428.806545: cpu_idle: state=4294967295 cpu_id=7
+...
+     <idle>-0     [007] d...  4429.051880: cpu_idle: state=4 cpu_id=7
+     <idle>-0     [007] d...  4429.086240: cpu_idle: state=4294967295 cpu_id=7
+kworker/7:2-399   [007] ....  4429.086293: cpu_frequency: state=1600000 cpu_id=7
 
+Without the patch the CPU dropped to min frequency after 3.2s
+With the patch applied the CPU dropped to min frequency after 0.86s
 
---1QPgVPpAmhabVHtlelcW9h4IUF2Jkwx5s--
+Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+---
+ v1 -> v2
+- Use correct terminology in change log
+- Change the member variable name from 'deferred_periods' to 'idle_periods'
+- Fix format issue
 
---n857cjnomD4uG8GC0NDaBnJseOJm0VOum
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ drivers/cpufreq/cpufreq_conservative.c | 14 +++++++++++++-
+ drivers/cpufreq/cpufreq_governor.c     | 18 +++++++++++++-----
+ drivers/cpufreq/cpufreq_governor.h     |  1 +
+ 3 files changed, 27 insertions(+), 6 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index fa5ece3..d787772 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -73,7 +73,19 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+ 	 */
+ 	if (cs_tuners->freq_step == 0)
+ 		goto out;
+-
++	/*
++	 * Decrease requested_freq for each idle period that we didn't
++	 * update the frequency
++	 */
++	if (policy_dbs->idle_periods < UINT_MAX) {
++		unsigned int freq_target = policy_dbs->idle_periods *
++				get_freq_target(cs_tuners, policy);
++		if (requested_freq > freq_target)
++			requested_freq -= freq_target;
++		else
++			requested_freq = policy->min;
++		policy_dbs->idle_periods = UINT_MAX;
++	}
+ 	/*
+ 	 * If requested_freq is out of range, it is likely that the limits
+ 	 * changed in the meantime, so fall back to current frequency in that
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 3729474..1bc7137 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -117,7 +117,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 	struct policy_dbs_info *policy_dbs = policy->governor_data;
+ 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+ 	unsigned int ignore_nice = dbs_data->ignore_nice_load;
+-	unsigned int max_load = 0;
++	unsigned int max_load = 0, idle_periods = UINT_MAX;
+ 	unsigned int sampling_rate, io_busy, j;
 
-iF4EAREIAAYFAlgnbFEACgkQHwImuRkmbWkJ2gEAgUtETmE1itXT9mzvlGR7AC8b
-D5TH3JnckBui3iP3jYEBAI1XOYqVX6ZMmIATP5ex9vPP4Rgmvpd4uNHAtSEuZt1S
-=lYHk
------END PGP SIGNATURE-----
-
---n857cjnomD4uG8GC0NDaBnJseOJm0VOum--
-
-
---===============3142525858879874895==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============3142525858879874895==--
+ 	/*
+@@ -163,8 +163,12 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			 * calls, so the previous load value can be used then.
+ 			 */
+ 			load = j_cdbs->prev_load;
+-		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
+-				    j_cdbs->prev_load)) {
++		} else if (unlikely(time_elapsed > 2 * sampling_rate)) {
++			unsigned int periods = time_elapsed / sampling_rate;
++
++			if (periods < idle_periods)
++				idle_periods = periods;
++
+ 			/*
+ 			 * If the CPU had gone completely idle and a task has
+ 			 * just woken up on this CPU now, it would be unfair to
+@@ -189,8 +193,10 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 			 * 'time_elapsed' (as compared to the sampling rate)
+ 			 * indicates this scenario.
+ 			 */
+-			load = j_cdbs->prev_load;
+-			j_cdbs->prev_load = 0;
++			if (j_cdbs->prev_load) {
++				load = j_cdbs->prev_load;
++				j_cdbs->prev_load = 0;
++			}
+ 		} else {
+ 			if (time_elapsed >= idle_time) {
+ 				load = 100 * (time_elapsed - idle_time) / time_elapsed;
+@@ -218,6 +224,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+ 		if (load > max_load)
+ 			max_load = load;
+ 	}
++	policy_dbs->idle_periods = idle_periods;
++
+ 	return max_load;
+ }
+ EXPORT_SYMBOL_GPL(dbs_update);
+diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+index 9660cc6..10a3e0a 100644
+--- a/drivers/cpufreq/cpufreq_governor.h
++++ b/drivers/cpufreq/cpufreq_governor.h
+@@ -97,6 +97,7 @@ struct policy_dbs_info {
+ 	struct list_head list;
+ 	/* Multiplier for increasing sample delay temporarily. */
+ 	unsigned int rate_mult;
++	unsigned int idle_periods;
+ 	/* Status indicators */
+ 	bool is_shared;		/* This object is used by multiple CPUs */
+ 	bool work_in_progress;	/* Work is being queued up or in progress */
+-- 
+2.7.4
