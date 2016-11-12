@@ -1,138 +1,98 @@
 From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue
- to SCHED_FIFO task
-Date: Fri, 11 Nov 2016 17:31:41 -0800
-Message-ID: <582670FD.7080203@codeaurora.org>
-References: <cover.1478858983.git.viresh.kumar@linaro.org> <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org> <CAJZ5v0jODn1gJtTtpTigA=7QwK04wzdFopr-R6GeoSchqgpgiQ@mail.gmail.com>
+Subject: Re: [PATCH] timers: Fix timer inaccuracy
+Date: Fri, 11 Nov 2016 17:55:01 -0800
+Message-ID: <58267675.9030006@codeaurora.org>
+References: <1478684203-11966-1-git-send-email-joonwoop@codeaurora.org> <alpine.DEB.2.20.1611091045040.3501@nanos> <53b2d275-23f2-9ee2-7bde-e441659cf885@codeaurora.org> <alpine.DEB.2.20.1611101039540.3501@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jODn1gJtTtpTigA=7QwK04wzdFopr-R6GeoSchqgpgiQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:48070 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S936530AbcKLBzE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Nov 2016 20:55:04 -0500
+In-Reply-To: <alpine.DEB.2.20.1611101039540.3501@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Joonwoo Park <joonwoop@codeaurora.org>, John Stultz <john.stultz@linaro.org>, Eric Dumazet <edumazet@google.com>, Frederic Weisbecker <fweisbec@gmail.com>, Linus Torvalds <torvalds@linux-foundation.org>, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 11/11/2016 02:16 PM, Rafael J. Wysocki wrote:
-> On Fri, Nov 11, 2016 at 11:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> If slow path frequency changes are conducted in a SCHED_OTHER context
->> then they may be delayed for some amount of time, including
->> indefinitely, when real time or deadline activity is taking place.
->>
->> Move the slow path to a real time kernel thread. In the future the
->> thread should be made SCHED_DEADLINE. The RT priority is arbitrarily set
->> to 50 for now.
->>
->> Hackbench results on ARM Exynos, dual core A15 platform for 10
->> iterations:
->>
->> $ hackbench -s 100 -l 100 -g 10 -f 20
->>
->> Before                  After
->> ---------------------------------
->> 1.808                   1.603
->> 1.847                   1.251
->> 2.229                   1.590
->> 1.952                   1.600
->> 1.947                   1.257
->> 1.925                   1.627
->> 2.694                   1.620
->> 1.258                   1.621
->> 1.919                   1.632
->> 1.250                   1.240
->>
->> Average:
->>
->> 1.8829                  1.5041
->>
->> Based on initial work by Steve Muckle.
->>
->> Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->>   kernel/sched/cpufreq_schedutil.c | 62 ++++++++++++++++++++++++++++++++--------
->>   1 file changed, 50 insertions(+), 12 deletions(-)
->>
->> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
->> index ccb2ab89affb..045ce0a4e6d1 100644
->> --- a/kernel/sched/cpufreq_schedutil.c
->> +++ b/kernel/sched/cpufreq_schedutil.c
->> @@ -12,6 +12,7 @@
->>   #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
->>
->>   #include <linux/cpufreq.h>
->> +#include <linux/kthread.h>
->>   #include <linux/slab.h>
->>   #include <trace/events/power.h>
->>
->> @@ -35,8 +36,10 @@ struct sugov_policy {
->>
->>          /* The next fields are only needed if fast switch cannot be used. */
->>          struct irq_work irq_work;
->> -       struct work_struct work;
->> +       struct kthread_work work;
->>          struct mutex work_lock;
->> +       struct kthread_worker worker;
->> +       struct task_struct *thread;
->>          bool work_in_progress;
->>
->>          bool need_freq_update;
->> @@ -291,9 +294,10 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->>          raw_spin_unlock(&sg_policy->update_lock);
->>   }
->>
->> -static void sugov_work(struct work_struct *work)
->> +static void sugov_work(struct kthread_work *work)
->>   {
->> -       struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
->> +       struct sugov_policy *sg_policy =
->> +               container_of(work, struct sugov_policy, work);
->
-> Why this change?
->
->>
->>          mutex_lock(&sg_policy->work_lock);
->>          __cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
->> @@ -308,7 +312,7 @@ static void sugov_irq_work(struct irq_work *irq_work)
->>          struct sugov_policy *sg_policy;
->>
->>          sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
->> -       schedule_work_on(smp_processor_id(), &sg_policy->work);
->> +       kthread_queue_work(&sg_policy->worker, &sg_policy->work);
->>   }
->>
->>   /************************** sysfs interface ************************/
->> @@ -362,9 +366,23 @@ static struct kobj_type sugov_tunables_ktype = {
->>
->>   static struct cpufreq_governor schedutil_gov;
->>
->> +static void sugov_policy_free(struct sugov_policy *sg_policy)
->> +{
->> +       if (!sg_policy->policy->fast_switch_enabled) {
->> +               kthread_flush_worker(&sg_policy->worker);
->> +               kthread_stop(sg_policy->thread);
->> +       }
->> +
->> +       mutex_destroy(&sg_policy->work_lock);
->> +       kfree(sg_policy);
->> +}
->> +
->>   static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
->>   {
->>          struct sugov_policy *sg_policy;
->> +       struct task_struct *thread;
->> +       struct sched_param param = { .sched_priority = 50 };
->
-> I'd define a symbol for the 50.  It's just one extra line of code ...
->
+On 11/10/2016 02:07 AM, Thomas Gleixner wrote:
+> On Wed, 9 Nov 2016, Joonwoo Park wrote:
+<SNIP>
 
-Hold on a sec. I thought during LPC someone (Peter?) made a point that 
-when RT thread run, we should bump the frequency to max? So, schedutil 
-is going to trigger schedutil to bump up the frequency to max, right?
+> So this timer expired exactly a few micro seconds after arming and therefor
+> violates the guarantee of firing not before the specified interval.
+>
+> So depending on when you arm the timer the expiry is going to be:
+>
+>     1 jiffie <= expiry <= 2 jiffies
+>
+> If you disable high resolution timers then your user space program using
+> nanosleep will have exactly the same behaviour.
+>
+> And this is the only sane behaviour you can expect from timers: To not
+> expire early.
 
--Saravana
+I completely understand the why you did the +1 jiffy. If you don't know 
+at which point between two jiffies the timer was set up, you'll have to 
+assume the worst case that the timer was set up just before the jiffy 
+rolls over. That why you are doing the +1. Makes sense.
 
+> Every user must cope with late expiry anyway as there is no guarantee that
+> the task is scheduled right away. Neither is there a guarantee that the
+> softirq (it might be deferred to ksoftirqd) invokes the callback on time.
+>
+> The timer wheel is optimized for enqueue/dequeue speed and implicit
+> batching. Making it artificial accurate for one particular case is just
+> adding pointless overhead and aside of that it's going to violate the valid
+> assumption that a 1 jiffie sleep is going to sleep at least 1 jiffie.
+>
+>> If that kind of drivers want to run periodic polling at similar level of
+>> accuracy like pre v4.8, each drivers have to switch to hrtimer but there are
+>> problems apart from the fact there is no nicely written deferred processing
+>> mechanism like workqueue with hrtimer -
+>> 1) there is no deferrable hrtimer.
+>> 2) hrtimer has more overhead more than low res timer, especially hrtimer will
+>> fire interrupt for individual timer lists which will cause power impact.
+>
+> Deferrable timers shouldn't have been invented in the first place and yes,
+> they are not going to happen on hrtimers, quite the contrary, I'm working
+> on eliminating them completely.
+
+If you do that, how exactly do you propose drivers do periodic polling 
+while the Linux isn't idling, but stop polling when Linux is idle? 
+devfreq is a classic example. devfreq is used in a lot of mobile 
+devices. Across different vendors, devfreq is used for scaling system 
+memory, flash storage, GPU, etc. You are going to kill power if you 
+remove deferrable timers without having an alternate mechanism to solve 
+this requirement.
+
+For example, when you are browsing on your phone and reading something 
+on screen (but not interacting with the device), the 
+CPUs/clusters/caches go idle for long periods (several seconds) of time. 
+If you remove deferrable timers, you are going to force a CPU wake up 
+every 10ms or 50ms or whatever it's configured for.
+
+>> It also makes sense to me that queued timer especially with long delay is
+>> tolerable to inaccuracy especially when most of them got canceled prior to its
+>> expiry time.
+>> But by drivers which use timer as polling mechanism which never cancel it,
+>> IMHO this behaviour change could be a regression.
+>
+> When you can come up with a real regression caused by the rework and not
+> just some handwaving theories then we can revisit that, but until then it's
+> going to stay as is.
+
+If the polling interval isn't accurate, the regression isn't so much 
+about the timer being inaccurate, but more so in the fact that it'll 
+take that much longer to react and increase the device frequency. Frame 
+rendering time is 16ms. If you react after 20ms instead of 10ms, that's 
+way past a frame rendering time. System memory frequency matters a lot 
+for frame rendering too.
+
+Thanks,
+Saravana
 
 -- 
 Qualcomm Innovation Center, Inc.
