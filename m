@@ -1,69 +1,129 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.9-rc5
-Date: Sat, 12 Nov 2016 00:52:36 +0100
-Message-ID: <CAJZ5v0h_BXB2j42FGM47q7RYCRrVf_UfC5_6gLEcepJ+6-o23A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Synchronize sysfs limits
+Date: Fri, 11 Nov 2016 16:11:35 -0800
+Message-ID: <1478909495-57026-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:53077 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934500AbcKLALj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Nov 2016 19:11:39 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: lenb@kernel.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Hi Linus,
+When user sets some limits using Intel P-State sysfs, they are not
+reflected in the cpufreq policy scaling_max_freq and scaling_min_freq.
+This change updates the cpufreq policy of each CPU, when user sets
+limits via Intel P-State sysfs.
 
-Please pull from the tag
+For example:
+root@stn1]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
+100
+root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+2800000
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.9-rc5
+Now limit the max performance
+root@stn1]# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
+This change now is also changed the scaling_max_freq
+root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+2240000
 
-with top-most commit cd16f3dcdb1817956277fbeee0746ae1eb4f851a
+But there is a side effect of this change for the users who use both
+methods to limit interchangeably. For example if user sets limit via
+Intel P-State sysfs to a lower maximum value and then sets a higher
+maximum value via cpufreq sysfs, then the cpufreq display will show a
+lower maximum value set by the Intel P-State sysfs. But there is no
+change in the effective P-State used, as the driver will always use
+the most constrained limit.
 
- Merge branches 'pm-tools-fixes' and 'pm-sleep-fixes'
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 43 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-on top of commit bc33b0ca11e3df467777a4fa7639ba488c9d4911
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8f683e2..d8315e3 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -805,6 +805,18 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
+ 	return count;
+ }
+ 
++static void update_cpufreq_policies(void)
++{
++	int cpu;
++
++	get_online_cpus();
++	for_each_online_cpu(cpu) {
++		if (all_cpu_data[cpu])
++			cpufreq_update_policy(cpu);
++	}
++	put_online_cpus();
++}
++
+ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 				  const char *buf, size_t count)
+ {
+@@ -830,6 +842,9 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
+ 
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set_online_cpus();
++
++	update_cpufreq_policies();
++
+ 	return count;
+ }
+ 
+@@ -858,6 +873,9 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
+ 
+ 	if (hwp_active)
+ 		intel_pstate_hwp_set_online_cpus();
++
++	update_cpufreq_policies();
++
+ 	return count;
+ }
+ 
+@@ -1802,6 +1820,28 @@ static struct cpufreq_driver intel_pstate_driver = {
+ 	.name		= "intel_pstate",
+ };
+ 
++static int cpufreq_intel_pstate_notifier(struct notifier_block *nb,
++					 unsigned long event, void *data)
++{
++	struct cpufreq_policy *policy = data;
++	int max_freq, min_freq;
++
++	/* When per-CPU limits are used, sysfs limits can't be set */
++	if (per_cpu_limits)
++		return NOTIFY_OK;
++
++	max_freq = policy->cpuinfo.max_freq * limits->max_sysfs_pct / 100;
++	min_freq = policy->cpuinfo.max_freq * limits->min_sysfs_pct / 100;
++
++	cpufreq_verify_within_limits(policy, min_freq, max_freq);
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block intel_pstate_cpufreq_notifier_block = {
++	.notifier_call = cpufreq_intel_pstate_notifier,
++};
++
+ static int no_load __initdata;
+ static int no_hwp __initdata;
+ static int hwp_only __initdata;
+@@ -2032,6 +2072,9 @@ static int __init intel_pstate_init(void)
+ 	if (hwp_active)
+ 		pr_info("HWP enabled\n");
+ 
++	cpufreq_register_notifier(&intel_pstate_cpufreq_notifier_block,
++				  CPUFREQ_POLICY_NOTIFIER);
++
+ 	return rc;
+ out:
+ 	get_online_cpus();
+-- 
+2.7.4
 
- Linux 4.9-rc4
-
-to receive power management fixes for v4.9-rc5.
-
-These fix two bugs in error code paths in the PM core (system-wide
-suspend of devices), a device reference leak in the boot-time suspend
-test code and a cpupower utility regression from the 4.7 cycle.
-
-Specifics:
-
- - Prevent the PM core from attempting to suspend parent devices
-   if any of their children, whose suspend callbacks were invoked
-   asynchronously, have failed to suspend during the "late" and
-   "noirq" phases of system-wide suspend of devices (Brian Norris).
-
- - Prevent the boot-time system suspend test code from leaking a
-   reference to the RTC device used by it (Johan Hovold).
-
- - Fix cpupower to use the return value of one of its library
-   functions correctly and restore the correct behavior of it
-   when used for setting cpufreq tunables broken during the 4.7
-   development cycle (Laura Abbott).
-
-Thanks!
-
-
----------------
-
-Brian Norris (1):
-      PM / sleep: don't suspend parent when async child
-suspend_{noirq, late} fails
-
-Johan Hovold (1):
-      PM / sleep: fix device reference leak in test_suspend
-
-Laura Abbott (1):
-      cpupower: Correct return type of cpu_power_is_cpu_online() in cpufreq-set
-
----------------
-
- drivers/base/power/main.c                | 8 ++++----
- kernel/power/suspend_test.c              | 4 +++-
- tools/power/cpupower/utils/cpufreq-set.c | 7 ++-----
- 3 files changed, 9 insertions(+), 10 deletions(-)
