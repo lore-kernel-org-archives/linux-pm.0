@@ -1,103 +1,163 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
- support
-Date: Sun, 13 Nov 2016 11:59:42 +0100
-Message-ID: <20161113105942.GE8388@kroah.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
- <20161110220407.GQ13978@wotan.suse.de>
- <20161110224054.GA10575@kroah.com>
- <3465624.0TqEj8I9ee@avalon>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to
+ SCHED_FIFO task
+Date: Sun, 13 Nov 2016 15:37:18 +0100
+Message-ID: <CAJZ5v0gdZZ-h5JvRYacv2OH+gzG-wwHWevRmp04GNPNzUWwYeA@mail.gmail.com>
+References: <cover.1478858983.git.viresh.kumar@linaro.org> <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
+ <CAJZ5v0jODn1gJtTtpTigA=7QwK04wzdFopr-R6GeoSchqgpgiQ@mail.gmail.com> <582670FD.7080203@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:35378 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933121AbcKMK7b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 05:59:31 -0500
-Content-Disposition: inline
-In-Reply-To: <3465624.0TqEj8I9ee@avalon>
+Received: from mail-qt0-f193.google.com ([209.85.216.193]:36326 "EHLO
+        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751810AbcKMOhT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 09:37:19 -0500
+In-Reply-To: <582670FD.7080203@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, Christoph
+To: Saravana Kannan <skannan@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
 
-On Fri, Nov 11, 2016 at 02:08:35AM +0200, Laurent Pinchart wrote:
-> Hi Greg,
-> 
-> On Thursday 10 Nov 2016 23:40:54 Greg Kroah-Hartman wrote:
-> > On Thu, Nov 10, 2016 at 11:04:07PM +0100, Luis R. Rodriguez wrote:
-> > > This is more forward looking, but -- if we had an annotation in
-> > > Kconfig/turned to a mod info section, or to start off with just a driver
-> > > MODULE_SUGGESTS() macro to start off with it might suffice for the driver
-> > > core to request_module() annotated dependencies, such requests could be
-> > > explicitly suggested as synchronous so init + probe do run together
-> > > (as-is today), after which it could know that all possible drivers that
-> > > needed to be loaded should now be loaded. If this sounds plausible to
-> > > help, do we have drivers where we can test this on? For instance, since
-> > > the functional dependency framework annotates functional dependencies for
-> > > consumers/providers for suspend/resume and un time PM could such
-> > > MODULE_SUGGESTS() annotations be considered on the consumers to suggest
-> > > the provider drivers so their own probe yields to their providers to try
-> > > first ?
-> > 
-> > No.
-> > 
-> > Stop.
-> > 
-> > First off, the "driver core" NEVER can "know" if "all possible drivers
-> > that should be loaded, are loaded.  That way lies madness and
-> > impossibility.
-> > 
-> > Secondly, yet-another-section isn't going to help anything here, we
-> > alredy "suggest" to userspace a bunch of stuff, so we get the needed
-> > modules loaded, at sometime in the future, if they are around, and
-> > userspace feels like it.  That's the best we can ever do.
-> > 
-> > Don't try to make this more difficult than it is please. DEFER works
-> > today really really well, and it's really really simple.
-> > Inter-dependancy of modules and devices connected to each other are two
-> > different things, be careful about this.
-> 
-> One issue we don't address today is handling of optional dependencies. A 
-> simple example is an SPI controller that can use a DMA engine or work in PIO 
-> mode. At probe time the driver will request a DMA channel if the platform 
-> (ACPI, DT, platform data) specifies that DMA is available. This can fail for 
-> various reasons, one of them being that the DMA engine driver hasn't probed 
-> the DMA device yet. In that case the SPI controller driver will continue in 
-> PIO mode, ignoring the DMA engine that will later be probed. We can't defer 
-> probing of the SPI controller as the DMA engine driver might never get loaded, 
-> which would result in the SPI controller probe being deferred forever.
-> 
-> One solution for this type of dependency issue would be to notify the SPI 
-> controller driver after probe that the DMA channel is now available. I'd like 
-> to avoid that though, as it would drastically increase the complexity of lots 
-> of drivers and create lots of race conditions.
-> 
-> There are certain configurations that we could possibly consider as invalid. 
-> For instance if the SPI controller driver is built-in and the DMA engine 
-> driver built as a module, the user clearly shot themselves in the foot and the 
-> kernel can't be blamed.
-> 
-> For resources that can't be built as a module (IOMMUs for instance) we thus 
-> only have to consider the case where both drivers are built-in, as the 
-> resource built-in and consumer as a module should work properly from an 
-> ordering point of view (at least as long as we don't allow asynchronous 
-> probing of built-in drivers to be delayed enough for modules to be loaded...). 
-> In this case, if the resource driver isn't available when the consumer is 
-> probed, if will never be available at the consumer can safely proceed in a 
-> degraded mode. We would thus only need to solve the probe ordering issue.
-> 
-> I'm not sure how far these simple(r) solutions that consider certain cases as 
-> invalid would scale though, and whether we won't need a more generic solution 
-> at some point anyway.
+On Sat, Nov 12, 2016 at 2:31 AM, Saravana Kannan <skannan@codeaurora.org> wrote:
+> On 11/11/2016 02:16 PM, Rafael J. Wysocki wrote:
+>>
+>> On Fri, Nov 11, 2016 at 11:22 AM, Viresh Kumar <viresh.kumar@linaro.org>
+>> wrote:
+>>>
+>>> If slow path frequency changes are conducted in a SCHED_OTHER context
+>>> then they may be delayed for some amount of time, including
+>>> indefinitely, when real time or deadline activity is taking place.
+>>>
+>>> Move the slow path to a real time kernel thread. In the future the
+>>> thread should be made SCHED_DEADLINE. The RT priority is arbitrarily set
+>>> to 50 for now.
+>>>
+>>> Hackbench results on ARM Exynos, dual core A15 platform for 10
+>>> iterations:
+>>>
+>>> $ hackbench -s 100 -l 100 -g 10 -f 20
+>>>
+>>> Before                  After
+>>> ---------------------------------
+>>> 1.808                   1.603
+>>> 1.847                   1.251
+>>> 2.229                   1.590
+>>> 1.952                   1.600
+>>> 1.947                   1.257
+>>> 1.925                   1.627
+>>> 2.694                   1.620
+>>> 1.258                   1.621
+>>> 1.919                   1.632
+>>> 1.250                   1.240
+>>>
+>>> Average:
+>>>
+>>> 1.8829                  1.5041
+>>>
+>>> Based on initial work by Steve Muckle.
+>>>
+>>> Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
+>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>> ---
+>>>   kernel/sched/cpufreq_schedutil.c | 62
+>>> ++++++++++++++++++++++++++++++++--------
+>>>   1 file changed, 50 insertions(+), 12 deletions(-)
+>>>
+>>> diff --git a/kernel/sched/cpufreq_schedutil.c
+>>> b/kernel/sched/cpufreq_schedutil.c
+>>> index ccb2ab89affb..045ce0a4e6d1 100644
+>>> --- a/kernel/sched/cpufreq_schedutil.c
+>>> +++ b/kernel/sched/cpufreq_schedutil.c
+>>> @@ -12,6 +12,7 @@
+>>>   #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+>>>
+>>>   #include <linux/cpufreq.h>
+>>> +#include <linux/kthread.h>
+>>>   #include <linux/slab.h>
+>>>   #include <trace/events/power.h>
+>>>
+>>> @@ -35,8 +36,10 @@ struct sugov_policy {
+>>>
+>>>          /* The next fields are only needed if fast switch cannot be
+>>> used. */
+>>>          struct irq_work irq_work;
+>>> -       struct work_struct work;
+>>> +       struct kthread_work work;
+>>>          struct mutex work_lock;
+>>> +       struct kthread_worker worker;
+>>> +       struct task_struct *thread;
+>>>          bool work_in_progress;
+>>>
+>>>          bool need_freq_update;
+>>> @@ -291,9 +294,10 @@ static void sugov_update_shared(struct
+>>> update_util_data *hook, u64 time,
+>>>          raw_spin_unlock(&sg_policy->update_lock);
+>>>   }
+>>>
+>>> -static void sugov_work(struct work_struct *work)
+>>> +static void sugov_work(struct kthread_work *work)
+>>>   {
+>>> -       struct sugov_policy *sg_policy = container_of(work, struct
+>>> sugov_policy, work);
+>>> +       struct sugov_policy *sg_policy =
+>>> +               container_of(work, struct sugov_policy, work);
+>>
+>>
+>> Why this change?
+>>
+>>>
+>>>          mutex_lock(&sg_policy->work_lock);
+>>>          __cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq,
+>>> @@ -308,7 +312,7 @@ static void sugov_irq_work(struct irq_work *irq_work)
+>>>          struct sugov_policy *sg_policy;
+>>>
+>>>          sg_policy = container_of(irq_work, struct sugov_policy,
+>>> irq_work);
+>>> -       schedule_work_on(smp_processor_id(), &sg_policy->work);
+>>> +       kthread_queue_work(&sg_policy->worker, &sg_policy->work);
+>>>   }
+>>>
+>>>   /************************** sysfs interface ************************/
+>>> @@ -362,9 +366,23 @@ static struct kobj_type sugov_tunables_ktype = {
+>>>
+>>>   static struct cpufreq_governor schedutil_gov;
+>>>
+>>> +static void sugov_policy_free(struct sugov_policy *sg_policy)
+>>> +{
+>>> +       if (!sg_policy->policy->fast_switch_enabled) {
+>>> +               kthread_flush_worker(&sg_policy->worker);
+>>> +               kthread_stop(sg_policy->thread);
+>>> +       }
+>>> +
+>>> +       mutex_destroy(&sg_policy->work_lock);
+>>> +       kfree(sg_policy);
+>>> +}
+>>> +
+>>>   static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy
+>>> *policy)
+>>>   {
+>>>          struct sugov_policy *sg_policy;
+>>> +       struct task_struct *thread;
+>>> +       struct sched_param param = { .sched_priority = 50 };
+>>
+>>
+>> I'd define a symbol for the 50.  It's just one extra line of code ...
+>>
+>
+> Hold on a sec. I thought during LPC someone (Peter?) made a point that when
+> RT thread run, we should bump the frequency to max? So, schedutil is going
+> to trigger schedutil to bump up the frequency to max, right?
 
-I would love to see a generic solution that works for all of these
-complex cases, as I agree with you, it's complex :)
+No, it isn't, or at least that is unlikely.
 
-But I have yet to see any such patches that implement this.  As always,
-I am very glad to review anything that people create, but I don't have
-the time to work on such a solution myself at the moment.
+sugov_update_commit() sets sg_policy->work_in_progress before queuing
+the IRQ work and it is not cleared until the frequency changes in
+sugov_work().
 
-thanks,
+OTOH, sugov_should_update_freq() checks sg_policy->work_in_progress
+upfront and returns false when it is set, so the governor won't see
+its own worker threads run, unless I'm overlooking something highly
+non-obvious.
 
-greg k-h
+Thanks,
+Rafael
