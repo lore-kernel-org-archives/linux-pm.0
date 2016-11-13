@@ -1,240 +1,103 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [PATCH v2] cpufreq: conservative: Decrease frequency faster when the
- update deferred
-Date: Sat, 12 Nov 2016 23:04:08 +0200
-Message-ID: <691e286d-249b-e450-2df1-8421d83e6a46@semaphore.gr>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
+ support
+Date: Sun, 13 Nov 2016 11:59:42 +0100
+Message-ID: <20161113105942.GE8388@kroah.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <20161110220407.GQ13978@wotan.suse.de>
+ <20161110224054.GA10575@kroah.com>
+ <3465624.0TqEj8I9ee@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:35378 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933121AbcKMK7b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 05:59:31 -0500
+Content-Disposition: inline
+In-Reply-To: <3465624.0TqEj8I9ee@avalon>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, Christoph
 
-Conservative governor changes the CPU frequency in steps.
-That means that if a CPU runs at max frequency, it will need several
-sampling periods to return to min frequency when the workload
-is finished.
+On Fri, Nov 11, 2016 at 02:08:35AM +0200, Laurent Pinchart wrote:
+> Hi Greg,
+> 
+> On Thursday 10 Nov 2016 23:40:54 Greg Kroah-Hartman wrote:
+> > On Thu, Nov 10, 2016 at 11:04:07PM +0100, Luis R. Rodriguez wrote:
+> > > This is more forward looking, but -- if we had an annotation in
+> > > Kconfig/turned to a mod info section, or to start off with just a driver
+> > > MODULE_SUGGESTS() macro to start off with it might suffice for the driver
+> > > core to request_module() annotated dependencies, such requests could be
+> > > explicitly suggested as synchronous so init + probe do run together
+> > > (as-is today), after which it could know that all possible drivers that
+> > > needed to be loaded should now be loaded. If this sounds plausible to
+> > > help, do we have drivers where we can test this on? For instance, since
+> > > the functional dependency framework annotates functional dependencies for
+> > > consumers/providers for suspend/resume and un time PM could such
+> > > MODULE_SUGGESTS() annotations be considered on the consumers to suggest
+> > > the provider drivers so their own probe yields to their providers to try
+> > > first ?
+> > 
+> > No.
+> > 
+> > Stop.
+> > 
+> > First off, the "driver core" NEVER can "know" if "all possible drivers
+> > that should be loaded, are loaded.  That way lies madness and
+> > impossibility.
+> > 
+> > Secondly, yet-another-section isn't going to help anything here, we
+> > alredy "suggest" to userspace a bunch of stuff, so we get the needed
+> > modules loaded, at sometime in the future, if they are around, and
+> > userspace feels like it.  That's the best we can ever do.
+> > 
+> > Don't try to make this more difficult than it is please. DEFER works
+> > today really really well, and it's really really simple.
+> > Inter-dependancy of modules and devices connected to each other are two
+> > different things, be careful about this.
+> 
+> One issue we don't address today is handling of optional dependencies. A 
+> simple example is an SPI controller that can use a DMA engine or work in PIO 
+> mode. At probe time the driver will request a DMA channel if the platform 
+> (ACPI, DT, platform data) specifies that DMA is available. This can fail for 
+> various reasons, one of them being that the DMA engine driver hasn't probed 
+> the DMA device yet. In that case the SPI controller driver will continue in 
+> PIO mode, ignoring the DMA engine that will later be probed. We can't defer 
+> probing of the SPI controller as the DMA engine driver might never get loaded, 
+> which would result in the SPI controller probe being deferred forever.
+> 
+> One solution for this type of dependency issue would be to notify the SPI 
+> controller driver after probe that the DMA channel is now available. I'd like 
+> to avoid that though, as it would drastically increase the complexity of lots 
+> of drivers and create lots of race conditions.
+> 
+> There are certain configurations that we could possibly consider as invalid. 
+> For instance if the SPI controller driver is built-in and the DMA engine 
+> driver built as a module, the user clearly shot themselves in the foot and the 
+> kernel can't be blamed.
+> 
+> For resources that can't be built as a module (IOMMUs for instance) we thus 
+> only have to consider the case where both drivers are built-in, as the 
+> resource built-in and consumer as a module should work properly from an 
+> ordering point of view (at least as long as we don't allow asynchronous 
+> probing of built-in drivers to be delayed enough for modules to be loaded...). 
+> In this case, if the resource driver isn't available when the consumer is 
+> probed, if will never be available at the consumer can safely proceed in a 
+> degraded mode. We would thus only need to solve the probe ordering issue.
+> 
+> I'm not sure how far these simple(r) solutions that consider certain cases as 
+> invalid would scale though, and whether we won't need a more generic solution 
+> at some point anyway.
 
-If the update function that calculates the load and target frequency
-is deferred, the governor might need even more time to decrease the
-frequency.
+I would love to see a generic solution that works for all of these
+complex cases, as I agree with you, it's complex :)
 
-This may have impact to power consumption and after all conservative
-should decrease the frequency if there is no workload at every sampling
-rate.
+But I have yet to see any such patches that implement this.  As always,
+I am very glad to review anything that people create, but I don't have
+the time to work on such a solution myself at the moment.
 
-To resolve the above issue calculate the number of sampling periods
-that the update is deferred. Considering that for each sampling period
-conservative should drop the frequency by a freq_step because the
-CPU was idle apply the proper subtraction to requested frequency.
+thanks,
 
-Below, the kernel trace with and without this patch. First an
-intensive workload is applied on a specific CPU. Then the workload
-is removed and the CPU goes to idle.
-
-WITHOUT
-
-     <idle>-0     [007] dN..   620.329153: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   620.350857: cpu_frequency: state=1700000 cpu_id=7
-kworker/7:2-556   [007] ....   620.370856: cpu_frequency: state=1900000 cpu_id=7
-kworker/7:2-556   [007] ....   620.390854: cpu_frequency: state=2100000 cpu_id=7
-kworker/7:2-556   [007] ....   620.411853: cpu_frequency: state=2200000 cpu_id=7
-kworker/7:2-556   [007] ....   620.432854: cpu_frequency: state=2400000 cpu_id=7
-kworker/7:2-556   [007] ....   620.453854: cpu_frequency: state=2600000 cpu_id=7
-kworker/7:2-556   [007] ....   620.494856: cpu_frequency: state=2900000 cpu_id=7
-kworker/7:2-556   [007] ....   620.515856: cpu_frequency: state=3100000 cpu_id=7
-kworker/7:2-556   [007] ....   620.536858: cpu_frequency: state=3300000 cpu_id=7
-kworker/7:2-556   [007] ....   620.557857: cpu_frequency: state=3401000 cpu_id=7
-     <idle>-0     [007] d...   669.591363: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   669.591939: cpu_idle: state=4294967295 cpu_id=7
-     <idle>-0     [007] d...   669.591980: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] dN..   669.591989: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   670.201224: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   670.221975: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   670.222016: cpu_frequency: state=3300000 cpu_id=7
-     <idle>-0     [007] d...   670.222026: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   670.234964: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   670.801251: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   671.236046: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   671.236073: cpu_frequency: state=3100000 cpu_id=7
-     <idle>-0     [007] d...   671.236112: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   671.393437: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   671.401277: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   671.404083: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   671.404111: cpu_frequency: state=2900000 cpu_id=7
-     <idle>-0     [007] d...   671.404125: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   671.404974: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   671.501180: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   671.995414: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   671.995459: cpu_frequency: state=2800000 cpu_id=7
-     <idle>-0     [007] d...   671.995469: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   671.996287: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   672.001305: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.078374: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   672.078410: cpu_frequency: state=2600000 cpu_id=7
-     <idle>-0     [007] d...   672.078419: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.158020: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   672.158040: cpu_frequency: state=2400000 cpu_id=7
-     <idle>-0     [007] d...   672.158044: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.160038: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   672.234557: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.237121: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   672.237174: cpu_frequency: state=2100000 cpu_id=7
-     <idle>-0     [007] d...   672.237186: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.237778: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   672.267902: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.269860: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   672.269906: cpu_frequency: state=1900000 cpu_id=7
-     <idle>-0     [007] d...   672.269914: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.271902: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...   672.751342: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...   672.823056: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-556   [007] ....   672.823095: cpu_frequency: state=1600000 cpu_id=7
-
-WITH
-
-     <idle>-0     [007] dN..  4380.928009: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-399   [007] ....  4380.949767: cpu_frequency: state=2000000 cpu_id=7
-kworker/7:2-399   [007] ....  4380.969765: cpu_frequency: state=2200000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.009766: cpu_frequency: state=2500000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.029767: cpu_frequency: state=2600000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.049769: cpu_frequency: state=2800000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.069769: cpu_frequency: state=3000000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.089771: cpu_frequency: state=3100000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.109772: cpu_frequency: state=3400000 cpu_id=7
-kworker/7:2-399   [007] ....  4381.129773: cpu_frequency: state=3401000 cpu_id=7
-     <idle>-0     [007] d...  4428.226159: cpu_idle: state=1 cpu_id=7
-     <idle>-0     [007] d...  4428.226176: cpu_idle: state=4294967295 cpu_id=7
-     <idle>-0     [007] d...  4428.226181: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...  4428.227177: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...  4428.551640: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...  4428.649239: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-399   [007] ....  4428.649268: cpu_frequency: state=2800000 cpu_id=7
-     <idle>-0     [007] d...  4428.649278: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...  4428.689856: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...  4428.799542: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...  4428.801683: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-399   [007] ....  4428.801748: cpu_frequency: state=1700000 cpu_id=7
-     <idle>-0     [007] d...  4428.801761: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...  4428.806545: cpu_idle: state=4294967295 cpu_id=7
-...
-     <idle>-0     [007] d...  4429.051880: cpu_idle: state=4 cpu_id=7
-     <idle>-0     [007] d...  4429.086240: cpu_idle: state=4294967295 cpu_id=7
-kworker/7:2-399   [007] ....  4429.086293: cpu_frequency: state=1600000 cpu_id=7
-
-Without the patch the CPU dropped to min frequency after 3.2s
-With the patch applied the CPU dropped to min frequency after 0.86s
-
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- v1 -> v2
-- Use correct terminology in change log
-- Change the member variable name from 'deferred_periods' to 'idle_periods'
-- Fix format issue
-
- drivers/cpufreq/cpufreq_conservative.c | 14 +++++++++++++-
- drivers/cpufreq/cpufreq_governor.c     | 18 +++++++++++++-----
- drivers/cpufreq/cpufreq_governor.h     |  1 +
- 3 files changed, 27 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index fa5ece3..d787772 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -73,7 +73,19 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
- 	 */
- 	if (cs_tuners->freq_step == 0)
- 		goto out;
--
-+	/*
-+	 * Decrease requested_freq for each idle period that we didn't
-+	 * update the frequency
-+	 */
-+	if (policy_dbs->idle_periods < UINT_MAX) {
-+		unsigned int freq_target = policy_dbs->idle_periods *
-+				get_freq_target(cs_tuners, policy);
-+		if (requested_freq > freq_target)
-+			requested_freq -= freq_target;
-+		else
-+			requested_freq = policy->min;
-+		policy_dbs->idle_periods = UINT_MAX;
-+	}
- 	/*
- 	 * If requested_freq is out of range, it is likely that the limits
- 	 * changed in the meantime, so fall back to current frequency in that
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 3729474..1bc7137 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -117,7 +117,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 	struct policy_dbs_info *policy_dbs = policy->governor_data;
- 	struct dbs_data *dbs_data = policy_dbs->dbs_data;
- 	unsigned int ignore_nice = dbs_data->ignore_nice_load;
--	unsigned int max_load = 0;
-+	unsigned int max_load = 0, idle_periods = UINT_MAX;
- 	unsigned int sampling_rate, io_busy, j;
-
- 	/*
-@@ -163,8 +163,12 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * calls, so the previous load value can be used then.
- 			 */
- 			load = j_cdbs->prev_load;
--		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
--				    j_cdbs->prev_load)) {
-+		} else if (unlikely(time_elapsed > 2 * sampling_rate)) {
-+			unsigned int periods = time_elapsed / sampling_rate;
-+
-+			if (periods < idle_periods)
-+				idle_periods = periods;
-+
- 			/*
- 			 * If the CPU had gone completely idle and a task has
- 			 * just woken up on this CPU now, it would be unfair to
-@@ -189,8 +193,10 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * 'time_elapsed' (as compared to the sampling rate)
- 			 * indicates this scenario.
- 			 */
--			load = j_cdbs->prev_load;
--			j_cdbs->prev_load = 0;
-+			if (j_cdbs->prev_load) {
-+				load = j_cdbs->prev_load;
-+				j_cdbs->prev_load = 0;
-+			}
- 		} else {
- 			if (time_elapsed >= idle_time) {
- 				load = 100 * (time_elapsed - idle_time) / time_elapsed;
-@@ -218,6 +224,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 		if (load > max_load)
- 			max_load = load;
- 	}
-+	policy_dbs->idle_periods = idle_periods;
-+
- 	return max_load;
- }
- EXPORT_SYMBOL_GPL(dbs_update);
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index 9660cc6..10a3e0a 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -97,6 +97,7 @@ struct policy_dbs_info {
- 	struct list_head list;
- 	/* Multiplier for increasing sample delay temporarily. */
- 	unsigned int rate_mult;
-+	unsigned int idle_periods;
- 	/* Status indicators */
- 	bool is_shared;		/* This object is used by multiple CPUs */
- 	bool work_in_progress;	/* Work is being queued up or in progress */
--- 
-2.7.4
+greg k-h
