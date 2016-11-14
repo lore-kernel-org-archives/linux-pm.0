@@ -1,35 +1,61 @@
-From: Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v7 0/7] Exynos IOMMU: proper runtime PM support (use
-	device dependencies)
-Date: Mon, 14 Nov 2016 17:13:32 +0100
-Message-ID: <20161114161332.GB14829@8bytes.org>
-References: <CGME20161114100908eucas1p1658fdc7f8e9d528248542ccfda12c6e6@eucas1p1.samsung.com>
-	<1479118092-1365-1-git-send-email-m.szyprowski@samsung.com>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH 1/3] idle: add support for tasks that inject idle
+Date: Mon, 14 Nov 2016 08:20:28 -0800
+Message-ID: <20161114082028.6c0ce338@jacob-builder>
+References: <1478718312-12847-1-git-send-email-jacob.jun.pan@linux.intel.com>
+        <1478718312-12847-2-git-send-email-jacob.jun.pan@linux.intel.com>
+        <20161114150119.GG3142@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1479118092-1365-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:54760 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932809AbcKNQSe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Nov 2016 11:18:34 -0500
+In-Reply-To: <20161114150119.GG3142@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Petr Mladek <pmladek@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, jacob.jun.pan@linux.intel.com
 
-On Mon, Nov 14, 2016 at 11:08:05AM +0100, Marek Szyprowski wrote:
-> Joerg: I hope you can merge this version on top of Greg's driver-core-next
-> branch to iommu tree.
+On Mon, 14 Nov 2016 16:01:19 +0100
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Merged Greg's driver-core-next branch and applied these on-top,
-thanks Marek.
+> On Wed, Nov 09, 2016 at 11:05:10AM -0800, Jacob Pan wrote:
+> > +void play_idle()
+> > +{
+> > +	/*
+> > +	 * Only FIFO tasks can disable the tick since they don't
+> > need the forced
+> > +	 * preemption.
+> > +	 */
+> > +	WARN_ON_ONCE(current->policy != SCHED_FIFO);
+> > +	WARN_ON_ONCE(current->nr_cpus_allowed != 1);
+> > +	WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
+> > +	WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
+> > +	rcu_sleep_check();
+> > +
+> > +	preempt_disable();
+> > +	current->flags |= PF_IDLE;
+> > +	do_idle();
+> > +	current->flags &= ~PF_IDLE;
+> > +
+> > +	preempt_fold_need_resched();
+> > +	preempt_enable();
+> > +}
+> > +EXPORT_SYMBOL_GPL(play_idle);  
+> 
+> Hurm.. didn't this initially also include the setup of the timer and
+> take an timeout argument?
 
+right, the initial version has a timeout and
+	init_timer_on_stack(timer);
 
-	Joerg
+I thought since this play_idle timer is likely to expire instead of
+being canceled, so I switched to hrtimer by caller. We don't have an on
+stack hrtimer, right? or Should we consider adding one?
+
+Thanks,
+
+Jacob
