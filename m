@@ -1,129 +1,277 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Synchronize sysfs limits
-Date: Mon, 14 Nov 2016 23:46:52 +0100
-Message-ID: <5404733.dplQ1iSI2R@vostro.rjw.lan>
-References: <1478909495-57026-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1479161257.6544.33.camel@linux.intel.com> <CAJZ5v0jUD7iDC6zY8USgDw=Z_0+nDnS-7DMCXLKxGSsG+Wz-BA@mail.gmail.com>
+From: Stratos Karafotis <stratosk@semaphore.gr>
+Subject: Re: [PATCH v2] cpufreq: conservative: Decrease frequency faster when
+ the update deferred
+Date: Tue, 15 Nov 2016 00:53:19 +0200
+Message-ID: <18d85114-a3bc-241c-0fdb-5009ca249d1b@semaphore.gr>
+References: <691e286d-249b-e450-2df1-8421d83e6a46@semaphore.gr>
+ <CAJZ5v0hREE4Q72XXqJS5ub+GEqw8=R111Svd2Z+A9pKuE3btcQ@mail.gmail.com>
+ <8e9ccf39-002e-5f72-8b00-47968f6b19b8@semaphore.gr>
+ <CAJZ5v0hO2T41qkPNETqJv7yfJ-=V34gqr_gEy7bNxg83e5HB+g@mail.gmail.com>
+ <CAJZ5v0jBVvM0AGhiqmSz3KLZt4nAVFCdsMUKENNkqzOo9NgCRQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47448 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S933841AbcKNWjW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 17:39:22 -0500
-In-Reply-To: <CAJZ5v0jUD7iDC6zY8USgDw=Z_0+nDnS-7DMCXLKxGSsG+Wz-BA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jBVvM0AGhiqmSz3KLZt4nAVFCdsMUKENNkqzOo9NgCRQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Monday, November 14, 2016 11:11:39 PM Rafael J. Wysocki wrote:
-> On Mon, Nov 14, 2016 at 11:07 PM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
-> > On Mon, 2016-11-14 at 02:04 +0100, Rafael J. Wysocki wrote:
-> >> On Sat, Nov 12, 2016 at 1:11 AM, Srinivas Pandruvada
-> >>
-> > [...]
-> >> +       get_online_cpus();
-> >> > +       for_each_online_cpu(cpu) {
-> >> > +               if (all_cpu_data[cpu])
-> >> > +                       cpufreq_update_policy(cpu);
-> >>
-> >> cpufreq_update_policy() calls cpufreq_cpu_get() to get the policy
-> >> anyway which does the requisite policy existence check (although it
-> >> is
-> >> a bit racy now, but that's a bug in there that we should not have to
-> >> work around here), so it should be sufficient to do this
-> >> for_each_possible_cpu() without additional locking.
-> >>
-> > I will change in the next patch set.
+
+
+On 15/11/2016 12:09 πμ, Rafael J. Wysocki wrote:
+> On Mon, Nov 14, 2016 at 10:59 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Mon, Nov 14, 2016 at 10:46 PM, Stratos Karafotis
+>> <stratosk@semaphore.gr> wrote:
+>>>
+>>>
+>>> On 14/11/2016 10:44 μμ, Rafael J. Wysocki wrote:
+>>>> On Sat, Nov 12, 2016 at 10:04 PM, Stratos Karafotis
+>>>> <stratosk@semaphore.gr> wrote:
+>>>>> Conservative governor changes the CPU frequency in steps.
+>>>>> That means that if a CPU runs at max frequency, it will need several
+>>>>> sampling periods to return to min frequency when the workload
+>>>>> is finished.
+>>>>>
+>>>>> If the update function that calculates the load and target frequency
+>>>>> is deferred, the governor might need even more time to decrease the
+>>>>> frequency.
+>>>>>
+>>>>> This may have impact to power consumption and after all conservative
+>>>>> should decrease the frequency if there is no workload at every sampling
+>>>>> rate.
+>>>>>
+>>>>> To resolve the above issue calculate the number of sampling periods
+>>>>> that the update is deferred. Considering that for each sampling period
+>>>>> conservative should drop the frequency by a freq_step because the
+>>>>> CPU was idle apply the proper subtraction to requested frequency.
+>>>>>
+>>>>> Below, the kernel trace with and without this patch. First an
+>>>>> intensive workload is applied on a specific CPU. Then the workload
+>>>>> is removed and the CPU goes to idle.
+>>>>>
+>>>>> WITHOUT
+>>>>>
+>>>>>      <idle>-0     [007] dN..   620.329153: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.350857: cpu_frequency: state=1700000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.370856: cpu_frequency: state=1900000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.390854: cpu_frequency: state=2100000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.411853: cpu_frequency: state=2200000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.432854: cpu_frequency: state=2400000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.453854: cpu_frequency: state=2600000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.494856: cpu_frequency: state=2900000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.515856: cpu_frequency: state=3100000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.536858: cpu_frequency: state=3300000 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   620.557857: cpu_frequency: state=3401000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   669.591363: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   669.591939: cpu_idle: state=4294967295 cpu_id=7
+>>>>>      <idle>-0     [007] d...   669.591980: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] dN..   669.591989: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   670.201224: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   670.221975: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   670.222016: cpu_frequency: state=3300000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   670.222026: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   670.234964: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   670.801251: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.236046: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   671.236073: cpu_frequency: state=3100000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.236112: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.393437: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   671.401277: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.404083: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   671.404111: cpu_frequency: state=2900000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.404125: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.404974: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   671.501180: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.995414: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   671.995459: cpu_frequency: state=2800000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.995469: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   671.996287: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   672.001305: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.078374: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   672.078410: cpu_frequency: state=2600000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.078419: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.158020: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   672.158040: cpu_frequency: state=2400000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.158044: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.160038: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   672.234557: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.237121: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   672.237174: cpu_frequency: state=2100000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.237186: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.237778: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   672.267902: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.269860: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   672.269906: cpu_frequency: state=1900000 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.269914: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.271902: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...   672.751342: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...   672.823056: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-556   [007] ....   672.823095: cpu_frequency: state=1600000 cpu_id=7
+>>>>>
+>>>>> WITH
+>>>>>
+>>>>>      <idle>-0     [007] dN..  4380.928009: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4380.949767: cpu_frequency: state=2000000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4380.969765: cpu_frequency: state=2200000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.009766: cpu_frequency: state=2500000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.029767: cpu_frequency: state=2600000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.049769: cpu_frequency: state=2800000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.069769: cpu_frequency: state=3000000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.089771: cpu_frequency: state=3100000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.109772: cpu_frequency: state=3400000 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4381.129773: cpu_frequency: state=3401000 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.226159: cpu_idle: state=1 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.226176: cpu_idle: state=4294967295 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.226181: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.227177: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...  4428.551640: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.649239: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4428.649268: cpu_frequency: state=2800000 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.649278: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.689856: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...  4428.799542: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.801683: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4428.801748: cpu_frequency: state=1700000 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.801761: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4428.806545: cpu_idle: state=4294967295 cpu_id=7
+>>>>> ...
+>>>>>      <idle>-0     [007] d...  4429.051880: cpu_idle: state=4 cpu_id=7
+>>>>>      <idle>-0     [007] d...  4429.086240: cpu_idle: state=4294967295 cpu_id=7
+>>>>> kworker/7:2-399   [007] ....  4429.086293: cpu_frequency: state=1600000 cpu_id=7
+>>>>>
+>>>>> Without the patch the CPU dropped to min frequency after 3.2s
+>>>>> With the patch applied the CPU dropped to min frequency after 0.86s
+>>>>>
+>>>>> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+>>>>> ---
+>>>>>  v1 -> v2
+>>>>> - Use correct terminology in change log
+>>>>> - Change the member variable name from 'deferred_periods' to 'idle_periods'
+>>>>> - Fix format issue
+>>>>>
+>>>>>  drivers/cpufreq/cpufreq_conservative.c | 14 +++++++++++++-
+>>>>>  drivers/cpufreq/cpufreq_governor.c     | 18 +++++++++++++-----
+>>>>>  drivers/cpufreq/cpufreq_governor.h     |  1 +
+>>>>>  3 files changed, 27 insertions(+), 6 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+>>>>> index fa5ece3..d787772 100644
+>>>>> --- a/drivers/cpufreq/cpufreq_conservative.c
+>>>>> +++ b/drivers/cpufreq/cpufreq_conservative.c
+>>>>> @@ -73,7 +73,19 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>>>>>          */
+>>>>>         if (cs_tuners->freq_step == 0)
+>>>>>                 goto out;
+>>>>> -
+>>>>> +       /*
+>>>>> +        * Decrease requested_freq for each idle period that we didn't
+>>>>> +        * update the frequency
+>>>>> +        */
+>>>>> +       if (policy_dbs->idle_periods < UINT_MAX) {
+>>>>> +               unsigned int freq_target = policy_dbs->idle_periods *
+>>>>> +                               get_freq_target(cs_tuners, policy);
+>>>>> +               if (requested_freq > freq_target)
+>>>>> +                       requested_freq -= freq_target;
+>>>>> +               else
+>>>>> +                       requested_freq = policy->min;
+>>>>> +               policy_dbs->idle_periods = UINT_MAX;
+>>>>> +       }
+>>>>>         /*
+>>>>>          * If requested_freq is out of range, it is likely that the limits
+>>>>>          * changed in the meantime, so fall back to current frequency in that
+>>>>> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+>>>>> index 3729474..1bc7137 100644
+>>>>> --- a/drivers/cpufreq/cpufreq_governor.c
+>>>>> +++ b/drivers/cpufreq/cpufreq_governor.c
+>>>>> @@ -117,7 +117,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>>>>         struct policy_dbs_info *policy_dbs = policy->governor_data;
+>>>>>         struct dbs_data *dbs_data = policy_dbs->dbs_data;
+>>>>>         unsigned int ignore_nice = dbs_data->ignore_nice_load;
+>>>>> -       unsigned int max_load = 0;
+>>>>> +       unsigned int max_load = 0, idle_periods = UINT_MAX;
+>>>>>         unsigned int sampling_rate, io_busy, j;
+>>>>>
+>>>>>         /*
+>>>>> @@ -163,8 +163,12 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>>>>                          * calls, so the previous load value can be used then.
+>>>>>                          */
+>>>>>                         load = j_cdbs->prev_load;
+>>>>> -               } else if (unlikely(time_elapsed > 2 * sampling_rate &&
+>>>>> -                                   j_cdbs->prev_load)) {
+>>>>> +               } else if (unlikely(time_elapsed > 2 * sampling_rate)) {
+>>>>> +                       unsigned int periods = time_elapsed / sampling_rate;
+>>>>> +
+>>>>> +                       if (periods < idle_periods)
+>>>>> +                               idle_periods = periods;
+>>>>> +
+>>>>>                         /*
+>>>>>                          * If the CPU had gone completely idle and a task has
+>>>>>                          * just woken up on this CPU now, it would be unfair to
+>>>>> @@ -189,8 +193,10 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>>>>                          * 'time_elapsed' (as compared to the sampling rate)
+>>>>>                          * indicates this scenario.
+>>>>>                          */
+>>>>> -                       load = j_cdbs->prev_load;
+>>>>> -                       j_cdbs->prev_load = 0;
+>>>>> +                       if (j_cdbs->prev_load) {
+>>>>> +                               load = j_cdbs->prev_load;
+>>>>> +                               j_cdbs->prev_load = 0;
+>>>>> +                       }
+>>>>>                 } else {
+>>>>>                         if (time_elapsed >= idle_time) {
+>>>>>                                 load = 100 * (time_elapsed - idle_time) / time_elapsed;
+>>>>> @@ -218,6 +224,8 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>>>>>                 if (load > max_load)
+>>>>>                         max_load = load;
+>>>>>         }
+>>>>> +       policy_dbs->idle_periods = idle_periods;
+>>>>> +
+>>>>>         return max_load;
+>>>>>  }
+>>>>>  EXPORT_SYMBOL_GPL(dbs_update);
+>>>>
+>>>> I have a murky suspicion that the changes in dbs_update() are going to
+>>>> break something.  I need to recall what it was, though.
+>>>
+>>> The only change in dbs_update() is the calculation of 'idle_periods'.
+>>> If I don't miss something I left current functionality untouched.
+>>
+>> Well, not quite.  The else branch may now trigger when
+>> j_cdbs->prev_load is zero too which it didn't do before, AFAICS.
 > 
-> Wait, wait, there's a better way I think, but I'll need to send a
-> patch to explain what I mean. :-)  Will do that shortly.
+> What I mean is that the "if else" never triggers when
+> j_cdbs->prev_load is zero before the change, but that changes, so the
+> "else" branch will not cover the "j_cdbs->prev_load equal to zero"
+> case any more.  I'm not sure how much that matters ATM, though.
 
-Something like the below, modulo changes in ->verify() or in ->set_policy() to
-update min/max (untested, but I don't see why it wouldn't work).
+Yes, I understood your point. You are absolutely right. The patch
+introduces a bug there:
 
-If we are going to call cpufreq_update_policy() anyway, we don't need to do
-anything special for HWP then, because that will trigger ->set_policy()
-eventually and we'll update HWP at the end of it.
+If time_elapsed > 2 * sampling_rate, it calculates the idle_periods.
+Finally checks prev_load. If the prev_load equals to zero
+there is no load calculation at all.
 
----
- drivers/cpufreq/intel_pstate.c |   25 +++++++++++--------------
- 1 file changed, 11 insertions(+), 14 deletions(-)
+Because, as you mentioned, the "else" branch will not cover this case.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -572,13 +572,13 @@ static inline void update_turbo_state(vo
- 		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
- }
- 
--static void intel_pstate_hwp_set(const struct cpumask *cpumask)
-+static void intel_pstate_hwp_set(struct cpufreq_policy *policy)
- {
- 	int min, hw_min, max, hw_max, cpu, range, adj_range;
- 	struct perf_limits *perf_limits = limits;
- 	u64 value, cap;
- 
--	for_each_cpu(cpu, cpumask) {
-+	for_each_cpu(cpu, policy->cpus) {
- 		int max_perf_pct, min_perf_pct;
- 
- 		if (per_cpu_limits)
-@@ -615,16 +615,17 @@ static void intel_pstate_hwp_set(const s
- static int intel_pstate_hwp_set_policy(struct cpufreq_policy *policy)
- {
- 	if (hwp_active)
--		intel_pstate_hwp_set(policy->cpus);
-+		intel_pstate_hwp_set(policy);
- 
- 	return 0;
- }
- 
--static void intel_pstate_hwp_set_online_cpus(void)
-+static void intel_pstate_update_policies(void)
- {
--	get_online_cpus();
--	intel_pstate_hwp_set(cpu_online_mask);
--	put_online_cpus();
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu)
-+		cpufreq_update_policy(cpu);
- }
- 
- /************************** debugfs begin ************************/
-@@ -751,9 +752,7 @@ static ssize_t store_no_turbo(struct kob
- 
- 	mutex_unlock(&intel_pstate_limits_lock);
- 
--	if (hwp_active)
--		intel_pstate_hwp_set_online_cpus();
--
-+	intel_pstate_update_policies();
- 	return count;
- }
- 
-@@ -780,8 +779,7 @@ static ssize_t store_max_perf_pct(struct
- 
- 	mutex_unlock(&intel_pstate_limits_lock);
- 
--	if (hwp_active)
--		intel_pstate_hwp_set_online_cpus();
-+	intel_pstate_update_policies();
- 	return count;
- }
- 
-@@ -808,8 +806,7 @@ static ssize_t store_min_perf_pct(struct
- 
- 	mutex_unlock(&intel_pstate_limits_lock);
- 
--	if (hwp_active)
--		intel_pstate_hwp_set_online_cpus();
-+	intel_pstate_update_policies();
- 	return count;
- }
- 
+So, we would have a load value only for the first deferred update and
+zero load if the update is deferred again.
 
+> Sent too quickly, sorry.
+
+I'm sorry for this mistake. My apologies.
+I will fix the patch and resend it.
+
+Thanks,
+Stratos
