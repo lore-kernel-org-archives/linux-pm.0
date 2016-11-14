@@ -1,44 +1,31 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] thermal/powerclamp: add back module device table
-Date: Mon, 14 Nov 2016 11:08:45 -0800
-Message-ID: <1479150525-13225-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: stable@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] thermal/powerclamp: add back module device table
+Date: Mon, 14 Nov 2016 11:09:41 -0800
+Message-ID: <20161114110941.10145c54@icelake>
+References: <1478703661-10875-1-git-send-email-jacob.jun.pan@linux.intel.com>
+        <20161109150835.GA6382@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:47760 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933387AbcKNTL2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Nov 2016 14:11:28 -0500
+In-Reply-To: <20161109150835.GA6382@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, eric.ernst@linux.intel.com, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, jacob.jun.pan@linux.intel.com
 
-Commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 replaced module
-cpu id table with a cpu feature check, which is logically correct.
-But we need the module device table to allow module auto loading.
+On Wed, 9 Nov 2016 16:08:35 +0100
+Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
 
-Fixes:3105f234 thermal/powerclamp: correct cpu support check
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/thermal/intel_powerclamp.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+> >  drivers/thermal/intel_powerclamp.c | 9 ++++++++-
+> >  1 file changed, 8 insertions(+), 1 deletion(-)  
+> 
+> No signed-off-by :(
+> 
+> No Fixes: line, and no stable: line :(
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index bd4914e..745fcec 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -704,9 +704,16 @@ static int powerclamp_set_cur_state(struct thermal_cooling_device *cdev,
- 	.set_cur_state = powerclamp_set_cur_state,
- };
- 
-+static const struct x86_cpu_id __initconst intel_powerclamp_ids[] = {
-+	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_MWAIT },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(x86cpu, intel_powerclamp_ids);
-+
- static int __init powerclamp_probe(void)
- {
--	if (!boot_cpu_has(X86_FEATURE_MWAIT)) {
-+
-+	if (!x86_match_cpu(intel_powerclamp_ids)) {
- 		pr_err("CPU does not support MWAIT");
- 		return -ENODEV;
- 	}
--- 
-1.9.1
+my bad, just resent with fixes.
