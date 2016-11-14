@@ -1,149 +1,146 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Synchronize sysfs limits
-Date: Mon, 14 Nov 2016 02:04:45 +0100
-Message-ID: <CAJZ5v0j8CQk8tbxsCA_R0M2RJ4u58UexQkb7Waq4qRYQdRcw1A@mail.gmail.com>
-References: <1478909495-57026-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v10 0/8] power: add power sequence library
+Date: Mon, 14 Nov 2016 09:35:51 +0800
+Message-ID: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f194.google.com ([209.85.220.194]:36586 "EHLO
-        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751847AbcKNBEr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 20:04:47 -0500
-Received: by mail-qk0-f194.google.com with SMTP id h201so9319636qke.3
-        for <linux-pm@vger.kernel.org>; Sun, 13 Nov 2016 17:04:47 -0800 (PST)
-In-Reply-To: <1478909495-57026-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
+Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, Peter Chen <peter.chen@nxp.com>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
 
-On Sat, Nov 12, 2016 at 1:11 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> When user sets some limits using Intel P-State sysfs, they are not
-> reflected in the cpufreq policy scaling_max_freq and scaling_min_freq.
-> This change updates the cpufreq policy of each CPU, when user sets
-> limits via Intel P-State sysfs.
->
-> For example:
-> root@stn1]# cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 100
-> root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> 2800000
->
-> Now limit the max performance
-> root@stn1]# echo 80 > /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> This change now is also changed the scaling_max_freq
-> root@stn1]# cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
-> 2240000
->
-> But there is a side effect of this change for the users who use both
-> methods to limit interchangeably. For example if user sets limit via
-> Intel P-State sysfs to a lower maximum value and then sets a higher
-> maximum value via cpufreq sysfs, then the cpufreq display will show a
-> lower maximum value set by the Intel P-State sysfs. But there is no
-> change in the effective P-State used, as the driver will always use
-> the most constrained limit.
->
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 43 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 43 insertions(+)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 8f683e2..d8315e3 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -805,6 +805,18 @@ static ssize_t store_no_turbo(struct kobject *a, struct attribute *b,
->         return count;
->  }
->
-> +static void update_cpufreq_policies(void)
-> +{
-> +       int cpu;
-> +
-> +       get_online_cpus();
-> +       for_each_online_cpu(cpu) {
-> +               if (all_cpu_data[cpu])
-> +                       cpufreq_update_policy(cpu);
+Hi all,
 
-cpufreq_update_policy() calls cpufreq_cpu_get() to get the policy
-anyway which does the requisite policy existence check (although it is
-a bit racy now, but that's a bug in there that we should not have to
-work around here), so it should be sufficient to do this
-for_each_possible_cpu() without additional locking.
+This is a follow-up for my last power sequence framework patch set [1].
+According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+power sequence instances will be added at postcore_initcall, the match
+criteria is compatible string first, if the compatible string is not
+matched between dts and library, it will try to use generic power sequence.
+	 
+The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+if only one power sequence instance is needed, for more power sequences
+are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
 
-> +       }
-> +       put_online_cpus();
-> +}
-> +
->  static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
->                                   const char *buf, size_t count)
->  {
-> @@ -830,6 +842,9 @@ static ssize_t store_max_perf_pct(struct kobject *a, struct attribute *b,
->
->         if (hwp_active)
->                 intel_pstate_hwp_set_online_cpus();
-> +
-> +       update_cpufreq_policies();
-> +
->         return count;
->  }
->
-> @@ -858,6 +873,9 @@ static ssize_t store_min_perf_pct(struct kobject *a, struct attribute *b,
->
->         if (hwp_active)
->                 intel_pstate_hwp_set_online_cpus();
-> +
-> +       update_cpufreq_policies();
-> +
->         return count;
->  }
->
-> @@ -1802,6 +1820,28 @@ static struct cpufreq_driver intel_pstate_driver = {
->         .name           = "intel_pstate",
->  };
->
-> +static int cpufreq_intel_pstate_notifier(struct notifier_block *nb,
-> +                                        unsigned long event, void *data)
-> +{
-> +       struct cpufreq_policy *policy = data;
-> +       int max_freq, min_freq;
-> +
-> +       /* When per-CPU limits are used, sysfs limits can't be set */
-> +       if (per_cpu_limits)
-> +               return NOTIFY_OK;
-> +
-> +       max_freq = policy->cpuinfo.max_freq * limits->max_sysfs_pct / 100;
-> +       min_freq = policy->cpuinfo.max_freq * limits->min_sysfs_pct / 100;
-> +
-> +       cpufreq_verify_within_limits(policy, min_freq, max_freq);
-> +
-> +       return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block intel_pstate_cpufreq_notifier_block = {
-> +       .notifier_call = cpufreq_intel_pstate_notifier,
-> +};
-> +
->  static int no_load __initdata;
->  static int no_hwp __initdata;
->  static int hwp_only __initdata;
-> @@ -2032,6 +2072,9 @@ static int __init intel_pstate_init(void)
->         if (hwp_active)
->                 pr_info("HWP enabled\n");
->
-> +       cpufreq_register_notifier(&intel_pstate_cpufreq_notifier_block,
-> +                                 CPUFREQ_POLICY_NOTIFIER);
-> +
+In future, if there are special power sequence requirements, the special
+power sequence library can be created.
 
-cpufreq_set_policy() will call our ->verify() and ->set_policy()
-things, so why do we need the notifier?
+This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+two hot-plug devices to simulate this use case, the related binding
+change is updated at patch [1/6], The udoo board changes were tested
+using my last power sequence patch set.[3]
 
->         return rc;
->  out:
->         get_online_cpus();
-> --
+Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+need to power on itself before it can be found by ULPI bus.
 
-Thanks,
-Rafael
+[1] http://www.spinics.net/lists/linux-usb/msg142755.html
+[2] http://www.spinics.net/lists/linux-usb/msg143106.html
+[3] http://www.spinics.net/lists/linux-usb/msg142815.html
+
+Changes for v10:
+- Improve the kernel-doc for power sequence core, including exported APIs and
+  main structure. [Patch 2/8]
+- Change Kconfig, and let the user choose power sequence. [Patch 2/8]
+- Delete EXPORT_SYMBOL and change related APIs as local, these APIs do not
+  be intended to export currently. [Patch 2/8]
+- Selete POWER_SEQUENCE at USB core's Kconfig. [Patch 4/8]
+
+Changes for v9:
+- Add Vaibhav Hiremath's reviewed-by [Patch 4/8]
+- Rebase to v4.9-rc1
+
+Changes for v8:
+- Allocate one extra pwrseq instance if pwrseq_get has succeed, it can avoid
+  preallocate instances problem which the number of instance is decided at
+  compile time, thanks for Heiko Stuebner's suggestion [Patch 2/8]
+- Delete pwrseq_compatible_sample.c which is the demo purpose to show compatible
+  match method. [Patch 2/8]
+- Add Maciej S. Szmigiero's tested-by. [Patch 7/8]
+
+Changes for v7:
+- Create kinds of power sequence instance at postcore_initcall, and match
+  the instance with node using compatible string, the beneit of this is
+  the host driver doesn't need to consider which pwrseq instance needs
+  to be used, and pwrseq core will match it, however, it eats some memories
+  if less power sequence instances are used. [Patch 2/8]
+- Add pwrseq_compatible_sample.c to test match pwrseq using device_id. [Patch 2/8]
+- Fix the comments Vaibhav Hiremath adds for error path for clock and do not
+  use device_node for parameters at pwrseq_on. [Patch 2/8]
+- Simplify the caller to use power sequence, follows Alan's commnets [Patch 4/8]
+- Tested three pwrseq instances together using both specific compatible string and
+  generic libraries.
+
+Changes for v6:
+- Add Matthias Kaehlcke's Reviewed-by and Tested-by. (patch [2/6])
+- Change chipidea core of_node assignment for coming user. (patch [5/6])
+- Applies Joshua Clayton's three dts changes for two boards,
+  the USB device's reg has only #address-cells, but without #size-cells.
+
+Changes for v5:
+- Delete pwrseq_register/pwrseq_unregister, which is useless currently
+- Fix the linker error when the pwrseq user is compiled as module
+
+Changes for v4:
+- Create the patch on next-20160722 
+- Fix the of_node is not NULL after chipidea driver is unbinded [Patch 5/6]
+- Using more friendly wait method for reset gpio [Patch 2/6]
+- Support multiple input clocks [Patch 2/6]
+- Add Rob Herring's ack for DT changes
+- Add Joshua Clayton's Tested-by
+
+Changes for v3:
+- Delete "power-sequence" property at binding-doc, and change related code
+  at both library and user code.
+- Change binding-doc example node name with Rob's comments
+- of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
+  add additional code request gpio with proper gpio flags
+- Add Philipp Zabel's Ack and MAINTAINER's entry
+
+Changes for v2:
+- Delete "pwrseq" prefix and clock-names for properties at dt binding
+- Should use structure not but its pointer for kzalloc
+- Since chipidea core has no of_node, let core's of_node equals glue
+  layer's at core's probe
+
+Joshua Clayton (2):
+  ARM: dts: imx6qdl: Enable usb node children with <reg>
+  ARM: dts: imx6q-evi: Fix onboard hub reset line
+
+Peter Chen (6):
+  binding-doc: power: pwrseq-generic: add binding doc for generic power
+    sequence library
+  power: add power sequence library
+  binding-doc: usb: usb-device: add optional properties for power
+    sequence
+  usb: core: add power sequence handling for USB devices
+  usb: chipidea: let chipidea core device of_node equal's glue layer
+    device of_node
+  ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+
+ .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 +++++
+ .../devicetree/bindings/usb/usb-device.txt         |  10 +-
+ MAINTAINERS                                        |   9 +
+ arch/arm/boot/dts/imx6q-evi.dts                    |  25 +--
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++-
+ arch/arm/boot/dts/imx6qdl.dtsi                     |   6 +
+ drivers/power/Kconfig                              |   1 +
+ drivers/power/Makefile                             |   1 +
+ drivers/power/pwrseq/Kconfig                       |  21 ++
+ drivers/power/pwrseq/Makefile                      |   2 +
+ drivers/power/pwrseq/core.c                        | 237 +++++++++++++++++++++
+ drivers/power/pwrseq/pwrseq_generic.c              | 183 ++++++++++++++++
+ drivers/usb/Kconfig                                |   1 +
+ drivers/usb/chipidea/core.c                        |  27 ++-
+ drivers/usb/core/hub.c                             |  41 +++-
+ drivers/usb/core/hub.h                             |   1 +
+ include/linux/power/pwrseq.h                       |  60 ++++++
+ 17 files changed, 658 insertions(+), 41 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+ create mode 100644 drivers/power/pwrseq/Kconfig
+ create mode 100644 drivers/power/pwrseq/Makefile
+ create mode 100644 drivers/power/pwrseq/core.c
+ create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+ create mode 100644 include/linux/power/pwrseq.h
+
+-- 
+2.7.4
