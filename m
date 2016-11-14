@@ -1,50 +1,35 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq/CPPC: Add MODULE_DEVICE_TABLE for cppc_cpufreq driver
-Date: Mon, 14 Nov 2016 01:21:25 +0100
-Message-ID: <3532123.n0qt8sN7td@vostro.rjw.lan>
-References: <1476468023-6917-1-git-send-email-pprakash@codeaurora.org>
+Subject: Re: [PATCH] PM / OPP: make _of_get_opp_desc_node a static function
+Date: Mon, 14 Nov 2016 01:22:30 +0100
+Message-ID: <2766734.vM5WhbhWxb@vostro.rjw.lan>
+References: <1476945893-26998-1-git-send-email-yamada.masahiro@socionext.com> <20161020065904.GL11766@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55896 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750815AbcKNANx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 19:13:53 -0500
-In-Reply-To: <1476468023-6917-1-git-send-email-pprakash@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161020065904.GL11766@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, Viresh Kumar <vireshk@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Prashanth Prakash <pprakash@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, Hoan Tran <hotran@apm.com>, Christopher Covington <cov@codeaurora.org>, Al Stone <ahs3@redhat.com>
 
-On Friday, October 14, 2016 12:00:23 PM Prashanth Prakash wrote:
-> MODULE_DEVICE_TABLE is added so that CPPC cpufreq module can be
-> automatically loaded when we have a acpi processor device with
-> "ACPI0007" hid.
+On Thursday, October 20, 2016 12:29:04 PM Viresh Kumar wrote:
+> On 20-10-16, 15:44, Masahiro Yamada wrote:
+> > Since commit f47b72a15a96 ("PM / OPP: Move CONFIG_OF dependent code
+> > in a separate file"), this function is defined and called only in
+> > drivers/base/power/opp/of.c .
+> > 
+> > Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> > ---
+> > 
+> >  drivers/base/power/opp/of.c  | 2 +-
+> >  drivers/base/power/opp/opp.h | 1 -
+> >  2 files changed, 1 insertion(+), 2 deletions(-)
+> > 
 > 
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> ---
->  drivers/cpufreq/cppc_cpufreq.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 4852d9e..e82bb3c 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -247,3 +247,10 @@ MODULE_DESCRIPTION("CPUFreq driver based on the ACPI CPPC v5.0+ spec");
->  MODULE_LICENSE("GPL");
->  
->  late_initcall(cppc_cpufreq_init);
-> +
-> +static const struct acpi_device_id cppc_acpi_ids[] = {
-> +	{ACPI_PROCESSOR_DEVICE_HID, },
-> +	{}
-> +};
-> +
-> +MODULE_DEVICE_TABLE(acpi, cppc_acpi_ids);
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 Applied.
 
 Thanks,
 Rafael
-
