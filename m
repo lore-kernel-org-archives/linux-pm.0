@@ -1,62 +1,112 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking support
-Date: Mon, 14 Nov 2016 09:15:02 +0100
-Message-ID: <CAMuHMdV-F4sODkR_aT0h5G8fK8wzk2eHejysJ_0+3PAf5zuioA@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <20161110220407.GQ13978@wotan.suse.de>
- <20161110224054.GA10575@kroah.com> <3465624.0TqEj8I9ee@avalon>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: [PATCH V4 1/8] Documentation: devicetree: watchdog: da9062/61
+ watchdog timer binding
+Date: Mon, 14 Nov 2016 08:22:44 +0000
+Message-ID: <5c3d4527c6f52bd30f7e919a19c1cd6232aad1a4.1479111766.git.stwiss.opensource@diasemi.com>
+References: <cover.1479111766.git.stwiss.opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:33326 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753462AbcKNIPE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 03:15:04 -0500
-In-Reply-To: <3465624.0TqEj8I9ee@avalon>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <cover.1479111766.git.stwiss.opensource@diasemi.com>
+Sender: linux-input-owner@vger.kernel.org
+To: DEVICETREE <devicetree@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Wim Van Sebroeck <wim@iguana.be>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Lukas Wunner <lukas@wunner.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Grant Likely <grant.likely@secretlab.ca>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Andrzej Hajda <a.hajda@samsung.com>, Chr
 
-Hi Laurent,
+From: Steve Twiss <stwiss.opensource@diasemi.com>
 
-On Fri, Nov 11, 2016 at 1:08 AM, Laurent Pinchart
-<laurent.pinchart@ideasonboard.com> wrote:
-> On Thursday 10 Nov 2016 23:40:54 Greg Kroah-Hartman wrote:
->> On Thu, Nov 10, 2016 at 11:04:07PM +0100, Luis R. Rodriguez wrote:
->> Don't try to make this more difficult than it is please. DEFER works
->> today really really well, and it's really really simple.
->> Inter-dependancy of modules and devices connected to each other are two
->> different things, be careful about this.
->
-> One issue we don't address today is handling of optional dependencies. A
-> simple example is an SPI controller that can use a DMA engine or work in PIO
-> mode. At probe time the driver will request a DMA channel if the platform
-> (ACPI, DT, platform data) specifies that DMA is available. This can fail for
-> various reasons, one of them being that the DMA engine driver hasn't probed
-> the DMA device yet. In that case the SPI controller driver will continue in
-> PIO mode, ignoring the DMA engine that will later be probed. We can't defer
-> probing of the SPI controller as the DMA engine driver might never get loaded,
-> which would result in the SPI controller probe being deferred forever.
->
-> One solution for this type of dependency issue would be to notify the SPI
-> controller driver after probe that the DMA channel is now available. I'd like
-> to avoid that though, as it would drastically increase the complexity of lots
-> of drivers and create lots of race conditions.
+Add binding information for DA9062 and DA9061 watchdog.
 
-Alternatively, the driver can request optional DMA resources at open time
-instead of at probe time.
-E.g. sh_sci does that in its uart_ops.startup() callback.
+Example bindings for both DA9062 and DA9061 devices are added. For
+the DA9061 device, a fallback compatible line is added as a valid
+combination of compatible strings.
 
-Regardless of that, DMA can fail temporarily for other reasons
-(e.g. running out of channels).
+The original binding for DA9062 (only) used to reside inside the
+Documentation/devicetree/bindings/mfd/da9062.txt MFD document.
+The da9062-watchdog section was deleted in that file and replaced
+with a link to the new DA9061/62 binding information stored in this
+patch.
 
-Gr{oetje,eeting}s,
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
 
-                        Geert
+---
+This patch applies against linux-next and v4.8
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+v3 -> v4
+ - NO CODE CHANGE
+ - Patch renamed from [PATCH V3 2/9] to [PATCH V4 1/8]
+ - Added Acked-by Rob Herring
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+v2 -> v3
+ - Patch renamed from [PATCH V1 02/10] to [PATCH V3 2/9]
+ - Each compatible line should be a valid combination of compatible
+   strings, alter DA9061 line to include the fall back compatible string
+ - Update the commit message to describe this change
+ - Add information about associated patches from this set without
+   describing them as being explicitly dependent on this binding
+
+v1 -> v2
+ - Patch renamed from [PATCH V1 07/10] to [PATCH V2 02/10] -- these
+   changes were made to fix checkpatch warnings caused by the patch
+   set dependency order
+ - Updated the patch description to be explicit about where parts of
+   this binding had originally been stored
+ - A second example for DA9061 is provided to highlight the use of a
+   fall-back compatible option for the DA9062 watchdog driver
+
+Hi,
+
+No code changes for this version PATCH V4. Added an Ack by Rob Herring
+for PATCH V3.
+
+As previously:
+For the watchdog case: the DA9062 device driver is compatible with the
+DA9061 and for this reason there is minimal change required to the DA9062
+watchdog device driver. The example for the DA9061 watchdog shows the
+use of a fall-back compatible string.
+
+Other information:
+The device driver from this patch set (associated with this binding) is
+  [PATCH V4 6/8] watchdog: da9061: watchdog driver
+ 
+Regards,
+Steve Twiss, Dialog Semiconductor Ltd.
+
+
+ .../devicetree/bindings/watchdog/da9062-wdt.txt    | 23 ++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
+
+diff --git a/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt b/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
+new file mode 100644
+index 0000000..b935b52
+--- /dev/null
++++ b/Documentation/devicetree/bindings/watchdog/da9062-wdt.txt
+@@ -0,0 +1,23 @@
++* Dialog Semiconductor DA9062/61 Watchdog Timer
++
++Required properties:
++
++- compatible: should be one of the following valid compatible string lines:
++	"dlg,da9061-watchdog", "dlg,da9062-watchdog"
++	"dlg,da9062-watchdog"
++
++Example: DA9062
++
++	pmic0: da9062@58 {
++		watchdog {
++			compatible = "dlg,da9062-watchdog";
++		};
++	};
++
++Example: DA9061 using a fall-back compatible for the DA9062 watchdog driver
++
++	pmic0: da9061@58 {
++		watchdog {
++			compatible = "dlg,da9061-watchdog", "dlg,da9062-watchdog";
++		};
++	};
+-- 
+end-of-patch for PATCH V4
+
