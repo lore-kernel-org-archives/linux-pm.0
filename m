@@ -1,63 +1,88 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to
- SCHED_FIFO task
-Date: Mon, 14 Nov 2016 12:06:09 +0530
-Message-ID: <20161114063609.GB4178@vireshk-i7>
-References: <cover.1478858983.git.viresh.kumar@linaro.org>
- <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
- <CAJZ5v0jODn1gJtTtpTigA=7QwK04wzdFopr-R6GeoSchqgpgiQ@mail.gmail.com>
- <582670FD.7080203@codeaurora.org>
- <CAJZ5v0gdZZ-h5JvRYacv2OH+gzG-wwHWevRmp04GNPNzUWwYeA@mail.gmail.com>
- <20161113194722.GC29583@graphite.smuckle.net>
- <CAJZ5v0hGVq7SQE-m7Pi-WTv7f+OP=sFwAuzp08sFKAMBS2Mzyg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hGVq7SQE-m7Pi-WTv7f+OP=sFwAuzp08sFKAMBS2Mzyg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Steve Muckle <smuckle.linux@gmail.com>, Saravana Kannan <skannan@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
+Subject: [PATCH] cpufreq: conservative: Rename get_freq_target() to get_freq_step()
+Date: Mon, 14 Nov 2016 12:30:43 +0530
+Message-ID: <4f72891a684f0a8510e8b9560e2d7922b133d591.1479106815.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:34206 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752035AbcKNHBA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 02:01:00 -0500
+Received: by mail-pf0-f181.google.com with SMTP id c4so15998393pfb.1
+        for <linux-pm@vger.kernel.org>; Sun, 13 Nov 2016 23:00:59 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, stratosk@semaphore.gr
 
-On 13-11-16, 23:44, Rafael J. Wysocki wrote:
-> To a minimum, there should be a comment regarding that in the patches.
+What's returned from this function is the delta by which the frequency
+must be increased or decreased and not the final frequency that should
+be selected.
 
-Wanted to get the comment written properly before sending that in the patch. Can
-you please rectify this based on what you are looking for ?
+Name it properly to match its purpose. Also update the variables used to
+store that value.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index c6bc60078e21..e43f4fd42fb4 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -313,6 +313,20 @@ static void sugov_irq_work(struct irq_work *irq_work)
-        struct sugov_policy *sg_policy;
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq_conservative.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index fa5ece3915a1..0681fcff5aae 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -37,16 +37,16 @@ struct cs_dbs_tuners {
+ #define DEF_SAMPLING_DOWN_FACTOR		(1)
+ #define MAX_SAMPLING_DOWN_FACTOR		(10)
  
-        sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
-+
-+       /*
-+        * For Real Time and Deadline tasks, schedutil governor shoots the
-+        * frequency to maximum. And special care must be taken to ensure that
-+        * this kthread doesn't result in that.
-+        *
-+        * This is (mostly) guaranteed by the work_in_progress flag. The flag is
-+        * updated only at the end of the sugov_work() and before that schedutil
-+        * rejects all other frequency scaling requests.
-+        *
-+        * Though there is a very rare case where the RT thread yields right
-+        * after the work_in_progress flag is cleared. The effects of that are
-+        * neglected for now.
-+        */
-        kthread_queue_work(&sg_policy->worker, &sg_policy->work);
+-static inline unsigned int get_freq_target(struct cs_dbs_tuners *cs_tuners,
+-					   struct cpufreq_policy *policy)
++static inline unsigned int get_freq_step(struct cs_dbs_tuners *cs_tuners,
++					 struct cpufreq_policy *policy)
+ {
+-	unsigned int freq_target = (cs_tuners->freq_step * policy->max) / 100;
++	unsigned int freq_step = (cs_tuners->freq_step * policy->max) / 100;
+ 
+ 	/* max freq cannot be less than 100. But who knows... */
+-	if (unlikely(freq_target == 0))
+-		freq_target = DEF_FREQUENCY_STEP;
++	if (unlikely(freq_step == 0))
++		freq_step = DEF_FREQUENCY_STEP;
+ 
+-	return freq_target;
++	return freq_step;
  }
  
-> In any case, the clearing of work_in_progress might still be deferred
-> by queuing a regular (non-RT) work item to do that from the kthread
-> work (that will guarantee "hiding" the kthread work from the
-> governor), but admittedly that would be a sledgehammer of sorts (and
-> it might defeat the purpose of the whole exercise) ...
-
-I agree.
-
+ /*
+@@ -90,7 +90,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+ 		if (requested_freq == policy->max)
+ 			goto out;
+ 
+-		requested_freq += get_freq_target(cs_tuners, policy);
++		requested_freq += get_freq_step(cs_tuners, policy);
+ 		if (requested_freq > policy->max)
+ 			requested_freq = policy->max;
+ 
+@@ -106,16 +106,16 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+ 
+ 	/* Check for frequency decrease */
+ 	if (load < cs_tuners->down_threshold) {
+-		unsigned int freq_target;
++		unsigned int freq_step;
+ 		/*
+ 		 * if we cannot reduce the frequency anymore, break out early
+ 		 */
+ 		if (requested_freq == policy->min)
+ 			goto out;
+ 
+-		freq_target = get_freq_target(cs_tuners, policy);
+-		if (requested_freq > freq_target)
+-			requested_freq -= freq_target;
++		freq_step = get_freq_step(cs_tuners, policy);
++		if (requested_freq > freq_step)
++			requested_freq -= freq_step;
+ 		else
+ 			requested_freq = policy->min;
+ 
 -- 
-viresh
+2.7.1.410.g6faf27b
+
