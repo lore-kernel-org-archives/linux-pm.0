@@ -1,98 +1,42 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Subject: [PATCH 3.16 216/346] timekeeping: Cap array access in
- timekeeping_debug
-Date: Mon, 14 Nov 2016 00:14:20 +0000
-Message-ID: <lsq.1479082460.317072411@decadent.org.uk>
-References: <lsq.1479082458.755945576@decadent.org.uk>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/3] cpufreq: schedutil: enable fast switch earlier
+Date: Mon, 14 Nov 2016 09:36:22 +0530
+Message-ID: <20161114040622.GA29087@vireshk-i7>
+References: <cover.1478858983.git.viresh.kumar@linaro.org>
+ <1acfffe798c0371e69ec1171f485499e7b49ed6d.1478858983.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gMDoLrdCqxnyUQqWydqj6Ot0ssf=P9=hOk_bOG9gCi0Q@mail.gmail.com>
+ <CAKohponvq3vuzNvaGE7_Pn8vM54AMPZu_E8yRyeytegh-bjuzQ@mail.gmail.com>
+ <CAJZ5v0gtmEUriThmYEeaEwoY2DmoDvDZDrzDv=fjRLsXKan+9g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f177.google.com ([209.85.192.177]:34185 "EHLO
+        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965818AbcKNENd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 23:13:33 -0500
+Received: by mail-pf0-f177.google.com with SMTP id c4so14896596pfb.1
+        for <linux-pm@vger.kernel.org>; Sun, 13 Nov 2016 20:13:33 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <lsq.1479082458.755945576@decadent.org.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Chen Yu <yu.c.chen@intel.com>, Janek Kozicki <cosurgi@gmail.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Xunlei Pang <xpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <CAJZ5v0gtmEUriThmYEeaEwoY2DmoDvDZDrzDv=fjRLsXKan+9g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
 
-3.16.39-rc1 review patch.  If anyone has any objections, please let me know.
+On 13-11-16, 15:46, Rafael J. Wysocki wrote:
+> That's only going to happen in the next patch, though, right?  It
+> wouldn't hurt to write that in the changelog too.
 
-------------------
+Sure.
 
-From: John Stultz <john.stultz@linaro.org>
+> Besides, I'm not actually sure if starting/stopping the kthread in
+> sugov_policy_alloc/free() is a good idea.  It sort of conflates the
+> allocation of memory with kthread creation.  Any chance to untangle
+> that?
 
-commit a4f8f6667f099036c88f231dcad4cf233652c824 upstream.
+Hmm, so either I can create two new routines for the thread and call
+them along with alloc/free. Or I can rename the alloc/free routines
+and keep this patch as is.
 
-It was reported that hibernation could fail on the 2nd attempt, where the
-system hangs at hibernate() -> syscore_resume() -> i8237A_resume() ->
-claim_dma_lock(), because the lock has already been taken.
-
-However there is actually no other process would like to grab this lock on
-that problematic platform.
-
-Further investigation showed that the problem is triggered by setting
-/sys/power/pm_trace to 1 before the 1st hibernation.
-
-Since once pm_trace is enabled, the rtc becomes unmeaningful after suspend,
-and meanwhile some BIOSes would like to adjust the 'invalid' RTC (e.g, smaller
-than 1970) to the release date of that motherboard during POST stage, thus
-after resumed, it may seem that the system had a significant long sleep time
-which is a completely meaningless value.
-
-Then in timekeeping_resume -> tk_debug_account_sleep_time, if the bit31 of the
-sleep time happened to be set to 1, fls() returns 32 and we add 1 to
-sleep_time_bin[32], which causes an out of bounds array access and therefor
-memory being overwritten.
-
-As depicted by System.map:
-0xffffffff81c9d080 b sleep_time_bin
-0xffffffff81c9d100 B dma_spin_lock
-the dma_spin_lock.val is set to 1, which caused this problem.
-
-This patch adds a sanity check in tk_debug_account_sleep_time()
-to ensure we don't index past the sleep_time_bin array.
-
-[jstultz: Problem diagnosed and original patch by Chen Yu, I've solved the
- issue slightly differently, but borrowed his excelent explanation of the
- issue here.]
-
-Fixes: 5c83545f24ab "power: Add option to log time spent in suspend"
-Reported-by: Janek Kozicki <cosurgi@gmail.com>
-Reported-by: Chen Yu <yu.c.chen@intel.com>
-Signed-off-by: John Stultz <john.stultz@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Xunlei Pang <xpang@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Link: http://lkml.kernel.org/r/1471993702-29148-3-git-send-email-john.stultz@linaro.org
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- kernel/time/timekeeping_debug.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
---- a/kernel/time/timekeeping_debug.c
-+++ b/kernel/time/timekeeping_debug.c
-@@ -23,7 +23,9 @@
- 
- #include "timekeeping_internal.h"
- 
--static unsigned int sleep_time_bin[32] = {0};
-+#define NUM_BINS 32
-+
-+static unsigned int sleep_time_bin[NUM_BINS] = {0};
- 
- static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
- {
-@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
- 
- void tk_debug_account_sleep_time(struct timespec *t)
- {
--	sleep_time_bin[fls(t->tv_sec)]++;
-+	/* Cap bin index so we don't overflow the array */
-+	int bin = min(fls(t->tv_sec), NUM_BINS-1);
-+
-+	sleep_time_bin[bin]++;
- }
- 
+-- 
+viresh
