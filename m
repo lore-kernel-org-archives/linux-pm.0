@@ -1,33 +1,42 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH 1/3] idle: add support for tasks that inject idle
-Date: Mon, 14 Nov 2016 08:29:45 -0800
-Message-ID: <20161114082945.4d8c7eff@jacob-builder>
-References: <1478718312-12847-1-git-send-email-jacob.jun.pan@linux.intel.com>
-        <1478718312-12847-2-git-send-email-jacob.jun.pan@linux.intel.com>
-        <20161114150119.GG3142@twins.programming.kicks-ass.net>
-        <20161114082028.6c0ce338@jacob-builder>
-        <20161114162211.GI3142@twins.programming.kicks-ass.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] cpufreq: intel_pstate: fix intel_pstate_use_acpi_profile helper
+Date: Mon, 14 Nov 2016 17:41:51 +0100
+Message-ID: <20161114164216.2657919-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:6917 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752781AbcKNQ1v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Nov 2016 11:27:51 -0500
-In-Reply-To: <20161114162211.GI3142@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Arnd Bergmann <arnd@arndb.de>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, Stephane Gasparini <stephane.gasparini@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Petr Mladek <pmladek@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>, jacob.jun.pan@linux.intel.com
 
-On Mon, 14 Nov 2016 17:22:11 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+The newly added function uses two different prototypes depending
+on configuration, and one of them does not match the caller:
 
-> hrtimer_init_on_stack() exists.
+drivers/cpufreq/intel_pstate.c: In function ‘copy_cpu_funcs’:
+drivers/cpufreq/intel_pstate.c:1798:2: error: too few arguments to function ‘intel_pstate_use_acpi_profile’
 
-I missed it. let me move the timeout inside play_idle().
+This changes it to look like the other one.
 
-Thanks,
+Fixes: 3bea6a285476 ("cpufreq: intel_pstate: Use cpu load based algorithm for mobile class devices")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/cpufreq/intel_pstate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Jacob
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 65832f8eacdc..7153cf2d8e11 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1779,7 +1779,7 @@ static void intel_pstate_use_acpi_profile(void)
+ 				get_target_pstate_use_cpu_load;
+ }
+ #else
+-static inline void intel_pstate_use_acpi_profile(struct pstate_funcs *funcs)
++static inline void intel_pstate_use_acpi_profile(void)
+ {
+ }
+ #endif
+-- 
+2.9.0
