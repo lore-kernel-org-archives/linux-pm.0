@@ -1,103 +1,65 @@
-From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Subject: [PATCH v10 5/8] usb: chipidea: let chipidea core device of_node equal's glue layer device of_node
-Date: Mon, 14 Nov 2016 09:35:56 +0800
-Message-ID: <1479087359-7547-6-git-send-email-peter.chen@nxp.com>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v10 6/8] ARM: dts: imx6qdl: Enable usb node children with <reg>
+Date: Mon, 14 Nov 2016 09:35:57 +0800
+Message-ID: <1479087359-7547-7-git-send-email-peter.chen@nxp.com>
 References: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1479087359-7547-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-by2nam03on0040.outbound.protection.outlook.com ([104.47.42.40]:59374
+        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752263AbcKNBg4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 13 Nov 2016 20:36:56 -0500
+In-Reply-To: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
+Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, Peter Chen <peter.chen@nxp.com>
 
-From: Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+From: Joshua Clayton <stillcompiling@gmail.com>
 
-At device tree, we have no device node for chipidea core,
-the glue layer's node is the parent node for host and udc
-device. But in related driver, the parent device is chipidea
-core. So, in order to let the common driver get parent's node,
-we let the core's device node equals glue layer device node.
+Give usb nodes #address and #size attributes, so that a child node
+representing a permanently connected device such as an onboard hub may
+be addressed with a <reg> attribute
 
-Signed-off-by: Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Tested-by: Maciej S. Szmigiero <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
-Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
 ---
- drivers/usb/chipidea/core.c | 27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/imx6qdl.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index 69426e6..6839e19 100644
---- a/drivers/usb/chipidea/core.c
-+++ b/drivers/usb/chipidea/core.c
-@@ -927,6 +927,16 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
+diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
+index b13b0b2..8fc66e1 100644
+--- a/arch/arm/boot/dts/imx6qdl.dtsi
++++ b/arch/arm/boot/dts/imx6qdl.dtsi
+@@ -935,6 +935,8 @@
  
-+	/*
-+	 * At device tree, we have no device node for chipidea core,
-+	 * the glue layer's node is the parent node for host and udc
-+	 * device. But in related driver, the parent device is chipidea
-+	 * core. So, in order to let the common driver get parent's node,
-+	 * we let the core's device node equals glue layer's node.
-+	 */
-+	if (dev->parent && dev->parent->of_node)
-+		dev->of_node = dev->parent->of_node;
-+
- 	if (ci->platdata->phy) {
- 		ci->phy = ci->platdata->phy;
- 	} else if (ci->platdata->usb_phy) {
-@@ -937,11 +947,15 @@ static int ci_hdrc_probe(struct platform_device *pdev)
+ 			usbh1: usb@02184200 {
+ 				compatible = "fsl,imx6q-usb", "fsl,imx27-usb";
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x02184200 0x200>;
+ 				interrupts = <0 40 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&clks IMX6QDL_CLK_USBOH3>;
+@@ -949,6 +951,8 @@
  
- 		/* if both generic PHY and USB PHY layers aren't enabled */
- 		if (PTR_ERR(ci->phy) == -ENOSYS &&
--				PTR_ERR(ci->usb_phy) == -ENXIO)
--			return -ENXIO;
-+				PTR_ERR(ci->usb_phy) == -ENXIO) {
-+			ret = -ENXIO;
-+			goto clear_of_node;
-+		}
+ 			usbh2: usb@02184400 {
+ 				compatible = "fsl,imx6q-usb", "fsl,imx27-usb";
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x02184400 0x200>;
+ 				interrupts = <0 41 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&clks IMX6QDL_CLK_USBOH3>;
+@@ -962,6 +966,8 @@
  
--		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy))
--			return -EPROBE_DEFER;
-+		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy)) {
-+			ret = -EPROBE_DEFER;
-+			goto clear_of_node;
-+		}
- 
- 		if (IS_ERR(ci->phy))
- 			ci->phy = NULL;
-@@ -952,7 +966,7 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 	ret = ci_usb_phy_init(ci);
- 	if (ret) {
- 		dev_err(dev, "unable to init phy: %d\n", ret);
--		return ret;
-+		goto clear_of_node;
- 	}
- 
- 	ci->hw_bank.phys = res->start;
-@@ -1058,6 +1072,8 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 	ci_role_destroy(ci);
- deinit_phy:
- 	ci_usb_phy_exit(ci);
-+clear_of_node:
-+	dev->of_node = NULL;
- 
- 	return ret;
- }
-@@ -1076,6 +1092,7 @@ static int ci_hdrc_remove(struct platform_device *pdev)
- 	ci_extcon_unregister(ci);
- 	ci_role_destroy(ci);
- 	ci_hdrc_enter_lpm(ci, true);
-+	ci->dev->of_node = NULL;
- 	ci_usb_phy_exit(ci);
- 
- 	return 0;
+ 			usbh3: usb@02184600 {
+ 				compatible = "fsl,imx6q-usb", "fsl,imx27-usb";
++				#address-cells = <1>;
++				#size-cells = <0>;
+ 				reg = <0x02184600 0x200>;
+ 				interrupts = <0 42 IRQ_TYPE_LEVEL_HIGH>;
+ 				clocks = <&clks IMX6QDL_CLK_USBOH3>;
 -- 
 2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
