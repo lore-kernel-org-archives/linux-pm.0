@@ -1,39 +1,48 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to
- SCHED_FIFO task
-Date: Mon, 14 Nov 2016 10:22:52 +0100
-Message-ID: <20161114092252.GT3117@twins.programming.kicks-ass.net>
-References: <cover.1478858983.git.viresh.kumar@linaro.org>
- <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
- <d9caf98b-706d-d331-89c4-b75120589da3@sssup.it>
- <20161111143935.GK3117@twins.programming.kicks-ass.net>
- <CAKohponr4=8Bf9C1=_YEhsvDXm0t2vXyGOnrrEr6HaMKzVOcnQ@mail.gmail.com>
+From: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH v7 1/7] iommu/exynos: Remove excessive, useless debug
+Date: Mon, 14 Nov 2016 11:08:06 +0100
+Message-ID: <1479118092-1365-2-git-send-email-m.szyprowski@samsung.com>
+References: <1479118092-1365-1-git-send-email-m.szyprowski@samsung.com>
+	<CGME20161114100909eucas1p1de05334a584eda44d68c932f31487e20@eucas1p1.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKohponr4=8Bf9C1=_YEhsvDXm0t2vXyGOnrrEr6HaMKzVOcnQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+In-reply-to: <1479118092-1365-1-git-send-email-m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
+List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
+List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
+	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
+Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>
+Cc: Tomeu Vizoso <tomeu.vizoso-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Tomasz Figa <tomasz.figa-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Inki Dae <inki.dae-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "Luis R. Rodriguez" <mcgrof-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lukas Wunner <lukas-JFq808J9C/izQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Nov 12, 2016 at 10:52:35AM +0530, Viresh Kumar wrote:
-> On 11 November 2016 at 20:09, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Fri, Nov 11, 2016 at 03:32:04PM +0100, Tommaso Cucinotta wrote:
-> >> >+    struct sched_param param = { .sched_priority = 50 };
-> >>
-> >> won't you have a tunable here? (sysctl?)
-> >
-> > You can use the regular userspace tools, like schedtool and chrt to set
-> > priorities.
-> 
-> I wanted to get some help from you on this Peter. The out of tree Interactive
-> governor has always used MAX_RT_PRIORITY - 1 here instead of 50.
-> 
-> But Steve started with 50. What do you think should the value be ?
+Remove excessive, useless debug about skipping TLB invalidation, which
+is a normal situation when more aggressive power management is enabled.
 
-Any static prio value is wrong (static prio assignment requires system
-knowledge that the kernel doesn't and cannot have), 50 is what threaded
-IRQs default too as well IIRC, so it would at least be consistent with
-that.
+Signed-off-by: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+---
+ drivers/iommu/exynos-iommu.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/iommu/exynos-iommu.c b/drivers/iommu/exynos-iommu.c
+index 30808e9..8ba0d60 100644
+--- a/drivers/iommu/exynos-iommu.c
++++ b/drivers/iommu/exynos-iommu.c
+@@ -578,9 +578,6 @@ static void sysmmu_tlb_invalidate_entry(struct sysmmu_drvdata *data,
+ 			sysmmu_unblock(data);
+ 		}
+ 		clk_disable(data->clk_master);
+-	} else {
+-		dev_dbg(data->master,
+-			"disabled. Skipping TLB invalidation @ %#x\n", iova);
+ 	}
+ 	spin_unlock_irqrestore(&data->lock, flags);
+ }
+-- 
+1.9.1
