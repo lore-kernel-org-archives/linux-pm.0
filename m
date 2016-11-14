@@ -1,66 +1,91 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/3] thermal/powerclamp: use PF_IDLE in injection kthread
-Date: Mon, 14 Nov 2016 16:11:05 +0100
-Message-ID: <20161114151105.GH3142@twins.programming.kicks-ass.net>
-References: <1478718312-12847-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <1478718312-12847-4-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v5 2/5] driver core: Functional dependencies tracking
+ support
+Date: Mon, 14 Nov 2016 16:48:05 +0100
+Message-ID: <20161114154805.GC10141@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <13957403.ZrB4mMbICz@vostro.rjw.lan>
+ <2715729.9U1nlcpFb3@vostro.rjw.lan>
+ <20161107213954.GI1764@wotan.suse.de>
+ <20161113173413.GB9598@wunner.de>
+ <20161114134831.GX13978@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:34180 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751532AbcKNPML (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 10:12:11 -0500
+Received: from mailout1.hostsharing.net ([83.223.95.204]:41251 "EHLO
+        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754688AbcKNPqv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 10:46:51 -0500
 Content-Disposition: inline
-In-Reply-To: <1478718312-12847-4-git-send-email-jacob.jun.pan@linux.intel.com>
+In-Reply-To: <20161114134831.GX13978@wotan.suse.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, "Chen, Yu C" <yu.c.chen@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Petr Mladek <pmladek@suse.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Arjan van de Ven <arjan@linux.intel.com>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>, Andrzej Hajda <a.hajda@samsung.com>
 
-On Wed, Nov 09, 2016 at 11:05:12AM -0800, Jacob Pan wrote:
-> +static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *hrtimer)
-> +{
-> +	set_tsk_need_resched(current);
+On Mon, Nov 14, 2016 at 02:48:32PM +0100, Luis R. Rodriguez wrote:
+> On Sun, Nov 13, 2016 at 06:34:13PM +0100, Lukas Wunner wrote:
+> > On Mon, Nov 07, 2016 at 10:39:54PM +0100, Luis R. Rodriguez wrote:
+> > > On Mon, Oct 10, 2016 at 02:51:04PM +0200, Rafael J. Wysocki wrote:
+> > > > One of the actions carried out by device_link_add() is to reorder
+> > > > the lists used for device shutdown and system suspend/resume to
+> > > > put the consumer device along with all of its children and all of
+> > > > its consumers (and so on, recursively) to the ends of those lists
+> > > > in order to ensure the right ordering between all of the supplier
+> > > > and consumer devices.
+> > > 
+> > > There's no explanation as to why this order is ensured to be
+> > > correct, I think its important to document this. From our discussions
+> > > at Plumbers it seems the order is ensured due to the fact that order
+> > > was already implicitly provided through platform firmware (ACPI
+> > > enumeration is one), adjusting order on the dpm list is just shuffling
+> > > order between consumer / provider, but nothing else.
+> > 
+> > ACPI specifies a hierarchy and the order on the dpm_list and
+> > devices_kset is such that children are behind their parent.
+> > 
+> > A device link specifies a dependency that exists in addition
+> > to the hierarchy, hence consumers need to be moved behind
+> > their supplier.  And not only the consumers themselves but
+> > also recursively their children and consumers. Essentially
+> > the entire subtree is moved to the back.  That happens in
+> > device_reorder_to_tail() in patch 2.
+> 
+> Ah neat, I failed to notice this full subtree tree move, its
+> rather important.
+> 
+> > If another device is enumerated which acts as a supplier to
+> > an existing other supplier, that other supplier and all its
+> > dependents are moved behind the newly enumerated device,
+> > and so on.
+> > 
+> > That is probably correct so long as no loops are introduced
+> > in the dependency graph.
+> 
+> "Probably" is what concerns me, there is no formality about
+> the correctness of this.
 
-So drivers really should not use this, which is why I had that in
-play_idle().
+It's a typo, I meant to say "provably correct". Sorry.
 
-> +	return HRTIMER_NORESTART;
-> +}
-> +
->  static void clamp_idle_injection_func(struct kthread_work *work)
->  {
->  	struct powerclamp_worker_data *w_data;
-> -	unsigned long target_jiffies;
-> +	unsigned long end_time;
-> +	unsigned int duration_ms;
->  
->  	w_data = container_of(work, struct powerclamp_worker_data,
->  			      idle_injection_work.work);
->  
-> +	hrtimer_init(&w_data->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL_PINNED);
-> +	w_data->timer.function = idle_inject_timer_fn;
-> +
->  	/*
->  	 * only elected controlling cpu can collect stats and update
->  	 * control parameters.
-> @@ -453,31 +459,17 @@ static void clamp_idle_injection_func(struct kthread_work *work)
->  	if (should_skip)
->  		goto balance;
->  
-> +	end_time = jiffies + w_data->duration_jiffies;
-> +	duration_ms = jiffies_to_msecs(w_data->duration_jiffies);
-> +	hrtimer_start(&w_data->timer, ms_to_ktime(duration_ms),
-> +		HRTIMER_MODE_REL_PINNED);
-> +
-> +	cpuidle_use_deepest_state(true);
-> +	while (time_after(end_time, jiffies))
-> +		play_idle();
+Quite a difference in meaning. :-)
 
-Why that loop?
 
-> +	cpuidle_use_deepest_state(false);
+> > That is checked by device_is_dependent(),
+> > which is called from device_link_add(), and the addition of the
+> > link is aborted if a loop is detected.
+> 
+> And that is sufficient ?
 
-> +
-> +	hrtimer_cancel(&w_data->timer);
+The device links turn the device tree into a directed acyclic graph.
+For the dpm_list and devices_kset, that graph is flattened into a
+one-dimensional form such that all ancestors and suppliers of a
+device appear in front of that device in the lists.  I'm not a
+graph theorist and can't provide a formal proof.  I think Rafael
+is a Dr., maybe he can do it. :-)  I merely looked at this from a
+practical point of view, i.e. I tried to come up with corner cases
+where dependencies are added that would result in incorrect ordering,
+and concluded that I couldn't find any.
+
+Thanks,
+
+Lukas
