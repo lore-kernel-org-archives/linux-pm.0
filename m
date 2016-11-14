@@ -1,40 +1,41 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to
- SCHED_FIFO task
-Date: Mon, 14 Nov 2016 15:52:54 +0530
-Message-ID: <20161114102254.GD4178@vireshk-i7>
+Subject: Re: [PATCH 1/3] cpufreq: schedutil: enable fast switch earlier
+Date: Mon, 14 Nov 2016 17:00:31 +0530
+Message-ID: <20161114113031.GE4178@vireshk-i7>
 References: <cover.1478858983.git.viresh.kumar@linaro.org>
- <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
- <d9caf98b-706d-d331-89c4-b75120589da3@sssup.it>
- <20161111143935.GK3117@twins.programming.kicks-ass.net>
- <CAKohponr4=8Bf9C1=_YEhsvDXm0t2vXyGOnrrEr6HaMKzVOcnQ@mail.gmail.com>
- <20161114092252.GT3117@twins.programming.kicks-ass.net>
+ <1acfffe798c0371e69ec1171f485499e7b49ed6d.1478858983.git.viresh.kumar@linaro.org>
+ <CAJZ5v0gMDoLrdCqxnyUQqWydqj6Ot0ssf=P9=hOk_bOG9gCi0Q@mail.gmail.com>
+ <CAKohponvq3vuzNvaGE7_Pn8vM54AMPZu_E8yRyeytegh-bjuzQ@mail.gmail.com>
+ <CAJZ5v0gtmEUriThmYEeaEwoY2DmoDvDZDrzDv=fjRLsXKan+9g@mail.gmail.com>
+ <20161114040622.GA29087@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:34911 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752433AbcKNKW6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 05:22:58 -0500
-Received: by mail-pg0-f46.google.com with SMTP id p66so52811326pga.2
-        for <linux-pm@vger.kernel.org>; Mon, 14 Nov 2016 02:22:58 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161114092252.GT3117@twins.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20161114040622.GA29087@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
 
-On 14-11-16, 10:22, Peter Zijlstra wrote:
-> Any static prio value is wrong (static prio assignment requires system
-> knowledge that the kernel doesn't and cannot have), 50 is what threaded
-> IRQs default too as well IIRC, so it would at least be consistent with
-> that.
+On 14-11-16, 09:36, Viresh Kumar wrote:
+> On 13-11-16, 15:46, Rafael J. Wysocki wrote:
+> > That's only going to happen in the next patch, though, right?  It
+> > wouldn't hurt to write that in the changelog too.
+> 
+> Sure.
+> 
+> > Besides, I'm not actually sure if starting/stopping the kthread in
+> > sugov_policy_alloc/free() is a good idea.  It sort of conflates the
+> > allocation of memory with kthread creation.  Any chance to untangle
+> > that?
+> 
+> Hmm, so either I can create two new routines for the thread and call
+> them along with alloc/free. Or I can rename the alloc/free routines
+> and keep this patch as is.
 
-Yes you are correct and I have found a better way of defining the
-priority in this case using that code instead of magic figure 50.
-
-MAX_USER_RT_PRIO/2 :)
+I have created separate routines in my new version (which I will send
+tomorrow).
 
 -- 
 viresh
