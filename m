@@ -1,41 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] cpufreq: schedutil: enable fast switch earlier
-Date: Mon, 14 Nov 2016 17:00:31 +0530
-Message-ID: <20161114113031.GE4178@vireshk-i7>
-References: <cover.1478858983.git.viresh.kumar@linaro.org>
- <1acfffe798c0371e69ec1171f485499e7b49ed6d.1478858983.git.viresh.kumar@linaro.org>
- <CAJZ5v0gMDoLrdCqxnyUQqWydqj6Ot0ssf=P9=hOk_bOG9gCi0Q@mail.gmail.com>
- <CAKohponvq3vuzNvaGE7_Pn8vM54AMPZu_E8yRyeytegh-bjuzQ@mail.gmail.com>
- <CAJZ5v0gtmEUriThmYEeaEwoY2DmoDvDZDrzDv=fjRLsXKan+9g@mail.gmail.com>
- <20161114040622.GA29087@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161114040622.GA29087@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
+From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+Subject: [PATCH -next] powernv: cpufreq: Fix uninitialized lpstate_idx in gpstates_timer_handler
+Date: Mon, 14 Nov 2016 17:29:27 +0530
+Message-ID: <1479124767-20165-1-git-send-email-akshay.adiga@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:56886 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932449AbcKNMA3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Nov 2016 07:00:29 -0500
+Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uAEC0HM8093014
+        for <linux-pm@vger.kernel.org>; Mon, 14 Nov 2016 07:00:29 -0500
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 26qb6svre2-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Mon, 14 Nov 2016 07:00:22 -0500
+Received: from localhost
+        by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <akshay.adiga@linux.vnet.ibm.com>;
+        Mon, 14 Nov 2016 21:59:46 +1000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: ego@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
 
-On 14-11-16, 09:36, Viresh Kumar wrote:
-> On 13-11-16, 15:46, Rafael J. Wysocki wrote:
-> > That's only going to happen in the next patch, though, right?  It
-> > wouldn't hurt to write that in the changelog too.
-> 
-> Sure.
-> 
-> > Besides, I'm not actually sure if starting/stopping the kthread in
-> > sugov_policy_alloc/free() is a good idea.  It sort of conflates the
-> > allocation of memory with kthread creation.  Any chance to untangle
-> > that?
-> 
-> Hmm, so either I can create two new routines for the thread and call
-> them along with alloc/free. Or I can rename the alloc/free routines
-> and keep this patch as is.
+lpstate_idx remains uninitialized in the case when elapsed_time
+is greater than MAX_RAMP_DOWN_TIME. At the end of rampdown
+global pstate should be equal to local pstate.
 
-I have created separate routines in my new version (which I will send
-tomorrow).
+Fixes: 20b15b766354 ("cpufreq: powernv: Use PMCR to verify global and
+localpstate")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index c82304b..c5c5bc3 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -624,6 +624,7 @@ void gpstate_timer_handler(unsigned long data)
+ 
+ 	if (gpstates->elapsed_time > MAX_RAMP_DOWN_TIME) {
+ 		gpstate_idx = pstate_to_idx(freq_data.pstate_id);
++		lpstate_idx = gpstate_idx;
+ 		reset_gpstates(policy);
+ 		gpstates->highest_lpstate_idx = gpstate_idx;
+ 	} else {
 -- 
-viresh
+2.5.5
+
