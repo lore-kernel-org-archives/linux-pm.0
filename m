@@ -1,42 +1,34 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 0/3] Broadcom STB AVS CPUfreq driver
-Date: Mon, 14 Nov 2016 01:32:44 +0100
-Message-ID: <5500544.cjuLUPfCfM@vostro.rjw.lan>
-References: <20161027210536.98988-1-code@mmayer.net> <CAGt4E5siDGgE=s1gZc80RSjDTptAhCm6ecrrw_4NpJwmrnU-CA@mail.gmail.com>
+Subject: Re: [PATCH -next] cpufreq: brcmstb-avs-cpufreq: make symbol brcm_avs_cpufreq_attr static
+Date: Mon, 14 Nov 2016 01:33:21 +0100
+Message-ID: <5120029.lrhJXGVADr@vostro.rjw.lan>
+References: <1478791145-21137-1-git-send-email-weiyj.lk@gmail.com> <CAGt4E5sQvRXdS+wh2jqa9jF4jxS9TxnULXwg1vJm1fwU-Gja4g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46931 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:65017 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751418AbcKNAZM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 19:25:12 -0500
-In-Reply-To: <CAGt4E5siDGgE=s1gZc80RSjDTptAhCm6ecrrw_4NpJwmrnU-CA@mail.gmail.com>
+        by vger.kernel.org with ESMTP id S1751057AbcKNAZt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 19:25:49 -0500
+In-Reply-To: <CAGt4E5sQvRXdS+wh2jqa9jF4jxS9TxnULXwg1vJm1fwU-Gja4g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Markus Mayer <markus.mayer@broadcom.com>
-Cc: Markus Mayer <code@mmayer.net>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Wei Yongjun <weiyj.lk@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Wei Yongjun <weiyongjun1@huawei.com>, BCM Kernel Feedback <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Linux ARM Kernel <linux-arm-kernel@lists.infradead.org>
 
-On Friday, November 04, 2016 10:00:19 AM Markus Mayer wrote:
-> On 27 October 2016 at 14:05, Markus Mayer <code@mmayer.net> wrote:
-> > From: Markus Mayer <mmayer@broadcom.com>
+On Thursday, November 10, 2016 02:06:16 PM Markus Mayer wrote:
+> On 10 November 2016 at 07:19, Wei Yongjun <weiyj.lk@gmail.com> wrote:
+> > From: Wei Yongjun <weiyongjun1@huawei.com>
 > >
-> > This series contains the CPUfreq driver for Broadcom SoCs that use "AVS
-> > Firmware" for voltage and frequency scaling. All voltage and frequency
-> > transitions are performed by the firmware and are therefore hidden from
-> > Linux.
+> > Fixes the following sparse warning:
 > >
-> > The driver provides a standard CPUfreq interface to other kernel
-> > components and to userland on the one hand and communicates with the
-> > AVS co-processor on the other.
-> >
-> > Communication between the two processors is via shared mailbox
-> > registers and interrupts (ARM -> AVS to tell the firmware that there is
-> > a command to process and AVS -> ARM to tell the driver that a command
-> > finished executing).
+> > drivers/cpufreq/brcmstb-avs-cpufreq.c:982:18: warning:
+> >  symbol 'brcm_avs_cpufreq_attr' was not declared. Should it be static?
 > 
-> Viresh, Rafael, are you ready to take this series? Rob gave his Ack
-> for the DT binding.
+> Yes, thanks for the fix.
+> 
+> Acked-by: Markus Mayer <mmayer@broadcom.com>
 
 Applied.
 
