@@ -1,80 +1,83 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH][v12] PM / hibernate: Verify the consistent of e820 memory map by md5 digest
-Date: Mon, 14 Nov 2016 01:26:28 +0100
-Message-ID: <9363379.0isTar43qg@vostro.rjw.lan>
-References: <1476951292-19619-1-git-send-email-yu.c.chen@intel.com> <20161022030302.GB26548@linux-rxt1.site>
+Subject: Re: [PATCH] intel_idle: avoid theoretical uninitialized data usage
+Date: Mon, 14 Nov 2016 01:29:47 +0100
+Message-ID: <18262381.8nEl38huXk@vostro.rjw.lan>
+References: <20161024155259.3041159-1-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161022030302.GB26548@linux-rxt1.site>
-Sender: linux-kernel-owner@vger.kernel.org
-To: joeyli <jlee@suse.com>, Chen Yu <yu.c.chen@intel.com>
-Cc: linux-pm@vger.kernel.org, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Pavel Machek <pavel@ucw.cz>, Borislav Petkov <bp@alien8.de>, Len Brown <len.brown@intel.com>, Denys Vlasenko <dvlasenk@redhat.com>, Dan Williams <dan.j.williams@intel.com>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:62451 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750866AbcKNAWP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 19:22:15 -0500
+In-Reply-To: <20161024155259.3041159-1-arnd@arndb.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andy Henroid <andrew.d.henroid@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, October 22, 2016 11:03:02 AM joeyli wrote:
-> Hi Chen Yu,
+On Monday, October 24, 2016 05:52:37 PM Arnd Bergmann wrote:
+> When CONFIG_PCI is disabled, pci_read_config_byte() may not update
+> its result, as indicated by this warning:
 > 
-> On Thu, Oct 20, 2016 at 04:14:52PM +0800, Chen Yu wrote:
-> > On some platforms, there is occasional panic triggered when
-> > trying to resume from hibernation, a typical panic looks like:
-> > 
-> > "BUG: unable to handle kernel paging request at ffff880085894000
-> > IP: [<ffffffff810c5dc2>] load_image_lzo+0x8c2/0xe70"
-> > 
-> > Investigation carried out by Lee Chun-Yi shows that this is because
-> > e820 map has been changed by BIOS across hibernation, and one
-> > of the page frames from suspend kernel is right located in restore
-> > kernel's unmapped region, so panic comes out when accessing unmapped
-> > kernel address.
-> > 
-> > In order to expose this issue earlier, the md5 hash of e820 map
-> > is passed from suspend kernel to restore kernel, and the restore
-> > kernel will terminate the resume process once it finds the md5
-> > hash are not the same.
-> > 
-> > As the format of image header has been modified, the magic number
-> > should also be adjusted as kernels with the same RESTORE_MAGIC have
-> > to use the same header format and interpret all of the fields in
-> > it in the same way.
-> > 
-> > If the suspend kernel is built without md5 support, and the restore
-> > kernel has md5 support, then the latter will bypass the check process.
-> > Vice versa the restore kernel will bypass the check if it does not
-> > support md5 operation.
-> > 
-> > Note:
-> > 1. Without this patch applied, it is possible that BIOS has
-> >    provided an inconsistent memory map, but the resume kernel is still
-> >    able to restore the image anyway(e.g, E820_RAM region is the superset
-> >    of the previous one), although the system might be unstable. So this
-> >    patch tries to treat any inconsistent e820 as illegal.
-> > 
-> > 2. Another case is, this patch replies on comparing the e820_saved, but
-> >    currently the e820_save might not be strictly the same across
-> >    hibernation, even if BIOS has provided consistent e820 map - In
-> >    theory mptable might modify the BIOS-provided e820_saved dynamically
-> >    in early_reserve_e820_mpc_new, which would allocate a buffer from
-> >    E820_RAM, and marks it from E820_RAM to E820_RESERVED).
-> >    This is a potential and rare case we need to deal with in OS in
-> >    the future.
-> > 
-> > Suggested-by: Pavel Machek <pavel@ucw.cz>
-> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Lee Chun-Yi <jlee@suse.com>
-> > Cc: Borislav Petkov <bp@alien8.de>
-> > Cc: Len Brown <len.brown@intel.com>
-> > Cc: Denys Vlasenko <dvlasenk@redhat.com>
-> > Cc: Dan Williams <dan.j.williams@intel.com>
-> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> drivers/idle/i7300_idle.c: In function ‘i7300_idle_notifier’:
+> drivers/idle/i7300_idle.c:423:141: warning: ‘got_ctl’ may be used uninitialized in this function [-Wmaybe-uninitialized]
+> drivers/idle/i7300_idle.c:415:5: note: ‘got_ctl’ was declared here
 > 
-> Please feel free to add:
-> 	Reviewed-by: Lee, Chun-Yi <jlee@suse.com>
+> We know the function is never called if CONFIG_PCI is not set, so
+> this is harmless, but we can avoid the problem by checking the
+> return value of the config space accessor before using the result.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/idle/i7300_idle.c | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
+> index ffeebc7e9f1c..9a104e558c77 100644
+> --- a/drivers/idle/i7300_idle.c
+> +++ b/drivers/idle/i7300_idle.c
+> @@ -347,6 +347,7 @@ static int i7300_idle_thrt_save(void)
+>  {
+>  	u32 new_mc_val;
+>  	u8 gblactlm;
+> +	int ret;
+>  
+>  	pci_read_config_byte(fbd_dev, DIMM_THRTCTL, &i7300_idle_thrtctl_saved);
+>  	pci_read_config_byte(fbd_dev, DIMM_THRTLOW, &i7300_idle_thrtlow_saved);
+> @@ -364,7 +365,9 @@ static int i7300_idle_thrt_save(void)
+>  	 * unlimited-activations while in open-loop throttling (i.e., when
+>  	 * Global Activation Throttle Limit is zero).
+>  	 */
+> -	pci_read_config_byte(fbd_dev, DIMM_GBLACT, &gblactlm);
+> +	ret = pci_read_config_byte(fbd_dev, DIMM_GBLACT, &gblactlm);
+> +	if (ret)
+> +		return ret;
+>  	dprintk("thrtctl_saved = 0x%02x, thrtlow_saved = 0x%02x\n",
+>  		i7300_idle_thrtctl_saved,
+>  		i7300_idle_thrtlow_saved);
+> @@ -413,14 +416,16 @@ static void i7300_idle_stop(void)
+>  {
+>  	u8 new_ctl;
+>  	u8 got_ctl;
+> +	int ret;
+>  
+>  	new_ctl = i7300_idle_thrtctl_saved & ~DIMM_THRTCTL_THRMHUNT;
+>  	pci_write_config_byte(fbd_dev, DIMM_THRTCTL, new_ctl);
+>  
+>  	pci_write_config_byte(fbd_dev, DIMM_THRTLOW, i7300_idle_thrtlow_saved);
+>  	pci_write_config_byte(fbd_dev, DIMM_THRTCTL, i7300_idle_thrtctl_saved);
+> -	pci_read_config_byte(fbd_dev, DIMM_THRTCTL, &got_ctl);
+> -	WARN_ON_ONCE(got_ctl != i7300_idle_thrtctl_saved);
+> +	ret = pci_read_config_byte(fbd_dev, DIMM_THRTCTL, &got_ctl);
+> +
+> +	WARN_ON_ONCE(ret || (got_ctl != i7300_idle_thrtctl_saved));
+>  }
+>  
 
-Applied (with the tag above).
+Applied (with a minor subject tweak).
 
 Thanks,
 Rafael
+
