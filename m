@@ -1,53 +1,39 @@
-From: Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>
-Subject: Re: linux-next: build warning after merge of the pm tree
-Date: Mon, 14 Nov 2016 14:19:33 +0530
-Message-ID: <8b5d3227-b5e4-c45c-3703-aa17a1584893@linux.vnet.ibm.com>
-References: <20161114104009.57b7e64b@canb.auug.org.au>
- <2357318.aIcIp7uAlP@vostro.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/3] cpufreq: schedutil: move slow path from workqueue to
+ SCHED_FIFO task
+Date: Mon, 14 Nov 2016 10:22:52 +0100
+Message-ID: <20161114092252.GT3117@twins.programming.kicks-ass.net>
+References: <cover.1478858983.git.viresh.kumar@linaro.org>
+ <85bf45982709e06f7f42e1b8f8315945e9d9b6d0.1478858983.git.viresh.kumar@linaro.org>
+ <d9caf98b-706d-d331-89c4-b75120589da3@sssup.it>
+ <20161111143935.GK3117@twins.programming.kicks-ass.net>
+ <CAKohponr4=8Bf9C1=_YEhsvDXm0t2vXyGOnrrEr6HaMKzVOcnQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2357318.aIcIp7uAlP@vostro.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <CAKohponr4=8Bf9C1=_YEhsvDXm0t2vXyGOnrrEr6HaMKzVOcnQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Linux PM list <linux-pm@vger.kernel.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rafeal,
-
-Good catch, I need to set lpstate_idx = gpstate_idx.
-I will send a patch which fixes this commit.
-
-Thanks Stephen for reporting it. :)
-
-Regards
-Akshay Adiga
-
-On 11/14/2016 05:33 AM, Rafael J. Wysocki wrote:
-> On Monday, November 14, 2016 10:40:09 AM Stephen Rothwell wrote:
-> > Hi Rafael,
->
-> Hi Stephen,
->
-> > After merging the pm tree, today's linux-next build (powerpc
-> > ppc64_defconfig) produced this warning:
+On Sat, Nov 12, 2016 at 10:52:35AM +0530, Viresh Kumar wrote:
+> On 11 November 2016 at 20:09, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Fri, Nov 11, 2016 at 03:32:04PM +0100, Tommaso Cucinotta wrote:
+> >> >+    struct sched_param param = { .sched_priority = 50 };
+> >>
+> >> won't you have a tunable here? (sysctl?)
 > >
-> > drivers/cpufreq/powernv-cpufreq.c: In function 'gpstate_timer_handler':
-> > drivers/cpufreq/powernv-cpufreq.c:642:5: warning: 'lpstate_idx' may
-> be used uninitialized in this function [-Wmaybe-uninitialized]
-> >   if (gpstate_idx != gpstates->last_lpstate_idx)
-> >      ^
-> >
-> > Introduced by commit
-> >
-> >   20b15b766354 ("cpufreq: powernv: Use PMCR to verify global and
-> local pstate")
->
-> Thanks for the notice!
->
-> Akshay, any thoughts?
->
-> Thanks,
-> Rafael
->
+> > You can use the regular userspace tools, like schedtool and chrt to set
+> > priorities.
+> 
+> I wanted to get some help from you on this Peter. The out of tree Interactive
+> governor has always used MAX_RT_PRIORITY - 1 here instead of 50.
+> 
+> But Steve started with 50. What do you think should the value be ?
+
+Any static prio value is wrong (static prio assignment requires system
+knowledge that the kernel doesn't and cannot have), 50 is what threaded
+IRQs default too as well IIRC, so it would at least be consistent with
+that.
