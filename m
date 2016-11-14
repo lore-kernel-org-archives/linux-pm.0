@@ -1,52 +1,153 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: fix
- intel_pstate_use_acpi_profile helper
-Date: Mon, 14 Nov 2016 09:14:23 -0800
-Message-ID: <1479143663.6544.11.camel@linux.intel.com>
-References: <20161114164216.2657919-1-arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161114164216.2657919-1-arnd@arndb.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, Stephane Gasparini <stephane.gasparini@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC] ACPI throttling: Save/restore tstate for each CPUs across suspend/resume
+Date: Tue, 15 Nov 2016 01:44:04 +0800
+Message-ID: <1479145444-29269-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:61020 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933194AbcKNRf0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Nov 2016 12:35:26 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-acpi@vger.kernel.org
+Cc: Rui Wang <ruwang@redhat.com>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>, Rui Zhang <rui.zhang@intel.com>, linux-pm@vger.kernel.org
 
-On Mon, 2016-11-14 at 17:41 +0100, Arnd Bergmann wrote:
-> The newly added function uses two different prototypes depending
-> on configuration, and one of them does not match the caller:
-> 
-> drivers/cpufreq/intel_pstate.c: In function ‘copy_cpu_funcs’:
-> drivers/cpufreq/intel_pstate.c:1798:2: error: too few arguments to
-> function ‘intel_pstate_use_acpi_profile’
-> 
-> This changes it to look like the other one.
-Sorry about that.
+This is a trial version and any comments are appreciated.
 
-> 
-> Fixes: 3bea6a285476 ("cpufreq: intel_pstate: Use cpu load based
-> algorithm for mobile class devices")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Previously a bug was reported that on certain Broadwell
+platforms, after resuming from S3, the CPU is running at
+an anomalously low speed, due to BIOS has enabled the
+throttling across S3. The solution to this is to introduce
+a quirk framework to save/restore tstate MSR register
+around suspend/resume, in Commit 7a9c2dd08ead ("x86/pm:
+Introduce quirk framework to save/restore extra MSR
+registers around suspend/resume").
 
-> ---
->  drivers/cpufreq/intel_pstate.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 65832f8eacdc..7153cf2d8e11 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1779,7 +1779,7 @@ static void intel_pstate_use_acpi_profile(void)
->  				get_target_pstate_use_cpu_load;
->  }
->  #else
-> -static inline void intel_pstate_use_acpi_profile(struct pstate_funcs
-> *funcs)
-> +static inline void intel_pstate_use_acpi_profile(void)
->  {
->  }
->  #endif
+However more and more reports show that other platforms also
+experienced the same issue, because some BIOSes would like to
+adjust the tstate if he thinks the temperature is too high.
+To deal with this situation, the Linux uses a compensation strategy
+that, the thermal management leverages thermal_pm_notify() upon resume
+to check if the Processors inside the thermal zone should be throttled
+or not, thus tstate would be re-evaluated. Unfortunately on these bogus
+platforms, none of the Processors are inside any thermal zones due
+to BIOS's implementation. Thus tstate for Processors never has a
+chance to be brought back to normal.
+
+This patch tries to save/restore tstate on receiving the
+PM_SUSPEND_PREPARE and PM_POST_SUSPEND, to be more specific,
+the tstate is saved after thermal_pm_notify(PM_SUSPEND_PREPARE)
+is called, while it's restored before thermal_pm_notify(PM_POST_SUSPEND),
+in this way the thermal zone would adjust the tstate eventually and
+also help adjust the tstate for Processors which do not have
+thermal zone bound. Thus it does not imapct the old semantics.
+
+Another concern is that, each CPU should take care of the
+save/restore operation, thus this patch uses percpu workqueue
+to achieve this.
+
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=90041
+Reported-by: Matthew Garrett <mjg59@srcf.ucam.org>
+Reported-by: Kadir <kadir@colakoglu.nl>
+Cc: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Rui Zhang <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/acpi/processor_throttling.c | 70 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
+
+diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
+index d51ca1c..8ddc7d6 100644
+--- a/drivers/acpi/processor_throttling.c
++++ b/drivers/acpi/processor_throttling.c
+@@ -29,6 +29,7 @@
+ #include <linux/sched.h>
+ #include <linux/cpufreq.h>
+ #include <linux/acpi.h>
++#include <linux/suspend.h>
+ #include <acpi/processor.h>
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+@@ -758,6 +759,75 @@ static int acpi_throttling_wrmsr(u64 value)
+ 	}
+ 	return ret;
+ }
++
++#ifdef CONFIG_PM_SLEEP
++static DEFINE_PER_CPU(u64, tstate_msr);
++
++static long tstate_pm_fn(void *data)
++{
++	u64 value;
++	bool save = *(bool *)data;
++
++	if (save) {
++		acpi_throttling_rdmsr(&value);
++		this_cpu_write(tstate_msr, value);
++	} else {
++		value = this_cpu_read(tstate_msr);
++		if (value)
++			acpi_throttling_wrmsr(value);
++	}
++	return 0;
++}
++
++static void tstate_check(unsigned long mode, bool suspend)
++{
++	int cpu;
++	bool save;
++
++	if (suspend && mode == PM_SUSPEND_PREPARE)
++		save = true;
++	else if (!suspend && mode == PM_POST_SUSPEND)
++		save = false;
++	else
++		return;
++
++	get_online_cpus();
++	for_each_online_cpu(cpu)
++		work_on_cpu(cpu, tstate_pm_fn, &save);
++	put_online_cpus();
++}
++
++static int tstate_suspend(struct notifier_block *nb,
++				unsigned long mode, void *_unused)
++{
++	tstate_check(mode, true);
++	return 0;
++}
++
++static int tstate_resume(struct notifier_block *nb,
++				unsigned long mode, void *_unused)
++{
++	tstate_check(mode, false);
++	return 0;
++}
++
++static int __init tstate_pm_init(void)
++{
++	/*
++	 * tstate_suspend should save tstate after
++	 * thermal zone's update in thermal_pm_notify,
++	 * vice versa tstate_resume restore tstate before
++	 * thermal_pm_notify, thus the thermal framework
++	 * has a chance to re-adjust tstate according to the
++	 * temperature trend.
++	 */
++	pm_notifier(tstate_suspend, -1);
++	pm_notifier(tstate_resume, 1);
++	return 0;
++}
++
++core_initcall(tstate_pm_init);
++#endif
+ #else
+ static int acpi_throttling_rdmsr(u64 *value)
+ {
+-- 
+2.7.4
+
