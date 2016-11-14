@@ -1,48 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH -next] i7300_idle: fix typo in parameter description
-Date: Mon, 14 Nov 2016 01:35:06 +0100
-Message-ID: <2091194.yr7fGkAp0D@vostro.rjw.lan>
-References: <1477753891-1841-1-git-send-email-weiyj.lk@gmail.com>
+Subject: Re: [PATCH] idle/i7300: Add CONFIG_PCI dependency
+Date: Mon, 14 Nov 2016 01:36:15 +0100
+Message-ID: <9076226.zObyvXuPt3@vostro.rjw.lan>
+References: <20161030114228.24114-1-bp@alien8.de> <1e525299-ffb2-4031-a215-c9407c22a312@infradead.org> <20161030163247.l5nj4b52un3nef6z@pd.tnic>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47216 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751564AbcKNA1e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Nov 2016 19:27:34 -0500
-In-Reply-To: <1477753891-1841-1-git-send-email-weiyj.lk@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161030163247.l5nj4b52un3nef6z@pd.tnic>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Borislav Petkov <bp@alien8.de>
+Cc: Randy Dunlap <rdunlap@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Andy Henroid <andrew.d.henroid@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wei Yongjun <weiyj.lk@gmail.com>
-Cc: Andy Henroid <andrew.d.henroid@intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-On Saturday, October 29, 2016 03:11:31 PM Wei Yongjun wrote:
-> From: Wei Yongjun <weiyongjun1@huawei.com>
+On Sunday, October 30, 2016 05:32:47 PM Borislav Petkov wrote:
+> On Sun, Oct 30, 2016 at 07:54:44AM -0700, Randy Dunlap wrote:
+> > 	depends on PCI
+> > (no CONFIG_ prefix)
 > 
-> Fix typo in parameter description.
+> Whoops!
 > 
-> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> Thanks. FWIW, it didn't fire even with "depends on CONFIG_PCI" anymore.
+> Didn't investigate why though...
+> 
 > ---
->  drivers/idle/i7300_idle.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> From: Borislav Petkov <bp@suse.de>
+> Date: Sun, 30 Oct 2016 14:39:28 +0100
+> Subject: [PATCH] idle/i7300: Add CONFIG_PCI dependency
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: 8bit
 > 
-> diff --git a/drivers/idle/i7300_idle.c b/drivers/idle/i7300_idle.c
-> index 9a104e5..b570560 100644
-> --- a/drivers/idle/i7300_idle.c
-> +++ b/drivers/idle/i7300_idle.c
-> @@ -44,7 +44,7 @@ MODULE_PARM_DESC(debug, "Enable debug printks in this driver");
->  
->  static int forceload;
->  module_param_named(forceload, forceload, uint, 0644);
-> -MODULE_PARM_DESC(debug, "Enable driver testing on unvalidated i5000");
-> +MODULE_PARM_DESC(forceload, "Enable driver testing on unvalidated i5000");
->  
->  #define dprintk(fmt, arg...) \
->  	do { if (debug) printk(KERN_INFO I7300_PRINT fmt, ##arg); } while (0)
+> ... in order to fix this randconfig build warning:
+> 
+>   drivers/idle/i7300_idle.c: In function ‘i7300_idle_stop’:
+>   ./include/asm-generic/bug.h:117:24: warning: ‘got_ctl’ is used uninitialized in this function [-Wuninitialized]
+>     int __ret_warn_once = !!(condition);   \
+>                           ^
+>   drivers/idle/i7300_idle.c:415:5: note: ‘got_ctl’ was declared here
+>     u8 got_ctl;
+>        ^
+> 
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> Cc: Andy Henroid <andrew.d.henroid@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> ---
+>  drivers/idle/Kconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/idle/Kconfig b/drivers/idle/Kconfig
+> index 4732dfc15447..a066fca3688f 100644
+> --- a/drivers/idle/Kconfig
+> +++ b/drivers/idle/Kconfig
+> @@ -18,6 +18,7 @@ config I7300_IDLE_IOAT_CHANNEL
+>  config I7300_IDLE
+>  	tristate "Intel chipset idle memory power saving driver"
+>  	select I7300_IDLE_IOAT_CHANNEL
+> +	depends on PCI
+>  	help
+>  	  Enable memory power savings when idle with certain Intel server
+>  	  chipsets. The chipset must have I/O AT support, such as the
+> 
 
 Applied.
 
 Thanks,
 Rafael
-
