@@ -1,89 +1,98 @@
-From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Subject: [PATCH v10 8/8] ARM: dts: imx6q-evi: Fix onboard hub reset line
-Date: Mon, 14 Nov 2016 09:35:59 +0800
-Message-ID: <1479087359-7547-9-git-send-email-peter.chen@nxp.com>
-References: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+Subject: [PATCH 3.16 216/346] timekeeping: Cap array access in
+ timekeeping_debug
+Date: Mon, 14 Nov 2016 00:14:20 +0000
+Message-ID: <lsq.1479082460.317072411@decadent.org.uk>
+References: <lsq.1479082458.755945576@decadent.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1479087359-7547-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <lsq.1479082458.755945576@decadent.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: akpm@linux-foundation.org, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Chen Yu <yu.c.chen@intel.com>, Janek Kozicki <cosurgi@gmail.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Xunlei Pang <xpang@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+3.16.39-rc1 review patch.  If anyone has any objections, please let me know.
 
-Previously the onboard hub was made to work by treating its
-reset gpio as a regulator enable.
-Get rid of that kludge now that pwseq has added reset gpio support
-Move pin muxing the hub reset pin into the usbh1 group
+------------------
 
-Signed-off-by: Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+From: John Stultz <john.stultz@linaro.org>
+
+commit a4f8f6667f099036c88f231dcad4cf233652c824 upstream.
+
+It was reported that hibernation could fail on the 2nd attempt, where the
+system hangs at hibernate() -> syscore_resume() -> i8237A_resume() ->
+claim_dma_lock(), because the lock has already been taken.
+
+However there is actually no other process would like to grab this lock on
+that problematic platform.
+
+Further investigation showed that the problem is triggered by setting
+/sys/power/pm_trace to 1 before the 1st hibernation.
+
+Since once pm_trace is enabled, the rtc becomes unmeaningful after suspend,
+and meanwhile some BIOSes would like to adjust the 'invalid' RTC (e.g, smaller
+than 1970) to the release date of that motherboard during POST stage, thus
+after resumed, it may seem that the system had a significant long sleep time
+which is a completely meaningless value.
+
+Then in timekeeping_resume -> tk_debug_account_sleep_time, if the bit31 of the
+sleep time happened to be set to 1, fls() returns 32 and we add 1 to
+sleep_time_bin[32], which causes an out of bounds array access and therefor
+memory being overwritten.
+
+As depicted by System.map:
+0xffffffff81c9d080 b sleep_time_bin
+0xffffffff81c9d100 B dma_spin_lock
+the dma_spin_lock.val is set to 1, which caused this problem.
+
+This patch adds a sanity check in tk_debug_account_sleep_time()
+to ensure we don't index past the sleep_time_bin array.
+
+[jstultz: Problem diagnosed and original patch by Chen Yu, I've solved the
+ issue slightly differently, but borrowed his excelent explanation of the
+ issue here.]
+
+Fixes: 5c83545f24ab "power: Add option to log time spent in suspend"
+Reported-by: Janek Kozicki <cosurgi@gmail.com>
+Reported-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: John Stultz <john.stultz@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Xunlei Pang <xpang@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Link: http://lkml.kernel.org/r/1471993702-29148-3-git-send-email-john.stultz@linaro.org
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- arch/arm/boot/dts/imx6q-evi.dts | 25 +++++++------------------
- 1 file changed, 7 insertions(+), 18 deletions(-)
+ kernel/time/timekeeping_debug.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6q-evi.dts b/arch/arm/boot/dts/imx6q-evi.dts
-index 6de21ff..3277a06 100644
---- a/arch/arm/boot/dts/imx6q-evi.dts
-+++ b/arch/arm/boot/dts/imx6q-evi.dts
-@@ -54,18 +54,6 @@
- 		reg = <0x10000000 0x40000000>;
- 	};
+--- a/kernel/time/timekeeping_debug.c
++++ b/kernel/time/timekeeping_debug.c
+@@ -23,7 +23,9 @@
  
--	reg_usbh1_vbus: regulator-usbhubreset {
--		compatible = "regulator-fixed";
--		regulator-name = "usbh1_vbus";
--		regulator-min-microvolt = <5000000>;
--		regulator-max-microvolt = <5000000>;
--		enable-active-high;
--		startup-delay-us = <2>;
--		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_usbh1_hubreset>;
--		gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
--	};
--
- 	reg_usb_otg_vbus: regulator-usbotgvbus {
- 		compatible = "regulator-fixed";
- 		regulator-name = "usb_otg_vbus";
-@@ -207,12 +195,18 @@
- };
+ #include "timekeeping_internal.h"
  
- &usbh1 {
--	vbus-supply = <&reg_usbh1_vbus>;
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh1>;
- 	dr_mode = "host";
- 	disable-over-current;
- 	status = "okay";
+-static unsigned int sleep_time_bin[32] = {0};
++#define NUM_BINS 32
 +
-+	usb2415host: hub@1 {
-+		compatible = "usb424,2513";
-+		reg = <1>;
-+		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-+		reset-duration-us = <3000>;
-+	};
- };
++static unsigned int sleep_time_bin[NUM_BINS] = {0};
  
- &usbotg {
-@@ -471,11 +465,6 @@
- 			MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0
- 			/* usbh1_b OC */
- 			MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x1b0b0
--		>;
--	};
--
--	pinctrl_usbh1_hubreset: usbh1hubresetgrp {
--		fsl,pins = <
- 			MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x1b0b0
- 		>;
- 	};
--- 
-2.7.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ static int tk_debug_show_sleep_time(struct seq_file *s, void *data)
+ {
+@@ -69,6 +71,9 @@ late_initcall(tk_debug_sleep_time_init);
+ 
+ void tk_debug_account_sleep_time(struct timespec *t)
+ {
+-	sleep_time_bin[fls(t->tv_sec)]++;
++	/* Cap bin index so we don't overflow the array */
++	int bin = min(fls(t->tv_sec), NUM_BINS-1);
++
++	sleep_time_bin[bin]++;
+ }
+ 
