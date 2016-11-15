@@ -1,82 +1,48 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 4/4] cpufreq: schedutil: irq-work and mutex are only used in slow path
-Date: Tue, 15 Nov 2016 13:53:23 +0530
-Message-ID: <a099804224d5e980a78668fa111e0564b0f44029.1479197311.git.viresh.kumar@linaro.org>
-References: <cover.1479197311.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:34825 "EHLO
-        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965962AbcKOIXw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 03:23:52 -0500
-Received: by mail-pf0-f177.google.com with SMTP id i88so34969869pfk.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Nov 2016 00:23:52 -0800 (PST)
-In-Reply-To: <cover.1479197311.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1479197311.git.viresh.kumar@linaro.org>
-References: <cover.1479197311.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH V4 7/8] thermal: da9062/61: Thermal junction temperature
+ monitoring driver
+Date: Tue, 15 Nov 2016 09:46:51 +0000
+Message-ID: <b2d2809e-b71e-5db0-2aeb-4773dc58960d@arm.com>
+References: <cover.1479111766.git.stwiss.opensource@diasemi.com>
+ <5d6cf6b51d71d2069db20ee427a92271015c337a.1479111766.git.stwiss.opensource@diasemi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5d6cf6b51d71d2069db20ee427a92271015c337a.1479111766.git.stwiss.opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Steve Twiss <stwiss.opensource@diasemi.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Execute the irq-work specific initialization/exit code only when the
-fast path isn't available.
+On 14/11/16 08:22, Steve Twiss wrote:
+> From: Steve Twiss <stwiss.opensource@diasemi.com>
+>
+> Add junction temperature monitoring supervisor device driver, compatible
+> with the DA9062 and DA9061 PMICs. A MODULE_DEVICE_TABLE() macro is added.
+>
+> If the PMIC's internal junction temperature rises above TEMP_WARN (125
+> degC) an interrupt is issued. This TEMP_WARN level is defined as the
+> THERMAL_TRIP_HOT trip-wire inside the device driver.
+>
+> The thermal triggering mechanism is interrupt based and happens when the
+> temperature rises above a given threshold level. The component cannot
+> return an exact temperature, it only has knowledge if the temperature is
+> above or below a given threshold value. A status bit must be polled to
+> detect when the temperature falls below that threshold level again. A
+> kernel work queue is configured to repeatedly poll and detect when the
+> temperature falls below this trip-wire, between 1 and 10 second intervals
+> (defaulting at 3 seconds).
+>
+> This first level of temperature supervision is intended for non-invasive
+> temperature control, where the necessary measures for cooling the system
+> down are left to the host software.
+>
+> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+>
+Looks good to me.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index f165ba0f0766..42a220e78f00 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -390,15 +390,12 @@ static struct sugov_policy *sugov_policy_alloc(struct cpufreq_policy *policy)
- 		return NULL;
- 
- 	sg_policy->policy = policy;
--	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
--	mutex_init(&sg_policy->work_lock);
- 	raw_spin_lock_init(&sg_policy->update_lock);
- 	return sg_policy;
- }
- 
- static void sugov_policy_free(struct sugov_policy *sg_policy)
- {
--	mutex_destroy(&sg_policy->work_lock);
- 	kfree(sg_policy);
- }
- 
-@@ -432,6 +429,9 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
- 
- 	sg_policy->thread = thread;
- 	kthread_bind_mask(thread, policy->related_cpus);
-+	init_irq_work(&sg_policy->irq_work, sugov_irq_work);
-+	mutex_init(&sg_policy->work_lock);
-+
- 	wake_up_process(thread);
- 
- 	return 0;
-@@ -445,6 +445,7 @@ static void sugov_kthread_stop(struct sugov_policy *sg_policy)
- 
- 	kthread_flush_worker(&sg_policy->worker);
- 	kthread_stop(sg_policy->thread);
-+	mutex_destroy(&sg_policy->work_lock);
- }
- 
- static struct sugov_tunables *sugov_tunables_alloc(struct sugov_policy *sg_policy)
-@@ -611,8 +612,10 @@ static void sugov_stop(struct cpufreq_policy *policy)
- 
- 	synchronize_sched();
- 
--	irq_work_sync(&sg_policy->irq_work);
--	kthread_cancel_work_sync(&sg_policy->work);
-+	if (!policy->fast_switch_enabled) {
-+		irq_work_sync(&sg_policy->irq_work);
-+		kthread_cancel_work_sync(&sg_policy->work);
-+	}
- }
- 
- static void sugov_limits(struct cpufreq_policy *policy)
--- 
-2.7.1.410.g6faf27b
-
+Regards,
+Lukasz
