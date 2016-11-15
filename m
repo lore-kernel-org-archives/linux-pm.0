@@ -1,48 +1,135 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [PATCH V4 7/8] thermal: da9062/61: Thermal junction temperature
- monitoring driver
-Date: Tue, 15 Nov 2016 09:46:51 +0000
-Message-ID: <b2d2809e-b71e-5db0-2aeb-4773dc58960d@arm.com>
-References: <cover.1479111766.git.stwiss.opensource@diasemi.com>
- <5d6cf6b51d71d2069db20ee427a92271015c337a.1479111766.git.stwiss.opensource@diasemi.com>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH v4 1/3] bus: simple-pm: add support to pm clocks
+Date: Tue, 15 Nov 2016 11:25:31 +0000
+Message-ID: <d61f62d1-7a7e-6d91-d278-0fd922cd77b5@linaro.org>
+References: <1479122155-13393-1-git-send-email-srinivas.kandagatla@linaro.org>
+ <1479122155-13393-2-git-send-email-srinivas.kandagatla@linaro.org>
+ <20161114221447.GH9868@bhelgaas-glaptop.roam.corp.google.com>
+ <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5d6cf6b51d71d2069db20ee427a92271015c337a.1479111766.git.stwiss.opensource@diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Steve Twiss <stwiss.opensource@diasemi.com>, Eduardo Valentin <edubezval@gmail.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Bjorn Helgaas <helgaas@kernel.org>
+Cc: svarbanov@mm-sol.com, linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, Linux PM list <linux-pm@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, "Nayak, Rajendra" <rjendra@qti.qualcomm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 14/11/16 08:22, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource@diasemi.com>
->
-> Add junction temperature monitoring supervisor device driver, compatible
-> with the DA9062 and DA9061 PMICs. A MODULE_DEVICE_TABLE() macro is added.
->
-> If the PMIC's internal junction temperature rises above TEMP_WARN (125
-> degC) an interrupt is issued. This TEMP_WARN level is defined as the
-> THERMAL_TRIP_HOT trip-wire inside the device driver.
->
-> The thermal triggering mechanism is interrupt based and happens when the
-> temperature rises above a given threshold level. The component cannot
-> return an exact temperature, it only has knowledge if the temperature is
-> above or below a given threshold value. A status bit must be polled to
-> detect when the temperature falls below that threshold level again. A
-> kernel work queue is configured to repeatedly poll and detect when the
-> temperature falls below this trip-wire, between 1 and 10 second intervals
-> (defaulting at 3 seconds).
->
-> This first level of temperature supervision is intended for non-invasive
-> temperature control, where the necessary measures for cooling the system
-> down are left to the host software.
->
-> Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
->
-Looks good to me.
++ Rajendra (qcom,gdsc author)
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+On 15/11/16 08:23, Geert Uytterhoeven wrote:
+> +cc linux-pm
+>
+> On Mon, Nov 14, 2016 at 11:14 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>> [+cc Geert, Kevin, Simon]
+>>
+>> On Mon, Nov 14, 2016 at 11:15:53AM +0000, Srinivas Kandagatla wrote:
+>>> This patch adds support to pm clocks via device tree, so that the clocks
+>>> can be turned on and off during runtime pm. This patch is required for
+>>> Qualcomm msm8996 pcie controller which sits on a bus with its own
+>>> power-domain and clocks.
+>>>
+>>> Without this patch the clock associated with the bus are never turned on.
+>>>
+>>> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+>>
+>> I don't see a formal maintainer for drivers/bus/simple-pm-bus.c, but I'd
+>> like an ack or at least a review from Geert or Simon.
+>
+> Thanks for letting me know!
+>
+>>> ---
+>>>  drivers/bus/simple-pm-bus.c | 13 ++++++++++++-
+>>>  1 file changed, 12 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/bus/simple-pm-bus.c b/drivers/bus/simple-pm-bus.c
+>>> index c5eb46c..63b7e8c 100644
+>>> --- a/drivers/bus/simple-pm-bus.c
+>>> +++ b/drivers/bus/simple-pm-bus.c
+>>> @@ -11,6 +11,7 @@
+>>>  #include <linux/module.h>
+>>>  #include <linux/of_platform.h>
+>>>  #include <linux/platform_device.h>
+>>> +#include <linux/pm_clock.h>
+>>>  #include <linux/pm_runtime.h>
+>>>
+>>>
+>>> @@ -22,17 +23,26 @@ static int simple_pm_bus_probe(struct platform_device *pdev)
+>>>
+>>>       pm_runtime_enable(&pdev->dev);
+>>>
+>>> -     if (np)
+>>> +     if (np) {
+>>> +             of_pm_clk_add_clks(&pdev->dev);
+>
+> This should work out-of-the-box (that's the actual purpose of this driver),
+> if the platform code that registers your PM Domain would take care
+> of registering the clocks needed for PM management of the bus.
 
-Regards,
-Lukasz
+Yep, if the pm domain provider takes care of the bus clks, then it would 
+work.
+
+Am guessing that the clocks property in the DT node would be read by the 
+PM domain provider and enable/disable during attach/detach callbacks.
+If that is true, then any device tree nodes which are not children of 
+"simple-pm-bus" and consumers of power-domain provider would enable all 
+(including non-bus clks) clks twice. Once in the power-domain provider 
+and once in the actual driver. Is this expected behavior from 
+power-domains in general?
+
+>
+> Adding of_pm_clk_add_clks() here will start managing all clocks of the bus,
+> which may not be wanted on all platforms.
+>
+That was the purpose.
+
+
+Rajendra,
+Looks like qcom gdsc pm domain provider driver does not handle bus clks 
+along with power-domain, Is this something we should do? Or the bus 
+driver take care of it?
+
+
+Thanks,
+srini
+>>>               of_platform_populate(np, NULL, NULL, &pdev->dev);
+>>> +     }
+>>>
+>>>       return 0;
+>>>  }
+>>>
+>>> +static const struct dev_pm_ops simple_pm_bus_pm_ops = {
+>>> +     SET_RUNTIME_PM_OPS(pm_clk_suspend,
+>>> +                        pm_clk_resume, NULL)
+>>> +};
+>>> +
+>>>  static int simple_pm_bus_remove(struct platform_device *pdev)
+>>>  {
+>>>       dev_dbg(&pdev->dev, "%s\n", __func__);
+>>>
+>>>       pm_runtime_disable(&pdev->dev);
+>>> +     pm_clk_destroy(&pdev->dev);
+>>> +
+>>>       return 0;
+>>>  }
+>>>
+>>> @@ -48,6 +58,7 @@ static struct platform_driver simple_pm_bus_driver = {
+>>>       .driver = {
+>>>               .name = "simple-pm-bus",
+>>>               .of_match_table = simple_pm_bus_of_match,
+>>> +             .pm = &simple_pm_bus_pm_ops,
+>>>       },
+>>>  };
+>
+> Gr{oetje,eeting}s,
+>
+>                         Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+>
