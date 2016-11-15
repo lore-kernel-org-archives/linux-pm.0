@@ -1,47 +1,71 @@
-From: Mark Greer <mgreer@animalcreek.com>
-Subject: Re: [PATCH] bq24190_charger: Fix PM runtime use for
- bq24190_battery_set_property
-Date: Tue, 15 Nov 2016 10:29:10 -0700
-Message-ID: <20161115172910.GA32729@animalcreek.com>
-References: <20161115033831.7620-1-tony@atomide.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [RFC/RFT][PATCH v3 0/5] Functional dependencies between devices
+Date: Tue, 15 Nov 2016 19:50:53 +0100
+Message-ID: <20161115185053.GA11003@wunner.de>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan>
+ <1618935.9CTdqGRBy5@vostro.rjw.lan>
+ <20160928114220.GA6113@wunner.de>
+ <5477203.SfEP4qzOYB@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out2-smtp.messagingengine.com ([66.111.4.26]:54852 "EHLO
-        out2-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751749AbcKOR3M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 12:29:12 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161115033831.7620-1-tony@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <5477203.SfEP4qzOYB@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Jonathan Corbet <corbet@lwn.net>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Mon, Nov 14, 2016 at 07:38:31PM -0800, Tony Lindgren wrote:
-> There's a typo, it should do pm_runtime_get_sync, not put.
+On Thu, Sep 29, 2016 at 02:51:45AM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, September 28, 2016 01:42:20 PM Lukas Wunner wrote:
+> > On Wed, Sep 28, 2016 at 02:33:21AM +0200, Rafael J. Wysocki wrote:
+> > > I'm only a bit reluctant about advertising the usage of links between
+> > > children and parents, because that doesn't look like the right tool for
+> > > the purpose (as I said before, I'd prefer to add a device flag causing
+> > > the parent driver to be probed before the child one if needed).
+> > 
+> > That wouldn't cover the unbinding of the child when the parent unbinds
+> > though, so it would only be a subset of the functionality offered by
+> > device links.
+> > 
+> > I actually don't know of a use case where driver presence is needed
+> > between parent and child.  But the patches look like they should work
+> > out of the box in such a scenario, so I was thinking, why forbid it?
+> > Someone might just try that because they think it should obviously work,
+> > and then they'll find out at runtime that it's forbidden.  That gives
+> > us only a score of 5 in Rusty's API rating scheme.
+> > 
+> > However for consistency, if you do want to forbid it, I think it should
+> > be forbidden for all ancestors of the device, not just the parent as v3
+> > does it.  (Suspend/resume + shutdown ordering is already handled for
+> > hierarchical dependencies, i.e. all ancestors.)
 > 
-> Cc: Mark A. Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1141,7 +1141,7 @@ static int bq24190_battery_set_property(struct power_supply *psy,
->  
->  	dev_dbg(bdi->dev, "prop: %d\n", psp);
->  
-> -	pm_runtime_put_sync(bdi->dev);
-> +	pm_runtime_get_sync(bdi->dev);
->  
->  	switch (psp) {
->  	case POWER_SUPPLY_PROP_ONLINE:
-> -- 
-> 2.10.2
+> Well, there is a difference between allowing something to be done and
+> documenting it as a good idea. :-)
 
-Oops, sorry about that.
+I'm reworking the documentation and to address your concerns I have
+now reformulated this paragraph as follows:
 
-Reviewed-by: Mark Greer <mgreer@animalcreek.com>
+    To prevent introduction of dependency loops into the graph, it is
+    verified upon device link addition that the supplier is not dependent
+    on the consumer or any children or consumers of the consumer.
+    (Call to device_is_dependent() from device_link_add().)  If that
+    constraint is violated, device_link_add() will return %NULL and
+    a WARNING will be logged.
+
+    Notably this also prevents addition of a device link from a parent
+    device to a child.  However the converse is allowed, i.e. a device link
+    from a child to a parent.  Since the driver core already guarantees
+    correct suspend/resume and shutdown ordering between parent and child,
+    such a device link only makes sense if a driver presence dependency is
+    needed on top of that.  In that case driver authors should weigh
+    carefully if a device link is the right tool for the purpose.
+    A more suitable approach might be to simply use deferred probing or
+    add a device flag causing the parent driver to be probed before the
+    child one.
+
+If you'd prefer a different wording just shout.
+
+Thanks,
+
+Lukas
