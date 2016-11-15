@@ -1,57 +1,65 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2] thermal: intel_pch_thermal: Support skylake PCH 100
- series thermal
-Date: Tue, 15 Nov 2016 20:20:10 +0800
-Message-ID: <1479212410.2224.11.camel@intel.com>
-References: <87pomyd515.fsf@mail.parknet.co.jp>
-         <1476813814.132953.50.camel@intel.com> <87eg3dctaj.fsf@mail.parknet.co.jp>
-         <1476821756.132953.56.camel@intel.com> <8760opcr4y.fsf@mail.parknet.co.jp>
-         <871szdcr0u.fsf_-_@mail.parknet.co.jp>
-         <1476824673.132953.57.camel@intel.com>
+Subject: Re: [PATCH 2/3] thermal: hisilicon: fix for dependency
+Date: Tue, 15 Nov 2016 20:24:55 +0800
+Message-ID: <1479212695.2224.12.camel@intel.com>
+References: <1472633417-9330-1-git-send-email-leo.yan@linaro.org>
+         <1472633417-9330-3-git-send-email-leo.yan@linaro.org>
+         <20161112120534.GC23848@leoy-linaro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:47071 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932786AbcKOMUn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Nov 2016 07:20:43 -0500
-In-Reply-To: <1476824673.132953.57.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20161112120534.GC23848@leoy-linaro>
+Sender: linux-clk-owner@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Eduardo Valentin <edubezval@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Krzysztof Kozlowski <krzk@kernel.org>, Thierry Reding <treding@nvidia.com>, Riku Voipio <riku.voipio@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Rob Herring <robh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Guodong Xu <guodong.xu@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "hirofumi@mail.parknet.co.jp" <hirofumi@mail.parknet.co.jp>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, 2016-10-18 at 15:04 -0600, Pandruvada, Srinivas wrote:
-> On Wed, 2016-10-19 at 05:59 +0900, OGAWA Hirofumi wrote:
+On Sat, 2016-11-12 at 20:05 +0800, Leo Yan wrote:
+> Hi Rui, Eduardo,
+> 
+> On Wed, Aug 31, 2016 at 04:50:16PM +0800, Leo Yan wrote:
 > > 
-> > This patch uses .driver_data and board_info[] to make per pci device
-> > behavior table (name and ops), instead of adding the code for each
-> > pci
-> > device in switch-case. This will make easier to add new pci device
-> > ids.
+> > The thermal driver is standalone driver which is used to enable
+> > thermal sensors, so it can be used with any cooling device and
+> > should not bind with CPU cooling device driver.
 > > 
-> > Then this adds new device id actually for skylake PCH 100 series
-> > (using registers are compatible with currently driver, so no need to
-> > change except adding device id to table).
-> > 
-> > Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-> Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-hmmm, this patch is queued in my tree for some time.
-However, it conflicts with
-commit 33086a9a3071812a829d4b63bed826736a5d8b17
-Author: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Date:   Mon Oct 3 12:36:02 2016 -0700
-
-    thermal: intel_pch_thermal: Enable Haswell PCH
-    
-    Added missing support for Haswell PCH thermal sensor.
-which has been shipped in v4.9-rc3.
-
-Rebased patch sent, please double check.
+> > This original patch is suggested by Amit Kucheria; so it's to
+> > polish the dependency in Kconfig, and remove the dependency with
+> > CPU_THERMAL.
+> Could you help review this patch? Or need me resend this patch? Sorry
+> I have not tracked this patches well before, this is one missed
+> patch for 96board Hikey.
+> 
+as it still applies cleanly, the patch is queued for 4.10.
 
 thanks,
 rui
-
-
-
+> Thanks,
+> Leo Yan
+> 
+> > 
+> > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> > ---
+> >  drivers/thermal/Kconfig | 4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > index 2d702ca..91ebab3 100644
+> > --- a/drivers/thermal/Kconfig
+> > +++ b/drivers/thermal/Kconfig
+> > @@ -177,8 +177,10 @@ config THERMAL_EMULATION
+> >  
+> >  config HISI_THERMAL
+> >  	tristate "Hisilicon thermal driver"
+> > -	depends on (ARCH_HISI && CPU_THERMAL && OF) ||
+> > COMPILE_TEST
+> > +	depends on ARCH_HISI || COMPILE_TEST
+> >  	depends on HAS_IOMEM
+> > +	depends on OF
+> > +	default y
+> >  	help
+> >  	  Enable this to plug hisilicon's thermal sensor driver
+> > into the Linux
+> >  	  thermal framework. cpufreq is used as the cooling device
+> > to throttle
