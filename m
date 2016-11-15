@@ -1,51 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/4] cpufreq: schedutil: move slow path from workqueue to SCHED_FIFO task
-Date: Tue, 15 Nov 2016 13:53:19 +0530
-Message-ID: <cover.1479197311.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/4] cpufreq: schedutil: Avoid indented labels
+Date: Tue, 15 Nov 2016 13:53:20 +0530
+Message-ID: <ac70c5f48b070bb9050705c6defc76f13a492702.1479197311.git.viresh.kumar@linaro.org>
+References: <cover.1479197311.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1479197311.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1479197311.git.viresh.kumar@linaro.org>
+References: <cover.1479197311.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Switch to the more common practice of writing labels.
 
-If slow path frequency changes are conducted in a SCHED_OTHER context
-then they may be delayed for some amount of time, including
-indefinitely, when real time or deadline activity is taking place.
+Suggested-by: Peter Zijlstra <peterz@infradead.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Move the slow path to a real time kernel thread using the kthread worker
-infrastructure. In the future the thread should be made SCHED_DEADLINE.
-The RT priority is arbitrarily set to 50 for now.
-
-This was tested with Hackbench on ARM Exynos, dual core A15 platform and
-no regressions were seen. The third patch has more details on it.
-
-This work was started by Steve Muckle, where he used a simple kthread
-instead of kthread-worker and that wasn't sufficient as some guarantees
-weren't met.
-
-I was wondering if the same should be done for ondemand/conservative
-governors as well ?
-
-V1->V2:
-- first patch is new based on Peter's suggestions.
-- fixed indented label
-- Moved kthread creation/destruction into separate routines
-- Used MACRO instead of magic number '50'
-- minor formatting, commenting and improved commit logs
-
---
-viresh
-
-Viresh Kumar (4):
-  cpufreq: schedutil: Avoid indented labels
-  cpufreq: schedutil: enable fast switch earlier
-  cpufreq: schedutil: move slow path from workqueue to SCHED_FIFO task
-  cpufreq: schedutil: irq-work and mutex are only used in slow path
-
- kernel/sched/cpufreq_schedutil.c | 119 ++++++++++++++++++++++++++++++++-------
- 1 file changed, 99 insertions(+), 20 deletions(-)
-
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 69e06898997d..8c4e1652e895 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -454,17 +454,17 @@ static int sugov_init(struct cpufreq_policy *policy)
+ 	if (ret)
+ 		goto fail;
+ 
+- out:
++out:
+ 	mutex_unlock(&global_tunables_lock);
+ 
+ 	cpufreq_enable_fast_switch(policy);
+ 	return 0;
+ 
+- fail:
++fail:
+ 	policy->governor_data = NULL;
+ 	sugov_tunables_free(tunables);
+ 
+- free_sg_policy:
++free_sg_policy:
+ 	mutex_unlock(&global_tunables_lock);
+ 
+ 	sugov_policy_free(sg_policy);
 -- 
 2.7.1.410.g6faf27b
