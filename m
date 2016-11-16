@@ -1,86 +1,144 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [TEST PATCH] WIP: Test OPP multi regulator support with
- ti-opp-domain driver
-Date: Wed, 16 Nov 2016 08:57:49 +0530
-Message-ID: <20161116032749.GE17245@vireshk-i7>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <20161115221059.31629-1-d-gerlach@ti.com>
+Subject: Re: [PATCH v3] cpufreq: conservative: Decrease frequency faster when
+ the update deferred
+Date: Wed, 16 Nov 2016 09:25:44 +0530
+Message-ID: <20161116035544.GF17245@vireshk-i7>
+References: <faad4ff0-8115-059b-2ebc-2cec2a76fafe@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:36171 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752020AbcKPD1w (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 22:27:52 -0500
-Received: by mail-pg0-f54.google.com with SMTP id f188so73735329pgc.3
-        for <linux-pm@vger.kernel.org>; Tue, 15 Nov 2016 19:27:52 -0800 (PST)
+Received: from mail-pg0-f53.google.com ([74.125.83.53]:34877 "EHLO
+        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752445AbcKPDzr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 22:55:47 -0500
+Received: by mail-pg0-f53.google.com with SMTP id p66so74164188pga.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Nov 2016 19:55:47 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20161115221059.31629-1-d-gerlach@ti.com>
+In-Reply-To: <faad4ff0-8115-059b-2ebc-2cec2a76fafe@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>, robh@kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Nishanth Menon <nm@ti.com>
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Thanks for this Dave :)
+On 15-11-16, 23:25, Stratos Karafotis wrote:
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index 0681fcf..808cc4d 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -66,6 +66,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>  	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+>  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
+>  	unsigned int load = dbs_update(policy);
+> +	unsigned int freq_step;
+> 
+>  	/*
+>  	 * break out if we 'cannot' reduce the speed as the user might
+> @@ -82,6 +83,22 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>  	if (requested_freq > policy->max || requested_freq < policy->min)
+>  		requested_freq = policy->cur;
+> 
+> +	freq_step = get_freq_step(cs_tuners, policy);
+> +
+> +	/*
+> +	 * Decrease requested_freq one freq_step for each idle period that
+> +	 * we didn't update the frequency.
+> +	 */
+> +	if (policy_dbs->idle_periods < UINT_MAX) {
+> +		unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
+> +
+> +		if (requested_freq > freq_steps)
+> +			requested_freq -= freq_steps;
+> +		else
+> +			requested_freq = policy->min;
 
-On 15-11-16, 16:10, Dave Gerlach wrote:
-> NOT FOR MERGE!
-> 
-> Introduce a test version of a 'ti-opp-domain' driver that will use new
-> multiple regulator support introduced to the OPP core by Viresh [1].
-> Tested on v4.9-rc1 with that series applied.  This is needed on TI
-> platforms like DRA7/AM57 in order to control both CPU regulator and
-> Adaptive Body Bias (ABB) regulator as described by Nishanth Menon here
-> [2]. These regulators must be scaled in sequence during an OPP
-> transition depending on whether or not the frequency is being scaled up
-> or down. Based on the new functionality provided by Viresh this driver
-> does the following:
-> 
-> * Call dev_pm_opp_set_regulators with the names of the two regulators
->   that feed the CPU:
-> 	* vdd is the 'cpu-supply' commonly used for cpufreq-dt but
-> 	  renamed so the cpufreq-dt driver doesn't use it directly.
-> 	  Note that this is supplied in board dts as it's external to
-> 	  SoC.
+Need a blank line here.
 
-I think I can fix this somehow.. Lemme check.
+> +		policy_dbs->idle_periods = UINT_MAX;
+> +	}
+> +
+>  	/* Check for frequency increase */
+>  	if (load > dbs_data->up_threshold) {
+>  		dbs_info->down_skip = 0;
+> @@ -90,7 +107,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>  		if (requested_freq == policy->max)
+>  			goto out;
+> 
+> -		requested_freq += get_freq_step(cs_tuners, policy);
+> +		requested_freq += freq_step;
+>  		if (requested_freq > policy->max)
+>  			requested_freq = policy->max;
+> 
+> @@ -106,14 +123,12 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+> 
+>  	/* Check for frequency decrease */
+>  	if (load < cs_tuners->down_threshold) {
+> -		unsigned int freq_step;
+>  		/*
+>  		 * if we cannot reduce the frequency anymore, break out early
+>  		 */
+>  		if (requested_freq == policy->min)
+>  			goto out;
+> 
+> -		freq_step = get_freq_step(cs_tuners, policy);
+>  		if (requested_freq > freq_step)
+>  			requested_freq -= freq_step;
+>  		else
+> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+> index 3729474..9780f50 100644
+> --- a/drivers/cpufreq/cpufreq_governor.c
+> +++ b/drivers/cpufreq/cpufreq_governor.c
+> @@ -117,7 +117,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>  	struct policy_dbs_info *policy_dbs = policy->governor_data;
+>  	struct dbs_data *dbs_data = policy_dbs->dbs_data;
+>  	unsigned int ignore_nice = dbs_data->ignore_nice_load;
+> -	unsigned int max_load = 0;
+> +	unsigned int max_load = 0, idle_periods = UINT_MAX;
+>  	unsigned int sampling_rate, io_busy, j;
+> 
+>  	/*
+> @@ -214,10 +214,17 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+>  			}
+>  			j_cdbs->prev_load = load;
+>  		}
 
-> 	* vbb for the ABB regulator. This is provided in SoC dtsi as it
-> 	  is internal to the SoC.
-> * Provide a platform set_opp function using
->   dev_pm_opp_register_set_opp_helper that is called when an OPP
->   transition is requested.
-> * Allow cpufreq-dt to probe which will work because no cpu-supply
->   regulator is found so the driver proceeds and calls
->   dev_pm_opp_set_rate which through the OPP core invokes the platform
->   set_opp call we provided
-> * Platform set_opp call provided by this driver checks to see if we are
->   scaling frequency up or down and based on this, scales vbb before vdd
->   for up or the other way around for down.
-> 
-> In addition to that, this driver implements AVS Class 0 as described in
-> section 18.4.6.12 of AM572x TRM [3] using the same platform set_rate
-> hook added to the OPP core. There are registers that define the optimal
-> voltage for that specific piece of silicon for an OPP so this driver
-> simply looks up this optimal value and programs that for an OPP instead
-> of the nominal value.
-> 
-> Missing from this is a good way to ensure that cpufreq-dt does not just
-> proceed if no cpu-supply regulator is found but we were intending to
-> rely on a platform set_opp and multiple regulators.
-> 
-> [1] https://marc.info/?l=linux-pm&m=147746362402994&w=2
-> [2] https://marc.info/?l=linux-pm&m=145684495832764&w=2
-> [3] http://www.ti.com/lit/ug/spruhz6g/spruhz6g.pdf
-> 
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
->  arch/arm/boot/dts/am57xx-beagle-x15-common.dtsi |   2 +-
->  arch/arm/boot/dts/dra7.dtsi                     |  46 ++-
->  drivers/soc/ti/Makefile                         |   2 +
->  drivers/soc/ti/ti-opp-domain.c                  | 427 ++++++++++++++++++++++++
+Here as well..
 
-I would rather ask you to move this to drivers/base/power/opp/ 
+> +		if (time_elapsed > 2 * sampling_rate) {
+> +			unsigned int periods = time_elapsed / sampling_rate;
+> 
+> +			if (periods < idle_periods)
+> +				idle_periods = periods;
+> +		}
+
+Here too
+
+>  		if (load > max_load)
+>  			max_load = load;
+>  	}
+
+And here..
+
+> +	policy_dbs->idle_periods = idle_periods;
+> +
+>  	return max_load;
+>  }
+>  EXPORT_SYMBOL_GPL(dbs_update);
+> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
+> index 9660cc6..10a3e0a 100644
+> --- a/drivers/cpufreq/cpufreq_governor.h
+> +++ b/drivers/cpufreq/cpufreq_governor.h
+> @@ -97,6 +97,7 @@ struct policy_dbs_info {
+>  	struct list_head list;
+>  	/* Multiplier for increasing sample delay temporarily. */
+>  	unsigned int rate_mult;
+> +	unsigned int idle_periods;
+>  	/* Status indicators */
+>  	bool is_shared;		/* This object is used by multiple CPUs */
+>  	bool work_in_progress;	/* Work is being queued up or in progress */
+
+And after fixing this trivial things, you can add
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
