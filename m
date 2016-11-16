@@ -1,156 +1,181 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Request P-states control from SMM if needed
-Date: Wed, 16 Nov 2016 03:36:45 +0100
-Message-ID: <1679905.fG5YOIvtAJ@vostro.rjw.lan>
+Subject: [PATCH v2] cpufreq: Avoid a couple of races related to cpufreq_cpu_get()
+Date: Wed, 16 Nov 2016 03:38:40 +0100
+Message-ID: <7191200.L2L3Fy8tSf@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45406 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58299 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752411AbcKPC3L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 21:29:11 -0500
+        by vger.kernel.org with ESMTP id S1752411AbcKPCbG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 21:31:06 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Currently, intel_pstate is unable to control P-states on my
-IvyBridge-based Acer Aspire S5, because they are controlled by SMM
-on that machine by default and it is necessary to request OS control
-of P-states from it via the SMI Command register exposed in the ACPI
-FADT.  intel_pstate doesn't do that now, but acpi-cpufreq and other
-cpufreq drivers for x86 platforms do.
+The cpumask_test_cpu() check in cpufreq_cpu_get_raw() is sort of
+pointless, because it may be racy with respect to CPU online/offline
+which sets/clears the policy->cpus mask.
 
-Address this problem by making intel_pstate use the ACPI-defined
-mechanism as well.  However, intel_pstate is not modular and it
-doesn't need the module refcount tricks played by
-acpi_processor_notify_smm(), so export the core of this function
-to it as acpi_processor_pstate_control() and make it call that.
-[The changes in processor_perflib.c related to this should not
-make any functional difference for the acpi_processor_notify_smm()
-users].
+Some of the races resulting from that are benign (worst case, stale
+values may be returned from some sysfs attribute for a relatively
+short period), but some of them may lead to invocations of low-level
+cpufreq driver callbacks for offline CPUs which is not guaranteed to
+work in general.
+
+For this reason, move the cpumask_test_cpu() check away from
+cpufreq_cpu_get_raw() and reserve it for the ondemand governor,
+which calls it for online CPUs only and with CPU online/offline
+locked anyway, and make the other callers of it use the per-CPU
+variable whose value is returned by it directly.
+
+With that, add the cpumask_test_cpu() check to cpufreq_generic_get()
+to preserve its current behavior for offline CPUs and to the callers
+of cpufreq_cpu_get().  There, in the cases when the races might
+lead to invocations of driver callbacks for offline CPUs, put it
+under policy->rwsem.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Suggested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/acpi/processor_perflib.c |   45 ++++++++++++++++++++++++---------------
- drivers/cpufreq/intel_pstate.c   |    8 ++++++
- include/acpi/processor.h         |    1 
- 3 files changed, 37 insertions(+), 17 deletions(-)
 
-Index: linux-pm/drivers/acpi/processor_perflib.c
+-> v2:
+ * Modify the changelog to make it better explain what's going on.
+ * Add the missing cpumask_test_cpu() check to cpufreq_offline().
+
+---
+ drivers/cpufreq/cpufreq.c |   52 ++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 37 insertions(+), 15 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/processor_perflib.c
-+++ linux-pm/drivers/acpi/processor_perflib.c
-@@ -465,11 +465,33 @@ int acpi_processor_get_performance_info(
- 	return result;
- }
- EXPORT_SYMBOL_GPL(acpi_processor_get_performance_info);
--int acpi_processor_notify_smm(struct module *calling_module)
-+
-+int acpi_processor_pstate_control(void)
- {
- 	acpi_status status;
--	static int is_done = 0;
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -65,6 +65,12 @@ static struct cpufreq_driver *cpufreq_dr
+ static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
+ static DEFINE_RWLOCK(cpufreq_driver_lock);
  
-+	if (!acpi_gbl_FADT.smi_command || !acpi_gbl_FADT.pstate_control)
-+		return 0;
-+
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+			  "Writing pstate_control [0x%x] to smi_command [0x%x]\n",
-+			  acpi_gbl_FADT.pstate_control, acpi_gbl_FADT.smi_command));
-+
-+	status = acpi_os_write_port(acpi_gbl_FADT.smi_command,
-+				    (u32)acpi_gbl_FADT.pstate_control, 8);
-+	if (ACPI_SUCCESS(status))
-+		return 1;
-+
-+	ACPI_EXCEPTION((AE_INFO, status,
-+			"Failed to write pstate_control [0x%x] to smi_command [0x%x]",
-+			acpi_gbl_FADT.pstate_control, acpi_gbl_FADT.smi_command));
-+	return -EIO;
-+}
-+
-+int acpi_processor_notify_smm(struct module *calling_module)
++struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
 +{
-+	static int is_done = 0;
-+	int result;
++	return per_cpu(cpufreq_cpu_data, cpu);
++}
++EXPORT_SYMBOL_GPL(cpufreq_cpu_get_raw);
++
+ /* Flag to suspend/resume CPUFreq governors */
+ static bool cpufreq_suspended;
  
- 	if (!(acpi_processor_ppc_status & PPC_REGISTERED))
- 		return -EBUSY;
-@@ -492,26 +514,15 @@ int acpi_processor_notify_smm(struct mod
+@@ -192,19 +198,12 @@ int cpufreq_generic_init(struct cpufreq_
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_generic_init);
  
- 	is_done = -EIO;
+-struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
+-{
+-	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
+-
+-	return policy && cpumask_test_cpu(cpu, policy->cpus) ? policy : NULL;
+-}
+-EXPORT_SYMBOL_GPL(cpufreq_cpu_get_raw);
+-
+ unsigned int cpufreq_generic_get(unsigned int cpu)
+ {
+-	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
++	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
  
--	/* Can't write pstate_control to smi_command if either value is zero */
--	if ((!acpi_gbl_FADT.smi_command) || (!acpi_gbl_FADT.pstate_control)) {
-+	result = acpi_processor_pstate_control();
-+	if (!result) {
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "No SMI port or pstate_control\n"));
- 		module_put(calling_module);
+-	if (!policy || IS_ERR(policy->clk)) {
++	if (!policy || !cpumask_test_cpu(cpu, policy->cpus) ||
++	    IS_ERR(policy->clk)) {
+ 		pr_err("%s: No %s associated to cpu: %d\n",
+ 		       __func__, policy ? "clk" : "policy", cpu);
+ 		return 0;
+@@ -240,7 +239,7 @@ struct cpufreq_policy *cpufreq_cpu_get(u
+ 
+ 	if (cpufreq_driver) {
+ 		/* get the CPU */
+-		policy = cpufreq_cpu_get_raw(cpu);
++		policy = per_cpu(cpufreq_cpu_data, cpu);
+ 		if (policy)
+ 			kobject_get(&policy->kobj);
+ 	}
+@@ -1328,13 +1327,19 @@ static int cpufreq_offline(unsigned int
+ 
+ 	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
+ 
+-	policy = cpufreq_cpu_get_raw(cpu);
++	policy = per_cpu(cpufreq_cpu_data, cpu);
+ 	if (!policy) {
+ 		pr_debug("%s: No cpu_data found\n", __func__);
  		return 0;
  	}
--
--	ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--			  "Writing pstate_control [0x%x] to smi_command [0x%x]\n",
--			  acpi_gbl_FADT.pstate_control, acpi_gbl_FADT.smi_command));
--
--	status = acpi_os_write_port(acpi_gbl_FADT.smi_command,
--				    (u32) acpi_gbl_FADT.pstate_control, 8);
--	if (ACPI_FAILURE(status)) {
--		ACPI_EXCEPTION((AE_INFO, status,
--				"Failed to write pstate_control [0x%x] to "
--				"smi_command [0x%x]", acpi_gbl_FADT.pstate_control,
--				acpi_gbl_FADT.smi_command));
-+	if (result < 0) {
- 		module_put(calling_module);
--		return status;
-+		return result;
+ 
+ 	down_write(&policy->rwsem);
++
++	if (!cpumask_test_cpu(cpu, policy->cpus)) {
++		pr_debug("%s: CPU %u is offline\n", __func__, cpu);
++		goto unlock;
++	}
++
+ 	if (has_target())
+ 		cpufreq_stop_governor(policy);
+ 
+@@ -1455,7 +1460,9 @@ unsigned int cpufreq_quick_get(unsigned
+ 
+ 	policy = cpufreq_cpu_get(cpu);
+ 	if (policy) {
+-		ret_freq = policy->cur;
++		if (cpumask_test_cpu(cpu, policy->cpus))
++			ret_freq = policy->cur;
++
+ 		cpufreq_cpu_put(policy);
  	}
  
- 	/* Success. If there's no _PPC, we need to fear nothing, so
-Index: linux-pm/include/acpi/processor.h
-===================================================================
---- linux-pm.orig/include/acpi/processor.h
-+++ linux-pm/include/acpi/processor.h
-@@ -249,6 +249,7 @@ extern int acpi_processor_register_perfo
- 					       *performance, unsigned int cpu);
- extern void acpi_processor_unregister_performance(unsigned int cpu);
+@@ -1475,7 +1482,9 @@ unsigned int cpufreq_quick_get_max(unsig
+ 	unsigned int ret_freq = 0;
  
-+int acpi_processor_pstate_control(void);
- /* note: this locks both the calling module and the processor module
-          if a _PPC object exists, rmmod is disallowed then */
- int acpi_processor_notify_smm(struct module *calling_module);
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2034,9 +2034,15 @@ static bool __init intel_pstate_platform
- 
- 	return false;
- }
+ 	if (policy) {
+-		ret_freq = policy->max;
++		if (cpumask_test_cpu(cpu, policy->cpus))
++			ret_freq = policy->max;
 +
-+static void intel_pstate_request_control(void)
-+{
-+	acpi_processor_pstate_control();
-+}
- #else /* CONFIG_ACPI not enabled */
- static inline bool intel_pstate_platform_pwr_mgmt_exists(void) { return false; }
- static inline bool intel_pstate_has_acpi_ppc(void) { return false; }
-+static inline void intel_pstate_request_control(void) {}
- #endif /* CONFIG_ACPI */
+ 		cpufreq_cpu_put(policy);
+ 	}
  
- static const struct x86_cpu_id hwp_support_ids[] __initconst = {
-@@ -2088,6 +2094,8 @@ hwp_cpu_matched:
- 	if (!hwp_active && hwp_only)
- 		goto out;
+@@ -1526,7 +1535,10 @@ unsigned int cpufreq_get(unsigned int cp
  
-+	intel_pstate_request_control();
+ 	if (policy) {
+ 		down_read(&policy->rwsem);
+-		ret_freq = __cpufreq_get(policy);
 +
- 	rc = cpufreq_register_driver(intel_pstate_driver);
- 	if (rc)
- 		goto out;
++		if (cpumask_test_cpu(cpu, policy->cpus))
++			ret_freq = __cpufreq_get(policy);
++
+ 		up_read(&policy->rwsem);
+ 
+ 		cpufreq_cpu_put(policy);
+@@ -2142,6 +2154,11 @@ int cpufreq_get_policy(struct cpufreq_po
+ 	if (!cpu_policy)
+ 		return -EINVAL;
+ 
++	if (!cpumask_test_cpu(cpu, policy->cpus)) {
++		cpufreq_cpu_put(cpu_policy);
++		return -EINVAL;
++	}
++
+ 	memcpy(policy, cpu_policy, sizeof(*policy));
+ 
+ 	cpufreq_cpu_put(cpu_policy);
+@@ -2265,6 +2282,11 @@ int cpufreq_update_policy(unsigned int c
+ 
+ 	down_write(&policy->rwsem);
+ 
++	if (!cpumask_test_cpu(cpu, policy->cpus)) {
++		ret = -ENODEV;
++		goto unlock;
++	}
++
+ 	pr_debug("updating policy for CPU %u\n", cpu);
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+ 	new_policy.min = policy->user_policy.min;
 
