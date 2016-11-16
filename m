@@ -1,44 +1,47 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] RFC: mmc: block: replace semaphore with freezing
-Date: Wed, 16 Nov 2016 17:32:44 +0100
-Message-ID: <17679227.zg8zl3jhbr@wuerfel>
-References: <1479293464-4576-1-git-send-email-linus.walleij@linaro.org> <CAJZ5v0gCDQXebsQoCYJY5FyE6oJUw4s6sQrNbKLuxpLvOe2RoA@mail.gmail.com> <CACRpkdY+jdU4ETuMJsY-efSkjwE0fWWRZoyCyrYAs_GxUo-DhQ@mail.gmail.com>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH v4 1/3] bus: simple-pm: add support to pm clocks
+Date: Wed, 16 Nov 2016 16:33:06 +0000
+Message-ID: <5c02f6bc-59dc-2c5e-d8e5-0d2e2d1d0fce@linaro.org>
+References: <1479122155-13393-1-git-send-email-srinivas.kandagatla@linaro.org>
+ <1479122155-13393-2-git-send-email-srinivas.kandagatla@linaro.org>
+ <20161114221447.GH9868@bhelgaas-glaptop.roam.corp.google.com>
+ <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com>
+ <d61f62d1-7a7e-6d91-d278-0fd922cd77b5@linaro.org>
+ <d1bc3663-5824-32f8-a20f-1c5e28466a15@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.17.10]:55318 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753629AbcKPQdE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 11:33:04 -0500
-In-Reply-To: <CACRpkdY+jdU4ETuMJsY-efSkjwE0fWWRZoyCyrYAs_GxUo-DhQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <d1bc3663-5824-32f8-a20f-1c5e28466a15@codeaurora.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Nayak, Rajendra" <rnayak@codeaurora.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Bjorn Helgaas <helgaas@kernel.org>
+Cc: svarbanov@mm-sol.com, linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, Linux PM list <linux-pm@vger.kernel.org>, "Nayak, Rajendra" <rjendra@qti.qualcomm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Chunyan Zhang <zhang.chunyan@linaro.org>, Baolin Wang <baolin.wang@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Jiri Kosina <jikos@kernel.org>
 
-On Wednesday, November 16, 2016 4:20:47 PM CET Linus Walleij wrote:
-> On Wed, Nov 16, 2016 at 1:46 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> 
-> > Well, we had a session at the KS regarding usage of the freezer on
-> > kernel threads and the conclusion was to get rid of that (as opposed
-> > to freezing user space, which is necessary IMO).  So this change would
-> > go in the opposite direction. 
-> 
-> Aha so I should not make this thread look like everyone else, instead
-> everyone else should look like this thread, haha 
-> 
-> Ah well, I'll just drop it.
+Thanks Rajendra for pointing to the patch
 
-It would still be good to remove the semaphore and do something else,
-as we also want to remove all semaphores. ;-)
+On 16/11/16 15:50, Nayak, Rajendra wrote:
+>>
+>>
+>> Rajendra,
+>> Looks like qcom gdsc pm domain provider driver does not handle bus clks
+>> along with power-domain, Is this something we should do? Or the bus
+>> driver take care of it?
+>
+> I did post some patches to support handling of clocks associated with
+> gdscs [1], but it got dropped at that point since there wasn't a
+> real user, besides there were some open issues wrt the handling of
+> !CONFIG_PM cases etc.
+> I will revive and repost those patches again now based on the
+> discussions last time around.
+>
+> [1]
+> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-August/362492.html
 
-We could check "mq->flags & MMC_QUEUE_SUSPENDED" in the kthread to see
-if the queue is currently suspended, and otherwise go to sleep there,
-and then call wake_up() in the resume function.
+This patch looks exactly like the one useful in pcie case, i would be 
+interesting to see the final patch on how we handle clocks which are 
+both related and not related to power domain.
 
-While looking at that code, I just noticed that access to 
-mq->flags is racy and should be fixed as well.
-
-	Arnd
-
+thanks,
+srini
+>
