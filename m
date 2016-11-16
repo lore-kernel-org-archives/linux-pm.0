@@ -1,96 +1,120 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Wed, 16 Nov 2016 10:48:29 +0000
-Message-ID: <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
- <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
- <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
- <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
- <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH] RFC: mmc: block: replace semaphore with freezing
+Date: Wed, 16 Nov 2016 11:51:04 +0100
+Message-ID: <1479293464-4576-1-git-send-email-linus.walleij@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:16514 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752713AbcKPKsm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 05:48:42 -0500
-In-Reply-To: <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:37962 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751741AbcKPKvW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 05:51:22 -0500
+Received: by mail-wm0-f52.google.com with SMTP id f82so64215298wmf.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2016 02:51:22 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>
+To: linux-mmc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Chunyan Zhang <zhang.chunyan@linaro.org>, Baolin Wang <baolin.wang@linaro.org>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>
 
-Hi Kevin, Ulf,
+The MMC/SD block core request processing thread is taking a
+semaphore in the request processing section and the same
+semaphore is taken around suspend/resume operations.
 
-On 03/11/16 14:20, Jon Hunter wrote:
-> 
-> On 11/10/16 10:15, Jon Hunter wrote:
-> 
-> ...
-> 
->>>>> Second, another way of seeing this is: Depending on the current
->>>>> runtime selected configuration you need to re-configure the PM domain
->>>>> topology - but the device would still remain in the same PM domain.
->>>>>
->>>>> In other words, you would need to remove/add subdomain(s) depending on
->>>>> the selected configuration. Would that better reflect the HW?
->>>>
->>>> I am not 100% sure I follow what you are saying, but ultimately, I would
->>>> like to get to ...
->>>>
->>>>         usb@70090000 {
->>>>                 compatible = "nvidia,tegra210-xusb";
->>>>                 ...
->>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>>         };
->>>
->>> So, is this really is a proper description of the HW? Isn't it so,
->>> that the usb device always resides in one and the same PM domain?
->>
->> I guess technically, the usbhost controller resides in one partition and
->> the super-speed logic in another. So could the usbhost domain be the
->> primary? Possibly, but the device cannot be probed without both enabled.
->>
->>> Now, depending on the selected speed mode (superspeed) additional
->>> logic may needs to be powered on and configured for the usb device to
->>> work?
->>> Perhaps, one could consider those additional logics as a master/parent
->>> PM domain for the usb device's PM domain?
->>>
->>> Or this is not how the HW works? :-)
->>
->> It might be possible for this case, but to be honest, the more I think
->> about this, I do wonder if we need to be able to make the framework a
->> lot more flexible for devices that need multiple power-domains. In other
->> words, for devices that use multiple domains allow them to control them
->> similarly to what we do for regulators or clocks. So if there is more
->> than one defined, then the genpd core will not bind the device to the
->> pm-domain and let the driver handle it. This way if you do need more
->> granular control of the pm-domains in the driver you can do whatever you
->> need to.
->>
->> I know that Rajendra (CC'ed) was looking into whether he had a need to
->> control multiple power-domains individually from within the context of a
->> single device driver.
-> 
-> So Rajendra commented to say that he does not see a need for individual
-> control of power-domains for now, but a need for specifying multiple.
-> 
-> One simple option would be to allow users to specify multiple and have
-> the genpd core effectively ignore such devices and leave it to the
-> driver to configure manually. I have been able to do this for XUSB by
-> dynamically adding power-domains to the device.
-> 
-> Let me know if you have any more thoughts on how we can do this.
+The purpose of the semaphore is to block any request from being
+issued to the MMC/SD host controllers when the system is
+suspended. A semaphore is used in place of a mutex since the
+calls are coming from different threads.
 
-Any more thoughts on this? Seems that there are a few others that would
-be interested in supporting multiple domains for a device.
+This construction predates the kernel thread freezer mechanism:
+we can easily replace the semaphore by instead activating the
+freezer with set_freezable() and call try_to_freeze() instead
+of the up(); schedule(); down(); construction that is devised
+to let the suspend/resume calls get in and grab the semaphore.
 
-Cheers
-Jon
+Tested with a few suspend/resume to memory cycles on the Ux500
+when doing intense dd operations in the background: the
+thread thaws and resumes operation after resume.
 
+Cc: linux-pm@vger.kernel.org
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+I haven't seen any need to preserve the call to schedule()
+in the request processing thread, but I want advice on whether
+that has a point. I would guess the thread will just anyway
+be preempted if needed anyway as it is marked interruptible?
+---
+ drivers/mmc/card/queue.c | 13 ++-----------
+ drivers/mmc/card/queue.h |  1 -
+ 2 files changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/mmc/card/queue.c b/drivers/mmc/card/queue.c
+index 8037f73a109a..09a932ffe46e 100644
+--- a/drivers/mmc/card/queue.c
++++ b/drivers/mmc/card/queue.c
+@@ -55,8 +55,8 @@ static int mmc_queue_thread(void *d)
+ 	struct request_queue *q = mq->queue;
+ 
+ 	current->flags |= PF_MEMALLOC;
++	set_freezable();
+ 
+-	down(&mq->thread_sem);
+ 	do {
+ 		struct request *req = NULL;
+ 
+@@ -95,12 +95,9 @@ static int mmc_queue_thread(void *d)
+ 				set_current_state(TASK_RUNNING);
+ 				break;
+ 			}
+-			up(&mq->thread_sem);
+-			schedule();
+-			down(&mq->thread_sem);
++			try_to_freeze();
+ 		}
+ 	} while (1);
+-	up(&mq->thread_sem);
+ 
+ 	return 0;
+ }
+@@ -289,8 +286,6 @@ int mmc_init_queue(struct mmc_queue *mq, struct mmc_card *card,
+ 			goto cleanup_queue;
+ 	}
+ 
+-	sema_init(&mq->thread_sem, 1);
+-
+ 	mq->thread = kthread_run(mmc_queue_thread, mq, "mmcqd/%d%s",
+ 		host->index, subname ? subname : "");
+ 
+@@ -424,8 +419,6 @@ void mmc_queue_suspend(struct mmc_queue *mq)
+ 		spin_lock_irqsave(q->queue_lock, flags);
+ 		blk_stop_queue(q);
+ 		spin_unlock_irqrestore(q->queue_lock, flags);
+-
+-		down(&mq->thread_sem);
+ 	}
+ }
+ 
+@@ -441,8 +434,6 @@ void mmc_queue_resume(struct mmc_queue *mq)
+ 	if (mq->flags & MMC_QUEUE_SUSPENDED) {
+ 		mq->flags &= ~MMC_QUEUE_SUSPENDED;
+ 
+-		up(&mq->thread_sem);
+-
+ 		spin_lock_irqsave(q->queue_lock, flags);
+ 		blk_start_queue(q);
+ 		spin_unlock_irqrestore(q->queue_lock, flags);
+diff --git a/drivers/mmc/card/queue.h b/drivers/mmc/card/queue.h
+index 3c15a75bae86..fe10f94795de 100644
+--- a/drivers/mmc/card/queue.h
++++ b/drivers/mmc/card/queue.h
+@@ -53,7 +53,6 @@ struct mmc_queue_req {
+ struct mmc_queue {
+ 	struct mmc_card		*card;
+ 	struct task_struct	*thread;
+-	struct semaphore	thread_sem;
+ 	unsigned int		flags;
+ #define MMC_QUEUE_SUSPENDED	(1 << 0)
+ #define MMC_QUEUE_NEW_REQUEST	(1 << 1)
 -- 
-nvpublic
+2.7.4
+
