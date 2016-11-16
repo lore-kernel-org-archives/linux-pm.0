@@ -1,70 +1,118 @@
-From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: [PATCH] RFC: mmc: block: replace semaphore with freezing
-Date: Wed, 16 Nov 2016 13:57:37 +0100 (CET)
-Message-ID: <alpine.LNX.2.00.1611161351520.29400@cbobk.fhfr.pm>
-References: <1479293464-4576-1-git-send-email-linus.walleij@linaro.org> <CAJZ5v0gCDQXebsQoCYJY5FyE6oJUw4s6sQrNbKLuxpLvOe2RoA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Wed, 16 Nov 2016 14:11:28 +0100
+Message-ID: <CAPDyKFpdRzDotofr+0F6gfuWg4hHikEfmxS2aM2D+hmq_JpHRA@mail.gmail.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <57F5E986.40704@codeaurora.org> <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
+ <57F60EBE.8010509@codeaurora.org> <91b96909-64bc-db72-6da5-556272565091@nvidia.com>
+ <5819AA42.5060603@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:58290 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751564AbcKPM5k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 16 Nov 2016 07:57:40 -0500
-In-Reply-To: <CAJZ5v0gCDQXebsQoCYJY5FyE6oJUw4s6sQrNbKLuxpLvOe2RoA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5819AA42.5060603-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linus Walleij <linus.walleij@linaro.org>, linux-mmc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Chunyan Zhang <zhang.chunyan@linaro.org>, Baolin Wang <baolin.wang@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Arnd Bergmann <arnd@arndb.de>
 
-On Wed, 16 Nov 2016, Rafael J. Wysocki wrote:
+On 2 November 2016 at 09:56, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+> Hi Jon,
+>
+> On 10/31/2016 04:14 PM, Jon Hunter wrote:
+>> Hi Rajendra,
+>>
+>> On 06/10/16 09:43, Rajendra Nayak wrote:
+>>>
+>>> On 10/06/2016 01:55 PM, Jon Hunter wrote:
+>>>> Hi Rajendra,
+>>>>
+>>>> On 06/10/16 07:04, Rajendra Nayak wrote:
+>>>>>
+>>>>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
+>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>>>>> controllers) is partitioned across 3 PM domains which are:
+>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>>>>> - XUSBB: Device controller
+>>>>>> - XUSBC: Host controller
+>>>>>>
+>>>>>> These power domains are not nested and can be powered-up and down
+>>>>>> independently of one another. In practice different scenarios require
+>>>>>> different combinations of the power domains, for example:
+>>>>>> - Superspeed host: XUSBA and XUSBC
+>>>>>> - Superspeed device: XUSBA and XUSBB
+>>>>>>
+>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>>>>> domains under the XUSBA, superspeed may not always be used/required and
+>>>>>> so this would keep it on unnecessarily.
+>>>>>
+>>>>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
+>>>>> for a device (which then will *all* be powered on/off together) or does
+>>>>> it also provide for more granular control of these powerdomains?
+>>>>
+>>>> Only to specify multiple power-domains for a device and not the later.
+>>>>
+>>>>> The above statement seems to suggest you would need more granular control
+>>>>> of these powerdomains (like keeping XUSBA off in case superspeed it not
+>>>>> needed) but I can't seem to figure out how you achieve it with this series.
+>>>>
+>>>> It is an interesting point but today we have always kept the superspeed
+>>>> partition on if the device is configured for superspeed regardless of
+>>>> what is actually connected. I will check to see if the h/w would allow
+>>>> us to turn it off if a non-superspeed device is in use but I did not
+>>>> think so.
+>>>>
+>>>> Do you have any interesting use-cases that would make use of this or
+>>>> require other such enhancements?
+>>>
+>>> We do have atleast a few devices which need to control multiple power domains,
+>>> I will need to look more to see if any of them can be controlled individually.
+>>> The downstream code we have models these (powerdomains) as regulators and
+>>> the drivers hence have individual control on each (specifying multiple -supply's
+>>> in DT)
+>>
+>> Were you able to check to see if you need to have individual control for the power-domains?
+>
+> I had a look at the Video decode block (for msm8996), which seems to be powered using 3 different
+> powerdomains, mainly venus, venus_core0 and venus_core1. The venus PD powers the ARM core
+> which runs the firmware, while the venus_core0 and venus_core1 power the encode/decode logic,
+> so for things like firmware image loading you ideally need only venus PD to be ON, but during
+> an encode/decode operation you would need all 3 to be ON.
 
-> > The MMC/SD block core request processing thread is taking a
-> > semaphore in the request processing section and the same
-> > semaphore is taken around suspend/resume operations.
-> >
-> > The purpose of the semaphore is to block any request from being
-> > issued to the MMC/SD host controllers when the system is
-> > suspended. A semaphore is used in place of a mutex since the
-> > calls are coming from different threads.
-> >
-> > This construction predates the kernel thread freezer mechanism:
-> > we can easily replace the semaphore by instead activating the
-> > freezer with set_freezable() and call try_to_freeze() instead
-> > of the up(); schedule(); down(); construction that is devised
-> > to let the suspend/resume calls get in and grab the semaphore.
-> >
-> > Tested with a few suspend/resume to memory cycles on the Ux500
-> > when doing intense dd operations in the background: the
-> > thread thaws and resumes operation after resume.
-> 
-> Well, we had a session at the KS regarding usage of the freezer on
-> kernel threads and the conclusion was to get rid of that (as opposed
-> to freezing user space, which is necessary IMO).  So this change would
-> go in the opposite direction. :-)
+Isn't there a scenario when encoding *or* decoding happens, not always both?
 
-[ thanks for CCing me, Rafael ]
+If so, doesn't that mean you may have venus + venus_core0 powered and
+in some other case venus + venus_core1 powered?
 
-Agreed. You already have PM callbacks handled properly, so the way this 
-should be done is once you're in the PM-callback due to system going 
-through power management change, you just stop generation of any new I/O, 
-and tell the kthread that it should schedule itself out.
+> The downstream driver turns *all* of them together, and does not control them individually.
+> For upstream, the way we have it working (the driver is not merged) is by having venus be the parent
+> of venus_core0 and venus_core0 as the parent of venus_core1, and having venus_core1 mentioned as
+> the powerdomain for the video decode block in DT.
+>
+> So in summary, there is still no need to control them individually, but given there is no way to
+> specify more than one powerdomain for a given device, we are ending up hooking up some
+> parent/child relations in the powerdomain code.
+>
 
-Plus the schedule() has to stay there anyway, as try_to_freeze() is not 
-going to provide you with the schedule() semantics unless the system is 
-actually undergoing a PM transition towards suspend.
+I think a better solution would be to model the video decode block as
+three struct devices.
 
-So either semaphore, or some kind of atomic flag, is exactly the 
-information that should be passed from the PM callback to the kthread.
+1) The main ARM device, attached to the venus PM domain.
+2) The encoder device, having the main device assigned as its parent
+and being attached to the venus_core0 PM domain.
+3) The decoder device, having the main device assigned as its parent
+and being attached to the venus_core1 PM domain.
 
-(now, I agree, that this is one of the very rare cases where the kthread 
-freezer is actually being used properly -- IOW to pause a kthread that is 
-actually generating new I/O ... but given the fact that this is so rare, 
-and the API is so heavily abused, I really tend to heavily prefer a 
-semaphore / flag based aproach).
+Then there is no need to specific a  PM domain hierarchy (which seems
+to be the issue here), but instead only the parent/child relationships
+between the struct devices.
 
-Thanks,
+Moreover, as you deploy runtime PM for these devices, you can more
+easily distinguish which device you need to operate on
+(pm_runtime_get|put*()) depending on what particular operations you
+want to do (encode, decode etc).
 
--- 
-Jiri Kosina
-SUSE Labs
+Would that work?
 
+Kind regards
+Uffe
