@@ -1,48 +1,98 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V2 3/4] cpufreq: schedutil: move slow path from workqueue
- to SCHED_FIFO task
-Date: Wed, 16 Nov 2016 16:26:05 +0100
-Message-ID: <20161116152605.GU3142@twins.programming.kicks-ass.net>
-References: <cover.1479197311.git.viresh.kumar@linaro.org>
- <09f8fe694b4491bfd20272e8c7dc0f13f35eb34e.1479197311.git.viresh.kumar@linaro.org>
+From: "Nayak, Rajendra" <rnayak@codeaurora.org>
+Subject: Re: [PATCH v4 1/3] bus: simple-pm: add support to pm clocks
+Date: Wed, 16 Nov 2016 21:20:15 +0530
+Message-ID: <d1bc3663-5824-32f8-a20f-1c5e28466a15@codeaurora.org>
+References: <1479122155-13393-1-git-send-email-srinivas.kandagatla@linaro.org>
+ <1479122155-13393-2-git-send-email-srinivas.kandagatla@linaro.org>
+ <20161114221447.GH9868@bhelgaas-glaptop.roam.corp.google.com>
+ <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com>
+ <d61f62d1-7a7e-6d91-d278-0fd922cd77b5@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:40564 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753156AbcKPP0I (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 10:26:08 -0500
-Content-Disposition: inline
-In-Reply-To: <09f8fe694b4491bfd20272e8c7dc0f13f35eb34e.1479197311.git.viresh.kumar@linaro.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38908 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932309AbcKPPu1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 10:50:27 -0500
+In-Reply-To: <d61f62d1-7a7e-6d91-d278-0fd922cd77b5@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
+To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Bjorn Helgaas <helgaas@kernel.org>
+Cc: svarbanov@mm-sol.com, linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, Linux PM list <linux-pm@vger.kernel.org>, "Nayak, Rajendra" <rjendra@qti.qualcomm.com>
 
-On Tue, Nov 15, 2016 at 01:53:22PM +0530, Viresh Kumar wrote:
-> @@ -308,7 +313,21 @@ static void sugov_irq_work(struct irq_work *irq_work)
->  	struct sugov_policy *sg_policy;
->  
->  	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
-> +
-> +	/*
-> +	 * For Real Time and Deadline tasks, schedutil governor shoots the
-> +	 * frequency to maximum. And special care must be taken to ensure that
-> +	 * this kthread doesn't result in that.
-> +	 *
-> +	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
-> +	 * updated only at the end of the sugov_work() and before that schedutil
-> +	 * rejects all other frequency scaling requests.
-> +	 *
-> +	 * Though there is a very rare case where the RT thread yields right
-> +	 * after the work_in_progress flag is cleared. The effects of that are
-> +	 * neglected for now.
-> +	 */
-> +	kthread_queue_work(&sg_policy->worker, &sg_policy->work);
->  }
+Hey Srini,
 
+On 11/15/2016 4:55 PM, Srinivas Kandagatla wrote:
+> + Rajendra (qcom,gdsc author)
+[]..
 
-Right, so that's a wee bit icky, but its also entirely pre-existing
-code.
+>>
+>>>> ---
+>>>>  drivers/bus/simple-pm-bus.c | 13 ++++++++++++-
+>>>>  1 file changed, 12 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/drivers/bus/simple-pm-bus.c b/drivers/bus/simple-pm-bus.c
+>>>> index c5eb46c..63b7e8c 100644
+>>>> --- a/drivers/bus/simple-pm-bus.c
+>>>> +++ b/drivers/bus/simple-pm-bus.c
+>>>> @@ -11,6 +11,7 @@
+>>>>  #include <linux/module.h>
+>>>>  #include <linux/of_platform.h>
+>>>>  #include <linux/platform_device.h>
+>>>> +#include <linux/pm_clock.h>
+>>>>  #include <linux/pm_runtime.h>
+>>>>
+>>>>
+>>>> @@ -22,17 +23,26 @@ static int simple_pm_bus_probe(struct
+>>>> platform_device *pdev)
+>>>>
+>>>>       pm_runtime_enable(&pdev->dev);
+>>>>
+>>>> -     if (np)
+>>>> +     if (np) {
+>>>> +             of_pm_clk_add_clks(&pdev->dev);
+>>
+>> This should work out-of-the-box (that's the actual purpose of this
+>> driver),
+>> if the platform code that registers your PM Domain would take care
+>> of registering the clocks needed for PM management of the bus.
+>
+> Yep, if the pm domain provider takes care of the bus clks, then it would
+> work.
+>
+> Am guessing that the clocks property in the DT node would be read by the
+> PM domain provider and enable/disable during attach/detach callbacks.
+> If that is true, then any device tree nodes which are not children of
+> "simple-pm-bus" and consumers of power-domain provider would enable all
+> (including non-bus clks) clks twice. Once in the power-domain provider
+> and once in the actual driver. Is this expected behavior from
+> power-domains in general?
+>
+>>
+>> Adding of_pm_clk_add_clks() here will start managing all clocks of the
+>> bus,
+>> which may not be wanted on all platforms.
+>>
+> That was the purpose.
+>
+>
+> Rajendra,
+> Looks like qcom gdsc pm domain provider driver does not handle bus clks
+> along with power-domain, Is this something we should do? Or the bus
+> driver take care of it?
 
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+I did post some patches to support handling of clocks associated with
+gdscs [1], but it got dropped at that point since there wasn't a
+real user, besides there were some open issues wrt the handling of
+!CONFIG_PM cases etc.
+I will revive and repost those patches again now based on the
+discussions last time around.
+
+[1] 
+http://lists.infradead.org/pipermail/linux-arm-kernel/2015-August/362492.html
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
