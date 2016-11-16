@@ -1,70 +1,53 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 2/3] thermal: hisilicon: fix for dependency
-Date: Wed, 16 Nov 2016 13:32:32 +0800
-Message-ID: <20161116053232.GA7240@leoy-linaro>
-References: <1472633417-9330-1-git-send-email-leo.yan@linaro.org>
- <1472633417-9330-3-git-send-email-leo.yan@linaro.org>
- <20161112120534.GC23848@leoy-linaro>
- <1479212695.2224.12.camel@intel.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
+ control runtime pm
+Date: Wed, 16 Nov 2016 10:30:55 +0100
+Message-ID: <20161116093055.GA11230@wunner.de>
+References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
+ <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
+ <20161107214747.GJ1764@wotan.suse.de>
+ <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
+ <20161108153044.GA6983@wunner.de>
+ <CAJZ5v0i3_8AE_o7vx=5kyuc8+P0jFOvjTC3YB9gcJVyQ+pTSkA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-clk-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1479212695.2224.12.camel@intel.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Eduardo Valentin <edubezval@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Krzysztof Kozlowski <krzk@kernel.org>, Thierry Reding <treding@nvidia.com>, Riku Voipio <riku.voipio@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Rob Herring <robh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Guodong Xu <guodong.xu@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>
+In-Reply-To: <CAJZ5v0i3_8AE_o7vx=5kyuc8+P0jFOvjTC3YB9gcJVyQ+pTSkA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:AMD IOMMU (AMD-VI)" <iommu@lists.linux-foundation.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gma>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 15, 2016 at 08:24:55PM +0800, Zhang Rui wrote:
-> On Sat, 2016-11-12 at 20:05 +0800, Leo Yan wrote:
-> > Hi Rui, Eduardo,
-> > 
-> > On Wed, Aug 31, 2016 at 04:50:16PM +0800, Leo Yan wrote:
-> > > 
-> > > The thermal driver is standalone driver which is used to enable
-> > > thermal sensors, so it can be used with any cooling device and
-> > > should not bind with CPU cooling device driver.
-> > > 
-> > > This original patch is suggested by Amit Kucheria; so it's to
-> > > polish the dependency in Kconfig, and remove the dependency with
-> > > CPU_THERMAL.
-> > Could you help review this patch? Or need me resend this patch? Sorry
-> > I have not tracked this patches well before, this is one missed
-> > patch for 96board Hikey.
-> > 
-> as it still applies cleanly, the patch is queued for 4.10.
+On Thu, Nov 10, 2016 at 12:56:14AM +0100, Rafael J. Wysocki wrote:
+> The idea, roughly, is that if there is a single on/off switch acting
+> on multiple devices, you can (a) set up a PM domain tracking all of
+> those device's runtime PM invocations and (b) maintaining a reference
+> counter of devices still not suspended.  This way it would only turn
+> the switch off when all of the devices in question had been suspended.
+> Analogously, it would turn the switch on before resuming the first
+> device in the domain.  Of course, that code isn't available as a
+> library, you would need to implement it (or use genpd, but chances are
+> it is too heavy weight for the job).
 
-Thanks a lot.
+My understanding is that the hierarchy of struct generic_pm_domain
+is created by the platform on boot.  For an embedded platform, this
+is encoded in the device tree, but what about ACPI which doesn't
+know anything about struct generic_pm_domain?  I would have to lump
+devices into generic_pm_domains after the fact, after the platform
+has scanned the buses, but this seems to be forbidden according to
+this slide deck, which calls that a "layering violation":
 
-> thanks,
-> rui
-> > Thanks,
-> > Leo Yan
-> > 
-> > > 
-> > > Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> > > ---
-> > >  drivers/thermal/Kconfig | 4 +++-
-> > >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > > index 2d702ca..91ebab3 100644
-> > > --- a/drivers/thermal/Kconfig
-> > > +++ b/drivers/thermal/Kconfig
-> > > @@ -177,8 +177,10 @@ config THERMAL_EMULATION
-> > >  
-> > >  config HISI_THERMAL
-> > >  	tristate "Hisilicon thermal driver"
-> > > -	depends on (ARCH_HISI && CPU_THERMAL && OF) ||
-> > > COMPILE_TEST
-> > > +	depends on ARCH_HISI || COMPILE_TEST
-> > >  	depends on HAS_IOMEM
-> > > +	depends on OF
-> > > +	default y
-> > >  	help
-> > >  	  Enable this to plug hisilicon's thermal sensor driver
-> > > into the Linux
-> > >  	  thermal framework. cpufreq is used as the cooling device
-> > > to throttle
+https://events.linuxfoundation.org/images/stories/pdf/lcjp2012_wysocki.pdf
+
+(Quote: "Adding and Removing Devices [...] Supposed to be called by
+the platform (calling one of them from a device driver is a layering
+violation).")
+
+So it seems that using struct generic_pm_domain is never an option
+on ACPI, is that correct?
+
+Thanks,
+
+Lukas
