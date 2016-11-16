@@ -1,144 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: conservative: Decrease frequency faster when
- the update deferred
-Date: Wed, 16 Nov 2016 09:25:44 +0530
-Message-ID: <20161116035544.GF17245@vireshk-i7>
-References: <faad4ff0-8115-059b-2ebc-2cec2a76fafe@semaphore.gr>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 2/3] thermal: hisilicon: fix for dependency
+Date: Wed, 16 Nov 2016 13:32:32 +0800
+Message-ID: <20161116053232.GA7240@leoy-linaro>
+References: <1472633417-9330-1-git-send-email-leo.yan@linaro.org>
+ <1472633417-9330-3-git-send-email-leo.yan@linaro.org>
+ <20161112120534.GC23848@leoy-linaro>
+ <1479212695.2224.12.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f53.google.com ([74.125.83.53]:34877 "EHLO
-        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752445AbcKPDzr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 22:55:47 -0500
-Received: by mail-pg0-f53.google.com with SMTP id p66so74164188pga.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Nov 2016 19:55:47 -0800 (PST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <faad4ff0-8115-059b-2ebc-2cec2a76fafe@semaphore.gr>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1479212695.2224.12.camel@intel.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Eduardo Valentin <edubezval@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Simon Horman <horms+renesas@verge.net.au>, Krzysztof Kozlowski <krzk@kernel.org>, Thierry Reding <treding@nvidia.com>, Riku Voipio <riku.voipio@linaro.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Rob Herring <robh@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Guodong Xu <guodong.xu@linaro.org>, Amit Kucheria <amit.kucheria@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 15-11-16, 23:25, Stratos Karafotis wrote:
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 0681fcf..808cc4d 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -66,6 +66,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->  	struct dbs_data *dbs_data = policy_dbs->dbs_data;
->  	struct cs_dbs_tuners *cs_tuners = dbs_data->tuners;
->  	unsigned int load = dbs_update(policy);
-> +	unsigned int freq_step;
-> 
->  	/*
->  	 * break out if we 'cannot' reduce the speed as the user might
-> @@ -82,6 +83,22 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->  	if (requested_freq > policy->max || requested_freq < policy->min)
->  		requested_freq = policy->cur;
-> 
-> +	freq_step = get_freq_step(cs_tuners, policy);
-> +
-> +	/*
-> +	 * Decrease requested_freq one freq_step for each idle period that
-> +	 * we didn't update the frequency.
-> +	 */
-> +	if (policy_dbs->idle_periods < UINT_MAX) {
-> +		unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
-> +
-> +		if (requested_freq > freq_steps)
-> +			requested_freq -= freq_steps;
-> +		else
-> +			requested_freq = policy->min;
+On Tue, Nov 15, 2016 at 08:24:55PM +0800, Zhang Rui wrote:
+> On Sat, 2016-11-12 at 20:05 +0800, Leo Yan wrote:
+> > Hi Rui, Eduardo,
+> > 
+> > On Wed, Aug 31, 2016 at 04:50:16PM +0800, Leo Yan wrote:
+> > > 
+> > > The thermal driver is standalone driver which is used to enable
+> > > thermal sensors, so it can be used with any cooling device and
+> > > should not bind with CPU cooling device driver.
+> > > 
+> > > This original patch is suggested by Amit Kucheria; so it's to
+> > > polish the dependency in Kconfig, and remove the dependency with
+> > > CPU_THERMAL.
+> > Could you help review this patch? Or need me resend this patch? Sorry
+> > I have not tracked this patches well before, this is one missed
+> > patch for 96board Hikey.
+> > 
+> as it still applies cleanly, the patch is queued for 4.10.
 
-Need a blank line here.
+Thanks a lot.
 
-> +		policy_dbs->idle_periods = UINT_MAX;
-> +	}
-> +
->  	/* Check for frequency increase */
->  	if (load > dbs_data->up_threshold) {
->  		dbs_info->down_skip = 0;
-> @@ -90,7 +107,7 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->  		if (requested_freq == policy->max)
->  			goto out;
-> 
-> -		requested_freq += get_freq_step(cs_tuners, policy);
-> +		requested_freq += freq_step;
->  		if (requested_freq > policy->max)
->  			requested_freq = policy->max;
-> 
-> @@ -106,14 +123,12 @@ static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
-> 
->  	/* Check for frequency decrease */
->  	if (load < cs_tuners->down_threshold) {
-> -		unsigned int freq_step;
->  		/*
->  		 * if we cannot reduce the frequency anymore, break out early
->  		 */
->  		if (requested_freq == policy->min)
->  			goto out;
-> 
-> -		freq_step = get_freq_step(cs_tuners, policy);
->  		if (requested_freq > freq_step)
->  			requested_freq -= freq_step;
->  		else
-> diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-> index 3729474..9780f50 100644
-> --- a/drivers/cpufreq/cpufreq_governor.c
-> +++ b/drivers/cpufreq/cpufreq_governor.c
-> @@ -117,7 +117,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
->  	struct policy_dbs_info *policy_dbs = policy->governor_data;
->  	struct dbs_data *dbs_data = policy_dbs->dbs_data;
->  	unsigned int ignore_nice = dbs_data->ignore_nice_load;
-> -	unsigned int max_load = 0;
-> +	unsigned int max_load = 0, idle_periods = UINT_MAX;
->  	unsigned int sampling_rate, io_busy, j;
-> 
->  	/*
-> @@ -214,10 +214,17 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
->  			}
->  			j_cdbs->prev_load = load;
->  		}
-
-Here as well..
-
-> +		if (time_elapsed > 2 * sampling_rate) {
-> +			unsigned int periods = time_elapsed / sampling_rate;
-> 
-> +			if (periods < idle_periods)
-> +				idle_periods = periods;
-> +		}
-
-Here too
-
->  		if (load > max_load)
->  			max_load = load;
->  	}
-
-And here..
-
-> +	policy_dbs->idle_periods = idle_periods;
-> +
->  	return max_load;
->  }
->  EXPORT_SYMBOL_GPL(dbs_update);
-> diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-> index 9660cc6..10a3e0a 100644
-> --- a/drivers/cpufreq/cpufreq_governor.h
-> +++ b/drivers/cpufreq/cpufreq_governor.h
-> @@ -97,6 +97,7 @@ struct policy_dbs_info {
->  	struct list_head list;
->  	/* Multiplier for increasing sample delay temporarily. */
->  	unsigned int rate_mult;
-> +	unsigned int idle_periods;
->  	/* Status indicators */
->  	bool is_shared;		/* This object is used by multiple CPUs */
->  	bool work_in_progress;	/* Work is being queued up or in progress */
-
-And after fixing this trivial things, you can add
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+> thanks,
+> rui
+> > Thanks,
+> > Leo Yan
+> > 
+> > > 
+> > > Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> > > ---
+> > >  drivers/thermal/Kconfig | 4 +++-
+> > >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > index 2d702ca..91ebab3 100644
+> > > --- a/drivers/thermal/Kconfig
+> > > +++ b/drivers/thermal/Kconfig
+> > > @@ -177,8 +177,10 @@ config THERMAL_EMULATION
+> > >  
+> > >  config HISI_THERMAL
+> > >  	tristate "Hisilicon thermal driver"
+> > > -	depends on (ARCH_HISI && CPU_THERMAL && OF) ||
+> > > COMPILE_TEST
+> > > +	depends on ARCH_HISI || COMPILE_TEST
+> > >  	depends on HAS_IOMEM
+> > > +	depends on OF
+> > > +	default y
+> > >  	help
+> > >  	  Enable this to plug hisilicon's thermal sensor driver
+> > > into the Linux
+> > >  	  thermal framework. cpufreq is used as the cooling device
+> > > to throttle
