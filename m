@@ -1,10 +1,9 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
 Subject: Re: [PATCH V3 1/9] PM / OPP: Reword binding supporting multiple
  regulators per device
-Date: Wed, 16 Nov 2016 08:38:46 +0530
-Message-ID: <20161116030846.GC17245@vireshk-i7>
-References: <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
- <20161110040440.GA11670@vireshk-i7>
+Date: Wed, 16 Nov 2016 08:48:44 +0530
+Message-ID: <20161116031844.GD17245@vireshk-i7>
+References: <20161110040440.GA11670@vireshk-i7>
  <20161110163659.rk67qrmnrovq2ktf@sirena.org.uk>
  <20161110180940.GD11670@vireshk-i7>
  <20161110225126.GK16026@codeaurora.org>
@@ -13,73 +12,74 @@ References: <20161109145828.p6vvsd5bygkzjcmh@sirena.org.uk>
  <20161115021302.GR5177@codeaurora.org>
  <20161115033151.GG4178@vireshk-i7>
  <20161115185645.GA25626@codeaurora.org>
+ <032e1bb4-c9e9-c588-a8c0-dd019bb64254@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f49.google.com ([74.125.83.49]:33178 "EHLO
+        mail-pg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752938AbcKPDSs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Nov 2016 22:18:48 -0500
+Received: by mail-pg0-f49.google.com with SMTP id 3so73966392pgd.0
+        for <linux-pm@vger.kernel.org>; Tue, 15 Nov 2016 19:18:48 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20161115185645.GA25626-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, d-gerlach-l0cyMroinI0@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <032e1bb4-c9e9-c588-a8c0-dd019bb64254@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh@kernel.org>, Mark Brown <broonie@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, devicetree@vger.kernel.org
 
-On 15-11-16, 10:56, Stephen Boyd wrote:
-> This is also possible from C code though.
-
-Right and this is what this patchset is doing right now. To make it
-clear, the order of regulator names in the call
-dev_pm_opp_set_regulators() is used now to communicate the order in
-which entries are present in the OPP table.
-
-> Or is there some case
-> where it isn't possible if we're sharing the same table with two
-> devices?
-
-Even in that case it will be possible to set regulators separately, so
-that's not a problem.
-
-> I'm lost on when this would ever happen.
-
-It would happen in case of Krait for example, where CPUs manage DVFS
-separately but their tables may all be same.
-
-> It feels like trying to keep the OPP table agnostic of the
-> consuming device and the device's binding is more trouble than
-> it's worth. Especially considering we have opp-shared and *-name
-> now.
-
-Right.
-
-> > - The order in which the supplies need to be programmed. We have all
-> >   agreed to do this in code instead of inferring it from DT and this
-> >   patch series already does that.
+On 15-11-16, 16:11, Dave Gerlach wrote:
+> On 11/15/2016 12:56 PM, Stephen Boyd wrote:
+> >On 11/15, Viresh Kumar wrote:
+> >>There are two important pieces of information we need for multiple
+> >>regulator support:
+> >>- Which regulator in the consumer node corresponds to which entry in
+> >>  the OPP table. As Mark mentioned earlier, DT should be able to get
+> >>  us this.
+> >
+> >This is also possible from C code though. Or is there some case
+> >where it isn't possible if we're sharing the same table with two
+> >devices? I'm lost on when this would ever happen.
+> >
+> >It feels like trying to keep the OPP table agnostic of the
+> >consuming device and the device's binding is more trouble than
+> >it's worth. Especially considering we have opp-shared and *-name
+> >now.
 > 
-> Agreed. Encoding a sequence into DT doesn't sound very feasible.
-> How is this going to be handled though? I don't see any users of
-> the code we're reviewing here, so it's hard to grasp how things
-> will work. It would be really useful if we had some user of the
-> code included in the patch series to get the big picture.
+> I agree with this, I do not like having to pass a list of regulator names to
+> the opp core that I *hope* the device I am controlling has provided.
 
-The TI guys would be doing it soon. The sequence will be handled by
-platform specific set_opp() callbacks now. So, there is nothing in the
-core for that.
+What do you mean by that? Are you saying this from DT's point of view
+or of the code? i.e. Are you saying that you don't like the
+dev_pm_opp_set_regulators() API ?
 
-> > So, are you saying that the way this patchset does it is fine with you
-> > ?
-> 
-> That's just to handle the ordering of operations?
+> The
+> intent seems to be to use the cpufreq-dt driver as is and not pass any
 
-Not just that. The blocking question here is that "Do we want to know
-the sequence in which the entries for multiple regulators are present
-in the OPP nodes from the DT? Or is it fine to handle that in code".
+I would like to kill all regulators code from cpufreq-dt sometime
+soon. All that is left there is making sure we have a regulator in
+place, but I strongly feel OPP core is the right place for doing that
+now.
 
-And AFAIU, you are saying that we better handle that in code as
-handling that in DT is going to be nightmare without a new ugly
-property.
+> cpu-supply anymore so the cpufreq-dt driver has no knowledge of what
+> regulators are present (it operates as it would today on a system with no
+> regulator required). But as is it will move forward regardless of whether or
+> not we actually intended to provide a multi regulator set up or platform
+> set_opp helper, and this probably isn't ideal.
+
+Yes and that's why I am more inclined towards my above comment. We
+shall make it consistent.
+
+> I would think cpufreq-dt/opp
+> core should be have knowledge of what regulators are needed to achieve these
+> opp transitions and make sure everything is in place before moving ahead.
+
+The last patch in my series does what you are looking for:
+
+PM / OPP: Don't assume platform doesn't have regulators
+
+Isn't it ?
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
