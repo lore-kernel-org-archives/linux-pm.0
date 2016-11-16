@@ -1,47 +1,79 @@
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Subject: Re: [PATCH v4 1/3] bus: simple-pm: add support to pm clocks
-Date: Wed, 16 Nov 2016 16:33:06 +0000
-Message-ID: <5c02f6bc-59dc-2c5e-d8e5-0d2e2d1d0fce@linaro.org>
-References: <1479122155-13393-1-git-send-email-srinivas.kandagatla@linaro.org>
- <1479122155-13393-2-git-send-email-srinivas.kandagatla@linaro.org>
- <20161114221447.GH9868@bhelgaas-glaptop.roam.corp.google.com>
- <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com>
- <d61f62d1-7a7e-6d91-d278-0fd922cd77b5@linaro.org>
- <d1bc3663-5824-32f8-a20f-1c5e28466a15@codeaurora.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH RFT] irqchip: mxs: Enable SKIP_SET_WAKE and
+ MASK_ON_SUSPEND
+Date: Wed, 16 Nov 2016 17:40:17 +0100 (CET)
+Message-ID: <385549534.180928.e7d7379f-2688-45de-8e73-a2f866d7cd9c.open-xchange@email.1und1.de>
+References: <1478885208-18821-1-git-send-email-stefan.wahren@i2se.com>
+ <40c3be7e-08c3-955c-746a-6906160e1e0a@rempel-privat.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <d1bc3663-5824-32f8-a20f-1c5e28466a15@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Nayak, Rajendra" <rnayak@codeaurora.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: svarbanov@mm-sol.com, linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, Linux PM list <linux-pm@vger.kernel.org>, "Nayak, Rajendra" <rjendra@qti.qualcomm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.131]:53682 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932180AbcKPQni (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 11:43:38 -0500
+In-Reply-To: <40c3be7e-08c3-955c-746a-6906160e1e0a@rempel-privat.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Oleksij Rempel <linux@rempel-privat.de>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-arm-kernel@lists.infradead.org, Thomas Gleixner <tglx@linutronix.de>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Fabio Estevam <fabio.estevam@nxp.com>, Marc Zyngier <marc.zyngier@arm.com>, =?UTF-8?Q?Lothar_Wa=C3=9Fmann?= <lw@karo-electronics.de>, Shawn Guo <shawnguo@kernel.org>, Marek Vasut <marex@denx.de>
 
-Thanks Rajendra for pointing to the patch
 
-On 16/11/16 15:50, Nayak, Rajendra wrote:
->>
->>
->> Rajendra,
->> Looks like qcom gdsc pm domain provider driver does not handle bus clks
->> along with power-domain, Is this something we should do? Or the bus
->> driver take care of it?
->
-> I did post some patches to support handling of clocks associated with
-> gdscs [1], but it got dropped at that point since there wasn't a
-> real user, besides there were some open issues wrt the handling of
-> !CONFIG_PM cases etc.
-> I will revive and repost those patches again now based on the
-> discussions last time around.
->
-> [1]
-> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-August/362492.html
+> Oleksij Rempel <linux@rempel-privat.de> hat am 12. November 2016 um 20:24
+> geschrieben:
+> 
+> 
+> Am 11.11.2016 um 18:26 schrieb Stefan Wahren:
+> > The ICOLL controller doesn't provide any facility to configure the
+> > wakeup sources. That's the reason why this implementation lacks
+> > the irq_set_wake implementation. But this prevent us from properly
+> > entering power management states like "suspend to idle".
+> > 
+> > So enable the flags IRQCHIP_SKIP_SET_WAKE and IRQCHIP_MASK_ON_SUSPEND
+> > to let the irqchip core allows and handles the power management.
+> > 
+> > This patch has been tested with a MX23 and a MX28 board. Any further
+> > tests especially with ASM9260 would be appreciated.
+> 
+> Hi, I wont be able to test this patch on ASM9260 until March.
+> Please roll it out, so far it looks ok for me.
 
-This patch looks exactly like the one useful in pcie case, i would be 
-interesting to see the final patch on how we handle clocks which are 
-both related and not related to power domain.
+Is this an "Acked-by" ?
 
-thanks,
-srini
+> 
+> 
+> > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> > ---
+> >  drivers/irqchip/irq-mxs.c |    4 ++++
+> >  1 file changed, 4 insertions(+)
+> > 
+> > diff --git a/drivers/irqchip/irq-mxs.c b/drivers/irqchip/irq-mxs.c
+> > index 1730470..05fa9f7 100644
+> > --- a/drivers/irqchip/irq-mxs.c
+> > +++ b/drivers/irqchip/irq-mxs.c
+> > @@ -131,12 +131,16 @@ static void asm9260_unmask_irq(struct irq_data *d)
+> >  	.irq_ack = icoll_ack_irq,
+> >  	.irq_mask = icoll_mask_irq,
+> >  	.irq_unmask = icoll_unmask_irq,
+> > +	.flags = IRQCHIP_MASK_ON_SUSPEND |
+> > +		 IRQCHIP_SKIP_SET_WAKE,
+> >  };
+> >  
+> >  static struct irq_chip asm9260_icoll_chip = {
+> >  	.irq_ack = icoll_ack_irq,
+> >  	.irq_mask = asm9260_mask_irq,
+> >  	.irq_unmask = asm9260_unmask_irq,
+> > +	.flags = IRQCHIP_MASK_ON_SUSPEND |
+> > +		 IRQCHIP_SKIP_SET_WAKE,
+> >  };
+> >  
+> >  asmlinkage void __exception_irq_entry icoll_handle_irq(struct pt_regs
+> > *regs)
+> > 
+> 
+> 
+> -- 
+> Regards,
+> Oleksij
 >
