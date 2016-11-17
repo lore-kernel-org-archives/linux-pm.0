@@ -1,55 +1,66 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH v2] cpufreq: intel_pstate: Generic governors support
-Date: Thu, 17 Nov 2016 09:27:15 -0800
-Message-ID: <000301d240f7$d86604b0$89320e10$@net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] cpufreq: Avoid using inactive policies
+Date: Thu, 17 Nov 2016 16:08:25 +0100
+Message-ID: <2600582.kqN5q7nCq0@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-References: 6pwucKlLvdmHH6pwzcpEkV
-In-Reply-To: 6pwucKlLvdmHH6pwzcpEkV
-Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
-Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45490 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751088AbcKQRr3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 12:47:29 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 2016.11.15 18:35 Rafael J. Wysocki wrote:
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> -> v2:
-> Notice that intel_cpufreq_target() generally can be called on a CPU
-> different from the target one, so it needs to ensure that the right
-> MSR will be written, so update the code accordingly.  This makes
-> the performance and powersave governors work with this driver as
-> expected (at least).
+There are two places in the cpufreq core in which low-level driver
+callbacks may be invoked for an inactive cpufreq policy, which isn't
+guaranteed to work in general.  Both are due to possible races with
+CPU offline.
 
-With V2 I did the exact same tests with the ondemand, powersave,
-and performance governors as I did with the previous versions 
-of this patch. Now everything works fine and as expected.
+First, in cpufreq_get(), the policy may become inactive after
+the check against policy->cpus in cpufreq_cpu_get() and before
+policy->rwsem is acquired, in which case using the policy going
+forward may not be correct.
 
-Thanks.
+Second, an analogous situation is possible in cpufreq_update_policy().
 
-Also from this previous reply to 
-"[RFC/RFT][PATCH] cpufreq: intel_pstate: Generic governors support":
+Avoid using inactive policies by adding policy_is_inactive() checks
+to the code in the above places.
 
-On 2016.11.01 17:14 Srinivas Pandruvada wrote:
-> On Tue, 2016-11-01 at 14:11 -0700, Doug Smythies wrote:
->> On 2016.10.22 17:17 Rafael J. Wysocki wrote: 
->> 
->> It is not clear to me why users that currently use
->> intel_pstate=disable on the kernel command line would benefit from
->> this change.
-> Two reasons I think:
-> - We have a big turbo zone, where current acpi-cpufreq can't select any
-> target frequency even if controllable.
->
-> - We can still target ACPI-CPPC compatible devices in legacy mode and
-> later in non-legacy mode.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-V2 also fixes the test results (I was using clock modulation as
-my test case), that caused me to erroneously think there would
-be no benefit from intel_pstate=passive over intel_pstate=disable
-in cases where the user has to use disable for proper operation.
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -1526,7 +1526,10 @@ unsigned int cpufreq_get(unsigned int cp
+ 
+ 	if (policy) {
+ 		down_read(&policy->rwsem);
+-		ret_freq = __cpufreq_get(policy);
++
++		if (!policy_is_inactive(policy))
++			ret_freq = __cpufreq_get(policy);
++
+ 		up_read(&policy->rwsem);
+ 
+ 		cpufreq_cpu_put(policy);
+@@ -2265,6 +2268,9 @@ int cpufreq_update_policy(unsigned int c
+ 
+ 	down_write(&policy->rwsem);
+ 
++	if (policy_is_inactive(policy))
++		goto unlock;
++
+ 	pr_debug("updating policy for CPU %u\n", cpu);
+ 	memcpy(&new_policy, policy, sizeof(*policy));
+ 	new_policy.min = policy->user_policy.min;
 
-... Doug
