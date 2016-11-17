@@ -1,46 +1,55 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 3/4] devfreq_cooling: let the driver supply the dynamic
- power every time we need it
-Date: Wed, 16 Nov 2016 19:13:58 -0800
-Message-ID: <20161117031357.GA4852@localhost.localdomain>
-References: <20160915144425.5443-1-lukasz.luba@arm.com>
- <20160915144425.5443-4-lukasz.luba@arm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: conservative: Fix comment explaining
+ frequency updates
+Date: Thu, 17 Nov 2016 09:10:59 +0530
+Message-ID: <20161117034059.GB4894@vireshk-i7>
+References: <4986155b-de07-1a4c-186c-71d90b12e75c@semaphore.gr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34657 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753778AbcKQDOD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 22:14:03 -0500
-Received: by mail-pf0-f196.google.com with SMTP id y68so10844216pfb.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2016 19:14:03 -0800 (PST)
+Received: from mail-pg0-f53.google.com ([74.125.83.53]:34625 "EHLO
+        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934109AbcKQDlC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 22:41:02 -0500
+Received: by mail-pg0-f53.google.com with SMTP id x23so83739101pgx.1
+        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2016 19:41:02 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20160915144425.5443-4-lukasz.luba@arm.com>
+In-Reply-To: <4986155b-de07-1a4c-186c-71d90b12e75c@semaphore.gr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukasz Luba <lukasz.luba@arm.com>
-Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, javi.merino@arm.com, orjan.eide@arm.com
+To: Stratos Karafotis <stratosk@semaphore.gr>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, Sep 15, 2016 at 03:44:24PM +0100, Lukasz Luba wrote:
-> The devfreq cooling implementation uses precalculated power table for caching
-> power values for each device state. The power table is used everytime the
-> thermal subsystem asks for the dynamic power, power2state, etc. There is no
-> mechanism to provide the data in real-time from drivers' function registered as
-> 'get_dynamic_power'. The power value can change in runtime, so the driver should
-> choose one of the options (during the registration) what the thermal framework
-> should do:
-> o Use pre-calculated power table
-> o Use direct call to driver's 'get_dynamic_power' and 'power2state'
-> registered functions
+On 16-11-16, 21:27, Stratos Karafotis wrote:
+> The original comment about the frequency increase to maximum is wrong.
 > 
-> With this patch, the driver can choose if the precalculated power table should
-> be used or a direct call to registered functions 'get_dynamic_power' and
-> 'power2state', to get more accurate values.
+> Both increase and decrease happen at steps.
+> 
+> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
+> ---
+>  -> v2
+> Remove a trailing space
+> 
+>  drivers/cpufreq/cpufreq_conservative.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+> index a48b724..7522ec6 100644
+> --- a/drivers/cpufreq/cpufreq_conservative.c
+> +++ b/drivers/cpufreq/cpufreq_conservative.c
+> @@ -55,8 +55,8 @@ static inline unsigned int get_freq_step(struct cs_dbs_tuners *cs_tuners,
+>   * sampling_down_factor, we check, if current idle time is more than 80%
+>   * (default), then we try to decrease frequency
+>   *
+> - * Any frequency increase takes it to the maximum frequency. Frequency reduction
+> - * happens at minimum steps of 5% (default) of maximum frequency
+> + * Frequency updates happen at minimum steps of 5% (default) of maximum
+> + * frequency
+>   */
+>  static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
+>  {
 
-I see this change is doing several minor changes. Can it be split into
-smaller patches?
-- add feature flags. This change is not so clear if this is the best
-  approach either, as it is a feature flag of a single feature.
-- several changes in function signature, removing voltage parameter.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-
+-- 
+viresh
