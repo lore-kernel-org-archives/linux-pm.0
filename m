@@ -1,97 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Avoid a couple of races related to
- cpufreq_cpu_get()
-Date: Thu, 17 Nov 2016 19:27:09 +0530
-Message-ID: <20161117135709.GA3380@vireshk-i7>
-References: <7191200.L2L3Fy8tSf@vostro.rjw.lan>
- <20161117063306.GC4894@vireshk-i7>
- <CAJZ5v0hYfDr0P6zG9GcCr_x_epQihxB8FdzpYH_hOUDSEc18BQ@mail.gmail.com>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH 3/4] devfreq_cooling: let the driver supply the dynamic
+ power every time we need it
+Date: Thu, 17 Nov 2016 15:26:47 +0000
+Message-ID: <20161117152646.GA10620@e105217-lin.cambridge.arm.com>
+References: <20160915144425.5443-1-lukasz.luba@arm.com>
+ <20160915144425.5443-4-lukasz.luba@arm.com>
+ <20161117031357.GA4852@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:36350 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750816AbcKQRtl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 12:49:41 -0500
-Received: by mail-pf0-f175.google.com with SMTP id 189so50310795pfz.3
-        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2016 09:49:41 -0800 (PST)
+Received: from foss.arm.com ([217.140.101.70]:57796 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752897AbcKQRwV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Nov 2016 12:52:21 -0500
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hYfDr0P6zG9GcCr_x_epQihxB8FdzpYH_hOUDSEc18BQ@mail.gmail.com>
+In-Reply-To: <20161117031357.GA4852@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, rui.zhang@intel.com, javi.merino@arm.com, orjan.eide@arm.com
 
-On 17-11-16, 14:35, Rafael J. Wysocki wrote:
-> That unless cpu == policy->cpu and it is going offline I suppose?
+Hi Eduardo,
+
+Thank you for looking at the patchset.
+
+On Wed, Nov 16, 2016 at 07:13:58PM -0800, Eduardo Valentin wrote:
+> On Thu, Sep 15, 2016 at 03:44:24PM +0100, Lukasz Luba wrote:
+> > The devfreq cooling implementation uses precalculated power table for caching
+> > power values for each device state. The power table is used everytime the
+> > thermal subsystem asks for the dynamic power, power2state, etc. There is no
+> > mechanism to provide the data in real-time from drivers' function registered as
+> > 'get_dynamic_power'. The power value can change in runtime, so the driver should
+> > choose one of the options (during the registration) what the thermal framework
+> > should do:
+> > o Use pre-calculated power table
+> > o Use direct call to driver's 'get_dynamic_power' and 'power2state'
+> > registered functions
+> > 
+> > With this patch, the driver can choose if the precalculated power table should
+> > be used or a direct call to registered functions 'get_dynamic_power' and
+> > 'power2state', to get more accurate values.
 > 
-> The scenario is as follows.  cpufreq_get() is invoked for policy->cpu
-> and cpufreq_offline() runs for it at the same time.
+> I see this change is doing several minor changes. Can it be split into
+> smaller patches?
+> - add feature flags. This change is not so clear if this is the best
+>   approach either, as it is a feature flag of a single feature.
+Yes, currently there is only one feature and the feature flag is passed as
+an argument. Maybe a better place for the flag would be in
+struct devfreq_cooling_power.
+The flag could potentially be reused is future.
+> - several changes in function signature, removing voltage parameter.
 > 
-> cpufreq_get() calls cpufreq_cpu_get() which does the policy->cpus
-> check which passes, because cpufreq_offline() hasn't updated the mask
-> yet.  Now cpufreq_offline() updates the mask and proceeds with
-> cpufreq_driver->stop_cpu() and cpufreq_driver->exit().  Then, it drops
-> the lock.
-> 
-> cpufreq_get() acquires the lock.  The policy is still there, but it
-> may be inactive at this point.  Still, cpufreq_get() doesn't check
-> that, but invokes __cpufreq_get() unconditionally, which calls
-> cpufreq_driver->get(policy->cpu).  Is this still guaranteed to work?
-> I don't think so.
-> 
-> It looks like a policy_is_inactive() check should be there in
-> cpufreq_get() at least.
+I will split the commit and sent a v2 version.
 
-Okay, trying to do any operations on the device for an inactive policy is
-absolutely wrong. I agree.
-
-> >> +
-> >>               up_read(&policy->rwsem);
-> >>
-> >>               cpufreq_cpu_put(policy);
-> >> @@ -2142,6 +2154,11 @@ int cpufreq_get_policy(struct cpufreq_po
-> >>       if (!cpu_policy)
-> >>               return -EINVAL;
-> >>
-> >> +     if (!cpumask_test_cpu(cpu, policy->cpus)) {
-> >> +             cpufreq_cpu_put(cpu_policy);
-> >> +             return -EINVAL;
-> >> +     }
-> >> +
-> >
-> > We are just copying the policy here, so it should be always safe.
-> 
-> So the check is not necessary at all?
-
-Right.
-
-> Say the CPU is the only one in the policy and it is going offline.
-> 
-> cpufreq_update_policy() is invoked at the same time and calls
-> cpufreq_cpu_get() which checks policy->cpus and the test passes,
-> because cpufreq_offline() hasn't updated the mask yet.  The
-> cpufreq_offline() updates the mask and the policy becomes inactive,
-> but there are no checks for that going forward, unless Im overlooking
-> something again.
-
-Same here. I agree.
-
-> > Also, even if we have some real cases for cpufreq_cpu_get_raw(), which
-> > needs to get fixed, I believe that we can move the check to
-> > cpufreq_cpu_get() and not to every caller.
-> 
-> I disagree, but for now I'm going to leave cpufreq_cpu_get() alone.
-> To me, the policy->cpus check in cpufreq_cpu_get_raw() is just
-> confusing (it isn't even needed by some callers of that function),
-> which is the reason why I'd prefer to get rid of it.
-
-Okay.
-
-> I'll add policy_is_inactive() checks to cpufreq_get() and
-> cpufreq_update_policy() at this point.
-
-That would be much better I think.
-
--- 
-viresh
+Regards,
+Lukasz
