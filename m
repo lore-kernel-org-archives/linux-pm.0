@@ -1,56 +1,44 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC][PATCH] cpufreq: intel_pstate: Support of energy
- performance hint using HWP
-Date: Thu, 17 Nov 2016 11:31:32 -0800
-Message-ID: <1479411092.6544.129.camel@linux.intel.com>
-References: <1479250783-74336-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1479250783-74336-2-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <20161117064954.GD4894@vireshk-i7>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] thermal/powerclamp: add back module device table
+Date: Thu, 17 Nov 2016 11:42:16 -0800
+Message-ID: <20161117114216.3fa995b4@jacob-builder>
+References: <1479150525-13225-1-git-send-email-jacob.jun.pan@linux.intel.com>
+        <20161115070332.GA26176@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:55923 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751161AbcKQTbd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Nov 2016 14:31:33 -0500
-In-Reply-To: <20161117064954.GD4894@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20161115070332.GA26176@kroah.com>
+Sender: stable-owner@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, stable@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Rafael Wysocki <rafael.j.wysocki@intel.com>, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, morten.rasmussen@arm.com, Juri.Lelli@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Viresh,
-On Thu, 2016-11-17 at 12:19 +0530, Viresh Kumar wrote:
-> Hi Srinivas,
-> 
-> I don't think other platforms need it for now and so it is fine to
-> add these to the driver itself.
-Good to know. In this case I will proceed with change only local to
-intel_pstate.
+On Tue, 15 Nov 2016 08:03:32 +0100
+Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
 
-> 
-> On 15-11-16, 14:59, Srinivas Pandruvada wrote:
+> On Mon, Nov 14, 2016 at 11:08:45AM -0800, Jacob Pan wrote:
+> > Commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 replaced module
+> > cpu id table with a cpu feature check, which is logically correct.
+> > But we need the module device table to allow module auto loading.
 > > 
-> > +static ssize_t show_energy_performance_available_preferences(
+> > Fixes:3105f234 thermal/powerclamp: correct cpu support check
+> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+> > ---
+> >  drivers/thermal/intel_powerclamp.c | 9 ++++++++-
+> >  1 file changed, 8 insertions(+), 1 deletion(-)  
 > 
-> Maybe a personal preference, but I would have broken the line after
-> ssize_t instead of where you have done it.
-I can change that.
+> <formletter>
+> 
+> This is not the correct way to submit patches for inclusion in the
+> stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
+> for how to do this properly.
+> 
+> </formletter>
 
-> 
-> > 
-> > +				struct cpufreq_policy *policy,
-> > char *buf)
-> > +{
-> > +static struct freq_attr *hwp_cpufreq_attrs[] = {
-> > +	&energy_performance_preference,
-> > +	&energy_performance_available_preferences,
-> > +	NULL,
-> > +};
-> 
-> What about adding these to intel_pstate_attr_group instead ?
-Sure.
+Good to know, thanks. Rui will take care of it this time. Per Rui
+"I will apply patch 1 and queue up for next -rc and 4.8 stable."
 
 Thanks,
-Srinivas
+
+Jacob
