@@ -1,50 +1,142 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Subject: Re: S3 resume regression [1cf4f629d9d2 ("cpu/hotplug: Move online
- calls to hotplugged cpu")]
-Date: Thu, 17 Nov 2016 19:14:56 +0200
-Message-ID: <20161117171456.GZ31595@intel.com>
-References: <alpine.DEB.2.20.1610272035180.4913@nanos>
- <20161027192006.GF4617@intel.com>
- <alpine.DEB.2.20.1610272122510.4913@nanos>
- <20161027203745.GH4617@intel.com>
- <alpine.DEB.2.20.1610272238390.4913@nanos>
- <20161028155603.GI4617@intel.com>
- <alpine.DEB.2.20.1610282049500.5053@nanos>
- <20161101204737.GB4617@intel.com>
- <20161109035418.GA18246@shbuild888>
- <CA+55aFyOSHrP0--+dNB0qcoCumTP4KUd6g=2Jt3WUw_W6o+aRg@mail.gmail.com>
+From: Stanimir Varbanov <stanimir.varbanov@linaro.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Thu, 17 Nov 2016 17:39:07 +0200
+Message-ID: <4bafcd71-edc9-9ddd-d8c4-093e4d9c58db@linaro.org>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <57F5E986.40704@codeaurora.org>
+ <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
+ <57F60EBE.8010509@codeaurora.org>
+ <91b96909-64bc-db72-6da5-556272565091@nvidia.com>
+ <5819AA42.5060603@codeaurora.org>
+ <CAPDyKFpdRzDotofr+0F6gfuWg4hHikEfmxS2aM2D+hmq_JpHRA@mail.gmail.com>
+ <582D1696.7000601@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFyOSHrP0--+dNB0qcoCumTP4KUd6g=2Jt3WUw_W6o+aRg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Feng Tang <feng.tang@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Feng Tang <feng.79.tang@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, Rik van Riel <riel@redhat.com>, "Srivatsa S. Bhat" <srivatsa@mit.edu>, Peter Zijlstra <peterz@infradead.org>, Arjan van de Ven <arjan@linux.intel.com>, Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@redhat.com>, Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>, Paul McKenney <paulmck@linux.vnet.ibm.com>, Paul Turner <pjt@google.com>, Linux Kernel Mailing List <linux-kernel@vger.k>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <582D1696.7000601@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rajendra Nayak <rnayak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Sricharan <sricharan@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Nov 08, 2016 at 10:08:37PM -0800, Linus Torvalds wrote:
-> On Tue, Nov 8, 2016 at 7:54 PM, Feng Tang <feng.tang@intel.com> wrote:
-> > On Wed, Nov 02, 2016 at 04:47:37AM +0800, Ville Syrjälä wrote:
-> >>
-> >> I left the thing running for the weekend and it failed 26 out of 16057
-> >> times with the 25ms timeout. Looks like it takes ~5 minutes to resume
-> >> when it fails, but eventually it does come back.
-> >
-> > Just came back from a travel. Yes, the 5 minutes delay may be due to the
-> > expiration of the HPET timer, counting from 0 to 0xffffffff for a 13M
-> > frequencey HPET takes about 300 seconds. After resume, it seems nobody
-> > arms it so my old patch forces to arm one event.
-> 
-> Ville, what happens if you disable HPET? Can you force the TSC with
-> "clocksource=tsc" or "tsc=reliable". Does resume work reliably then?
-> 
-> Or is this one of the CPU's where tsc just doesn't work?
+Hi,
 
-tsc=reliable allows use of the tsc it seems. Doesn't seem to help
-with resuming though.
+On 11/17/2016 04:31 AM, Rajendra Nayak wrote:
+> 
+> 
+> On 11/16/2016 06:41 PM, Ulf Hansson wrote:
+>> On 2 November 2016 at 09:56, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>>> Hi Jon,
+>>>
+>>> On 10/31/2016 04:14 PM, Jon Hunter wrote:
+>>>> Hi Rajendra,
+>>>>
+>>>> On 06/10/16 09:43, Rajendra Nayak wrote:
+>>>>>
+>>>>> On 10/06/2016 01:55 PM, Jon Hunter wrote:
+>>>>>> Hi Rajendra,
+>>>>>>
+>>>>>> On 06/10/16 07:04, Rajendra Nayak wrote:
+>>>>>>>
+>>>>>>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
+>>>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>>>>>>> controllers) is partitioned across 3 PM domains which are:
+>>>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>>>>>>> - XUSBB: Device controller
+>>>>>>>> - XUSBC: Host controller
+>>>>>>>>
+>>>>>>>> These power domains are not nested and can be powered-up and down
+>>>>>>>> independently of one another. In practice different scenarios require
+>>>>>>>> different combinations of the power domains, for example:
+>>>>>>>> - Superspeed host: XUSBA and XUSBC
+>>>>>>>> - Superspeed device: XUSBA and XUSBB
+>>>>>>>>
+>>>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>>>>>>> domains under the XUSBA, superspeed may not always be used/required and
+>>>>>>>> so this would keep it on unnecessarily.
+>>>>>>>
+>>>>>>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
+>>>>>>> for a device (which then will *all* be powered on/off together) or does
+>>>>>>> it also provide for more granular control of these powerdomains?
+>>>>>>
+>>>>>> Only to specify multiple power-domains for a device and not the later.
+>>>>>>
+>>>>>>> The above statement seems to suggest you would need more granular control
+>>>>>>> of these powerdomains (like keeping XUSBA off in case superspeed it not
+>>>>>>> needed) but I can't seem to figure out how you achieve it with this series.
+>>>>>>
+>>>>>> It is an interesting point but today we have always kept the superspeed
+>>>>>> partition on if the device is configured for superspeed regardless of
+>>>>>> what is actually connected. I will check to see if the h/w would allow
+>>>>>> us to turn it off if a non-superspeed device is in use but I did not
+>>>>>> think so.
+>>>>>>
+>>>>>> Do you have any interesting use-cases that would make use of this or
+>>>>>> require other such enhancements?
+>>>>>
+>>>>> We do have atleast a few devices which need to control multiple power domains,
+>>>>> I will need to look more to see if any of them can be controlled individually.
+>>>>> The downstream code we have models these (powerdomains) as regulators and
+>>>>> the drivers hence have individual control on each (specifying multiple -supply's
+>>>>> in DT)
+>>>>
+>>>> Were you able to check to see if you need to have individual control for the power-domains?
+>>>
+>>> I had a look at the Video decode block (for msm8996), which seems to be powered using 3 different
+>>> powerdomains, mainly venus, venus_core0 and venus_core1. The venus PD powers the ARM core
+>>> which runs the firmware, while the venus_core0 and venus_core1 power the encode/decode logic,
+>>> so for things like firmware image loading you ideally need only venus PD to be ON, but during
+>>> an encode/decode operation you would need all 3 to be ON.
+>>
+>> Isn't there a scenario when encoding *or* decoding happens, not always both?
+>>
+>> If so, doesn't that mean you may have venus + venus_core0 powered and
+>> in some other case venus + venus_core1 powered?
+>>
+>>> The downstream driver turns *all* of them together, and does not control them individually.
+>>> For upstream, the way we have it working (the driver is not merged) is by having venus be the parent
+>>> of venus_core0 and venus_core0 as the parent of venus_core1, and having venus_core1 mentioned as
+>>> the powerdomain for the video decode block in DT.
+>>>
+>>> So in summary, there is still no need to control them individually, but given there is no way to
+>>> specify more than one powerdomain for a given device, we are ending up hooking up some
+>>> parent/child relations in the powerdomain code.
+>>>
+>>
+>> I think a better solution would be to model the video decode block as
+>> three struct devices.
+>>
+>> 1) The main ARM device, attached to the venus PM domain.
+>> 2) The encoder device, having the main device assigned as its parent
+>> and being attached to the venus_core0 PM domain.
+>> 3) The decoder device, having the main device assigned as its parent
+>> and being attached to the venus_core1 PM domain.
+>>
+>> Then there is no need to specific a  PM domain hierarchy (which seems
+>> to be the issue here), but instead only the parent/child relationships
+>> between the struct devices.
+>>
+>> Moreover, as you deploy runtime PM for these devices, you can more
+>> easily distinguish which device you need to operate on
+>> (pm_runtime_get|put*()) depending on what particular operations you
+>> want to do (encode, decode etc).
+> 
+> Stan, is this something you think is possible to do, given the way the
+> vidc driver is designed? This is mainly for 8996 which has 3 different
+> powerdomains associated with the video decode block.
+
+Even if it is possible it will be difficult for many reasons.
+
+On the other side, current design (firmware) doesn't expect kernel
+driver to have control over venus_core0 and venus_core1 pm domains. The
+firmware manages those two pm domains internally and the only thing
+which we need to do is to prepare those domains (and follow the power up
+sequence) to be in hardware control mode. So I think the best we could
+do is to model those two power domains as genpd subdomains of the parent
+venus pm domain.
 
 -- 
-Ville Syrjälä
-Intel OTC
+regards,
+Stan
