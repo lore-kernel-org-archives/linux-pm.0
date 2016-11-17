@@ -1,134 +1,148 @@
-From: Stratos Karafotis <stratosk@semaphore.gr>
-Subject: [RFC][PATCH] cpufreq: governor: Change the calculation of load for
- deferred updates
-Date: Thu, 17 Nov 2016 21:54:14 +0200
-Message-ID: <4f7f7d9e-4b6b-a9f8-bf54-a6d99bd952c6@semaphore.gr>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Thu, 17 Nov 2016 21:21:05 +0100
+Message-ID: <CAPDyKFp5Ay1dN2UQauD7vHxPQP+kghviAAduhpHO7QAmH-1UiA@mail.gmail.com>
+References: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.semaphore.gr ([138.201.185.188]:56450 "EHLO
-        mail.semaphore.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752030AbcKQTyW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 14:54:22 -0500
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:35848 "EHLO
+        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752302AbcKQUVI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 15:21:08 -0500
+Received: by mail-wm0-f41.google.com with SMTP id g23so334887350wme.1
+        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2016 12:21:07 -0800 (PST)
+In-Reply-To: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Ulf Hansson <ulf.hansson@linaro.org>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>
 
-Commit 18b46abd0009 ("cpufreq: governor: Be friendly towards latency-
-sensitive bursty workloads"), introduced a method to copy the calculated
-load from the previous sampling period in case of a deferred timer
-(update).
+On 13 October 2016 at 16:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> When the pm_runtime_force_suspend|resume() helpers were invented, we still
+> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+>
+> To make sure these helpers worked for all combinations and without
+> introducing too much of complexity, the device was always resumed in
+> pm_runtime_force_resume().
+>
+> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+> unset, we needed to resume the device as the subsystem/driver couldn't
+> rely on using runtime PM to do it.
+>
+> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+> removed this combination, of using CONFIG_PM_SLEEP without the earlier
+> CONFIG_PM_RUNTIME.
+>
+> For this reason we can now rely on the subsystem/driver to use runtime PM
+> to resume the device, instead of forcing that to be done in all cases. In
+> other words, let's defer the runtime resume to a later point when it's
+> actually needed.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-This helps on bursty workloads but generally coping the load for the
-previous measurement could be arbitrary, because of the possibly different
-nature of the new workload.
+Rafael, this one is ready to be queued. Unless there are other objections.
 
-Instead of coping the load from the previous period we can calculate the
-load considering that between the two samples, the busy time is comparable
-to one sampling period. Thus:
+The problems that was reported by Geert for this change, has been
+taken care of. Those are fixed by the patch for the smsc911x ethernet
+driver [1], which you queued a while ago.
+I realized that wasn't obvious unless one digested the conversations in detail.
 
- busy = time_elapsed - idle_time
+Geert, perhaps you can confirm by providing a tested-by tag?
 
-and
+Kind regards
+Uffe
 
- load = 100 * busy / sampling_rate;
+[1]
+https://www.spinics.net/lists/netdev/msg401339.html
 
-Also, remove the 'unlikely' hint because it seems that a deferred update
-is a very common case on most modern systems.
-
-Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
----
- drivers/cpufreq/cpufreq_governor.c | 37 +++++++++++++++----------------------
- drivers/cpufreq/cpufreq_governor.h |  7 +------
- 2 files changed, 16 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 0196467..8675180 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -163,25 +163,17 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * calls, so the previous load value can be used then.
- 			 */
- 			load = j_cdbs->prev_load;
--		} else if (unlikely(time_elapsed > 2 * sampling_rate &&
--				    j_cdbs->prev_load)) {
-+		} else if (time_elapsed > 2 * sampling_rate) {
-+			unsigned int busy, periods;
-+
- 			/*
- 			 * If the CPU had gone completely idle and a task has
- 			 * just woken up on this CPU now, it would be unfair to
- 			 * calculate 'load' the usual way for this elapsed
- 			 * time-window, because it would show near-zero load,
- 			 * irrespective of how CPU intensive that task actually
--			 * was. This is undesirable for latency-sensitive bursty
--			 * workloads.
--			 *
--			 * To avoid this, reuse the 'load' from the previous
--			 * time-window and give this task a chance to start with
--			 * a reasonably high CPU frequency. However, that
--			 * shouldn't be over-done, lest we get stuck at a high
--			 * load (high frequency) for too long, even when the
--			 * current system load has actually dropped down, so
--			 * clear prev_load to guarantee that the load will be
--			 * computed again next time.
-+			 * was. This is undesirable, so we can safely consider
-+			 * that the CPU is busy only in the last sampling period
- 			 *
- 			 * Detecting this situation is easy: the governor's
- 			 * utilization update handler would not have run during
-@@ -189,8 +181,16 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			 * 'time_elapsed' (as compared to the sampling rate)
- 			 * indicates this scenario.
- 			 */
--			load = j_cdbs->prev_load;
--			j_cdbs->prev_load = 0;
-+			busy = time_elapsed - idle_time;
-+			if (busy > sampling_rate)
-+				load = 100;
-+			else
-+				load = 100 * busy / sampling_rate;
-+			j_cdbs->prev_load = load;
-+
-+			periods = time_elapsed / sampling_rate;
-+			if (periods < idle_periods)
-+				idle_periods = periods;
- 		} else {
- 			if (time_elapsed >= idle_time) {
- 				load = 100 * (time_elapsed - idle_time) / time_elapsed;
-@@ -215,13 +215,6 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 			j_cdbs->prev_load = load;
- 		}
-
--		if (time_elapsed > 2 * sampling_rate) {
--			unsigned int periods = time_elapsed / sampling_rate;
--
--			if (periods < idle_periods)
--				idle_periods = periods;
--		}
--
- 		if (load > max_load)
- 			max_load = load;
- 	}
-diff --git a/drivers/cpufreq/cpufreq_governor.h b/drivers/cpufreq/cpufreq_governor.h
-index f5717ca..e068a31 100644
---- a/drivers/cpufreq/cpufreq_governor.h
-+++ b/drivers/cpufreq/cpufreq_governor.h
-@@ -114,12 +114,7 @@ struct cpu_dbs_info {
- 	u64 prev_cpu_idle;
- 	u64 prev_update_time;
- 	u64 prev_cpu_nice;
--	/*
--	 * Used to keep track of load in the previous interval. However, when
--	 * explicitly set to zero, it is used as a flag to ensure that we copy
--	 * the previous load to the current interval only once, upon the first
--	 * wake-up from idle.
--	 */
-+	/* Used to keep track of load in the previous interval. */
- 	unsigned int prev_load;
- 	struct update_util_data update_util;
- 	struct policy_dbs_info *policy_dbs;
--- 
-2.7.4
+> ---
+>
+> Changes in v3:
+>         - Updated to take care of parent-child relations.
+>         - Improved comment in the code and updated text in a function header
+>         to better describe the changes.
+>
+> This patch has earlier been sent standalone, but also as a part of series. In
+> the end it turned out the solution needed some improvement to take care of
+> parent-child relations, as reported by Geert [1].
+>
+> Geert, I would really appreciate if you could help out testing to make sure the
+> reported issue is fixed.
+>
+> [1]
+> https://patches.linaro.org/patch/67940/
+>
+> ---
+>
+>  drivers/base/power/runtime.c | 35 ++++++++++++++++++++++++++++++-----
+>  1 file changed, 30 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> index e097d35..f662267 100644
+> --- a/drivers/base/power/runtime.c
+> +++ b/drivers/base/power/runtime.c
+> @@ -1478,6 +1478,16 @@ int pm_runtime_force_suspend(struct device *dev)
+>         if (ret)
+>                 goto err;
+>
+> +       /*
+> +        * Increase the runtime PM usage count for the device's parent, in case
+> +        * when we find the device being used when system suspend was invoked.
+> +        * This informs pm_runtime_force_resume() to resume the parent
+> +        * immediately, which is needed to be able to resume its children,
+> +        * when not deferring the resume to be managed via runtime PM.
+> +        */
+> +       if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
+> +               pm_runtime_get_noresume(dev->parent);
+> +
+>         pm_runtime_set_suspended(dev);
+>         return 0;
+>  err:
+> @@ -1487,16 +1497,20 @@ err:
+>  EXPORT_SYMBOL_GPL(pm_runtime_force_suspend);
+>
+>  /**
+> - * pm_runtime_force_resume - Force a device into resume state.
+> + * pm_runtime_force_resume - Force a device into resume state if needed.
+>   * @dev: Device to resume.
+>   *
+>   * Prior invoking this function we expect the user to have brought the device
+>   * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
+> - * those actions and brings the device into full power. We update the runtime PM
+> - * status and re-enables runtime PM.
+> + * those actions and brings the device into full power, if it is expected to be
+> + * used on system resume. To distinguish that, we check whether the runtime PM
+> + * usage count is greater than 1 (the PM core increases the usage count in the
+> + * system PM prepare phase), as that indicates a real user (such as a subsystem,
+> + * driver, userspace, etc.) is using it. If that is the case, the device is
+> + * expected to be used on system resume as well, so then we resume it. In the
+> + * other case, we defer the resume to be managed via runtime PM.
+>   *
+> - * Typically this function may be invoked from a system resume callback to make
+> - * sure the device is put into full power state.
+> + * Typically this function may be invoked from a system resume callback.
+>   */
+>  int pm_runtime_force_resume(struct device *dev)
+>  {
+> @@ -1513,6 +1527,17 @@ int pm_runtime_force_resume(struct device *dev)
+>         if (!pm_runtime_status_suspended(dev))
+>                 goto out;
+>
+> +       /*
+> +        * Decrease the parent's runtime PM usage count, if we increased it
+> +        * during system suspend in pm_runtime_force_suspend().
+> +       */
+> +       if (atomic_read(&dev->power.usage_count) > 1) {
+> +               if (dev->parent)
+> +                       pm_runtime_put_noidle(dev->parent);
+> +       } else {
+> +               goto out;
+> +       }
+> +
+>         ret = pm_runtime_set_active(dev);
+>         if (ret)
+>                 goto out;
+> --
+> 1.9.1
+>
