@@ -1,138 +1,136 @@
-From: <piwet_sokolow@wp.pl>
-Subject: 33014 linux-pm
-Date: Thu, 17 Nov 2016 02:26:51 -0000
-Message-ID: <147934961146.31198.15757348023209189335@mediaworksit.net>
+From: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that require
+ multiple domains
+Date: Thu, 17 Nov 2016 08:01:50 +0530
+Message-ID: <582D1696.7000601@codeaurora.org>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com> <57F5E986.40704@codeaurora.org> <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com> <57F60EBE.8010509@codeaurora.org> <91b96909-64bc-db72-6da5-556272565091@nvidia.com> <5819AA42.5060603@codeaurora.org> <CAPDyKFpdRzDotofr+0F6gfuWg4hHikEfmxS2aM2D+hmq_JpHRA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="bill_41318237286268_linux-pm.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from free-164-14.mediaworksit.net ([178.254.164.14]:41198 "HELO
-        mediaworksit.net" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with SMTP id S1752694AbcKQC05 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 21:26:57 -0500
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFpdRzDotofr+0F6gfuWg4hHikEfmxS2aM2D+hmq_JpHRA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sricharan <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-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
-AAA=
+
+
+On 11/16/2016 06:41 PM, Ulf Hansson wrote:
+> On 2 November 2016 at 09:56, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
+>> Hi Jon,
+>>
+>> On 10/31/2016 04:14 PM, Jon Hunter wrote:
+>>> Hi Rajendra,
+>>>
+>>> On 06/10/16 09:43, Rajendra Nayak wrote:
+>>>>
+>>>> On 10/06/2016 01:55 PM, Jon Hunter wrote:
+>>>>> Hi Rajendra,
+>>>>>
+>>>>> On 06/10/16 07:04, Rajendra Nayak wrote:
+>>>>>>
+>>>>>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
+>>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>>>>>> controllers) is partitioned across 3 PM domains which are:
+>>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>>>>>> - XUSBB: Device controller
+>>>>>>> - XUSBC: Host controller
+>>>>>>>
+>>>>>>> These power domains are not nested and can be powered-up and down
+>>>>>>> independently of one another. In practice different scenarios require
+>>>>>>> different combinations of the power domains, for example:
+>>>>>>> - Superspeed host: XUSBA and XUSBC
+>>>>>>> - Superspeed device: XUSBA and XUSBB
+>>>>>>>
+>>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>>>>>> domains under the XUSBA, superspeed may not always be used/required and
+>>>>>>> so this would keep it on unnecessarily.
+>>>>>>
+>>>>>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
+>>>>>> for a device (which then will *all* be powered on/off together) or does
+>>>>>> it also provide for more granular control of these powerdomains?
+>>>>>
+>>>>> Only to specify multiple power-domains for a device and not the later.
+>>>>>
+>>>>>> The above statement seems to suggest you would need more granular control
+>>>>>> of these powerdomains (like keeping XUSBA off in case superspeed it not
+>>>>>> needed) but I can't seem to figure out how you achieve it with this series.
+>>>>>
+>>>>> It is an interesting point but today we have always kept the superspeed
+>>>>> partition on if the device is configured for superspeed regardless of
+>>>>> what is actually connected. I will check to see if the h/w would allow
+>>>>> us to turn it off if a non-superspeed device is in use but I did not
+>>>>> think so.
+>>>>>
+>>>>> Do you have any interesting use-cases that would make use of this or
+>>>>> require other such enhancements?
+>>>>
+>>>> We do have atleast a few devices which need to control multiple power domains,
+>>>> I will need to look more to see if any of them can be controlled individually.
+>>>> The downstream code we have models these (powerdomains) as regulators and
+>>>> the drivers hence have individual control on each (specifying multiple -supply's
+>>>> in DT)
+>>>
+>>> Were you able to check to see if you need to have individual control for the power-domains?
+>>
+>> I had a look at the Video decode block (for msm8996), which seems to be powered using 3 different
+>> powerdomains, mainly venus, venus_core0 and venus_core1. The venus PD powers the ARM core
+>> which runs the firmware, while the venus_core0 and venus_core1 power the encode/decode logic,
+>> so for things like firmware image loading you ideally need only venus PD to be ON, but during
+>> an encode/decode operation you would need all 3 to be ON.
+> 
+> Isn't there a scenario when encoding *or* decoding happens, not always both?
+> 
+> If so, doesn't that mean you may have venus + venus_core0 powered and
+> in some other case venus + venus_core1 powered?
+> 
+>> The downstream driver turns *all* of them together, and does not control them individually.
+>> For upstream, the way we have it working (the driver is not merged) is by having venus be the parent
+>> of venus_core0 and venus_core0 as the parent of venus_core1, and having venus_core1 mentioned as
+>> the powerdomain for the video decode block in DT.
+>>
+>> So in summary, there is still no need to control them individually, but given there is no way to
+>> specify more than one powerdomain for a given device, we are ending up hooking up some
+>> parent/child relations in the powerdomain code.
+>>
+> 
+> I think a better solution would be to model the video decode block as
+> three struct devices.
+> 
+> 1) The main ARM device, attached to the venus PM domain.
+> 2) The encoder device, having the main device assigned as its parent
+> and being attached to the venus_core0 PM domain.
+> 3) The decoder device, having the main device assigned as its parent
+> and being attached to the venus_core1 PM domain.
+> 
+> Then there is no need to specific a  PM domain hierarchy (which seems
+> to be the issue here), but instead only the parent/child relationships
+> between the struct devices.
+> 
+> Moreover, as you deploy runtime PM for these devices, you can more
+> easily distinguish which device you need to operate on
+> (pm_runtime_get|put*()) depending on what particular operations you
+> want to do (encode, decode etc).
+
+Stan, is this something you think is possible to do, given the way the
+vidc driver is designed? This is mainly for 8996 which has 3 different
+powerdomains associated with the video decode block.
+
+regards,
+Rajendra
+
+> 
+> Would that work?
+> 
+> Kind regards
+> Uffe
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
