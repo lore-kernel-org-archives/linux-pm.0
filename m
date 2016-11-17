@@ -1,235 +1,90 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: Avoid a couple of races related to
- cpufreq_cpu_get()
-Date: Thu, 17 Nov 2016 12:03:06 +0530
-Message-ID: <20161117063306.GC4894@vireshk-i7>
-References: <7191200.L2L3Fy8tSf@vostro.rjw.lan>
+From: NeilBrown <neilb@suse.com>
+Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
+Date: Thu, 17 Nov 2016 17:46:13 +1100
+Message-ID: <87fumqhadm.fsf@notabene.neil.brown.name>
+References: <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com> <87a8dls7yn.fsf@notabene.neil.brown.name> <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com> <871sytqrqh.fsf@notabene.neil.brown.name> <CAMz4kuJV5wiCpWJF=-YpTf1sjNrOqjc53iRYmGoEQepqtrfUdA@mail.gmail.com> <87a8dbni27.fsf@notabene.neil.brown.name> <CAMz4ku+qY4U7=v5nEBEdPTjwki8j10jYbQuokz785NEy5SzYmg@mail.gmail.com> <87eg2ek7ye.fsf@notabene.neil.brown.name> <20161114120430.hpnetdedyofhlkad@sirena.org.uk> <87mvh1iw32.fsf@notabene.neil.brown.name> <20161116161605.smif6kf3mdhdhyhd@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:33398 "EHLO
-        mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S940520AbcKQGdK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 01:33:10 -0500
-Received: by mail-pf0-f171.google.com with SMTP id d2so47663471pfd.0
-        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2016 22:33:10 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <7191200.L2L3Fy8tSf@vostro.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161116161605.smif6kf3mdhdhyhd@sirena.org.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Hi Rafael,
+--=-=-=
+Content-Type: text/plain
 
-I still have few concerns that I would like to share ..
+On Thu, Nov 17 2016, Mark Brown wrote:
 
-On 16-11-16, 03:38, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The cpumask_test_cpu() check in cpufreq_cpu_get_raw() is sort of
-> pointless, because it may be racy with respect to CPU online/offline
-> which sets/clears the policy->cpus mask.
-> 
-> Some of the races resulting from that are benign (worst case, stale
-> values may be returned from some sysfs attribute for a relatively
-> short period), but some of them may lead to invocations of low-level
-> cpufreq driver callbacks for offline CPUs which is not guaranteed to
-> work in general.
-> 
-> For this reason, move the cpumask_test_cpu() check away from
-> cpufreq_cpu_get_raw() and reserve it for the ondemand governor,
-> which calls it for online CPUs only and with CPU online/offline
-> locked anyway, and make the other callers of it use the per-CPU
-> variable whose value is returned by it directly.
-> 
-> With that, add the cpumask_test_cpu() check to cpufreq_generic_get()
-> to preserve its current behavior for offline CPUs and to the callers
-> of cpufreq_cpu_get().  There, in the cases when the races might
-> lead to invocations of driver callbacks for offline CPUs, put it
-> under policy->rwsem.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> -> v2:
->  * Modify the changelog to make it better explain what's going on.
->  * Add the missing cpumask_test_cpu() check to cpufreq_offline().
-> 
-> ---
->  drivers/cpufreq/cpufreq.c |   52 ++++++++++++++++++++++++++++++++--------------
->  1 file changed, 37 insertions(+), 15 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -65,6 +65,12 @@ static struct cpufreq_driver *cpufreq_dr
->  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
->  static DEFINE_RWLOCK(cpufreq_driver_lock);
->  
-> +struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
-> +{
-> +	return per_cpu(cpufreq_cpu_data, cpu);
-> +}
-> +EXPORT_SYMBOL_GPL(cpufreq_cpu_get_raw);
-> +
->  /* Flag to suspend/resume CPUFreq governors */
->  static bool cpufreq_suspended;
->  
-> @@ -192,19 +198,12 @@ int cpufreq_generic_init(struct cpufreq_
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_generic_init);
->  
-> -struct cpufreq_policy *cpufreq_cpu_get_raw(unsigned int cpu)
-> -{
-> -	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
-> -
-> -	return policy && cpumask_test_cpu(cpu, policy->cpus) ? policy : NULL;
-> -}
-> -EXPORT_SYMBOL_GPL(cpufreq_cpu_get_raw);
-> -
->  unsigned int cpufreq_generic_get(unsigned int cpu)
->  {
-> -	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
-> +	struct cpufreq_policy *policy = per_cpu(cpufreq_cpu_data, cpu);
->  
-> -	if (!policy || IS_ERR(policy->clk)) {
-> +	if (!policy || !cpumask_test_cpu(cpu, policy->cpus) ||
-> +	    IS_ERR(policy->clk)) {
->  		pr_err("%s: No %s associated to cpu: %d\n",
->  		       __func__, policy ? "clk" : "policy", cpu);
->  		return 0;
-> @@ -240,7 +239,7 @@ struct cpufreq_policy *cpufreq_cpu_get(u
->  
->  	if (cpufreq_driver) {
->  		/* get the CPU */
-> -		policy = cpufreq_cpu_get_raw(cpu);
-> +		policy = per_cpu(cpufreq_cpu_data, cpu);
+> [ Unknown signature status ]
+> On Tue, Nov 15, 2016 at 08:35:13AM +1100, NeilBrown wrote:
+>> On Mon, Nov 14 2016, Mark Brown wrote:
+>
+>> > Conflating the two seems like the whole point here.  We're looking for
+>> > something that sits between the power supply code and the USB code and
+>> > tells the power supply code what it's allowed to do which is the result
+>> > of a combination of physical cable detection and USB protocol.  It seems
+>> > reasonable that extcon drivers ought to be part of this but it doesn't
+>> > seem like they are the whole story.
+>
+>> I don't think "between the power supply code and the USB code" is where
+>> this thing sits. I think it sits inside the power-supply driver.
+>> We already have extcon which sits between the phy and the power_supply
+>> code, and the usb_notifier which sits between the USB code and the
+>> power supply code.  We don't need another go-between.
+>
+> ...
+>
+>> correct determinations and set the current limits itself.  All this
+>> could be done entirely internally, without the help of any new
+>> subsystem.
+>> Do you agree?
+>
+>> Clearly doing it that way would result in lots of code duplication and
+>> would mean that each driver probably gets its own private set of bugs,
+>> but it would be possible.  Just undesirable.
+>
+> I think this is the key here - the fact that it's technically possible
+> to implement doesn't really matter if it's sufficiently fiddly and non
+> obvious that nobody is actually joining everything up (bits are done
+> intermittently but not as a whole as far as I can see).
+>
+>> So yes, it makes perfect to provide common code which handles the
+>> registrations, and captures the events, and translates the different
+>> events into current levels and feeds those back to the driver.  This
+>> isn't some new subsystem, this is just a resource, provided by a
+>> library, that power drivers can allocate and initialize if the want to.
+>
+> To me that's pretty much what's being done here, the code just happens
+> to sit in USB instead but fundamentally it's just a blob of helper code,
+> you could replace the notifier with a callback if that's the big concern
+> here.
 
-There are many other users of cpufreq_cpu_get() outside of cpufreq
-core which aren't updated in this patch.
+It is a lot more than "just a blob of helper code".  It duplicates
+existing infrastructure instead of fixing and using the
+infrastructure.... but I've said all this before.  Repeatedly.
 
->  		if (policy)
->  			kobject_get(&policy->kobj);
->  	}
-> @@ -1328,13 +1327,19 @@ static int cpufreq_offline(unsigned int
->  
->  	pr_debug("%s: unregistering CPU %u\n", __func__, cpu);
->  
-> -	policy = cpufreq_cpu_get_raw(cpu);
-> +	policy = per_cpu(cpufreq_cpu_data, cpu);
->  	if (!policy) {
->  		pr_debug("%s: No cpu_data found\n", __func__);
->  		return 0;
->  	}
->  
->  	down_write(&policy->rwsem);
-> +
-> +	if (!cpumask_test_cpu(cpu, policy->cpus)) {
-> +		pr_debug("%s: CPU %u is offline\n", __func__, cpu);
-> +		goto unlock;
-> +	}
-> +
+NeilBrown
 
-Is it really important for this change to be present within the lock?
-I am not 100% sure.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-cpufreq_offline() can get called via two paths:
-- CPU hot-unplug
-- cpufreq driver getting unregistered
+-----BEGIN PGP SIGNATURE-----
 
-The second path calls get_online_cpus() and so these two shall never
-race against each other. And so it shall not be possible that
-policy->cpus is getting cleared for 'cpu' while this routine is
-running.
-
-Though I agree that this check is required for sure, but perhaps
-without the lock. Which also means that cpufreq_cpu_get_raw() wasn't
-required to get updated considering this case.
-
->  	if (has_target())
->  		cpufreq_stop_governor(policy);
->  
-> @@ -1455,7 +1460,9 @@ unsigned int cpufreq_quick_get(unsigned
->  
->  	policy = cpufreq_cpu_get(cpu);
->  	if (policy) {
-> -		ret_freq = policy->cur;
-> +		if (cpumask_test_cpu(cpu, policy->cpus))
-> +			ret_freq = policy->cur;
-> +
->  		cpufreq_cpu_put(policy);
->  	}
->  
-> @@ -1475,7 +1482,9 @@ unsigned int cpufreq_quick_get_max(unsig
->  	unsigned int ret_freq = 0;
->  
->  	if (policy) {
-> -		ret_freq = policy->max;
-> +		if (cpumask_test_cpu(cpu, policy->cpus))
-> +			ret_freq = policy->max;
-> +
->  		cpufreq_cpu_put(policy);
->  	}
->  
-> @@ -1526,7 +1535,10 @@ unsigned int cpufreq_get(unsigned int cp
->  
->  	if (policy) {
->  		down_read(&policy->rwsem);
-> -		ret_freq = __cpufreq_get(policy);
-> +
-> +		if (cpumask_test_cpu(cpu, policy->cpus))
-> +			ret_freq = __cpufreq_get(policy);
-
-As __cpufreq_get() receives 'policy' as a parameter and not 'cpu',
-its always safe to call this if the policy isn't going away.
-
-i.e. cpumask_test_cpu() check can be done without down_read() here as
-well.
-
-> +
->  		up_read(&policy->rwsem);
->  
->  		cpufreq_cpu_put(policy);
-> @@ -2142,6 +2154,11 @@ int cpufreq_get_policy(struct cpufreq_po
->  	if (!cpu_policy)
->  		return -EINVAL;
->  
-> +	if (!cpumask_test_cpu(cpu, policy->cpus)) {
-> +		cpufreq_cpu_put(cpu_policy);
-> +		return -EINVAL;
-> +	}
-> +
-
-We are just copying the policy here, so it should be always safe.
-
->  	memcpy(policy, cpu_policy, sizeof(*policy));
->  
->  	cpufreq_cpu_put(cpu_policy);
-> @@ -2265,6 +2282,11 @@ int cpufreq_update_policy(unsigned int c
->  
->  	down_write(&policy->rwsem);
->  
-> +	if (!cpumask_test_cpu(cpu, policy->cpus)) {
-> +		ret = -ENODEV;
-> +		goto unlock;
-> +	}
-> +
-
-Here as well the test isn't required to be within the lock, as we are
-working on the policy and not CPU and at least one CPU is guaranteed
-to be online for now.
-
-For the summary, I would like to understand a bit more on which
-particular code segment are we worried about, which will behave
-improperly without this change.
-
-Also, even if we have some real cases for cpufreq_cpu_get_raw(), which
-needs to get fixed, I believe that we can move the check to
-cpufreq_cpu_get() and not to every caller.
-
-Sorry for the noise :(
-
--- 
-viresh
+iQIcBAEBCAAGBQJYLVI1AAoJEDnsnt1WYoG5SzkP/22Eren5Q5/LrXnq7SQSNzlR
+xls1UJ4v1EIuKARj47ut6sXpAxqh83IlbIolbs6xLKYGERGQCXU/PjxPquFkykXs
+gedZ0nF807z8MdnZfxyl1X6kUmEMpCRD6zSKqW/iUMupU/u/obuHv75VORSm2dhV
+dQV94cTigGOaJVuzV+2GAQtZypMr44poPFhTDAPC4AX55RUej/eFbxdIbhIqvYib
+g9rxrQ+LjFPI+MHTFbr8KRaN26AuqSbyIrPEncejVAQGuPzGljq8H3VebqwdGUxS
+gDIfA2GkIcqymgRh/wx1flIKKPMKu86bR4WsZiDZn0+v5t7OyYQwaBwPdOFx2vjw
+2ejvUFJGB9x112oliuXP1w9AuU/0n7dy5XtBE8KGLRRg4mR5M+HQEX4kl77lYX4/
+xgFDSS3+b9dGu540geN+dOzkl3RhJfoSuPFWa8vvUkJR8sRHps2legA4hb5Xv+8O
+n42mgnLM9GVHu1eDPs4Uj/btfzEcztrfMKMeD4oBD6SUwUWoHAPqnmULTa63hW3p
+n4XAqrXAKPEPVx96fLBL+TzwXZ+AUgKQdF5lWlLU++W2CIbnT5OqbM4ev/Swl2M/
+q8VyGTHqztc7RXVTwqsT+A7O7c3uRCSC9WdP32FV3sU7uPCzxzn3lKmqyxW4GnOs
++Jg5VEIY6Ws3npnE+Eyy
+=cTCu
+-----END PGP SIGNATURE-----
+--=-=-=--
