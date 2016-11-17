@@ -1,66 +1,97 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: Avoid using inactive policies
-Date: Thu, 17 Nov 2016 16:08:25 +0100
-Message-ID: <2600582.kqN5q7nCq0@vostro.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: Avoid a couple of races related to
+ cpufreq_cpu_get()
+Date: Thu, 17 Nov 2016 19:27:09 +0530
+Message-ID: <20161117135709.GA3380@vireshk-i7>
+References: <7191200.L2L3Fy8tSf@vostro.rjw.lan>
+ <20161117063306.GC4894@vireshk-i7>
+ <CAJZ5v0hYfDr0P6zG9GcCr_x_epQihxB8FdzpYH_hOUDSEc18BQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45490 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751088AbcKQRr3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 12:47:29 -0500
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:36350 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750816AbcKQRtl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 12:49:41 -0500
+Received: by mail-pf0-f175.google.com with SMTP id 189so50310795pfz.3
+        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2016 09:49:41 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hYfDr0P6zG9GcCr_x_epQihxB8FdzpYH_hOUDSEc18BQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 17-11-16, 14:35, Rafael J. Wysocki wrote:
+> That unless cpu == policy->cpu and it is going offline I suppose?
+> 
+> The scenario is as follows.  cpufreq_get() is invoked for policy->cpu
+> and cpufreq_offline() runs for it at the same time.
+> 
+> cpufreq_get() calls cpufreq_cpu_get() which does the policy->cpus
+> check which passes, because cpufreq_offline() hasn't updated the mask
+> yet.  Now cpufreq_offline() updates the mask and proceeds with
+> cpufreq_driver->stop_cpu() and cpufreq_driver->exit().  Then, it drops
+> the lock.
+> 
+> cpufreq_get() acquires the lock.  The policy is still there, but it
+> may be inactive at this point.  Still, cpufreq_get() doesn't check
+> that, but invokes __cpufreq_get() unconditionally, which calls
+> cpufreq_driver->get(policy->cpu).  Is this still guaranteed to work?
+> I don't think so.
+> 
+> It looks like a policy_is_inactive() check should be there in
+> cpufreq_get() at least.
 
-There are two places in the cpufreq core in which low-level driver
-callbacks may be invoked for an inactive cpufreq policy, which isn't
-guaranteed to work in general.  Both are due to possible races with
-CPU offline.
+Okay, trying to do any operations on the device for an inactive policy is
+absolutely wrong. I agree.
 
-First, in cpufreq_get(), the policy may become inactive after
-the check against policy->cpus in cpufreq_cpu_get() and before
-policy->rwsem is acquired, in which case using the policy going
-forward may not be correct.
+> >> +
+> >>               up_read(&policy->rwsem);
+> >>
+> >>               cpufreq_cpu_put(policy);
+> >> @@ -2142,6 +2154,11 @@ int cpufreq_get_policy(struct cpufreq_po
+> >>       if (!cpu_policy)
+> >>               return -EINVAL;
+> >>
+> >> +     if (!cpumask_test_cpu(cpu, policy->cpus)) {
+> >> +             cpufreq_cpu_put(cpu_policy);
+> >> +             return -EINVAL;
+> >> +     }
+> >> +
+> >
+> > We are just copying the policy here, so it should be always safe.
+> 
+> So the check is not necessary at all?
 
-Second, an analogous situation is possible in cpufreq_update_policy().
+Right.
 
-Avoid using inactive policies by adding policy_is_inactive() checks
-to the code in the above places.
+> Say the CPU is the only one in the policy and it is going offline.
+> 
+> cpufreq_update_policy() is invoked at the same time and calls
+> cpufreq_cpu_get() which checks policy->cpus and the test passes,
+> because cpufreq_offline() hasn't updated the mask yet.  The
+> cpufreq_offline() updates the mask and the policy becomes inactive,
+> but there are no checks for that going forward, unless Im overlooking
+> something again.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Same here. I agree.
 
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1526,7 +1526,10 @@ unsigned int cpufreq_get(unsigned int cp
- 
- 	if (policy) {
- 		down_read(&policy->rwsem);
--		ret_freq = __cpufreq_get(policy);
-+
-+		if (!policy_is_inactive(policy))
-+			ret_freq = __cpufreq_get(policy);
-+
- 		up_read(&policy->rwsem);
- 
- 		cpufreq_cpu_put(policy);
-@@ -2265,6 +2268,9 @@ int cpufreq_update_policy(unsigned int c
- 
- 	down_write(&policy->rwsem);
- 
-+	if (policy_is_inactive(policy))
-+		goto unlock;
-+
- 	pr_debug("updating policy for CPU %u\n", cpu);
- 	memcpy(&new_policy, policy, sizeof(*policy));
- 	new_policy.min = policy->user_policy.min;
+> > Also, even if we have some real cases for cpufreq_cpu_get_raw(), which
+> > needs to get fixed, I believe that we can move the check to
+> > cpufreq_cpu_get() and not to every caller.
+> 
+> I disagree, but for now I'm going to leave cpufreq_cpu_get() alone.
+> To me, the policy->cpus check in cpufreq_cpu_get_raw() is just
+> confusing (it isn't even needed by some callers of that function),
+> which is the reason why I'd prefer to get rid of it.
 
+Okay.
+
+> I'll add policy_is_inactive() checks to cpufreq_get() and
+> cpufreq_update_policy() at this point.
+
+That would be much better I think.
+
+-- 
+viresh
