@@ -1,509 +1,95 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: brcmstb-cpufreq: CPUfreq driver for older
- Broadcom STB SoCs
-Date: Thu, 17 Nov 2016 14:32:19 +0530
-Message-ID: <20161117090219.GE4894@vireshk-i7>
-References: <20161110235601.71395-1-code@mmayer.net>
+From: Martin Sperl <kernel@martin.sperl.org>
+Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835
+ soc
+Date: Thu, 17 Nov 2016 10:51:33 +0100
+Message-ID: <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org>
+References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
+ <1478081906-12009-3-git-send-email-kernel@martin.sperl.org>
+ <20161117021107.GA2647@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161110235601.71395-1-code@mmayer.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:59890
+        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933903AbcKQJtW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 04:49:22 -0500
+In-Reply-To: <20161117021107.GA2647@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-On 10-11-16, 15:56, Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
-> 
-> This CPUfreq driver provides basic frequency scaling for older Broadcom
-> STB SoCs that do not use AVS firmware with DVFS support. There is no
-> support for voltage scaling.
-> 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> ---
-> 
-> This patch is based on Rafael's "bleeding-edge" branch.
-> 
->  drivers/cpufreq/Kconfig.arm       |  12 ++
->  drivers/cpufreq/Makefile          |   1 +
->  drivers/cpufreq/brcmstb-cpufreq.c | 407 ++++++++++++++++++++++++++++++++++++++
->  3 files changed, 420 insertions(+)
->  create mode 100644 drivers/cpufreq/brcmstb-cpufreq.c
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 920c469..36422af 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -33,6 +33,18 @@ config ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
->  
->  	  If in doubt, say N.
->  
-> +config ARM_BRCMSTB_CPUFREQ
-> +	tristate "Broadcom STB CPUfreq driver"
-> +	depends on ARCH_BRCMSTB || COMPILE_TEST
-> +	default y
-> +	help
-> +	  Some Broadcom SoCs offer multiple operating frequencies that CPUfreq
-> +	  can take advantage of to improve energy efficiency.
-> +
-> +	  Say Y, if you have a supported Broadcom SoC. If your Broadcom SoC
-> +	  has AVS firmware with support for frequency and voltage scaling,
-> +	  say N here and enable ARM_BRCMSTB_AVS_CPUFREQ instead.
-> +
->  config ARM_DT_BL_CPUFREQ
->  	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
->  	depends on ARM_BIG_LITTLE_CPUFREQ && OF
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 1e46c39..23700aa 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -52,6 +52,7 @@ obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
->  obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
->  
->  obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
-> +obj-$(CONFIG_ARM_BRCMSTB_CPUFREQ)	+= brcmstb-cpufreq.o
->  obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
->  obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
->  obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
-> diff --git a/drivers/cpufreq/brcmstb-cpufreq.c b/drivers/cpufreq/brcmstb-cpufreq.c
-> new file mode 100644
-> index 0000000..419638a
-> --- /dev/null
-> +++ b/drivers/cpufreq/brcmstb-cpufreq.c
-> @@ -0,0 +1,407 @@
-> +/*
-> + * CPU frequency scaling for Broadcom set top box SoCs
-> + *
-> + * Copyright (c) 2016 Broadcom
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation version 2.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-> + * kind, whether express or implied; without even the implied warranty
-> + * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/clk-provider.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/module.h>
-> +#include <linux/of_address.h>
-> +#include <linux/platform_device.h>
-> +
-> +#define BRCMSTB_CPUFREQ_PREFIX	"brcmstb"
-> +#define BRCMSTB_CPUFREQ_NAME	BRCMSTB_CPUFREQ_PREFIX "-cpufreq"
-> +
-> +/* We search for these compatible strings. */
-> +#define BRCMSTB_DT_CPU_CLK_CTRL	"brcm,brcmstb-cpu-clk-div"
-> +#define BRCMSTB_DT_MEMC_DDR	"brcm,brcmstb-memc-ddr"
-> +#define BRCM_AVS_CPU_DATA	"brcm,avs-cpu-data-mem"
-> +
-> +/* We also need a few clocks in device tree. These are node names. */
-> +#define BRCMSTB_CLK_MDIV_CH0	"cpu_mdiv_ch0"
-> +#define BRCMSTB_CLK_NDIV_INT	"cpu_ndiv_int"
-> +#define BRCMSTB_CLK_SW_SCB	"sw_scb"
-> +
-> +#define BRCMSTB_TBL_SAFE_MODE	BIT(0)
-> +#define BRCMSTB_REG_SAFE_MODE	BIT(4)
-> +
-> +/* This is as low as we'll go in the frequency table. */
-> +#define MIN_CPU_FREQ		(100 * 1000)	/* in kHz */
-> +
-> +struct private_data {
-> +	void __iomem *cpu_clk_ctrl_reg;
-> +	struct device *dev;
-> +};
-> +
-> +/* Count the active memory controllers in the system. */
-> +static int count_memory_controllers(void)
-> +{
-> +	struct device_node *np = NULL;
-> +	int i = 0;
-> +
-> +	do {
-> +		np = of_find_compatible_node(np, NULL, BRCMSTB_DT_MEMC_DDR);
-> +		if (of_device_is_available(np))
-> +			i++;
-> +		of_node_put(np);
-> +	} while (np);
-> +
-> +	return i;
-> +}
-> +
-> +static int get_frequencies(const struct cpufreq_policy *policy,
-> +			   unsigned int *vco_freq, unsigned int *cpu_freq,
-> +			   unsigned int *scb_freq)
-> +{
-> +	struct clk *cpu_ndiv_int, *sw_scb;
-> +
-> +	cpu_ndiv_int = __clk_lookup(BRCMSTB_CLK_NDIV_INT);
-> +	if (!cpu_ndiv_int)
-> +		return -ENODEV;
-> +
-> +	sw_scb = __clk_lookup(BRCMSTB_CLK_SW_SCB);
-> +	if (!sw_scb)
-> +		return -ENODEV;
-> +
-> +	/* return frequencies in kHz */
-> +	*vco_freq = clk_get_rate(cpu_ndiv_int) / 1000;
-> +	*cpu_freq = clk_get_rate(policy->clk) / 1000;
-> +	*scb_freq = clk_get_rate(sw_scb) / 1000;
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * Safe mode: When set, the CPU's bus unit is being throttled. This is done to
-> + * avoid buffer overflows when the CPU-to-bus-clock ratio is low.
-> + *
-> + * The formula as to what constitutes a low CPU-to-bus-clock ratio takes into
-> + * account the number of memory controllers active in the system and the SCB
-> + * frequency. More memory controllers means safe mode is required starting at
-> + * higher frequencies.
-> + *
-> + * For 1 memory controller, cpu_freq/scb_freq must be greater than or equal to
-> + * 2 to not require safe mode.
-> + *
-> + * For 2 or 3 memory controllers, cpu_freq/scb_freq must be greater than or
-> + * equal 3 to not require safe mode.
-> + */
-> +
-> +static int freq_requires_safe_mode(unsigned int cpu_freq, unsigned int scb_freq,
-> +				   int num_memc)
-> +{
-> +	unsigned int safe_ratio;
-> +
-> +	switch (num_memc) {
-> +	case 1:
-> +		safe_ratio = 2;
-> +		break;
-> +	case 2:
-> +	case 3:
-> +		safe_ratio = 3;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	return ((cpu_freq / scb_freq) < safe_ratio);
-> +}
-> +
-> +static struct cpufreq_frequency_table *
-> +brcmstb_get_freq_table(const struct cpufreq_policy *policy)
-> +{
-> +	unsigned int cpu_freq, vco_freq, scb_freq, mdiv, init_mdiv, f;
-> +	struct cpufreq_frequency_table *table;
-> +	struct private_data *priv;
-> +	int num_memc, ret;
-> +	unsigned int i = 0;
-> +
-> +	ret = get_frequencies(policy, &vco_freq, &cpu_freq, &scb_freq);
-> +	if (ret)
-> +		return ERR_PTR(ret);
-> +
-> +	priv = policy->driver_data;
-> +	num_memc = count_memory_controllers();
-> +
-> +	/* Calculate the initial mdiv value. We'll increment mdiv from here. */
-> +	init_mdiv = vco_freq / cpu_freq;
-> +
-> +	/* Count how many frequencies we'll offer. */
-> +	f = cpu_freq;
-> +	for (mdiv = init_mdiv; f >= MIN_CPU_FREQ; mdiv++, f = vco_freq / mdiv) {
-> +		/* We only want to use "whole" MHz. */
-> +		if ((f % 1000) == 0)
-> +			i++;
-> +	}
-> +
-> +	table = devm_kzalloc(priv->dev, (i + 1) * sizeof(*table), GFP_KERNEL);
-> +	if (!table)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	/* Now, fill the table. */
-> +	f = cpu_freq;
-> +	i = 0;
-> +	for (mdiv = init_mdiv; f >= MIN_CPU_FREQ; mdiv++, f = vco_freq / mdiv) {
-> +		if ((f % 1000) == 0) {
-> +			table[i].frequency = f;
-> +			ret = freq_requires_safe_mode(f, scb_freq, num_memc);
-> +			if (ret < 0)
-> +				return ERR_PTR(ret);
-> +			if (ret > 0)
-> +				table[i].driver_data |= BRCMSTB_TBL_SAFE_MODE;
-> +			i++;
-> +		}
-> +	}
-> +	table[i].frequency = CPUFREQ_TABLE_END;
-> +
-> +	return table;
-> +}
-> +
-> +static unsigned int brcmstb_cpufreq_get(unsigned int cpu)
-> +{
-> +	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-> +
-> +	return clk_get_rate(policy->clk) / 1000;
-> +}
 
-Rather use cpufreq_generic_get().
 
-> +
-> +static int brcmstb_target_index(struct cpufreq_policy *policy,
-> +				unsigned int index)
-> +{
-> +	struct cpufreq_frequency_table *entry;
-> +	struct private_data *priv;
-> +	int ret, safe_mode_needed;
-> +	u32 reg;
-> +
-> +	priv = policy->driver_data;
-> +	entry = &policy->freq_table[index];
-> +	safe_mode_needed = entry->driver_data & BRCMSTB_TBL_SAFE_MODE;
-> +
-> +	reg = readl(priv->cpu_clk_ctrl_reg);
-> +	if (safe_mode_needed && !(reg & BRCMSTB_REG_SAFE_MODE)) {
-> +		reg |= BRCMSTB_REG_SAFE_MODE;
-> +		writel(reg, priv->cpu_clk_ctrl_reg);
-> +	}
-> +	ret = clk_set_rate(policy->clk, entry->frequency * 1000);
-> +	if (!ret && !safe_mode_needed && (reg & BRCMSTB_REG_SAFE_MODE)) {
-> +		reg &= ~BRCMSTB_REG_SAFE_MODE;
-> +		writel(reg, priv->cpu_clk_ctrl_reg);
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +/*
-> + * All initialization code that we only want to execute once goes here. Setup
-> + * code that can be re-tried on every core (if it failed before) can go into
-> + * brcm_avs_cpufreq_init().
-> + */
-> +static int brcmstb_prepare_init(struct platform_device *pdev)
-> +{
-> +	struct private_data *priv;
-> +	struct resource *res;
-> +	struct device *dev;
-> +
-> +	/*
-> +	 * If the BRCM STB AVS CPUfreq driver is supported, we bail, so that
-> +	 * the more modern approach implementing DVFS in firmware can be used.
-> +	 */
-> +	if (IS_ENABLED(CONFIG_ARM_BRCM_AVS_CPUFREQ)) {
-> +		struct device_node *np;
-> +
-> +		np = of_find_compatible_node(NULL, NULL, BRCM_AVS_CPU_DATA);
-> +		if (np) {
-> +			of_node_put(np);
-> +			return -ENXIO;
-> +		}
-> +	}
-> +
-> +	dev = &pdev->dev;
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	priv->cpu_clk_ctrl_reg = devm_ioremap_resource(dev, res);
-> +	if (IS_ERR(priv->cpu_clk_ctrl_reg)) {
-> +		dev_err(dev, "couldn't map DT entry %s\n",
-> +			BRCMSTB_DT_CPU_CLK_CTRL);
-> +		return -ENODEV;
-> +	}
-> +
-> +	priv->dev = dev;
-> +	platform_set_drvdata(pdev, priv);
-> +
-> +	return 0;
-> +}
-> +
-> +static int brcmstb_cpu_init(struct cpufreq_policy *policy)
-> +{
-> +	struct cpufreq_frequency_table *freq_table;
-> +	struct platform_device *pdev;
-> +	struct private_data *priv;
-> +	struct clk *cpu_mdiv_ch0;
-> +	struct device *dev;
-> +	int ret;
-> +
-> +	cpu_mdiv_ch0 = __clk_lookup(BRCMSTB_CLK_MDIV_CH0);
-> +	if (!cpu_mdiv_ch0)
-> +		return -ENODEV;
-> +
-> +	pdev = cpufreq_get_driver_data();
-> +	priv = platform_get_drvdata(pdev);
-> +	dev = &pdev->dev;
-> +
-> +	policy->clk = cpu_mdiv_ch0;
-> +	policy->driver_data = priv;
-> +
-> +	freq_table = brcmstb_get_freq_table(policy);
-> +	if (IS_ERR(freq_table)) {
-> +		ret = PTR_ERR(freq_table);
-> +		dev_err(dev, "Couldn't determine frequency table (%d).\n", ret);
-> +		if (ret == -EINVAL)
-> +			dev_emerg(dev,
-> +				"Invalid number of memory controllers -- %d!\n",
-> +				count_memory_controllers());
-> +		return ret;
-> +	}
-> +
-> +	ret = cpufreq_table_validate_and_show(policy, freq_table);
-> +	if (ret) {
-> +		dev_err(dev, "invalid frequency table: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-> +	dev_info(dev, "registered\n");
-> +
-> +	/* All cores share the same clock and thus the same policy. */
-> +	cpumask_setall(policy->cpus);
+On 17.11.2016 03:11, Eduardo Valentin wrote:
+> Hey Martin,
+>
+> Very sorry for the late feedback. Not so sure if this one got queued
+> already or not. Anyways, just minor questions as follows:
+>
+> On Wed, Nov 02, 2016 at 10:18:22AM +0000, kernel@martin.sperl.org wrote:
+>> From: Martin Sperl <kernel@martin.sperl.org>
+>>
+>> Add basic thermal driver for bcm2835 SOC.
+>>
+>> This driver currently relies on the firmware setting up the
+>> tsense HW block and does not set it up itself.
+>>
+>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+>> Acked-by: Eric Anholt <eric@anholt.net>
+>> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+>>
+...
+>> +static int bcm2835_thermal_adc2temp(
+>> +	const struct bcm2835_thermal_info *info, u32 adc)
+>> +{
+>> +	return info->offset + (adc * info->slope);
+>
+> Any specific reason we cannot use thermal_zone_params->slope and
+> thermal_zone_params->offset?
 
-You can use cpufreq_generic_init() instead of above two calls.
+You could - the patch was just rebased to 4.9 and those slope and
+offset just got merged during this cycle.
 
-> +
-> +	/* We start at the first entry in the frequency table. */
-> +	policy->cur = freq_table[0].frequency;
+Do we really need to modify it - the patch has been around since 4.6.
 
-No, you can't update policy->cur by yourself. Its for the core to
-handle it. Though check if you want to use
-CPUFREQ_NEED_INITIAL_FREQ_CHECK.
+>> +
+>> +static int bcm2835_thermal_get_trip_temp(
+>> +	struct thermal_zone_device *tz, int trip, int *temp)
+>> +{
+>> +	struct bcm2835_thermal_data *data = tz->devdata;
+>> +	u32 val = readl(data->regs + BCM2835_TS_TSENSCTL);
+>> +
+>> +	/* get the THOLD bits */
+>> +	val &= BCM2835_TS_TSENSCTL_THOLD_MASK;
+>> +	val >>= BCM2835_TS_TSENSCTL_THOLD_SHIFT;
+>> +
+>> +	/* if it is zero then use the info value */
+>> +	if (val)
+>
+> Is this a read only register or is this driver supposed to program it?
+> In which scenario it would be 0? Can this be added as comments?
 
-> +
-> +	return 0;
-> +}
-> +
-> +/* Shows the number of memory controllers. */
-> +static ssize_t show_brcmstb_num_memc(struct cpufreq_policy *policy, char *buf)
-> +{
-> +	return sprintf(buf, "%u\n", count_memory_controllers());
-> +}
-> +
-> +/* Shows vco_freq, cpu_freq, and scb_freq in kHz. */
-> +static ssize_t show_brcmstb_freqs(struct cpufreq_policy *policy, char *buf)
-> +{
-> +	unsigned int vco_freq, cpu_freq, scb_freq;
-> +	int ret;
-> +
-> +	ret = get_frequencies(policy, &vco_freq, &cpu_freq, &scb_freq);
-> +	if (ret)
-> +		return sprintf(buf, "<unknown>\n");
-> +
-> +	return sprintf(buf, "%u %u %u\n", vco_freq, cpu_freq, scb_freq);
-> +}
-> +
-> +/* Shows the lowest frequency (in kHz) that can be used without "safe mode". */
-> +static ssize_t show_brcmstb_safe_freq(struct cpufreq_policy *policy, char *buf)
-> +{
-> +	unsigned int vco_freq, cpu_freq, scb_freq;
-> +	unsigned int safe_freq = 0;
-> +	int i, num_memc, ret;
-> +
-> +	ret = get_frequencies(policy, &vco_freq, &cpu_freq, &scb_freq);
-> +	if (ret)
-> +		return sprintf(buf, "<unknown>\n");
-> +
-> +	num_memc = count_memory_controllers();
-> +
-> +	for (i = 0; policy->freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+It is RW, but the Firmware typically sets up the thermal device with the 
+correct values already - this is just a fallback.
 
-You can use cpufreq_for_each_valid_entry() here.
+>> +static int bcm2835_thermal_get_temp(struct thermal_zone_device *tz,
+>> +				    int *temp)
+>> +{
+>> +	struct bcm2835_thermal_data *data = tz->devdata;
+>> +	u32 val = readl(data->regs + BCM2835_TS_TSENSSTAT);
+>> +
+>> +	if (!(val & BCM2835_TS_TSENSSTAT_VALID))
+>
+> What cases you would get the valid bit not set? Do you need to wait for
+> the conversion to finish?
 
-> +		ret = freq_requires_safe_mode(policy->freq_table[i].frequency,
-> +					      scb_freq, num_memc);
-> +		if (ret < 0)
-> +			return sprintf(buf, "<error> (%d)\n", ret);
-> +		if (ret == 0)
-> +			safe_freq = policy->freq_table[i].frequency;
+I guess: if you have just enabled the HW-block (which the FW does much
+in advance) and start to read the value immediately (before the first 
+sample period has finished), then this will not be valid.
 
-You don't want to break from the loop here ?
+So do you need another version of the patchset that uses that new API?
 
-> +	}
-> +
-> +	return sprintf(buf, "%u\n", safe_freq);
-> +}
-> +
-> +cpufreq_freq_attr_ro(brcmstb_num_memc);
-> +cpufreq_freq_attr_ro(brcmstb_freqs);
-> +cpufreq_freq_attr_ro(brcmstb_safe_freq);
-> +
-> +static struct freq_attr *brcmstb_cpufreq_attr[] = {
-> +	&cpufreq_freq_attr_scaling_available_freqs,
-> +	&brcmstb_num_memc,
-> +	&brcmstb_freqs,
-> +	&brcmstb_safe_freq,
-> +	NULL
-> +};
-> +
-> +static struct cpufreq_driver brcmstb_driver = {
-> +	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-> +	.verify		= cpufreq_generic_frequency_table_verify,
-> +	.target_index	= brcmstb_target_index,
-> +	.get		= brcmstb_cpufreq_get,
-> +	.init		= brcmstb_cpu_init,
-
-What about .exit ?
-
-> +	.attr		= brcmstb_cpufreq_attr,
-> +	.name		= BRCMSTB_CPUFREQ_PREFIX,
-> +};
-> +
-> +static int brcmstb_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	int ret;
-> +
-> +	ret = brcmstb_prepare_init(pdev);
-> +	if (ret)
-> +		return ret;
-> +
-> +	brcmstb_driver.driver_data = pdev;
-> +
-> +	return cpufreq_register_driver(&brcmstb_driver);
-> +}
-> +
-> +static int brcmstb_cpufreq_remove(struct platform_device *pdev)
-> +{
-> +	int ret;
-> +
-> +	ret = cpufreq_unregister_driver(&brcmstb_driver);
-> +	if (ret)
-> +		return ret;
-> +
-> +	platform_set_drvdata(pdev, NULL);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id brcmstb_cpufreq_match[] = {
-> +	{ .compatible = BRCMSTB_DT_CPU_CLK_CTRL },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(platform, brcmstb_cpufreq_match);
-> +
-> +static struct platform_driver brcmstb_cpufreq_platdrv = {
-
-How is the device getting created for this? Be aware the DT can't have
-a separate node for cpufreq-device ..
-
-> +	.driver = {
-> +		.name	= BRCMSTB_CPUFREQ_NAME,
-> +		.of_match_table = brcmstb_cpufreq_match,
-> +	},
-> +	.probe		= brcmstb_cpufreq_probe,
-> +	.remove		= brcmstb_cpufreq_remove,
-> +};
-> +module_platform_driver(brcmstb_cpufreq_platdrv);
-> +
-> +MODULE_AUTHOR("Markus Mayer <mmayer@broadcom.com>");
-> +MODULE_DESCRIPTION("CPUfreq driver for Broadcom STB SoCs");
-> +MODULE_LICENSE("GPL");
-
--- 
-viresh
+Thanks,
+	Martin
