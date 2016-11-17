@@ -1,52 +1,66 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Thu, 17 Nov 2016 22:00:20 +0100
-Message-ID: <CAJZ5v0iGWTk0bvg6OmQiMTi_EftqxU0q17ERj+GcaL_QQ-0Agg@mail.gmail.com>
-References: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFp5Ay1dN2UQauD7vHxPQP+kghviAAduhpHO7QAmH-1UiA@mail.gmail.com>
+Subject: Re: [PATCH 0/2] PM / sleep: Support for using suspend-to-idle by default
+Date: Thu, 17 Nov 2016 22:05:08 +0100
+Message-ID: <CAJZ5v0g-eOciw_3PZBvaHPzh8sMpe0Fbx6RmCTiS1Nax=Bxh3w@mail.gmail.com>
+References: <9316960.49SRRJV8RJ@vostro.rjw.lan> <71203ae1bfe54eb39d79c54b51ba7ae8@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:33608 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750866AbcKQVAW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 16:00:22 -0500
-Received: by mail-wm0-f68.google.com with SMTP id u144so24956555wmu.0
-        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2016 13:00:21 -0800 (PST)
-In-Reply-To: <CAPDyKFp5Ay1dN2UQauD7vHxPQP+kghviAAduhpHO7QAmH-1UiA@mail.gmail.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:36338 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751161AbcKQVFK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 16:05:10 -0500
+In-Reply-To: <71203ae1bfe54eb39d79c54b51ba7ae8@ausx13mpc120.AMER.DELL.COM>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>
+To: Mario Limonciello <Mario.Limonciello@dell.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andy Lutomirski <luto@kernel.org>
 
-On Thu, Nov 17, 2016 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 13 October 2016 at 16:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> When the pm_runtime_force_suspend|resume() helpers were invented, we still
->> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
->>
->> To make sure these helpers worked for all combinations and without
->> introducing too much of complexity, the device was always resumed in
->> pm_runtime_force_resume().
->>
->> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
->> unset, we needed to resume the device as the subsystem/driver couldn't
->> rely on using runtime PM to do it.
->>
->> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
->> removed this combination, of using CONFIG_PM_SLEEP without the earlier
->> CONFIG_PM_RUNTIME.
->>
->> For this reason we can now rely on the subsystem/driver to use runtime PM
->> to resume the device, instead of forcing that to be done in all cases. In
->> other words, let's defer the runtime resume to a later point when it's
->> actually needed.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Thu, Nov 17, 2016 at 9:40 PM,  <Mario.Limonciello@dell.com> wrote:
+> Hi Rafael,
 >
-> Rafael, this one is ready to be queued. Unless there are other objections.
+>> -----Original Message-----
+>> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+>> Sent: Wednesday, November 16, 2016 8:19 PM
+>> To: Linux PM list <linux-pm@vger.kernel.org>
+>> Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>; Len Brown
+>> <len.brown@intel.com>; Linux Kernel Mailing List <linux-
+>> kernel@vger.kernel.org>; Limonciello, Mario
+>> <Mario_Limonciello@Dell.com>; Andy Lutomirski <luto@kernel.org>
+>> Subject: [PATCH 0/2] PM / sleep: Support for using suspend-to-idle by
+>> default
+>>
+>> Hi,
+>>
+>> This series is a follow-up for a BoF discussion during the LPC.
+>>
+>> The discussion was about supporting Linux on modern laptops and one of
+>> the issues mentioned was the lack of support for suspend-to-idle in user
+>> space and if there's anything that can be done about that in the kernel.
+>>
+>> The following patches are my input. :-)
+>>
+>> The first one reworks the suspend interface to allow the "mem" string
+>> in /sys/power/state to represent multiple things that can be selected via
+>> an additional sysfs attribute.
+>>
+>> The second one makes ACPI select suspend-to-idle as the default suspend
+>> mode
+>> if so indicated in the FADT.
+>>
+>> Please let me know what you think.
+>>
+>> Thanks,
+>> Rafael
+>
+> Thanks for submitting.  I like the approach, especially that it leaves room
+> to easily modify the behavior for debugging purposes and adding quirks.
 
-Not an objection, but I'd like to revisit this when the device
-dependencies work gets in, as something similar may need to be done
-for suppliers, in principle.
+Well, that's the point. :-)
 
-Thanks,
-Rafael
+> I tested your series on a machine that had this bit set in the FADT and
+> confirmed that it set up and used policy properly.
+>
+> Tested-By: Mario Limonciello <mario.limonciello@dell.com>
+
+Thanks!
