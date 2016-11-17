@@ -1,142 +1,55 @@
-From: Stanimir Varbanov <stanimir.varbanov@linaro.org>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Thu, 17 Nov 2016 17:39:07 +0200
-Message-ID: <4bafcd71-edc9-9ddd-d8c4-093e4d9c58db@linaro.org>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <57F5E986.40704@codeaurora.org>
- <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
- <57F60EBE.8010509@codeaurora.org>
- <91b96909-64bc-db72-6da5-556272565091@nvidia.com>
- <5819AA42.5060603@codeaurora.org>
- <CAPDyKFpdRzDotofr+0F6gfuWg4hHikEfmxS2aM2D+hmq_JpHRA@mail.gmail.com>
- <582D1696.7000601@codeaurora.org>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v2] cpufreq: intel_pstate: Generic governors support
+Date: Thu, 17 Nov 2016 09:27:15 -0800
+Message-ID: <000301d240f7$d86604b0$89320e10$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+        charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <582D1696.7000601@codeaurora.org>
+References: 6pwucKlLvdmHH6pwzcpEkV
+In-Reply-To: 6pwucKlLvdmHH6pwzcpEkV
+Content-Language: en-ca
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rajendra Nayak <rnayak@codeaurora.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Sricharan <sricharan@codeaurora.org>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
+Cc: 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 2016.11.15 18:35 Rafael J. Wysocki wrote:
 
-On 11/17/2016 04:31 AM, Rajendra Nayak wrote:
-> 
-> 
-> On 11/16/2016 06:41 PM, Ulf Hansson wrote:
->> On 2 November 2016 at 09:56, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->>> Hi Jon,
->>>
->>> On 10/31/2016 04:14 PM, Jon Hunter wrote:
->>>> Hi Rajendra,
->>>>
->>>> On 06/10/16 09:43, Rajendra Nayak wrote:
->>>>>
->>>>> On 10/06/2016 01:55 PM, Jon Hunter wrote:
->>>>>> Hi Rajendra,
->>>>>>
->>>>>> On 06/10/16 07:04, Rajendra Nayak wrote:
->>>>>>>
->>>>>>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
->>>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>>>>>>> controllers) is partitioned across 3 PM domains which are:
->>>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
->>>>>>>> - XUSBB: Device controller
->>>>>>>> - XUSBC: Host controller
->>>>>>>>
->>>>>>>> These power domains are not nested and can be powered-up and down
->>>>>>>> independently of one another. In practice different scenarios require
->>>>>>>> different combinations of the power domains, for example:
->>>>>>>> - Superspeed host: XUSBA and XUSBC
->>>>>>>> - Superspeed device: XUSBA and XUSBB
->>>>>>>>
->>>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>>>>>>> domains under the XUSBA, superspeed may not always be used/required and
->>>>>>>> so this would keep it on unnecessarily.
->>>>>>>
->>>>>>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
->>>>>>> for a device (which then will *all* be powered on/off together) or does
->>>>>>> it also provide for more granular control of these powerdomains?
->>>>>>
->>>>>> Only to specify multiple power-domains for a device and not the later.
->>>>>>
->>>>>>> The above statement seems to suggest you would need more granular control
->>>>>>> of these powerdomains (like keeping XUSBA off in case superspeed it not
->>>>>>> needed) but I can't seem to figure out how you achieve it with this series.
->>>>>>
->>>>>> It is an interesting point but today we have always kept the superspeed
->>>>>> partition on if the device is configured for superspeed regardless of
->>>>>> what is actually connected. I will check to see if the h/w would allow
->>>>>> us to turn it off if a non-superspeed device is in use but I did not
->>>>>> think so.
->>>>>>
->>>>>> Do you have any interesting use-cases that would make use of this or
->>>>>> require other such enhancements?
->>>>>
->>>>> We do have atleast a few devices which need to control multiple power domains,
->>>>> I will need to look more to see if any of them can be controlled individually.
->>>>> The downstream code we have models these (powerdomains) as regulators and
->>>>> the drivers hence have individual control on each (specifying multiple -supply's
->>>>> in DT)
->>>>
->>>> Were you able to check to see if you need to have individual control for the power-domains?
->>>
->>> I had a look at the Video decode block (for msm8996), which seems to be powered using 3 different
->>> powerdomains, mainly venus, venus_core0 and venus_core1. The venus PD powers the ARM core
->>> which runs the firmware, while the venus_core0 and venus_core1 power the encode/decode logic,
->>> so for things like firmware image loading you ideally need only venus PD to be ON, but during
->>> an encode/decode operation you would need all 3 to be ON.
->>
->> Isn't there a scenario when encoding *or* decoding happens, not always both?
->>
->> If so, doesn't that mean you may have venus + venus_core0 powered and
->> in some other case venus + venus_core1 powered?
->>
->>> The downstream driver turns *all* of them together, and does not control them individually.
->>> For upstream, the way we have it working (the driver is not merged) is by having venus be the parent
->>> of venus_core0 and venus_core0 as the parent of venus_core1, and having venus_core1 mentioned as
->>> the powerdomain for the video decode block in DT.
->>>
->>> So in summary, there is still no need to control them individually, but given there is no way to
->>> specify more than one powerdomain for a given device, we are ending up hooking up some
->>> parent/child relations in the powerdomain code.
->>>
->>
->> I think a better solution would be to model the video decode block as
->> three struct devices.
->>
->> 1) The main ARM device, attached to the venus PM domain.
->> 2) The encoder device, having the main device assigned as its parent
->> and being attached to the venus_core0 PM domain.
->> 3) The decoder device, having the main device assigned as its parent
->> and being attached to the venus_core1 PM domain.
->>
->> Then there is no need to specific a  PM domain hierarchy (which seems
->> to be the issue here), but instead only the parent/child relationships
->> between the struct devices.
->>
->> Moreover, as you deploy runtime PM for these devices, you can more
->> easily distinguish which device you need to operate on
->> (pm_runtime_get|put*()) depending on what particular operations you
->> want to do (encode, decode etc).
-> 
-> Stan, is this something you think is possible to do, given the way the
-> vidc driver is designed? This is mainly for 8996 which has 3 different
-> powerdomains associated with the video decode block.
+> -> v2:
+> Notice that intel_cpufreq_target() generally can be called on a CPU
+> different from the target one, so it needs to ensure that the right
+> MSR will be written, so update the code accordingly.  This makes
+> the performance and powersave governors work with this driver as
+> expected (at least).
 
-Even if it is possible it will be difficult for many reasons.
+With V2 I did the exact same tests with the ondemand, powersave,
+and performance governors as I did with the previous versions 
+of this patch. Now everything works fine and as expected.
 
-On the other side, current design (firmware) doesn't expect kernel
-driver to have control over venus_core0 and venus_core1 pm domains. The
-firmware manages those two pm domains internally and the only thing
-which we need to do is to prepare those domains (and follow the power up
-sequence) to be in hardware control mode. So I think the best we could
-do is to model those two power domains as genpd subdomains of the parent
-venus pm domain.
+Thanks.
 
--- 
-regards,
-Stan
+Also from this previous reply to 
+"[RFC/RFT][PATCH] cpufreq: intel_pstate: Generic governors support":
+
+On 2016.11.01 17:14 Srinivas Pandruvada wrote:
+> On Tue, 2016-11-01 at 14:11 -0700, Doug Smythies wrote:
+>> On 2016.10.22 17:17 Rafael J. Wysocki wrote: 
+>> 
+>> It is not clear to me why users that currently use
+>> intel_pstate=disable on the kernel command line would benefit from
+>> this change.
+> Two reasons I think:
+> - We have a big turbo zone, where current acpi-cpufreq can't select any
+> target frequency even if controllable.
+>
+> - We can still target ACPI-CPPC compatible devices in legacy mode and
+> later in non-legacy mode.
+
+V2 also fixes the test results (I was using clock modulation as
+my test case), that caused me to erroneously think there would
+be no benefit from intel_pstate=passive over intel_pstate=disable
+in cases where the user has to use disable for proper operation.
+
+... Doug
