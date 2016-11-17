@@ -1,55 +1,74 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: conservative: Fix comment explaining
- frequency updates
-Date: Thu, 17 Nov 2016 09:10:59 +0530
-Message-ID: <20161117034059.GB4894@vireshk-i7>
-References: <4986155b-de07-1a4c-186c-71d90b12e75c@semaphore.gr>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?W1BVTEwtUkVRXSBMaW51eCAvIFBNIEZpeGVz?=
+Date: Thu, 17 Nov 2016 03:56:56 +0000
+Message-ID: <1208365325.802375.1479355016759.JavaMail.weblogic@ep1ml103c>
+References: <CGME20161117035656epcms1p592a72cddc5e31a178a13023b4764918f@epcms1p5>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/related;
+ boundary="----=_Part_802374_747033841.1479355016759"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f53.google.com ([74.125.83.53]:34625 "EHLO
-        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934109AbcKQDlC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 22:41:02 -0500
-Received: by mail-pg0-f53.google.com with SMTP id x23so83739101pgx.1
-        for <linux-pm@vger.kernel.org>; Wed, 16 Nov 2016 19:41:02 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <4986155b-de07-1a4c-186c-71d90b12e75c@semaphore.gr>
+Received: from mailout4.samsung.com ([203.254.224.34]:44960 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752213AbcKQD5A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Nov 2016 22:57:00 -0500
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+ by mailout4.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OGR024NXPMXH4E0@mailout4.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 17 Nov 2016 12:56:57 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stratos Karafotis <stratosk@semaphore.gr>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
+Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?YXhlbC5saW5AaW5naWNzLmNvbQ==?= <axel.lin@ingics.com>, =?UTF-8?B?amF2aWVyQG9zZy5zYW1zdW5nLmNvbQ==?= <javier@osg.samsung.com>, =?UTF-8?B?cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20=?= <rafael.j.wysocki@intel.com>
 
-On 16-11-16, 21:27, Stratos Karafotis wrote:
-> The original comment about the frequency increase to maximum is wrong.
-> 
-> Both increase and decrease happen at steps.
-> 
-> Signed-off-by: Stratos Karafotis <stratosk@semaphore.gr>
-> ---
->  -> v2
-> Remove a trailing space
-> 
->  drivers/cpufreq/cpufreq_conservative.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index a48b724..7522ec6 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -55,8 +55,8 @@ static inline unsigned int get_freq_step(struct cs_dbs_tuners *cs_tuners,
->   * sampling_down_factor, we check, if current idle time is more than 80%
->   * (default), then we try to decrease frequency
->   *
-> - * Any frequency increase takes it to the maximum frequency. Frequency reduction
-> - * happens at minimum steps of 5% (default) of maximum frequency
-> + * Frequency updates happen at minimum steps of 5% (default) of maximum
-> + * frequency
->   */
->  static unsigned int cs_dbs_update(struct cpufreq_policy *policy)
->  {
+------=_Part_802374_747033841.1479355016759
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+RGVhciBSYWZhZWwsDQoNCkhlcmUgZ29lcyBhIHB1bGwtcmVxdWVzdCBmb3IgTGludXggUE0gY29u
+c2lzdGluZyBtb3N0bHkgZGV2ZnJlcSBmaXhlcy4NCg0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQot
+LS0tLUJFR0lOIFBHUCBTSUdORUQgTUVTU0FHRS0tLS0tDQpIYXNoOiBTSEExDQoNClRoZSBmb2xs
+b3dpbmcgY2hhbmdlcyBzaW5jZSBjb21taXQgYTI1ZjA5NDRiYTliMWQ4YTY4MTNmZDZmMWE4NmYx
+YmQ1OWFjMjVhNjoNCg0KICBMaW51eCA0LjktcmM1ICgyMDE2LTExLTEzIDEwOjMyOjMyIC0wODAw
+KQ0KDQphcmUgYXZhaWxhYmxlIGluIHRoZSBnaXQgcmVwb3NpdG9yeSBhdDoNCg0KICBodHRwczov
+L2tlcm5lbC5nb29nbGVzb3VyY2UuY29tL3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9tengvZGV2
+ZnJlcS5naXQgZm9yLTQuOS1yYw0KDQpmb3IgeW91IHRvIGZldGNoIGNoYW5nZXMgdXAgdG8gOTI3
+Yjc1YTYyOGIxZDgwZmVmMTcxNDIwZmJkNjk0ZmMyOGQ5YjhlOToNCg0KICBQTSAvIGRldmZyZXE6
+IHJrMzM5OV9kbWM6IFVzZSB0aGUgcmVzb3VyY2UtbWFuYWdlZCBmdW5jdGlvbiB0byBhZGQgZGV2
+ZnJlcSBkZXYgKDIwMTYtMTEtMTcgMTE6MzE6MjkgKzA5MDApDQoNCi0gLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KVGhpcyBp
+bmNsdWRlcyA3IGZpeGVzIGFuZCAxIGRyaXZlciBtaW5vciB1cGRhdGUuDQoNCi0gLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0K
+QXhlbCBMaW4gKDIpOg0KICAgICAgUE0gLyBkZXZmcmVxOiBleHlub3MtcHBtdTogcHBtdV9ldmVu
+dHMgYXJyYXkgc2hvdWxkIG5vdCBiZSBOVUxMIHRlcm1pbmF0ZWQNCiAgICAgIFBNIC8gZGV2ZnJl
+cTogZXh5bm9zLXBwbXU6IFJlbW92ZSB1bnVzZWQgbXV0ZXggZnJvbSBzdHJ1Y3QgZXh5bm9zX3Bw
+bXUNCg0KQ2hhbndvbyBDaG9pICgxKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogcmszMzk5X2RtYzog
+VXNlIHRoZSByZXNvdXJjZS1tYW5hZ2VkIGZ1bmN0aW9uIHRvIGFkZCBkZXZmcmVxIGRldg0KDQpK
+YXZpZXIgTWFydGluZXogQ2FuaWxsYXMgKDQpOg0KICAgICAgUE0gLyBkZXZmcmVxOiByazMzOTlf
+ZG1jOiBGaXggbW9kdWxlIGF1dG9sb2FkDQogICAgICBQTSAvIGRldmZyZXE6IGV4eW5vcy1ub2Nw
+OiBGaXggbW9kdWxlIGF1dG9sb2FkDQogICAgICBQTSAvIGRldmZyZXE6IHJvY2tjaGlwLWRmaTog
+Rml4IG1vZHVsZSBhdXRvbG9hZA0KICAgICAgUE0gLyBkZXZmcmVxOiBleHlub3MtcHBtdTogRml4
+IG1vZHVsZSBhdXRvbG9hZA0KDQpNeXVuZ0pvbyBIYW0gKDEpOg0KICAgICAgUE0gLyBkZXZmcmVx
+OiBjb3JyZWN0IGNvbW1lbnQgdHlwby4NCg0KIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMgICAg
+ICAgICAgICB8IDIgKy0NCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLW5vY3AuYyAgfCAx
+ICsNCiBkcml2ZXJzL2RldmZyZXEvZXZlbnQvZXh5bm9zLXBwbXUuYyAgfCA2ICstLS0tLQ0KIGRy
+aXZlcnMvZGV2ZnJlcS9ldmVudC9yb2NrY2hpcC1kZmkuYyB8IDEgKw0KIGRyaXZlcnMvZGV2ZnJl
+cS9yazMzOTlfZG1jLmMgICAgICAgICB8IDMgKystDQogNSBmaWxlcyBjaGFuZ2VkLCA2IGluc2Vy
+dGlvbnMoKyksIDcgZGVsZXRpb25zKC0pDQotLS0tLUJFR0lOIFBHUCBTSUdOQVRVUkUtLS0tLQ0K
+VmVyc2lvbjogR251UEcgdjENCg0KaVFJY0JBRUJBZ0FHQlFKWUxTQU9BQW9KRUJPaHVydldCb0NL
+MHgwUC9pUEZPNnl1by9PNXh4dUpXdERDdkJpQQ0Kd282SGhPMnZvVDB0blNjWG41QU5GQlBhVkxO
+TTJBbVR2OXhVZnpnRTNOWUJUUnZiWnN0Ty9LL3BRMkYzMHUrMg0Kb2Q3TzY4ZUdTcFRCdGpsbitQ
+WWoxV2w2TUNocms0TXRjR3VXaXhRNFZ2LzVNT25WTzdWWS9HNU8wQ3ArdXVLNg0KWFpBVEdQWXVx
+Q2NwanFVRmJtdmZBR0FWdFV0L05tR2lGQU5PSnRqM0ZlWml4cVhrbU9qMmZBN3MxY0k0MmRKeg0K
+TC9ZY3E2dERqeXN0TTVmcWw5V0VJakR3TlpqNm03SWZOMlIzdjdWaktWVG1GOThna1EzSDhGbnMw
+MllQN2hGYQ0KVkp0Y25nVkN6dVY0V2Fod0MvL0EyRVM4QnU3UGZUQ0RVaWdRM0JnZW11NmZHb25Q
+WTcrZ2VId0RUS0swVXl1Mw0KVExmNkhnM2xxT1FlaWliWUVnMTBxQ2NtejBHejBQcTNub3lIcHFI
+ZHBEd3k5bldlZmNWcXVjejcrNGhyMGYwZA0KRS94UUdnN0JHV1Q4cUpYeWg4NllzNDVISVVnQjAy
+anJncktnMWF0ZzZiODc1aVU4d1dSNTNFV0RqQ1lMazdKRg0KaVVJUnVnaS9UWmFzVHliK1JpMjND
+TURlM1pNZFlFdEp2OUhpM0g2UXdENlhoMWFTVFV3dDdMS05vQmFIbVZscg0KYlU4OEZhanZLMGJs
+RDRBVFpBN1FYcUdQK0Y3d2J6dmM3Vm52Mk82eCtYQ3U5U3NEMXJJRkxQYXB2KzVRZ1Z3aQ0KVHhR
+a3psQ0tCUW1MSnl4Ry9lY20vWE5RUG9mYVZiMnY5UHFrc3RNOGNzdUM4ZnJzTVFKdlZ2VlZCOFVy
+ZHZDdQ0Ka0V5amxCbkZZKy8ydmZiZzdnZVINCj0wc2RTDQotLS0tLUVORCBQR1AgU0lHTkFUVVJF
+LS0tLS0NCg==
+------=_Part_802374_747033841.1479355016759--
