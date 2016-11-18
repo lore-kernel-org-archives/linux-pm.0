@@ -1,74 +1,102 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] cpufreq: Avoid using inactive policies
-Date: Fri, 18 Nov 2016 13:40:45 +0100
-Message-ID: <2709142.YWmMDScDNY@vostro.rjw.lan>
+Subject: [PATCH 2/2] cpufreq: Make cpufreq_update_policy() void
+Date: Fri, 18 Nov 2016 13:59:21 +0100
+Message-ID: <1530666.Sy9rOD7LaC@vostro.rjw.lan>
+References: <1975886.qL3AyWerjl@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:42407 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752821AbcKRMdI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 07:33:08 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1975886.qL3AyWerjl@vostro.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM list <linux-pm@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM list <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-There are two places in the cpufreq core in which low-level driver
-callbacks may be invoked for an inactive cpufreq policy, which isn't
-guaranteed to work in general.  Both are due to possible races with
-CPU offline.
-
-First, in cpufreq_get(), the policy may become inactive after
-the check against policy->cpus in cpufreq_cpu_get() and before
-policy->rwsem is acquired, in which case using it going forward may
-not be correct.
-
-Second, an analogous situation is possible in cpufreq_update_policy().
-
-Avoid using inactive policies by adding policy_is_inactive() checks
-to the code in the above places.
+The return value of cpufreq_update_policy() is never used, so make
+it void.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
--> v2:
- Initialize ret in cpufreq_update_policy() if the inactive policy check
- doesn't pass.
+On top of https://patchwork.kernel.org/patch/9436381/
 
 ---
- drivers/cpufreq/cpufreq.c |   10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq.c |   21 +++++++--------------
+ include/linux/cpufreq.h   |    2 +-
+ 2 files changed, 8 insertions(+), 15 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/cpufreq.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/cpufreq.c
 +++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1526,7 +1526,10 @@ unsigned int cpufreq_get(unsigned int cp
+@@ -2257,21 +2257,18 @@ static int cpufreq_set_policy(struct cpu
+  *	Useful for policy notifiers which have different necessities
+  *	at different times.
+  */
+-int cpufreq_update_policy(unsigned int cpu)
++void cpufreq_update_policy(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+ 	struct cpufreq_policy new_policy;
+-	int ret;
  
- 	if (policy) {
- 		down_read(&policy->rwsem);
--		ret_freq = __cpufreq_get(policy);
-+
-+		if (!policy_is_inactive(policy))
-+			ret_freq = __cpufreq_get(policy);
-+
- 		up_read(&policy->rwsem);
- 
- 		cpufreq_cpu_put(policy);
-@@ -2265,6 +2268,11 @@ int cpufreq_update_policy(unsigned int c
+ 	if (!policy)
+-		return -ENODEV;
++		return;
  
  	down_write(&policy->rwsem);
  
-+	if (policy_is_inactive(policy)) {
-+		ret = -ENODEV;
-+		goto unlock;
-+	}
-+
+-	if (policy_is_inactive(policy)) {
+-		ret = -ENODEV;
++	if (policy_is_inactive(policy))
+ 		goto unlock;
+-	}
+ 
  	pr_debug("updating policy for CPU %u\n", cpu);
  	memcpy(&new_policy, policy, sizeof(*policy));
- 	new_policy.min = policy->user_policy.min;
+@@ -2283,24 +2280,20 @@ int cpufreq_update_policy(unsigned int c
+ 	 * -> ask driver for current freq and notify governors about a change
+ 	 */
+ 	if (cpufreq_driver->get && !cpufreq_driver->setpolicy) {
+-		if (cpufreq_suspended) {
+-			ret = -EAGAIN;
++		if (cpufreq_suspended)
+ 			goto unlock;
+-		}
++
+ 		new_policy.cur = cpufreq_update_current_freq(policy);
+-		if (WARN_ON(!new_policy.cur)) {
+-			ret = -EIO;
++		if (WARN_ON(!new_policy.cur))
+ 			goto unlock;
+-		}
+ 	}
+ 
+-	ret = cpufreq_set_policy(policy, &new_policy);
++	cpufreq_set_policy(policy, &new_policy);
+ 
+ unlock:
+ 	up_write(&policy->rwsem);
+ 
+ 	cpufreq_cpu_put(policy);
+-	return ret;
+ }
+ EXPORT_SYMBOL(cpufreq_update_policy);
+ 
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -175,7 +175,7 @@ void disable_cpufreq(void);
+ 
+ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
+ int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
+-int cpufreq_update_policy(unsigned int cpu);
++void cpufreq_update_policy(unsigned int cpu);
+ bool have_governor_per_policy(void);
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
+ void cpufreq_enable_fast_switch(struct cpufreq_policy *policy);
 
