@@ -1,213 +1,171 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 07/12] thermal/x86_pkg_temp: Cleanup code some more
-Date: Fri, 18 Nov 2016 00:03:33 -0000
-Message-ID: <20161117234810.430062221@linutronix.de>
+Subject: [patch 05/12] thermal/x86_pkg_temp: Get rid of ref counting
+Date: Fri, 18 Nov 2016 00:03:28 -0000
+Message-ID: <20161117234810.273411135@linutronix.de>
 References: <20161117231435.891545908@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline;
- filename=thermal-x86_pkg_temp--Cleanup-code-some-more.patch
+ filename=thermal-x86_pkg_temp--Get-rid-of-ref-counting.patch
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, x86@kernel.org, rt@linutronix.de, Borislav Petkov <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-Coding style fixups and replacement of overly complex constructs and random
-error codes instead of returning the real ones. This mess makes the eyes bleeding.
+There is no point in the whole package data refcounting dance because
+topology_core_cpumask tells us whether this is the last cpu in the
+package. If yes, then the package can go, if not it stays. It's already
+serialized via the hotplug code.
+
+While at it rename the first_cpu member of the package structure to
+cpu. The first has absolutely no meaning.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/thermal/x86_pkg_temp_thermal.c |   81 ++++++++++++---------------------
- 1 file changed, 30 insertions(+), 51 deletions(-)
+ drivers/thermal/x86_pkg_temp_thermal.c |   62 ++++++++++-----------------------
+ 1 file changed, 20 insertions(+), 42 deletions(-)
 
 --- a/drivers/thermal/x86_pkg_temp_thermal.c
 +++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -139,27 +139,17 @@ static struct pkg_device *pkg_temp_therm
- */
- static int get_tj_max(int cpu, u32 *tj_max)
- {
--	u32 eax, edx;
--	u32 val;
-+	u32 eax, edx, val;
- 	int err;
+@@ -60,9 +60,8 @@ MODULE_PARM_DESC(notify_delay_ms,
+ struct phy_dev_entry {
+ 	struct list_head list;
+ 	u16 phys_proc_id;
+-	u16 first_cpu;
++	u16 cpu;
+ 	u32 tj_max;
+-	int ref_cnt;
+ 	u32 start_pkg_therm_low;
+ 	u32 start_pkg_therm_high;
+ 	struct thermal_zone_device *tzone;
+@@ -170,8 +169,8 @@ static int sys_get_curr_temp(struct ther
+ 	struct phy_dev_entry *phy_dev_entry;
  
- 	err = rdmsr_safe_on_cpu(cpu, MSR_IA32_TEMPERATURE_TARGET, &eax, &edx);
- 	if (err)
--		goto err_ret;
--	else {
--		val = (eax >> 16) & 0xff;
--		if (val)
--			*tj_max = val * 1000;
--		else {
--			err = -EINVAL;
--			goto err_ret;
--		}
--	}
-+		return err;
+ 	phy_dev_entry = tzd->devdata;
+-	rdmsr_on_cpu(phy_dev_entry->first_cpu, MSR_IA32_PACKAGE_THERM_STATUS,
+-			&eax, &edx);
++	rdmsr_on_cpu(phy_dev_entry->cpu, MSR_IA32_PACKAGE_THERM_STATUS,
++		     &eax, &edx);
+ 	if (eax & 0x80000000) {
+ 		*temp = phy_dev_entry->tj_max -
+ 				((eax >> 16) & 0x7f) * 1000;
+@@ -204,8 +203,8 @@ static int sys_get_trip_temp(struct ther
+ 		shift = THERM_SHIFT_THRESHOLD0;
+ 	}
  
--	return 0;
--err_ret:
--	*tj_max = 0;
--	return err;
-+	val = (eax >> 16) & 0xff;
-+	*tj_max = val * 1000;
-+
-+	return val ? 0 : -EINVAL;
- }
- 
- static int sys_get_curr_temp(struct thermal_zone_device *tzd, int *temp)
-@@ -198,7 +188,7 @@ static int sys_get_trip_temp(struct ther
- 	ret = rdmsr_on_cpu(pkgdev->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
- 			   &eax, &edx);
+-	ret = rdmsr_on_cpu(phy_dev_entry->first_cpu,
+-				MSR_IA32_PACKAGE_THERM_INTERRUPT, &eax, &edx);
++	ret = rdmsr_on_cpu(phy_dev_entry->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
++			   &eax, &edx);
  	if (ret < 0)
--		return -EINVAL;
-+		return ret;
+ 		return -EINVAL;
  
- 	thres_reg_value = (eax & mask) >> shift;
- 	if (thres_reg_value)
-@@ -223,7 +213,7 @@ sys_set_trip_temp(struct thermal_zone_de
- 	ret = rdmsr_on_cpu(pkgdev->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
- 			   &l, &h);
+@@ -232,9 +231,8 @@ static int sys_set_trip_temp(struct ther
+ 	if (trip >= MAX_NUMBER_OF_TRIPS || temp >= phy_dev_entry->tj_max)
+ 		return -EINVAL;
+ 
+-	ret = rdmsr_on_cpu(phy_dev_entry->first_cpu,
+-					MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-					&l, &h);
++	ret = rdmsr_on_cpu(phy_dev_entry->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
++			   &l, &h);
  	if (ret < 0)
--		return -EINVAL;
-+		return ret;
+ 		return -EINVAL;
  
- 	if (trip) {
- 		mask = THERM_MASK_THRESHOLD1;
-@@ -252,9 +242,7 @@ sys_set_trip_temp(struct thermal_zone_de
- static int sys_get_trip_type(struct thermal_zone_device *thermal, int trip,
- 			     enum thermal_trip_type *type)
- {
--
- 	*type = THERMAL_TRIP_PASSIVE;
--
- 	return 0;
+@@ -259,9 +257,8 @@ static int sys_set_trip_temp(struct ther
+ 		l |= intr;
+ 	}
+ 
+-	return wrmsr_on_cpu(phy_dev_entry->first_cpu,
+-					MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-					l, h);
++	return wrmsr_on_cpu(phy_dev_entry->cpu,	MSR_IA32_PACKAGE_THERM_INTERRUPT,
++			    l, h);
  }
  
-@@ -274,8 +262,8 @@ static bool pkg_thermal_rate_control(voi
- /* Enable threshold interrupt on local package/cpu */
- static inline void enable_pkg_thres_interrupt(void)
- {
--	u32 l, h;
- 	u8 thres_0, thres_1;
-+	u32 l, h;
- 
- 	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
- 	/* only enable/disable if it had valid threshold value */
-@@ -292,20 +280,21 @@ static inline void enable_pkg_thres_inte
- static inline void disable_pkg_thres_interrupt(void)
- {
- 	u32 l, h;
-+
- 	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
--	wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
--			l & (~THERM_INT_THRESHOLD0_ENABLE) &
--				(~THERM_INT_THRESHOLD1_ENABLE), h);
-+
-+	l &= ~(THERM_INT_THRESHOLD0_ENABLE | THERM_INT_THRESHOLD1_ENABLE);
-+	wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, l, h);
- }
- 
- static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
- {
--	__u64 msr_val;
- 	int cpu = smp_processor_id();
--	int phy_id = topology_physical_package_id(cpu);
- 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
-+	int phy_id = topology_physical_package_id(cpu);
- 	bool notify = false;
- 	unsigned long flags;
-+	u64 msr_val, wr_val;
- 
- 	if (!pkgdev)
- 		return;
-@@ -320,14 +309,9 @@ static void pkg_temp_thermal_threshold_w
+ static int sys_get_trip_type(struct thermal_zone_device *thermal,
+@@ -431,9 +428,8 @@ static int pkg_temp_thermal_device_add(u
  	spin_unlock_irqrestore(&pkg_work_lock, flags);
  
- 	rdmsrl(MSR_IA32_PACKAGE_THERM_STATUS, msr_val);
--	if (msr_val & THERM_LOG_THRESHOLD0) {
--		wrmsrl(MSR_IA32_PACKAGE_THERM_STATUS,
--				msr_val & ~THERM_LOG_THRESHOLD0);
--		notify = true;
--	}
--	if (msr_val & THERM_LOG_THRESHOLD1) {
--		wrmsrl(MSR_IA32_PACKAGE_THERM_STATUS,
--				msr_val & ~THERM_LOG_THRESHOLD1);
-+	wr_val = msr_val & ~(THERM_LOG_THRESHOLD0 | THERM_LOG_THRESHOLD1);
-+	if (wr_val != msr_val) {
-+		wrmsrl(MSR_IA32_PACKAGE_THERM_STATUS, wr_val);
- 		notify = true;
- 	}
- 
-@@ -340,11 +324,11 @@ static void pkg_temp_thermal_threshold_w
- 	}
- }
- 
--static int pkg_thermal_notify(__u64 msr_val)
-+static int pkg_thermal_notify(u64 msr_val)
+ 	phy_dev_entry->phys_proc_id = topology_physical_package_id(cpu);
+-	phy_dev_entry->first_cpu = cpu;
++	phy_dev_entry->cpu = cpu;
+ 	phy_dev_entry->tj_max = tj_max;
+-	phy_dev_entry->ref_cnt = 1;
+ 	phy_dev_entry->tzone = thermal_zone_device_register("x86_pkg_temp",
+ 			thres_count,
+ 			(thres_count == MAX_NUMBER_OF_TRIPS) ?
+@@ -468,30 +464,16 @@ static int pkg_temp_thermal_device_add(u
+ static int pkg_temp_thermal_device_remove(unsigned int cpu)
  {
--	unsigned long flags;
- 	int cpu = smp_processor_id();
- 	int phy_id = topology_physical_package_id(cpu);
-+	unsigned long flags;
+ 	struct phy_dev_entry *phdev = pkg_temp_thermal_get_phy_entry(cpu);
+-	u16 phys_proc_id = topology_physical_package_id(cpu);
++	int target;
  
- 	/*
- 	* When a package is in interrupted state, all CPU's in that package
-@@ -483,21 +467,17 @@ static int get_core_online(unsigned int
- 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+ 	if (!phdev)
+ 		return -ENODEV;
  
--	/* Check if there is already an instance for this package */
--	if (!pkgdev) {
--		if (!cpu_has(c, X86_FEATURE_DTHERM) ||
--					!cpu_has(c, X86_FEATURE_PTS))
--			return -ENODEV;
--		if (pkg_temp_thermal_device_add(cpu))
--			return -ENODEV;
+ 	mutex_lock(&phy_dev_list_mutex);
+-	/* If we are loosing the first cpu for this package, we need change */
+-	if (phdev->first_cpu == cpu) {
+-		int target = cpumask_any_but(topology_core_cpumask(cpu), cpu);
+-
+-		phdev->first_cpu = target;
+-		pr_debug("CPU %d down. New first_cpu%d\n", cpu, target);
 -	}
-+	/* Paranoia check */
-+	if (!cpu_has(c, X86_FEATURE_DTHERM) || !cpu_has(c, X86_FEATURE_PTS))
-+		return -ENODEV;
+-	/*
+-	* It is possible that no siblings left as this was the last cpu
+-	* going offline. We don't need to worry about this assignment
+-	* as the phydev entry will be removed in this case and
+-	* thermal zone is removed.
+-	*/
+-	--phdev->ref_cnt;
+-	pr_debug("thermal_device_remove: pkg: %d cpu %d ref_cnt %d\n",
+-					phys_proc_id, cpu, phdev->ref_cnt);
  
- 	INIT_DELAYED_WORK(&per_cpu(pkg_temp_thermal_threshold_work, cpu),
- 			  pkg_temp_thermal_threshold_work_fn);
+-	if (!phdev->ref_cnt) {
++	target = cpumask_any_but(topology_core_cpumask(cpu), cpu);
++	/* This might be the last cpu in this package */
++	if (target >= nr_cpu_ids) {
+ 		thermal_zone_device_unregister(phdev->tzone);
+ 		/*
+ 		 * Restore original MSR value for package thermal
+@@ -502,7 +484,10 @@ static int pkg_temp_thermal_device_remov
+ 			     phdev->start_pkg_therm_high);
+ 		list_del(&phdev->list);
+ 		kfree(phdev);
++	} else if (phdev->cpu == cpu) {
++		phdev->cpu = target;
+ 	}
++
+ 	mutex_unlock(&phy_dev_list_mutex);
  
--	pr_debug("get_core_online: cpu %d successful\n", cpu);
--
--	return 0;
-+	/* If the package exists, nothing to do */
-+	if (pkgdev)
-+		return 0;
-+	return pkg_temp_thermal_device_add(cpu);
- }
- 
- static void put_core_offline(unsigned int cpu)
-@@ -555,8 +535,8 @@ static int __init pkg_temp_thermal_init(
- 	platform_thermal_package_notify = pkg_thermal_notify;
- 	platform_thermal_package_rate_control = pkg_thermal_rate_control;
- 
--	pkg_temp_debugfs_init(); /* Don't care if fails */
--
-+	 /* Don't care if it fails */
-+	pkg_temp_debugfs_init();
  	return 0;
- 
- err_ret:
-@@ -566,6 +546,7 @@ static int __init pkg_temp_thermal_init(
- 	kfree(pkg_work_scheduled);
- 	return -ENODEV;
- }
-+module_init(pkg_temp_thermal_init)
- 
- static void __exit pkg_temp_thermal_exit(void)
- {
-@@ -597,8 +578,6 @@ static void __exit pkg_temp_thermal_exit
- 
- 	debugfs_remove_recursive(debugfs);
- }
--
--module_init(pkg_temp_thermal_init)
- module_exit(pkg_temp_thermal_exit)
- 
- MODULE_DESCRIPTION("X86 PKG TEMP Thermal Driver");
+@@ -520,12 +505,6 @@ static int get_core_online(unsigned int
+ 			return -ENODEV;
+ 		if (pkg_temp_thermal_device_add(cpu))
+ 			return -ENODEV;
+-	} else {
+-		mutex_lock(&phy_dev_list_mutex);
+-		++phdev->ref_cnt;
+-		pr_debug("get_core_online: cpu %d ref_cnt %d\n",
+-						cpu, phdev->ref_cnt);
+-		mutex_unlock(&phy_dev_list_mutex);
+ 	}
+ 	INIT_DELAYED_WORK(&per_cpu(pkg_temp_thermal_threshold_work, cpu),
+ 			pkg_temp_thermal_threshold_work_fn);
+@@ -615,10 +594,9 @@ static void __exit pkg_temp_thermal_exit
+ 	mutex_lock(&phy_dev_list_mutex);
+ 	list_for_each_entry_safe(phdev, n, &phy_dev_list, list) {
+ 		/* Retore old MSR value for package thermal interrupt */
+-		wrmsr_on_cpu(phdev->first_cpu,
+-			MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-			phdev->start_pkg_therm_low,
+-			phdev->start_pkg_therm_high);
++		wrmsr_on_cpu(phdev->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
++			     phdev->start_pkg_therm_low,
++			     phdev->start_pkg_therm_high);
+ 		thermal_zone_device_unregister(phdev->tzone);
+ 		list_del(&phdev->list);
+ 		kfree(phdev);
