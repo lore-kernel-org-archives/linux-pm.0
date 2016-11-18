@@ -1,55 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/2] PM / Domains: Introduce domain-performance-state binding
-Date: Fri, 18 Nov 2016 14:53:12 +0530
-Message-ID: <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
-References: <cover.1479459752.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1479459752.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1479459752.git.viresh.kumar@linaro.org>
-References: <cover.1479459752.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nayak Rajendra <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
+Date: Fri, 18 Nov 2016 10:43:29 +0000
+Message-ID: <20161118104329.27xpm7cshfpxykqd@sirena.org.uk>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+ <20161118030636.GA3110@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="xyuxqlscjuvzm3z6"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:53850 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752654AbcKRKnp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 05:43:45 -0500
+Content-Disposition: inline
+In-Reply-To: <20161118030636.GA3110@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com
 
-Some platforms have the capability to configure the performance state of
-their Power Domains. The performance levels are represented by positive
-integer values, a lower value represents lower performance state.
 
-The power-domains until now were only concentrating on the idle state
-management of the device and this needs to change in order to reuse the
-infrastructure of power domains for active state management.
+--xyuxqlscjuvzm3z6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-This patch introduces a new optional property for the consumers of the
-power-domains: domain-performance-state.
+On Fri, Nov 18, 2016 at 08:36:36AM +0530, Viresh Kumar wrote:
 
-If the consumers don't need the capability of switching to different
-domain performance states at runtime, then they can simply define their
-required domain performance state in their node directly. Otherwise the
-consumers can define their requirements with help of other
-infrastructure, for example the OPP table.
+> Can we please get this series reviewed quickly and come to a conclusion? It has
+> already taken a lot of time getting this merged and the present code seems to be
+> the best possible shot we have, AFAIU.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
- 1 file changed, 6 insertions(+)
+There already seems to be extensive, ongoing discusion about this...
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index e1650364b296..db42eacf8b5c 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
-  - power-domains : A phandle and PM domain specifier as defined by bindings of
-                    the power controller specified by phandle.
- 
-+Optional properties:
-+- domain-performance-state: A positive integer value representing the minimum
-+  performance level (of the parent domain) required by the consumer for its
-+  working. The integer value '1' represents the lowest performance level and the
-+  highest value represents the highest performance level.
-+
- Example:
- 
- 	leaky-device@12350000 {
--- 
-2.7.1.410.g6faf27b
+--xyuxqlscjuvzm3z6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAABCAAGBQJYLttRAAoJECTWi3JdVIfQ574H/0tvcdtY7mtox5xeOuN8poTN
+wE1DaMOa8DwRyKp0ti5XObNEdFZ2EaihW8wJWUJQvETGVy6kVRAHgjAAKrBzkbjO
+7y8N+X/zcdkcoJm+obeFh73H99xwr2TeghDNBieEq4v9zd94tTIjZLexNzZ9IKYk
+z6IsSfgP9Vk6q8h+odCNT0+YH3ihFF4yt9r/QpAy55Ndqhoa99oOdc3A2/MYeYVm
+U3Wjy2tIQpVODW6ews/PHDGQTiDghTmrZtp+3umDdpsxTbfmgGywD+dfs2nyXCsa
+FZbKgy4+I33BavzP+BHRIgJvYvDVTQ5X+IlihJM8qA3C4KdO2Ofe/c+Tq+yZreU=
+=LfXk
+-----END PGP SIGNATURE-----
+
+--xyuxqlscjuvzm3z6--
