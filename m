@@ -1,41 +1,76 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v2 0/9] PCIe port PM: high gloss polish & hotplug support
-Date: Fri, 18 Nov 2016 10:10:57 +0100
-Message-ID: <20161118091057.GA12168@wunner.de>
-References: <cover.1477611126.git.lukas@wunner.de>
- <20161118011515.GB25762@bhelgaas-glaptop.roam.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/2] PM / Domains / OPP: Introduce domain-performance-state binding
+Date: Fri, 18 Nov 2016 14:53:11 +0530
+Message-ID: <cover.1479459752.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.hostsharing.net ([83.223.95.204]:39377 "EHLO
-        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752189AbcKRJJf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 04:09:35 -0500
-Content-Disposition: inline
-In-Reply-To: <20161118011515.GB25762@bhelgaas-glaptop.roam.corp.google.com>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:35824 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752206AbcKRJXc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 04:23:32 -0500
+Received: by mail-pg0-f50.google.com with SMTP id p66so101310100pga.2
+        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2016 01:23:32 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nayak Rajendra <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, Nov 17, 2016 at 07:15:15PM -0600, Bjorn Helgaas wrote:
-> On Fri, Oct 28, 2016 at 10:52:06AM +0200, Lukas Wunner wrote:
-> > Respin of this series to polish the runtime PM support for PCIe ports
-> > that was added with v4.8, and extend it to native hotplug ports:
-[snip]
-> I applied these to pci/pm for v4.10, thanks!
-> 
-> I did make two changes to the changelog of the last patch: you
-> mentioned the "subordinate" bus, and I changed it to "secondary".  We
-> have often used "subordinate" to refer to the immediately-downstream
-> bus, but that's slightly confusing because in the bridge spec,
-> "subordinate" means the highest bus number downstream from the bridge,
-> while "secondary" refers to the immediately-downstream bridge.  Am I
-> making sense or confusing things more?
+Hello,
 
-Indeed the secondary bus was meant here and I used "subordinate" only
-because the attribute in struct pci_dev is named like this. :-)
+Some platforms have the capability to configure the performance state of
+their Power Domains. The performance levels are represented by positive
+integer values, a lower value represents lower performance state.
 
-Thanks,
+We had some discussions about it in the past on the PM list [1], which
+is followed by discussions during the LPC. The outcome of all that was
+that we should extend Power Domain framework to support active state
+power management as well.
 
-Lukas
+The power-domains until now were only concentrating on the idle state
+management of the device and this needs to change in order to reuse the
+infrastructure of power domains for active state management.
+
+To get a complete picture of the proposed plan, following is what we
+need to do:
+- Create DT bindings to get domain performance state information for the
+  platforms.
+- Enhance OPP framework to parse these and call into the PM Qos
+  framework with a performance state request.
+- Enhance PM Qos framework to provide the API to be used by consumers
+  (or OPP framework) and pass it on to the (Generic) Power Domain
+  framework.
+- Enhance Generic Power Domain framework to accept such requests,
+  accumulate all belonging to a single power domain and call domain
+  driver specific callback with the performance state we want for the
+  domain.
+- The domain driver shall then, in a platform specific way, set the
+  requested performance level.
+- Note that these features are applicable to the CPU, GPU and other IIO
+  or non-IIO devices.
+- There can be cases where a device can choose between multiple power
+  domains based on what performance level we want for the device. In
+  such cases, we should represent the multiplexer with a separate power
+  domain. In effect, the device (or OPP table) will correspond to a
+  single power domain, but the backend driver of that domain shall
+  implement the multiplexing functionality.
+
+This patchset implements the very first part of this chain and
+introduces a new optional property for the consumers of the
+power-domains: domain-performance-state. This property can be used
+directly by the consumer or its OPP table.
+
+--
+viresh
+
+[1] https://marc.info/?l=linux-pm&m=147747923708075&w=2
+
+Viresh Kumar (2):
+  PM / Domains: Introduce domain-performance-state binding
+  PM / OPP: Introduce domain-performance-state binding to OPP nodes
+
+ Documentation/devicetree/bindings/opp/opp.txt      | 57 ++++++++++++++++++++++
+ .../devicetree/bindings/power/power_domain.txt     |  6 +++
+ 2 files changed, 63 insertions(+)
+
+-- 
+2.7.1.410.g6faf27b
+
