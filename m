@@ -1,72 +1,50 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Fri, 18 Nov 2016 09:07:04 +0100
-Message-ID: <CAMuHMdUUUMZP_eSsO1+GJE7C4k40XFM6UPmO6EcUc1WJgBAXtQ@mail.gmail.com>
-References: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFp5Ay1dN2UQauD7vHxPQP+kghviAAduhpHO7QAmH-1UiA@mail.gmail.com>
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v7 REPOST 8/9] arm: add sysfs cpu_capacity attribute
+Date: Fri, 18 Nov 2016 08:27:24 +0000
+Message-ID: <20161118082724.GC24383@e106622-lin>
+References: <20161017154650.18779-1-juri.lelli@arm.com>
+ <20161017154650.18779-9-juri.lelli@arm.com>
+ <20161030204551.GM1041@n2100.armlinux.org.uk>
+ <20161103052842.GA16920@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:35513 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751617AbcKRIHG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 03:07:06 -0500
-Received: by mail-it0-f68.google.com with SMTP id b123so2741456itb.2
-        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2016 00:07:06 -0800 (PST)
-In-Reply-To: <CAPDyKFp5Ay1dN2UQauD7vHxPQP+kghviAAduhpHO7QAmH-1UiA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20161103052842.GA16920@e106622-lin>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>
 
-Hi Ulf,
+Hi Russell,
 
-On Thu, Nov 17, 2016 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 13 October 2016 at 16:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> When the pm_runtime_force_suspend|resume() helpers were invented, we still
->> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
->>
->> To make sure these helpers worked for all combinations and without
->> introducing too much of complexity, the device was always resumed in
->> pm_runtime_force_resume().
->>
->> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
->> unset, we needed to resume the device as the subsystem/driver couldn't
->> rely on using runtime PM to do it.
->>
->> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
->> removed this combination, of using CONFIG_PM_SLEEP without the earlier
->> CONFIG_PM_RUNTIME.
->>
->> For this reason we can now rely on the subsystem/driver to use runtime PM
->> to resume the device, instead of forcing that to be done in all cases. In
->> other words, let's defer the runtime resume to a later point when it's
->> actually needed.
->>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Rafael, this one is ready to be queued. Unless there are other objections.
->
-> The problems that was reported by Geert for this change, has been
-> taken care of. Those are fixed by the patch for the smsc911x ethernet
-> driver [1], which you queued a while ago.
-> I realized that wasn't obvious unless one digested the conversations in detail.
+On 03/11/16 05:28, Juri Lelli wrote:
+> Hi,
+> 
+> apologies for the delay in replying, but I'm attending Linux Plumbers
+> this week.
+> 
+> On 30/10/16 20:45, Russell King - ARM Linux wrote:
+> > On Mon, Oct 17, 2016 at 04:46:49PM +0100, Juri Lelli wrote:
 
-> [1]
-> https://www.spinics.net/lists/netdev/msg401339.html
+[...]
 
-That's correct, thanks again for that fix!
+> 
+> I should have addressed your comments with the updated version below. If
+> it looks good to you I'll superseed the old version with this new one.
+> 
 
-> Geert, perhaps you can confirm by providing a tested-by tag?
+The two updated patches are still listed as incoming in your system.
+Do you think we will be able to queue them for 4.10? IMHO, it would be
+good to have all pieces in together at once (Catalin and Sudeep already
+queued their respective bits).
 
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Thanks a lot.
 
-Gr{oetje,eeting}s,
+Best,
 
-                        Geert
-
+- Juri
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
