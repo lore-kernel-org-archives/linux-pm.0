@@ -1,73 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI fixes for v4.9-rc6
-Date: Fri, 18 Nov 2016 22:06:52 +0100
-Message-ID: <CAJZ5v0jC+iPnnB5sHE+6JMJxCLD6Mq8OKNuqKtFra_BzhiA2=g@mail.gmail.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Fri, 18 Nov 2016 14:34:50 -0800
+Message-ID: <m2h974quwl.fsf@baylibre.com>
+References: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:34240 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752168AbcKRWew (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 17:34:52 -0500
+Received: by mail-pf0-f176.google.com with SMTP id c4so44466748pfb.1
+        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2016 14:34:52 -0800 (PST)
+In-Reply-To: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+        Hansson's message of "Thu, 13 Oct 2016 16:58:54 +0200")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>
 
-Hi Linus,
+Ulf Hansson <ulf.hansson@linaro.org> writes:
 
-Please pull from the tag
+> When the pm_runtime_force_suspend|resume() helpers were invented, we still
+> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+>
+> To make sure these helpers worked for all combinations and without
+> introducing too much of complexity, the device was always resumed in
+> pm_runtime_force_resume().
+>
+> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+> unset, we needed to resume the device as the subsystem/driver couldn't
+> rely on using runtime PM to do it.
+>
+> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+> removed this combination, of using CONFIG_PM_SLEEP without the earlier
+> CONFIG_PM_RUNTIME.
+>
+> For this reason we can now rely on the subsystem/driver to use runtime PM
+> to resume the device, instead of forcing that to be done in all cases. In
+> other words, let's defer the runtime resume to a later point when it's
+> actually needed.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.9-rc6
-
-with top-most commit aab0b243b9a2fab7dcee0ce6e13789d3ab0394bf
-
- Merge branches 'acpica-fixes', 'acpi-cppc-fixes' and 'acpi-tools-fixes'
-
-on top of commit a25f0944ba9b1d8a6813fd6f1a86f1bd59ac25a6
-
- Linux 4.9-rc5
-
-to receive ACPI fixes for v4.9-rc6.
-
-They fix an ACPI thermal management regression introduced by a recent
-FADT handling cleanup, an ACPI tools build issue introduced by a
-recent ACPICA commit and a PCC mailbox initialization bug causing
-lockdep to complain loudly.
-
-Specifics:
-
- - Revert a recent ACPICA cleanup that attempted to get rid of all
-   FADT version 2 legacy, but broke ACPI thermal management on at
-   least one system (Rafael Wysocki).
-
- - Fix cross-compiled builds of ACPI tools that stopped working
-   after a recent cleanup related to the handling of header files
-   in ACPICA (Lv Zheng).
-
- - Fix a locking issue in the PCC channel initialization code that
-   invokes devm_request_irq() under a spinlock (among other things)
-   and causes lockdep to complain (Hoan Tran).
-
-Thanks!
-
----------------
-
-Hoan Tran (1):
-      mailbox: PCC: Fix lockdep warning when request PCC channel
-
-Lv Zheng (1):
-      tools/power/acpi: Remove direct kernel source include reference
-
-Rafael J. Wysocki (1):
-      Revert "ACPICA: FADT support cleanup"
-
----------------
-
- drivers/acpi/acpica/tbfadt.c             |  10 +-
- drivers/mailbox/pcc.c                    |  13 +--
- include/acpi/actbl.h                     | 164 +++++++++++++------------------
- include/acpi/platform/aclinux.h          |   3 +
- tools/power/acpi/Makefile.config         |  23 ++---
- tools/power/acpi/Makefile.rules          |  40 +++++---
- tools/power/acpi/tools/acpidbg/Makefile  |   4 +-
- tools/power/acpi/tools/acpidbg/acpidbg.c |   8 +-
- tools/power/acpi/tools/acpidump/Makefile |  12 +--
- 9 files changed, 137 insertions(+), 140 deletions(-)
+Acked-by: Kevin Hilman <khilman@baylibre.com>
