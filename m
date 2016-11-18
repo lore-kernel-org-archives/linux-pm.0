@@ -1,74 +1,42 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/2] ACPI / processor: Make acpi_processor_ppc_has_changed() void
-Date: Fri, 18 Nov 2016 13:57:54 +0100
-Message-ID: <2026068.mxVXsQBFmT@vostro.rjw.lan>
-References: <1975886.qL3AyWerjl@vostro.rjw.lan>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 0/9] PCIe port PM: high gloss polish & hotplug support
+Date: Fri, 18 Nov 2016 08:03:19 -0600
+Message-ID: <20161118140319.GD25762@bhelgaas-glaptop.roam.corp.google.com>
+References: <cover.1477611126.git.lukas@wunner.de>
+ <20161118011515.GB25762@bhelgaas-glaptop.roam.corp.google.com>
+ <20161118091057.GA12168@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1975886.qL3AyWerjl@vostro.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:41160 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752824AbcKROD2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 18 Nov 2016 09:03:28 -0500
+Content-Disposition: inline
+In-Reply-To: <20161118091057.GA12168@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Nov 18, 2016 at 10:10:57AM +0100, Lukas Wunner wrote:
+> On Thu, Nov 17, 2016 at 07:15:15PM -0600, Bjorn Helgaas wrote:
+> > On Fri, Oct 28, 2016 at 10:52:06AM +0200, Lukas Wunner wrote:
+> > > Respin of this series to polish the runtime PM support for PCIe ports
+> > > that was added with v4.8, and extend it to native hotplug ports:
+> [snip]
+> > I applied these to pci/pm for v4.10, thanks!
+> > 
+> > I did make two changes to the changelog of the last patch: you
+> > mentioned the "subordinate" bus, and I changed it to "secondary".  We
+> > have often used "subordinate" to refer to the immediately-downstream
+> > bus, but that's slightly confusing because in the bridge spec,
+> > "subordinate" means the highest bus number downstream from the bridge,
+> > while "secondary" refers to the immediately-downstream bridge.  Am I
+> > making sense or confusing things more?
+> 
+> Indeed the secondary bus was meant here and I used "subordinate" only
+> because the attribute in struct pci_dev is named like this. :-)
 
-The return value of acpi_processor_ppc_has_changed() is never used,
-so make it void.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/processor_perflib.c |   10 ++++------
- include/acpi/processor.h         |    2 +-
- 2 files changed, 5 insertions(+), 7 deletions(-)
-
-Index: linux-pm/drivers/acpi/processor_perflib.c
-===================================================================
---- linux-pm.orig/drivers/acpi/processor_perflib.c
-+++ linux-pm/drivers/acpi/processor_perflib.c
-@@ -157,7 +157,7 @@ static void acpi_processor_ppc_ost(acpi_
- 				  status, NULL);
- }
- 
--int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
-+void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag)
- {
- 	int ret;
- 
-@@ -168,7 +168,7 @@ int acpi_processor_ppc_has_changed(struc
- 		 */
- 		if (event_flag)
- 			acpi_processor_ppc_ost(pr->handle, 1);
--		return 0;
-+		return;
- 	}
- 
- 	ret = acpi_processor_get_platform_limit(pr);
-@@ -182,10 +182,8 @@ int acpi_processor_ppc_has_changed(struc
- 		else
- 			acpi_processor_ppc_ost(pr->handle, 0);
- 	}
--	if (ret < 0)
--		return (ret);
--	else
--		return cpufreq_update_policy(pr->id);
-+	if (ret >= 0)
-+		cpufreq_update_policy(pr->id);
- }
- 
- int acpi_processor_get_bios_limit(int cpu, unsigned int *limit)
-Index: linux-pm/include/acpi/processor.h
-===================================================================
---- linux-pm.orig/include/acpi/processor.h
-+++ linux-pm/include/acpi/processor.h
-@@ -295,7 +295,7 @@ static inline void acpi_processor_ffh_cs
- #ifdef CONFIG_CPU_FREQ
- void acpi_processor_ppc_init(void);
- void acpi_processor_ppc_exit(void);
--int acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag);
-+void acpi_processor_ppc_has_changed(struct acpi_processor *pr, int event_flag);
- extern int acpi_processor_get_bios_limit(int cpu, unsigned int *limit);
- #else
- static inline void acpi_processor_ppc_init(void)
+Yeah, I wish it weren't named that way, but I guess we're stuck with
+that one.
