@@ -1,54 +1,76 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: brcmstb-cpufreq: CPUfreq driver for older
- Broadcom STB SoCs
-Date: Fri, 18 Nov 2016 08:39:34 +0530
-Message-ID: <20161118030934.GB3110@vireshk-i7>
-References: <20161110235601.71395-1-code@mmayer.net>
- <20161117090219.GE4894@vireshk-i7>
- <CAGt4E5tguK-wCapbjgP3_b5wbmxVW-W=MnfpPx_5AdrxUWmRnQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: Avoid using inactive policies
+Date: Fri, 18 Nov 2016 08:47:50 +0530
+Message-ID: <20161118031750.GD3110@vireshk-i7>
+References: <2600582.kqN5q7nCq0@vostro.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:36213 "EHLO
+        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751971AbcKRDRy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Nov 2016 22:17:54 -0500
+Received: by mail-pf0-f179.google.com with SMTP id 189so52230878pfz.3
+        for <linux-pm@vger.kernel.org>; Thu, 17 Nov 2016 19:17:54 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <CAGt4E5tguK-wCapbjgP3_b5wbmxVW-W=MnfpPx_5AdrxUWmRnQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <markus.mayer@broadcom.com>
-Cc: Markus Mayer <code@mmayer.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <2600582.kqN5q7nCq0@vostro.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 17-11-16, 10:38, Markus Mayer wrote:
-> No, because I am trying to find the lowest frequency that doesn't
-> require safe mode and it's looping through the table from highest to
-> lowest. So there could still be a lower frequency after the current
-> one that doesn't require safe mode.
+On 17-11-16, 16:08, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> What I can do, however, is something like this:
+> There are two places in the cpufreq core in which low-level driver
+> callbacks may be invoked for an inactive cpufreq policy, which isn't
+> guaranteed to work in general.  Both are due to possible races with
+> CPU offline.
 > 
-> static ssize_t show_brcmstb_safe_freq(struct cpufreq_policy *policy, char *buf)
-> {
->     struct cpufreq_frequency_table *entry;
->     unsigned int safe_freq = 0;
+> First, in cpufreq_get(), the policy may become inactive after
+> the check against policy->cpus in cpufreq_cpu_get() and before
+> policy->rwsem is acquired, in which case using the policy going
+> forward may not be correct.
 > 
->     cpufreq_for_each_valid_entry(entry, policy->freq_table) {
->         if (!(entry->driver_data & BRCMSTB_TBL_SAFE_MODE))
->             safe_freq = entry->frequency;
->    }
+> Second, an analogous situation is possible in cpufreq_update_policy().
 > 
->     return sprintf(buf, "%u\n", safe_freq);
-> }
+> Avoid using inactive policies by adding policy_is_inactive() checks
+> to the code in the above places.
 > 
-> This is using the existing data from the frequency table rather than
-> re-generating it on the fly by calling freq_requires_safe_mode().
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -1526,7 +1526,10 @@ unsigned int cpufreq_get(unsigned int cp
+>  
+>  	if (policy) {
+>  		down_read(&policy->rwsem);
+> -		ret_freq = __cpufreq_get(policy);
+> +
+> +		if (!policy_is_inactive(policy))
+> +			ret_freq = __cpufreq_get(policy);
+> +
+>  		up_read(&policy->rwsem);
+>  
+>  		cpufreq_cpu_put(policy);
+> @@ -2265,6 +2268,9 @@ int cpufreq_update_policy(unsigned int c
+>  
+>  	down_write(&policy->rwsem);
+>  
+> +	if (policy_is_inactive(policy))
 
+You also need to set some value to 'ret' as it is uninitialized right now.
 
-> All my allocations are managed (i.e. using devm* functions), so
-> cleanup should be automatic. Do I still need one?
-
-
-> It's using for a clock node (brcm,brcmstb-cpu-clk-div) which exists
-> independently of this driver.
-
-All these seem fine to me.
+> +		goto unlock;
+> +
+>  	pr_debug("updating policy for CPU %u\n", cpu);
+>  	memcpy(&new_policy, policy, sizeof(*policy));
+>  	new_policy.min = policy->user_policy.min;
 
 -- 
 viresh
