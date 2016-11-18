@@ -1,49 +1,65 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
-Date: Fri, 18 Nov 2016 10:43:29 +0000
-Message-ID: <20161118104329.27xpm7cshfpxykqd@sirena.org.uk>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <20161118030636.GA3110@vireshk-i7>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
+Date: Fri, 18 Nov 2016 11:50:07 +0100
+Message-ID: <CAPDyKFozunxSTBY_vWbdOFRjSHOjpb+KKTJsdMj+dPpzNCyi-w@mail.gmail.com>
+References: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org>
+ <CAPDyKFp5Ay1dN2UQauD7vHxPQP+kghviAAduhpHO7QAmH-1UiA@mail.gmail.com> <CAJZ5v0iGWTk0bvg6OmQiMTi_EftqxU0q17ERj+GcaL_QQ-0Agg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="xyuxqlscjuvzm3z6"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mezzanine.sirena.org.uk ([106.187.55.193]:53850 "EHLO
-        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752654AbcKRKnp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 05:43:45 -0500
-Content-Disposition: inline
-In-Reply-To: <20161118030636.GA3110@vireshk-i7>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:35287 "EHLO
+        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751634AbcKRK5V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Nov 2016 05:57:21 -0500
+Received: by mail-wm0-f51.google.com with SMTP id a197so30157143wmd.0
+        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2016 02:57:21 -0800 (PST)
+In-Reply-To: <CAJZ5v0iGWTk0bvg6OmQiMTi_EftqxU0q17ERj+GcaL_QQ-0Agg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>
 
+On 17 November 2016 at 22:00, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, Nov 17, 2016 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 13 October 2016 at 16:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>> When the pm_runtime_force_suspend|resume() helpers were invented, we still
+>>> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
+>>>
+>>> To make sure these helpers worked for all combinations and without
+>>> introducing too much of complexity, the device was always resumed in
+>>> pm_runtime_force_resume().
+>>>
+>>> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
+>>> unset, we needed to resume the device as the subsystem/driver couldn't
+>>> rely on using runtime PM to do it.
+>>>
+>>> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
+>>> removed this combination, of using CONFIG_PM_SLEEP without the earlier
+>>> CONFIG_PM_RUNTIME.
+>>>
+>>> For this reason we can now rely on the subsystem/driver to use runtime PM
+>>> to resume the device, instead of forcing that to be done in all cases. In
+>>> other words, let's defer the runtime resume to a later point when it's
+>>> actually needed.
+>>>
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>
+>> Rafael, this one is ready to be queued. Unless there are other objections.
+>
+> Not an objection, but I'd like to revisit this when the device
+> dependencies work gets in, as something similar may need to be done
+> for suppliers, in principle.
 
---xyuxqlscjuvzm3z6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I certainly think it would make sense to extend this approach to also
+respect device-dependencies.
 
-On Fri, Nov 18, 2016 at 08:36:36AM +0530, Viresh Kumar wrote:
+However, I suggest we deal with that as a second step, on top of
+$subject patch. It should not be a problem, as we don't have any users
+of device-dependencies that also uses
+pm_runtime_force_suspend|resume(), right?
 
-> Can we please get this series reviewed quickly and come to a conclusion? It has
-> already taken a lot of time getting this merged and the present code seems to be
-> the best possible shot we have, AFAIU.
+Queuing this now, also allow us to get this more widely tested, before
+we continue extending it for dependencies.
 
-There already seems to be extensive, ongoing discusion about this...
-
---xyuxqlscjuvzm3z6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEcBAABCAAGBQJYLttRAAoJECTWi3JdVIfQ574H/0tvcdtY7mtox5xeOuN8poTN
-wE1DaMOa8DwRyKp0ti5XObNEdFZ2EaihW8wJWUJQvETGVy6kVRAHgjAAKrBzkbjO
-7y8N+X/zcdkcoJm+obeFh73H99xwr2TeghDNBieEq4v9zd94tTIjZLexNzZ9IKYk
-z6IsSfgP9Vk6q8h+odCNT0+YH3ihFF4yt9r/QpAy55Ndqhoa99oOdc3A2/MYeYVm
-U3Wjy2tIQpVODW6ews/PHDGQTiDghTmrZtp+3umDdpsxTbfmgGywD+dfs2nyXCsa
-FZbKgy4+I33BavzP+BHRIgJvYvDVTQ5X+IlihJM8qA3C4KdO2Ofe/c+Tq+yZreU=
-=LfXk
------END PGP SIGNATURE-----
-
---xyuxqlscjuvzm3z6--
+Kind regards
+Uffe
