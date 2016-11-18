@@ -1,78 +1,60 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v2 0/9] PCIe port PM: high gloss polish & hotplug support
-Date: Thu, 17 Nov 2016 19:15:15 -0600
-Message-ID: <20161118011515.GB25762@bhelgaas-glaptop.roam.corp.google.com>
-References: <cover.1477611126.git.lukas@wunner.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
+Date: Fri, 18 Nov 2016 08:36:36 +0530
+Message-ID: <20161118030636.GA3110@vireshk-i7>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48888 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752366AbcKRBPU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Nov 2016 20:15:20 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <cover.1477611126.git.lukas@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <cover.1477463128.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Andreas Noever <andreas.noever@gmail.com>, Keith Busch <keith.busch@intel.com>
 
-On Fri, Oct 28, 2016 at 10:52:06AM +0200, Lukas Wunner wrote:
-> Respin of this series to polish the runtime PM support for PCIe ports
-> that was added with v4.8, and extend it to native hotplug ports:
+On 26-10-16, 12:02, Viresh Kumar wrote:
+> Hi,
 > 
-> - All patches have been reviewed by Rafael, patches 1 to 8 have been
->   tested by Mika.  (Thanks a lot!)
+> Some platforms (like TI) have complex DVFS configuration for CPU
+> devices, where multiple regulators are required to be configured to
+> change DVFS state of the device. This was explained well by Nishanth
+> earlier [1].
 > 
-> - Patch 6 ("PCI: Unfold conditions to block runtime PM on PCIe ports")
->   contains a minor change relative to v1 wherein the function returns
->   as soon as a single condition evaluates to true.  (Instead of
->   needlessly evaluating all the remaining conditions.)
+> One of the major complaints around multiple regulators case was that the
+> DT isn't responsible in any way to represent the ordering in which
+> multiple supplies need to be programmed, before or after frequency
+> change. It was considered in this patch and such information is left to
+> the platform specific OPP driver now, which can register its own
+> opp_set_rate() callback with the OPP core and the OPP core will then
+> call it during DVFS.
 > 
-> - Patch 9 was rebased to accommodate to this change but is otherwise
->   the same as before.
+> The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
+> and code to pass values for multiple regulators and verified that they
+> are all properly read by the kernel (using debugfs interface).
 > 
-> As usual I've pushed the series to GitHub to ease reviewing/fetching:
-> https://github.com/l1k/linux/commits/pcie_port_pm_v2
+> Dave Gerlach has already tested it on the real TI platforms and it works
+> well for him.
 > 
-> Link to v1:
-> http://www.spinics.net/lists/linux-pci/msg55347.html
+> This is rebased over: linux-next branch in the PM tree.
 > 
-> Thanks,
-> 
-> Lukas
-> 
-> 
-> Lukas Wunner (9):
->   PCI: Don't acquire ref on parent in pci_bridge_d3_update()
->   PCI: Autosense device removal in pci_bridge_d3_update()
->   PCI: Speed up algorithm in pci_bridge_d3_update()
->   PCI: Activate runtime PM on a PCIe port only if it can suspend
->   PCI: Consolidate conditions to allow runtime PM on PCIe ports
->   PCI: Unfold conditions to block runtime PM on PCIe ports
->   ACPI / hotplug / PCI: Use cached copy of PCI_EXP_SLTCAP_HPC bit
->   ACPI / hotplug / PCI: Make device_is_managed_by_native_pciehp() public
->   PCI: pciehp: Add runtime PM support for PCIe hotplug ports
-> 
->  drivers/pci/bus.c                  |   2 +-
->  drivers/pci/hotplug/acpiphp_glue.c |  31 +-----------
->  drivers/pci/hotplug/pciehp_ctrl.c  |   6 +++
->  drivers/pci/pci-acpi.c             |  24 +++++++++
->  drivers/pci/pci.c                  | 100 ++++++++++++++++++-------------------
->  drivers/pci/pci.h                  |   4 +-
->  drivers/pci/pcie/portdrv_pci.c     |  13 ++---
->  drivers/pci/remove.c               |   2 +-
->  include/linux/pci_hotplug.h        |   2 +
->  9 files changed, 88 insertions(+), 96 deletions(-)
+> V2->V3:
+> - The last patch is new
+> - Removed a debug leftover pr_info() message
+> - Renamed few names as s/set_rate/set_opp
+> - Removed a TODO comment (as it is done now with this series)
+> - created struct for min_uV and max_uV
+> - kerneldoc comments for structures in pm_opp.h
+> - s/const char */const char * const
+> - use kasprintf()
+> - Some more minor reformatting
+> - More Ack/RBY tags added
 
-I applied these to pci/pm for v4.10, thanks!
+Hi guys,
 
-I did make two changes to the changelog of the last patch: you
-mentioned the "subordinate" bus, and I changed it to "secondary".  We
-have often used "subordinate" to refer to the immediately-downstream
-bus, but that's slightly confusing because in the bridge spec,
-"subordinate" means the highest bus number downstream from the bridge,
-while "secondary" refers to the immediately-downstream bridge.  Am I
-making sense or confusing things more?
+Can we please get this series reviewed quickly and come to a conclusion? It has
+already taken a lot of time getting this merged and the present code seems to be
+the best possible shot we have, AFAIU.
 
-Bjorn
+-- 
+viresh
