@@ -1,174 +1,73 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Fri, 18 Nov 2016 12:18:24 -0800
-Message-ID: <20161118201823.GX4082@atomide.com>
-References: <CAKdAkRRWUWmGUFaD=95Zd=wZfqXcs47YXL335Y4A+VmhtdJFTA@mail.gmail.com>
- <20161110184910.GA135921@google.com>
- <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
- <20161111163147.GC7138@atomide.com>
- <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
- <20161111222911.GL7138@atomide.com>
- <20161111223234.GM7138@atomide.com>
- <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
- <20161112001917.GN7138@atomide.com>
- <CAJZ5v0ivMWZ2c8MphWcyz_S=tNgUyUihcP4=Y4Mz_uw7iZ6dMA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] ACPI fixes for v4.9-rc6
+Date: Fri, 18 Nov 2016 22:06:52 +0100
+Message-ID: <CAJZ5v0jC+iPnnB5sHE+6JMJxCLD6Mq8OKNuqKtFra_BzhiA2=g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ivMWZ2c8MphWcyz_S=tNgUyUihcP4=Y4Mz_uw7iZ6dMA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Hi Linus,
 
-* Rafael J. Wysocki <rafael@kernel.org> [161111 16:35]:
-> However, my understanding is that the current code actually works for
-> runtime PM just fine.
+Please pull from the tag
 
-Hmm well I just noticed that for drivers not using autosuspend it can be
-flakey, see the patch below. That probably explains some mysteries people
-are seeing with wakeirqs.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-4.9-rc6
 
-Do you have any better ideas for setting wirq->active on the first
-rpm_suspend()?
+with top-most commit aab0b243b9a2fab7dcee0ce6e13789d3ab0394bf
 
-> What Brian seems to be wanting is to make system resume synchronize
-> the wakeup interrupt at one point, so maybe there could be a "sync"
-> version of dev_pm_disable_wake_irq() to be invoked then?
+ Merge branches 'acpica-fixes', 'acpi-cppc-fixes' and 'acpi-tools-fixes'
 
-We call rpm_resume() from handle_threaded_wake_irq(), that's no better :)
+on top of commit a25f0944ba9b1d8a6813fd6f1a86f1bd59ac25a6
 
-Regards,
+ Linux 4.9-rc5
 
-Tony
+to receive ACPI fixes for v4.9-rc6.
 
-8< -------------------------
->From tony Mon Sep 17 00:00:00 2001
-From: Tony Lindgren <tony@atomide.com>
-Date: Fri, 18 Nov 2016 10:15:34 -0800
-Subject: [PATCH] PM / wakeirq: Fix wakeirq init
+They fix an ACPI thermal management regression introduced by a recent
+FADT handling cleanup, an ACPI tools build issue introduced by a
+recent ACPICA commit and a PCC mailbox initialization bug causing
+lockdep to complain loudly.
 
-I noticed some wakeirq flakeyness with consumer drivers not using
-autosuspend. For drivers not using autosuspend, the wakeirq may never
-get unmasked in rpm_suspend() because of irq desc->depth.
+Specifics:
 
-We are configuring dedicated wakeirqs to start with IRQ_NOAUTOEN as we
-naturally don't want them running until rpm_suspend() is called.
+ - Revert a recent ACPICA cleanup that attempted to get rid of all
+   FADT version 2 legacy, but broke ACPI thermal management on at
+   least one system (Rafael Wysocki).
 
-However, when a consumer driver calls pm_runtime_get functions, we now
-wrongly start with disable_irq_nosync() call on the dedicated wakeirq
-that is disabled to start with.
+ - Fix cross-compiled builds of ACPI tools that stopped working
+   after a recent cleanup related to the handling of header files
+   in ACPICA (Lv Zheng).
 
-This causes desc->depth to toggle between 1 and 2 instead of the usual
-0 and 1. This can prevent enable_irq() from unmasking the wakeirq as
-that only happens at desc->depth 1.
+ - Fix a locking issue in the PCC channel initialization code that
+   invokes devm_request_irq() under a spinlock (among other things)
+   and causes lockdep to complain (Hoan Tran).
 
-This does not necessarily show up with drivers using autosuspend as
-there is time for disable_irq_nosync() before rpm_suspend() gets called
-after the autosuspend timeout.
+Thanks!
 
-Fix the issue by adding wirq->active flag that lazily gets set on
-the first rpm_suspend().
+---------------
 
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/base/power/power.h   | 19 +++++++++++++++++++
- drivers/base/power/runtime.c |  1 +
- drivers/base/power/wakeirq.c | 10 ++++------
- 3 files changed, 24 insertions(+), 6 deletions(-)
+Hoan Tran (1):
+      mailbox: PCC: Fix lockdep warning when request PCC channel
 
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -24,9 +24,24 @@ extern void pm_runtime_remove(struct device *dev);
- struct wake_irq {
- 	struct device *dev;
- 	int irq;
-+	bool active:1;
- 	bool dedicated_irq:1;
- };
- 
-+/* Caller must hold &dev->power.lock to change wirq->active */
-+static inline void dev_pm_check_wake_irq(struct device *dev)
-+{
-+	struct wake_irq *wirq = dev->power.wakeirq;
-+
-+	if (!wirq)
-+		return;
-+
-+	if (unlikely(!wirq->active)) {
-+		wirq->active = true;
-+		wmb();	/* ensure dev_pm_enable_wake_irq() sees active */
-+	}
-+}
-+
- extern void dev_pm_arm_wake_irq(struct wake_irq *wirq);
- extern void dev_pm_disarm_wake_irq(struct wake_irq *wirq);
- 
-@@ -96,6 +111,10 @@ static inline void wakeup_sysfs_remove(struct device *dev) {}
- static inline int pm_qos_sysfs_add(struct device *dev) { return 0; }
- static inline void pm_qos_sysfs_remove(struct device *dev) {}
- 
-+static inline void dev_pm_check_wake_irq(struct device *dev)
-+{
-+}
-+
- static inline void dev_pm_arm_wake_irq(struct wake_irq *wirq)
- {
- }
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -592,6 +592,7 @@ static int rpm_suspend(struct device *dev, int rpmflags)
- 
- 	callback = RPM_GET_CALLBACK(dev, runtime_suspend);
- 
-+	dev_pm_check_wake_irq(dev);
- 	dev_pm_enable_wake_irq(dev);
- 	retval = rpm_callback(callback, dev);
- 	if (retval)
-diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
---- a/drivers/base/power/wakeirq.c
-+++ b/drivers/base/power/wakeirq.c
-@@ -212,8 +212,7 @@ EXPORT_SYMBOL_GPL(dev_pm_set_dedicated_wake_irq);
-  * dev_pm_enable_wake_irq - Enable device wake-up interrupt
-  * @dev: Device
-  *
-- * Called from the bus code or the device driver for
-- * runtime_suspend() to enable the wake-up interrupt while
-+ * Called from rpm_suspend() to enable the wake-up interrupt while
-  * the device is running.
-  *
-  * Note that for runtime_suspend()) the wake-up interrupts
-@@ -224,7 +223,7 @@ void dev_pm_enable_wake_irq(struct device *dev)
- {
- 	struct wake_irq *wirq = dev->power.wakeirq;
- 
--	if (wirq && wirq->dedicated_irq)
-+	if (wirq && wirq->dedicated_irq && wirq->active)
- 		enable_irq(wirq->irq);
- }
- EXPORT_SYMBOL_GPL(dev_pm_enable_wake_irq);
-@@ -233,15 +232,14 @@ EXPORT_SYMBOL_GPL(dev_pm_enable_wake_irq);
-  * dev_pm_disable_wake_irq - Disable device wake-up interrupt
-  * @dev: Device
-  *
-- * Called from the bus code or the device driver for
-- * runtime_resume() to disable the wake-up interrupt while
-+ * Called from rpm_resume() to disable the wake-up interrupt while
-  * the device is running.
-  */
- void dev_pm_disable_wake_irq(struct device *dev)
- {
- 	struct wake_irq *wirq = dev->power.wakeirq;
- 
--	if (wirq && wirq->dedicated_irq)
-+	if (wirq && wirq->dedicated_irq && wirq->active)
- 		disable_irq_nosync(wirq->irq);
- }
- EXPORT_SYMBOL_GPL(dev_pm_disable_wake_irq);
--- 
-2.10.2
+Lv Zheng (1):
+      tools/power/acpi: Remove direct kernel source include reference
+
+Rafael J. Wysocki (1):
+      Revert "ACPICA: FADT support cleanup"
+
+---------------
+
+ drivers/acpi/acpica/tbfadt.c             |  10 +-
+ drivers/mailbox/pcc.c                    |  13 +--
+ include/acpi/actbl.h                     | 164 +++++++++++++------------------
+ include/acpi/platform/aclinux.h          |   3 +
+ tools/power/acpi/Makefile.config         |  23 ++---
+ tools/power/acpi/Makefile.rules          |  40 +++++---
+ tools/power/acpi/tools/acpidbg/Makefile  |   4 +-
+ tools/power/acpi/tools/acpidbg/acpidbg.c |   8 +-
+ tools/power/acpi/tools/acpidump/Makefile |  12 +--
+ 9 files changed, 137 insertions(+), 140 deletions(-)
