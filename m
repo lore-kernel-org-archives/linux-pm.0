@@ -1,122 +1,92 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835
- soc
-Date: Fri, 18 Nov 2016 20:22:25 -0800
-Message-ID: <20161119042224.GA25063@localhost.localdomain>
-References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
- <1478081906-12009-3-git-send-email-kernel@martin.sperl.org>
- <20161117021107.GA2647@localhost.localdomain>
- <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org>
- <20161117151019.GA3115@localhost.localdomain>
- <7957B3CC-0E18-4B27-82EB-EF88B7695E28@martin.sperl.org>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH 1/3] thermal: handle get_temp() errors properly
+Date: Fri, 18 Nov 2016 21:30:15 -0800
+Message-ID: <20161119053014.GA58324@google.com>
+References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
+ <20161119034158.GA26405@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f45.google.com ([74.125.83.45]:33158 "EHLO
+        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750940AbcKSFaT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 19 Nov 2016 00:30:19 -0500
+Received: by mail-pg0-f45.google.com with SMTP id 3so110165165pgd.0
+        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2016 21:30:19 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <7957B3CC-0E18-4B27-82EB-EF88B7695E28-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <20161119034158.GA26405@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, Caesar Wang <wxt@rock-chips.com>, Stephen Barber <smbarber@chromium.org>
 
-Hello Martin,
+Hi,
 
-Thanks for your patience to take the time to explain to me how the
-firmware/linux split is done in your platform. Still, one thing is not
-clear to me.
-
-On Fri, Nov 18, 2016 at 09:32:47AM +0100, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org wrote:
-> 
-
-> The way that firmware works on the RPI is quite different from most others I guess.
-> in principle you got 2 different CPUs on the bcm2835:
-> * ARM, which runs the linux instance
-> * VideoCore 4, which runs the firmware (loading from SD initially) and
->   then booting the ARM.
-> 
-> So this Firmware on VC4 is the one that I am talking about.
-> Without the working firmware linux can not boot on arm.
-
-Given that "without the working firmware linux can not boot on arm",
-
-(...)
-
-> As far as I understand the conversion is continuous (as soon as the HW is
-> configured). This case is there primarily to handle the situation where
-> we initialize the HW ourselves (see line 226 and below), and we immediately
-
-and around line 226 we have the comment:
-+       /*
-+        * right now the FW does set up the HW-block, so we are not
-+        * touching the configuration registers.
-+        * But if the HW is not enabled, then set it up
-+        * using "sane" values used by the firmware right now.
-+        */
-
-
-> want to read the ADC value before the first conversion is finished.
-> 
-
-then, does the firmware initializes the device or not?
-
-What are the cases you would load this driver but still get an
-uninitialized device? That looks like some bug workaround hidden
-somewhere. Do system integrators/engineers need to be aware of this w/a?
-Would the driver work right aways when the subsystem is loaded during
-boot? How about module insertion?
-
-
-Who has the ownership of this device?
-
-> The above mentioned “configuration if not running” reflect the values that
-> the FW is currently setting. We should not change those values as long as the
-> Firmware is also reading the temperature on its own.
-
-hmm.. that looks like racy to me. Again, How do you synchronize accesses to
-this device? What if you configure the device and right after the
-firmware updates the configs? How do you make sure the configs you are
-writing here are the same used by the firmware? What if the firmware
-version changes? What versions of the firmware does this driver support?
-
-Would it make sense to simply always initialize the device? Do you have
-a way to tell the firmware that it should not use the device?
-
-Or, if you want to keep the device driver simply being a dummy reader,
-would it make sense to simply avoid writing configurations to the
-device, and simply retry to check if the firmware gets the device
-initialized?
-
-> 
+On Fri, Nov 18, 2016 at 07:41:59PM -0800, Eduardo Valentin wrote:
+> On Fri, Nov 18, 2016 at 03:52:55PM -0800, Brian Norris wrote:
+> > If using CONFIG_THERMAL_EMULATION, there's a corner case where we might
+> > get an error from the zone's get_temp() callback, but we'll ignore that
+> > and keep using its value. Let's just error out properly instead.
 > > 
-> >> So do you need another version of the patchset that uses that new API?
+> > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> > ---
+> >  drivers/thermal/thermal_core.c | 3 +++
+> >  1 file changed, 3 insertions(+)
 > > 
-> > I think the API usage is change that can be done together with
-> > clarification for the above questions too: on hardware state,
-> > firmware loading, maybe a master driver dependency, and the ADC
-> > conversion sequence, which are not well clear to me on this driver. As long as
-> > this is clarified and documented in the code (can be simple comments so
-> > it is clear to whoever reads in the future), then I would be OK with
-> > this driver. 
+> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> > index 911fd964c742..0fa497f10d25 100644
+> > --- a/drivers/thermal/thermal_core.c
+> > +++ b/drivers/thermal/thermal_core.c
+> > @@ -494,6 +494,8 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+> >  	mutex_lock(&tz->lock);
+> >  
+> >  	ret = tz->ops->get_temp(tz, temp);
+> > +	if (ret)
+> > +		goto exit_unlock;
 > 
-> So how do you want this to get “documented” in the driver?
-> The setup and Firmware is a generic feature of the SOC, so if we would put
-> some clarifications in this driver, then we would need to put it in every
-> bcm283X driver (which seems unreasonable).
+> Yeah, but the follow through is intentional, if I am not mistaken.
+
+OK...but it has a bug. It potentially utilizes an uninitialized value
+for *temp.
+
+> >  
+> >  	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
 > 
+> Even if the driver is not able to read real temperature, but emul temp
+> is configured, then there is still opportunity to report the emulated
+> temperature.
 
-I think a simple comment explaining the firmware dependency and the
-expected pre-conditions to get this driver working in a sane state would
-do it.
+OK, maybe, but you should avoid doing this comparison then:
 
-A better device initialization would also be appreciated. Based on my
-limited understanding of this platform, and your explanations, this
-device seams to have a serious race condition with firmware while
-accessing this device.
+513                 if (!ret && *temp < crit_temp)
+514                         *temp = tz->emul_temperature;
 
-> Thanks,
-> 	Martin
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Note that 'ret' might be 0 (from the calls to ->get_trip_type()), and then
+you're comparing with the uninitialized value of *temp. So you need some
+solution that accounts for this and decides to ignore the real
+temperature properly.
+
+> >  		for (count = 0; count < tz->trips; count++) {
+> > @@ -514,6 +516,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+> >  			*temp = tz->emul_temperature;
+> 
+> And if you check the lines at the bottom of the loop, you will see that,
+> in the fail case, we will stil compare to what is the content of temp,
+> which might be problematic.
+
+Yes...are you saying the same thing I am above?
+
+> I would prefer we consider the patch I sent
+> some time ago:
+> https://patchwork.kernel.org/patch/7876381/
+
+Honestly I didn't look that deeply into the framework here (and I also
+don't use CONFIG_THERMAL_EMULATION), I was just fixing something that
+was obviously wrong.
+
+But on first read, that patch looks good to me -- although it'd be good
+to note the uninitialized value fix in the comit log. Any reason that
+didn't end up getting merged? It looks like it got reviewed, and you're
+a thermal subsystem maintainer...
+
+Brian
