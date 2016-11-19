@@ -1,254 +1,122 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH 3/3] thermal: rockchip: don't pass table structs by value
-Date: Sat, 19 Nov 2016 12:03:32 +0800
-Message-ID: <0a05cc27-53d2-3c81-7ccc-31fd22ba584a@rock-chips.com>
-References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
- <1479513177-81504-3-git-send-email-briannorris@chromium.org>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835
+ soc
+Date: Fri, 18 Nov 2016 20:22:25 -0800
+Message-ID: <20161119042224.GA25063@localhost.localdomain>
+References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
+ <1478081906-12009-3-git-send-email-kernel@martin.sperl.org>
+ <20161117021107.GA2647@localhost.localdomain>
+ <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org>
+ <20161117151019.GA3115@localhost.localdomain>
+ <7957B3CC-0E18-4B27-82EB-EF88B7695E28@martin.sperl.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1479513177-81504-3-git-send-email-briannorris@chromium.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Barber <smbarber@chromium.org>, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <7957B3CC-0E18-4B27-82EB-EF88B7695E28-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-在 2016年11月19日 07:52, Brian Norris 写道:
-> This driver passes struct chip_tsadc_table by value throughout; this is
-> inefficient, and AFAICT, there is no reason for it. Let's pass pointers
-> instead.
->
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-Reviewed-by: Caesar Wang <wxt@rock-chips.com>
-Tested-by: Caesar Wang <wxt@rock-chips.com>
+Hello Martin,
 
-Yup, that make sense to improve efficiency.
-Thanks the fixes.
+Thanks for your patience to take the time to explain to me how the
+firmware/linux split is done in your platform. Still, one thing is not
+clear to me.
 
-And tested on rk3399 evb board.
+On Fri, Nov 18, 2016 at 09:32:47AM +0100, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org wrote:
+> 
 
-> ---
->   drivers/thermal/rockchip_thermal.c | 80 +++++++++++++++++++-------------------
->   1 file changed, 40 insertions(+), 40 deletions(-)
->
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index 35554d146b9d..30fb95a0dff0 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -118,11 +118,11 @@ struct rockchip_tsadc_chip {
->   	void (*control)(void __iomem *reg, bool on);
->   
->   	/* Per-sensor methods */
-> -	int (*get_temp)(struct chip_tsadc_table table,
-> +	int (*get_temp)(const struct chip_tsadc_table *table,
->   			int chn, void __iomem *reg, int *temp);
-> -	void (*set_alarm_temp)(struct chip_tsadc_table table,
-> +	void (*set_alarm_temp)(const struct chip_tsadc_table *table,
->   			       int chn, void __iomem *reg, int temp);
-> -	void (*set_tshut_temp)(struct chip_tsadc_table table,
-> +	void (*set_tshut_temp)(const struct chip_tsadc_table *table,
->   			       int chn, void __iomem *reg, int temp);
->   	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
->   
-> @@ -397,26 +397,26 @@ static const struct tsadc_table rk3399_code_table[] = {
->   	{TSADCV3_DATA_MASK, 125000},
->   };
->   
-> -static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
-> +static u32 rk_tsadcv2_temp_to_code(const struct chip_tsadc_table *table,
->   				   int temp)
->   {
->   	int high, low, mid;
->   	u32 error = 0;
->   
->   	low = 0;
-> -	high = table.length - 1;
-> +	high = table->length - 1;
->   	mid = (high + low) / 2;
->   
->   	/* Return mask code data when the temp is over table range */
-> -	if (temp < table.id[low].temp || temp > table.id[high].temp) {
-> -		error = table.data_mask;
-> +	if (temp < table->id[low].temp || temp > table->id[high].temp) {
-> +		error = table->data_mask;
->   		goto exit;
->   	}
->   
->   	while (low <= high) {
-> -		if (temp == table.id[mid].temp)
-> -			return table.id[mid].code;
-> -		else if (temp < table.id[mid].temp)
-> +		if (temp == table->id[mid].temp)
-> +			return table->id[mid].code;
-> +		else if (temp < table->id[mid].temp)
->   			high = mid - 1;
->   		else
->   			low = mid + 1;
-> @@ -429,28 +429,28 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
->   	return error;
->   }
->   
-> -static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
-> -				   int *temp)
-> +static int rk_tsadcv2_code_to_temp(const struct chip_tsadc_table *table,
-> +				   u32 code, int *temp)
->   {
->   	unsigned int low = 1;
-> -	unsigned int high = table.length - 1;
-> +	unsigned int high = table->length - 1;
->   	unsigned int mid = (low + high) / 2;
->   	unsigned int num;
->   	unsigned long denom;
->   
-> -	WARN_ON(table.length < 2);
-> +	WARN_ON(table->length < 2);
->   
-> -	switch (table.mode) {
-> +	switch (table->mode) {
->   	case ADC_DECREMENT:
-> -		code &= table.data_mask;
-> -		if (code < table.id[high].code)
-> +		code &= table->data_mask;
-> +		if (code < table->id[high].code)
->   			return -EAGAIN;		/* Incorrect reading */
->   
->   		while (low <= high) {
-> -			if (code >= table.id[mid].code &&
-> -			    code < table.id[mid - 1].code)
-> +			if (code >= table->id[mid].code &&
-> +			    code < table->id[mid - 1].code)
->   				break;
-> -			else if (code < table.id[mid].code)
-> +			else if (code < table->id[mid].code)
->   				low = mid + 1;
->   			else
->   				high = mid - 1;
-> @@ -459,15 +459,15 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
->   		}
->   		break;
->   	case ADC_INCREMENT:
-> -		code &= table.data_mask;
-> -		if (code < table.id[low].code)
-> +		code &= table->data_mask;
-> +		if (code < table->id[low].code)
->   			return -EAGAIN;		/* Incorrect reading */
->   
->   		while (low <= high) {
-> -			if (code <= table.id[mid].code &&
-> -			    code > table.id[mid - 1].code)
-> +			if (code <= table->id[mid].code &&
-> +			    code > table->id[mid - 1].code)
->   				break;
-> -			else if (code > table.id[mid].code)
-> +			else if (code > table->id[mid].code)
->   				low = mid + 1;
->   			else
->   				high = mid - 1;
-> @@ -477,7 +477,7 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
->   		break;
->   	default:
->   		pr_err("%s: invalid conversion table, mode=%d\n",
-> -			__func__, table.mode);
-> +			__func__, table->mode);
->   		return -EINVAL;
->   	}
->   
-> @@ -487,10 +487,10 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
->   	 * temperature between 2 table entries is linear and interpolate
->   	 * to produce less granular result.
->   	 */
-> -	num = table.id[mid].temp - table.id[mid - 1].temp;
-> -	num *= abs(table.id[mid - 1].code - code);
-> -	denom = abs(table.id[mid - 1].code - table.id[mid].code);
-> -	*temp = table.id[mid - 1].temp + (num / denom);
-> +	num = table->id[mid].temp - table->id[mid - 1].temp;
-> +	num *= abs(table->id[mid - 1].code - code);
-> +	denom = abs(table->id[mid - 1].code - table->id[mid].code);
-> +	*temp = table->id[mid - 1].temp + (num / denom);
->   
->   	return 0;
->   }
-> @@ -646,7 +646,7 @@ static void rk_tsadcv3_control(void __iomem *regs, bool enable)
->   	writel_relaxed(val, regs + TSADCV2_AUTO_CON);
->   }
->   
-> -static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
-> +static int rk_tsadcv2_get_temp(const struct chip_tsadc_table *table,
->   			       int chn, void __iomem *regs, int *temp)
->   {
->   	u32 val;
-> @@ -656,17 +656,17 @@ static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
->   	return rk_tsadcv2_code_to_temp(table, val, temp);
->   }
->   
-> -static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
-> +static void rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
->   				  int chn, void __iomem *regs, int temp)
->   {
->   	u32 alarm_value, int_en;
->   
->   	/* Make sure the value is valid */
->   	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
-> -	if (alarm_value == table.data_mask)
-> +	if (alarm_value == table->data_mask)
->   		return;
->   
-> -	writel_relaxed(alarm_value & table.data_mask,
-> +	writel_relaxed(alarm_value & table->data_mask,
->   		       regs + TSADCV2_COMP_INT(chn));
->   
->   	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
-> @@ -674,14 +674,14 @@ static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
->   	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
->   }
->   
-> -static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
-> +static void rk_tsadcv2_tshut_temp(const struct chip_tsadc_table *table,
->   				  int chn, void __iomem *regs, int temp)
->   {
->   	u32 tshut_value, val;
->   
->   	/* Make sure the value is valid */
->   	tshut_value = rk_tsadcv2_temp_to_code(table, temp);
-> -	if (tshut_value == table.data_mask)
-> +	if (tshut_value == table->data_mask)
->   		return;
->   
->   	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
-> @@ -891,7 +891,7 @@ static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
->   	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
->   		__func__, sensor->id, low, high);
->   
-> -	tsadc->set_alarm_temp(tsadc->table,
-> +	tsadc->set_alarm_temp(&tsadc->table,
->   			      sensor->id, thermal->regs, high);
->   
->   	return 0;
-> @@ -904,7 +904,7 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
->   	const struct rockchip_tsadc_chip *tsadc = sensor->thermal->chip;
->   	int retval;
->   
-> -	retval = tsadc->get_temp(tsadc->table,
-> +	retval = tsadc->get_temp(&tsadc->table,
->   				 sensor->id, thermal->regs, out_temp);
->   	dev_dbg(&thermal->pdev->dev, "sensor %d - temp: %d, retval: %d\n",
->   		sensor->id, *out_temp, retval);
-> @@ -988,7 +988,7 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
->   	int error;
->   
->   	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
-> -	tsadc->set_tshut_temp(tsadc->table, id, thermal->regs,
-> +	tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
->   			      thermal->tshut_temp);
->   
->   	sensor->thermal = thermal;
-> @@ -1202,7 +1202,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
->   
->   		thermal->chip->set_tshut_mode(id, thermal->regs,
->   					      thermal->tshut_mode);
-> -		thermal->chip->set_tshut_temp(thermal->chip->table,
-> +		thermal->chip->set_tshut_temp(&thermal->chip->table,
->   					      id, thermal->regs,
->   					      thermal->tshut_temp);
->   	}
+> The way that firmware works on the RPI is quite different from most others I guess.
+> in principle you got 2 different CPUs on the bcm2835:
+> * ARM, which runs the linux instance
+> * VideoCore 4, which runs the firmware (loading from SD initially) and
+>   then booting the ARM.
+> 
+> So this Firmware on VC4 is the one that I am talking about.
+> Without the working firmware linux can not boot on arm.
+
+Given that "without the working firmware linux can not boot on arm",
+
+(...)
+
+> As far as I understand the conversion is continuous (as soon as the HW is
+> configured). This case is there primarily to handle the situation where
+> we initialize the HW ourselves (see line 226 and below), and we immediately
+
+and around line 226 we have the comment:
++       /*
++        * right now the FW does set up the HW-block, so we are not
++        * touching the configuration registers.
++        * But if the HW is not enabled, then set it up
++        * using "sane" values used by the firmware right now.
++        */
+
+
+> want to read the ADC value before the first conversion is finished.
+> 
+
+then, does the firmware initializes the device or not?
+
+What are the cases you would load this driver but still get an
+uninitialized device? That looks like some bug workaround hidden
+somewhere. Do system integrators/engineers need to be aware of this w/a?
+Would the driver work right aways when the subsystem is loaded during
+boot? How about module insertion?
+
+
+Who has the ownership of this device?
+
+> The above mentioned “configuration if not running” reflect the values that
+> the FW is currently setting. We should not change those values as long as the
+> Firmware is also reading the temperature on its own.
+
+hmm.. that looks like racy to me. Again, How do you synchronize accesses to
+this device? What if you configure the device and right after the
+firmware updates the configs? How do you make sure the configs you are
+writing here are the same used by the firmware? What if the firmware
+version changes? What versions of the firmware does this driver support?
+
+Would it make sense to simply always initialize the device? Do you have
+a way to tell the firmware that it should not use the device?
+
+Or, if you want to keep the device driver simply being a dummy reader,
+would it make sense to simply avoid writing configurations to the
+device, and simply retry to check if the firmware gets the device
+initialized?
+
+> 
+> > 
+> >> So do you need another version of the patchset that uses that new API?
+> > 
+> > I think the API usage is change that can be done together with
+> > clarification for the above questions too: on hardware state,
+> > firmware loading, maybe a master driver dependency, and the ADC
+> > conversion sequence, which are not well clear to me on this driver. As long as
+> > this is clarified and documented in the code (can be simple comments so
+> > it is clear to whoever reads in the future), then I would be OK with
+> > this driver. 
+> 
+> So how do you want this to get “documented” in the driver?
+> The setup and Firmware is a generic feature of the SOC, so if we would put
+> some clarifications in this driver, then we would need to put it in every
+> bcm283X driver (which seems unreasonable).
+> 
+
+I think a simple comment explaining the firmware dependency and the
+expected pre-conditions to get this driver working in a sane state would
+do it.
+
+A better device initialization would also be appreciated. Based on my
+limited understanding of this platform, and your explanations, this
+device seams to have a serious race condition with firmware while
+accessing this device.
+
+> Thanks,
+> 	Martin
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
