@@ -1,92 +1,71 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH 1/3] thermal: handle get_temp() errors properly
-Date: Fri, 18 Nov 2016 21:30:15 -0800
-Message-ID: <20161119053014.GA58324@google.com>
-References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
- <20161119034158.GA26405@localhost.localdomain>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v5 7/7] iommu/exynos: Use device dependency links to
+ control runtime pm
+Date: Sat, 19 Nov 2016 12:11:57 +0100
+Message-ID: <20161119111157.GA364@wunner.de>
+References: <1476948173-21093-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20161020072336eucas1p24a2b020f69b6ae1f55e1760e6e0e94f9@eucas1p2.samsung.com>
+ <1476948173-21093-8-git-send-email-m.szyprowski@samsung.com>
+ <20161107214747.GJ1764@wotan.suse.de>
+ <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f45.google.com ([74.125.83.45]:33158 "EHLO
-        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750940AbcKSFaT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 19 Nov 2016 00:30:19 -0500
-Received: by mail-pg0-f45.google.com with SMTP id 3so110165165pgd.0
-        for <linux-pm@vger.kernel.org>; Fri, 18 Nov 2016 21:30:19 -0800 (PST)
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161119034158.GA26405@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <4bc652ce-6cf9-f4df-4793-e126cf81079d@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org, Joerg Roedel <joro@8bytes.org>, Inki Dae <inki.dae@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mark Brown <broonie@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>, Grant Likely <grant.likely@secretlab.ca>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lars-Peter Clausen <lars@metafoo.de>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, Caesar Wang <wxt@rock-chips.com>, Stephen Barber <smbarber@chromium.org>
 
-Hi,
-
-On Fri, Nov 18, 2016 at 07:41:59PM -0800, Eduardo Valentin wrote:
-> On Fri, Nov 18, 2016 at 03:52:55PM -0800, Brian Norris wrote:
-> > If using CONFIG_THERMAL_EMULATION, there's a corner case where we might
-> > get an error from the zone's get_temp() callback, but we'll ignore that
-> > and keep using its value. Let's just error out properly instead.
-> > 
-> > Signed-off-by: Brian Norris <briannorris@chromium.org>
-> > ---
-> >  drivers/thermal/thermal_core.c | 3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> > index 911fd964c742..0fa497f10d25 100644
-> > --- a/drivers/thermal/thermal_core.c
-> > +++ b/drivers/thermal/thermal_core.c
-> > @@ -494,6 +494,8 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
-> >  	mutex_lock(&tz->lock);
-> >  
-> >  	ret = tz->ops->get_temp(tz, temp);
-> > +	if (ret)
-> > +		goto exit_unlock;
+On Tue, Nov 08, 2016 at 08:27:12AM +0100, Marek Szyprowski wrote:
+> On 2016-11-07 22:47, Luis R. Rodriguez wrote:
+> > If so
+> > why? If this issue is present also on systems that only use ACPI is
+> > this possibly due to an ACPI firmware bug  or the lack of some semantics
+> > in ACPI to express ordering in a better way? If the issue is device
+> > tree related only is this due to the lack of semantics in device tree
+> > to express some more complex dependency ?
 > 
-> Yeah, but the follow through is intentional, if I am not mistaken.
+> The main feature of device links that is used in this patch is enabling
+> runtime pm dependency between Exynos SYSMMU controller (called it client
+> device) and the device, for which it implements DMA address translation
+> (called master device). The assumptions are following:
+> 1. master device driver is completely unaware of the Exynos SYSMMU presence,
+>    IOMMU is transparently hooked up and managed by DMA-mapping framework
+> 2. SYSMMU belongs to the same power domain as it's master device
+> 3. SYSMMU is optional, master device can fully operate without it, with
+>    simple DMA address translation (DMA address == physical address)
+> 4. Master device implements runtime pm, what in turn causes respective
+>    power domain to be turned on/off
+> 5. DMA-mapping and IOMMU frameworks provides no calls to notify SYSMMU
+>    when its master device is performing DMA operations, so SYSMMU has
+>    to be runtime active
+> 6. Currently SYSMMU always sets its runtime pm status to active after
+>    attaching to its master device to ensure proper hardware state. This
+>    prevents power domain to be turned off, even when master device sets
+>    its runtime pm status to suspended.
+> 7. Exynos SYSMMU has to be runtime active at the same time when its
+>    master device is runtime active to it to perform DMA operations and
+>    allow the power domain to be turned off, when master device is
+>    runtime suspended.
+> 8. The terms of device links, Exynos SYSMMU is a 'consumer' and master
+>    device is a 'supplier'.
 
-OK...but it has a bug. It potentially utilizes an uninitialized value
-for *temp.
+You seem to have mixed up the consumer and supplier in point 8 above.
+Your code is such that the SYSMMU is the supplier and the master device
+is the consumer:
 
-> >  
-> >  	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz->emul_temperature) {
-> 
-> Even if the driver is not able to read real temperature, but emul temp
-> is configured, then there is still opportunity to report the emulated
-> temperature.
+	device_link_add(dev, data->sysmmu, DL_FLAG_PM_RUNTIME);
 
-OK, maybe, but you should avoid doing this comparison then:
+Prototype of device_link_add:
 
-513                 if (!ret && *temp < crit_temp)
-514                         *temp = tz->emul_temperature;
+	struct device_link *device_link_add(struct device *consumer,
+				            struct device *supplier,
+					    u32 flags);
 
-Note that 'ret' might be 0 (from the calls to ->get_trip_type()), and then
-you're comparing with the uninitialized value of *temp. So you need some
-solution that accounts for this and decides to ignore the real
-temperature properly.
+Your code is correct, only point 8 above is wrong.
 
-> >  		for (count = 0; count < tz->trips; count++) {
-> > @@ -514,6 +516,7 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
-> >  			*temp = tz->emul_temperature;
-> 
-> And if you check the lines at the bottom of the loop, you will see that,
-> in the fail case, we will stil compare to what is the content of temp,
-> which might be problematic.
+Best regards,
 
-Yes...are you saying the same thing I am above?
-
-> I would prefer we consider the patch I sent
-> some time ago:
-> https://patchwork.kernel.org/patch/7876381/
-
-Honestly I didn't look that deeply into the framework here (and I also
-don't use CONFIG_THERMAL_EMULATION), I was just fixing something that
-was obviously wrong.
-
-But on first read, that patch looks good to me -- although it'd be good
-to note the uninitialized value fix in the comit log. Any reason that
-didn't end up getting merged? It looks like it got reviewed, and you're
-a thermal subsystem maintainer...
-
-Brian
+Lukas
