@@ -1,71 +1,132 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal/powerclamp: add back module device table
-Date: Mon, 21 Nov 2016 20:27:58 +0800
-Message-ID: <1479731278.2360.12.camel@intel.com>
-References: <1479150525-13225-1-git-send-email-jacob.jun.pan@linux.intel.com>
-         <20161115070332.GA26176@kroah.com> <20161117114216.3fa995b4@jacob-builder>
-         <1479699790.2360.10.camel@intel.com> <20161121071322.GA5006@kroah.com>
+From: Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
+Date: Mon, 21 Nov 2016 12:37:02 +0000
+Message-ID: <87zikt6mc1.fsf@arm.com>
+References: <1478210075-92045-1-git-send-email-lina.iyer@linaro.org> <1478210075-92045-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <20161121071322.GA5006@kroah.com>
-Sender: stable-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, stable@vger.kernel.org, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-reply-to: <1478210075-92045-2-git-send-email-lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, Juri.Lelli-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2016-11-21 at 08:13 +0100, Greg Kroah-Hartman wrote:
-> On Mon, Nov 21, 2016 at 11:43:10AM +0800, Zhang Rui wrote:
-> > 
-> > On Thu, 2016-11-17 at 11:42 -0800, Jacob Pan wrote:
-> > > 
-> > > On Tue, 15 Nov 2016 08:03:32 +0100
-> > > Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> > > 
-> > > > 
-> > > > 
-> > > > On Mon, Nov 14, 2016 at 11:08:45AM -0800, Jacob Pan wrote:
-> > > > > 
-> > > > > 
-> > > > > Commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 replaced
-> > > > > module
-> > > > > cpu id table with a cpu feature check, which is logically
-> > > > > correct.
-> > > > > But we need the module device table to allow module auto
-> > > > > loading.
-> > > > > 
-> > > > > Fixes:3105f234 thermal/powerclamp: correct cpu support check
-> > > > > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > > > > ---
-> > > > >  drivers/thermal/intel_powerclamp.c | 9 ++++++++-
-> > > > >  1 file changed, 8 insertions(+), 1 deletion(-)  
-> > > > <formletter>
-> > > > 
-> > > > This is not the correct way to submit patches for inclusion in
-> > > > the
-> > > > stable kernel tree.  Please read
-> > > > Documentation/stable_kernel_rules.txt
-> > > > for how to do this properly.
-> > > > 
-> > > > </formletter>
-> > > Good to know, thanks. Rui will take care of it this time. Per Rui
-> > > "I will apply patch 1 and queue up for next -rc and 4.8 stable."
-> > > 
-> > Just find another problem.
-> > We're still missing this upstream
-> > commit 3105f234e0aba43e44e277c20f9b32ee8add43d4
-> > (thermal/powerclamp:
-> > correct cpu support check) for 4.7 stable, and in this case, we can
-> > not
-> > queue this patch for both 4.7 and 4.8 stable at the moment because
-> > it
-> > does not apply to 4.7 stable.
-> I don't understand, 4.7 is end-of-life, no one cares about it
-> anymore,
+Hi,
 
-sorry, I was not aware of that.
-will send the patch out tomorrow.
+On Thu, Nov 03 2016 at 21:54, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> Re-using idle state definition provided by arm,idle-state for domain
+> idle states creates a lot of confusion and limits further evolution of
+> the domain idle definition. To keep things clear and simple, define a
+> idle states for domain using a new compatible "domain-idle-state".
+>
+> Fix existing PM domains code to look for the newly defined compatible.
 
-thanks,
-rui
+This looks good to me, pinging for review from others/queue for merge.
+
+Best,
+Brendan
+
+>
+> Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
+>  .../devicetree/bindings/power/power_domain.txt     |  8 +++---
+>  drivers/base/power/domain.c                        |  2 +-
+>  3 files changed, 38 insertions(+), 5 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
+> new file mode 100644
+> index 0000000..eefc7ed
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
+> @@ -0,0 +1,33 @@
+> +PM Domain Idle State Node:
+> +
+> +A domain idle state node represents the state parameters that will be used to
+> +select the state when there are no active components in the domain.
+> +
+> +The state node has the following parameters -
+> +
+> +- compatible:
+> +	Usage: Required
+> +	Value type: <string>
+> +	Definition: Must be "domain-idle-state".
+> +
+> +- entry-latency-us
+> +	Usage: Required
+> +	Value type: <prop-encoded-array>
+> +	Definition: u32 value representing worst case latency in
+> +		    microseconds required to enter the idle state.
+> +		    The exit-latency-us duration may be guaranteed
+> +		    only after entry-latency-us has passed.
+> +
+> +- exit-latency-us
+> +	Usage: Required
+> +	Value type: <prop-encoded-array>
+> +	Definition: u32 value representing worst case latency
+> +		    in microseconds required to exit the idle state.
+> +
+> +- min-residency-us
+> +	Usage: Required
+> +	Value type: <prop-encoded-array>
+> +	Definition: u32 value representing minimum residency duration
+> +		    in microseconds after which the idle state will yield
+> +		    power benefits after overcoming the overhead in entering
+> +i		    the idle state.
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index e165036..723e1ad 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -31,7 +31,7 @@ Optional properties:
+>
+>  - domain-idle-states : A phandle of an idle-state that shall be soaked into a
+>                  generic domain power state. The idle state definitions are
+> -                compatible with arm,idle-state specified in [1].
+> +                compatible with domain-idle-state specified in [1].
+>    The domain-idle-state property reflects the idle state of this PM domain and
+>    not the idle states of the devices or sub-domains in the PM domain. Devices
+>    and sub-domains have their own idle-states independent of the parent
+> @@ -85,7 +85,7 @@ Example 3:
+>  	};
+>
+>  	DOMAIN_RET: state@0 {
+> -		compatible = "arm,idle-state";
+> +		compatible = "domain-idle-state";
+>  		reg = <0x0>;
+>  		entry-latency-us = <1000>;
+>  		exit-latency-us = <2000>;
+> @@ -93,7 +93,7 @@ Example 3:
+>  	};
+>
+>  	DOMAIN_PWR_DN: state@1 {
+> -		compatible = "arm,idle-state";
+> +		compatible = "domain-idle-state";
+>  		reg = <0x1>;
+>  		entry-latency-us = <5000>;
+>  		exit-latency-us = <8000>;
+> @@ -118,4 +118,4 @@ The node above defines a typical PM domain consumer device, which is located
+>  inside a PM domain with index 0 of a power controller represented by a node
+>  with the label "power".
+>
+> -[1]. Documentation/devicetree/bindings/arm/idle-states.txt
+> +[1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 661737c..f0bc672 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2048,7 +2048,7 @@ int genpd_dev_pm_attach(struct device *dev)
+>  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
+>
+>  static const struct of_device_id idle_state_match[] = {
+> -	{ .compatible = "arm,idle-state", },
+> +	{ .compatible = "domain-idle-state", },
+>  	{ }
+>  };
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
