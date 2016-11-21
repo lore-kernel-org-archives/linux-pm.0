@@ -1,62 +1,106 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] thermal/powerclamp: add back module device table
-Date: Mon, 21 Nov 2016 08:13:22 +0100
-Message-ID: <20161121071322.GA5006@kroah.com>
-References: <1479150525-13225-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <20161115070332.GA26176@kroah.com>
- <20161117114216.3fa995b4@jacob-builder>
- <1479699790.2360.10.camel@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition
+ rate limits
+Date: Mon, 21 Nov 2016 15:38:05 +0530
+Message-ID: <20161121100805.GB10014@vireshk-i7>
+References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <stable-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:36624 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752469AbcKUKIJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 05:08:09 -0500
+Received: by mail-pf0-f175.google.com with SMTP id 189so63998680pfz.3
+        for <linux-pm@vger.kernel.org>; Mon, 21 Nov 2016 02:08:09 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1479699790.2360.10.camel@intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, stable@vger.kernel.org, Rafael Wysocki <rafael.j.wysocki@intel.com>
+In-Reply-To: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, tkjos@google.com
 
-On Mon, Nov 21, 2016 at 11:43:10AM +0800, Zhang Rui wrote:
-> On Thu, 2016-11-17 at 11:42 -0800, Jacob Pan wrote:
-> > On Tue, 15 Nov 2016 08:03:32 +0100
-> > Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> > 
-> > > 
-> > > On Mon, Nov 14, 2016 at 11:08:45AM -0800, Jacob Pan wrote:
-> > > > 
-> > > > Commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 replaced module
-> > > > cpu id table with a cpu feature check, which is logically
-> > > > correct.
-> > > > But we need the module device table to allow module auto loading.
-> > > > 
-> > > > Fixes:3105f234 thermal/powerclamp: correct cpu support check
-> > > > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > > > ---
-> > > >  drivers/thermal/intel_powerclamp.c | 9 ++++++++-
-> > > >  1 file changed, 8 insertions(+), 1 deletion(-)  
-> > > <formletter>
-> > > 
-> > > This is not the correct way to submit patches for inclusion in the
-> > > stable kernel tree.  Please read
-> > > Documentation/stable_kernel_rules.txt
-> > > for how to do this properly.
-> > > 
-> > > </formletter>
-> > Good to know, thanks. Rui will take care of it this time. Per Rui
-> > "I will apply patch 1 and queue up for next -rc and 4.8 stable."
-> > 
+On 17-11-16, 10:48, Viresh Kumar wrote:
+> From: Steve Muckle <smuckle.linux@gmail.com>
 > 
-> Just find another problem.
-> We're still missing this upstream
-> commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 (thermal/powerclamp:
-> correct cpu support check) for 4.7 stable, and in this case, we can not
-> queue this patch for both 4.7 and 4.8 stable at the moment because it
-> does not apply to 4.7 stable.
+> The rate-limit tunable in the schedutil governor applies to transitions
+> to both lower and higher frequencies. On several platforms it is not the
+> ideal tunable though, as it is difficult to get best power/performance
+> figures using the same limit in both directions.
+> 
+> It is common on mobile platforms with demanding user interfaces to want
+> to increase frequency rapidly for example but decrease slowly.
+> 
+> One of the example can be a case where we have short busy periods
+> followed by similar or longer idle periods. If we keep the rate-limit
+> high enough, we will not go to higher frequencies soon enough. On the
+> other hand, if we keep it too low, we will have too many frequency
+> transitions, as we will always reduce the frequency after the busy
+> period.
+> 
+> It would be very useful if we can set low rate-limit while increasing
+> the frequency (so that we can respond to the short busy periods quickly)
+> and high rate-limit while decreasing frequency (so that we don't reduce
+> the frequency immediately after the short busy period and that may avoid
+> frequency transitions before the next busy period).
+> 
+> Implement separate up/down transition rate limits. Note that the
+> governor avoids frequency recalculations for a period equal to minimum
+> of up and down rate-limit. A global mutex is also defined to protect
+> updates to min_rate_limit_us via two separate sysfs files.
+> 
+> Note that this wouldn't change behavior of the schedutil governor for
+> the platforms which wish to keep same values for both up and down rate
+> limits.
+> 
+> This is tested with the rt-app [1] on ARM Exynos, dual A15 processor
+> platform.
+> 
+> Testcase: Run a SCHED_OTHER thread on CPU0 which will emulate work-load
+> for X ms of busy period out of the total period of Y ms, i.e. Y - X ms
+> of idle period. The values of X/Y taken were: 20/40, 20/50, 20/70, i.e
+> idle periods of 20, 30 and 50 ms respectively. These were tested against
+> values of up/down rate limits as: 10/10 ms and 10/40 ms.
+> 
+> For every test we noticed a performance increase of 5-10% with the
+> schedutil governor, which was very much expected.
+> 
+> [Viresh]: Simplified user interface and introduced min_rate_limit_us +
+> 	      mutex, rewrote commit log and included test results.
+> 
+> [1] https://github.com/scheduler-tools/rt-app/
+> 
+> Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 106 +++++++++++++++++++++++++++++++++------
+>  1 file changed, 90 insertions(+), 16 deletions(-)
 
-I don't understand, 4.7 is end-of-life, no one cares about it anymore,
-why are you worrying about that kernel version?
+(Background story for others from my discussion with Rafael on IRC: Rafael
+proposed that instead of this patch we can add down_rate_limit_delta_us (>0 =)
+which can be added to rate_limit_us (rate limit while increasing freq) to find
+the rate limit to be used in the downward direction. And I raised the point
+that it looks much neater to have separate up and down rate_limit_us. I also
+said that people may have a valid case where they want to keep down_rate_limit
+lower than up_rate_limit and Rafael wasn't fully sure of any such cases).
 
-confused,
+Hi Rafael,
 
-greg k-h
+I gathered inputs from few people (including Google) and there are two cases
+basically we need to support:
+
+- Performance mode (normal phone mode): We want to have higher values of
+  down_rate_limit and lower_values of up_rate_limit as performance is more
+  important here and we want to avoid unnecessary transitions to lower
+  frequencies for short bursts.
+
+- Power-saving mode (like the Battery-saver mode in Android phones): We want to
+  save power here but don't want to be too bad in performance at the same time.
+  So, platform may not use powersave governor but schedutil. But in this case we
+  may want to keep down_rate_limit to a value lower than up_rate_limit, as we
+  want to switch back to lower frequencies as soon as the load reduces. This
+  will also ensure that we move to higher frequencies at a slower pace, i.e.
+  less aggressively.
+
+-- 
+viresh
