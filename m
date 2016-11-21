@@ -1,84 +1,46 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [patch 00/12] thermal/x86_pkg_temp: Sanitize yet another
- hotplug and locking trainwreck
-Date: Mon, 21 Nov 2016 23:16:19 +0000
-Message-ID: <1479770177.6544.195.camel@intel.com>
-References: <20161117231435.891545908@linutronix.de>
-         <1479758532.6544.169.camel@intel.com>
-         <alpine.DEB.2.20.1611212228220.3677@nanos>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH v3] cpufreq: intel_pstate: Generic governors support
+Date: Mon, 21 Nov 2016 15:54:38 -0800
+Message-ID: <004501d24452$a06d2440$e1476cc0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain;
+        charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:24905 "EHLO mga04.intel.com"
+Received: from cmta20.telus.net ([209.171.16.93]:38717 "EHLO cmta20.telus.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754345AbcKUXQV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Nov 2016 18:16:21 -0500
-In-Reply-To: <alpine.DEB.2.20.1611212228220.3677@nanos>
-Content-Language: en-US
-Content-ID: <19104B0AEB65BB40B49E3696E6987407@intel.com>
+        id S1752505AbcKUXyn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Nov 2016 18:54:43 -0500
+References: 7V8gc8F0cCdRJ7V8lcAyAi
+In-Reply-To: 7V8gc8F0cCdRJ7V8lcAyAi
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "tglx@linutronix.de" <tglx@linutronix.de>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, "rt@linutronix.de" <rt@linutronix.de>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "bp@alien8.de" <bp@alien8.de>
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
 
-T24gTW9uLCAyMDE2LTExLTIxIGF0IDIyOjM0ICswMTAwLCBUaG9tYXMgR2xlaXhuZXIgd3JvdGU6
-DQo+IE9uIE1vbiwgMjEgTm92IDIwMTYsIFBhbmRydXZhZGEsIFNyaW5pdmFzIHdyb3RlOg0KDQpb
-Li4uXQ0KDQo+IFN0dXBpZCBtZS4gSSB0ZXN0ZWQgcHV0dGluZyBhIHNvY2tldCBvZmZsaW5lLCB3
-aGljaCB3b3JrcywgYnV0IGRpZA0KPiBub3QNCj4gY2hlY2sgd2hhdCBoYXBwZW5zIG9uIG1vZHVs
-ZSByZW1vdmFsLiBEZWx0YSBmaXggYmVsb3cuIFRoYXQgbmVlZHMgdG8NCj4gYmUNCj4gZm9sZGVk
-IGludG8gdGhlIHNlcmllcyBhcyB0aGUgd3JlY2thZ2UgYWxyZWFkeSBoYXBwZW5zIGJlZm9yZSB0
-aGUNCj4gbGFzdA0KPiBwYXRjaC4NCg0KWW91ciBjaGFuZ2UgYmVsb3cgZml4ZXMgdGhlIGNyYXNo
-IGlzc3VlLiBOb3cgSSB0ZXN0ZWQgYSBjYXNlIHdoZXJlIHRoZQ0KbGFzdCBjcHUgb2ZmbGluZWQg
-ZnJvbSBhIHBhY2thZ2UsIGl0IHJlbW92ZWQgdGhlcm1hbCB6b25lIGFuZCBhZGRlZA0Kem9uZSBi
-YWNrIG9uY2UgYW55IGNwdSBmcm9tIHRoZSBwYWNrYWdlIG9ubGluZWQuIFNvIHRoaXMgaXMgd29y
-a2luZy4NCg0KSSB3YW50IHRvIHRyeSB0byBydW4gc29tZSB3b3JrbG9hZCBvbiB0aG9zZSBjcHUg
-dG8gYnVtcCB1cCB0aGUNCnRlbXBlcmF0dXJlIGFuZCBjaGVjayBpbnRlcnJ1cHRzLiBJIGFtIGhp
-dHRpbmcgc29tZSBpc3N1ZSB1bnJlbGF0ZWQgdG8NCnRoaXMgY2hhbmdlIG1heSBiZS4gSSBvbmxp
-bmVkIHRocmVlIGNwdXMgZnJvbSB0aGUgcGFja2FnZSAxLg0KDQpbMTg5NDQzLjU2NzcyOF0gc21w
-Ym9vdDogQm9vdGluZyBOb2RlIDEgUHJvY2Vzc29yIDE1IEFQSUMgMHgyZQ0KWzE4OTY1Ni42MjU5
-NDddIHNtcGJvb3Q6IEJvb3RpbmcgTm9kZSAxIFByb2Nlc3NvciA4IEFQSUMgMHgyMA0KWzE4OTgy
-OS41NDU4NTFdIHNtcGJvb3Q6IEJvb3RpbmcgTm9kZSAxIFByb2Nlc3NvciAyNCBBUElDIDB4MjEN
-Cg0KQnV0IEkgY2FuJ3Qgc2NoZWR1bGUgYW55dGhpbmcgb24gdGhvc2UgQ1BVcy4gRm9yIGV4YW1w
-bGUgbm93IGNhbid0IHJ1bg0KdHVyYm9zdGF0LCBpdCBjb21wbGFpbnMNCiINCnR1cmJvc3RhdDog
-cmUtaW5pdGlhbGl6ZWQgd2l0aCBudW1fY3B1cyAxOQ0KQ291bGQgbm90IG1pZ3JhdGUgdG8gQ1BV
-IDgNCiINCg0KU2FtZSB3aXRoDQoNCiN0YXNrc2V0IDB4MTAwIHN0cmVzcyAtYyAxDQp0YXNrc2V0
-OiBmYWlsZWQgdG8gc2V0IHBpZCAwJ3MgYWZmaW5pdHk6IEludmFsaWQgYXJndW1lbnQNCg0KSSBh
-bSBvbiB0aGUgbGF0ZXN0IGxpbnV4LXBtL2xpbnV4LW5leHQgdHJlZSBvbiB0aGlzIHNlcnZlci4g
-SSB3aWxsDQpzd2l0Y2ggdG8gbGF0ZXN0IG1haW4gbGluZSBhbmQgdHJ5Lg0KDQpUaGFua3MsDQpT
-cmluaXZhcw0KDQoNCg0KODwtLS0tLS0tLS0tLS0tLS0tLS0tLQ0KLS0tIGEvZHJpdmVycy90aGVy
-bWFsL3g4Nl9wa2dfdGVtcF90aGVybWFsLmMNCisrKyBiL2RyaXZlcnMvdGhlcm1hbC94ODZfcGtn
-X3RlbXBfdGhlcm1hbC5jDQpAQCAtNjMsNiArNjMsNyBAQCBzdHJ1Y3QgcGtnX2RldmljZSB7DQrC
-oMKgwqDCoMKgwqDCoMKgdTMywqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoG1zcl9wa2dfdGhlcm1faGlnaDsNCsKgwqDCoMKgwqDCoMKgwqBz
-dHJ1Y3QgZGVsYXllZF93b3JrwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB3b3JrOw0KwqDCoMKg
-wqDCoMKgwqDCoHN0cnVjdCB0aGVybWFsX3pvbmVfZGV2aWNlwqDCoMKgwqDCoMKgKnR6b25lOw0K
-K8KgwqDCoMKgwqDCoMKgc3RydWN0IGNwdW1hc2vCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqBjcHVtYXNrOw0KwqB9Ow0KwqANCsKgc3RhdGljIHN0cnVjdCB0aGVybWFsX3pvbmVf
-cGFyYW1zIHBrZ190ZW1wX3R6X3BhcmFtcyA9IHsNCkBAIC0zOTEsNiArMzkyLDcgQEAgc3RhdGlj
-IGludCBwa2dfdGVtcF90aGVybWFsX2RldmljZV9hZGQodQ0KwqDCoMKgwqDCoMKgwqDCoHJkbXNy
-KE1TUl9JQTMyX1BBQ0tBR0VfVEhFUk1fSU5URVJSVVBULCBwa2dkZXYtDQo+bXNyX3BrZ190aGVy
-bV9sb3csDQrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgcGtnZGV2LT5tc3JfcGtnX3RoZXJt
-X2hpZ2gpOw0KwqANCivCoMKgwqDCoMKgwqDCoGNwdW1hc2tfc2V0X2NwdShjcHUsICZwa2dkZXYt
-PmNwdW1hc2spOw0KwqDCoMKgwqDCoMKgwqDCoHNwaW5fbG9ja19pcnEoJnBrZ190ZW1wX2xvY2sp
-Ow0KwqDCoMKgwqDCoMKgwqDCoHBhY2thZ2VzW3BrZ2lkXSA9IHBrZ2RldjsNCsKgwqDCoMKgwqDC
-oMKgwqBzcGluX3VubG9ja19pcnEoJnBrZ190ZW1wX2xvY2spOw0KQEAgLTM5OSwxMyArNDAxLDE1
-IEBAIHN0YXRpYyBpbnQgcGtnX3RlbXBfdGhlcm1hbF9kZXZpY2VfYWRkKHUNCsKgDQrCoHN0YXRp
-YyBpbnQgcGtnX3RoZXJtYWxfY3B1X29mZmxpbmUodW5zaWduZWQgaW50IGNwdSkNCsKgew0KLcKg
-wqDCoMKgwqDCoMKgaW50IHRhcmdldCA9IGNwdW1hc2tfYW55X2J1dCh0b3BvbG9neV9jb3JlX2Nw
-dW1hc2soY3B1KSwgY3B1KTsNCsKgwqDCoMKgwqDCoMKgwqBzdHJ1Y3QgcGtnX2RldmljZSAqcGtn
-ZGV2ID0gcGtnX3RlbXBfdGhlcm1hbF9nZXRfZGV2KGNwdSk7DQrCoMKgwqDCoMKgwqDCoMKgYm9v
-bCBsYXN0Y3B1LCB3YXNfdGFyZ2V0Ow0KK8KgwqDCoMKgwqDCoMKgaW50IHRhcmdldDsNCsKgDQrC
-oMKgwqDCoMKgwqDCoMKgaWYgKCFwa2dkZXYpDQrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqDCoHJldHVybiAwOw0KwqANCivCoMKgwqDCoMKgwqDCoHRhcmdldCA9IGNwdW1hc2tfYW55X2J1
-dCgmcGtnZGV2LT5jcHVtYXNrLCBjcHUpOw0KK8KgwqDCoMKgwqDCoMKgY3B1bWFza19jbGVhcl9j
-cHUoY3B1LCAmcGtnZGV2LT5jcHVtYXNrKTsNCsKgwqDCoMKgwqDCoMKgwqBsYXN0Y3B1ID0gdGFy
-Z2V0ID49IG5yX2NwdV9pZHM7DQrCoA0KwqDCoMKgwqDCoMKgwqDCoC8qDQpAQCAtNDkyLDggKzQ5
-NiwxMCBAQCBzdGF0aWMgaW50IHBrZ190aGVybWFsX2NwdV9vbmxpbmUodW5zaWduDQrCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJldHVybiAtRU5PREVWOw0KwqANCsKgwqDCoMKgwqDC
-oMKgwqAvKiBJZiB0aGUgcGFja2FnZSBleGlzdHMsIG5vdGhpbmcgdG8gZG8gKi8NCi3CoMKgwqDC
-oMKgwqDCoGlmIChwa2dkZXYpDQorwqDCoMKgwqDCoMKgwqBpZiAocGtnZGV2KSB7DQorwqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgY3B1bWFza19zZXRfY3B1KGNwdSwgJnBrZ2Rldi0+Y3B1
-bWFzayk7DQrCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoHJldHVybiAwOw0KK8KgwqDC
-oMKgwqDCoMKgfQ0KwqDCoMKgwqDCoMKgwqDCoHJldHVybiBwa2dfdGVtcF90aGVybWFsX2Rldmlj
-ZV9hZGQoY3B1KTsNCsKgfQ0KwqA=
+On 2016.11.17 14:34 Rafael J. Wysocki wrote:
+
+> v2 -> v3:
+> The previous iteration didn't work correcty if ondemand was the default
+>  governor, because it didn't set policy->cur during initialization and
+>  that caused cpufreq_dbs_governor_start() to return an error (thanks to
+>  Srinovas for finding that bug).
+
+Just for the sake of due diligence:
+
+I re-tested v3 with all the same tests I had done with previous versions,
+with the same positive results that I got with v2.
+
+On my test computer, I also re-created the v2 failure discovered by
+Srinivas, and confirm it is O.K. with v3.
+
+On the v2 thread you said:
+
+> I'll add a Tested-by tag from you to it if you don't mind.
+
+That would be fine.
+
+... Doug
+
+
