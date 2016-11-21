@@ -1,50 +1,101 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Set EPP/EPB to 0 in performance mode
-Date: Mon, 21 Nov 2016 21:57:35 +0100
-Message-ID: <CAJZ5v0jo60gMnJ3ue1kDw4KmRkatTwdPiFgKREQLvVZ=-dSdVQ@mail.gmail.com>
-References: <1479438902-167977-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <CAJZ5v0iC2MesdO58+d1J4u1F5UYGtcPZArXWkiY5cptF=bxntw@mail.gmail.com> <1479749238.6544.147.camel@linux.intel.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/12] thermal/x86_pkg_temp: Sanitize yet another hotplug
+ and locking trainwreck
+Date: Mon, 21 Nov 2016 22:34:38 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1611212228220.3677@nanos>
+References: <20161117231435.891545908@linutronix.de> <1479758532.6544.169.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/mixed; BOUNDARY="8323329-1838706425-1479764079=:3677"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f196.google.com ([209.85.220.196]:36566 "EHLO
-        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753564AbcKUVJq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 16:09:46 -0500
-Received: by mail-qk0-f196.google.com with SMTP id h201so50045778qke.3
-        for <linux-pm@vger.kernel.org>; Mon, 21 Nov 2016 13:09:46 -0800 (PST)
-In-Reply-To: <1479749238.6544.147.camel@linux.intel.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:57640 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752889AbcKUVhn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 16:37:43 -0500
+In-Reply-To: <1479758532.6544.169.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "bp@alien8.de" <bp@alien8.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "rt@linutronix.de" <rt@linutronix.de>
 
-On Mon, Nov 21, 2016 at 6:27 PM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Sat, 2016-11-19 at 00:26 +0100, Rafael J. Wysocki wrote:
->> On Fri, Nov 18, 2016 at 4:15 AM, Srinivas Pandruvada
->> <srinivas.pandruvada@linux.intel.com> wrote:
->
-> [...]
->
->> > +                       if (cpu_data->policy ==
->> > CPUFREQ_POLICY_PERFORMANCE) {
->>
->> Why don't we simply save the EPP/EPB here, ->
->
-> We can, but we loose the ability to restore to the default power on
-> configuration. For other control limits, users have ability to look at
-> the sysfs and set the limits back to power on default. Since we don't
-> have any other way to look at go back to default EPP, once save and
-> restore. So if this behavior is not important, then this can be done.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I don't think we need to provide a way to go back to the power-on
-default (no matter what the used did to the EPP in the meantime) in
-this patch.
+--8323329-1838706425-1479764079=:3677
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 
-If it does what I suggested, it actually will go back to the power-on
-default when switching the policy to "powersave" unless some changes
-have been made to the setting while using the "performance" policy.
+On Mon, 21 Nov 2016, Pandruvada, Srinivas wrote:
+
+> On Fri, 2016-11-18 at 00:03 +0000, Thomas Gleixner wrote:
+> > We solely intended to convert that driver to the hotplug state
+> > machine and
+> > stumbled over a large pile of insanities, which are all interwoven
+> > with the
+> > package management:
+> 
+> Thanks Thomas for fixes.
+> But I did a very simple test on 4.9.0-rc5 on a client machine, just
+> rmmod and read zone, it will cause crash. I have not tested on a multi-
+> socket system, which is also required where the real test of  last cpu
+> on a package goes offline can be tested.
+
+Stupid me. I tested putting a socket offline, which works, but did not
+check what happens on module removal. Delta fix below. That needs to be
+folded into the series as the wreckage already happens before the last
+patch.
 
 Thanks,
-Rafael
+
+	tglx
+
+8<--------------------
+--- a/drivers/thermal/x86_pkg_temp_thermal.c
++++ b/drivers/thermal/x86_pkg_temp_thermal.c
+@@ -63,6 +63,7 @@ struct pkg_device {
+ 	u32				msr_pkg_therm_high;
+ 	struct delayed_work		work;
+ 	struct thermal_zone_device	*tzone;
++	struct cpumask			cpumask;
+ };
+ 
+ static struct thermal_zone_params pkg_temp_tz_params = {
+@@ -391,6 +392,7 @@ static int pkg_temp_thermal_device_add(u
+ 	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, pkgdev->msr_pkg_therm_low,
+ 	      pkgdev->msr_pkg_therm_high);
+ 
++	cpumask_set_cpu(cpu, &pkgdev->cpumask);
+ 	spin_lock_irq(&pkg_temp_lock);
+ 	packages[pkgid] = pkgdev;
+ 	spin_unlock_irq(&pkg_temp_lock);
+@@ -399,13 +401,15 @@ static int pkg_temp_thermal_device_add(u
+ 
+ static int pkg_thermal_cpu_offline(unsigned int cpu)
+ {
+-	int target = cpumask_any_but(topology_core_cpumask(cpu), cpu);
+ 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
+ 	bool lastcpu, was_target;
++	int target;
+ 
+ 	if (!pkgdev)
+ 		return 0;
+ 
++	target = cpumask_any_but(&pkgdev->cpumask, cpu);
++	cpumask_clear_cpu(cpu, &pkgdev->cpumask);
+ 	lastcpu = target >= nr_cpu_ids;
+ 
+ 	/*
+@@ -492,8 +496,10 @@ static int pkg_thermal_cpu_online(unsign
+ 		return -ENODEV;
+ 
+ 	/* If the package exists, nothing to do */
+-	if (pkgdev)
++	if (pkgdev) {
++		cpumask_set_cpu(cpu, &pkgdev->cpumask);
+ 		return 0;
++	}
+ 	return pkg_temp_thermal_device_add(cpu);
+ }
+ 
+
+
+--8323329-1838706425-1479764079=:3677--
