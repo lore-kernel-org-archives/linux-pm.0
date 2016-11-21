@@ -1,40 +1,52 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Set EPP/EPB to 0 in performance
- mode
-Date: Mon, 21 Nov 2016 09:27:18 -0800
-Message-ID: <1479749238.6544.147.camel@linux.intel.com>
-References: <1479438902-167977-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <CAJZ5v0iC2MesdO58+d1J4u1F5UYGtcPZArXWkiY5cptF=bxntw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+From: Nicola Saenz Julienne <nicolas.saenz@prodys.net>
+Subject: [PATCH 1/2] power: supply: sbs-battery: use fixed device name
+Date: Mon, 21 Nov 2016 19:04:50 +0100
+Message-ID: <1479751491-8849-2-git-send-email-nicolas.saenz@prodys.net>
+References: <1479751491-8849-1-git-send-email-nicolas.saenz@prodys.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:1435 "EHLO mga09.intel.com"
+Received: from host.prodys.net ([89.248.106.65]:55325 "EHLO host.prodys.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753309AbcKUR1T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Nov 2016 12:27:19 -0500
-In-Reply-To: <CAJZ5v0iC2MesdO58+d1J4u1F5UYGtcPZArXWkiY5cptF=bxntw@mail.gmail.com>
+        id S1753471AbcKUSLy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Nov 2016 13:11:54 -0500
+In-Reply-To: <1479751491-8849-1-git-send-email-nicolas.saenz@prodys.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+To: sre@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, nicolas.saenz@prodys.net
 
-On Sat, 2016-11-19 at 00:26 +0100, Rafael J. Wysocki wrote:
-> On Fri, Nov 18, 2016 at 4:15 AM, Srinivas Pandruvada
-> <srinivas.pandruvada@linux.intel.com> wrote:
+The current device name for sbs-battery is derived from it's i2c address.
+This is not acceptable if we want to be able to trigger the
+"external_power_changed()" routine from a charger driver.
 
-[...]
+Signed-off-by: Nicola Saenz Julienne <nicolas.saenz@prodys.net>
+---
+ drivers/power/supply/sbs-battery.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-> > +                       if (cpu_data->policy ==
-> > CPUFREQ_POLICY_PERFORMANCE) {
-> 
-> Why don't we simply save the EPP/EPB here, ->
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 8bb2eb3..9565c696 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -740,6 +740,7 @@ static void sbs_delayed_work(struct work_struct *work)
+ }
+ 
+ static const struct power_supply_desc sbs_default_desc = {
++	.name = "sbs-battery",
+ 	.type = POWER_SUPPLY_TYPE_BATTERY,
+ 	.properties = sbs_properties,
+ 	.num_properties = ARRAY_SIZE(sbs_properties),
+@@ -762,11 +763,6 @@ static int sbs_probe(struct i2c_client *client,
+ 	if (!sbs_desc)
+ 		return -ENOMEM;
+ 
+-	sbs_desc->name = devm_kasprintf(&client->dev, GFP_KERNEL, "sbs-%s",
+-			dev_name(&client->dev));
+-	if (!sbs_desc->name)
+-		return -ENOMEM;
+-
+ 	chip = devm_kzalloc(&client->dev, sizeof(struct sbs_info), GFP_KERNEL);
+ 	if (!chip)
+ 		return -ENOMEM;
+-- 
+2.7.4
 
-We can, but we loose the ability to restore to the default power on
-configuration. For other control limits, users have ability to look at
-the sysfs and set the limits back to power on default. Since we don't
-have any other way to look at go back to default EPP, once save and
-restore. So if this behavior is not important, then this can be done.
-
-Thanks,
-Srinivas
