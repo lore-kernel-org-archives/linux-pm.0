@@ -1,111 +1,50 @@
-From: <kgbok.kezyhumh@murad.com>
-Subject: 55318 linux-pm
-Date: Mon, 21 Nov 2016 00:16:59 -0000
-Message-ID: <147968741910.13679.9815209994624986251@nsg-static-14.175.75.182-airtel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] cpufreq: Avoid using inactive policies
+Date: Mon, 21 Nov 2016 09:07:31 +0530
+Message-ID: <20161121033731.GA4722@vireshk-i7>
+References: <2709142.YWmMDScDNY@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: application/zip; name="EMAIL_760551670972_linux-pm.zip"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from nsg-static-14.175.75.182-airtel.com ([182.75.175.14]:3135 "HELO
-        nsg-static-14.175.75.182-airtel.com" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with SMTP id S1751271AbcKUARF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Nov 2016 19:17:05 -0500
-Content-Disposition: attachment
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:36380 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752422AbcKUDhf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Nov 2016 22:37:35 -0500
+Received: by mail-pg0-f41.google.com with SMTP id f188so125272820pgc.3
+        for <linux-pm@vger.kernel.org>; Sun, 20 Nov 2016 19:37:35 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <2709142.YWmMDScDNY@vostro.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-UEsDBBQAAgAIAEExdUlbYTorDBQAAA4UAAARABwARVVST18yNDg3X1pJUC56aXBVVAkAA1k7MlhZ
-OzJYdXgLAAEEAAAAAAQAAAAAdZhVVBSMt8WHDoFRkHIoBSnpGjqkJAUEhpAeQoYShqGkQ0pSQmBA
-AWkQhm6Q7oahc+hOSf/fd/9P965191p773Mezut5+Gmp4eA+BWADCAFy/O4qXwqD6MwpAAB7YQCA
-BEAHUNTTeWsmICQK5rF309MlAuAYSggY/Gt3z0cALFzAP/qfcDQ2jF0XTfAre6DEN8vAY0VN1EqG
-LimODF8OdpwHlmI3BL6X0SJ/OSFeEJWw03V39bPz1fZOmPZBCbmiwDBvSzidSm3DyWtpKPXAFLA4
-9mxv97xhrqnscoB68j2o6s7F0+SAh3E7gMesBTTFKS3cBHVXyfaa/eAlKxPmt95sKug/mdZs4uao
-kHhstHDdzjVX2KN2o7e7FTtgW3nnpfWoFvG8T4HzcPAoRAGyJ7yFeWncnGj2OKWJ2lplzcI0xA4J
-7DXlNtJHJmN2eyqN/jhRR2qTnC/1YwLSMV0EPrUXM2Fli0bsJOKReZQmzIgzVLCvTeMnMR62DOcb
-EG3Zm9KohYYQ2y8OH5IYhvyMcL1n3IWd81uyVkzX2otiMEO3Tb8X2sreMXamH42dHuRSMyz+Lkqe
-UcnzmONtVDTqqKQbuaSYTQKxD0m8UpuLV2Wo5lMJTVYGDkx4Yyzq17D6UXnCsW7JT7e8Zp3EdrnC
-Wu8vSLmXRRAnDoYSHsMN1Dt6LJSOg5SxA3tTE9sNN7GUrg3BNVPlCTFcSAh7xI8y0/vwEigZIrRl
-tcnJaoZDvrB3nVVEicXIdrj88VvFmEwWsf60q7uxd26/OlAkSRyK0+9FpkHDx/YoSmaYgFVPZU3Y
-BbVvFnIR4huL/a7lTN+0tltsZEB/N2MvJL7a5LHnt7oEhfMjffLdv9UeFj5yVnQg/58CzyHxlc0V
-K6XV5gc98cn+ygSBVWnNT4CSMV4Qu/VlY8Oc1olZzPmH2ulWHI1EzU7mqD0v5MSJQyI9SNszhLvJ
-QrFSR9JIP73y0HFB1MB95BbobGarHKD8EiJwrOk7hpo1DlYGp6V2OO2/ymZyjf+ga5sUpTtjRiBQ
-cjChmWtUJLGNdSq3F7nI9v0YanCIMKqZtkGE7VL9HCTQgc1nKbb4qj2J+1GDwZlE2n2AxNvzPzm/
-+vuQZ3aEQBuCCbEXRxNeCyURS0tDC0duZrpxkVJ1K/x8a6rSnUPhoyHrKSNZrUwgUrK5moWgiNov
-g8aHP82h2pGcMwwUO1IZTV5LCQ+sDECrS3F0if8R2vv6OSqIb2ntsiHSp0dVJ3dthd6oMdcdk9MI
-WojXpVB5ZaqyPmH0SQIUs7U+LuP3ZevY1zU5q0+zZtzOfikbshyf1N89Gx+bS9t41vJExFPiSPav
-/K2S8cr0Id2m5hhnj6muQ7Re6xJeyH1i0BE/7TW6Ij3q8kb7/Is+YeqBqXFiIhMIqur0icbDxhAq
-LCQx9evki73b5G+Z35O6TzlHEmJqlF7YpsPG/JOoKFJZVg+F9TZ4JIxQwRHYc2Gjo1EMWOtS4kn1
-iZtgkYo1VnD3mwzLIcNfHD7KTsrUzc78KgTT+VUYCauEguuBq00VALRmtE91PFzlUuC0nsRXQzzP
-vaZymPwPavxiEiUqsiY62+FYwjK9+GyOopVNKFnFKRPyNvvprGeVW+AOh8RAjX7asKET3axUTFmV
-AtUJ7mr0V7xCkKHH7wUbqpm3JZMCLsM/Q58w8c9BWN6tptB+a3SoxXEBXFSRuZBpY+VgYrsL0Aul
-w8tx1b+3+2KnfO291KhzUjHRDlBE+cE59Oha70ehsUoRdO+AntZKyjhxStqFDMMmIMIHbEOIXCvr
-p0bBgP3Okw2Vlcxe3G++9WL0C2hpUMWxiOrp0wexV/Bcqoh4yZs7a4xzvsbOxqhVXPZRthXQZnqH
-dNSd78eKg/x0JYuan+1E29AFXacC51y7I05+7k9257uH8vZjwioHHfhy69AmKvRyvpyV7aWPwhL5
-RWCTo+P+Mv6tyS+UT3jGTGhFnNeQTK2zv6zD7kTIO2S/N6lv7+WicgChaFtfJKPvukyFrBcXJQ5I
-wU+Ce+72eo9RpvHOvUrpmsTOObgu8StVcMSSE6/Q31coWb66NPYy+KCChxB4Pig1b7h2U3z5N2Cq
-+DyLypULrg4vf09wJwyzOa5wKydQMreGVNka5+wjSz3Vm54VJG+xEn6mHRFIOM49s5uGCpoCexsG
-Hzjkt7ILvAja5HGjYUN71V3Ocvvc4gmITyyGL0kCRHE1GwgU5VZyg9k3vnjtic53flAtfglu/L7C
-leAulW6ZCQr98Vfvbz1XY+WTVcJFriFrNVVjkl+Krfhd8VGPQMhMX9rnSqGR+D7FpdWheKelVU+D
-BQ6TE6VtrpKXclVex1M2+zXzSM+Y9dmRdn6eaLIp5FKzKKuurXe2JX4SmakemQIdvNaKYBVp/wgU
-4d+xVEwf/yquGWCi9igpwzFwo+jpFf5XXQ7X3hnq9Ii5yORdN4G9aZkIV1LV495Iu1vdeFKh/BnV
-JTbjoxx4n5UtLAV0KyZZCr1KW7YynHl25+g4qlyV0ms6YTdsm7ahCrNOFi48NxwDNUs4WeAEwM+f
-kvUrxRAxCroKNSJLh2BXSq1xkWnknbBsK3n5tUA9gnSsFiZYtzLsIf4Ry6ErS4QeXqazZGp4CdGI
-j+/t0CJfyc2vTw52E/3tVE/pYSsXw2RXbYueKXEGcsMcxA4k9w/CcrI4cnnxtRLFqtkuQt89yL6H
-G6e0DgrDzNlLSv/QTICmuNoTKvN/ImQAMSvQHyZaVWRSfQoJWkeyw+6IS++C8e+LYrFv3n1sHUhA
-5wbaW//pDSvrJfq7LOjCNZ+wsdHfBKTHwrGGNS5OUKowJKarw4lF5zeC0swIUd85bq6KOL4ZQCYu
-lS6l03KmGpS/pyGEjbSgXz30OM7FxXGtL/xtZOroq+2DyNd5nOp1ZyNbfSCxslXC5aV3Ecy+8rwT
-aZuS6eA73+7OIXP47Yr873m5GlNzguPX7wqObAlEO64qxFfr6fAzMUfPsMjoUZhhhkko61+xlI0d
-ZOzdtEoATA1Kj86NAYzU8KsR05oBW15IGOSLGxAGGtxT0YwF58NfHFxs03KyMa/HXaeH0bEBgwRN
-jyUxcj8qQ79HFhT1bBHXolibg+hrBj9WOAf+ccYJshhixioDtGAXLK7pb/e03kfK0mOOj5+oOusS
-3vS/MMPi/eYuR8oGc/axBUvEUhGMnSXUZmYtGjK7L4lCSgMJZ/niFeAeOjeuPYE5XcOdssjxjg2B
-93rQUsbcZ4PJPp+FdpjEPz8LJv6rtPt+E6hzWjkjnLZEDhlRqtmdxdfLCHrclFdNdHqjFJ4HxBXL
-Z/pZlbuppwa/OLVacOs5ERs6yOK64lS7rtN5a+RQ0rllMBbxTEqukGX9XqFSxfrCw6yQt2u/zR43
-9fD+3eKnLQ21geiutASxeeOREsvmmuJhLYQVl/jYxE9TJd51FvMmSfmPt/vs45ok9IZMzUEJUu5c
-G+0vjHIc6qI1T5PDQWpKR0Y+MI2zA4WkRJnC3XcfHe3Syrksjrrb6dwiTKfTq2H8uMeS1rGZVIl1
-O9Ld01RmZ5oyf88Yl+mSGALMbrbfgCb2t1czcT77wFRherplFweSrsWK3OIMLurdIy1ZeTJXUIEE
-eHasinR2ANCsxPeiOScDGINzKjR33z3+Go9BoJvBGbRymUc0t551/sEAPOZqSTF/g935w00e7yq4
-S4RNtpcEnlaHiZuy2ms91S2j98VBZzBZ9/WwO+E197PHFVgkSIjXPX4qN7agLNKrAIbRvTfwT1TT
-wHwS/L6yp50HLgy8KdlIulEbUTeEEJrjF2I8863ZYpZMEIDoQ4diG4q4YLy3XoezcA/pqnKPeGb9
-RUfdpQ09daEsWXzcBnHbR1NgcVExjwhGHS9X5nmlQ0lB4ZQI1UaY7CQe1q73S84tDpCIToDui/Hc
-5If5lU9CjRE6FBOyZmj3Lb5OLhqHICxIkBRtyHNgKM55DA6ok2HHIs6x/CAfML2k18zqitvcrI4B
-8bM3e3p6Exs7tfzuwUqKNoHgEYRT4qiHO8ZHchtG+S50BpR2Jr/uWXr2USvbggaff+NNBTOS385k
-dXSCv1eWhtWIRCKJhopPlOQ7OkFX9E0NTbbtfoQvSRsp/v4TsmcVonYHFgBgtZd37uSJgmE8EZ7E
-o0u4BZ64Htr9vty52lwWY7V80l5+ijry5jT0oqtMyG/wQAA4DHwJPIk7hlnJ2jnxh3SMp+iDLh1L
-BJrZlbNQ4OdShQc0x+9oxq1Eew3QeqFx82v8fU5w73LUqYnDzOwU/1hChGhuR8WAlmibGs24Ahp8
-WK6sjG7XJfGeRJ/E0lg6kuSRlfMa8Nn5W1ADTR4uqoaDqxzKB4PyNz+GR/K17YimSrfFXHSVrwZq
-TNY8X9ILus3/yvS1YaLYwWgzqqS3aORy/T3ryZPztAiRrcLM6vCSwG0XPFUnkgEEyQ2SpvweDZEQ
-UZYceQlvVrfjdpsvqIGnknoTyD7Lyoo0WTrlpKQ4kPr2qI/pTiFjBZBvrhw+20nZzprEqydIebGz
-8Bj8MjcwPTE1Hey2l6ZZnKVQygkzbU3FPTeUmXTF9KOqO5tHrATT7HWw05fGuvzmsUgqp560mdUX
-QjP6PhNJPhJ7R1nG4VqzY+lBFMHg0RFAzqL4osxjbl9SqsKrWq+wUN91o0GO2thoP+umVAHvZ7R1
-TdaOS4jVxFbtaw1v9W97qtsuXkE/+jMa5JL5zwI2ce1hPb/96uJDkKFv7Pgod11NaBBhqvXwt/Y1
-XyGs+1zhzSPmPfM15YDbuooiItXAhCr4SoQQvp3A5acwCewamEiDQb/N1rZiAal1PaeU0KV1TDCf
-5xyTxm4qv4SlZSvtBJEx6j6JDTxOnlUovYAe6VanetwBNnOgd6sxkpahTMvmVpSJUPiTrZ81+RVp
-3NbLpHFipCyNV9AabuhmVcF4+hEviActrTVPPIMTRmUVvUcOfymYtDEbV/eRbqYFnmjJ6OQKsxrg
-ubfUjcY1yXD+AzCFEueC77RTPRhW1Gw0JEWxvwi5TfSmqZ4flbobLlkr9UzWO+N+7ihBa7DIk4cu
-oVJRZ7GaMTnRH0rq4wTNkczHvvq1xEKE5zJgJsfBGSK6kHwgHhV4RHuoY3yEN4tbWSzcYiOx9hUY
-Y8lGeoodqPlTbLTLXQWnN56SGHtRx950i3MXKCT5uFcWpGU0zG+1lYeT4VgteJftpab54FAuWNrR
-W6I6SUmoAJ0BieMn2ACTkN3s5jGIm2S7pvrnTGghcOYGgcXCKpq9OOiyYfZDdP8XgYYGuiSbhWM4
-VufpQ+EYPXWVo8YA0bP+zalhC2RpYbr5q6PtNXGtFu8R4m/hEbfaL6+u0Ti/xnhiGCrFDninDWux
-vLc9L5kUG0k3SyazGJ9s96VaCHk3poG9/Ni21Tg/sR5BhkKRptzhYteIDJjKAe/313Du6YN3y+pJ
-Dx6GvU0VzgtBqKnQTOSZ20wbGp3KIKpm3M/5kmJPastCfR3ACqlJFkdaQ3g2PsCx1tU+bzk55B9T
-lzr6r5HsmioXp6ED69ZHB5/jdPwkRX4GuM1XowMR0w+UcEdtB9QyrRaJbWK8yQn/OkQqEpMHQog4
-fBj6xJTG9NgcKR5DjUxZGPvzBUE8Mp1s47oxRPD0Vv0VqwKjo8/Hq6rxXTbK01/F1BRV0r8ejhpD
-zuHC8KAHTOPbR4vMoFO6QfWdGgUU5ofBVFU2W6aveDD7jsHztyWZmXNgnPIoTCiHCsX4jjb7zOG1
-y1ky60GRKoWc0iH25jBdg9HSjAhUp8uE09u8jjHqcsQ8xgpI96Ih5EAO7H2nwkyaPIlalZbNXMSj
-T0K4UNBpdI/h4RbSM5UkX/VFzyTSCT4KpiMXFU22aeEbt8OY8+6yQ8Hd5yo9OfUvyhR3Gx83QgZA
-SJM/fDO175rNX1ju/Xnt36msMZ5uB1VHZEYGM8fc4sGhZG4O7W8SA7fYZLG5eEtB3l8Ki6hBO4sX
-hKzPsyG3tTfbdjs1TqttsR8F/+okCJX4HRcdM9s7Weoy7uIgfMe0ngPcbeT2g6/6lCaLQiweGa7i
-iJMrxgCmnNVHV1Oa9Sa7L0BLixLX8oFLyfmIwU6tLnaOT1YdLRefsCr5Y0aCKgxfvZF09cv3kdnY
-cMnQLPfjGjAMoh0uSJm+xhhK4KQzVHF5jh36BnriEt8EyM3NMqcJBJ1XmKR7e5np9f9RCtMEMjUe
-LvUE/fNdfeg+RH2UOcK2Ulfkvg2DfDv66VBqy9EUxiUa1Rawp8TY95wDougfKaEaybt8r8Z2BkJ2
-pnJbtQXwCHS8Kfrda2A0Cr+27ThDz/rEf9MSUx6iPt63jTLpLf3qZk9w/uXD+8IEb4M8OtIji/4c
-zaUjB/M++pZZeu3mGZkTrG5ffgeAienvLa4cP+2jBQM0p2tdsFiMEXh5twMouroCIeHhzWTxqp7x
-MZm97YfGSSGJON9G4rJhtZoHyXXgzfflXIconWJEY3u3ON8rHH+3efRq5a6fITtN7O5aiRHLLaad
-188c7BproUYXXOG/ryTByzs/sqv8tsr8HsH3NDZY+z1JNxbfHV6cIkWUwn30SwTzj4FWlMMFSnK1
-Z6wCCdFZ+2NR7eufRXHBxq4EVvlyAEcrtnaOvLAaLeloiXKrEMsAMhuHLZGYnK3mCX7kKwkLrmCk
-IwkxH1WqyJyrhMl/juQRjt9KL5+YSlnhdIESB8/K7BNk8/AidrZcShk1ul104E/22MxlGPOAPl4n
-nyeUbn8dUXUF7bDsP9ukiZa2FN1AeI2hbu8wf7G01LCwGXD+P05H8y+CA2D949zAf6f/Te3w/kvt
-/g+x01LDw//vFRZA55/Oo/h3+w9QSwECHgMUAAIACABBMXVJW2E6KwwUAAAOFAAAEQAYAAAAAAAA
-AAAApIEAAAAARVVST18yNDg3X1pJUC56aXBVVAUAA1k7Mlh1eAsAAQQAAAAABAAAAABQSwUGAAAA
-AAEAAQBXAAAAVxQAAAAA
+On 18-11-16, 13:40, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> There are two places in the cpufreq core in which low-level driver
+> callbacks may be invoked for an inactive cpufreq policy, which isn't
+> guaranteed to work in general.  Both are due to possible races with
+> CPU offline.
+> 
+> First, in cpufreq_get(), the policy may become inactive after
+> the check against policy->cpus in cpufreq_cpu_get() and before
+> policy->rwsem is acquired, in which case using it going forward may
+> not be correct.
+> 
+> Second, an analogous situation is possible in cpufreq_update_policy().
+> 
+> Avoid using inactive policies by adding policy_is_inactive() checks
+> to the code in the above places.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> -> v2:
+>  Initialize ret in cpufreq_update_policy() if the inactive policy check
+>  doesn't pass.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
