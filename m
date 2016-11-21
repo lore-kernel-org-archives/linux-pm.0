@@ -1,140 +1,87 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
-Date: Mon, 21 Nov 2016 14:27:13 +0100
-Message-ID: <CAPDyKFomCaT+dV+C7wzcqnMzwKOn6w7wPo3Gm94O2x3RRL_tLw@mail.gmail.com>
-References: <1478210075-92045-1-git-send-email-lina.iyer@linaro.org>
- <1478210075-92045-2-git-send-email-lina.iyer@linaro.org>
+From: Juri Lelli <Juri.Lelli@arm.com>
+Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition
+ rate limits
+Date: Mon, 21 Nov 2016 13:53:08 +0000
+Message-ID: <20161121135308.GN24383@e106622-lin>
+References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+ <20161121100805.GB10014@vireshk-i7>
+ <20161121101946.GI3102@twins.programming.kicks-ass.net>
+ <20161121121432.GK24383@e106622-lin>
+ <20161121122622.GC3092@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1478210075-92045-2-git-send-email-lina.iyer@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Brendan Jackman <brendan.jackman@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:60888 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754299AbcKUNwo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Nov 2016 08:52:44 -0500
+Content-Disposition: inline
+In-Reply-To: <20161121122622.GC3092@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, tkjos@google.com, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On 3 November 2016 at 22:54, Lina Iyer <lina.iyer@linaro.org> wrote:
-> Re-using idle state definition provided by arm,idle-state for domain
-> idle states creates a lot of confusion and limits further evolution of
-> the domain idle definition. To keep things clear and simple, define a
-> idle states for domain using a new compatible "domain-idle-state".
->
-> Fix existing PM domains code to look for the newly defined compatible.
->
-> Cc: <devicetree@vger.kernel.org>
-> Cc: Rob Herring <robh@kernel.org>
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+On 21/11/16 13:26, Peter Zijlstra wrote:
+> On Mon, Nov 21, 2016 at 12:14:32PM +0000, Juri Lelli wrote:
+> > On 21/11/16 11:19, Peter Zijlstra wrote:
+> 
+> > > So no tunables and rate limits here at all please.
+> > > 
+> > > During LPC we discussed the rampup and decay issues and decided that we
+> > > should very much first address them by playing with the PELT stuff.
+> > > Morton was going to play with capping the decay on the util signal. This
+> > > should greatly improve the ramp-up scenario and cure some other wobbles.
+> > > 
+> > > The decay can be set by changing the over-all pelt decay, if so desired.
+> > > 
+> > 
+> > Do you mean we might want to change the decay (make it different from
+> > ramp-up) once for all, or maybe we make it tunable so that we can
+> > address different power/perf requirements?
+> 
+> So the limited decay would be the dominant factor in ramp-up time,
+> leaving the regular PELT period the dominant factor for ramp-down.
+> 
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Hmmm, AFAIU the limited decay will help not forgetting completely the
+contribution of tasks that sleep for a long time, but it won't modify
+the actual ramp-up of the signal. So, for new tasks we will need to play
+with a sensible initial value (trading off perf and power as usual).
 
-Kind regards
-Uffe
+> (Note that the decay limit would only be applied on the per-task signal,
+> not the accumulated signal.)
+> 
 
-> ---
->  .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
->  .../devicetree/bindings/power/power_domain.txt     |  8 +++---
->  drivers/base/power/domain.c                        |  2 +-
->  3 files changed, 38 insertions(+), 5 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
-> new file mode 100644
-> index 0000000..eefc7ed
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
-> @@ -0,0 +1,33 @@
-> +PM Domain Idle State Node:
-> +
-> +A domain idle state node represents the state parameters that will be used to
-> +select the state when there are no active components in the domain.
-> +
-> +The state node has the following parameters -
-> +
-> +- compatible:
-> +       Usage: Required
-> +       Value type: <string>
-> +       Definition: Must be "domain-idle-state".
-> +
-> +- entry-latency-us
-> +       Usage: Required
-> +       Value type: <prop-encoded-array>
-> +       Definition: u32 value representing worst case latency in
-> +                   microseconds required to enter the idle state.
-> +                   The exit-latency-us duration may be guaranteed
-> +                   only after entry-latency-us has passed.
-> +
-> +- exit-latency-us
-> +       Usage: Required
-> +       Value type: <prop-encoded-array>
-> +       Definition: u32 value representing worst case latency
-> +                   in microseconds required to exit the idle state.
-> +
-> +- min-residency-us
-> +       Usage: Required
-> +       Value type: <prop-encoded-array>
-> +       Definition: u32 value representing minimum residency duration
-> +                   in microseconds after which the idle state will yield
-> +                   power benefits after overcoming the overhead in entering
-> +i                  the idle state.
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index e165036..723e1ad 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -31,7 +31,7 @@ Optional properties:
->
->  - domain-idle-states : A phandle of an idle-state that shall be soaked into a
->                  generic domain power state. The idle state definitions are
-> -                compatible with arm,idle-state specified in [1].
-> +                compatible with domain-idle-state specified in [1].
->    The domain-idle-state property reflects the idle state of this PM domain and
->    not the idle states of the devices or sub-domains in the PM domain. Devices
->    and sub-domains have their own idle-states independent of the parent
-> @@ -85,7 +85,7 @@ Example 3:
->         };
->
->         DOMAIN_RET: state@0 {
-> -               compatible = "arm,idle-state";
-> +               compatible = "domain-idle-state";
->                 reg = <0x0>;
->                 entry-latency-us = <1000>;
->                 exit-latency-us = <2000>;
-> @@ -93,7 +93,7 @@ Example 3:
->         };
->
->         DOMAIN_PWR_DN: state@1 {
-> -               compatible = "arm,idle-state";
-> +               compatible = "domain-idle-state";
->                 reg = <0x1>;
->                 entry-latency-us = <5000>;
->                 exit-latency-us = <8000>;
-> @@ -118,4 +118,4 @@ The node above defines a typical PM domain consumer device, which is located
->  inside a PM domain with index 0 of a power controller represented by a node
->  with the label "power".
->
-> -[1]. Documentation/devicetree/bindings/arm/idle-states.txt
-> +[1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 661737c..f0bc672 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2048,7 +2048,7 @@ int genpd_dev_pm_attach(struct device *dev)
->  EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->
->  static const struct of_device_id idle_state_match[] = {
-> -       { .compatible = "arm,idle-state", },
-> +       { .compatible = "domain-idle-state", },
->         { }
->  };
->
-> --
-> 2.7.4
->
+Right, and since schedutil consumes the latter, we could still suffer
+from too frequent frequency switch events I guess (this is where the
+down threshold thing came as a quick and dirty fix). Maybe we can think
+of some smoothing applied to the accumulated signal, or make it decay
+slower (don't really know what this means in practice, though :) ?
+
+> It could be an option, for some, to build the kernel with a PELT window
+> of 16ms or so (half its current size), this of course means regenerating
+> all the constants etc.. And this very much is a compile time thing.
+> 
+
+Right. I seem to remember that helped a bit for mobile type of
+workloads. But never did a thorough evaluation.
+
+> We could fairly easy; if this is so desired; make the PELT window size a
+> CONFIG option (hidden by default).
+> 
+> But like everything; patches should come with numbers justifying them
+> etc..
+> 
+
+Sure. :)
+
+> > > Also, there was the idea of; once the above ideas have all been
+> > > explored; tying the freq ram rate to the power curve.
+> > > 
+> > 
+> > Yep. That's an interesting one to look at, but it might require some
+> > time.
+> 
+> Sure, just saying that we should resist knobs until all other avenues
+> have been explored. Never start with a knob.
