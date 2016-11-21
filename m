@@ -1,58 +1,95 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH] thermal/powerclamp: add back module device table
-Date: Mon, 21 Nov 2016 11:43:10 +0800
-Message-ID: <1479699790.2360.10.camel@intel.com>
-References: <1479150525-13225-1-git-send-email-jacob.jun.pan@linux.intel.com>
-         <20161115070332.GA26176@kroah.com> <20161117114216.3fa995b4@jacob-builder>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161117114216.3fa995b4@jacob-builder>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, stable@vger.kernel.org, Rafael Wysocki <rafael.j.wysocki@intel.com>
+From: Nick Desaulniers <nick.desaulniers@gmail.com>
+Subject: [PATCH] ACPI: small formatting fixes
+Date: Sun, 20 Nov 2016 22:51:49 -0800
+Message-ID: <20161121065149.9760-1-nick.desaulniers@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:36777 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751019AbcKUGwT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 01:52:19 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: len.brown@intel.com, pavel@ucw.cz, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Nick Desaulniers <nick.desaulniers@gmail.com>
 
-On Thu, 2016-11-17 at 11:42 -0800, Jacob Pan wrote:
-> On Tue, 15 Nov 2016 08:03:32 +0100
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org> wrote:
-> 
-> > 
-> > On Mon, Nov 14, 2016 at 11:08:45AM -0800, Jacob Pan wrote:
-> > > 
-> > > Commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 replaced module
-> > > cpu id table with a cpu feature check, which is logically
-> > > correct.
-> > > But we need the module device table to allow module auto loading.
-> > > 
-> > > Fixes:3105f234 thermal/powerclamp: correct cpu support check
-> > > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> > > ---
-> > >  drivers/thermal/intel_powerclamp.c | 9 ++++++++-
-> > >  1 file changed, 8 insertions(+), 1 deletion(-)  
-> > <formletter>
-> > 
-> > This is not the correct way to submit patches for inclusion in the
-> > stable kernel tree.  Please read
-> > Documentation/stable_kernel_rules.txt
-> > for how to do this properly.
-> > 
-> > </formletter>
-> Good to know, thanks. Rui will take care of it this time. Per Rui
-> "I will apply patch 1 and queue up for next -rc and 4.8 stable."
-> 
+A quick cleanup that passes scripts/checkpatch.pl -f <file>.
 
-Just find another problem.
-We're still missing this upstream
-commit 3105f234e0aba43e44e277c20f9b32ee8add43d4 (thermal/powerclamp:
-correct cpu support check) for 4.7 stable, and in this case, we can not
-queue this patch for both 4.7 and 4.8 stable at the moment because it
-does not apply to 4.7 stable.
+Signed-off-by: Nick Desaulniers <nick.desaulniers@gmail.com>
+---
+ arch/x86/kernel/acpi/cstate.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-I will send this patch out asap to catch 4.9, and then send a note to
-stable kernel with the following Option 2
-in Documentation/stable_kernel_rules.txt after it's merged.
+diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
+index af15f44..ed52aec 100644
+--- a/arch/x86/kernel/acpi/cstate.c
++++ b/arch/x86/kernel/acpi/cstate.c
+@@ -1,7 +1,7 @@
+ /*
+  * Copyright (C) 2005 Intel Corporation
+- * 	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+- * 	- Added _PDC for SMP C-states on Intel CPUs
++ * Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
++ * - Added _PDC for SMP C-states on Intel CPUs
+  */
+ 
+ #include <linux/kernel.h>
+@@ -12,7 +12,6 @@
+ #include <linux/sched.h>
+ 
+ #include <acpi/processor.h>
+-#include <asm/acpi.h>
+ #include <asm/mwait.h>
+ #include <asm/special_insns.h>
+ 
+@@ -50,8 +49,8 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
+ 	 * P4, Core and beyond CPUs
+ 	 */
+ 	if (c->x86_vendor == X86_VENDOR_INTEL &&
+-	    (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
+-			flags->bm_control = 0;
++			(c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
++		flags->bm_control = 0;
+ }
+ EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
+ 
+@@ -89,7 +88,8 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+ 	retval = 0;
+ 	/* If the HW does not support any sub-states in this C-state */
+ 	if (num_cstate_subtype == 0) {
+-		pr_warn(FW_BUG "ACPI MWAIT C-state 0x%x not supported by HW (0x%x)\n", cx->address, edx_part);
++		pr_warn(FW_BUG "ACPI MWAIT C-state 0x%x not supported by HW (0x%x)\n",
++				cx->address, edx_part);
+ 		retval = -1;
+ 		goto out;
+ 	}
+@@ -103,9 +103,8 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
+ 
+ 	if (!mwait_supported[cstate_type]) {
+ 		mwait_supported[cstate_type] = 1;
+-		printk(KERN_DEBUG
+-			"Monitor-Mwait will be used to enter C-%d "
+-			"state\n", cx->type);
++		pr_debug("Monitor-Mwait will be used to enter C-%d state\n",
++				cx->type);
+ 	}
+ 	snprintf(cx->desc,
+ 			ACPI_CX_DESC_LEN, "ACPI FFH INTEL MWAIT 0x%x",
+@@ -159,13 +158,14 @@ void __cpuidle acpi_processor_ffh_cstate_enter(struct acpi_processor_cx *cx)
+ 
+ 	percpu_entry = per_cpu_ptr(cpu_cstate_entry, cpu);
+ 	mwait_idle_with_hints(percpu_entry->states[cx->index].eax,
+-	                      percpu_entry->states[cx->index].ecx);
++		percpu_entry->states[cx->index].ecx);
+ }
+ EXPORT_SYMBOL_GPL(acpi_processor_ffh_cstate_enter);
+ 
+ static int __init ffh_cstate_init(void)
+ {
+ 	struct cpuinfo_x86 *c = &boot_cpu_data;
++
+ 	if (c->x86_vendor != X86_VENDOR_INTEL)
+ 		return -1;
+ 
+-- 
+2.9.3
 
-thanks,
-rui
