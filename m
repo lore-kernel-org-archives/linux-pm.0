@@ -1,49 +1,59 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition
- rate limits
-Date: Mon, 21 Nov 2016 12:48:02 +0100
-Message-ID: <20161121114802.GB3092@twins.programming.kicks-ass.net>
-References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
- <20161121100805.GB10014@vireshk-i7>
- <20161121101946.GI3102@twins.programming.kicks-ass.net>
- <20161121104800.GC10014@vireshk-i7>
- <20161121111243.GK3102@twins.programming.kicks-ass.net>
- <20161121113016.GD10014@vireshk-i7>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH 3/3] thermal/intel_powerclamp: Convert to CPU hotplug
+ state
+Date: Mon, 21 Nov 2016 12:57:23 +0100
+Message-ID: <20161121115723.GB14582@pathway.suse.cz>
+References: <20161024095529.2b1855b4@icelake>
+ <20161027145348.GV23809@pathway.suse.cz>
+ <20161027151726.s2uavcnnbtjvmboq@linutronix.de>
+ <20161027132736.2a74c0b6@jacob-builder>
+ <20161111093330.GE2324@pathway.suse.cz>
+ <20161111100713.GF2324@pathway.suse.cz>
+ <20161111173410.GA15785@pathway.suse.cz>
+ <20161114111234.40d56736@icelake>
+ <1479209786.2224.3.camel@intel.com>
+ <20161115084057.1475dbfc@jacob-builder>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:50664 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753521AbcKULsJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 06:48:09 -0500
+Received: from mx2.suse.de ([195.135.220.15]:58282 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752452AbcKUL51 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Nov 2016 06:57:27 -0500
 Content-Disposition: inline
-In-Reply-To: <20161121113016.GD10014@vireshk-i7>
+In-Reply-To: <20161115084057.1475dbfc@jacob-builder>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, tkjos@google.com, Morten Rasmussen <morten.rasmussen@arm.com>
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Eduardo Valentin <edubezval@gmail.com>, Tejun Heo <tj@kernel.org>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Nov 21, 2016 at 05:00:16PM +0530, Viresh Kumar wrote:
-> On 21-11-16, 12:12, Peter Zijlstra wrote:
-> > I think it should be replaced by a value provided by the driver. It
-> > makes sense to have a rate-limit in so far as that it doesn't make sense
-> > to try and program the hardware faster than it can actually change
-> > frequencies and/or have a programming cost amortization. And this very
-> > clearly is a driver specific thing.
+On Tue 2016-11-15 08:40:57, Jacob Pan wrote:
+> On Tue, 15 Nov 2016 19:36:26 +0800
+> Zhang Rui <rui.zhang@intel.com> wrote:
 > 
-> We already have something called as transition_latency for that (though it isn't
-> used much currently).
-> 
-> > It however doesn't make sense to me to fudge with this in order to
-> > achieve ramp up/down differences.
-> 
-> So if a platform, for example, can do DVFS in say 100-500 us, then the scheduler
-> should try to re-evaluate frequency (and update it) after that short of a
-> period? Wouldn't that scheme waste lots of time doing just freq updates? And
-> that's the primary reason why cpufreq governors have some sort of sampling-rate
-> or rate-limit until now.
+> > On Mon, 2016-11-14 at 11:12 -0800, Jacob Pan wrote:
+> > > On Fri, 11 Nov 2016 18:34:10 +0100
+> > > Petr Mladek <pmladek@suse.com> wrote:
+> > >   
+> > > > 
+> > > > Please, let me known if I should do this as a separate patch
+> > > > and/or resend the patchset.  
+> > > Rui/Eduardo,
+> > > There are four independent posted changes made to powerclamp driver:
+> > > Should I roll them into one set such that you can easily apply them?
+> > > 1. add back module device table https://lkml.org/lkml/2016/11/14/760
+> > > 2. kworker, this patchset
+> > > 3. cpu hotplug state, this patch.
+> > > 4. PF_IDLE https://lkml.org/lkml/2016/11/14/747
+> > >   
+> > hmm, I will apply patch 1 and queue up for next -rc and 4.8 stable.
+> > 
+> > please resend the others that are targeted for 4.10 and later in one
+> > patch set.
+> OK, will do. I guess Petr and Sebastian are OK with me putting your
+> powerclamp changes in one patchset too?
 
-Dunno.. there's of course the cost amortization, but by the time we've
-reached sugov_should_update_freq() most of the 'expensive' parts have
-already been done from the scheduler's POV and its once again down to
-the driver.
+Sure. I am fine with it.
+
+Best Regards,
+Petr
