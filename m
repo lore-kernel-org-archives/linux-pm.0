@@ -1,106 +1,217 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition
- rate limits
-Date: Mon, 21 Nov 2016 15:38:05 +0530
-Message-ID: <20161121100805.GB10014@vireshk-i7>
-References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 8/9] mfd: wm97xx-core: core support for wm97xx Codec
+Date: Mon, 21 Nov 2016 10:12:19 +0000
+Message-ID: <20161121101219.GB32509@dell>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+ <1477510907-23495-9-git-send-email-robert.jarzmik@free.fr>
+ <20161118165040.GB19884@dell.home>
+ <87twb3r94s.fsf@belgarion.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:36624 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752469AbcKUKIJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 05:08:09 -0500
-Received: by mail-pf0-f175.google.com with SMTP id 189so63998680pfz.3
-        for <linux-pm@vger.kernel.org>; Mon, 21 Nov 2016 02:08:09 -0800 (PST)
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:38460 "EHLO
+        mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753603AbcKUKJW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 05:09:22 -0500
+Received: by mail-wm0-f45.google.com with SMTP id f82so135354360wmf.1
+        for <linux-pm@vger.kernel.org>; Mon, 21 Nov 2016 02:09:22 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+In-Reply-To: <87twb3r94s.fsf@belgarion.home>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, tkjos@google.com
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
 
-On 17-11-16, 10:48, Viresh Kumar wrote:
-> From: Steve Muckle <smuckle.linux@gmail.com>
-> 
-> The rate-limit tunable in the schedutil governor applies to transitions
-> to both lower and higher frequencies. On several platforms it is not the
-> ideal tunable though, as it is difficult to get best power/performance
-> figures using the same limit in both directions.
-> 
-> It is common on mobile platforms with demanding user interfaces to want
-> to increase frequency rapidly for example but decrease slowly.
-> 
-> One of the example can be a case where we have short busy periods
-> followed by similar or longer idle periods. If we keep the rate-limit
-> high enough, we will not go to higher frequencies soon enough. On the
-> other hand, if we keep it too low, we will have too many frequency
-> transitions, as we will always reduce the frequency after the busy
-> period.
-> 
-> It would be very useful if we can set low rate-limit while increasing
-> the frequency (so that we can respond to the short busy periods quickly)
-> and high rate-limit while decreasing frequency (so that we don't reduce
-> the frequency immediately after the short busy period and that may avoid
-> frequency transitions before the next busy period).
-> 
-> Implement separate up/down transition rate limits. Note that the
-> governor avoids frequency recalculations for a period equal to minimum
-> of up and down rate-limit. A global mutex is also defined to protect
-> updates to min_rate_limit_us via two separate sysfs files.
-> 
-> Note that this wouldn't change behavior of the schedutil governor for
-> the platforms which wish to keep same values for both up and down rate
-> limits.
-> 
-> This is tested with the rt-app [1] on ARM Exynos, dual A15 processor
-> platform.
-> 
-> Testcase: Run a SCHED_OTHER thread on CPU0 which will emulate work-load
-> for X ms of busy period out of the total period of Y ms, i.e. Y - X ms
-> of idle period. The values of X/Y taken were: 20/40, 20/50, 20/70, i.e
-> idle periods of 20, 30 and 50 ms respectively. These were tested against
-> values of up/down rate limits as: 10/10 ms and 10/40 ms.
-> 
-> For every test we noticed a performance increase of 5-10% with the
-> schedutil governor, which was very much expected.
-> 
-> [Viresh]: Simplified user interface and introduced min_rate_limit_us +
-> 	      mutex, rewrote commit log and included test results.
-> 
-> [1] https://github.com/scheduler-tools/rt-app/
-> 
-> Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 106 +++++++++++++++++++++++++++++++++------
->  1 file changed, 90 insertions(+), 16 deletions(-)
+Mark, please see below:
 
-(Background story for others from my discussion with Rafael on IRC: Rafael
-proposed that instead of this patch we can add down_rate_limit_delta_us (>0 =)
-which can be added to rate_limit_us (rate limit while increasing freq) to find
-the rate limit to be used in the downward direction. And I raised the point
-that it looks much neater to have separate up and down rate_limit_us. I also
-said that people may have a valid case where they want to keep down_rate_limit
-lower than up_rate_limit and Rafael wasn't fully sure of any such cases).
+On Sat, 19 Nov 2016, Robert Jarzmik wrote:
+> Lee Jones <lee.jones@linaro.org> writes:
+> 
+> >> +#define WM9705_VENDOR_ID 0x574d4c05
+> >> +#define WM9712_VENDOR_ID 0x574d4c12
+> >> +#define WM9713_VENDOR_ID 0x574d4c13
+> >> +#define WM97xx_VENDOR_ID_MASK 0xffffffff
+> >
+> > These are probably better represented as enums.
+> These are ids, just as devicetree ids, or PCI ids, I don't think an enum will
+> fit.
 
-Hi Rafael,
+That's fine.  We can use enums to simply group items of a similar
+type.  Representing these as enums would only serve to benefit code
+cleanliness.  What makes you think they won't fit?
 
-I gathered inputs from few people (including Google) and there are two cases
-basically we need to support:
+> >> +struct wm97xx_priv {
+> >> +	struct regmap *regmap;
+> >> +	struct snd_ac97 *ac97;
+> >> +	struct device *dev;
+> >> +};
+> >
+> > Replace _priv with _ddata.
+> Ok, will do, would you care to explain if this is something specific to your mfd
+> tree, or is it a kernel overall recommendation ?
 
-- Performance mode (normal phone mode): We want to have higher values of
-  down_rate_limit and lower_values of up_rate_limit as performance is more
-  important here and we want to avoid unnecessary transitions to lower
-  frequencies for short bursts.
+It's personal preference.  But these aren't necessarily private, so
+priv doesn't really make a great deal of sense.  These types of saved
+pointers are better described as device data (ddata).
 
-- Power-saving mode (like the Battery-saver mode in Android phones): We want to
-  save power here but don't want to be too bad in performance at the same time.
-  So, platform may not use powersave governor but schedutil. But in this case we
-  may want to keep down_rate_limit to a value lower than up_rate_limit, as we
-  want to switch back to lower frequencies as soon as the load reduces. This
-  will also ensure that we move to higher frequencies at a slower pace, i.e.
-  less aggressively.
+
+[...]
+
+> >> +static const struct reg_default wm97xx_reg_defaults[] = {
+> >> +};
+> >
+> > What's the point in this?
+> Ah, that's a reminder I have still more work on this patch ... Either I remove
+> support for wm9705 and wm9712 in the first version, or I complete it and add the
+> tables :
+>  - wm9705_reg_defaults
+>  - wm9712_reg_defaults
+
+Please don't add redundant code.  I suggest you remove it for this
+submission.
+
+> >> +static int wm9705_register(struct wm97xx_priv *wm97xx)
+> >> +{
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static int wm9712_register(struct wm97xx_priv *wm97xx)
+> >> +{
+> >> +	return 0;
+> >> +}
+> >
+> > I don't get it?
+> >
+> > Either populate or don't provide.
+> Same story as above, either I complete wm9705 and wm9712 support or I remove it.
+
+Remove it please.
+
+> >> +static int wm9713_register(struct wm97xx_priv *wm97xx,
+> >> +			   struct wm97xx_pdata *pdata)
+> >> +{
+> >
+> > What are you lining this up with?
+> Emacs ... I don't see your point though, seeing it not aligned in the diff chunk
+> doesn't mean it's not properly aligned.
+
+That is true.  So the two "scruct"s are line up in the source file,
+right?
+
+[...]
+
+> >> +	codec_pdata.ac97 = wm97xx->ac97;
+> >> +	codec_pdata.regmap = devm_regmap_init_ac97(wm97xx->ac97,
+> >> +						   &wm9713_regmap_config);
+> >> +	codec_pdata.batt_pdata = pdata->batt_pdata;
+> >> +	if (IS_ERR(codec_pdata.regmap))
+> >> +		return PTR_ERR(codec_pdata.regmap);
+> >
+> > This doesn't look like pdata.  You can get rid of all of this hoop
+> > jumping if you add it to ddata and set it as such.
+> You mean I should pass ddata to mfd sub-cells, right ?
+
+Correct.
+
+[...]
+
+> >> +static int wm97xx_ac97_probe(struct ac97_codec_device *adev)
+> >
+> > This looks sound specific.
+> >
+> > Why isn't this a plane platform driver?
+> That's the whole purpose of the patch serie.
+> 
+> This serie transforms the wm97xx drivers from a platform driver model to an ac97
+> model, where the ac97 devices are automatically discovered. The long explanation
+> is in patch 0/9, on how it started and what is the global purpose.
+> 
+> The short story is : switch to the new AC97 bus driver model.
+> 
+> As for the "sound specific part", it's because AC97 bus is mainly used in sound
+> oriented drivers, but still the codec IPs provide more than just sound, as the
+> Wolfson codecs for instance.
+
+I'd like to get Mark Brown's opinion on this.
+
+> >> +{
+> >> +	struct wm97xx_priv *wm97xx;
+> >> +	int ret;
+> >> +	void *pdata = snd_ac97_codec_get_platdata(adev);
+> >> +
+> >> +	wm97xx = devm_kzalloc(ac97_codec_dev2dev(adev),
+> >> +			      sizeof(*wm97xx), GFP_KERNEL);
+> >> +	if (!wm97xx)
+> >> +		return -ENOMEM;
+> >> +
+> >> +	wm97xx->dev = ac97_codec_dev2dev(adev);
+> >> +	wm97xx->ac97 = snd_ac97_compat_alloc(adev);
+> >> +	if (IS_ERR(wm97xx->ac97))
+> >> +		return PTR_ERR(wm97xx->ac97);
+> >> +
+> >> +
+> >> +	ac97_set_drvdata(adev, wm97xx);
+> >> +	dev_info(wm97xx->dev, "wm97xx core found, id=0x%x\n",
+> >> +		 adev->vendor_id);
+> >
+> > All of this ac97/sound stuff should be done in the ac97/sound driver.
+> 
+> Nope, it's not sound adherence you're seeing here, it's ac97 bus and driver
+> model adherence you're seeing. Would the bus be in drivers/ac97 instead of
+> sound/ac97, the code would remain the same, would be bus be i2c you would see
+> the same kind of calls but with i2c_xxx and not ac97_xxx.
+> 
+> The wm97xx needs an ac97 bus to interact with the hardware, to provide sound,
+> gpio, adc, etc ... functions. That's what is expressed here, and the fact that
+> this ac97 access has to shared amongst the mfd sub-cells, and that these cells
+> require :
+>  - wm97xx->ac97 : this one is for drivers/input/touchscreen/wm97xx-core.c
+> 
+> So the requirement in this case is not for ac97/sound but input/touchscreen.
+> 
+> >> diff --git a/include/linux/mfd/wm97xx.h b/include/linux/mfd/wm97xx.h
+> >> new file mode 100644
+> >> index 000000000000..627322f14d48
+> >> --- /dev/null
+> >> +++ b/include/linux/mfd/wm97xx.h
+> >> @@ -0,0 +1,31 @@
+> >> +/*
+> >> + * wm97xx client interface
+> >> + *
+> >> + * Copyright (C) 2016 Robert Jarzmik
+> >> + *
+> >> + * This program is free software; you can redistribute it and/or modify
+> >> + * it under the terms of the GNU General Public License as published by
+> >> + * the Free Software Foundation; either version 2 of the License, or
+> >> + * (at your option) any later version.
+> >> + *
+> >> + * This program is distributed in the hope that it will be useful,
+> >> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> >> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> >> + * GNU General Public License for more details.
+> >> + */
+> >> +
+> >> +#ifndef __LINUX_MFD_WM97XX_H
+> >> +#define __LINUX_MFD_WM97XX_H
+> >> +
+> >> +struct regmap;
+> >> +struct wm97xx_batt_pdata;
+> >> +struct snd_ac97;
+> >
+> > Why can't you just add the include files?
+> I could, but I don't need to, do I ?
+> Moreover, if a mfd sub-cell doesn't use regmap for example, I won't include a
+> useless define.
+> 
+> Thanks for the review, Lee. This will iterate, I'll split out mfd patch(es) to
+> follow up the review with you and Mark to lessen the burden on your mailbox.
+> 
+> Cheers.
+> 
 
 -- 
-viresh
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
