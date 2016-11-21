@@ -1,134 +1,89 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [patch 00/12] thermal/x86_pkg_temp: Sanitize yet another
- hotplug and locking trainwreck
-Date: Mon, 21 Nov 2016 20:02:13 +0000
-Message-ID: <1479758532.6544.169.camel@intel.com>
-References: <20161117231435.891545908@linutronix.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition rate limits
+Date: Mon, 21 Nov 2016 21:53:44 +0100
+Message-ID: <CAJZ5v0g8yOfqUrg3zucr7Fc_T=qkHLcU1XTL1O1Pg=x1s6bHAw@mail.gmail.com>
+References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+ <20161121100805.GB10014@vireshk-i7> <20161121101946.GI3102@twins.programming.kicks-ass.net>
+ <20161121121432.GK24383@e106622-lin> <20161121122622.GC3092@twins.programming.kicks-ass.net>
+ <20161121135308.GN24383@e106622-lin> <20161121145919.GA3414@e105326-lin>
+ <20161121152606.GI3092@twins.programming.kicks-ass.net> <20161121162424.GA10744@e105326-lin>
+ <20161121164605.GJ3092@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:53629 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754227AbcKUUCQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Nov 2016 15:02:16 -0500
-In-Reply-To: <20161117231435.891545908@linutronix.de>
-Content-Language: en-US
-Content-ID: <4EC721A9640E4F4EAB8B30D162918C47@intel.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34406 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753643AbcKUUxq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 15:53:46 -0500
+In-Reply-To: <20161121164605.GJ3092@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "tglx@linutronix.de" <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "bp@alien8.de" <bp@alien8.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "rt@linutronix.de" <rt@linutronix.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, tkjos@google.com, Morten Rasmussen <morten.rasmussen@arm.com>
 
-T24gRnJpLCAyMDE2LTExLTE4IGF0IDAwOjAzICswMDAwLCBUaG9tYXMgR2xlaXhuZXIgd3JvdGU6
-DQo+IFdlIHNvbGVseSBpbnRlbmRlZCB0byBjb252ZXJ0IHRoYXQgZHJpdmVyIHRvIHRoZSBob3Rw
-bHVnIHN0YXRlDQo+IG1hY2hpbmUgYW5kDQo+IHN0dW1ibGVkIG92ZXIgYSBsYXJnZSBwaWxlIG9m
-IGluc2FuaXRpZXMsIHdoaWNoIGFyZSBhbGwgaW50ZXJ3b3Zlbg0KPiB3aXRoIHRoZQ0KPiBwYWNr
-YWdlIG1hbmFnZW1lbnQ6DQoNClRoYW5rcyBUaG9tYXMgZm9yIGZpeGVzLg0KQnV0IEkgZGlkIGEg
-dmVyeSBzaW1wbGUgdGVzdCBvbiA0LjkuMC1yYzUgb24gYSBjbGllbnQgbWFjaGluZSwganVzdA0K
-cm1tb2QgYW5kIHJlYWQgem9uZSwgaXQgd2lsbCBjYXVzZSBjcmFzaC4gSSBoYXZlIG5vdCB0ZXN0
-ZWQgb24gYSBtdWx0aS0NCnNvY2tldCBzeXN0ZW0sIHdoaWNoIGlzIGFsc28gcmVxdWlyZWQgd2hl
-cmUgdGhlIHJlYWwgdGVzdCBvZiDCoGxhc3QgY3B1DQpvbiBhIHBhY2thZ2UgZ29lcyBvZmZsaW5l
-IGNhbiBiZSB0ZXN0ZWQuDQoNCiQgdW5hbWUgLWENCkxpbnV4IHh4eCA0LjkuMC1yYzUrICM0NyBT
-TVAgTW9uIE5vdiAyMSAxMTozMDo1NiBQU1QgMjAxNiB4ODZfNjQgeDg2XzY0DQp4ODZfNjQgR05V
-L0xpbnV4DQoNCiQgcHdkDQovc3lzL2RldmljZXMvdmlydHVhbC90aGVybWFsL3RoZXJtYWxfem9u
-ZTgNCiQgY2F0IHR5cGXCoA0KeDg2X3BrZ190ZW1wDQokIGNhdCB0ZW1wwqANCjQzMDAwDQokIGxz
-bW9kIHwgZ3JlcCB4ODYNCng4Nl9wa2dfdGVtcF90aGVybWFswqDCoMKgwqAxNjM4NMKgwqAwDQph
-ZXNfeDg2XzY0wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqAyMDQ4MMKgwqAxIGFlc25pX2ludGVs
-DQokIHN1ZG8gcm1tb2QgeDg2X3BrZ190ZW1wX3RoZXJtYWwNCiQgY2QgLi4vdGhlcm1hbF96b25l
-OA0KDQpab25lIGlzIG5vdCByZW1vdmVkIG9uIHJtbW9kISEhLCBzbyBhbnkgcmVhZCBvbiB6b25l
-IHdpbGwgY2F1c2UgY3Jhc2gNCg0KJCBscw0KYXZhaWxhYmxlX3BvbGljaWVzwqDCoGtfZMKgwqDC
-oGtfcHUJwqDCoHBvd2VywqDCoMKgwqDCoMKgc3VzdGFpbmFibGVfcG93ZXIJDQp0cmlwX3BvaW50
-XzBfdHlwZcKgwqB0eXBlDQplbXVsX3RlbXAJwqDCoMKgwqBrX2nCoMKgwqBvZmZzZXTCoMKgc2xv
-cGXCoMKgwqDCoMKgwqB0ZW1wCQl0cmlwXw0KcG9pbnRfMV90ZW1wwqDCoHVldmVudA0KaW50ZWdy
-YWxfY3V0b2ZmwqDCoMKgwqDCoGtfcG/CoMKgcG9saWN5wqDCoHN1YnN5c3RlbcKgwqB0cmlwX3Bv
-aW50XzBfdGVtcAl0DQpyaXBfcG9pbnRfMV90eXBlDQpzcGFuZHJ1dmFkYUBzcGFuZHJ1di1tb2Js
-Mjovc3lzL2RldmljZXMvdmlydHVhbC90aGVybWFsL3RoZXJtYWxfem9uZTgkDQpjYXQgdGVtcMKg
-DQpLaWxsZWQNCnNwYW5kcnV2YWRhQHNwYW5kcnV2LW1vYmwyOi9zeXMvZGV2aWNlcy92aXJ0dWFs
-L3RoZXJtYWwvdGhlcm1hbF96b25lOCTCoA0KDQoNCg0KDQpbwqDCoDExNi43MjY5ODldIEJVRzog
-dW5hYmxlIHRvIGhhbmRsZSBrZXJuZWwgcGFnaW5nIHJlcXVlc3QgYXQNCmZmZmZmZmZmYTA3Yjgw
-MTANClvCoMKgMTE2LjcyNzEwM10gSVA6IFs8ZmZmZmZmZmY4MTY3N2NkZD5dDQp0aGVybWFsX3pv
-bmVfZ2V0X3RlbXArMHgzZC8weDEwMA0KW8KgwqAxMTYuNzI3MTkyXSBQR0QgMmUwZDA2N8KgDQpb
-wqDCoDExNi43MjcyMjRdIFBVRCAyZTBlMDYzwqANClvCoMKgMTE2LjcyNzI1OV0gUE1EIDE0MjY2
-YzA2N8KgDQpbwqDCoDExNi43MjcyNzhdIFBURSAwDQoNClvCoMKgMTE2LjcyNzMyOF0gT29wczog
-MDAwMCBbIzFdIFNNUA0KW8KgwqAxMTYuNzI3MzY4XSBNb2R1bGVzIGxpbmtlZCBpbjogcmZjb21t
-IHZtd192c29ja192bWNpX3RyYW5zcG9ydCB2c29jaw0Kdm13X3ZtY2kgYXNpeCB1c2JuZXQgbWlp
-IGJpbmZtdF9taXNjIGJuZXAgaGlkX3NlbnNvcl9yb3RhdGlvbg0KaGlkX3NlbnNvcl9hbHMgaGlk
-X3NlbnNvcl9pbmNsXzNkIGhpZF9zZW5zb3JfYWNjZWxfM2QNCmhpZF9zZW5zb3JfbWFnbl8zZCBo
-aWRfc2Vuc29yX2d5cm9fM2QgaGlkX3NlbnNvcl90cmlnZ2VyDQpoaWRfc2Vuc29yX2N1c3RvbSBq
-b3lkZXYgaGlkX3NlbnNvcl9paW9fY29tbW9uIHBuNTQ0X21laSBoaWRfcm1pDQptZWlfcGh5IGhp
-ZF9tdWx0aXRvdWNoIHBuNTQ0IGhjaSBoaWRfc2Vuc29yX2h1YiBuZmMgaW50ZWxfcmFwbA0Kbmxz
-X2lzbzg4NTlfMSB1dmN2aWRlbyBjb3JldGVtcCBjcmN0MTBkaWZfcGNsbXVsIGNyYzMyX3BjbG11
-bA0KZ2hhc2hfY2xtdWxuaV9pbnRlbCB2aWRlb2J1ZjJfdm1hbGxvYyB2aWRlb2J1ZjJfbWVtb3Bz
-IGFlc25pX2ludGVsDQp2aWRlb2J1ZjJfdjRsMiBvcHRpb24gYWVzX3g4Nl82NCB1c2Jfd3dhbiB2
-aWRlb2J1ZjJfY29yZSBscncgdXNic2VyaWFsDQpnZjEyOG11bCBnbHVlX2hlbHBlciBhYmxrX2hl
-bHBlciB2aWRlb2RldiBidHVzYiBjcnlwdGQgYnRydGwgYnRiY20NCml3bHdpZmkgYnRpbnRlbCBz
-ZXJpb19yYXcgYmx1ZXRvb3RoIGludGVsX3BjaF90aGVybWFsIGNmZzgwMjExDQpzbmRfaGRhX2Nv
-ZGVjX2hkbWkgc25kX2hkYV9jb2RlY19yZWFsdGVrIHNuZF9oZGFfY29kZWNfZ2VuZXJpYw0Kc25k
-X2hkYV9pbnRlbCBiYXR0ZXJ5IHNuZF9oZGFfY29kZWMgc25kX2hkYV9jb3JlDQpbwqDCoDExNi43
-Mjg0MzNdwqDCoHdpbmJvbmRfY2lyIGludDM0MDNfdGhlcm1hbCByY19jb3JlIHNuZF9od2RlcA0K
-c25kX3NlcV9taWRpIHNuZF9wY20gc25kX3NlcV9taWRpX2V2ZW50IG1hY19oaWQgc25kX3Jhd21p
-ZGkgZHdfZG1hYw0KaW50MzQwMl90aGVybWFsIHNuZF9zZXEgODI1MF9kdyBpMmNfZGVzaWdud2Fy
-ZV9wbGF0Zm9ybSBzbmRfc2VxX2RldmljZQ0Kc3BpX3B4YTJ4eF9wbGF0Zm9ybSBpMmNfZGVzaWdu
-d2FyZV9jb3JlIHNuZF90aW1lciBpbnQzNDAwX3RoZXJtYWwNCmFjcGlfdGhlcm1hbF9yZWwgc25k
-IG1laV9tZSBwcm9jZXNzb3JfdGhlcm1hbF9kZXZpY2UgbWVpDQppbnQzNDB4X3RoZXJtYWxfem9u
-ZSBscGNfaWNoIGludGVsX3NvY19kdHNfaW9zZiBzb3VuZGNvcmUgbmZzZA0KYXV0aF9ycGNnc3Mg
-a3ZtX2ludGVsIG5mc19hY2wgbG9ja2Qga3ZtIGdyYWNlIGlycWJ5cGFzcyBzdW5ycGMgY3VzZQ0K
-cGFycG9ydF9wYyBwcGRldiBscCBwYXJwb3J0IGF1dG9mczQgaGlkX2dlbmVyaWMgdXNiaGlkIGk5
-MTUNCmkyY19hbGdvX2JpdCBkcm1fa21zX2hlbHBlciBzeXNjb3B5YXJlYSBzeXNmaWxscmVjdCBz
-eXNpbWdibHQNCmZiX3N5c19mb3BzIGRybSBhaGNpIGxpYmFoY2kgdmlkZW8gaTJjX2hpZCBoaWQg
-c2RoY2lfYWNwaSBzZGhjaSBbbGFzdA0KdW5sb2FkZWQ6IHg4Nl9wa2dfdGVtcF90aGVybWFsXQ0K
-W8KgwqAxMTYuNzI5MzQyXSBDUFU6IDEgUElEOiAyNDMxIENvbW06IGNhdCBOb3QgdGFpbnRlZCA0
-LjkuMC1yYzUrICM0Nw0KW8KgwqAxMTYuNzI5NDEzXSBIYXJkd2FyZSBuYW1lOiBJbnRlbCBDb3Jw
-b3JhdGlvbiBTaGFyayBCYXkgQ2xpZW50DQpwbGF0Zm9ybS9IYXJyaXMgQmVhY2ggU0RTLCBCSU9T
-IEhTV0xQVFUxLjg2Qy4wMTMzLlIwMC4xMzA5MTcyMTIzDQowOS8xNy8yMDEzDQpbwqDCoDExNi43
-Mjk1NDddIHRhc2s6IGZmZmY4ODAxMjQyODgwMDAgdGFzay5zdGFjazogZmZmZmM5MDAwMGNmNDAw
-MA0KW8KgwqAxMTYuNzI5NjE0XSBSSVA6IDAwMTA6WzxmZmZmZmZmZjgxNjc3Y2RkPl3CoMKgWzxm
-ZmZmZmZmZjgxNjc3Y2RkPl0NCnRoZXJtYWxfem9uZV9nZXRfdGVtcCsweDNkLzB4MTAwDQpbwqDC
-oDExNi43Mjk3MjFdIFJTUDogMDAxODpmZmZmYzkwMDAwY2Y3Y2Q4wqDCoEVGTEFHUzogMDAwMTAy
-ODcNClvCoMKgMTE2LjcyOTc4M10gUkFYOiAwMDAwMDAwMGZmZmZmZmVhIFJCWDogZmZmZjg4MDEx
-NGRlMjAwMCBSQ1g6DQpmZmZmODgwMTBmODlkNGMwDQpbwqDCoDExNi43Mjk4NjJdIFJEWDogZmZm
-ZmZmZmZhMDdiODAwMCBSU0k6IGZmZmZjOTAwMDBjZjdkMWMgUkRJOg0KZmZmZjg4MDExNGM1YTAw
-MA0KW8KgwqAxMTYuNzI5OTQyXSBSQlA6IGZmZmZjOTAwMDBjZjdkMDggUjA4OiAwMDAwMDAwMDAw
-MDAwMDAwIFIwOToNCjAwMDAwMDAwMDAwMDAwMDANClvCoMKgMTE2LjczMDAyMV0gUjEwOiAwMDAw
-MDAwMDFjZmZkY2ZmIFIxMTogMDAwMDAwMDAwMDAwMDAwMSBSMTI6DQpmZmZmODgwMTE0YzVhMDI4
-DQpbwqDCoDExNi43MzAxMDFdIFIxMzogZmZmZmZmZmY4MWE3YWFiMCBSMTQ6IGZmZmY4ODAxMTNh
-NTM4MDAgUjE1Og0KZmZmZjg4MDEyZmRjYzIwMA0KW8KgwqAxMTYuNzMwMTgyXSBGUzrCoMKgMDAw
-MDdmNDBiZjU3ZTcwMCgwMDAwKSBHUzpmZmZmODgwMTRmMjgwMDAwKDAwMDApDQprbmxHUzowMDAw
-MDAwMDAwMDAwMDAwDQpbwqDCoDExNi43MzAyNzJdIENTOsKgwqAwMDEwIERTOiAwMDAwIEVTOiAw
-MDAwIENSMDogMDAwMDAwMDA4MDA1MDAzMw0KW8KgwqAxMTYuNzMwMzM3XSBDUjI6IGZmZmZmZmZm
-YTA3YjgwMTAgQ1IzOiAwMDAwMDAwMDEwMTMwMDAwIENSNDoNCjAwMDAwMDAwMDAxNDA2ZTANClvC
-oMKgMTE2LjczMDQxOF0gRFIwOiAwMDAwMDAwMDAwMDAwMDAwIERSMTogMDAwMDAwMDAwMDAwMDAw
-MCBEUjI6DQowMDAwMDAwMDAwMDAwMDAwDQpbwqDCoDExNi43MzA0OTddIERSMzogMDAwMDAwMDAw
-MDAwMDAwMCBEUjY6IDAwMDAwMDAwZmZmZTBmZjAgRFI3Og0KMDAwMDAwMDAwMDAwMDQwMA0KW8Kg
-wqAxMTYuNzMwNTc2XSBTdGFjazoNClvCoMKgMTE2LjczMDYwM13CoMKgMDAwMDAwMDAwMDAwMDI4
-MiBmZmZmZmZmZjdmZmZmZmZmIGZmZmY4ODAxMTRkZTIwMDANCmZmZmY4ODAxMTRjNWEwMjgNClvC
-oMKgMTE2LjczNjY5N13CoMKgZmZmZmZmZmY4MWE3YWFiMCBmZmZmODgwMTEzYTUzODAwIGZmZmZj
-OTAwMDBjZjdkMjgNCmZmZmZmZmZmODE2NzgyNmUNClvCoMKgMTE2Ljc0MjY4MF3CoMKgMDAwMDAw
-MDAwMDAwMDI0NiBmZmZmZmZmZjgxZjE5ZTIwIGZmZmZjOTAwMDBjZjdkNDgNCmZmZmZmZmZmODE1
-NGM5MTANClvCoMKgMTE2Ljc0ODYwN10gQ2FsbCBUcmFjZToNClvCoMKgMTE2Ljc1NDM0OV3CoMKg
-WzxmZmZmZmZmZjgxNjc4MjZlPl0gdGVtcF9zaG93KzB4MWUvMHg0MA0KW8KgwqAxMTYuNzU5NzA1
-XcKgwqBbPGZmZmZmZmZmODE1NGM5MTA+XSBkZXZfYXR0cl9zaG93KzB4MjAvMHg1MA0KW8KgwqAx
-MTYuNzY0ODQxXcKgwqBbPGZmZmZmZmZmODEyYTUwYzE+XSA/IHN5c2ZzX2ZpbGVfb3BzKzB4NDEv
-MHg2MA0KW8KgwqAxMTYuNzY5MDU2XcKgwqBbPGZmZmZmZmZmODEyYTU0MTE+XSBzeXNmc19rZl9z
-ZXFfc2hvdysweGMxLzB4MTIwDQpbwqDCoDExNi43NzMyODJdwqDCoFs8ZmZmZmZmZmY4MTJhMzlm
-Nj5dIGtlcm5mc19zZXFfc2hvdysweDI2LzB4MzANClvCoMKgMTE2Ljc3NzQ1N13CoMKgWzxmZmZm
-ZmZmZjgxMjQ5OTVmPl0gc2VxX3JlYWQrMHhjZi8weDM4MA0KW8KgwqAxMTYuNzgxNjQ5XcKgwqBb
-PGZmZmZmZmZmODEyYTRhNGI+XSBrZXJuZnNfZm9wX3JlYWQrMHgxMWIvMHgxYTANClvCoMKgMTE2
-Ljc4NTcyN13CoMKgWzxmZmZmZmZmZjgxMjIxOTY4Pl0gX192ZnNfcmVhZCsweDI4LzB4MTEwDQpb
-wqDCoDExNi43ODk3OTZdwqDCoFs8ZmZmZmZmZmY4MTM1MjZhYj5dID8NCnNlY3VyaXR5X2ZpbGVf
-cGVybWlzc2lvbisweDliLzB4YzANClvCoMKgMTE2Ljc5MzYwNV3CoMKgWzxmZmZmZmZmZjgxMjIx
-ZGVlPl0gPyByd192ZXJpZnlfYXJlYSsweDRlLzB4YjANClvCoMKgMTE2Ljc5NTY0MF3CoMKgWzxm
-ZmZmZmZmZjgxMjIxZWUzPl0gdmZzX3JlYWQrMHg5My8weDEzMA0KW8KgwqAxMTYuNzk3MjEyXcKg
-wqBbPGZmZmZmZmZmODEyMjMyZTk+XSBTeVNfcmVhZCsweDQ5LzB4YTANClvCoMKgMTE2Ljc5ODcx
-NV3CoMKgWzxmZmZmZmZmZjgxMDAzYmZlPl0gZG9fc3lzY2FsbF82NCsweDZlLzB4MTgwDQpbwqDC
-oDExNi44MDAyMjRdwqDCoFs8ZmZmZmZmZmY4MTgxYzIzND5dDQplbnRyeV9TWVNDQUxMNjRfc2xv
-d19wYXRoKzB4MjUvMHgyNQ0KW8KgwqAxMTYuODAxNzA5XSBDb2RlOiA0MSA1NCA1MyA0OCA4MyBl
-YyAxMCA0OCA4NSBmZiBjNyA0NSBkOCBmZiBmZiBmZiA3Zg0KMGYgODQgYTMgMDAgMDAgMDAgNDgg
-ODEgZmYgMDAgZjAgZmYgZmYgMGYgODcgOTYgMDAgMDAgMDAgNDggOGIgOTcgYTAgMDQNCjAwIDAw
-IDw0OD4gODMgN2EgMTAgMDAgMGYgODQgODQgMDAgMDAgMDAgNGMgOGQgYjcgMzAgMDUgMDAgMDAg
-NDggODkgZmLCoA0KW8KgwqAxMTYuODAzMzM0XSBSSVDCoMKgWzxmZmZmZmZmZjgxNjc3Y2RkPl0N
-CnRoZXJtYWxfem9uZV9nZXRfdGVtcCsweDNkLzB4MTAwDQpbwqDCoDExNi44MDQ4NzddwqDCoFJT
-UCA8ZmZmZmM5MDAwMGNmN2NkOD4NClvCoMKgMTE2LjgwNjM3OF0gQ1IyOiBmZmZmZmZmZmEwN2I4
-MDEwDQpbwqDCoDExNi44MTU1MTZdIC0tLVsgZW5kIHRyYWNlIDU5M2EyODFkNjdkMzgyYmIgXS0t
-LQ0KDQoNClRoYW5rcywNClNyaW5pdmFzDQo=
+On Mon, Nov 21, 2016 at 5:46 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> On Mon, Nov 21, 2016 at 04:24:24PM +0000, Patrick Bellasi wrote:
+>> On 21-Nov 16:26, Peter Zijlstra wrote:
+>
+>> > In any case, worth trying, see what happens.
+>>
+>> Are you saying that you would like to see the code which implements a
+>> more generic version of the peak_util "filter" on top of PELT?
+>
+> Not sure about peak_util, I was more thinking of an IIR/PID filter, as
+> per the email thread referenced below. Doesn't make sense to hide that
+> in intel_pstate if it appears to be universally useful etc..
+>
+>> IMO it could be a good exercise now that we agree we want to improve
+>> PELT without replacing it.
+>
+> I think it would make sense to keep it inside sched_cpufreq for now.
+>
+>> > > For example, a task running 30 [ms] every 100 [ms] is a ~300 util_avg
+>> > > task. With PELT, we get a signal which range between [120,550] with an
+>> > > average of ~300 which is instead completely ignored. By capping the
+>> > > decay we will get:
+>> > >
+>> > >    decay_cap [ms]      range    average
+>> > >                 0      120:550     300
+>> > >                64      140:560     310
+>> > >                32      320:660     430
+>> > >
+>> > > which means that still the raw PELT signal is wobbling and never
+>> > > provides a consistent response to drive decisions.
+>> > >
+>> > > Thus, a "predictor" should be something which sample information from
+>> > > PELT to provide a more consistent view, a sort of of low-pass filter
+>> > > on top of the "dynamic metric" which is PELT.
+>> > >
+>> > > Should not such a "predictor" help on solving some of the issues
+>> > > related to PELT slow ramp-up or fast ramp-down?
+>> >
+>> > I think intel_pstate recently added a local PID filter, I asked at the
+>> > time if something like that should live in generic code, looks like
+>> > maybe it should.
+>>
+>> That PID filter is not "just" a software implementation of the ACPI's
+>> Collaborative Processor Performance Control (CPPC) when HWP hardware
+>> is not provided by a certain processor?
+>
+> I think it was this thread:
+>
+>   http://lkml.kernel.org/r/1572483.RZjvRFdxPx@vostro.rjw.lan
+>
+> It never really made sense such a filter should live in individual
+> drivers.
+
+We don't use the IIR filter in intel_pstate after all.
+
+We evaluated it, but it affected performance too much to be useful for us.
+
+That said in the "proportional" version of the intel_pstate's P-state
+selection algorithm (without PID) we ramp up faster than we reduce the
+P-state, but the approach used in there depends on using the feedback
+registers.
+
+And, of course, that's only used if HWP is not active.
+
+Thanks,
+Rafael
