@@ -1,77 +1,134 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition
- rate limits
-Date: Tue, 22 Nov 2016 11:03:16 +0000
-Message-ID: <20161122110316.GE3414@e105326-lin>
-References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
- <20161121100805.GB10014@vireshk-i7>
- <20161121101946.GI3102@twins.programming.kicks-ass.net>
- <20161121121432.GK24383@e106622-lin>
- <20161121122622.GC3092@twins.programming.kicks-ass.net>
- <20161121135308.GN24383@e106622-lin>
- <20161121141728.GF3092@twins.programming.kicks-ass.net>
- <20161121143727.GO24383@e106622-lin>
- <CAKfTPtCCMaV_k-3V7ReVC7VXYWuxgwovY+BAQ0jMGig947R+bA@mail.gmail.com>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Tue, 22 Nov 2016 11:12:43 +0000
+Message-ID: <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
+ <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
+ <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+ <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
+ <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
+ <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
+ <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:53320 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932250AbcKVLDV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 22 Nov 2016 06:03:21 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKfTPtCCMaV_k-3V7ReVC7VXYWuxgwovY+BAQ0jMGig947R+bA@mail.gmail.com>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:10392 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932164AbcKVLMx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 06:12:53 -0500
+In-Reply-To: <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Juri Lelli <Juri.Lelli@arm.com>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Todd Kjos <tkjos@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>
 
-On 22-Nov 10:27, Vincent Guittot wrote:
-> On 21 November 2016 at 15:37, Juri Lelli <Juri.Lelli@arm.com> wrote:
-> > On 21/11/16 15:17, Peter Zijlstra wrote:
-> >> On Mon, Nov 21, 2016 at 01:53:08PM +0000, Juri Lelli wrote:
-> >> > On 21/11/16 13:26, Peter Zijlstra wrote:
-> >>
-> >> > > So the limited decay would be the dominant factor in ramp-up time,
-> >> > > leaving the regular PELT period the dominant factor for ramp-down.
-> >> > >
-> >> >
-> >> > Hmmm, AFAIU the limited decay will help not forgetting completely the
-> >> > contribution of tasks that sleep for a long time, but it won't modify
-> >> > the actual ramp-up of the signal. So, for new tasks we will need to play
-> >> > with a sensible initial value (trading off perf and power as usual).
-> >>
-> >> Oh, you mean ramp-up for bright spanking new tasks? I forgot the
-> >> details, but I think we can fudge the 'history' such that those too ramp
-> >> up quickly.
-> >>
-> >
-> > Right. I think Vincent had some ideas on this front already.
+
+On 16/11/16 12:53, Rafael J. Wysocki wrote:
+> On Wed, Nov 16, 2016 at 11:48 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>> Hi Kevin, Ulf,
+>>
+>> On 03/11/16 14:20, Jon Hunter wrote:
+>>>
+>>> On 11/10/16 10:15, Jon Hunter wrote:
+>>>
+>>> ...
+>>>
+>>>>>>> Second, another way of seeing this is: Depending on the current
+>>>>>>> runtime selected configuration you need to re-configure the PM domain
+>>>>>>> topology - but the device would still remain in the same PM domain.
+>>>>>>>
+>>>>>>> In other words, you would need to remove/add subdomain(s) depending on
+>>>>>>> the selected configuration. Would that better reflect the HW?
+>>>>>>
+>>>>>> I am not 100% sure I follow what you are saying, but ultimately, I would
+>>>>>> like to get to ...
+>>>>>>
+>>>>>>         usb@70090000 {
+>>>>>>                 compatible = "nvidia,tegra210-xusb";
+>>>>>>                 ...
+>>>>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>>>>>         };
+>>>>>
+>>>>> So, is this really is a proper description of the HW? Isn't it so,
+>>>>> that the usb device always resides in one and the same PM domain?
+>>>>
+>>>> I guess technically, the usbhost controller resides in one partition and
+>>>> the super-speed logic in another. So could the usbhost domain be the
+>>>> primary? Possibly, but the device cannot be probed without both enabled.
+>>>>
+>>>>> Now, depending on the selected speed mode (superspeed) additional
+>>>>> logic may needs to be powered on and configured for the usb device to
+>>>>> work?
+>>>>> Perhaps, one could consider those additional logics as a master/parent
+>>>>> PM domain for the usb device's PM domain?
+>>>>>
+>>>>> Or this is not how the HW works? :-)
+>>>>
+>>>> It might be possible for this case, but to be honest, the more I think
+>>>> about this, I do wonder if we need to be able to make the framework a
+>>>> lot more flexible for devices that need multiple power-domains. In other
+>>>> words, for devices that use multiple domains allow them to control them
+>>>> similarly to what we do for regulators or clocks. So if there is more
+>>>> than one defined, then the genpd core will not bind the device to the
+>>>> pm-domain and let the driver handle it. This way if you do need more
+>>>> granular control of the pm-domains in the driver you can do whatever you
+>>>> need to.
+>>>>
+>>>> I know that Rajendra (CC'ed) was looking into whether he had a need to
+>>>> control multiple power-domains individually from within the context of a
+>>>> single device driver.
+>>>
+>>> So Rajendra commented to say that he does not see a need for individual
+>>> control of power-domains for now, but a need for specifying multiple.
+>>>
+>>> One simple option would be to allow users to specify multiple and have
+>>> the genpd core effectively ignore such devices and leave it to the
+>>> driver to configure manually. I have been able to do this for XUSB by
+>>> dynamically adding power-domains to the device.
+>>>
+>>> Let me know if you have any more thoughts on how we can do this.
+>>
+>> Any more thoughts on this? Seems that there are a few others that would
+>> be interested in supporting multiple domains for a device.
 > 
-> You are probably referring to some properties linked to how the PELT
-> signal is evolving. As an example, an increase of 100 pf the
-> utilization during the running phase means that we have for sure run
-> for more than 5ms. This could probably used such kind of properties
-> when estimating the utilization level of the task or the CPU
+> There is a design limitation to that, however.
+> 
+> The PM domain concept really is about intercepting the flow of PM
+> callbacks for a device in order to carry out additional operations,
+> not covered by the bus type or driver.  That's why there is only one
+> set of PM domain callbacks per device and I don't quite see how and
+> why it would be useful to add more of them in there.
 
-I like the idea of using PELT features to derive richer information.
-However, to better evaluate the effect we can expect, we should always
-keep in mind the specific timings of the different scenarios we want
-to target the optimizations for.
+Sorry for the delay.
 
-Thus, for example in the specific case of Android phones, the most
-important tasks for the user experience are usually running every 16ms
-and for a time which is in the range of 4 to 6ms. This means that
-having to wait 5ms to trigger an action it can be a too long time.
+We do, however, support the nesting of power-domains to allow more than
+one power-domain to be controlled for a device. For the current
+implementations that use nested power-domains, I am not sure if the
+power-domains are truly nested or just describing a relationship between
+power-domains.
 
-I know that your example was intentionally simplified, however it
-suggested me that maybe we should try to start a "campaign" to collect
-a description of use-cases we would like to optimize for.
+Nesting power-domains could also work for the Tegra XHCI device.
+However, I don't wish to statically nest the power-domains in
+device-tree where they are defined so they are always nested, because
+this may not be always necessary. However, I would rather the client of
+the power-domains specify which power-domains they require and
+dynamically nested the power-domains at runtime. This is slightly
+different to what I proposed in this RFC, but it is not really beyond
+the bounds of what we support today IMO. What is missing is a means to
+do this dynamically and not statically.
 
-Knowing timing and desirable behaviours at the end can also help on
-design and implement better solutions.
+By the way, I am not sure if you are suggesting that for devices that
+may need multiple power-domains we should architect the driver
+differently and split it up in some way such that we have a power-domain
+per device. But for the case of the Tegra XHCI it is quite complex
+because the driver loads firmware which runs on a micro-controller and
+we need to manage the various power-domains that are used.
+
+Cheers
+Jon
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+nvpublic
