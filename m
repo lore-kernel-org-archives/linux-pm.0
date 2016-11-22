@@ -1,199 +1,136 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch V2 12/12] thermal/x86 pkg temp: Convert to hotplug state
- machine
-Date: Tue, 22 Nov 2016 17:57:15 -0000
-Message-ID: <20161122175357.874883446@linutronix.de>
+Subject: [patch V2 09/12] thermal/x86_pkg_temp: Move work scheduled flag into
+ package struct
+Date: Tue, 22 Nov 2016 17:57:12 -0000
+Message-ID: <20161122175357.619305966@linutronix.de>
 References: <20161122175256.922158782@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:60571 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933968AbcKVSAR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 13:00:17 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline;
- filename=thermalx86_pkg_temp_Convert_to_hotplug_state_machine.patch
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+ filename=thermalx86_pkg_temp_Move_work_scheduled_flag_into_package_struct.patch
+Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Rui Zhang <rui.zhang@intel.com>, edubezval@gmail.com, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, x86@kernel.org, rt@linutronix.de, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Rui Zhang <rui.zhang@intel.com>, edubezval@gmail.com, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, x86@kernel.org, rt@linutronix.de, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Storage for a boolean information whether work is scheduled for a package
+is kept in separate allocated storage, which is resized when the number of
+detected packages grows.
 
-Install the callbacks via the state machine and let the core invoke
-the callbacks on the already online CPUs.
+With the proper locking in place this is a completely pointless exercise
+because we can simply stick it into the per package struct.
 
-Replace the wrmsr/rdmrs_on_cpu() calls in the hotplug callbacks as they are
-guaranteed to be invoked on the incoming/outgoing cpu.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- drivers/thermal/x86_pkg_temp_thermal.c |   80 +++++++++------------------------
- 1 file changed, 23 insertions(+), 57 deletions(-)
+ drivers/thermal/x86_pkg_temp_thermal.c |   35 ++++-----------------------------
+ 1 file changed, 5 insertions(+), 30 deletions(-)
 
 --- a/drivers/thermal/x86_pkg_temp_thermal.c
 +++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -79,6 +79,9 @@ static DEFINE_SPINLOCK(pkg_temp_lock);
- /* Protects zone operation in the work function against hotplug removal */
- static DEFINE_MUTEX(thermal_zone_mutex);
+@@ -61,6 +61,7 @@ struct pkg_device {
+ 	struct list_head		list;
+ 	u16				phys_proc_id;
+ 	u16				cpu;
++	bool				work_scheduled;
+ 	u32				tj_max;
+ 	u32				msr_pkg_therm_low;
+ 	u32				msr_pkg_therm_high;
+@@ -82,11 +83,6 @@ static DEFINE_MUTEX(thermal_zone_mutex);
+ /* Interrupt to work function schedule queue */
+ static DEFINE_PER_CPU(struct delayed_work, pkg_temp_thermal_threshold_work);
  
-+/* The dynamically assigned cpu hotplug state for module_exit() */
-+static enum cpuhp_state pkg_thermal_hp_state __read_mostly;
-+
+-/* To track if the work is already scheduled on a package */
+-static u8 *pkg_work_scheduled;
+-
+-static u16 max_phy_id;
+-
  /* Debug counters to show using debugfs */
  static struct dentry *debugfs;
  static unsigned int pkg_interrupt_cnt;
-@@ -386,9 +389,8 @@ static int pkg_temp_thermal_device_add(u
- 		return err;
- 	}
- 	/* Store MSR value for package thermal interrupt, to restore at exit */
--	rdmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
--		     &pkgdev->msr_pkg_therm_low,
--		     &pkgdev->msr_pkg_therm_high);
-+	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, pkgdev->msr_pkg_therm_low,
-+	      pkgdev->msr_pkg_therm_high);
- 
- 	cpumask_set_cpu(cpu, &pkgdev->cpumask);
- 	spin_lock_irq(&pkg_temp_lock);
-@@ -397,14 +399,14 @@ static int pkg_temp_thermal_device_add(u
- 	return 0;
- }
- 
--static void put_core_offline(unsigned int cpu)
-+static int pkg_thermal_cpu_offline(unsigned int cpu)
+@@ -294,7 +290,7 @@ static inline void disable_pkg_thres_int
+ static void pkg_temp_thermal_threshold_work_fn(struct work_struct *work)
  {
- 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
- 	bool lastcpu, was_target;
- 	int target;
+ 	struct thermal_zone_device *tzone = NULL;
+-	int phy_id, cpu = smp_processor_id();
++	int cpu = smp_processor_id();
+ 	struct pkg_device *pkgdev;
+ 	u64 msr_val, wr_val;
  
+@@ -308,8 +304,7 @@ static void pkg_temp_thermal_threshold_w
+ 		mutex_unlock(&thermal_zone_mutex);
+ 		return;
+ 	}
+-
+-	pkg_work_scheduled[phy_id] = 0;
++	pkgdev->work_scheduled = false;
+ 
+ 	rdmsrl(MSR_IA32_PACKAGE_THERM_STATUS, msr_val);
+ 	wr_val = msr_val & ~(THERM_LOG_THRESHOLD0 | THERM_LOG_THRESHOLD1);
+@@ -334,7 +329,6 @@ static void pkg_temp_thermal_threshold_w
+ static int pkg_thermal_notify(u64 msr_val)
+ {
+ 	int cpu = smp_processor_id();
+-	int phy_id = topology_physical_package_id(cpu);
+ 	struct pkg_device *pkgdev;
+ 	unsigned long flags;
+ 
+@@ -345,8 +339,8 @@ static int pkg_thermal_notify(u64 msr_va
+ 
+ 	/* Work is per package, so scheduling it once is enough. */
+ 	pkgdev = pkg_temp_thermal_get_dev(cpu);
+-	if (pkgdev && pkg_work_scheduled && !pkg_work_scheduled[phy_id]) {
+-		pkg_work_scheduled[phy_id] = 1;
++	if (pkgdev && !pkgdev->work_scheduled) {
++		pkgdev->work_scheduled = true;
+ 		schedule_delayed_work_on(cpu,
+ 				&per_cpu(pkg_temp_thermal_threshold_work, cpu),
+ 				msecs_to_jiffies(notify_delay_ms));
+@@ -361,8 +355,6 @@ static int pkg_temp_thermal_device_add(u
+ 	u32 tj_max, eax, ebx, ecx, edx;
+ 	struct pkg_device *pkgdev;
+ 	int thres_count, err;
+-	unsigned long flags;
+-	u8 *temp;
+ 
+ 	cpuid(6, &eax, &ebx, &ecx, &edx);
+ 	thres_count = ebx & 0x07;
+@@ -382,20 +374,6 @@ static int pkg_temp_thermal_device_add(u
  	if (!pkgdev)
--		return;
-+		return 0;
- 
- 	target = cpumask_any_but(&pkgdev->cpumask, cpu);
- 	cpumask_clear_cpu(cpu, &pkgdev->cpumask);
-@@ -448,16 +450,9 @@ static void put_core_offline(unsigned in
- 	 */
- 	if (lastcpu) {
- 		packages[topology_logical_package_id(cpu)] = NULL;
--		/*
--		 * After this point nothing touches the MSR anymore. We
--		 * must drop the lock to make the cross cpu call. This goes
--		 * away once we move that code to the hotplug state machine.
--		 */
--		spin_unlock_irq(&pkg_temp_lock);
--		wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
--			     pkgdev->msr_pkg_therm_low,
--			     pkgdev->msr_pkg_therm_high);
--		spin_lock_irq(&pkg_temp_lock);
-+		/* After this point nothing touches the MSR anymore. */
-+		wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+		      pkgdev->msr_pkg_therm_low, pkgdev->msr_pkg_therm_high);
- 	}
- 
- 	/*
-@@ -487,9 +482,10 @@ static void put_core_offline(unsigned in
- 	/* Final cleanup if this is the last cpu */
- 	if (lastcpu)
- 		kfree(pkgdev);
-+	return 0;
- }
- 
--static int get_core_online(unsigned int cpu)
-+static int pkg_thermal_cpu_online(unsigned int cpu)
- {
- 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
-@@ -506,27 +502,6 @@ static int get_core_online(unsigned int
- 	return pkg_temp_thermal_device_add(cpu);
- }
- 
--static int pkg_temp_thermal_cpu_callback(struct notifier_block *nfb,
--				 unsigned long action, void *hcpu)
--{
--	unsigned int cpu = (unsigned long) hcpu;
--
--	switch (action & ~CPU_TASKS_FROZEN) {
--	case CPU_ONLINE:
--	case CPU_DOWN_FAILED:
--		get_core_online(cpu);
--		break;
--	case CPU_DOWN_PREPARE:
--		put_core_offline(cpu);
--		break;
--	}
--	return NOTIFY_OK;
--}
--
--static struct notifier_block pkg_temp_thermal_notifier __refdata = {
--	.notifier_call = pkg_temp_thermal_cpu_callback,
--};
--
- static const struct x86_cpu_id __initconst pkg_temp_thermal_ids[] = {
- 	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_PTS },
- 	{}
-@@ -535,7 +510,7 @@ MODULE_DEVICE_TABLE(x86cpu, pkg_temp_the
- 
- static int __init pkg_temp_thermal_init(void)
- {
--	int i;
-+	int ret;
- 
- 	if (!x86_match_cpu(pkg_temp_thermal_ids))
- 		return -ENODEV;
-@@ -545,12 +520,13 @@ static int __init pkg_temp_thermal_init(
- 	if (!packages)
  		return -ENOMEM;
  
--	cpu_notifier_register_begin();
--	for_each_online_cpu(i)
--		if (get_core_online(i))
--			goto err_ret;
--	__register_hotcpu_notifier(&pkg_temp_thermal_notifier);
--	cpu_notifier_register_done();
-+	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "thermal/x86_pkg:online",
-+				pkg_thermal_cpu_online,	pkg_thermal_cpu_offline);
-+	if (ret < 0)
-+		goto err;
-+
-+	/* Store the state for module exit */
-+	pkg_thermal_hp_state = ret;
- 
- 	platform_thermal_package_notify = pkg_thermal_notify;
- 	platform_thermal_package_rate_control = pkg_thermal_rate_control;
-@@ -559,28 +535,18 @@ static int __init pkg_temp_thermal_init(
- 	pkg_temp_debugfs_init();
- 	return 0;
- 
--err_ret:
--	for_each_online_cpu(i)
--		put_core_offline(i);
--	cpu_notifier_register_done();
-+err:
- 	kfree(packages);
--	return -ENODEV;
-+	return ret;
+-	spin_lock_irqsave(&pkg_temp_lock, flags);
+-	if (topology_physical_package_id(cpu) > max_phy_id)
+-		max_phy_id = topology_physical_package_id(cpu);
+-	temp = krealloc(pkg_work_scheduled,
+-			(max_phy_id+1) * sizeof(u8), GFP_ATOMIC);
+-	if (!temp) {
+-		spin_unlock_irqrestore(&pkg_temp_lock, flags);
+-		kfree(pkgdev);
+-		return -ENOMEM;
+-	}
+-	pkg_work_scheduled = temp;
+-	pkg_work_scheduled[topology_physical_package_id(cpu)] = 0;
+-	spin_unlock_irqrestore(&pkg_temp_lock, flags);
+-
+ 	pkgdev->phys_proc_id = topology_physical_package_id(cpu);
+ 	pkgdev->cpu = cpu;
+ 	pkgdev->tj_max = tj_max;
+@@ -554,7 +532,6 @@ static int __init pkg_temp_thermal_init(
+ 	for_each_online_cpu(i)
+ 		put_core_offline(i);
+ 	cpu_notifier_register_done();
+-	kfree(pkg_work_scheduled);
+ 	return -ENODEV;
  }
  module_init(pkg_temp_thermal_init)
+@@ -572,8 +549,6 @@ static void __exit pkg_temp_thermal_exit
+ 		put_core_offline(i);
+ 	cpu_notifier_register_done();
  
- static void __exit pkg_temp_thermal_exit(void)
- {
--	int i;
+-	kfree(pkg_work_scheduled);
 -
- 	platform_thermal_package_notify = NULL;
- 	platform_thermal_package_rate_control = NULL;
- 
--	cpu_notifier_register_begin();
--	__unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
--	for_each_online_cpu(i)
--		put_core_offline(i);
--	cpu_notifier_register_done();
--
-+	cpuhp_remove_state(pkg_thermal_hp_state);
  	debugfs_remove_recursive(debugfs);
- 	kfree(packages);
  }
-
-
+ module_exit(pkg_temp_thermal_exit)
