@@ -1,145 +1,144 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Tue, 22 Nov 2016 14:31:35 +0100
-Message-ID: <CAPDyKFq0iVHEhwVbFZNQAMSw-W8YHk5Qc2EA2NSWkMux5SEnmw@mail.gmail.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
- <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com> <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
- <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com> <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
- <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com> <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
- <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <d9a4c1cd-6682-663d-e30d-cc85f665cf64-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Tue, 22 Nov 2016 15:28:04 +0100
+Message-ID: <28F93ABE-8210-4389-AE77-4D5E830E669B@martin.sperl.org>
+References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org> <1478081906-12009-3-git-send-email-kernel@martin.sperl.org> <20161117021107.GA2647@localhost.localdomain> <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org> <20161117151019.GA3115@localhost.localdomain> <7957B3CC-0E18-4B27-82EB-EF88B7695E28@martin.sperl.org> <20161119042224.GA25063@localhost.localdomain>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161119042224.GA25063-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 22 November 2016 at 12:12, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->
-> On 16/11/16 12:53, Rafael J. Wysocki wrote:
->> On Wed, Nov 16, 2016 at 11:48 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
->>> Hi Kevin, Ulf,
->>>
->>> On 03/11/16 14:20, Jon Hunter wrote:
->>>>
->>>> On 11/10/16 10:15, Jon Hunter wrote:
->>>>
->>>> ...
->>>>
->>>>>>>> Second, another way of seeing this is: Depending on the current
->>>>>>>> runtime selected configuration you need to re-configure the PM domain
->>>>>>>> topology - but the device would still remain in the same PM domain.
->>>>>>>>
->>>>>>>> In other words, you would need to remove/add subdomain(s) depending on
->>>>>>>> the selected configuration. Would that better reflect the HW?
->>>>>>>
->>>>>>> I am not 100% sure I follow what you are saying, but ultimately, I would
->>>>>>> like to get to ...
->>>>>>>
->>>>>>>         usb@70090000 {
->>>>>>>                 compatible = "nvidia,tegra210-xusb";
->>>>>>>                 ...
->>>>>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
->>>>>>>         };
->>>>>>
->>>>>> So, is this really is a proper description of the HW? Isn't it so,
->>>>>> that the usb device always resides in one and the same PM domain?
->>>>>
->>>>> I guess technically, the usbhost controller resides in one partition and
->>>>> the super-speed logic in another. So could the usbhost domain be the
->>>>> primary? Possibly, but the device cannot be probed without both enabled.
->>>>>
->>>>>> Now, depending on the selected speed mode (superspeed) additional
->>>>>> logic may needs to be powered on and configured for the usb device to
->>>>>> work?
->>>>>> Perhaps, one could consider those additional logics as a master/parent
->>>>>> PM domain for the usb device's PM domain?
->>>>>>
->>>>>> Or this is not how the HW works? :-)
->>>>>
->>>>> It might be possible for this case, but to be honest, the more I think
->>>>> about this, I do wonder if we need to be able to make the framework a
->>>>> lot more flexible for devices that need multiple power-domains. In other
->>>>> words, for devices that use multiple domains allow them to control them
->>>>> similarly to what we do for regulators or clocks. So if there is more
->>>>> than one defined, then the genpd core will not bind the device to the
->>>>> pm-domain and let the driver handle it. This way if you do need more
->>>>> granular control of the pm-domains in the driver you can do whatever you
->>>>> need to.
->>>>>
->>>>> I know that Rajendra (CC'ed) was looking into whether he had a need to
->>>>> control multiple power-domains individually from within the context of a
->>>>> single device driver.
->>>>
->>>> So Rajendra commented to say that he does not see a need for individual
->>>> control of power-domains for now, but a need for specifying multiple.
->>>>
->>>> One simple option would be to allow users to specify multiple and have
->>>> the genpd core effectively ignore such devices and leave it to the
->>>> driver to configure manually. I have been able to do this for XUSB by
->>>> dynamically adding power-domains to the device.
->>>>
->>>> Let me know if you have any more thoughts on how we can do this.
->>>
->>> Any more thoughts on this? Seems that there are a few others that would
->>> be interested in supporting multiple domains for a device.
->>
->> There is a design limitation to that, however.
->>
->> The PM domain concept really is about intercepting the flow of PM
->> callbacks for a device in order to carry out additional operations,
->> not covered by the bus type or driver.  That's why there is only one
->> set of PM domain callbacks per device and I don't quite see how and
->> why it would be useful to add more of them in there.
->
-> Sorry for the delay.
->
-> We do, however, support the nesting of power-domains to allow more than
-> one power-domain to be controlled for a device. For the current
-> implementations that use nested power-domains, I am not sure if the
-> power-domains are truly nested or just describing a relationship between
-> power-domains.
->
-> Nesting power-domains could also work for the Tegra XHCI device.
-> However, I don't wish to statically nest the power-domains in
-> device-tree where they are defined so they are always nested, because
-> this may not be always necessary. However, I would rather the client of
-> the power-domains specify which power-domains they require and
-> dynamically nested the power-domains at runtime. This is slightly
-> different to what I proposed in this RFC, but it is not really beyond
-> the bounds of what we support today IMO. What is missing is a means to
-> do this dynamically and not statically.
+Hi Eduardo!
 
-Hmm, going back to the original post for this thread.
+On 19.11.2016 05:22, Eduardo Valentin wrote:
+> Hello Martin,
+> 
+> Thanks for your patience to take the time to explain to me how the
+> firmware/linux split is done in your platform. Still, one thing is not
+> clear to me.
+> 
+> On Fri, Nov 18, 2016 at 09:32:47AM +0100, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org wrote:
+>> 
+> 
+>> The way that firmware works on the RPI is quite different from most others I guess.
+>> in principle you got 2 different CPUs on the bcm2835:
+>> * ARM, which runs the linux instance
+>> * VideoCore 4, which runs the firmware (loading from SD initially) and
+>>  then booting the ARM.
+>> 
+>> So this Firmware on VC4 is the one that I am talking about.
+>> Without the working firmware linux can not boot on arm.
+> 
+> Given that "without the working firmware linux can not boot on arm",
+> 
+> (...)
+> 
+>> As far as I understand the conversion is continuous (as soon as the HW is
+>> configured). This case is there primarily to handle the situation where
+>> we initialize the HW ourselves (see line 226 and below), and we immediately
+> 
+> and around line 226 we have the comment:
+> +       /*
+> +        * right now the FW does set up the HW-block, so we are not
+> +        * touching the configuration registers.
+> +        * But if the HW is not enabled, then set it up
+> +        * using "sane" values used by the firmware right now.
+> +        */
+> 
+> 
+>> want to read the ADC value before the first conversion is finished.
+>> 
+> 
+> then, does the firmware initializes the device or not?
+> 
 
-This more or less sounds very similar as the case for when Rajendra
-described the problem for the video decode block in msm8996, except
-that in this case you already have couple of different struct devices
-available that for you could deploy runtime PM.
+Yes, it does (normally)
 
-Then, wouldn't it be possible to assign a parent/child relationship
-for these devices, each device has its own corresponding PM domain -
-instead of having to dynamically nest PM domains.
+> What are the cases you would load this driver but still get an
+> uninitialized device? That looks like some bug workaround hidden
+> somewhere. Do system integrators/engineers need to be aware of this w/a?
+> Would the driver work right aways when the subsystem is loaded during
+> boot? How about module insertion?
+> 
 
-Runtime PM will help to make sure parent devices are always active
-when child devices also are active.
+I was asked to implement the "initialize" case just in case FW ever
+stopped setting up the device itself, so that is why this code is
+included.
 
->
-> By the way, I am not sure if you are suggesting that for devices that
-> may need multiple power-domains we should architect the driver
-> differently and split it up in some way such that we have a power-domain
-> per device. But for the case of the Tegra XHCI it is quite complex
-> because the driver loads firmware which runs on a micro-controller and
-> we need to manage the various power-domains that are used.
+> 
+> Who has the ownership of this device?
 
-Again, if it's possible to model the topology by using parent/child
-devices, and deploy runtime PM for them, then we shouldn't need more
-than one PM domain per device. I am not sure that works here though,
-but just and idea.
+Joined ownership I suppose...
 
-Kind regards
-Uffe
+> 
+>> The above mentioned “configuration if not running” reflect the values that
+>> the FW is currently setting. We should not change those values as long as the
+>> Firmware is also reading the temperature on its own.
+> 
+> hmm.. that looks like racy to me. Again, How do you synchronize accesses to
+> this device? What if you configure the device and right after the
+> firmware updates the configs? How do you make sure the configs you are
+> writing here are the same used by the firmware? What if the firmware
+> version changes? What versions of the firmware does this driver support?
+> 
+> Would it make sense to simply always initialize the device? Do you have
+> a way to tell the firmware that it should not use the device?
+> 
+> Or, if you want to keep the device driver simply being a dummy reader,
+> would it make sense to simply avoid writing configurations to the
+> device, and simply retry to check if the firmware gets the device
+> initialized?
+
+Again: the device registers are only ever written if the device is not started
+already. Otherwise the driver only reads for the ADC register, so there
+is no real race here.
+
+> 
+>> 
+>>> 
+>>>> So do you need another version of the patchset that uses that new API?
+>>> 
+>>> I think the API usage is change that can be done together with
+>>> clarification for the above questions too: on hardware state,
+>>> firmware loading, maybe a master driver dependency, and the ADC
+>>> conversion sequence, which are not well clear to me on this driver. As long as
+>>> this is clarified and documented in the code (can be simple comments so
+>>> it is clear to whoever reads in the future), then I would be OK with
+>>> this driver.
+>> 
+>> So how do you want this to get “documented” in the driver?
+>> The setup and Firmware is a generic feature of the SOC, so if we would put
+>> some clarifications in this driver, then we would need to put it in every
+>> bcm283X driver (which seems unreasonable).
+>> 
+> 
+> I think a simple comment explaining the firmware dependency and the
+> expected pre-conditions to get this driver working in a sane state would
+> do it.
+> 
+> A better device initialization would also be appreciated. Based on my
+> limited understanding of this platform, and your explanations, this
+> device seams to have a serious race condition with firmware while
+> accessing this device.
+
+Again: the firmware runs before the ARM is started and for all practical
+purposes the firmware is (as of now) configuring the thermal device.
+
+As for the use of thermal_zone_get_offset/slope: looking into the code
+it looks like this actually blows up the code, as we now would need to
+allocate thermal_zone_params and preset it with the “correct” values.
+
+So more code to maintain and more memory consumed.
+The only advantage I would see is that it would allow to set offset and
+slope directly in the device tree.
+
+Thanks,
+		Martin--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
