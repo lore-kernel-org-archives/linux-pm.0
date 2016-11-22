@@ -1,72 +1,147 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 0/9] AC97 device/driver model revamp
-Date: Tue, 22 Nov 2016 18:13:17 +0000
-Message-ID: <20161122181317.jcyhcyorxgpp6w3m@sirena.org.uk>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that require multiple domains
+Date: Tue, 22 Nov 2016 10:26:53 -0800
+Message-ID: <m2lgwbxtea.fsf@baylibre.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+        <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
+        <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
+        <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+        <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
+        <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
+        <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
+        <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
+        <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0576043004976886590=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: alsa-devel@alsa-project.org, patches@opensource.wolfsonmicro.com, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, Lee Jones <lee.jones@linaro.org>, Daniel Mack <daniel@zonque.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com> (Jon Hunter's
+        message of "Tue, 22 Nov 2016 11:12:43 +0000")
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
+Jon Hunter <jonathanh@nvidia.com> writes:
 
---===============0576043004976886590==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="xaxrk4mep5322mmb"
-Content-Disposition: inline
+> On 16/11/16 12:53, Rafael J. Wysocki wrote:
+>> On Wed, Nov 16, 2016 at 11:48 AM, Jon Hunter <jonathanh@nvidia.com> wrote:
+>>> Hi Kevin, Ulf,
+>>>
+>>> On 03/11/16 14:20, Jon Hunter wrote:
+>>>>
+>>>> On 11/10/16 10:15, Jon Hunter wrote:
+>>>>
+>>>> ...
+>>>>
+>>>>>>>> Second, another way of seeing this is: Depending on the current
+>>>>>>>> runtime selected configuration you need to re-configure the PM domain
+>>>>>>>> topology - but the device would still remain in the same PM domain.
+>>>>>>>>
+>>>>>>>> In other words, you would need to remove/add subdomain(s) depending on
+>>>>>>>> the selected configuration. Would that better reflect the HW?
+>>>>>>>
+>>>>>>> I am not 100% sure I follow what you are saying, but ultimately, I would
+>>>>>>> like to get to ...
+>>>>>>>
+>>>>>>>         usb@70090000 {
+>>>>>>>                 compatible = "nvidia,tegra210-xusb";
+>>>>>>>                 ...
+>>>>>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>>>>>>         };
+>>>>>>
+>>>>>> So, is this really is a proper description of the HW? Isn't it so,
+>>>>>> that the usb device always resides in one and the same PM domain?
+>>>>>
+>>>>> I guess technically, the usbhost controller resides in one partition and
+>>>>> the super-speed logic in another. So could the usbhost domain be the
+>>>>> primary? Possibly, but the device cannot be probed without both enabled.
+>>>>>
+>>>>>> Now, depending on the selected speed mode (superspeed) additional
+>>>>>> logic may needs to be powered on and configured for the usb device to
+>>>>>> work?
+>>>>>> Perhaps, one could consider those additional logics as a master/parent
+>>>>>> PM domain for the usb device's PM domain?
+>>>>>>
+>>>>>> Or this is not how the HW works? :-)
+>>>>>
+>>>>> It might be possible for this case, but to be honest, the more I think
+>>>>> about this, I do wonder if we need to be able to make the framework a
+>>>>> lot more flexible for devices that need multiple power-domains. In other
+>>>>> words, for devices that use multiple domains allow them to control them
+>>>>> similarly to what we do for regulators or clocks. So if there is more
+>>>>> than one defined, then the genpd core will not bind the device to the
+>>>>> pm-domain and let the driver handle it. This way if you do need more
+>>>>> granular control of the pm-domains in the driver you can do whatever you
+>>>>> need to.
+>>>>>
+>>>>> I know that Rajendra (CC'ed) was looking into whether he had a need to
+>>>>> control multiple power-domains individually from within the context of a
+>>>>> single device driver.
+>>>>
+>>>> So Rajendra commented to say that he does not see a need for individual
+>>>> control of power-domains for now, but a need for specifying multiple.
+>>>>
+>>>> One simple option would be to allow users to specify multiple and have
+>>>> the genpd core effectively ignore such devices and leave it to the
+>>>> driver to configure manually. I have been able to do this for XUSB by
+>>>> dynamically adding power-domains to the device.
+>>>>
+>>>> Let me know if you have any more thoughts on how we can do this.
+>>>
+>>> Any more thoughts on this? Seems that there are a few others that would
+>>> be interested in supporting multiple domains for a device.
+>> 
+>> There is a design limitation to that, however.
+>> 
+>> The PM domain concept really is about intercepting the flow of PM
+>> callbacks for a device in order to carry out additional operations,
+>> not covered by the bus type or driver.  That's why there is only one
+>> set of PM domain callbacks per device and I don't quite see how and
+>> why it would be useful to add more of them in there.
 
+@Rafael: Re: why it would be useful...
 
---xaxrk4mep5322mmb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Many ARM SoCs have devices that have independent power rails for the
+memory and the logic of an IP block.  For example, while powering off
+the logic you could keep the memory at a retention voltage, so you'd
+want to treat those power domains separately.
 
-On Wed, Oct 26, 2016 at 09:41:38PM +0200, Robert Jarzmik wrote:
+Today, in order to model this, you'd have to create another (dummy)
+device, just for the memory and put it in its own domain so the two
+could be controlled separately.
 
-> The driving ideas are still the same, and I put them in [1] for memory. This is
-> the first post RFC submission. In order to make a full demonstration of the
-> framework, wm97xx was converted to an MFD, see [2] for the "why".
+> Sorry for the delay.
+>
+> We do, however, support the nesting of power-domains to allow more than
+> one power-domain to be controlled for a device. For the current
+> implementations that use nested power-domains, I am not sure if the
+> power-domains are truly nested or just describing a relationship between
+> power-domains.
 
-This all looks nice to me, I did spot a few things but I don't think I
-had anything that wasn't already raised by someone else so didn't repeat
-them.  Thanks for stepping up and doing this work!
+@Jon: Do you think the nesting could work to handle the above case too?
 
---xaxrk4mep5322mmb
-Content-Type: application/pgp-signature; name="signature.asc"
+> Nesting power-domains could also work for the Tegra XHCI device.
+> However, I don't wish to statically nest the power-domains in
+> device-tree where they are defined so they are always nested, because
+> this may not be always necessary.
 
------BEGIN PGP SIGNATURE-----
+And, that's not describing the hardware very accurately either, IIUC
 
-iQEcBAABCAAGBQJYNIq8AAoJECTWi3JdVIfQMjgH/je+KeOstLfSW2OjUoKyRn7y
-CYdl68cdRkRygHfPUIZio/QXlpxbqKDl9VYmGXAvDWpad5MyRDVZjDlPm3JtflgP
-2ug3nn01Jw0NeE1kD3pgJBQi7ghg3XExXwMlCv7qawo4kQQIhUUgQFY8lQD6Bwal
-Hku9hddeFQCpuNwlx3Rekd5VXm6X7x8NkPgSrHJVOJRogmmwbzBPVu4ONhR24oCK
-RSx2p/7cedwlkCKVEisd6zRKIcQJgmJHhQQjzc3A+n6foEM7GWnM6h5oP9S1nxVk
-kD9RxstanRPNTg06bIWlgXq1iAAaavhZJQG3wWoSyWr1dtNvWiMST/az9j3HcAo=
-=lGWW
------END PGP SIGNATURE-----
+> However, I would rather the client of
+> the power-domains specify which power-domains they require and
+> dynamically nested the power-domains at runtime. This is slightly
+> different to what I proposed in this RFC, but it is not really beyond
+> the bounds of what we support today IMO. What is missing is a means to
+> do this dynamically and not statically.
+>
+> By the way, I am not sure if you are suggesting that for devices that
+> may need multiple power-domains we should architect the driver
+> differently and split it up in some way such that we have a power-domain
+> per device. But for the case of the Tegra XHCI it is quite complex
+> because the driver loads firmware which runs on a micro-controller and
+> we need to manage the various power-domains that are used.
 
---xaxrk4mep5322mmb--
+IMO, constructing a network of new struct devices just to workaround
+limitations in the framework doesn't sound quite right either.
 
-
---===============0576043004976886590==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============0576043004976886590==--
+Kevin
