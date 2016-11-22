@@ -1,55 +1,53 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH 2/3] thermal: rockchip: improve conversion error messages
-Date: Mon, 21 Nov 2016 19:43:33 -0800
-Message-ID: <20161122034332.GA113841@google.com>
-References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
- <1479513177-81504-2-git-send-email-briannorris@chromium.org>
- <b6da9490-9a27-4330-7988-cb25724ba345@rock-chips.com>
- <378ade3d-a980-58e4-5253-c16702c74bf3@gmail.com>
- <20161122021506.GA103691@google.com>
- <81605141-dd5b-1714-6486-3381e616a992@gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
+Date: Tue, 22 Nov 2016 09:19:22 +0530
+Message-ID: <20161122034922.GC3070@vireshk-i7>
+References: <cover.1477463128.git.viresh.kumar@linaro.org>
+ <20161118030636.GA3110@vireshk-i7>
+ <20161118104329.27xpm7cshfpxykqd@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f49.google.com ([74.125.83.49]:34281 "EHLO
+        mail-pg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932241AbcKVDt1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Nov 2016 22:49:27 -0500
+Received: by mail-pg0-f49.google.com with SMTP id x23so2702781pgx.1
+        for <linux-pm@vger.kernel.org>; Mon, 21 Nov 2016 19:49:26 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <81605141-dd5b-1714-6486-3381e616a992@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Caesar Wang <caesar.upstream@gmail.com>
-Cc: Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Barber <smbarber@chromium.org>, linux-rockchip@lists.infradead.org
+In-Reply-To: <20161118104329.27xpm7cshfpxykqd@sirena.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com
 
-On Tue, Nov 22, 2016 at 10:33:27AM +0800, Caesar Wang wrote:
-> 在 2016年11月22日 10:15, Brian Norris 写道:
-> >On Tue, Nov 22, 2016 at 09:51:23AM +0800, Caesar Wang wrote:
-> >>CHECK: Alignment should match open parenthesis
-> >>#428: FILE: drivers/thermal/rockchip_thermal.c:428:
-> >>+    pr_err("%s: invalid temperature, temp=%d error=%d\n",
-> >>+        __func__, temp, error);
-> >>
-> >>CHECK: Alignment should match open parenthesis
-> >>#480: FILE: drivers/thermal/rockchip_thermal.c:480:
-> >>+        pr_err("%s: invalid conversion table, mode=%d\n",
-> >>+            __func__, table->mode);
-> >What patch are you checking? I ran mine through checkpatch, and there
-> >are no problems.
+On 18-11-16, 10:43, Mark Brown wrote:
+> On Fri, Nov 18, 2016 at 08:36:36AM +0530, Viresh Kumar wrote:
 > 
-> That  just checkcode on Chromeos kernelv4.4,  that trivial things :)
-> $chromiumos/src/third_party/kernel/v4.4$ checkcode
+> > Can we please get this series reviewed quickly and come to a conclusion? It has
+> > already taken a lot of time getting this merged and the present code seems to be
+> > the best possible shot we have, AFAIU.
+> 
+> There already seems to be extensive, ongoing discusion about this...
 
-I'm not familiar with that tool, and that repository isn't upstream
-but...
+And I am quite sure we are stuck again :)
 
-> drivers/thermal/rockchip_thermal.c
-> CHECK: Alignment should match open parenthesis
-> #428: FILE: drivers/thermal/rockchip_thermal.c:428:
-> +    pr_err("%s: invalid temperature, temp=%d error=%d\n",
-> +        __func__, temp, error);
+I just wanted to say that we should get it to some sort of conclusion. And yes I
+want to say thanks to all who invested their time on this thread :)
 
-...on approximately my 10th read of this...I guess maybe this tool has
-determined that 2 tabs is 1 character too much, because the second line
-lines up with the '%' instead of the '"'. If this is so important to
-you, you can of course edit my patch and include it with yours.
+So the LAST remaining question is:
 
-Regards,
-Brian
+"How do we know (from the DT) the order in which entries for multiple regulators
+are present in the OPP table?"
+
+And I am not sure if we can do that without having a property like:
+
++               supply-names = "vcc0", "vcc1", "vcc2";
+
+in the OPP table or the consumer device. And surely it isn't a clean enough
+solution and that's why this series relied on the code to get such details.
+
+Does someone have an alternative? If NO, can we go ahead with this series as is?
+
+-- 
+viresh
