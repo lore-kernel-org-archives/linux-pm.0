@@ -1,233 +1,85 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v8 3/8] x86: Enable Intel Turbo Boost Max Technology 3.0
-Date: Tue, 22 Nov 2016 12:23:55 -0800
-Message-ID: <cd401ccdff88f88c8349314febdc25d51f7c48f7.1479844244.git.tim.c.chen@linux.intel.com>
-References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH 5/5] thermal: rockchip: handle the set_trips without the
+ trip points.
+Date: Tue, 22 Nov 2016 12:51:43 -0800
+Message-ID: <20161122205142.GA45366@google.com>
+References: <1479818088-6007-1-git-send-email-wxt@rock-chips.com>
+ <1479818088-6007-6-git-send-email-wxt@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1479844244.git.tim.c.chen@linux.intel.com>
-In-Reply-To: <cover.1479844244.git.tim.c.chen@linux.intel.com>
-References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <1479818088-6007-6-git-send-email-wxt@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
-Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, heiko@sntech.de, smbarber@chromium.org
 List-Id: linux-pm@vger.kernel.org
 
-On platforms supporting Intel Turbo Boost Max Technology 3.0, the maximum
-turbo frequencies of some cores in a CPU package may be higher than for
-the other cores in the same package.  In that case, better performance
-(and possibly lower energy consumption as well) can be achieved by
-making the scheduler prefer to run tasks on the CPUs with higher max
-turbo frequencies.
+On Tue, Nov 22, 2016 at 08:34:48PM +0800, Caesar Wang wrote:
+> In some cases, some sensors didn't need the trip points, the
+> set_trips will return {-INT_MAX, INT_MAX} to trigger thermal alarm.
+> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> ---
+> 
+>  drivers/thermal/rockchip_thermal.c | 13 +++++++++++++
+>  1 file changed, 13 insertions(+)
+> 
+> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> index f4d4be9..5b9c346 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -200,6 +200,7 @@ struct rockchip_thermal_data {
+>  #define TSADCV3_AUTO_Q_SEL_EN			BIT(1)
+>  
+>  #define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
+> +#define TSADCV2_INT_SRC_SHIFT(chn)		chn
+>  #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
+>  #define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
+>  
+> @@ -903,10 +904,22 @@ static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
+>  	struct rockchip_thermal_sensor *sensor = _sensor;
+>  	struct rockchip_thermal_data *thermal = sensor->thermal;
+>  	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
+> +	u32 int_clr;
+>  
+>  	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
+>  		__func__, sensor->id, low, high);
+>  
+> +	/*
+> +	 * In some cases, some sensors didn't need the trip points, the
+> +	 * set_trips will return {-INT_MAX, INT_MAX} to trigger thermal alarm.
 
-To that end, set up a core priority metric to abstract the core
-preferences based on the maximum turbo frequency.  In that metric,
-the cores with higher maximum turbo frequencies are higher-priority
-than the other cores in the same package and that causes the scheduler
-to favor them when making load-balancing decisions using the asymmertic
-packing approach.  At the same time, the priority of SMT threads with a
-higher CPU number is reduced so as to avoid scheduling tasks on all of
-the threads that belong to a favored core before all of the other cores
-have been given a task to run.
+This language is a little unclear. AFAICT, set_trips is not "returning"
+those values, it's "passing" them as arguments.
 
-The priority metric will be initialized by the P-state driver with the
-help of the sched_set_itmt_core_prio() function.  The P-state driver
-will also determine whether or not ITMT is supported by the platform
-and will call sched_set_itmt_support() to indicate that.
+> +	 */
+> +	if (high == INT_MAX) {
+> +		int_clr = readl_relaxed(thermal->regs + TSADCV2_INT_EN);
+> +		int_clr |= 0 << TSADCV2_INT_SRC_SHIFT(sensor->id);
 
-Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Co-developed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
----
- arch/x86/Kconfig                |   9 ++++
- arch/x86/include/asm/topology.h |  28 +++++++++++
- arch/x86/kernel/Makefile        |   1 +
- arch/x86/kernel/itmt.c          | 109 ++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 147 insertions(+)
- create mode 100644 arch/x86/kernel/itmt.c
+Uhh, really? This line is a no-op; you're just OR'ing a value of zero...
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index bada636..25950f0 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -939,6 +939,15 @@ config SCHED_MC
- 	  making when dealing with multi-core CPU chips at a cost of slightly
- 	  increased overhead in some places. If unsure say N here.
- 
-+config SCHED_ITMT
-+	bool "Intel Turbo Boost Max Technology (ITMT) scheduler support"
-+	depends on SCHED_MC && CPU_SUP_INTEL && X86_INTEL_PSTATE
-+	---help---
-+	  ITMT enabled scheduler support improves the CPU scheduler's decision
-+	  to move tasks to cpu core that can be boosted to a higher frequency
-+	  than others. It will have better performance at a cost of slightly
-+	  increased overhead in task migrations. If unsure say N here.
-+
- source "kernel/Kconfig.preempt"
- 
- config UP_LATE_INIT
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index a5ca88a..8ace951 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -147,4 +147,32 @@ int x86_pci_root_bus_node(int bus);
- void x86_pci_root_bus_resources(int bus, struct list_head *resources);
- 
- extern bool x86_topology_update;
-+
-+#ifdef CONFIG_SCHED_ITMT
-+#include <asm/percpu.h>
-+
-+DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-+
-+/* Interface to set priority of a cpu */
-+void sched_set_itmt_core_prio(int prio, int core_cpu);
-+
-+/* Interface to notify scheduler that system supports ITMT */
-+void sched_set_itmt_support(void);
-+
-+/* Interface to notify scheduler that system revokes ITMT support */
-+void sched_clear_itmt_support(void);
-+
-+#else /* CONFIG_SCHED_ITMT */
-+
-+static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
-+{
-+}
-+static inline void sched_set_itmt_support(void)
-+{
-+}
-+static inline void sched_clear_itmt_support(void)
-+{
-+}
-+#endif /* CONFIG_SCHED_ITMT */
-+
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 79076d7..bbd0ebc 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -123,6 +123,7 @@ obj-$(CONFIG_EFI)			+= sysfb_efi.o
- 
- obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
- obj-$(CONFIG_TRACING)			+= tracepoint.o
-+obj-$(CONFIG_SCHED_ITMT)		+= itmt.o
- 
- ifdef CONFIG_FRAME_POINTER
- obj-y					+= unwind_frame.o
-diff --git a/arch/x86/kernel/itmt.c b/arch/x86/kernel/itmt.c
-new file mode 100644
-index 0000000..63c9b3e
---- /dev/null
-+++ b/arch/x86/kernel/itmt.c
-@@ -0,0 +1,109 @@
-+/*
-+ * itmt.c: Support Intel Turbo Boost Max Technology 3.0
-+ *
-+ * (C) Copyright 2016 Intel Corporation
-+ * Author: Tim Chen <tim.c.chen@linux.intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2
-+ * of the License.
-+ *
-+ * On platforms supporting Intel Turbo Boost Max Technology 3.0, (ITMT),
-+ * the maximum turbo frequencies of some cores in a CPU package may be
-+ * higher than for the other cores in the same package.  In that case,
-+ * better performance can be achieved by making the scheduler prefer
-+ * to run tasks on the CPUs with higher max turbo frequencies.
-+ *
-+ * This file provides functions and data structures for enabling the
-+ * scheduler to favor scheduling on cores can be boosted to a higher
-+ * frequency under ITMT.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpuset.h>
-+#include <asm/mutex.h>
-+#include <linux/sched.h>
-+#include <linux/sysctl.h>
-+#include <linux/nodemask.h>
-+
-+static DEFINE_MUTEX(itmt_update_mutex);
-+DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-+
-+/* Boolean to track if system has ITMT capabilities */
-+static bool __read_mostly sched_itmt_capable;
-+
-+/**
-+ * sched_set_itmt_support() - Indicate platform supports ITMT
-+ *
-+ * This function is used by the OS to indicate to scheduler that the platform
-+ * is capable of supporting the ITMT feature.
-+ *
-+ * The current scheme has the pstate driver detects if the system
-+ * is ITMT capable and call sched_set_itmt_support.
-+ *
-+ * This must be done only after sched_set_itmt_core_prio
-+ * has been called to set the cpus' priorities.
-+ */
-+void sched_set_itmt_support(void)
-+{
-+	mutex_lock(&itmt_update_mutex);
-+
-+	sched_itmt_capable = true;
-+
-+	mutex_unlock(&itmt_update_mutex);
-+}
-+
-+/**
-+ * sched_clear_itmt_support() - Revoke platform's support of ITMT
-+ *
-+ * This function is used by the OS to indicate that it has
-+ * revoked the platform's support of ITMT feature.
-+ *
-+ */
-+void sched_clear_itmt_support(void)
-+{
-+	mutex_lock(&itmt_update_mutex);
-+
-+	sched_itmt_capable = false;
-+
-+	mutex_unlock(&itmt_update_mutex);
-+}
-+
-+int arch_asym_cpu_priority(int cpu)
-+{
-+	return per_cpu(sched_core_priority, cpu);
-+}
-+
-+/**
-+ * sched_set_itmt_core_prio() - Set CPU priority based on ITMT
-+ * @prio:	Priority of cpu core
-+ * @core_cpu:	The cpu number associated with the core
-+ *
-+ * The pstate driver will find out the max boost frequency
-+ * and call this function to set a priority proportional
-+ * to the max boost frequency. CPU with higher boost
-+ * frequency will receive higher priority.
-+ *
-+ * No need to rebuild sched domain after updating
-+ * the CPU priorities. The sched domains have no
-+ * dependency on CPU priorities.
-+ */
-+void sched_set_itmt_core_prio(int prio, int core_cpu)
-+{
-+	int cpu, i = 1;
-+
-+	for_each_cpu(cpu, topology_sibling_cpumask(core_cpu)) {
-+		int smt_prio;
-+
-+		/*
-+		 * Ensure that the siblings are moved to the end
-+		 * of the priority chain and only used when
-+		 * all other high priority cpus are out of capacity.
-+		 */
-+		smt_prio = prio * smp_num_siblings / i;
-+		per_cpu(sched_core_priority, cpu) = smt_prio;
-+		i++;
-+	}
-+}
--- 
-2.5.5
+It also seems like this should use the existing shift macro,
+TSADCV2_INT_SRC_EN(). So:
+
+		int_clr &= ~TSADCV2_INT_SRC_EN(sensor->id);
+
+> +		writel_relaxed(int_clr, thermal->regs + TSADCV2_INT_EN);
+> +		return 0;
+> +	}
+> +
+>  	tsadc->set_alarm_temp(&tsadc->table,
+>  			      sensor->id, thermal->regs, high);
+
+Given that you have a level of indirection here for ->set_alarm_temp(),
+it seems like you should not be doing the above register programming
+directly in this function; it should either go in the ->set_alarm_temp()
+callback, or in a new callback like ->disable_alarm().
+
+Brian
+
+>  
+> -- 
+> 2.7.4
+> 
