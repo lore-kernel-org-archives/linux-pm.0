@@ -1,58 +1,66 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH 5/5] thermal: rockchip: handle the set_trips without the trip points.
-Date: Tue, 22 Nov 2016 20:34:48 +0800
-Message-ID: <1479818088-6007-6-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH 1/5] thermal: rockchip: improve conversion error messages
+Date: Tue, 22 Nov 2016 20:34:44 +0800
+Message-ID: <1479818088-6007-2-git-send-email-wxt@rock-chips.com>
 References: <1479818088-6007-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:35249 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932127AbcKVMfQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 07:35:16 -0500
 In-Reply-To: <1479818088-6007-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, briannorris@chromium.org, heiko@sntech.de, smbarber@chromium.org, Caesar Wang <wxt@rock-chips.com>
-List-Id: linux-pm@vger.kernel.org
 
-In some cases, some sensors didn't need the trip points, the
-set_trips will return {-INT_MAX, INT_MAX} to trigger thermal alarm.
+From: Brian Norris <briannorris@chromium.org>
 
+These error messages don't give much information about what went wrong.
+It would be nice, for one, to see what invalid temperature was being
+requested when conversion fails. It's also good to return an error when
+we can't handle a conversion properly.
+
+While we're at it, fix the grammar too.
+
+Signed-off-by: Brian Norris <briannorris@chromium.org>
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+
 ---
 
- drivers/thermal/rockchip_thermal.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Changes:
+- The original Brian posted on https://patchwork.kernel.org/patch/9437685
+  Brain said: "Note: it'd probably be even nicer to know which sensor this was, but we've
+  kinda abstracted that one away by this point..."
+
+ drivers/thermal/rockchip_thermal.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index f4d4be9..5b9c346 100644
+index b811b0f..26c247c 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -200,6 +200,7 @@ struct rockchip_thermal_data {
- #define TSADCV3_AUTO_Q_SEL_EN			BIT(1)
+@@ -424,7 +424,8 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
+ 	}
  
- #define TSADCV2_INT_SRC_EN(chn)			BIT(chn)
-+#define TSADCV2_INT_SRC_SHIFT(chn)		chn
- #define TSADCV2_SHUT_2GPIO_SRC_EN(chn)		BIT(4 + (chn))
- #define TSADCV2_SHUT_2CRU_SRC_EN(chn)		BIT(8 + (chn))
+ exit:
+-	pr_err("Invalid the conversion, error=%d\n", error);
++	pr_err("%s: invalid temperature, temp=%d error=%d\n",
++	       __func__, temp, error);
+ 	return error;
+ }
  
-@@ -903,10 +904,22 @@ static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
- 	struct rockchip_thermal_sensor *sensor = _sensor;
- 	struct rockchip_thermal_data *thermal = sensor->thermal;
- 	const struct rockchip_tsadc_chip *tsadc = thermal->chip;
-+	u32 int_clr;
+@@ -475,7 +476,9 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+ 		}
+ 		break;
+ 	default:
+-		pr_err("Invalid the conversion table\n");
++		pr_err("%s: invalid conversion table, mode=%d\n",
++		       __func__, table.mode);
++		return -EINVAL;
+ 	}
  
- 	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
- 		__func__, sensor->id, low, high);
- 
-+	/*
-+	 * In some cases, some sensors didn't need the trip points, the
-+	 * set_trips will return {-INT_MAX, INT_MAX} to trigger thermal alarm.
-+	 */
-+	if (high == INT_MAX) {
-+		int_clr = readl_relaxed(thermal->regs + TSADCV2_INT_EN);
-+		int_clr |= 0 << TSADCV2_INT_SRC_SHIFT(sensor->id);
-+		writel_relaxed(int_clr, thermal->regs + TSADCV2_INT_EN);
-+		return 0;
-+	}
-+
- 	tsadc->set_alarm_temp(&tsadc->table,
- 			      sensor->id, thermal->regs, high);
- 
+ 	/*
 -- 
 2.7.4
+
