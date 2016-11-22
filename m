@@ -1,146 +1,40 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 5/5] powercap/intel_rapl: Track active CPUs internally
-Date: Tue, 22 Nov 2016 21:16:05 -0000
-Message-ID: <20161122211438.755830906@linutronix.de>
-References: <20161122210518.079483154@linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Subject: [patch 0/5] powercap/intel_rapl: Fixes,
+ hotplug conversion and simplifcation
+Date: Tue, 22 Nov 2016 21:15:56 -0000
+Message-ID: <20161122210518.079483154@linutronix.de>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline;
- filename=powercap-intel_rapl--Track-active-cpus-internally.patch
 Sender: linux-kernel-owner@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Rafael Wysocki <rjw@sisk.pl>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The ability of the CPU hotplug code to stop online/offline at each step
-makes it necessary to track the activated CPUs in a package directly,
-because outerwise a CPU offline callback can find CPUs which have already
-executed the offline callback, but are not yet marked offline in the
-topology mask. That could make such a CPU the package leader and in case
-that CPU goes fully offline leave the package lead orphaned.
+The driver fails to:
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- drivers/powercap/intel_rapl.c |   59 +++++++++++++++++-------------------------
- 1 file changed, 24 insertions(+), 35 deletions(-)
+ - initialize packages which are not available at driver init time, though
+   the value of that initialization is completely unclear as nothing ever
+   uses these values. I fixed it up nevertheless and leave it to the
+   maintainers to decide whether it should completely go away.
 
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -189,14 +189,13 @@ struct rapl_package {
- 	unsigned int time_unit;
- 	struct rapl_domain *domains; /* array of domains, sized at runtime */
- 	struct powercap_zone *power_zone; /* keep track of parent zone */
--	int nr_cpus; /* active cpus on the package, topology info is lost during
--		      * cpu hotplug. so we have to track ourselves.
--		      */
- 	unsigned long power_limit_irq; /* keep track of package power limit
- 					* notify interrupt enable status.
- 					*/
- 	struct list_head plist;
- 	int lead_cpu; /* one active cpu per package for access */
-+	/* Track active cpus */
-+	struct cpumask cpumask;
- };
- 
- struct rapl_defaults {
-@@ -1432,19 +1431,17 @@ static void rapl_remove_package(struct r
- }
- 
- /* called from CPU hotplug notifier, hotplug lock held */
--static int rapl_add_package(int cpu)
-+static struct rapl_package *rapl_add_package(int cpu, int pkgid)
- {
- 	struct rapl_package *rp;
--	int ret, phy_package_id;
-+	int ret;
- 
--	phy_package_id = topology_physical_package_id(cpu);
- 	rp = kzalloc(sizeof(struct rapl_package), GFP_KERNEL);
- 	if (!rp)
--		return -ENOMEM;
-+		return ERR_PTR(-ENOMEM);
- 
- 	/* add the new package to the list */
--	rp->id = phy_package_id;
--	rp->nr_cpus = 1;
-+	rp->id = pkgid;
- 	rp->lead_cpu = cpu;
- 
- 	/* check if the package contains valid domains */
-@@ -1457,14 +1454,13 @@ static int rapl_add_package(int cpu)
- 	if (!ret) {
- 		INIT_LIST_HEAD(&rp->plist);
- 		list_add(&rp->plist, &rapl_packages);
--		return 0;
-+		return rp;
- 	}
- 
- err_free_package:
- 	kfree(rp->domains);
- 	kfree(rp);
--
--	return ret;
-+	return ERR_PTR(ret);
- }
- 
- /* Handles CPU hotplug on multi-socket systems.
-@@ -1476,42 +1472,35 @@ static int rapl_add_package(int cpu)
-  */
- static int rapl_cpu_online(unsigned int cpu)
- {
-+	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
--	int phy_package_id;
--
--	phy_package_id = topology_physical_package_id(cpu);
- 
--	rp = find_package_by_id(phy_package_id);
--	if (rp) {
--		rp->nr_cpus++;
--		return 0;
-+	rp = find_package_by_id(pkgid);
-+	if (!rp) {
-+		rp = rapl_add_package(cpu, pkgid);
-+		if (IS_ERR(rp))
-+			return PTR_ERR(rp);
- 	}
--	return rapl_add_package(cpu);
-+	cpumask_set_cpu(cpu, &rp->cpumask);
-+	return 0;
- }
- 
- static int rapl_cpu_down_prep(unsigned int cpu)
- {
--	int phy_package_id;
-+	int pkgid = topology_physical_package_id(cpu);
- 	struct rapl_package *rp;
- 	int lead_cpu;
- 
--	phy_package_id = topology_physical_package_id(cpu);
--	rp = find_package_by_id(phy_package_id);
-+	rp = find_package_by_id(pkgid);
- 	if (!rp)
- 		return 0;
--	if (--rp->nr_cpus == 0) {
-+
-+	cpumask_clear_cpu(cpu, &rp->cpumask);
-+	lead_cpu = cpumask_first(&rp->cpumask);
-+	if (lead_cpu >= nr_cpu_ids)
- 		rapl_remove_package(rp);
--	} else if (cpu == rp->lead_cpu) {
--		/* choose another active cpu in the package */
--		lead_cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
--		if (lead_cpu < nr_cpu_ids) {
--			rp->lead_cpu = lead_cpu;
--		} else {
--			/* should never go here */
--			pr_err("no active cpu available for package %d\n",
--			       phy_package_id);
--		}
--	}
-+	else if (rp->lead_cpu == cpu)
-+		rp->lead_cpu = lead_cpu;
- 	return 0;
- }
- 
+ - to propagate error codes in the hotplug online path, where a
+   registration fails and the package data is freed, but return code is 0.
+
+The initialization/removal code of that driver is a maze of duplicated code
+which is more or less the same as the cpu hotplug code. After switching
+over the driver to the hotplug statemachine, the whole init/removal
+machinery can be replaced by installing/removing the hotplug state.
+
+The total damage is:
+
+ intel_rapl.c |  363 ++++++++++++++++-------------------------------------------
+ 1 file changed, 104 insertions(+), 259 deletions(-)
+
+and the binary size shrinks as well:
+
+   text	   data	    bss	    dec	    hex
+   7996	    625	     32	   8653	   21cd	  Before
+   7216	    593	     32	   7841	   1ea1	  After
+
+Thanks,
+
+	tglx
