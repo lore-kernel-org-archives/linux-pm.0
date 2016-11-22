@@ -1,649 +1,448 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v10 2/8] power: add power sequence library
-Date: Tue, 22 Nov 2016 08:36:38 +0800
-Message-ID: <20161122003638.GA10439@b29397-desktop>
-References: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
- <1479087359-7547-3-git-send-email-peter.chen@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Markus Mayer <code@mmayer.net>
+Subject: [PATCH v2] cpufreq: brcmstb-cpufreq: CPUfreq driver for older Broadcom STB SoCs
+Date: Mon, 21 Nov 2016 17:06:16 -0800
+Message-ID: <20161122010616.91307-1-code@mmayer.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1479087359-7547-3-git-send-email-peter.chen@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>
-Cc: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com, heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Nov 14, 2016 at 09:35:53AM +0800, Peter Chen wrote:
-> We have an well-known problem that the device needs to do some power
-> sequence before it can be recognized by related host, the typical
-> example like hard-wired mmc devices and usb devices.
-> 
-> This power sequence is hard to be described at device tree and handled by
-> related host driver, so we have created a common power sequence
-> library to cover this requirement. The core code has supplied
-> some common helpers for host driver, and individual power sequence
-> libraries handle kinds of power sequence for devices. The pwrseq
-> librares always need to allocate extra instance for compatible
-> string match.
-> 
-> pwrseq_generic is intended for general purpose of power sequence, which
-> handles gpios and clocks currently, and can cover other controls in
-> future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> if only one power sequence is needed, else call of_pwrseq_on_list
-> /of_pwrseq_off_list instead (eg, USB hub driver).
-> 
-> For new power sequence library, it can add its compatible string
-> to pwrseq_of_match_table, then the pwrseq core will match it with
-> DT's, and choose this library at runtime.
-> 
+From: Markus Mayer <mmayer@broadcom.com>
 
-Rafael, would you get any chances to review this version, it makes
-some changes according to your comments, I hope this patch set could
-be in v4.10-rc1, thanks.
+This CPUfreq driver provides basic frequency scaling for older Broadcom
+STB SoCs that do not use AVS firmware with DVFS support. There is no
+support for voltage scaling.
 
-Peter
-> Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-> Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
->  MAINTAINERS                           |   9 ++
->  drivers/power/Kconfig                 |   1 +
->  drivers/power/Makefile                |   1 +
->  drivers/power/pwrseq/Kconfig          |  21 +++
->  drivers/power/pwrseq/Makefile         |   2 +
->  drivers/power/pwrseq/core.c           | 237 ++++++++++++++++++++++++++++++++++
->  drivers/power/pwrseq/pwrseq_generic.c | 183 ++++++++++++++++++++++++++
->  include/linux/power/pwrseq.h          |  60 +++++++++
->  8 files changed, 514 insertions(+)
->  create mode 100644 drivers/power/pwrseq/Kconfig
->  create mode 100644 drivers/power/pwrseq/Makefile
->  create mode 100644 drivers/power/pwrseq/core.c
->  create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
->  create mode 100644 include/linux/power/pwrseq.h
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 3d838cf..066b1e4 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -9621,6 +9621,15 @@ F:	include/linux/pm_*
->  F:	include/linux/powercap.h
->  F:	drivers/powercap/
->  
-> +POWER SEQUENCE LIBRARY
-> +M:	Peter Chen <Peter.Chen@nxp.com>
-> +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/peter.chen/usb.git
-> +L:	linux-pm@vger.kernel.org
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/power/pwrseq/
-> +F:	drivers/power/pwrseq/
-> +F:	include/linux/power/pwrseq.h/
-> +
->  POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
->  M:	Sebastian Reichel <sre@kernel.org>
->  L:	linux-pm@vger.kernel.org
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 63454b5..c1bb046 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -1,3 +1,4 @@
->  source "drivers/power/avs/Kconfig"
->  source "drivers/power/reset/Kconfig"
->  source "drivers/power/supply/Kconfig"
-> +source "drivers/power/pwrseq/Kconfig"
-> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-> index ff35c71..7db8035 100644
-> --- a/drivers/power/Makefile
-> +++ b/drivers/power/Makefile
-> @@ -1,3 +1,4 @@
->  obj-$(CONFIG_POWER_AVS)		+= avs/
->  obj-$(CONFIG_POWER_RESET)	+= reset/
->  obj-$(CONFIG_POWER_SUPPLY)	+= supply/
-> +obj-$(CONFIG_POWER_SEQUENCE)	+= pwrseq/
-> diff --git a/drivers/power/pwrseq/Kconfig b/drivers/power/pwrseq/Kconfig
-> new file mode 100644
-> index 0000000..88f5597
-> --- /dev/null
-> +++ b/drivers/power/pwrseq/Kconfig
-> @@ -0,0 +1,21 @@
-> +#
-> +# Power Sequence library
-> +#
-> +
-> +menuconfig POWER_SEQUENCE
-> +	bool "Power sequence control"
-> +	depends on OF
-> +	help
-> +	   It is used for drivers which needs to do power sequence
-> +	   (eg, turn on clock, toggle reset gpio) before the related
-> +	   devices can be found by hardware, eg, USB bus.
-> +
-> +if POWER_SEQUENCE
-> +
-> +config PWRSEQ_GENERIC
-> +	bool "Generic power sequence control"
-> +	default y
-> +	help
-> +	   This is the generic power sequence control library, and is
-> +	   supposed to support common power sequence usage.
-> +endif
-> diff --git a/drivers/power/pwrseq/Makefile b/drivers/power/pwrseq/Makefile
-> new file mode 100644
-> index 0000000..ad82389
-> --- /dev/null
-> +++ b/drivers/power/pwrseq/Makefile
-> @@ -0,0 +1,2 @@
-> +obj-$(CONFIG_POWER_SEQUENCE) += core.o
-> +obj-$(CONFIG_PWRSEQ_GENERIC) += pwrseq_generic.o
-> diff --git a/drivers/power/pwrseq/core.c b/drivers/power/pwrseq/core.c
-> new file mode 100644
-> index 0000000..e3c1fbb
-> --- /dev/null
-> +++ b/drivers/power/pwrseq/core.c
-> @@ -0,0 +1,237 @@
-> +/*
-> + * core.c	power sequence core file
-> + *
-> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> + * Author: Peter Chen <peter.chen@nxp.com>
-> + *
-> + * This program is free software: you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2  of
-> + * the License as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/list.h>
-> +#include <linux/mutex.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/power/pwrseq.h>
-> +
-> +static DEFINE_MUTEX(pwrseq_list_mutex);
-> +static LIST_HEAD(pwrseq_list);
-> +
-> +static int pwrseq_get(struct device_node *np, struct pwrseq *p)
-> +{
-> +	if (p && p->get)
-> +		return p->get(np, p);
-> +
-> +	return -ENOTSUPP;
-> +}
-> +
-> +static int pwrseq_on(struct pwrseq *p)
-> +{
-> +	if (p && p->on)
-> +		return p->on(p);
-> +
-> +	return -ENOTSUPP;
-> +}
-> +
-> +static void pwrseq_off(struct pwrseq *p)
-> +{
-> +	if (p && p->off)
-> +		p->off(p);
-> +}
-> +
-> +static void pwrseq_put(struct pwrseq *p)
-> +{
-> +	if (p && p->put)
-> +		p->put(p);
-> +}
-> +
-> +static int pwrseq_suspend(struct pwrseq *p)
-> +{
-> +	if (p && p->suspend)
-> +		return p->suspend(p);
-> +
-> +	return 0;
-> +}
-> +
-> +static int pwrseq_resume(struct pwrseq *p)
-> +{
-> +	if (p && p->resume)
-> +		return p->resume(p);
-> +
-> +	return 0;
-> +}
-> +
-> +/**
-> + * pwrseq_register: add pwrseq instance to global pwrseq list
-> + *
-> + * @pwrseq: the pwrseq instance
-> + */
-> +void pwrseq_register(struct pwrseq *pwrseq)
-> +{
-> +	mutex_lock(&pwrseq_list_mutex);
-> +	list_add(&pwrseq->node, &pwrseq_list);
-> +	mutex_unlock(&pwrseq_list_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(pwrseq_register);
-> +
-> +/**
-> + * pwrseq_unregister: remove pwrseq instance from global pwrseq list
-> + *
-> + * @pwrseq: the pwrseq instance
-> + */
-> +void pwrseq_unregister(struct pwrseq *pwrseq)
-> +{
-> +	mutex_lock(&pwrseq_list_mutex);
-> +	list_del(&pwrseq->node);
-> +	mutex_unlock(&pwrseq_list_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(pwrseq_unregister);
-> +
-> +static struct pwrseq *pwrseq_find_available_instance(struct device_node *np)
-> +{
-> +	struct pwrseq *pwrseq;
-> +
-> +	list_for_each_entry(pwrseq, &pwrseq_list, node) {
-> +		if (pwrseq->used)
-> +			continue;
-> +
-> +		/* compare compatible string for pwrseq node */
-> +		if (of_match_node(pwrseq->pwrseq_of_match_table, np)) {
-> +			pwrseq->used = true;
-> +			return pwrseq;
-> +		}
-> +
-> +		/* return generic pwrseq instance */
-> +		if (!strcmp(pwrseq->pwrseq_of_match_table->compatible,
-> +				"generic")) {
-> +			pr_debug("using generic pwrseq instance for %s\n",
-> +				np->full_name);
-> +			pwrseq->used = true;
-> +			return pwrseq;
-> +		}
-> +	}
-> +	pr_warn("Can't find any pwrseq instances for %s\n", np->full_name);
-> +
-> +	return NULL;
-> +}
-> +
-> +/**
-> + * of_pwrseq_on: do power sequence on for device node
-> + *
-> + * This API is used to power on single device, if the host
-> + * controller only needs to handle one child device (this device
-> + * node points to), use this API. If multiply devices are needed
-> + * to handle on bus, use of_pwrseq_on_list.
-> + *
-> + * @np: the device node would like to power on
-> + *
-> + * On successful, it returns pwrseq instance, otherwise an error value.
-> + */
-> +struct pwrseq *of_pwrseq_on(struct device_node *np)
-> +{
-> +	struct pwrseq *pwrseq;
-> +	int ret;
-> +
-> +	pwrseq = pwrseq_find_available_instance(np);
-> +	if (!pwrseq)
-> +		return ERR_PTR(-ENONET);
-> +
-> +	ret = pwrseq_get(np, pwrseq);
-> +	if (ret) {
-> +		/* Mark current pwrseq as unused */
-> +		pwrseq->used = false;
-> +		return ERR_PTR(ret);
-> +	}
-> +
-> +	ret = pwrseq_on(pwrseq);
-> +	if (ret)
-> +		goto pwr_put;
-> +
-> +	return pwrseq;
-> +
-> +pwr_put:
-> +	pwrseq_put(pwrseq);
-> +	return ERR_PTR(ret);
-> +}
-> +EXPORT_SYMBOL_GPL(of_pwrseq_on);
-> +
-> +/**
-> + * of_pwrseq_off: do power sequence off for this pwrseq instance
-> + *
-> + * This API is used to power off single device, it is the opposite
-> + * operation for of_pwrseq_on.
-> + *
-> + * @pwrseq: the pwrseq instance which related device would like to be off
-> + */
-> +void of_pwrseq_off(struct pwrseq *pwrseq)
-> +{
-> +	pwrseq_off(pwrseq);
-> +	pwrseq_put(pwrseq);
-> +}
-> +EXPORT_SYMBOL_GPL(of_pwrseq_off);
-> +
-> +/**
-> + * of_pwrseq_on_list: do power sequence on for list
-> + *
-> + * This API is used to power on multiple devices at single bus.
-> + * If there are several devices on bus (eg, USB bus), uses this
-> + * this API. Otherwise, use of_pwrseq_on. After the device
-> + * is powered on successfully, it will be added to pwrseq list for
-> + * this bus.
-> + *
-> + * @np: the device node would like to power on
-> + * @head: the list head for pwrseq list on this bus
-> + *
-> + * On successful, it returns 0, otherwise an error value.
-> + */
-> +int of_pwrseq_on_list(struct device_node *np, struct list_head *head)
-> +{
-> +	struct pwrseq *pwrseq;
-> +	struct pwrseq_list_per_dev *pwrseq_list_node;
-> +
-> +	pwrseq = of_pwrseq_on(np);
-> +	if (IS_ERR(pwrseq))
-> +		return PTR_ERR(pwrseq);
-> +
-> +	pwrseq_list_node = kzalloc(sizeof(*pwrseq_list_node), GFP_KERNEL);
-> +	if (!pwrseq_list_node) {
-> +		of_pwrseq_off(pwrseq);
-> +		return -ENOMEM;
-> +	}
-> +	pwrseq_list_node->pwrseq = pwrseq;
-> +	list_add(&pwrseq_list_node->list, head);
-> +
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(of_pwrseq_on_list);
-> +
-> +/**
-> + * of_pwrseq_off_list: do power sequence off for the list
-> + *
-> + * This API is used to power off all devices on this bus, it is
-> + * the opposite operation for of_pwrseq_on_list.
-> + *
-> + * @head: the list head for pwrseq instance list on this bus
-> + */
-> +void of_pwrseq_off_list(struct list_head *head)
-> +{
-> +	struct pwrseq *pwrseq;
-> +	struct pwrseq_list_per_dev *pwrseq_list_node, *tmp_node;
-> +
-> +	list_for_each_entry_safe(pwrseq_list_node, tmp_node, head, list) {
-> +		pwrseq = pwrseq_list_node->pwrseq;
-> +		of_pwrseq_off(pwrseq);
-> +		list_del(&pwrseq_list_node->list);
-> +		kfree(pwrseq_list_node);
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(of_pwrseq_off_list);
-> diff --git a/drivers/power/pwrseq/pwrseq_generic.c b/drivers/power/pwrseq/pwrseq_generic.c
-> new file mode 100644
-> index 0000000..d7a77f2
-> --- /dev/null
-> +++ b/drivers/power/pwrseq/pwrseq_generic.c
-> @@ -0,0 +1,183 @@
-> +/*
-> + * pwrseq_generic.c	Generic power sequence handling
-> + *
-> + * Copyright (C) 2016 Freescale Semiconductor, Inc.
-> + * Author: Peter Chen <peter.chen@nxp.com>
-> + *
-> + * This program is free software: you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2  of
-> + * the License as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-> + */
-> +
-> +#include <linux/clk.h>
-> +#include <linux/delay.h>
-> +#include <linux/gpio.h>
-> +#include <linux/gpio/consumer.h>
-> +#include <linux/of.h>
-> +#include <linux/of_gpio.h>
-> +#include <linux/slab.h>
-> +
-> +#include <linux/power/pwrseq.h>
-> +
-> +struct pwrseq_generic {
-> +	struct pwrseq pwrseq;
-> +	struct gpio_desc *gpiod_reset;
-> +	struct clk *clks[PWRSEQ_MAX_CLKS];
-> +	u32 duration_us;
-> +};
-> +
-> +#define to_generic_pwrseq(p) container_of(p, struct pwrseq_generic, pwrseq)
-> +
-> +static int pwrseq_generic_alloc_instance(void);
-> +static const struct of_device_id generic_id_table[] = {
-> +	{ .compatible = "generic",},
-> +	{ /* sentinel */ }
-> +};
-> +
-> +static void pwrseq_generic_put(struct pwrseq *pwrseq)
-> +{
-> +	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-> +	int clk;
-> +
-> +	if (pwrseq_gen->gpiod_reset)
-> +		gpiod_put(pwrseq_gen->gpiod_reset);
-> +
-> +	for (clk = 0; clk < PWRSEQ_MAX_CLKS; clk++)
-> +		clk_put(pwrseq_gen->clks[clk]);
-> +
-> +	pwrseq_unregister(&pwrseq_gen->pwrseq);
-> +	kfree(pwrseq_gen);
-> +}
-> +
-> +static void pwrseq_generic_off(struct pwrseq *pwrseq)
-> +{
-> +	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-> +	int clk;
-> +
-> +	for (clk = PWRSEQ_MAX_CLKS - 1; clk >= 0; clk--)
-> +		clk_disable_unprepare(pwrseq_gen->clks[clk]);
-> +}
-> +
-> +static int pwrseq_generic_on(struct pwrseq *pwrseq)
-> +{
-> +	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-> +	int clk, ret = 0;
-> +	struct gpio_desc *gpiod_reset = pwrseq_gen->gpiod_reset;
-> +
-> +	for (clk = 0; clk < PWRSEQ_MAX_CLKS && pwrseq_gen->clks[clk]; clk++) {
-> +		ret = clk_prepare_enable(pwrseq_gen->clks[clk]);
-> +		if (ret) {
-> +			pr_err("Can't enable clock, ret=%d\n", ret);
-> +			goto err_disable_clks;
-> +		}
-> +	}
-> +
-> +	if (gpiod_reset) {
-> +		u32 duration_us = pwrseq_gen->duration_us;
-> +
-> +		if (duration_us <= 10)
-> +			udelay(10);
-> +		else
-> +			usleep_range(duration_us, duration_us + 100);
-> +		gpiod_set_value(gpiod_reset, 0);
-> +	}
-> +
-> +	return ret;
-> +
-> +err_disable_clks:
-> +	while (--clk >= 0)
-> +		clk_disable_unprepare(pwrseq_gen->clks[clk]);
-> +
-> +	return ret;
-> +}
-> +
-> +static int pwrseq_generic_get(struct device_node *np, struct pwrseq *pwrseq)
-> +{
-> +	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-> +	enum of_gpio_flags flags;
-> +	int reset_gpio, clk, ret = 0;
-> +
-> +	for (clk = 0; clk < PWRSEQ_MAX_CLKS; clk++) {
-> +		pwrseq_gen->clks[clk] = of_clk_get(np, clk);
-> +		if (IS_ERR(pwrseq_gen->clks[clk])) {
-> +			ret = PTR_ERR(pwrseq_gen->clks[clk]);
-> +			if (ret != -ENOENT)
-> +				goto err_put_clks;
-> +			pwrseq_gen->clks[clk] = NULL;
-> +			break;
-> +		}
-> +	}
-> +
-> +	reset_gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &flags);
-> +	if (gpio_is_valid(reset_gpio)) {
-> +		unsigned long gpio_flags;
-> +
-> +		if (flags & OF_GPIO_ACTIVE_LOW)
-> +			gpio_flags = GPIOF_ACTIVE_LOW | GPIOF_OUT_INIT_LOW;
-> +		else
-> +			gpio_flags = GPIOF_OUT_INIT_HIGH;
-> +
-> +		ret = gpio_request_one(reset_gpio, gpio_flags,
-> +				"pwrseq-reset-gpios");
-> +		if (ret)
-> +			goto err_put_clks;
-> +
-> +		pwrseq_gen->gpiod_reset = gpio_to_desc(reset_gpio);
-> +		of_property_read_u32(np, "reset-duration-us",
-> +				&pwrseq_gen->duration_us);
-> +	} else if (reset_gpio == -ENOENT) {
-> +		; /* no such gpio */
-> +	} else {
-> +		ret = reset_gpio;
-> +		pr_err("Failed to get reset gpio on %s, err = %d\n",
-> +				np->full_name, reset_gpio);
-> +		goto err_put_clks;
-> +	}
-> +
-> +	/* allocate new one for later pwrseq instance request */
-> +	ret = pwrseq_generic_alloc_instance();
-> +	if (ret)
-> +		goto err_put_gpio;
-> +
-> +	return 0;
-> +
-> +err_put_gpio:
-> +	if (pwrseq_gen->gpiod_reset)
-> +		gpiod_put(pwrseq_gen->gpiod_reset);
-> +err_put_clks:
-> +	while (--clk >= 0)
-> +		clk_put(pwrseq_gen->clks[clk]);
-> +	return ret;
-> +}
-> +
-> +static int pwrseq_generic_alloc_instance(void)
-> +{
-> +	struct pwrseq_generic *pwrseq_gen;
-> +
-> +	pwrseq_gen = kzalloc(sizeof(*pwrseq_gen), GFP_KERNEL);
-> +	if (!pwrseq_gen)
-> +		return -ENOMEM;
-> +
-> +	pwrseq_gen->pwrseq.pwrseq_of_match_table = generic_id_table;
-> +	pwrseq_gen->pwrseq.get = pwrseq_generic_get;
-> +	pwrseq_gen->pwrseq.on = pwrseq_generic_on;
-> +	pwrseq_gen->pwrseq.off = pwrseq_generic_off;
-> +	pwrseq_gen->pwrseq.put = pwrseq_generic_put;
-> +
-> +	pwrseq_register(&pwrseq_gen->pwrseq);
-> +	return 0;
-> +}
-> +
-> +static int __init pwrseq_generic_register(void)
-> +{
-> +	return pwrseq_generic_alloc_instance();
-> +}
-> +postcore_initcall(pwrseq_generic_register)
-> diff --git a/include/linux/power/pwrseq.h b/include/linux/power/pwrseq.h
-> new file mode 100644
-> index 0000000..598301a
-> --- /dev/null
-> +++ b/include/linux/power/pwrseq.h
-> @@ -0,0 +1,60 @@
-> +#ifndef __LINUX_PWRSEQ_H
-> +#define __LINUX_PWRSEQ_H
-> +
-> +#include <linux/of.h>
-> +
-> +#define PWRSEQ_MAX_CLKS		3
-> +
-> +/**
-> + * struct pwrseq - the power sequence structure
-> + * @pwrseq_of_match_table: the OF device id table this pwrseq library supports
-> + * @node: the list pointer to be added to pwrseq list
-> + * @get: the API is used to get pwrseq instance from the device node
-> + * @on: do power on for this pwrseq instance
-> + * @off: do power off for this pwrseq instance
-> + * @put: release the resources on this pwrseq instance
-> + * @suspend: do suspend operation on this pwrseq instance
-> + * @resume: do resume operation on this pwrseq instance
-> + * @used: this pwrseq instance is used by device
-> + */
-> +struct pwrseq {
-> +	const struct of_device_id *pwrseq_of_match_table;
-> +	struct list_head node;
-> +	int (*get)(struct device_node *np, struct pwrseq *p);
-> +	int (*on)(struct pwrseq *p);
-> +	void (*off)(struct pwrseq *p);
-> +	void (*put)(struct pwrseq *p);
-> +	int (*suspend)(struct pwrseq *p);
-> +	int (*resume)(struct pwrseq *p);
-> +	bool used;
-> +};
-> +
-> +/* used for power sequence instance list in one driver */
-> +struct pwrseq_list_per_dev {
-> +	struct pwrseq *pwrseq;
-> +	struct list_head list;
-> +};
-> +
-> +#if IS_ENABLED(CONFIG_POWER_SEQUENCE)
-> +void pwrseq_register(struct pwrseq *pwrseq);
-> +void pwrseq_unregister(struct pwrseq *pwrseq);
-> +struct pwrseq *of_pwrseq_on(struct device_node *np);
-> +void of_pwrseq_off(struct pwrseq *pwrseq);
-> +int of_pwrseq_on_list(struct device_node *np, struct list_head *head);
-> +void of_pwrseq_off_list(struct list_head *head);
-> +#else
-> +static inline void pwrseq_register(struct pwrseq *pwrseq) {}
-> +static inline void pwrseq_unregister(struct pwrseq *pwrseq) {}
-> +static inline struct pwrseq *of_pwrseq_on(struct device_node *np)
-> +{
-> +	return NULL;
-> +}
-> +void of_pwrseq_off(struct pwrseq *pwrseq) {}
-> +int of_pwrseq_on_list(struct device_node *np, struct list_head *head)
-> +{
-> +	return 0;
-> +}
-> +void of_pwrseq_off_list(struct list_head *head) {}
-> +#endif /* CONFIG_POWER_SEQUENCE */
-> +
-> +#endif  /* __LINUX_PWRSEQ_H */
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
+ drivers/cpufreq/Kconfig.arm       |  12 ++
+ drivers/cpufreq/Makefile          |   1 +
+ drivers/cpufreq/brcmstb-cpufreq.c | 381 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 394 insertions(+)
+ create mode 100644 drivers/cpufreq/brcmstb-cpufreq.c
 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 920c469..36422af 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -33,6 +33,18 @@ config ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
+ 
+ 	  If in doubt, say N.
+ 
++config ARM_BRCMSTB_CPUFREQ
++	tristate "Broadcom STB CPUfreq driver"
++	depends on ARCH_BRCMSTB || COMPILE_TEST
++	default y
++	help
++	  Some Broadcom SoCs offer multiple operating frequencies that CPUfreq
++	  can take advantage of to improve energy efficiency.
++
++	  Say Y, if you have a supported Broadcom SoC. If your Broadcom SoC
++	  has AVS firmware with support for frequency and voltage scaling,
++	  say N here and enable ARM_BRCMSTB_AVS_CPUFREQ instead.
++
+ config ARM_DT_BL_CPUFREQ
+ 	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
+ 	depends on ARM_BIG_LITTLE_CPUFREQ && OF
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 1e46c39..23700aa 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -52,6 +52,7 @@ obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
+ obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
+ 
+ obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
++obj-$(CONFIG_ARM_BRCMSTB_CPUFREQ)	+= brcmstb-cpufreq.o
+ obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+ obj-$(CONFIG_UX500_SOC_DB8500)		+= dbx500-cpufreq.o
+ obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
+diff --git a/drivers/cpufreq/brcmstb-cpufreq.c b/drivers/cpufreq/brcmstb-cpufreq.c
+new file mode 100644
+index 0000000..0270789
+--- /dev/null
++++ b/drivers/cpufreq/brcmstb-cpufreq.c
+@@ -0,0 +1,381 @@
++/*
++ * CPU frequency scaling for Broadcom set top box SoCs
++ *
++ * Copyright (c) 2016 Broadcom
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation version 2.
++ *
++ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
++ * kind, whether express or implied; without even the implied warranty
++ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/clk.h>
++#include <linux/clk-provider.h>
++#include <linux/cpufreq.h>
++#include <linux/module.h>
++#include <linux/of_address.h>
++#include <linux/platform_device.h>
++
++#define BRCMSTB_CPUFREQ_PREFIX	"brcmstb"
++#define BRCMSTB_CPUFREQ_NAME	BRCMSTB_CPUFREQ_PREFIX "-cpufreq"
++
++/* We search for these compatible strings. */
++#define BRCMSTB_DT_CPU_CLK_CTRL	"brcm,brcmstb-cpu-clk-div"
++#define BRCMSTB_DT_MEMC_DDR	"brcm,brcmstb-memc-ddr"
++#define BRCM_AVS_CPU_DATA	"brcm,avs-cpu-data-mem"
++
++/* We also need a few clocks in device tree. These are node names. */
++#define BRCMSTB_CLK_MDIV_CH0	"cpu_mdiv_ch0"
++#define BRCMSTB_CLK_NDIV_INT	"cpu_ndiv_int"
++#define BRCMSTB_CLK_SW_SCB	"sw_scb"
++
++#define BRCMSTB_TBL_SAFE_MODE	BIT(0)
++#define BRCMSTB_REG_SAFE_MODE	BIT(4)
++
++#define TRANSITION_LATENCY	(25 * 1000)	/* 25 us */
++
++/* This is as low as we'll go in the frequency table. */
++#define MIN_CPU_FREQ		(100 * 1000)	/* in kHz */
++
++struct private_data {
++	void __iomem *cpu_clk_ctrl_reg;
++	struct device *dev;
++};
++
++/* Count the active memory controllers in the system. */
++static int count_memory_controllers(void)
++{
++	struct device_node *np = NULL;
++	int i = 0;
++
++	do {
++		np = of_find_compatible_node(np, NULL, BRCMSTB_DT_MEMC_DDR);
++		if (of_device_is_available(np))
++			i++;
++		of_node_put(np);
++	} while (np);
++
++	return i;
++}
++
++static int get_frequencies(const struct cpufreq_policy *policy,
++			   unsigned int *vco_freq, unsigned int *cpu_freq,
++			   unsigned int *scb_freq)
++{
++	struct clk *cpu_ndiv_int, *sw_scb;
++
++	cpu_ndiv_int = __clk_lookup(BRCMSTB_CLK_NDIV_INT);
++	if (!cpu_ndiv_int)
++		return -ENODEV;
++
++	sw_scb = __clk_lookup(BRCMSTB_CLK_SW_SCB);
++	if (!sw_scb)
++		return -ENODEV;
++
++	/* return frequencies in kHz */
++	*vco_freq = clk_get_rate(cpu_ndiv_int) / 1000;
++	*cpu_freq = clk_get_rate(policy->clk) / 1000;
++	*scb_freq = clk_get_rate(sw_scb) / 1000;
++
++	return 0;
++}
++
++/*
++ * Safe mode: When set, the CPU's bus unit is being throttled. This is done to
++ * avoid buffer overflows when the CPU-to-bus-clock ratio is low.
++ *
++ * The formula as to what constitutes a low CPU-to-bus-clock ratio takes into
++ * account the number of memory controllers active in the system and the SCB
++ * frequency. More memory controllers means safe mode is required starting at
++ * higher frequencies.
++ *
++ * For 1 memory controller, cpu_freq/scb_freq must be greater than or equal to
++ * 2 to not require safe mode.
++ *
++ * For 2 or 3 memory controllers, cpu_freq/scb_freq must be greater than or
++ * equal 3 to not require safe mode.
++ */
++
++static int freq_requires_safe_mode(unsigned int cpu_freq, unsigned int scb_freq,
++				   int num_memc)
++{
++	unsigned int safe_ratio;
++
++	switch (num_memc) {
++	case 1:
++		safe_ratio = 2;
++		break;
++	case 2:
++	case 3:
++		safe_ratio = 3;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return ((cpu_freq / scb_freq) < safe_ratio);
++}
++
++static struct cpufreq_frequency_table *
++brcmstb_get_freq_table(const struct cpufreq_policy *policy)
++{
++	unsigned int cpu_freq, vco_freq, scb_freq, mdiv, init_mdiv, f;
++	struct cpufreq_frequency_table *table;
++	struct private_data *priv;
++	int num_memc, ret;
++	unsigned int i = 0;
++
++	ret = get_frequencies(policy, &vco_freq, &cpu_freq, &scb_freq);
++	if (ret)
++		return ERR_PTR(ret);
++
++	priv = policy->driver_data;
++	num_memc = count_memory_controllers();
++
++	/* Calculate the initial mdiv value. We'll increment mdiv from here. */
++	init_mdiv = vco_freq / cpu_freq;
++
++	/* Count how many frequencies we'll offer. */
++	f = cpu_freq;
++	for (mdiv = init_mdiv; f >= MIN_CPU_FREQ; mdiv++, f = vco_freq / mdiv) {
++		/* We only want to use "whole" MHz. */
++		if ((f % 1000) == 0)
++			i++;
++	}
++
++	table = devm_kzalloc(priv->dev, (i + 1) * sizeof(*table), GFP_KERNEL);
++	if (!table)
++		return ERR_PTR(-ENOMEM);
++
++	/* Now, fill the table. */
++	f = cpu_freq;
++	i = 0;
++	for (mdiv = init_mdiv; f >= MIN_CPU_FREQ; mdiv++, f = vco_freq / mdiv) {
++		if ((f % 1000) == 0) {
++			table[i].frequency = f;
++			ret = freq_requires_safe_mode(f, scb_freq, num_memc);
++			if (ret < 0)
++				return ERR_PTR(ret);
++			if (ret > 0)
++				table[i].driver_data |= BRCMSTB_TBL_SAFE_MODE;
++			i++;
++		}
++	}
++	table[i].frequency = CPUFREQ_TABLE_END;
++
++	return table;
++}
++
++static int brcmstb_target_index(struct cpufreq_policy *policy,
++				unsigned int index)
++{
++	struct cpufreq_frequency_table *entry;
++	struct private_data *priv;
++	int ret, safe_mode_needed;
++	u32 reg;
++
++	priv = policy->driver_data;
++	entry = &policy->freq_table[index];
++	safe_mode_needed = entry->driver_data & BRCMSTB_TBL_SAFE_MODE;
++
++	reg = readl(priv->cpu_clk_ctrl_reg);
++	if (safe_mode_needed && !(reg & BRCMSTB_REG_SAFE_MODE)) {
++		reg |= BRCMSTB_REG_SAFE_MODE;
++		writel(reg, priv->cpu_clk_ctrl_reg);
++	}
++	ret = clk_set_rate(policy->clk, entry->frequency * 1000);
++	if (!ret && !safe_mode_needed && (reg & BRCMSTB_REG_SAFE_MODE)) {
++		reg &= ~BRCMSTB_REG_SAFE_MODE;
++		writel(reg, priv->cpu_clk_ctrl_reg);
++	}
++
++	return ret;
++}
++
++/*
++ * All initialization code that we only want to execute once goes here. Setup
++ * code that can be re-tried on every core (if it failed before) can go into
++ * brcm_avs_cpufreq_init().
++ */
++static int brcmstb_prepare_init(struct platform_device *pdev)
++{
++	struct private_data *priv;
++	struct resource *res;
++	struct device *dev;
++
++	/*
++	 * If the BRCM STB AVS CPUfreq driver is supported, we bail, so that
++	 * the more modern approach implementing DVFS in firmware can be used.
++	 */
++	if (IS_ENABLED(CONFIG_ARM_BRCM_AVS_CPUFREQ)) {
++		struct device_node *np;
++
++		np = of_find_compatible_node(NULL, NULL, BRCM_AVS_CPU_DATA);
++		if (np) {
++			of_node_put(np);
++			return -ENXIO;
++		}
++	}
++
++	dev = &pdev->dev;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	priv->cpu_clk_ctrl_reg = devm_ioremap_resource(dev, res);
++	if (IS_ERR(priv->cpu_clk_ctrl_reg)) {
++		dev_err(dev, "couldn't map DT entry %s\n",
++			BRCMSTB_DT_CPU_CLK_CTRL);
++		return -ENODEV;
++	}
++
++	priv->dev = dev;
++	platform_set_drvdata(pdev, priv);
++
++	return 0;
++}
++
++static int brcmstb_cpu_init(struct cpufreq_policy *policy)
++{
++	struct cpufreq_frequency_table *freq_table;
++	struct platform_device *pdev;
++	struct private_data *priv;
++	struct clk *cpu_mdiv_ch0;
++	struct device *dev;
++	int ret;
++
++	cpu_mdiv_ch0 = __clk_lookup(BRCMSTB_CLK_MDIV_CH0);
++	if (!cpu_mdiv_ch0)
++		return -ENODEV;
++
++	pdev = cpufreq_get_driver_data();
++	priv = platform_get_drvdata(pdev);
++	dev = &pdev->dev;
++
++	policy->clk = cpu_mdiv_ch0;
++	policy->driver_data = priv;
++
++	freq_table = brcmstb_get_freq_table(policy);
++	if (IS_ERR(freq_table)) {
++		ret = PTR_ERR(freq_table);
++		dev_err(dev, "Couldn't determine frequency table (%d).\n", ret);
++		if (ret == -EINVAL)
++			dev_emerg(dev,
++				"Invalid number of memory controllers -- %d!\n",
++				count_memory_controllers());
++		return ret;
++	}
++
++	ret = cpufreq_generic_init(policy, freq_table, TRANSITION_LATENCY);
++	if (!ret)
++		dev_info(dev, "registered\n");
++
++	return ret;
++}
++
++/* Shows the number of memory controllers. */
++static ssize_t show_brcmstb_num_memc(struct cpufreq_policy *policy, char *buf)
++{
++	return sprintf(buf, "%u\n", count_memory_controllers());
++}
++
++/* Shows vco_freq, cpu_freq, and scb_freq in kHz. */
++static ssize_t show_brcmstb_freqs(struct cpufreq_policy *policy, char *buf)
++{
++	unsigned int vco_freq, cpu_freq, scb_freq;
++	int ret;
++
++	ret = get_frequencies(policy, &vco_freq, &cpu_freq, &scb_freq);
++	if (ret)
++		return sprintf(buf, "<unknown>\n");
++
++	return sprintf(buf, "%u %u %u\n", vco_freq, cpu_freq, scb_freq);
++}
++
++/* Shows the lowest frequency (in kHz) that can be used without "safe mode". */
++static ssize_t show_brcmstb_safe_freq(struct cpufreq_policy *policy, char *buf)
++{
++	struct cpufreq_frequency_table *entry;
++	unsigned int safe_freq = 0;
++
++	cpufreq_for_each_valid_entry(entry, policy->freq_table) {
++		if (!(entry->driver_data & BRCMSTB_TBL_SAFE_MODE))
++			safe_freq = entry->frequency;
++	}
++
++	return sprintf(buf, "%u\n", safe_freq);
++}
++
++cpufreq_freq_attr_ro(brcmstb_num_memc);
++cpufreq_freq_attr_ro(brcmstb_freqs);
++cpufreq_freq_attr_ro(brcmstb_safe_freq);
++
++static struct freq_attr *brcmstb_cpufreq_attr[] = {
++	&cpufreq_freq_attr_scaling_available_freqs,
++	&brcmstb_num_memc,
++	&brcmstb_freqs,
++	&brcmstb_safe_freq,
++	NULL
++};
++
++static struct cpufreq_driver brcmstb_driver = {
++	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
++	.verify		= cpufreq_generic_frequency_table_verify,
++	.target_index	= brcmstb_target_index,
++	.get		= cpufreq_generic_get,
++	.init		= brcmstb_cpu_init,
++	.attr		= brcmstb_cpufreq_attr,
++	.name		= BRCMSTB_CPUFREQ_PREFIX,
++};
++
++static int brcmstb_cpufreq_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	ret = brcmstb_prepare_init(pdev);
++	if (ret)
++		return ret;
++
++	brcmstb_driver.driver_data = pdev;
++
++	return cpufreq_register_driver(&brcmstb_driver);
++}
++
++static int brcmstb_cpufreq_remove(struct platform_device *pdev)
++{
++	int ret;
++
++	ret = cpufreq_unregister_driver(&brcmstb_driver);
++	if (ret)
++		return ret;
++
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++static const struct of_device_id brcmstb_cpufreq_match[] = {
++	{ .compatible = BRCMSTB_DT_CPU_CLK_CTRL },
++	{ }
++};
++MODULE_DEVICE_TABLE(platform, brcmstb_cpufreq_match);
++
++static struct platform_driver brcmstb_cpufreq_platdrv = {
++	.driver = {
++		.name	= BRCMSTB_CPUFREQ_NAME,
++		.of_match_table = brcmstb_cpufreq_match,
++	},
++	.probe		= brcmstb_cpufreq_probe,
++	.remove		= brcmstb_cpufreq_remove,
++};
++module_platform_driver(brcmstb_cpufreq_platdrv);
++
++MODULE_AUTHOR("Markus Mayer <mmayer@broadcom.com>");
++MODULE_DESCRIPTION("CPUfreq driver for Broadcom STB SoCs");
++MODULE_LICENSE("GPL");
 -- 
-
-Best Regards,
-Peter Chen
+2.7.4
