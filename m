@@ -1,68 +1,173 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH 3/5] thermal: rockchip: fixes invalid temperature case
-Date: Tue, 22 Nov 2016 12:57:37 -0800
-Message-ID: <20161122205737.GB45366@google.com>
-References: <1479818088-6007-1-git-send-email-wxt@rock-chips.com>
- <1479818088-6007-4-git-send-email-wxt@rock-chips.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 3/5] powercap/intel rapl: Convert to hotplug state machine
+Date: Tue, 22 Nov 2016 21:16:00 -0000
+Message-ID: <20161122211438.595830572@linutronix.de>
+References: <20161122210518.079483154@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1479818088-6007-4-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, heiko@sntech.de, smbarber@chromium.org
+Content-Type: text/plain; charset=ISO-8859-15
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:60993 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932992AbcKVVSn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 16:18:43 -0500
+Content-Disposition: inline;
+ filename=powercapintel_rapl_Convert_to_hotplug_state_machine.patch
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Rafael Wysocki <rjw@sisk.pl>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-On Tue, Nov 22, 2016 at 08:34:46PM +0800, Caesar Wang wrote:
-> The temp_to_code function will return 0 when we set the trip points value
-> or valid temperature.
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-I'm not quite sure what you mean by "when we set the trip points value
-or valid temperature." Do you mean "when we set the trip point's value
-to an invalid temperature"?
+Install the callbacks via the state machine as a first step. The init/exit
+code is a duplicate of the hotplug code. This is cleaned up in a
+consecutive patch.
 
-Assuming that's what you meant...
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-> This patch will prevent this case happening.
+---
+ drivers/powercap/intel_rapl.c |   94 +++++++++++++++++++++---------------------
+ 1 file changed, 49 insertions(+), 45 deletions(-)
 
-This is good to change, but IMO, it's better to actually pick a close
-value, instead of the max. e.g., if you support temperatures at degree
-intervals of 80, 85, 90, ..., 125, but someone lists 82 in the device
-tree, we should pick either 80 or 85, not 125.
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -1603,50 +1603,48 @@ static int rapl_add_package(int cpu)
+  * associated domains. Cooling devices are handled accordingly at
+  * per-domain level.
+  */
+-static int rapl_cpu_callback(struct notifier_block *nfb,
+-				unsigned long action, void *hcpu)
++static int rapl_cpu_online(unsigned int cpu)
++{
++	struct rapl_package *rp;
++	int phy_package_id;
++
++	phy_package_id = topology_physical_package_id(cpu);
++
++	rp = find_package_by_id(phy_package_id);
++	if (rp)
++		rp->nr_cpus++;
++	else
++		rapl_add_package(cpu);
++	return 0;
++}
++
++static int rapl_cpu_down_prep(unsigned int cpu)
+ {
+-	unsigned long cpu = (unsigned long)hcpu;
+ 	int phy_package_id;
+ 	struct rapl_package *rp;
+ 	int lead_cpu;
+ 
+ 	phy_package_id = topology_physical_package_id(cpu);
+-	switch (action) {
+-	case CPU_ONLINE:
+-	case CPU_ONLINE_FROZEN:
+-	case CPU_DOWN_FAILED:
+-	case CPU_DOWN_FAILED_FROZEN:
+-		rp = find_package_by_id(phy_package_id);
+-		if (rp)
+-			++rp->nr_cpus;
+-		else
+-			rapl_add_package(cpu);
+-		break;
+-	case CPU_DOWN_PREPARE:
+-	case CPU_DOWN_PREPARE_FROZEN:
+-		rp = find_package_by_id(phy_package_id);
+-		if (!rp)
+-			break;
+-		if (--rp->nr_cpus == 0)
+-			rapl_remove_package(rp);
+-		else if (cpu == rp->lead_cpu) {
+-			/* choose another active cpu in the package */
+-			lead_cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
+-			if (lead_cpu < nr_cpu_ids)
+-				rp->lead_cpu = lead_cpu;
+-			else /* should never go here */
+-				pr_err("no active cpu available for package %d\n",
+-					phy_package_id);
++	rp = find_package_by_id(phy_package_id);
++	if (!rp)
++		return 0;
++	if (--rp->nr_cpus == 0) {
++		rapl_remove_package(rp);
++	} else if (cpu == rp->lead_cpu) {
++		/* choose another active cpu in the package */
++		lead_cpu = cpumask_any_but(topology_core_cpumask(cpu), cpu);
++		if (lead_cpu < nr_cpu_ids) {
++			rp->lead_cpu = lead_cpu;
++		} else {
++			/* should never go here */
++			pr_err("no active cpu available for package %d\n",
++			       phy_package_id);
+ 		}
+ 	}
+-
+-	return NOTIFY_OK;
++	return 0;
+ }
+ 
+-static struct notifier_block rapl_cpu_notifier = {
+-	.notifier_call = rapl_cpu_callback,
+-};
++static enum cpuhp_state pcap_rapl_online;
+ 
+ static int __init rapl_init(void)
+ {
+@@ -1663,36 +1661,42 @@ static int __init rapl_init(void)
+ 
+ 	rapl_defaults = (struct rapl_defaults *)id->driver_data;
+ 
+-	cpu_notifier_register_begin();
+-
+ 	/* prevent CPU hotplug during detection */
+ 	get_online_cpus();
+ 	ret = rapl_detect_topology();
+ 	if (ret)
+-		goto done;
++		goto err;
+ 
+ 	if (rapl_register_powercap()) {
+-		rapl_cleanup_data();
+ 		ret = -ENODEV;
+-		goto done;
++		goto err_cleanup;
+ 	}
+-	__register_hotcpu_notifier(&rapl_cpu_notifier);
+-done:
++	ret = cpuhp_setup_state_nocalls(CPUHP_AP_ONLINE_DYN,
++					"powercap/rapl:online",
++					rapl_cpu_online, rapl_cpu_down_prep);
++	if (ret < 0)
++		goto err_unreg;
++	pcap_rapl_online = ret;
+ 	put_online_cpus();
+-	cpu_notifier_register_done();
++	return 0;
+ 
++err_unreg:
++	rapl_unregister_powercap();
++
++err_cleanup:
++	rapl_cleanup_data();
++err:
++	put_online_cpus();
+ 	return ret;
+ }
+ 
+ static void __exit rapl_exit(void)
+ {
+-	cpu_notifier_register_begin();
+ 	get_online_cpus();
+-	__unregister_hotcpu_notifier(&rapl_cpu_notifier);
++	cpuhp_remove_state(pcap_rapl_online);
+ 	rapl_unregister_powercap();
+ 	rapl_cleanup_data();
+ 	put_online_cpus();
+-	cpu_notifier_register_done();
+ }
+ 
+ module_init(rapl_init);
 
-Brian
 
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> ---
-> 
->  drivers/thermal/rockchip_thermal.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index 766486f..535f1fa 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -401,17 +401,15 @@ static u32 rk_tsadcv2_temp_to_code(const struct chip_tsadc_table *table,
->  				   int temp)
->  {
->  	int high, low, mid;
-> -	u32 error = 0;
-> +	u32 error = table->data_mask;
->  
->  	low = 0;
->  	high = table->length - 1;
->  	mid = (high + low) / 2;
->  
->  	/* Return mask code data when the temp is over table range */
-> -	if (temp < table->id[low].temp || temp > table->id[high].temp) {
-> -		error = table->data_mask;
-> +	if (temp < table->id[low].temp || temp > table->id[high].temp)
->  		goto exit;
-> -	}
->  
->  	while (low <= high) {
->  		if (temp == table->id[mid].temp)
-> -- 
-> 2.7.4
-> 
