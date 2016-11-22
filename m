@@ -1,7 +1,7 @@
 From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v8 8/8] cpufreq: intel_pstate: Use CPPC to get max performance
-Date: Tue, 22 Nov 2016 12:24:00 -0800
-Message-ID: <0998b98943bcdec7d1ddd4ff27358da555ea8e92.1479844244.git.tim.c.chen@linux.intel.com>
+Subject: [PATCH v8 4/8] x86/sysctl: Add sysctl for ITMT scheduling feature
+Date: Tue, 22 Nov 2016 12:23:56 -0800
+Message-ID: <07cc62426a28bad57b01ab16bb903a9c84fa5421.1479844244.git.tim.c.chen@linux.intel.com>
 References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1479844244.git.tim.c.chen@linux.intel.com>
@@ -9,119 +9,213 @@ In-Reply-To: <cover.1479844244.git.tim.c.chen@linux.intel.com>
 References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, Tim Chen <tim.c.chen@linux.intel.com>, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Intel Turbo Boost Max Technology 3.0 (ITMT) feature
+allows some cores to be boosted to higher turbo
+frequency than others.
 
-This change uses acpi cppc_lib interface to get CPPC performance limits
-and calls scheduler interface to update per cpu highest priority. If
-there is a difference in highest performance of each CPUs, call scheduler
-interface to enable ITMT feature for only one time.
+Add /proc/sys/kernel/sched_itmt_enabled so operator
+can enable/disable scheduling of tasks that favor cores
+with higher turbo boost frequency potential.
 
-Here sched_set_itmt_core_prio() is called to set priorities and
-sched_set_itmt_support() is called to enable ITMT feature.
+By default, system that is ITMT capable and single
+socket has this feature turned on.  It is more likely
+to be lightly loaded and operates in Turbo range.
 
+When there is a change in the ITMT scheduling operation
+desired, a rebuild of the sched domain is initiated
+so the scheduler can set up sched domains with appropriate
+flag to enable/disable ITMT scheduling operations.
+
+Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Co-developed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
 ---
- drivers/cpufreq/Kconfig.x86    |  1 +
- drivers/cpufreq/intel_pstate.c | 56 +++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 56 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/topology.h |   7 ++-
+ arch/x86/kernel/itmt.c          | 108 +++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 112 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index adbd1de..c6d273b 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -6,6 +6,7 @@ config X86_INTEL_PSTATE
-        bool "Intel P state control"
-        depends on X86
-        select ACPI_PROCESSOR if ACPI
-+       select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_ITMT
-        help
-           This driver provides a P state for Intel core processors.
- 	  The driver implements an internal governor and will become
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 4737520..e8dc42f 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -44,6 +44,7 @@
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index 8ace951..4813df5 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -152,23 +152,26 @@ extern bool x86_topology_update;
+ #include <asm/percpu.h>
  
- #ifdef CONFIG_ACPI
- #include <acpi/processor.h>
-+#include <acpi/cppc_acpi.h>
- #endif
+ DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
++extern unsigned int __read_mostly sysctl_sched_itmt_enabled;
  
- #define FRAC_BITS 8
-@@ -379,14 +380,67 @@ static bool intel_pstate_get_ppc_enable_status(void)
- 	return acpi_ppc;
+ /* Interface to set priority of a cpu */
+ void sched_set_itmt_core_prio(int prio, int core_cpu);
+ 
+ /* Interface to notify scheduler that system supports ITMT */
+-void sched_set_itmt_support(void);
++int sched_set_itmt_support(void);
+ 
+ /* Interface to notify scheduler that system revokes ITMT support */
+ void sched_clear_itmt_support(void);
+ 
+ #else /* CONFIG_SCHED_ITMT */
+ 
++#define sysctl_sched_itmt_enabled	0
+ static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
+ {
  }
+-static inline void sched_set_itmt_support(void)
++static inline int sched_set_itmt_support(void)
+ {
++	return 0;
+ }
+ static inline void sched_clear_itmt_support(void)
+ {
+diff --git a/arch/x86/kernel/itmt.c b/arch/x86/kernel/itmt.c
+index 63c9b3e..672fbf7 100644
+--- a/arch/x86/kernel/itmt.c
++++ b/arch/x86/kernel/itmt.c
+@@ -34,6 +34,68 @@ DEFINE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
+ /* Boolean to track if system has ITMT capabilities */
+ static bool __read_mostly sched_itmt_capable;
  
-+#ifdef CONFIG_ACPI_CPPC_LIB
++/*
++ * Boolean to control whether we want to move processes to cpu capable
++ * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
++ * Technology 3.0.
++ *
++ * It can be set via /proc/sys/kernel/sched_itmt_enabled
++ */
++unsigned int __read_mostly sysctl_sched_itmt_enabled;
 +
-+/* The work item is needed to avoid CPU hotplug locking issues */
-+static void intel_pstste_sched_itmt_work_fn(struct work_struct *work)
++static int sched_itmt_update_handler(struct ctl_table *table, int write,
++				     void __user *buffer, size_t *lenp,
++				     loff_t *ppos)
 +{
-+	sched_set_itmt_support();
-+}
-+
-+static DECLARE_WORK(sched_itmt_work, intel_pstste_sched_itmt_work_fn);
-+
-+static void intel_pstate_set_itmt_prio(int cpu)
-+{
-+	struct cppc_perf_caps cppc_perf;
-+	static u32 max_highest_perf = 0, min_highest_perf = U32_MAX;
++	unsigned int old_sysctl;
 +	int ret;
 +
-+	ret = cppc_get_perf_caps(cpu, &cppc_perf);
-+	if (ret)
-+		return;
++	mutex_lock(&itmt_update_mutex);
 +
-+	/*
-+	 * The priorities can be set regardless of whether or not
-+	 * sched_set_itmt_support(true) has been called and it is valid to
-+	 * update them at any time after it has been called.
-+	 */
-+	sched_set_itmt_core_prio(cppc_perf.highest_perf, cpu);
-+
-+	if (max_highest_perf <= min_highest_perf) {
-+		if (cppc_perf.highest_perf > max_highest_perf)
-+			max_highest_perf = cppc_perf.highest_perf;
-+
-+		if (cppc_perf.highest_perf < min_highest_perf)
-+			min_highest_perf = cppc_perf.highest_perf;
-+
-+		if (max_highest_perf > min_highest_perf) {
-+			/*
-+			 * This code can be run during CPU online under the
-+			 * CPU hotplug locks, so sched_set_itmt_support()
-+			 * cannot be called from here.  Queue up a work item
-+			 * to invoke it.
-+			 */
-+			schedule_work(&sched_itmt_work);
-+		}
++	if (!sched_itmt_capable) {
++		mutex_unlock(&itmt_update_mutex);
++		return -EINVAL;
 +	}
-+}
-+#else
-+static void intel_pstate_set_itmt_prio(int cpu)
-+{
-+}
-+#endif
 +
- static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
++	old_sysctl = sysctl_sched_itmt_enabled;
++	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
++
++	if (!ret && write && old_sysctl != sysctl_sched_itmt_enabled) {
++		x86_topology_update = true;
++		rebuild_sched_domains();
++	}
++
++	mutex_unlock(&itmt_update_mutex);
++
++	return ret;
++}
++
++static unsigned int zero;
++static unsigned int one = 1;
++static struct ctl_table itmt_kern_table[] = {
++	{
++		.procname	= "sched_itmt_enabled",
++		.data		= &sysctl_sched_itmt_enabled,
++		.maxlen		= sizeof(unsigned int),
++		.mode		= 0644,
++		.proc_handler	= sched_itmt_update_handler,
++		.extra1		= &zero,
++		.extra2		= &one,
++	},
++	{}
++};
++
++static struct ctl_table itmt_root_table[] = {
++	{
++		.procname	= "kernel",
++		.mode		= 0555,
++		.child		= itmt_kern_table,
++	},
++	{}
++};
++
++static struct ctl_table_header *itmt_sysctl_header;
++
+ /**
+  * sched_set_itmt_support() - Indicate platform supports ITMT
+  *
+@@ -45,14 +107,39 @@ static bool __read_mostly sched_itmt_capable;
+  *
+  * This must be done only after sched_set_itmt_core_prio
+  * has been called to set the cpus' priorities.
++ * It must not be called with cpu hot plug lock
++ * held as we need to acquire the lock to rebuild sched domains
++ * later.
++ *
++ * Return: 0 on success
+  */
+-void sched_set_itmt_support(void)
++int sched_set_itmt_support(void)
  {
- 	struct cpudata *cpu;
- 	int ret;
- 	int i;
+ 	mutex_lock(&itmt_update_mutex);
  
--	if (hwp_active)
-+	if (hwp_active) {
-+		intel_pstate_set_itmt_prio(policy->cpu);
- 		return;
++	if (sched_itmt_capable) {
++		mutex_unlock(&itmt_update_mutex);
++		return 0;
 +	}
++
++	itmt_sysctl_header = register_sysctl_table(itmt_root_table);
++	if (!itmt_sysctl_header) {
++		mutex_unlock(&itmt_update_mutex);
++		return -ENOMEM;
++	}
++
+ 	sched_itmt_capable = true;
  
- 	if (!intel_pstate_get_ppc_enable_status())
- 		return;
++	sysctl_sched_itmt_enabled = 1;
++
++	if (sysctl_sched_itmt_enabled) {
++		x86_topology_update = true;
++		rebuild_sched_domains();
++	}
++
+ 	mutex_unlock(&itmt_update_mutex);
++
++	return 0;
+ }
+ 
+ /**
+@@ -61,13 +148,32 @@ void sched_set_itmt_support(void)
+  * This function is used by the OS to indicate that it has
+  * revoked the platform's support of ITMT feature.
+  *
++ * It must not be called with cpu hot plug lock
++ * held as we need to acquire the lock to rebuild sched domains
++ * later.
+  */
+ void sched_clear_itmt_support(void)
+ {
+ 	mutex_lock(&itmt_update_mutex);
+ 
++	if (!sched_itmt_capable) {
++		mutex_unlock(&itmt_update_mutex);
++		return;
++	}
+ 	sched_itmt_capable = false;
+ 
++	if (itmt_sysctl_header) {
++		unregister_sysctl_table(itmt_sysctl_header);
++		itmt_sysctl_header = NULL;
++	}
++
++	if (sysctl_sched_itmt_enabled) {
++		/* disable sched_itmt if we are no longer ITMT capable */
++		sysctl_sched_itmt_enabled = 0;
++		x86_topology_update = true;
++		rebuild_sched_domains();
++	}
++
+ 	mutex_unlock(&itmt_update_mutex);
+ }
+ 
 -- 
 2.5.5
