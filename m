@@ -1,93 +1,72 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state binding
-Date: Tue, 22 Nov 2016 10:12:28 -0800
-Message-ID: <m260nfz8mr.fsf@baylibre.com>
-References: <cover.1479459752.git.viresh.kumar@linaro.org>
-        <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
-        <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
-        <20161122031717.GE10014@vireshk-i7>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 0/9] AC97 device/driver model revamp
+Date: Tue, 22 Nov 2016 18:13:17 +0000
+Message-ID: <20161122181317.jcyhcyorxgpp6w3m@sirena.org.uk>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161122031717.GE10014@vireshk-i7> (Viresh Kumar's message of
-        "Tue, 22 Nov 2016 08:47:17 +0530")
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nayak Rajendra <rnayak@codeaurora.org>
+Content-Type: multipart/mixed; boundary="===============0576043004976886590=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: alsa-devel@alsa-project.org, patches@opensource.wolfsonmicro.com, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Takashi Iwai <tiwai@suse.com>, Haojian Zhuang <haojian.zhuang@gmail.com>, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>, Lee Jones <lee.jones@linaro.org>, Daniel Mack <daniel@zonque.org>
 List-Id: linux-pm@vger.kernel.org
 
-Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-> On 21-11-16, 09:07, Rob Herring wrote:
->> On Fri, Nov 18, 2016 at 02:53:12PM +0530, Viresh Kumar wrote:
->> > Some platforms have the capability to configure the performance state of
->> > their Power Domains. The performance levels are represented by positive
->> > integer values, a lower value represents lower performance state.
->> > 
->> > The power-domains until now were only concentrating on the idle state
->> > management of the device and this needs to change in order to reuse the
->> > infrastructure of power domains for active state management.
->> > 
->> > This patch introduces a new optional property for the consumers of the
->> > power-domains: domain-performance-state.
->> > 
->> > If the consumers don't need the capability of switching to different
->> > domain performance states at runtime, then they can simply define their
->> > required domain performance state in their node directly. Otherwise the
->> > consumers can define their requirements with help of other
->> > infrastructure, for example the OPP table.
->> > 
->> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> >  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
->> >  1 file changed, 6 insertions(+)
->> > 
->> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->> > index e1650364b296..db42eacf8b5c 100644
->> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
->> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->> > @@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
->> >   - power-domains : A phandle and PM domain specifier as defined by bindings of
->> >                     the power controller specified by phandle.
->> >  
->> > +Optional properties:
->> > +- domain-performance-state: A positive integer value representing the minimum
->> > +  performance level (of the parent domain) required by the consumer for its
->> > +  working. The integer value '1' represents the lowest performance level and the
->> > +  highest value represents the highest performance level.
->> 
->> How does one come up with the range of values?
->
-> Why would we need a range here? The value here represents the minimum 'state'
-> and the assumption is that everything above that level would be fine. So the
-> range is automatically: domain-performance-state -> MAX.
->
->> It seems like you are 
->> just making up numbers. Couldn't the domain performance level be an OPP 
->> in the sense that it is a collection of clock frequencies and voltage 
->> settings?
->
-> The clock is going to be handled by the device itself (at least for the case we
-> have today) and the performance-state lies with the power-domain which is
-> configured separately. If the performance level includes both clk and voltage,
-> then why would we need to show the clock rates in the DT ? Wouldn't a
-> performance level be enough in such cases?
+--===============0576043004976886590==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="xaxrk4mep5322mmb"
+Content-Disposition: inline
 
-I think the question is: what does the performance-level of a domain
-actually mean?  Or, what are the units?
 
-Depending on the SoC, there's probably a few things this could mean.  It
-might mean is that an underlying bus/interconnect can be configured to
-guarantee a specific bandwidth or throughput.  That in turn might mean
-that that bus/interconnect might have to be set at a specific
-frequency/voltage.
+--xaxrk4mep5322mmb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-In your case, IIUC, you're just passing some magic value to some
-firmware running on a micro-controller, but under the hood that uC is
-probably configuring a frequency/voltage someplace.
+On Wed, Oct 26, 2016 at 09:41:38PM +0200, Robert Jarzmik wrote:
 
-So, if we're going to have a generic DT binding for this, it needs to be
-something that's useful on platforms that are not using magic numbers
-managed by a uC as well.
+> The driving ideas are still the same, and I put them in [1] for memory. This is
+> the first post RFC submission. In order to make a full demonstration of the
+> framework, wm97xx was converted to an MFD, see [2] for the "why".
 
-Kevin
+This all looks nice to me, I did spot a few things but I don't think I
+had anything that wasn't already raised by someone else so didn't repeat
+them.  Thanks for stepping up and doing this work!
+
+--xaxrk4mep5322mmb
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEcBAABCAAGBQJYNIq8AAoJECTWi3JdVIfQMjgH/je+KeOstLfSW2OjUoKyRn7y
+CYdl68cdRkRygHfPUIZio/QXlpxbqKDl9VYmGXAvDWpad5MyRDVZjDlPm3JtflgP
+2ug3nn01Jw0NeE1kD3pgJBQi7ghg3XExXwMlCv7qawo4kQQIhUUgQFY8lQD6Bwal
+Hku9hddeFQCpuNwlx3Rekd5VXm6X7x8NkPgSrHJVOJRogmmwbzBPVu4ONhR24oCK
+RSx2p/7cedwlkCKVEisd6zRKIcQJgmJHhQQjzc3A+n6foEM7GWnM6h5oP9S1nxVk
+kD9RxstanRPNTg06bIWlgXq1iAAaavhZJQG3wWoSyWr1dtNvWiMST/az9j3HcAo=
+=lGWW
+-----END PGP SIGNATURE-----
+
+--xaxrk4mep5322mmb--
+
+
+--===============0576043004976886590==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============0576043004976886590==--
