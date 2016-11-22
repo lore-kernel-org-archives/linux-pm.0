@@ -1,46 +1,55 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH v3] cpufreq: intel_pstate: Generic governors support
-Date: Mon, 21 Nov 2016 15:54:38 -0800
-Message-ID: <004501d24452$a06d2440$e1476cc0$@net>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/2] cpufreq: intel_pstate: round up min_perf limits
+Date: Mon, 21 Nov 2016 16:33:19 -0800
+Message-ID: <1479774800-126589-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta20.telus.net ([209.171.16.93]:38717 "EHLO cmta20.telus.net"
+Received: from mga03.intel.com ([134.134.136.65]:4835 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752505AbcKUXyn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Nov 2016 18:54:43 -0500
-References: 7V8gc8F0cCdRJ7V8lcAyAi
-In-Reply-To: 7V8gc8F0cCdRJ7V8lcAyAi
-Content-Language: en-ca
+        id S1753695AbcKVAd0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 21 Nov 2016 19:33:26 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM list' <linux-pm@vger.kernel.org>
+To: lenb@kernel.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 2016.11.17 14:34 Rafael J. Wysocki wrote:
+In some use cases, user wants to enforce a minimum performance limit on
+CPUs. But because of simple division the resultant performance is 100 MHz
+less than the desired in some cases.
 
-> v2 -> v3:
-> The previous iteration didn't work correcty if ondemand was the default
->  governor, because it didn't set policy->cur during initialization and
->  that caused cpufreq_dbs_governor_start() to return an error (thanks to
->  Srinovas for finding that bug).
+For example when the maximum frequency is 3.50 GHz, setting
+scaling_min_frequency to 1.6 GHz always results in 1.5 GHz minimum. With
+simple round up, the frequency can be set to 1.6 GHz to minimum in this
+case. This round up is already done to max_policy_pct and max_perf, so do
+the same for min_policy_pct and min_perf.
 
-Just for the sake of due diligence:
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-I re-tested v3 with all the same tests I had done with previous versions,
-with the same positive results that I got with v2.
-
-On my test computer, I also re-created the v2 failure discovered by
-Srinivas, and confirm it is O.K. with v3.
-
-On the v2 thread you said:
-
-> I'll add a Tested-by tag from you to it if you don't mind.
-
-That would be fine.
-
-... Doug
-
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index f07e591..2f27812 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1569,8 +1569,8 @@ static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
+ 	if (policy->max == policy->min) {
+ 		limits->min_policy_pct = limits->max_policy_pct;
+ 	} else {
+-		limits->min_policy_pct = (policy->min * 100) /
+-						policy->cpuinfo.max_freq;
++		limits->min_policy_pct = DIV_ROUND_UP(policy->min * 100,
++						      policy->cpuinfo.max_freq);
+ 		limits->min_policy_pct = clamp_t(int, limits->min_policy_pct,
+ 						 0, 100);
+ 	}
+@@ -1591,6 +1591,7 @@ static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
+ 	limits->min_perf = div_fp(limits->min_perf_pct, 100);
+ 	limits->max_perf = div_fp(limits->max_perf_pct, 100);
+ 	limits->max_perf = round_up(limits->max_perf, FRAC_BITS);
++	limits->min_perf = round_up(limits->min_perf, FRAC_BITS);
+ 
+ 	mutex_unlock(&intel_pstate_limits_lock);
+ 
+-- 
+2.7.4
 
