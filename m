@@ -1,49 +1,60 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 00/12] thermal/x86_pkg_temp: Sanitize yet another hotplug
- and locking trainwreck
-Date: Tue, 22 Nov 2016 10:05:50 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1611221001120.3521@nanos>
-References: <20161117231435.891545908@linutronix.de>  <1479758532.6544.169.camel@intel.com>  <alpine.DEB.2.20.1611212228220.3677@nanos> <1479770177.6544.195.camel@intel.com>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH] RFC: mmc: block: replace semaphore with freezing
+Date: Tue, 22 Nov 2016 09:10:23 +0000
+Message-ID: <20161122091023.GS1041@n2100.armlinux.org.uk>
+References: <1479293464-4576-1-git-send-email-linus.walleij@linaro.org>
+ <CAJZ5v0gCDQXebsQoCYJY5FyE6oJUw4s6sQrNbKLuxpLvOe2RoA@mail.gmail.com>
+ <CACRpkdY+jdU4ETuMJsY-efSkjwE0fWWRZoyCyrYAs_GxUo-DhQ@mail.gmail.com>
+ <17679227.zg8zl3jhbr@wuerfel>
+ <CACRpkdagS-7kaYCd2Sq0vLR8+19Mmckx=CuCqPv+HheRk8Cm7w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1479770177.6544.195.camel@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, "rt@linutronix.de" <rt@linutronix.de>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "bp@alien8.de" <bp@alien8.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:40070 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752916AbcKVJKg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 04:10:36 -0500
+Content-Disposition: inline
+In-Reply-To: <CACRpkdagS-7kaYCd2Sq0vLR8+19Mmckx=CuCqPv+HheRk8Cm7w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Binoy Jayan <binoy.jayan@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Chunyan Zhang <zhang.chunyan@linaro.org>, Baolin Wang <baolin.wang@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Jiri Kosina <jikos@kernel.org>
 
-On Mon, 21 Nov 2016, Pandruvada, Srinivas wrote:
-> Your change below fixes the crash issue. Now I tested a case where the
-> last cpu offlined from a package, it removed thermal zone and added
-> zone back once any cpu from the package onlined. So this is working.
+On Tue, Nov 22, 2016 at 09:54:18AM +0100, Linus Walleij wrote:
+> On Wed, Nov 16, 2016 at 5:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Wednesday, November 16, 2016 4:20:47 PM CET Linus Walleij wrote:
+> >> On Wed, Nov 16, 2016 at 1:46 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >>
+> >> > Well, we had a session at the KS regarding usage of the freezer on
+> >> > kernel threads and the conclusion was to get rid of that (as opposed
+> >> > to freezing user space, which is necessary IMO).  So this change would
+> >> > go in the opposite direction.
+> >>
+> >> Aha so I should not make this thread look like everyone else, instead
+> >> everyone else should look like this thread, haha
+> >>
+> >> Ah well, I'll just drop it.
+> >
+> > It would still be good to remove the semaphore and do something else,
+> > as we also want to remove all semaphores. ;-)
+> >
+> > We could check "mq->flags & MMC_QUEUE_SUSPENDED" in the kthread to see
+> > if the queue is currently suspended, and otherwise go to sleep there,
+> > and then call wake_up() in the resume function.
 > 
-> I want to try to run some workload on those cpu to bump up the
-> temperature and check interrupts. I am hitting some issue unrelated to
-> this change may be. I onlined three cpus from the package 1.
+> Hm... so simply:
 > 
-> [189443.567728] smpboot: Booting Node 1 Processor 15 APIC 0x2e
-> [189656.625947] smpboot: Booting Node 1 Processor 8 APIC 0x20
-> [189829.545851] smpboot: Booting Node 1 Processor 24 APIC 0x21
+> if (mq->flags & MMC_QUEUE_SUSPENDED)
+>   schedule();
 > 
-> But I can't schedule anything on those CPUs. For example now can't run
-> turbostat, it complains
-> "
-> turbostat: re-initialized with num_cpus 19
-> Could not migrate to CPU 8
-> "
-> 
-> Same with
-> 
-> #taskset 0x100 stress -c 1
-> taskset: failed to set pid 0's affinity: Invalid argument
-> 
-> I am on the latest linux-pm/linux-next tree on this server. I will
-> switch to latest main line and try.
+> ?
 
-That must be something unrelated. I can use turbostat and taskset after
-doing the above.
+No, the schedule() is required when there are no more requests to
+process, so the thread doesn't spin waiting for the next request to
+appear.
 
-Thanks,
-
-	tglx
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
