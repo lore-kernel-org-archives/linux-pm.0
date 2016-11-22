@@ -1,64 +1,179 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] cpufreq, powernv: Disable preemption while checking
- CPU throttling state throttling state
-Date: Tue, 22 Nov 2016 23:44:58 +0100
-Message-ID: <CAJZ5v0jPhGHsUPHsfMyzxktC_1YMhxdXEmCZO6+_kt6YaJ9fxg@mail.gmail.com>
-References: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
+Subject: Re: [PATCH][RFC] ACPI throttling: Save/restore tstate for each CPUs
+ across suspend/resume
+Date: Wed, 23 Nov 2016 00:03:22 +0100
+Message-ID: <CAJZ5v0iMT4+qVdQ-8ev_NRavLNnLhr_+eEO9M=85WJC+zfDySw@mail.gmail.com>
+References: <1479145444-29269-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:36774 "EHLO
-        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934976AbcKVWp3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 17:45:29 -0500
-Received: by mail-wm0-f65.google.com with SMTP id m203so7239336wma.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 14:44:59 -0800 (PST)
-In-Reply-To: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:35502 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932461AbcKVXDY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 18:03:24 -0500
+In-Reply-To: <1479145444-29269-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, akshay.adiga@linux.vnet.ibm.com
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Rui Wang <ruwang@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>, Rui Zhang <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tue, Nov 22, 2016 at 2:07 PM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> With preemption turned on we can read incorrect throttling state while being switched
-> to CPU on a different chip.
-> The following BUG_() was hit while running the 4.8-rc5 kernel compiled
-> with CONFIG_PREEMPT_DEBUG on a POWER machine.
+On Mon, Nov 14, 2016 at 6:44 PM, Chen Yu <yu.c.chen@intel.com> wrote:
+> This is a trial version and any comments are appreciated.
 >
+> Previously a bug was reported that on certain Broadwell
+> platforms, after resuming from S3, the CPU is running at
+> an anomalously low speed, due to BIOS has enabled the
+> throttling across S3. The solution to this is to introduce
+> a quirk framework to save/restore tstate MSR register
+> around suspend/resume, in Commit 7a9c2dd08ead ("x86/pm:
+> Introduce quirk framework to save/restore extra MSR
+> registers around suspend/resume").
 >
->     [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
->     [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
->     [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
->     [   67.701038] Call Trace:
->     [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
->     [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
->     [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
->     [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
->     [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
->     [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
->     [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
->     [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
->     [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
->     [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
->     [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
->     [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
->     [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
->     [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+> However more and more reports show that other platforms also
+> experienced the same issue, because some BIOSes would like to
+> adjust the tstate if he thinks the temperature is too high.
+> To deal with this situation, the Linux uses a compensation strategy
+> that, the thermal management leverages thermal_pm_notify() upon resume
+> to check if the Processors inside the thermal zone should be throttled
+> or not, thus tstate would be re-evaluated. Unfortunately on these bogus
+> platforms, none of the Processors are inside any thermal zones due
+> to BIOS's implementation. Thus tstate for Processors never has a
+> chance to be brought back to normal.
 >
-> The task which updates the cpu-frequency checks if the chip was
-> throttled. However, it does so without protecting itself against
-> preemption. Hence, if the task is preempted and woken up on a CPU on
-> another chip, it can end up updating the throttle statistics of the
-> incorrect chip.
+> This patch tries to save/restore tstate on receiving the
+> PM_SUSPEND_PREPARE and PM_POST_SUSPEND, to be more specific,
+> the tstate is saved after thermal_pm_notify(PM_SUSPEND_PREPARE)
+> is called, while it's restored before thermal_pm_notify(PM_POST_SUSPEND),
+> in this way the thermal zone would adjust the tstate eventually and
+> also help adjust the tstate for Processors which do not have
+> thermal zone bound. Thus it does not imapct the old semantics.
 >
-> This patch fixes the issue by ensuring that the throttle_check is
-> performed with preemption disabled.
+> Another concern is that, each CPU should take care of the
+> save/restore operation, thus this patch uses percpu workqueue
+> to achieve this.
 >
-> Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=90041
+> Reported-by: Matthew Garrett <mjg59@srcf.ucam.org>
+> Reported-by: Kadir <kadir@colakoglu.nl>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+> Cc: Rui Zhang <rui.zhang@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/acpi/processor_throttling.c | 70 +++++++++++++++++++++++++++++++++++++
+>  1 file changed, 70 insertions(+)
+>
+> diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
+> index d51ca1c..8ddc7d6 100644
+> --- a/drivers/acpi/processor_throttling.c
+> +++ b/drivers/acpi/processor_throttling.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/acpi.h>
+> +#include <linux/suspend.h>
+>  #include <acpi/processor.h>
+>  #include <asm/io.h>
+>  #include <asm/uaccess.h>
+> @@ -758,6 +759,75 @@ static int acpi_throttling_wrmsr(u64 value)
+>         }
+>         return ret;
+>  }
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static DEFINE_PER_CPU(u64, tstate_msr);
 
-That's already queued up for v4.10, you don't have to resend it.
+Call it saved_tstate_msr maybe?
+
+> +
+> +static long tstate_pm_fn(void *data)
+> +{
+> +       u64 value;
+> +       bool save = *(bool *)data;
+> +
+> +       if (save) {
+> +               acpi_throttling_rdmsr(&value);
+> +               this_cpu_write(tstate_msr, value);
+> +       } else {
+> +               value = this_cpu_read(tstate_msr);
+> +               if (value)
+> +                       acpi_throttling_wrmsr(value);
+> +       }
+> +       return 0;
+> +}
+
+I would split the above into two functions, one for saving and one for
+restoring ->
+
+> +
+> +static void tstate_check(unsigned long mode, bool suspend)
+> +{
+> +       int cpu;
+> +       bool save;
+> +
+> +       if (suspend && mode == PM_SUSPEND_PREPARE)
+> +               save = true;
+> +       else if (!suspend && mode == PM_POST_SUSPEND)
+> +               save = false;
+> +       else
+> +               return;
+> +
+> +       get_online_cpus();
+> +       for_each_online_cpu(cpu)
+
+-> and decide here which one to invoke.
+
+> +               work_on_cpu(cpu, tstate_pm_fn, &save);
+
+Does work_on_cpu() wait for the work to complete?
+
+> +       put_online_cpus();
+> +}
+> +
+> +static int tstate_suspend(struct notifier_block *nb,
+> +                               unsigned long mode, void *_unused)
+> +{
+> +       tstate_check(mode, true);
+> +       return 0;
+> +}
+> +
+> +static int tstate_resume(struct notifier_block *nb,
+> +                               unsigned long mode, void *_unused)
+> +{
+> +       tstate_check(mode, false);
+> +       return 0;
+> +}
+> +
+> +static int __init tstate_pm_init(void)
+> +{
+> +       /*
+> +        * tstate_suspend should save tstate after
+> +        * thermal zone's update in thermal_pm_notify,
+> +        * vice versa tstate_resume restore tstate before
+> +        * thermal_pm_notify, thus the thermal framework
+> +        * has a chance to re-adjust tstate according to the
+> +        * temperature trend.
+> +        */
+> +       pm_notifier(tstate_suspend, -1);
+> +       pm_notifier(tstate_resume, 1);
+
+I don't think this is going to do what you really want.
+
+Each of these notifiers is going to be invoked during both suspend and
+resume, so I guess you only need one notifier?
+
+> +       return 0;
+> +}
+> +
+> +core_initcall(tstate_pm_init);
+> +#endif
+>  #else
+>  static int acpi_throttling_rdmsr(u64 *value)
+>  {
+> --
 
 Thanks,
 Rafael
