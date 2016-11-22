@@ -1,78 +1,72 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] RFC: mmc: block: replace semaphore with freezing
-Date: Tue, 22 Nov 2016 10:16:09 +0100
-Message-ID: <2495798.NCupJYMGV1@wuerfel>
-References: <1479293464-4576-1-git-send-email-linus.walleij@linaro.org> <17679227.zg8zl3jhbr@wuerfel> <CACRpkdagS-7kaYCd2Sq0vLR8+19Mmckx=CuCqPv+HheRk8Cm7w@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition rate limits
+Date: Tue, 22 Nov 2016 10:27:40 +0100
+Message-ID: <CAKfTPtCCMaV_k-3V7ReVC7VXYWuxgwovY+BAQ0jMGig947R+bA@mail.gmail.com>
+References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+ <20161121100805.GB10014@vireshk-i7> <20161121101946.GI3102@twins.programming.kicks-ass.net>
+ <20161121121432.GK24383@e106622-lin> <20161121122622.GC3092@twins.programming.kicks-ass.net>
+ <20161121135308.GN24383@e106622-lin> <20161121141728.GF3092@twins.programming.kicks-ass.net>
+ <20161121143727.GO24383@e106622-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.134]:58399 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932273AbcKVJQU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 04:16:20 -0500
-In-Reply-To: <CACRpkdagS-7kaYCd2Sq0vLR8+19Mmckx=CuCqPv+HheRk8Cm7w@mail.gmail.com>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:38230 "EHLO
+        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755414AbcKVJ2D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 04:28:03 -0500
+Received: by mail-wm0-f49.google.com with SMTP id f82so14454961wmf.1
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 01:28:02 -0800 (PST)
+In-Reply-To: <20161121143727.GO24383@e106622-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Binoy Jayan <binoy.jayan@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Chunyan Zhang <zhang.chunyan@linaro.org>, Baolin Wang <baolin.wang@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Jiri Kosina <jikos@kernel.org>
+To: Juri Lelli <Juri.Lelli@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, Todd Kjos <tkjos@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>
 
-On Tuesday, November 22, 2016 9:54:18 AM CET Linus Walleij wrote:
-> On Wed, Nov 16, 2016 at 5:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Wednesday, November 16, 2016 4:20:47 PM CET Linus Walleij wrote:
-> >> On Wed, Nov 16, 2016 at 1:46 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >>
-> >> > Well, we had a session at the KS regarding usage of the freezer on
-> >> > kernel threads and the conclusion was to get rid of that (as opposed
-> >> > to freezing user space, which is necessary IMO).  So this change would
-> >> > go in the opposite direction.
-> >>
-> >> Aha so I should not make this thread look like everyone else, instead
-> >> everyone else should look like this thread, haha
-> >>
-> >> Ah well, I'll just drop it.
-> >
-> > It would still be good to remove the semaphore and do something else,
-> > as we also want to remove all semaphores. 
-> >
-> > We could check "mq->flags & MMC_QUEUE_SUSPENDED" in the kthread to see
-> > if the queue is currently suspended, and otherwise go to sleep there,
-> > and then call wake_up() in the resume function.
-> 
-> Hm... so simply:
-> 
-> if (mq->flags & MMC_QUEUE_SUSPENDED)
->   schedule();
-> 
-> ?
+On 21 November 2016 at 15:37, Juri Lelli <Juri.Lelli@arm.com> wrote:
+> On 21/11/16 15:17, Peter Zijlstra wrote:
+>> On Mon, Nov 21, 2016 at 01:53:08PM +0000, Juri Lelli wrote:
+>> > On 21/11/16 13:26, Peter Zijlstra wrote:
+>>
+>> > > So the limited decay would be the dominant factor in ramp-up time,
+>> > > leaving the regular PELT period the dominant factor for ramp-down.
+>> > >
+>> >
+>> > Hmmm, AFAIU the limited decay will help not forgetting completely the
+>> > contribution of tasks that sleep for a long time, but it won't modify
+>> > the actual ramp-up of the signal. So, for new tasks we will need to play
+>> > with a sensible initial value (trading off perf and power as usual).
+>>
+>> Oh, you mean ramp-up for bright spanking new tasks? I forgot the
+>> details, but I think we can fudge the 'history' such that those too ramp
+>> up quickly.
+>>
+>
+> Right. I think Vincent had some ideas on this front already.
 
-Something like that.
+You are probably referring to some properties linked to how the PELT
+signal is evolving. As an example, an increase of 100 pf the
+utilization during the running phase means that we have for sure run
+for more than 5ms. This could probably used such kind of properties
+when estimating the utilization level of the task or the CPU
 
-> This whole kthread business is pretty messy. I would prefer if I could
-> just convert it to a workqueue. Just that it's not very simple the way
-> it speculates around in the request queue from the block layer.
-
-I don't see how that would work, but might be worth trying.
-After doing that, a simple flush_workqueue() might be enough
-to take care of the suspend operation.
-
-> > While looking at that code, I just noticed that access to
-> > mq->flags is racy and should be fixed as well.
-> 
-> I guess we should take the queue lock &q->lock around accessing
-> the flags.
-
-Yes, either that, or use set_bit/test_bit/test_and_set_bit for
-atomic access. For instance, this one
-
-        if (mq->flags & MMC_QUEUE_NEW_REQUEST) {
-                mq->flags &= ~MMC_QUEUE_NEW_REQUEST;
-
-Could be
-
-	if (test_and_clear(MMC_QUEUE_NEW_REQUEST_BIT, &mq->flags))
-			...
-
-
-	Arnd
-
+>
+>> > > (Note that the decay limit would only be applied on the per-task signal,
+>> > > not the accumulated signal.)
+>> > >
+>> >
+>> > Right, and since schedutil consumes the latter, we could still suffer
+>> > from too frequent frequency switch events I guess (this is where the
+>> > down threshold thing came as a quick and dirty fix). Maybe we can think
+>> > of some smoothing applied to the accumulated signal, or make it decay
+>> > slower (don't really know what this means in practice, though :) ?
+>>
+>> Not sure I follow. So by limiting decay to the task value, the moment we
+>> add it back to the accumulated signal (wakeup), the accumulated signal
+>> jumps up quickly and ramp-up is achieved.
+>>
+>
+> This is true, but it seems that this potentially spiky behaviour
+> (which in general depends on tasks composition and periodicity) might
+> affect power savings (as in you don't generally want to switch between
+> high and low freqs too often). So that's why I was just thinking that
+> some sort of smoothing applied to the signal schedutil uses might help.
