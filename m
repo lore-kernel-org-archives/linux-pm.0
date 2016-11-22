@@ -1,172 +1,199 @@
 From: Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch V2 05/12] thermal/x86_pkg_temp: Get rid of ref counting
-Date: Tue, 22 Nov 2016 17:57:07 -0000
-Message-ID: <20161122175357.272861517@linutronix.de>
+Subject: [patch V2 12/12] thermal/x86 pkg temp: Convert to hotplug state
+ machine
+Date: Tue, 22 Nov 2016 17:57:15 -0000
+Message-ID: <20161122175357.874883446@linutronix.de>
 References: <20161122175256.922158782@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:60571 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933968AbcKVSAR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 13:00:17 -0500
 Content-Disposition: inline;
- filename=thermalx86_pkg_temp_Get_rid_of_ref_counting.patch
-Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Rui Zhang <rui.zhang@intel.com>, edubezval@gmail.com, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, x86@kernel.org, rt@linutronix.de, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+ filename=thermalx86_pkg_temp_Convert_to_hotplug_state_machine.patch
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Rui Zhang <rui.zhang@intel.com>, edubezval@gmail.com, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, x86@kernel.org, rt@linutronix.de, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-There is no point in the whole package data refcounting dance because
-topology_core_cpumask tells us whether this is the last cpu in the
-package. If yes, then the package can go, if not it stays. It's already
-serialized via the hotplug code.
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-While at it rename the first_cpu member of the package structure to
-cpu. The first has absolutely no meaning.
+Install the callbacks via the state machine and let the core invoke
+the callbacks on the already online CPUs.
 
+Replace the wrmsr/rdmrs_on_cpu() calls in the hotplug callbacks as they are
+guaranteed to be invoked on the incoming/outgoing cpu.
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- drivers/thermal/x86_pkg_temp_thermal.c |   62 ++++++++++-----------------------
- 1 file changed, 20 insertions(+), 42 deletions(-)
+ drivers/thermal/x86_pkg_temp_thermal.c |   80 +++++++++------------------------
+ 1 file changed, 23 insertions(+), 57 deletions(-)
 
 --- a/drivers/thermal/x86_pkg_temp_thermal.c
 +++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -60,9 +60,8 @@ MODULE_PARM_DESC(notify_delay_ms,
- struct phy_dev_entry {
- 	struct list_head list;
- 	u16 phys_proc_id;
--	u16 first_cpu;
-+	u16 cpu;
- 	u32 tj_max;
--	int ref_cnt;
- 	u32 start_pkg_therm_low;
- 	u32 start_pkg_therm_high;
- 	struct thermal_zone_device *tzone;
-@@ -170,8 +169,8 @@ static int sys_get_curr_temp(struct ther
- 	struct phy_dev_entry *phy_dev_entry;
+@@ -79,6 +79,9 @@ static DEFINE_SPINLOCK(pkg_temp_lock);
+ /* Protects zone operation in the work function against hotplug removal */
+ static DEFINE_MUTEX(thermal_zone_mutex);
  
- 	phy_dev_entry = tzd->devdata;
--	rdmsr_on_cpu(phy_dev_entry->first_cpu, MSR_IA32_PACKAGE_THERM_STATUS,
--			&eax, &edx);
-+	rdmsr_on_cpu(phy_dev_entry->cpu, MSR_IA32_PACKAGE_THERM_STATUS,
-+		     &eax, &edx);
- 	if (eax & 0x80000000) {
- 		*temp = phy_dev_entry->tj_max -
- 				((eax >> 16) & 0x7f) * 1000;
-@@ -204,8 +203,8 @@ static int sys_get_trip_temp(struct ther
- 		shift = THERM_SHIFT_THRESHOLD0;
++/* The dynamically assigned cpu hotplug state for module_exit() */
++static enum cpuhp_state pkg_thermal_hp_state __read_mostly;
++
+ /* Debug counters to show using debugfs */
+ static struct dentry *debugfs;
+ static unsigned int pkg_interrupt_cnt;
+@@ -386,9 +389,8 @@ static int pkg_temp_thermal_device_add(u
+ 		return err;
  	}
+ 	/* Store MSR value for package thermal interrupt, to restore at exit */
+-	rdmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-		     &pkgdev->msr_pkg_therm_low,
+-		     &pkgdev->msr_pkg_therm_high);
++	rdmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT, pkgdev->msr_pkg_therm_low,
++	      pkgdev->msr_pkg_therm_high);
  
--	ret = rdmsr_on_cpu(phy_dev_entry->first_cpu,
--				MSR_IA32_PACKAGE_THERM_INTERRUPT, &eax, &edx);
-+	ret = rdmsr_on_cpu(phy_dev_entry->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+			   &eax, &edx);
- 	if (ret < 0)
- 		return -EINVAL;
- 
-@@ -232,9 +231,8 @@ static int sys_set_trip_temp(struct ther
- 	if (trip >= MAX_NUMBER_OF_TRIPS || temp >= phy_dev_entry->tj_max)
- 		return -EINVAL;
- 
--	ret = rdmsr_on_cpu(phy_dev_entry->first_cpu,
--					MSR_IA32_PACKAGE_THERM_INTERRUPT,
--					&l, &h);
-+	ret = rdmsr_on_cpu(phy_dev_entry->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+			   &l, &h);
- 	if (ret < 0)
- 		return -EINVAL;
- 
-@@ -259,9 +257,8 @@ static int sys_set_trip_temp(struct ther
- 		l |= intr;
- 	}
- 
--	return wrmsr_on_cpu(phy_dev_entry->first_cpu,
--					MSR_IA32_PACKAGE_THERM_INTERRUPT,
--					l, h);
-+	return wrmsr_on_cpu(phy_dev_entry->cpu,	MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+			    l, h);
+ 	cpumask_set_cpu(cpu, &pkgdev->cpumask);
+ 	spin_lock_irq(&pkg_temp_lock);
+@@ -397,14 +399,14 @@ static int pkg_temp_thermal_device_add(u
+ 	return 0;
  }
  
- static int sys_get_trip_type(struct thermal_zone_device *thermal,
-@@ -431,9 +428,8 @@ static int pkg_temp_thermal_device_add(u
- 	spin_unlock_irqrestore(&pkg_work_lock, flags);
- 
- 	phy_dev_entry->phys_proc_id = topology_physical_package_id(cpu);
--	phy_dev_entry->first_cpu = cpu;
-+	phy_dev_entry->cpu = cpu;
- 	phy_dev_entry->tj_max = tj_max;
--	phy_dev_entry->ref_cnt = 1;
- 	phy_dev_entry->tzone = thermal_zone_device_register("x86_pkg_temp",
- 			thres_count,
- 			(thres_count == MAX_NUMBER_OF_TRIPS) ?
-@@ -468,30 +464,16 @@ static int pkg_temp_thermal_device_add(u
- static int pkg_temp_thermal_device_remove(unsigned int cpu)
+-static void put_core_offline(unsigned int cpu)
++static int pkg_thermal_cpu_offline(unsigned int cpu)
  {
- 	struct phy_dev_entry *phdev = pkg_temp_thermal_get_phy_entry(cpu);
--	u16 phys_proc_id = topology_physical_package_id(cpu);
-+	int target;
+ 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
+ 	bool lastcpu, was_target;
+ 	int target;
  
- 	if (!phdev)
- 		return -ENODEV;
+ 	if (!pkgdev)
+-		return;
++		return 0;
  
- 	mutex_lock(&phy_dev_list_mutex);
--	/* If we are loosing the first cpu for this package, we need change */
--	if (phdev->first_cpu == cpu) {
--		int target = cpumask_any_but(topology_core_cpumask(cpu), cpu);
+ 	target = cpumask_any_but(&pkgdev->cpumask, cpu);
+ 	cpumask_clear_cpu(cpu, &pkgdev->cpumask);
+@@ -448,16 +450,9 @@ static void put_core_offline(unsigned in
+ 	 */
+ 	if (lastcpu) {
+ 		packages[topology_logical_package_id(cpu)] = NULL;
+-		/*
+-		 * After this point nothing touches the MSR anymore. We
+-		 * must drop the lock to make the cross cpu call. This goes
+-		 * away once we move that code to the hotplug state machine.
+-		 */
+-		spin_unlock_irq(&pkg_temp_lock);
+-		wrmsr_on_cpu(cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
+-			     pkgdev->msr_pkg_therm_low,
+-			     pkgdev->msr_pkg_therm_high);
+-		spin_lock_irq(&pkg_temp_lock);
++		/* After this point nothing touches the MSR anymore. */
++		wrmsr(MSR_IA32_PACKAGE_THERM_INTERRUPT,
++		      pkgdev->msr_pkg_therm_low, pkgdev->msr_pkg_therm_high);
+ 	}
+ 
+ 	/*
+@@ -487,9 +482,10 @@ static void put_core_offline(unsigned in
+ 	/* Final cleanup if this is the last cpu */
+ 	if (lastcpu)
+ 		kfree(pkgdev);
++	return 0;
+ }
+ 
+-static int get_core_online(unsigned int cpu)
++static int pkg_thermal_cpu_online(unsigned int cpu)
+ {
+ 	struct pkg_device *pkgdev = pkg_temp_thermal_get_dev(cpu);
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+@@ -506,27 +502,6 @@ static int get_core_online(unsigned int
+ 	return pkg_temp_thermal_device_add(cpu);
+ }
+ 
+-static int pkg_temp_thermal_cpu_callback(struct notifier_block *nfb,
+-				 unsigned long action, void *hcpu)
+-{
+-	unsigned int cpu = (unsigned long) hcpu;
 -
--		phdev->first_cpu = target;
--		pr_debug("CPU %d down. New first_cpu%d\n", cpu, target);
+-	switch (action & ~CPU_TASKS_FROZEN) {
+-	case CPU_ONLINE:
+-	case CPU_DOWN_FAILED:
+-		get_core_online(cpu);
+-		break;
+-	case CPU_DOWN_PREPARE:
+-		put_core_offline(cpu);
+-		break;
 -	}
--	/*
--	* It is possible that no siblings left as this was the last cpu
--	* going offline. We don't need to worry about this assignment
--	* as the phydev entry will be removed in this case and
--	* thermal zone is removed.
--	*/
--	--phdev->ref_cnt;
--	pr_debug("thermal_device_remove: pkg: %d cpu %d ref_cnt %d\n",
--					phys_proc_id, cpu, phdev->ref_cnt);
+-	return NOTIFY_OK;
+-}
+-
+-static struct notifier_block pkg_temp_thermal_notifier __refdata = {
+-	.notifier_call = pkg_temp_thermal_cpu_callback,
+-};
+-
+ static const struct x86_cpu_id __initconst pkg_temp_thermal_ids[] = {
+ 	{ X86_VENDOR_INTEL, X86_FAMILY_ANY, X86_MODEL_ANY, X86_FEATURE_PTS },
+ 	{}
+@@ -535,7 +510,7 @@ MODULE_DEVICE_TABLE(x86cpu, pkg_temp_the
  
--	if (!phdev->ref_cnt) {
-+	target = cpumask_any_but(topology_core_cpumask(cpu), cpu);
-+	/* This might be the last cpu in this package */
-+	if (target >= nr_cpu_ids) {
- 		thermal_zone_device_unregister(phdev->tzone);
- 		/*
- 		 * Restore original MSR value for package thermal
-@@ -502,7 +484,10 @@ static int pkg_temp_thermal_device_remov
- 			     phdev->start_pkg_therm_high);
- 		list_del(&phdev->list);
- 		kfree(phdev);
-+	} else if (phdev->cpu == cpu) {
-+		phdev->cpu = target;
- 	}
+ static int __init pkg_temp_thermal_init(void)
+ {
+-	int i;
++	int ret;
+ 
+ 	if (!x86_match_cpu(pkg_temp_thermal_ids))
+ 		return -ENODEV;
+@@ -545,12 +520,13 @@ static int __init pkg_temp_thermal_init(
+ 	if (!packages)
+ 		return -ENOMEM;
+ 
+-	cpu_notifier_register_begin();
+-	for_each_online_cpu(i)
+-		if (get_core_online(i))
+-			goto err_ret;
+-	__register_hotcpu_notifier(&pkg_temp_thermal_notifier);
+-	cpu_notifier_register_done();
++	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "thermal/x86_pkg:online",
++				pkg_thermal_cpu_online,	pkg_thermal_cpu_offline);
++	if (ret < 0)
++		goto err;
 +
- 	mutex_unlock(&phy_dev_list_mutex);
++	/* Store the state for module exit */
++	pkg_thermal_hp_state = ret;
  
+ 	platform_thermal_package_notify = pkg_thermal_notify;
+ 	platform_thermal_package_rate_control = pkg_thermal_rate_control;
+@@ -559,28 +535,18 @@ static int __init pkg_temp_thermal_init(
+ 	pkg_temp_debugfs_init();
  	return 0;
-@@ -520,12 +505,6 @@ static int get_core_online(unsigned int
- 			return -ENODEV;
- 		if (pkg_temp_thermal_device_add(cpu))
- 			return -ENODEV;
--	} else {
--		mutex_lock(&phy_dev_list_mutex);
--		++phdev->ref_cnt;
--		pr_debug("get_core_online: cpu %d ref_cnt %d\n",
--						cpu, phdev->ref_cnt);
--		mutex_unlock(&phy_dev_list_mutex);
- 	}
- 	INIT_DELAYED_WORK(&per_cpu(pkg_temp_thermal_threshold_work, cpu),
- 			pkg_temp_thermal_threshold_work_fn);
-@@ -615,10 +594,9 @@ static void __exit pkg_temp_thermal_exit
- 	mutex_lock(&phy_dev_list_mutex);
- 	list_for_each_entry_safe(phdev, n, &phy_dev_list, list) {
- 		/* Retore old MSR value for package thermal interrupt */
--		wrmsr_on_cpu(phdev->first_cpu,
--			MSR_IA32_PACKAGE_THERM_INTERRUPT,
--			phdev->start_pkg_therm_low,
--			phdev->start_pkg_therm_high);
-+		wrmsr_on_cpu(phdev->cpu, MSR_IA32_PACKAGE_THERM_INTERRUPT,
-+			     phdev->start_pkg_therm_low,
-+			     phdev->start_pkg_therm_high);
- 		thermal_zone_device_unregister(phdev->tzone);
- 		list_del(&phdev->list);
- 		kfree(phdev);
+ 
+-err_ret:
+-	for_each_online_cpu(i)
+-		put_core_offline(i);
+-	cpu_notifier_register_done();
++err:
+ 	kfree(packages);
+-	return -ENODEV;
++	return ret;
+ }
+ module_init(pkg_temp_thermal_init)
+ 
+ static void __exit pkg_temp_thermal_exit(void)
+ {
+-	int i;
+-
+ 	platform_thermal_package_notify = NULL;
+ 	platform_thermal_package_rate_control = NULL;
+ 
+-	cpu_notifier_register_begin();
+-	__unregister_hotcpu_notifier(&pkg_temp_thermal_notifier);
+-	for_each_online_cpu(i)
+-		put_core_offline(i);
+-	cpu_notifier_register_done();
+-
++	cpuhp_remove_state(pkg_thermal_hp_state);
+ 	debugfs_remove_recursive(debugfs);
+ 	kfree(packages);
+ }
+
+
