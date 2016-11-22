@@ -1,101 +1,94 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Tue, 22 Nov 2016 14:28:46 +0000
-Message-ID: <d49837a4-a49d-f152-4242-632f42879b27@nvidia.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
- <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
- <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
- <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
- <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
- <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
- <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
- <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
- <CAPDyKFq0iVHEhwVbFZNQAMSw-W8YHk5Qc2EA2NSWkMux5SEnmw@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 1/2] power: supply: sbs-battery: use fixed device name
+Date: Tue, 22 Nov 2016 16:23:48 +0100
+Message-ID: <20161122152348.ip3gz3mea4fgrejl@earth>
+References: <1479751491-8849-1-git-send-email-nicolas.saenz@prodys.net>
+ <1479751491-8849-2-git-send-email-nicolas.saenz@prodys.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFq0iVHEhwVbFZNQAMSw-W8YHk5Qc2EA2NSWkMux5SEnmw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="mdiunlqrmlj3n3hx"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:50328 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933052AbcKVPXz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 22 Nov 2016 10:23:55 -0500
+Content-Disposition: inline
+In-Reply-To: <1479751491-8849-2-git-send-email-nicolas.saenz@prodys.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Nicola Saenz Julienne <nicolas.saenz@prodys.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
-On 22/11/16 13:31, Ulf Hansson wrote:
-> On 22 November 2016 at 12:12, Jon Hunter <jonathanh@nvidia.com> wrote:
->> On 16/11/16 12:53, Rafael J. Wysocki wrote:
+--mdiunlqrmlj3n3hx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-...
+Hi,
 
->>> There is a design limitation to that, however.
->>>
->>> The PM domain concept really is about intercepting the flow of PM
->>> callbacks for a device in order to carry out additional operations,
->>> not covered by the bus type or driver.  That's why there is only one
->>> set of PM domain callbacks per device and I don't quite see how and
->>> why it would be useful to add more of them in there.
->>
->> Sorry for the delay.
->>
->> We do, however, support the nesting of power-domains to allow more than
->> one power-domain to be controlled for a device. For the current
->> implementations that use nested power-domains, I am not sure if the
->> power-domains are truly nested or just describing a relationship between
->> power-domains.
->>
->> Nesting power-domains could also work for the Tegra XHCI device.
->> However, I don't wish to statically nest the power-domains in
->> device-tree where they are defined so they are always nested, because
->> this may not be always necessary. However, I would rather the client of
->> the power-domains specify which power-domains they require and
->> dynamically nested the power-domains at runtime. This is slightly
->> different to what I proposed in this RFC, but it is not really beyond
->> the bounds of what we support today IMO. What is missing is a means to
->> do this dynamically and not statically.
-> 
-> Hmm, going back to the original post for this thread.
-> 
-> This more or less sounds very similar as the case for when Rajendra
-> described the problem for the video decode block in msm8996, except
-> that in this case you already have couple of different struct devices
-> available that for you could deploy runtime PM.
+On Mon, Nov 21, 2016 at 07:04:50PM +0100, Nicola Saenz Julienne wrote:
+> The current device name for sbs-battery is derived from it's i2c address.
+> This is not acceptable if we want to be able to trigger the
+> "external_power_changed()" routine from a charger driver.
+>=20
+> Signed-off-by: Nicola Saenz Julienne <nicolas.saenz@prodys.net>
+> ---
+>  drivers/power/supply/sbs-battery.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sb=
+s-battery.c
+> index 8bb2eb3..9565c696 100644
+> --- a/drivers/power/supply/sbs-battery.c
+> +++ b/drivers/power/supply/sbs-battery.c
+> @@ -740,6 +740,7 @@ static void sbs_delayed_work(struct work_struct *work)
+>  }
+> =20
+>  static const struct power_supply_desc sbs_default_desc =3D {
+> +	.name =3D "sbs-battery",
+>  	.type =3D POWER_SUPPLY_TYPE_BATTERY,
+>  	.properties =3D sbs_properties,
+>  	.num_properties =3D ARRAY_SIZE(sbs_properties),
+> @@ -762,11 +763,6 @@ static int sbs_probe(struct i2c_client *client,
+>  	if (!sbs_desc)
+>  		return -ENOMEM;
+> =20
+> -	sbs_desc->name =3D devm_kasprintf(&client->dev, GFP_KERNEL, "sbs-%s",
+> -			dev_name(&client->dev));
+> -	if (!sbs_desc->name)
+> -		return -ENOMEM;
+> -
+>  	chip =3D devm_kzalloc(&client->dev, sizeof(struct sbs_info), GFP_KERNEL=
+);
+>  	if (!chip)
+>  		return -ENOMEM;
 
-In this case there is only one device, so ...
+NAK. This is not ok for systems using multiple sbs-batteries.
+Also please read:
 
-> Then, wouldn't it be possible to assign a parent/child relationship
-> for these devices, each device has its own corresponding PM domain -
-> instead of having to dynamically nest PM domains.
+Documentation/devicetree/bindings/power/supply/power_supply.txt
 
-... no that will not work in this case unless we create some sort of
-dummy parent device but I was hoping to avoid that.
+-- Sebastian
 
-> Runtime PM will help to make sure parent devices are always active
-> when child devices also are active.
-> 
->>
->> By the way, I am not sure if you are suggesting that for devices that
->> may need multiple power-domains we should architect the driver
->> differently and split it up in some way such that we have a power-domain
->> per device. But for the case of the Tegra XHCI it is quite complex
->> because the driver loads firmware which runs on a micro-controller and
->> we need to manage the various power-domains that are used.
-> 
-> Again, if it's possible to model the topology by using parent/child
-> devices, and deploy runtime PM for them, then we shouldn't need more
-> than one PM domain per device. I am not sure that works here though,
-> but just and idea.
+--mdiunlqrmlj3n3hx
+Content-Type: application/pgp-signature; name="signature.asc"
 
-It is really not too different from how we nest power-domains today. In
-fact I can manually nest them and add them to the device in the driver
-with the existing genpd APIs. However, I don't have a meaningful way to
-describe the power-domains that are used by the device in DT because
-there is more than one.
+-----BEGIN PGP SIGNATURE-----
 
-Cheers
-Jon
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlg0YvwACgkQ2O7X88g7
++poeORAAhtw/xJvqINf2fhMqrUqH6KrY/Uy7d97TlIWkbfrtIn5MxnC6PCiXARBD
+PdN8kQVy4hN7TLwzcWGLfN6RUULC4APRtSSLPA0ssBmRjeLZ4Ha28JwqwYAT6jR7
+aFQ6TxMHdKZ/ct42TKNmAATgF5/xtgqBkf6pJqbTSjDmfWEu4BPTA5KL6vHoacPO
+ka06235BL9YQSIejLMu4V0pnCFQYvDE+iK64IgOf9T8bvjVytQrnNXB5Ku80BfXj
+XpLxg+/kF6Wv5VwXQh508ld//dwBLkSfNcBz3AtrE/OJfxH+yyImmWnZ++RNBTRf
+jN2ccdlzF/vfh6A5FvYZjwEEQsBFKdxxn/Df+8C2Ss3pPfNTzhaicxRk1aTE2PYh
+9E2yiLnUESGVlmAMr6W8/UNXExz3EFAuPd5R82SQIMYfejK2saVry64na3fL4FrP
+T/4+Gd7rj9LugbLqHORm1ymabU70uQnqz4oX0bmcp+69Ic7Aa9ypWrb9g3z+NXH4
+6s5hNKHGHmgHBBsbANEarc9kDeDsWW5XK54e+TJ81C0c2egG1HnVKAvyiiygWhfq
++fA1wyi+nuifrW7Ebt2bQkRYMBssPelVjCiKY/uOjKrJJViyrnQF43rFf8Va4t4o
+ZsXjU6C4Or4xwlA6T4E86MFHkMSz3YIwZGx50aYRRLBL1Ch+nmA=
+=KDkP
+-----END PGP SIGNATURE-----
 
--- 
-nvpublic
+--mdiunlqrmlj3n3hx--
