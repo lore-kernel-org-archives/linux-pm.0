@@ -1,141 +1,83 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Tue, 22 Nov 2016 14:05:50 +0100
-Message-ID: <CAPDyKFo4okrLLM+HVKTOn8pDvwO5aRKCYnyznt+Vrokp64yjqQ@mail.gmail.com>
-References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
- <57F5E986.40704@codeaurora.org> <8ba7aa10-0c2f-98ca-c7bd-00e1724e5972@nvidia.com>
- <57F60EBE.8010509@codeaurora.org> <91b96909-64bc-db72-6da5-556272565091@nvidia.com>
- <5819AA42.5060603@codeaurora.org> <CAPDyKFpdRzDotofr+0F6gfuWg4hHikEfmxS2aM2D+hmq_JpHRA@mail.gmail.com>
- <582D1696.7000601@codeaurora.org> <4bafcd71-edc9-9ddd-d8c4-093e4d9c58db@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <4bafcd71-edc9-9ddd-d8c4-093e4d9c58db-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sricharan <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Denis Kirjanov <kda@linux-powerpc.org>
+Subject: [PATCH v2] cpufreq, powernv: Disable preemption while checking CPU throttling state throttling state
+Date: Tue, 22 Nov 2016 08:07:05 -0500
+Message-ID: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f196.google.com ([209.85.216.196]:35319 "EHLO
+        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932480AbcKVNIu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 08:08:50 -0500
+Received: by mail-qt0-f196.google.com with SMTP id m48so2047256qta.2
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 05:08:50 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, ego@linux.vnet.ibm.com, shilpa.bhat@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, Denis Kirjanov <kda@linux-powerpc.org>
 
-On 17 November 2016 at 16:39, Stanimir Varbanov
-<stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> Hi,
->
-> On 11/17/2016 04:31 AM, Rajendra Nayak wrote:
->>
->>
->> On 11/16/2016 06:41 PM, Ulf Hansson wrote:
->>> On 2 November 2016 at 09:56, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org> wrote:
->>>> Hi Jon,
->>>>
->>>> On 10/31/2016 04:14 PM, Jon Hunter wrote:
->>>>> Hi Rajendra,
->>>>>
->>>>> On 06/10/16 09:43, Rajendra Nayak wrote:
->>>>>>
->>>>>> On 10/06/2016 01:55 PM, Jon Hunter wrote:
->>>>>>> Hi Rajendra,
->>>>>>>
->>>>>>> On 06/10/16 07:04, Rajendra Nayak wrote:
->>>>>>>>
->>>>>>>> On 09/20/2016 03:58 PM, Jon Hunter wrote:
->>>>>>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
->>>>>>>>> controllers) is partitioned across 3 PM domains which are:
->>>>>>>>> - XUSBA: Superspeed logic (for USB 3.0)
->>>>>>>>> - XUSBB: Device controller
->>>>>>>>> - XUSBC: Host controller
->>>>>>>>>
->>>>>>>>> These power domains are not nested and can be powered-up and down
->>>>>>>>> independently of one another. In practice different scenarios require
->>>>>>>>> different combinations of the power domains, for example:
->>>>>>>>> - Superspeed host: XUSBA and XUSBC
->>>>>>>>> - Superspeed device: XUSBA and XUSBB
->>>>>>>>>
->>>>>>>>> Although it could be possible to logically nest both the XUSBB and XUSBC
->>>>>>>>> domains under the XUSBA, superspeed may not always be used/required and
->>>>>>>>> so this would keep it on unnecessarily.
->>>>>>>>
->>>>>>>> Hey Jon, so does this RFC provide a way to just specify multiple Powerdomains
->>>>>>>> for a device (which then will *all* be powered on/off together) or does
->>>>>>>> it also provide for more granular control of these powerdomains?
->>>>>>>
->>>>>>> Only to specify multiple power-domains for a device and not the later.
->>>>>>>
->>>>>>>> The above statement seems to suggest you would need more granular control
->>>>>>>> of these powerdomains (like keeping XUSBA off in case superspeed it not
->>>>>>>> needed) but I can't seem to figure out how you achieve it with this series.
->>>>>>>
->>>>>>> It is an interesting point but today we have always kept the superspeed
->>>>>>> partition on if the device is configured for superspeed regardless of
->>>>>>> what is actually connected. I will check to see if the h/w would allow
->>>>>>> us to turn it off if a non-superspeed device is in use but I did not
->>>>>>> think so.
->>>>>>>
->>>>>>> Do you have any interesting use-cases that would make use of this or
->>>>>>> require other such enhancements?
->>>>>>
->>>>>> We do have atleast a few devices which need to control multiple power domains,
->>>>>> I will need to look more to see if any of them can be controlled individually.
->>>>>> The downstream code we have models these (powerdomains) as regulators and
->>>>>> the drivers hence have individual control on each (specifying multiple -supply's
->>>>>> in DT)
->>>>>
->>>>> Were you able to check to see if you need to have individual control for the power-domains?
->>>>
->>>> I had a look at the Video decode block (for msm8996), which seems to be powered using 3 different
->>>> powerdomains, mainly venus, venus_core0 and venus_core1. The venus PD powers the ARM core
->>>> which runs the firmware, while the venus_core0 and venus_core1 power the encode/decode logic,
->>>> so for things like firmware image loading you ideally need only venus PD to be ON, but during
->>>> an encode/decode operation you would need all 3 to be ON.
->>>
->>> Isn't there a scenario when encoding *or* decoding happens, not always both?
->>>
->>> If so, doesn't that mean you may have venus + venus_core0 powered and
->>> in some other case venus + venus_core1 powered?
->>>
->>>> The downstream driver turns *all* of them together, and does not control them individually.
->>>> For upstream, the way we have it working (the driver is not merged) is by having venus be the parent
->>>> of venus_core0 and venus_core0 as the parent of venus_core1, and having venus_core1 mentioned as
->>>> the powerdomain for the video decode block in DT.
->>>>
->>>> So in summary, there is still no need to control them individually, but given there is no way to
->>>> specify more than one powerdomain for a given device, we are ending up hooking up some
->>>> parent/child relations in the powerdomain code.
->>>>
->>>
->>> I think a better solution would be to model the video decode block as
->>> three struct devices.
->>>
->>> 1) The main ARM device, attached to the venus PM domain.
->>> 2) The encoder device, having the main device assigned as its parent
->>> and being attached to the venus_core0 PM domain.
->>> 3) The decoder device, having the main device assigned as its parent
->>> and being attached to the venus_core1 PM domain.
->>>
->>> Then there is no need to specific a  PM domain hierarchy (which seems
->>> to be the issue here), but instead only the parent/child relationships
->>> between the struct devices.
->>>
->>> Moreover, as you deploy runtime PM for these devices, you can more
->>> easily distinguish which device you need to operate on
->>> (pm_runtime_get|put*()) depending on what particular operations you
->>> want to do (encode, decode etc).
->>
->> Stan, is this something you think is possible to do, given the way the
->> vidc driver is designed? This is mainly for 8996 which has 3 different
->> powerdomains associated with the video decode block.
->
-> Even if it is possible it will be difficult for many reasons.
->
-> On the other side, current design (firmware) doesn't expect kernel
-> driver to have control over venus_core0 and venus_core1 pm domains. The
-> firmware manages those two pm domains internally and the only thing
-> which we need to do is to prepare those domains (and follow the power up
-> sequence) to be in hardware control mode. So I think the best we could
-> do is to model those two power domains as genpd subdomains of the parent
-> venus pm domain.
+With preemption turned on we can read incorrect throttling state while being switched
+to CPU on a different chip.
+The following BUG_() was hit while running the 4.8-rc5 kernel compiled
+with CONFIG_PREEMPT_DEBUG on a POWER machine.
 
-Okay, so that was easy then. Why all the fuzz? :-)
 
-Kind regards
-Uffe
+    [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+    [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+    [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+    [   67.701038] Call Trace:
+    [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+    [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+    [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+    [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+    [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+    [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+    [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+    [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+    [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+    [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+    [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+    [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+    [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+    [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+
+The task which updates the cpu-frequency checks if the chip was
+throttled. However, it does so without protecting itself against
+preemption. Hence, if the task is preempted and woken up on a CPU on
+another chip, it can end up updating the throttle statistics of the
+incorrect chip.
+
+This patch fixes the issue by ensuring that the throttle_check is
+performed with preemption disabled.
+
+Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
+---
+
+v2: added patch description
+
+drivers/cpufreq/powernv-cpufreq.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index d3ffde8..a84724e 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -647,8 +647,14 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 	if (unlikely(rebooting) && new_index != get_nominal_index())
+ 		return 0;
+ 
+-	if (!throttled)
++	if (!throttled) {
++		/* we don't want to be preempted while
++		 * checking if the CPU frequency has been throttled
++		 */
++		preempt_disable();
+ 		powernv_cpufreq_throttle_check(NULL);
++		preempt_enable();
++	}
+ 
+ 	cur_msec = jiffies_to_msecs(get_jiffies_64());
+ 
+-- 
+1.8.3.1
+
