@@ -1,70 +1,64 @@
-From: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Subject: Re: [PATCH 1/3] thermal: handle get_temp() errors properly
-Date: Tue, 22 Nov 2016 14:27:13 -0800
-Message-ID: <20161122222712.GA53509@google.com>
-References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
- <20161119034158.GA26405@localhost.localdomain>
- <20161119053014.GA58324@google.com>
- <1479801145.2360.24.camel@intel.com>
- <20161122110045.GB2018@localhost.localdomain>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpufreq, powernv: Disable preemption while checking
+ CPU throttling state throttling state
+Date: Tue, 22 Nov 2016 23:44:58 +0100
+Message-ID: <CAJZ5v0jPhGHsUPHsfMyzxktC_1YMhxdXEmCZO6+_kt6YaJ9fxg@mail.gmail.com>
+References: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20161122110045.GB2018-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Barber <smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:36774 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934976AbcKVWp3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 17:45:29 -0500
+Received: by mail-wm0-f65.google.com with SMTP id m203so7239336wma.3
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 14:44:59 -0800 (PST)
+In-Reply-To: <1479820025-15855-1-git-send-email-kda@linux-powerpc.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Denis Kirjanov <kda@linux-powerpc.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, akshay.adiga@linux.vnet.ibm.com
 
-On Tue, Nov 22, 2016 at 03:00:47AM -0800, Eduardo Valentin wrote:
-> On Tue, Nov 22, 2016 at 03:52:25PM +0800, Zhang Rui wrote:
-> > On Fri, 2016-11-18 at 21:30 -0800, Brian Norris wrote:
-> > > On Fri, Nov 18, 2016 at 07:41:59PM -0800, Eduardo Valentin wrote:
-> > > > I would prefer we consider the patch I sent
-> > > > some time ago:
-> > > > https://patchwork.kernel.org/patch/7876381/
-> > > Honestly I didn't look that deeply into the framework here (and I
-> > > also
-> > > don't use CONFIG_THERMAL_EMULATION), I was just fixing something that
-> > > was obviously wrong.
-> 
-> Yeah, but that is why we need people to look the code considering all
-> features. :-)
+On Tue, Nov 22, 2016 at 2:07 PM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
+> With preemption turned on we can read incorrect throttling state while being switched
+> to CPU on a different chip.
+> The following BUG_() was hit while running the 4.8-rc5 kernel compiled
+> with CONFIG_PREEMPT_DEBUG on a POWER machine.
+>
+>
+>     [   67.700897] BUG: using smp_processor_id() in preemptible [00000000] code: cat/7343
+>     [   67.700988] caller is .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.700998] CPU: 13 PID: 7343 Comm: cat Not tainted 4.8.0-rc5-dirty #1
+>     [   67.701038] Call Trace:
+>     [   67.701066] [c0000007d25b75b0] [c000000000971378] .dump_stack+0xe4/0x150 (unreliable)
+>     [   67.701153] [c0000007d25b7640] [c0000000005162e4] .check_preemption_disabled+0x134/0x150
+>     [   67.701238] [c0000007d25b76e0] [c0000000007b63ac] .powernv_cpufreq_throttle_check+0x2c/0x710
+>     [   67.701322] [c0000007d25b7790] [c0000000007b6d18] .powernv_cpufreq_target_index+0x288/0x360
+>     [   67.701407] [c0000007d25b7870] [c0000000007acee4] .__cpufreq_driver_target+0x394/0x8c0
+>     [   67.701491] [c0000007d25b7920] [c0000000007b22ac] .cpufreq_set+0x7c/0xd0
+>     [   67.701565] [c0000007d25b79b0] [c0000000007adf50] .store_scaling_setspeed+0x80/0xc0
+>     [   67.701650] [c0000007d25b7a40] [c0000000007ae270] .store+0xa0/0x100
+>     [   67.701723] [c0000007d25b7ae0] [c0000000003566e8] .sysfs_kf_write+0x88/0xb0
+>     [   67.701796] [c0000007d25b7b70] [c0000000003553b8] .kernfs_fop_write+0x178/0x260
+>     [   67.701881] [c0000007d25b7c10] [c0000000002ac3cc] .__vfs_write+0x3c/0x1c0
+>     [   67.701954] [c0000007d25b7cf0] [c0000000002ad584] .vfs_write+0xc4/0x230
+>     [   67.702027] [c0000007d25b7d90] [c0000000002aeef8] .SyS_write+0x58/0x100
+>     [   67.702101] [c0000007d25b7e30] [c00000000000bfec] system_call+0x38/0xfc
+>
+> The task which updates the cpu-frequency checks if the chip was
+> throttled. However, it does so without protecting itself against
+> preemption. Hence, if the task is preempted and woken up on a CPU on
+> another chip, it can end up updating the throttle statistics of the
+> incorrect chip.
+>
+> This patch fixes the issue by ensuring that the throttle_check is
+> performed with preemption disabled.
+>
+> Fixes: 09a972d16209 ("cpufreq: powernv: Report cpu frequency throttling")
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Denis Kirjanov <kda@linux-powerpc.org>
 
-Well, there are bugfixes and there are features. My patch fixed the bug
-in the simplest way possible; it didn't break CONFIG_THERMAL_EMULATION
-any further than it already was, and it'll still work if get_temp()
-doesn't return an error.
+That's already queued up for v4.10, you don't have to resend it.
 
-I'd say your patch is essentially adding a feature, and IMO that's not
-the best way to fix a bug. You can fix the bug and *then* add the
-feature.
-
-Anyway, I'm not going to tell you how to run your subsystem. If your
-patch goes through, that's probably just as well.
-
-[...]
-
-> > hmmm, I forgot why I missed this one in the end.
-> > Eduardo,
-> > would you mind refresh and resend the patch?
-> 
-> Yeah sure. I have at least three extra patch sets on thermal core on
-> my queue. But I would like to get first the thermal sysfs reorg in
-> first. This fix is one of the changes that will go on top of the thermal
-> sysfs reorg.
-
-So, the bugfix depends on feature work? I guess I'll check back in
-another year to see what the status of the bugfix is :)
-
-Brian
+Thanks,
+Rafael
