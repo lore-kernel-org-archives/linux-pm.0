@@ -1,141 +1,207 @@
 From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH v8 0/8] Support Intel Turbo Boost Max Technology 3.0
-Date: Tue, 22 Nov 2016 12:23:52 -0800
-Message-ID: <cover.1479844244.git.tim.c.chen@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
+Subject: [PATCH v8 1/8] sched: Extend scheduler's asym packing
+Date: Tue, 22 Nov 2016 12:23:53 -0800
+Message-ID: <0e73ae12737dfaafa46c07066cc7c5d3f1675e46.1479844244.git.tim.c.chen@linux.intel.com>
+References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+In-Reply-To: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
 Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-With Intel Turbo Boost Max Technology 3.0 (ITMT), single-threaded
-performance is optimized by identifying processor's fastest
-core and running critical workloads on it.
+We generalize the scheduler's asym packing to provide an ordering
+of the cpu beyond just the cpu number.  This allows the use of the
+ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+sched domain. The preference is defined with the cpu priority
+given by arch_asym_cpu_priority(cpu).
 
-Refer to:
-http://www.intel.com/content/www/us/en/architecture-and-technology/turbo-boost/turbo-boost-max-technology.html
+We also record the most preferred cpu in a sched group when
+we build the cpu's capacity for fast lookup of preferred cpu
+during load balancing.
 
-This patchset consist of all changes required to support ITMT feature:
-- Use CPPC information in Intel P-State driver to get performance information
-- Scheduler enhancements
-- cppc lib patches (split in to a seprate series)
+Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+---
+ include/linux/sched.h |  4 ++++
+ kernel/sched/core.c   | 15 ++++++++++++++
+ kernel/sched/fair.c   | 54 +++++++++++++++++++++++++++++++++++----------------
+ kernel/sched/sched.h  |  6 ++++++
+ 4 files changed, 62 insertions(+), 17 deletions(-)
 
-This featured can be enabled by writing at runtime
-# echo 1 > /proc/sys/kernel/sched_itmt_enabled
-This featured can be disabled by writing at runtime
-# echo 0 > /proc/sys/kernel/sched_itmt_enabled
-
-Change Log:
-v8:
-1. Remove arch_asym_max_cpu_and function and implement the logic
-explicitly in nohz_kick_needed. 
-
-v7:
-1. ITMT3.0 is enabled by default also for multi-socket systems supporting
-the feature.  Remove single socket restriction.  
-2. Add proper ASYM_PACKING check for high priority idle cpu in
-nohz_kick_needed.
-3. Nulling of itmt_sysctl_header after sysctl table
-unregistration.
-4. Minor code format cleanups.
-5. Fix build issue on i386
-
-v6:
-- Split ITMT support control by OS into sched_set_itmt_support and
-sched_clear_itmt_support functions.
-- Return error when we set sysctl_sched_itmt_enabled, if system
-does not support ITMT, or when we cannot create sysctl table entry.
-- Minor code clean up and moving definition of sched_core_priority
-to top of file.
-- Rebase on v4.9-rc1
-
-v5:
-- Simplify intel_pstate for enabling ITMT feature
-- Put x86_sched_itmt_flags related functions under proper
-CONFIG_SCHED_MC/SMT flags
-- Comment to note that rebuild_sched_domain is not needed after updating
-CPU priorities.
-- Define sysctl_sched_itmt_enabled to 0 when ITMT is not used in
-arch/x86/include/asm/topology.h
-- Dropped patch "Fix numa in package topology bug", as this is
-already applied
-
-v4:
-- Split x86 multi-node numa topology bug fix and setting
-of SD_ASYM flag for ITMT topology into 2 patches
-- Split the sysctl changes for ITMT enablement and setting of ITMT
-capability/core priorities into 2 patches.
-- Avoid unnecessary rebuild of sched domains when ITMT sysctl or
-capabilities are updated.
-- Fix missing stub function for topology_max_packages for !SMP case.
-- Rename set_sched_itmt() to sched_set_itmt_support().
-- Various updates to itmt.c to eliminate goto and make logic tighter.
-- Various change logs and comments update.
-- intel_pstate: Split function to process cppc and enable ITMT
-- intel_pstate: Just keep the cppc_perf information till we use CPPC for HWP
-
-v3:
-- Fix race clash when more than one program are enabling/disabling ITMT
-- Remove group_priority_cpu macro to simplify code.
-- Error reported by 0-day for compile issue on ARM
-
-v2
-- The patchset is split into two parts so that CPPC changes can be merged first
- 1. Only ACPI CPPC changes (It is posted separately)
- 2. ITMT changes (scheduler and Intel P-State)
-
-- Changes in patch: sched,x86: Enable Turbo Boost Max Technology
- 1. Use arch_update_cpu_topology to indicate need to completely
-    rebuild sched domain when ITMT related sched domain flags change
- 2. Enable client (single node) platform capable of ITMT with ITMT
-    scheduling by default
- 3. Implement arch_asym_cpu_priority to provide the cpu priority
-    value to scheduler for asym packing.
- 4. Fix a compile bug for i386 architecture.
-
-- Changes in patch: sched: Extend scheduler's asym packing
- 1. Use arch_asym_cpu_priority() to provide cpu priority
-    value used for asym packing to the scheduler.
-
-- Changes in acpi: bus: Enable HWP CPPC objects and
-  acpi: bus: Set _OSC for diverse core support
-  Minor code cleanup by removing #ifdef
-- Changes in Kconfig for Intel P-State
-  Avoid building CPPC lib for i386 for issue reported by 0-day
-
-- Feature is enabled by default for single socket systems
-
-
-Rafael J. Wysocki (1):
-  cpufreq: intel_pstate: Use CPPC to get max performance
-
-Srinivas Pandruvada (2):
-  acpi: bus: Enable HWP CPPC objects
-  acpi: bus: Set _OSC for diverse core support
-
-Tim Chen (5):
-  sched: Extend scheduler's asym packing
-  x86/topology: Define x86's arch_update_cpu_topology
-  x86: Enable Intel Turbo Boost Max Technology 3.0
-  x86/sysctl: Add sysctl for ITMT scheduling feature
-  x86/sched: Add SD_ASYM_PACKING flags to x86 ITMT CPU
-
- arch/x86/Kconfig                |   9 ++
- arch/x86/include/asm/topology.h |  32 ++++++
- arch/x86/kernel/Makefile        |   1 +
- arch/x86/kernel/itmt.c          | 215 ++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/smpboot.c       |  39 +++++++-
- drivers/acpi/bus.c              |  10 ++
- drivers/cpufreq/Kconfig.x86     |   1 +
- drivers/cpufreq/intel_pstate.c  |  56 ++++++++++-
- include/linux/acpi.h            |   1 +
- include/linux/sched.h           |   4 +
- kernel/sched/core.c             |  15 +++
- kernel/sched/fair.c             |  54 ++++++----
- kernel/sched/sched.h            |   6 ++
- 13 files changed, 421 insertions(+), 22 deletions(-)
- create mode 100644 arch/x86/kernel/itmt.c
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 348f51b..ca02475 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1057,6 +1057,10 @@ static inline int cpu_numa_flags(void)
+ }
+ #endif
+ 
++int arch_asym_cpu_priority(int cpu);
++int arch_asym_max_cpu_and(const struct cpumask *mask1,
++			  const struct cpumask *mask2);
++
+ struct sched_domain_attr {
+ 	int relax_domain_level;
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 154fd68..d54c6e1 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6301,7 +6301,22 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	WARN_ON(!sg);
+ 
+ 	do {
++		int cpu, max_cpu = -1;
++
+ 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
++
++		if (!(sd->flags & SD_ASYM_PACKING))
++			goto next;
++
++		for_each_cpu(cpu, sched_group_cpus(sg)) {
++			if (max_cpu < 0)
++				max_cpu = cpu;
++			else if (sched_asym_prefer(cpu, max_cpu))
++				max_cpu = cpu;
++		}
++		sg->asym_prefer_cpu = max_cpu;
++
++next:
+ 		sg = sg->next;
+ 	} while (sg != sd->groups);
+ 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index c242944..af97dc8 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -100,6 +100,17 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+  */
+ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
+ 
++#ifdef CONFIG_SMP
++/*
++ * For asym packing, by default the lower numbered cpu has higher priority.
++ */
++int __weak arch_asym_cpu_priority(int cpu)
++{
++	return -cpu;
++}
++
++#endif
++
+ #ifdef CONFIG_CFS_BANDWIDTH
+ /*
+  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+@@ -7113,16 +7124,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
+ 	if (env->idle == CPU_NOT_IDLE)
+ 		return true;
+ 	/*
+-	 * ASYM_PACKING needs to move all the work to the lowest
+-	 * numbered CPUs in the group, therefore mark all groups
+-	 * higher than ourself as busy.
++	 * ASYM_PACKING needs to move all the work to the highest
++	 * prority CPUs in the group, therefore mark all groups
++	 * of lower priority than ourself as busy.
+ 	 */
+-	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
++	if (sgs->sum_nr_running &&
++	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
+ 		if (!sds->busiest)
+ 			return true;
+ 
+-		/* Prefer to move from highest possible cpu's work */
+-		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
++		/* Prefer to move from lowest priority cpu's work */
++		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
++				      sg->asym_prefer_cpu))
+ 			return true;
+ 	}
+ 
+@@ -7274,8 +7287,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
+ 	if (!sds->busiest)
+ 		return 0;
+ 
+-	busiest_cpu = group_first_cpu(sds->busiest);
+-	if (env->dst_cpu > busiest_cpu)
++	busiest_cpu = sds->busiest->asym_prefer_cpu;
++	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
+ 		return 0;
+ 
+ 	env->imbalance = DIV_ROUND_CLOSEST(
+@@ -7613,10 +7626,11 @@ static int need_active_balance(struct lb_env *env)
+ 
+ 		/*
+ 		 * ASYM_PACKING needs to force migrate tasks from busy but
+-		 * higher numbered CPUs in order to pack all tasks in the
+-		 * lowest numbered CPUs.
++		 * lower priority CPUs in order to pack all tasks in the
++		 * highest priority CPUs.
+ 		 */
+-		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
++		if ((sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+ 			return 1;
+ 	}
+ 
+@@ -8465,7 +8479,7 @@ static inline bool nohz_kick_needed(struct rq *rq)
+ 	unsigned long now = jiffies;
+ 	struct sched_domain_shared *sds;
+ 	struct sched_domain *sd;
+-	int nr_busy, cpu = rq->cpu;
++	int nr_busy, i, cpu = rq->cpu;
+ 	bool kick = false;
+ 
+ 	if (unlikely(rq->idle_balance))
+@@ -8516,12 +8530,18 @@ static inline bool nohz_kick_needed(struct rq *rq)
+ 	}
+ 
+ 	sd = rcu_dereference(per_cpu(sd_asym, cpu));
+-	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
+-				  sched_domain_span(sd)) < cpu)) {
+-		kick = true;
+-		goto unlock;
+-	}
++	if (sd) {
++		for_each_cpu(i, sched_domain_span(sd)) {
++			if (i == cpu ||
++			    !cpumask_test_cpu(i, nohz.idle_cpus_mask))
++				continue;
+ 
++			if (sched_asym_prefer(i, cpu)) {
++				kick = true;
++				goto unlock;
++			}
++		}
++	}
+ unlock:
+ 	rcu_read_unlock();
+ 	return kick;
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 055f935..cd3d413 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -539,6 +539,11 @@ struct dl_rq {
+ 
+ #ifdef CONFIG_SMP
+ 
++static inline bool sched_asym_prefer(int a, int b)
++{
++	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++}
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
+@@ -905,6 +910,7 @@ struct sched_group {
+ 
+ 	unsigned int group_weight;
+ 	struct sched_group_capacity *sgc;
++	int asym_prefer_cpu;		/* cpu of highest priority in group */
+ 
+ 	/*
+ 	 * The CPUs this group covers.
 -- 
 2.5.5
-
