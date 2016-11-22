@@ -1,113 +1,28 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state binding
-Date: Tue, 22 Nov 2016 19:34:59 +0100
-Message-ID: <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
-References: <cover.1479459752.git.viresh.kumar@linaro.org> <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
- <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop> <20161122031717.GE10014@vireshk-i7>
- <m260nfz8mr.fsf@baylibre.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [patch V2 00/12] thermal/x86_pkg_temp: Sanitize hotplug and
+ locking
+Date: Tue, 22 Nov 2016 19:51:02 +0000
+Message-ID: <1479844260.6544.220.camel@intel.com>
+References: <20161122175256.922158782@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f171.google.com ([209.85.210.171]:35613 "EHLO
-        mail-wj0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934335AbcKVSls (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 13:41:48 -0500
-Received: by mail-wj0-f171.google.com with SMTP id v7so46644001wjy.2
-        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 10:41:37 -0800 (PST)
-In-Reply-To: <m260nfz8mr.fsf@baylibre.com>
+Received: from mga03.intel.com ([134.134.136.65]:18331 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934262AbcKVTvE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 22 Nov 2016 14:51:04 -0500
+In-Reply-To: <20161122175256.922158782@linutronix.de>
+Content-Language: en-US
+Content-ID: <1549F8526619444E82D694111F7A3912@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nayak Rajendra <rnayak@codeaurora.org>
+To: "tglx@linutronix.de" <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "rt@linutronix.de" <rt@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "bp@alien8.de" <bp@alien8.de>, "x86@kernel.org" <x86@kernel.org>
 
-On 22 November 2016 at 19:12, Kevin Hilman <khilman@baylibre.com> wrote:
-> Viresh Kumar <viresh.kumar@linaro.org> writes:
->
->> On 21-11-16, 09:07, Rob Herring wrote:
->>> On Fri, Nov 18, 2016 at 02:53:12PM +0530, Viresh Kumar wrote:
->>> > Some platforms have the capability to configure the performance state of
->>> > their Power Domains. The performance levels are represented by positive
->>> > integer values, a lower value represents lower performance state.
->>> >
->>> > The power-domains until now were only concentrating on the idle state
->>> > management of the device and this needs to change in order to reuse the
->>> > infrastructure of power domains for active state management.
->>> >
->>> > This patch introduces a new optional property for the consumers of the
->>> > power-domains: domain-performance-state.
->>> >
->>> > If the consumers don't need the capability of switching to different
->>> > domain performance states at runtime, then they can simply define their
->>> > required domain performance state in their node directly. Otherwise the
->>> > consumers can define their requirements with help of other
->>> > infrastructure, for example the OPP table.
->>> >
->>> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>> > ---
->>> >  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
->>> >  1 file changed, 6 insertions(+)
->>> >
->>> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->>> > index e1650364b296..db42eacf8b5c 100644
->>> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
->>> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>> > @@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
->>> >   - power-domains : A phandle and PM domain specifier as defined by bindings of
->>> >                     the power controller specified by phandle.
->>> >
->>> > +Optional properties:
->>> > +- domain-performance-state: A positive integer value representing the minimum
->>> > +  performance level (of the parent domain) required by the consumer for its
->>> > +  working. The integer value '1' represents the lowest performance level and the
->>> > +  highest value represents the highest performance level.
->>>
->>> How does one come up with the range of values?
->>
->> Why would we need a range here? The value here represents the minimum 'state'
->> and the assumption is that everything above that level would be fine. So the
->> range is automatically: domain-performance-state -> MAX.
->>
->>> It seems like you are
->>> just making up numbers. Couldn't the domain performance level be an OPP
->>> in the sense that it is a collection of clock frequencies and voltage
->>> settings?
->>
->> The clock is going to be handled by the device itself (at least for the case we
->> have today) and the performance-state lies with the power-domain which is
->> configured separately. If the performance level includes both clk and voltage,
->> then why would we need to show the clock rates in the DT ? Wouldn't a
->> performance level be enough in such cases?
->
-> I think the question is: what does the performance-level of a domain
-> actually mean?  Or, what are the units?
->
-> Depending on the SoC, there's probably a few things this could mean.  It
-> might mean is that an underlying bus/interconnect can be configured to
-> guarantee a specific bandwidth or throughput.  That in turn might mean
-> that that bus/interconnect might have to be set at a specific
-> frequency/voltage.
->
-> In your case, IIUC, you're just passing some magic value to some
-> firmware running on a micro-controller, but under the hood that uC is
-> probably configuring a frequency/voltage someplace.
-
-In the case described by Viresh, it's only about setting the voltage
-of a power domain that is shared between different devices. these
-devices wants to run at different frequency (set by the devices) but
-we have to select a Volateg value that will match with the constraint
-of all devices (in this case the highest voltage)
-
->
-> So, if we're going to have a generic DT binding for this, it needs to be
-> something that's useful on platforms that are not using magic numbers
-> managed by a uC as well.
->
-> Kevin
->
->
->
->
->
->
->
->
+T24gVHVlLCAyMDE2LTExLTIyIGF0IDE3OjU3ICswMDAwLCBUaG9tYXMgR2xlaXhuZXIgd3JvdGU6
+DQo+IENoYW5nZXMgdnMuIFYxOiBGaXggdGhlIHBhY2thZ2UgcmVtb3ZhbCB3cmVja2FnZSByZXBv
+cnRlZCBieSBTcmluaXZhcw0KPiANCg0KSSBoYXZlbid0IGxvb2tlZCBhdCBpbmRpdmlkdWFsIHBh
+dGNoIGJ1dCB0ZXN0ZWQgdGhlIHNlcmllcyBhcyBhIHdob2xlLsKgDQoNClNvIFJ1aSwgeW91IGNh
+biBhZGQNCg0KVGVzdGVkLWJ5OiBTcmluaXZhcyBQYW5kcnV2YWRhIDxzcmluaXZhcy5wYW5kcnV2
+YWRhQGxpbnV4LmludGVsLmNvbT4NCg0KVGhhbmtzLA0KU3Jpbml2YXM=
