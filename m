@@ -1,56 +1,49 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH] RFC: mmc: block: replace semaphore with freezing
-Date: Tue, 22 Nov 2016 09:54:18 +0100
-Message-ID: <CACRpkdagS-7kaYCd2Sq0vLR8+19Mmckx=CuCqPv+HheRk8Cm7w@mail.gmail.com>
-References: <1479293464-4576-1-git-send-email-linus.walleij@linaro.org>
- <CAJZ5v0gCDQXebsQoCYJY5FyE6oJUw4s6sQrNbKLuxpLvOe2RoA@mail.gmail.com>
- <CACRpkdY+jdU4ETuMJsY-efSkjwE0fWWRZoyCyrYAs_GxUo-DhQ@mail.gmail.com> <17679227.zg8zl3jhbr@wuerfel>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 00/12] thermal/x86_pkg_temp: Sanitize yet another hotplug
+ and locking trainwreck
+Date: Tue, 22 Nov 2016 10:05:50 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1611221001120.3521@nanos>
+References: <20161117231435.891545908@linutronix.de>  <1479758532.6544.169.camel@intel.com>  <alpine.DEB.2.20.1611212228220.3677@nanos> <1479770177.6544.195.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <17679227.zg8zl3jhbr@wuerfel>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>, Binoy Jayan <binoy.jayan@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Chunyan Zhang <zhang.chunyan@linaro.org>, Baolin Wang <baolin.wang@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, Jiri Kosina <jikos@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1479770177.6544.195.camel@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "peterz@infradead.org" <peterz@infradead.org>, "Zhang, Rui" <rui.zhang@intel.com>, "rt@linutronix.de" <rt@linutronix.de>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "bp@alien8.de" <bp@alien8.de>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 16, 2016 at 5:32 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wednesday, November 16, 2016 4:20:47 PM CET Linus Walleij wrote:
->> On Wed, Nov 16, 2016 at 1:46 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>
->> > Well, we had a session at the KS regarding usage of the freezer on
->> > kernel threads and the conclusion was to get rid of that (as opposed
->> > to freezing user space, which is necessary IMO).  So this change would
->> > go in the opposite direction.
->>
->> Aha so I should not make this thread look like everyone else, instead
->> everyone else should look like this thread, haha
->>
->> Ah well, I'll just drop it.
->
-> It would still be good to remove the semaphore and do something else,
-> as we also want to remove all semaphores. ;-)
->
-> We could check "mq->flags & MMC_QUEUE_SUSPENDED" in the kthread to see
-> if the queue is currently suspended, and otherwise go to sleep there,
-> and then call wake_up() in the resume function.
+On Mon, 21 Nov 2016, Pandruvada, Srinivas wrote:
+> Your change below fixes the crash issue. Now I tested a case where the
+> last cpu offlined from a package, it removed thermal zone and added
+> zone back once any cpu from the package onlined. So this is working.
+> 
+> I want to try to run some workload on those cpu to bump up the
+> temperature and check interrupts. I am hitting some issue unrelated to
+> this change may be. I onlined three cpus from the package 1.
+> 
+> [189443.567728] smpboot: Booting Node 1 Processor 15 APIC 0x2e
+> [189656.625947] smpboot: Booting Node 1 Processor 8 APIC 0x20
+> [189829.545851] smpboot: Booting Node 1 Processor 24 APIC 0x21
+> 
+> But I can't schedule anything on those CPUs. For example now can't run
+> turbostat, it complains
+> "
+> turbostat: re-initialized with num_cpus 19
+> Could not migrate to CPU 8
+> "
+> 
+> Same with
+> 
+> #taskset 0x100 stress -c 1
+> taskset: failed to set pid 0's affinity: Invalid argument
+> 
+> I am on the latest linux-pm/linux-next tree on this server. I will
+> switch to latest main line and try.
 
-Hm... so simply:
+That must be something unrelated. I can use turbostat and taskset after
+doing the above.
 
-if (mq->flags & MMC_QUEUE_SUSPENDED)
-  schedule();
+Thanks,
 
-?
-
-This whole kthread business is pretty messy. I would prefer if I could
-just convert it to a workqueue. Just that it's not very simple the way
-it speculates around in the request queue from the block layer.
-
-> While looking at that code, I just noticed that access to
-> mq->flags is racy and should be fixed as well.
-
-I guess we should take the queue lock &q->lock around accessing
-the flags.
-
-Yours,
-Linus Walleij
+	tglx
