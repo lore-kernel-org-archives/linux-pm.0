@@ -1,140 +1,66 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v7 1/8] sched: Extend scheduler's asym packing
-Date: Tue, 22 Nov 2016 11:09:59 +0100
-Message-ID: <20161122100959.GC3124@twins.programming.kicks-ass.net>
-References: <cover.1478805832.git.tim.c.chen@linux.intel.com>
- <0c494b134a93e89ebf48e45719a6b864d4ac96b7.1478805832.git.tim.c.chen@linux.intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL V2] Thermal SoC management updates for v4.10-rc1 #1
+Date: Tue, 22 Nov 2016 02:48:56 -0800
+Message-ID: <20161122104854.GA3011@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <0c494b134a93e89ebf48e45719a6b864d4ac96b7.1478805832.git.tim.c.chen@linux.intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 10, 2016 at 02:36:33PM -0800, Tim Chen wrote:
-> +/*
-> + * Return the lowest numbered (or highest priority) cpu
-> + * in the intersection of two cpu masks.  If no cpu is
-> + * is in both masks, nr_cpu_ids will be returned.
-> + */
-> +int __weak arch_asym_max_cpu_and(const struct cpumask *mask1,
-> +				 const struct cpumask *mask2)
-> +{
-> +	return cpumask_first_and(mask1, mask2);
-> +}
-> +#endif
+Hello Rui,
 
-> @@ -8516,10 +8541,14 @@ static inline bool nohz_kick_needed(struct rq *rq)
->  	}
->  
->  	sd = rcu_dereference(per_cpu(sd_asym, cpu));
-> -	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
-> -				  sched_domain_span(sd)) < cpu)) {
-> -		kick = true;
-> -		goto unlock;
-> +	if (sd) {
-> +		asym_idle_cpu = arch_asym_max_cpu_and(nohz.idle_cpus_mask,
-> +						sched_domain_span(sd));
-> +		if (asym_idle_cpu < nr_cpu_ids &&
-> +		        sched_asym_prefer(asym_idle_cpu, cpu)) {
-> +			kick = true;
-> +			goto unlock;
-> +		}
->  	}
+Please considering pull the following driver fixes for 4.10-rc1. This is now
+base on your current master.
 
+The following changes since commit b58ec8b5824717875b844a9e8cc62fc6eb5fd289:
 
-Not a big fan of that part.. would not something like the below cure
-that?
+  Merge tag 'arm64-fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux (2016-11-07 10:16:23 -0800)
 
-It would be slightly less optimal for Power7 but would actually be
-faster (on average) for the ITMT case, but most importantly, it does
-away with that extra weak function.
+are available in the git repository at:
 
----
- arch/x86/kernel/itmt.c |   16 ----------------
- kernel/sched/fair.c    |   29 ++++++++++-------------------
- 2 files changed, 10 insertions(+), 35 deletions(-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
 
---- a/arch/x86/kernel/itmt.c
-+++ b/arch/x86/kernel/itmt.c
-@@ -76,22 +76,6 @@ int arch_asym_cpu_priority(int cpu)
- 	return per_cpu(sched_core_priority, cpu);
- }
- 
--int arch_asym_max_cpu_and(const struct cpumask *mask1,
--			  const struct cpumask *mask2)
--{
--	int cpu;
--	int max_priority, max_cpu = nr_cpu_ids;
--
--	for_each_cpu_and(cpu, mask1, mask2) {
--		if (max_cpu == nr_cpu_ids ||
--		    arch_asym_cpu_priority(cpu) > max_priority) {
--			max_cpu = cpu;
--			max_priority = arch_asym_cpu_priority(cpu);
--		}
--	}
--	return max_cpu;
--}
--
- /**
-  * sched_set_itmt_core_prio() - Set CPU priority based on ITMT
-  * @prio:	Priority of cpu core
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -102,16 +102,6 @@ int __weak arch_asym_cpu_priority(int cp
- 	return -cpu;
- }
- 
--/*
-- * Return the lowest numbered (or highest priority) cpu
-- * in the intersection of two cpu masks.  If no cpu is
-- * is in both masks, nr_cpu_ids will be returned.
-- */
--int __weak arch_asym_max_cpu_and(const struct cpumask *mask1,
--				 const struct cpumask *mask2)
--{
--	return cpumask_first_and(mask1, mask2);
--}
- #endif
- 
- #ifdef CONFIG_CFS_BANDWIDTH
-@@ -8758,9 +8748,8 @@ static inline bool nohz_kick_needed(stru
- 	unsigned long now = jiffies;
- 	struct sched_domain_shared *sds;
- 	struct sched_domain *sd;
--	int nr_busy, cpu = rq->cpu;
-+	int nr_busy, i, cpu = rq->cpu;
- 	bool kick = false;
--	int asym_idle_cpu;
- 
- 	if (unlikely(rq->idle_balance))
- 		return false;
-@@ -8811,15 +8800,17 @@ static inline bool nohz_kick_needed(stru
- 
- 	sd = rcu_dereference(per_cpu(sd_asym, cpu));
- 	if (sd) {
--		asym_idle_cpu = arch_asym_max_cpu_and(nohz.idle_cpus_mask,
--						sched_domain_span(sd));
--		if (asym_idle_cpu < nr_cpu_ids &&
--		    sched_asym_prefer(asym_idle_cpu, cpu)) {
--			kick = true;
--			goto unlock;
-+		for_each_cpu(i, sched_domain_span(sd)) {
-+			if (i == cpu ||
-+			    !cpumask_test_cpu(i, nohz.idle_cpus_mask))
-+				continue;
-+
-+			if (sched_asym_prefer(i, cpu)) {
-+				kick = true;
-+				goto unlock;
-+			}
- 		}
- 	}
--
- unlock:
- 	rcu_read_unlock();
- 	return kick;
+for you to fetch changes up to 2caa24332dd241549cd5af91b6d8d5d500b7d286:
+
+  devfreq_cooling: pass a pointer to devfreq in the power model callbacks (2016-11-22 02:44:40 -0800)
+
+----------------------------------------------------------------
+Javi Merino (1):
+      devfreq_cooling: pass a pointer to devfreq in the power model callbacks
+
+Javier Martinez Canillas (3):
+      thermal: max77620: Fix module autoload
+      thermal: tango: Fix module autoload
+      thermal: db8500: Fix module autoload
+
+Leo Yan (1):
+      thermal: hisilicon: fix for dependency
+
+Luis Henriques (1):
+      thermal: ti-soc-thermal: add missing clk_put()
+
+Lukasz Luba (1):
+      devfreq_cooling: make the structs devfreq_cooling_xxx visible for all
+
+Shawn Lin (2):
+      thermal: rockchip: improve the warning log
+      dt-bindings: rockchip-thermal: fix the misleading description
+
+Stephen Boyd (1):
+      thermal: qcom-spmi: Treat reg property as a single cell
+
+ Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 3 +++
+ drivers/thermal/Kconfig                                        | 4 +++-
+ drivers/thermal/db8500_thermal.c                               | 1 +
+ drivers/thermal/devfreq_cooling.c                              | 5 +++--
+ drivers/thermal/max77620_thermal.c                             | 1 +
+ drivers/thermal/qcom-spmi-temp-alarm.c                         | 6 +++---
+ drivers/thermal/rockchip_thermal.c                             | 7 ++-----
+ drivers/thermal/tango_thermal.c                                | 1 +
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c                    | 5 +++--
+ include/linux/devfreq_cooling.h                                | 9 ++++++---
+ 10 files changed, 26 insertions(+), 16 deletions(-)
