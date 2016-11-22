@@ -1,122 +1,105 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/3] thermal: handle get_temp() errors properly
-Date: Tue, 22 Nov 2016 15:52:25 +0800
-Message-ID: <1479801145.2360.24.camel@intel.com>
+Subject: Re: [PATCH 2/3] thermal: rockchip: improve conversion error messages
+Date: Tue, 22 Nov 2016 15:57:16 +0800
+Message-ID: <1479801436.2360.26.camel@intel.com>
 References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
-         <20161119034158.GA26405@localhost.localdomain>
-         <20161119053014.GA58324@google.com>
+         <1479513177-81504-2-git-send-email-briannorris@chromium.org>
+         <b6da9490-9a27-4330-7988-cb25724ba345@rock-chips.com>
+         <378ade3d-a980-58e4-5253-c16702c74bf3@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:45895 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751986AbcKVHw3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 22 Nov 2016 02:52:29 -0500
-In-Reply-To: <20161119053014.GA58324@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <378ade3d-a980-58e4-5253-c16702c74bf3@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Caesar Wang <caesar.upstream@gmail.com>, Caesar Wang <wxt@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Barber <smbarber@chromium.org>, linux-rockchip@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, Caesar Wang <wxt@rock-chips.com>, Stephen Barber <smbarber@chromium.org>
 
-Hi, Brian,
-
-On Fri, 2016-11-18 at 21:30 -0800, Brian Norris wrote:
-> Hi,
-> 
-> On Fri, Nov 18, 2016 at 07:41:59PM -0800, Eduardo Valentin wrote:
+On Tue, 2016-11-22 at 09:51 +0800, Caesar Wang wrote:
+> 在 2016年11月19日 11:31, Caesar Wang 写道:
 > > 
-> > On Fri, Nov 18, 2016 at 03:52:55PM -0800, Brian Norris wrote:
+> > Brian,
+> > 
+> > 在 2016年11月19日 07:52, Brian Norris 写道:
 > > > 
-> > > If using CONFIG_THERMAL_EMULATION, there's a corner case where we
-> > > might
-> > > get an error from the zone's get_temp() callback, but we'll
-> > > ignore that
-> > > and keep using its value. Let's just error out properly instead.
+> > > These error messages don't give much information about what went
+> > > wrong.
+> > > It would be nice, for one, to see what invalid temperature was
+> > > being
+> > > requested when conversion fails. It's also good to return an
+> > > error when
+> > > we can't handle a conversion properly.
+> > > 
+> > > While we're at it, fix the grammar too.
 > > > 
 > > > Signed-off-by: Brian Norris <briannorris@chromium.org>
 > > > ---
-> > >  drivers/thermal/thermal_core.c | 3 +++
-> > >  1 file changed, 3 insertions(+)
+> > > Note: it'd probably be even nicer to know which sensor this was,
+> > > but 
+> > > we've
+> > > kinda abstracted that one away by this point...
 > > > 
-> > > diff --git a/drivers/thermal/thermal_core.c
-> > > b/drivers/thermal/thermal_core.c
-> > > index 911fd964c742..0fa497f10d25 100644
-> > > --- a/drivers/thermal/thermal_core.c
-> > > +++ b/drivers/thermal/thermal_core.c
-> > > @@ -494,6 +494,8 @@ int thermal_zone_get_temp(struct
-> > > thermal_zone_device *tz, int *temp)
-> > >  	mutex_lock(&tz->lock);
-> > >  
-> > >  	ret = tz->ops->get_temp(tz, temp);
-> > > +	if (ret)
-> > > +		goto exit_unlock;
-> > Yeah, but the follow through is intentional, if I am not mistaken.
-> OK...but it has a bug. It potentially utilizes an uninitialized value
-> for *temp.
-> 
-Agreed.
+> > >   drivers/thermal/rockchip_thermal.c | 7 +++++--
+> > >   1 file changed, 5 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/drivers/thermal/rockchip_thermal.c 
+> > > b/drivers/thermal/rockchip_thermal.c
+> > > index e227a9f0acf7..35554d146b9d 100644
+> > > --- a/drivers/thermal/rockchip_thermal.c
+> > > +++ b/drivers/thermal/rockchip_thermal.c
+> > > @@ -424,7 +424,8 @@ static u32 rk_tsadcv2_temp_to_code(struct 
+> > > chip_tsadc_table table,
+> > >       }
+> > >     exit:
+> > > -    pr_err("Invalid the conversion, error=%d\n", error);
+> > > +    pr_err("%s: invalid temperature, temp=%d error=%d\n",
+> > > +        __func__, temp, error);
+> > I have do some similar for rockchip inside thermal driver.  Forget
+> > to 
+> > send for upstream. :(
+> > exit:
+> >     pr_err("%s: Invalid conversion table: code=%d,
+> > temperature=%d\n",
+> >            __func__, error, temp);
 > > 
 > > > 
-> > >  
-> > >  	if (IS_ENABLED(CONFIG_THERMAL_EMULATION) && tz-
-> > > >emul_temperature) {
-> > Even if the driver is not able to read real temperature, but emul
-> > temp
-> > is configured, then there is still opportunity to report the
-> > emulated
-> > temperature.
-> OK, maybe, but you should avoid doing this comparison then:
+> > >       return error;
+> > >   }
+> > >   @@ -475,7 +476,9 @@ static int rk_tsadcv2_code_to_temp(struct 
+> > > chip_tsadc_table table, u32 code,
+> > >           }
+> > >           break;
+> > >       default:
+> > > -        pr_err("Invalid the conversion table\n");
+> > > +        pr_err("%s: invalid conversion table, mode=%d\n",
+> > > +            __func__, table.mode);
+> > > +        return -EINVAL;
+> CHECK: Alignment should match open parenthesis
+> #428: FILE: drivers/thermal/rockchip_thermal.c:428:
+> +    pr_err("%s: invalid temperature, temp=%d error=%d\n",
+> +        __func__, temp, error);
 > 
-> 513                 if (!ret && *temp < crit_temp)
-> 514                         *temp = tz->emul_temperature;
+> CHECK: Alignment should match open parenthesis
+> #480: FILE: drivers/thermal/rockchip_thermal.c:480:
+> +        pr_err("%s: invalid conversion table, mode=%d\n",
+> +            __func__, table->mode);
 > 
-> Note that 'ret' might be 0 (from the calls to ->get_trip_type()), and
-> then
-> you're comparing with the uninitialized value of *temp. So you need
-> some
-> solution that accounts for this and decides to ignore the real
-> temperature properly.
 > 
-right.
-> > 
-> > > 
-> > >  		for (count = 0; count < tz->trips; count++) {
-> > > @@ -514,6 +516,7 @@ int thermal_zone_get_temp(struct
-> > > thermal_zone_device *tz, int *temp)
-> > >  			*temp = tz->emul_temperature;
-> > And if you check the lines at the bottom of the loop, you will see
-> > that,
-> > in the fail case, we will stil compare to what is the content of
-> > temp,
-> > which might be problematic.
-> Yes...are you saying the same thing I am above?
+> I'm ready to resend all rockchip thermal patches. (contain them)
 > 
-> > 
-> > I would prefer we consider the patch I sent
-> > some time ago:
-> > https://patchwork.kernel.org/patch/7876381/
-> Honestly I didn't look that deeply into the framework here (and I
-> also
-> don't use CONFIG_THERMAL_EMULATION), I was just fixing something that
-> was obviously wrong.
-> 
-> But on first read, that patch looks good to me -- although it'd be
-> good
-> to note the uninitialized value fix in the comit log. Any reason that
-> didn't end up getting merged? It looks like it got reviewed, and
-> you're
-> a thermal subsystem maintainer...
-> 
-hmmm, I forgot why I missed this one in the end.
-Eduardo,
-would you mind refresh and resend the patch?
+so I will ignore patch 2/3 and 3/3 for now and wait for your new patch
+set.
 
 thanks,
 rui
-> Brian
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> > > 
+> > >       }
+> > >         /*
+> > 
+> > 
+> > _______________________________________________
+> > Linux-rockchip mailing list
+> > Linux-rockchip@lists.infradead.org
+> > http://lists.infradead.org/mailman/listinfo/linux-rockchip
