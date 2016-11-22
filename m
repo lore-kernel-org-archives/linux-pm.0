@@ -1,57 +1,79 @@
-From: Caesar Wang <caesar.upstream@gmail.com>
-Subject: Re: [PATCH 2/3] thermal: rockchip: improve conversion error messages
-Date: Tue, 22 Nov 2016 10:33:27 +0800
-Message-ID: <81605141-dd5b-1714-6486-3381e616a992@gmail.com>
-References: <1479513177-81504-1-git-send-email-briannorris@chromium.org>
- <1479513177-81504-2-git-send-email-briannorris@chromium.org>
- <b6da9490-9a27-4330-7988-cb25724ba345@rock-chips.com>
- <378ade3d-a980-58e4-5253-c16702c74bf3@gmail.com>
- <20161122021506.GA103691@google.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state
+ binding
+Date: Tue, 22 Nov 2016 08:47:17 +0530
+Message-ID: <20161122031717.GE10014@vireshk-i7>
+References: <cover.1479459752.git.viresh.kumar@linaro.org>
+ <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
+ <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161122021506.GA103691@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Caesar Wang <wxt@rock-chips.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Barber <smbarber@chromium.org>, linux-rockchip@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nayak Rajendra <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-在 2016年11月22日 10:15, Brian Norris 写道:
-> On Tue, Nov 22, 2016 at 09:51:23AM +0800, Caesar Wang wrote:
->> CHECK: Alignment should match open parenthesis
->> #428: FILE: drivers/thermal/rockchip_thermal.c:428:
->> +    pr_err("%s: invalid temperature, temp=%d error=%d\n",
->> +        __func__, temp, error);
->>
->> CHECK: Alignment should match open parenthesis
->> #480: FILE: drivers/thermal/rockchip_thermal.c:480:
->> +        pr_err("%s: invalid conversion table, mode=%d\n",
->> +            __func__, table->mode);
-> What patch are you checking? I ran mine through checkpatch, and there
-> are no problems.
+On 21-11-16, 09:07, Rob Herring wrote:
+> On Fri, Nov 18, 2016 at 02:53:12PM +0530, Viresh Kumar wrote:
+> > Some platforms have the capability to configure the performance state of
+> > their Power Domains. The performance levels are represented by positive
+> > integer values, a lower value represents lower performance state.
+> > 
+> > The power-domains until now were only concentrating on the idle state
+> > management of the device and this needs to change in order to reuse the
+> > infrastructure of power domains for active state management.
+> > 
+> > This patch introduces a new optional property for the consumers of the
+> > power-domains: domain-performance-state.
+> > 
+> > If the consumers don't need the capability of switching to different
+> > domain performance states at runtime, then they can simply define their
+> > required domain performance state in their node directly. Otherwise the
+> > consumers can define their requirements with help of other
+> > infrastructure, for example the OPP table.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > ---
+> >  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> > index e1650364b296..db42eacf8b5c 100644
+> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> > @@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
+> >   - power-domains : A phandle and PM domain specifier as defined by bindings of
+> >                     the power controller specified by phandle.
+> >  
+> > +Optional properties:
+> > +- domain-performance-state: A positive integer value representing the minimum
+> > +  performance level (of the parent domain) required by the consumer for its
+> > +  working. The integer value '1' represents the lowest performance level and the
+> > +  highest value represents the highest performance level.
+> 
+> How does one come up with the range of values?
 
-That  just checkcode on Chromeos kernelv4.4,  that trivial things :)
-$chromiumos/src/third_party/kernel/v4.4$ checkcode 
-drivers/thermal/rockchip_thermal.c
-CHECK: Alignment should match open parenthesis
-#428: FILE: drivers/thermal/rockchip_thermal.c:428:
-+    pr_err("%s: invalid temperature, temp=%d error=%d\n",
-+        __func__, temp, error);
-...
+Why would we need a range here? The value here represents the minimum 'state'
+and the assumption is that everything above that level would be fine. So the
+range is automatically: domain-performance-state -> MAX.
 
-vi drivers/thermal/rockchip_thermal.c +428 or  vi 
-drivers/thermal/rockchip_thermal.c +480,
+> It seems like you are 
+> just making up numbers. Couldn't the domain performance level be an OPP 
+> in the sense that it is a collection of clock frequencies and voltage 
+> settings?
 
-> Did you perhaps mangle the tabs into spaces when you
-> saved the patch?
->
->> I'm ready to resend all rockchip thermal patches. (contain them)
-> I see no reason to resend so far; the only criticism was on the 1st
-> patch (a non-critical patch to the core thermal code; the others are
-> relatively independent, as long as you don't care that I'm adding
-> another error return without fixing up the broken
-> CONFIG_THERMAL_EMULATION support).
->
-> Brian
->
+The clock is going to be handled by the device itself (at least for the case we
+have today) and the performance-state lies with the power-domain which is
+configured separately. If the performance level includes both clk and voltage,
+then why would we need to show the clock rates in the DT ? Wouldn't a
+performance level be enough in such cases?
+
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
