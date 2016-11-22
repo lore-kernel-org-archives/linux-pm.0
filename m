@@ -1,56 +1,93 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [alsa-devel] [PATCH 2/9] ALSA: ac97: add an ac97 bus
-Date: Tue, 22 Nov 2016 18:08:17 +0000
-Message-ID: <20161122180817.2gqkjal76smnyp63@sirena.org.uk>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
- <1477510907-23495-3-git-send-email-robert.jarzmik@free.fr>
- <d57cdfba-da22-652d-3d75-6d1b754cf1d5@metafoo.de>
- <87eg2ly8k6.fsf@belgarion.home>
- <5ae15e01-eaaf-4996-27ec-1179041c0268@metafoo.de>
- <87mvh8uywm.fsf@belgarion.home>
- <6b97a129-bd10-b9be-616d-a3ea3b91b103@metafoo.de>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state binding
+Date: Tue, 22 Nov 2016 10:12:28 -0800
+Message-ID: <m260nfz8mr.fsf@baylibre.com>
+References: <cover.1479459752.git.viresh.kumar@linaro.org>
+        <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
+        <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
+        <20161122031717.GE10014@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="7wx2z723wtuxaqym"
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <6b97a129-bd10-b9be-616d-a3ea3b91b103@metafoo.de>
+In-Reply-To: <20161122031717.GE10014@vireshk-i7> (Viresh Kumar's message of
+        "Tue, 22 Nov 2016 08:47:17 +0530")
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lars-Peter Clausen <lars@metafoo.de>
-Cc: Robert Jarzmik <robert.jarzmik@free.fr>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, alsa-devel@alsa-project.org, linux-pm@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nayak Rajendra <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
 
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
---7wx2z723wtuxaqym
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On 21-11-16, 09:07, Rob Herring wrote:
+>> On Fri, Nov 18, 2016 at 02:53:12PM +0530, Viresh Kumar wrote:
+>> > Some platforms have the capability to configure the performance state of
+>> > their Power Domains. The performance levels are represented by positive
+>> > integer values, a lower value represents lower performance state.
+>> > 
+>> > The power-domains until now were only concentrating on the idle state
+>> > management of the device and this needs to change in order to reuse the
+>> > infrastructure of power domains for active state management.
+>> > 
+>> > This patch introduces a new optional property for the consumers of the
+>> > power-domains: domain-performance-state.
+>> > 
+>> > If the consumers don't need the capability of switching to different
+>> > domain performance states at runtime, then they can simply define their
+>> > required domain performance state in their node directly. Otherwise the
+>> > consumers can define their requirements with help of other
+>> > infrastructure, for example the OPP table.
+>> > 
+>> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> > ---
+>> >  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+>> >  1 file changed, 6 insertions(+)
+>> > 
+>> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>> > index e1650364b296..db42eacf8b5c 100644
+>> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>> > @@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
+>> >   - power-domains : A phandle and PM domain specifier as defined by bindings of
+>> >                     the power controller specified by phandle.
+>> >  
+>> > +Optional properties:
+>> > +- domain-performance-state: A positive integer value representing the minimum
+>> > +  performance level (of the parent domain) required by the consumer for its
+>> > +  working. The integer value '1' represents the lowest performance level and the
+>> > +  highest value represents the highest performance level.
+>> 
+>> How does one come up with the range of values?
+>
+> Why would we need a range here? The value here represents the minimum 'state'
+> and the assumption is that everything above that level would be fine. So the
+> range is automatically: domain-performance-state -> MAX.
+>
+>> It seems like you are 
+>> just making up numbers. Couldn't the domain performance level be an OPP 
+>> in the sense that it is a collection of clock frequencies and voltage 
+>> settings?
+>
+> The clock is going to be handled by the device itself (at least for the case we
+> have today) and the performance-state lies with the power-domain which is
+> configured separately. If the performance level includes both clk and voltage,
+> then why would we need to show the clock rates in the DT ? Wouldn't a
+> performance level be enough in such cases?
 
-On Thu, Nov 10, 2016 at 12:38:40PM +0100, Lars-Peter Clausen wrote:
-> On 11/09/2016 10:27 PM, Robert Jarzmik wrote:
+I think the question is: what does the performance-level of a domain
+actually mean?  Or, what are the units?
 
-> > here, ie. that the rescan is a bug, or if it's more an "Occam's razor"
-> > discussion ?
+Depending on the SoC, there's probably a few things this could mean.  It
+might mean is that an underlying bus/interconnect can be configured to
+guarantee a specific bandwidth or throughput.  That in turn might mean
+that that bus/interconnect might have to be set at a specific
+frequency/voltage.
 
-> Maybe we can just leave the rescanning out for now and think about how to
-> best handle it when the need arises.
+In your case, IIUC, you're just passing some magic value to some
+firmware running on a micro-controller, but under the hood that uC is
+probably configuring a frequency/voltage someplace.
 
-Yes, I think that's best - I suspect it'd be something that'd need to be
-triggered by a driver for an AC'97 CODEC doing power management but I
-imagine that if we were going to have such a system we'd have run into
-it already anyway.
+So, if we're going to have a generic DT binding for this, it needs to be
+something that's useful on platforms that are not using magic numbers
+managed by a uC as well.
 
---7wx2z723wtuxaqym
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEcBAABCAAGBQJYNImQAAoJECTWi3JdVIfQZ14H/30yBSAmxlXCbogpUNM79jxX
-3ScUP+q7Ea4Jdgd8sOHVTegLRmdAXHoncxnERXrE2E71n77qU+t0MHb7aiuQfhQW
-ze+EHDH91a4qNQitqMT9EY353ya9lyIPhnbaPrumRHL4SjUQvwo99JrhrbVEWX2l
-u6FdvW7lKi5ZojNR0C+G8VrQr7go2d2HIt37J0mIxtpH7uZaden8JyLZeOZEaixP
-AEEc0zhGjVrZ/JsCtr7umD7Jrh5rqxrdE9pNCW5MgoQFL/7Ar6MDe5k7wXmfyeuG
-Ev1mxu/4YCfi/1vsUO94hniFmcOJwxoiUbvufffba7CyJx+vMIvcUWRWdEKn6pM=
-=IihL
------END PGP SIGNATURE-----
-
---7wx2z723wtuxaqym--
+Kevin
