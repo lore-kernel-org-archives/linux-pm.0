@@ -1,66 +1,62 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [BUG] genpd: domains can suspend asynchronously
-Date: Wed, 23 Nov 2016 14:08:39 +0100
-Message-ID: <CAPDyKFo+MMBhgFYWDGsyWF0+4RvdehSK8452Z_wqATayqO8mRA@mail.gmail.com>
-References: <20161122230724.GA86250@google.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v8 1/8] sched: Extend scheduler's asym packing
+Date: Wed, 23 Nov 2016 14:09:11 +0100
+Message-ID: <20161123130911.GT3092@twins.programming.kicks-ass.net>
+References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+ <0e73ae12737dfaafa46c07066cc7c5d3f1675e46.1479844244.git.tim.c.chen@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:36926 "EHLO
-        mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752295AbcKWNIm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 08:08:42 -0500
-Received: by mail-wm0-f48.google.com with SMTP id t79so22988773wmt.0
-        for <linux-pm@vger.kernel.org>; Wed, 23 Nov 2016 05:08:41 -0800 (PST)
-In-Reply-To: <20161122230724.GA86250@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <0e73ae12737dfaafa46c07066cc7c5d3f1675e46.1479844244.git.tim.c.chen@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-On 23 November 2016 at 00:07, Brian Norris <briannorris@chromium.org> wrote:
-> Hi,
->
-> I reported this previously in the midst of another tangentially-related
-> thread, so it could easily have gotten lost. I thought I'd repeat it
-> here.
->
+On Tue, Nov 22, 2016 at 12:23:53PM -0800, Tim Chen wrote:
+> We generalize the scheduler's asym packing to provide an ordering
+> of the cpu beyond just the cpu number.  This allows the use of the
+> ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+> sched domain. The preference is defined with the cpu priority
+> given by arch_asym_cpu_priority(cpu).
+> 
+> We also record the most preferred cpu in a sched group when
+> we build the cpu's capacity for fast lookup of preferred cpu
+> during load balancing.
+> 
+> Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+
+With the two little edits below:
+
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+
 > ---
->
-> I noticed the genpd code has comments like this scattered all over:
->
->  * This function is only called in "noirq" and "syscore" stages of system power
->  * transitions, so it need not acquire locks (all of the "noirq" callbacks are
->  * executed sequentially, so it is guaranteed that it will never run twice in
->  * parallel).
->
-> Isn't that no longer true, now that noirq suspend can be asynchronous?
-> Maybe we should grep for the phrase "need not acquire locks" throughout
-> the kernel, in order to find low-hanging fruit for race conditions :)
+>  include/linux/sched.h |  4 ++++
+>  kernel/sched/core.c   | 15 ++++++++++++++
+>  kernel/sched/fair.c   | 54 +++++++++++++++++++++++++++++++++++----------------
+>  kernel/sched/sched.h  |  6 ++++++
+>  4 files changed, 62 insertions(+), 17 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 348f51b..ca02475 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1057,6 +1057,10 @@ static inline int cpu_numa_flags(void)
+>  }
+>  #endif
+>  
+> +int arch_asym_cpu_priority(int cpu);
 
-Thanks for the reminder. I have been starring at the comment for
-several times, but never come around to send a patch. I will fix it
-asap.
+extern
 
-Moreover, genpd should also respect driver's ->suspend|resume_noirq()
-callbacks(), which is another related change that should be done.
-Let's me fix this as well.
+> +int arch_asym_max_cpu_and(const struct cpumask *mask1,
+> +			  const struct cpumask *mask2);
+> +
 
->
-> ---
->
-> Anyway, I was considering hacking my way through the subsystem here
-> sometime, but there's no guarantee. And in case someone else wanted to
-> fix this up, I figured I'd least put the report out there.
+And that needs to go too; that function no longer exists.
 
-I can deal with, and allow me to add your reported-by/suggested-by tag.
-
->
-> NB: I noticed there are more drivers enabling asynchronous suspend these
-> days. Some USB, SDIO, and MMC host controllers seem ripe for triggering
-> bugs here.
->
-> Brian
-
-Kind regards
-Uffe
+>  struct sched_domain_attr {
+>  	int relax_domain_level;
+>  };
