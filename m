@@ -1,87 +1,59 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+From: Brian Norris <briannorris@chromium.org>
 Subject: Re: [PATCH 3/5] thermal: rockchip: fixes invalid temperature case
-Date: Wed, 23 Nov 2016 10:06:15 +0800
-Message-ID: <7168a98b-be91-8180-f9c0-8d54f5535075@rock-chips.com>
+Date: Tue, 22 Nov 2016 18:33:26 -0800
+Message-ID: <20161123023325.GB122654@google.com>
 References: <1479818088-6007-1-git-send-email-wxt@rock-chips.com>
  <1479818088-6007-4-git-send-email-wxt@rock-chips.com>
- <20161122205737.GB45366@google.com> <20161122215240.GA52900@google.com>
+ <20161122205737.GB45366@google.com>
+ <20161122215240.GA52900@google.com>
+ <7168a98b-be91-8180-f9c0-8d54f5535075@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <20161122215240.GA52900-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f47.google.com ([74.125.83.47]:34243 "EHLO
+        mail-pg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751532AbcKWCd3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 21:33:29 -0500
+Received: by mail-pg0-f47.google.com with SMTP id x23so63522pgx.1
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 18:33:29 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <7168a98b-be91-8180-f9c0-8d54f5535075@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: heiko@sntech.de, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, rui.zhang@intel.com
 
-5ZyoIDIwMTblubQxMeaciDIz5pelIDA1OjUyLCBCcmlhbiBOb3JyaXMg5YaZ6YGTOgo+IE9uIFR1
-ZSwgTm92IDIyLCAyMDE2IGF0IDEyOjU3OjM3UE0gLTA4MDAsIEJyaWFuIE5vcnJpcyB3cm90ZToK
-Pj4gT24gVHVlLCBOb3YgMjIsIDIwMTYgYXQgMDg6MzQ6NDZQTSArMDgwMCwgQ2Flc2FyIFdhbmcg
-d3JvdGU6Cj4+PiBUaGUgdGVtcF90b19jb2RlIGZ1bmN0aW9uIHdpbGwgcmV0dXJuIDAgd2hlbiB3
-ZSBzZXQgdGhlIHRyaXAgcG9pbnRzIHZhbHVlCj4+PiBvciB2YWxpZCB0ZW1wZXJhdHVyZS4KPj4g
-SSdtIG5vdCBxdWl0ZSBzdXJlIHdoYXQgeW91IG1lYW4gYnkgIndoZW4gd2Ugc2V0IHRoZSB0cmlw
-IHBvaW50cyB2YWx1ZQo+PiBvciB2YWxpZCB0ZW1wZXJhdHVyZS4iIERvIHlvdSBtZWFuICJ3aGVu
-IHdlIHNldCB0aGUgdHJpcCBwb2ludCdzIHZhbHVlCj4+IHRvIGFuIGludmFsaWQgdGVtcGVyYXR1
-cmUiPwo+Pgo+PiBBc3N1bWluZyB0aGF0J3Mgd2hhdCB5b3UgbWVhbnQuLi4KCkFsbW9zdCwgSSB3
-aWxsIGltcHJvdmUgdGhlIGNvbW1pdC4KCj4+Cj4+PiBUaGlzIHBhdGNoIHdpbGwgcHJldmVudCB0
-aGlzIGNhc2UgaGFwcGVuaW5nLgo+PiBUaGlzIGlzIGdvb2QgdG8gY2hhbmdlLCBidXQgSU1PLCBp
-dCdzIGJldHRlciB0byBhY3R1YWxseSBwaWNrIGEgY2xvc2UKPj4gdmFsdWUsIGluc3RlYWQgb2Yg
-dGhlIG1heC4gZS5nLiwgaWYgeW91IHN1cHBvcnQgdGVtcGVyYXR1cmVzIGF0IGRlZ3JlZQo+PiBp
-bnRlcnZhbHMgb2YgODAsIDg1LCA5MCwgLi4uLCAxMjUsIGJ1dCBzb21lb25lIGxpc3RzIDgyIGlu
-IHRoZSBkZXZpY2UKPj4gdHJlZSwgd2Ugc2hvdWxkIHBpY2sgZWl0aGVyIDgwIG9yIDg1LCBub3Qg
-MTI1Lgo+IEkgc2VlIHRoYXQncyB3aGF0IHlvdSdyZSBkb2luZyBpbiBhIHBhdGNoIGxhdGVyIGlu
-IHRoaXMgc2VyaWVzLiBHb29kLgoKWWVhaCwgZmluZCBhbm90aGVyIGlzc3VlIGR1cmluZyB3cml0
-aW5nIHRoaXMgcGF0Y2gsIGFzIHRoZSBwYXRjaFs0LzVdLgoKPgo+Pj4gU2lnbmVkLW9mZi1ieTog
-Q2Flc2FyIFdhbmcgPHd4dEByb2NrLWNoaXBzLmNvbT4KPj4+IC0tLQo+Pj4KPj4+ICAgZHJpdmVy
-cy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyB8IDYgKystLS0tCj4+PiAgIDEgZmlsZSBjaGFu
-Z2VkLCAyIGluc2VydGlvbnMoKyksIDQgZGVsZXRpb25zKC0pCj4+Pgo+Pj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMgYi9kcml2ZXJzL3RoZXJtYWwvcm9j
-a2NoaXBfdGhlcm1hbC5jCj4+PiBpbmRleCA3NjY0ODZmLi41MzVmMWZhIDEwMDY0NAo+Pj4gLS0t
-IGEvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYwo+Pj4gKysrIGIvZHJpdmVycy90
-aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYwo+Pj4gQEAgLTQwMSwxNyArNDAxLDE1IEBAIHN0YXRp
-YyB1MzIgcmtfdHNhZGN2Ml90ZW1wX3RvX2NvZGUoY29uc3Qgc3RydWN0IGNoaXBfdHNhZGNfdGFi
-bGUgKnRhYmxlLAo+Pj4gICAJCQkJICAgaW50IHRlbXApCj4+PiAgIHsKPj4+ICAgCWludCBoaWdo
-LCBsb3csIG1pZDsKPj4+IC0JdTMyIGVycm9yID0gMDsKPj4+ICsJdTMyIGVycm9yID0gdGFibGUt
-PmRhdGFfbWFzazsKPj4+ICAgCj4+PiAgIAlsb3cgPSAwOwo+Pj4gICAJaGlnaCA9IHRhYmxlLT5s
-ZW5ndGggLSAxOwo+Pj4gICAJbWlkID0gKGhpZ2ggKyBsb3cpIC8gMjsKPj4+ICAgCj4+PiAgIAkv
-KiBSZXR1cm4gbWFzayBjb2RlIGRhdGEgd2hlbiB0aGUgdGVtcCBpcyBvdmVyIHRhYmxlIHJhbmdl
-ICovCj4+PiAtCWlmICh0ZW1wIDwgdGFibGUtPmlkW2xvd10udGVtcCB8fCB0ZW1wID4gdGFibGUt
-PmlkW2hpZ2hdLnRlbXApIHsKPj4+IC0JCWVycm9yID0gdGFibGUtPmRhdGFfbWFzazsKPj4+ICsJ
-aWYgKHRlbXAgPCB0YWJsZS0+aWRbbG93XS50ZW1wIHx8IHRlbXAgPiB0YWJsZS0+aWRbaGlnaF0u
-dGVtcCkKPj4+ICAgCQlnb3RvIGV4aXQ7Cj4gSSB3YXMgcmV2aXNpdGluZyB0aGUgbG9naWMgaGVy
-ZSB0aG91Z2gsIGFuZCBJIGRvbid0IHVuZGVyc3RhbmQgeW91cgo+IGVycm9yIGNhc2UuIFlvdSdy
-ZSB0cmVhdGluZyAidG9vIGxvdyIgYW5kICJ0b28gaGlnaCIgdGhlIHNhbWUsIGFuZCBpbgo+IGVp
-dGhlciBjYXNlLCB5b3UncmUgY2hvb3NpbmcgYSB2YWx1ZSBvZiAtPmRhdGFfbWFzay4gVGhhdCBk
-b2Vzbid0IG1ha2UKPiBzZW5zZSB0byBtZSwgZXNwZWNpYWxseSBmb3IgQURDX0RFQ1JFTUVOVCBj
-YXNlcyBsaWtlIHJrMzI4OC4gSW4gdGhhdAo+IGNhc2UsIHlvdSdyZSBwcm9ncmFtbWluZyB0aGUg
-dHJpcCB0byB0aGUgbG93ZXN0IHBvc3NpYmxlIHRlbXBlcmF0dXJlLgoKSSBhZG1pdCB0aGF0J3Mg
-bm90IHBlcmZlY3QsIGJ1dCB0aGF0IHNob3VsZCBjb25mb3JtIHRvIHJlYWxpdHkuCgpXaGljaGV2
-ZXIgaXMgdGhlIGFkYyB2YWx1ZSwgMTJpdCBvciAxMGJpdC4KI2RlZmluZSBUU0FEQ1YyX0RBVEFf
-TUFTSyAgICAgICAgICAgIDB4ZmZmCiNkZWZpbmUgVFNBRENWM19EQVRBX01BU0sgICAgICAgICAg
-ICAweDNmZgoKVGhlICJ0b28gbG93IiBhbmQgInRvbyBoaWdoIiBhcmUgc2FtZSwgdGhhdCBzaG91
-bGQgaW5kaWNhdGUgdGhhdCB0ZW1wZXJhdHVyZSBpcwppbnZhbGlkIG9yIG92ZXIgdGFibGUgcmFu
-Z2UuCgpUaGUgY3VycmVjdCBjb2RlIHdpbGwgcmV0dXJuIHRoZSBtYXggYW5hbG9nIHZhbHVlIHRv
-IHdhcm4gaXQuCi0tLQoKVGhlIHRlbXBlcmF0dXJlIHstNDBDLCAxMjVDfSBpcyBmb3Igcm9ja2No
-aXAgU29DcywgdGhhdCBzaG91bGQgYmUgCnNpbWlsYXIgd2l0aCByZWFsIHdvcmxkJ3MgdGVtcGVy
-YXR1cmUgey1JTlRfTUFYLCBJTlRfTUFYfS4KCi1DYWVzYXIKPgo+IEl0IHNlZW1zIGxpa2UgZWl0
-aGVyIHlvdSBzaG91bGQgbWFrZSB0aGlzIGNvbmRpdGlvbmFsLCBzbyB0aGF0ICJ0b28gbG93Igo+
-IGFuZCAidG9vIGhpZ2giIG1ha2Ugc2FuZSBhbHRlcm5hdGl2ZSBjaG9pY2VzIChsaWtlIE1BWCBv
-ciBNSU4gdGVtcCksIG9yCj4gZWxzZSByZXN0cnVjdHVyZSB0aGlzIHRvIHBhc3MgZXJyb3IgY29k
-ZXMgYmFjayB0byB0aGUgdXBwZXIgbGF5ZXJzLgo+Cj4gQnJpYW4KPgo+Pj4gLQl9Cj4+PiAgIAo+
-Pj4gICAJd2hpbGUgKGxvdyA8PSBoaWdoKSB7Cj4+PiAgIAkJaWYgKHRlbXAgPT0gdGFibGUtPmlk
-W21pZF0udGVtcCkKPj4+IC0tIAo+Pj4gMi43LjQKPj4+Cj4gX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX18KPiBMaW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QK
-PiBMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCj4gaHR0cDovL2xpc3RzLmluZnJh
-ZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1yb2NrY2hpcAoKCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1yb2NrY2hpcCBtYWlsaW5n
-IGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5m
-cmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCg==
+On Wed, Nov 23, 2016 at 10:06:15AM +0800, Caesar Wang wrote:
+> 在 2016年11月23日 05:52, Brian Norris 写道:
+> >On Tue, Nov 22, 2016 at 12:57:37PM -0800, Brian Norris wrote:
+
+> >>>+	if (temp < table->id[low].temp || temp > table->id[high].temp)
+> >>>  		goto exit;
+> >I was revisiting the logic here though, and I don't understand your
+> >error case. You're treating "too low" and "too high" the same, and in
+> >either case, you're choosing a value of ->data_mask. That doesn't make
+> >sense to me, especially for ADC_DECREMENT cases like rk3288. In that
+> >case, you're programming the trip to the lowest possible temperature.
+> 
+> I admit that's not perfect, but that should conform to reality.
+> 
+> Whichever is the adc value, 12it or 10bit.
+> #define TSADCV2_DATA_MASK            0xfff
+> #define TSADCV3_DATA_MASK            0x3ff
+> 
+> The "too low" and "too high" are same, that should indicate that temperature is
+> invalid or over table range.
+> 
+> The currect code will return the max analog value to warn it.
+> ---
+> 
+> The temperature {-40C, 125C} is for rockchip SoCs, that should be
+> similar with real world's temperature {-INT_MAX, INT_MAX}.
+
+IIUC, "too high" should not be interpreted as TSADCV2_DATA_MASK on
+rk3288, should it? That corresponds to -40C, which means you'll be
+triggering the alarm temperature at a very *low* temperature, not a very
+high one, no?
+
+Brian
