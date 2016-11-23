@@ -1,30 +1,80 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 0/3] Stop sched tick in idle injection task
-Date: Wed, 23 Nov 2016 22:45:55 +0100
-Message-ID: <20161123214555.GC3092@twins.programming.kicks-ass.net>
-References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] bq24190_charger: Fix PM runtime use for
+ bq24190_battery_set_property
+Date: Wed, 23 Nov 2016 23:35:33 +0100
+Message-ID: <20161123223533.gmt7joee3kzhjk5p@earth>
+References: <20161115033831.7620-1-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="u4p7jirqhaqww3yg"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:44590 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753438AbcKWVqI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 16:46:08 -0500
+Received: from mail.kernel.org ([198.145.29.136]:57940 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752437AbcKWWfj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 23 Nov 2016 17:35:39 -0500
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
+In-Reply-To: <20161115033831.7620-1-tony@atomide.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Tony Lindgren <tony@atomide.com>
+Cc: "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Wed, Nov 23, 2016 at 10:12:46PM +0100, Rafael J. Wysocki wrote:
-> On Wed, Nov 23, 2016 at 9:13 PM, Jacob Pan
 
-> 
-> Any objections anyone?
-> 
-> If not, I'll queue up this series for 4.10.
+--u4p7jirqhaqww3yg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-1h30 is a bit short to expect people to have even seen this, let alone
-reviewed.
+Hi,
+
+On Mon, Nov 14, 2016 at 07:38:31PM -0800, Tony Lindgren wrote:
+> There's a typo, it should do pm_runtime_get_sync, not put.
+>=20
+> Cc: Mark A. Greer <mgreer@animalcreek.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  drivers/power/supply/bq24190_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
+y/bq24190_charger.c
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1141,7 +1141,7 @@ static int bq24190_battery_set_property(struct powe=
+r_supply *psy,
+> =20
+>  	dev_dbg(bdi->dev, "prop: %d\n", psp);
+> =20
+> -	pm_runtime_put_sync(bdi->dev);
+> +	pm_runtime_get_sync(bdi->dev);
+> =20
+>  	switch (psp) {
+>  	case POWER_SUPPLY_PROP_ONLINE:
+
+Thanks, queued to power-supply's for-next branch. I added
+
+Fixes: d7bf353fd0aa3
+
+-- Sebastian
+
+--u4p7jirqhaqww3yg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlg2GbAACgkQ2O7X88g7
++por6w/8CTAw1hFoS25Wtaq9AdwDX37NREcZyGTWyAxPeTPO/ja1sRdbUhlb7Nn1
+W2J5IF0WCBXcSa0aJTdzYyMJsaSMnU9baUK8VhndxAkdXpfmw4zzZhyuTA+DQ9xT
+TG0ji0bZ3E7g4sxTcItXnKJyZFWvdHLGVch8pCskfglgtSS9+e5NavZI2U5m86ZM
+zZt9S2fgtz48Ui5q8LFzNloQeyQ1MsyLtvv1JPIutcGcnjk0hjGFFodVCrqXLdfH
+DwGM9RR/LFyy7zLxIqkQhZkPsdBhB2mkAYPwGAdbKf7euYUKOV1rEaa+F3RNJ4Tx
+5W1r8w6/wKQTumSZwlNByxj1q/6vITmxQYbesZrfZ2IWTRG4tas7w31J/RXdwNB3
+aQPo5zPUFkZCmrnVrApHdEOprf/0+V0WzS346Ow9hEeNWwlNwpvMvRVwICKRSdnC
+7TdbLfc2RCbacYdRlBecM1Funrx5Bkow/74/HJIn/aHkGF9WnErRBFNGMXQLTwXg
+NYxbkjNLPiZYyBDsC8RYmON3H+S+YOhDLmdxAVqvLi/+Rq7lgDuVzK/SNIlJgeg6
+bMDB7vDTQxnlfuOTtDSlAM5SqlppTSruu79igsqLA/pz2x909yiEzHK/ef1Zw+Cj
+lq7zue0vWnBQPQPE/Qtthflrxecj5zpKwauZGKqy1Iot6J/RJ1g=
+=zk0G
+-----END PGP SIGNATURE-----
+
+--u4p7jirqhaqww3yg--
