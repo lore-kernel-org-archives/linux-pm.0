@@ -1,44 +1,83 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: intel_pstate: Set EPP/EPB to 0 in performance mode
-Date: Wed, 23 Nov 2016 02:41:55 +0100
-Message-ID: <3082292.lE3RZvZN3d@vostro.rjw.lan>
-References: <1479858269-175501-1-git-send-email-srinivas.pandruvada@linux.intel.com> <CAJZ5v0h5Qx-_p2wfAqDjEt4jQ6h86mHCSfuRaewqumGgONGidQ@mail.gmail.com> <1479864022.20426.12.camel@linux.intel.com>
+From: hl <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: Re: [PATCH v1 1/2] PM/devfreq: add suspend frequency support
+Date: Wed, 23 Nov 2016 10:01:06 +0800
+Message-ID: <5834F862.6000603@rock-chips.com>
+References: <1477990029-11062-1-git-send-email-hl@rock-chips.com>
+ <CGME20161101084721epcas4p471cc74df8b12d042d1fac542e5371db8@epcas4p4.samsung.com>
+ <422077764.570918.1478068526663.JavaMail.weblogic@ep1ml102b>
+ <581AE13C.9070706@rock-chips.com>
+ <CAJ0PZbSYZYF6xJ-ut23G+tTXYLCDNpQ8_AJpjTdDGO7VnECMvg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46606 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752790AbcKWBnM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 20:43:12 -0500
-In-Reply-To: <1479864022.20426.12.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <CAJ0PZbSYZYF6xJ-ut23G+tTXYLCDNpQ8_AJpjTdDGO7VnECMvg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: myungjoo.ham-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org" <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org" <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tuesday, November 22, 2016 05:20:22 PM Srinivas Pandruvada wrote:
-> On Wed, 2016-11-23 at 01:53 +0100, Rafael J. Wysocki wrote:
-> > On Wed, Nov 23, 2016 at 1:42 AM, Rafael J. Wysocki <rafael@kernel.org
-> > > wrote:
-> > > 
-> > > 
-> [...]
-> 
-> > > > invalid */
-> > > > +                       if (cpu_data->epp_saved < 0)
-> > > > +                               goto skip_epp;
-> > > > +
-> > This can be avoided too I suppose if epp_saved is initialized with
-> > the
-> > initial value of the EPP.
-> This is not only for initialization, but transient MSR read failures
-> later (which shouldn't happen, but for the completeness). So if you
-> weren't able to read for some unknown reason, then you shouldn't
-> restore.
-
-OK, fair enough.
-
-Thanks,
-Rafael
-
+CgpPbiAyMDE25bm0MTHmnIgyMuaXpSAyMDo0OCwgTXl1bmdKb28gSGFtIHdyb3RlOgo+IE9uIFRo
+dSwgTm92IDMsIDIwMTYgYXQgNDowMyBQTSwgaGwgPGhsQHJvY2stY2hpcHMuY29tPiB3cm90ZToK
+Pj4gSGkgTXl1bmdKb28gSGFtLAo+Pgo+Pgo+PiBPbiAyMDE25bm0MTHmnIgwMuaXpSAxNDozNSwg
+TXl1bmdKb28gSGFtIHdyb3RlOgo+Pj4+IEFkZCBzdXNwZW5kIGZyZXF1ZW5jeSBzdXBwb3J0IGFu
+ZCBpZiBuZWVkZWQgc2V0IGl0IHRvCj4+Pj4gdGhlIGZyZXF1ZW5jeSBvYnRhaW5lZCBmcm9tIHRo
+ZSBzdXNwZW5kIG9wcCAoY2FuIGJlIGRlZmluZWQKPj4+PiB1c2luZyBvcHAtdjIgYmluZGluZ3Mg
+YW5kIGlzIG9wdGlvbmFsKS4KPj4+Pgo+Pj4+IENoYW5nZS1JZDogSWFhMGQzODQ4ZDYzZDljZTAz
+ZjY1ZWE3NmYyNjNlNDY4NWE0YzI5NWUKPj4+PiBTaWduZWQtb2ZmLWJ5OiBMaW4gSHVhbmcgPGhs
+QHJvY2stY2hpcHMuY29tPgo+Pj4+IC0tLQo+Pj4+ICAgIGRyaXZlcnMvZGV2ZnJlcS9kZXZmcmVx
+LmMgfCAxNyArKysrKysrKysrKysrKysrLQo+Pj4+ICAgIGluY2x1ZGUvbGludXgvZGV2ZnJlcS5o
+ICAgfCAgOSArKysrKysrKysKPj4+PiAgICAyIGZpbGVzIGNoYW5nZWQsIDI1IGluc2VydGlvbnMo
+KyksIDEgZGVsZXRpb24oLSkKPj4+Pgo+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RldmZyZXEv
+ZGV2ZnJlcS5jIGIvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYwo+Pj4+IGluZGV4IGJmM2VhNzYu
+LmQxMTUyZWIgMTAwNjQ0Cj4+Pj4gLS0tIGEvZHJpdmVycy9kZXZmcmVxL2RldmZyZXEuYwo+Pj4+
+ICsrKyBiL2RyaXZlcnMvZGV2ZnJlcS9kZXZmcmVxLmMKPj4+PiBAQCAtMzY0LDcgKzM2NCwxMCBA
+QCB2b2lkIGRldmZyZXFfbW9uaXRvcl9zdXNwZW5kKHN0cnVjdCBkZXZmcmVxCj4+Pj4gKmRldmZy
+ZXEpCj4+Pj4gICAgICAgICAgICAgICAgICByZXR1cm47Cj4+Pj4gICAgICAgICAgfQo+Pj4+ICAg
+IC0gICAgIGRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVxLT5wcmV2aW91c19m
+cmVxKTsKPj4+PiArICAgICAgIGlmIChkZXZmcmVxLT5zdXNwZW5kX2ZyZXEpCj4+Pj4gKyAgICAg
+ICAgICAgICAgIGRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVxLT5zdXNwZW5k
+X2ZyZXEpOwo+Pj4+ICsgICAgICAgZWxzZQo+Pj4+ICsgICAgICAgICAgICAgICBkZXZmcmVxX3Vw
+ZGF0ZV9zdGF0dXMoZGV2ZnJlcSwgZGV2ZnJlcS0+cHJldmlvdXNfZnJlcSk7Cj4+PiBUaGlzIGlz
+IGluY29ycmVjdC4KPj4+Cj4+PiBkZXZmcmVxX3VwZGF0ZV9zdGF0dXMgaXMgdG8gcmVjb3JkIHRo
+ZSBzdGF0aXN0aWNzLgo+Pj4gVGhpcyBjb2RlIGludGVuZHMgdG8gcmVjb3JkIHRoZSBjdXJyZW50
+IHN0YXR1cyBiZWZvcmUgZW50ZXJpbmcgc3VzcGVuZDsKPj4+IHRodXMgeW91IHNob3VsZCBub3Qg
+cmVjb3JkICJzdXNwZW5kX2ZyZXEiIGhlcmUuCj4+Pgo+Pj4gSWYgeW91IHJlYWxseSBuZWVkIHRv
+IHJlY29yZCB0aGUgZnJlcXVlbmN5IGR1cmluZyBzdXNwZW5kZWQgc3RhdGUKPj4+IGZvciB0aGUg
+c3RhdGlzdGljcywgeW91IG5lZWQgdG8gZG8gdGhhdCBhdCByZXN1bWU7IGhvd2V2ZXIsIEkgb2Jq
+ZWN0IHRvCj4+PiB0aGF0IGlkZWEgZWl0aGVyLgo+Pj4KPj4+IElmIHlvdSByZWFsbHkgd2FudCB0
+byBzZXQgYSBwcmVkZWZpbmVkIHN1c3BlbmQtdG8tUkFNIG1vZGUgZnJlcXVlbmN5LAo+Pj4gKHBy
+b2JhYmx5IGJlY2F1c2Ugb2YgSFcgaW5zdGFiaWxpdHkgZHVyaW5nIHJlc3VtZSBwcm9jZXNzKQo+
+Pj4geW91IG5lZWQgdG8gdXBkYXRlLCBub3QgdWRwYXRlX3N0YXR1cyAoc3RhdGlzdGljcykuCj4+
+Pgo+PiBUaGFua3MgZm9yIHBvaW50aW5nIGl0LCBidXQgaWYgaSB1c2UgdXBkYXRlX2RldmZyZXEo
+KSwgaXQgY2FuIG5vdCBzcGVjaWZ5Cj4+IHRoZQo+PiBmcmVxdWVuY3ksIGl0IGNhbGwgdGhlIGdl
+dF90YXJnZXRfZnJlcSgpIHRvIGdldCB0aGUgZnJlcXVlbmN5IGFuZCBzZXR0aW5nLAo+PiB1c2Ug
+bm93IGRldmZyZXEgZnJhbWV3b3JrLCBpdCBzZWVtcyBoYXJkIHRvIHNldCB0aGUgc3BlY2lmaWMg
+ZnJlcWV1ZW5jeQo+PiB3aGVuIHN1c3BlbmQuIERvIHlvdSBoYXZlIGFueSBpZGVhLCB0aGFua3Mu
+Cj4KPiBJdCBhcHBlYXJzIHRoYXQgd2UgbmVlZCB0byBzZXQgdGhlIGZyZXF1ZW5jeSBkaXJlY3Rs
+eSB3aXRoIHRhcmdldCgpIGZ1bmN0aW9uCj4gYXQgc3VzcGVuZC9yZXN1bWUgYWZ0ZXIgaXQgaXMg
+YXNzdXJlZCB0aGF0IHJlbGF0ZWQgcm91dGluZXMgYXJlCj4gYWxyZWFkeSBzdXNwZW5kZWQuCj4K
+PiBQbHVzLCB5b3UgbWlnaHQgbmVlZCB0byBjb25zaWRlciB1c2luZyBkZXZmcmVxX3N1c3BlbmQv
+cmVzdW1lX2RldmljZSBpbnN0ZWFkCj4gb2YgbW9uaXRvci4gbW9uaXRvciBmdW5jdGlvbnMgYXJl
+IGZvciB0aGUgZ292ZXJub3Itc3BlY2lmaWMgYmVoYXZpb3JzLgo+IFlvdSdsbCBuZWVkIHN1Y2gg
+Y2FwYWJpbGl0aWVzIHJlZ2FyZGxlc3Mgb2YgZ292ZXJub3JzLiAoZXZlbiB1c2Vyc3BhY2UtZ292
+ZXJub3IKPiBuZWVkcyB0aGlzKQpXZSBzdGlsbCBuZWVkIHRvIHN5bmMgdGhlIGFsbCBzdGF0dXMg
+ZXZlbiBpIGNhbGwgdGFyZ2V0KCkgaW4gCmRldmZyZXFfc3VzcGVuZC9yZXN1bWVfZGV2aWNlCmRp
+cmVjdGx5LCBzbyBzdGlsbCBuZWVkIHVwZGF0ZV9kZXZmcmVxKCkgb3RoZXIgc2V0cCBleGNlcHQK
+ZGV2ZnJlcS0+Z292ZXJub3ItPmdldF90YXJnZXRfZnJlcShkZXZmcmVxLCAmZnJlcSk7Cj4KPiBD
+aGVlcnMsCj4gTXl1bmdKb28KPgo+Pgo+PiAtLQo+PiBUbyB1bnN1YnNjcmliZSBmcm9tIHRoaXMg
+bGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtcG0iIGluCj4+IHRoZSBib2R5
+IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCj4+IE1vcmUgbWFqb3Jk
+b21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWluZm8uaHRtbAo+
+Cj4KCi0tIApMaW4gSHVhbmcKCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KTGludXgtcm9ja2NoaXAgbWFpbGluZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxp
+c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1yb2NrY2hpcAo=
