@@ -1,120 +1,73 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH] powercap/intel_rapl: fix and tidy up error handling
-Date: Wed, 23 Nov 2016 11:01:06 -0800
-Message-ID: <1479927666-563-1-git-send-email-jacob.jun.pan@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Rafael Wysocki <rafael.j.wysocki@intel.com>, Marcin Koss <marcin.koss@intel.com>, Lukasz Odzioba <lukasz.odzioba@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [patch 0/5] powercap/intel_rapl: Fixes, hotplug conversion and
+ simplifcation
+Date: Wed, 23 Nov 2016 11:06:47 -0800
+Message-ID: <20161123110647.37485542@icelake>
+References: <20161122210518.079483154@linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga03.intel.com ([134.134.136.65]:28642 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1756303AbcKWTIg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 23 Nov 2016 14:08:36 -0500
+In-Reply-To: <20161122210518.079483154@linutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@sisk.pl>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, jacob.jun.pan@linux.intel.com
 
-Commit e1399ba20eee ("powercap / RAPL: handle missing MSRs") added
-contraint_to_pl() function to return index into an array. But it
-can potentially return -EINVAL if powercap layer sends an out of
-range constraint ID. This patch adds sanity check.
+On Tue, 22 Nov 2016 21:15:56 -0000
+Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Unnecessary RAPL domain pointer check is removed since it must be
-initialized before calling rapl_unit_xlate().
+> The driver fails to:
+> 
+>  - initialize packages which are not available at driver init time,
+> though the value of that initialization is completely unclear as
+> nothing ever uses these values. I fixed it up nevertheless and leave
+> it to the maintainers to decide whether it should completely go away.
+> 
+>  - to propagate error codes in the hotplug online path, where a
+>    registration fails and the package data is freed, but return code
+> is 0.
+> 
+> The initialization/removal code of that driver is a maze of
+> duplicated code which is more or less the same as the cpu hotplug
+> code. After switching over the driver to the hotplug statemachine,
+> the whole init/removal machinery can be replaced by
+> installing/removing the hotplug state.
+> 
+> The total damage is:
+> 
+>  intel_rapl.c |  363
+> ++++++++++++++++------------------------------------------- 1 file
+> changed, 104 insertions(+), 259 deletions(-)
+> 
+> and the binary size shrinks as well:
+> 
+>    text	   data	    bss	    dec	    hex
+>    7996	    625	     32	   8653
+> 21cd	  Before 7216	    593	     32
+> 7841	   1ea1	  After
+> 
+I have successfully tested this patchset with various cpu online/offline
+scenarios on both single and dual socket systems.
 
-Reported-by: Odzioba, Lukasz <lukasz.odzioba@intel.com>
-Reported-by: Koss, Marcin <marcin.koss@intel.com>
+Looks good to me. The cpu topology management is much more streamlined.
+Thanks. I also sent out this patch below on top of yours.
 
-Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
----
- drivers/powercap/intel_rapl.c | 25 ++++++++++++++++++++++++-
- 1 file changed, 24 insertions(+), 1 deletion(-)
+[PATCH] powercap/intel_rapl: fix and tidy up error handling
 
-diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
-index 65ed88a..f6937d0 100644
---- a/drivers/powercap/intel_rapl.c
-+++ b/drivers/powercap/intel_rapl.c
-@@ -429,6 +429,7 @@ static int contraint_to_pl(struct rapl_domain *rd, int cid)
- 			return i;
- 		}
- 	}
-+	pr_err("Cannot find matching power limit for constraint %d\n", cid);
- 
- 	return -EINVAL;
- }
-@@ -444,6 +445,10 @@ static int set_power_limit(struct powercap_zone *power_zone, int cid,
- 	get_online_cpus();
- 	rd = power_zone_to_rapl_domain(power_zone);
- 	id = contraint_to_pl(rd, cid);
-+	if (id < 0) {
-+		ret = id;
-+		goto set_exit;
-+	}
- 
- 	rp = rd->rp;
- 
-@@ -483,6 +488,11 @@ static int get_current_power_limit(struct powercap_zone *power_zone, int cid,
- 	get_online_cpus();
- 	rd = power_zone_to_rapl_domain(power_zone);
- 	id = contraint_to_pl(rd, cid);
-+	if (id < 0) {
-+		ret = id;
-+		goto get_exit;
-+	}
-+
- 	switch (rd->rpl[id].prim_id) {
- 	case PL1_ENABLE:
- 		prim = POWER_LIMIT1;
-@@ -499,6 +509,7 @@ static int get_current_power_limit(struct powercap_zone *power_zone, int cid,
- 	else
- 		*data = val;
- 
-+get_exit:
- 	put_online_cpus();
- 
- 	return ret;
-@@ -514,6 +525,10 @@ static int set_time_window(struct powercap_zone *power_zone, int cid,
- 	get_online_cpus();
- 	rd = power_zone_to_rapl_domain(power_zone);
- 	id = contraint_to_pl(rd, cid);
-+	if (id < 0) {
-+		ret = id;
-+		goto set_time_exit;
-+	}
- 
- 	switch (rd->rpl[id].prim_id) {
- 	case PL1_ENABLE:
-@@ -525,6 +540,8 @@ static int set_time_window(struct powercap_zone *power_zone, int cid,
- 	default:
- 		ret = -EINVAL;
- 	}
-+
-+set_time_exit:
- 	put_online_cpus();
- 	return ret;
- }
-@@ -539,6 +556,10 @@ static int get_time_window(struct powercap_zone *power_zone, int cid, u64 *data)
- 	get_online_cpus();
- 	rd = power_zone_to_rapl_domain(power_zone);
- 	id = contraint_to_pl(rd, cid);
-+	if (id < 0) {
-+		ret = id;
-+		goto get_time_exit;
-+	}
- 
- 	switch (rd->rpl[id].prim_id) {
- 	case PL1_ENABLE:
-@@ -553,6 +574,8 @@ static int get_time_window(struct powercap_zone *power_zone, int cid, u64 *data)
- 	}
- 	if (!ret)
- 		*data = val;
-+
-+get_time_exit:
- 	put_online_cpus();
- 
- 	return ret;
-@@ -694,7 +717,7 @@ static u64 rapl_unit_xlate(struct rapl_domain *rd, enum unit_type type,
- 	case ENERGY_UNIT:
- 		scale = ENERGY_UNIT_SCALE;
- 		/* per domain unit takes precedence */
--		if (rd && rd->domain_energy_unit)
-+		if (rd->domain_energy_unit)
- 			units = rd->domain_energy_unit;
- 		else
- 			units = rp->energy_unit;
--- 
-1.9.1
+Thanks,
+
+Jacob
+> Thanks,
+> 
+> 	tglx
+> 
+> 
+> 
+> 
+
+[Jacob Pan]
