@@ -1,73 +1,107 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [patch 0/5] powercap/intel_rapl: Fixes, hotplug conversion and
- simplifcation
-Date: Wed, 23 Nov 2016 11:06:47 -0800
-Message-ID: <20161123110647.37485542@icelake>
-References: <20161122210518.079483154@linutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:28642 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756303AbcKWTIg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 23 Nov 2016 14:08:36 -0500
-In-Reply-To: <20161122210518.079483154@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH v3 3/3] thermal/powerclamp: stop sched tick in forced idle
+Date: Wed, 23 Nov 2016 12:13:10 -0800
+Message-ID: <1479931990-11732-4-git-send-email-jacob.jun.pan@linux.intel.com>
+References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@sisk.pl>, x86@kernel.org, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@intel.com>, jacob.jun.pan@linux.intel.com
 
-On Tue, 22 Nov 2016 21:15:56 -0000
-Thomas Gleixner <tglx@linutronix.de> wrote:
+With the introduction of play_idle(), idle injection kthread can
+go through the normal idle task processing to get correct accounting
+and turn off scheduler tick when possible.
 
-> The driver fails to:
-> 
->  - initialize packages which are not available at driver init time,
-> though the value of that initialization is completely unclear as
-> nothing ever uses these values. I fixed it up nevertheless and leave
-> it to the maintainers to decide whether it should completely go away.
-> 
->  - to propagate error codes in the hotplug online path, where a
->    registration fails and the package data is freed, but return code
-> is 0.
-> 
-> The initialization/removal code of that driver is a maze of
-> duplicated code which is more or less the same as the cpu hotplug
-> code. After switching over the driver to the hotplug statemachine,
-> the whole init/removal machinery can be replaced by
-> installing/removing the hotplug state.
-> 
-> The total damage is:
-> 
->  intel_rapl.c |  363
-> ++++++++++++++++------------------------------------------- 1 file
-> changed, 104 insertions(+), 259 deletions(-)
-> 
-> and the binary size shrinks as well:
-> 
->    text	   data	    bss	    dec	    hex
->    7996	    625	     32	   8653
-> 21cd	  Before 7216	    593	     32
-> 7841	   1ea1	  After
-> 
-I have successfully tested this patchset with various cpu online/offline
-scenarios on both single and dual socket systems.
+Hrtimer is used to wake up since timeout is most likely to occur
+during idle injection.
 
-Looks good to me. The cpu topology management is much more streamlined.
-Thanks. I also sent out this patch below on top of yours.
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/thermal/intel_powerclamp.c | 35 +----------------------------------
+ 1 file changed, 1 insertion(+), 34 deletions(-)
 
-[PATCH] powercap/intel_rapl: fix and tidy up error handling
-
-Thanks,
-
-Jacob
-> Thanks,
-> 
-> 	tglx
-> 
-> 
-> 
-> 
-
-[Jacob Pan]
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 745fcec..68dd963 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -93,7 +93,6 @@ struct powerclamp_worker_data {
+ 	struct kthread_worker *worker;
+ 	struct kthread_work balancing_work;
+ 	struct kthread_delayed_work idle_injection_work;
+-	struct timer_list wakeup_timer;
+ 	unsigned int cpu;
+ 	unsigned int count;
+ 	unsigned int guard;
+@@ -278,11 +277,6 @@ static u64 pkg_state_counter(void)
+ 	return count;
+ }
+ 
+-static void noop_timer(unsigned long foo)
+-{
+-	/* empty... just the fact that we get the interrupt wakes us up */
+-}
+-
+ static unsigned int get_compensation(int ratio)
+ {
+ 	unsigned int comp = 0;
+@@ -432,7 +426,6 @@ static void clamp_balancing_func(struct kthread_work *work)
+ static void clamp_idle_injection_func(struct kthread_work *work)
+ {
+ 	struct powerclamp_worker_data *w_data;
+-	unsigned long target_jiffies;
+ 
+ 	w_data = container_of(work, struct powerclamp_worker_data,
+ 			      idle_injection_work.work);
+@@ -453,31 +446,7 @@ static void clamp_idle_injection_func(struct kthread_work *work)
+ 	if (should_skip)
+ 		goto balance;
+ 
+-	target_jiffies = jiffies + w_data->duration_jiffies;
+-	mod_timer(&w_data->wakeup_timer, target_jiffies);
+-	if (unlikely(local_softirq_pending()))
+-		goto balance;
+-	/*
+-	 * stop tick sched during idle time, interrupts are still
+-	 * allowed. thus jiffies are updated properly.
+-	 */
+-	preempt_disable();
+-	/* mwait until target jiffies is reached */
+-	while (time_before(jiffies, target_jiffies)) {
+-		unsigned long ecx = 1;
+-		unsigned long eax = target_mwait;
+-
+-		/*
+-		 * REVISIT: may call enter_idle() to notify drivers who
+-		 * can save power during cpu idle. same for exit_idle()
+-		 */
+-		local_touch_nmi();
+-		stop_critical_timings();
+-		mwait_idle_with_hints(eax, ecx);
+-		start_critical_timings();
+-		atomic_inc(&idle_wakeup_counter);
+-	}
+-	preempt_enable();
++	play_idle(jiffies_to_msecs(w_data->duration_jiffies));
+ 
+ balance:
+ 	if (clamping && w_data->clamping && cpu_online(w_data->cpu))
+@@ -540,7 +509,6 @@ static void start_power_clamp_worker(unsigned long cpu)
+ 	w_data->cpu = cpu;
+ 	w_data->clamping = true;
+ 	set_bit(cpu, cpu_clamping_mask);
+-	setup_timer(&w_data->wakeup_timer, noop_timer, 0);
+ 	sched_setscheduler(worker->task, SCHED_FIFO, &sparam);
+ 	kthread_init_work(&w_data->balancing_work, clamp_balancing_func);
+ 	kthread_init_delayed_work(&w_data->idle_injection_work,
+@@ -572,7 +540,6 @@ static void stop_power_clamp_worker(unsigned long cpu)
+ 	 * a big deal. The balancing work is fast and destroy kthread
+ 	 * will wait for it.
+ 	 */
+-	del_timer_sync(&w_data->wakeup_timer);
+ 	clear_bit(w_data->cpu, cpu_clamping_mask);
+ 	kthread_destroy_worker(w_data->worker);
+ 
+-- 
+1.9.1
