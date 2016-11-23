@@ -1,68 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 0/9] PM / OPP: Multiple regulator support
-Date: Wed, 23 Nov 2016 09:16:57 +0530
-Message-ID: <20161123034657.GB22335@vireshk-i7>
-References: <cover.1477463128.git.viresh.kumar@linaro.org>
- <20161118030636.GA3110@vireshk-i7>
- <20161118104329.27xpm7cshfpxykqd@sirena.org.uk>
- <20161122034922.GC3070@vireshk-i7>
- <20161122184103.djm3jn67gshdtun4@sirena.org.uk>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH 3/5] thermal: rockchip: fixes invalid temperature case
+Date: Tue, 22 Nov 2016 20:36:43 -0800
+Message-ID: <20161123043642.GA28948@google.com>
+References: <1479818088-6007-1-git-send-email-wxt@rock-chips.com>
+ <1479818088-6007-4-git-send-email-wxt@rock-chips.com>
+ <20161122205737.GB45366@google.com>
+ <20161122215240.GA52900@google.com>
+ <7168a98b-be91-8180-f9c0-8d54f5535075@rock-chips.com>
+ <20161123023325.GB122654@google.com>
+ <b2736d4e-120e-cbb9-3371-838c8f36c752@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:33289 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756157AbcKWDyO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 22:54:14 -0500
-Received: by mail-pf0-f176.google.com with SMTP id d2so525897pfd.0
-        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 19:54:13 -0800 (PST)
+Received: from mail-pg0-f42.google.com ([74.125.83.42]:35060 "EHLO
+        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755463AbcKWEhM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Nov 2016 23:37:12 -0500
+Received: by mail-pg0-f42.google.com with SMTP id p66so1241930pga.2
+        for <linux-pm@vger.kernel.org>; Tue, 22 Nov 2016 20:36:47 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20161122184103.djm3jn67gshdtun4@sirena.org.uk>
+In-Reply-To: <b2736d4e-120e-cbb9-3371-838c8f36c752@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: heiko@sntech.de, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, rui.zhang@intel.com
 
-On 22-11-16, 18:41, Mark Brown wrote:
-> On Tue, Nov 22, 2016 at 09:19:22AM +0530, Viresh Kumar wrote:
-> > "How do we know (from the DT) the order in which entries for multiple regulators
-> > are present in the OPP table?"
-> > 
-> > And I am not sure if we can do that without having a property like:
-> > 
-> > +               supply-names = "vcc0", "vcc1", "vcc2";
-> > 
-> > in the OPP table or the consumer device. And surely it isn't a clean enough
-> > solution and that's why this series relied on the code to get such details.
-> > 
-> > Does someone have an alternative? If NO, can we go ahead with this series as is?
+On Wed, Nov 23, 2016 at 11:03:33AM +0800, Caesar Wang wrote:
+> 在 2016年11月23日 10:33, Brian Norris 写道:
+> >IIUC, "too high" should not be interpreted as TSADCV2_DATA_MASK on
+> >rk3288, should it? That corresponds to -40C, which means you'll be
+> >triggering the alarm temperature at a very *low* temperature, not a very
+> >high one, no?
 > 
-> I'm really not at all clear why this has to be in DT.  My understanding
-> was that this is basically a helper library for more specific bindings
-> which already have to hard code things like sequencing so surely they'd
-> be specifying the ordering to be used when supplying data?
+> The "too high" will correspond to -40C on rk3288, but shouldn't
+> trigger the alarm temperature.
+> 
+> Due to the alarm or tshut function will handle it.
+> 
+> e.g.:
+> static void rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
+>                   int chn, void __iomem *regs, int temp)
+> {
+>     u32 alarm_value, int_en;
+> 
+>     /* Make sure the value is valid */
+>     alarm_value = rk_tsadcv2_temp_to_code(table, temp);
+>     if (alarm_value == table->data_mask)
+>         return;
 
-I am a bit confused and perhaps I am misreading your feedback.
+Ah, right. I keep forgetting about this odd error handling.
 
-Are you saying that:
+That's still the wrong error handling though; the right response is
+never to avoid doing anything (and therefore returning "success" to the
+thermal core). You need to either program a high (or low) trip value, or
+else report an error (i.e., allow rk_tsadcv2_alarm_temp() to return an
+error code back to the calling function). Otherwise, this:
 
-"we don't need to identify which microVolts value in the OPP table corresponds
-to which supply from the DT itself and we can do that with some hard coded
-stuff" ?
+echo -45000 > trip_0_temp
 
-If yes, then below is from an earlier email from you, which I feel is opposite
-of what you are suggesting now.
+will succeed without error, and:
 
-On 09-11-16, 14:58, Mark Brown wrote:
-> On Wed, Oct 26, 2016 at 12:02:56PM +0530, Viresh Kumar wrote:
+cat trip_0_temp
+-45000
 
-> > The platform driver is responsible to identify the order and pass it on to the
-> > OPP core. And the platform driver needs to have that hard coded.
->
-> That *really* should be in the binding.  Honestly if the binding is this
-> vague I'm not even clear that it's worth documenting these properties at
-> this level, might be better to just put the documentation in the
-> platform driver bindings.
+will return the cached temperature from of-thermal, even though the trip
+point is programmed to something else entirely.
 
--- 
-viresh
+Brian
