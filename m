@@ -1,62 +1,47 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 3/3] powernv: Pass PSSCR value and mask to
- power9_idle_stop
-Date: Wed, 23 Nov 2016 20:51:10 +1100
-Message-ID: <87shqittgx.fsf@concordia.ellerman.id.au>
-References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
- <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-In-Reply-To: <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>
-Cc: skiboot@lists.ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Nicolas Saenz Julienne <nicolas.saenz@prodys.net>
+Subject: [PATCH 0/2] power: supply: add sbs-charger driver
+Date: Wed, 23 Nov 2016 12:20:42 +0100
+Message-ID: <1479900044-19270-1-git-send-email-nicolas.saenz@prodys.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from host.prodys.net ([89.248.106.65]:38851 "EHLO host.prodys.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933205AbcKWLVG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 23 Nov 2016 06:21:06 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, nicolas.saenz@prodys.net
 
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+Hi,
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> The power9_idle_stop method currently takes only the requested stop
-> level as a parameter and picks up the rest of the PSSCR bits from a
-> hand-coded macro. This is not a very flexible design, especially when
-> the firmware has the capability to communicate the psscr value and the
-> mask associated with a particular stop state via device tree.
->
-> This patch modifies the power9_idle_stop API to take as parameters the
-> PSSCR value and the PSSCR mask corresponding to the stop state that
-> needs to be set. These PSSCR value and mask are respectively obtained
-> by parsing the "ibm,cpu-idle-state-psscr" and
-> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
->
-> In addition to this, the patch adds support for handling stop states
-> for which ESL and EC bits in the PSSCR are zero. As per the
-> architecture, a wakeup from these stop states resumes execution from
-> the subsequent instruction as opposed to waking up at the System
-> Vector.
->
-> The older firmware sets only the Requested Level (RL) field in the
-> psscr and psscr-mask exposed in the device tree. For older firmware
-> where psscr-mask=0xf, this patch will set the default sane values that
-> the set for for remaining PSSCR fields (i.e PSLL, MTL, ESL, EC, and
-> TR).
+This series adds support for all SBS compatible battery chargers, as defined
+here: http://sbs-forum.org/specs/sbc110.pdf.
 
-So we're using psscr-mas=0xf as a signal that we're running on old
-firmware.
+The first patch changes the sbs-battery device name in order to be able to
+create a proper supplier/supplied relation between the two of them.
 
-That's OK I think, but please send a patch to document it in the device
-tree binding.
+The second introduces the driver.
 
-And call it out below in the code.
+Regards,
+Nicolas
 
-cheers
+changes since v1:
+- added dt bindings
+- updated driver with Sebastian's comments
+- s/Nicola/Nicolas/ in commits
+
+Nicolas Saenz Julienne (2):
+  power: supply: add sbs-charger driver
+  dt-bindings: power: add bindings for sbs-charger
+
+ .../bindings/power/supply/sbs_sbs-charger.txt      |  22 ++
+ drivers/power/supply/Kconfig                       |   6 +
+ drivers/power/supply/Makefile                      |   1 +
+ drivers/power/supply/sbs-charger.c                 | 264 +++++++++++++++++++++
+ 4 files changed, 293 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/sbs_sbs-charger.txt
+ create mode 100644 drivers/power/supply/sbs-charger.c
+
+-- 
+2.7.4
+
