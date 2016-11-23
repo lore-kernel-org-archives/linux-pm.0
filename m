@@ -1,74 +1,88 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: ipaq_micro_battery: fix alias
-Date: Thu, 24 Nov 2016 00:09:05 +0100
-Message-ID: <20161123230905.qanedjdqla5u42dh@earth>
-References: <E1c1VrC-0000LC-Jo@rmk-PC.armlinux.org.uk>
+Subject: Re: [PATCH 03/15] wm8350_power: use permission-specific DEVICE_ATTR
+ variants
+Date: Thu, 24 Nov 2016 00:10:08 +0100
+Message-ID: <20161123231008.jaycog5acvpoowoh@earth>
+References: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1477769829-22230-4-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2gl7yxn3mfonv26i"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34072 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756384AbcKWXJM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 23 Nov 2016 18:09:12 -0500
+        protocol="application/pgp-signature"; boundary="t6bzhwngfulh5gl6"
+Return-path: <kernel-janitors-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <E1c1VrC-0000LC-Jo@rmk-PC.armlinux.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1477769829-22230-4-git-send-email-Julia.Lawall@lip6.fr>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <rmk+kernel@armlinux.org.uk>
-Cc: linux-pm@vger.kernel.org
 
 
---2gl7yxn3mfonv26i
+--t6bzhwngfulh5gl6
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Russel,
+Hi Julia,
 
-On Tue, Nov 01, 2016 at 09:59:50AM +0000, Russell King wrote:
-> The alias for the ipaq_micro_battery driver is incorrect, fix it so the
-> module can be auto-loaded.
+On Sat, Oct 29, 2016 at 09:36:57PM +0200, Julia Lawall wrote:
+> Use DEVICE_ATTR_RO for read only attributes.  This simplifies the source
+> code, improves readbility, and reduces the chance of inconsistencies.
 >=20
-> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+> The semantic patch that makes this change is as follows:
+> (http://coccinelle.lip6.fr/)
+>=20
+> // <smpl>
+> @ro@
+> declarer name DEVICE_ATTR;
+> identifier x,x_show;
+> @@
+>=20
+> DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
+>=20
+> @script:ocaml@
+> x << ro.x;
+> x_show << ro.x_show;
+> @@
+>=20
+> if not (x^"_show" =3D x_show) then Coccilib.include_match false
+>=20
+> @@
+> declarer name DEVICE_ATTR_RO;
+> identifier ro.x,ro.x_show;
+> @@
+>=20
+> - DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
+> + DEVICE_ATTR_RO(x);
+> // </smpl>
+>=20
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+>=20
 > ---
->  drivers/power/supply/ipaq_micro_battery.c | 2 +-
+>  drivers/power/supply/wm8350_power.c |    2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/ipaq_micro_battery.c b/drivers/power/su=
-pply/ipaq_micro_battery.c
-> index 4af7b770f293..2fa6edd6e8b1 100644
-> --- a/drivers/power/supply/ipaq_micro_battery.c
-> +++ b/drivers/power/supply/ipaq_micro_battery.c
-> @@ -313,4 +313,4 @@ module_platform_driver(micro_batt_device_driver);
-> =20
->  MODULE_LICENSE("GPL");
->  MODULE_DESCRIPTION("driver for iPAQ Atmel micro battery");
-> -MODULE_ALIAS("platform:battery-ipaq-micro");
-> +MODULE_ALIAS("platform:ipaq-micro-battery");
 
-Thanks, queued into power-supply's for-next branch.
+Thanks, queued.
 
 -- Sebastian
 
---2gl7yxn3mfonv26i
+--t6bzhwngfulh5gl6
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlg2IZEACgkQ2O7X88g7
-+ppT7hAAicHdQbo4AFS14w5EIKQrucm8e9RcdpmeWCWYZbdbkAJzme8XcfOdLIgA
-VVFt5najwqVNSI5GalSOyeG8xiym/M5S6Tvx5RFSkvVacAu+KHlx30aYx6uESrcb
-k4cVO++dZAjnFazaCvXShizlImccs+dBhNfE5Wqa6oqT7a6ba30I9cuiG/aUsAZO
-YZ9YbesR/v9cMATJm7S2jOKenESlf1Gl5RU0xHL2PhlAfT7BJbRrSf/NmIn9mZiM
-YRqXQ8/H8A4KRYe4/G/V/4vZJbwCOsRwfe0YgTWIqsNnVPeP135zw9nVFCsmhqz5
-Kz0WFjJ7j6zcJj0vVBSc29VwtQlR7oy90/DigEldcKlikzyccVYEQEjID/SdpB03
-+THJ/FQW9G8np3h5BSoVpE05H1Or86ECQ5fM80iWaW4zgEodBNxZrh7DTCxPWTus
-s2U81Z18wy679k3ryM0mOalAX5/3g2GDJFLFQvgubGnoT8g0trPTHwIgihj51KG1
-6TXlTkG/R9YCDscnZgnazvthbOzugQMAHRV9JxCIXkl8CSeff3qhiWUrSh9L3Cf5
-WpSj0YvHVgvuP9x2UEslxKDIVlr7NBjOMMefEgtR0SZGOD/DqPkLNmuS5b7LvBd5
-yktPldGbHNrrtGcVOeEiv88272PtvTJ4bi+KnigrUkUE3bJeZck=
-=iUbu
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlg2IdAACgkQ2O7X88g7
++poSKA/9Eptz6QYWi+EKSMoab7gBxSeeoJEpTGGbJhISlgR5LAgpvrTCsLF8Z4zE
+c+xqHpbkXQKd8y895fzarCgYzqpnEZOKKUf2YFUUOeevDhhBYYIK2ltS7zLD++Ve
+CCmfXXNbhn9pXjuENEDyKwBY3iqxQu3RFSJSrkhB6bJzp119tOkyERt58dzz/Tnb
+7M5mRS1FqMhn//UbjhAs2a3VW+Pw7l7o6T3HLBXj9pDJpesfX1h2vztlUJh8zc8l
+TVe0eYIRvV0eiV1l0xaaJITKdUzi676vgDccJsu/KRIcra4Qi0QDHD4VeiR3fLYX
+UESXUh9PYB786WVqVo346ELiTmkK4/LT+frRqF1IU7sst2eE61bBam+tjEEWsyQA
+KIx9s9KexIo+O/dKNbbmbnDq/XP8WKbRiP+pSWro+z1tp7CPez5BeAx++240vuGs
+n49pq6I1/ReGL6edJxcPGlkTZtIhijSNPclVhiAZhbQy5GsMExvP4akPHSP8riCo
++a/Csy9PplmdMsQqWLuz6Cqkbiav1QLMHx+AcIgtEThitJdfSxcT6XM5f9a0iTFZ
+scSc6Bgu6O4RSLx/uSbntCBjz1rVUfpLMsonpsKGf2YKhJWrqLFlgCZQQnjyOgbW
+lVwTtoGI9257/s7SCK6P7M8tpxJHZpIKnv0BxL2LOj5bgrcxB6k=
+=N6t3
 -----END PGP SIGNATURE-----
 
---2gl7yxn3mfonv26i--
+--t6bzhwngfulh5gl6--
