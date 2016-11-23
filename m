@@ -1,65 +1,122 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: ab8500_btemp: use builtin_platform_driver
-Date: Wed, 23 Nov 2016 16:47:11 +0100
-Message-ID: <20161123154711.spvfn2iguovkgp4h@earth>
-References: <e9ca1fc1443a01e115a7603b7c6584dc3235fd76.1479912980.git.geliangtang@gmail.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state binding
+Date: Wed, 23 Nov 2016 07:51:49 -0800
+Message-ID: <m2wpfuw5wq.fsf@baylibre.com>
+References: <cover.1479459752.git.viresh.kumar@linaro.org>
+        <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
+        <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
+        <20161122031717.GE10014@vireshk-i7> <m260nfz8mr.fsf@baylibre.com>
+        <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="laa7zw7q6ytqfgmt"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:34260 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S965221AbcKWPrQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 23 Nov 2016 10:47:16 -0500
-Content-Disposition: inline
-In-Reply-To: <e9ca1fc1443a01e115a7603b7c6584dc3235fd76.1479912980.git.geliangtang@gmail.com>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:33986 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752948AbcKWPvv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 10:51:51 -0500
+Received: by mail-pg0-f54.google.com with SMTP id x23so7389775pgx.1
+        for <linux-pm@vger.kernel.org>; Wed, 23 Nov 2016 07:51:51 -0800 (PST)
+In-Reply-To: <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
+        (Vincent Guittot's message of "Tue, 22 Nov 2016 19:34:59 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geliang Tang <geliangtang@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nayak Rajendra <rnayak@codeaurora.org>
 
+Vincent Guittot <vincent.guittot@linaro.org> writes:
 
---laa7zw7q6ytqfgmt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-On Wed, Nov 23, 2016 at 10:56:52PM +0800, Geliang Tang wrote:
-> Use builtin_platform_driver() helper to simplify the code.
->=20
-> Signed-off-by: Geliang Tang <geliangtang@gmail.com>
+> On 22 November 2016 at 19:12, Kevin Hilman <khilman@baylibre.com> wrote:
+>> Viresh Kumar <viresh.kumar@linaro.org> writes:
+>>
+>>> On 21-11-16, 09:07, Rob Herring wrote:
+>>>> On Fri, Nov 18, 2016 at 02:53:12PM +0530, Viresh Kumar wrote:
+>>>> > Some platforms have the capability to configure the performance state of
+>>>> > their Power Domains. The performance levels are represented by positive
+>>>> > integer values, a lower value represents lower performance state.
+>>>> >
+>>>> > The power-domains until now were only concentrating on the idle state
+>>>> > management of the device and this needs to change in order to reuse the
+>>>> > infrastructure of power domains for active state management.
+>>>> >
+>>>> > This patch introduces a new optional property for the consumers of the
+>>>> > power-domains: domain-performance-state.
+>>>> >
+>>>> > If the consumers don't need the capability of switching to different
+>>>> > domain performance states at runtime, then they can simply define their
+>>>> > required domain performance state in their node directly. Otherwise the
+>>>> > consumers can define their requirements with help of other
+>>>> > infrastructure, for example the OPP table.
+>>>> >
+>>>> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>> > ---
+>>>> >  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+>>>> >  1 file changed, 6 insertions(+)
+>>>> >
+>>>> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+>>>> > index e1650364b296..db42eacf8b5c 100644
+>>>> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
+>>>> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+>>>> > @@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
+>>>> >   - power-domains : A phandle and PM domain specifier as defined by bindings of
+>>>> >                     the power controller specified by phandle.
+>>>> >
+>>>> > +Optional properties:
+>>>> > +- domain-performance-state: A positive integer value representing the minimum
+>>>> > +  performance level (of the parent domain) required by the consumer for its
+>>>> > +  working. The integer value '1' represents the lowest performance level and the
+>>>> > +  highest value represents the highest performance level.
+>>>>
+>>>> How does one come up with the range of values?
+>>>
+>>> Why would we need a range here? The value here represents the minimum 'state'
+>>> and the assumption is that everything above that level would be fine. So the
+>>> range is automatically: domain-performance-state -> MAX.
+>>>
+>>>> It seems like you are
+>>>> just making up numbers. Couldn't the domain performance level be an OPP
+>>>> in the sense that it is a collection of clock frequencies and voltage
+>>>> settings?
+>>>
+>>> The clock is going to be handled by the device itself (at least for the case we
+>>> have today) and the performance-state lies with the power-domain which is
+>>> configured separately. If the performance level includes both clk and voltage,
+>>> then why would we need to show the clock rates in the DT ? Wouldn't a
+>>> performance level be enough in such cases?
+>>
+>> I think the question is: what does the performance-level of a domain
+>> actually mean?  Or, what are the units?
+>>
+>> Depending on the SoC, there's probably a few things this could mean.  It
+>> might mean is that an underlying bus/interconnect can be configured to
+>> guarantee a specific bandwidth or throughput.  That in turn might mean
+>> that that bus/interconnect might have to be set at a specific
+>> frequency/voltage.
+>>
+>> In your case, IIUC, you're just passing some magic value to some
+>> firmware running on a micro-controller, but under the hood that uC is
+>> probably configuring a frequency/voltage someplace.
 >
-> [...]
->
-> +builtin_platform_driver(ab8500_btemp_driver);
->  module_exit(ab8500_btemp_exit);
+> In the case described by Viresh, it's only about setting the voltage
+> of a power domain that is shared between different devices. these
+> devices wants to run at different frequency (set by the devices) but
+> we have to select a Volateg value that will match with the constraint
+> of all devices (in this case the highest voltage)
 
-builtin_XYZ() followed by module_XYZ() is obviously wrong. I think
-the driver could be made tristate, so lets do that (and then use
-module_platform_driver() instead).
+Then, at least for this use case, we're talking about voltage, not some
+unspecified units.
 
--- Sebastian
+But that makes me wonder, this performance state sounds like something
+that is changing dynamically at runtime, so why do you want to describe
+this statically in DT?
 
---laa7zw7q6ytqfgmt
-Content-Type: application/pgp-signature; name="signature.asc"
+This sounds to me like the job of the genpd.  When any device in the
+domain does its pm_runtime_get(), the domain could check the device
+frequency and see if it needs to change the domain voltage in order for
+that device to operate at that frequency.  When the device goes away
+(using pm_runtime_put()) the domain can check again if it could lower
+the voltage and still meet the requirements of the remaining devices.
 
------BEGIN PGP SIGNATURE-----
+Kevin
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlg1ufkACgkQ2O7X88g7
-+poD4xAAqPzlZJAE9sIBjdwDQHZXqqEUFzVs6/kC7gyv6d3+JwgpaVrtSFh/5H0J
-V9DJomZiFDlpi7yybytyt9tGfpmxDokEYGHeoKg3AcVfcujaQlKmLBQQ7VQykrPw
-R1n4q/S+NbjR7srb327Gq6owB73FAfjw0ZNPWx+2VmHGPtbLepdtZbbjNpgs2DjV
-2T+KZM9Y+dyDKM/PfaHzDYkJ9PyBE0Ly6ERl4ogwLjfp41w04fft6Ds7P/6lY/Nl
-CYPyjvsftni6Zssn+D5Yet3KodXfqXWdVZI0KugaqjoAhFb12rmWhnOcx9cgTbZZ
-jIoBhq/ufxwcEBC1/+9t2HNW4vrJBw16tO824g4jePTTADbIhrSq1Z0VOIkcRyk5
-l2pM2ml5dnoUBapn9tQuK8Gwfd1PSA4T2oh7tGghiyWqxu2hPmTVlCVX0E8zn2Zi
-kA34XmgWZJ1/ZQ8HBZmWzha2XfGaxWMcLf1cHV9UQ/csX9nlEl5oeaxxwEU7XgzE
-kYEN59YMEED3IFcn+egBRHRJTBe4lCtQXGQBZ7wKqUlgeUfVZZ3RgFoQmw/Ph8tg
-jr2amLbbjO++MUHIkpLeuZ8MzoJRLhuoA788FiI8P+HMxZQqMuL3upGaSrgzb+R/
-ilnrQFQ37W2QOEbuIJZ0yntdSCTJVDJwPIMIWQoDbAy22AGzqvI=
-=D7Cy
------END PGP SIGNATURE-----
 
---laa7zw7q6ytqfgmt--
+
