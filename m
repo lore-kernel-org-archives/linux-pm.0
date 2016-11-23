@@ -1,7 +1,8 @@
 From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v2 4/5] thermal: rockchip: optimize the conversion table
-Date: Wed, 23 Nov 2016 22:29:33 +0800
-Message-ID: <1479911374-22006-5-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH v2 5/5] thermal: rockchip: handle set_trips without the trip
+ points
+Date: Wed, 23 Nov 2016 22:29:34 +0800
+Message-ID: <1479911374-22006-6-git-send-email-wxt@rock-chips.com>
 References: <1479911374-22006-1-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,72 +22,47 @@ To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxt
 Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-In order to support the valid temperature can conver to analog value.
-The rockchip thermal driver has not supported the all valid temperature
-to convert the analog value. (e.g.: 61C, 62C, 63C....)
-
-For example:
-In some cases, we need adjust the trip point.
-$cd /sys/class/thermal/thermal_zone*
-$echo 68000 > trip_point_0_temp
-That will return the max analogic value indicates the invalid before
-posting this patch.
-
-So, this patch will optimize the conversion table to support the other
-cases.
+In some cases, some sensors didn't need the trip points, the
+set_trips will return {-INT_MAX, INT_MAX} to trigger thermal alarm.
 
 Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Reviewed-by: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 ---
 
 Changes in v2:
-- improve the commit as Brian commnets on https://patchwork.kernel.org/patch/9440985
+- Fixes something as Brian comments on
+  https://patchwork.kernel.org/patch/9440989.
 
 Changes in v1: None
 
- drivers/thermal/rockchip_thermal.c | 23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ drivers/thermal/rockchip_thermal.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index e243e40..0d50df7 100644
+index 0d50df7..f873053 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -401,6 +401,8 @@ static u32 rk_tsadcv2_temp_to_code(const struct chip_tsadc_table *table,
- 				   int temp)
+@@ -675,7 +675,21 @@ static int rk_tsadcv2_get_temp(const struct chip_tsadc_table *table,
+ static int rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
+ 				  int chn, void __iomem *regs, int temp)
  {
- 	int high, low, mid;
-+	unsigned long num;
-+	unsigned int denom;
- 	u32 error = table->data_mask;
- 
- 	low = 0;
-@@ -421,6 +423,27 @@ static u32 rk_tsadcv2_temp_to_code(const struct chip_tsadc_table *table,
- 		mid = (low + high) / 2;
- 	}
- 
+-	u32 alarm_value, int_en;
++	u32 alarm_value;
++	u32 int_en, int_clr;
++
 +	/*
-+	 * The conversion code granularity provided by the table. Let's
-+	 * assume that the relationship between temperature and
-+	 * analog value between 2 table entries is linear and interpolate
-+	 * to produce less granular result.
++	 * In some cases, some sensors didn't need the trip points, the
++	 * set_trips will pass {-INT_MAX, INT_MAX} to trigger tsadc alarm
++	 * in the end, ignore this case and disable the high temperature
++	 * interrupt.
 +	 */
-+	num = abs(table->id[mid].code - table->id[mid + 1].code);
-+	num *= temp - table->id[mid].temp;
-+	denom = table->id[mid + 1].temp - table->id[mid].temp;
-+
-+	switch (table->mode) {
-+	case ADC_DECREMENT:
-+		return table->id[mid].code - (num / denom);
-+	case ADC_INCREMENT:
-+		return table->id[mid].code + (num / denom);
-+	default:
-+		pr_err("%s: invalid conversion table, mode=%d\n",
-+		       __func__, table->mode);
-+		return error;
++	if (temp == INT_MAX) {
++		int_clr = readl_relaxed(regs + TSADCV2_INT_EN);
++		int_clr &= ~TSADCV2_INT_SRC_EN(chn);
++		writel_relaxed(int_clr, regs + TSADCV2_INT_EN);
++		return 0;
 +	}
-+
- exit:
- 	pr_err("%s: invalid temperature, temp=%d error=%d\n",
- 	       __func__, temp, error);
+ 
+ 	/* Make sure the value is valid */
+ 	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
 -- 
 2.7.4
