@@ -1,234 +1,136 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v3] cpufreq: intel_pstate: Set EPP/EPB to 0 in performance mode
-Date: Tue, 22 Nov 2016 21:47:30 -0800
-Message-ID: <1479880050-186251-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:20821 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750945AbcKWFrh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 23 Nov 2016 00:47:37 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Wed, 23 Nov 2016 09:29:31 +0000
+Message-ID: <82802459-8292-efb7-ac23-733de8687d51@nvidia.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
+ <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
+ <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+ <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
+ <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
+ <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
+ <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
+ <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
+ <m2lgwbxtea.fsf@baylibre.com>
+ <CAJZ5v0gUO8TqxbyLh37mfvoTLY1y1Uj91i9T6zcx5A9SmmcReA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAJZ5v0gUO8TqxbyLh37mfvoTLY1y1Uj91i9T6zcx5A9SmmcReA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: lenb@kernel.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-When user has selected performance policy, then set the EPP (Energy
-Performance Preference) or EPB (Energy Performance Bias) to maximum
-performance mode.
-Also when user switch back to powersave, then restore EPP/EPB to last
-EPP/EPB value before entering performance mode. If user has not changed
-EPP/EPB manually then it will be power on default value.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-v3:
-	Restore EPP=0 when in set in powersave mode after switch from
-	performance
+On 22/11/16 21:55, Rafael J. Wysocki wrote:
+> On Tue, Nov 22, 2016 at 7:26 PM, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org> wrote:
+>> Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> writes:
+>>
+>>> On 16/11/16 12:53, Rafael J. Wysocki wrote:
+>>>> On Wed, Nov 16, 2016 at 11:48 AM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>>>>> Hi Kevin, Ulf,
+>>>>>
+>>>>> On 03/11/16 14:20, Jon Hunter wrote:
+>>>>>>
+>>>>>> On 11/10/16 10:15, Jon Hunter wrote:
+>>>>>>
+>>>>>> ...
+>>>>>>
+>>>>>>>>>> Second, another way of seeing this is: Depending on the current
+>>>>>>>>>> runtime selected configuration you need to re-configure the PM domain
+>>>>>>>>>> topology - but the device would still remain in the same PM domain.
+>>>>>>>>>>
+>>>>>>>>>> In other words, you would need to remove/add subdomain(s) depending on
+>>>>>>>>>> the selected configuration. Would that better reflect the HW?
+>>>>>>>>>
+>>>>>>>>> I am not 100% sure I follow what you are saying, but ultimately, I would
+>>>>>>>>> like to get to ...
+>>>>>>>>>
+>>>>>>>>>         usb@70090000 {
+>>>>>>>>>                 compatible = "nvidia,tegra210-xusb";
+>>>>>>>>>                 ...
+>>>>>>>>>                 power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>>>>>>>>         };
+>>>>>>>>
+>>>>>>>> So, is this really is a proper description of the HW? Isn't it so,
+>>>>>>>> that the usb device always resides in one and the same PM domain?
+>>>>>>>
+>>>>>>> I guess technically, the usbhost controller resides in one partition and
+>>>>>>> the super-speed logic in another. So could the usbhost domain be the
+>>>>>>> primary? Possibly, but the device cannot be probed without both enabled.
+>>>>>>>
+>>>>>>>> Now, depending on the selected speed mode (superspeed) additional
+>>>>>>>> logic may needs to be powered on and configured for the usb device to
+>>>>>>>> work?
+>>>>>>>> Perhaps, one could consider those additional logics as a master/parent
+>>>>>>>> PM domain for the usb device's PM domain?
+>>>>>>>>
+>>>>>>>> Or this is not how the HW works? :-)
+>>>>>>>
+>>>>>>> It might be possible for this case, but to be honest, the more I think
+>>>>>>> about this, I do wonder if we need to be able to make the framework a
+>>>>>>> lot more flexible for devices that need multiple power-domains. In other
+>>>>>>> words, for devices that use multiple domains allow them to control them
+>>>>>>> similarly to what we do for regulators or clocks. So if there is more
+>>>>>>> than one defined, then the genpd core will not bind the device to the
+>>>>>>> pm-domain and let the driver handle it. This way if you do need more
+>>>>>>> granular control of the pm-domains in the driver you can do whatever you
+>>>>>>> need to.
+>>>>>>>
+>>>>>>> I know that Rajendra (CC'ed) was looking into whether he had a need to
+>>>>>>> control multiple power-domains individually from within the context of a
+>>>>>>> single device driver.
+>>>>>>
+>>>>>> So Rajendra commented to say that he does not see a need for individual
+>>>>>> control of power-domains for now, but a need for specifying multiple.
+>>>>>>
+>>>>>> One simple option would be to allow users to specify multiple and have
+>>>>>> the genpd core effectively ignore such devices and leave it to the
+>>>>>> driver to configure manually. I have been able to do this for XUSB by
+>>>>>> dynamically adding power-domains to the device.
+>>>>>>
+>>>>>> Let me know if you have any more thoughts on how we can do this.
+>>>>>
+>>>>> Any more thoughts on this? Seems that there are a few others that would
+>>>>> be interested in supporting multiple domains for a device.
+>>>>
+>>>> There is a design limitation to that, however.
+>>>>
+>>>> The PM domain concept really is about intercepting the flow of PM
+>>>> callbacks for a device in order to carry out additional operations,
+>>>> not covered by the bus type or driver.  That's why there is only one
+>>>> set of PM domain callbacks per device and I don't quite see how and
+>>>> why it would be useful to add more of them in there.
+>>
+>> @Rafael: Re: why it would be useful...
+>>
+>> Many ARM SoCs have devices that have independent power rails for the
+>> memory and the logic of an IP block.  For example, while powering off
+>> the logic you could keep the memory at a retention voltage, so you'd
+>> want to treat those power domains separately.
+>>
+>> Today, in order to model this, you'd have to create another (dummy)
+>> device, just for the memory and put it in its own domain so the two
+>> could be controlled separately.
+> 
+> Perhaps if you want to use genpd for that. :-)
+> 
+> Let me rephrase, though.  I don't see why and how it would be useful
+> to intercept the flow of PM callbacks for a given device more than
+> once.
 
-Some test scnerios
-1. Switch from powersave->performance->powersave
-# cat scaling_governor 
-powersave
-# rdmsr 0x774
-80001c05
-# echo performance > scaling_governor
-# rdmsr 0x774
-1c1c
-# echo powersave > scaling_governor
-# rdmsr 0x774
-80001c05
+In this RFC, all I was proposing is that we create a dummy pm-domain
+that is a child of the actual pm-domains it uses and this new dummy
+pm-domain is associated with the device. Hence, you are still only
+intercepting the flow of PM callback once even with this approach. I am
+just using the parent-child relationship to ensure that all require
+pm-domains are turned on thats all. Sorry if I am still missing your point!
 
-2. Switch from powersave->manually change EPP->performance->powersave
-# wrmsr 0x774 0xc0001c05
-# rdmsr 0x774
-c0001c05
-# echo performance > scaling_governor
-# rdmsr 0x774
-1c1c
-# echo powersave > scaling_governor
-# rdmsr 0x774
-c0001c05
+Cheers
+Jon
 
-3. Switch from powersave->manually change EPP to 0->performance->powersave
-# wrmsr 0x774 0x1c05
-# rdmsr 0x774
-1c05
-# echo performance > scaling_governor
-# rdmsr 0x774
-1c1c
-# echo powersave > scaling_governor
-# rdmsr 0x774
-1c05
-
-4. Switch from performance->manually change EPP->powersave
-# cat scaling_governor 
-performance
-# wrmsr 0x774 0x40001c05
-# rdmsr 0x774
-40001c05
-# echo powersave > scaling_governor
-# rdmsr 0x774
-40001c05
-
-5. Switch from powersave->performance->change max scaling freq->powersave
-# cat scaling_governor 
-powersave
-# rdmsr 0x774
-80001c05
-# echo performance > scaling_governor
-# rdmsr 0x774
-1c1c
-# echo 2000000 > scaling_max_freq
-# echo powersave > scaling_governor
-# rdmsr 0x774
-80001c05
-
-v2:
-        Save EPP/EPB when policy is switched to performance and restore
-        on entering powersave policy, when EPP/EPB is still 0.
-
- drivers/cpufreq/intel_pstate.c | 100 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 100 insertions(+)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 72e8bbc..acf2ef8 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -243,6 +243,8 @@ struct perf_limits {
-  *			when per cpu controls are enforced
-  * @acpi_perf_data:	Stores ACPI perf information read from _PSS
-  * @valid_pss_table:	Set to true for valid ACPI _PSS entries found
-+ * @epp_saved:		Last saved HWP energy performance preference
-+ *			or energy performance bias and policy information
-  *
-  * This structure stores per CPU instance data for all CPUs.
-  */
-@@ -270,6 +272,7 @@ struct cpudata {
- 	bool valid_pss_table;
- #endif
- 	unsigned int iowait_boost;
-+	int epp_saved;
- };
- 
- static struct cpudata **all_cpu_data;
-@@ -568,6 +571,52 @@ static inline void update_turbo_state(void)
- 		 cpu->pstate.max_pstate == cpu->pstate.turbo_pstate);
- }
- 
-+static int intel_pstate_get_epb(struct cpudata *cpu_data)
-+{
-+	u64 epb;
-+	int ret;
-+
-+	if (!static_cpu_has(X86_FEATURE_EPB))
-+		return -ENXIO;
-+
-+	ret = rdmsrl_on_cpu(cpu_data->cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb);
-+	if (ret)
-+		return ret;
-+
-+	return (int)(epb & 0x0f);
-+}
-+
-+static int intel_pstate_get_epp(struct cpudata *cpu_data, u64 hwp_req_data)
-+{
-+	int epp;
-+
-+	if (static_cpu_has(X86_FEATURE_HWP_EPP))
-+		epp = (hwp_req_data >> 24) & 0xff;
-+	else
-+		/* When there is no EPP present, HWP uses EPB settings */
-+		epp = intel_pstate_get_epb(cpu_data);
-+
-+	return epp;
-+}
-+
-+static void intel_pstate_set_epb(int cpu, int pref)
-+{
-+	u64 epb;
-+
-+	if (!static_cpu_has(X86_FEATURE_EPB))
-+		return;
-+
-+	if (rdmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, &epb))
-+		return;
-+
-+	epb = (epb & ~0x0f) | pref;
-+	wrmsrl_on_cpu(cpu, MSR_IA32_ENERGY_PERF_BIAS, epb);
-+}
-+
-+
-+#define EPP_POLICY_SHIFT	4
-+#define EPP_POLICY_MASK		0xff
-+
- static void intel_pstate_hwp_set(const struct cpumask *cpumask)
- {
- 	int min, hw_min, max, hw_max, cpu, range, adj_range;
-@@ -576,6 +625,8 @@ static void intel_pstate_hwp_set(const struct cpumask *cpumask)
- 
- 	for_each_cpu(cpu, cpumask) {
- 		int max_perf_pct, min_perf_pct;
-+		struct cpudata *cpu_data = all_cpu_data[cpu];
-+		int epp;
- 
- 		if (per_cpu_limits)
- 			perf_limits = all_cpu_data[cpu]->perf_limits;
-@@ -604,6 +655,55 @@ static void intel_pstate_hwp_set(const struct cpumask *cpumask)
- 
- 		value &= ~HWP_MAX_PERF(~0L);
- 		value |= HWP_MAX_PERF(max);
-+		if (cpu_data->policy == CPUFREQ_POLICY_PERFORMANCE) {
-+			epp = intel_pstate_get_epp(cpu_data, value);
-+			/* If EPP read was failed, then don't try to write */
-+			if (epp < 0) {
-+				cpu_data->epp_saved = epp;
-+				goto skip_epp;
-+			}
-+
-+			/*
-+			 * Don't store 0 to epp_saved, when there is no policy
-+			 * switch, so that last powersave EPP can be restored.
-+			 * The actual EPP is stored from the offset
-+			 * EPP_POLICY_SHIFT.
-+			 */
-+			if ((cpu_data->epp_saved & EPP_POLICY_MASK) !=
-+							cpu_data->policy)
-+				cpu_data->epp_saved =
-+						(epp << EPP_POLICY_SHIFT) |
-+						cpu_data->policy;
-+			epp = 0;
-+		} else {
-+			/* skip setting EPP, when saved value is invalid */
-+			if (cpu_data->epp_saved < 0)
-+				goto skip_epp;
-+
-+			/*
-+			 * No need to restore EPP when it is not zero. This
-+			 * means:
-+			 *  - Policy is not changed
-+			 *  - user has manually changed
-+			 *  - Error reading EPB
-+			 */
-+			epp = intel_pstate_get_epp(cpu_data, value);
-+			if (epp) {
-+				cpu_data->epp_saved = 0;
-+				goto skip_epp;
-+			}
-+
-+			epp = cpu_data->epp_saved >> EPP_POLICY_SHIFT;
-+
-+			cpu_data->epp_saved = 0;
-+		}
-+		if (static_cpu_has(X86_FEATURE_HWP_EPP)) {
-+			value &= ~GENMASK_ULL(31, 24);
-+			value |= (u64)epp << 24;
-+		} else {
-+			intel_pstate_set_epb(cpu, epp);
-+		}
-+skip_epp:
- 		wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
- 	}
- }
 -- 
-2.7.4
-
+nvpublic
