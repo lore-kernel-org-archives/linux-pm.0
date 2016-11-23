@@ -1,125 +1,257 @@
-From: Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state binding
-Date: Wed, 23 Nov 2016 16:55:38 +0100
-Message-ID: <CAKfTPtBMro7+UruF0-E26TJPu6pEAvkjF9V7SKriNBm5q+K9+A@mail.gmail.com>
-References: <cover.1479459752.git.viresh.kumar@linaro.org> <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
- <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop> <20161122031717.GE10014@vireshk-i7>
- <m260nfz8mr.fsf@baylibre.com> <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
- <m2wpfuw5wq.fsf@baylibre.com>
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: Re: [PATCH v8 1/8] sched: Extend scheduler's asym packing
+Date: Wed, 23 Nov 2016 09:32:28 -0800
+Message-ID: <20161123173227.GA6876@linux.intel.com>
+References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+ <0e73ae12737dfaafa46c07066cc7c5d3f1675e46.1479844244.git.tim.c.chen@linux.intel.com>
+ <20161123130911.GT3092@twins.programming.kicks-ass.net>
+Reply-To: tim.c.chen@linux.intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <m2wpfuw5wq.fsf-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nayak Rajendra <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161123130911.GT3092@twins.programming.kicks-ass.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 23 November 2016 at 16:51, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org> wrote:
-> Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
->
->> On 22 November 2016 at 19:12, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org> wrote:
->>> Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> writes:
->>>
->>>> On 21-11-16, 09:07, Rob Herring wrote:
->>>>> On Fri, Nov 18, 2016 at 02:53:12PM +0530, Viresh Kumar wrote:
->>>>> > Some platforms have the capability to configure the performance state of
->>>>> > their Power Domains. The performance levels are represented by positive
->>>>> > integer values, a lower value represents lower performance state.
->>>>> >
->>>>> > The power-domains until now were only concentrating on the idle state
->>>>> > management of the device and this needs to change in order to reuse the
->>>>> > infrastructure of power domains for active state management.
->>>>> >
->>>>> > This patch introduces a new optional property for the consumers of the
->>>>> > power-domains: domain-performance-state.
->>>>> >
->>>>> > If the consumers don't need the capability of switching to different
->>>>> > domain performance states at runtime, then they can simply define their
->>>>> > required domain performance state in their node directly. Otherwise the
->>>>> > consumers can define their requirements with help of other
->>>>> > infrastructure, for example the OPP table.
->>>>> >
->>>>> > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>>>> > ---
->>>>> >  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
->>>>> >  1 file changed, 6 insertions(+)
->>>>> >
->>>>> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->>>>> > index e1650364b296..db42eacf8b5c 100644
->>>>> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
->>>>> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
->>>>> > @@ -106,6 +106,12 @@ domain provided by the 'parent' power controller.
->>>>> >   - power-domains : A phandle and PM domain specifier as defined by bindings of
->>>>> >                     the power controller specified by phandle.
->>>>> >
->>>>> > +Optional properties:
->>>>> > +- domain-performance-state: A positive integer value representing the minimum
->>>>> > +  performance level (of the parent domain) required by the consumer for its
->>>>> > +  working. The integer value '1' represents the lowest performance level and the
->>>>> > +  highest value represents the highest performance level.
->>>>>
->>>>> How does one come up with the range of values?
->>>>
->>>> Why would we need a range here? The value here represents the minimum 'state'
->>>> and the assumption is that everything above that level would be fine. So the
->>>> range is automatically: domain-performance-state -> MAX.
->>>>
->>>>> It seems like you are
->>>>> just making up numbers. Couldn't the domain performance level be an OPP
->>>>> in the sense that it is a collection of clock frequencies and voltage
->>>>> settings?
->>>>
->>>> The clock is going to be handled by the device itself (at least for the case we
->>>> have today) and the performance-state lies with the power-domain which is
->>>> configured separately. If the performance level includes both clk and voltage,
->>>> then why would we need to show the clock rates in the DT ? Wouldn't a
->>>> performance level be enough in such cases?
->>>
->>> I think the question is: what does the performance-level of a domain
->>> actually mean?  Or, what are the units?
->>>
->>> Depending on the SoC, there's probably a few things this could mean.  It
->>> might mean is that an underlying bus/interconnect can be configured to
->>> guarantee a specific bandwidth or throughput.  That in turn might mean
->>> that that bus/interconnect might have to be set at a specific
->>> frequency/voltage.
->>>
->>> In your case, IIUC, you're just passing some magic value to some
->>> firmware running on a micro-controller, but under the hood that uC is
->>> probably configuring a frequency/voltage someplace.
->>
->> In the case described by Viresh, it's only about setting the voltage
->> of a power domain that is shared between different devices. these
->> devices wants to run at different frequency (set by the devices) but
->> we have to select a Volateg value that will match with the constraint
->> of all devices (in this case the highest voltage)
->
-> Then, at least for this use case, we're talking about voltage, not some
-> unspecified units.
->
-> But that makes me wonder, this performance state sounds like something
-> that is changing dynamically at runtime, so why do you want to describe
-> this statically in DT?
->
-> This sounds to me like the job of the genpd.  When any device in the
-> domain does its pm_runtime_get(), the domain could check the device
-> frequency and see if it needs to change the domain voltage in order for
-> that device to operate at that frequency.  When the device goes away
-> (using pm_runtime_put()) the domain can check again if it could lower
-> the voltage and still meet the requirements of the remaining devices.
+On Wed, Nov 23, 2016 at 02:09:11PM +0100, Peter Zijlstra wrote:
+> 
+> With the two little edits below:
+> 
+> Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> 
+> > ---
+> >  include/linux/sched.h |  4 ++++
+> >  kernel/sched/core.c   | 15 ++++++++++++++
+> >  kernel/sched/fair.c   | 54 +++++++++++++++++++++++++++++++++++----------------
+> >  kernel/sched/sched.h  |  6 ++++++
+> >  4 files changed, 62 insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index 348f51b..ca02475 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -1057,6 +1057,10 @@ static inline int cpu_numa_flags(void)
+> >  }
+> >  #endif
+> >  
+> > +int arch_asym_cpu_priority(int cpu);
+> 
+> extern
+> 
+> > +int arch_asym_max_cpu_and(const struct cpumask *mask1,
+> > +			  const struct cpumask *mask2);
+> > +
+> 
+> And that needs to go too; that function no longer exists.
+> 
+> >  struct sched_domain_attr {
+> >  	int relax_domain_level;
+> >  };
 
-That's only part of the job. The device can change its frequency and
-as a result ask for a new voltage index while it is already running
+Thanks for catching that.  The patch updated below.
 
-Vincent
+Tim
 
->
-> Kevin
->
->
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---->8----
+
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Subject: [PATCH v8 1/8] sched: Extend scheduler's asym packing
+To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, Tim Chen <tim.c.chen@linux.intel.com>, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+
+We generalize the scheduler's asym packing to provide an ordering
+of the cpu beyond just the cpu number.  This allows the use of the
+ASYM_PACKING scheduler machinery to move loads to preferred CPU in a
+sched domain. The preference is defined with the cpu priority
+given by arch_asym_cpu_priority(cpu).
+
+We also record the most preferred cpu in a sched group when
+we build the cpu's capacity for fast lookup of preferred cpu
+during load balancing.
+
+Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org> 
+Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+---
+ include/linux/sched.h |  2 ++
+ kernel/sched/core.c   | 15 ++++++++++++++
+ kernel/sched/fair.c   | 54 +++++++++++++++++++++++++++++++++++----------------
+ kernel/sched/sched.h  |  6 ++++++
+ 4 files changed, 60 insertions(+), 17 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 348f51b..c75f778 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1057,6 +1057,8 @@ static inline int cpu_numa_flags(void)
+ }
+ #endif
+ 
++extern int arch_asym_cpu_priority(int cpu);
++
+ struct sched_domain_attr {
+ 	int relax_domain_level;
+ };
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 154fd68..d54c6e1 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6301,7 +6301,22 @@ static void init_sched_groups_capacity(int cpu, struct sched_domain *sd)
+ 	WARN_ON(!sg);
+ 
+ 	do {
++		int cpu, max_cpu = -1;
++
+ 		sg->group_weight = cpumask_weight(sched_group_cpus(sg));
++
++		if (!(sd->flags & SD_ASYM_PACKING))
++			goto next;
++
++		for_each_cpu(cpu, sched_group_cpus(sg)) {
++			if (max_cpu < 0)
++				max_cpu = cpu;
++			else if (sched_asym_prefer(cpu, max_cpu))
++				max_cpu = cpu;
++		}
++		sg->asym_prefer_cpu = max_cpu;
++
++next:
+ 		sg = sg->next;
+ 	} while (sg != sd->groups);
+ 
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index c242944..af97dc8 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -100,6 +100,17 @@ const_debug unsigned int sysctl_sched_migration_cost = 500000UL;
+  */
+ unsigned int __read_mostly sysctl_sched_shares_window = 10000000UL;
+ 
++#ifdef CONFIG_SMP
++/*
++ * For asym packing, by default the lower numbered cpu has higher priority.
++ */
++int __weak arch_asym_cpu_priority(int cpu)
++{
++	return -cpu;
++}
++
++#endif
++
+ #ifdef CONFIG_CFS_BANDWIDTH
+ /*
+  * Amount of runtime to allocate from global (tg) to local (per-cfs_rq) pool
+@@ -7113,16 +7124,18 @@ static bool update_sd_pick_busiest(struct lb_env *env,
+ 	if (env->idle == CPU_NOT_IDLE)
+ 		return true;
+ 	/*
+-	 * ASYM_PACKING needs to move all the work to the lowest
+-	 * numbered CPUs in the group, therefore mark all groups
+-	 * higher than ourself as busy.
++	 * ASYM_PACKING needs to move all the work to the highest
++	 * prority CPUs in the group, therefore mark all groups
++	 * of lower priority than ourself as busy.
+ 	 */
+-	if (sgs->sum_nr_running && env->dst_cpu < group_first_cpu(sg)) {
++	if (sgs->sum_nr_running &&
++	    sched_asym_prefer(env->dst_cpu, sg->asym_prefer_cpu)) {
+ 		if (!sds->busiest)
+ 			return true;
+ 
+-		/* Prefer to move from highest possible cpu's work */
+-		if (group_first_cpu(sds->busiest) < group_first_cpu(sg))
++		/* Prefer to move from lowest priority cpu's work */
++		if (sched_asym_prefer(sds->busiest->asym_prefer_cpu,
++				      sg->asym_prefer_cpu))
+ 			return true;
+ 	}
+ 
+@@ -7274,8 +7287,8 @@ static int check_asym_packing(struct lb_env *env, struct sd_lb_stats *sds)
+ 	if (!sds->busiest)
+ 		return 0;
+ 
+-	busiest_cpu = group_first_cpu(sds->busiest);
+-	if (env->dst_cpu > busiest_cpu)
++	busiest_cpu = sds->busiest->asym_prefer_cpu;
++	if (sched_asym_prefer(busiest_cpu, env->dst_cpu))
+ 		return 0;
+ 
+ 	env->imbalance = DIV_ROUND_CLOSEST(
+@@ -7613,10 +7626,11 @@ static int need_active_balance(struct lb_env *env)
+ 
+ 		/*
+ 		 * ASYM_PACKING needs to force migrate tasks from busy but
+-		 * higher numbered CPUs in order to pack all tasks in the
+-		 * lowest numbered CPUs.
++		 * lower priority CPUs in order to pack all tasks in the
++		 * highest priority CPUs.
+ 		 */
+-		if ((sd->flags & SD_ASYM_PACKING) && env->src_cpu > env->dst_cpu)
++		if ((sd->flags & SD_ASYM_PACKING) &&
++		    sched_asym_prefer(env->dst_cpu, env->src_cpu))
+ 			return 1;
+ 	}
+ 
+@@ -8465,7 +8479,7 @@ static inline bool nohz_kick_needed(struct rq *rq)
+ 	unsigned long now = jiffies;
+ 	struct sched_domain_shared *sds;
+ 	struct sched_domain *sd;
+-	int nr_busy, cpu = rq->cpu;
++	int nr_busy, i, cpu = rq->cpu;
+ 	bool kick = false;
+ 
+ 	if (unlikely(rq->idle_balance))
+@@ -8516,12 +8530,18 @@ static inline bool nohz_kick_needed(struct rq *rq)
+ 	}
+ 
+ 	sd = rcu_dereference(per_cpu(sd_asym, cpu));
+-	if (sd && (cpumask_first_and(nohz.idle_cpus_mask,
+-				  sched_domain_span(sd)) < cpu)) {
+-		kick = true;
+-		goto unlock;
+-	}
++	if (sd) {
++		for_each_cpu(i, sched_domain_span(sd)) {
++			if (i == cpu ||
++			    !cpumask_test_cpu(i, nohz.idle_cpus_mask))
++				continue;
+ 
++			if (sched_asym_prefer(i, cpu)) {
++				kick = true;
++				goto unlock;
++			}
++		}
++	}
+ unlock:
+ 	rcu_read_unlock();
+ 	return kick;
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 055f935..cd3d413 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -539,6 +539,11 @@ struct dl_rq {
+ 
+ #ifdef CONFIG_SMP
+ 
++static inline bool sched_asym_prefer(int a, int b)
++{
++	return arch_asym_cpu_priority(a) > arch_asym_cpu_priority(b);
++}
++
+ /*
+  * We add the notion of a root-domain which will be used to define per-domain
+  * variables. Each exclusive cpuset essentially defines an island domain by
+@@ -905,6 +910,7 @@ struct sched_group {
+ 
+ 	unsigned int group_weight;
+ 	struct sched_group_capacity *sgc;
++	int asym_prefer_cpu;		/* cpu of highest priority in group */
+ 
+ 	/*
+ 	 * The CPUs this group covers.
+-- 
+2.5.5
+
