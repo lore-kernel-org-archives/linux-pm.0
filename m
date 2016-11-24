@@ -1,80 +1,49 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3 0/3] Stop sched tick in idle injection task
-Date: Thu, 24 Nov 2016 05:21:30 +0100
-Message-ID: <20161124042129.GC29338@gmail.com>
-References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 4/4] cpufreq: schedutil: irq-work and mutex are only
+ used in slow path
+Date: Thu, 24 Nov 2016 11:42:03 +0530
+Message-ID: <20161124061203.GF9376@vireshk-i7>
+References: <cover.1479197311.git.viresh.kumar@linaro.org>
+ <a099804224d5e980a78668fa111e0564b0f44029.1479197311.git.viresh.kumar@linaro.org>
+ <20161124045337.GB18417@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:35350 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750933AbcKXFeH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:34:07 -0500
+Received: from mail-pg0-f53.google.com ([74.125.83.53]:34899 "EHLO
+        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751393AbcKXGMH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 01:12:07 -0500
+Received: by mail-pg0-f53.google.com with SMTP id p66so14797915pga.2
+        for <linux-pm@vger.kernel.org>; Wed, 23 Nov 2016 22:12:07 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
+In-Reply-To: <20161124045337.GB18417@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
 
-
-* Rafael J. Wysocki <rafael@kernel.org> wrote:
-
-> On Wed, Nov 23, 2016 at 9:13 PM, Jacob Pan
-> <jacob.jun.pan@linux.intel.com> wrote:
-> > Changelog:
-> > v3:     - rearrange idle.c change based on Rafael's suggestion.
-> >
-> > v2:
-> >         - moved duration timer from powerclamp driver to play_idle()
-> >         - unexport cpuidle_use_deepest_state
-> >         - indentation fix
-> >
-> > Idle injection drivers today use RT threads to run idle loop. There are
-> > efficiency and accounting issues with the current intel_powerclamp.c
-> > and acpi_pad.c. A while ago, I posted CFS based idle injection patch trying
-> > to address them:
-> > https://lkml.org/lkml/2015/11/13/576
-> >
-> > Peter proposed another approach with the introduction of a PF_IDLE flag.
-> > This patchset is based on his original posting:
-> > https://lkml.org/lkml/2014/6/4/56
-> >
-> > These patches apply on top of the kworker and cpu hotplug state machine
-> > changes made to Intel powerclamp driver.
-> > https://lkml.org/lkml/2016/10/17/362
-> >
-> > Similar changes to ACPI PAD driver is developed along with other
-> > enhancements. It will be posted after this patchset is accepted.
-> >
-> > Jacob Pan (2):
-> >   cpuidle: allow setting deepest idle
-> >   thermal/powerclamp: stop sched tick in forced idle
-> >
-> > Peter Zijlstra (1):
-> >   idle: add support for tasks that inject idle
-> >
-> >  drivers/cpuidle/cpuidle.c          |  11 +++
-> >  drivers/thermal/intel_powerclamp.c |  35 +------
-> >  include/linux/cpu.h                |   2 +
-> >  include/linux/cpuidle.h            |   4 +-
-> >  include/linux/sched.h              |   3 +-
-> >  kernel/fork.c                      |   3 +
-> >  kernel/sched/core.c                |   1 +
-> >  kernel/sched/idle.c                | 183 +++++++++++++++++++++++--------------
-> >  8 files changed, 139 insertions(+), 103 deletions(-)
+On 24-11-16, 05:53, Ingo Molnar wrote:
 > 
-> Any objections anyone?
+> Firstly, please start changes to scheduler code with a verb. This title:
 > 
-> If not, I'll queue up this series for 4.10.
+>   Subject: Re: [PATCH V2 4/4] cpufreq: schedutil: irq-work and mutex are only used in slow path
+> 
+> is totally inadequate as it's a statement that says nothing about the _change_.
+> 
+> What does the patch do? Does it add, remove, modify, fix or clean up?
 
-NAK. The first patch alone has a dozen of trivial problems - very sloppy.
+Thanks for the tip. I have sometimes seen similar subjects-line in patches from
+core developers and so thought it might be right. But yes I understand what you
+are saying and will take care of this in future across all subsystems.
 
-Guys, please rework, double check and actually _READ_ the fine patches you are 
-promoting and then in a couple of days I'll review this series again to see 
-whether the NAK can be lifted ...
+> * Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> 
+> > Execute the irq-work specific initialization/exit code only when the
+> > fast path isn't available.
+> 
+> Is this an optimization? A correctness fix?
 
-Thanks,
+Its an optimization but yeah I will try to explain a bit more next time.
 
-	Ingo
+-- 
+viresh
