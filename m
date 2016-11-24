@@ -1,125 +1,87 @@
-From: hl <hl@rock-chips.com>
-Subject: Re: [PATCH v1 1/2] PM/devfreq: add suspend frequency support
-Date: Thu, 24 Nov 2016 10:18:12 +0800
-Message-ID: <58364DE4.9030505@rock-chips.com>
-References: <1477990029-11062-1-git-send-email-hl@rock-chips.com>
- <CGME20161101084721epcas4p471cc74df8b12d042d1fac542e5371db8@epcas4p4.samsung.com>
- <422077764.570918.1478068526663.JavaMail.weblogic@ep1ml102b>
- <581AE13C.9070706@rock-chips.com>
- <CAJ0PZbSYZYF6xJ-ut23G+tTXYLCDNpQ8_AJpjTdDGO7VnECMvg@mail.gmail.com>
- <5834F862.6000603@rock-chips.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Wed, 23 Nov 2016 18:30:14 -0800
+Message-ID: <20161124023014.GK6095@codeaurora.org>
+References: <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
+ <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
+ <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+ <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
+ <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
+ <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
+ <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
+ <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
+ <m2lgwbxtea.fsf@baylibre.com>
+ <f54b4912-bfdd-aa2c-6f04-e09ed4207af6@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lucky1.263xmail.com ([211.157.147.134]:42231 "EHLO
-        lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752417AbcKXCSX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 21:18:23 -0500
-In-Reply-To: <5834F862.6000603@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <f54b4912-bfdd-aa2c-6f04-e09ed4207af6@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>
+Cc: Kevin Hilman <khilman@baylibre.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@gmail.com
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dianders@chromium.org" <dianders@chromium.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>
 
-Hi MyungJoo Ham,
+On 11/22, Jon Hunter wrote:
+> 
+> On 22/11/16 18:26, Kevin Hilman wrote:
+> > Jon Hunter <jonathanh@nvidia.com> writes:
+> > 
+> >> However, I would rather the client of
+> >> the power-domains specify which power-domains they require and
+> >> dynamically nested the power-domains at runtime. This is slightly
+> >> different to what I proposed in this RFC, but it is not really beyond
+> >> the bounds of what we support today IMO. What is missing is a means to
+> >> do this dynamically and not statically.
+> >>
+> >> By the way, I am not sure if you are suggesting that for devices that
+> >> may need multiple power-domains we should architect the driver
+> >> differently and split it up in some way such that we have a power-domain
+> >> per device. But for the case of the Tegra XHCI it is quite complex
+> >> because the driver loads firmware which runs on a micro-controller and
+> >> we need to manage the various power-domains that are used.
+> > 
+> > IMO, constructing a network of new struct devices just to workaround
+> > limitations in the framework doesn't sound quite right either.
+> 
+> I agree.
+> 
 
-On 2016年11月23日 10:01, hl wrote:
->
->
-> On 2016年11月22日 20:48, MyungJoo Ham wrote:
->> On Thu, Nov 3, 2016 at 4:03 PM, hl <hl@rock-chips.com> wrote:
->>> Hi MyungJoo Ham,
->>>
->>>
->>> On 2016年11月02日 14:35, MyungJoo Ham wrote:
->>>>> Add suspend frequency support and if needed set it to
->>>>> the frequency obtained from the suspend opp (can be defined
->>>>> using opp-v2 bindings and is optional).
->>>>>
->>>>> Change-Id: Iaa0d3848d63d9ce03f65ea76f263e4685a4c295e
->>>>> Signed-off-by: Lin Huang <hl@rock-chips.com>
->>>>> ---
->>>>>    drivers/devfreq/devfreq.c | 17 ++++++++++++++++-
->>>>>    include/linux/devfreq.h   |  9 +++++++++
->>>>>    2 files changed, 25 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>>> index bf3ea76..d1152eb 100644
->>>>> --- a/drivers/devfreq/devfreq.c
->>>>> +++ b/drivers/devfreq/devfreq.c
->>>>> @@ -364,7 +364,10 @@ void devfreq_monitor_suspend(struct devfreq
->>>>> *devfreq)
->>>>>                  return;
->>>>>          }
->>>>>    -     devfreq_update_status(devfreq, devfreq->previous_freq);
->>>>> +       if (devfreq->suspend_freq)
->>>>> +               devfreq_update_status(devfreq, 
->>>>> devfreq->suspend_freq);
->>>>> +       else
->>>>> +               devfreq_update_status(devfreq, 
->>>>> devfreq->previous_freq);
->>>> This is incorrect.
->>>>
->>>> devfreq_update_status is to record the statistics.
->>>> This code intends to record the current status before entering 
->>>> suspend;
->>>> thus you should not record "suspend_freq" here.
->>>>
->>>> If you really need to record the frequency during suspended state
->>>> for the statistics, you need to do that at resume; however, I 
->>>> object to
->>>> that idea either.
->>>>
->>>> If you really want to set a predefined suspend-to-RAM mode frequency,
->>>> (probably because of HW instability during resume process)
->>>> you need to update, not udpate_status (statistics).
->>>>
->>> Thanks for pointing it, but if i use update_devfreq(), it can not 
->>> specify
->>> the
->>> frequency, it call the get_target_freq() to get the frequency and 
->>> setting,
->>> use now devfreq framework, it seems hard to set the specific freqeuency
->>> when suspend. Do you have any idea, thanks.
->>
->> It appears that we need to set the frequency directly with target() 
->> function
->> at suspend/resume after it is assured that related routines are
->> already suspended.
->>
->> Plus, you might need to consider using devfreq_suspend/resume_device 
->> instead
->> of monitor. monitor functions are for the governor-specific behaviors.
->> You'll need such capabilities regardless of governors. (even 
->> userspace-governor
->> needs this)
-> We still need to sync the all status even i call target() in 
-> devfreq_suspend/resume_device
-> directly, so still need update_devfreq() other setp except
-> devfreq->governor->get_target_freq(devfreq, &freq);
-And i think it better to be governor behaviors, for userspace they may 
-not want to change
-the suspend frequency like other governor, the frequency should decide 
-by the user, if they
-want this function, they should like other governor to rigister a 
-devfreq_monitor_suspend().
-What do you think about my rev6 patch?
+Marek is attempting to do this for the samsung clock
+controller[1] (patch #5 is informative). From what I can tell
+they have one DT node for their clock controller because it's one
+register address space to control clocks. But, certain clocks
+exposed by that driver only work when certain power domains are
+enabled. For example, they have a clock controller that exposes
+clock signals for multimedia hardware blocks like video
+accelerators, gpus, and cameras. The clocks seem to have been
+placed inside different power domains for the multimedia hardware
+they're associated with, so there may be 10 or so power domains
+that need to be enabled at different times for different clocks
+to work. If the GPU power domain isn't enabled when the GPU
+clocks are touched by the driver, things break, etc.
 
->>
->> Cheers,
->> MyungJoo
->>
->>>
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at http://vger.kernel.org/majordomo-info.html
->>
->>
->
+In the proposed patchset, we have the top-level clock controller
+node with subnodes for each power domain that needs to be
+associated with clocks inside these different multimedia blocks.
+So we end up with one parent device and attached driver for the
+clock driver, and then that driver populates child nodes as
+devices and matches up clocks with child nodes while registering
+clks with clk_register(). Because we pass a dev pointer to
+clk_register, we associate different devices with different
+clocks all from the same top-level clock controller device
+driver. Then clk framework calls runtime_pm APIs with devices
+used during clk registration. Some of those devices don't have
+any driver bound to them, which feels odd.
 
+This seems like a case where we really want a better way to
+explicitly control power domains without making up subnodes and
+registering struct devices just to work around the one device to
+one genpd construct we have today. Maybe power domains just don't
+map to genpd though and that's the disconnect.
+
+[1] http://lkml.kernel.org/r/1477311130-6534-1-git-send-email-m.szyprowski@samsung.com
 -- 
-Lin Huang
-
-
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
