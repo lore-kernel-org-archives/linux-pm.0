@@ -1,69 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V3] PM / Runtime: Defer resuming of the device in pm_runtime_force_resume()
-Date: Thu, 24 Nov 2016 02:14:10 +0100
-Message-ID: <2464704.SUWQ90frYr@vostro.rjw.lan>
-References: <1476370734-23168-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFozunxSTBY_vWbdOFRjSHOjpb+KKTJsdMj+dPpzNCyi-w@mail.gmail.com> <CAJZ5v0gxPzK=YVcG4kR+07VW8_NxfczNSyu+m8PtvE4=5dUxYA@mail.gmail.com>
+Subject: Re: [PATCH v2] drivers: cpuidle: assign enter_freeze to same as enter callback function
+Date: Thu, 24 Nov 2016 02:15:41 +0100
+Message-ID: <27933980.8pxBHcNLmE@vostro.rjw.lan>
+References: <1478713410-10727-1-git-send-email-sudeep.holla@arm.com> <1478787873-18180-1-git-send-email-sudeep.holla@arm.com> <e79767a7-03be-2073-b78e-3ec8d29d5f8a@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46659 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56577 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S935318AbcKXBGY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 20:06:24 -0500
-In-Reply-To: <CAJZ5v0gxPzK=YVcG4kR+07VW8_NxfczNSyu+m8PtvE4=5dUxYA@mail.gmail.com>
+        by vger.kernel.org with ESMTP id S935632AbcKXBHy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 20:07:54 -0500
+In-Reply-To: <e79767a7-03be-2073-b78e-3ec8d29d5f8a@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Andy Gross <andy.gross@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Andy Gross <andy.gross@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Saturday, November 19, 2016 12:13:03 AM Rafael J. Wysocki wrote:
-> On Fri, Nov 18, 2016 at 11:50 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > On 17 November 2016 at 22:00, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >> On Thu, Nov 17, 2016 at 9:21 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >>> On 13 October 2016 at 16:58, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >>>> When the pm_runtime_force_suspend|resume() helpers were invented, we still
-> >>>> had CONFIG_PM_RUNTIME and CONFIG_PM_SLEEP as separate Kconfig options.
-> >>>>
-> >>>> To make sure these helpers worked for all combinations and without
-> >>>> introducing too much of complexity, the device was always resumed in
-> >>>> pm_runtime_force_resume().
-> >>>>
-> >>>> More precisely, when CONFIG_PM_SLEEP was set and CONFIG_PM_RUNTIME was
-> >>>> unset, we needed to resume the device as the subsystem/driver couldn't
-> >>>> rely on using runtime PM to do it.
-> >>>>
-> >>>> As the CONFIG_PM_RUNTIME option was merged into CONFIG_PM a while ago, it
-> >>>> removed this combination, of using CONFIG_PM_SLEEP without the earlier
-> >>>> CONFIG_PM_RUNTIME.
-> >>>>
-> >>>> For this reason we can now rely on the subsystem/driver to use runtime PM
-> >>>> to resume the device, instead of forcing that to be done in all cases. In
-> >>>> other words, let's defer the runtime resume to a later point when it's
-> >>>> actually needed.
-> >>>>
-> >>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> >>>
-> >>> Rafael, this one is ready to be queued. Unless there are other objections.
-> >>
-> >> Not an objection, but I'd like to revisit this when the device
-> >> dependencies work gets in, as something similar may need to be done
-> >> for suppliers, in principle.
-> >
-> > I certainly think it would make sense to extend this approach to also
-> > respect device-dependencies.
-> >
-> > However, I suggest we deal with that as a second step, on top of
-> > $subject patch. It should not be a problem, as we don't have any users
-> > of device-dependencies that also uses
-> > pm_runtime_force_suspend|resume(), right?
-> >
-> > Queuing this now, also allow us to get this more widely tested, before
-> > we continue extending it for dependencies.
+On Tuesday, November 15, 2016 02:20:21 PM Sudeep Holla wrote:
+> Hi Rafael,
 > 
-> Fair enough.
+> On 10/11/16 14:24, Sudeep Holla wrote:
+> > enter_freeze() callback is expected atleast to do the same as enter()
+> > but it has to guarantee that interrupts aren't enabled at any point
+> > in its execution, as the tick is frozen.
+> >
+> > CPUs execute ->enter_freeze with the local tick or entire timekeeping
+> > suspended, so it must not re-enable interrupts at any point (even
+> > temporarily) or attempt to change states of clock event devices.
+> >
+> > It will be called when the system goes to suspend-to-idle and will
+> > reduce power usage because CPUs won't be awaken for unnecessary IRQs
+> > (i.e. woken up only on IRQs from "wakeup sources")
+> >
+> > We can reuse the same code for both the enter() and enter_freeze()
+> > callbacks as along as they don't re-enable interrupts. Only "coupled"
+> > cpuidle mechanism enables interrupts and doing that with timekeeping
+> > suspended is generally not safe.
+> >
+> > Since this generic DT based idle driver doesn't support "coupled"
+> > states, it is safe to assume that the interrupts are not re-enabled.
+> >
+> > This patch assign enter_freeze to same as enter callback function which
+> > helps to save power without any intermittent spurious wakeups from
+> > suspend-to-idle.
+> >
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> > ---
+> >  drivers/cpuidle/dt_idle_states.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> >
+> > v1->v2:
+> > 	- Dropped checking and using only states with CPUIDLE_FLAG_TIMER_STOP
+> > 	  enabled.
+> >
+> 
+> Can you pick up this patch directly if there are no concerns ?
 
-The patch has been queued up for 4.10.
+There were none, so it's been queued up for 4.10.
 
 Thanks,
 Rafael
