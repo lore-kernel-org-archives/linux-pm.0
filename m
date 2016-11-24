@@ -1,72 +1,81 @@
-From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Subject: Re: [RFC 4/4] ARM: dts: exynos4x12: add suspend OPP for DMC and
- leftbus
-Date: Thu, 24 Nov 2016 15:27:18 +0100
-Message-ID: <5836F8C6.4080708@math.uni-bielefeld.de>
-References: <1479909087-22659-1-git-send-email-tjakobi@math.uni-bielefeld.de>
- <CGME20161123135415epcas4p235d175ffdbbba89e261482b1e7f0e358@epcas4p2.samsung.com>
- <1479909087-22659-5-git-send-email-tjakobi@math.uni-bielefeld.de>
- <58364560.4030904@samsung.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
+Date: Thu, 24 Nov 2016 06:27:47 -0800
+Message-ID: <20161124142747.GL4082@atomide.com>
+References: <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
+ <20161111163147.GC7138@atomide.com>
+ <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
+ <20161111222911.GL7138@atomide.com>
+ <20161111223234.GM7138@atomide.com>
+ <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
+ <20161112001917.GN7138@atomide.com>
+ <CAJZ5v0ivMWZ2c8MphWcyz_S=tNgUyUihcP4=Y4Mz_uw7iZ6dMA@mail.gmail.com>
+ <20161118201823.GX4082@atomide.com>
+ <CAJZ5v0ggv2Z9rOiwWan2=urcfTooG1_CeALdo=TN4b0tJGEHdA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <58364560.4030904@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, linux-samsung-soc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ggv2Z9rOiwWan2=urcfTooG1_CeALdo=TN4b0tJGEHdA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hello Chanwoo,
-
-since exynos-bus is not only used for the Exynos4 platform, could you
-maybe check if we need to apply this elsewhere?
-
-I see in the exynos5422-odroidxu3-common.dtsi that bus_wcore adjusts the
-INT voltage. But MyungJoo mentioned that on newer platform the BL0 might
-be "smarter", so we don't need this.
-
-With best wishes,
-Tobias
-
-
-Chanwoo Choi wrote:
-> Hi Tobias,
+* Rafael J. Wysocki <rafael@kernel.org> [161123 14:37]:
+> On Fri, Nov 18, 2016 at 9:18 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > Hi,
+> >
+> > * Rafael J. Wysocki <rafael@kernel.org> [161111 16:35]:
+> >> However, my understanding is that the current code actually works for
+> >> runtime PM just fine.
+> >
+> > Hmm well I just noticed that for drivers not using autosuspend it can be
+> > flakey, see the patch below. That probably explains some mysteries people
+> > are seeing with wakeirqs.
+> >
+> > Do you have any better ideas for setting wirq->active on the first
+> > rpm_suspend()?
 > 
-> Looks good to me.
-> Because the bus_dmc (MIF) and bus_leftbus (INT) are parent devfreq device.
+> You could change dedicated_irq into status and have three values for
+> it: INVALID, ALLOCATED and IN_USE.
 > 
-> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+> dev_pm_set_dedicated_wake_irq() would make it ALLOCATED and
+> dev_pm_check_wake_irq() would change it into IN_USE.  In turn,
+> dev_pm_enable/disable_wake_irq() would only touch it if it is IN_USE
+> and dev_pm_clear_wake_irq() would free it if it is not INVALID.
+
+OK sounds good to me.
+
+> > +static inline void dev_pm_check_wake_irq(struct device *dev)
+> > +{
+> > +       struct wake_irq *wirq = dev->power.wakeirq;
+> > +
+> > +       if (!wirq)
+> > +               return;
+> > +
+> > +       if (unlikely(!wirq->active)) {
+> > +               wirq->active = true;
+> > +               wmb();  /* ensure dev_pm_enable_wake_irq() sees active */
 > 
-> Best Regards,
-> Chanwoo Choi
+> smp_wmb()?
 > 
-> On 2016년 11월 23일 22:51, Tobias Jakobi wrote:
->> TODO: write desc
->> Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
->> ---
->>  arch/arm/boot/dts/exynos4x12.dtsi | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
->> index d5cb433..a00a8b0 100644
->> --- a/arch/arm/boot/dts/exynos4x12.dtsi
->> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
->> @@ -375,6 +375,7 @@
->>  		opp@400000000 {
->>  			opp-hz = /bits/ 64 <400000000>;
->>  			opp-microvolt = <1050000>;
->> +			opp-suspend;
->>  		};
->>  	};
->>  
->> @@ -463,6 +464,7 @@
->>  		opp@200000000 {
->>  			opp-hz = /bits/ 64 <200000000>;
->>  			opp-microvolt = <1000000>;
->> +			opp-suspend;
->>  		};
->>  	};
->>  
->>
-> 
+> Also, do we have a corresponding barrier on the reader side?
+
+Will check thanks.
+
+> I wonder if it would make sense to fold dev_pm_check_wake_irq() into
+> dev_pm_enable_wake_irq()?
+
+I was thinking that too but then bus or device itself won't be
+able to manage the wakeirq if needed.
+
+Let me check if we could easily add something to initialize things
+like dev_pm_manage_wake_irq() and dev_pm_dont_manage_wake_irq().
+That means we need to update the drivers using it, but then we don't
+need to add extra checks to the idle path and can let bus or
+drivers mange the wakeirq if necessary.
+
+Regards,
+
+Tony
