@@ -1,131 +1,221 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v1 & v6 1/2] PM/devfreq: add suspend frequency support
-Date: Thu, 24 Nov 2016 17:16:32 +0900
-Message-ID: <5836A1E0.1070707@samsung.com>
-References: <CGME20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
- <20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
- <58368C91.8030502@rock-chips.com> <5836927B.9010205@samsung.com>
- <5836980F.6050006@rock-chips.com>
+Subject: Re: [RFC 1/4] PM / devfreq: Add DevFreq subsystem suspend/resume
+Date: Thu, 24 Nov 2016 17:20:55 +0900
+Message-ID: <5836A2E7.5080504@samsung.com>
+References: <1479909087-22659-1-git-send-email-tjakobi@math.uni-bielefeld.de>
+ <CGME20161123135204epcas1p4c16e65584e901dfc5062f9afdc00b0fe@epcas1p4.samsung.com>
+ <1479909087-22659-2-git-send-email-tjakobi@math.uni-bielefeld.de>
+ <583643A7.6020502@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <5836980F.6050006@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: hl <hl@rock-chips.com>, myungjoo.ham@samsung.com
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "dianders@chromium.org" <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <583643A7.6020502@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-samsung-soc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lin,
+Hi Tobias,
 
-On 2016년 11월 24일 16:34, hl wrote:
-> Hi Chanwoo Choi,
+On 2016년 11월 24일 10:34, Chanwoo Choi wrote:
+> Hi Tobias,
 > 
->     I think the dev_pm_opp_get_suspend_opp() have implement most of
-> the funtion, all we need is just define the node in dts, like following:
+> I like your suggestion. But I have some comment on below.
 > 
-> &dmc_opp_table {
->     opp06 {
->         opp-suspend;
->     };
-> };
+> On 2016년 11월 23일 22:51, Tobias Jakobi wrote:
+>> This suspend/resume operations works analogous to the
+>> cpufreq_{suspend,resume}() calls in the CPUFreq subsystem.
+>>
+>> Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>> ---
+>>  drivers/devfreq/devfreq.c | 75 +++++++++++++++++++++++++++++++++++++++++++++++
+>>  include/linux/devfreq.h   | 10 +++++++
+>>  2 files changed, 85 insertions(+)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index bf3ea76..2f1aa83 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -785,6 +785,81 @@ int devfreq_resume_device(struct devfreq *devfreq)
+>>  EXPORT_SYMBOL(devfreq_resume_device);
+>>  
+>>  /**
+>> + * devfreq_suspend() - Suspend DevFreq governors
+>> + *
+>> + * Called during system wide Suspend/Hibernate cycles for suspending governors
+>> + * in the same fashion as cpufreq_suspend().
+>> + */
+>> +void devfreq_suspend(void)
+>> +{
+>> +	struct devfreq *devfreq;
+>> +	unsigned long freq;
+>> +	int ret;
+>> +
+>> +	mutex_lock(&devfreq_list_lock);
+>> +
+>> +	list_for_each_entry(devfreq, &devfreq_list, node) {
+>> +		if (!devfreq->suspend_freq)
+>> +			continue;
+>> +
+>> +		ret = devfreq_suspend_device(devfreq);
 
-Two approaches use the 'opp-suspend' property.
+The devfreq_suspend_device() stop the monitoring of governors.
+But, this function is exported. It means that each devfreq device.
+can call the devfreq_suspend/resume_device() (e.g., int drivers/scsi/ufs/ufshcd.c)
 
-I think that the method to support suspend-opp have to
-guarantee following conditions:
-- Support the all of devfreq's governors.
-- Devfreq framework have the responsibility to change the
-  frequency/voltage for suspend-opp. If we uses the
-  new devfreq_suspend(), each devfreq device don't care
-  how to support the suspend-opp. Just the developer of each
-  devfreq device need to add 'opp-suspend' propet to OPP entry in DT file.
+So, you should consider following case:
+- case :Before calling the devfreq_suspend() and specific devfreq already call
+  the devfreq_suspend_device(), how to support it?
+  In this case, the specific devfreq device don't want to call
+  the devfreq_resume_device() in the devfreq_resume().
 
+>> +		if (ret < 0) {
+>> +			dev_warn(&devfreq->dev, "%s: governor suspend failed\n", __func__);
+>> +			continue;
+>> +		}
+>> +
+>> +		devfreq->resume_freq = 0;
+>> +		if (devfreq->profile->get_cur_freq) {
+>> +			ret = devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq);
+>> +			if (ret >= 0)
+>> +				devfreq->resume_freq = freq;
+>> +		}
+>> +
+>> +		freq = devfreq->suspend_freq;
+>> +		ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
+> 
+> 
+> DEVFREQ subsystem has the passive governor[2] and devfreq device using passive[1]
+> governor depends on the parent devfreq device. The passive governor uses
+> 'DEVFREQ_TRANSITION_NOTIFIER' notifier to track the changed state of
+> parent devfreq device.
+> 
+> When changing the clock/voltage of parent devfreq device,
+> DEVFREQ subsystem have to notify the changed frequency
+> to the passive devfreq device.
+> 
+> So, you should call the devfreq_notifiy_transition()
+> before/after 'devfreq->profile->target' as following:
+> You can refer the update_devfreq() function 
+> that is how to use devfreq_notifiy_transition().
+> 
+> For example,
+> 		struct devfreq_freq freqs;
+>  
+> 		if (devfreq->profile->get_cur_freq) {
+> 			ret = devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq);
+> 			if (ret >= 0)
+> 				devfreq->resume_freq = freq;
+> 		} else {
+> 			devfreq->resume_freq = devfreq_previous_freq;
+> 		} 
+> 
+> 		freqs.old = devfreq->resume_freq;
+> 		freqs.new = devfreq->suspend_freq;
+> 		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+> 
+>                 freq = devfreq->suspend_freq;
+>                 ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
+>  
+> 		freqs.new = freq;
+> 		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+> 
+>                 if (ret < 0)
+>                         dev_warn(&devfreq->dev, "%s: setting suspend frequency failed\n", __func__);
+>         }
+> 
+> [1] DEVFREQ_TRANSITION_NOTIFIER notifier
+> - https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=0fe3a66410a3ba96679be903f1e287d7a0a264a9
+> [2] DEVFREQ passive governor
+> - https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=996133119f57334c38b020dbfaaac5b5eb127e29
+> 
+>> +
+>> +		if (ret < 0)
+>> +			dev_warn(&devfreq->dev, "%s: setting suspend frequency failed\n", __func__);
+>> +	}
+>> +
+>> +	mutex_unlock(&devfreq_list_lock);
+>> +}
+>> +
+>> +/**
+>> + * devfreq_resume() - Resume DevFreq governors
+>> + *
+>> + * Called during system wide Suspend/Hibernate cycle for resuming governors that
+>> + * are suspended with devfreq_suspend().
+>> + */
+>> +void devfreq_resume(void)
+>> +{
+>> +	struct devfreq *devfreq;
+>> +	unsigned long freq;
+>> +	int ret;
+>> +
+>> +	mutex_lock(&devfreq_list_lock);
+>> +
+>> +	list_for_each_entry(devfreq, &devfreq_list, node) {
+>> +		if (!devfreq->suspend_freq)
+>> +			continue;
+>> +
+>> +		freq = devfreq->resume_freq;
+>> +		ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
+> 
+> ditto.
+> 
+>> +
+>> +		if (ret < 0) {
+>> +			dev_warn(&devfreq->dev, "%s: setting resume frequency failed\n", __func__);
+>> +			continue;
+>> +		}
+>> +
+>> +		ret = devfreq_resume_device(devfreq);
+>> +		if (ret < 0)
+>> +			dev_warn(&devfreq->dev, "%s: governor resume failed\n", __func__);
+>> +	}
+>> +
+>> +	mutex_unlock(&devfreq_list_lock);
+>> +}
+>> +
+>> +/**
+>>   * devfreq_add_governor() - Add devfreq governor
+>>   * @governor:	the devfreq governor to be added
+>>   */
+>> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+>> index 2de4e2e..555d024 100644
+>> --- a/include/linux/devfreq.h
+>> +++ b/include/linux/devfreq.h
+>> @@ -171,6 +171,9 @@ struct devfreq {
+>>  	struct notifier_block nb;
+>>  	struct delayed_work work;
+>>  
+>> +	unsigned long suspend_freq; /* freq during devfreq suspend */
+>> +	unsigned long resume_freq; /* freq restored after suspend cycle */
+>> +
+>>  	unsigned long previous_freq;
+>>  	struct devfreq_dev_status last_status;
+>>  
+>> @@ -211,6 +214,10 @@ extern void devm_devfreq_remove_device(struct device *dev,
+>>  extern int devfreq_suspend_device(struct devfreq *devfreq);
+>>  extern int devfreq_resume_device(struct devfreq *devfreq);
+>>  
+>> +/* Suspend/resume the entire Devfreq subsystem. */
+>> +void devfreq_suspend(void);
+>> +void devfreq_resume(void);
+>> +
+>>  /* Helper functions for devfreq user device driver with OPP. */
+>>  extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+>>  					   unsigned long *freq, u32 flags);
+>> @@ -410,6 +417,9 @@ static inline int devfreq_update_stats(struct devfreq *df)
+>>  {
+>>  	return -EINVAL;
+>>  }
+>> +
+>> +static inline void devfreq_suspend(void) {}
+>> +static inline void devfreq_resume(void) {}
+>>  #endif /* CONFIG_PM_DEVFREQ */
+>>  
+>>  #endif /* __LINUX_DEVFREQ_H__ */
+>>
+> 
+> 
 Best Regards,
 Chanwoo Choi
-
-> 
-> so i think my way semm more simple.
-> 
-> On 2016年11月24日 15:10, Chanwoo Choi wrote:
->> + Tobias Jakobi,
->>
->> Hi Lin,
->>
->> We need to discuss how to support the suspend-opp of devfreq device.
->> Now, there are two patch thread for suspend-opp of devfreq.
->>
->> The Lin's approach modify the devfreq_suspend_device() to support suspend-opp.
->> The Tobias's approach[1] add new devfreq_suspend() and then call it on dpm_suspend()
->> when entering the suspend state.
->>
->> [1] [RFC 0/4] PM / devfreq: draft for OPP suspend impl
->> - https://patchwork.kernel.org/patch/9443323/
->> - https://patchwork.kernel.org/patch/9443325/
->> - https://patchwork.kernel.org/patch/9443329/
->> - https://patchwork.kernel.org/patch/9443331/
->>
->> I think we need to discuss it together.
->>
->> Regards,
->> Chanwoo Choi
->>
->> On 2016년 11월 24일 15:45, hl wrote:
->>> Hi MyungJoo Ham,
->>>
->>> On 2016年11月24日 14:14, MyungJoo Ham wrote:
->>>> On Thu, Nov 24, 2016 at 11:18 AM, hl <hl@rock-chips.com> wrote:
->>>>> Hi MyungJoo Ham,
->>>> []
->>>>>> We still need to sync the all status even i call target() in
->>>>>> devfreq_suspend/resume_device
->>>>>> directly, so still need update_devfreq() other setp except
->>>>>> devfreq->governor->get_target_freq(devfreq, &freq);
->>>>> And i think it better to be governor behaviors, for userspace they may not
->>>>> want to change
->>>>> the suspend frequency like other governor, the frequency should decide by
->>>>> the user, if they
->>>>> want this function, they should like other governor to rigister a
->>>>> devfreq_monitor_suspend().
->>>>> What do you think about my rev6 patch?
->>>> If I understand the intention correctly, this is for the stability of
->>>> the device due to the behavior or bootloader/SoC-initializer, which
->>>> has nothing to do with governors.
->>>>
->>>> Even if users are using userspace, as long as they set the custom
->>>> frequencies lower than the default, they have the possibility of
->>>> being unstable as ondemand is going to have.
->>>>
->>>>
->>>> To reuse the update_devfreq() code, you may do something like:
->>>>
->>>> static int _update_freq(struct devfreq *devfreq, bool is_suspending)
->>>> {
->>>>      /* original contents of update_freq with if statement with is_suspending wrapping get_target_freq */
->>>> }
->>>> int update_freq(struct devfreq *devfreq)
->>>> {
->>>>     return _update_freq(devfreq, false);
->>>> }
->>>>
->>>>
->>>> There should be other good non-invasive methods that are not governoe-specific as well.
->>>>
->>> Thanks for your suggestion, i will update the new version soon.
->>>> Cheers,
->>>> MyungJoo
->>>>
->>>>
->>>>
->>>>
->>>> _______________________________________________
->>>> Linux-rockchip mailing list
->>>> Linux-rockchip@lists.infradead.org
->>>> http://lists.infradead.org/mailman/listinfo/linux-rockchip
->>> -- 
->>> Lin Huang
->>>
->>
->>
->>
-> 
