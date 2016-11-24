@@ -1,80 +1,80 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MSAxLzJdIFBNL2RldmZyZXE6IGFkZCBz?=
- =?UTF-8?B?dXNwZW5kIGZyZXF1ZW5jeSBzdXBwb3J0?=
-Date: Thu, 24 Nov 2016 05:19:03 +0000
-Message-ID: <20161124051903epcms1p75ab1450eff0361338592c5cb659104f3@epcms1p7>
-References: <CGME20161124051903epcms1p75ab1450eff0361338592c5cb659104f3@epcms1p7>
-Reply-To: myungjoo.ham@samsung.com
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v3 0/3] Stop sched tick in idle injection task
+Date: Thu, 24 Nov 2016 05:21:30 +0100
+Message-ID: <20161124042129.GC29338@gmail.com>
+References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_835729_275350538.1479964743674"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:42825 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750698AbcKXFTG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:19:06 -0500
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OH401W69S3SCC60@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Thu, 24 Nov 2016 14:19:04 +0900 (KST)
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:35350 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750933AbcKXFeH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:34:07 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?aGxAcm9jay1jaGlwcy5jb20=?= <hl@rock-chips.com>
-Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?ZGJhc2Vob3JlQGNocm9taXVtLm9yZw==?= <dbasehore@chromium.org>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?ZGlhbmRlcnNAY2hyb21pdW0ub3Jn?= <dianders@chromium.org>, =?UTF-8?B?bGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZw==?= <linux-rockchip@lists.infradead.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-------=_Part_835729_275350538.1479964743674
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
 
-DQoNCk9uIFdlZCwgTm92IDIzLCAyMDE2IGF0IDExOjAxIEFNLCBobCA8aGxAcm9jay1jaGlwcy5j
-b20+IHdyb3RlOg0KPg0KPg0KPiBPbiAyMDE25bm0MTHmnIgyMuaXpSAyMDo0OCwgTXl1bmdKb28g
-SGFtIHdyb3RlOg0KPj4NCj4+IE9uIFRodSwgTm92IDMsIDIwMTYgYXQgNDowMyBQTSwgaGwgPGhs
-QHJvY2stY2hpcHMuY29tPiB3cm90ZToNCj4+Pg0KPj4+IEhpIE15dW5nSm9vIEhhbSwNCj4+Pg0K
-Pj4+DQo+Pj4gT24gMjAxNuW5tDEx5pyIMDLml6UgMTQ6MzUsIE15dW5nSm9vIEhhbSB3cm90ZToN
-Cj4+Pj4+DQo+Pj4+PiBBZGQgc3VzcGVuZCBmcmVxdWVuY3kgc3VwcG9ydCBhbmQgaWYgbmVlZGVk
-IHNldCBpdCB0bw0KPj4+Pj4gdGhlIGZyZXF1ZW5jeSBvYnRhaW5lZCBmcm9tIHRoZSBzdXNwZW5k
-IG9wcCAoY2FuIGJlIGRlZmluZWQNCj4+Pj4+IHVzaW5nIG9wcC12MiBiaW5kaW5ncyBhbmQgaXMg
-b3B0aW9uYWwpLg0KPj4+Pj4NCj4+Pj4+ICsgICAgICAgaWYgKGRldmZyZXEtPnN1c3BlbmRfZnJl
-cSkNCj4+Pj4+ICsgICAgICAgICAgICAgICBkZXZmcmVxX3VwZGF0ZV9zdGF0dXMoZGV2ZnJlcSwg
-ZGV2ZnJlcS0+c3VzcGVuZF9mcmVxKTsNCj4+Pj4+ICsgICAgICAgZWxzZQ0KPj4+Pj4gKyAgICAg
-ICAgICAgICAgIGRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVxLT5wcmV2aW91
-c19mcmVxKTsNCj4+Pj4NCj4+Pj4gVGhpcyBpcyBpbmNvcnJlY3QuDQo+Pj4+DQo+Pj4+IGRldmZy
-ZXFfdXBkYXRlX3N0YXR1cyBpcyB0byByZWNvcmQgdGhlIHN0YXRpc3RpY3MuDQo+Pj4+IFRoaXMg
-Y29kZSBpbnRlbmRzIHRvIHJlY29yZCB0aGUgY3VycmVudCBzdGF0dXMgYmVmb3JlIGVudGVyaW5n
-IHN1c3BlbmQ7DQo+Pj4+IHRodXMgeW91IHNob3VsZCBub3QgcmVjb3JkICJzdXNwZW5kX2ZyZXEi
-IGhlcmUuDQo+Pj4+DQo+Pj4+IElmIHlvdSByZWFsbHkgbmVlZCB0byByZWNvcmQgdGhlIGZyZXF1
-ZW5jeSBkdXJpbmcgc3VzcGVuZGVkIHN0YXRlDQo+Pj4+IGZvciB0aGUgc3RhdGlzdGljcywgeW91
-IG5lZWQgdG8gZG8gdGhhdCBhdCByZXN1bWU7IGhvd2V2ZXIsIEkgb2JqZWN0IHRvDQo+Pj4+IHRo
-YXQgaWRlYSBlaXRoZXIuDQo+Pj4+DQo+Pj4+IElmIHlvdSByZWFsbHkgd2FudCB0byBzZXQgYSBw
-cmVkZWZpbmVkIHN1c3BlbmQtdG8tUkFNIG1vZGUgZnJlcXVlbmN5LA0KPj4+PiAocHJvYmFibHkg
-YmVjYXVzZSBvZiBIVyBpbnN0YWJpbGl0eSBkdXJpbmcgcmVzdW1lIHByb2Nlc3MpDQo+Pj4+IHlv
-dSBuZWVkIHRvIHVwZGF0ZSwgbm90IHVkcGF0ZV9zdGF0dXMgKHN0YXRpc3RpY3MpLg0KPj4+Pg0K
-Pj4+IFRoYW5rcyBmb3IgcG9pbnRpbmcgaXQsIGJ1dCBpZiBpIHVzZSB1cGRhdGVfZGV2ZnJlcSgp
-LCBpdCBjYW4gbm90IHNwZWNpZnkNCj4+PiB0aGUNCj4+PiBmcmVxdWVuY3ksIGl0IGNhbGwgdGhl
-IGdldF90YXJnZXRfZnJlcSgpIHRvIGdldCB0aGUgZnJlcXVlbmN5IGFuZA0KPj4+IHNldHRpbmcs
-DQo+Pj4gdXNlIG5vdyBkZXZmcmVxIGZyYW1ld29yaywgaXQgc2VlbXMgaGFyZCB0byBzZXQgdGhl
-IHNwZWNpZmljIGZyZXFldWVuY3kNCj4+PiB3aGVuIHN1c3BlbmQuIERvIHlvdSBoYXZlIGFueSBp
-ZGVhLCB0aGFua3MuDQo+Pg0KPj4NCj4+IEl0IGFwcGVhcnMgdGhhdCB3ZSBuZWVkIHRvIHNldCB0
-aGUgZnJlcXVlbmN5IGRpcmVjdGx5IHdpdGggdGFyZ2V0KCkNCj4+IGZ1bmN0aW9uDQo+PiBhdCBz
-dXNwZW5kL3Jlc3VtZSBhZnRlciBpdCBpcyBhc3N1cmVkIHRoYXQgcmVsYXRlZCByb3V0aW5lcyBh
-cmUNCj4+IGFscmVhZHkgc3VzcGVuZGVkLg0KPj4NCj4+IFBsdXMsIHlvdSBtaWdodCBuZWVkIHRv
-IGNvbnNpZGVyIHVzaW5nIGRldmZyZXFfc3VzcGVuZC9yZXN1bWVfZGV2aWNlDQo+PiBpbnN0ZWFk
-DQo+PiBvZiBtb25pdG9yLiBtb25pdG9yIGZ1bmN0aW9ucyBhcmUgZm9yIHRoZSBnb3Zlcm5vci1z
-cGVjaWZpYyBiZWhhdmlvcnMuDQo+PiBZb3UnbGwgbmVlZCBzdWNoIGNhcGFiaWxpdGllcyByZWdh
-cmRsZXNzIG9mIGdvdmVybm9ycy4gKGV2ZW4NCj4+IHVzZXJzcGFjZS1nb3Zlcm5vcg0KPj4gbmVl
-ZHMgdGhpcykNCj4NCj4gV2Ugc3RpbGwgbmVlZCB0byBzeW5jIHRoZSBhbGwgc3RhdHVzIGV2ZW4g
-aSBjYWxsIHRhcmdldCgpIGluDQo+IGRldmZyZXFfc3VzcGVuZC9yZXN1bWVfZGV2aWNlDQo+IGRp
-cmVjdGx5LCBzbyBzdGlsbCBuZWVkIHVwZGF0ZV9kZXZmcmVxKCkgb3RoZXIgc2V0cCBleGNlcHQN
-Cj4gZGV2ZnJlcS0+Z292ZXJub3ItPmdldF90YXJnZXRfZnJlcShkZXZmcmVxLCAmZnJlcSk7DQoN
-ClRoZSBkZXZmcmVxX3VwZGF0ZSgpIHRoZXJlLCB3aGljaCBpcyB0byBpbnZva2UgY29ycmVzcG9u
-ZGluZw0KZ292ZXJub3IgdG8gZGVjaWRlIG5leHQgZnJlcXVlbmN5IChnZXRfdGFyZ2V0X2ZyZXEp
-Lg0KDQpJbiBvcmRlciB0byBjaGFuZ2UgdGhlIGZyZXF1ZW5jeSBpZ25vcmluZyB3aGF0ZXZlciBn
-b3Zlcm5vcnMgbWlnaHQgc2F5DQooaS5lLiwgd2UgYXJlIGdvaW5nIHRvIHN1c3BlbmQgLyByZXN1
-bWUgbm93KSwgeW91IG5lZWQgdG8gdGFsayB0bw0KdGhlIGRyaXZlciBkaXJlY3RseSB3aXRob3V0
-IGludm9raW5nIGdvdmVybm9ycy4NCg0KWW91IG9ubHkgbmVlZCB0byBiZSBjYXJlZnVsIG9uIHRo
-ZSBzZXF1ZW5jZSBvZiBub3RpZmljYXRpb24gY2hhaW5zIGFuZA0Kc3RhdHVzIHVwZGF0aW5nICh5
-b3Ugd2lsbCBwcm9iYWJseSBiZSB3cml0aW5nIGEgbXVjaCBzaW1wbGVyIHZlcnNpb24gb2YNCnVw
-ZGF0ZV9kZXZmcmVxKCkgZm9yIHN1c3BlbmQvcmVzdW1lKQ0KDQogDQoNCkNoZWVycywNCk15dW5n
-Sm9vDQoNCiANCg==
-------=_Part_835729_275350538.1479964743674--
+* Rafael J. Wysocki <rafael@kernel.org> wrote:
+
+> On Wed, Nov 23, 2016 at 9:13 PM, Jacob Pan
+> <jacob.jun.pan@linux.intel.com> wrote:
+> > Changelog:
+> > v3:     - rearrange idle.c change based on Rafael's suggestion.
+> >
+> > v2:
+> >         - moved duration timer from powerclamp driver to play_idle()
+> >         - unexport cpuidle_use_deepest_state
+> >         - indentation fix
+> >
+> > Idle injection drivers today use RT threads to run idle loop. There are
+> > efficiency and accounting issues with the current intel_powerclamp.c
+> > and acpi_pad.c. A while ago, I posted CFS based idle injection patch trying
+> > to address them:
+> > https://lkml.org/lkml/2015/11/13/576
+> >
+> > Peter proposed another approach with the introduction of a PF_IDLE flag.
+> > This patchset is based on his original posting:
+> > https://lkml.org/lkml/2014/6/4/56
+> >
+> > These patches apply on top of the kworker and cpu hotplug state machine
+> > changes made to Intel powerclamp driver.
+> > https://lkml.org/lkml/2016/10/17/362
+> >
+> > Similar changes to ACPI PAD driver is developed along with other
+> > enhancements. It will be posted after this patchset is accepted.
+> >
+> > Jacob Pan (2):
+> >   cpuidle: allow setting deepest idle
+> >   thermal/powerclamp: stop sched tick in forced idle
+> >
+> > Peter Zijlstra (1):
+> >   idle: add support for tasks that inject idle
+> >
+> >  drivers/cpuidle/cpuidle.c          |  11 +++
+> >  drivers/thermal/intel_powerclamp.c |  35 +------
+> >  include/linux/cpu.h                |   2 +
+> >  include/linux/cpuidle.h            |   4 +-
+> >  include/linux/sched.h              |   3 +-
+> >  kernel/fork.c                      |   3 +
+> >  kernel/sched/core.c                |   1 +
+> >  kernel/sched/idle.c                | 183 +++++++++++++++++++++++--------------
+> >  8 files changed, 139 insertions(+), 103 deletions(-)
+> 
+> Any objections anyone?
+> 
+> If not, I'll queue up this series for 4.10.
+
+NAK. The first patch alone has a dozen of trivial problems - very sloppy.
+
+Guys, please rework, double check and actually _READ_ the fine patches you are 
+promoting and then in a couple of days I'll review this series again to see 
+whether the NAK can be lifted ...
+
+Thanks,
+
+	Ingo
