@@ -1,65 +1,49 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 6/9] power_supply: wm97xx_battery: use
- power_supply_get_drvdata
-Date: Thu, 24 Nov 2016 00:13:20 +0100
-Message-ID: <20161123231320.fo3kilw5h7cctngc@earth>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
- <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3 0/3] Stop sched tick in idle injection task
+Date: Thu, 24 Nov 2016 01:24:48 +0100
+Message-ID: <CAJZ5v0iUy9g0J9bZCHCho7oCQvf7rzM5c=AYww5V+BD2x1jV2A@mail.gmail.com>
+References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <CAJZ5v0g6==h_qBQ1x6wbV+N3MjjWRb-iNmF4OShFrD0qR2L9JA@mail.gmail.com>
+ <20161123214555.GC3092@twins.programming.kicks-ass.net> <CAJZ5v0j15suAbq8ZFdg5s4j9x+V8v3EoUNUL4DJT6ZLSjZ+UWw@mail.gmail.com>
+ <20161123162507.2354e504@jacob-builder>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="vkhjhr2u2sgpauj6"
-Return-path: <linux-input-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
-Sender: linux-input-owner@vger.kernel.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:33953 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933573AbcKXAYu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 19:24:50 -0500
+In-Reply-To: <20161123162507.2354e504@jacob-builder>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
+On Thu, Nov 24, 2016 at 1:25 AM, Jacob Pan
+<jacob.jun.pan@linux.intel.com> wrote:
+> On Wed, 23 Nov 2016 23:38:39 +0100
+> "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+>
+>> On Wed, Nov 23, 2016 at 10:45 PM, Peter Zijlstra
+>> <peterz@infradead.org> wrote:
+>> > On Wed, Nov 23, 2016 at 10:12:46PM +0100, Rafael J. Wysocki wrote:
+>> >> On Wed, Nov 23, 2016 at 9:13 PM, Jacob Pan
+>> >
+>> >>
+>> >> Any objections anyone?
+>> >>
+>> >> If not, I'll queue up this series for 4.10.
+>> >
+>> > 1h30 is a bit short to expect people to have even seen this, let
+>> > alone reviewed.
+>>
+>> I didn't say I'd queue it up right away. :-)
+>
+> The powerclamp change is on top of Petr and Sebastian's kworker and cpu
+> hp state machine patches. I plan to put all powerclamp patches in one
+> series after 1 and 2 are accepted.
 
---vkhjhr2u2sgpauj6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+OK
 
-Hi Robert,
-
-On Wed, Oct 26, 2016 at 09:41:44PM +0200, Robert Jarzmik wrote:
-> As the power supply framework provides a way to store and retrieve
-> private supply data, use it.
->=20
-> In the process, change the platform data for wm97xx_battery from a
-> container of a single struct wm97xx_batt_pdata to the direct point to wm9=
-7xx_batt_pdata.
->=20
-> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> ---
->  drivers/input/touchscreen/wm97xx-core.c |  2 +-
->  drivers/power/supply/wm97xx_battery.c   | 25 ++++++++++---------------
->  2 files changed, 11 insertions(+), 16 deletions(-)
-
-I queued this into power-supply's for-next branch.
-
--- Sebastian
-
---vkhjhr2u2sgpauj6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlg2IpAACgkQ2O7X88g7
-+pr25w//beIkNI5JttriQyzPkMKP+e3tuxw5q4zPRdJcoQID6UWgPuEN+U4Sqv4Q
-G7Oo9qyIpocirsokSkiq9Pf6CKwiL7SWqJy0gCpqGFeSQWnIOf2s5LurVCBCwPaI
-+VPYarKZMIB3QEepNS1Kl6k8vGMDKVk7XyX0TZ1dfBMTjqsLeTZm7uIxrv9jZEP2
-P1+FHrjRAWlEkamct9cJKVhjTFvZMz3PjrUjA5q2lbMqPzehk7afGXrcsh8rTz0Z
-l2jMN5BqRRBpz7qMnv3ABCAmihI/YjUdX6vpdvNPJjqKTZbSGY3jBkTS2GHkpz0h
-DMmOJCfwWFA6J7LZ1rjxaJzf0/pMLT8aXaE38vqhmWy1ECPoNIm/2BhYx/q/odzH
-wC91b3PGD+PBzMg1p5wwvJ8CEJFCJqtQlcX1i/1VXHVapbHPREkoZ2gDpBnPj8z1
-Aoap1Iv7XVNZe3c5k2EHq3W8OosHLvbWX5ubIV1YOMzRufw/+q4aJgwLeRGp9QxE
-vFiLn3v/d0jVXcq1Xau6YPtN+jNJDfUvCbjPPOfltC79J3d3fbA0T9rSLU+pD7BM
-9IKYrNmaiG4q+Mnx6R9wJdh2OX9j7aaCUstwlsQmWVhH5eNFL4hOcLDxZN/FXvcL
-I7BNVTja40IFVY7snC3q2D4bhAnFwkbTSJvtlPp1tP9T9RlsS3k=
-=CqX6
------END PGP SIGNATURE-----
-
---vkhjhr2u2sgpauj6--
+Thanks,
+Rafael
