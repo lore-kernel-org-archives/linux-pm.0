@@ -1,102 +1,81 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 00/10] PM / OPP: Multiple regulator support
-Date: Thu, 24 Nov 2016 17:06:09 +0530
-Message-ID: <cover.1479986491.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f177.google.com ([209.85.192.177]:35394 "EHLO
-        mail-pf0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965225AbcKXLg2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 06:36:28 -0500
-Received: by mail-pf0-f177.google.com with SMTP id i88so9876854pfk.2
-        for <linux-pm@vger.kernel.org>; Thu, 24 Nov 2016 03:36:28 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org
+Subject: [PATCH V4 02/10] PM / OPP: Reword binding supporting multiple regulators per device
+Date: Thu, 24 Nov 2016 17:06:11 +0530
+Message-ID: <e4635d74b9e1ed256c733281c5b07884ed515082.1479986491.git.viresh.kumar@linaro.org>
+References: <cover.1479986491.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1479986491.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1479986491.git.viresh.kumar@linaro.org>
+References: <cover.1479986491.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh Kumar <vireshk@kernel.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On certain platforms (like TI), DVFS for a single device (CPU) requires
+configuring multiple power supplies.
 
-Some platforms (like TI) have complex DVFS configuration for CPU
-devices, where multiple regulators are required to be configured to
-change DVFS state of the device. This was explained well by Nishanth
-earlier [1].
+The OPP bindings already contains binding and example to explain this
+case, but it isn't sufficient.
 
-One of the major complaints around multiple regulators case was that the
-DT isn't responsible in any way to represent the order in which multiple
-supplies need to be programmed, before or after a frequency change. It
-was considered in this patch and such information is left for the
-platform specific OPP driver now, which can register its own
-opp_set_rate() callback with the OPP core and the OPP core will then
-call it during DVFS.
+- There is no way for the code parsing these bindings to know which
+  voltage values belong to which power supply.
 
-The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
-and code to pass values for multiple regulators and verified that they
-are all properly read by the kernel (using debugfs interface).
+- It is not possible to know the order in which the supplies need to be
+  configured while switching OPPs.
 
-Dave Gerlach has already tested [2] it on the real TI platforms and it
-works well for him.
+This patch clarifies on those details by mentioning that such
+information is left for the implementation specific bindings to explain.
+They may want to hardcode such details or implement their own properties
+to get such information. All implementations using multiple regulators
+for their devices must provide a binding document explaining their
+implementation.
 
-This is rebased over: linux-next branch in the PM tree.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
-V3->V4:
-- Separate out cpu-supply fix in the binding in a separate patch (Mark).
-- Add more documentation to the binding to explain that the relation to
-  the supplies and the order of programming them is left for the
-  platform specific bindings and that every platform using multiple
-  regulators for their devices needs to provide a separate binding
-  document explaining their implementation (Mark).
-- @Rob and Stephen: I have kept your Acks for the bindings as the
-  bindings only got a bit reworded (improved) since the time you guys
-  Acked them. Please let me know if you want more improvement in the
-  bindings now.
-- V4 for 10/10 was sent earlier, which added a missing
-  rcu_read_unlock(). Nothing else changed in it.
-- Added some missing Kernel documentation comments
-
-V2->V3:
-- The last patch is new
-- Removed a debug leftover pr_info() message
-- Renamed few names as s/set_rate/set_opp
-- Removed a TODO comment (as it is done now with this series)
-- created struct for min_uV and max_uV
-- kerneldoc comments for structures in pm_opp.h
-- s/const char */const char * const
-- use kasprintf()
-- Some more minor reformatting
-- More Ack/RBY tags added
-
-V1->V2:
-- Ack from Rob for 1st patch
-- Moved the supplies structure to pm_opp.h (Dave)
-- Fixed an compilation warning.
-
---
-viresh
-
-[1] https://marc.info/?l=linux-pm&m=145684495832764&w=2
-[2] https://marc.info/?l=linux-kernel&m=147924789305276&w=2
-
-Viresh Kumar (10):
-  PM / OPP: Fix incorrect cpu-supply property in binding
-  PM / OPP: Reword binding supporting multiple regulators per device
-  PM / OPP: Don't use OPP structure outside of rcu protected section
-  PM / OPP: Manage supply's voltage/current in a separate structure
-  PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
-  PM / OPP: Add infrastructure to manage multiple regulators
-  PM / OPP: Separate out _generic_opp_set_rate()
-  PM / OPP: Allow platform specific custom set_opp() callbacks
-  PM / OPP: Don't WARN on multiple calls to dev_pm_opp_set_regulators()
-  PM / OPP: Don't assume platform doesn't have regulators
-
- Documentation/devicetree/bindings/opp/opp.txt |  27 +-
- drivers/base/power/opp/core.c                 | 511 ++++++++++++++++++++------
- drivers/base/power/opp/debugfs.c              |  52 ++-
- drivers/base/power/opp/of.c                   | 105 ++++--
- drivers/base/power/opp/opp.h                  |  22 +-
- drivers/cpufreq/cpufreq-dt.c                  |   9 +-
- include/linux/pm_opp.h                        |  67 +++-
- 7 files changed, 612 insertions(+), 181 deletions(-)
-
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index f0239f68d186..9f5ca4457b5f 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -86,8 +86,14 @@ properties.
+   Single entry is for target voltage and three entries are for <target min max>
+   voltages.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. The OPP binding doesn't provide any provisions to
++  relate the values to their power supplies or the order in which the supplies
++  need to be configured and that is left for the implementation specific
++  binding.
++
++  Entries for all regulators shall be of the same size, i.e. either all use a
++  single value or triplets.
+ 
+ - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
+   the above opp-microvolt property, but allows multiple voltage ranges to be
+@@ -104,10 +110,13 @@ properties.
+ 
+   Should only be set if opp-microvolt is set for the OPP.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node. If this property isn't required
+-  for few regulators, then this should be marked as zero for them. If it isn't
+-  required for any regulator, then this property need not be present.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. If current values aren't required for a regulator,
++  then it shall be filled with 0. If current values aren't required for any of
++  the regulators, then this field is not required. The OPP binding doesn't
++  provide any provisions to relate the values to their power supplies or the
++  order in which the supplies need to be configured and that is left for the
++  implementation specific binding.
+ 
+ - opp-microamp-<name>: Named opp-microamp property. Similar to
+   opp-microvolt-<name> property, but for microamp instead.
 -- 
 2.7.1.410.g6faf27b
-
