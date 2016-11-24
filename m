@@ -1,100 +1,260 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3 1/3] idle: add support for tasks that inject idle
-Date: Thu, 24 Nov 2016 14:44:04 +0100
-Message-ID: <CAJZ5v0h__Xm=EEUV4gys5nNr7Eu_HiOMZHfBEWqMG-ZA67Gcgg@mail.gmail.com>
-References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
- <1479931990-11732-2-git-send-email-jacob.jun.pan@linux.intel.com>
- <20161124095016.GD3092@twins.programming.kicks-ass.net> <20161124110454.GA22551@gmail.com>
+From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Subject: Re: [RFC 1/4] PM / devfreq: Add DevFreq subsystem suspend/resume
+Date: Thu, 24 Nov 2016 15:20:44 +0100
+Message-ID: <5836F73C.8040706@math.uni-bielefeld.de>
+References: <1479909087-22659-1-git-send-email-tjakobi@math.uni-bielefeld.de>
+ <CGME20161123135204epcas1p4c16e65584e901dfc5062f9afdc00b0fe@epcas1p4.samsung.com>
+ <1479909087-22659-2-git-send-email-tjakobi@math.uni-bielefeld.de>
+ <583643A7.6020502@samsung.com> <5836A2E7.5080504@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161124110454.GA22551@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.math.uni-bielefeld.de ([129.70.45.10]:60767 "EHLO
+        smtp.math.uni-bielefeld.de" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S965062AbcKXOUt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 09:20:49 -0500
+In-Reply-To: <5836A2E7.5080504@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-samsung-soc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com
 
-On Thu, Nov 24, 2016 at 12:04 PM, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * Peter Zijlstra <peterz@infradead.org> wrote:
->
->> On Wed, Nov 23, 2016 at 12:13:08PM -0800, Jacob Pan wrote:
->> > @@ -280,6 +272,58 @@ bool cpu_in_idle(unsigned long pc)
->> >             pc < (unsigned long)__cpuidle_text_end;
->> >  }
->> >
->> > +static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *hrtimer)
->> > +{
->> > +   set_tsk_need_resched(current);
->> > +   return HRTIMER_NORESTART;
->> > +}
->> > +
->> > +void play_idle(unsigned long duration_ms)
->> > +{
->> > +   struct hrtimer timer;
->> > +   unsigned long end_time;
->> > +
->> > +   /*
->> > +    * Only FIFO tasks can disable the tick since they don't need the forced
->> > +    * preemption.
->> > +    */
->> > +   WARN_ON_ONCE(current->policy != SCHED_FIFO);
->> > +   WARN_ON_ONCE(current->nr_cpus_allowed != 1);
->> > +   WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
->> > +   WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
->> > +
->> > +   rcu_sleep_check();
->> > +   preempt_disable();
->> > +   current->flags |= PF_IDLE;
->> > +   cpuidle_use_deepest_state(true);
->> > +
->> > +   /*
->> > +    * If duration is 0, we will return after a natural wake event occurs. If
->> > +    * duration is none zero, we will go back to sleep if we were woken up earlier.
->> > +    * We also set up a timer to make sure we don't oversleep in deep idle.
->> > +    */
->> > +   if (!duration_ms)
->> > +           do_idle();
->>
->> OK, so that doesn't make any sense, you should not be calling this
->> without a timeout.
->>
->> > +   else {
->> > +           hrtimer_init_on_stack(&timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
->> > +           timer.function = idle_inject_timer_fn;
->> > +           hrtimer_start(&timer, ms_to_ktime(duration_ms),
->> > +                   HRTIMER_MODE_REL_PINNED);
->> > +           end_time = jiffies + msecs_to_jiffies(duration_ms);
->> > +
->> > +           while (time_after(end_time, jiffies))
->> > +                   do_idle();
->> > +   }
->> > +   hrtimer_cancel(&timer);
->> > +
->> > +   cpuidle_use_deepest_state(false);
->> > +   current->flags &= ~PF_IDLE;
->> > +
->> > +   preempt_fold_need_resched();
->> > +   preempt_enable();
->> > +}
->> > +EXPORT_SYMBOL_GPL(play_idle);
->>
->>
->> How about something like so... (since I had to edit, I fixed up most
->> things Ingo complained about as well).
->>
->> Note that it doesn't build because of a distinct lack of
->> cpuidle_use_deepest_state() in my kernel tree.
->
-> Ok, I really like this one, it so much cleaner!
->
-> If the patch builds & works:
->
->   Acked-by: Ingo Molnar <mingo@kernel.org>
+Hey Chanwoo,
 
-OK, thanks!
+first of all, thanks for the help!
 
-Jacob, can you please test this one along with the rest of the series?
 
-Thanks,
-Rafael
+Chanwoo Choi wrote:
+> Hi Tobias,
+> 
+> On 2016년 11월 24일 10:34, Chanwoo Choi wrote:
+>> Hi Tobias,
+>>
+>> I like your suggestion. But I have some comment on below.
+>>
+>> On 2016년 11월 23일 22:51, Tobias Jakobi wrote:
+>>> This suspend/resume operations works analogous to the
+>>> cpufreq_{suspend,resume}() calls in the CPUFreq subsystem.
+>>>
+>>> Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>>> ---
+>>>  drivers/devfreq/devfreq.c | 75 +++++++++++++++++++++++++++++++++++++++++++++++
+>>>  include/linux/devfreq.h   | 10 +++++++
+>>>  2 files changed, 85 insertions(+)
+>>>
+>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>>> index bf3ea76..2f1aa83 100644
+>>> --- a/drivers/devfreq/devfreq.c
+>>> +++ b/drivers/devfreq/devfreq.c
+>>> @@ -785,6 +785,81 @@ int devfreq_resume_device(struct devfreq *devfreq)
+>>>  EXPORT_SYMBOL(devfreq_resume_device);
+>>>  
+>>>  /**
+>>> + * devfreq_suspend() - Suspend DevFreq governors
+>>> + *
+>>> + * Called during system wide Suspend/Hibernate cycles for suspending governors
+>>> + * in the same fashion as cpufreq_suspend().
+>>> + */
+>>> +void devfreq_suspend(void)
+>>> +{
+>>> +	struct devfreq *devfreq;
+>>> +	unsigned long freq;
+>>> +	int ret;
+>>> +
+>>> +	mutex_lock(&devfreq_list_lock);
+>>> +
+>>> +	list_for_each_entry(devfreq, &devfreq_list, node) {
+>>> +		if (!devfreq->suspend_freq)
+>>> +			continue;
+>>> +
+>>> +		ret = devfreq_suspend_device(devfreq);
+> 
+> The devfreq_suspend_device() stop the monitoring of governors.
+> But, this function is exported. It means that each devfreq device.
+> can call the devfreq_suspend/resume_device() (e.g., int drivers/scsi/ufs/ufshcd.c)
+> 
+> So, you should consider following case:
+> - case :Before calling the devfreq_suspend() and specific devfreq already call
+>   the devfreq_suspend_device(), how to support it?
+>   In this case, the specific devfreq device don't want to call
+>   the devfreq_resume_device() in the devfreq_resume().
+How about this idea?
+
+Introduce a boolean 'devfreq_suspended' (again similar to CPUFreq) and
+set it to true (atomically?) once we have entered devfreq_suspend().
+
+At the end of devfreq_suspend() we set it to false again.
+
+We just need to check in devfreq_{suspend,resume}_device() for
+'devfreq_suspended' and return some error code (-EBUSY maybe?) to the
+caller.
+
+Of course I would inline the devfreq->governor->event_handler() call
+into devfreq_{suspend,resume}() first.
+
+Does this look sane?
+
+Also, do you see any other exported calls which we might have to
+'protect' during suspended state?
+
+
+With best wishes,
+Tobias
+
+
+>>> +		if (ret < 0) {
+>>> +			dev_warn(&devfreq->dev, "%s: governor suspend failed\n", __func__);
+>>> +			continue;
+>>> +		}
+>>> +
+>>> +		devfreq->resume_freq = 0;
+>>> +		if (devfreq->profile->get_cur_freq) {
+>>> +			ret = devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq);
+>>> +			if (ret >= 0)
+>>> +				devfreq->resume_freq = freq;
+>>> +		}
+>>> +
+>>> +		freq = devfreq->suspend_freq;
+>>> +		ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
+>>
+>>
+>> DEVFREQ subsystem has the passive governor[2] and devfreq device using passive[1]
+>> governor depends on the parent devfreq device. The passive governor uses
+>> 'DEVFREQ_TRANSITION_NOTIFIER' notifier to track the changed state of
+>> parent devfreq device.
+>>
+>> When changing the clock/voltage of parent devfreq device,
+>> DEVFREQ subsystem have to notify the changed frequency
+>> to the passive devfreq device.
+>>
+>> So, you should call the devfreq_notifiy_transition()
+>> before/after 'devfreq->profile->target' as following:
+>> You can refer the update_devfreq() function 
+>> that is how to use devfreq_notifiy_transition().
+>>
+>> For example,
+>> 		struct devfreq_freq freqs;
+>>  
+>> 		if (devfreq->profile->get_cur_freq) {
+>> 			ret = devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq);
+>> 			if (ret >= 0)
+>> 				devfreq->resume_freq = freq;
+>> 		} else {
+>> 			devfreq->resume_freq = devfreq_previous_freq;
+>> 		} 
+>>
+>> 		freqs.old = devfreq->resume_freq;
+>> 		freqs.new = devfreq->suspend_freq;
+>> 		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_PRECHANGE);
+>>
+>>                 freq = devfreq->suspend_freq;
+>>                 ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
+>>  
+>> 		freqs.new = freq;
+>> 		devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+>>
+>>                 if (ret < 0)
+>>                         dev_warn(&devfreq->dev, "%s: setting suspend frequency failed\n", __func__);
+>>         }
+>>
+>> [1] DEVFREQ_TRANSITION_NOTIFIER notifier
+>> - https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=0fe3a66410a3ba96679be903f1e287d7a0a264a9
+>> [2] DEVFREQ passive governor
+>> - https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id=996133119f57334c38b020dbfaaac5b5eb127e29
+>>
+>>> +
+>>> +		if (ret < 0)
+>>> +			dev_warn(&devfreq->dev, "%s: setting suspend frequency failed\n", __func__);
+>>> +	}
+>>> +
+>>> +	mutex_unlock(&devfreq_list_lock);
+>>> +}
+>>> +
+>>> +/**
+>>> + * devfreq_resume() - Resume DevFreq governors
+>>> + *
+>>> + * Called during system wide Suspend/Hibernate cycle for resuming governors that
+>>> + * are suspended with devfreq_suspend().
+>>> + */
+>>> +void devfreq_resume(void)
+>>> +{
+>>> +	struct devfreq *devfreq;
+>>> +	unsigned long freq;
+>>> +	int ret;
+>>> +
+>>> +	mutex_lock(&devfreq_list_lock);
+>>> +
+>>> +	list_for_each_entry(devfreq, &devfreq_list, node) {
+>>> +		if (!devfreq->suspend_freq)
+>>> +			continue;
+>>> +
+>>> +		freq = devfreq->resume_freq;
+>>> +		ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
+>>
+>> ditto.
+>>
+>>> +
+>>> +		if (ret < 0) {
+>>> +			dev_warn(&devfreq->dev, "%s: setting resume frequency failed\n", __func__);
+>>> +			continue;
+>>> +		}
+>>> +
+>>> +		ret = devfreq_resume_device(devfreq);
+>>> +		if (ret < 0)
+>>> +			dev_warn(&devfreq->dev, "%s: governor resume failed\n", __func__);
+>>> +	}
+>>> +
+>>> +	mutex_unlock(&devfreq_list_lock);
+>>> +}
+>>> +
+>>> +/**
+>>>   * devfreq_add_governor() - Add devfreq governor
+>>>   * @governor:	the devfreq governor to be added
+>>>   */
+>>> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+>>> index 2de4e2e..555d024 100644
+>>> --- a/include/linux/devfreq.h
+>>> +++ b/include/linux/devfreq.h
+>>> @@ -171,6 +171,9 @@ struct devfreq {
+>>>  	struct notifier_block nb;
+>>>  	struct delayed_work work;
+>>>  
+>>> +	unsigned long suspend_freq; /* freq during devfreq suspend */
+>>> +	unsigned long resume_freq; /* freq restored after suspend cycle */
+>>> +
+>>>  	unsigned long previous_freq;
+>>>  	struct devfreq_dev_status last_status;
+>>>  
+>>> @@ -211,6 +214,10 @@ extern void devm_devfreq_remove_device(struct device *dev,
+>>>  extern int devfreq_suspend_device(struct devfreq *devfreq);
+>>>  extern int devfreq_resume_device(struct devfreq *devfreq);
+>>>  
+>>> +/* Suspend/resume the entire Devfreq subsystem. */
+>>> +void devfreq_suspend(void);
+>>> +void devfreq_resume(void);
+>>> +
+>>>  /* Helper functions for devfreq user device driver with OPP. */
+>>>  extern struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+>>>  					   unsigned long *freq, u32 flags);
+>>> @@ -410,6 +417,9 @@ static inline int devfreq_update_stats(struct devfreq *df)
+>>>  {
+>>>  	return -EINVAL;
+>>>  }
+>>> +
+>>> +static inline void devfreq_suspend(void) {}
+>>> +static inline void devfreq_resume(void) {}
+>>>  #endif /* CONFIG_PM_DEVFREQ */
+>>>  
+>>>  #endif /* __LINUX_DEVFREQ_H__ */
+>>>
+>>
+>>
+> Best Regards,
+> Chanwoo Choi
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-samsung-soc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+
