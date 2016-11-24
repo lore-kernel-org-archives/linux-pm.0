@@ -1,87 +1,33 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
- require multiple domains
-Date: Wed, 23 Nov 2016 18:30:14 -0800
-Message-ID: <20161124023014.GK6095@codeaurora.org>
-References: <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
- <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
- <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
- <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
- <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
- <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
- <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
- <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
- <m2lgwbxtea.fsf@baylibre.com>
- <f54b4912-bfdd-aa2c-6f04-e09ed4207af6@nvidia.com>
+From: Steve Muckle <smuckle.linux@gmail.com>
+Subject: Re: [PATCH V2 0/4] cpufreq: schedutil: move slow path from workqueue
+ to SCHED_FIFO task
+Date: Wed, 23 Nov 2016 19:01:02 -0800
+Message-ID: <20161124030102.GA20047@graphite.smuckle.net>
+References: <cover.1479197311.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:35879 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753943AbcKXDBF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 22:01:05 -0500
 Content-Disposition: inline
-In-Reply-To: <f54b4912-bfdd-aa2c-6f04-e09ed4207af6@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Kevin Hilman <khilman@baylibre.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <cover.1479197311.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
 
-On 11/22, Jon Hunter wrote:
-> 
-> On 22/11/16 18:26, Kevin Hilman wrote:
-> > Jon Hunter <jonathanh@nvidia.com> writes:
-> > 
-> >> However, I would rather the client of
-> >> the power-domains specify which power-domains they require and
-> >> dynamically nested the power-domains at runtime. This is slightly
-> >> different to what I proposed in this RFC, but it is not really beyond
-> >> the bounds of what we support today IMO. What is missing is a means to
-> >> do this dynamically and not statically.
-> >>
-> >> By the way, I am not sure if you are suggesting that for devices that
-> >> may need multiple power-domains we should architect the driver
-> >> differently and split it up in some way such that we have a power-domain
-> >> per device. But for the case of the Tegra XHCI it is quite complex
-> >> because the driver loads firmware which runs on a micro-controller and
-> >> we need to manage the various power-domains that are used.
-> > 
-> > IMO, constructing a network of new struct devices just to workaround
-> > limitations in the framework doesn't sound quite right either.
-> 
-> I agree.
-> 
+Hi Viresh,
 
-Marek is attempting to do this for the samsung clock
-controller[1] (patch #5 is informative). From what I can tell
-they have one DT node for their clock controller because it's one
-register address space to control clocks. But, certain clocks
-exposed by that driver only work when certain power domains are
-enabled. For example, they have a clock controller that exposes
-clock signals for multimedia hardware blocks like video
-accelerators, gpus, and cameras. The clocks seem to have been
-placed inside different power domains for the multimedia hardware
-they're associated with, so there may be 10 or so power domains
-that need to be enabled at different times for different clocks
-to work. If the GPU power domain isn't enabled when the GPU
-clocks are touched by the driver, things break, etc.
+On Tue, Nov 15, 2016 at 01:53:19PM +0530, Viresh Kumar wrote:
+> This work was started by Steve Muckle, where he used a simple kthread
+> instead of kthread-worker and that wasn't sufficient as some guarantees
+> weren't met.
 
-In the proposed patchset, we have the top-level clock controller
-node with subnodes for each power domain that needs to be
-associated with clocks inside these different multimedia blocks.
-So we end up with one parent device and attached driver for the
-clock driver, and then that driver populates child nodes as
-devices and matches up clocks with child nodes while registering
-clks with clk_register(). Because we pass a dev pointer to
-clk_register, we associate different devices with different
-clocks all from the same top-level clock controller device
-driver. Then clk framework calls runtime_pm APIs with devices
-used during clk registration. Some of those devices don't have
-any driver bound to them, which feels odd.
+I know this has already gone in, but can you expand on the unmet
+guarantees mentioned here just for my own (and perhaps others')
+understanding?
 
-This seems like a case where we really want a better way to
-explicitly control power domains without making up subnodes and
-registering struct devices just to work around the one device to
-one genpd construct we have today. Maybe power domains just don't
-map to genpd though and that's the disconnect.
-
-[1] http://lkml.kernel.org/r/1477311130-6534-1-git-send-email-m.szyprowski@samsung.com
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+thanks,
+Steve
