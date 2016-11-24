@@ -1,95 +1,107 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/4] cpufreq: schedutil: move slow path from workqueue
- to SCHED_FIFO task
-Date: Thu, 24 Nov 2016 09:34:04 +0530
-Message-ID: <20161124040404.GB9376@vireshk-i7>
-References: <cover.1479197311.git.viresh.kumar@linaro.org>
- <20161124030102.GA20047@graphite.smuckle.net>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v3 1/3] idle: add support for tasks that inject idle
+Date: Thu, 24 Nov 2016 05:18:48 +0100
+Message-ID: <20161124041848.GB29338@gmail.com>
+References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <1479931990-11732-2-git-send-email-jacob.jun.pan@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:35374 "EHLO
-        mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753943AbcKXEEc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Nov 2016 23:04:32 -0500
-Received: by mail-pf0-f182.google.com with SMTP id i88so7123134pfk.2
-        for <linux-pm@vger.kernel.org>; Wed, 23 Nov 2016 20:04:08 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161124030102.GA20047@graphite.smuckle.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1479931990-11732-2-git-send-email-jacob.jun.pan@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Steve Muckle <smuckle.linux@gmail.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>
 
-On 23-11-16, 19:01, Steve Muckle wrote:
-> I know this has already gone in, but can you expand on the unmet
-> guarantees mentioned here just for my own (and perhaps others')
-> understanding?
 
-Sure. This is the simplified form of your original patch:
+* Jacob Pan <jacob.jun.pan@linux.intel.com> wrote:
 
-@@ -71,7 +73,7 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- {
-        s64 delta_ns;
- 
--       if (sg_policy->work_in_progress)
-+       if (sg_policy->thread_active)
-                return false;
- 
-        if (unlikely(sg_policy->need_freq_update)) {
- 
-+static int sugov_thread(void *data)
- {
-	...
+> From: Peter Zijlstra <peterz@infradead.org>
+> 
+> Idle injection drivers such as Intel powerclamp and ACPI PAD drivers use
+> realtime tasks to take control of CPU then inject idle. There are two issues
+> with this approach:
 
-+       do {
+'CPU' is capitalized properly here.
 
-        ...
+And here:
 
-+               set_current_state(TASK_RUNNING);
-+               /* Issue request. */
-+               mutex_lock(&sg_policy->slow_lock);
-+               __cpufreq_driver_target(sg_policy->policy,
-+                                       sg_policy->next_freq,
-+                                       CPUFREQ_RELATION_L);
-+               mutex_unlock(&sg_policy->slow_lock);
-+
-+               sg_policy->thread_active = false;
+>  #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
 
-        ...
+But not later in the patch.
 
-+               schedule();
-+
-+       } while (!kthread_should_stop());
-+       return 0;
- }
- 
- static void sugov_irq_work(struct irq_work *irq_work)
-@@ -349,7 +382,7 @@ static void sugov_irq_work(struct irq_work *irq_work)
-        struct sugov_policy *sg_policy;
- 
-        sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
--       schedule_work_on(smp_processor_id(), &sg_policy->work);
-+       wake_up_process(sg_policy->thread);
- }
+> +++ b/kernel/fork.c
+> @@ -1819,6 +1819,9 @@ static __latent_entropy struct task_struct *copy_process(
+>  	threadgroup_change_end(current);
+>  	perf_event_fork(p);
+>  
+> +	/* do not inherit idle task */
+> +	p->flags &= ~PF_IDLE;
 
-Consider that the thread has just got a chance to run and has set
-'thread_active' to false from sugov_thread(), i.e. schedule() isn't called yet.
+Sloppy formulation: how can the idle task be inherited? Also, capitalize comments 
+please.
 
-At this time if sugov_should_update_freq() gets called again, it will return
-'true', and eventually we will land into sugov_irq_work() and that will call
-wake_up_process(). But the process is already running and haven't slept yet.
-I am not sure how it works but I don't expect the thread to go to sleep again at
-this point of time.
+> +	/*
+> +	 * If the arch has a polling bit, we maintain an invariant:
+> +	 *
+> +	 * Our polling bit is clear if we're not scheduled (i.e. if
+> +	 * rq->curr != rq->idle).  This means that, if rq->idle has
+> +	 * the polling bit set, then setting need_resched is
+> +	 * guaranteed to cause the cpu to reschedule.
+> +	 */
 
-And in this particular case we will end up not evaluating the load and doing
-DVFS for period = 2 * rate_limit_us, whereas we wanted to do that every
-rate_limit microseconds.
+'CPU' is not properly capitalized here.
 
-Of course a simple kthread would have been better instead of a kthread + work if
-this wasn't the case.
+> +	/* In poll mode we reenable interrupts and spin.
+> +	 * Also if we detected in the wakeup from idle
+> +	 * path that the tick broadcast device expired
+> +	 * for us, we don't want to go deep idle as we
+> +	 * know that the IPI is going to arrive right
+> +	 * away
+> +	 */
+> +		if (cpu_idle_force_poll || tick_check_broadcast_expired())
+> +			cpu_idle_poll();
+> +		else
+> +			cpuidle_idle_call();
+> +		arch_cpu_idle_exit();
 
-Does that sound reasonable or Am I missing something ?
+Sigh: that's not standard comment style, nor is it standard coding style.
 
--- 
-viresh
+Also, multi-sentence comments should end with a full stop.
+
+> +	/*
+> +	 * We promise to call sched_ttwu_pending and reschedule
+> +	 * if need_resched is set while polling is set.  That
+> +	 * means that clearing polling needs to be visible
+> +	 * before doing these things.
+> +	 */
+
+When referring to functions in comments please spell them as "fn()", i.e. with 
+parentheses.
+
+> +	/*
+> +	 * If duration is 0, we will return after a natural wake event occurs. If
+> +	 * duration is none zero, we will go back to sleep if we were woken up earlier.
+> +	 * We also set up a timer to make sure we don't oversleep in deep idle.
+> +	 */
+> +	if (!duration_ms)
+> +		do_idle();
+> +	else {
+> +		hrtimer_init_on_stack(&timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> +		timer.function = idle_inject_timer_fn;
+> +		hrtimer_start(&timer, ms_to_ktime(duration_ms),
+> +			HRTIMER_MODE_REL_PINNED);
+> +		end_time = jiffies + msecs_to_jiffies(duration_ms);
+> +
+> +		while (time_after(end_time, jiffies))
+> +			do_idle();
+> +	}
+
+Curly braces should be balanced and nonsensical line breaks should be omitted.
+
+Also, comments should be read and grammar should be fixed.
+
+Thanks,
+
+	Ingo
