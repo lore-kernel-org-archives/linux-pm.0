@@ -1,53 +1,97 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH 1/6] PM / devfreq: Fix the checkpatch warnings
-Date: Thu, 24 Nov 2016 02:52:38 -0800
-Message-ID: <1479984758.19726.7.camel@perches.com>
-References: <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
-         <1479963668-22845-2-git-send-email-cw00.choi@samsung.com>
-         <CGME20161124102049epcas4p3312e9a6cc4cb33b16dc1984922025c44@epcas4p3.samsung.com>
-         <1479982838.19726.3.camel@perches.com> <5836C4F9.2010509@samsung.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v3 1/3] idle: add support for tasks that inject idle
+Date: Thu, 24 Nov 2016 12:04:54 +0100
+Message-ID: <20161124110454.GA22551@gmail.com>
+References: <1479931990-11732-1-git-send-email-jacob.jun.pan@linux.intel.com>
+ <1479931990-11732-2-git-send-email-jacob.jun.pan@linux.intel.com>
+ <20161124095016.GD3092@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0066.hostedemail.com ([216.40.44.66]:38980 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S935138AbcKXKwm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 05:52:42 -0500
-In-Reply-To: <5836C4F9.2010509@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161124095016.GD3092@twins.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2016-11-24 at 19:46 +0900, Chanwoo Choi wrote:
-> On 2016년 11월 24일 19:20, Joe Perches wrote:
-> > On Thu, 2016-11-24 at 14:01 +0900, Chanwoo Choi wrote:
-> > > This patch just fixes the checkpatch warnings.
-> > 
-> > unrelated trivia:
-> > 
-> > > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-[]
-> > > @@ -576,11 +575,13 @@ struct devfreq *devfreq_add_device(struct device *dev,
-> > >  		goto err_out;
-> > >  	}
-> > >  
-> > > -	devfreq->trans_table =	devm_kzalloc(&devfreq->dev, sizeof(unsigned int) *
-> > > +	devfreq->trans_table =	devm_kzalloc(&devfreq->dev,
-> > > +						sizeof(unsigned int) *
-> > >  						devfreq->profile->max_state *
-> > >  						devfreq->profile->max_state,
-> > >  						GFP_KERNEL);
-> > > -	devfreq->time_in_state = devm_kzalloc(&devfreq->dev, sizeof(unsigned long) *
-> > > +	devfreq->time_in_state = devm_kzalloc(&devfreq->dev,
-> > > +						sizeof(unsigned long) *
-> > >  						devfreq->profile->max_state,
-> > >  						GFP_KERNEL);
-> > 
-> > Maybe these should be devm_kcalloc calls
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Wed, Nov 23, 2016 at 12:13:08PM -0800, Jacob Pan wrote:
+> > @@ -280,6 +272,58 @@ bool cpu_in_idle(unsigned long pc)
+> >  		pc < (unsigned long)__cpuidle_text_end;
+> >  }
+> >  
+> > +static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *hrtimer)
+> > +{
+> > +	set_tsk_need_resched(current);
+> > +	return HRTIMER_NORESTART;
+> > +}
+> > +
+> > +void play_idle(unsigned long duration_ms)
+> > +{
+> > +	struct hrtimer timer;
+> > +	unsigned long end_time;
+> > +
+> > +	/*
+> > +	 * Only FIFO tasks can disable the tick since they don't need the forced
+> > +	 * preemption.
+> > +	 */
+> > +	WARN_ON_ONCE(current->policy != SCHED_FIFO);
+> > +	WARN_ON_ONCE(current->nr_cpus_allowed != 1);
+> > +	WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
+> > +	WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
+> > +
+> > +	rcu_sleep_check();
+> > +	preempt_disable();
+> > +	current->flags |= PF_IDLE;
+> > +	cpuidle_use_deepest_state(true);
+> > +
+> > +	/*
+> > +	 * If duration is 0, we will return after a natural wake event occurs. If
+> > +	 * duration is none zero, we will go back to sleep if we were woken up earlier.
+> > +	 * We also set up a timer to make sure we don't oversleep in deep idle.
+> > +	 */
+> > +	if (!duration_ms)
+> > +		do_idle();
 > 
-> Why should devfreq use the devm_kcalloc?
+> OK, so that doesn't make any sense, you should not be calling this
+> without a timeout.
+> 
+> > +	else {
+> > +		hrtimer_init_on_stack(&timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> > +		timer.function = idle_inject_timer_fn;
+> > +		hrtimer_start(&timer, ms_to_ktime(duration_ms),
+> > +			HRTIMER_MODE_REL_PINNED);
+> > +		end_time = jiffies + msecs_to_jiffies(duration_ms);
+> > +
+> > +		while (time_after(end_time, jiffies))
+> > +			do_idle();
+> > +	}
+> > +	hrtimer_cancel(&timer);
+> > +
+> > +	cpuidle_use_deepest_state(false);
+> > +	current->flags &= ~PF_IDLE;
+> > +
+> > +	preempt_fold_need_resched();
+> > +	preempt_enable();
+> > +}
+> > +EXPORT_SYMBOL_GPL(play_idle);
+> 
+> 
+> How about something like so... (since I had to edit, I fixed up most
+> things Ingo complained about as well).
+> 
+> Note that it doesn't build because of a distinct lack of
+> cpuidle_use_deepest_state() in my kernel tree.
 
-Because these are allocating zeroed arrays of a specific size.
+Ok, I really like this one, it so much cleaner!
 
+If the patch builds & works:
+
+  Acked-by: Ingo Molnar <mingo@kernel.org>
+
+Thanks,
+
+	Ingo
