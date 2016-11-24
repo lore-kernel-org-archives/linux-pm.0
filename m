@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 03/10] PM / OPP: Don't use OPP structure outside of rcu protected section
-Date: Thu, 24 Nov 2016 17:06:12 +0530
-Message-ID: <7817d2d3ccc77680c6e40101e80d201794398693.1479986491.git.viresh.kumar@linaro.org>
+Subject: [PATCH V4 01/10] PM / OPP: Fix incorrect cpu-supply property in binding
+Date: Thu, 24 Nov 2016 17:06:10 +0530
+Message-ID: <85323242b2d1a1b489283fea8892c915510a2a61.1479986491.git.viresh.kumar@linaro.org>
 References: <cover.1479986491.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1479986491.git.viresh.kumar@linaro.org>
@@ -12,55 +12,39 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, sboyd@codeaurora.org, Viresh 
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The OPP structure must not be used out of the rcu protected section.
-Cache the values to be used in separate variables instead.
+The regulator bindings allow the "<name>-supply" property to define a
+single parent supply and not a list of parents.
+
+Fix the wrong example code present in OPP bindings.
+
+While at it also change the compatible string as Rob pointed out earlier
+that none of A7 implementation have multiple supplies for the CPU core.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Dave Gerlach <d-gerlach@ti.com>
+Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 4c7c6da7a989..056527a3fb4e 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -584,6 +584,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	struct clk *clk;
- 	unsigned long freq, old_freq;
- 	unsigned long u_volt, u_volt_min, u_volt_max;
-+	unsigned long old_u_volt, old_u_volt_min, old_u_volt_max;
- 	int ret;
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index ee91cbdd95ee..f0239f68d186 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -386,10 +386,12 @@ Example 4: Handling multiple regulators
+ / {
+ 	cpus {
+ 		cpu@0 {
+-			compatible = "arm,cortex-a7";
++			compatible = "vendor,cpu-type";
+ 			...
  
- 	if (unlikely(!target_freq)) {
-@@ -633,6 +634,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		return ret;
- 	}
- 
-+	if (IS_ERR(old_opp)) {
-+		old_u_volt = 0;
-+	} else {
-+		old_u_volt = old_opp->u_volt;
-+		old_u_volt_min = old_opp->u_volt_min;
-+		old_u_volt_max = old_opp->u_volt_max;
-+	}
-+
- 	u_volt = opp->u_volt;
- 	u_volt_min = opp->u_volt_min;
- 	u_volt_max = opp->u_volt_max;
-@@ -677,9 +686,10 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 			__func__, old_freq);
- restore_voltage:
- 	/* This shouldn't harm even if the voltages weren't updated earlier */
--	if (!IS_ERR(old_opp))
--		_set_opp_voltage(dev, reg, old_opp->u_volt,
--				 old_opp->u_volt_min, old_opp->u_volt_max);
-+	if (old_u_volt) {
-+		_set_opp_voltage(dev, reg, old_u_volt, old_u_volt_min,
-+				 old_u_volt_max);
-+	}
- 
- 	return ret;
- }
+-			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
++			vcc0-supply = <&cpu_supply0>;
++			vcc1-supply = <&cpu_supply1>;
++			vcc2-supply = <&cpu_supply2>;
+ 			operating-points-v2 = <&cpu0_opp_table>;
+ 		};
+ 	};
 -- 
 2.7.1.410.g6faf27b
