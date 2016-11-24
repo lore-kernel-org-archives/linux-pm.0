@@ -1,36 +1,34 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH V2 4/4] cpufreq: schedutil: irq-work and mutex are only
- used in slow path
-Date: Thu, 24 Nov 2016 05:53:37 +0100
-Message-ID: <20161124045337.GB18417@gmail.com>
-References: <cover.1479197311.git.viresh.kumar@linaro.org>
- <a099804224d5e980a78668fa111e0564b0f44029.1479197311.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <a099804224d5e980a78668fa111e0564b0f44029.1479197311.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 0/6] PM / devfreq: Modify devfreq/devfreq-event for improvement
+Date: Thu, 24 Nov 2016 14:01:02 +0900
+Message-ID: <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:34693 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750853AbcKXFBL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:01:11 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
+This patches modify the devfreq and devfreq-event framework for improving
+them. But, these patches don't make an impact to operation of
+devfreq/devfreq-event.
 
-Firstly, please start changes to scheduler code with a verb. This title:
+Chanwoo Choi (6):
+  PM / devfreq: Fix the checkpatch warnings
+  PM / devfreq: Modify the device name as devfreq[X] for sysfs
+  PM / devfreq: event: Simplify the sysfs name of devfreq-event device
+  PM / devfreq: Remove the duplicate sysfs entry for current frequency
+  PM / devfreq: event: exynos-ppmu: Use the regmap interface to handle the registers
+  PM / devfreq: event: exynos-ppmu: Add the completion log of device registration
 
-  Subject: Re: [PATCH V2 4/4] cpufreq: schedutil: irq-work and mutex are only used in slow path
+ drivers/devfreq/devfreq-event.c     |   2 +-
+ drivers/devfreq/devfreq.c           |  25 ++-
+ drivers/devfreq/event/exynos-ppmu.c | 329 ++++++++++++++++++++++++++----------
+ 3 files changed, 251 insertions(+), 105 deletions(-)
 
-is totally inadequate as it's a statement that says nothing about the _change_.
+-- 
+1.9.1
 
-What does the patch do? Does it add, remove, modify, fix or clean up?
-
-* Viresh Kumar <viresh.kumar@linaro.org> wrote:
-
-> Execute the irq-work specific initialization/exit code only when the
-> fast path isn't available.
-
-Is this an optimization? A correctness fix?
-
-Thanks,
-
-	Ingo
