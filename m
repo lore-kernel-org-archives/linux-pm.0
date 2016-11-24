@@ -1,40 +1,108 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] powercap/intel_rapl: fix and tidy up error handling
-Date: Thu, 24 Nov 2016 22:06:59 +0100
-Message-ID: <CAJZ5v0jJ4kxcT0MVi3mz0zKRrEiRaNfQqPvY6y5bTHpkPpiU3A@mail.gmail.com>
-References: <1479927666-563-1-git-send-email-jacob.jun.pan@linux.intel.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] MAINTAINERS: Add bug tracking system location entry type
+Date: Fri, 25 Nov 2016 00:13:56 +0100
+Message-ID: <2170547.PZqCrC6KTi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:32898 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S966004AbcKXVHl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 16:07:41 -0500
-In-Reply-To: <1479927666-563-1-git-send-email-jacob.jun.pan@linux.intel.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56291 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S966450AbcKXXGT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 18:06:19 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Marcin Koss <marcin.koss@intel.com>, Lukasz Odzioba <lukasz.odzioba@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Darren Hart <darren.hart@intel.com>, Laura Abbott <labbott@redhat.com>, Konstantin Ryabitsev <konstantin@linuxfoundation.org>, Jon Corbet <corbet@lwn.net>, James Bottomley <jejb@kernel.org>, Theodore Tso <tytso@google.com>
 
-On Wed, Nov 23, 2016 at 8:01 PM, Jacob Pan
-<jacob.jun.pan@linux.intel.com> wrote:
-> Commit e1399ba20eee ("powercap / RAPL: handle missing MSRs") added
-> contraint_to_pl() function to return index into an array. But it
-> can potentially return -EINVAL if powercap layer sends an out of
-> range constraint ID. This patch adds sanity check.
->
-> Unnecessary RAPL domain pointer check is removed since it must be
-> initialized before calling rapl_unit_xlate().
->
-> Reported-by: Odzioba, Lukasz <lukasz.odzioba@intel.com>
-> Reported-by: Koss, Marcin <marcin.koss@intel.com>
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Does this depend on the Thomas' series only?
+Following the kernel Bugzilla discussion during the Kernel Summit
+(https://lwn.net/Articles/705245/), add bug tracking system location
+entry type (B) to MAINTAINERS and populate it for several subsystems
+known to be using the kernel BZ actively (and add the upstream BZ for
+ACPICA too).
 
-Also, it looks like a Fixes: tag should be present here.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ MAINTAINERS |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
->
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Index: linux-pm/MAINTAINERS
+===================================================================
+--- linux-pm.orig/MAINTAINERS
++++ linux-pm/MAINTAINERS
+@@ -77,6 +77,7 @@ Descriptions of section entries:
+ 	Q: Patchwork web based patch tracking system site
+ 	T: SCM tree type and location.
+ 	   Type is one of: git, hg, quilt, stgit, topgit
++	B: Bug tracking system location.
+ 	S: Status, one of the following:
+ 	   Supported:	Someone is actually paid to look after this.
+ 	   Maintained:	Someone actually looks after it.
+@@ -281,6 +282,7 @@ L:	linux-acpi@vger.kernel.org
+ W:	https://01.org/linux-acpi
+ Q:	https://patchwork.kernel.org/project/linux-acpi/list/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	drivers/acpi/
+ F:	drivers/pnp/pnpacpi/
+@@ -304,6 +306,8 @@ W:	https://acpica.org/
+ W:	https://github.com/acpica/acpica/
+ Q:	https://patchwork.kernel.org/project/linux-acpi/list/
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
++B:	https://bugzilla.kernel.org
++B:	https://bugs.acpica.org
+ S:	Supported
+ F:	drivers/acpi/acpica/
+ F:	include/acpi/
+@@ -313,6 +317,7 @@ ACPI FAN DRIVER
+ M:	Zhang Rui <rui.zhang@intel.com>
+ L:	linux-acpi@vger.kernel.org
+ W:	https://01.org/linux-acpi
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	drivers/acpi/fan.c
+ 
+@@ -328,6 +333,7 @@ ACPI THERMAL DRIVER
+ M:	Zhang Rui <rui.zhang@intel.com>
+ L:	linux-acpi@vger.kernel.org
+ W:	https://01.org/linux-acpi
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	drivers/acpi/*thermal*
+ 
+@@ -335,6 +341,7 @@ ACPI VIDEO DRIVER
+ M:	Zhang Rui <rui.zhang@intel.com>
+ L:	linux-acpi@vger.kernel.org
+ W:	https://01.org/linux-acpi
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	drivers/acpi/acpi_video.c
+ 
+@@ -5671,6 +5678,7 @@ HIBERNATION (aka Software Suspend, aka s
+ M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+ M:	Pavel Machek <pavel@ucw.cz>
+ L:	linux-pm@vger.kernel.org
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	arch/x86/power/
+ F:	drivers/base/power/
+@@ -9632,6 +9640,7 @@ POWER MANAGEMENT CORE
+ M:	"Rafael J. Wysocki" <rjw@rjwysocki.net>
+ L:	linux-pm@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	drivers/base/power/
+ F:	include/linux/pm.h
+@@ -11621,6 +11630,7 @@ M:	"Rafael J. Wysocki" <rjw@rjwysocki.ne
+ M:	Len Brown <len.brown@intel.com>
+ M:	Pavel Machek <pavel@ucw.cz>
+ L:	linux-pm@vger.kernel.org
++B:	https://bugzilla.kernel.org
+ S:	Supported
+ F:	Documentation/power/
+ F:	arch/x86/kernel/acpi/
 
-Thanks,
-Rafael
