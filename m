@@ -1,55 +1,44 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 4/6] PM / devfreq: Remove the duplicate sysfs entry for current
- frequency
-Date: Thu, 24 Nov 2016 14:01:06 +0900
-Message-ID: <1479963668-22845-5-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 3/6] PM / devfreq: event: Simplify the sysfs name of
+ devfreq-event device
+Date: Thu, 24 Nov 2016 14:01:05 +0900
+Message-ID: <1479963668-22845-4-git-send-email-cw00.choi@samsung.com>
 References: <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:43826 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750858AbcKXFBS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:01:18 -0500
 In-reply-to: <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch removes the duplicate 'target_freq' entry which shows the current
-frequency of devfreq device. The 'cur_freq' entry has the same information.
-
-Following two sysfs entry provide the same information to user-process.
-Usually, the 'cur_freq' is more universal expression than 'target_freq'
-such as cpufreq subsystem. This patch removes the 'target_freq' entry.
-- /sys/class/devfreq/[devfreq name]/cur_freq
-- /sys/class/devfreq/[devfreq name]/target_freq
+This patch just removes '.' character from the sysfs name of devfreq-event
+device as following. Usually, the subsystem uses the similiar naming style
+such as {framework name}{Number}.
+- old : /sys/class/devfreq-event/event.X
+- new : /sys/class/devfreq-event/eventX
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 8 --------
- 1 file changed, 8 deletions(-)
+ drivers/devfreq/devfreq-event.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 4d2b7e5b8d3c..3eaa7b5d1c91 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -999,13 +999,6 @@ static ssize_t cur_freq_show(struct device *dev, struct device_attribute *attr,
- }
- static DEVICE_ATTR_RO(cur_freq);
+diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+index 9aea2c7ecbe6..39f8704ad664 100644
+--- a/drivers/devfreq/devfreq-event.c
++++ b/drivers/devfreq/devfreq-event.c
+@@ -329,7 +329,7 @@ struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
+ 	edev->dev.class = devfreq_event_class;
+ 	edev->dev.release = devfreq_event_release_edev;
  
--static ssize_t target_freq_show(struct device *dev,
--				struct device_attribute *attr, char *buf)
--{
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->previous_freq);
--}
--static DEVICE_ATTR_RO(target_freq);
--
- static ssize_t polling_interval_show(struct device *dev,
- 				     struct device_attribute *attr, char *buf)
- {
-@@ -1181,7 +1174,6 @@ static ssize_t trans_stat_show(struct device *dev,
- 	&dev_attr_available_governors.attr,
- 	&dev_attr_cur_freq.attr,
- 	&dev_attr_available_frequencies.attr,
--	&dev_attr_target_freq.attr,
- 	&dev_attr_polling_interval.attr,
- 	&dev_attr_min_freq.attr,
- 	&dev_attr_max_freq.attr,
+-	dev_set_name(&edev->dev, "event.%d", atomic_inc_return(&event_no) - 1);
++	dev_set_name(&edev->dev, "event%d", atomic_inc_return(&event_no) - 1);
+ 	ret = device_register(&edev->dev);
+ 	if (ret < 0) {
+ 		put_device(&edev->dev);
 -- 
 1.9.1
+
