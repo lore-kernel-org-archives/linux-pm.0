@@ -1,59 +1,94 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 1/6] PM / devfreq: Fix the checkpatch warnings
-Date: Fri, 25 Nov 2016 08:37:40 +0900
-Message-ID: <583779C4.9070707@samsung.com>
-References: <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
- <1479963668-22845-2-git-send-email-cw00.choi@samsung.com>
- <CGME20161124102049epcas4p3312e9a6cc4cb33b16dc1984922025c44@epcas4p3.samsung.com>
- <1479982838.19726.3.camel@perches.com> <5836C4F9.2010509@samsung.com>
- <1479984758.19726.7.camel@perches.com>
+Subject: Re: [RFC 4/4] ARM: dts: exynos4x12: add suspend OPP for DMC and leftbus
+Date: Fri, 25 Nov 2016 08:44:12 +0900
+Message-ID: <58377B4C.5010503@samsung.com>
+References: <1479909087-22659-1-git-send-email-tjakobi@math.uni-bielefeld.de>
+ <CGME20161123135415epcas4p235d175ffdbbba89e261482b1e7f0e358@epcas4p2.samsung.com>
+ <1479909087-22659-5-git-send-email-tjakobi@math.uni-bielefeld.de>
+ <58364560.4030904@samsung.com> <5836F8C6.4080708@math.uni-bielefeld.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:42765 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750723AbcKXXhm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 18:37:42 -0500
-In-reply-to: <1479984758.19726.7.camel@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <5836F8C6.4080708@math.uni-bielefeld.de>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-samsung-soc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2016년 11월 24일 19:52, Joe Perches wrote:
-> On Thu, 2016-11-24 at 19:46 +0900, Chanwoo Choi wrote:
->> On 2016년 11월 24일 19:20, Joe Perches wrote:
->>> On Thu, 2016-11-24 at 14:01 +0900, Chanwoo Choi wrote:
->>>> This patch just fixes the checkpatch warnings.
->>>
->>> unrelated trivia:
->>>
->>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> []
->>>> @@ -576,11 +575,13 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>>>  		goto err_out;
->>>>  	}
->>>>  
->>>> -	devfreq->trans_table =	devm_kzalloc(&devfreq->dev, sizeof(unsigned int) *
->>>> +	devfreq->trans_table =	devm_kzalloc(&devfreq->dev,
->>>> +						sizeof(unsigned int) *
->>>>  						devfreq->profile->max_state *
->>>>  						devfreq->profile->max_state,
->>>>  						GFP_KERNEL);
->>>> -	devfreq->time_in_state = devm_kzalloc(&devfreq->dev, sizeof(unsigned long) *
->>>> +	devfreq->time_in_state = devm_kzalloc(&devfreq->dev,
->>>> +						sizeof(unsigned long) *
->>>>  						devfreq->profile->max_state,
->>>>  						GFP_KERNEL);
->>>
->>> Maybe these should be devm_kcalloc calls
->>
->> Why should devfreq use the devm_kcalloc?
+Hi Tobias,
+
+On 2016년 11월 24일 23:27, Tobias Jakobi wrote:
+> Hello Chanwoo,
 > 
-> Because these are allocating zeroed arrays of a specific size.
+> since exynos-bus is not only used for the Exynos4 platform, could you
+> maybe check if we need to apply this elsewhere?
 
-kzalloc is already set to zero.
+Sure, I'll review and test your patches on following boards:
+- exynos4412-u3/exynos5422-xu3/exynos3250-rinato.
 
-[1]https://www.kernel.org/doc/htmldocs/kernel-api/API-kzalloc.html
+Regards,
+Chanwoo Choi
 
+> 
+> I see in the exynos5422-odroidxu3-common.dtsi that bus_wcore adjusts the
+> INT voltage. But MyungJoo mentioned that on newer platform the BL0 might
+> be "smarter", so we don't need this.
+> 
+> With best wishes,
+> Tobias
+> 
+> 
+> Chanwoo Choi wrote:
+>> Hi Tobias,
+>>
+>> Looks good to me.
+>> Because the bus_dmc (MIF) and bus_leftbus (INT) are parent devfreq device.
+>>
+>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>
+>> Best Regards,
+>> Chanwoo Choi
+>>
+>> On 2016년 11월 23일 22:51, Tobias Jakobi wrote:
+>>> TODO: write desc
+>>> Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+>>> ---
+>>>  arch/arm/boot/dts/exynos4x12.dtsi | 2 ++
+>>>  1 file changed, 2 insertions(+)
+>>>
+>>> diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
+>>> index d5cb433..a00a8b0 100644
+>>> --- a/arch/arm/boot/dts/exynos4x12.dtsi
+>>> +++ b/arch/arm/boot/dts/exynos4x12.dtsi
+>>> @@ -375,6 +375,7 @@
+>>>  		opp@400000000 {
+>>>  			opp-hz = /bits/ 64 <400000000>;
+>>>  			opp-microvolt = <1050000>;
+>>> +			opp-suspend;
+>>>  		};
+>>>  	};
+>>>  
+>>> @@ -463,6 +464,7 @@
+>>>  		opp@200000000 {
+>>>  			opp-hz = /bits/ 64 <200000000>;
+>>>  			opp-microvolt = <1000000>;
+>>> +			opp-suspend;
+>>>  		};
+>>>  	};
+>>>  
+>>>
+>>
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+> 
+
+
+-- 
+Best Regards,
+Chanwoo Choi
