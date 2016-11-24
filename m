@@ -1,38 +1,61 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch 0/5] powercap/intel_rapl: Fixes, hotplug conversion and
- simplifcation
-Date: Thu, 24 Nov 2016 09:33:02 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1611240931580.3434@nanos>
-References: <20161122210518.079483154@linutronix.de> <20161123110647.37485542@icelake> <CAJZ5v0hCtb42GOaLOA2CPBQjGAaTDxH6qTMrRQSYCOVjQGyVMQ@mail.gmail.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH] cpufreq: schedutil: Rectify comment in sugov_irq_work()
+ function
+Date: Thu, 24 Nov 2016 09:45:36 +0100
+Message-ID: <20161124084536.GA17988@gmail.com>
+References: <94dc68617a6c8e42de4f225b1860d9d65d11b4aa.1479975620.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:36421 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932607AbcKXIhV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 03:37:21 -0500
-In-Reply-To: <CAJZ5v0hCtb42GOaLOA2CPBQjGAaTDxH6qTMrRQSYCOVjQGyVMQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <94dc68617a6c8e42de4f225b1860d9d65d11b4aa.1479975620.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@sisk.pl>, the arch/x86 maintainers <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 
-Rafael,
 
-On Wed, 23 Nov 2016, Rafael J. Wysocki wrote:
-> On Wed, Nov 23, 2016 at 8:06 PM, Jacob Pan
-> > Looks good to me. The cpu topology management is much more streamlined.
-> > Thanks. I also sent out this patch below on top of yours.
-> >
-> > [PATCH] powercap/intel_rapl: fix and tidy up error handling
+* Viresh Kumar <viresh.kumar@linaro.org> wrote:
+
+> This patch rectifies a comment present in sugov_irq_work() function to
+> follow proper grammar.
 > 
-> OK
+> Suggested-by: Ingo Molnar <mingo@kernel.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
 > 
-> Thomas, I'm assuming that this series will go in via tip.  Please let
-> me know if you want me to take it instead.
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 42a220e78f00..71e1a980d40a 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -315,15 +315,15 @@ static void sugov_irq_work(struct irq_work *irq_work)
+>  	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
+>  
+>  	/*
+> +	 * For Real Time and Deadline tasks, the schedutil governor shoots the
+> +	 * frequency to maximum. Special care must be taken to ensure that this
+> +	 * kthread doesn't result in the same behavior.
+>  	 *
+>  	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
+> +	 * updated only at the end of the sugov_work() function and before that
+> +	 * the schedutil governor rejects all other frequency scaling requests.
+>  	 *
+> +	 * There is a very rare case though, where the RT thread yields right
+>  	 * after the work_in_progress flag is cleared. The effects of that are
+>  	 * neglected for now.
+>  	 */
 
-It does not depend on anything in tip, so please route it through your tree.
+Also:
+
+  s/Real Time task/RT task
+  s/Deadline task/deadline task
+
+With those:
+
+  Acked-by: Ingo Molnar <mingo@kernel.org>
 
 Thanks,
 
-	tglx
+	Ingo
