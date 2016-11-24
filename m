@@ -1,54 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: schedutil: Rectify comment in sugov_irq_work() function
-Date: Thu, 24 Nov 2016 13:51:11 +0530
-Message-ID: <94dc68617a6c8e42de4f225b1860d9d65d11b4aa.1479975620.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f41.google.com ([74.125.83.41]:36444 "EHLO
-        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755116AbcKXIVv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 03:21:51 -0500
-Received: by mail-pg0-f41.google.com with SMTP id f188so16036634pgc.3
-        for <linux-pm@vger.kernel.org>; Thu, 24 Nov 2016 00:21:51 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH] PM / OPP: fix CPU device to be removed from OPP table in
+ wrong order
+Date: Thu, 24 Nov 2016 14:04:03 +0530
+Message-ID: <20161124083403.GA29969@vireshk-i7>
+References: <1479973761-21225-1-git-send-email-jy0922.shim@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1479973761-21225-1-git-send-email-jy0922.shim@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Joonyoung Shim <jy0922.shim@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@kernel.org>
 
-This patch rectifies a comment present in sugov_irq_work() function to
-follow proper grammar.
+Ho Joonyoung,
 
-Suggested-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+On 24-11-16, 16:49, Joonyoung Shim wrote:
+> The device that creates OPP table first should be removed from dev_list
+> of OPP table in last because it can be used by other resources
+> (supported_hw, prop_name, regulator), but not now.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 42a220e78f00..71e1a980d40a 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -315,15 +315,15 @@ static void sugov_irq_work(struct irq_work *irq_work)
- 	sg_policy = container_of(irq_work, struct sugov_policy, irq_work);
- 
- 	/*
--	 * For Real Time and Deadline tasks, schedutil governor shoots the
--	 * frequency to maximum. And special care must be taken to ensure that
--	 * this kthread doesn't result in that.
-+	 * For Real Time and Deadline tasks, the schedutil governor shoots the
-+	 * frequency to maximum. Special care must be taken to ensure that this
-+	 * kthread doesn't result in the same behavior.
- 	 *
- 	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
--	 * updated only at the end of the sugov_work() and before that schedutil
--	 * rejects all other frequency scaling requests.
-+	 * updated only at the end of the sugov_work() function and before that
-+	 * the schedutil governor rejects all other frequency scaling requests.
- 	 *
--	 * Though there is a very rare case where the RT thread yields right
-+	 * There is a very rare case though, where the RT thread yields right
- 	 * after the work_in_progress flag is cleared. The effects of that are
- 	 * neglected for now.
- 	 */
+I am not sure what you are trying to do here? Why can't the CPU which
+added the OPP should be removed last.
+
+Can you give a real example where you see a problem ?
+
+> If OPP table is
+> shared by several CPUs, the CPU device that creates OPP table can be
+> removed earlier than other CPU devices.
+
+I don't think that's a problem, though I can be wrong for sure.
+
 -- 
-2.7.1.410.g6faf27b
-
+viresh
