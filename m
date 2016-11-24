@@ -1,61 +1,80 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 3/4] cpufreq: schedutil: move slow path from workqueue
- to SCHED_FIFO task
-Date: Thu, 24 Nov 2016 10:40:34 +0530
-Message-ID: <20161124051034.GE9376@vireshk-i7>
-References: <cover.1479197311.git.viresh.kumar@linaro.org>
- <09f8fe694b4491bfd20272e8c7dc0f13f35eb34e.1479197311.git.viresh.kumar@linaro.org>
- <20161124045118.GA18417@gmail.com>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MSAxLzJdIFBNL2RldmZyZXE6IGFkZCBz?=
+ =?UTF-8?B?dXNwZW5kIGZyZXF1ZW5jeSBzdXBwb3J0?=
+Date: Thu, 24 Nov 2016 05:19:03 +0000
+Message-ID: <20161124051903epcms1p75ab1450eff0361338592c5cb659104f3@epcms1p7>
+References: <CGME20161124051903epcms1p75ab1450eff0361338592c5cb659104f3@epcms1p7>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/related;
+ boundary="----=_Part_835729_275350538.1479964743674"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f49.google.com ([74.125.83.49]:34025 "EHLO
-        mail-pg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750727AbcKXFKs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:10:48 -0500
-Received: by mail-pg0-f49.google.com with SMTP id x23so14171040pgx.1
-        for <linux-pm@vger.kernel.org>; Wed, 23 Nov 2016 21:10:37 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20161124045118.GA18417@gmail.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:42825 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750698AbcKXFTG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 00:19:06 -0500
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OH401W69S3SCC60@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 24 Nov 2016 14:19:04 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>
+To: =?UTF-8?B?aGxAcm9jay1jaGlwcy5jb20=?= <hl@rock-chips.com>
+Cc: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?ZGJhc2Vob3JlQGNocm9taXVtLm9yZw==?= <dbasehore@chromium.org>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?ZGlhbmRlcnNAY2hyb21pdW0ub3Jn?= <dianders@chromium.org>, =?UTF-8?B?bGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFkLm9yZw==?= <linux-rockchip@lists.infradead.org>
 
-On 24-11-16, 05:51, Ingo Molnar wrote:
-> 
-> * Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> > +	/*
-> > +	 * For Real Time and Deadline tasks, schedutil governor shoots the
-> > +	 * frequency to maximum. And special care must be taken to ensure that
-> > +	 * this kthread doesn't result in that.
-> > +	 *
-> > +	 * This is (mostly) guaranteed by the work_in_progress flag. The flag is
-> > +	 * updated only at the end of the sugov_work() and before that schedutil
-> > +	 * rejects all other frequency scaling requests.
-> > +	 *
-> > +	 * Though there is a very rare case where the RT thread yields right
-> > +	 * after the work_in_progress flag is cleared. The effects of that are
-> > +	 * neglected for now.
-> > +	 */
-> 
-> s/schedutil governor/
->   the schedutil governor
-> 
-> s/And special care must be taken/
->   Special care must be taken
-> 
-> s/at the end of the sugov_work()/
->   at the end of the sugov_work() function
-> 
-> s/before that schedutil rejects/
->   before the schedutil governor rejects
-> 
-> s/Though there is a very rare case where
->   There is a very rare case though, where
+------=_Part_835729_275350538.1479964743674
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Thanks. I will send a fix for this.
-
--- 
-viresh
+DQoNCk9uIFdlZCwgTm92IDIzLCAyMDE2IGF0IDExOjAxIEFNLCBobCA8aGxAcm9jay1jaGlwcy5j
+b20+IHdyb3RlOg0KPg0KPg0KPiBPbiAyMDE25bm0MTHmnIgyMuaXpSAyMDo0OCwgTXl1bmdKb28g
+SGFtIHdyb3RlOg0KPj4NCj4+IE9uIFRodSwgTm92IDMsIDIwMTYgYXQgNDowMyBQTSwgaGwgPGhs
+QHJvY2stY2hpcHMuY29tPiB3cm90ZToNCj4+Pg0KPj4+IEhpIE15dW5nSm9vIEhhbSwNCj4+Pg0K
+Pj4+DQo+Pj4gT24gMjAxNuW5tDEx5pyIMDLml6UgMTQ6MzUsIE15dW5nSm9vIEhhbSB3cm90ZToN
+Cj4+Pj4+DQo+Pj4+PiBBZGQgc3VzcGVuZCBmcmVxdWVuY3kgc3VwcG9ydCBhbmQgaWYgbmVlZGVk
+IHNldCBpdCB0bw0KPj4+Pj4gdGhlIGZyZXF1ZW5jeSBvYnRhaW5lZCBmcm9tIHRoZSBzdXNwZW5k
+IG9wcCAoY2FuIGJlIGRlZmluZWQNCj4+Pj4+IHVzaW5nIG9wcC12MiBiaW5kaW5ncyBhbmQgaXMg
+b3B0aW9uYWwpLg0KPj4+Pj4NCj4+Pj4+ICsgICAgICAgaWYgKGRldmZyZXEtPnN1c3BlbmRfZnJl
+cSkNCj4+Pj4+ICsgICAgICAgICAgICAgICBkZXZmcmVxX3VwZGF0ZV9zdGF0dXMoZGV2ZnJlcSwg
+ZGV2ZnJlcS0+c3VzcGVuZF9mcmVxKTsNCj4+Pj4+ICsgICAgICAgZWxzZQ0KPj4+Pj4gKyAgICAg
+ICAgICAgICAgIGRldmZyZXFfdXBkYXRlX3N0YXR1cyhkZXZmcmVxLCBkZXZmcmVxLT5wcmV2aW91
+c19mcmVxKTsNCj4+Pj4NCj4+Pj4gVGhpcyBpcyBpbmNvcnJlY3QuDQo+Pj4+DQo+Pj4+IGRldmZy
+ZXFfdXBkYXRlX3N0YXR1cyBpcyB0byByZWNvcmQgdGhlIHN0YXRpc3RpY3MuDQo+Pj4+IFRoaXMg
+Y29kZSBpbnRlbmRzIHRvIHJlY29yZCB0aGUgY3VycmVudCBzdGF0dXMgYmVmb3JlIGVudGVyaW5n
+IHN1c3BlbmQ7DQo+Pj4+IHRodXMgeW91IHNob3VsZCBub3QgcmVjb3JkICJzdXNwZW5kX2ZyZXEi
+IGhlcmUuDQo+Pj4+DQo+Pj4+IElmIHlvdSByZWFsbHkgbmVlZCB0byByZWNvcmQgdGhlIGZyZXF1
+ZW5jeSBkdXJpbmcgc3VzcGVuZGVkIHN0YXRlDQo+Pj4+IGZvciB0aGUgc3RhdGlzdGljcywgeW91
+IG5lZWQgdG8gZG8gdGhhdCBhdCByZXN1bWU7IGhvd2V2ZXIsIEkgb2JqZWN0IHRvDQo+Pj4+IHRo
+YXQgaWRlYSBlaXRoZXIuDQo+Pj4+DQo+Pj4+IElmIHlvdSByZWFsbHkgd2FudCB0byBzZXQgYSBw
+cmVkZWZpbmVkIHN1c3BlbmQtdG8tUkFNIG1vZGUgZnJlcXVlbmN5LA0KPj4+PiAocHJvYmFibHkg
+YmVjYXVzZSBvZiBIVyBpbnN0YWJpbGl0eSBkdXJpbmcgcmVzdW1lIHByb2Nlc3MpDQo+Pj4+IHlv
+dSBuZWVkIHRvIHVwZGF0ZSwgbm90IHVkcGF0ZV9zdGF0dXMgKHN0YXRpc3RpY3MpLg0KPj4+Pg0K
+Pj4+IFRoYW5rcyBmb3IgcG9pbnRpbmcgaXQsIGJ1dCBpZiBpIHVzZSB1cGRhdGVfZGV2ZnJlcSgp
+LCBpdCBjYW4gbm90IHNwZWNpZnkNCj4+PiB0aGUNCj4+PiBmcmVxdWVuY3ksIGl0IGNhbGwgdGhl
+IGdldF90YXJnZXRfZnJlcSgpIHRvIGdldCB0aGUgZnJlcXVlbmN5IGFuZA0KPj4+IHNldHRpbmcs
+DQo+Pj4gdXNlIG5vdyBkZXZmcmVxIGZyYW1ld29yaywgaXQgc2VlbXMgaGFyZCB0byBzZXQgdGhl
+IHNwZWNpZmljIGZyZXFldWVuY3kNCj4+PiB3aGVuIHN1c3BlbmQuIERvIHlvdSBoYXZlIGFueSBp
+ZGVhLCB0aGFua3MuDQo+Pg0KPj4NCj4+IEl0IGFwcGVhcnMgdGhhdCB3ZSBuZWVkIHRvIHNldCB0
+aGUgZnJlcXVlbmN5IGRpcmVjdGx5IHdpdGggdGFyZ2V0KCkNCj4+IGZ1bmN0aW9uDQo+PiBhdCBz
+dXNwZW5kL3Jlc3VtZSBhZnRlciBpdCBpcyBhc3N1cmVkIHRoYXQgcmVsYXRlZCByb3V0aW5lcyBh
+cmUNCj4+IGFscmVhZHkgc3VzcGVuZGVkLg0KPj4NCj4+IFBsdXMsIHlvdSBtaWdodCBuZWVkIHRv
+IGNvbnNpZGVyIHVzaW5nIGRldmZyZXFfc3VzcGVuZC9yZXN1bWVfZGV2aWNlDQo+PiBpbnN0ZWFk
+DQo+PiBvZiBtb25pdG9yLiBtb25pdG9yIGZ1bmN0aW9ucyBhcmUgZm9yIHRoZSBnb3Zlcm5vci1z
+cGVjaWZpYyBiZWhhdmlvcnMuDQo+PiBZb3UnbGwgbmVlZCBzdWNoIGNhcGFiaWxpdGllcyByZWdh
+cmRsZXNzIG9mIGdvdmVybm9ycy4gKGV2ZW4NCj4+IHVzZXJzcGFjZS1nb3Zlcm5vcg0KPj4gbmVl
+ZHMgdGhpcykNCj4NCj4gV2Ugc3RpbGwgbmVlZCB0byBzeW5jIHRoZSBhbGwgc3RhdHVzIGV2ZW4g
+aSBjYWxsIHRhcmdldCgpIGluDQo+IGRldmZyZXFfc3VzcGVuZC9yZXN1bWVfZGV2aWNlDQo+IGRp
+cmVjdGx5LCBzbyBzdGlsbCBuZWVkIHVwZGF0ZV9kZXZmcmVxKCkgb3RoZXIgc2V0cCBleGNlcHQN
+Cj4gZGV2ZnJlcS0+Z292ZXJub3ItPmdldF90YXJnZXRfZnJlcShkZXZmcmVxLCAmZnJlcSk7DQoN
+ClRoZSBkZXZmcmVxX3VwZGF0ZSgpIHRoZXJlLCB3aGljaCBpcyB0byBpbnZva2UgY29ycmVzcG9u
+ZGluZw0KZ292ZXJub3IgdG8gZGVjaWRlIG5leHQgZnJlcXVlbmN5IChnZXRfdGFyZ2V0X2ZyZXEp
+Lg0KDQpJbiBvcmRlciB0byBjaGFuZ2UgdGhlIGZyZXF1ZW5jeSBpZ25vcmluZyB3aGF0ZXZlciBn
+b3Zlcm5vcnMgbWlnaHQgc2F5DQooaS5lLiwgd2UgYXJlIGdvaW5nIHRvIHN1c3BlbmQgLyByZXN1
+bWUgbm93KSwgeW91IG5lZWQgdG8gdGFsayB0bw0KdGhlIGRyaXZlciBkaXJlY3RseSB3aXRob3V0
+IGludm9raW5nIGdvdmVybm9ycy4NCg0KWW91IG9ubHkgbmVlZCB0byBiZSBjYXJlZnVsIG9uIHRo
+ZSBzZXF1ZW5jZSBvZiBub3RpZmljYXRpb24gY2hhaW5zIGFuZA0Kc3RhdHVzIHVwZGF0aW5nICh5
+b3Ugd2lsbCBwcm9iYWJseSBiZSB3cml0aW5nIGEgbXVjaCBzaW1wbGVyIHZlcnNpb24gb2YNCnVw
+ZGF0ZV9kZXZmcmVxKCkgZm9yIHN1c3BlbmQvcmVzdW1lKQ0KDQogDQoNCkNoZWVycywNCk15dW5n
+Sm9vDQoNCiANCg==
+------=_Part_835729_275350538.1479964743674--
