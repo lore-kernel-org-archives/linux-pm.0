@@ -1,81 +1,40 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] PM / wakeirq: report wakeup events in dedicated wake-IRQs
-Date: Thu, 24 Nov 2016 06:27:47 -0800
-Message-ID: <20161124142747.GL4082@atomide.com>
-References: <CAJZ5v0gAFmsZ3_YSG1VBzi=K-GTn+SnUj3K3mJ5Su1gCpiB3jQ@mail.gmail.com>
- <20161111163147.GC7138@atomide.com>
- <CAJZ5v0jkwHnCPhdm6XAgiWz2=X1SPbfHVHZtZ-ONsp2OL0d-4w@mail.gmail.com>
- <20161111222911.GL7138@atomide.com>
- <20161111223234.GM7138@atomide.com>
- <CAJZ5v0gjcRyZHoj9YTpw1aKjFqH9mTZFH=ERvj2-FV_7ZnqjgA@mail.gmail.com>
- <20161112001917.GN7138@atomide.com>
- <CAJZ5v0ivMWZ2c8MphWcyz_S=tNgUyUihcP4=Y4Mz_uw7iZ6dMA@mail.gmail.com>
- <20161118201823.GX4082@atomide.com>
- <CAJZ5v0ggv2Z9rOiwWan2=urcfTooG1_CeALdo=TN4b0tJGEHdA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [patch 0/5] powercap/intel_rapl: Fixes, hotplug conversion and simplifcation
+Date: Thu, 24 Nov 2016 22:04:26 +0100
+Message-ID: <CAJZ5v0i9U9LHtsnLpw_ZbOivc-PEe6ZUBH5jVGVcunj0Xxw-YA@mail.gmail.com>
+References: <20161122210518.079483154@linutronix.de> <20161123110647.37485542@icelake>
+ <CAJZ5v0hCtb42GOaLOA2CPBQjGAaTDxH6qTMrRQSYCOVjQGyVMQ@mail.gmail.com> <alpine.DEB.2.20.1611240931580.3434@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ggv2Z9rOiwWan2=urcfTooG1_CeALdo=TN4b0tJGEHdA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, lkml <linux-kernel@vger.kernel.org>, Brian Norris <computersforpeace@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:36740 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965980AbcKXVEa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 16:04:30 -0500
+In-Reply-To: <alpine.DEB.2.20.1611240931580.3434@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Rafael Wysocki <rjw@sisk.pl>, the arch/x86 maintainers <x86@kernel.org>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 
-* Rafael J. Wysocki <rafael@kernel.org> [161123 14:37]:
-> On Fri, Nov 18, 2016 at 9:18 PM, Tony Lindgren <tony@atomide.com> wrote:
-> > Hi,
-> >
-> > * Rafael J. Wysocki <rafael@kernel.org> [161111 16:35]:
-> >> However, my understanding is that the current code actually works for
-> >> runtime PM just fine.
-> >
-> > Hmm well I just noticed that for drivers not using autosuspend it can be
-> > flakey, see the patch below. That probably explains some mysteries people
-> > are seeing with wakeirqs.
-> >
-> > Do you have any better ideas for setting wirq->active on the first
-> > rpm_suspend()?
-> 
-> You could change dedicated_irq into status and have three values for
-> it: INVALID, ALLOCATED and IN_USE.
-> 
-> dev_pm_set_dedicated_wake_irq() would make it ALLOCATED and
-> dev_pm_check_wake_irq() would change it into IN_USE.  In turn,
-> dev_pm_enable/disable_wake_irq() would only touch it if it is IN_USE
-> and dev_pm_clear_wake_irq() would free it if it is not INVALID.
+On Thu, Nov 24, 2016 at 9:33 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Rafael,
+>
+> On Wed, 23 Nov 2016, Rafael J. Wysocki wrote:
+>> On Wed, Nov 23, 2016 at 8:06 PM, Jacob Pan
+>> > Looks good to me. The cpu topology management is much more streamlined.
+>> > Thanks. I also sent out this patch below on top of yours.
+>> >
+>> > [PATCH] powercap/intel_rapl: fix and tidy up error handling
+>>
+>> OK
+>>
+>> Thomas, I'm assuming that this series will go in via tip.  Please let
+>> me know if you want me to take it instead.
+>
+> It does not depend on anything in tip, so please route it through your tree.
 
-OK sounds good to me.
+OK, I'm queuing it up, then.
 
-> > +static inline void dev_pm_check_wake_irq(struct device *dev)
-> > +{
-> > +       struct wake_irq *wirq = dev->power.wakeirq;
-> > +
-> > +       if (!wirq)
-> > +               return;
-> > +
-> > +       if (unlikely(!wirq->active)) {
-> > +               wirq->active = true;
-> > +               wmb();  /* ensure dev_pm_enable_wake_irq() sees active */
-> 
-> smp_wmb()?
-> 
-> Also, do we have a corresponding barrier on the reader side?
-
-Will check thanks.
-
-> I wonder if it would make sense to fold dev_pm_check_wake_irq() into
-> dev_pm_enable_wake_irq()?
-
-I was thinking that too but then bus or device itself won't be
-able to manage the wakeirq if needed.
-
-Let me check if we could easily add something to initialize things
-like dev_pm_manage_wake_irq() and dev_pm_dont_manage_wake_irq().
-That means we need to update the drivers using it, but then we don't
-need to add extra checks to the idle path and can let bus or
-drivers mange the wakeirq if necessary.
-
-Regards,
-
-Tony
+Thanks,
+Rafael
