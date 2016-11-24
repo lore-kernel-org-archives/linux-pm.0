@@ -1,74 +1,120 @@
-From: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+From: hl <hl@rock-chips.com>
 Subject: Re: [PATCH v1 & v6 1/2] PM/devfreq: add suspend frequency support
-Date: Thu, 24 Nov 2016 16:10:51 +0900
-Message-ID: <5836927B.9010205@samsung.com>
+Date: Thu, 24 Nov 2016 15:34:39 +0800
+Message-ID: <5836980F.6050006@rock-chips.com>
 References: <CGME20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
  <20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
- <58368C91.8030502@rock-chips.com>
+ <58368C91.8030502@rock-chips.com> <5836927B.9010205@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-reply-to: <58368C91.8030502-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: hl <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org" <dbasehore-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org" <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Tobias Jakobi <tjakobi-o02PS0xoJP9W0yFyLvAVXMxlOr/tl8fh@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lucky1.263xmail.com ([211.157.147.130]:34161 "EHLO
+        lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751625AbcKXHev (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Nov 2016 02:34:51 -0500
+In-Reply-To: <5836927B.9010205@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "dianders@chromium.org" <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 
-KyBUb2JpYXMgSmFrb2JpLAoKSGkgTGluLAoKV2UgbmVlZCB0byBkaXNjdXNzIGhvdyB0byBzdXBw
-b3J0IHRoZSBzdXNwZW5kLW9wcCBvZiBkZXZmcmVxIGRldmljZS4KTm93LCB0aGVyZSBhcmUgdHdv
-IHBhdGNoIHRocmVhZCBmb3Igc3VzcGVuZC1vcHAgb2YgZGV2ZnJlcS4KClRoZSBMaW4ncyBhcHBy
-b2FjaCBtb2RpZnkgdGhlIGRldmZyZXFfc3VzcGVuZF9kZXZpY2UoKSB0byBzdXBwb3J0IHN1c3Bl
-bmQtb3BwLgpUaGUgVG9iaWFzJ3MgYXBwcm9hY2hbMV0gYWRkIG5ldyBkZXZmcmVxX3N1c3BlbmQo
-KSBhbmQgdGhlbiBjYWxsIGl0IG9uIGRwbV9zdXNwZW5kKCkKd2hlbiBlbnRlcmluZyB0aGUgc3Vz
-cGVuZCBzdGF0ZS4KClsxXSBbUkZDIDAvNF0gUE0gLyBkZXZmcmVxOiBkcmFmdCBmb3IgT1BQIHN1
-c3BlbmQgaW1wbAotIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvOTQ0MzMyMy8K
-LSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzk0NDMzMjUvCi0gaHR0cHM6Ly9w
-YXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC85NDQzMzI5LwotIGh0dHBzOi8vcGF0Y2h3b3JrLmtl
-cm5lbC5vcmcvcGF0Y2gvOTQ0MzMzMS8KCkkgdGhpbmsgd2UgbmVlZCB0byBkaXNjdXNzIGl0IHRv
-Z2V0aGVyLgoKUmVnYXJkcywKQ2hhbndvbyBDaG9pCgpPbiAyMDE264WEIDEx7JuUIDI07J28IDE1
-OjQ1LCBobCB3cm90ZToKPiBIaSBNeXVuZ0pvbyBIYW0sCj4gCj4gT24gMjAxNuW5tDEx5pyIMjTm
-l6UgMTQ6MTQsIE15dW5nSm9vIEhhbSB3cm90ZToKPj4gT24gVGh1LCBOb3YgMjQsIDIwMTYgYXQg
-MTE6MTggQU0sIGhsIDxobEByb2NrLWNoaXBzLmNvbT4gd3JvdGU6Cj4+PiBIaSBNeXVuZ0pvbyBI
-YW0sCj4+IFtdCj4+Pj4gV2Ugc3RpbGwgbmVlZCB0byBzeW5jIHRoZSBhbGwgc3RhdHVzIGV2ZW4g
-aSBjYWxsIHRhcmdldCgpIGluCj4+Pj4gZGV2ZnJlcV9zdXNwZW5kL3Jlc3VtZV9kZXZpY2UKPj4+
-PiBkaXJlY3RseSwgc28gc3RpbGwgbmVlZCB1cGRhdGVfZGV2ZnJlcSgpIG90aGVyIHNldHAgZXhj
-ZXB0Cj4+Pj4gZGV2ZnJlcS0+Z292ZXJub3ItPmdldF90YXJnZXRfZnJlcShkZXZmcmVxLCAmZnJl
-cSk7Cj4+PiBBbmQgaSB0aGluayBpdCBiZXR0ZXIgdG8gYmUgZ292ZXJub3IgYmVoYXZpb3JzLCBm
-b3IgdXNlcnNwYWNlIHRoZXkgbWF5IG5vdAo+Pj4gd2FudCB0byBjaGFuZ2UKPj4+IHRoZSBzdXNw
-ZW5kIGZyZXF1ZW5jeSBsaWtlIG90aGVyIGdvdmVybm9yLCB0aGUgZnJlcXVlbmN5IHNob3VsZCBk
-ZWNpZGUgYnkKPj4+IHRoZSB1c2VyLCBpZiB0aGV5Cj4+PiB3YW50IHRoaXMgZnVuY3Rpb24sIHRo
-ZXkgc2hvdWxkIGxpa2Ugb3RoZXIgZ292ZXJub3IgdG8gcmlnaXN0ZXIgYQo+Pj4gZGV2ZnJlcV9t
-b25pdG9yX3N1c3BlbmQoKS4KPj4KPj4+IFdoYXQgZG8geW91IHRoaW5rIGFib3V0IG15IHJldjYg
-cGF0Y2g/Cj4+IElmIEkgdW5kZXJzdGFuZCB0aGUgaW50ZW50aW9uIGNvcnJlY3RseSwgdGhpcyBp
-cyBmb3IgdGhlIHN0YWJpbGl0eSBvZgo+PiB0aGUgZGV2aWNlIGR1ZSB0byB0aGUgYmVoYXZpb3Ig
-b3IgYm9vdGxvYWRlci9Tb0MtaW5pdGlhbGl6ZXIsIHdoaWNoCj4+IGhhcyBub3RoaW5nIHRvIGRv
-IHdpdGggZ292ZXJub3JzLgo+Pgo+PiBFdmVuIGlmIHVzZXJzIGFyZSB1c2luZyB1c2Vyc3BhY2Us
-IGFzIGxvbmcgYXMgdGhleSBzZXQgdGhlIGN1c3RvbQo+PiBmcmVxdWVuY2llcyBsb3dlciB0aGFu
-IHRoZSBkZWZhdWx0LCB0aGV5IGhhdmUgdGhlIHBvc3NpYmlsaXR5IG9mCj4+IGJlaW5nIHVuc3Rh
-YmxlIGFzIG9uZGVtYW5kIGlzIGdvaW5nIHRvIGhhdmUuCj4+Cj4+Cj4+IFRvIHJldXNlIHRoZSB1
-cGRhdGVfZGV2ZnJlcSgpIGNvZGUsIHlvdSBtYXkgZG8gc29tZXRoaW5nIGxpa2U6Cj4+Cj4+IHN0
-YXRpYyBpbnQgX3VwZGF0ZV9mcmVxKHN0cnVjdCBkZXZmcmVxICpkZXZmcmVxLCBib29sIGlzX3N1
-c3BlbmRpbmcpCj4+IHsKPj4gICAgIC8qIG9yaWdpbmFsIGNvbnRlbnRzIG9mIHVwZGF0ZV9mcmVx
-IHdpdGggaWYgc3RhdGVtZW50IHdpdGggaXNfc3VzcGVuZGluZyB3cmFwcGluZyBnZXRfdGFyZ2V0
-X2ZyZXEgKi8KPj4gfQo+PiBpbnQgdXBkYXRlX2ZyZXEoc3RydWN0IGRldmZyZXEgKmRldmZyZXEp
-Cj4+IHsKPj4gCXJldHVybiBfdXBkYXRlX2ZyZXEoZGV2ZnJlcSwgZmFsc2UpOwo+PiB9Cj4+Cj4+
-Cj4+IFRoZXJlIHNob3VsZCBiZSBvdGhlciBnb29kIG5vbi1pbnZhc2l2ZSBtZXRob2RzIHRoYXQg
-YXJlIG5vdCBnb3Zlcm5vZS1zcGVjaWZpYyBhcyB3ZWxsLgo+Pgo+IFRoYW5rcyBmb3IgeW91ciBz
-dWdnZXN0aW9uLCBpIHdpbGwgdXBkYXRlIHRoZSBuZXcgdmVyc2lvbiBzb29uLgo+Pgo+PiBDaGVl
-cnMsCj4+IE15dW5nSm9vCj4+Cj4+Cj4+Cj4+Cj4+IF9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fCj4+IExpbnV4LXJvY2tjaGlwIG1haWxpbmcgbGlzdAo+PiBM
-aW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCj4+IGh0dHA6Ly9saXN0cy5pbmZyYWRl
-YWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAKPiAKPiAtLSAKPiBMaW4gSHVh
-bmcKPiAKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpM
-aW51eC1yb2NrY2hpcCBtYWlsaW5nIGxpc3QKTGludXgtcm9ja2NoaXBAbGlzdHMuaW5mcmFkZWFk
-Lm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJv
-Y2tjaGlwCg==
+Hi Chanwoo Choi,
+
+     I think the dev_pm_opp_get_suspend_opp() have implement most of
+the funtion, all we need is just define the node in dts, like following:
+
+&dmc_opp_table {
+     opp06 {
+         opp-suspend;
+     };
+};
+
+so i think my way semm more simple.
+
+On 2016年11月24日 15:10, Chanwoo Choi wrote:
+> + Tobias Jakobi,
+>
+> Hi Lin,
+>
+> We need to discuss how to support the suspend-opp of devfreq device.
+> Now, there are two patch thread for suspend-opp of devfreq.
+>
+> The Lin's approach modify the devfreq_suspend_device() to support suspend-opp.
+> The Tobias's approach[1] add new devfreq_suspend() and then call it on dpm_suspend()
+> when entering the suspend state.
+>
+> [1] [RFC 0/4] PM / devfreq: draft for OPP suspend impl
+> - https://patchwork.kernel.org/patch/9443323/
+> - https://patchwork.kernel.org/patch/9443325/
+> - https://patchwork.kernel.org/patch/9443329/
+> - https://patchwork.kernel.org/patch/9443331/
+>
+> I think we need to discuss it together.
+>
+> Regards,
+> Chanwoo Choi
+>
+> On 2016년 11월 24일 15:45, hl wrote:
+>> Hi MyungJoo Ham,
+>>
+>> On 2016年11月24日 14:14, MyungJoo Ham wrote:
+>>> On Thu, Nov 24, 2016 at 11:18 AM, hl <hl@rock-chips.com> wrote:
+>>>> Hi MyungJoo Ham,
+>>> []
+>>>>> We still need to sync the all status even i call target() in
+>>>>> devfreq_suspend/resume_device
+>>>>> directly, so still need update_devfreq() other setp except
+>>>>> devfreq->governor->get_target_freq(devfreq, &freq);
+>>>> And i think it better to be governor behaviors, for userspace they may not
+>>>> want to change
+>>>> the suspend frequency like other governor, the frequency should decide by
+>>>> the user, if they
+>>>> want this function, they should like other governor to rigister a
+>>>> devfreq_monitor_suspend().
+>>>> What do you think about my rev6 patch?
+>>> If I understand the intention correctly, this is for the stability of
+>>> the device due to the behavior or bootloader/SoC-initializer, which
+>>> has nothing to do with governors.
+>>>
+>>> Even if users are using userspace, as long as they set the custom
+>>> frequencies lower than the default, they have the possibility of
+>>> being unstable as ondemand is going to have.
+>>>
+>>>
+>>> To reuse the update_devfreq() code, you may do something like:
+>>>
+>>> static int _update_freq(struct devfreq *devfreq, bool is_suspending)
+>>> {
+>>>      /* original contents of update_freq with if statement with is_suspending wrapping get_target_freq */
+>>> }
+>>> int update_freq(struct devfreq *devfreq)
+>>> {
+>>> 	return _update_freq(devfreq, false);
+>>> }
+>>>
+>>>
+>>> There should be other good non-invasive methods that are not governoe-specific as well.
+>>>
+>> Thanks for your suggestion, i will update the new version soon.
+>>> Cheers,
+>>> MyungJoo
+>>>
+>>>
+>>>
+>>>
+>>> _______________________________________________
+>>> Linux-rockchip mailing list
+>>> Linux-rockchip@lists.infradead.org
+>>> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+>> -- 
+>> Lin Huang
+>>
+>
+>
+>
+
+-- 
+Lin Huang
+
+
