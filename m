@@ -1,66 +1,41 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences without runtime PM
-Date: Fri, 25 Nov 2016 21:34:56 +0200
-Message-ID: <3007760.0ebxS8fqmr@avalon>
-References: <Pine.LNX.4.44L0.1611251014130.1509-100000@netrider.rowland.org>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH 6/9] power_supply: wm97xx_battery: use power_supply_get_drvdata
+Date: Fri, 25 Nov 2016 20:54:21 +0100
+Message-ID: <87a8cnqqs2.fsf@belgarion.home>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+        <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
+        <20161123231320.fo3kilw5h7cctngc@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-media-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1611251014130.1509-100000@netrider.rowland.org>
-Sender: linux-media-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Sakari Ailus <sakari.ailus@iki.fi>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20161123231320.fo3kilw5h7cctngc@earth> (Sebastian Reichel's
+        message of "Thu, 24 Nov 2016 00:13:20 +0100")
+Sender: linux-input-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Alan,
+Sebastian Reichel <sre@kernel.org> writes:
 
-On Friday 25 Nov 2016 10:21:21 Alan Stern wrote:
-> On Fri, 25 Nov 2016, Sakari Ailus wrote:
-> > On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
-> >> On Fri, 25 Nov 2016, Laurent Pinchart wrote:
-> >>> Dear linux-pm developers, what's the suggested way to ensure that a
-> >>> runtime- pm-enabled driver can run fine on a system with CONFIG_PM
-> >>> disabled ?
-> >>
-> >> The exact point of your question isn't entirely clear.  In the most
-> >> literal sense, the best ways to ensure this are (1) audit the code, and
-> >> (2) actually try it.
-> >> 
-> >> I have a feeling this doesn't quite answer your question, however.  :-)
-> > 
-> > The question is related to devices that require certain power-up and
-> > power-down sequences that are now implemented as PM runtime hooks that,
-> > without CONFIG_PM defined, will not be executed. Is there a better way
-> > than to handle this than have an implementation in the driver for the PM
-> > runtime and non-PM runtime case separately?
-> 
-> Yes, there is a better way.  For the initial power-up and final
-> power-down sequences, don't rely on the PM core to invoke the
-> callbacks.  Just call them directly, yourself.
-> 
-> For example, as part of the probe routine, instead of doing this:
-> 
-> 	pm_runtime_set_suspended(dev);
-> 	pm_runtime_enable(dev);
-> 	pm_runtime_get_sync(dev);
-> 
-> Do this:
-> 
-> 	pm_runtime_set_active(dev);
-> 	pm_runtime_get_noresume(dev);
-> 	pm_runtime_enable(dev);
-> 	/*
-> 	 * In case CONFIG_PM is disabled, invoke the runtime-resume
-> 	 * callback directly.
-> 	 */
-> 	my_runtime_resume(dev);
+> Hi Robert,
+>
+> On Wed, Oct 26, 2016 at 09:41:44PM +0200, Robert Jarzmik wrote:
+>> As the power supply framework provides a way to store and retrieve
+>> private supply data, use it.
+>> 
+>> In the process, change the platform data for wm97xx_battery from a
+>> container of a single struct wm97xx_batt_pdata to the direct point to wm97xx_batt_pdata.
+>> 
+>> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+>> ---
+>>  drivers/input/touchscreen/wm97xx-core.c |  2 +-
+>>  drivers/power/supply/wm97xx_battery.c   | 25 ++++++++++---------------
+>>  2 files changed, 11 insertions(+), 16 deletions(-)
+>
+> I queued this into power-supply's for-next branch.
+Thanks Sebastian.
 
-Wouldn't it be cleaner for drivers not to have to handle this manually (which 
-gives an opportunity to get it wrong) but instead have pm_runtime_enable() 
-call the runtime resume callback when CONFIG_PM is disabled ?
+Cheers.
 
 -- 
-Regards,
-
-Laurent Pinchart
+Robert
