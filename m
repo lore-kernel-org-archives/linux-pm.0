@@ -1,55 +1,64 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH] bq24190_charger: Fix PM runtime use for
- bq24190_battery_set_property
-Date: Fri, 25 Nov 2016 05:34:22 -0800
-Message-ID: <20161125133421.GO4082@atomide.com>
-References: <20161115033831.7620-1-tony@atomide.com>
- <20161123223533.gmt7joee3kzhjk5p@earth>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences
+ without runtime PM
+Date: Fri, 25 Nov 2016 10:21:21 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1611251014130.1509-100000@netrider.rowland.org>
+References: <20161125074838.GA16630@valkosipuli.retiisi.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:51956 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753305AbcKYNfR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 25 Nov 2016 08:35:17 -0500
-Content-Disposition: inline
-In-Reply-To: <20161123223533.gmt7joee3kzhjk5p@earth>
+Received: from netrider.rowland.org ([192.131.102.5]:33521 "HELO
+        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with SMTP id S1755213AbcKYPWP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 10:22:15 -0500
+In-Reply-To: <20161125074838.GA16630@valkosipuli.retiisi.org.uk>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Sakari Ailus <sakari.ailus@iki.fi>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 
-* Sebastian Reichel <sre@kernel.org> [161123 14:35]:
-> Hi,
+On Fri, 25 Nov 2016, Sakari Ailus wrote:
+
+> Hi Alan and others,
 > 
-> On Mon, Nov 14, 2016 at 07:38:31PM -0800, Tony Lindgren wrote:
-> > There's a typo, it should do pm_runtime_get_sync, not put.
+> On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
+> > On Fri, 25 Nov 2016, Laurent Pinchart wrote:
 > > 
-> > Cc: Mark A. Greer <mgreer@animalcreek.com>
-> > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > ---
-> >  drivers/power/supply/bq24190_charger.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > > Dear linux-pm developers, what's the suggested way to ensure that a runtime-
+> > > pm-enabled driver can run fine on a system with CONFIG_PM disabled ?
 > > 
-> > diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> > --- a/drivers/power/supply/bq24190_charger.c
-> > +++ b/drivers/power/supply/bq24190_charger.c
-> > @@ -1141,7 +1141,7 @@ static int bq24190_battery_set_property(struct power_supply *psy,
-> >  
-> >  	dev_dbg(bdi->dev, "prop: %d\n", psp);
-> >  
-> > -	pm_runtime_put_sync(bdi->dev);
-> > +	pm_runtime_get_sync(bdi->dev);
-> >  
-> >  	switch (psp) {
-> >  	case POWER_SUPPLY_PROP_ONLINE:
+> > The exact point of your question isn't entirely clear.  In the most 
+> > literal sense, the best ways to ensure this are (1) audit the code, and 
+> > (2) actually try it.
+> > 
+> > I have a feeling this doesn't quite answer your question, however.  :-)
 > 
-> Thanks, queued to power-supply's for-next branch. I added
-> 
-> Fixes: d7bf353fd0aa3
+> The question is related to devices that require certain power-up and
+> power-down sequences that are now implemented as PM runtime hooks that,
+> without CONFIG_PM defined, will not be executed. Is there a better way than
+> to handle this than have an implementation in the driver for the PM runtime
+> and non-PM runtime case separately?
 
-Thanks!
+Yes, there is a better way.  For the initial power-up and final 
+power-down sequences, don't rely on the PM core to invoke the 
+callbacks.  Just call them directly, yourself.
 
-Tony
+For example, as part of the probe routine, instead of doing this:
+
+	pm_runtime_set_suspended(dev);
+	pm_runtime_enable(dev);
+	pm_runtime_get_sync(dev);
+
+Do this:
+
+	pm_runtime_set_active(dev);
+	pm_runtime_get_noresume(dev);
+	pm_runtime_enable(dev);
+	/*
+	 * In case CONFIG_PM is disabled, invoke the runtime-resume 
+	 * callback directly.
+	 */
+	my_runtime_resume(dev);
+
+Alan Stern
 
