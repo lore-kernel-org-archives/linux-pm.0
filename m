@@ -1,56 +1,65 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 00/10] add support for VBUS max current and min voltage limits AXP20X and AXP22X PMICs
-Date: Fri, 25 Nov 2016 10:09:11 +0100
-Message-ID: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
+Subject: [PATCH 04/10] power: supply: axp20x_usb_power: add 100mA max current limit for AXP223
+Date: Fri, 25 Nov 2016 10:09:15 +0100
+Message-ID: <20161125090921.23138-5-quentin.schulz@free-electrons.com>
+References: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
 Cc: Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP209 and AXP20X PMICs are able to set a limit for the VBUS power
-supply for both max current and min voltage supplied. This series of patch adds
-the possibility to set these limits from sysfs.
+The X-Powers AXP223 shares most of its behaviour with the AXP221 PMIC
+but allows the VBUS power supply max current to be set to 100mA (like
+the AXP209 PMIC).
 
-Also, the AXP223 PMIC shares most of its behaviour with the AXP221 but the
-former can set the VBUS power supply max current to 100mA, unlike the latter.
-The AXP223 VBUS power supply driver used to probe on the AXP221 compatible. This
-series of patch introduces a new compatible for the AXP223 to be able to set the
-current max limit to 100mA.
+This basically adds a new compatible to the VBUS power supply driver and
+adds a check on the compatible when setting current max limit.
 
-With that new compatible, boards having the AXP223 see their DT updated to use
-the VBUS power supply driver with the correct compatible.
+Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+---
+ drivers/power/supply/axp20x_usb_power.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-This series of patch also migrates from of_device_is_compatible function to the
-data field of of_device_id to identify the compatible used to probe. This
-improves the code readability.
-
-Quentin Schulz (10):
-  power: supply: axp20x_usb_power: use of_device_id data field instead
-    of device_is_compatible
-  power: supply: axp20x_usb_power: set min voltage and max current from
-    sysfs
-  Documentation: DT: binding: axp20x_usb_power: add axp223 compatible
-  power: supply: axp20x_usb_power: add 100mA max current limit for
-    AXP223
-  mfd: axp20x: add separate MFD cell for AXP223
-  ARM: dtsi: add DTSI for AXP223
-  ARM: dts: sun8i-a33-olinuxino: use AXP223 DTSI
-  ARM: dts: sun8i-a33-sinlinx-sina33: use AXP223 DTSI
-  ARM: dts: sun8i-r16-parrot: use AXP223 DTSI
-  ARM: dtsi: sun8i-reference-design-tablet: use AXP223 DTSI
-
- .../bindings/power/supply/axp20x_usb_power.txt     |   1 +
- arch/arm/boot/dts/axp223.dtsi                      |  55 ++++++++++
- arch/arm/boot/dts/sun8i-a33-olinuxino.dts          |   2 +-
- arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts     |   2 +-
- arch/arm/boot/dts/sun8i-r16-parrot.dts             |   2 +-
- .../boot/dts/sun8i-reference-design-tablet.dtsi    |   2 +-
- drivers/mfd/axp20x.c                               |  22 +++-
- drivers/power/supply/axp20x_usb_power.c            | 120 +++++++++++++++++----
- include/linux/mfd/axp20x.h                         |   3 +
- 9 files changed, 186 insertions(+), 23 deletions(-)
- create mode 100644 arch/arm/boot/dts/axp223.dtsi
-
+diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+index 638cb52..6d5d451 100644
+--- a/drivers/power/supply/axp20x_usb_power.c
++++ b/drivers/power/supply/axp20x_usb_power.c
+@@ -88,11 +88,10 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 
+ 		switch (v & AXP20X_VBUS_CLIMIT_MASK) {
+ 		case AXP20X_VBUC_CLIMIT_100mA:
+-			if (power->axp20x_id == AXP202_ID) {
+-				val->intval = 100000;
+-			} else {
++			if (power->axp20x_id == AXP221_ID)
+ 				val->intval = -1; /* No 100mA limit */
+-			}
++			else
++				val->intval = 100000;
+ 			break;
+ 		case AXP20X_VBUC_CLIMIT_500mA:
+ 			val->intval = 500000;
+@@ -268,6 +267,9 @@ static const struct of_device_id axp20x_usb_power_match[] = {
+ 	}, {
+ 		.compatible = "x-powers,axp221-usb-power-supply",
+ 		.data = (void *)AXP221_ID,
++	}, {
++		.compatible = "x-powers,axp223-usb-power-supply",
++		.data = (void *)AXP223_ID,
+ 	}, { /* sentinel */ }
+ };
+ MODULE_DEVICE_TABLE(of, axp20x_usb_power_match);
+@@ -324,7 +326,8 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+ 
+ 		usb_power_desc = &axp20x_usb_power_desc;
+ 		irq_names = axp20x_irq_names;
+-	} else if (power->axp20x_id == AXP221_ID) {
++	} else if (power->axp20x_id == AXP221_ID ||
++		   power->axp20x_id == AXP223_ID) {
+ 		usb_power_desc = &axp22x_usb_power_desc;
+ 		irq_names = axp22x_irq_names;
+ 	} else {
 -- 
 2.9.3
