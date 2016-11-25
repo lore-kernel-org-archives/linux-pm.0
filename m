@@ -1,64 +1,57 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences
- without runtime PM
-Date: Fri, 25 Nov 2016 10:21:21 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1611251014130.1509-100000@netrider.rowland.org>
-References: <20161125074838.GA16630@valkosipuli.retiisi.org.uk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / OPP: Allow inactive opp_device to be present in dev list
+Date: Fri, 25 Nov 2016 16:55:00 +0100
+Message-ID: <CAJZ5v0g_0G8a0QePQhXFUh-4QxX6=CYrKp+FtKDvj801yP9rfg@mail.gmail.com>
+References: <2fe61813c867c173ddfcb0b9cabc00a65997a935.1480056714.git.viresh.kumar@linaro.org>
+ <20161125065529.GB29969@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from netrider.rowland.org ([192.131.102.5]:33521 "HELO
-        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with SMTP id S1755213AbcKYPWP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 10:22:15 -0500
-In-Reply-To: <20161125074838.GA16630@valkosipuli.retiisi.org.uk>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161125065529.GB29969@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stable <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sakari Ailus <sakari.ailus@iki.fi>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, 25 Nov 2016, Sakari Ailus wrote:
+On Fri, Nov 25, 2016 at 7:55 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25-11-16, 12:23, Viresh Kumar wrote:
+>> Joonyoung Shim reported an interesting problem on his ARM octa-core
+>> Odoroid-XU3 platform. During system suspend, dev_pm_opp_put_regulator()
+>> was failing for a struct device for which dev_pm_opp_set_regulator() is
+>> called earlier.
+>>
+>> This happened because an earlier call to
+>> dev_pm_opp_of_cpumask_remove_table() function (from cpufreq-dt.c file)
+>> removed all the entries from opp_table->dev_list apart from the last CPU
+>> device in the cpumask of CPUs sharing the OPP.
+>>
+>> But both dev_pm_opp_set_regulator() and dev_pm_opp_put_regulator()
+>> routines get CPU device for the first CPU in the cpumask. And so the OPP
+>> core failed to find the OPP table for the struct device.
+>>
+>> This patch attempts to fix this problem by adding another field in the
+>> struct opp_device: inactive.
+>>
+>> Instead of removing the entries from the list during
+>> dev_pm_opp_of_cpumask_remove_table() function call, we mark them as
+>> inactive. Such inactive devices will not be used by the core in most of
+>> the cases, like before, but will be used only at special places which
+>> need to take inactive devices into account.
+>>
+>> All the devices are removed from the list together now and that happens
+>> only when the opp_table gets destroyed.
+>>
+>> This patch is tested on Dual A15, Exynos5250 platform by compiling the
+>> cpufreq-dt driver as a module. The module is inserted/removed multiple
+>> times with combinations of CPU offline/online steps.
+>>
+>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> @Rafael: Can you please add following while applying the patch ?
+>
+> Cc: <stable@vger.kernel.org> # v4.4+
 
-> Hi Alan and others,
-> 
-> On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
-> > On Fri, 25 Nov 2016, Laurent Pinchart wrote:
-> > 
-> > > Dear linux-pm developers, what's the suggested way to ensure that a runtime-
-> > > pm-enabled driver can run fine on a system with CONFIG_PM disabled ?
-> > 
-> > The exact point of your question isn't entirely clear.  In the most 
-> > literal sense, the best ways to ensure this are (1) audit the code, and 
-> > (2) actually try it.
-> > 
-> > I have a feeling this doesn't quite answer your question, however.  :-)
-> 
-> The question is related to devices that require certain power-up and
-> power-down sequences that are now implemented as PM runtime hooks that,
-> without CONFIG_PM defined, will not be executed. Is there a better way than
-> to handle this than have an implementation in the driver for the PM runtime
-> and non-PM runtime case separately?
+Yes, I can, but I need an ACK for this from Stephen too.
 
-Yes, there is a better way.  For the initial power-up and final 
-power-down sequences, don't rely on the PM core to invoke the 
-callbacks.  Just call them directly, yourself.
-
-For example, as part of the probe routine, instead of doing this:
-
-	pm_runtime_set_suspended(dev);
-	pm_runtime_enable(dev);
-	pm_runtime_get_sync(dev);
-
-Do this:
-
-	pm_runtime_set_active(dev);
-	pm_runtime_get_noresume(dev);
-	pm_runtime_enable(dev);
-	/*
-	 * In case CONFIG_PM is disabled, invoke the runtime-resume 
-	 * callback directly.
-	 */
-	my_runtime_resume(dev);
-
-Alan Stern
-
+Thanks,
+Rafael
