@@ -1,148 +1,89 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 02/10] power: supply: axp20x_usb_power: set min voltage and
- max current from sysfs
-Date: Fri, 25 Nov 2016 10:09:13 +0100
-Message-ID: <20161125090921.23138-3-quentin.schulz@free-electrons.com>
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 06/10] ARM: dtsi: add DTSI for AXP223
+Date: Fri, 25 Nov 2016 10:09:17 +0100
+Message-ID: <20161125090921.23138-7-quentin.schulz@free-electrons.com>
 References: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
-Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161125090921.23138-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-AXP20X and AXP22X PMICs allow setting the min voltage and max current of
-VBUS power supply. This adds entries in sysfs to allow to do so.
+The AXP223 shares most of its logic with the AXP221 but it has some
+differences for the VBUS driver.
 
-Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/power/supply/axp20x_usb_power.c | 72 +++++++++++++++++++++++++++++++++
- include/linux/mfd/axp20x.h              |  3 ++
- 2 files changed, 75 insertions(+)
+ arch/arm/boot/dts/axp223.dtsi | 55 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+ create mode 100644 arch/arm/boot/dts/axp223.dtsi
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index b19754e..638cb52 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -155,6 +155,74 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 	return 0;
- }
- 
-+static int axp20x_usb_power_set_property(struct power_supply *psy,
-+					 enum power_supply_property psp,
-+					 const union power_supply_propval *val)
-+{
-+	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
-+	int ret, val1;
+diff --git a/arch/arm/boot/dts/axp223.dtsi b/arch/arm/boot/dts/axp223.dtsi
+new file mode 100644
+index 0000000..f8ce55c
+--- /dev/null
++++ b/arch/arm/boot/dts/axp223.dtsi
+@@ -0,0 +1,55 @@
++/*
++ * Copyright 2016 Free Electrons
++ *
++ * Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
++ *
++ * This file is dual-licensed: you can use it either under the terms
++ * of the GPL or the X11 license, at your option. Note that this dual
++ * licensing only applies to this file, and not this project as a
++ * whole.
++ *
++ *  a) This file is free software; you can redistribute it and/or
++ *     modify it under the terms of the GNU General Public License as
++ *     published by the Free Software Foundation; either version 2 of the
++ *     License, or (at your option) any later version.
++ *
++ *     This file is distributed in the hope that it will be useful,
++ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *     GNU General Public License for more details.
++ *
++ * Or, alternatively,
++ *
++ *  b) Permission is hereby granted, free of charge, to any person
++ *     obtaining a copy of this software and associated documentation
++ *     files (the "Software"), to deal in the Software without
++ *     restriction, including without limitation the rights to use,
++ *     copy, modify, merge, publish, distribute, sublicense, and/or
++ *     sell copies of the Software, and to permit persons to whom the
++ *     Software is furnished to do so, subject to the following
++ *     conditions:
++ *
++ *     The above copyright notice and this permission notice shall be
++ *     included in all copies or substantial portions of the Software.
++ *
++ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
++ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
++ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
++ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
++ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
++ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
++ *     OTHER DEALINGS IN THE SOFTWARE.
++ */
 +
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
-+		switch (val->intval) {
-+		case 4000000:
-+		case 4100000:
-+		case 4200000:
-+		case 4300000:
-+		case 4400000:
-+		case 4500000:
-+		case 4600000:
-+		case 4700000:
-+			val1 = (val->intval - 4000000) / 100000;
-+			ret = regmap_update_bits(power->regmap,
-+						 AXP20X_VBUS_IPSOUT_MGMT,
-+						 AXP20X_VBUS_VHOLD_MASK,
-+						 val1 << 3);
-+			if (ret)
-+				return ret;
++/*
++ * AXP223 Integrated Power Management Chip
++ * http://www.x-powers.com/product/AXP22X.php
++ * http://dl.linux-sunxi.org/AXP/AXP223-en.pdf
++ */
 +
-+			return 0;
-+		default:
-+			return -EINVAL;
-+		}
++#include "axp22x.dtsi"
 +
-+		return 0;
-+
-+	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		switch (val->intval) {
-+		case 100000:
-+			if (power->axp20x_id == AXP221_ID)
-+				return -EINVAL;
-+		case 500000:
-+		case 900000:
-+			val1 = (900000 - val->intval) / 400000;
-+			ret = regmap_update_bits(power->regmap,
-+						 AXP20X_VBUS_IPSOUT_MGMT,
-+						 AXP20X_VBUS_CLIMIT_MASK, val1);
-+			if (ret)
-+				return ret;
-+
-+			return 0;
-+		default:
-+			return -EINVAL;
-+		}
-+
-+		return 0;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int axp20x_usb_power_prop_writeable(struct power_supply *psy,
-+					   enum power_supply_property psp)
-+{
-+	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
-+	       psp == POWER_SUPPLY_PROP_CURRENT_MAX;
-+}
-+
- static enum power_supply_property axp20x_usb_power_properties[] = {
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_PRESENT,
-@@ -178,7 +246,9 @@ static const struct power_supply_desc axp20x_usb_power_desc = {
- 	.type = POWER_SUPPLY_TYPE_USB,
- 	.properties = axp20x_usb_power_properties,
- 	.num_properties = ARRAY_SIZE(axp20x_usb_power_properties),
-+	.property_is_writeable = axp20x_usb_power_prop_writeable,
- 	.get_property = axp20x_usb_power_get_property,
-+	.set_property = axp20x_usb_power_set_property,
- };
- 
- static const struct power_supply_desc axp22x_usb_power_desc = {
-@@ -186,7 +256,9 @@ static const struct power_supply_desc axp22x_usb_power_desc = {
- 	.type = POWER_SUPPLY_TYPE_USB,
- 	.properties = axp22x_usb_power_properties,
- 	.num_properties = ARRAY_SIZE(axp22x_usb_power_properties),
-+	.property_is_writeable = axp20x_usb_power_prop_writeable,
- 	.get_property = axp20x_usb_power_get_property,
-+	.set_property = axp20x_usb_power_set_property,
- };
- 
- static const struct of_device_id axp20x_usb_power_match[] = {
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index fec597f..8883595 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -56,6 +56,9 @@ enum {
- #define AXP20X_LDO24_V_OUT		0x28
- #define AXP20X_LDO3_V_OUT		0x29
- #define AXP20X_VBUS_IPSOUT_MGMT		0x30
-+
-+#define AXP20X_VBUS_VHOLD_MASK		GENMASK(5, 3)
-+
- #define AXP20X_V_OFF			0x31
- #define AXP20X_OFF_CTRL			0x32
- #define AXP20X_CHRG_CTRL1		0x33
++&usb_power_supply {
++	compatible = "x-powers,axp223-usb-power-supply";
++};
 -- 
 2.9.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
