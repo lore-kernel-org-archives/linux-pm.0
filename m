@@ -1,39 +1,67 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: fix intel_pstate_exit_perf_limits prototype
-Date: Fri, 25 Nov 2016 22:10:20 +0100
-Message-ID: <CAJZ5v0g2dNmZGB+MSatMRYuoqA5PKBrQ5UpBOfCBz92GYM-9zw@mail.gmail.com>
-References: <20161125165036.195969-1-arnd@arndb.de>
+Subject: [GIT PULL] ACPI fixes for v4.9-rc7
+Date: Fri, 25 Nov 2016 22:48:00 +0100
+Message-ID: <CAJZ5v0gNzC9XJmCGpwkc_VacLsPEix9hYNqkJ5dz+h+6Pzf6rg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f194.google.com ([209.85.210.194]:32807 "EHLO
-        mail-wj0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750903AbcKYVLX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 16:11:23 -0500
-In-Reply-To: <20161125165036.195969-1-arnd@arndb.de>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:35159 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751261AbcKYVsx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 16:48:53 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Philippe Longepe <philippe.longepe@linux.intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Nov 25, 2016 at 5:50 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> The addition of the generic governor support marked the
-> intel_pstate_exit_perf_limits as inline, which fixed a warning,
-> but it introduced another warning:
->
-> drivers/cpufreq/intel_pstate.c: In function =E2=80=98intel_pstate_exit_pe=
-rf_limits=E2=80=99:
-> drivers/cpufreq/intel_pstate.c:483:1: error: no return statement in funct=
-ion returning non-void [-Werror=3Dreturn-type]
->
-> This changes it back to a 'void' return type, and changes the
-> corresponding intel_pstate_init_acpi_perf_limits() function to
-> be inline as well for consistency.
->
-> Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Hi Linus,
 
-Applied, thanks!
+Please pull from the tag
 
-Rafael
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ acpi-4.9-rc7
+
+with top-most commit 7e5c07af8693e72b23aefb70da88b31b30c35b22
+
+ Merge branches 'acpi-sleep-fixes' and 'acpi-wdat-fixes'
+
+on top of commit 9c763584b7c8911106bb77af7e648bef09af9d80
+
+ Linux 4.9-rc6
+
+to receive ACPI fixes for v4.9-rc7.
+
+One of them reverts a recent ACPI commit that attempted to improve
+reboot/power-off on some systems, but introduced problems elsewhere,
+and the other one fixes kernel builds with the new WDAT watchdog
+driver enabled in some configurations.
+
+Specifics:
+
+ - Revert the recent commit that caused the ACPI _PTS method to
+   be executed in the power-off/reboot code path (as per the
+   specification) in an attempt to improve things on some systems
+   (apparently expecting _PTS to be executed in that code path),
+   but broke power-off/reboot on at least one other machine (Rafael
+   Wysocki).
+
+ - Fix kernel builds with the new WDAT watchdog driver enabled in
+   some configurations by explicitly selecting WATCHDOG_CORE when
+   enabling the WDAT watchdog driver (Mika Westerberg).
+
+Thanks!
+
+
+---------------
+
+Mika Westerberg (1):
+      watchdog: wdat_wdt: Select WATCHDOG_CORE
+
+Rafael J. Wysocki (1):
+      Revert "ACPI: Execute _PTS before system reboot"
+
+---------------
+
+ drivers/acpi/sleep.c     | 29 ++++++-----------------------
+ drivers/watchdog/Kconfig |  1 +
+ 2 files changed, 7 insertions(+), 23 deletions(-)
