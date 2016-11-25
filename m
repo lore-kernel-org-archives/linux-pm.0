@@ -1,36 +1,32 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 09/10] ARM: dts: sun8i-r16-parrot: use AXP223 DTSI
-Date: Fri, 25 Nov 2016 10:09:20 +0100
-Message-ID: <20161125090921.23138-10-quentin.schulz@free-electrons.com>
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 10/10] ARM: dtsi: sun8i-reference-design-tablet: use AXP223 DTSI
+Date: Fri, 25 Nov 2016 10:09:21 +0100
+Message-ID: <20161125090921.23138-11-quentin.schulz@free-electrons.com>
 References: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:58743 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754601AbcKYJLm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 04:11:42 -0500
-In-Reply-To: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161125090921.23138-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
-Cc: Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com
 
-Previously, the Allwinner Parrot R16 used everything declared in AXP221
-DTSI while it has an AXP223 PMIC.
+Previously, the sun8i tablets used everything declared in AXP221 DTSI
+while they have an AXP223 PMIC.
 
-This corrects that so the Allwinner Parrot R16 can get some features the
-AXP223 has (at the moment, ability to have 100mA as maximal current on
-VBUS power supply).
+This corrects that so the sun8i tablets can get some features the AXP223
+has (at the moment, ability to have 100mA as maximal current on VBUS
+power supply).
 
-Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- arch/arm/boot/dts/sun8i-r16-parrot.dts | 2 +-
+ arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/sun8i-r16-parrot.dts b/arch/arm/boot/dts/sun8i-r16-parrot.dts
-index 47553e5..6afdba3 100644
---- a/arch/arm/boot/dts/sun8i-r16-parrot.dts
-+++ b/arch/arm/boot/dts/sun8i-r16-parrot.dts
-@@ -209,7 +209,7 @@
+diff --git a/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi b/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi
+index 08cd001..ea79c33 100644
+--- a/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi
++++ b/arch/arm/boot/dts/sun8i-reference-design-tablet.dtsi
+@@ -136,7 +136,7 @@
  	};
  };
  
@@ -42,3 +38,7 @@ index 47553e5..6afdba3 100644
 -- 
 2.9.3
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
