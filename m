@@ -1,76 +1,46 @@
-From: Joonyoung Shim <jy0922.shim@samsung.com>
-Subject: Re: [PATCH] PM / OPP: fix CPU device to be removed from OPP table in
- wrong order
-Date: Fri, 25 Nov 2016 16:30:27 +0900
-Message-ID: <5837E893.1020409@samsung.com>
-References: <1479973761-21225-1-git-send-email-jy0922.shim@samsung.com>
- <CGME20161124084531epcas2p1f662ed5a74f2c6f3da5911f1fe38a200@epcas2p1.samsung.com>
- <20161124083403.GA29969@vireshk-i7> <583799EC.4060101@samsung.com>
- <20161125065739.GC29969@vireshk-i7>
+From: Sakari Ailus <sakari.ailus@iki.fi>
+Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences
+ without runtime PM
+Date: Fri, 25 Nov 2016 09:48:38 +0200
+Message-ID: <20161125074838.GA16630@valkosipuli.retiisi.org.uk>
+References: <2929151.g7xCm3YOsX@avalon>
+ <Pine.LNX.4.44L0.1611242112030.20545-100000@netrider.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:41674 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750995AbcKYH3p (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 02:29:45 -0500
-In-reply-to: <20161125065739.GC29969@vireshk-i7>
+Received: from nblzone-211-213.nblnetworks.fi ([83.145.211.213]:43382 "EHLO
+        hillosipuli.retiisi.org.uk" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1752264AbcKYHso (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Nov 2016 02:48:44 -0500
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1611242112030.20545-100000@netrider.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, gregkh@linuxfoundation.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Viresh,
+Hi Alan and others,
 
-On 11/25/2016 03:57 PM, Viresh Kumar wrote:
-> On 25-11-16, 10:54, Joonyoung Shim wrote:
->> I found this problem during system suspend/resume of Odroid-XU3 board.
->>
->> # rtcwake -m mem -s 3
->> wakeup from "mem" at Wed Apr  4 05:54:44 2001
->> [   15.965996] PM: Syncing filesystems ... done.
->> [   15.976333] Freezing user space processes ... (elapsed 0.002 seconds) done.
->> [   15.983287] Freezing remaining freezable tasks ... (elapsed 0.002 seconds) done.
->> [   16.006951] wake enabled for irq 135
->> [   16.008782] smsc95xx 1-1.1:1.0 eth0: entering SUSPEND2 mode
->> [   16.094110] PM: suspend of devices complete after 95.038 msecs
->> [   16.105648] PM: late suspend of devices complete after 6.903 msecs
->> [   16.116356] PM: noirq suspend of devices complete after 5.912 msecs
->> [   16.121213] Disabling non-boot CPUs ...
->> [   16.154140] IRQ51 no longer affine to CPU1
->> [   16.154709] CPU1: shutdown
->> [   16.214148] IRQ52 no longer affine to CPU2
->> [   16.214646] CPU2: shutdown
->> [   16.273980] IRQ53 no longer affine to CPU3
->> [   16.274458] CPU3: shutdown
->> [   16.335093] IRQ54 no longer affine to CPU4
->> [   16.336033] CPU4: shutdown
->> [   16.389979] IRQ55 no longer affine to CPU5
->> [   16.390823] CPU5: shutdown
->> [   16.444829] IRQ56 no longer affine to CPU6
->> [   16.445621] CPU6: shutdown
->> [   16.509229] cpu cpu4: Failed to find opp_table: -19
->> [   16.514008] IRQ57 no longer affine to CPU7
->> [   16.514824] CPU7: shutdown
+On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
+> On Fri, 25 Nov 2016, Laurent Pinchart wrote:
 > 
-> Hi,
+> > Dear linux-pm developers, what's the suggested way to ensure that a runtime-
+> > pm-enabled driver can run fine on a system with CONFIG_PM disabled ?
 > 
-> Yes you have found a real bug it seems. I think that can be reproduced
-> by a simple rmmmod of cpufreq-dt.ko module as well.
+> The exact point of your question isn't entirely clear.  In the most 
+> literal sense, the best ways to ensure this are (1) audit the code, and 
+> (2) actually try it.
 > 
-> Though the solution you provided isn't good enough.
-> 
-> Consider for example a case where you do this:
-> - offline CPU 4
-> - suspend the system
-> 
-> You are going to get stuck in the exact same problem again.
-> 
-> I have sent a separate patch and cc'd you. Can you please verify that
-> it works for you ?
-> 
+> I have a feeling this doesn't quite answer your question, however.  :-)
 
-Thanks for the patch, i tested it and it is working well.
+The question is related to devices that require certain power-up and
+power-down sequences that are now implemented as PM runtime hooks that,
+without CONFIG_PM defined, will not be executed. Is there a better way than
+to handle this than have an implementation in the driver for the PM runtime
+and non-PM runtime case separately?
 
-Thanks.
+-- 
+Kind regards,
+
+Sakari Ailus
+e-mail: sakari.ailus@iki.fi	XMPP: sailus@retiisi.org.uk
