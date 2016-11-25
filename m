@@ -1,36 +1,30 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 07/10] ARM: dts: sun8i-a33-olinuxino: use AXP223 DTSI
-Date: Fri, 25 Nov 2016 18:05:06 +0800
-Message-ID: <CAGb2v67d6ZidMmftyU+4YEZgMxu+wJWmwNxevB5PLH2Wh4FFVg@mail.gmail.com>
-References: <20161125090921.23138-1-quentin.schulz@free-electrons.com>
- <20161125090921.23138-8-quentin.schulz@free-electrons.com>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 09/10] ARM: dts: sun8i-r16-parrot: use AXP223 DTSI
+Date: Fri, 25 Nov 2016 18:05:56 +0800
+Message-ID: <CAGb2v6444+omLZ_AwEOPg90bxS__1fLJoXXhHTb4JY+-VcKrqQ@mail.gmail.com>
+References: <20161125090921.23138-1-quentin.schulz@free-electrons.com> <20161125090921.23138-10-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161125090921.23138-8-quentin.schulz@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161125090921.23138-10-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, Nov 25, 2016 at 5:09 PM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> Previously, the Olimex A33-OlinuXino used everything declared in AXP221
+<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> Previously, the Allwinner Parrot R16 used everything declared in AXP221
 > DTSI while it has an AXP223 PMIC.
 >
-> This corrects that so the Olimex A33-OlinuXino can get some features the
+> This corrects that so the Allwinner Parrot R16 can get some features the
 > AXP223 has (at the moment, ability to have 100mA as maximal current on
 > VBUS power supply).
 >
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 
-Acked-by: Chen-Yu Tsai <wens@csie.org>
+Acked-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
