@@ -1,142 +1,246 @@
-From: NeilBrown <neilb@suse.com>
-Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
-Date: Sat, 26 Nov 2016 11:44:46 +1100
-Message-ID: <87bmx39iip.fsf@notabene.neil.brown.name>
-References: <CAMz4kuJV5wiCpWJF=-YpTf1sjNrOqjc53iRYmGoEQepqtrfUdA@mail.gmail.com> <87a8dbni27.fsf@notabene.neil.brown.name> <CAMz4ku+qY4U7=v5nEBEdPTjwki8j10jYbQuokz785NEy5SzYmg@mail.gmail.com> <87eg2ek7ye.fsf@notabene.neil.brown.name> <20161114120430.hpnetdedyofhlkad@sirena.org.uk> <87mvh1iw32.fsf@notabene.neil.brown.name> <20161116161605.smif6kf3mdhdhyhd@sirena.org.uk> <87fumqhadm.fsf@notabene.neil.brown.name> <20161121171712.wo2qsnnqnnsnej26@sirena.org.uk> <87y40ccv94.fsf@notabene.neil.brown.name> <20161125130035.xf57xe5ajx6zfnqq@sirena.org.uk>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH 8/9] mfd: wm97xx-core: core support for wm97xx Codec
+Date: Sat, 26 Nov 2016 10:18:38 +0100
+Message-ID: <87y406ppjl.fsf@belgarion.home>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+        <1477510907-23495-9-git-send-email-robert.jarzmik@free.fr>
+        <20161118165040.GB19884@dell.home> <87twb3r94s.fsf@belgarion.home>
+        <20161121101219.GB32509@dell>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:51183 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752181AbcKZApH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 25 Nov 2016 19:45:07 -0500
-In-Reply-To: <20161125130035.xf57xe5ajx6zfnqq@sirena.org.uk>
+Received: from smtp05.smtpout.orange.fr ([80.12.242.127]:26405 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751524AbcKZJTA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Nov 2016 04:19:00 -0500
+In-Reply-To: <20161121101219.GB32509@dell> (Lee Jones's message of "Mon, 21
+        Nov 2016 10:12:19 +0000")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Baolin Wang <baolin.wang@linaro.org>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel>
+To: Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
 
---=-=-=
-Content-Type: text/plain
+Lee Jones <lee.jones@linaro.org> writes:
 
-On Sat, Nov 26 2016, Mark Brown wrote:
+> Mark, please see below:
+You'll get better chances to have an answer if you put Mark in the To: list.
 
-> [ Unknown signature status ]
-> On Tue, Nov 22, 2016 at 09:40:07AM +1100, NeilBrown wrote:
+Mark, Lee has question, especially in the part where he wrote "I'd like to get
+Mark Brown's opinion on this.". I added the code extract in [1] to spare you
+going through the all patch.
+
+I copy-pasted his reply below in [2], which makes it top-posting ... let's say
+for this time it's acceptable.
+
+Cheers.
+
+--
+Robert
+
+[1] Probe function and your opinion
+	+static int wm97xx_ac97_probe(struct ac97_codec_device *adev)
+	+{
+	+	struct wm97xx_priv *wm97xx;
+	+	int ret;
+	+	void *pdata = snd_ac97_codec_get_platdata(adev);
+	+
+	+	wm97xx = devm_kzalloc(ac97_codec_dev2dev(adev),
+	+			      sizeof(*wm97xx), GFP_KERNEL);
+	+	if (!wm97xx)
+	+		return -ENOMEM;
+	+
+	+	wm97xx->dev = ac97_codec_dev2dev(adev);
+	+	wm97xx->ac97 = snd_ac97_compat_alloc(adev);
+	+	if (IS_ERR(wm97xx->ac97))
+	+		return PTR_ERR(wm97xx->ac97);
+	+
+	+
+	+	ac97_set_drvdata(adev, wm97xx);
+	+	dev_info(wm97xx->dev, "wm97xx core found, id=0x%x\n",
+	+		 adev->vendor_id);
+
+[2] Lee's previous mail
+> On Sat, 19 Nov 2016, Robert Jarzmik wrote:
+>> Lee Jones <lee.jones@linaro.org> writes:
+>> 
+>> >> +#define WM9705_VENDOR_ID 0x574d4c05
+>> >> +#define WM9712_VENDOR_ID 0x574d4c12
+>> >> +#define WM9713_VENDOR_ID 0x574d4c13
+>> >> +#define WM97xx_VENDOR_ID_MASK 0xffffffff
+>> >
+>> > These are probably better represented as enums.
+>> These are ids, just as devicetree ids, or PCI ids, I don't think an enum will
+>> fit.
 >
->> I agree that the question of where the responsibility for information
->> aggregation lies is open for discussion. If fact all details on how
->> things should work are always open for discussion.
->> I don't agree that this is the main different between our positions,
->> though I can see how you might get that impression.
+> That's fine.  We can use enums to simply group items of a similar
+> type.  Representing these as enums would only serve to benefit code
+> cleanliness.  What makes you think they won't fit?
 >
->> You could even fix them so they look *exactly* like the notifiers that
->> Baolin is proposing.  This is my key point.  It is not the end result
->> that I particularly object to (though I do object to some details).  It
+>> >> +struct wm97xx_priv {
+>> >> +	struct regmap *regmap;
+>> >> +	struct snd_ac97 *ac97;
+>> >> +	struct device *dev;
+>> >> +};
+>> >
+>> > Replace _priv with _ddata.
+>> Ok, will do, would you care to explain if this is something specific to your mfd
+>> tree, or is it a kernel overall recommendation ?
 >
-> Ah, OK.  This really hadn't been at all clear - both Baolin and I had
-> the impression that the it was both that were blockers for you.  What
-> were the details here?
-
-I don't really like the idea of a separate "usb charger" object.  It
-looks too much like a "midlayer" and they tend to get in the way.  But
-if a convincing case could be made that changing from the current design
-to that aspect of the proposed design brings measurable benefits, then I
-would certainly assess that case on its merits.  No such case was made,
-and the patchset didn't seem to even acknowledge the existing design.
-
-When I said "I do object to some details" it was details of the end
-result, not details of what took responsibility of information
-aggregation (in case that wasn't clear).  Those details were everything
-that duplicated existing functionality, or ignored existing
-functionality, or was simply unworkable.  e.g. the lack of proper
-integration with extcon, the new sysfs attributes, the name-lookup
-mechanism.  Probably others.
-
+> It's personal preference.  But these aren't necessarily private, so
+> priv doesn't really make a great deal of sense.  These types of saved
+> pointers are better described as device data (ddata).
 >
->> is the process of getting to the end result that I don't like.  If the
->> current system doesn't work and something different is needed, then the
->> correct thing to do is to transform the existing system into something
->> new that works better.  This should be a clear series of steps.  Each
 >
-> Sometimes there's something to be said for working out what we want
-> things to look like before setting out to make these gradual
-> refactorings and sometimes the refactorings are just more pain than
-> they're worth, especially when they go across subsystems.  In this case
-> I do worry about the cross subsystem aspect causing hassle, it may be
-> more practical to do anything that represents an interface change by
-> adding the new interface, converting the users to it and then removing
-> the old interface.
-
-Yes, you need a clear vision of the goal.  You also need a clear vision
-of the starting point. There was no evidence of the latter.
-Yes, sometimes you need to create a new thing and transition users over,
-then discard the old.  There was no discarding of the old.
-
+> [...]
 >
-> At the very least the series should grow to incorporate conversion of
-> the existing users though.  Baolin, I think this does need adding to the
-> series but probably best to think about how to do it - some of Neil's
-> suggestions for incremental steps do seem like they should be useful
-> for organizing things here, probably we can get some things that can be
-> done internally within individual drivers merged while everything else
-> is under discussion.
-
-I would be very encouraged to see those simple things done first!
-Seeing the series grow isn't much fun, but seeing preliminary work land
-certainly is.
-
+>> >> +static const struct reg_default wm97xx_reg_defaults[] = {
+>> >> +};
+>> >
+>> > What's the point in this?
+>> Ah, that's a reminder I have still more work on this patch ... Either I remove
+>> support for wm9705 and wm9712 in the first version, or I complete it and add the
+>> tables :
+>>  - wm9705_reg_defaults
+>>  - wm9712_reg_defaults
 >
->> But I think here my key point got lost too, in part because it was hard
->> to refer to an actual instance.
->> My point was that in the present patch set, the "usb charger" is given
->> a name which is dependant on discovery order, and only supports
->> lookup-by-name.  This cannot work.
+> Please don't add redundant code.  I suggest you remove it for this
+> submission.
 >
-> There's two bits here: one is the way names are assigned and the other
-> is the lookup by name.  I agree that the lookup by name isn't
-> particularly useful as things stand, that could just be dropped until
-> some naming mechanism is added.  We'd be more likely to use phandles in
-> DT systems, I don't know what ACPI systems would look like but I guess
-> it'd be something similar.
+>> >> +static int wm9705_register(struct wm97xx_priv *wm97xx)
+>> >> +{
+>> >> +	return 0;
+>> >> +}
+>> >> +
+>> >> +static int wm9712_register(struct wm97xx_priv *wm97xx)
+>> >> +{
+>> >> +	return 0;
+>> >> +}
+>> >
+>> > I don't get it?
+>> >
+>> > Either populate or don't provide.
+>> Same story as above, either I complete wm9705 and wm9712 support or I remove it.
 >
->> If they supported lookup by phy-name or lookup-by-active (i.e. "find me
->> any usb-charger which has power available"), or look up by some other
->> attribute, then discover-order naming could work.  But the only
->> lookup-mechanism is by-name, and the names aren't reliably stable.  So
->> the name/lookup system proposed cannot possibly do anything useful
->> with more than one usb_charger.
+> Remove it please.
 >
-> Baolin, I think adding a DT binding and lookup mechanism makes sense
-> here - do you agree?
-
-We already have a lookup mechanism for a battery charger to find the phy
-that it gets current from: devm_usb_get_phy_by_phandle() (or even
-devm_usb_get_phy() if there is known to only be one phy).  We would need
-a case to be made that the existing mechanism cannot be used before we
-consider "adding a DT binding and lookup mechanism".
-
-Thanks,
-NeilBrown
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEG8Yp69OQ2HB7X0l6Oeye3VZigbkFAlg42v8ACgkQOeye3VZi
-gbmcJA//Xk9fxXpx8fUlFk/BnV+QkNN5a/d54wykywCx9hhDHTDpL+EPmzmRMISB
-zX0n0SX2uBOxoXsy/oNQqepV0RBGhoZh/dxN9E1JEFmjJcW07yK72rJrLfhPq9sy
-1B5YkR51d1tkh7zwW3Bym7mAR4fq3PHPQ1Dz0hTuteRMPiOWIdqKsMzxS/iKBYBx
-FTQxTNeceBGuZLAMqEpRp4ugyMb9KaTxt4/LpNJNv5zwESwhtgdozOsOVe9GSvzD
-AXRLecywjtfmxdCZ1Ylf5U/sMyHx+8KXfBQLBvWvmuYJO6JK2ugbewAcOoXDU9EB
-2YmpKm1JYqGfU8v9nGKZ6I9QbhwFeUpX3IotSeYJjqJtb6vVJV37xFCuvOaPg82C
-Fk7TU/hhV3wF7b8EwV8iFxUucQ+K4YlV5JfC8YPrS05ZXJ53xEHi3ipaoW9Ulg0x
-E2qPTkP0IXFtRawwJwqdVFRiS1IFE/FgLOVKTjRWOZXhzlTwKhyg204YYqjkFlqv
-xVEJ8QtLkyNoq5qGKZy68ATKMM8Aj2hlWhQ4t/6WK2HeVZbflp1cAToBmVuTVxxm
-kJ9Iirmu11T8NxjW0CnWZrQfqUJL07ek4ZuN8TqUWbgt7l0qtSCuF64R17dpAP2v
-fPXcNmNQYWDLkT1ARd8ZunULhMoxQ+VCBVNzBvuapLX2nOu5Q/U=
-=/jpI
------END PGP SIGNATURE-----
---=-=-=--
+>> >> +static int wm9713_register(struct wm97xx_priv *wm97xx,
+>> >> +			   struct wm97xx_pdata *pdata)
+>> >> +{
+>> >
+>> > What are you lining this up with?
+>> Emacs ... I don't see your point though, seeing it not aligned in the diff chunk
+>> doesn't mean it's not properly aligned.
+>
+> That is true.  So the two "scruct"s are line up in the source file,
+> right?
+>
+> [...]
+>
+>> >> +	codec_pdata.ac97 = wm97xx->ac97;
+>> >> +	codec_pdata.regmap = devm_regmap_init_ac97(wm97xx->ac97,
+>> >> +						   &wm9713_regmap_config);
+>> >> +	codec_pdata.batt_pdata = pdata->batt_pdata;
+>> >> +	if (IS_ERR(codec_pdata.regmap))
+>> >> +		return PTR_ERR(codec_pdata.regmap);
+>> >
+>> > This doesn't look like pdata.  You can get rid of all of this hoop
+>> > jumping if you add it to ddata and set it as such.
+>> You mean I should pass ddata to mfd sub-cells, right ?
+>
+> Correct.
+>
+> [...]
+>
+>> >> +static int wm97xx_ac97_probe(struct ac97_codec_device *adev)
+>> >
+>> > This looks sound specific.
+>> >
+>> > Why isn't this a plane platform driver?
+>> That's the whole purpose of the patch serie.
+>> 
+>> This serie transforms the wm97xx drivers from a platform driver model to an ac97
+>> model, where the ac97 devices are automatically discovered. The long explanation
+>> is in patch 0/9, on how it started and what is the global purpose.
+>> 
+>> The short story is : switch to the new AC97 bus driver model.
+>> 
+>> As for the "sound specific part", it's because AC97 bus is mainly used in sound
+>> oriented drivers, but still the codec IPs provide more than just sound, as the
+>> Wolfson codecs for instance.
+>
+> I'd like to get Mark Brown's opinion on this.
+>
+>> >> +{
+>> >> +	struct wm97xx_priv *wm97xx;
+>> >> +	int ret;
+>> >> +	void *pdata = snd_ac97_codec_get_platdata(adev);
+>> >> +
+>> >> +	wm97xx = devm_kzalloc(ac97_codec_dev2dev(adev),
+>> >> +			      sizeof(*wm97xx), GFP_KERNEL);
+>> >> +	if (!wm97xx)
+>> >> +		return -ENOMEM;
+>> >> +
+>> >> +	wm97xx->dev = ac97_codec_dev2dev(adev);
+>> >> +	wm97xx->ac97 = snd_ac97_compat_alloc(adev);
+>> >> +	if (IS_ERR(wm97xx->ac97))
+>> >> +		return PTR_ERR(wm97xx->ac97);
+>> >> +
+>> >> +
+>> >> +	ac97_set_drvdata(adev, wm97xx);
+>> >> +	dev_info(wm97xx->dev, "wm97xx core found, id=0x%x\n",
+>> >> +		 adev->vendor_id);
+>> >
+>> > All of this ac97/sound stuff should be done in the ac97/sound driver.
+>> 
+>> Nope, it's not sound adherence you're seeing here, it's ac97 bus and driver
+>> model adherence you're seeing. Would the bus be in drivers/ac97 instead of
+>> sound/ac97, the code would remain the same, would be bus be i2c you would see
+>> the same kind of calls but with i2c_xxx and not ac97_xxx.
+>> 
+>> The wm97xx needs an ac97 bus to interact with the hardware, to provide sound,
+>> gpio, adc, etc ... functions. That's what is expressed here, and the fact that
+>> this ac97 access has to shared amongst the mfd sub-cells, and that these cells
+>> require :
+>>  - wm97xx->ac97 : this one is for drivers/input/touchscreen/wm97xx-core.c
+>> 
+>> So the requirement in this case is not for ac97/sound but input/touchscreen.
+>> 
+>> >> diff --git a/include/linux/mfd/wm97xx.h b/include/linux/mfd/wm97xx.h
+>> >> new file mode 100644
+>> >> index 000000000000..627322f14d48
+>> >> --- /dev/null
+>> >> +++ b/include/linux/mfd/wm97xx.h
+>> >> @@ -0,0 +1,31 @@
+>> >> +/*
+>> >> + * wm97xx client interface
+>> >> + *
+>> >> + * Copyright (C) 2016 Robert Jarzmik
+>> >> + *
+>> >> + * This program is free software; you can redistribute it and/or modify
+>> >> + * it under the terms of the GNU General Public License as published by
+>> >> + * the Free Software Foundation; either version 2 of the License, or
+>> >> + * (at your option) any later version.
+>> >> + *
+>> >> + * This program is distributed in the hope that it will be useful,
+>> >> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> >> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> >> + * GNU General Public License for more details.
+>> >> + */
+>> >> +
+>> >> +#ifndef __LINUX_MFD_WM97XX_H
+>> >> +#define __LINUX_MFD_WM97XX_H
+>> >> +
+>> >> +struct regmap;
+>> >> +struct wm97xx_batt_pdata;
+>> >> +struct snd_ac97;
+>> >
+>> > Why can't you just add the include files?
+>> I could, but I don't need to, do I ?
+>> Moreover, if a mfd sub-cell doesn't use regmap for example, I won't include a
+>> useless define.
+>> 
+>> Thanks for the review, Lee. This will iterate, I'll split out mfd patch(es) to
+>> follow up the review with you and Mark to lessen the burden on your mailbox.
+>> 
+>> Cheers.
+>> 
