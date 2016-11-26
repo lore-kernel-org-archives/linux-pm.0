@@ -1,48 +1,95 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 176411] cpufreq/cpuinfo_cur_freq reports <unknown>
-Date: Sat, 26 Nov 2016 13:34:01 +0000
-Message-ID: <bug-176411-137361-agznAS5slN@https.bugzilla.kernel.org/>
-References: <bug-176411-137361@https.bugzilla.kernel.org/>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences
+ without runtime PM
+Date: Sat, 26 Nov 2016 15:10:28 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1611261451230.32289-100000@netrider.rowland.org>
+References: <3007760.0ebxS8fqmr@avalon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:57670 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751099AbcKZNeH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 26 Nov 2016 08:34:07 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id 5D90120379
-        for <linux-pm@vger.kernel.org>; Sat, 26 Nov 2016 13:34:05 +0000 (UTC)
-Received: from bugzilla2.web.kernel.org (bugzilla2.web.kernel.org [172.20.200.52])
-        by mail.kernel.org (Postfix) with ESMTP id 06424203A0
-        for <linux-pm@vger.kernel.org>; Sat, 26 Nov 2016 13:34:02 +0000 (UTC)
-In-Reply-To: <bug-176411-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-media-owner@vger.kernel.org>
+In-Reply-To: <3007760.0ebxS8fqmr@avalon>
+Sender: linux-media-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Sakari Ailus <sakari.ailus@iki.fi>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=176411
+On Fri, 25 Nov 2016, Laurent Pinchart wrote:
 
---- Comment #24 from Dominik Gronkiewicz <gronki@gmail.com> ---
-(In reply to Dominik Gronkiewicz from comment #23)
-> I can reproduce it on my machine running Fedora 24.
-> 
-> model name	: Intel(R) Core(TM) i7-5930K CPU @ 3.50GHz
-> model		: 63
-> 
-> Kernel 4.8.8-200.fc24.x86_64
-> 
-> I also noticed that machine has slowed down significantly.
-> 
-> If there's any help I can provide to debug this, please let me know. I use
-> this machine for computing so CPU time is essential for me to benchmark my
-> code.
+> Hi Alan,
 
-Sorry for posting two comments in a row. Disabling C-states in MSI BIOS indeed
-brings back full functionality and performance of the CPU. Still, if there's
-any way I can help in debugging, please let me know.
+Hello.
 
--- 
-You are receiving this mail because:
-You are the assignee for the bug.
+> On Friday 25 Nov 2016 10:21:21 Alan Stern wrote:
+> > On Fri, 25 Nov 2016, Sakari Ailus wrote:
+> > > On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
+> > >> On Fri, 25 Nov 2016, Laurent Pinchart wrote:
+> > >>> Dear linux-pm developers, what's the suggested way to ensure that a
+> > >>> runtime- pm-enabled driver can run fine on a system with CONFIG_PM
+> > >>> disabled ?
+> > >>
+> > >> The exact point of your question isn't entirely clear.  In the most
+> > >> literal sense, the best ways to ensure this are (1) audit the code, and
+> > >> (2) actually try it.
+> > >> 
+> > >> I have a feeling this doesn't quite answer your question, however.  :-)
+> > > 
+> > > The question is related to devices that require certain power-up and
+> > > power-down sequences that are now implemented as PM runtime hooks that,
+> > > without CONFIG_PM defined, will not be executed. Is there a better way
+> > > than to handle this than have an implementation in the driver for the PM
+> > > runtime and non-PM runtime case separately?
+> > 
+> > Yes, there is a better way.  For the initial power-up and final
+> > power-down sequences, don't rely on the PM core to invoke the
+> > callbacks.  Just call them directly, yourself.
+> > 
+> > For example, as part of the probe routine, instead of doing this:
+> > 
+> > 	pm_runtime_set_suspended(dev);
+> > 	pm_runtime_enable(dev);
+> > 	pm_runtime_get_sync(dev);
+> > 
+> > Do this:
+> > 
+> > 	pm_runtime_set_active(dev);
+> > 	pm_runtime_get_noresume(dev);
+> > 	pm_runtime_enable(dev);
+> > 	/*
+> > 	 * In case CONFIG_PM is disabled, invoke the runtime-resume
+> > 	 * callback directly.
+> > 	 */
+> > 	my_runtime_resume(dev);
+> 
+> Wouldn't it be cleaner for drivers not to have to handle this manually (which 
+> gives an opportunity to get it wrong) but instead have pm_runtime_enable() 
+> call the runtime resume callback when CONFIG_PM is disabled ?
+
+Well, I admit it would be nicer if drivers didn't have to worry about 
+whether or not CONFIG_PM was enabled.  A slightly cleaner approach 
+from the one outlined above would have the probe routine do this:
+
+	my_power_up(dev);
+	pm_runtime_set_active(dev);
+	pm_runtime_get_noresume(dev);
+	pm_runtime_enable(dev);
+
+and have the runtime-resume callback routine call my_power_up() to do
+its work.  (Or make my_power_up() actually be the runtime-resume
+callback routine.)  That's pretty straightforward and hard to mess up.
+
+In theory, we could have pm_runtime_enable() invoke the runtime-resume
+callback when CONFIG_PM is disabled.  In practice, it would be rather 
+awkward.  drivers/base/power/runtime.c, which is where 
+pm_runtime_enable() is defined and the runtime-PM callbacks are 
+invoked, doesn't even get compiled if CONFIG_PM is off.
+
+(Also, it would run against the grain.  CONFIG_PM=n means the kernel
+ignores runtime PM, so pm_runtime_enable() shouldn't do anything.)
+
+There's a corollary aspect to this.  If you depend on runtime PM for
+powering up your device during probe, does that mean you also depend on
+runtime PM for powering down the device during remove?  That is likely
+not to work, because the user can prevent runtime suspends by writing
+to /sys/.../power/control.
+
+Alan Stern
