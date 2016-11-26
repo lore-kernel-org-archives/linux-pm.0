@@ -1,95 +1,50 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences
- without runtime PM
-Date: Sat, 26 Nov 2016 15:10:28 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1611261451230.32289-100000@netrider.rowland.org>
-References: <3007760.0ebxS8fqmr@avalon>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-media-owner@vger.kernel.org>
-In-Reply-To: <3007760.0ebxS8fqmr@avalon>
-Sender: linux-media-owner@vger.kernel.org
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Sakari Ailus <sakari.ailus@iki.fi>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
+From: Peter Foley <pefoley2@pefoley.com>
+Subject: [PATCH] Fix multiple definition error under lto
+Date: Sat, 26 Nov 2016 17:25:28 -0500
+Message-ID: <20161126222528.15261-1-pefoley2@pefoley.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f172.google.com ([209.85.216.172]:35343 "EHLO
+        mail-qt0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752136AbcKZWZe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Nov 2016 17:25:34 -0500
+Received: by mail-qt0-f172.google.com with SMTP id c47so92634984qtc.2
+        for <linux-pm@vger.kernel.org>; Sat, 26 Nov 2016 14:25:33 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: Peter Foley <pefoley2@pefoley.com>
 
-On Fri, 25 Nov 2016, Laurent Pinchart wrote:
+drivers/thermal/built-in.o: In function `type_show.lto_priv.33':
+(.text+0x3d80): multiple definition of `type_show.lto_priv.33'
+drivers/base/built-in.o:(.text+0x2a40): first defined here
 
-> Hi Alan,
+Signed-off-by: Peter Foley <pefoley2@pefoley.com>
+---
+ drivers/thermal/thermal_core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Hello.
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 226b0b4aced6..23ec1dd2ff3b 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -643,7 +643,7 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	container_of(_dev, struct thermal_zone_device, device)
+ 
+ static ssize_t
+-type_show(struct device *dev, struct device_attribute *attr, char *buf)
++thermal_type_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	struct thermal_zone_device *tz = to_thermal_zone(dev);
+ 
+@@ -1159,7 +1159,7 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
+ 	return 0;
+ }
+ 
+-static DEVICE_ATTR(type, 0444, type_show, NULL);
++static DEVICE_ATTR(type, 0444, thermal_type_show, NULL);
+ static DEVICE_ATTR(temp, 0444, temp_show, NULL);
+ static DEVICE_ATTR(mode, 0644, mode_show, mode_store);
+ static DEVICE_ATTR(passive, S_IRUGO | S_IWUSR, passive_show, passive_store);
+-- 
+2.11.0.rc2
 
-> On Friday 25 Nov 2016 10:21:21 Alan Stern wrote:
-> > On Fri, 25 Nov 2016, Sakari Ailus wrote:
-> > > On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
-> > >> On Fri, 25 Nov 2016, Laurent Pinchart wrote:
-> > >>> Dear linux-pm developers, what's the suggested way to ensure that a
-> > >>> runtime- pm-enabled driver can run fine on a system with CONFIG_PM
-> > >>> disabled ?
-> > >>
-> > >> The exact point of your question isn't entirely clear.  In the most
-> > >> literal sense, the best ways to ensure this are (1) audit the code, and
-> > >> (2) actually try it.
-> > >> 
-> > >> I have a feeling this doesn't quite answer your question, however.  :-)
-> > > 
-> > > The question is related to devices that require certain power-up and
-> > > power-down sequences that are now implemented as PM runtime hooks that,
-> > > without CONFIG_PM defined, will not be executed. Is there a better way
-> > > than to handle this than have an implementation in the driver for the PM
-> > > runtime and non-PM runtime case separately?
-> > 
-> > Yes, there is a better way.  For the initial power-up and final
-> > power-down sequences, don't rely on the PM core to invoke the
-> > callbacks.  Just call them directly, yourself.
-> > 
-> > For example, as part of the probe routine, instead of doing this:
-> > 
-> > 	pm_runtime_set_suspended(dev);
-> > 	pm_runtime_enable(dev);
-> > 	pm_runtime_get_sync(dev);
-> > 
-> > Do this:
-> > 
-> > 	pm_runtime_set_active(dev);
-> > 	pm_runtime_get_noresume(dev);
-> > 	pm_runtime_enable(dev);
-> > 	/*
-> > 	 * In case CONFIG_PM is disabled, invoke the runtime-resume
-> > 	 * callback directly.
-> > 	 */
-> > 	my_runtime_resume(dev);
-> 
-> Wouldn't it be cleaner for drivers not to have to handle this manually (which 
-> gives an opportunity to get it wrong) but instead have pm_runtime_enable() 
-> call the runtime resume callback when CONFIG_PM is disabled ?
-
-Well, I admit it would be nicer if drivers didn't have to worry about 
-whether or not CONFIG_PM was enabled.  A slightly cleaner approach 
-from the one outlined above would have the probe routine do this:
-
-	my_power_up(dev);
-	pm_runtime_set_active(dev);
-	pm_runtime_get_noresume(dev);
-	pm_runtime_enable(dev);
-
-and have the runtime-resume callback routine call my_power_up() to do
-its work.  (Or make my_power_up() actually be the runtime-resume
-callback routine.)  That's pretty straightforward and hard to mess up.
-
-In theory, we could have pm_runtime_enable() invoke the runtime-resume
-callback when CONFIG_PM is disabled.  In practice, it would be rather 
-awkward.  drivers/base/power/runtime.c, which is where 
-pm_runtime_enable() is defined and the runtime-PM callbacks are 
-invoked, doesn't even get compiled if CONFIG_PM is off.
-
-(Also, it would run against the grain.  CONFIG_PM=n means the kernel
-ignores runtime PM, so pm_runtime_enable() shouldn't do anything.)
-
-There's a corollary aspect to this.  If you depend on runtime PM for
-powering up your device during probe, does that mean you also depend on
-runtime PM for powering down the device during remove?  That is likely
-not to work, because the user can prevent runtime suspends by writing
-to /sys/.../power/control.
-
-Alan Stern
