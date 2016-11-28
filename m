@@ -1,17 +1,29 @@
 From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v3] cpufreq: brcmstb-cpufreq: CPUfreq driver for older Broadcom STB SoCs
-Date: Mon, 28 Nov 2016 11:14:36 +0100
-Message-ID: <8526810.ogr5uYm3lV@wuerfel>
+Subject: fwd, Re: [PATCH v3] cpufreq: brcmstb-cpufreq: CPUfreq driver for older
+ Broadcom STB SoCs
+Date: Mon, 28 Nov 2016 11:16:48 +0100
+Message-ID: <5336918.eLmd7pA3eN@wuerfel>
 References: <20161122213245.17955-1-code@mmayer.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20161122213245.17955-1-code@mmayer.net>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Markus Mayer <code@mmayer.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+Cc: Device Tree <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
+
+[resending my mail, this time with devicetree, linux-clk, and linux-arm-kernel
+on cc]
 
 On Tuesday, November 22, 2016 1:32:45 PM CET Markus Mayer wrote:
 > From: Markus Mayer <mmayer@broadcom.com>
