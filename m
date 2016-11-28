@@ -1,64 +1,174 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: fix intel_pstate_exit_perf_limits
- prototype
-Date: Mon, 28 Nov 2016 09:44:52 +0530
-Message-ID: <20161128041452.GB14931@vireshk-i7>
-References: <20161125165036.195969-1-arnd@arndb.de>
+Subject: Re: [PATCH 01/22] cpufreq/acpi-cpufreq: Convert to hotplug state
+ machine
+Date: Mon, 28 Nov 2016 10:45:20 +0530
+Message-ID: <20161128051520.GA9104@vireshk-i7>
+References: <20161126231350.10321-1-bigeasy@linutronix.de>
+ <20161126231350.10321-2-bigeasy@linutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:35186 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753171AbcK1EO4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Nov 2016 23:14:56 -0500
-Received: by mail-pg0-f46.google.com with SMTP id p66so52330943pga.2
-        for <linux-pm@vger.kernel.org>; Sun, 27 Nov 2016 20:14:56 -0800 (PST)
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161125165036.195969-1-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20161126231350.10321-2-bigeasy@linutronix.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, rt@linutronix.de, tglx@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Philippe Longepe <philippe.longepe@linux.intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 25-11-16, 17:50, Arnd Bergmann wrote:
-> The addition of the generic governor support marked the
-> intel_pstate_exit_perf_limits as inline, which fixed a warning,
-> but it introduced another warning:
+On 27-11-16, 00:13, Sebastian Andrzej Siewior wrote:
+> Install the callbacks via the state machine.
 > 
-> drivers/cpufreq/intel_pstate.c: In function ‘intel_pstate_exit_perf_limits’:
-> drivers/cpufreq/intel_pstate.c:483:1: error: no return statement in function returning non-void [-Werror=return-type]
-> 
-> This changes it back to a 'void' return type, and changes the
-> corresponding intel_pstate_init_acpi_perf_limits() function to
-> be inline as well for consistency.
-> 
-> Fixes: 001c76f05b01 ("cpufreq: intel_pstate: Generic governors support")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 > ---
->  drivers/cpufreq/intel_pstate.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  drivers/cpufreq/acpi-cpufreq.c | 93 ++++++++++++++++++++----------------------
+>  1 file changed, 45 insertions(+), 48 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 7159dbde0160..8921686b8cd2 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -474,11 +474,11 @@ static void intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 297e9128fe9f..2c29cbaca7b5 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -536,46 +536,33 @@ static void free_acpi_perf_data(void)
+>  	free_percpu(acpi_perf_data);
 >  }
 >  
->  #else
-> -static void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
-> +static inline void intel_pstate_init_acpi_perf_limits(struct cpufreq_policy *policy)
+> -static int boost_notify(struct notifier_block *nb, unsigned long action,
+> -		      void *hcpu)
+> +static int cpufreq_boost_online(unsigned int cpu)
+> +{
+> +	const struct cpumask *cpumask;
+> +
+> +	cpumask = get_cpu_mask(cpu);
+> +	/*
+> +	 * On the CPU_UP path we simply keep the boost-disable flag
+> +	 * in sync with the current global state.
+> +	 */
+> +	boost_set_msrs(acpi_cpufreq_driver.boost_enabled, cpumask);
+> +	return 0;
+> +}
+> +
+> +static int cpufreq_boost_down_prep(unsigned int cpu)
 >  {
+> -	unsigned cpu = (long)hcpu;
+>  	const struct cpumask *cpumask;
+>  
+>  	cpumask = get_cpu_mask(cpu);
+>  
+>  	/*
+>  	 * Clear the boost-disable bit on the CPU_DOWN path so that
+> -	 * this cpu cannot block the remaining ones from boosting. On
+> -	 * the CPU_UP path we simply keep the boost-disable flag in
+> -	 * sync with the current global state.
+> +	 * this cpu cannot block the remaining ones from boosting.
+>  	 */
+> -
+> -	switch (action) {
+> -	case CPU_DOWN_FAILED:
+> -	case CPU_DOWN_FAILED_FROZEN:
+> -	case CPU_ONLINE:
+> -	case CPU_ONLINE_FROZEN:
+> -		boost_set_msrs(acpi_cpufreq_driver.boost_enabled, cpumask);
+> -		break;
+> -
+> -	case CPU_DOWN_PREPARE:
+> -	case CPU_DOWN_PREPARE_FROZEN:
+> -		boost_set_msrs(1, cpumask);
+> -		break;
+> -
+> -	default:
+> -		break;
+> -	}
+> -
+> -	return NOTIFY_OK;
+> +	boost_set_msrs(1, cpumask);
+> +	return 0;
 >  }
 >  
-> -static inline int intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
-> +static inline void intel_pstate_exit_perf_limits(struct cpufreq_policy *policy)
+> -
+> -static struct notifier_block boost_nb = {
+> -	.notifier_call          = boost_notify,
+> -};
+> -
+>  /*
+>   * acpi_cpufreq_early_init - initialize ACPI P-States library
+>   *
+> @@ -922,37 +909,47 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
+>  	.attr		= acpi_cpufreq_attr,
+>  };
+>  
+> +static enum cpuhp_state acpi_cpufreq_online;
+> +
+>  static void __init acpi_cpufreq_boost_init(void)
 >  {
->  }
->  #endif
+> -	if (boot_cpu_has(X86_FEATURE_CPB) || boot_cpu_has(X86_FEATURE_IDA)) {
+> -		msrs = msrs_alloc();
+> +	int ret;
+>  
+> -		if (!msrs)
+> -			return;
+> +	if (!(boot_cpu_has(X86_FEATURE_CPB) || boot_cpu_has(X86_FEATURE_IDA)))
+> +		return;
+>  
+> -		acpi_cpufreq_driver.set_boost = set_boost;
+> -		acpi_cpufreq_driver.boost_enabled = boost_state(0);
+> +	msrs = msrs_alloc();
+>  
+> -		cpu_notifier_register_begin();
+> +	if (!msrs)
+> +		return;
+>  
+> -		/* Force all MSRs to the same value */
+> -		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
+> -			       cpu_online_mask);
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Why isn't this required anymore ?
+
+> +	acpi_cpufreq_driver.set_boost = set_boost;
+> +	acpi_cpufreq_driver.boost_enabled = boost_state(0);
+>  
+> -		__register_cpu_notifier(&boost_nb);
+> -
+> -		cpu_notifier_register_done();
+> +	/*
+> +	 * This calls the online callback on all online cpu and forces all
+> +	 * MSRs to the same value.
+> +	 */
+> +	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "cpufreq/acpi:online",
+> +				cpufreq_boost_online, cpufreq_boost_down_prep);
+> +	if (ret < 0) {
+> +		pr_err("acpi_cpufreq: failed to register hotplug callbacks\n");
+> +		msrs_free(msrs);
+
+If 'msrs = NULL' is required to be done in the _exit() routine, then it should
+be done here as well. Right?
+
+> +		return;
+>  	}
+> +	acpi_cpufreq_online = ret;
+>  }
+>  
+>  static void acpi_cpufreq_boost_exit(void)
+>  {
+> -	if (msrs) {
+> -		unregister_cpu_notifier(&boost_nb);
+> +	if (!msrs)
+> +		return;
+>  
+> -		msrs_free(msrs);
+> -		msrs = NULL;
+> -	}
+> +	if (acpi_cpufreq_online >= 0)
+> +		cpuhp_remove_state_nocalls(acpi_cpufreq_online);
+> +
+> +	msrs_free(msrs);
+> +	msrs = NULL;
+>  }
+>  
+>  static int __init acpi_cpufreq_init(void)
+> -- 
+> 2.10.2
 
 -- 
 viresh
