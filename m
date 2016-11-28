@@ -1,78 +1,74 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v3 0/5] thermal: fixes the rockchip thermal
-Date: Mon, 28 Nov 2016 19:11:59 +0800
-Message-ID: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:35495 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932094AbcK1LMc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 06:12:32 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH v3 1/5] thermal: rockchip: improve conversion error messages
+Date: Mon, 28 Nov 2016 19:12:00 +0800
+Message-ID: <1480331524-18741-2-git-send-email-wxt@rock-chips.com>
+References: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1480331524-18741-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: heiko@sntech.de, smbarber@chromium.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>
 
-There are five patches posted for upstream.
-89267b5 thermal: rockchip: improve conversion error messages
-a0b5649 thermal: rockchip: don't pass table structs by value
-bceed92 thermal: rockchip: fixes invalid temperature case
-30be6d0 thermal: rockchip: optimize the conversion table
-35636e9 thermal: rockchip: handle the set_trips without the trip points.
---
+From: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
 
-History version:
-V1:
-https://lkml.org/lkml/2016/11/22/250
-V2:
-https://lkml.org/lkml/2016/11/23/348
+These error messages don't give much information about what went wrong.
+It would be nice, for one, to see what invalid temperature was being
+requested when conversion fails. It's also good to return an error when
+we can't handle a conversion properly.
+
+While we're at it, fix the grammar too.
+
+Signed-off-by: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+
 ---
 
-Brain posted the below patches for upstream.
-89267b5 thermal: rockchip: improve conversion error messages
-a0b5649 thermal: rockchip: don't pass table structs by value
-That make sense to improve efficiency
-
-Caesar post the below patches for upstream.
-bceed92 thermal: rockchip: fixes invalid temperature case
-30be6d0 thermal: rockchip: optimize the conversion table
-35636e9 thermal: rockchip: handle the set_trips without the trip points.
-That will fixes some issues in special cases.
---
-
-Anyway, this series patches should can improve the rockchip thermal driver.
-
-
-Changes in v3:
-- fix trivial thing for error message nd return value.
-- change the commit.
-- Fixes something as Brian comments on
-
-Changes in v2:
-- As Brian commnets that restructure this to pass error codes back to the
-  upper layers.
-- Improve the commit message.
-- improve the commit as Brian commnets on https://patchwork.kernel.org/patch/9440985
-- Fixes something as Brian comments on
-  https://patchwork.kernel.org/patch/9440989.
-
+Changes in v3: None
+Changes in v2: None
 Changes in v1:
 - The original Brian posted on https://patchwork.kernel.org/patch/9437686
   Note: it'd probably be even nicer to know which sensor this was, but we've
   kinda abstracted that one away by this point...
-- The original Brian posted on https://patchwork.kernel.org/patch/9437687
 
-Brian Norris (2):
-  thermal: rockchip: improve conversion error messages
-  thermal: rockchip: don't pass table structs by value
+ drivers/thermal/rockchip_thermal.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Caesar Wang (3):
-  thermal: rockchip: fixes invalid temperature case
-  thermal: rockchip: optimize the conversion table
-  thermal: rockchip: handle set_trips without the trip points
-
- drivers/thermal/rockchip_thermal.c | 154 ++++++++++++++++++++++++-------------
- 1 file changed, 101 insertions(+), 53 deletions(-)
-
+diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+index b811b0f..26c247c 100644
+--- a/drivers/thermal/rockchip_thermal.c
++++ b/drivers/thermal/rockchip_thermal.c
+@@ -424,7 +424,8 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
+ 	}
+ 
+ exit:
+-	pr_err("Invalid the conversion, error=%d\n", error);
++	pr_err("%s: invalid temperature, temp=%d error=%d\n",
++	       __func__, temp, error);
+ 	return error;
+ }
+ 
+@@ -475,7 +476,9 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+ 		}
+ 		break;
+ 	default:
+-		pr_err("Invalid the conversion table\n");
++		pr_err("%s: invalid conversion table, mode=%d\n",
++		       __func__, table.mode);
++		return -EINVAL;
+ 	}
+ 
+ 	/*
 -- 
 2.7.4
-
