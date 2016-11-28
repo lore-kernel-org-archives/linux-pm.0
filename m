@@ -1,56 +1,125 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH v4 1/2] idle: add support for tasks that inject idle
-Date: Mon, 28 Nov 2016 13:46:22 -0800
-Message-ID: <20161128134622.622689ab@icelake>
-References: <1480368809-23685-1-git-send-email-jacob.jun.pan@linux.intel.com>
-        <1480368809-23685-2-git-send-email-jacob.jun.pan@linux.intel.com>
-        <CAJZ5v0iLf5JpdzRnjk+TxKVuX2GkLx4-0p8SJb1uxFsKGe0ksg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH] powercap/intel_rapl: fix and tidy up error handling
+Date: Mon, 28 Nov 2016 13:53:11 -0800
+Message-ID: <1480369991-24093-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:22436 "EHLO mga09.intel.com"
+Received: from mga14.intel.com ([192.55.52.115]:26983 "EHLO mga14.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754377AbcK1VsM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 28 Nov 2016 16:48:12 -0500
-In-Reply-To: <CAJZ5v0iLf5JpdzRnjk+TxKVuX2GkLx4-0p8SJb1uxFsKGe0ksg@mail.gmail.com>
+        id S1755188AbcK1VzB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 28 Nov 2016 16:55:01 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, jacob.jun.pan@linux.intel.com
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Lukasz Odzioba <lukasz.odzioba@intel.com>, Marcin Koss <marcin.koss@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On Mon, 28 Nov 2016 22:39:07 +0100
-"Rafael J. Wysocki" <rafael@kernel.org> wrote:
+Commit e1399ba20eee ("powercap / RAPL: handle missing MSRs") added
+contraint_to_pl() function to return index into an array. But it
+can potentially return -EINVAL if powercap layer sends an out of
+range constraint ID. This patch adds sanity check.
 
-> On Mon, Nov 28, 2016 at 10:33 PM, Jacob Pan
-> <jacob.jun.pan@linux.intel.com> wrote:
-> > From: Peter Zijlstra <peterz@infradead.org>
-> >
-> > Idle injection drivers such as Intel powerclamp and ACPI PAD
-> > drivers use realtime tasks to take control of CPU then inject idle.
-> > There are two issues with this approach:
-> >
-> >  1. Low efficiency: injected idle task is treated as busy so sched
-> > ticks do not stop during injected idle period, the result of these
-> >     unwanted wakeups can be ~20% loss in power savings.
-> >
-> >  2. Idle accounting: injected idle time is presented to user as
-> > busy.
-> >
-> > This patch addresses the issues by introducing a new PF_IDLE flag
-> > which allows any given task to be treated as idle task while the
-> > flag is set. Therefore, idle injection tasks can run through the
-> > normal flow of NOHZ idle enter/exit to get the correct accounting
-> > as well as tick stop when possible.
-> >
-> > The implication is that idle task is then no longer limited to PID
-> > == 0.
-> >
-> > Acked-by: Ingo Molnar <mingo@kernel.org>
-> > Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> 
-> Have you made any changes to the original Peter's patch, or is this
-> just a resend of that?
-No changes made to Peter's patch. I just rebased to v4.9-rc7 and tested
-it.
+Unnecessary RAPL domain pointer check is removed since it must be
+initialized before calling rapl_unit_xlate().
+
+Fixes: e1399ba20eee ("powercap / RAPL: handle missing MSRs")
+Reported-by: Odzioba, Lukasz <lukasz.odzioba@intel.com>
+Reported-by: Koss, Marcin <marcin.koss@intel.com>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+---
+ drivers/powercap/intel_rapl.c | 25 ++++++++++++++++++++++++-
+ 1 file changed, 24 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index 65ed88a..f6937d0 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -429,6 +429,7 @@ static int contraint_to_pl(struct rapl_domain *rd, int cid)
+ 			return i;
+ 		}
+ 	}
++	pr_err("Cannot find matching power limit for constraint %d\n", cid);
+ 
+ 	return -EINVAL;
+ }
+@@ -444,6 +445,10 @@ static int set_power_limit(struct powercap_zone *power_zone, int cid,
+ 	get_online_cpus();
+ 	rd = power_zone_to_rapl_domain(power_zone);
+ 	id = contraint_to_pl(rd, cid);
++	if (id < 0) {
++		ret = id;
++		goto set_exit;
++	}
+ 
+ 	rp = rd->rp;
+ 
+@@ -483,6 +488,11 @@ static int get_current_power_limit(struct powercap_zone *power_zone, int cid,
+ 	get_online_cpus();
+ 	rd = power_zone_to_rapl_domain(power_zone);
+ 	id = contraint_to_pl(rd, cid);
++	if (id < 0) {
++		ret = id;
++		goto get_exit;
++	}
++
+ 	switch (rd->rpl[id].prim_id) {
+ 	case PL1_ENABLE:
+ 		prim = POWER_LIMIT1;
+@@ -499,6 +509,7 @@ static int get_current_power_limit(struct powercap_zone *power_zone, int cid,
+ 	else
+ 		*data = val;
+ 
++get_exit:
+ 	put_online_cpus();
+ 
+ 	return ret;
+@@ -514,6 +525,10 @@ static int set_time_window(struct powercap_zone *power_zone, int cid,
+ 	get_online_cpus();
+ 	rd = power_zone_to_rapl_domain(power_zone);
+ 	id = contraint_to_pl(rd, cid);
++	if (id < 0) {
++		ret = id;
++		goto set_time_exit;
++	}
+ 
+ 	switch (rd->rpl[id].prim_id) {
+ 	case PL1_ENABLE:
+@@ -525,6 +540,8 @@ static int set_time_window(struct powercap_zone *power_zone, int cid,
+ 	default:
+ 		ret = -EINVAL;
+ 	}
++
++set_time_exit:
+ 	put_online_cpus();
+ 	return ret;
+ }
+@@ -539,6 +556,10 @@ static int get_time_window(struct powercap_zone *power_zone, int cid, u64 *data)
+ 	get_online_cpus();
+ 	rd = power_zone_to_rapl_domain(power_zone);
+ 	id = contraint_to_pl(rd, cid);
++	if (id < 0) {
++		ret = id;
++		goto get_time_exit;
++	}
+ 
+ 	switch (rd->rpl[id].prim_id) {
+ 	case PL1_ENABLE:
+@@ -553,6 +574,8 @@ static int get_time_window(struct powercap_zone *power_zone, int cid, u64 *data)
+ 	}
+ 	if (!ret)
+ 		*data = val;
++
++get_time_exit:
+ 	put_online_cpus();
+ 
+ 	return ret;
+@@ -694,7 +717,7 @@ static u64 rapl_unit_xlate(struct rapl_domain *rd, enum unit_type type,
+ 	case ENERGY_UNIT:
+ 		scale = ENERGY_UNIT_SCALE;
+ 		/* per domain unit takes precedence */
+-		if (rd && rd->domain_energy_unit)
++		if (rd->domain_energy_unit)
+ 			units = rd->domain_energy_unit;
+ 		else
+ 			units = rp->energy_unit;
+-- 
+1.9.1
+
