@@ -1,49 +1,37 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] powercap/intel_rapl: fix and tidy up error handling
-Date: Mon, 28 Nov 2016 09:31:03 -0800
-Message-ID: <20161128093103.3cb4041c@jacob-builder>
-References: <1479927666-563-1-git-send-email-jacob.jun.pan@linux.intel.com>
-        <CAJZ5v0jJ4kxcT0MVi3mz0zKRrEiRaNfQqPvY6y5bTHpkPpiU3A@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 04/22] idle/intel: Convert to hotplug state machine
+Date: Mon, 28 Nov 2016 18:29:41 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1611281828050.3512@nanos>
+References: <20161126231350.10321-1-bigeasy@linutronix.de> <20161126231350.10321-5-bigeasy@linutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:23220 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750799AbcK1R3D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 28 Nov 2016 12:29:03 -0500
-In-Reply-To: <CAJZ5v0jJ4kxcT0MVi3mz0zKRrEiRaNfQqPvY6y5bTHpkPpiU3A@mail.gmail.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:46536 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753585AbcK1RcV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 12:32:21 -0500
+In-Reply-To: <20161126231350.10321-5-bigeasy@linutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Marcin Koss <marcin.koss@intel.com>, Lukasz Odzioba <lukasz.odzioba@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, jacob.jun.pan@linux.intel.com
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, rt@linutronix.de, Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org
 
-On Thu, 24 Nov 2016 22:06:59 +0100
-"Rafael J. Wysocki" <rafael@kernel.org> wrote:
+On Sun, 27 Nov 2016, Sebastian Andrzej Siewior wrote:
+> +static enum cpuhp_state hp_online;
+> +
+>  static int __init intel_idle_init(void)
+>  {
+...
 
-> On Wed, Nov 23, 2016 at 8:01 PM, Jacob Pan
-> <jacob.jun.pan@linux.intel.com> wrote:
-> > Commit e1399ba20eee ("powercap / RAPL: handle missing MSRs") added
-> > contraint_to_pl() function to return index into an array. But it
-> > can potentially return -EINVAL if powercap layer sends an out of
-> > range constraint ID. This patch adds sanity check.
-> >
-> > Unnecessary RAPL domain pointer check is removed since it must be
-> > initialized before calling rapl_unit_xlate().
-> >
-> > Reported-by: Odzioba, Lukasz <lukasz.odzioba@intel.com>
-> > Reported-by: Koss, Marcin <marcin.koss@intel.com>  
-> 
-> Does this depend on the Thomas' series only?
-> 
-yes, it is on top of Thomas' series.
-> Also, it looks like a Fixes: tag should be present here.
-> 
-OK. will add that.
-> >
-> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>  
-> 
-> Thanks,
-> Rafael
+> -	cpu_notifier_register_done();
+> +	retval = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "idle/intel:online",
+> +				   intel_idle_cpu_online, NULL);
+> +	if (retval < 0)
+> +		goto hp_setup_fail;
+> +	hp_online = retval;
 
-[Jacob Pan]
+Why do you want to store that. There is no exit function AFAICT.
+
+Thanks,
+
+	tglx
