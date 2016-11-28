@@ -1,20 +1,21 @@
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Subject: [PATCH v3 1/4] thermal: rcar_gen3_thermal: Document the R-Car Gen3
-Date: Mon, 28 Nov 2016 22:09:21 +0100
-Message-ID: <20161128210924.2921-2-wsa+renesas@sang-engineering.com>
-References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
+Subject: [PATCH v3 0/4] thermal: add driver for R-Car Gen3
+Date: Mon, 28 Nov 2016 22:09:20 +0100
+Message-ID: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
 Sender: linux-renesas-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Hien Dang <hien.dang.eb@renesas.com>
+Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Wolfram Sang <wsa+renesas@sang-engineering.com>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Hien Dang <hien.dang.eb@renesas.com>
-Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
+Finally, here is a new series adding support for the thermal sensors on Renesas
+R-Car Gen3 SoCs. The driver has been largely refactored since v2 sent by Khiem.
+It is a lot simpler (no interrupts for now, will be added later), so I hope we
+could still apply the 'new-driver-rule' and make it for 4.10?
+
 Changes since last version:
+
+Patch 1 (bindings):
 
 * earlier versions had one node per sensor. This version has one node for all,
   but we now have one reg entry per sensor. This makes it easier to use the
@@ -32,71 +33,59 @@ Changes since last version:
 
 * reformatted paragraphs and fixed some typos.
 
- .../bindings/thermal/rcar-gen3-thermal.txt         | 56 ++++++++++++++++++++++
- 1 file changed, 56 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
+Patch 2 (driver):
 
-diff --git a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-new file mode 100644
-index 00000000000000..07a9713ae6a757
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
-@@ -0,0 +1,56 @@
-+* DT bindings for Renesas R-Car Gen3 Thermal Sensor driver
-+
-+On R-Car Gen3 SoCs, the thermal sensor controllers (TSC) control the thermal
-+sensors (THS) which are the analog circuits for measuring temperature (Tj)
-+inside the LSI.
-+
-+Required properties:
-+- compatible		: "renesas,<soctype>-thermal",
-+			  Examples with soctypes are:
-+			    - "renesas,r8a7795-thermal" (R-Car H3)
-+			    - "renesas,r8a7796-thermal" (R-Car M3-W)
-+- reg			: Address ranges of the thermal registers. Each sensor
-+			  needs one address range. Sorting must be done in
-+			  increasing order according to datasheet, i.e.
-+			  TSC1, TSC2, ...
-+- clocks		: Must contain a reference to the functional clock.
-+- #thermal-sensor-cells : must be <1>.
-+
-+Optional properties:
-+
-+- interrupts           : interrupts routed to the TSC (3 for H3 and M3-W)
-+- power-domain		: Must contain a reference to the power domain. This
-+			  property is mandatory if the thermal sensor instance
-+			  is part of a controllable power domain.
-+
-+Example:
-+
-+	tsc: thermal@e6198000 {
-+		compatible = "renesas,r8a7795-thermal";
-+		reg = <0 0xe6198000 0 0x68>,
-+		      <0 0xe61a0000 0 0x5c>,
-+		      <0 0xe61a8000 0 0x5c>;
-+		interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
-+			     <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
-+		clocks = <&cpg CPG_MOD 522>;
-+		power-domains = <&sysc R8A7795_PD_ALWAYS_ON>;
-+		#thermal-sensor-cells = <1>;
-+		status = "okay";
-+	};
-+
-+	thermal-zones {
-+		sensor_thermal1: sensor-thermal1 {
-+			polling-delay-passive = <250>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&tsc 0>;
-+
-+			trips {
-+				sensor1_crit: sensor1-crit {
-+					temperature = <90000>;
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+			};
-+		};
-+	};
+* removed interrupt support, needs to be refactored seperately
+
+* adapt code to the new bindings, especially one node for all sensors.
+  Similarly, we have one private structure containing n sensor structs.
+
+* gave register bits proper namespaces, properly seperates H3 and M3-W
+
+* refactored the way default values are determined when there are no fuses
+  (which is default case currently)
+
+* refactored the rounding routine
+
+* removed some superfluous macros
+
+* use pass-by-reference instead of pass-by-value where apropriate
+
+* removed BSPisms here and there
+
+Patches 3+4:
+
+* DTSI updates refactored to meet the above changes
+
+A branch can be found here:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git renesas/thermal-on-4.10-next
+
+Tested on a Salvator-X with H3 and M3-W SoCs. Compared against previous and BSP versions
+of the driver and the results match when turning the fan on/off.
+
+Please test, review, comment, apply...
+
+Thanks,
+
+   Wolfram
+
+
+Wolfram Sang (4):
+  thermal: rcar_gen3_thermal: Document the R-Car Gen3
+  thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver
+  arm64: dts: r8a7795: Add R-Car Gen3 thermal support
+  arm64: dts: r8a7796: Add R-Car Gen3 thermal support
+
+ .../bindings/thermal/rcar-gen3-thermal.txt         |  56 ++++
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi           |  58 ++++
+ arch/arm64/boot/dts/renesas/r8a7796.dtsi           |  58 ++++
+ drivers/thermal/Kconfig                            |   9 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/rcar_gen3_thermal.c                | 347 +++++++++++++++++++++
+ 6 files changed, 529 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
+ create mode 100644 drivers/thermal/rcar_gen3_thermal.c
+
 -- 
 2.10.2
