@@ -1,115 +1,109 @@
 From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: [PATCH 1/4] thermal/intel_powerclamp: Remove duplicated code that starts the kthread
-Date: Mon, 28 Nov 2016 13:44:49 -0800
-Message-ID: <1480369492-23901-2-git-send-email-jacob.jun.pan@linux.intel.com>
+Subject: [PATCH 4/4] thermal/intel_powerclamp: stop sched tick in forced idle
+Date: Mon, 28 Nov 2016 13:44:52 -0800
+Message-ID: <1480369492-23901-5-git-send-email-jacob.jun.pan@linux.intel.com>
 References: <1480369492-23901-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:23833 "EHLO mga11.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:21651 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755369AbcK1Vqn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 28 Nov 2016 16:46:43 -0500
+        id S1755533AbcK1Vqp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 28 Nov 2016 16:46:45 -0500
 In-Reply-To: <1480369492-23901-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
 Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-From: Petr Mladek <pmladek@suse.com>
+With the introduction of play_idle(), idle injection kthread can
+go through the normal idle task processing to get correct accounting
+and turn off scheduler tick when possible.
 
-This patch removes a code duplication. It does not modify
-the functionality.
-
-Signed-off-by: Petr Mladek <pmladek@suse.com>
-CC: Zhang Rui <rui.zhang@intel.com>
-CC: Eduardo Valentin <edubezval@gmail.com>
-CC: Jacob Pan <jacob.jun.pan@linux.intel.com>
-CC: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-CC: linux-pm@vger.kernel.org
-Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
 ---
- drivers/thermal/intel_powerclamp.c | 45 +++++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 25 deletions(-)
+ drivers/thermal/intel_powerclamp.c | 35 +----------------------------------
+ 1 file changed, 1 insertion(+), 34 deletions(-)
 
 diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index afada65..8a60772 100644
+index 1310283..83e6971 100644
 --- a/drivers/thermal/intel_powerclamp.c
 +++ b/drivers/thermal/intel_powerclamp.c
-@@ -508,10 +508,27 @@ static void poll_pkg_cstate(struct work_struct *dummy)
- 		schedule_delayed_work(&poll_pkg_cstate_work, HZ);
+@@ -92,7 +92,6 @@ struct powerclamp_worker_data {
+ 	struct kthread_worker *worker;
+ 	struct kthread_work balancing_work;
+ 	struct kthread_delayed_work idle_injection_work;
+-	struct timer_list wakeup_timer;
+ 	unsigned int cpu;
+ 	unsigned int count;
+ 	unsigned int guard;
+@@ -277,11 +276,6 @@ static u64 pkg_state_counter(void)
+ 	return count;
  }
  
-+static void start_power_clamp_thread(unsigned long cpu)
-+{
-+	struct task_struct **p = per_cpu_ptr(powerclamp_thread, cpu);
-+	struct task_struct *thread;
-+
-+	thread = kthread_create_on_node(clamp_thread,
-+					(void *) cpu,
-+					cpu_to_node(cpu),
-+					"kidle_inject/%ld", cpu);
-+	if (IS_ERR(thread))
-+		return;
-+
-+	/* bind to cpu here */
-+	kthread_bind(thread, cpu);
-+	wake_up_process(thread);
-+	*p = thread;
-+}
-+
- static int start_power_clamp(void)
- {
- 	unsigned long cpu;
--	struct task_struct *thread;
- 
- 	set_target_ratio = clamp(set_target_ratio, 0U, MAX_TARGET_RATIO - 1);
- 	/* prevent cpu hotplug */
-@@ -527,20 +544,7 @@ static int start_power_clamp(void)
- 
- 	/* start one thread per online cpu */
- 	for_each_online_cpu(cpu) {
--		struct task_struct **p =
--			per_cpu_ptr(powerclamp_thread, cpu);
+-static void noop_timer(unsigned long foo)
+-{
+-	/* empty... just the fact that we get the interrupt wakes us up */
+-}
 -
--		thread = kthread_create_on_node(clamp_thread,
--						(void *) cpu,
--						cpu_to_node(cpu),
--						"kidle_inject/%ld", cpu);
--		/* bind to cpu here */
--		if (likely(!IS_ERR(thread))) {
--			kthread_bind(thread, cpu);
--			wake_up_process(thread);
--			*p = thread;
--		}
--
-+		start_power_clamp_thread(cpu);
- 	}
- 	put_online_cpus();
- 
-@@ -572,7 +576,6 @@ static int powerclamp_cpu_callback(struct notifier_block *nfb,
- 				unsigned long action, void *hcpu)
+ static unsigned int get_compensation(int ratio)
  {
- 	unsigned long cpu = (unsigned long)hcpu;
--	struct task_struct *thread;
- 	struct task_struct **percpu_thread =
- 		per_cpu_ptr(powerclamp_thread, cpu);
+ 	unsigned int comp = 0;
+@@ -431,7 +425,6 @@ static void clamp_balancing_func(struct kthread_work *work)
+ static void clamp_idle_injection_func(struct kthread_work *work)
+ {
+ 	struct powerclamp_worker_data *w_data;
+-	unsigned long target_jiffies;
  
-@@ -581,15 +584,7 @@ static int powerclamp_cpu_callback(struct notifier_block *nfb,
+ 	w_data = container_of(work, struct powerclamp_worker_data,
+ 			      idle_injection_work.work);
+@@ -452,31 +445,7 @@ static void clamp_idle_injection_func(struct kthread_work *work)
+ 	if (should_skip)
+ 		goto balance;
  
- 	switch (action) {
- 	case CPU_ONLINE:
--		thread = kthread_create_on_node(clamp_thread,
--						(void *) cpu,
--						cpu_to_node(cpu),
--						"kidle_inject/%lu", cpu);
--		if (likely(!IS_ERR(thread))) {
--			kthread_bind(thread, cpu);
--			wake_up_process(thread);
--			*percpu_thread = thread;
--		}
-+		start_power_clamp_thread(cpu);
- 		/* prefer BSP as controlling CPU */
- 		if (cpu == 0) {
- 			control_cpu = 0;
+-	target_jiffies = jiffies + w_data->duration_jiffies;
+-	mod_timer(&w_data->wakeup_timer, target_jiffies);
+-	if (unlikely(local_softirq_pending()))
+-		goto balance;
+-	/*
+-	 * stop tick sched during idle time, interrupts are still
+-	 * allowed. thus jiffies are updated properly.
+-	 */
+-	preempt_disable();
+-	/* mwait until target jiffies is reached */
+-	while (time_before(jiffies, target_jiffies)) {
+-		unsigned long ecx = 1;
+-		unsigned long eax = target_mwait;
+-
+-		/*
+-		 * REVISIT: may call enter_idle() to notify drivers who
+-		 * can save power during cpu idle. same for exit_idle()
+-		 */
+-		local_touch_nmi();
+-		stop_critical_timings();
+-		mwait_idle_with_hints(eax, ecx);
+-		start_critical_timings();
+-		atomic_inc(&idle_wakeup_counter);
+-	}
+-	preempt_enable();
++	play_idle(jiffies_to_msecs(w_data->duration_jiffies));
+ 
+ balance:
+ 	if (clamping && w_data->clamping && cpu_online(w_data->cpu))
+@@ -538,7 +507,6 @@ static void start_power_clamp_worker(unsigned long cpu)
+ 	w_data->cpu = cpu;
+ 	w_data->clamping = true;
+ 	set_bit(cpu, cpu_clamping_mask);
+-	setup_timer(&w_data->wakeup_timer, noop_timer, 0);
+ 	sched_setscheduler(worker->task, SCHED_FIFO, &sparam);
+ 	kthread_init_work(&w_data->balancing_work, clamp_balancing_func);
+ 	kthread_init_delayed_work(&w_data->idle_injection_work,
+@@ -570,7 +538,6 @@ static void stop_power_clamp_worker(unsigned long cpu)
+ 	 * a big deal. The balancing work is fast and destroy kthread
+ 	 * will wait for it.
+ 	 */
+-	del_timer_sync(&w_data->wakeup_timer);
+ 	clear_bit(w_data->cpu, cpu_clamping_mask);
+ 	kthread_destroy_worker(w_data->worker);
+ 
 -- 
 1.9.1
 
