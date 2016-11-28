@@ -1,38 +1,110 @@
-From: Andreas Ziegler <andreas.ziegler@fau.de>
-Subject: Re: [PATCH v3] cpufreq: brcmstb-cpufreq: CPUfreq driver for older
- Broadcom STB SoCs
-Date: Mon, 28 Nov 2016 10:33:28 +0100
-Message-ID: <19fea35d-98de-2367-96c8-101d34aa93d8@fau.de>
-References: <5995ce7b-6a00-8944-a8b9-b256abf4d92e@fau.de>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH 01/22] cpufreq/acpi-cpufreq: Convert to hotplug state
+ machine
+Date: Mon, 28 Nov 2016 10:49:08 +0100
+Message-ID: <20161128094908.o6f4itwnj4gssv46@linutronix.de>
+References: <20161126231350.10321-1-bigeasy@linutronix.de>
+ <20161126231350.10321-2-bigeasy@linutronix.de>
+ <20161128051520.GA9104@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5995ce7b-6a00-8944-a8b9-b256abf4d92e@fau.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <mmayer@broadcom.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:45276 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932223AbcK1JtO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 04:49:14 -0500
+Content-Disposition: inline
+In-Reply-To: <20161128051520.GA9104@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, rt@linutronix.de, tglx@linutronix.de, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-Forgot to CC linux-kernel and linux-pm in my first message.
+On 2016-11-28 10:45:20 [+0530], Viresh Kumar wrote:
+> > diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> > index 297e9128fe9f..2c29cbaca7b5 100644
+> > --- a/drivers/cpufreq/acpi-cpufreq.c
+> > +++ b/drivers/cpufreq/acpi-cpufreq.c
+> > @@ -922,37 +909,47 @@ static struct cpufreq_driver acpi_cpufreq_driver = {
+> >  	.attr		= acpi_cpufreq_attr,
+> >  };
+> >  
+> > +static enum cpuhp_state acpi_cpufreq_online;
+> > +
+> >  static void __init acpi_cpufreq_boost_init(void)
+> >  {
+> > -	if (boot_cpu_has(X86_FEATURE_CPB) || boot_cpu_has(X86_FEATURE_IDA)) {
+> > -		msrs = msrs_alloc();
+> > +	int ret;
+> >  
+> > -		if (!msrs)
+> > -			return;
+> > +	if (!(boot_cpu_has(X86_FEATURE_CPB) || boot_cpu_has(X86_FEATURE_IDA)))
+> > +		return;
+> >  
+> > -		acpi_cpufreq_driver.set_boost = set_boost;
+> > -		acpi_cpufreq_driver.boost_enabled = boost_state(0);
+> > +	msrs = msrs_alloc();
+> >  
+> > -		cpu_notifier_register_begin();
+> > +	if (!msrs)
+> > +		return;
+> >  
+> > -		/* Force all MSRs to the same value */
+> > -		boost_set_msrs(acpi_cpufreq_driver.boost_enabled,
+> > -			       cpu_online_mask);
+> 
+> Why isn't this required anymore ?
 
-On 11/28/2016 10:28, Andreas Ziegler wrote:
-> Hi Markus,
+Later there is cpuhp_setup_state() which invokes the online callback
+(cpufreq_boost_online) which is doing this.
+
+> > +	acpi_cpufreq_driver.set_boost = set_boost;
+> > +	acpi_cpufreq_driver.boost_enabled = boost_state(0);
+> >  
+> > -		__register_cpu_notifier(&boost_nb);
+> > -
+> > -		cpu_notifier_register_done();
+> > +	/*
+> > +	 * This calls the online callback on all online cpu and forces all
+> > +	 * MSRs to the same value.
+> > +	 */
+> > +	ret = cpuhp_setup_state(CPUHP_AP_ONLINE_DYN, "cpufreq/acpi:online",
+> > +				cpufreq_boost_online, cpufreq_boost_down_prep);
+> > +	if (ret < 0) {
+> > +		pr_err("acpi_cpufreq: failed to register hotplug callbacks\n");
+> > +		msrs_free(msrs);
 > 
-> your patch "cpufreq: brcmstb-cpufreq: CPUfreq driver for older Broadcom STB
-> SoCs" showed up in linux-next today, and I noticed a small error in it.
-> 
-> In drivers/cpufreq/brcmstb-cpufreq.c, line 214 there is an IS_ENABLED()
-> statement with CONFIG_ARM_BRCM_AVS_CPUFREQ. This symbol, however, does not exist
-> - making the if condition always evaluate to false. Did you mean to use
-> CONFIG_ARM_BRCMSTB_AVS_CPUFREQ (note the STB after BRCM)?
-> 
-> I noticed this mistake by running 'scripts/checkkconfigsymbols -f --force -f
-> next-20161124..next-20161128', which essentialy diffs the last two
-> linux-next releases and looks for undefined/unknown Kconfig symbols.
-> You can also run the script on single commits with -c to test them.
-> 
-> Best regards,
-> 
-> Andreas
-> 
+> If 'msrs = NULL' is required to be done in the _exit() routine, then it should
+> be done here as well. Right?
+
+It is not required in the exit path, it is just needed here. It is gone
+in the following patch anyway but I will post a fixed version.
+
+> > +		return;
+> >  	}
+> > +	acpi_cpufreq_online = ret;
+> >  }
+> >  
+> >  static void acpi_cpufreq_boost_exit(void)
+> >  {
+> > -	if (msrs) {
+> > -		unregister_cpu_notifier(&boost_nb);
+> > +	if (!msrs)
+> > +		return;
+> >  
+> > -		msrs_free(msrs);
+> > -		msrs = NULL;
+> > -	}
+> > +	if (acpi_cpufreq_online >= 0)
+> > +		cpuhp_remove_state_nocalls(acpi_cpufreq_online);
+> > +
+> > +	msrs_free(msrs);
+> > +	msrs = NULL;
+> >  }
+> >  
+> >  static int __init acpi_cpufreq_init(void)
+> > -- 
+> > 2.10.2
+
+Sebastian
