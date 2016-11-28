@@ -1,118 +1,83 @@
-From: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835 soc
-Date: Mon, 28 Nov 2016 12:30:38 -0800
-Message-ID: <87twarz6s1.fsf@eliezer.anholt.net>
-References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org> <1478081906-12009-3-git-send-email-kernel@martin.sperl.org> <20161117021107.GA2647@localhost.localdomain> <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org> <20161117151019.GA3115@localhost.localdomain> <7957B3CC-0E18-4B27-82EB-EF88B7695E28@martin.sperl.org> <20161119042224.GA25063@localhost.localdomain> <28F93ABE-8210-4389-AE77-4D5E830E669B@martin.sperl.org> <20161125052008.GA8342@localhost.localdomain>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v3] cpufreq: brcmstb-cpufreq: CPUfreq driver for older Broadcom STB SoCs
+Date: Mon, 28 Nov 2016 21:58:53 +0100
+Message-ID: <5489387.Z7UgOxivrY@wuerfel>
+References: <20161122213245.17955-1-code@mmayer.net> <8526810.ogr5uYm3lV@wuerfel> <CAGt4E5vvNxoa-3SW-Gmoymy4AuLQfU_qckC8UQHyN=+0+EU2oA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha512; protocol="application/pgp-signature"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161125052008.GA8342-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Stephen Warren <swarren-3lzwWm7+Weoh9ZMKESR00Q@public.gmane.org>, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([217.72.192.73]:55779 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754808AbcK1U7D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 15:59:03 -0500
+In-Reply-To: <CAGt4E5vvNxoa-3SW-Gmoymy4AuLQfU_qckC8UQHyN=+0+EU2oA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Markus Mayer <markus.mayer@broadcom.com>
+Cc: Markus Mayer <code@mmayer.net>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On Monday, November 28, 2016 9:12:05 AM CET Markus Mayer wrote:
+> >> +static int get_frequencies(const struct cpufreq_policy *policy,
+> >> +                        unsigned int *vco_freq, unsigned int *cpu_freq,
+> >> +                        unsigned int *scb_freq)
+> >> +{
+> >> +     struct clk *cpu_ndiv_int, *sw_scb;
+> >> +
+> >> +     cpu_ndiv_int = __clk_lookup(BRCMSTB_CLK_NDIV_INT);
+> >> +     if (!cpu_ndiv_int)
+> >> +             return -ENODEV;
+> >> +
+> >> +     sw_scb = __clk_lookup(BRCMSTB_CLK_SW_SCB);
+> >> +     if (!sw_scb)
+> >> +             return -ENODEV;
+> >> +
+> >> +     /* return frequencies in kHz */
+> >> +     *vco_freq = clk_get_rate(cpu_ndiv_int) / 1000;
+> >> +     *cpu_freq = clk_get_rate(policy->clk) / 1000;
+> >> +     *scb_freq = clk_get_rate(sw_scb) / 1000;
+> >> +
+> >> +     return 0;
+> >> +}
+> >
+> > You really can't do this:
+> >
+> > ../drivers/cpufreq/brcmstb-cpufreq.c: In function 'get_frequencies':
+> > ../drivers/cpufreq/brcmstb-cpufreq.c:71:17: error: implicit declaration of function '__clk_lookup';did you mean 'key_lookup'? [-Werror=implicit-function-declaration]
+> >   cpu_ndiv_int = __clk_lookup(BRCMSTB_CLK_NDIV_INT);
+> >                  ^~~~~~~~~~~~
+> >
+> > __clk_lookup is an internal API for the clk providers.
+> >
+> > In particular, relying on undocumented internal names of the
+> > clk provider in a device driver is inappropriate.
+> 
+> What compiler are you using? I didn't get any warnings. Otherwise I
+> would have known right away that something isn't right.
 
-Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> writes:
+This is a randconfig build with CONFIG_COMMON_CLK=n. There is a different
+problem with COMMON_CLK=y and the cpufreq driver as a loadable module,
+where the symbol causes a link error.
 
-> Hello,
->
-> On Tue, Nov 22, 2016 at 03:28:04PM +0100, Martin Sperl wrote:
->> Hi Eduardo!
->>=20
->> On 19.11.2016 05:22, Eduardo Valentin wrote:
->> > Hello Martin,
->
-> <cut>
->
->>=20
->> I was asked to implement the "initialize" case just in case FW ever
->> stopped setting up the device itself, so that is why this code is
->> included.
->
-> OK. Looks like we (like, we in the Linux side) do not understand the
-> conditions that firmware fails to initialize the thermal device, but we
-> still want to force an initialization, hoping to get the device in a sane
-> state, even if we do not know if the firmware is correctly booted or
-> not. And that is done silently, with no notification to user. I see.
+I did not get any warnings either, these are both hard errors.
 
-The firmware today always initializes thermal.  I suggested adding the
-init code because we (myself and the Pi Foundation) would like to reduce
-how much closed firmware code is required in the platform, and the Linux
-driver doing this would help make that possible in the future.
+> >> +static const struct of_device_id brcmstb_cpufreq_match[] = {
+> >> +     { .compatible = BRCMSTB_DT_CPU_CLK_CTRL },
+> >> +     { }
+> >> +};
+> >> +MODULE_DEVICE_TABLE(platform, brcmstb_cpufreq_match);
+> >
+> > This is a simple typo, also causing the build to fail:
+> >
+> >     FATAL: drivers/cpufreq/brcmstb-cpufreq: sizeof(struct platform_device_id)=24 is not a modulo of the size of section __mod_platform__<identifier>_device_table=392.
+> 
+> What is the typo, if I may ask. Again strange, since the build doesn't
+> fail for me. What was the configuration you used?
 
->> > Who has the ownership of this device?
->>=20
->> Joined ownership I suppose...
->>=20
->
-> with no synchronization mechanism?
+MODULE_DEVICE_TABLE() is only used when building a loadable module,
+e.g. in allmodconfig.
 
-Correct, because none is necessary.
+MODULE_DEVICE_TABLE(platform, ...) is for 'struct platform_device_id'.
+You need to use MODULE_DEVICE_TABLE(of, ...) for 'struct of_device_id'.
 
->> >> The above mentioned =E2=80=9Cconfiguration if not running=E2=80=9D re=
-flect the values that
->> >> the FW is currently setting. We should not change those values as lon=
-g as the
->> >> Firmware is also reading the temperature on its own.
->> >=20
->> > hmm.. that looks like racy to me. Again, How do you synchronize access=
-es to
->> > this device? What if you configure the device and right after the
->> > firmware updates the configs? How do you make sure the configs you are
->> > writing here are the same used by the firmware? What if the firmware
->> > version changes? What versions of the firmware does this driver suppor=
-t?
->> >=20
->> > Would it make sense to simply always initialize the device? Do you have
->> > a way to tell the firmware that it should not use the device?
->> >=20
->> > Or, if you want to keep the device driver simply being a dummy reader,
->> > would it make sense to simply avoid writing configurations to the
->> > device, and simply retry to check if the firmware gets the device
->> > initialized?
->>=20
->> Again: the device registers are only ever written if the device is not s=
-tarted
->> already. Otherwise the driver only reads for the ADC register, so there
->> is no real race here.
->>=20
->
-> and no race?
->
-> To me, there is a race when you write to the config of this device,
-> given that there is no sync between the two. We do not know if the
-> firmware would be still attempting to initialize the device or not, do
-> we?=20
-
-Either the device was initialized by the firmware before handing off to
-ARM (today's firmware) or it never will be (potential future firmware).
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE/JuuFDWp9/ZkuCBXtdYpNtH8nugFAlg8k+4ACgkQtdYpNtH8
-nujz2Q//XcVXKAYKDYEQZy8L/XRhIeXFkIrGZo5D5RG5+jRGEY5Ia+F9v4r/VY1Q
-0Mao1R9pbl5cOCjwmVes3GHMq7B3UCT9/ZJCcFQVw2ZLdbl2wrVJ38+mLa8YsSA4
-NTWtHLvY+UuAxFL68A/oPj2gQZuOeiaRpZ8aaOJVwctkWeLi5Ok6rQ1ja22mXY6T
-HYfynqFaNvREff5EfItjjX7DHGvgHyiN9F/hFfOU/2CS+/Bm5rS0rWdg0r77Aw7T
-JYZlEGIkoa49n6XpPn1xK4JjwMNFfAikFVE0pT71h3lz4cZZGzZCN/bH9NslSAAC
-wN1pOvFt3g4rRkGuGfmHCVwrYztmIy7bLM+waBHKKhBhc5K4HiR72PfHg1Mp7Cfx
-HGdhYka8ex5t+a10Q7r5IRkMwgqS8Y+Qc3cSFdNUwzjYnaaKEljKhB5kJUDdS40M
-zMe+n+r93COfB2pgN09bMA99bEL8w1aIoqD5eMbjlS0iOZbKLZdWVlNgFl/wSHm6
-tYKz5b1maS+dX2DsUUw7QTptXFxGTy6+ZuOHsljA17jkvfXC3E7GlAB44XRvmk+k
-GtDMuSJxlCFn+IK1m1d0oRz+mCj52edVmGMhTYJ53CGvwHU3od8hAHbyiv6p2Xwl
-y7e8neQTfNcrHCwVYNmfWJGzfvs+oEic/Sl3zO/jTPU/n5on1Ow=
-=NzcU
------END PGP SIGNATURE-----
---=-=-=--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	Arnd
