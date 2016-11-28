@@ -1,43 +1,47 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state
- binding
-Date: Mon, 28 Nov 2016 10:27:57 -0800
-Message-ID: <4f815e31-22d0-fef7-953c-257fa2bbcb9d@codeaurora.org>
-References: <cover.1479459752.git.viresh.kumar@linaro.org>
- <cce951c7159aa235792959ce27546be3aaa554ec.1479459752.git.viresh.kumar@linaro.org>
- <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
- <20161122031717.GE10014@vireshk-i7> <m260nfz8mr.fsf@baylibre.com>
- <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
- <m2wpfuw5wq.fsf@baylibre.com>
- <CAKfTPtBMro7+UruF0-E26TJPu6pEAvkjF9V7SKriNBm5q+K9+A@mail.gmail.com>
- <m2fumhx21h.fsf@baylibre.com> <20161124020322.GI6095@codeaurora.org>
- <20161124044020.GC9376@vireshk-i7>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH v3 3/5] thermal: rockchip: fixes invalid temperature case
+Date: Mon, 28 Nov 2016 10:47:50 -0800
+Message-ID: <20161128184749.GA70364@google.com>
+References: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
+ <1480331524-18741-4-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161124044020.GC9376@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nayak Rajendra <rnayak@codeaurora.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:33816 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751824AbcK1Sry (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 13:47:54 -0500
+Received: by mail-pg0-f46.google.com with SMTP id x23so59702346pgx.1
+        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2016 10:47:53 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1480331524-18741-4-git-send-email-wxt@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, smbarber@chromium.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
 
-On 11/23/2016 08:40 PM, Viresh Kumar wrote:
-> On 23-11-16, 18:03, Stephen Boyd wrote:
->> On 11/23, Kevin Hilman wrote:
->>> Vincent Guittot <vincent.guittot@linaro.org> writes:
->>>> On 23 November 2016 at 16:51, Kevin Hilman <khilman@baylibre.com> wrote:
->>>>> Then, at least for this use case, we're talking about voltage, not some
->>>>> unspecified units.
->> In some cases we actually know the voltage of the domain and
->> would want to put some voltage mapping in DT. For example, level
->> 1 is voltage 2V and level 2 is voltage 2.5V.
-> But even in these cases we wouldn't be using the voltage values within the
-> kernel as we will be giving only a performance state to the M3 core, right?
+On Mon, Nov 28, 2016 at 07:12:02PM +0800, Caesar Wang wrote:
+> The temp_to_code function will return 0 when we set the temperature to a
+> invalid value (e.g. 61C, 62C, 63C....), that's unpractical. This patch
+> will prevent this case happening. That will return the max analog value to
+> indicate the temperature is invalid or over table temperature range.
+> 
+> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> ---
+> 
+> Changes in v3:
+> - fix trivial thing for error message nd return value.
+> 
+> Changes in v2:
+> - As Brian commnets that restructure this to pass error codes back to the
+>   upper layers.
+> - Improve the commit message.
+> 
+> Changes in v1: None
+> 
+>  drivers/thermal/rockchip_thermal.c | 48 ++++++++++++++++++++++----------------
+>  1 file changed, 28 insertions(+), 20 deletions(-)
 
-Nope. In these cases we need to set a certain voltage and we do that by
-requesting it via the M3 core.
+Looks better now.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Reviewed-by: Brian Norris <briannorris@chromium.org>
