@@ -1,120 +1,67 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 1/1] smiapp: Implement power-on and power-off sequences without runtime PM
-Date: Mon, 28 Nov 2016 09:58:29 +0200
-Message-ID: <2882556.Uxbj3HAuQA@avalon>
-References: <Pine.LNX.4.44L0.1611261451230.32289-100000@netrider.rowland.org>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v8 4/8] x86/sysctl: Add sysctl for ITMT scheduling feature
+Date: Mon, 28 Nov 2016 09:56:08 +0100
+Message-ID: <20161128085608.v7ujy5j2iftn6qs5@pd.tnic>
+References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+ <07cc62426a28bad57b01ab16bb903a9c84fa5421.1479844244.git.tim.c.chen@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from galahad.ideasonboard.com ([185.26.127.97]:50300 "EHLO
-        galahad.ideasonboard.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754109AbcK1H6S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 02:58:18 -0500
-In-Reply-To: <Pine.LNX.4.44L0.1611261451230.32289-100000@netrider.rowland.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <07cc62426a28bad57b01ab16bb903a9c84fa5421.1479844244.git.tim.c.chen@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Tim Chen <tim.c.chen@linux.intel.com>
+Cc: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Sakari Ailus <sakari.ailus@iki.fi>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Alan,
-
-On Saturday 26 Nov 2016 15:10:28 Alan Stern wrote:
-> On Fri, 25 Nov 2016, Laurent Pinchart wrote:
-> > On Friday 25 Nov 2016 10:21:21 Alan Stern wrote:
-> >> On Fri, 25 Nov 2016, Sakari Ailus wrote:
-> >>> On Thu, Nov 24, 2016 at 09:15:39PM -0500, Alan Stern wrote:
-> >>>> On Fri, 25 Nov 2016, Laurent Pinchart wrote:
-> >>>>> Dear linux-pm developers, what's the suggested way to ensure that a
-> >>>>> runtime- pm-enabled driver can run fine on a system with CONFIG_PM
-> >>>>> disabled ?
-> >>>> 
-> >>>> The exact point of your question isn't entirely clear.  In the most
-> >>>> literal sense, the best ways to ensure this are (1) audit the code,
-> >>>> and (2) actually try it.
-> >>>> 
-> >>>> I have a feeling this doesn't quite answer your question, however. 
-> >>>> :-)
-> >>> 
-> >>> The question is related to devices that require certain power-up and
-> >>> power-down sequences that are now implemented as PM runtime hooks
-> >>> that, without CONFIG_PM defined, will not be executed. Is there a
-> >>> better way than to handle this than have an implementation in the
-> >>> driver for the PM runtime and non-PM runtime case separately?
-> >> 
-> >> Yes, there is a better way.  For the initial power-up and final
-> >> power-down sequences, don't rely on the PM core to invoke the
-> >> callbacks.  Just call them directly, yourself.
-> >> 
-> >> For example, as part of the probe routine, instead of doing this:
-> >> 	pm_runtime_set_suspended(dev);
-> >> 	pm_runtime_enable(dev);
-> >> 	pm_runtime_get_sync(dev);
-> >> 
-> >> Do this:
-> >> 	pm_runtime_set_active(dev);
-> >> 	pm_runtime_get_noresume(dev);
-> >> 	pm_runtime_enable(dev);
-> >> 	/*
-> >> 	 * In case CONFIG_PM is disabled, invoke the runtime-resume
-> >> 	 * callback directly.
-> >> 	 */
-> >> 	my_runtime_resume(dev);
-> > 
-> > Wouldn't it be cleaner for drivers not to have to handle this manually
-> > (which gives an opportunity to get it wrong) but instead have
-> > pm_runtime_enable() call the runtime resume callback when CONFIG_PM is
-> > disabled ?
+On Tue, Nov 22, 2016 at 12:23:56PM -0800, Tim Chen wrote:
+> Intel Turbo Boost Max Technology 3.0 (ITMT) feature
+> allows some cores to be boosted to higher turbo
+> frequency than others.
 > 
-> Well, I admit it would be nicer if drivers didn't have to worry about
-> whether or not CONFIG_PM was enabled.  A slightly cleaner approach
-> from the one outlined above would have the probe routine do this:
+> Add /proc/sys/kernel/sched_itmt_enabled so operator
+> can enable/disable scheduling of tasks that favor cores
+> with higher turbo boost frequency potential.
 > 
-> 	my_power_up(dev);
-> 	pm_runtime_set_active(dev);
-> 	pm_runtime_get_noresume(dev);
-> 	pm_runtime_enable(dev);
+> By default, system that is ITMT capable and single
+> socket has this feature turned on.  It is more likely
+> to be lightly loaded and operates in Turbo range.
 > 
-> and have the runtime-resume callback routine call my_power_up() to do
-> its work.  (Or make my_power_up() actually be the runtime-resume
-> callback routine.)  That's pretty straightforward and hard to mess up.
+> When there is a change in the ITMT scheduling operation
+> desired, a rebuild of the sched domain is initiated
+> so the scheduler can set up sched domains with appropriate
+> flag to enable/disable ITMT scheduling operations.
+> 
+> Co-developed-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Co-developed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
+> ---
+>  arch/x86/include/asm/topology.h |   7 ++-
+>  arch/x86/kernel/itmt.c          | 108 +++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 112 insertions(+), 3 deletions(-)
 
-You'd be surprised how easy drivers can mess simple things up ;-) We'd still 
-have to get the message out there, that would be the most difficult part.
+...
 
-> In theory, we could have pm_runtime_enable() invoke the runtime-resume
-> callback when CONFIG_PM is disabled.  In practice, it would be rather
-> awkward.  drivers/base/power/runtime.c, which is where
-> pm_runtime_enable() is defined and the runtime-PM callbacks are
-> invoked, doesn't even get compiled if CONFIG_PM is off.
+> +/*
+> + * Boolean to control whether we want to move processes to cpu capable
+> + * of higher turbo frequency for cpus supporting Intel Turbo Boost Max
+> + * Technology 3.0.
+> + *
+> + * It can be set via /proc/sys/kernel/sched_itmt_enabled
+> + */
+> +unsigned int __read_mostly sysctl_sched_itmt_enabled;
 
-Sure, but that can easily be fixed.
+Err, can we not have the boolean in the name itself?
 
-> (Also, it would run against the grain.  CONFIG_PM=n means the kernel
-> ignores runtime PM, so pm_runtime_enable() shouldn't do anything.)
+I.e., have it called sysctl_sched_itmt and 1 means enabled and 0
+disabled? I.e., the classic thing. :)
 
-I'd argue that CONFIG_PM=n should mean that the runtime PM API doesn't perform 
-runtime PM, not that it should do absolutely nothing. If semantics is the 
-biggest concern, we could introduce a helper (whose name is TBD) that would 
-enable runtime PM when CONFIG_PM=y or power on the device when CONFIG_PM=n
-
-I want to make it as easy as possible for drivers to make sure they won't get 
-this wrong, which in my opinion requires a simple and straightforward API with 
-no code in the driver that would depend on the value of CONFIG_PM.
-
-> There's a corollary aspect to this.  If you depend on runtime PM for
-> powering up your device during probe, does that mean you also depend on
-> runtime PM for powering down the device during remove?  That is likely
-> not to work, because the user can prevent runtime suspends by writing
-> to /sys/.../power/control.
-
-Yes, I do, and I expect most runtime PM-enabled driver to do the same. When 
-runtime suspend is disabled through /sys/.../power/control does 
-pm_runtime_disable() invoke the runtime PM suspend handler if the device is 
-powered on ?
+Ditto for the sysctl name?
 
 -- 
-Regards,
+Regards/Gruss,
+    Boris.
 
-Laurent Pinchart
-
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
