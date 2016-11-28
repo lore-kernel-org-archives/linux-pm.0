@@ -1,50 +1,49 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH] power: supply: bq27xxx_battery: Fix register map for
- BQ27510 and BQ27520
-Date: Mon, 28 Nov 2016 11:13:19 -0600
-Message-ID: <792c4722-9f32-3fda-85b2-6c8320111151@ti.com>
-References: <20161104183313.2767-1-afd@ti.com>
- <20161123230832.anbbhmllij4bxpsh@earth>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] powercap/intel_rapl: fix and tidy up error handling
+Date: Mon, 28 Nov 2016 09:31:03 -0800
+Message-ID: <20161128093103.3cb4041c@jacob-builder>
+References: <1479927666-563-1-git-send-email-jacob.jun.pan@linux.intel.com>
+        <CAJZ5v0jJ4kxcT0MVi3mz0zKRrEiRaNfQqPvY6y5bTHpkPpiU3A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:51608 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933198AbcK1RNX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 12:13:23 -0500
-In-Reply-To: <20161123230832.anbbhmllij4bxpsh@earth>
+Received: from mga03.intel.com ([134.134.136.65]:23220 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750799AbcK1R3D (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 28 Nov 2016 12:29:03 -0500
+In-Reply-To: <CAJZ5v0jJ4kxcT0MVi3mz0zKRrEiRaNfQqPvY6y5bTHpkPpiU3A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Marcin Koss <marcin.koss@intel.com>, Lukasz Odzioba <lukasz.odzioba@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, jacob.jun.pan@linux.intel.com
 
-On 11/23/2016 05:08 PM, Sebastian Reichel wrote:
-> Hi,
+On Thu, 24 Nov 2016 22:06:59 +0100
+"Rafael J. Wysocki" <rafael@kernel.org> wrote:
+
+> On Wed, Nov 23, 2016 at 8:01 PM, Jacob Pan
+> <jacob.jun.pan@linux.intel.com> wrote:
+> > Commit e1399ba20eee ("powercap / RAPL: handle missing MSRs") added
+> > contraint_to_pl() function to return index into an array. But it
+> > can potentially return -EINVAL if powercap layer sends an out of
+> > range constraint ID. This patch adds sanity check.
+> >
+> > Unnecessary RAPL domain pointer check is removed since it must be
+> > initialized before calling rapl_unit_xlate().
+> >
+> > Reported-by: Odzioba, Lukasz <lukasz.odzioba@intel.com>
+> > Reported-by: Koss, Marcin <marcin.koss@intel.com>  
 > 
-> On Fri, Nov 04, 2016 at 01:33:13PM -0500, Andrew F. Davis wrote:
->> The BQ27510 and BQ27520 use a slightly different register map than the
->> BQ27500, add a new type enum and add these gauges to it.
->>
->> Fixes: d74534c27775 ("power: bq27xxx_battery: Add support for additional bq27xxx family devices")
->> Based-on-patch-by: Kenneth R. Crudup <kenny@panix.com>
->> Signed-off-by: Andrew F. Davis <afd@ti.com>
->> ---
->>  drivers/power/supply/bq27xxx_battery.c     | 41 +++++++++++++++++++++++++++++-
->>  drivers/power/supply/bq27xxx_battery_i2c.c |  4 +--
->>  include/linux/power/bq27xxx_battery.h      |  3 ++-
->>  3 files changed, 44 insertions(+), 4 deletions(-)
+> Does this depend on the Thomas' series only?
 > 
-> Queued into for-next. I think pali's hint, that bq27xxx_battery_overtemp()
-> should be implemented using a switch-case is valid to make the code more
-> readable. Please provide this change as follow-up patch.
+yes, it is on top of Thomas' series.
+> Also, it looks like a Fixes: tag should be present here.
 > 
+OK. will add that.
+> >
+> > Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>  
+> 
+> Thanks,
+> Rafael
 
-I think there may be better ways than even switch-case, perhaps we can
-add additional info flags to the part's description tables, then just
-branch on that for each accessor type.
-
-Anyway, I'll see what I can to to clean this up when I get some bandwidth.
-
-Thanks,
-Andrew
+[Jacob Pan]
