@@ -1,104 +1,78 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: fwd, Re: [PATCH v3] cpufreq: brcmstb-cpufreq: CPUfreq driver for older
- Broadcom STB SoCs
-Date: Mon, 28 Nov 2016 11:16:48 +0100
-Message-ID: <5336918.eLmd7pA3eN@wuerfel>
-References: <20161122213245.17955-1-code@mmayer.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161122213245.17955-1-code@mmayer.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Markus Mayer <code@mmayer.net>
-Cc: Device Tree <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v3 0/5] thermal: fixes the rockchip thermal
+Date: Mon, 28 Nov 2016 19:11:59 +0800
+Message-ID: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:35495 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932094AbcK1LMc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 06:12:32 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: heiko@sntech.de, smbarber@chromium.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, Caesar Wang <wxt@rock-chips.com>
 
-[resending my mail, this time with devicetree, linux-clk, and linux-arm-kernel
-on cc]
+There are five patches posted for upstream.
+89267b5 thermal: rockchip: improve conversion error messages
+a0b5649 thermal: rockchip: don't pass table structs by value
+bceed92 thermal: rockchip: fixes invalid temperature case
+30be6d0 thermal: rockchip: optimize the conversion table
+35636e9 thermal: rockchip: handle the set_trips without the trip points.
+--
 
-On Tuesday, November 22, 2016 1:32:45 PM CET Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
-> 
-> This CPUfreq driver provides basic frequency scaling for older Broadcom
-> STB SoCs that do not use AVS firmware with DVFS support. There is no
-> support for voltage scaling.
-> 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+History version:
+V1:
+https://lkml.org/lkml/2016/11/22/250
+V2:
+https://lkml.org/lkml/2016/11/23/348
+---
 
-This causes multiple build errors in linux-next, please fix asap or
-drop the patch again. My feeling is that it's probably too late to
-fix it for v4.10, but that's up to Viresh and Rafael of course.
+Brain posted the below patches for upstream.
+89267b5 thermal: rockchip: improve conversion error messages
+a0b5649 thermal: rockchip: don't pass table structs by value
+That make sense to improve efficiency
 
-> +#define BRCMSTB_CPUFREQ_PREFIX	"brcmstb"
-> +#define BRCMSTB_CPUFREQ_NAME	BRCMSTB_CPUFREQ_PREFIX "-cpufreq"
-> +
-> +/* We search for these compatible strings. */
-> +#define BRCMSTB_DT_CPU_CLK_CTRL	"brcm,brcmstb-cpu-clk-div"
-> +#define BRCMSTB_DT_MEMC_DDR	"brcm,brcmstb-memc-ddr"
-> +#define BRCM_AVS_CPU_DATA	"brcm,avs-cpu-data-mem"
-> +
-> +/* We also need a few clocks in device tree. These are node names. */
-> +#define BRCMSTB_CLK_MDIV_CH0	"cpu_mdiv_ch0"
-> +#define BRCMSTB_CLK_NDIV_INT	"cpu_ndiv_int"
-> +#define BRCMSTB_CLK_SW_SCB	"sw_scb"
+Caesar post the below patches for upstream.
+bceed92 thermal: rockchip: fixes invalid temperature case
+30be6d0 thermal: rockchip: optimize the conversion table
+35636e9 thermal: rockchip: handle the set_trips without the trip points.
+That will fixes some issues in special cases.
+--
 
-Not critical but the use of those macros obfuscates the DT interfaces
-here and made it harder to analyse what was going on.
+Anyway, this series patches should can improve the rockchip thermal driver.
 
-Also, a couple of them are lacking a DT binding.
 
-> +static int get_frequencies(const struct cpufreq_policy *policy,
-> +			   unsigned int *vco_freq, unsigned int *cpu_freq,
-> +			   unsigned int *scb_freq)
-> +{
-> +	struct clk *cpu_ndiv_int, *sw_scb;
-> +
-> +	cpu_ndiv_int = __clk_lookup(BRCMSTB_CLK_NDIV_INT);
-> +	if (!cpu_ndiv_int)
-> +		return -ENODEV;
-> +
-> +	sw_scb = __clk_lookup(BRCMSTB_CLK_SW_SCB);
-> +	if (!sw_scb)
-> +		return -ENODEV;
-> +
-> +	/* return frequencies in kHz */
-> +	*vco_freq = clk_get_rate(cpu_ndiv_int) / 1000;
-> +	*cpu_freq = clk_get_rate(policy->clk) / 1000;
-> +	*scb_freq = clk_get_rate(sw_scb) / 1000;
-> +
-> +	return 0;
-> +}
+Changes in v3:
+- fix trivial thing for error message nd return value.
+- change the commit.
+- Fixes something as Brian comments on
 
-You really can't do this: 
+Changes in v2:
+- As Brian commnets that restructure this to pass error codes back to the
+  upper layers.
+- Improve the commit message.
+- improve the commit as Brian commnets on https://patchwork.kernel.org/patch/9440985
+- Fixes something as Brian comments on
+  https://patchwork.kernel.org/patch/9440989.
 
-../drivers/cpufreq/brcmstb-cpufreq.c: In function 'get_frequencies':
-../drivers/cpufreq/brcmstb-cpufreq.c:71:17: error: implicit declaration of function '__clk_lookup';did you mean 'key_lookup'? [-Werror=implicit-function-declaration]
-  cpu_ndiv_int = __clk_lookup(BRCMSTB_CLK_NDIV_INT);
-                 ^~~~~~~~~~~~
+Changes in v1:
+- The original Brian posted on https://patchwork.kernel.org/patch/9437686
+  Note: it'd probably be even nicer to know which sensor this was, but we've
+  kinda abstracted that one away by this point...
+- The original Brian posted on https://patchwork.kernel.org/patch/9437687
 
-__clk_lookup is an internal API for the clk providers.
+Brian Norris (2):
+  thermal: rockchip: improve conversion error messages
+  thermal: rockchip: don't pass table structs by value
 
-In particular, relying on undocumented internal names of the
-clk provider in a device driver is inappropriate.
+Caesar Wang (3):
+  thermal: rockchip: fixes invalid temperature case
+  thermal: rockchip: optimize the conversion table
+  thermal: rockchip: handle set_trips without the trip points
 
-> +static const struct of_device_id brcmstb_cpufreq_match[] = {
-> +	{ .compatible = BRCMSTB_DT_CPU_CLK_CTRL },
-> +	{ }
-> +};
-> +MODULE_DEVICE_TABLE(platform, brcmstb_cpufreq_match);
+ drivers/thermal/rockchip_thermal.c | 154 ++++++++++++++++++++++++-------------
+ 1 file changed, 101 insertions(+), 53 deletions(-)
 
-This is a simple typo, also causing the build to fail:
+-- 
+2.7.4
 
-    FATAL: drivers/cpufreq/brcmstb-cpufreq: sizeof(struct platform_device_id)=24 is not a modulo of the size of section __mod_platform__<identifier>_device_table=392.
-
-	Arnd
