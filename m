@@ -1,73 +1,123 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835
- soc
-Date: Mon, 28 Nov 2016 17:34:37 -0800
-Message-ID: <20161129013436.GA3080@localhost.localdomain>
-References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
- <1478081906-12009-3-git-send-email-kernel@martin.sperl.org>
- <20161117021107.GA2647@localhost.localdomain>
- <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org>
- <20161117151019.GA3115@localhost.localdomain>
- <7957B3CC-0E18-4B27-82EB-EF88B7695E28@martin.sperl.org>
- <20161119042224.GA25063@localhost.localdomain>
- <28F93ABE-8210-4389-AE77-4D5E830E669B@martin.sperl.org>
- <20161125052008.GA8342@localhost.localdomain>
- <87twarz6s1.fsf@eliezer.anholt.net>
+Subject: Re: [PATCH v3 3/5] thermal: rockchip: fixes invalid temperature case
+Date: Mon, 28 Nov 2016 17:45:54 -0800
+Message-ID: <20161129014553.GA3097@localhost.localdomain>
+References: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
+ <1480331524-18741-4-git-send-email-wxt@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:32982 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751765AbcK2Bel (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 20:34:41 -0500
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:35575 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750754AbcK2Bp6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 20:45:58 -0500
 Content-Disposition: inline
-In-Reply-To: <87twarz6s1.fsf@eliezer.anholt.net>
+In-Reply-To: <1480331524-18741-4-git-send-email-wxt@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eric Anholt <eric@anholt.net>
-Cc: Martin Sperl <kernel@martin.sperl.org>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Lee Jones <lee@kernel.org>, Russell King <linux@arm.linux.org.uk>, Florian Fainelli <f.fainelli@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: rui.zhang@intel.com, heiko@sntech.de, smbarber@chromium.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
 
-Hello Eric, Martin,
+Hey Caesar, Brian,
 
-On Mon, Nov 28, 2016 at 12:30:38PM -0800, Eric Anholt wrote:
-> Eduardo Valentin <edubezval@gmail.com> writes:
-> 
-
-<cut> 
-
-> The firmware today always initializes thermal.  I suggested adding the
-> init code because we (myself and the Pi Foundation) would like to reduce
-> how much closed firmware code is required in the platform, and the Linux
-> driver doing this would help make that possible in the future.
-
-Oh I see. Backup code for future chips/firmware.
-
-> 
-> >> > Who has the ownership of this device?
-> >> 
-> >> Joined ownership I suppose...
-> >> 
-> >
-> > with no synchronization mechanism?
-> 
-> Correct, because none is necessary.
-> 
-
-
+On Mon, Nov 28, 2016 at 07:12:02PM +0800, Caesar Wang wrote:
+> The temp_to_code function will return 0 when we set the temperature to a
+> invalid value (e.g. 61C, 62C, 63C....), that's unpractical. This patch
+> will prevent this case happening. That will return the max analog value to
+> indicate the temperature is invalid or over table temperature range.
 
 <cut>
 
+>  
+>  	/* Make sure the value is valid */
+>  	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
+
+dummy question here, looking at your tables, if I did not miss
+something, looks like we have an accuracy of 5C steps. Not only, that,
+we also support only multiples of 5C temperatures. If that observation
+is correct, would it make more sense to simply check for this property,
+and min and max temperature check, instead of going through the binary
+search to check for valid temperature? 
+
+>  	if (alarm_value == table->data_mask)
+> -		return;
+> +		return -ERANGE;
+>  
+>  	writel_relaxed(alarm_value & table->data_mask,
+>  		       regs + TSADCV2_COMP_INT(chn));
+> @@ -667,23 +665,27 @@ static void rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
+>  	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
+>  	int_en |= TSADCV2_INT_SRC_EN(chn);
+>  	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
+> +
+> +	return 0;
+>  }
+>  
+> -static void rk_tsadcv2_tshut_temp(const struct chip_tsadc_table *table,
+> -				  int chn, void __iomem *regs, int temp)
+> +static int rk_tsadcv2_tshut_temp(const struct chip_tsadc_table *table,
+> +				 int chn, void __iomem *regs, int temp)
+>  {
+>  	u32 tshut_value, val;
+>  
+>  	/* Make sure the value is valid */
+>  	tshut_value = rk_tsadcv2_temp_to_code(table, temp);
+>  	if (tshut_value == table->data_mask)
+> -		return;
+> +		return -ERANGE;
+>  
+>  	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
+>  
+>  	/* TSHUT will be valid */
+>  	val = readl_relaxed(regs + TSADCV2_AUTO_CON);
+>  	writel_relaxed(val | TSADCV2_AUTO_SRC_EN(chn), regs + TSADCV2_AUTO_CON);
+> +
+> +	return 0;
+>  }
+>  
+>  static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
+> @@ -886,10 +888,8 @@ static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
+>  	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
+>  		__func__, sensor->id, low, high);
+>  
+> -	tsadc->set_alarm_temp(&tsadc->table,
+> -			      sensor->id, thermal->regs, high);
+> -
+> -	return 0;
+> +	return tsadc->set_alarm_temp(&tsadc->table,
+> +				     sensor->id, thermal->regs, high);
+>  }
+>  
+>  static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
+> @@ -985,8 +985,12 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
+>  	int error;
+>  
+>  	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
+> -	tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
+> +
+> +	error = tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
+>  			      thermal->tshut_temp);
+> +	if (error)
+> +		dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
+> +			__func__, thermal->tshut_temp, error);
+>  
+>  	sensor->thermal = thermal;
+>  	sensor->id = id;
+> @@ -1199,9 +1203,13 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
+>  
+>  		thermal->chip->set_tshut_mode(id, thermal->regs,
+>  					      thermal->tshut_mode);
+> -		thermal->chip->set_tshut_temp(&thermal->chip->table,
+> +
+> +		error = thermal->chip->set_tshut_temp(&thermal->chip->table,
+>  					      id, thermal->regs,
+>  					      thermal->tshut_temp);
+> +		if (error)
+> +			dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
+> +				__func__, thermal->tshut_temp, error);
+>  	}
+>  
+>  	thermal->chip->control(thermal->regs, true);
+> -- 
+> 2.7.4
 > 
-> Either the device was initialized by the firmware before handing off to
-> ARM (today's firmware) or it never will be (potential future firmware).
-
-And do you have a way to check if the firmware has the initialization
-code or not? By firmware version, for example. Or even, chip version,
-maybe?
-
-If the current firmware will always initialize the chip, I would say,
-ARM should simply read the registers, no initialization, unless it is
-known that the firmware intentionally left the device uninitialized.
-
-Again, just trying to avoid obscure misbehavior, when running into a
-faulty state, and running silently broken.
