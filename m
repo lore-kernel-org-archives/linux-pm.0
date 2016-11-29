@@ -1,115 +1,94 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3] PM / OPP: Don't remove the first cpu in the mask before removing others
-Date: Tue, 29 Nov 2016 11:12:19 +0530
-Message-ID: <29c512d06de99663c3c8acc2e04a898831879a6c.1480398079.git.viresh.kumar@linaro.org>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "# v4 . 4+" <stable@vger.kernel.org>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [PATCH v3 1/5] thermal: rockchip: improve conversion error
+ messages
+Date: Mon, 28 Nov 2016 21:47:29 -0800
+Message-ID: <20161129054728.GA64845@google.com>
+References: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
+ <1480331524-18741-2-git-send-email-wxt@rock-chips.com>
+ <20161129015155.GA3329@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:35385 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753356AbcK2Frd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 00:47:33 -0500
+Received: by mail-pg0-f44.google.com with SMTP id p66so65578239pga.2
+        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2016 21:47:33 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20161129015155.GA3329@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Caesar Wang <wxt@rock-chips.com>, rui.zhang@intel.com, heiko@sntech.de, smbarber@chromium.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
 
-Joonyoung Shim reported an interesting problem on his ARM octa-core
-Odoroid-XU3 platform. During system suspend, dev_pm_opp_put_regulator()
-was failing for a struct device for which dev_pm_opp_set_regulator() is
-called earlier.
+Hi,
 
-This happened because an earlier call to
-dev_pm_opp_of_cpumask_remove_table() function (from cpufreq-dt.c file)
-removed all the entries from opp_table->dev_list apart from the last CPU
-device in the cpumask of CPUs sharing the OPP.
+On Mon, Nov 28, 2016 at 05:51:55PM -0800, Eduardo Valentin wrote:
+> On Mon, Nov 28, 2016 at 07:12:00PM +0800, Caesar Wang wrote:
+> > From: Brian Norris <briannorris@chromium.org>
+> > 
+> > These error messages don't give much information about what went wrong.
+> > It would be nice, for one, to see what invalid temperature was being
+> > requested when conversion fails. It's also good to return an error when
+> > we can't handle a conversion properly.
+> > 
+> > While we're at it, fix the grammar too.
+> > 
+> > Signed-off-by: Brian Norris <briannorris@chromium.org>
+> > Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+> > 
+> > ---
+> > 
+> > Changes in v3: None
+> > Changes in v2: None
+> > Changes in v1:
+> > - The original Brian posted on https://patchwork.kernel.org/patch/9437686
+> >   Note: it'd probably be even nicer to know which sensor this was, but we've
+> >   kinda abstracted that one away by this point...
+> > 
+> >  drivers/thermal/rockchip_thermal.c | 7 +++++--
+> >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
+> > index b811b0f..26c247c 100644
+> > --- a/drivers/thermal/rockchip_thermal.c
+> > +++ b/drivers/thermal/rockchip_thermal.c
+> > @@ -424,7 +424,8 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
+> >  	}
+> >  
+> >  exit:
+> > -	pr_err("Invalid the conversion, error=%d\n", error);
+> > +	pr_err("%s: invalid temperature, temp=%d error=%d\n",
+> > +	       __func__, temp, error);
+> >  	return error;
+> >  }
+> >  
+> > @@ -475,7 +476,9 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
+> >  		}
+> >  		break;
+> >  	default:
+> > -		pr_err("Invalid the conversion table\n");
+> > +		pr_err("%s: invalid conversion table, mode=%d\n",
+> > +		       __func__, table.mode);
+> 
+> Given that we are improving messages, would it be more informative to
+> say that you have an invalid table mode?
 
-But both dev_pm_opp_set_regulator() and dev_pm_opp_put_regulator()
-routines get CPU device for the first CPU in the cpumask. And so the OPP
-core failed to find the OPP table for the struct device.
+I considered the mode and ID listing to go hand in hand, so it was the
+whole table that is wrong. But it is just as well to say the "table
+mode" is wrong.
 
-In order to fix that up properly, we need to revisit APIs like
-dev_pm_opp_set_regulator() and make them talk in terms of cookies
-provided by the OPP core. But such a solution will be hard to backport
-to stable kernels.
+Maybe even better: "%s: unknown table mode: %d\n".
 
-This patch attempts to fix this problem (in a Hacky way) by specially
-handling the first cpu in the mask. A FIXME is also added to make sure
-that this Hack doesn't get unnoticed later on.
+And I guess same answer for patch 4, where you had the same question.
 
-Cc:  # v4.4+ <stable@vger.kernel.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2->V3:
-- Fix $Subject, which carried text from V1.
+Brian
 
-V1->V2:
-- A completely different approach, more of hack so that backport to
-  stable kernels can be done easily.
-- A more comprehensive solution is required to fix the design flaws.
-
- drivers/base/power/opp/cpu.c | 50 +++++++++++++++++++++++++++++++-------------
- 1 file changed, 35 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-index 8c3434bdb26d..5d1b0f98bcb0 100644
---- a/drivers/base/power/opp/cpu.c
-+++ b/drivers/base/power/opp/cpu.c
-@@ -118,26 +118,46 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
- EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
- #endif	/* CONFIG_CPU_FREQ */
- 
-+void _cpu_remove_table(unsigned int cpu, bool of)
-+{
-+	struct device *cpu_dev = get_cpu_device(cpu);
-+
-+	if (!cpu_dev) {
-+		pr_err("%s: failed to get cpu%d device\n", __func__, cpu);
-+		return;
-+	}
-+
-+	if (of)
-+		dev_pm_opp_of_remove_table(cpu_dev);
-+	else
-+		dev_pm_opp_remove_table(cpu_dev);
-+}
-+
- void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of)
- {
--	struct device *cpu_dev;
--	int cpu;
-+	struct cpumask tmpmask;
-+	int cpu, first_cpu;
- 
- 	WARN_ON(cpumask_empty(cpumask));
- 
--	for_each_cpu(cpu, cpumask) {
--		cpu_dev = get_cpu_device(cpu);
--		if (!cpu_dev) {
--			pr_err("%s: failed to get cpu%d device\n", __func__,
--			       cpu);
--			continue;
--		}
--
--		if (of)
--			dev_pm_opp_of_remove_table(cpu_dev);
--		else
--			dev_pm_opp_remove_table(cpu_dev);
--	}
-+	/*
-+	 * The first cpu in the cpumask is important as that is used to create
-+	 * the opp-table initially and routines like dev_pm_opp_put_regulator()
-+	 * will expect the list-dev for the first CPU to be present while such
-+	 * routines are called, otherwise we will fail to find the opp-table for
-+	 * such devices.
-+	 *
-+	 * FIXME: Cleanup this mess and implement cookie based solutions instead
-+	 * of working on the device pointer.
-+	 */
-+	first_cpu = cpumask_first(cpumask);
-+	cpumask_copy(&tmpmask, cpumask);
-+	cpumask_clear_cpu(first_cpu, &tmpmask);
-+
-+	for_each_cpu(cpu, &tmpmask)
-+		_cpu_remove_table(cpu, of);
-+
-+	_cpu_remove_table(first_cpu, of);
- }
- 
- /**
--- 
-2.7.1.410.g6faf27b
+> > +		return -EINVAL;
+> >  	}
+> >  
+> >  	/*
+> > -- 
+> > 2.7.4
+> > 
