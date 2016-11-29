@@ -1,62 +1,105 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v3 0/3] powernv:stop: Use psscr_val,mask provided by
- firmware
-Date: Tue, 29 Nov 2016 17:34:03 +1100
-Message-ID: <9bde9678-56cf-a718-7f00-98f0eca45f22@gmail.com>
-References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33807 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753427AbcK2GeN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 01:34:13 -0500
-In-Reply-To: <cover.1478760806.git.ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V5 00/10] PM / OPP: Multiple regulator support
+Date: Tue, 29 Nov 2016 12:06:47 +0530
+Message-ID: <cover.1480401041.git.viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>
-Cc: "\"linuxppc-dev"@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, "skiboot\""@lists.ozlabs.org
 
+Hi,
 
+Some platforms (like TI) have complex DVFS configuration for CPU
+devices, where multiple regulators are required to be configured to
+change DVFS state of the device. This was explained well by Nishanth
+earlier [1].
 
-On 10/11/16 18:54, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> This is the third iteration of the patchset to use the psscr_val and
-> psscr_mask provided by the firmware for each of the stop states.
-> 
-> The previous version can be found here:
-> 
-> [v2]: https://lkml.org/lkml/2016/10/27/143
-> [v1]: https://lkml.org/lkml/2016/9/29/45
-> 
-> This version fixes a couple of bugs pertaining to strncpy and
-> initialization of the target-residency values of nap and sleep
-> which were pointed out by Paul and Oliver in the earlier version.
-> 
-> Synopsis
-> ==========
-> In the current implementation, the code for ISA
-> v3.0 stop implementation has a couple of shortcomings.
-> 
-> a) The code hand-codes the values for ESL,EC,TR,MTL bits of PSSCR and
->    uses only the RL field from the firmware. While this is not
->    incorrect, since the hand-coded values are legitimate, it is not a
->    very flexible design since the firmware has the capability to
->    communicate these values via the "ibm,cpu-idle-state-psscr" and
->    "ibm,cpu-idle-state-psscr-mask" properties. In case where the
->    firmware provides values for these fields that is different from
->    the hand-coded values, the current code will not work as intended.
-> 
-> b) Due to issue a), the current code assumes that ESL=EC=1 for all the
->    stop states and hence the wakeup from the stop instruction will
->    happen at 0x100, the system-reset vector. However, the ISA v3.0
->    allows the ESL=EC=0 behaviour where the corresponding stop-state
->    loses no state and wakes up from the subsequent instruction. The
->    current code doesn't handle this case.
->    
+One of the major complaints around multiple regulators case was that the
+DT isn't responsible in any way to represent the order in which multiple
+supplies need to be programmed, before or after a frequency change. It
+was considered in this patch and such information is left for the
+platform specific OPP driver now, which can register its own
+opp_set_rate() callback with the OPP core and the OPP core will then
+call it during DVFS.
 
-Sounds reasonable
+The patches are tested on Exynos5250 (Dual A15). I have hacked around DT
+and code to pass values for multiple regulators and verified that they
+are all properly read by the kernel (using debugfs interface).
 
-Balbir Singh.
+Dave Gerlach has already tested [2] it on the real TI platforms and it
+works well for him.
+
+This is rebased over: linux-next branch in the PM tree.
+
+V4->V5:
+- Stephen boyd had some minor review comments and gave his Reviewed-by
+  tag for the rest. Only 2 patches don't have his RBY tag.
+- Individual patches contain the version history from V4 to V5.
+
+V3->V4:
+- Separate out cpu-supply fix in the binding in a separate patch (Mark).
+- Add more documentation to the binding to explain that the relation to
+  the supplies and the order of programming them is left for the
+  platform specific bindings and that every platform using multiple
+  regulators for their devices needs to provide a separate binding
+  document explaining their implementation (Mark).
+- @Rob and Stephen: I have kept your Acks for the bindings as the
+  bindings only got a bit reworded (improved) since the time you guys
+  Acked them. Please let me know if you want more improvement in the
+  bindings now.
+- V4 for 10/10 was sent earlier, which added a missing
+  rcu_read_unlock(). Nothing else changed in it.
+- Added some missing Kernel documentation comments
+
+V2->V3:
+- The last patch is new
+- Removed a debug leftover pr_info() message
+- Renamed few names as s/set_rate/set_opp
+- Removed a TODO comment (as it is done now with this series)
+- created struct for min_uV and max_uV
+- kerneldoc comments for structures in pm_opp.h
+- s/const char */const char * const
+- use kasprintf()
+- Some more minor reformatting
+- More Ack/RBY tags added
+
+V1->V2:
+- Ack from Rob for 1st patch
+- Moved the supplies structure to pm_opp.h (Dave)
+- Fixed an compilation warning.
+
+--
+viresh
+
+[1] https://marc.info/?l=linux-pm&m=145684495832764&w=2
+[2] https://marc.info/?l=linux-kernel&m=147924789305276&w=2
+
+Viresh Kumar (10):
+  PM / OPP: Fix incorrect cpu-supply property in binding
+  PM / OPP: Reword binding supporting multiple regulators per device
+  PM / OPP: Don't use OPP structure outside of rcu protected section
+  PM / OPP: Manage supply's voltage/current in a separate structure
+  PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
+  PM / OPP: Add infrastructure to manage multiple regulators
+  PM / OPP: Separate out _generic_set_opp()
+  PM / OPP: Allow platform specific custom set_opp() callbacks
+  PM / OPP: Don't WARN on multiple calls to dev_pm_opp_set_regulators()
+  PM / OPP: Don't assume platform doesn't have regulators
+
+ Documentation/devicetree/bindings/opp/opp.txt |  27 +-
+ drivers/base/power/opp/core.c                 | 536 ++++++++++++++++++++------
+ drivers/base/power/opp/debugfs.c              |  52 ++-
+ drivers/base/power/opp/of.c                   | 105 +++--
+ drivers/base/power/opp/opp.h                  |  22 +-
+ drivers/cpufreq/cpufreq-dt.c                  |   9 +-
+ include/linux/pm_opp.h                        |  69 +++-
+ 7 files changed, 634 insertions(+), 186 deletions(-)
+
+-- 
+2.7.1.410.g6faf27b
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
