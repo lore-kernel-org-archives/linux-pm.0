@@ -1,32 +1,32 @@
 From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 2/3] cpuidle:powernv: Add helper function to populate
- powernv idle states.
-Date: Tue, 29 Nov 2016 11:39:11 +0530
-Message-ID: <20161129060911.GA30454@in.ibm.com>
+Subject: Re: [PATCH v3 3/3] powernv: Pass PSSCR value and mask to
+ power9_idle_stop
+Date: Tue, 29 Nov 2016 11:40:35 +0530
+Message-ID: <20161129061035.GB30454@in.ibm.com>
 References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
- <9c2b5cae68b54ec5dcb2651f352f740f1d09051c.1478760806.git.ego@linux.vnet.ibm.com>
- <87vavettkb.fsf@concordia.ellerman.id.au>
+ <f3853e81d3b3a1cf51a920acbbddc8f64238d7b6.1478760806.git.ego@linux.vnet.ibm.com>
+ <87shqittgx.fsf@concordia.ellerman.id.au>
 Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:40194 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932860AbcK2GJZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 01:09:25 -0500
-Received: from pps.filterd (m0098410.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uAT647cs144372
-        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 01:09:24 -0500
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:42410 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S932457AbcK2GKn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 01:10:43 -0500
+Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uAT64B38097945
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 01:10:42 -0500
 Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2713dc2yxq-1
+        by mx0b-001b2d01.pphosted.com with ESMTP id 271158nxrt-1
         (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 01:09:24 -0500
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 01:10:42 -0500
 Received: from localhost
         by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
         for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Tue, 29 Nov 2016 01:09:23 -0500
+        Tue, 29 Nov 2016 01:10:41 -0500
 Content-Disposition: inline
-In-Reply-To: <87vavettkb.fsf@concordia.ellerman.id.au>
+In-Reply-To: <87shqittgx.fsf@concordia.ellerman.id.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Michael Ellerman <mpe@ellerman.id.au>
@@ -34,41 +34,44 @@ Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Benjamin Herrenschmidt <benh@k
 
 Hi Michael,
 
-On Wed, Nov 23, 2016 at 08:49:08PM +1100, Michael Ellerman wrote:
+On Wed, Nov 23, 2016 at 08:51:10PM +1100, Michael Ellerman wrote:
 > "Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
 > 
-> > diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> > index 7fe442c..9240e08 100644
-> > --- a/drivers/cpuidle/cpuidle-powernv.c
-> > +++ b/drivers/cpuidle/cpuidle-powernv.c
-> > @@ -243,28 +262,31 @@ static int powernv_add_idle_states(void)
-> >  		 */
-> >  		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
-> >  			continue;
-> > +		/*
-> > +		 * Firmware passes residency and latency values in ns.
-> > +		 * cpuidle expects it in us.
-> > +		 */
-> > +		exit_latency = ((unsigned int)latency_ns[i]) / 1000;
-> > +		target_residency = (!rc) ? ((unsigned int)residency_ns[i]) : 0;
-> > +		target_residency /= 1000;
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >
+> > The power9_idle_stop method currently takes only the requested stop
+> > level as a parameter and picks up the rest of the PSSCR bits from a
+> > hand-coded macro. This is not a very flexible design, especially when
+> > the firmware has the capability to communicate the psscr value and the
+> > mask associated with a particular stop state via device tree.
+> >
+> > This patch modifies the power9_idle_stop API to take as parameters the
+> > PSSCR value and the PSSCR mask corresponding to the stop state that
+> > needs to be set. These PSSCR value and mask are respectively obtained
+> > by parsing the "ibm,cpu-idle-state-psscr" and
+> > "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
+> >
+> > In addition to this, the patch adds support for handling stop states
+> > for which ESL and EC bits in the PSSCR are zero. As per the
+> > architecture, a wakeup from these stop states resumes execution from
+> > the subsequent instruction as opposed to waking up at the System
+> > Vector.
+> >
+> > The older firmware sets only the Requested Level (RL) field in the
+> > psscr and psscr-mask exposed in the device tree. For older firmware
+> > where psscr-mask=0xf, this patch will set the default sane values that
+> > the set for for remaining PSSCR fields (i.e PSLL, MTL, ESL, EC, and
+> > TR).
 > 
-> Urk.
+> So we're using psscr-mas=0xf as a signal that we're running on old
+> firmware.
 > 
-> Can you just do it normally:
+> That's OK I think, but please send a patch to document it in the device
+> tree binding.
 > 
-> 		if (rc == 0)
-> 			target_residency = (unsigned int)residency_ns[i] / 1000;
+> And call it out below in the code.
 
-Wrote this in a non-standard manner since the normal way would exceed
-80 chars.
-
-> 
-> I also don't see why you need the cast?
-
-It is a remnant from the previous code. But I see your point, the cast
-is redundant, and removing it will make it possible to implement this
-in the normal manner without checkpatch warning about it.
+Sure will do this! Thanks for reviewing the code.
 
 > 
 > cheers
