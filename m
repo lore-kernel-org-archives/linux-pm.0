@@ -1,444 +1,139 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V2 09/10] thermal: da9062/61: Thermal junction
- temperature monitoring driver
-Date: Mon, 28 Nov 2016 17:24:10 -0800
-Message-ID: <20161129012409.GA2813@localhost.localdomain>
-References: <cover.1477501000.git.stwiss.opensource@diasemi.com>
- <20fefc922818ab0511101f73b1a4d3468c9a8ed3.1477501000.git.stwiss.opensource@diasemi.com>
+From: "Chen, Yu C" <yu.c.chen@intel.com>
+Subject: RE: [PATCH][RFC] ACPI throttling: Save/restore tstate for each CPUs
+ across suspend/resume
+Date: Tue, 29 Nov 2016 01:27:36 +0000
+Message-ID: <36DF59CE26D8EE47B0655C516E9CE6405E63B74D@shsmsx102.ccr.corp.intel.com>
+References: <1479145444-29269-1-git-send-email-yu.c.chen@intel.com>
+ <CAJZ5v0iMT4+qVdQ-8ev_NRavLNnLhr_+eEO9M=85WJC+zfDySw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20fefc922818ab0511101f73b1a4d3468c9a8ed3.1477501000.git.stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-Cc: LINUX-KERNEL <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, DEVICETREE <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, LINUX-INPUT <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LINUX-WATCHDOG <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Support Opensource <support.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga07.intel.com ([134.134.136.100]:52840 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751569AbcK2B1k (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 28 Nov 2016 20:27:40 -0500
+In-Reply-To: <CAJZ5v0iMT4+qVdQ-8ev_NRavLNnLhr_+eEO9M=85WJC+zfDySw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Rui Wang <ruwang@redhat.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>, "Zhang, Rui" <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-Hello Steve,
-
-On Wed, Oct 26, 2016 at 05:56:39PM +0100, Steve Twiss wrote:
-> From: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-> 
-> Add junction temperature monitoring supervisor device driver, compatible
-> with the DA9062 and DA9061 PMICs.
-> 
-> If the PMIC's internal junction temperature rises above TEMP_WARN (125
-> degC) an interrupt is issued. This TEMP_WARN level is defined as the
-> THERMAL_TRIP_HOT trip-wire inside the device driver.
-> 
-> The thermal triggering mechanism is interrupt based and happens when the
-> temperature rises above a given threshold level. The component cannot
-> return an exact temperature, it only has knowledge if the temperature is
-> above or below a given threshold value. A status bit must be polled to
-> detect when the temperature falls below that threshold level again. A
-> kernel work queue is configured to repeatedly poll and detect when the
-> temperature falls below this trip-wire, between 1 and 10 second intervals
-> (defaulting at 3 seconds).
-> 
-> This first level of temperature supervision is intended for non-invasive
-> temperature control, where the necessary measures for cooling the system
-> down are left to the host software.
-> 
-> Signed-off-by: Steve Twiss <stwiss.opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
-> 
-> ---
-> This patch applies against linux-next and v4.8
-> 
-> v1 -> v2
->  - Patch renamed from [PATCH V1 05/10] to [PATCH V2 09/10] -- these
->    changes were made to fix checkpatch warnings caused by the patch
->    set dependency order
->  - List the header files in alphabetical order
->  - Remove "GPL v2" and replace with MODULE_LICENSE("GPL") to match the
->    copyright "GNU Public License v2 or later" option in the header
->    comment for this file. See the allowed identifiers in the file
->    include/linux/module.h +170
->  - Remove notify function "da9062_thermal_notify" function.
->  - MODULE_AUTHOR() macros removes Company Name and just gives Name in
->    accordance with include/linux/module.h +200
->  - Remove the compatible "dlg,da9061-thermal" option in the of_device_id
->    struct table. This patch now assumes the use of a DA9062 fallback
->    compatible string in the DTS when using the DA9061 thermal component
->    of the DA9061 device.
->  - Re-ordered some assignments earlier in the probe() for thermal->hw,
->    thermal->polling_period, thermal->mode, thermal->dev
->  - Added further information in the patch description to explain the use
->    of the device driver's built-in work-queue.
-> 
-> Regards,
-> Steve Twiss, Dialog Semiconductor Ltd.
-> 
-> 
->  drivers/thermal/Kconfig          |  10 ++
->  drivers/thermal/Makefile         |   1 +
->  drivers/thermal/da9062-thermal.c | 289 +++++++++++++++++++++++++++++++++++++++
->  3 files changed, 300 insertions(+)
->  create mode 100644 drivers/thermal/da9062-thermal.c
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index 2d702ca..da58e54 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -272,6 +272,16 @@ config DB8500_CPUFREQ_COOLING
->  	  bound cpufreq cooling device turns active to set CPU frequency low to
->  	  cool down the CPU.
->  
-> +config DA9062_THERMAL
-> +	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
-> +	depends on MFD_DA9062
-> +	depends on OF
-> +	help
-> +	  Enable this for the Dialog Semiconductor thermal sensor driver.
-> +	  This will report PMIC junction over-temperature for one thermal trip
-> +	  zone.
-> +	  Compatible with the DA9062 and DA9061 PMICs.
-
-Is there any hardware documentation available for this chip that can be
-pointed out?
-
-> +
->  config INTEL_POWERCLAMP
->  	tristate "Intel PowerClamp idle injection driver"
->  	depends on THERMAL
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 10b07c1..0a2b3f2 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -38,6 +38,7 @@ obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
->  obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
->  obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
->  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+= db8500_cpufreq_cooling.o
-> +obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
->  obj-$(CONFIG_INTEL_POWERCLAMP)	+= intel_powerclamp.o
->  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+= x86_pkg_temp_thermal.o
->  obj-$(CONFIG_INTEL_SOC_DTS_IOSF_CORE)	+= intel_soc_dts_iosf.o
-> diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
-> new file mode 100644
-> index 0000000..e0d2b1b
-> --- /dev/null
-> +++ b/drivers/thermal/da9062-thermal.c
-> @@ -0,0 +1,289 @@
-> +/*
-> + * Thermal device driver for DA9062 and DA9061
-> + * Copyright (C) 2016  Dialog Semiconductor Ltd.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version 2
-> + * of the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/regmap.h>
-> +#include <linux/thermal.h>
-> +#include <linux/workqueue.h>
-> +
-> +#include <linux/mfd/da9062/core.h>
-> +#include <linux/mfd/da9062/registers.h>
-> +
-> +#define DA9062_DEFAULT_POLLING_MS_PERIOD	3000
-> +#define DA9062_MAX_POLLING_MS_PERIOD		10000
-> +#define DA9062_MIN_POLLING_MS_PERIOD		1000
-> +
-> +#define DA9062_MILLI_CELSIUS(t)			((t)*1000)
-> +
-> +struct da9062_thermal_config {
-> +	const char *name;
-> +};
-> +
-> +struct da9062_thermal {
-> +	struct da9062 *hw;
-> +	struct delayed_work work;
-> +	struct thermal_zone_device *zone;
-> +	enum thermal_device_mode mode;
-> +	unsigned int polling_period;
-> +	struct mutex lock;
-> +	int temperature;
-> +	int irq;
-> +	const struct da9062_thermal_config *config;
-> +	struct device *dev;
-> +};
-> +
-> +static void da9062_thermal_poll_on(struct work_struct *work)
-> +{
-> +	struct da9062_thermal *thermal = container_of(work,
-> +						struct da9062_thermal,
-> +						work.work);
-> +	unsigned int val;
-> +	int ret;
-> +
-> +	/* clear E_TEMP */
-> +	ret = regmap_write(thermal->hw->regmap,
-> +				DA9062AA_EVENT_B,
-> +				DA9062AA_E_TEMP_MASK);
-> +	if (ret < 0) {
-> +		dev_err(thermal->dev,
-> +			"Cannot clear the TJUNC temperature status\n");
-> +		goto err_enable_irq;
-> +	}
-> +
-> +	/* Now read E_TEMP again: it is acting like a status bit.
-> +	 * If over-temperature, then this status will be true.
-> +	 * If not over-temperature, this status will be false.
-> +	 */
-> +	ret = regmap_read(thermal->hw->regmap,
-> +			  DA9062AA_EVENT_B,
-> +			  &val);
-> +	if (ret < 0) {
-> +		dev_err(thermal->dev,
-> +			"Cannot check the TJUNC temperature status\n");
-> +		goto err_enable_irq;
-> +	} else {
-> +		if (val & DA9062AA_E_TEMP_MASK) {
-> +			mutex_lock(&thermal->lock);
-> +			thermal->temperature = DA9062_MILLI_CELSIUS(125);
-
-Does this mean that the chip temperature is above or equal to 125C, is
-this really a safe temperature to keep it running?
-
-> +			mutex_unlock(&thermal->lock);
-> +			thermal_zone_device_update(thermal->zone);
-> +
-> +			schedule_delayed_work(&thermal->work,
-> +				msecs_to_jiffies(thermal->polling_period));
-> +			return;
-> +		} else {
-> +			mutex_lock(&thermal->lock);
-> +			thermal->temperature = DA9062_MILLI_CELSIUS(0);
-> +			mutex_unlock(&thermal->lock);
-> +			thermal_zone_device_update(thermal->zone);
-> +		}
-> +	}
-> +
-> +err_enable_irq:
-> +	enable_irq(thermal->irq);
-> +}
-> +
-> +static irqreturn_t da9062_thermal_irq_handler(int irq, void *data)
-> +{
-> +	struct da9062_thermal *thermal = data;
-> +
-> +	disable_irq_nosync(thermal->irq);
-> +	schedule_delayed_work(&thermal->work, 0);
-
-Can you please elaborate a little on why you have an one shot threaded IRQ
-handler that is only disabling the IRQ then, scheduling a work with delay of 0?
-
-To my understanding, this is exactly what you get when you run your
-threaded IRQ handler, when you configure it as one shot.
-
-Have you tried simply handling the same work done in your workqueue
-handler in your threaded IRQ? That should simplify your code and get the
-same result you are expecting.
-
-If you are not getting the IRQ disabled on the threaded IRQ when
-configured as one shot, something else seams to be broken.
-
-> +
-> +	return IRQ_HANDLED;
-> +}
-> +
-> +static int da9062_thermal_get_mode(struct thermal_zone_device *z,
-> +				   enum thermal_device_mode *mode)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +	*mode = thermal->mode;
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_get_trip_type(struct thermal_zone_device *z,
-> +				int trip,
-> +				enum thermal_trip_type *type)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	switch (trip) {
-> +	case 0:
-> +		*type = THERMAL_TRIP_HOT;
-> +		break;
-> +	default:
-> +		dev_err(thermal->dev,
-> +			"Driver does not support more than 1 trip-wire\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_get_trip_temp(struct thermal_zone_device *z,
-> +					int trip,
-> +					int *temp)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	switch (trip) {
-> +	case 0:
-> +		*temp = DA9062_MILLI_CELSIUS(125);
-> +		break;
-> +	default:
-> +		dev_err(thermal->dev,
-> +			"Driver does not support more than 1 trip-wire\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int da9062_thermal_get_temp(struct thermal_zone_device *z,
-> +				   int *temp)
-> +{
-> +	struct da9062_thermal *thermal = z->devdata;
-> +
-> +	mutex_lock(&thermal->lock);
-> +	*temp = thermal->temperature;
-> +	mutex_unlock(&thermal->lock);
-> +
-> +	return 0;
-> +}
-> +
-> +static struct thermal_zone_device_ops da9062_thermal_ops = {
-> +	.get_temp	= da9062_thermal_get_temp,
-> +	.get_mode	= da9062_thermal_get_mode,
-> +	.get_trip_type	= da9062_thermal_get_trip_type,
-> +	.get_trip_temp	= da9062_thermal_get_trip_temp,
-> +};
-> +
-> +static const struct da9062_thermal_config da9062_config = {
-> +	.name = "da9062-thermal",
-> +};
-> +
-> +static const struct of_device_id da9062_compatible_reg_id_table[] = {
-> +	{ .compatible = "dlg,da9062-thermal", .data = &da9062_config },
-> +	{ },
-> +};
-> +
-> +static int da9062_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct da9062 *chip = dev_get_drvdata(pdev->dev.parent);
-> +	struct da9062_thermal *thermal;
-> +	unsigned int pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-> +	const struct of_device_id *match;
-> +	int ret = 0;
-> +
-> +	match = of_match_node(da9062_compatible_reg_id_table,
-> +			      pdev->dev.of_node);
-> +	if (!match)
-> +		return -ENXIO;
-> +
-> +	if (pdev->dev.of_node) {
-> +		if (!of_property_read_u32(pdev->dev.of_node,
-> +					"dlg,tjunc-temp-polling-period-ms",
-> +					&pp_tmp)) {
-> +			if (pp_tmp < DA9062_MIN_POLLING_MS_PERIOD ||
-> +				pp_tmp > DA9062_MAX_POLLING_MS_PERIOD)
-> +				pp_tmp = DA9062_DEFAULT_POLLING_MS_PERIOD;
-> +		}
-> +
-> +		dev_dbg(&pdev->dev,
-> +			 "TJUNC temp polling period set at %d ms\n",
-> +			 pp_tmp);
-> +	}
-> +
-> +	thermal = devm_kzalloc(&pdev->dev, sizeof(struct da9062_thermal),
-> +			     GFP_KERNEL);
-> +	if (!thermal) {
-> +		ret = -ENOMEM;
-> +		goto err;
-> +	}
-> +
-> +	thermal->config = match->data;
-> +	thermal->hw = chip;
-> +	thermal->polling_period = pp_tmp;
-> +	thermal->mode = THERMAL_DEVICE_ENABLED;
-> +	thermal->dev = &pdev->dev;
-> +
-> +	INIT_DELAYED_WORK(&thermal->work, da9062_thermal_poll_on);
-> +	mutex_init(&thermal->lock);
-> +
-> +	thermal->zone = thermal_zone_device_register(thermal->config->name,
-> +					1, 0, thermal,
-> +					&da9062_thermal_ops, NULL, 0,
-> +					0);
-
-Did you try using of-thermal?
-
-So you would avoid having specific DT properties for something that
-there is already a defined property?
-
-> +	if (IS_ERR(thermal->zone)) {
-> +		dev_err(&pdev->dev, "Cannot register thermal zone device\n");
-> +		ret = PTR_ERR(thermal->zone);
-> +		goto err;
-> +	}
-> +
-> +	ret = platform_get_irq_byname(pdev, "THERMAL");
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "Failed to get platform IRQ.\n");
-> +		goto err_zone;
-> +	}
-> +	thermal->irq = ret;
-> +
-> +	ret = request_threaded_irq(thermal->irq, NULL,
-> +				   da9062_thermal_irq_handler,
-> +				   IRQF_TRIGGER_LOW | IRQF_ONESHOT,
-> +				   "THERMAL", thermal);
-
-How about using the devm_ version?
-
-> +	if (ret) {
-> +		dev_err(&pdev->dev,
-> +			"Failed to request thermal device IRQ.\n");
-> +		goto err_zone;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, thermal);
-> +	return 0;
-> +
-> +err_zone:
-> +	thermal_zone_device_unregister(thermal->zone);
-> +err:
-> +	return ret;
-> +}
-> +
-> +static int da9062_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct	da9062_thermal *thermal = platform_get_drvdata(pdev);
-> +
-> +	free_irq(thermal->irq, thermal);
-> +	thermal_zone_device_unregister(thermal->zone);
-> +	cancel_delayed_work_sync(&thermal->work);
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver da9062_thermal_driver = {
-> +	.probe	= da9062_thermal_probe,
-> +	.remove	= da9062_thermal_remove,
-> +	.driver	= {
-> +		.name	= "da9062-thermal",
-> +		.of_match_table = da9062_compatible_reg_id_table,
-> +	},
-> +};
-> +
-> +module_platform_driver(da9062_thermal_driver);
-> +
-> +MODULE_AUTHOR("Steve Twiss");
-> +MODULE_DESCRIPTION("Thermal TJUNC device driver for Dialog DA9062 and DA9061");
-> +MODULE_LICENSE("GPL");
-> +MODULE_ALIAS("platform:da9062-thermal");
-> -- 
-> end-of-patch for PATCH V2
-> 
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGksDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IHJqd3lzb2NraUBnbWFp
+bC5jb20gW21haWx0bzpyand5c29ja2lAZ21haWwuY29tXSBPbiBCZWhhbGYgT2YNCj4gUmFmYWVs
+IEouIFd5c29ja2kNCj4gU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAyMywgMjAxNiA3OjAzIEFN
+DQo+IFRvOiBDaGVuLCBZdSBDDQo+IENjOiBBQ1BJIERldmVsIE1hbGluZyBMaXN0OyBSdWkgV2Fu
+ZzsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdDsgTGVuIEJyb3duOw0KPiBSYWZhZWwgSi4gV3lz
+b2NraTsgUGF2ZWwgTWFjaGVrOyBNYXR0aGV3IEdhcnJldHQ7IFpoYW5nLCBSdWk7IExpbnV4IFBN
+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdW1JGQ10gQUNQSSB0aHJvdHRsaW5nOiBTYXZlL3Jlc3Rv
+cmUgdHN0YXRlIGZvciBlYWNoIENQVXMNCj4gYWNyb3NzIHN1c3BlbmQvcmVzdW1lDQo+IA0KPiBP
+biBNb24sIE5vdiAxNCwgMjAxNiBhdCA2OjQ0IFBNLCBDaGVuIFl1IDx5dS5jLmNoZW5AaW50ZWwu
+Y29tPiB3cm90ZToNCj4gPiBUaGlzIGlzIGEgdHJpYWwgdmVyc2lvbiBhbmQgYW55IGNvbW1lbnRz
+IGFyZSBhcHByZWNpYXRlZC4NCj4gPg0KPiA+IFByZXZpb3VzbHkgYSBidWcgd2FzIHJlcG9ydGVk
+IHRoYXQgb24gY2VydGFpbiBCcm9hZHdlbGwgcGxhdGZvcm1zLA0KPiA+IGFmdGVyIHJlc3VtaW5n
+IGZyb20gUzMsIHRoZSBDUFUgaXMgcnVubmluZyBhdCBhbiBhbm9tYWxvdXNseSBsb3cNCj4gPiBz
+cGVlZCwgZHVlIHRvIEJJT1MgaGFzIGVuYWJsZWQgdGhlIHRocm90dGxpbmcgYWNyb3NzIFMzLiBU
+aGUgc29sdXRpb24NCj4gPiB0byB0aGlzIGlzIHRvIGludHJvZHVjZSBhIHF1aXJrIGZyYW1ld29y
+ayB0byBzYXZlL3Jlc3RvcmUgdHN0YXRlIE1TUg0KPiA+IHJlZ2lzdGVyIGFyb3VuZCBzdXNwZW5k
+L3Jlc3VtZSwgaW4gQ29tbWl0IDdhOWMyZGQwOGVhZCAoIng4Ni9wbToNCj4gPiBJbnRyb2R1Y2Ug
+cXVpcmsgZnJhbWV3b3JrIHRvIHNhdmUvcmVzdG9yZSBleHRyYSBNU1IgcmVnaXN0ZXJzIGFyb3Vu
+ZA0KPiA+IHN1c3BlbmQvcmVzdW1lIikuDQo+ID4NCj4gPiBIb3dldmVyIG1vcmUgYW5kIG1vcmUg
+cmVwb3J0cyBzaG93IHRoYXQgb3RoZXIgcGxhdGZvcm1zIGFsc28NCj4gPiBleHBlcmllbmNlZCB0
+aGUgc2FtZSBpc3N1ZSwgYmVjYXVzZSBzb21lIEJJT1NlcyB3b3VsZCBsaWtlIHRvIGFkanVzdA0K
+PiA+IHRoZSB0c3RhdGUgaWYgaGUgdGhpbmtzIHRoZSB0ZW1wZXJhdHVyZSBpcyB0b28gaGlnaC4N
+Cj4gPiBUbyBkZWFsIHdpdGggdGhpcyBzaXR1YXRpb24sIHRoZSBMaW51eCB1c2VzIGEgY29tcGVu
+c2F0aW9uIHN0cmF0ZWd5DQo+ID4gdGhhdCwgdGhlIHRoZXJtYWwgbWFuYWdlbWVudCBsZXZlcmFn
+ZXMgdGhlcm1hbF9wbV9ub3RpZnkoKSB1cG9uIHJlc3VtZQ0KPiA+IHRvIGNoZWNrIGlmIHRoZSBQ
+cm9jZXNzb3JzIGluc2lkZSB0aGUgdGhlcm1hbCB6b25lIHNob3VsZCBiZSB0aHJvdHRsZWQNCj4g
+PiBvciBub3QsIHRodXMgdHN0YXRlIHdvdWxkIGJlIHJlLWV2YWx1YXRlZC4gVW5mb3J0dW5hdGVs
+eSBvbiB0aGVzZQ0KPiA+IGJvZ3VzIHBsYXRmb3Jtcywgbm9uZSBvZiB0aGUgUHJvY2Vzc29ycyBh
+cmUgaW5zaWRlIGFueSB0aGVybWFsIHpvbmVzDQo+ID4gZHVlIHRvIEJJT1MncyBpbXBsZW1lbnRh
+dGlvbi4gVGh1cyB0c3RhdGUgZm9yIFByb2Nlc3NvcnMgbmV2ZXIgaGFzIGENCj4gPiBjaGFuY2Ug
+dG8gYmUgYnJvdWdodCBiYWNrIHRvIG5vcm1hbC4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggdHJpZXMg
+dG8gc2F2ZS9yZXN0b3JlIHRzdGF0ZSBvbiByZWNlaXZpbmcgdGhlDQo+ID4gUE1fU1VTUEVORF9Q
+UkVQQVJFIGFuZCBQTV9QT1NUX1NVU1BFTkQsIHRvIGJlIG1vcmUgc3BlY2lmaWMsIHRoZQ0KPiA+
+IHRzdGF0ZSBpcyBzYXZlZCBhZnRlciB0aGVybWFsX3BtX25vdGlmeShQTV9TVVNQRU5EX1BSRVBB
+UkUpDQo+ID4gaXMgY2FsbGVkLCB3aGlsZSBpdCdzIHJlc3RvcmVkIGJlZm9yZQ0KPiA+IHRoZXJt
+YWxfcG1fbm90aWZ5KFBNX1BPU1RfU1VTUEVORCksDQo+ID4gaW4gdGhpcyB3YXkgdGhlIHRoZXJt
+YWwgem9uZSB3b3VsZCBhZGp1c3QgdGhlIHRzdGF0ZSBldmVudHVhbGx5IGFuZA0KPiA+IGFsc28g
+aGVscCBhZGp1c3QgdGhlIHRzdGF0ZSBmb3IgUHJvY2Vzc29ycyB3aGljaCBkbyBub3QgaGF2ZSB0
+aGVybWFsDQo+ID4gem9uZSBib3VuZC4gVGh1cyBpdCBkb2VzIG5vdCBpbWFwY3QgdGhlIG9sZCBz
+ZW1hbnRpY3MuDQo+ID4NCj4gPiBBbm90aGVyIGNvbmNlcm4gaXMgdGhhdCwgZWFjaCBDUFUgc2hv
+dWxkIHRha2UgY2FyZSBvZiB0aGUgc2F2ZS9yZXN0b3JlDQo+ID4gb3BlcmF0aW9uLCB0aHVzIHRo
+aXMgcGF0Y2ggdXNlcyBwZXJjcHUgd29ya3F1ZXVlIHRvIGFjaGlldmUgdGhpcy4NCj4gPg0KPiA+
+IEJ1Z3ppbGxhOiBodHRwczovL2J1Z3ppbGxhLmtlcm5lbC5vcmcvc2hvd19idWcuY2dpP2lkPTkw
+MDQxDQo+ID4gUmVwb3J0ZWQtYnk6IE1hdHRoZXcgR2FycmV0dCA8bWpnNTlAc3JjZi51Y2FtLm9y
+Zz4NCj4gPiBSZXBvcnRlZC1ieTogS2FkaXIgPGthZGlyQGNvbGFrb2dsdS5ubD4NCj4gPiBDYzog
+TGVuIEJyb3duIDxsZW5iQGtlcm5lbC5vcmc+DQo+ID4gQ2M6ICJSYWZhZWwgSi4gV3lzb2NraSIg
+PHJhZmFlbEBrZXJuZWwub3JnPg0KPiA+IENjOiBQYXZlbCBNYWNoZWsgPHBhdmVsQHVjdy5jej4N
+Cj4gPiBDYzogTWF0dGhldyBHYXJyZXR0IDxtamc1OUBzcmNmLnVjYW0ub3JnPg0KPiA+IENjOiBS
+dWkgWmhhbmcgPHJ1aS56aGFuZ0BpbnRlbC5jb20+DQo+ID4gQ2M6IGxpbnV4LXBtQHZnZXIua2Vy
+bmVsLm9yZw0KPiA+IFNpZ25lZC1vZmYtYnk6IENoZW4gWXUgPHl1LmMuY2hlbkBpbnRlbC5jb20+
+DQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvYWNwaS9wcm9jZXNzb3JfdGhyb3R0bGluZy5jIHwgNzAN
+Cj4gPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBj
+aGFuZ2VkLCA3MCBpbnNlcnRpb25zKCspDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9h
+Y3BpL3Byb2Nlc3Nvcl90aHJvdHRsaW5nLmMNCj4gPiBiL2RyaXZlcnMvYWNwaS9wcm9jZXNzb3Jf
+dGhyb3R0bGluZy5jDQo+ID4gaW5kZXggZDUxY2ExYy4uOGRkYzdkNiAxMDA2NDQNCj4gPiAtLS0g
+YS9kcml2ZXJzL2FjcGkvcHJvY2Vzc29yX3Rocm90dGxpbmcuYw0KPiA+ICsrKyBiL2RyaXZlcnMv
+YWNwaS9wcm9jZXNzb3JfdGhyb3R0bGluZy5jDQo+ID4gQEAgLTI5LDYgKzI5LDcgQEANCj4gPiAg
+I2luY2x1ZGUgPGxpbnV4L3NjaGVkLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9jcHVmcmVxLmg+
+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9hY3BpLmg+DQo+ID4gKyNpbmNsdWRlIDxsaW51eC9zdXNw
+ZW5kLmg+DQo+ID4gICNpbmNsdWRlIDxhY3BpL3Byb2Nlc3Nvci5oPg0KPiA+ICAjaW5jbHVkZSA8
+YXNtL2lvLmg+DQo+ID4gICNpbmNsdWRlIDxhc20vdWFjY2Vzcy5oPg0KPiA+IEBAIC03NTgsNiAr
+NzU5LDc1IEBAIHN0YXRpYyBpbnQgYWNwaV90aHJvdHRsaW5nX3dybXNyKHU2NCB2YWx1ZSkNCj4g
+PiAgICAgICAgIH0NCj4gPiAgICAgICAgIHJldHVybiByZXQ7DQo+ID4gIH0NCj4gPiArDQo+ID4g
+KyNpZmRlZiBDT05GSUdfUE1fU0xFRVANCj4gPiArc3RhdGljIERFRklORV9QRVJfQ1BVKHU2NCwg
+dHN0YXRlX21zcik7DQo+IA0KPiBDYWxsIGl0IHNhdmVkX3RzdGF0ZV9tc3IgbWF5YmU/DQpPSy4N
+Cj4gDQo+ID4gKw0KPiA+ICtzdGF0aWMgbG9uZyB0c3RhdGVfcG1fZm4odm9pZCAqZGF0YSkNCj4g
+PiArew0KPiA+ICsgICAgICAgdTY0IHZhbHVlOw0KPiA+ICsgICAgICAgYm9vbCBzYXZlID0gKihi
+b29sICopZGF0YTsNCj4gPiArDQo+ID4gKyAgICAgICBpZiAoc2F2ZSkgew0KPiA+ICsgICAgICAg
+ICAgICAgICBhY3BpX3Rocm90dGxpbmdfcmRtc3IoJnZhbHVlKTsNCj4gPiArICAgICAgICAgICAg
+ICAgdGhpc19jcHVfd3JpdGUodHN0YXRlX21zciwgdmFsdWUpOw0KPiA+ICsgICAgICAgfSBlbHNl
+IHsNCj4gPiArICAgICAgICAgICAgICAgdmFsdWUgPSB0aGlzX2NwdV9yZWFkKHRzdGF0ZV9tc3Ip
+Ow0KPiA+ICsgICAgICAgICAgICAgICBpZiAodmFsdWUpDQo+ID4gKyAgICAgICAgICAgICAgICAg
+ICAgICAgYWNwaV90aHJvdHRsaW5nX3dybXNyKHZhbHVlKTsNCj4gPiArICAgICAgIH0NCj4gPiAr
+ICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+IA0KPiBJIHdvdWxkIHNwbGl0IHRoZSBhYm92ZSBp
+bnRvIHR3byBmdW5jdGlvbnMsIG9uZSBmb3Igc2F2aW5nIGFuZCBvbmUgZm9yIHJlc3RvcmluZyAt
+Pg0KPiANCk9LLg0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgdHN0YXRlX2NoZWNrKHVuc2lnbmVk
+IGxvbmcgbW9kZSwgYm9vbCBzdXNwZW5kKSB7DQo+ID4gKyAgICAgICBpbnQgY3B1Ow0KPiA+ICsg
+ICAgICAgYm9vbCBzYXZlOw0KPiA+ICsNCj4gPiArICAgICAgIGlmIChzdXNwZW5kICYmIG1vZGUg
+PT0gUE1fU1VTUEVORF9QUkVQQVJFKQ0KPiA+ICsgICAgICAgICAgICAgICBzYXZlID0gdHJ1ZTsN
+Cj4gPiArICAgICAgIGVsc2UgaWYgKCFzdXNwZW5kICYmIG1vZGUgPT0gUE1fUE9TVF9TVVNQRU5E
+KQ0KPiA+ICsgICAgICAgICAgICAgICBzYXZlID0gZmFsc2U7DQo+ID4gKyAgICAgICBlbHNlDQo+
+ID4gKyAgICAgICAgICAgICAgIHJldHVybjsNCj4gPiArDQo+ID4gKyAgICAgICBnZXRfb25saW5l
+X2NwdXMoKTsNCj4gPiArICAgICAgIGZvcl9lYWNoX29ubGluZV9jcHUoY3B1KQ0KPiANCj4gLT4g
+YW5kIGRlY2lkZSBoZXJlIHdoaWNoIG9uZSB0byBpbnZva2UuDQpPSy4NCj4gDQo+ID4gKyAgICAg
+ICAgICAgICAgIHdvcmtfb25fY3B1KGNwdSwgdHN0YXRlX3BtX2ZuLCAmc2F2ZSk7DQo+IA0KPiBE
+b2VzIHdvcmtfb25fY3B1KCkgd2FpdCBmb3IgdGhlIHdvcmsgdG8gY29tcGxldGU/DQo+IA0KWWVz
+LCBpdCBtaWdodCBpbmNyZWFzZSB0aGUgc3VzcGVuZC9yZXN1bWUgdGltZSwgYSAncXVldWVfd29y
+a19vbicgbWlnaHQgYmUgYmV0dGVyPyANCj4gPiArICAgICAgIHB1dF9vbmxpbmVfY3B1cygpOw0K
+PiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IHRzdGF0ZV9zdXNwZW5kKHN0cnVjdCBub3Rp
+Zmllcl9ibG9jayAqbmIsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB1bnNp
+Z25lZCBsb25nIG1vZGUsIHZvaWQgKl91bnVzZWQpIHsNCj4gPiArICAgICAgIHRzdGF0ZV9jaGVj
+ayhtb2RlLCB0cnVlKTsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+
+ICtzdGF0aWMgaW50IHRzdGF0ZV9yZXN1bWUoc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwNCj4g
+PiArICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHVuc2lnbmVkIGxvbmcgbW9kZSwgdm9p
+ZCAqX3VudXNlZCkgew0KPiA+ICsgICAgICAgdHN0YXRlX2NoZWNrKG1vZGUsIGZhbHNlKTsNCj4g
+PiArICAgICAgIHJldHVybiAwOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IF9faW5p
+dCB0c3RhdGVfcG1faW5pdCh2b2lkKSB7DQo+ID4gKyAgICAgICAvKg0KPiA+ICsgICAgICAgICog
+dHN0YXRlX3N1c3BlbmQgc2hvdWxkIHNhdmUgdHN0YXRlIGFmdGVyDQo+ID4gKyAgICAgICAgKiB0
+aGVybWFsIHpvbmUncyB1cGRhdGUgaW4gdGhlcm1hbF9wbV9ub3RpZnksDQo+ID4gKyAgICAgICAg
+KiB2aWNlIHZlcnNhIHRzdGF0ZV9yZXN1bWUgcmVzdG9yZSB0c3RhdGUgYmVmb3JlDQo+ID4gKyAg
+ICAgICAgKiB0aGVybWFsX3BtX25vdGlmeSwgdGh1cyB0aGUgdGhlcm1hbCBmcmFtZXdvcmsNCj4g
+PiArICAgICAgICAqIGhhcyBhIGNoYW5jZSB0byByZS1hZGp1c3QgdHN0YXRlIGFjY29yZGluZyB0
+byB0aGUNCj4gPiArICAgICAgICAqIHRlbXBlcmF0dXJlIHRyZW5kLg0KPiA+ICsgICAgICAgICov
+DQo+ID4gKyAgICAgICBwbV9ub3RpZmllcih0c3RhdGVfc3VzcGVuZCwgLTEpOw0KPiA+ICsgICAg
+ICAgcG1fbm90aWZpZXIodHN0YXRlX3Jlc3VtZSwgMSk7DQo+IA0KPiBJIGRvbid0IHRoaW5rIHRo
+aXMgaXMgZ29pbmcgdG8gZG8gd2hhdCB5b3UgcmVhbGx5IHdhbnQuDQo+IA0KPiBFYWNoIG9mIHRo
+ZXNlIG5vdGlmaWVycyBpcyBnb2luZyB0byBiZSBpbnZva2VkIGR1cmluZyBib3RoIHN1c3BlbmQg
+YW5kIHJlc3VtZSwNClllcywNCj4gc28gSSBndWVzcyB5b3Ugb25seSBuZWVkIG9uZSBub3RpZmll
+cj8NCkhlcmUncyBteSBvcmlnaW5hbCB0aG91Z2h0OiAgdHN0YXRlX3N1c3BlbmQgbmVlZHMgdG8g
+YmUgaW52b2tlZCBhZnRlcg0KIHRoZXJtYWxfcG1fbm90aWZ5LCB3aGljaCBoYXMgYSBwcmlvcml0
+eSBvZiAnMCcsDQpzbyB0aGUgbm90aWZpZXIgb2YgdHN0YXRlX3N1c3BlbmQgc2hvdWxkIGJlIGxv
+d2VyIHRoYW4gJzAnLCANCnRodXMgJy0xJy4gQW5kIHRoZSBzYW1lIGZvciB0c3RhdGVfcmVzdW1l
+LA0KaXQgc2hvdWxkIGJlIGludm9rZWQgYmVmb3JlIHRoZXJtYWxfcG1fbm90aWZ5LCANCnRodXMg
+cHJpb3JpdHkgaXMgJzEnID8NCj4gDQo+ID4gKyAgICAgICByZXR1cm4gMDsNCj4gPiArfQ0KPiA+
+ICsNCj4gPiArY29yZV9pbml0Y2FsbCh0c3RhdGVfcG1faW5pdCk7DQo+ID4gKyNlbmRpZg0KPiA+
+ICAjZWxzZQ0KPiA+ICBzdGF0aWMgaW50IGFjcGlfdGhyb3R0bGluZ19yZG1zcih1NjQgKnZhbHVl
+KSAgew0KPiA+IC0tDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQpUaGFua3MsDQpZdQ0K
