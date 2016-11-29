@@ -1,116 +1,119 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Allow inactive opp_device to be present in dev
- list
-Date: Tue, 29 Nov 2016 10:41:15 +0530
-Message-ID: <20161129051115.GE3288@vireshk-i7>
-References: <2fe61813c867c173ddfcb0b9cabc00a65997a935.1480056714.git.viresh.kumar@linaro.org>
- <20161129024647.GY6095@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH V2] PM / OPP: Allow inactive opp_device to be present in dev list
+Date: Tue, 29 Nov 2016 11:04:52 +0530
+Message-ID: <3bb7733d915c2e3e1cfcda8b8c798294a3c6ebbd.1480397575.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:33544 "EHLO
-        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751308AbcK2FLU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 00:11:20 -0500
-Received: by mail-pf0-f179.google.com with SMTP id d2so29497090pfd.0
-        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2016 21:11:19 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20161129024647.GY6095@codeaurora.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:36830 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752592AbcK2FfN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 00:35:13 -0500
+Received: by mail-pf0-f176.google.com with SMTP id 189so29645226pfz.3
+        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2016 21:35:13 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, "# v4 . 4+" <stable@vger.kernel.org>
 
-On 28-11-16, 18:46, Stephen Boyd wrote:
-> Anyway, rant over, how about handing out the opp table pointer to
-> the caller so they can pass it back in when they call the put
-> side? That should fix the same problem if I understand correctly.
+Joonyoung Shim reported an interesting problem on his ARM octa-core
+Odoroid-XU3 platform. During system suspend, dev_pm_opp_put_regulator()
+was failing for a struct device for which dev_pm_opp_set_regulator() is
+called earlier.
 
-Hmm, so the problem is that all below routines (and their callers) need to get
-updated:
+This happened because an earlier call to
+dev_pm_opp_of_cpumask_remove_table() function (from cpufreq-dt.c file)
+removed all the entries from opp_table->dev_list apart from the last CPU
+device in the cpumask of CPUs sharing the OPP.
 
-int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
-void dev_pm_opp_put_supported_hw(struct device *dev);
-int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
-void dev_pm_opp_put_prop_name(struct device *dev);
-struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name);
-void dev_pm_opp_put_regulator(struct opp_table *opp_table);
+But both dev_pm_opp_set_regulator() and dev_pm_opp_put_regulator()
+routines get CPU device for the first CPU in the cpumask. And so the OPP
+core failed to find the OPP table for the struct device.
 
-And that will make it difficult to get it back to stable kernels, specially
-because they were all added in different kernel releases after 4.4.
+In order to fix that up properly, we need to revisit APIs like
+dev_pm_opp_set_regulator() and make them talk in terms of cookies
+provided by the OPP core. But such a solution will be hard to backport
+to stable kernels.
 
-And we also need to fix them properly, with something like a cookie instead of a
-plain opp_table pointer.
+This patch attempts to fix this problem (in a Hacky way) by specially
+handling the first cpu in the mask. A FIXME is also added to make sure
+that this Hack doesn't get unnoticed later on.
 
-I suggest this patch for the time being, with a big FIXME in it, so that we can
-get it to stable kernels.
+Cc:  # v4.4+ <stable@vger.kernel.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- A completely different approach, more of hack so that backport to
+  stable kernels can be done easily.
+- A more comprehensive solution is required to fix the design flaws.
 
--------------------------8<-------------------------
+ drivers/base/power/opp/cpu.c | 50 +++++++++++++++++++++++++++++++-------------
+ 1 file changed, 35 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
-index 8c3434bdb26d..2e96efdb10b2 100644
+index 8c3434bdb26d..5d1b0f98bcb0 100644
 --- a/drivers/base/power/opp/cpu.c
 +++ b/drivers/base/power/opp/cpu.c
-@@ -118,26 +118,45 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+@@ -118,26 +118,46 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
  EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
- #endif /* CONFIG_CPU_FREQ */
+ #endif	/* CONFIG_CPU_FREQ */
  
 +void _cpu_remove_table(unsigned int cpu, bool of)
 +{
-+       struct device *cpu_dev = get_cpu_device(cpu);
++	struct device *cpu_dev = get_cpu_device(cpu);
 +
-+       if (!cpu_dev) {
-+               pr_err("%s: failed to get cpu%d device\n", __func__, cpu);
-+               return;
-+       }
++	if (!cpu_dev) {
++		pr_err("%s: failed to get cpu%d device\n", __func__, cpu);
++		return;
++	}
 +
-+       if (of)
-+               dev_pm_opp_of_remove_table(cpu_dev);
-+       else
-+               dev_pm_opp_remove_table(cpu_dev);
++	if (of)
++		dev_pm_opp_of_remove_table(cpu_dev);
++	else
++		dev_pm_opp_remove_table(cpu_dev);
 +}
 +
  void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of)
  {
-        struct device *cpu_dev;
--       int cpu;
-+       int cpu, first_cpu;
+-	struct device *cpu_dev;
+-	int cpu;
++	struct cpumask tmpmask;
++	int cpu, first_cpu;
  
-        WARN_ON(cpumask_empty(cpumask));
+ 	WARN_ON(cpumask_empty(cpumask));
  
--       for_each_cpu(cpu, cpumask) {
--               cpu_dev = get_cpu_device(cpu);
--               if (!cpu_dev) {
--                       pr_err("%s: failed to get cpu%d device\n", __func__,
--                              cpu);
--                       continue;
--               }
+-	for_each_cpu(cpu, cpumask) {
+-		cpu_dev = get_cpu_device(cpu);
+-		if (!cpu_dev) {
+-			pr_err("%s: failed to get cpu%d device\n", __func__,
+-			       cpu);
+-			continue;
+-		}
 -
--               if (of)
--                       dev_pm_opp_of_remove_table(cpu_dev);
--               else
--                       dev_pm_opp_remove_table(cpu_dev);
--       }
-+       /*
-+        * The first cpu in the cpumask is important as that is used to create
-+        * the opp-table initially and routines like dev_pm_opp_put_regulator()
-+        * will expect the list-dev for the first CPU to be present while such
-+        * routines are called, otherwise we will fail to find the opp-table for
-+        * such devices.
-+        *
-+        * FIXME: Cleanup this mess and implement cookie based solutions instead
-+        * of working on the device pointer.
-+        */
-+       first_cpu = cpumask_first(cpumask);
-+       cpumask_clear_cpu(first_cpu, cpumask);
+-		if (of)
+-			dev_pm_opp_of_remove_table(cpu_dev);
+-		else
+-			dev_pm_opp_remove_table(cpu_dev);
+-	}
++	/*
++	 * The first cpu in the cpumask is important as that is used to create
++	 * the opp-table initially and routines like dev_pm_opp_put_regulator()
++	 * will expect the list-dev for the first CPU to be present while such
++	 * routines are called, otherwise we will fail to find the opp-table for
++	 * such devices.
++	 *
++	 * FIXME: Cleanup this mess and implement cookie based solutions instead
++	 * of working on the device pointer.
++	 */
++	first_cpu = cpumask_first(cpumask);
++	cpumask_copy(&tmpmask, cpumask);
++	cpumask_clear_cpu(first_cpu, &tmpmask);
 +
-+       for_each_cpu(cpu, cpumask)
-+               _cpu_remove_table(cpu, of);
++	for_each_cpu(cpu, &tmpmask)
++		_cpu_remove_table(cpu, of);
 +
-+       _cpu_remove_table(first_cpu, of);
++	_cpu_remove_table(first_cpu, of);
  }
  
  /**
-
 -- 
-viresh
+2.7.1.410.g6faf27b
+
