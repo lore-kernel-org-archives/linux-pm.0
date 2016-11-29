@@ -1,94 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state
- binding
-Date: Tue, 29 Nov 2016 12:27:26 +0530
-Message-ID: <20161129065726.GG3288@vireshk-i7>
-References: <20161121150708.j4gosfr2uetc7mwp@rob-hp-laptop>
- <20161122031717.GE10014@vireshk-i7>
- <m260nfz8mr.fsf@baylibre.com>
- <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
- <m2wpfuw5wq.fsf@baylibre.com>
- <CAKfTPtBMro7+UruF0-E26TJPu6pEAvkjF9V7SKriNBm5q+K9+A@mail.gmail.com>
- <m2fumhx21h.fsf@baylibre.com>
- <20161124020322.GI6095@codeaurora.org>
- <20161124044020.GC9376@vireshk-i7>
- <4f815e31-22d0-fef7-953c-257fa2bbcb9d@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: [PATCH v5 0/2] Stop sched tick in idle injection task
+Date: Mon, 28 Nov 2016 23:03:03 -0800
+Message-ID: <1480402985-7317-1-git-send-email-jacob.jun.pan@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f43.google.com ([74.125.83.43]:35553 "EHLO
-        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755776AbcK2G5a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 01:57:30 -0500
-Received: by mail-pg0-f43.google.com with SMTP id p66so66317509pga.2
-        for <linux-pm@vger.kernel.org>; Mon, 28 Nov 2016 22:57:30 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <4f815e31-22d0-fef7-953c-257fa2bbcb9d@codeaurora.org>
+Received: from mga01.intel.com ([192.55.52.88]:49183 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755989AbcK2HDI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 29 Nov 2016 02:03:08 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nayak Rajendra <rnayak@codeaurora.org>
+To: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-On 28-11-16, 10:27, Stephen Boyd wrote:
-> On 11/23/2016 08:40 PM, Viresh Kumar wrote:
-> > But even in these cases we wouldn't be using the voltage values within the
-> > kernel as we will be giving only a performance state to the M3 core, right?
-> 
-> Nope. In these cases we need to set a certain voltage and we do that by
-> requesting it via the M3 core.
 
-Don't we need something like this then ?
+Changelog:
+v5:	- Fix compile error in cpuidle patch reported by 0-day.
+	- Reverse patch order for correct dependency.
 
-	parent: power-controller@12340000 {
-		compatible = "foo,power-controller";
-		reg = <0x12340000 0x1000>;
-		#power-domain-cells = <0>;
-		domain-performance-states = <&perf_state0>;
-	};
+v4:	- Misc comments from Ingo are addressed, including style fix,
+	  timeout handling, fork().
+	- Dropped powerclamp patch from this set, move to its own
+	  series.
 
-	perf_state0: performance_states {
-		pstate1: pstate@1 {
-			index = <1>;
-			/* Optional */
-			microvolt = <970000 975000 985000>;
-		};
-		pstate2: pstate@2 {
-			index = <2>;
-			/* Optional */
-			microvolt = <970000 975000 985000>;
-		};
-		pstate3: pstate@3 {
-			index = <3>;
-			/* Optional */
-			microvolt = <970000 975000 985000>;
-		};
-	}
+v3:	- Rearrange idle.c change based on Rafael's suggestion.
 
-	cpus {
-		cpu@0 {
-			...
-			power-domain = <&parent>;
-			operating-points-v2 = <&cpu0_opp_table>;
-		};
-	};
+v2:
+	- Moved duration timer from powerclamp driver to play_idle()
+	- Unexport cpuidle_use_deepest_state
+	- Indentation fix
 
-	cpu0_opp_table: opp_table0 {
-		compatible = "operating-points-v2";
-		opp-shared;
+Idle injection drivers today use RT threads to run idle loop. There are
+efficiency and accounting issues with the current intel_powerclamp.c
+and acpi_pad.c. A while ago, I posted CFS based idle injection patch trying
+to address them:
+https://lkml.org/lkml/2015/11/13/576
 
-		opp@1000000000 {
-			opp-hz = /bits/ 64 <1000000000>;
-			domain-performance-state = <&pstate1>;
-		};
-		opp@1100000000 {
-			opp-hz = /bits/ 64 <1100000000>;
-			domain-performance-state = <&pstate2>;
-		};
-		opp@1200000000 {
-			opp-hz = /bits/ 64 <1200000000>;
-			domain-performance-state = <&pstate3>;
-		};
-	};
+Peter proposed another approach with the introduction of a PF_IDLE flag.
+This patchset is based on his original posting:
+https://lkml.org/lkml/2014/6/4/56
+
+These patches apply on top of the kworker and cpu hotplug state machine
+changes made to Intel powerclamp driver.
+https://lkml.org/lkml/2016/10/17/362
+
+Similar changes to ACPI PAD driver is developed along with other
+enhancements. It will be posted after this patchset is accepted.
+
+
+Jacob Pan (1):
+  cpuidle: allow setting deepest idle
+
+Peter Zijlstra (1):
+  idle: add support for tasks that inject idle
+
+ drivers/cpuidle/cpuidle.c |  13 +++-
+ include/linux/cpu.h       |   2 +
+ include/linux/cpuidle.h   |   7 +-
+ include/linux/sched.h     |   3 +-
+ kernel/fork.c             |   2 +-
+ kernel/sched/core.c       |   1 +
+ kernel/sched/idle.c       | 175 +++++++++++++++++++++++++++++-----------------
+ 7 files changed, 133 insertions(+), 70 deletions(-)
 
 -- 
-viresh
+1.9.1
+
