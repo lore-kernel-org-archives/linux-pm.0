@@ -1,145 +1,136 @@
-From: Wolfram Sang <wsa-dev@sang-engineering.com>
-Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
- thermal driver
-Date: Tue, 29 Nov 2016 19:55:13 +0100
-Message-ID: <20161129185513.GB3378@katana>
-References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
- <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
- <CAMuHMdW=Ap6ENtN0_Q=MHkhGLy0WuJUPtdb7n34yNAw1rXR4Fw@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] PM / OPP: Allow inactive opp_device to be present in dev
+ list
+Date: Tue, 29 Nov 2016 12:56:38 -0800
+Message-ID: <20161129205638.GB6095@codeaurora.org>
+References: <2fe61813c867c173ddfcb0b9cabc00a65997a935.1480056714.git.viresh.kumar@linaro.org>
+ <20161129024647.GY6095@codeaurora.org>
+ <20161129051115.GE3288@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdW=Ap6ENtN0_Q=MHkhGLy0WuJUPtdb7n34yNAw1rXR4Fw@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+In-Reply-To: <20161129051115.GE3288@vireshk-i7>
+Sender: stable-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 11/29, Viresh Kumar wrote:
+> On 28-11-16, 18:46, Stephen Boyd wrote:
+> > Anyway, rant over, how about handing out the opp table pointer to
+> > the caller so they can pass it back in when they call the put
+> > side? That should fix the same problem if I understand correctly.
+> 
+> Hmm, so the problem is that all below routines (and their callers) need to get
+> updated:
+> 
+> int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
+> void dev_pm_opp_put_supported_hw(struct device *dev);
+> int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+> void dev_pm_opp_put_prop_name(struct device *dev);
+> struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name);
+> void dev_pm_opp_put_regulator(struct opp_table *opp_table);
+> 
+> And that will make it difficult to get it back to stable kernels, specially
+> because they were all added in different kernel releases after 4.4.
 
---UHN/qo2QbUvPLonB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Why do we care? The put variants of the prop and supported_hw
+functions are never called, so we're not going to hit this
+problem there. Sure the code is broken, but nobody is using the
+code in mainline so there isn't anything to backport to stable
+urgently.
 
-Hi Geert,
+> 
+> And we also need to fix them properly, with something like a cookie instead of a
+> plain opp_table pointer.
 
-thanks for the prompt review!
+Perhaps this means my approach in using opp_table is undesirable
+for some reason? Care to elaborate why?
 
-> > +/* Structure for thermal temperature calculation */
-> > +struct equation_coefs {
-> > +       long a1;
-> > +       long b1;
-> > +       long a2;
-> > +       long b2;
->=20
-> Why long? Long has a different size for 32-bit and 64-bit platforms.
-> I know this is a driver for arm64, but if you need 64-bits, you want to m=
-ake
-> this clear using s64, or long long.
+> 
+> I suggest this patch for the time being, with a big FIXME in it, so that we can
+> get it to stable kernels.
+> 
+> -------------------------8<-------------------------
+> 
+> diff --git a/drivers/base/power/opp/cpu.c b/drivers/base/power/opp/cpu.c
+> index 8c3434bdb26d..2e96efdb10b2 100644
+> --- a/drivers/base/power/opp/cpu.c
+> +++ b/drivers/base/power/opp/cpu.c
+> @@ -118,26 +118,45 @@ void dev_pm_opp_free_cpufreq_table(struct device *dev,
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_free_cpufreq_table);
+>  #endif /* CONFIG_CPU_FREQ */
+>  
+> +void _cpu_remove_table(unsigned int cpu, bool of)
 
-I'll check if int will do.
+static?
 
-> > +static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_ts=
-c *tsc,
-> > +                                    u32 reg, u32 data)
-> > +{
-> > +       iowrite32(data, tsc->base + reg);
-> > +}
->=20
-> ... so using the "convenience" wrappers is more (typing) work than using
-> io{read,write}32() directly?
+> +{
+> +       struct device *cpu_dev = get_cpu_device(cpu);
+> +
+> +       if (!cpu_dev) {
+> +               pr_err("%s: failed to get cpu%d device\n", __func__, cpu);
+> +               return;
+> +       }
+> +
+> +       if (of)
+> +               dev_pm_opp_of_remove_table(cpu_dev);
+> +       else
+> +               dev_pm_opp_remove_table(cpu_dev);
+> +}
+> +
+>  void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of)
+>  {
+>         struct device *cpu_dev;
+> -       int cpu;
+> +       int cpu, first_cpu;
+>  
+>         WARN_ON(cpumask_empty(cpumask));
+>  
+> -       for_each_cpu(cpu, cpumask) {
+> -               cpu_dev = get_cpu_device(cpu);
+> -               if (!cpu_dev) {
+> -                       pr_err("%s: failed to get cpu%d device\n", __func__,
+> -                              cpu);
+> -                       continue;
+> -               }
+> -
+> -               if (of)
+> -                       dev_pm_opp_of_remove_table(cpu_dev);
+> -               else
+> -                       dev_pm_opp_remove_table(cpu_dev);
+> -       }
+> +       /*
+> +        * The first cpu in the cpumask is important as that is used to create
+> +        * the opp-table initially and routines like dev_pm_opp_put_regulator()
+> +        * will expect the list-dev for the first CPU to be present while such
+> +        * routines are called, otherwise we will fail to find the opp-table for
+> +        * such devices.
 
-TBH I don't favor such macros, but since they are in quite some Renesas
-drivers, I kept them in the first take for consistency reasons.
+This seems a lot like the patch from Joonyoung. It would be good
+to add a note that the patch is based on that one and also a
+reported-by tag.
 
-> > +       tj_2 =3D (CODETSD((ptat[1] - ptat[2]) * 137)
-> > +               / (ptat[0] - ptat[2])) - CODETSD(41);
->=20
-> Isn't "* 1000" easier to read then CODETSD()?
+Also, this approach is brittle as it requires that the first
+device in the mask be used for the set/put APIs, when that could
+be any of the devices. I'd prefer we used my patch because it
+isn't as easy to break and more directly fixes the problem at
+hand.
 
-Probably. I'd think there can be done even more to make this code a tad
-more readable. For the first take, I'd like to keep these formulas,
-though. They come from the BSP and are the only documentation about how
-to calculate the temperature which we currently have. Changing them
-will obsolete all the testing done so far.
+> +        *
+> +        * FIXME: Cleanup this mess and implement cookie based solutions instead
+> +        * of working on the device pointer.
+> +        */
+> +       first_cpu = cpumask_first(cpumask);
+> +       cpumask_clear_cpu(first_cpu, cpumask);
+> +
+> +       for_each_cpu(cpu, cpumask)
+> +               _cpu_remove_table(cpu, of);
+> +
+> +       _cpu_remove_table(first_cpu, of);
+>  }
 
-
-> > +       /* calculate coefficients for linear equation */
-> > +       a1_num =3D CODETSD(thcode[1] - thcode[2]);
-> > +       a1_den =3D tj_2 - TJ_3;
-> > +       a1 =3D (10000 * a1_num) / a1_den;
-> > +       b1 =3D (10000 * thcode[2]) - ((a1 * TJ_3) / 1000);
->=20
-> Rounding needed for / 1000?
-
-Ditto.
-
-> > +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
-> > +{
-> > +       struct rcar_gen3_thermal_priv *priv;
-> > +       struct device *dev =3D &pdev->dev;
-> > +       struct resource *res;
-> > +       struct thermal_zone_device *zone;
-> > +       int ret, i;
->=20
-> unsigned int i;
-
-I'll likely produce more bugs if 'i' is not an int ;)
-
->=20
-> > +       const struct rcar_gen3_thermal_data *match_data =3D of_device_g=
-et_match_data(dev);
-> > +
-> > +       /* default values if FUSEs are missing */
-> > +       int ptat[3] =3D { 2351, 1509, 435 };
->=20
-> unsigned?
->=20
-> > +       int thcode[TSC_MAX_NUM][3] =3D {
->=20
-> unsigned?
-
-Had that before, didn't work. Since the calculation involves
-substraction with other ints, I prefer to have them all the same type as
-the fix.
-
-> > +               tsc =3D devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
-> > +               if (!tsc)
-> > +                       return -ENOMEM;
->=20
-> Missing pm_runtime_put() etc.?
->=20
-> ret =3D -ENOMEM;
-> goto error_unregister;
-
-Yes!
-
-Regards,
-
-   Wolfram
-
-
---UHN/qo2QbUvPLonB
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJYPc8RAAoJEBQN5MwUoCm2B+IQALLQ8iKaP4/EgZz6eD3qINHb
-jrVHQn18o+vGqYrzugFkJCv8uTrjKCs3IV+qUuJl/kiocmGejg0WmXLW0ieVxQyY
-1SXDc+EyrBQnXuacywHHkWKlgsTi6sSxFzTjMSSnEPDK6WahF23qLdXuYHghkkpa
-t5vbZTy4T9UxEOR03Ld8e7AOwutA3Ltu2ZmrvFCopWDsCWPN6C9DI0XtJSiqlVwu
-SxLSlMvn7GPTgHyoncQsKIAniyyb9pkECiomd2aibhTzjxrnyZmui2a2iSUhqgyv
-yY1WxJo1tCh4KXDFFTWRIAfEMFaHTnMinLXPYk1koaDD/eeIQeP6ZZnqn7rc74uo
-ttccUzyWsFojnBinDm1jhg+tVr62DREmHB1nh4D4XZkInXLKJPWbZxXf+dxY4fkO
-fDxNDjs6N/smoZnpZIBZQRkFGeNE6Ev0ijGYntm3APoEHKPtrZvX2o0qHnvuP0Sb
-YnfrPobuhW1bXZqm/GsD0Df297i7CangpWamVl4XiJX4DclzgU2yJSktIwYv6h6A
-v8nlIKCz1GyGkhtaIZdsSI7iXwSoqHi6SjMtcUdP+CX+O5qe7PIe5i9e2m9BO2cq
-VTsxSEMwAlZ9o0FzoQagQN82QJXZbpVWFBezfewxN+MZSACJfCRvbZrr7RBPs5ma
-LA2iMXPMeqgNphB+blk4
-=iaXa
------END PGP SIGNATURE-----
-
---UHN/qo2QbUvPLonB--
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
