@@ -1,106 +1,141 @@
-From: Wolfram Sang <wsa-dev@sang-engineering.com>
-Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
- thermal driver
-Date: Tue, 29 Nov 2016 09:32:42 +0100
-Message-ID: <20161129083241.GA1458@katana>
-References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
- <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
- <20161129020652.GA3701@localhost.localdomain>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver
+Date: Tue, 29 Nov 2016 09:43:17 +0100
+Message-ID: <CAMuHMdW=Ap6ENtN0_Q=MHkhGLy0WuJUPtdb7n34yNAw1rXR4Fw@mail.gmail.com>
+References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com> <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.zeus03.de ([194.117.254.33]:39584 "EHLO mail.zeus03.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754940AbcK2Icq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 29 Nov 2016 03:32:46 -0500
-Content-Disposition: inline
-In-Reply-To: <20161129020652.GA3701@localhost.localdomain>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34738 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754522AbcK2InU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 03:43:20 -0500
+In-Reply-To: <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 
+Hi Wolfram,
 
---Qxx1br4bt0+wmkIi
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Nov 28, 2016 at 10:09 PM, Wolfram Sang
+<wsa+renesas@sang-engineering.com> wrote:
+> --- /dev/null
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
 
-Hi Eduardo,
+> +/* Structure for thermal temperature calculation */
+> +struct equation_coefs {
+> +       long a1;
+> +       long b1;
+> +       long a2;
+> +       long b2;
 
-> No commit message ? :-( generally speaking here, it is a good practice
-> to describe what you are doing, what you have considered, and what you
-> have tested, just for the sake of code history/documentation.
+Why long? Long has a different size for 32-bit and 64-bit platforms.
+I know this is a driver for arm64, but if you need 64-bits, you want to make
+this clear using s64, or long long.
 
-OK, can do.
+> +static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc, u32 reg)
 
-> > +	spin_lock_irqsave(&tsc->lock, flags);
->=20
-> Why do you need a full blown spin lock irqsave? Can this locking be
-> solved by a simple mutex?
+What a long function name...
 
-Currently, it can be a mutex, yes. This is a "left-over" from the
-version which had interrupt support. I am not fully done with
-refactoring the irqs, but I thought it is likely we need this lock then
-again, so I chose to leave it. I can use a mutex for now if you prefer.
+> +{
+> +       return ioread32(tsc->base + reg);
+> +}
+> +
+> +static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
+> +                                    u32 reg, u32 data)
+> +{
+> +       iowrite32(data, tsc->base + reg);
+> +}
 
->=20
-> > +static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&tsc->lock, flags);
-> > +
-> > +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
-> > +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
-> > +
-> > +	udelay(1000);
->=20
-> Why do you disable irqs, then busyloop for 1ms?
+... so using the "convenience" wrappers is more (typing) work than using
+io{read,write}32() directly?
 
-Uh yes, this is ugly. I don't think we need to lock during init, but
-I'll double check later.
+> +static void _linear_coefficient_calculation(struct rcar_gen3_thermal_tsc *tsc,
+> +                                           int *ptat, int *thcode)
+> +{
+> +       int tj_2;
+> +       long a1, b1;
+> +       long a2, b2;
+> +       long a1_num, a1_den;
+> +       long a2_num, a2_den;
 
-> > +	/* default values if FUSEs are missing */
-> > +	int ptat[3] =3D { 2351, 1509, 435 };
-> > +	int thcode[TSC_MAX_NUM][3] =3D {
-> > +		{ 3248, 2800, 2221 },
-> > +		{ 3245, 2795, 2216 },
-> > +		{ 3250, 2805, 2237 },
-> > +	};
->=20
-> are these fuses valid for both? 7796 and 7797? or would you need a
-> different array for each version?
+s64?
 
-According to the information I have today, it is the same array. And all
-later versions are promised to have fuse registers. This is already
-documented, but such HW is not available to me currently.
+> +       tj_2 = (CODETSD((ptat[1] - ptat[2]) * 137)
+> +               / (ptat[0] - ptat[2])) - CODETSD(41);
 
-Thanks for the quick review, very much appreciated!
+Isn't "* 1000" easier to read then CODETSD()?
 
-   Wolfram
+> +       /* calculate coefficients for linear equation */
+> +       a1_num = CODETSD(thcode[1] - thcode[2]);
+> +       a1_den = tj_2 - TJ_3;
+> +       a1 = (10000 * a1_num) / a1_den;
+> +       b1 = (10000 * thcode[2]) - ((a1 * TJ_3) / 1000);
 
+Rounding needed for / 1000?
 
---Qxx1br4bt0+wmkIi
-Content-Type: application/pgp-signature; name="signature.asc"
+> +       a2_num = CODETSD(thcode[1] - thcode[0]);
+> +       a2_den = tj_2 - TJ_1;
+> +       a2 = (10000 * a2_num) / a2_den;
+> +       b2 = (10000 * thcode[0]) - ((a2 * TJ_1) / 1000);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Idem.
 
-iQIcBAEBAgAGBQJYPT0pAAoJEBQN5MwUoCm2rfYQAIK/VcjG6s31xxNCVyaV+Tqb
-gXNSoj0GBYeu8qPbzoAgBY13NN6Qkh3hcHZ8Fm5eTuJbMhm9B/V+fQKq3k7YqK6z
-CWcBqQDQdBCsUgl81e2BgGYvKYXM4CapIbUBvBkSIStpOSbVIlM/Cf/k3Z4Hxlzm
-43d+w6NOw/4o41wu+xfChyTbuXvUWWPvlUtMZ598LnwkEhG+AmSlMKVlYGO2lGjk
-lf7lNcv0tFsx7AooPYIheKmvnathzWBkZtYnWusJ2FtgkJ8DQAqeCyJleULT2fcz
-Clw6qysmTwfnPLawsZ6Lq3Slfw/AZvLRgU/OoEdstILhND7Ci7TpZ7eQQGfA68Cr
-AHoAB+B0/97LN+cM+D8lMbAbLlWEecDbgBLllDPnEhRrbrMOY0rcU81bwR7caY6j
-2vZJvrD8w+M67fIvMzoIDmwUYDZfXBTRD7heQULgcnoy4laEDqmZxdlciUSuhfm4
-wyzIKvIgxYnLkJiB/viyZ8nDeDupfzVgoyuESbxW2Pe3Xh6J+TpnxNsjDnThNn9c
-qiMOsXhp3yiF1r4mGHSL6ZkF/enFxHe9WBijlX2rsbJX4nYkzwGT+TP6UmKj+aoZ
-w8LtMODMzyYEn8EY07IxXiFZGdh/6249Y2d0rPF5b9mnphS6QQTMTjw0S5STyRgi
-A9qasfkqhS9xxqhDRpg4
-=qlvS
------END PGP SIGNATURE-----
+> +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> +{
+> +       struct rcar_gen3_thermal_priv *priv;
+> +       struct device *dev = &pdev->dev;
+> +       struct resource *res;
+> +       struct thermal_zone_device *zone;
+> +       int ret, i;
 
---Qxx1br4bt0+wmkIi--
+unsigned int i;
+
+> +       const struct rcar_gen3_thermal_data *match_data = of_device_get_match_data(dev);
+> +
+> +       /* default values if FUSEs are missing */
+> +       int ptat[3] = { 2351, 1509, 435 };
+
+unsigned?
+
+> +       int thcode[TSC_MAX_NUM][3] = {
+
+unsigned?
+
+> +               { 3248, 2800, 2221 },
+> +               { 3245, 2795, 2216 },
+> +               { 3250, 2805, 2237 },
+> +       };
+> +
+> +       priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +       if (!priv)
+> +               return -ENOMEM;
+> +
+> +       platform_set_drvdata(pdev, priv);
+> +
+> +       pm_runtime_enable(dev);
+> +       pm_runtime_get_sync(dev);
+> +
+> +       for (i = 0; i < TSC_MAX_NUM; i++) {
+> +               struct rcar_gen3_thermal_tsc *tsc;
+> +
+> +               tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
+> +               if (!tsc)
+> +                       return -ENOMEM;
+
+Missing pm_runtime_put() etc.?
+
+ret = -ENOMEM;
+goto error_unregister;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
