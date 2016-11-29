@@ -1,34 +1,33 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V4 04/10] PM / OPP: Manage supply's voltage/current in a
- separate structure
-Date: Mon, 28 Nov 2016 16:58:21 -0800
-Message-ID: <20161129005821.GS6095@codeaurora.org>
+From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH V4 05/10] PM / OPP: Pass struct dev_pm_opp_supply to
+ _set_opp_voltage()
+Date: Mon, 28 Nov 2016 16:59:12 -0800
+Message-ID: <20161129005912.GT6095@codeaurora.org>
 References: <cover.1479986491.git.viresh.kumar@linaro.org>
- <6078de802f62a50e4da80022949745fc9f0bdce8.1479986491.git.viresh.kumar@linaro.org>
+ <d71095ecb8e8dde5861e73f2b8df8955f2e2fb9c.1479986491.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:46146 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754302AbcK2A6X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 19:58:23 -0500
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <6078de802f62a50e4da80022949745fc9f0bdce8.1479986491.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <d71095ecb8e8dde5861e73f2b8df8955f2e2fb9c.1479986491.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, nm-l0cyMroinI0@public.gmane.org, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, nm@ti.com, Viresh Kumar <vireshk@kernel.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org
 
 On 11/24, Viresh Kumar wrote:
-> This is a preparatory step for multiple regulator per device support.
-> Move the voltage/current variables to a new structure.
+> Pass the entire supply structure instead of all of its fields.
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Tested-by: Dave Gerlach <d-gerlach@ti.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Tested-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 > ---
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 a Linux Foundation Collaborative Project
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
