@@ -1,293 +1,32 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 1/2] idle: add support for tasks that inject idle
-Date: Tue, 29 Nov 2016 00:22:23 +0100
-Message-ID: <CAJZ5v0g9WZe0suZwsv2+ezeGd4SWfT1oN=QkEgh5ahYfi882Cw@mail.gmail.com>
-References: <1480368809-23685-1-git-send-email-jacob.jun.pan@linux.intel.com> <1480368809-23685-2-git-send-email-jacob.jun.pan@linux.intel.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] MAINTAINERS: Add bug tracking system location entry
+ type
+Date: Mon, 28 Nov 2016 17:27:08 -0700
+Message-ID: <20161128172708.0e69857e@lwn.net>
+References: <2170547.PZqCrC6KTi@vostro.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f193.google.com ([209.85.210.193]:33972 "EHLO
-        mail-wj0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755837AbcK1XW0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 18:22:26 -0500
-In-Reply-To: <1480368809-23685-2-git-send-email-jacob.jun.pan@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2170547.PZqCrC6KTi@vostro.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Len Brown <len.brown@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Darren Hart <darren.hart@intel.com>, Laura Abbott <labbott@redhat.com>, Konstantin Ryabitsev <konstantin@linuxfoundation.org>, James Bottomley <jejb@kernel.org>, Theodore Tso <tytso@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-On Mon, Nov 28, 2016 at 10:33 PM, Jacob Pan
-<jacob.jun.pan@linux.intel.com> wrote:
-> From: Peter Zijlstra <peterz@infradead.org>
->
-> Idle injection drivers such as Intel powerclamp and ACPI PAD drivers use
-> realtime tasks to take control of CPU then inject idle. There are two
-> issues with this approach:
->
->  1. Low efficiency: injected idle task is treated as busy so sched ticks
->     do not stop during injected idle period, the result of these
->     unwanted wakeups can be ~20% loss in power savings.
->
->  2. Idle accounting: injected idle time is presented to user as busy.
->
-> This patch addresses the issues by introducing a new PF_IDLE flag which
-> allows any given task to be treated as idle task while the flag is set.
-> Therefore, idle injection tasks can run through the normal flow of NOHZ
-> idle enter/exit to get the correct accounting as well as tick stop when
-> possible.
->
-> The implication is that idle task is then no longer limited to PID == 0.
->
-> Acked-by: Ingo Molnar <mingo@kernel.org>
-> Signed-off-by: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> ---
->  include/linux/cpu.h   |   2 +
->  include/linux/sched.h |   3 +-
->  kernel/fork.c         |   2 +-
->  kernel/sched/core.c   |   1 +
->  kernel/sched/idle.c   | 164 +++++++++++++++++++++++++++++++-------------------
->  5 files changed, 108 insertions(+), 64 deletions(-)
->
-> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-> index b886dc1..ac0efae 100644
-> --- a/include/linux/cpu.h
-> +++ b/include/linux/cpu.h
-> @@ -245,6 +245,8 @@ static inline void enable_nonboot_cpus(void) {}
->  int cpu_report_state(int cpu);
->  int cpu_check_up_prepare(int cpu);
->  void cpu_set_state_online(int cpu);
-> +void play_idle(unsigned long duration_ms);
-> +
->  #ifdef CONFIG_HOTPLUG_CPU
->  bool cpu_wait_death(unsigned int cpu, int seconds);
->  bool cpu_report_death(void);
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index e9c009d..a3d338e 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -2254,6 +2254,7 @@ static inline cputime_t task_gtime(struct task_struct *t)
->  /*
->   * Per process flags
->   */
-> +#define PF_IDLE                0x00000002      /* I am an IDLE thread */
->  #define PF_EXITING     0x00000004      /* getting shut down */
->  #define PF_EXITPIDONE  0x00000008      /* pi exit done on shut down */
->  #define PF_VCPU                0x00000010      /* I'm a virtual CPU */
-> @@ -2611,7 +2612,7 @@ extern int sched_setattr(struct task_struct *,
->   */
->  static inline bool is_idle_task(const struct task_struct *p)
->  {
-> -       return p->pid == 0;
-> +       return !!(p->flags & PF_IDLE);
->  }
->  extern struct task_struct *curr_task(int cpu);
->  extern void ia64_set_curr_task(int cpu, struct task_struct *p);
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index 997ac1d..a8eb821 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1540,7 +1540,7 @@ static __latent_entropy struct task_struct *copy_process(
->                 goto bad_fork_cleanup_count;
->
->         delayacct_tsk_init(p);  /* Must remain after dup_task_struct() */
-> -       p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER);
-> +       p->flags &= ~(PF_SUPERPRIV | PF_WQ_WORKER | PF_IDLE);
->         p->flags |= PF_FORKNOEXEC;
->         INIT_LIST_HEAD(&p->children);
->         INIT_LIST_HEAD(&p->sibling);
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index 154fd68..c95fbcd 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -5279,6 +5279,7 @@ void init_idle(struct task_struct *idle, int cpu)
->         __sched_fork(0, idle);
->         idle->state = TASK_RUNNING;
->         idle->se.exec_start = sched_clock();
-> +       idle->flags |= PF_IDLE;
->
->         kasan_unpoison_task_stack(idle);
->
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index 1d8718d..f01d494 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -202,76 +202,65 @@ static void cpuidle_idle_call(void)
->   *
->   * Called with polling cleared.
->   */
-> -static void cpu_idle_loop(void)
-> +static void do_idle(void)
->  {
-> -       int cpu = smp_processor_id();
-> +       /*
-> +        * If the arch has a polling bit, we maintain an invariant:
-> +        *
-> +        * Our polling bit is clear if we're not scheduled (i.e. if rq->curr !=
-> +        * rq->idle). This means that, if rq->idle has the polling bit set,
-> +        * then setting need_resched is guaranteed to cause the CPU to
-> +        * reschedule.
-> +        */
->
-> -       while (1) {
-> -               /*
-> -                * If the arch has a polling bit, we maintain an invariant:
-> -                *
-> -                * Our polling bit is clear if we're not scheduled (i.e. if
-> -                * rq->curr != rq->idle).  This means that, if rq->idle has
-> -                * the polling bit set, then setting need_resched is
-> -                * guaranteed to cause the cpu to reschedule.
-> -                */
-> +       __current_set_polling();
-> +       tick_nohz_idle_enter();
-> +
-> +       while (!need_resched()) {
-> +               check_pgt_cache();
-> +               rmb();
->
-> -               __current_set_polling();
-> -               quiet_vmstat();
-> -               tick_nohz_idle_enter();
-> -
-> -               while (!need_resched()) {
-> -                       check_pgt_cache();
-> -                       rmb();
-> -
-> -                       if (cpu_is_offline(cpu)) {
-> -                               cpuhp_report_idle_dead();
-> -                               arch_cpu_idle_dead();
-> -                       }
-> -
-> -                       local_irq_disable();
-> -                       arch_cpu_idle_enter();
-> -
-> -                       /*
-> -                        * In poll mode we reenable interrupts and spin.
-> -                        *
-> -                        * Also if we detected in the wakeup from idle
-> -                        * path that the tick broadcast device expired
-> -                        * for us, we don't want to go deep idle as we
-> -                        * know that the IPI is going to arrive right
-> -                        * away
-> -                        */
-> -                       if (cpu_idle_force_poll || tick_check_broadcast_expired())
-> -                               cpu_idle_poll();
-> -                       else
-> -                               cpuidle_idle_call();
-> -
-> -                       arch_cpu_idle_exit();
-> +               if (cpu_is_offline(smp_processor_id())) {
-> +                       cpuhp_report_idle_dead();
-> +                       arch_cpu_idle_dead();
->                 }
->
-> -               /*
-> -                * Since we fell out of the loop above, we know
-> -                * TIF_NEED_RESCHED must be set, propagate it into
-> -                * PREEMPT_NEED_RESCHED.
-> -                *
-> -                * This is required because for polling idle loops we will
-> -                * not have had an IPI to fold the state for us.
-> -                */
-> -               preempt_set_need_resched();
-> -               tick_nohz_idle_exit();
-> -               __current_clr_polling();
-> +               local_irq_disable();
-> +               arch_cpu_idle_enter();
->
->                 /*
-> -                * We promise to call sched_ttwu_pending and reschedule
-> -                * if need_resched is set while polling is set.  That
-> -                * means that clearing polling needs to be visible
-> -                * before doing these things.
-> +                * In poll mode we reenable interrupts and spin. Also if we
-> +                * detected in the wakeup from idle path that the tick
-> +                * broadcast device expired for us, we don't want to go deep
-> +                * idle as we know that the IPI is going to arrive right away.
->                  */
-> -               smp_mb__after_atomic();
-> -
-> -               sched_ttwu_pending();
-> -               schedule_preempt_disabled();
-> +               if (cpu_idle_force_poll || tick_check_broadcast_expired())
-> +                       cpu_idle_poll();
-> +               else
-> +                       cpuidle_idle_call();
-> +               arch_cpu_idle_exit();
->         }
-> +
-> +       /*
-> +        * Since we fell out of the loop above, we know TIF_NEED_RESCHED must
-> +        * be set, propagate it into PREEMPT_NEED_RESCHED.
-> +        *
-> +        * This is required because for polling idle loops we will not have had
-> +        * an IPI to fold the state for us.
-> +        */
-> +       preempt_set_need_resched();
-> +       tick_nohz_idle_exit();
-> +       __current_clr_polling();
-> +
-> +       /*
-> +        * We promise to call sched_ttwu_pending() and reschedule if
-> +        * need_resched() is set while polling is set. That means that clearing
-> +        * polling needs to be visible before doing these things.
-> +        */
-> +       smp_mb__after_atomic();
-> +
-> +       sched_ttwu_pending();
-> +       schedule_preempt_disabled();
->  }
->
->  bool cpu_in_idle(unsigned long pc)
-> @@ -280,6 +269,56 @@ bool cpu_in_idle(unsigned long pc)
->                 pc < (unsigned long)__cpuidle_text_end;
->  }
->
-> +struct idle_timer {
-> +       struct hrtimer timer;
-> +       int done;
-> +};
-> +
-> +static enum hrtimer_restart idle_inject_timer_fn(struct hrtimer *timer)
-> +{
-> +       struct idle_timer *it = container_of(timer, struct idle_timer, timer);
-> +
-> +       WRITE_ONCE(it->done, 1);
-> +       set_tsk_need_resched(current);
-> +
-> +       return HRTIMER_NORESTART;
-> +}
-> +
-> +void play_idle(unsigned long duration_ms)
-> +{
-> +       struct idle_timer it;
-> +
-> +       /*
-> +        * Only FIFO tasks can disable the tick since they don't need the forced
-> +        * preemption.
-> +        */
-> +       WARN_ON_ONCE(current->policy != SCHED_FIFO);
-> +       WARN_ON_ONCE(current->nr_cpus_allowed != 1);
-> +       WARN_ON_ONCE(!(current->flags & PF_KTHREAD));
-> +       WARN_ON_ONCE(!(current->flags & PF_NO_SETAFFINITY));
-> +       WARN_ON_ONCE(!duration_ms);
-> +
-> +       rcu_sleep_check();
-> +       preempt_disable();
-> +       current->flags |= PF_IDLE;
-> +       cpuidle_use_deepest_state(true);
-> +
-> +       it.done = 0;
-> +       hrtimer_init_on_stack(&it.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +       it.timer.function = idle_inject_timer_fn;
-> +       hrtimer_start(&it.timer, ms_to_ktime(duration_ms), HRTIMER_MODE_REL_PINNED);
-> +
-> +       while (!READ_ONCE(it.done))
-> +               do_idle();
-> +
-> +       cpuidle_use_deepest_state(false);
+On Fri, 25 Nov 2016 00:13:56 +0100
+"Rafael J. Wysocki" <rjw@rjwysocki.net> wrote:
 
-This actually depends on your [2/2], doesn't it?
+> Following the kernel Bugzilla discussion during the Kernel Summit
+> (https://lwn.net/Articles/705245/), add bug tracking system location
+> entry type (B) to MAINTAINERS and populate it for several subsystems
+> known to be using the kernel BZ actively (and add the upstream BZ for
+> ACPICA too).
 
-Thanks,
-Rafael
+Applied to the docs tree, thanks.
+
+(We are accumulating a pretty big mess of field types in that file,
+though; at some point we need to think about how much more stuff we want
+to try to cram in there.)
+
+jon
