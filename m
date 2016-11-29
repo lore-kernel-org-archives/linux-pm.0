@@ -1,80 +1,195 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH 4/4] thermal/intel_powerclamp: stop sched tick in forced
- idle
-Date: Mon, 28 Nov 2016 23:11:23 -0800
-Message-ID: <20161128231123.24fc63c0@yairi>
-References: <1480369492-23901-5-git-send-email-jacob.jun.pan@linux.intel.com>
-        <201611290756.8ueWRhF9%fengguang.wu@intel.com>
+From: Ram Pai <linuxram@us.ibm.com>
+Subject: Re: [PATCH 15/20] cpuidle/powernv: Add support for POWER ISA v3 idle
+ states
+Date: Mon, 28 Nov 2016 23:35:23 -0800
+Message-ID: <20161129073523.GD5710@ram.oc3035372033.ibm.com>
+References: <1480403344-25751-1-git-send-email-linuxram@us.ibm.com>
+ <1480403344-25751-15-git-send-email-linuxram@us.ibm.com>
+Reply-To: Ram Pai <linuxram@us.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:62980 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755971AbcK2HL2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 29 Nov 2016 02:11:28 -0500
-In-Reply-To: <201611290756.8ueWRhF9%fengguang.wu@intel.com>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:33200 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1753935AbcK2Hfi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 02:35:38 -0500
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uAT7XbV9089486
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 02:35:38 -0500
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 27143kmpds-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 02:35:37 -0500
+Received: from localhost
+        by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <linuxram@us.ibm.com>;
+        Tue, 29 Nov 2016 00:35:37 -0700
+Content-Disposition: inline
+In-Reply-To: <1480403344-25751-15-git-send-email-linuxram@us.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, Arjan van de Ven <arjan@linux.intel.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, jacob.jun.pan@linux.intel.com
+To: ego@linux.vnet.ibm.com
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rob Herring <robh+dt@kernel.org>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, linux-pm@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
 
-On Tue, 29 Nov 2016 07:21:14 +0800
-kbuild test robot <lkp@intel.com> wrote:
+Sorry. please ignore this email.
+RP
 
-> Hi Jacob,
+On Mon, Nov 28, 2016 at 11:08:59PM -0800, linuxram@us.ibm.com wrote:
+> From: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 > 
-> [auto build test ERROR on soc-thermal/next]
-> [also build test ERROR on v4.9-rc7 next-20161128]
-> [if your patch is applied to the wrong git tree, please drop us a
-> note to help improve the system]
+> POWER ISA v3 defines a new idle processor core mechanism. In summary,
+>  a) new instruction named stop is added.
+>  b) new per thread SPR named PSSCR is added which controls the behavior
+> 	of stop instruction.
 > 
-This patchset is applicable on top of another patch indicated in the
-cover letter.
-(https://lkml.org/lkml/2016/11/28/683)
-
-Thanks,
-
-Jacob
-
-> url:
-> https://github.com/0day-ci/linux/commits/Jacob-Pan/Misc-enhancements-to-intel_powerclamp/20161129-065523
-> base:
-> https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
-> next config: x86_64-randconfig-x015-201648 (attached as .config)
-> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901 reproduce: # save the
-> attached .config to linux build tree make ARCH=x86_64 
+> Supported idle states and value to be written to PSSCR register to enter
+> any idle state is exposed via ibm,cpu-idle-state-names and
+> ibm,cpu-idle-state-psscr respectively. To enter an idle state,
+> platform provided power_stop() needs to be invoked with the appropriate
+> PSSCR value.
 > 
-> All errors (new ones prefixed by >>):
+> This patch adds support for this new mechanism in cpuidle powernv driver.
 > 
->    drivers/thermal/intel_powerclamp.c: In function
-> 'clamp_idle_injection_func':
-> >> drivers/thermal/intel_powerclamp.c:448:2: error: implicit
-> >> declaration of function
-> >> 'play_idle' [-Werror=implicit-function-declaration]
->      play_idle(jiffies_to_msecs(w_data->duration_jiffies));
->      ^~~~~~~~~
->    cc1: some warnings being treated as errors
-> 
-> vim +/play_idle +448 drivers/thermal/intel_powerclamp.c
-> 
->    442			smp_mb();
->    443		}
->    444	
->    445		if (should_skip)
->    446			goto balance;
->    447	
->  > 448
->  > play_idle(jiffies_to_msecs(w_data->duration_jiffies));
->    449	
->    450	balance:
->    451		if (clamping && w_data->clamping &&
-> cpu_online(w_data->cpu))
-> 
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Paul Mackerras <paulus@ozlabs.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> Signed-off-by: Ram Pai <linuxram@us.ibm.com>
+> (cherry-picked from 3005c597ba46480b42e1fea3512c408f1830b816)
 > ---
-> 0-DAY kernel test infrastructure                Open Source
-> Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel
-> Corporation
+>  drivers/cpuidle/cpuidle-powernv.c |   61 +++++++++++++++++++++++++++++++++++++
+>  1 files changed, 61 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+> index bdf8dae..cab1b4b 100644
+> --- a/drivers/cpuidle/cpuidle-powernv.c
+> +++ b/drivers/cpuidle/cpuidle-powernv.c
+> @@ -20,6 +20,8 @@
+>  #include <asm/opal.h>
+>  #include <asm/runlatch.h>
+> 
+> +#define POWERNV_THRESHOLD_LATENCY_NS 200000
+> +
+>  struct cpuidle_driver powernv_idle_driver = {
+>  	.name             = "powernv_idle",
+>  	.owner            = THIS_MODULE,
+> @@ -27,6 +29,9 @@ struct cpuidle_driver powernv_idle_driver = {
+> 
+>  static int max_idle_state;
+>  static struct cpuidle_state *cpuidle_state_table;
+> +
+> +static u64 stop_psscr_table[CPUIDLE_STATE_MAX];
+> +
+>  static u64 snooze_timeout;
+>  static bool snooze_timeout_en;
+> 
+> @@ -91,6 +96,17 @@ static int fastsleep_loop(struct cpuidle_device *dev,
+>  	return index;
+>  }
+>  #endif
+> +
+> +static int stop_loop(struct cpuidle_device *dev,
+> +		     struct cpuidle_driver *drv,
+> +		     int index)
+> +{
+> +	ppc64_runlatch_off();
+> +	power9_idle_stop(stop_psscr_table[index]);
+> +	ppc64_runlatch_on();
+> +	return index;
+> +}
+> +
+>  /*
+>   * States for dedicated partition case.
+>   */
+> @@ -170,6 +186,8 @@ static int powernv_add_idle_states(void)
+>  	u32 latency_ns[CPUIDLE_STATE_MAX];
+>  	u32 residency_ns[CPUIDLE_STATE_MAX];
+>  	u32 flags[CPUIDLE_STATE_MAX];
+> +	u64 psscr_val[CPUIDLE_STATE_MAX];
+> +	const char *names[CPUIDLE_STATE_MAX];
+>  	int i, rc;
+> 
+>  	/* Currently we have snooze statically defined */
+> @@ -208,12 +226,35 @@ static int powernv_add_idle_states(void)
+>  		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latencies-ns in DT\n");
+>  		goto out;
+>  	}
+> +	if (of_property_read_string_array(power_mgt,
+> +		"ibm,cpu-idle-state-names", names, dt_idle_states) < 0) {
+> +		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-names in DT\n");
+> +		goto out;
+> +	}
+> +
+> +	/*
+> +	 * If the idle states use stop instruction, probe for psscr values
+> +	 * which are necessary to specify required stop level.
+> +	 */
+> +	if (flags[0] & (OPAL_PM_STOP_INST_FAST | OPAL_PM_STOP_INST_DEEP))
+> +		if (of_property_read_u64_array(power_mgt,
+> +		    "ibm,cpu-idle-state-psscr", psscr_val, dt_idle_states)) {
+> +			pr_warn("cpuidle-powernv: missing ibm,cpu-idle-states-psscr in DT\n");
+> +			goto out;
+> +		}
+> 
+>  	rc = of_property_read_u32_array(power_mgt,
+>  		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+> 
+> 
+>  	for (i = 0; i < dt_idle_states; i++) {
+> +		/*
+> +		 * If an idle state has exit latency beyond
+> +		 * POWERNV_THRESHOLD_LATENCY_NS then don't use it
+> +		 * in cpu-idle.
+> +		 */
+> +		if (latency_ns[i] > POWERNV_THRESHOLD_LATENCY_NS)
+> +			continue;
+> 
+>  		/*
+>  		 * Cpuidle accepts exit_latency and target_residency in us.
+> @@ -226,6 +267,16 @@ static int powernv_add_idle_states(void)
+>  			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIME_VALID;
+>  			powernv_states[nr_idle_states].target_residency = 100;
+>  			powernv_states[nr_idle_states].enter = nap_loop;
+> +		} else if ((flags[i] & OPAL_PM_STOP_INST_FAST) &&
+> +				!(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> +			strncpy(powernv_states[nr_idle_states].name,
+> +				names[i], CPUIDLE_NAME_LEN);
+> +			strncpy(powernv_states[nr_idle_states].desc,
+> +				names[i], CPUIDLE_NAME_LEN);
+> +			powernv_states[nr_idle_states].flags = 0;
+> +
+> +			powernv_states[nr_idle_states].enter = stop_loop;
+> +			stop_psscr_table[nr_idle_states] = psscr_val[i];
+>  		}
+> 
+>  		/*
+> @@ -242,6 +293,16 @@ static int powernv_add_idle_states(void)
+>  				CPUIDLE_FLAG_TIME_VALID | CPUIDLE_FLAG_TIMER_STOP;
+>  			powernv_states[nr_idle_states].target_residency = 300000;
+>  			powernv_states[nr_idle_states].enter = fastsleep_loop;
+> +		} else if ((flags[i] & OPAL_PM_STOP_INST_DEEP) &&
+> +				(flags[i] & OPAL_PM_TIMEBASE_STOP)) {
+> +			strncpy(powernv_states[nr_idle_states].name,
+> +				names[i], CPUIDLE_NAME_LEN);
+> +			strncpy(powernv_states[nr_idle_states].desc,
+> +				names[i], CPUIDLE_NAME_LEN);
+> +
+> +			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+> +			powernv_states[nr_idle_states].enter = stop_loop;
+> +			stop_psscr_table[nr_idle_states] = psscr_val[i];
+>  		}
+>  #endif
+>  		powernv_states[nr_idle_states].exit_latency =
+> -- 
+> 1.7.1
 
-[Jacob Pan]
+-- 
+Ram Pai
+
