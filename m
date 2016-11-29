@@ -1,80 +1,475 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 1/5] thermal: rockchip: improve conversion error
- messages
-Date: Mon, 28 Nov 2016 17:51:55 -0800
-Message-ID: <20161129015155.GA3329@localhost.localdomain>
-References: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
- <1480331524-18741-2-git-send-email-wxt@rock-chips.com>
+Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
+ thermal driver
+Date: Mon, 28 Nov 2016 18:06:53 -0800
+Message-ID: <20161129020652.GA3701@localhost.localdomain>
+References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
+ <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:36735 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752236AbcK2Bv6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 20:51:58 -0500
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:35795 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752046AbcK2CG7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 21:06:59 -0500
 Content-Disposition: inline
-In-Reply-To: <1480331524-18741-2-git-send-email-wxt@rock-chips.com>
+In-Reply-To: <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <wxt@rock-chips.com>
-Cc: rui.zhang@intel.com, heiko@sntech.de, smbarber@chromium.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 
-Hello,
+Wolfram,
 
-On Mon, Nov 28, 2016 at 07:12:00PM +0800, Caesar Wang wrote:
-> From: Brian Norris <briannorris@chromium.org>
-> 
-> These error messages don't give much information about what went wrong.
-> It would be nice, for one, to see what invalid temperature was being
-> requested when conversion fails. It's also good to return an error when
-> we can't handle a conversion properly.
-> 
-> While we're at it, fix the grammar too.
-> 
-> Signed-off-by: Brian Norris <briannorris@chromium.org>
-> Signed-off-by: Caesar Wang <wxt@rock-chips.com>
-> 
+Thanks for sending the driver. Questions on the driver locking strategy as follows.
+
+On Mon, Nov 28, 2016 at 10:09:22PM +0100, Wolfram Sang wrote:
+
+No commit message ? :-( generally speaking here, it is a good practice
+to describe what you are doing, what you have considered, and what you
+have tested, just for the sake of code history/documentation.
+
+> Signed-off-by: Hien Dang <hien.dang.eb@renesas.com>
+> Signed-off-by: Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 > ---
+> Changes since last version:
 > 
-> Changes in v3: None
-> Changes in v2: None
-> Changes in v1:
-> - The original Brian posted on https://patchwork.kernel.org/patch/9437686
->   Note: it'd probably be even nicer to know which sensor this was, but we've
->   kinda abstracted that one away by this point...
+> * removed interrupt support, needs to be refactored seperately
 > 
->  drivers/thermal/rockchip_thermal.c | 7 +++++--
->  1 file changed, 5 insertions(+), 2 deletions(-)
+> * adapt code to the new bindings, especially one node for all sensors.
+>   Similarly, we have one private structure containing n sensor structs.
 > 
-> diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-> index b811b0f..26c247c 100644
-> --- a/drivers/thermal/rockchip_thermal.c
-> +++ b/drivers/thermal/rockchip_thermal.c
-> @@ -424,7 +424,8 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
->  	}
+> * gave register bits proper namespaces, properly seperates H3 and M3-W
+> 
+> * refactored the way default values are determined when there are no fuses
+>   (which is default case currently)
+> 
+> * refactored the rounding routine
+> 
+> * removed some superfluous macros
+> 
+> * use pass-by-reference instead of pass-by-value where apropriate
+> 
+> * removed BSPisms here and there
+> 
+>  drivers/thermal/Kconfig             |   9 +
+>  drivers/thermal/Makefile            |   1 +
+>  drivers/thermal/rcar_gen3_thermal.c | 347 ++++++++++++++++++++++++++++++++++++
+>  3 files changed, 357 insertions(+)
+>  create mode 100644 drivers/thermal/rcar_gen3_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index c2c056cc7ea52e..3912d24a07b10f 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -245,6 +245,15 @@ config RCAR_THERMAL
+>  	  Enable this to plug the R-Car thermal sensor driver into the Linux
+>  	  thermal framework.
 >  
->  exit:
-> -	pr_err("Invalid the conversion, error=%d\n", error);
-> +	pr_err("%s: invalid temperature, temp=%d error=%d\n",
-> +	       __func__, temp, error);
->  	return error;
->  }
->  
-> @@ -475,7 +476,9 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
->  		}
->  		break;
->  	default:
-> -		pr_err("Invalid the conversion table\n");
-> +		pr_err("%s: invalid conversion table, mode=%d\n",
-> +		       __func__, table.mode);
+> +config RCAR_GEN3_THERMAL
+> +	tristate "Renesas R-Car Gen3 thermal driver"
+> +	depends on ARCH_RENESAS || COMPILE_TEST
+> +	depends on HAS_IOMEM
+> +	depends on OF
+> +	help
+> +	  Enable this to plug the R-Car Gen3 thermal sensor driver into the Linux
+> +	  thermal framework.
+> +
+>  config KIRKWOOD_THERMAL
+>  	tristate "Temperature sensor on Marvell Kirkwood SoCs"
+>  	depends on MACH_KIRKWOOD || COMPILE_TEST
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index c92eb22a41ff89..1216fb31ed4036 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -30,6 +30,7 @@ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
+>  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
+>  obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
+>  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
+> +obj-$(CONFIG_RCAR_GEN3_THERMAL)	+= rcar_gen3_thermal.o
+>  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
+>  obj-y				+= samsung/
+>  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
+> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+> new file mode 100644
+> index 00000000000000..6e162220672884
+> --- /dev/null
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+> @@ -0,0 +1,347 @@
+> +/*
+> + *  R-Car Gen3 THS thermal sensor driver
+> + *  Based on rcar_thermal.c and work from Hien Dang and Khiem Nguyen.
+> + *
+> + * Copyright (C) 2016 Renesas Electronics Corporation.
+> + * Copyright (C) 2016 Sang Engineering
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; version 2 of the License.
+> + *
+> + *  This program is distributed in the hope that it will be useful, but
+> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + *  General Public License for more details.
+> + *
+> + */
+> +#include <linux/delay.h>
+> +#include <linux/err.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/thermal.h>
+> +
+> +/* Register offsets */
+> +#define REG_GEN3_IRQSTR		0x04
+> +#define REG_GEN3_IRQMSK		0x08
+> +#define REG_GEN3_IRQCTL		0x0C
+> +#define REG_GEN3_IRQEN		0x10
+> +#define REG_GEN3_IRQTEMP1	0x14
+> +#define REG_GEN3_IRQTEMP2	0x18
+> +#define REG_GEN3_IRQTEMP3	0x1C
+> +#define REG_GEN3_CTSR		0x20
+> +#define REG_GEN3_THCTR		0x20
+> +#define REG_GEN3_TEMP		0x28
+> +#define REG_GEN3_THCODE1	0x50
+> +#define REG_GEN3_THCODE2	0x54
+> +#define REG_GEN3_THCODE3	0x58
+> +
+> +/* CTSR bits */
+> +#define CTSR_PONM	BIT(8)
+> +#define CTSR_AOUT	BIT(7)
+> +#define CTSR_THBGR	BIT(5)
+> +#define CTSR_VMEN	BIT(4)
+> +#define CTSR_VMST	BIT(1)
+> +#define CTSR_THSST	BIT(0)
+> +
+> +/* THCTR bits */
+> +#define THCTR_PONM	BIT(6)
+> +#define THCTR_THSST	BIT(0)
+> +
+> +#define CTEMP_MASK	0xFFF
+> +
+> +#define MCELSIUS(temp)	((temp) * 1000)
+> +#define GEN3_FUSE_MASK	0xFFF
+> +
+> +#define TSC_MAX_NUM	3
+> +
+> +/* Structure for thermal temperature calculation */
+> +struct equation_coefs {
+> +	long a1;
+> +	long b1;
+> +	long a2;
+> +	long b2;
+> +};
+> +
+> +struct rcar_gen3_thermal_tsc {
+> +	void __iomem *base;
+> +	struct thermal_zone_device *zone;
+> +	struct equation_coefs coef;
+> +	spinlock_t lock;
+> +	u32 ctemp;
+> +};
+> +
+> +struct rcar_gen3_thermal_priv {
+> +	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
+> +};
+> +
+> +struct rcar_gen3_thermal_data {
+> +	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
+> +};
+> +
+> +/* Temperature calculation  */
+> +#define RCAR3_THERMAL_GRAN 500
+> +#define CODETSD(x) ((x) * 1000)
+> +#define TJ_1 96000L
+> +#define TJ_3 (-41000L)
+> +
+> +static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc, u32 reg)
+> +{
+> +	return ioread32(tsc->base + reg);
+> +}
+> +
+> +static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
+> +				     u32 reg, u32 data)
+> +{
+> +	iowrite32(data, tsc->base + reg);
+> +}
+> +
+> +static int _round_temp(int temp)
+> +{
+> +	int result, round_offs;
+> +
+> +	round_offs = temp >= 0 ? RCAR3_THERMAL_GRAN / 2 : -RCAR3_THERMAL_GRAN / 2;
+> +	result = (temp + round_offs) / RCAR3_THERMAL_GRAN;
+> +	return result * RCAR3_THERMAL_GRAN;
+> +}
+> +
+> +static void _linear_coefficient_calculation(struct rcar_gen3_thermal_tsc *tsc,
+> +					    int *ptat, int *thcode)
+> +{
+> +	int tj_2;
+> +	long a1, b1;
+> +	long a2, b2;
+> +	long a1_num, a1_den;
+> +	long a2_num, a2_den;
+> +
+> +	tj_2 = (CODETSD((ptat[1] - ptat[2]) * 137)
+> +		/ (ptat[0] - ptat[2])) - CODETSD(41);
+> +
+> +	/* calculate coefficients for linear equation */
+> +	a1_num = CODETSD(thcode[1] - thcode[2]);
+> +	a1_den = tj_2 - TJ_3;
+> +	a1 = (10000 * a1_num) / a1_den;
+> +	b1 = (10000 * thcode[2]) - ((a1 * TJ_3) / 1000);
+> +
+> +	a2_num = CODETSD(thcode[1] - thcode[0]);
+> +	a2_den = tj_2 - TJ_1;
+> +	a2 = (10000 * a2_num) / a2_den;
+> +	b2 = (10000 * thcode[0]) - ((a2 * TJ_1) / 1000);
+> +
+> +	tsc->coef.a1 = DIV_ROUND_CLOSEST(a1, 10);
+> +	tsc->coef.b1 = DIV_ROUND_CLOSEST(b1, 10);
+> +	tsc->coef.a2 = DIV_ROUND_CLOSEST(a2, 10);
+> +	tsc->coef.b2 = DIV_ROUND_CLOSEST(b2, 10);
+> +}
+> +
+> +static int _linear_temp_converter(struct equation_coefs *coef,
+> +					int temp_code)
+> +{
+> +	int temp, temp1, temp2;
+> +
+> +	temp1 = MCELSIUS((CODETSD(temp_code) - coef->b1)) / coef->a1;
+> +	temp2 = MCELSIUS((CODETSD(temp_code) - coef->b2)) / coef->a2;
+> +	temp = (temp1 + temp2) / 2;
+> +
+> +	return _round_temp(temp);
+> +}
+> +
+> +static int rcar_gen3_thermal_update_temp(struct rcar_gen3_thermal_tsc *tsc)
+> +{
+> +	u32 ctemp;
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&tsc->lock, flags);
 
-Given that we are improving messages, would it be more informative to
-say that you have an invalid table mode?
+Why do you need a full blown spin lock irqsave? Can this locking be
+solved by a simple mutex?
 
-> +		return -EINVAL;
->  	}
->  
->  	/*
+> +	ctemp = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
+> +	tsc->ctemp = ctemp;
+> +	spin_unlock_irqrestore(&tsc->lock, flags);
+
+I see it is a very short critical section, but still, do you really need
+to disable irqs to read this sensor?
+
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
+> +{
+> +	struct rcar_gen3_thermal_tsc *tsc = devdata;
+> +	int ctemp;
+> +	unsigned long flags;
+> +
+> +	rcar_gen3_thermal_update_temp(tsc);
+> +
+> +	spin_lock_irqsave(&tsc->lock, flags);
+> +	ctemp = _linear_temp_converter(&tsc->coef, tsc->ctemp);
+> +	spin_unlock_irqrestore(&tsc->lock, flags);
+> +
+> +	if ((ctemp < MCELSIUS(-40)) || (ctemp > MCELSIUS(125)))
+> +		return -EIO;
+> +
+> +	*temp = ctemp;
+> +
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
+> +	.get_temp	= rcar_gen3_thermal_get_temp,
+> +};
+> +
+> +static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&tsc->lock, flags);
+> +
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
+> +
+> +	udelay(1000);
+
+Why do you disable irqs, then busyloop for 1ms?
+
+> +
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR, CTSR_PONM);
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
+> +			   CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
+> +
+> +	udelay(100);
+
+1.1ms?
+
+> +
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
+> +			  CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN |
+> +			  CTSR_VMST | CTSR_THSST);
+> +
+> +	spin_unlock_irqrestore(&tsc->lock, flags);
+
+again, why not a simpler way, by using a mutex?
+
+> +}
+> +
+> +static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+> +{
+> +	unsigned long flags;
+> +	u32 reg_val;
+> +
+> +	spin_lock_irqsave(&tsc->lock, flags);
+> +
+> +	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
+> +	reg_val &= ~THCTR_PONM;
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
+> +
+> +	udelay(1000);
+> +
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
+> +	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
+> +	reg_val |= THCTR_THSST;
+> +	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
+> +
+> +	spin_unlock_irqrestore(&tsc->lock, flags);
+>
+
+ ditto
+
++}
+> +
+> +static const struct rcar_gen3_thermal_data r8a7795_data = {
+> +	.thermal_init = r8a7795_thermal_init,
+> +};
+> +
+> +static const struct rcar_gen3_thermal_data r8a7796_data = {
+> +	.thermal_init = r8a7796_thermal_init,
+> +};
+> +
+> +static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
+> +	{ .compatible = "renesas,r8a7795-thermal", .data = &r8a7795_data},
+> +	{ .compatible = "renesas,r8a7796-thermal", .data = &r8a7796_data},
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
+> +
+> +static int rcar_gen3_thermal_remove(struct platform_device *pdev)
+> +{
+> +	struct device *dev = &pdev->dev;
+> +
+> +	pm_runtime_put(dev);
+> +	pm_runtime_disable(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct rcar_gen3_thermal_priv *priv;
+> +	struct device *dev = &pdev->dev;
+> +	struct resource *res;
+> +	struct thermal_zone_device *zone;
+> +	int ret, i;
+> +	const struct rcar_gen3_thermal_data *match_data = of_device_get_match_data(dev);
+> +
+> +	/* default values if FUSEs are missing */
+> +	int ptat[3] = { 2351, 1509, 435 };
+> +	int thcode[TSC_MAX_NUM][3] = {
+> +		{ 3248, 2800, 2221 },
+> +		{ 3245, 2795, 2216 },
+> +		{ 3250, 2805, 2237 },
+> +	};
+
+are these fuses valid for both? 7796 and 7797? or would you need a
+different array for each version?
+
+> +
+> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	platform_set_drvdata(pdev, priv);
+> +
+> +	pm_runtime_enable(dev);
+> +	pm_runtime_get_sync(dev);
+> +
+> +	for (i = 0; i < TSC_MAX_NUM; i++) {
+> +		struct rcar_gen3_thermal_tsc *tsc;
+> +
+> +		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
+> +		if (!tsc)
+> +			return -ENOMEM;
+> +
+> +		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
+> +		if (!res)
+> +			break;
+> +
+> +		tsc->base = devm_ioremap_resource(dev, res);
+> +		if (IS_ERR(tsc->base)) {
+> +			ret = PTR_ERR(tsc->base);
+> +			goto error_unregister;
+> +		}
+> +
+> +		priv->tscs[i] = tsc;
+> +		spin_lock_init(&tsc->lock);
+> +
+> +		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
+> +					&rcar_gen3_tz_of_ops);
+> +		if (IS_ERR(zone)) {
+> +			dev_err(dev, "Can't register thermal zone\n");
+> +			ret = PTR_ERR(zone);
+> +			goto error_unregister;
+> +		}
+> +		tsc->zone = zone;
+> +
+> +		match_data->thermal_init(tsc);
+> +
+> +		_linear_coefficient_calculation(tsc, ptat, thcode[i]);
+> +
+> +		ret = rcar_gen3_thermal_update_temp(tsc);
+> +
+> +		if (ret < 0)
+> +			goto error_unregister;
+> +	}
+> +
+> +	return 0;
+> +
+> +error_unregister:
+> +	rcar_gen3_thermal_remove(pdev);
+> +
+> +	return ret;
+> +}
+> +
+> +static struct platform_driver rcar_gen3_thermal_driver = {
+> +	.driver	= {
+> +		.name	= "rcar_gen3_thermal",
+> +		.of_match_table = rcar_gen3_thermal_dt_ids,
+> +	},
+> +	.probe		= rcar_gen3_thermal_probe,
+> +	.remove		= rcar_gen3_thermal_remove,
+> +};
+> +module_platform_driver(rcar_gen3_thermal_driver);
+> +
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_DESCRIPTION("R-Car Gen3 THS thermal sensor driver");
+> +MODULE_AUTHOR("Wolfram Sang <wsa+renesas@sang-engineering.com>");
 > -- 
-> 2.7.4
+> 2.10.2
 > 
