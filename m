@@ -1,141 +1,81 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver
-Date: Tue, 29 Nov 2016 09:43:17 +0100
-Message-ID: <CAMuHMdW=Ap6ENtN0_Q=MHkhGLy0WuJUPtdb7n34yNAw1rXR4Fw@mail.gmail.com>
-References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com> <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
+Date: Tue, 29 Nov 2016 09:47:03 +0100
+Message-ID: <CAPDyKFqFnk6+Rfdzp-4wzEy8KNkq=03q5qfbkQD4pPNF0Pc6ww@mail.gmail.com>
+References: <1478210075-92045-1-git-send-email-lina.iyer@linaro.org>
+ <1478210075-92045-2-git-send-email-lina.iyer@linaro.org> <CAPDyKFoCjf1qSBDWUY_wNx21_78fRrFqcqrFbsSmabzAZJxQAQ@mail.gmail.com>
+ <20161110195832.4nz7lxlmshaemcbb@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:34738 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754522AbcK2InU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 03:43:20 -0500
-In-Reply-To: <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161110195832.4nz7lxlmshaemcbb@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Juri Lelli <Juri.Lelli-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 
-Hi Wolfram,
+On 10 November 2016 at 20:58, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Mon, Nov 07, 2016 at 12:14:28PM +0100, Ulf Hansson wrote:
+>> On 3 November 2016 at 22:54, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+>> > Re-using idle state definition provided by arm,idle-state for domain
+>> > idle states creates a lot of confusion and limits further evolution of
+>> > the domain idle definition. To keep things clear and simple, define a
+>> > idle states for domain using a new compatible "domain-idle-state".
+>> >
+>> > Fix existing PM domains code to look for the newly defined compatible.
+>> >
+>> > Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+>> > Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> > Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> > ---
+>> >  .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
+>> >  .../devicetree/bindings/power/power_domain.txt     |  8 +++---
+>> >  drivers/base/power/domain.c                        |  2 +-
+>> >  3 files changed, 38 insertions(+), 5 deletions(-)
+>> >  create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
+>> >
+>> > diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
+>> > new file mode 100644
+>> > index 0000000..eefc7ed
+>> > --- /dev/null
+>> > +++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
+>> > @@ -0,0 +1,33 @@
+>> > +PM Domain Idle State Node:
+>> > +
+>> > +A domain idle state node represents the state parameters that will be used to
+>> > +select the state when there are no active components in the domain.
+>> > +
+>> > +The state node has the following parameters -
+>> > +
+>> > +- compatible:
+>> > +       Usage: Required
+>> > +       Value type: <string>
+>> > +       Definition: Must be "domain-idle-state".
+>> > +
+>> > +- entry-latency-us
+>> > +       Usage: Required
+>> > +       Value type: <prop-encoded-array>
+>> > +       Definition: u32 value representing worst case latency in
+>> > +                   microseconds required to enter the idle state.
+>> > +                   The exit-latency-us duration may be guaranteed
+>> > +                   only after entry-latency-us has passed.
+>>
+>> As we anyway are going to change this, why not use an u64 and have the
+>> value in ns instead of us?
+>
+> I can't imagine that you would need more resolution or range. For times
+> less than 1us, s/w and register access times are going to dominate the
+> time.
+>
+> Unless there is a real need, I'd keep alignment with the existing
+> binding.
 
-On Mon, Nov 28, 2016 at 10:09 PM, Wolfram Sang
-<wsa+renesas@sang-engineering.com> wrote:
-> --- /dev/null
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
+Rob, are you fine with this? I thought it would be great to get this
+in for 4.10 rc1.
 
-> +/* Structure for thermal temperature calculation */
-> +struct equation_coefs {
-> +       long a1;
-> +       long b1;
-> +       long a2;
-> +       long b2;
-
-Why long? Long has a different size for 32-bit and 64-bit platforms.
-I know this is a driver for arm64, but if you need 64-bits, you want to make
-this clear using s64, or long long.
-
-> +static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc, u32 reg)
-
-What a long function name...
-
-> +{
-> +       return ioread32(tsc->base + reg);
-> +}
-> +
-> +static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
-> +                                    u32 reg, u32 data)
-> +{
-> +       iowrite32(data, tsc->base + reg);
-> +}
-
-... so using the "convenience" wrappers is more (typing) work than using
-io{read,write}32() directly?
-
-> +static void _linear_coefficient_calculation(struct rcar_gen3_thermal_tsc *tsc,
-> +                                           int *ptat, int *thcode)
-> +{
-> +       int tj_2;
-> +       long a1, b1;
-> +       long a2, b2;
-> +       long a1_num, a1_den;
-> +       long a2_num, a2_den;
-
-s64?
-
-> +       tj_2 = (CODETSD((ptat[1] - ptat[2]) * 137)
-> +               / (ptat[0] - ptat[2])) - CODETSD(41);
-
-Isn't "* 1000" easier to read then CODETSD()?
-
-> +       /* calculate coefficients for linear equation */
-> +       a1_num = CODETSD(thcode[1] - thcode[2]);
-> +       a1_den = tj_2 - TJ_3;
-> +       a1 = (10000 * a1_num) / a1_den;
-> +       b1 = (10000 * thcode[2]) - ((a1 * TJ_3) / 1000);
-
-Rounding needed for / 1000?
-
-> +       a2_num = CODETSD(thcode[1] - thcode[0]);
-> +       a2_den = tj_2 - TJ_1;
-> +       a2 = (10000 * a2_num) / a2_den;
-> +       b2 = (10000 * thcode[0]) - ((a2 * TJ_1) / 1000);
-
-Idem.
-
-> +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
-> +{
-> +       struct rcar_gen3_thermal_priv *priv;
-> +       struct device *dev = &pdev->dev;
-> +       struct resource *res;
-> +       struct thermal_zone_device *zone;
-> +       int ret, i;
-
-unsigned int i;
-
-> +       const struct rcar_gen3_thermal_data *match_data = of_device_get_match_data(dev);
-> +
-> +       /* default values if FUSEs are missing */
-> +       int ptat[3] = { 2351, 1509, 435 };
-
-unsigned?
-
-> +       int thcode[TSC_MAX_NUM][3] = {
-
-unsigned?
-
-> +               { 3248, 2800, 2221 },
-> +               { 3245, 2795, 2216 },
-> +               { 3250, 2805, 2237 },
-> +       };
-> +
-> +       priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +       if (!priv)
-> +               return -ENOMEM;
-> +
-> +       platform_set_drvdata(pdev, priv);
-> +
-> +       pm_runtime_enable(dev);
-> +       pm_runtime_get_sync(dev);
-> +
-> +       for (i = 0; i < TSC_MAX_NUM; i++) {
-> +               struct rcar_gen3_thermal_tsc *tsc;
-> +
-> +               tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
-> +               if (!tsc)
-> +                       return -ENOMEM;
-
-Missing pm_runtime_put() etc.?
-
-ret = -ENOMEM;
-goto error_unregister;
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+Kind regards
+Uffe
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
