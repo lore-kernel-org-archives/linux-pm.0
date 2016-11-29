@@ -1,475 +1,270 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
- thermal driver
-Date: Mon, 28 Nov 2016 18:06:53 -0800
-Message-ID: <20161129020652.GA3701@localhost.localdomain>
-References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
- <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] PM / OPP: Allow inactive opp_device to be present in dev
+ list
+Date: Mon, 28 Nov 2016 18:46:47 -0800
+Message-ID: <20161129024647.GY6095@codeaurora.org>
+References: <2fe61813c867c173ddfcb0b9cabc00a65997a935.1480056714.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35795 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752046AbcK2CG7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 21:06:59 -0500
+Received: from smtp.codeaurora.org ([198.145.29.96]:47864 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754981AbcK2Cqv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Nov 2016 21:46:51 -0500
 Content-Disposition: inline
-In-Reply-To: <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
+In-Reply-To: <2fe61813c867c173ddfcb0b9cabc00a65997a935.1480056714.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-Wolfram,
-
-Thanks for sending the driver. Questions on the driver locking strategy as follows.
-
-On Mon, Nov 28, 2016 at 10:09:22PM +0100, Wolfram Sang wrote:
-
-No commit message ? :-( generally speaking here, it is a good practice
-to describe what you are doing, what you have considered, and what you
-have tested, just for the sake of code history/documentation.
-
-> Signed-off-by: Hien Dang <hien.dang.eb@renesas.com>
-> Signed-off-by: Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
-> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+On 11/25, Viresh Kumar wrote:
+> Joonyoung Shim reported an interesting problem on his ARM octa-core
+> Odoroid-XU3 platform. During system suspend, dev_pm_opp_put_regulator()
+> was failing for a struct device for which dev_pm_opp_set_regulator() is
+> called earlier.
+> 
+> This happened because an earlier call to
+> dev_pm_opp_of_cpumask_remove_table() function (from cpufreq-dt.c file)
+> removed all the entries from opp_table->dev_list apart from the last CPU
+> device in the cpumask of CPUs sharing the OPP.
+> 
+> But both dev_pm_opp_set_regulator() and dev_pm_opp_put_regulator()
+> routines get CPU device for the first CPU in the cpumask. And so the OPP
+> core failed to find the OPP table for the struct device.
+> 
+> This patch attempts to fix this problem by adding another field in the
+> struct opp_device: inactive.
+> 
+> Instead of removing the entries from the list during
+> dev_pm_opp_of_cpumask_remove_table() function call, we mark them as
+> inactive. Such inactive devices will not be used by the core in most of
+> the cases, like before, but will be used only at special places which
+> need to take inactive devices into account.
+> 
+> All the devices are removed from the list together now and that happens
+> only when the opp_table gets destroyed.
+> 
+> This patch is tested on Dual A15, Exynos5250 platform by compiling the
+> cpufreq-dt driver as a module. The module is inserted/removed multiple
+> times with combinations of CPU offline/online steps.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
-> Changes since last version:
-> 
-> * removed interrupt support, needs to be refactored seperately
-> 
-> * adapt code to the new bindings, especially one node for all sensors.
->   Similarly, we have one private structure containing n sensor structs.
-> 
-> * gave register bits proper namespaces, properly seperates H3 and M3-W
-> 
-> * refactored the way default values are determined when there are no fuses
->   (which is default case currently)
-> 
-> * refactored the rounding routine
-> 
-> * removed some superfluous macros
-> 
-> * use pass-by-reference instead of pass-by-value where apropriate
-> 
-> * removed BSPisms here and there
-> 
->  drivers/thermal/Kconfig             |   9 +
->  drivers/thermal/Makefile            |   1 +
->  drivers/thermal/rcar_gen3_thermal.c | 347 ++++++++++++++++++++++++++++++++++++
->  3 files changed, 357 insertions(+)
->  create mode 100644 drivers/thermal/rcar_gen3_thermal.c
-> 
-> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> index c2c056cc7ea52e..3912d24a07b10f 100644
-> --- a/drivers/thermal/Kconfig
-> +++ b/drivers/thermal/Kconfig
-> @@ -245,6 +245,15 @@ config RCAR_THERMAL
->  	  Enable this to plug the R-Car thermal sensor driver into the Linux
->  	  thermal framework.
->  
-> +config RCAR_GEN3_THERMAL
-> +	tristate "Renesas R-Car Gen3 thermal driver"
-> +	depends on ARCH_RENESAS || COMPILE_TEST
-> +	depends on HAS_IOMEM
-> +	depends on OF
-> +	help
-> +	  Enable this to plug the R-Car Gen3 thermal sensor driver into the Linux
-> +	  thermal framework.
-> +
->  config KIRKWOOD_THERMAL
->  	tristate "Temperature sensor on Marvell Kirkwood SoCs"
->  	depends on MACH_KIRKWOOD || COMPILE_TEST
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index c92eb22a41ff89..1216fb31ed4036 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -30,6 +30,7 @@ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
->  obj-$(CONFIG_SPEAR_THERMAL)	+= spear_thermal.o
->  obj-$(CONFIG_ROCKCHIP_THERMAL)	+= rockchip_thermal.o
->  obj-$(CONFIG_RCAR_THERMAL)	+= rcar_thermal.o
-> +obj-$(CONFIG_RCAR_GEN3_THERMAL)	+= rcar_gen3_thermal.o
->  obj-$(CONFIG_KIRKWOOD_THERMAL)  += kirkwood_thermal.o
->  obj-y				+= samsung/
->  obj-$(CONFIG_DOVE_THERMAL)  	+= dove_thermal.o
-> diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-> new file mode 100644
-> index 00000000000000..6e162220672884
-> --- /dev/null
-> +++ b/drivers/thermal/rcar_gen3_thermal.c
-> @@ -0,0 +1,347 @@
-> +/*
-> + *  R-Car Gen3 THS thermal sensor driver
-> + *  Based on rcar_thermal.c and work from Hien Dang and Khiem Nguyen.
-> + *
-> + * Copyright (C) 2016 Renesas Electronics Corporation.
-> + * Copyright (C) 2016 Sang Engineering
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License as published by
-> + *  the Free Software Foundation; version 2 of the License.
-> + *
-> + *  This program is distributed in the hope that it will be useful, but
-> + *  WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> + *  General Public License for more details.
-> + *
-> + */
-> +#include <linux/delay.h>
-> +#include <linux/err.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/thermal.h>
-> +
-> +/* Register offsets */
-> +#define REG_GEN3_IRQSTR		0x04
-> +#define REG_GEN3_IRQMSK		0x08
-> +#define REG_GEN3_IRQCTL		0x0C
-> +#define REG_GEN3_IRQEN		0x10
-> +#define REG_GEN3_IRQTEMP1	0x14
-> +#define REG_GEN3_IRQTEMP2	0x18
-> +#define REG_GEN3_IRQTEMP3	0x1C
-> +#define REG_GEN3_CTSR		0x20
-> +#define REG_GEN3_THCTR		0x20
-> +#define REG_GEN3_TEMP		0x28
-> +#define REG_GEN3_THCODE1	0x50
-> +#define REG_GEN3_THCODE2	0x54
-> +#define REG_GEN3_THCODE3	0x58
-> +
-> +/* CTSR bits */
-> +#define CTSR_PONM	BIT(8)
-> +#define CTSR_AOUT	BIT(7)
-> +#define CTSR_THBGR	BIT(5)
-> +#define CTSR_VMEN	BIT(4)
-> +#define CTSR_VMST	BIT(1)
-> +#define CTSR_THSST	BIT(0)
-> +
-> +/* THCTR bits */
-> +#define THCTR_PONM	BIT(6)
-> +#define THCTR_THSST	BIT(0)
-> +
-> +#define CTEMP_MASK	0xFFF
-> +
-> +#define MCELSIUS(temp)	((temp) * 1000)
-> +#define GEN3_FUSE_MASK	0xFFF
-> +
-> +#define TSC_MAX_NUM	3
-> +
-> +/* Structure for thermal temperature calculation */
-> +struct equation_coefs {
-> +	long a1;
-> +	long b1;
-> +	long a2;
-> +	long b2;
-> +};
-> +
-> +struct rcar_gen3_thermal_tsc {
-> +	void __iomem *base;
-> +	struct thermal_zone_device *zone;
-> +	struct equation_coefs coef;
-> +	spinlock_t lock;
-> +	u32 ctemp;
-> +};
-> +
-> +struct rcar_gen3_thermal_priv {
-> +	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
-> +};
-> +
-> +struct rcar_gen3_thermal_data {
-> +	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
-> +};
-> +
-> +/* Temperature calculation  */
-> +#define RCAR3_THERMAL_GRAN 500
-> +#define CODETSD(x) ((x) * 1000)
-> +#define TJ_1 96000L
-> +#define TJ_3 (-41000L)
-> +
-> +static inline u32 rcar_gen3_thermal_read(struct rcar_gen3_thermal_tsc *tsc, u32 reg)
-> +{
-> +	return ioread32(tsc->base + reg);
-> +}
-> +
-> +static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_tsc *tsc,
-> +				     u32 reg, u32 data)
-> +{
-> +	iowrite32(data, tsc->base + reg);
-> +}
-> +
-> +static int _round_temp(int temp)
-> +{
-> +	int result, round_offs;
-> +
-> +	round_offs = temp >= 0 ? RCAR3_THERMAL_GRAN / 2 : -RCAR3_THERMAL_GRAN / 2;
-> +	result = (temp + round_offs) / RCAR3_THERMAL_GRAN;
-> +	return result * RCAR3_THERMAL_GRAN;
-> +}
-> +
-> +static void _linear_coefficient_calculation(struct rcar_gen3_thermal_tsc *tsc,
-> +					    int *ptat, int *thcode)
-> +{
-> +	int tj_2;
-> +	long a1, b1;
-> +	long a2, b2;
-> +	long a1_num, a1_den;
-> +	long a2_num, a2_den;
-> +
-> +	tj_2 = (CODETSD((ptat[1] - ptat[2]) * 137)
-> +		/ (ptat[0] - ptat[2])) - CODETSD(41);
-> +
-> +	/* calculate coefficients for linear equation */
-> +	a1_num = CODETSD(thcode[1] - thcode[2]);
-> +	a1_den = tj_2 - TJ_3;
-> +	a1 = (10000 * a1_num) / a1_den;
-> +	b1 = (10000 * thcode[2]) - ((a1 * TJ_3) / 1000);
-> +
-> +	a2_num = CODETSD(thcode[1] - thcode[0]);
-> +	a2_den = tj_2 - TJ_1;
-> +	a2 = (10000 * a2_num) / a2_den;
-> +	b2 = (10000 * thcode[0]) - ((a2 * TJ_1) / 1000);
-> +
-> +	tsc->coef.a1 = DIV_ROUND_CLOSEST(a1, 10);
-> +	tsc->coef.b1 = DIV_ROUND_CLOSEST(b1, 10);
-> +	tsc->coef.a2 = DIV_ROUND_CLOSEST(a2, 10);
-> +	tsc->coef.b2 = DIV_ROUND_CLOSEST(b2, 10);
-> +}
-> +
-> +static int _linear_temp_converter(struct equation_coefs *coef,
-> +					int temp_code)
-> +{
-> +	int temp, temp1, temp2;
-> +
-> +	temp1 = MCELSIUS((CODETSD(temp_code) - coef->b1)) / coef->a1;
-> +	temp2 = MCELSIUS((CODETSD(temp_code) - coef->b2)) / coef->a2;
-> +	temp = (temp1 + temp2) / 2;
-> +
-> +	return _round_temp(temp);
-> +}
-> +
-> +static int rcar_gen3_thermal_update_temp(struct rcar_gen3_thermal_tsc *tsc)
-> +{
-> +	u32 ctemp;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&tsc->lock, flags);
+>  drivers/base/power/opp/core.c    | 156 ++++++++++++++++++++++++++-------------
+>  drivers/base/power/opp/cpu.c     |   4 +-
+>  drivers/base/power/opp/debugfs.c |   4 +-
+>  drivers/base/power/opp/of.c      |   2 +-
+>  drivers/base/power/opp/opp.h     |   6 +-
+>  5 files changed, 116 insertions(+), 56 deletions(-)
 
-Why do you need a full blown spin lock irqsave? Can this locking be
-solved by a simple mutex?
+That's a lot of lines for something that we want to backport to
+stable kernels!
 
-> +	ctemp = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
-> +	tsc->ctemp = ctemp;
-> +	spin_unlock_irqrestore(&tsc->lock, flags);
+The whole dev_list design seems fairly broken to me. Another
+solution would be to iterate the cpumask in reverse, but there
+doesn't seem to be a construct for that and adding one is
+probably not worth the effort.
 
-I see it is a very short critical section, but still, do you really need
-to disable irqs to read this sensor?
+Adding yet another member to the structure and doing accounting
+in different places seems to be papering over the problem as
+well. Now we want to have "inactive" devices in the list? That
+seems like a problem for cpufreq to solve. It can decide to not
+call OPP APIs when the cpu device isn't actually physically
+removed if it wants to.
 
-> +
-> +	return 0;
-> +}
-> +
-> +static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
-> +{
-> +	struct rcar_gen3_thermal_tsc *tsc = devdata;
-> +	int ctemp;
-> +	unsigned long flags;
-> +
-> +	rcar_gen3_thermal_update_temp(tsc);
-> +
-> +	spin_lock_irqsave(&tsc->lock, flags);
-> +	ctemp = _linear_temp_converter(&tsc->coef, tsc->ctemp);
-> +	spin_unlock_irqrestore(&tsc->lock, flags);
-> +
-> +	if ((ctemp < MCELSIUS(-40)) || (ctemp > MCELSIUS(125)))
-> +		return -EIO;
-> +
-> +	*temp = ctemp;
-> +
-> +	return 0;
-> +}
-> +
-> +static struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops = {
-> +	.get_temp	= rcar_gen3_thermal_get_temp,
-> +};
-> +
-> +static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&tsc->lock, flags);
-> +
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
-> +
-> +	udelay(1000);
+It also exposes the OPP API's strong reliance on struct device
+for everything. Really we shouldn't be storing device pointers in
+the OPP core at all because we're not treating them like the
+reference counted objects they are. The dev_list should go
+probably go away and be replaced with some sort of counter. It
+would also be nice if struct device had a pointer to the OPP
+table(s) for a device so the lookup is direct.
 
-Why do you disable irqs, then busyloop for 1ms?
+BTW, _dev_pm_opp_remove_table() calls _find_opp_dev() twice, once
+to find the opp_table for a device and then to find the
+opp_device inside the table that was used to match up the table
+in the first place. Madness!
 
-> +
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR, CTSR_PONM);
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
-> +			   CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
-> +
-> +	udelay(100);
+Anyway, rant over, how about handing out the opp table pointer to
+the caller so they can pass it back in when they call the put
+side? That should fix the same problem if I understand correctly.
 
-1.1ms?
+We should think about changing the API further so that callers
+have to "get" the OPP table cookie for their device and then pass
+that pointer to the dev_pm_*_set() APIs instead of passing a
+struct device pointer. That would save lots of cycles searching
+for something we already had.
 
-> +
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
-> +			  CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN |
-> +			  CTSR_VMST | CTSR_THSST);
-> +
-> +	spin_unlock_irqrestore(&tsc->lock, flags);
+ drivers/base/power/opp/core.c | 23 +++++++----------------
+ drivers/cpufreq/cpufreq-dt.c  | 12 ++++++++----
+ include/linux/pm_opp.h        | 12 +++++++-----
+ 3 files changed, 22 insertions(+), 25 deletions(-)
 
-again, why not a simpler way, by using a mutex?
+And the diff is 1/5 and negative.
 
-> +}
-> +
-> +static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-> +{
-> +	unsigned long flags;
-> +	u32 reg_val;
-> +
-> +	spin_lock_irqsave(&tsc->lock, flags);
-> +
-> +	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
-> +	reg_val &= ~THCTR_PONM;
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
-> +
-> +	udelay(1000);
-> +
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
-> +	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
-> +	reg_val |= THCTR_THSST;
-> +	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
-> +
-> +	spin_unlock_irqrestore(&tsc->lock, flags);
->
-
- ditto
-
-+}
-> +
-> +static const struct rcar_gen3_thermal_data r8a7795_data = {
-> +	.thermal_init = r8a7795_thermal_init,
-> +};
-> +
-> +static const struct rcar_gen3_thermal_data r8a7796_data = {
-> +	.thermal_init = r8a7796_thermal_init,
-> +};
-> +
-> +static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
-> +	{ .compatible = "renesas,r8a7795-thermal", .data = &r8a7795_data},
-> +	{ .compatible = "renesas,r8a7796-thermal", .data = &r8a7796_data},
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
-> +
-> +static int rcar_gen3_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +
-> +	pm_runtime_put(dev);
-> +	pm_runtime_disable(dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct rcar_gen3_thermal_priv *priv;
-> +	struct device *dev = &pdev->dev;
-> +	struct resource *res;
-> +	struct thermal_zone_device *zone;
-> +	int ret, i;
-> +	const struct rcar_gen3_thermal_data *match_data = of_device_get_match_data(dev);
-> +
-> +	/* default values if FUSEs are missing */
-> +	int ptat[3] = { 2351, 1509, 435 };
-> +	int thcode[TSC_MAX_NUM][3] = {
-> +		{ 3248, 2800, 2221 },
-> +		{ 3245, 2795, 2216 },
-> +		{ 3250, 2805, 2237 },
-> +	};
-
-are these fuses valid for both? 7796 and 7797? or would you need a
-different array for each version?
-
-> +
-> +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> +	if (!priv)
-> +		return -ENOMEM;
-> +
-> +	platform_set_drvdata(pdev, priv);
-> +
-> +	pm_runtime_enable(dev);
-> +	pm_runtime_get_sync(dev);
-> +
-> +	for (i = 0; i < TSC_MAX_NUM; i++) {
-> +		struct rcar_gen3_thermal_tsc *tsc;
-> +
-> +		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
-> +		if (!tsc)
-> +			return -ENOMEM;
-> +
-> +		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
-> +		if (!res)
-> +			break;
-> +
-> +		tsc->base = devm_ioremap_resource(dev, res);
-> +		if (IS_ERR(tsc->base)) {
-> +			ret = PTR_ERR(tsc->base);
-> +			goto error_unregister;
-> +		}
-> +
-> +		priv->tscs[i] = tsc;
-> +		spin_lock_init(&tsc->lock);
-> +
-> +		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
-> +					&rcar_gen3_tz_of_ops);
-> +		if (IS_ERR(zone)) {
-> +			dev_err(dev, "Can't register thermal zone\n");
-> +			ret = PTR_ERR(zone);
-> +			goto error_unregister;
-> +		}
-> +		tsc->zone = zone;
-> +
-> +		match_data->thermal_init(tsc);
-> +
-> +		_linear_coefficient_calculation(tsc, ptat, thcode[i]);
-> +
-> +		ret = rcar_gen3_thermal_update_temp(tsc);
-> +
-> +		if (ret < 0)
-> +			goto error_unregister;
-> +	}
-> +
-> +	return 0;
-> +
-> +error_unregister:
-> +	rcar_gen3_thermal_remove(pdev);
-> +
-> +	return ret;
-> +}
-> +
-> +static struct platform_driver rcar_gen3_thermal_driver = {
-> +	.driver	= {
-> +		.name	= "rcar_gen3_thermal",
-> +		.of_match_table = rcar_gen3_thermal_dt_ids,
-> +	},
-> +	.probe		= rcar_gen3_thermal_probe,
-> +	.remove		= rcar_gen3_thermal_remove,
-> +};
-> +module_platform_driver(rcar_gen3_thermal_driver);
-> +
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_DESCRIPTION("R-Car Gen3 THS thermal sensor driver");
-> +MODULE_AUTHOR("Wolfram Sang <wsa+renesas@sang-engineering.com>");
-> -- 
-> 2.10.2
-> 
+----8<----
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 4c7c6da7a989..4a1ebec88ddd 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1316,7 +1316,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-int dev_pm_opp_set_regulator(struct device *dev, const char *name)
++struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ {
+ 	struct opp_table *opp_table;
+ 	struct regulator *reg;
+@@ -1354,20 +1354,21 @@ int dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ 	opp_table->regulator = reg;
+ 
+ 	mutex_unlock(&opp_table_lock);
+-	return 0;
++	return opp_table;
+ 
+ err:
+ 	_remove_opp_table(opp_table);
++	opp_table = ERR_PTR(ret);
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
+ 
+-	return ret;
++	return opp_table;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulator);
+ 
+ /**
+  * dev_pm_opp_put_regulator() - Releases resources blocked for regulator
+- * @dev: Device for which regulator was set.
++ * @dev: opp_table returned from dev_pm_opp_set_regulator
+  *
+  * Locking: The internal opp_table and opp structures are RCU protected.
+  * Hence this function internally uses RCU updater strategy with mutex locks
+@@ -1375,22 +1376,12 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulator);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-void dev_pm_opp_put_regulator(struct device *dev)
++void dev_pm_opp_put_regulator(struct opp_table *opp_table)
+ {
+-	struct opp_table *opp_table;
+-
+ 	mutex_lock(&opp_table_lock);
+ 
+-	/* Check for existing table for 'dev' first */
+-	opp_table = _find_opp_table(dev);
+-	if (IS_ERR(opp_table)) {
+-		dev_err(dev, "Failed to find opp_table: %ld\n",
+-			PTR_ERR(opp_table));
+-		goto unlock;
+-	}
+-
+ 	if (IS_ERR(opp_table->regulator)) {
+-		dev_err(dev, "%s: Doesn't have regulator set\n", __func__);
++		pr_err("%s: Doesn't have regulator set\n", __func__);
+ 		goto unlock;
+ 	}
+ 
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 5c07ae05d69a..4d3ec92cbabf 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -28,6 +28,7 @@
+ #include "cpufreq-dt.h"
+ 
+ struct private_data {
++	struct opp_table *opp_table;
+ 	struct device *cpu_dev;
+ 	struct thermal_cooling_device *cdev;
+ 	const char *reg_name;
+@@ -143,6 +144,7 @@ static int resources_available(void)
+ static int cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	struct cpufreq_frequency_table *freq_table;
++	struct opp_table *opp_table = NULL;
+ 	struct private_data *priv;
+ 	struct device *cpu_dev;
+ 	struct clk *cpu_clk;
+@@ -186,8 +188,9 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	 */
+ 	name = find_supply_name(cpu_dev);
+ 	if (name) {
+-		ret = dev_pm_opp_set_regulator(cpu_dev, name);
+-		if (ret) {
++		opp_table = dev_pm_opp_set_regulator(cpu_dev, name);
++		if (IS_ERR(opp_table)) {
++			ret = PTR_ERR(opp_table);
+ 			dev_err(cpu_dev, "Failed to set regulator for cpu%d: %d\n",
+ 				policy->cpu, ret);
+ 			goto out_put_clk;
+@@ -237,6 +240,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	}
+ 
+ 	priv->reg_name = name;
++	priv->opp_table = opp_table;
+ 
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+@@ -285,7 +289,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ out_free_opp:
+ 	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+ 	if (name)
+-		dev_pm_opp_put_regulator(cpu_dev);
++		dev_pm_opp_put_regulator(opp_table);
+ out_put_clk:
+ 	clk_put(cpu_clk);
+ 
+@@ -300,7 +304,7 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
+ 	if (priv->reg_name)
+-		dev_pm_opp_put_regulator(priv->cpu_dev);
++		dev_pm_opp_put_regulator(priv->opp_table);
+ 
+ 	clk_put(policy->clk);
+ 	kfree(priv);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index bca26157f5b6..a2066abb2a35 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -19,6 +19,7 @@
+ 
+ struct dev_pm_opp;
+ struct device;
++struct opp_table;
+ 
+ enum dev_pm_opp_event {
+ 	OPP_EVENT_ADD, OPP_EVENT_REMOVE, OPP_EVENT_ENABLE, OPP_EVENT_DISABLE,
+@@ -62,8 +63,8 @@ int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
+ void dev_pm_opp_put_supported_hw(struct device *dev);
+ int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+ void dev_pm_opp_put_prop_name(struct device *dev);
+-int dev_pm_opp_set_regulator(struct device *dev, const char *name);
+-void dev_pm_opp_put_regulator(struct device *dev);
++struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name);
++void dev_pm_opp_put_regulator(struct opp_table *opp_table);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+@@ -170,12 +171,13 @@ static inline int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
+ 
+ static inline void dev_pm_opp_put_prop_name(struct device *dev) {}
+ 
+-static inline int dev_pm_opp_set_regulator(struct device *dev, const char *name)
++static inline struct opp_table *
++dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ {
+-	return -ENOTSUPP;
++	return ERR_PTR(-ENOTSUPP);
+ }
+ 
+-static inline void dev_pm_opp_put_regulator(struct device *dev) {}
++static inline void dev_pm_opp_put_regulator(struct opp_table *opp_table) {}
+ 
+ static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ {
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
