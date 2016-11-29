@@ -1,58 +1,105 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V3] PM / OPP: Don't remove the first cpu in the mask
- before removing others
-Date: Tue, 29 Nov 2016 13:49:56 +0100
-Message-ID: <CAJZ5v0jRooZSJP1wRHD7NN2rkEpsJ-tkk5Z7_Xw1xcQaiUQwpw@mail.gmail.com>
-References: <29c512d06de99663c3c8acc2e04a898831879a6c.1480398079.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f196.google.com ([209.85.210.196]:32863 "EHLO
-        mail-wj0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754693AbcK2Mt6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 07:49:58 -0500
-In-Reply-To: <29c512d06de99663c3c8acc2e04a898831879a6c.1480398079.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Subject: [PATCH v2.1 1/2] smiapp: Implement power-on and power-off sequences without runtime PM
+Date: Tue, 29 Nov 2016 19:28:53 +0200
+Message-ID: <1480440533-32685-1-git-send-email-sakari.ailus@linux.intel.com>
+References: <1479594266-3034-2-git-send-email-sakari.ailus@linux.intel.com>
+Return-path: <linux-media-owner@vger.kernel.org>
+In-Reply-To: <1479594266-3034-2-git-send-email-sakari.ailus@linux.intel.com>
+Sender: linux-media-owner@vger.kernel.org
+To: stern@rowland.harvard.edu
+Cc: laurent.pinchart@ideasonboard.com, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "# v4 . 4+" <stable@vger.kernel.org>
 
-On Tue, Nov 29, 2016 at 6:42 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Joonyoung Shim reported an interesting problem on his ARM octa-core
-> Odoroid-XU3 platform. During system suspend, dev_pm_opp_put_regulator()
-> was failing for a struct device for which dev_pm_opp_set_regulator() is
-> called earlier.
->
-> This happened because an earlier call to
-> dev_pm_opp_of_cpumask_remove_table() function (from cpufreq-dt.c file)
-> removed all the entries from opp_table->dev_list apart from the last CPU
-> device in the cpumask of CPUs sharing the OPP.
->
-> But both dev_pm_opp_set_regulator() and dev_pm_opp_put_regulator()
-> routines get CPU device for the first CPU in the cpumask. And so the OPP
-> core failed to find the OPP table for the struct device.
->
-> In order to fix that up properly, we need to revisit APIs like
-> dev_pm_opp_set_regulator() and make them talk in terms of cookies
-> provided by the OPP core. But such a solution will be hard to backport
-> to stable kernels.
->
-> This patch attempts to fix this problem (in a Hacky way) by specially
-> handling the first cpu in the mask. A FIXME is also added to make sure
-> that this Hack doesn't get unnoticed later on.
->
-> Cc:  # v4.4+ <stable@vger.kernel.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> V2->V3:
-> - Fix $Subject, which carried text from V1.
->
-> V1->V2:
-> - A completely different approach, more of hack so that backport to
->   stable kernels can be done easily.
-> - A more comprehensive solution is required to fix the design flaws.
+Power on the sensor when the module is loaded and power it off when it is
+removed.
 
-I'll wait for a response from Stephen this time.
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+---
+Hi Alan and Laurent,
 
-Thanks,
-Rafael
+I hope this should be good then. I'm only enabling runtime PM at the end
+of probe() when all is well, which reduces need for error handling.
+
+Regards,
+Sakari
+
+ drivers/media/i2c/smiapp/smiapp-core.c | 28 +++++++++-------------------
+ 1 file changed, 9 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/media/i2c/smiapp/smiapp-core.c b/drivers/media/i2c/smiapp/smiapp-core.c
+index 59872b3..683a3e0 100644
+--- a/drivers/media/i2c/smiapp/smiapp-core.c
++++ b/drivers/media/i2c/smiapp/smiapp-core.c
+@@ -2741,8 +2741,6 @@ static const struct v4l2_subdev_internal_ops smiapp_internal_ops = {
+  * I2C Driver
+  */
+ 
+-#ifdef CONFIG_PM
+-
+ static int smiapp_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+@@ -2783,13 +2781,6 @@ static int smiapp_resume(struct device *dev)
+ 	return rval;
+ }
+ 
+-#else
+-
+-#define smiapp_suspend	NULL
+-#define smiapp_resume	NULL
+-
+-#endif /* CONFIG_PM */
+-
+ static struct smiapp_hwconfig *smiapp_get_hwconfig(struct device *dev)
+ {
+ 	struct smiapp_hwconfig *hwcfg;
+@@ -2913,13 +2904,9 @@ static int smiapp_probe(struct i2c_client *client,
+ 	if (IS_ERR(sensor->xshutdown))
+ 		return PTR_ERR(sensor->xshutdown);
+ 
+-	pm_runtime_enable(&client->dev);
+-
+-	rval = pm_runtime_get_sync(&client->dev);
+-	if (rval < 0) {
+-		rval = -ENODEV;
+-		goto out_power_off;
+-	}
++	rval = smiapp_power_on(&client->dev);
++	if (rval < 0)
++		return rval;
+ 
+ 	rval = smiapp_identify_module(sensor);
+ 	if (rval) {
+@@ -3100,6 +3087,9 @@ static int smiapp_probe(struct i2c_client *client,
+ 	if (rval < 0)
+ 		goto out_media_entity_cleanup;
+ 
++	pm_runtime_set_active(&client->dev);
++	pm_runtime_get_noresume(&client->dev);
++	pm_runtime_enable(&client->dev);
+ 	pm_runtime_set_autosuspend_delay(&client->dev, 1000);
+ 	pm_runtime_use_autosuspend(&client->dev);
+ 	pm_runtime_put_autosuspend(&client->dev);
+@@ -3113,8 +3103,7 @@ static int smiapp_probe(struct i2c_client *client,
+ 	smiapp_cleanup(sensor);
+ 
+ out_power_off:
+-	pm_runtime_put(&client->dev);
+-	pm_runtime_disable(&client->dev);
++	smiapp_power_off(&client->dev);
+ 
+ 	return rval;
+ }
+@@ -3127,8 +3116,9 @@ static int smiapp_remove(struct i2c_client *client)
+ 
+ 	v4l2_async_unregister_subdev(subdev);
+ 
+-	pm_runtime_suspend(&client->dev);
+ 	pm_runtime_disable(&client->dev);
++	pm_runtime_set_suspended(&client->dev);
++	smiapp_power_off(&client->dev);
+ 
+ 	for (i = 0; i < sensor->ssds_used; i++) {
+ 		v4l2_device_unregister_subdev(&sensor->ssds[i].sd);
+-- 
+2.1.4
