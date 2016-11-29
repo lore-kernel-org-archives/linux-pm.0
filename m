@@ -1,135 +1,145 @@
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Subject: [PATCH] sched/x86: Change CONFIG_SCHED_ITMT to CONFIG_SCHED_MC_PRIO
-Date: Tue, 29 Nov 2016 10:43:27 -0800
-Message-ID: <2b2ee29d93e3f162922d72d0165a1405864fbb23.1480444902.git.tim.c.chen@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com, bp@suse.de
-Cc: Tim Chen <tim.c.chen@linux.intel.com>, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, peterz@infradead.org, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Wolfram Sang <wsa-dev@sang-engineering.com>
+Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
+ thermal driver
+Date: Tue, 29 Nov 2016 19:55:13 +0100
+Message-ID: <20161129185513.GB3378@katana>
+References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
+ <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
+ <CAMuHMdW=Ap6ENtN0_Q=MHkhGLy0WuJUPtdb7n34yNAw1rXR4Fw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="UHN/qo2QbUvPLonB"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdW=Ap6ENtN0_Q=MHkhGLy0WuJUPtdb7n34yNAw1rXR4Fw@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-Update CONFIG_SCHED_ITMT for Intel Turbo Boost Max Technology 3.0
-to CONFIG_SCHED_MC_PRIO.  This makes the configuration extensible
-in future to other architectures that wish to similarly establish CPU
-core priorities support in the scheduler.
 
-The description in Kconfig is updated to reflect this change with
-added details for better clarity.  The configuration is explicitly
-defaulted to be on for cpus that have this feature.
+--UHN/qo2QbUvPLonB
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tim Chen <tim.c.chen@linux.intel.com>
----
- arch/x86/Kconfig                | 22 ++++++++++++++++------
- arch/x86/include/asm/topology.h |  6 +++---
- arch/x86/kernel/Makefile        |  2 +-
- drivers/acpi/bus.c              |  2 +-
- drivers/cpufreq/Kconfig.x86     |  2 +-
- 5 files changed, 22 insertions(+), 12 deletions(-)
+Hi Geert,
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 25950f0..715c1f3 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -939,14 +939,24 @@ config SCHED_MC
- 	  making when dealing with multi-core CPU chips at a cost of slightly
- 	  increased overhead in some places. If unsure say N here.
- 
--config SCHED_ITMT
--	bool "Intel Turbo Boost Max Technology (ITMT) scheduler support"
-+config SCHED_MC_PRIO
-+	bool "CPU core priorities scheduler support"
- 	depends on SCHED_MC && CPU_SUP_INTEL && X86_INTEL_PSTATE
-+	default y
- 	---help---
--	  ITMT enabled scheduler support improves the CPU scheduler's decision
--	  to move tasks to cpu core that can be boosted to a higher frequency
--	  than others. It will have better performance at a cost of slightly
--	  increased overhead in task migrations. If unsure say N here.
-+	   Intel Turbo Boost Max Technology 3.0 enabled CPUs have a
-+	   core ordering determined at manufacturing time, which allows
-+	   certain cores to reach higher turbo frequencies (when running
-+	   single threaded workloads) than others.
-+
-+	   Enabling this kernel feature teaches the scheduler about
-+	   the TBM3 (aka ITMT) priority order of the CPU cores and adjusts the
-+	   scheduler's CPU selection logic accordingly, so that higher
-+	   overall system performance can be achieved.
-+
-+	   This feature will have no effect on CPUs without this feature.
-+
-+	   If unsure say Y here.
- 
- source "kernel/Kconfig.preempt"
- 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index 4813df5..6358a85 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -148,7 +148,7 @@ void x86_pci_root_bus_resources(int bus, struct list_head *resources);
- 
- extern bool x86_topology_update;
- 
--#ifdef CONFIG_SCHED_ITMT
-+#ifdef CONFIG_SCHED_MC_PRIO
- #include <asm/percpu.h>
- 
- DECLARE_PER_CPU_READ_MOSTLY(int, sched_core_priority);
-@@ -163,7 +163,7 @@ int sched_set_itmt_support(void);
- /* Interface to notify scheduler that system revokes ITMT support */
- void sched_clear_itmt_support(void);
- 
--#else /* CONFIG_SCHED_ITMT */
-+#else /* CONFIG_SCHED_MC_PRIO */
- 
- #define sysctl_sched_itmt_enabled	0
- static inline void sched_set_itmt_core_prio(int prio, int core_cpu)
-@@ -176,6 +176,6 @@ static inline int sched_set_itmt_support(void)
- static inline void sched_clear_itmt_support(void)
- {
- }
--#endif /* CONFIG_SCHED_ITMT */
-+#endif /* CONFIG_SCHED_MC_PRIO */
- 
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index bbd0ebc..05110c1 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -123,7 +123,7 @@ obj-$(CONFIG_EFI)			+= sysfb_efi.o
- 
- obj-$(CONFIG_PERF_EVENTS)		+= perf_regs.o
- obj-$(CONFIG_TRACING)			+= tracepoint.o
--obj-$(CONFIG_SCHED_ITMT)		+= itmt.o
-+obj-$(CONFIG_SCHED_MC_PRIO)		+= itmt.o
- 
- ifdef CONFIG_FRAME_POINTER
- obj-y					+= unwind_frame.o
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 806db0d..5cbefd7 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -338,7 +338,7 @@ static void acpi_bus_osc_support(void)
- 	}
- #endif
- 
--	if (IS_ENABLED(CONFIG_SCHED_ITMT))
-+	if (IS_ENABLED(CONFIG_SCHED_MC_PRIO))
- 		capbuf[OSC_SUPPORT_DWORD] |= OSC_SB_CPC_DIVERSE_HIGH_SUPPORT;
- 
- 	if (!ghes_disable)
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index c6d273b..35f7182 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -6,7 +6,7 @@ config X86_INTEL_PSTATE
-        bool "Intel P state control"
-        depends on X86
-        select ACPI_PROCESSOR if ACPI
--       select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_ITMT
-+       select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_MC_PRIO
-        help
-           This driver provides a P state for Intel core processors.
- 	  The driver implements an internal governor and will become
--- 
-2.5.5
+thanks for the prompt review!
 
+> > +/* Structure for thermal temperature calculation */
+> > +struct equation_coefs {
+> > +       long a1;
+> > +       long b1;
+> > +       long a2;
+> > +       long b2;
+>=20
+> Why long? Long has a different size for 32-bit and 64-bit platforms.
+> I know this is a driver for arm64, but if you need 64-bits, you want to m=
+ake
+> this clear using s64, or long long.
+
+I'll check if int will do.
+
+> > +static inline void rcar_gen3_thermal_write(struct rcar_gen3_thermal_ts=
+c *tsc,
+> > +                                    u32 reg, u32 data)
+> > +{
+> > +       iowrite32(data, tsc->base + reg);
+> > +}
+>=20
+> ... so using the "convenience" wrappers is more (typing) work than using
+> io{read,write}32() directly?
+
+TBH I don't favor such macros, but since they are in quite some Renesas
+drivers, I kept them in the first take for consistency reasons.
+
+> > +       tj_2 =3D (CODETSD((ptat[1] - ptat[2]) * 137)
+> > +               / (ptat[0] - ptat[2])) - CODETSD(41);
+>=20
+> Isn't "* 1000" easier to read then CODETSD()?
+
+Probably. I'd think there can be done even more to make this code a tad
+more readable. For the first take, I'd like to keep these formulas,
+though. They come from the BSP and are the only documentation about how
+to calculate the temperature which we currently have. Changing them
+will obsolete all the testing done so far.
+
+
+> > +       /* calculate coefficients for linear equation */
+> > +       a1_num =3D CODETSD(thcode[1] - thcode[2]);
+> > +       a1_den =3D tj_2 - TJ_3;
+> > +       a1 =3D (10000 * a1_num) / a1_den;
+> > +       b1 =3D (10000 * thcode[2]) - ((a1 * TJ_3) / 1000);
+>=20
+> Rounding needed for / 1000?
+
+Ditto.
+
+> > +static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+> > +{
+> > +       struct rcar_gen3_thermal_priv *priv;
+> > +       struct device *dev =3D &pdev->dev;
+> > +       struct resource *res;
+> > +       struct thermal_zone_device *zone;
+> > +       int ret, i;
+>=20
+> unsigned int i;
+
+I'll likely produce more bugs if 'i' is not an int ;)
+
+>=20
+> > +       const struct rcar_gen3_thermal_data *match_data =3D of_device_g=
+et_match_data(dev);
+> > +
+> > +       /* default values if FUSEs are missing */
+> > +       int ptat[3] =3D { 2351, 1509, 435 };
+>=20
+> unsigned?
+>=20
+> > +       int thcode[TSC_MAX_NUM][3] =3D {
+>=20
+> unsigned?
+
+Had that before, didn't work. Since the calculation involves
+substraction with other ints, I prefer to have them all the same type as
+the fix.
+
+> > +               tsc =3D devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
+> > +               if (!tsc)
+> > +                       return -ENOMEM;
+>=20
+> Missing pm_runtime_put() etc.?
+>=20
+> ret =3D -ENOMEM;
+> goto error_unregister;
+
+Yes!
+
+Regards,
+
+   Wolfram
+
+
+--UHN/qo2QbUvPLonB
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJYPc8RAAoJEBQN5MwUoCm2B+IQALLQ8iKaP4/EgZz6eD3qINHb
+jrVHQn18o+vGqYrzugFkJCv8uTrjKCs3IV+qUuJl/kiocmGejg0WmXLW0ieVxQyY
+1SXDc+EyrBQnXuacywHHkWKlgsTi6sSxFzTjMSSnEPDK6WahF23qLdXuYHghkkpa
+t5vbZTy4T9UxEOR03Ld8e7AOwutA3Ltu2ZmrvFCopWDsCWPN6C9DI0XtJSiqlVwu
+SxLSlMvn7GPTgHyoncQsKIAniyyb9pkECiomd2aibhTzjxrnyZmui2a2iSUhqgyv
+yY1WxJo1tCh4KXDFFTWRIAfEMFaHTnMinLXPYk1koaDD/eeIQeP6ZZnqn7rc74uo
+ttccUzyWsFojnBinDm1jhg+tVr62DREmHB1nh4D4XZkInXLKJPWbZxXf+dxY4fkO
+fDxNDjs6N/smoZnpZIBZQRkFGeNE6Ev0ijGYntm3APoEHKPtrZvX2o0qHnvuP0Sb
+YnfrPobuhW1bXZqm/GsD0Df297i7CangpWamVl4XiJX4DclzgU2yJSktIwYv6h6A
+v8nlIKCz1GyGkhtaIZdsSI7iXwSoqHi6SjMtcUdP+CX+O5qe7PIe5i9e2m9BO2cq
+VTsxSEMwAlZ9o0FzoQagQN82QJXZbpVWFBezfewxN+MZSACJfCRvbZrr7RBPs5ma
+LA2iMXPMeqgNphB+blk4
+=iaXa
+-----END PGP SIGNATURE-----
+
+--UHN/qo2QbUvPLonB--
