@@ -1,39 +1,33 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [patch V2 00/12] thermal/x86_pkg_temp: Sanitize hotplug and
- locking
-Date: Wed, 30 Nov 2016 20:30:03 +0800
-Message-ID: <1480509003.2202.6.camel@intel.com>
-References: <20161122175256.922158782@linutronix.de>
-         <1479844260.6544.220.camel@intel.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] PM / Domains: Do not print PM domain add error message
+ if EPROBE_DEFER
+Date: Wed, 30 Nov 2016 13:41:48 +0100
+Message-ID: <20161130124145.GA22147@verge.net.au>
+References: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:2258 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753438AbcK3MaP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 30 Nov 2016 07:30:15 -0500
-In-Reply-To: <1479844260.6544.220.camel@intel.com>
+Received: from kirsty.vergenet.net ([202.4.237.240]:55065 "EHLO
+        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756551AbcK3Ml4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 07:41:56 -0500
+Content-Disposition: inline
+In-Reply-To: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "rt@linutronix.de" <rt@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "bp@alien8.de" <bp@alien8.de>, "x86@kernel.org" <x86@kernel.org>
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 
-On Tue, 2016-11-22 at 12:51 -0700, Pandruvada, Srinivas wrote:
-> On Tue, 2016-11-22 at 17:57 +0000, Thomas Gleixner wrote:
-> > 
-> > Changes vs. V1: Fix the package removal wreckage reported by
-> > Srinivas
-> > 
-> I haven't looked at individual patch but tested the series as a
-> whole. 
+On Wed, Nov 30, 2016 at 01:24:56PM +0100, Geert Uytterhoeven wrote:
+> EPROBE_DEFER is not an error, hence printing an error message like
 > 
-> So Rui, you can add
+>     renesas_irqc e61c0000.interrupt-controller: failed to add to PM domain always-on: -517
 > 
-> Tested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> may confuse the user.
 > 
+> Suppress the error message in case of EPROBE_DEFER to fix this.
+> 
+> Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-applied.
-
-thanks,
-rui
+Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
