@@ -1,41 +1,45 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RESEND PATCH 06/11] cpufreq: intel_pstate: Add Knights Mill CPUID
-Date: Wed, 30 Nov 2016 23:01:51 +0100
-Message-ID: <CAJZ5v0jS+VDEqbqTMv6-KzYSVRxnjv5qFcZUNaR5iFhf7XJ9Ug@mail.gmail.com>
-References: <20161013153105.2517-1-piotr.luc@intel.com> <20161013153105.2517-7-piotr.luc@intel.com>
- <1476381119.114531.61.camel@linux.intel.com> <1477392172.9496.2.camel@intel.com>
- <CAJZ5v0jDGaM9M_aZz_8mHD1UpY3khRrWNVXR_BQwnMYDx+t0xw@mail.gmail.com>
- <1477395555.26677.2.camel@intel.com> <1480522710.10089.9.camel@intel.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V6 08/10] PM / OPP: Allow platform specific custom
+ set_opp() callbacks
+Date: Wed, 30 Nov 2016 14:04:19 -0800
+Message-ID: <20161130220419.GL6095@codeaurora.org>
+References: <cover.1480481312.git.viresh.kumar@linaro.org>
+ <152e4a2c876449f3e47c206f5120cafdfd48b976.1480481312.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1480522710.10089.9.camel@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luc, Piotr" <Piotr.Luc@intel.com>
-Cc: "rafael@kernel.org" <rafael@kernel.org>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:51472 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1759407AbcK3WEU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 17:04:20 -0500
+Content-Disposition: inline
+In-Reply-To: <152e4a2c876449f3e47c206f5120cafdfd48b976.1480481312.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org
 
-On Wed, Nov 30, 2016 at 5:19 PM, Luc, Piotr <Piotr.Luc@intel.com> wrote:
-> Hi Rafael,
->
->> > >
->> > > The mentioned path 03/11 is already merged in 4.9.rc2.
->> >
->> > If it's already there, I can pick up the intel_pstate one.
->> >
->> > Thanks,
->> > >
->> > > Rafael
->>
->> Here is the commit http://git.kernel.org/cgit/linux/kernel/git/torval
->> ds
->> /linux.git/commit/?id=0047f59834e5947d45f34f5f12eb330d158f700b
->>
->
-> Could you confirm that it is in your queue or tree for v4.10?
+On 11/30, Viresh Kumar wrote:
+> The generic set_opp() handler isn't sufficient for platforms with
+> complex DVFS.  For example, some TI platforms have multiple regulators
+> for a CPU device. The order in which various supplies need to be
+> programmed is only known to the platform code and its best to leave it
+> to it.
+> 
+> This patch implements APIs to register platform specific set_opp()
+> callback.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Tested-by: Dave Gerlach <d-gerlach@ti.com>
+> 
+> ---
 
-In fact it wasn't, so queuing it up now.
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-Thanks for the reminder!
+So this one has the same set/put problem the other APIs has?
+Presumably we're going to need to fix and change the API that is
+introduced here. Wouldn't it be better to do that first though?
 
-Rafael
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
