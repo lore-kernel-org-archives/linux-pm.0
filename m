@@ -1,103 +1,35 @@
-From: Sakari Ailus <sakari.ailus@linux.intel.com>
-Subject: [PATCH v2.2 1/2] smiapp: Implement power-on and power-off sequences without runtime PM
-Date: Wed, 30 Nov 2016 18:11:36 +0200
-Message-ID: <1480522296-24006-1-git-send-email-sakari.ailus@linux.intel.com>
-References: <1480440533-32685-1-git-send-email-sakari.ailus@linux.intel.com>
-Return-path: <linux-media-owner@vger.kernel.org>
-In-Reply-To: <1480440533-32685-1-git-send-email-sakari.ailus@linux.intel.com>
-Sender: linux-media-owner@vger.kernel.org
-To: stern@rowland.harvard.edu
-Cc: laurent.pinchart@ideasonboard.com, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
+From: "Luc, Piotr" <Piotr.Luc@intel.com>
+Subject: Re: [RESEND PATCH 06/11] cpufreq: intel_pstate: Add Knights Mill
+ CPUID
+Date: Wed, 30 Nov 2016 16:19:01 +0000
+Message-ID: <1480522710.10089.9.camel@intel.com>
+References: <20161013153105.2517-1-piotr.luc@intel.com>
+         <20161013153105.2517-7-piotr.luc@intel.com>
+         <1476381119.114531.61.camel@linux.intel.com>
+         <1477392172.9496.2.camel@intel.com>
+         <CAJZ5v0jDGaM9M_aZz_8mHD1UpY3khRrWNVXR_BQwnMYDx+t0xw@mail.gmail.com>
+         <1477395555.26677.2.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:3811 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752594AbcK3QTF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 30 Nov 2016 11:19:05 -0500
+In-Reply-To: <1477395555.26677.2.camel@intel.com>
+Content-Language: en-US
+Content-ID: <E9B18E133479A446A7ADF95EA99701D4@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "rafael@kernel.org" <rafael@kernel.org>
+Cc: "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Power on the sensor when the module is loaded and power it off when it is
-removed.
-
-Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
----
-since v2.1:
-
-- Power off conditionally, i.e. only if the device was powered.
-  pm_runtime_status_suspended() returns false if CONFIG_PM is not set.
-
- drivers/media/i2c/smiapp/smiapp-core.c | 29 ++++++++++-------------------
- 1 file changed, 10 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/media/i2c/smiapp/smiapp-core.c b/drivers/media/i2c/smiapp/smiapp-core.c
-index 59872b3..620f8ce 100644
---- a/drivers/media/i2c/smiapp/smiapp-core.c
-+++ b/drivers/media/i2c/smiapp/smiapp-core.c
-@@ -2741,8 +2741,6 @@ static const struct v4l2_subdev_internal_ops smiapp_internal_ops = {
-  * I2C Driver
-  */
- 
--#ifdef CONFIG_PM
--
- static int smiapp_suspend(struct device *dev)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
-@@ -2783,13 +2781,6 @@ static int smiapp_resume(struct device *dev)
- 	return rval;
- }
- 
--#else
--
--#define smiapp_suspend	NULL
--#define smiapp_resume	NULL
--
--#endif /* CONFIG_PM */
--
- static struct smiapp_hwconfig *smiapp_get_hwconfig(struct device *dev)
- {
- 	struct smiapp_hwconfig *hwcfg;
-@@ -2913,13 +2904,9 @@ static int smiapp_probe(struct i2c_client *client,
- 	if (IS_ERR(sensor->xshutdown))
- 		return PTR_ERR(sensor->xshutdown);
- 
--	pm_runtime_enable(&client->dev);
--
--	rval = pm_runtime_get_sync(&client->dev);
--	if (rval < 0) {
--		rval = -ENODEV;
--		goto out_power_off;
--	}
-+	rval = smiapp_power_on(&client->dev);
-+	if (rval < 0)
-+		return rval;
- 
- 	rval = smiapp_identify_module(sensor);
- 	if (rval) {
-@@ -3100,6 +3087,9 @@ static int smiapp_probe(struct i2c_client *client,
- 	if (rval < 0)
- 		goto out_media_entity_cleanup;
- 
-+	pm_runtime_set_active(&client->dev);
-+	pm_runtime_get_noresume(&client->dev);
-+	pm_runtime_enable(&client->dev);
- 	pm_runtime_set_autosuspend_delay(&client->dev, 1000);
- 	pm_runtime_use_autosuspend(&client->dev);
- 	pm_runtime_put_autosuspend(&client->dev);
-@@ -3113,8 +3103,7 @@ static int smiapp_probe(struct i2c_client *client,
- 	smiapp_cleanup(sensor);
- 
- out_power_off:
--	pm_runtime_put(&client->dev);
--	pm_runtime_disable(&client->dev);
-+	smiapp_power_off(&client->dev);
- 
- 	return rval;
- }
-@@ -3127,8 +3116,10 @@ static int smiapp_remove(struct i2c_client *client)
- 
- 	v4l2_async_unregister_subdev(subdev);
- 
--	pm_runtime_suspend(&client->dev);
- 	pm_runtime_disable(&client->dev);
-+	if (!pm_runtime_status_suspended(&client->dev))
-+		smiapp_power_off(&client->dev);
-+	pm_runtime_set_suspended(&client->dev);
- 
- 	for (i = 0; i < sensor->ssds_used; i++) {
- 		v4l2_device_unregister_subdev(&sensor->ssds[i].sd);
--- 
-2.1.4
+SGkgUmFmYWVsLA0KDQo+ID4gPiANCj4gPiA+IFRoZSBtZW50aW9uZWQgcGF0aCAwMy8xMSBpcyBh
+bHJlYWR5IG1lcmdlZCBpbiA0LjkucmMyLg0KPiA+IA0KPiA+IElmIGl0J3MgYWxyZWFkeSB0aGVy
+ZSwgSSBjYW4gcGljayB1cCB0aGUgaW50ZWxfcHN0YXRlIG9uZS4NCj4gPiANCj4gPiBUaGFua3Ms
+DQo+ID4gPiANCj4gPiA+IFJhZmFlbA0KPiANCj4gSGVyZSBpcyB0aGUgY29tbWl0wqBodHRwOi8v
+Z2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbA0KPiBkcw0KPiAvbGlu
+dXguZ2l0L2NvbW1pdC8/aWQ9MDA0N2Y1OTgzNGU1OTQ3ZDQ1ZjM0ZjVmMTJlYjMzMGQxNThmNzAw
+Yg0KPiANCg0KQ291bGQgeW91IGNvbmZpcm0gdGhhdCBpdCBpcyBpbiB5b3VyIHF1ZXVlIG9yIHRy
+ZWUgZm9yIHY0LjEwPw0KDQpUaGFua3MsDQpQaW90cg==
