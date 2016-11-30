@@ -1,61 +1,103 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Do not print PM domain add error message if EPROBE_DEFER
-Date: Wed, 30 Nov 2016 15:34:49 +0100
-Message-ID: <CAPDyKFqUY_2gmR3QTdVMuOAR5BrT9DVzXvdpgburK+QDNPA6bA@mail.gmail.com>
-References: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f172.google.com ([209.85.210.172]:32960 "EHLO
-        mail-wj0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757885AbcK3Oev (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 09:34:51 -0500
-Received: by mail-wj0-f172.google.com with SMTP id xy5so175513977wjc.0
-        for <linux-pm@vger.kernel.org>; Wed, 30 Nov 2016 06:34:51 -0800 (PST)
-In-Reply-To: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Subject: [PATCH v2.2 1/2] smiapp: Implement power-on and power-off sequences without runtime PM
+Date: Wed, 30 Nov 2016 18:11:36 +0200
+Message-ID: <1480522296-24006-1-git-send-email-sakari.ailus@linux.intel.com>
+References: <1480440533-32685-1-git-send-email-sakari.ailus@linux.intel.com>
+Return-path: <linux-media-owner@vger.kernel.org>
+In-Reply-To: <1480440533-32685-1-git-send-email-sakari.ailus@linux.intel.com>
+Sender: linux-media-owner@vger.kernel.org
+To: stern@rowland.harvard.edu
+Cc: laurent.pinchart@ideasonboard.com, linux-media@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On 30 November 2016 at 13:24, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> EPROBE_DEFER is not an error, hence printing an error message like
->
->     renesas_irqc e61c0000.interrupt-controller: failed to add to PM domain always-on: -517
->
-> may confuse the user.
->
-> Suppress the error message in case of EPROBE_DEFER to fix this.
->
-> Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Power on the sensor when the module is loaded and power it off when it is
+removed.
 
-Acked-by; Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+---
+since v2.1:
 
-Kind regards
-Uffe
+- Power off conditionally, i.e. only if the device was powered.
+  pm_runtime_status_suspended() returns false if CONFIG_PM is not set.
 
-> ---
->  drivers/base/power/domain.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 64164aac6ae3990a..f22137b52dcb641b 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2032,8 +2032,9 @@ int genpd_dev_pm_attach(struct device *dev)
->         mutex_unlock(&gpd_list_lock);
->
->         if (ret < 0) {
-> -               dev_err(dev, "failed to add to PM domain %s: %d",
-> -                       pd->name, ret);
-> +               if (ret != -EPROBE_DEFER)
-> +                       dev_err(dev, "failed to add to PM domain %s: %d",
-> +                               pd->name, ret);
->                 goto out;
->         }
->
-> --
-> 1.9.1
->
+ drivers/media/i2c/smiapp/smiapp-core.c | 29 ++++++++++-------------------
+ 1 file changed, 10 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/media/i2c/smiapp/smiapp-core.c b/drivers/media/i2c/smiapp/smiapp-core.c
+index 59872b3..620f8ce 100644
+--- a/drivers/media/i2c/smiapp/smiapp-core.c
++++ b/drivers/media/i2c/smiapp/smiapp-core.c
+@@ -2741,8 +2741,6 @@ static const struct v4l2_subdev_internal_ops smiapp_internal_ops = {
+  * I2C Driver
+  */
+ 
+-#ifdef CONFIG_PM
+-
+ static int smiapp_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+@@ -2783,13 +2781,6 @@ static int smiapp_resume(struct device *dev)
+ 	return rval;
+ }
+ 
+-#else
+-
+-#define smiapp_suspend	NULL
+-#define smiapp_resume	NULL
+-
+-#endif /* CONFIG_PM */
+-
+ static struct smiapp_hwconfig *smiapp_get_hwconfig(struct device *dev)
+ {
+ 	struct smiapp_hwconfig *hwcfg;
+@@ -2913,13 +2904,9 @@ static int smiapp_probe(struct i2c_client *client,
+ 	if (IS_ERR(sensor->xshutdown))
+ 		return PTR_ERR(sensor->xshutdown);
+ 
+-	pm_runtime_enable(&client->dev);
+-
+-	rval = pm_runtime_get_sync(&client->dev);
+-	if (rval < 0) {
+-		rval = -ENODEV;
+-		goto out_power_off;
+-	}
++	rval = smiapp_power_on(&client->dev);
++	if (rval < 0)
++		return rval;
+ 
+ 	rval = smiapp_identify_module(sensor);
+ 	if (rval) {
+@@ -3100,6 +3087,9 @@ static int smiapp_probe(struct i2c_client *client,
+ 	if (rval < 0)
+ 		goto out_media_entity_cleanup;
+ 
++	pm_runtime_set_active(&client->dev);
++	pm_runtime_get_noresume(&client->dev);
++	pm_runtime_enable(&client->dev);
+ 	pm_runtime_set_autosuspend_delay(&client->dev, 1000);
+ 	pm_runtime_use_autosuspend(&client->dev);
+ 	pm_runtime_put_autosuspend(&client->dev);
+@@ -3113,8 +3103,7 @@ static int smiapp_probe(struct i2c_client *client,
+ 	smiapp_cleanup(sensor);
+ 
+ out_power_off:
+-	pm_runtime_put(&client->dev);
+-	pm_runtime_disable(&client->dev);
++	smiapp_power_off(&client->dev);
+ 
+ 	return rval;
+ }
+@@ -3127,8 +3116,10 @@ static int smiapp_remove(struct i2c_client *client)
+ 
+ 	v4l2_async_unregister_subdev(subdev);
+ 
+-	pm_runtime_suspend(&client->dev);
+ 	pm_runtime_disable(&client->dev);
++	if (!pm_runtime_status_suspended(&client->dev))
++		smiapp_power_off(&client->dev);
++	pm_runtime_set_suspended(&client->dev);
+ 
+ 	for (i = 0; i < sensor->ssds_used; i++) {
+ 		v4l2_device_unregister_subdev(&sensor->ssds[i].sd);
+-- 
+2.1.4
