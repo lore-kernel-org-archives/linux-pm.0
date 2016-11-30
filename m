@@ -1,47 +1,39 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] PM / Domains: Do not print PM domain add error message if EPROBE_DEFER
-Date: Wed, 30 Nov 2016 13:24:56 +0100
-Message-ID: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [patch V2 00/12] thermal/x86_pkg_temp: Sanitize hotplug and
+ locking
+Date: Wed, 30 Nov 2016 20:30:03 +0800
+Message-ID: <1480509003.2202.6.camel@intel.com>
+References: <20161122175256.922158782@linutronix.de>
+         <1479844260.6544.220.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from laurent.telenet-ops.be ([195.130.137.89]:38962 "EHLO
-        laurent.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751038AbcK3MY6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 07:24:58 -0500
+Received: from mga14.intel.com ([192.55.52.115]:2258 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753438AbcK3MaP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 30 Nov 2016 07:30:15 -0500
+In-Reply-To: <1479844260.6544.220.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: "edubezval@gmail.com" <edubezval@gmail.com>, "peterz@infradead.org" <peterz@infradead.org>, "rt@linutronix.de" <rt@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "bp@alien8.de" <bp@alien8.de>, "x86@kernel.org" <x86@kernel.org>
 
-EPROBE_DEFER is not an error, hence printing an error message like
+On Tue, 2016-11-22 at 12:51 -0700, Pandruvada, Srinivas wrote:
+> On Tue, 2016-11-22 at 17:57 +0000, Thomas Gleixner wrote:
+> > 
+> > Changes vs. V1: Fix the package removal wreckage reported by
+> > Srinivas
+> > 
+> I haven't looked at individual patch but tested the series as a
+> whole. 
+> 
+> So Rui, you can add
+> 
+> Tested-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> 
 
-    renesas_irqc e61c0000.interrupt-controller: failed to add to PM domain always-on: -517
+applied.
 
-may confuse the user.
-
-Suppress the error message in case of EPROBE_DEFER to fix this.
-
-Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- drivers/base/power/domain.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 64164aac6ae3990a..f22137b52dcb641b 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2032,8 +2032,9 @@ int genpd_dev_pm_attach(struct device *dev)
- 	mutex_unlock(&gpd_list_lock);
- 
- 	if (ret < 0) {
--		dev_err(dev, "failed to add to PM domain %s: %d",
--			pd->name, ret);
-+		if (ret != -EPROBE_DEFER)
-+			dev_err(dev, "failed to add to PM domain %s: %d",
-+				pd->name, ret);
- 		goto out;
- 	}
- 
--- 
-1.9.1
-
+thanks,
+rui
