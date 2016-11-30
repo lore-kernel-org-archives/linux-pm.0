@@ -1,133 +1,815 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V6 05/10] PM / OPP: Pass struct dev_pm_opp_supply to _set_opp_voltage()
-Date: Wed, 30 Nov 2016 10:44:08 +0530
-Message-ID: <4df9dc487818ea4bc2f3e2e8cb4eb93b3acf71eb.1480481312.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V6 06/10] PM / OPP: Add infrastructure to manage multiple regulators
+Date: Wed, 30 Nov 2016 10:44:09 +0530
+Message-ID: <3b3ce1dac198fb668b97e81490bcbcf03d31e40d.1480481312.git.viresh.kumar@linaro.org>
 References: <cover.1480481312.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:36333 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751606AbcK3FOo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 00:14:44 -0500
-Received: by mail-pg0-f46.google.com with SMTP id f188so77461140pgc.3
-        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 21:14:44 -0800 (PST)
-In-Reply-To: <cover.1480481312.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1480481312.git.viresh.kumar@linaro.org>
-References: <cover.1480481312.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Pass the entire supply structure instead of all of its fields.
+This patch adds infrastructure to manage multiple regulators and updates
+the only user (cpufreq-dt) of dev_pm_opp_set{put}_regulator().
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Dave Gerlach <d-gerlach@ti.com>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+This is preparatory work for adding full support for devices with
+multiple regulators.
+
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Tested-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+
 ---
- drivers/base/power/opp/core.c | 44 +++++++++++++++++--------------------------
- 1 file changed, 17 insertions(+), 27 deletions(-)
+V4->V5:
+- Don't allocate from within rcu locked section.
+- s/+//
+---
+ drivers/base/power/opp/core.c    | 245 +++++++++++++++++++++++++++------------
+ drivers/base/power/opp/debugfs.c |  52 +++++++--
+ drivers/base/power/opp/of.c      | 103 +++++++++++-----
+ drivers/base/power/opp/opp.h     |  10 +-
+ drivers/cpufreq/cpufreq-dt.c     |   9 +-
+ include/linux/pm_opp.h           |   8 +-
+ 6 files changed, 302 insertions(+), 125 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index f706a961815d..8328ff06cc08 100644
+index 8328ff06cc08..f0dd0bd29ce8 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -542,8 +542,7 @@ static struct clk *_get_opp_clk(struct device *dev)
+@@ -93,6 +93,8 @@ struct opp_table *_find_opp_table(struct device *dev)
+  * Return: voltage in micro volt corresponding to the opp, else
+  * return 0
+  *
++ * This is useful only for devices with single power supply.
++ *
+  * Locking: This function must be called under rcu_read_lock(). opp is a rcu
+  * protected pointer. This means that opp which could have been fetched by
+  * opp_find_freq_{exact,ceil,floor} functions is valid as long as we are
+@@ -112,7 +114,7 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
+ 	if (IS_ERR_OR_NULL(tmp_opp))
+ 		pr_err("%s: Invalid parameters\n", __func__);
+ 	else
+-		v = tmp_opp->supply.u_volt;
++		v = tmp_opp->supplies[0].u_volt;
+ 
+ 	return v;
  }
+@@ -210,6 +212,24 @@ unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_clock_latency);
  
- static int _set_opp_voltage(struct device *dev, struct regulator *reg,
--			    unsigned long u_volt, unsigned long u_volt_min,
--			    unsigned long u_volt_max)
-+			    struct dev_pm_opp_supply *supply)
++static int _get_regulator_count(struct device *dev)
++{
++	struct opp_table *opp_table;
++	int count;
++
++	rcu_read_lock();
++
++	opp_table = _find_opp_table(dev);
++	if (!IS_ERR(opp_table))
++		count = opp_table->regulator_count;
++	else
++		count = 0;
++
++	rcu_read_unlock();
++
++	return count;
++}
++
+ /**
+  * dev_pm_opp_get_max_volt_latency() - Get max voltage latency in nanoseconds
+  * @dev: device for which we do this operation
+@@ -222,34 +242,51 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
  {
- 	int ret;
+ 	struct opp_table *opp_table;
+ 	struct dev_pm_opp *opp;
+-	struct regulator *reg;
++	struct regulator *reg, **regulators;
+ 	unsigned long latency_ns = 0;
+-	unsigned long min_uV = ~0, max_uV = 0;
+-	int ret;
++	int ret, i, count;
++	struct {
++		unsigned long min;
++		unsigned long max;
++	} *uV;
++
++	count = _get_regulator_count(dev);
++
++	/* Regulator may not be required for the device */
++	if (!count)
++		return 0;
++
++	regulators = kmalloc_array(count, sizeof(*regulators), GFP_KERNEL);
++	if (!regulators)
++		return 0;
++
++	uV = kmalloc_array(count, sizeof(*uV), GFP_KERNEL);
++	if (!uV)
++		goto free_regulators;
  
-@@ -554,14 +553,15 @@ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
- 		return 0;
+ 	rcu_read_lock();
+ 
+ 	opp_table = _find_opp_table(dev);
+ 	if (IS_ERR(opp_table)) {
+ 		rcu_read_unlock();
+-		return 0;
++		goto free_uV;
  	}
  
--	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__, u_volt_min,
--		u_volt, u_volt_max);
-+	dev_dbg(dev, "%s: voltages (mV): %lu %lu %lu\n", __func__,
-+		supply->u_volt_min, supply->u_volt, supply->u_volt_max);
+-	reg = opp_table->regulator;
+-	if (IS_ERR(reg)) {
+-		/* Regulator may not be required for device */
+-		rcu_read_unlock();
+-		return 0;
+-	}
++	memcpy(regulators, opp_table->regulators, count * sizeof(*regulators));
  
--	ret = regulator_set_voltage_triplet(reg, u_volt_min, u_volt,
--					    u_volt_max);
-+	ret = regulator_set_voltage_triplet(reg, supply->u_volt_min,
-+					    supply->u_volt, supply->u_volt_max);
- 	if (ret)
- 		dev_err(dev, "%s: failed to set voltage (%lu %lu %lu mV): %d\n",
--			__func__, u_volt_min, u_volt, u_volt_max, ret);
-+			__func__, supply->u_volt_min, supply->u_volt,
-+			supply->u_volt_max, ret);
+-	list_for_each_entry_rcu(opp, &opp_table->opp_list, node) {
+-		if (!opp->available)
+-			continue;
++	for (i = 0; i < count; i++) {
++		uV[i].min = ~0;
++		uV[i].max = 0;
++
++		list_for_each_entry_rcu(opp, &opp_table->opp_list, node) {
++			if (!opp->available)
++				continue;
  
- 	return ret;
+-		if (opp->supply.u_volt_min < min_uV)
+-			min_uV = opp->supply.u_volt_min;
+-		if (opp->supply.u_volt_max > max_uV)
+-			max_uV = opp->supply.u_volt_max;
++			if (opp->supplies[i].u_volt_min < uV[i].min)
++				uV[i].min = opp->supplies[i].u_volt_min;
++			if (opp->supplies[i].u_volt_max > uV[i].max)
++				uV[i].max = opp->supplies[i].u_volt_max;
++		}
+ 	}
+ 
+ 	rcu_read_unlock();
+@@ -258,9 +295,16 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
+ 	 * The caller needs to ensure that opp_table (and hence the regulator)
+ 	 * isn't freed, while we are executing this routine.
+ 	 */
+-	ret = regulator_set_voltage_time(reg, min_uV, max_uV);
+-	if (ret > 0)
+-		latency_ns = ret * 1000;
++	for (i = 0; reg = regulators[i], i < count; i++) {
++		ret = regulator_set_voltage_time(reg, uV[i].min, uV[i].max);
++		if (ret > 0)
++			latency_ns += ret * 1000;
++	}
++
++free_uV:
++	kfree(uV);
++free_regulators:
++	kfree(regulators);
+ 
+ 	return latency_ns;
  }
-@@ -583,8 +583,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	struct regulator *reg;
+@@ -580,7 +624,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ {
+ 	struct opp_table *opp_table;
+ 	struct dev_pm_opp *old_opp, *opp;
+-	struct regulator *reg;
++	struct regulator *reg = ERR_PTR(-ENXIO);
  	struct clk *clk;
  	unsigned long freq, old_freq;
--	unsigned long u_volt, u_volt_min, u_volt_max;
--	unsigned long old_u_volt, old_u_volt_min, old_u_volt_max;
-+	struct dev_pm_opp_supply old_supply, new_supply;
- 	int ret;
- 
- 	if (unlikely(!target_freq)) {
-@@ -634,17 +633,12 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	struct dev_pm_opp_supply old_supply, new_supply;
+@@ -633,14 +677,23 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
  		return ret;
  	}
  
--	if (IS_ERR(old_opp)) {
--		old_u_volt = 0;
--	} else {
--		old_u_volt = old_opp->supply.u_volt;
--		old_u_volt_min = old_opp->supply.u_volt_min;
--		old_u_volt_max = old_opp->supply.u_volt_max;
--	}
-+	if (IS_ERR(old_opp))
-+		old_supply.u_volt = 0;
-+	else
-+		memcpy(&old_supply, &old_opp->supply, sizeof(old_supply));
++	if (opp_table->regulators) {
++		/* This function only supports single regulator per device */
++		if (WARN_ON(opp_table->regulator_count > 1)) {
++			dev_err(dev, "multiple regulators not supported\n");
++			rcu_read_unlock();
++			return -EINVAL;
++		}
++
++		reg = opp_table->regulators[0];
++	}
++
+ 	if (IS_ERR(old_opp))
+ 		old_supply.u_volt = 0;
+ 	else
+-		memcpy(&old_supply, &old_opp->supply, sizeof(old_supply));
++		memcpy(&old_supply, old_opp->supplies, sizeof(old_supply));
  
--	u_volt = opp->supply.u_volt;
--	u_volt_min = opp->supply.u_volt_min;
--	u_volt_max = opp->supply.u_volt_max;
-+	memcpy(&new_supply, &opp->supply, sizeof(new_supply));
+-	memcpy(&new_supply, &opp->supply, sizeof(new_supply));
+-
+-	reg = opp_table->regulator;
++	memcpy(&new_supply, opp->supplies, sizeof(new_supply));
  
- 	reg = opp_table->regulator;
+ 	rcu_read_unlock();
  
-@@ -652,8 +646,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+@@ -764,9 +817,6 @@ static struct opp_table *_add_opp_table(struct device *dev)
  
- 	/* Scaling up? Scale voltage before frequency */
- 	if (freq > old_freq) {
--		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
--				       u_volt_max);
-+		ret = _set_opp_voltage(dev, reg, &new_supply);
- 		if (ret)
- 			goto restore_voltage;
+ 	_of_init_opp_table(opp_table, dev);
+ 
+-	/* Set regulator to a non-NULL error value */
+-	opp_table->regulator = ERR_PTR(-ENXIO);
+-
+ 	/* Find clk for the device */
+ 	opp_table->clk = clk_get(dev, NULL);
+ 	if (IS_ERR(opp_table->clk)) {
+@@ -815,7 +865,7 @@ static void _remove_opp_table(struct opp_table *opp_table)
+ 	if (opp_table->prop_name)
+ 		return;
+ 
+-	if (!IS_ERR(opp_table->regulator))
++	if (opp_table->regulators)
+ 		return;
+ 
+ 	/* Release clk */
+@@ -924,35 +974,50 @@ struct dev_pm_opp *_allocate_opp(struct device *dev,
+ 				 struct opp_table **opp_table)
+ {
+ 	struct dev_pm_opp *opp;
++	int count, supply_size;
++	struct opp_table *table;
+ 
+-	/* allocate new OPP node */
+-	opp = kzalloc(sizeof(*opp), GFP_KERNEL);
+-	if (!opp)
++	table = _add_opp_table(dev);
++	if (!table)
+ 		return NULL;
+ 
+-	INIT_LIST_HEAD(&opp->node);
++	/* Allocate space for at least one supply */
++	count = table->regulator_count ? table->regulator_count : 1;
++	supply_size = sizeof(*opp->supplies) * count;
+ 
+-	*opp_table = _add_opp_table(dev);
+-	if (!*opp_table) {
+-		kfree(opp);
++	/* allocate new OPP node and supplies structures */
++	opp = kzalloc(sizeof(*opp) + supply_size, GFP_KERNEL);
++	if (!opp) {
++		kfree(table);
+ 		return NULL;
  	}
-@@ -672,8 +665,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
  
- 	/* Scaling down? Scale voltage after frequency */
- 	if (freq < old_freq) {
--		ret = _set_opp_voltage(dev, reg, u_volt, u_volt_min,
--				       u_volt_max);
-+		ret = _set_opp_voltage(dev, reg, &new_supply);
- 		if (ret)
- 			goto restore_freq;
- 	}
-@@ -686,10 +678,8 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 			__func__, old_freq);
- restore_voltage:
- 	/* This shouldn't harm even if the voltages weren't updated earlier */
--	if (old_u_volt) {
--		_set_opp_voltage(dev, reg, old_u_volt, old_u_volt_min,
--				 old_u_volt_max);
--	}
-+	if (old_supply.u_volt)
-+		_set_opp_voltage(dev, reg, &old_supply);
- 
- 	return ret;
++	/* Put the supplies at the end of the OPP structure as an empty array */
++	opp->supplies = (struct dev_pm_opp_supply *)(opp + 1);
++	INIT_LIST_HEAD(&opp->node);
++
++	*opp_table = table;
++
+ 	return opp;
  }
+ 
+ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
+ 					 struct opp_table *opp_table)
+ {
+-	struct regulator *reg = opp_table->regulator;
+-
+-	if (!IS_ERR(reg) &&
+-	    !regulator_is_supported_voltage(reg, opp->supply.u_volt_min,
+-					    opp->supply.u_volt_max)) {
+-		pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
+-			__func__, opp->supply.u_volt_min,
+-			opp->supply.u_volt_max);
+-		return false;
++	struct regulator *reg;
++	int i;
++
++	for (i = 0; i < opp_table->regulator_count; i++) {
++		reg = opp_table->regulators[i];
++
++		if (!regulator_is_supported_voltage(reg,
++					opp->supplies[i].u_volt_min,
++					opp->supplies[i].u_volt_max)) {
++			pr_warn("%s: OPP minuV: %lu maxuV: %lu, not supported by regulator\n",
++				__func__, opp->supplies[i].u_volt_min,
++				opp->supplies[i].u_volt_max);
++			return false;
++		}
+ 	}
+ 
+ 	return true;
+@@ -984,12 +1049,13 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 
+ 		/* Duplicate OPPs */
+ 		dev_warn(dev, "%s: duplicate OPPs detected. Existing: freq: %lu, volt: %lu, enabled: %d. New: freq: %lu, volt: %lu, enabled: %d\n",
+-			 __func__, opp->rate, opp->supply.u_volt,
+-			 opp->available, new_opp->rate, new_opp->supply.u_volt,
+-			 new_opp->available);
++			 __func__, opp->rate, opp->supplies[0].u_volt,
++			 opp->available, new_opp->rate,
++			 new_opp->supplies[0].u_volt, new_opp->available);
+ 
++		/* Should we compare voltages for all regulators here ? */
+ 		return opp->available &&
+-		       new_opp->supply.u_volt == opp->supply.u_volt ? 0 : -EEXIST;
++		       new_opp->supplies[0].u_volt == opp->supplies[0].u_volt ? 0 : -EEXIST;
+ 	}
+ 
+ 	new_opp->opp_table = opp_table;
+@@ -1056,9 +1122,9 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
+ 	/* populate the opp table */
+ 	new_opp->rate = freq;
+ 	tol = u_volt * opp_table->voltage_tolerance_v1 / 100;
+-	new_opp->supply.u_volt = u_volt;
+-	new_opp->supply.u_volt_min = u_volt - tol;
+-	new_opp->supply.u_volt_max = u_volt + tol;
++	new_opp->supplies[0].u_volt = u_volt;
++	new_opp->supplies[0].u_volt_min = u_volt - tol;
++	new_opp->supplies[0].u_volt_max = u_volt + tol;
+ 	new_opp->available = true;
+ 	new_opp->dynamic = dynamic;
+ 
+@@ -1303,12 +1369,14 @@ void dev_pm_opp_put_prop_name(struct device *dev)
+ EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+ 
+ /**
+- * dev_pm_opp_set_regulator() - Set regulator name for the device
++ * dev_pm_opp_set_regulators() - Set regulator names for the device
+  * @dev: Device for which regulator name is being set.
+- * @name: Name of the regulator.
++ * @names: Array of pointers to the names of the regulator.
++ * @count: Number of regulators.
+  *
+  * In order to support OPP switching, OPP layer needs to know the name of the
+- * device's regulator, as the core would be required to switch voltages as well.
++ * device's regulators, as the core would be required to switch voltages as
++ * well.
+  *
+  * This must be called before any OPPs are initialized for the device.
+  *
+@@ -1318,10 +1386,13 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name)
++struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
++					    const char * const names[],
++					    unsigned int count)
+ {
+ 	struct opp_table *opp_table;
+ 	struct regulator *reg;
++	int ret, i;
+ 
+ 	mutex_lock(&opp_table_lock);
+ 
+@@ -1337,26 +1408,44 @@ struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ 		goto err;
+ 	}
+ 
+-	/* Already have a regulator set */
+-	if (WARN_ON(!IS_ERR(opp_table->regulator))) {
++	/* Already have regulators set */
++	if (WARN_ON(opp_table->regulators)) {
+ 		opp_table = ERR_PTR(-EBUSY);
+ 		goto err;
+ 	}
+-	/* Allocate the regulator */
+-	reg = regulator_get_optional(dev, name);
+-	if (IS_ERR(reg)) {
+-		opp_table = (struct opp_table *)reg;
+-		if (PTR_ERR(reg) != -EPROBE_DEFER)
+-			dev_err(dev, "%s: no regulator (%s) found: %ld\n",
+-				__func__, name, PTR_ERR(reg));
++
++	opp_table->regulators = kmalloc_array(count,
++					      sizeof(*opp_table->regulators),
++					      GFP_KERNEL);
++	if (!opp_table->regulators) {
++		opp_table = ERR_PTR(-ENOMEM);
+ 		goto err;
+ 	}
+ 
+-	opp_table->regulator = reg;
++	for (i = 0; i < count; i++) {
++		reg = regulator_get_optional(dev, names[i]);
++		if (IS_ERR(reg)) {
++			opp_table = (struct opp_table *)reg;
++			if (PTR_ERR(reg) != -EPROBE_DEFER)
++				dev_err(dev, "%s: no regulator (%s) found: %ld\n",
++					__func__, names[i], PTR_ERR(reg));
++			goto free_regulators;
++		}
++
++		opp_table->regulators[i] = reg;
++	}
++
++	opp_table->regulator_count = count;
+ 
+ 	mutex_unlock(&opp_table_lock);
+ 	return opp_table;
+ 
++free_regulators:
++	while (i != 0)
++		regulator_put(opp_table->regulators[--i]);
++
++	kfree(opp_table->regulators);
++	opp_table->regulators = NULL;
+ err:
+ 	_remove_opp_table(opp_table);
+ unlock:
+@@ -1364,10 +1453,10 @@ struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name)
+ 
+ 	return opp_table;
+ }
+-EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulator);
++EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulators);
+ 
+ /**
+- * dev_pm_opp_put_regulator() - Releases resources blocked for regulator
++ * dev_pm_opp_put_regulators() - Releases resources blocked for regulators
+  * @opp_table: opp_table returned from dev_pm_opp_set_regulator
+  *
+  * Locking: The internal opp_table and opp structures are RCU protected.
+@@ -1376,20 +1465,26 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulator);
+  * that this function is *NOT* called under RCU protection or in contexts where
+  * mutex cannot be locked.
+  */
+-void dev_pm_opp_put_regulator(struct opp_table *opp_table)
++void dev_pm_opp_put_regulators(struct opp_table *opp_table)
+ {
++	int i;
++
+ 	mutex_lock(&opp_table_lock);
+ 
+-	if (IS_ERR(opp_table->regulator)) {
+-		pr_err("%s: Doesn't have regulator set\n", __func__);
++	if (!opp_table->regulators) {
++		pr_err("%s: Doesn't have regulators set\n", __func__);
+ 		goto unlock;
+ 	}
+ 
+ 	/* Make sure there are no concurrent readers while updating opp_table */
+ 	WARN_ON(!list_empty(&opp_table->opp_list));
+ 
+-	regulator_put(opp_table->regulator);
+-	opp_table->regulator = ERR_PTR(-ENXIO);
++	for (i = opp_table->regulator_count - 1; i >= 0; i--)
++		regulator_put(opp_table->regulators[i]);
++
++	kfree(opp_table->regulators);
++	opp_table->regulators = NULL;
++	opp_table->regulator_count = 0;
+ 
+ 	/* Try freeing opp_table if this was the last blocking resource */
+ 	_remove_opp_table(opp_table);
+@@ -1397,7 +1492,7 @@ void dev_pm_opp_put_regulator(struct opp_table *opp_table)
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
+ }
+-EXPORT_SYMBOL_GPL(dev_pm_opp_put_regulator);
++EXPORT_SYMBOL_GPL(dev_pm_opp_put_regulators);
+ 
+ /**
+  * dev_pm_opp_add()  - Add an OPP table from a table definitions
+diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
+index c897676ca35f..95f433db4ac7 100644
+--- a/drivers/base/power/opp/debugfs.c
++++ b/drivers/base/power/opp/debugfs.c
+@@ -15,6 +15,7 @@
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/limits.h>
++#include <linux/slab.h>
+ 
+ #include "opp.h"
+ 
+@@ -34,6 +35,46 @@ void opp_debug_remove_one(struct dev_pm_opp *opp)
+ 	debugfs_remove_recursive(opp->dentry);
+ }
+ 
++static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
++				      struct opp_table *opp_table,
++				      struct dentry *pdentry)
++{
++	struct dentry *d;
++	int i = 0;
++	char *name;
++
++	/* Always create at least supply-0 directory */
++	do {
++		name = kasprintf(GFP_KERNEL, "supply-%d", i);
++
++		/* Create per-opp directory */
++		d = debugfs_create_dir(name, pdentry);
++
++		kfree(name);
++
++		if (!d)
++			return false;
++
++		if (!debugfs_create_ulong("u_volt_target", S_IRUGO, d,
++					  &opp->supplies[i].u_volt))
++			return false;
++
++		if (!debugfs_create_ulong("u_volt_min", S_IRUGO, d,
++					  &opp->supplies[i].u_volt_min))
++			return false;
++
++		if (!debugfs_create_ulong("u_volt_max", S_IRUGO, d,
++					  &opp->supplies[i].u_volt_max))
++			return false;
++
++		if (!debugfs_create_ulong("u_amp", S_IRUGO, d,
++					  &opp->supplies[i].u_amp))
++			return false;
++	} while (++i < opp_table->regulator_count);
++
++	return true;
++}
++
+ int opp_debug_create_one(struct dev_pm_opp *opp, struct opp_table *opp_table)
+ {
+ 	struct dentry *pdentry = opp_table->dentry;
+@@ -63,16 +104,7 @@ int opp_debug_create_one(struct dev_pm_opp *opp, struct opp_table *opp_table)
+ 	if (!debugfs_create_ulong("rate_hz", S_IRUGO, d, &opp->rate))
+ 		return -ENOMEM;
+ 
+-	if (!debugfs_create_ulong("u_volt_target", S_IRUGO, d, &opp->supply.u_volt))
+-		return -ENOMEM;
+-
+-	if (!debugfs_create_ulong("u_volt_min", S_IRUGO, d, &opp->supply.u_volt_min))
+-		return -ENOMEM;
+-
+-	if (!debugfs_create_ulong("u_volt_max", S_IRUGO, d, &opp->supply.u_volt_max))
+-		return -ENOMEM;
+-
+-	if (!debugfs_create_ulong("u_amp", S_IRUGO, d, &opp->supply.u_amp))
++	if (!opp_debug_create_supplies(opp, opp_table, d))
+ 		return -ENOMEM;
+ 
+ 	if (!debugfs_create_ulong("clock_latency_ns", S_IRUGO, d,
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index bdf409d42126..3f7d2591b173 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -17,6 +17,7 @@
+ #include <linux/errno.h>
+ #include <linux/device.h>
+ #include <linux/of.h>
++#include <linux/slab.h>
+ #include <linux/export.h>
+ 
+ #include "opp.h"
+@@ -101,16 +102,16 @@ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
+ 	return true;
+ }
+ 
+-/* TODO: Support multiple regulators */
+ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 			      struct opp_table *opp_table)
+ {
+-	u32 microvolt[3] = {0};
+-	u32 val;
+-	int count, ret;
++	u32 *microvolt, *microamp = NULL;
++	int supplies, vcount, icount, ret, i, j;
+ 	struct property *prop = NULL;
+ 	char name[NAME_MAX];
+ 
++	supplies = opp_table->regulator_count ? opp_table->regulator_count : 1;
++
+ 	/* Search for "opp-microvolt-<name>" */
+ 	if (opp_table->prop_name) {
+ 		snprintf(name, sizeof(name), "opp-microvolt-%s",
+@@ -128,34 +129,29 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 			return 0;
+ 	}
+ 
+-	count = of_property_count_u32_elems(opp->np, name);
+-	if (count < 0) {
++	vcount = of_property_count_u32_elems(opp->np, name);
++	if (vcount < 0) {
+ 		dev_err(dev, "%s: Invalid %s property (%d)\n",
+-			__func__, name, count);
+-		return count;
++			__func__, name, vcount);
++		return vcount;
+ 	}
+ 
+-	/* There can be one or three elements here */
+-	if (count != 1 && count != 3) {
+-		dev_err(dev, "%s: Invalid number of elements in %s property (%d)\n",
+-			__func__, name, count);
++	/* There can be one or three elements per supply */
++	if (vcount != supplies && vcount != supplies * 3) {
++		dev_err(dev, "%s: Invalid number of elements in %s property (%d) with supplies (%d)\n",
++			__func__, name, vcount, supplies);
+ 		return -EINVAL;
+ 	}
+ 
+-	ret = of_property_read_u32_array(opp->np, name, microvolt, count);
++	microvolt = kmalloc_array(vcount, sizeof(*microvolt), GFP_KERNEL);
++	if (!microvolt)
++		return -ENOMEM;
++
++	ret = of_property_read_u32_array(opp->np, name, microvolt, vcount);
+ 	if (ret) {
+ 		dev_err(dev, "%s: error parsing %s: %d\n", __func__, name, ret);
+-		return -EINVAL;
+-	}
+-
+-	opp->supply.u_volt = microvolt[0];
+-
+-	if (count == 1) {
+-		opp->supply.u_volt_min = opp->supply.u_volt;
+-		opp->supply.u_volt_max = opp->supply.u_volt;
+-	} else {
+-		opp->supply.u_volt_min = microvolt[1];
+-		opp->supply.u_volt_max = microvolt[2];
++		ret = -EINVAL;
++		goto free_microvolt;
+ 	}
+ 
+ 	/* Search for "opp-microamp-<name>" */
+@@ -172,10 +168,59 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+ 		prop = of_find_property(opp->np, name, NULL);
+ 	}
+ 
+-	if (prop && !of_property_read_u32(opp->np, name, &val))
+-		opp->supply.u_amp = val;
++	if (prop) {
++		icount = of_property_count_u32_elems(opp->np, name);
++		if (icount < 0) {
++			dev_err(dev, "%s: Invalid %s property (%d)\n", __func__,
++				name, icount);
++			ret = icount;
++			goto free_microvolt;
++		}
+ 
+-	return 0;
++		if (icount != supplies) {
++			dev_err(dev, "%s: Invalid number of elements in %s property (%d) with supplies (%d)\n",
++				__func__, name, icount, supplies);
++			ret = -EINVAL;
++			goto free_microvolt;
++		}
++
++		microamp = kmalloc_array(icount, sizeof(*microamp), GFP_KERNEL);
++		if (!microamp) {
++			ret = -EINVAL;
++			goto free_microvolt;
++		}
++
++		ret = of_property_read_u32_array(opp->np, name, microamp,
++						 icount);
++		if (ret) {
++			dev_err(dev, "%s: error parsing %s: %d\n", __func__,
++				name, ret);
++			ret = -EINVAL;
++			goto free_microamp;
++		}
++	}
++
++	for (i = 0, j = 0; i < supplies; i++) {
++		opp->supplies[i].u_volt = microvolt[j++];
++
++		if (vcount == supplies) {
++			opp->supplies[i].u_volt_min = opp->supplies[i].u_volt;
++			opp->supplies[i].u_volt_max = opp->supplies[i].u_volt;
++		} else {
++			opp->supplies[i].u_volt_min = microvolt[j++];
++			opp->supplies[i].u_volt_max = microvolt[j++];
++		}
++
++		if (microamp)
++			opp->supplies[i].u_amp = microamp[i];
++	}
++
++free_microamp:
++	kfree(microamp);
++free_microvolt:
++	kfree(microvolt);
++
++	return ret;
+ }
+ 
+ /**
+@@ -304,8 +349,8 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ 
+ 	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu\n",
+ 		 __func__, new_opp->turbo, new_opp->rate,
+-		 new_opp->supply.u_volt, new_opp->supply.u_volt_min,
+-		 new_opp->supply.u_volt_max, new_opp->clock_latency_ns);
++		 new_opp->supplies[0].u_volt, new_opp->supplies[0].u_volt_min,
++		 new_opp->supplies[0].u_volt_max, new_opp->clock_latency_ns);
+ 
+ 	/*
+ 	 * Notify the changes in the availability of the operable
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 8a02516542c2..5b0f7e53bede 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -61,7 +61,7 @@ extern struct list_head opp_tables;
+  * @turbo:	true if turbo (boost) OPP
+  * @suspend:	true if suspend OPP
+  * @rate:	Frequency in hertz
+- * @supply:	Power supply voltage/current values
++ * @supplies:	Power supplies voltage/current values
+  * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
+  *		frequency from any other OPP's frequency.
+  * @opp_table:	points back to the opp_table struct this opp belongs to
+@@ -80,7 +80,7 @@ struct dev_pm_opp {
+ 	bool suspend;
+ 	unsigned long rate;
+ 
+-	struct dev_pm_opp_supply supply;
++	struct dev_pm_opp_supply *supplies;
+ 
+ 	unsigned long clock_latency_ns;
+ 
+@@ -139,7 +139,8 @@ enum opp_table_access {
+  * @supported_hw_count: Number of elements in supported_hw array.
+  * @prop_name: A name to postfix to many DT properties, while parsing them.
+  * @clk: Device's clock handle
+- * @regulator: Supply regulator
++ * @regulators: Supply regulators
++ * @regulator_count: Number of power supply regulators
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+  *
+@@ -174,7 +175,8 @@ struct opp_table {
+ 	unsigned int supported_hw_count;
+ 	const char *prop_name;
+ 	struct clk *clk;
+-	struct regulator *regulator;
++	struct regulator **regulators;
++	unsigned int regulator_count;
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *dentry;
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 4d3ec92cbabf..1cd1fcfe835a 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -188,7 +188,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	 */
+ 	name = find_supply_name(cpu_dev);
+ 	if (name) {
+-		opp_table = dev_pm_opp_set_regulator(cpu_dev, name);
++		const char *names[] = {name};
++
++		opp_table = dev_pm_opp_set_regulators(cpu_dev, names,
++						ARRAY_SIZE(names));
+ 		if (IS_ERR(opp_table)) {
+ 			ret = PTR_ERR(opp_table);
+ 			dev_err(cpu_dev, "Failed to set regulator for cpu%d: %d\n",
+@@ -289,7 +292,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ out_free_opp:
+ 	dev_pm_opp_of_cpumask_remove_table(policy->cpus);
+ 	if (name)
+-		dev_pm_opp_put_regulator(opp_table);
++		dev_pm_opp_put_regulators(opp_table);
+ out_put_clk:
+ 	clk_put(cpu_clk);
+ 
+@@ -304,7 +307,7 @@ static int cpufreq_exit(struct cpufreq_policy *policy)
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
+ 	if (priv->reg_name)
+-		dev_pm_opp_put_regulator(priv->opp_table);
++		dev_pm_opp_put_regulators(priv->opp_table);
+ 
+ 	clk_put(policy->clk);
+ 	kfree(priv);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 824f7268f687..9a825ae78653 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -79,8 +79,8 @@ int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
+ void dev_pm_opp_put_supported_hw(struct device *dev);
+ int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
+ void dev_pm_opp_put_prop_name(struct device *dev);
+-struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name);
+-void dev_pm_opp_put_regulator(struct opp_table *opp_table);
++struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count);
++void dev_pm_opp_put_regulators(struct opp_table *opp_table);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+@@ -187,12 +187,12 @@ static inline int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
+ 
+ static inline void dev_pm_opp_put_prop_name(struct device *dev) {}
+ 
+-static inline struct opp_table *dev_pm_opp_set_regulator(struct device *dev, const char *name)
++static inline struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count)
+ {
+ 	return ERR_PTR(-ENOTSUPP);
+ }
+ 
+-static inline void dev_pm_opp_put_regulator(struct opp_table *opp_table) {}
++static inline void dev_pm_opp_put_regulators(struct opp_table *opp_table) {}
+ 
+ static inline int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ {
 -- 
 2.7.1.410.g6faf27b
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
