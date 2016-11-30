@@ -1,55 +1,88 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V6 01/10] PM / OPP: Fix incorrect cpu-supply property in binding
-Date: Wed, 30 Nov 2016 10:44:04 +0530
-Message-ID: <8f19cf047b21de8b0e837c9e60e48edbbd76b91d.1480481312.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V6 02/10] PM / OPP: Reword binding supporting multiple regulators per device
+Date: Wed, 30 Nov 2016 10:44:05 +0530
+Message-ID: <bc027ba0694dabe839da75325d6a901434944f9e.1480481312.git.viresh.kumar@linaro.org>
 References: <cover.1480481312.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:34555 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751404AbcK3FOf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 00:14:35 -0500
+Received: by mail-pg0-f43.google.com with SMTP id x23so77790096pgx.1
+        for <linux-pm@vger.kernel.org>; Tue, 29 Nov 2016 21:14:34 -0800 (PST)
+In-Reply-To: <cover.1480481312.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1480481312.git.viresh.kumar@linaro.org>
+References: <cover.1480481312.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-The regulator bindings allow the "<name>-supply" property to define a
-single parent supply and not a list of parents.
+On certain platforms (like TI), DVFS for a single device (CPU) requires
+configuring multiple power supplies.
 
-Fix the wrong example code present in OPP bindings.
+The OPP bindings already contains binding and example to explain this
+case, but it isn't sufficient.
 
-While at it also change the compatible string as Rob pointed out earlier
-that none of A7 implementation have multiple supplies for the CPU core.
+- There is no way for the code parsing these bindings to know which
+  voltage values belong to which power supply.
 
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+- It is not possible to know the order in which the supplies need to be
+  configured while switching OPPs.
+
+This patch clarifies on those details by mentioning that such
+information is left for the implementation specific bindings to explain.
+They may want to hardcode such details or implement their own properties
+to get such information. All implementations using multiple regulators
+for their devices must provide a binding document explaining their
+implementation.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
 diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index ee91cbdd95ee..f0239f68d186 100644
+index f0239f68d186..9f5ca4457b5f 100644
 --- a/Documentation/devicetree/bindings/opp/opp.txt
 +++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -386,10 +386,12 @@ Example 4: Handling multiple regulators
- / {
- 	cpus {
- 		cpu@0 {
--			compatible = "arm,cortex-a7";
-+			compatible = "vendor,cpu-type";
- 			...
+@@ -86,8 +86,14 @@ properties.
+   Single entry is for target voltage and three entries are for <target min max>
+   voltages.
  
--			cpu-supply = <&cpu_supply0>, <&cpu_supply1>, <&cpu_supply2>;
-+			vcc0-supply = <&cpu_supply0>;
-+			vcc1-supply = <&cpu_supply1>;
-+			vcc2-supply = <&cpu_supply2>;
- 			operating-points-v2 = <&cpu0_opp_table>;
- 		};
- 	};
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. The OPP binding doesn't provide any provisions to
++  relate the values to their power supplies or the order in which the supplies
++  need to be configured and that is left for the implementation specific
++  binding.
++
++  Entries for all regulators shall be of the same size, i.e. either all use a
++  single value or triplets.
+ 
+ - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
+   the above opp-microvolt property, but allows multiple voltage ranges to be
+@@ -104,10 +110,13 @@ properties.
+ 
+   Should only be set if opp-microvolt is set for the OPP.
+ 
+-  Entries for multiple regulators must be present in the same order as
+-  regulators are specified in device's DT node. If this property isn't required
+-  for few regulators, then this should be marked as zero for them. If it isn't
+-  required for any regulator, then this property need not be present.
++  Entries for multiple regulators shall be provided in the same field separated
++  by angular brackets <>. If current values aren't required for a regulator,
++  then it shall be filled with 0. If current values aren't required for any of
++  the regulators, then this field is not required. The OPP binding doesn't
++  provide any provisions to relate the values to their power supplies or the
++  order in which the supplies need to be configured and that is left for the
++  implementation specific binding.
+ 
+ - opp-microamp-<name>: Named opp-microamp property. Similar to
+   opp-microvolt-<name> property, but for microamp instead.
 -- 
 2.7.1.410.g6faf27b
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
