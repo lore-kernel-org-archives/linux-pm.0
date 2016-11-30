@@ -1,41 +1,27 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [patch V2 00/12] thermal/x86_pkg_temp: Sanitize hotplug and
- locking
-Date: Tue, 29 Nov 2016 21:27:59 -0800
-Message-ID: <20161130052758.GB27252@localhost.localdomain>
-References: <20161122175256.922158782@linutronix.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Allow inactive opp_device to be present in dev
+ list
+Date: Wed, 30 Nov 2016 11:03:13 +0530
+Message-ID: <20161130053313.GI3288@vireshk-i7>
+References: <2fe61813c867c173ddfcb0b9cabc00a65997a935.1480056714.git.viresh.kumar@linaro.org>
+ <20161129024647.GY6095@codeaurora.org>
+ <20161129051115.GE3288@vireshk-i7>
+ <20161129205638.GB6095@codeaurora.org>
+ <CAKohpom1khq8ot5VBJmBufh+58hkiCD4Ko7GOScK55cxW8z++w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35421 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751529AbcK3F2D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 00:28:03 -0500
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161122175256.922158782@linutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAKohpom1khq8ot5VBJmBufh+58hkiCD4Ko7GOScK55cxW8z++w@mail.gmail.com>
+Sender: stable-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Joonyoung Shim <jy0922.shim@samsung.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "# 3.13.x" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Rui Zhang <rui.zhang@intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Borislav Petkov <bp@alien8.de>, linux-pm@vger.kernel.org, x86@kernel.org, rt@linutronix.de, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 
-Rui,
+On 30-11-16, 07:06, Viresh Kumar wrote:
+> Okay, can you please send it formally and I can Ack it then ?
 
-On Tue, Nov 22, 2016 at 05:57:04PM -0000, Thomas Gleixner wrote:
+I have sent it now to move things faster. Thanks.
 
-<cut>
-
-> ---
->  x86_pkg_temp_thermal.c |  593 ++++++++++++++++++++-----------------------------
->  1 file changed, 249 insertions(+), 344 deletions(-)
-
-I am assuming you are handling this one in your tree directly. In any
-case, you can add my:
-
-Acked-by: Eduardo Valentin <edubezval@gmail>
-
-for the series.
-
-BR,
-
-Eduardo
-
+-- 
+viresh
