@@ -1,95 +1,51 @@
-From: Ye Xiaolong <xiaolong.ye@intel.com>
-Subject: Re: [kbuild-all] [PATCH 4/4] thermal/intel_powerclamp: stop sched
- tick in forced idle
-Date: Wed, 30 Nov 2016 05:50:45 +0800
-Message-ID: <20161129215045.GE16489@yexl-desktop>
-References: <1480369492-23901-5-git-send-email-jacob.jun.pan@linux.intel.com>
- <201611290756.8ueWRhF9%fengguang.wu@intel.com>
- <20161128231123.24fc63c0@yairi>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:13514 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750700AbcK3Fuq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 30 Nov 2016 00:50:46 -0500
-Content-Disposition: inline
-In-Reply-To: <20161128231123.24fc63c0@yairi>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH 00/12] extcon: Replace the deprecated extcon API
+Date: Wed, 30 Nov 2016 14:57:28 +0900
+Message-ID: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: balbi@kernel.org, gregkh@linuxfoundation.org, kishon@ti.com, sre@kernel.org
+Cc: Peter.Chen@nxp.com, wens@csie.org, yoshihiro.shimoda.uh@renesas.com, maxime.ripard@free-electrons.com, b-liu@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-renesas-soc@vger.kernel.org, cw00.choi@samsung.com, chanwoo@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: kbuild test robot <lkp@intel.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On 11/28, Jacob Pan wrote:
->On Tue, 29 Nov 2016 07:21:14 +0800
->kbuild test robot <lkp@intel.com> wrote:
->
->> Hi Jacob,
->> 
->> [auto build test ERROR on soc-thermal/next]
->> [also build test ERROR on v4.9-rc7 next-20161128]
->> [if your patch is applied to the wrong git tree, please drop us a
->> note to help improve the system]
->> 
->This patchset is applicable on top of another patch indicated in the
->cover letter.
->(https://lkml.org/lkml/2016/11/28/683)
->
+This patches just replace the deprecated extcon API without any change
+of extcon operation and use the resource-managed function for
+extcon_register_notifier().
 
-Thanks for the info, you could try use git(>=2.9.0) format-patch --base=<commit> (or
---base=auto for convenience) to record what (public, well-known) commit
-your patch series was built on, then 0day would be able to know the
-exact base and prerequisite patches.
+The new extcon API instead of deprecated API.
+- extcon_set_cable_state_() -> extcon_set_state_sync();
+- extcon_get_cable_state_() -> extcon_get_state();
 
-Thanks,
-Xiaolong
+The each patch has not any dependency among patches. So, each maintainer
+could pick up each patch without any problem.
 
->Thanks,
->
->Jacob
->
->> url:
->> https://github.com/0day-ci/linux/commits/Jacob-Pan/Misc-enhancements-to-intel_powerclamp/20161129-065523
->> base:
->> https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
->> next config: x86_64-randconfig-x015-201648 (attached as .config)
->> compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901 reproduce: # save the
->> attached .config to linux build tree make ARCH=x86_64 
->> 
->> All errors (new ones prefixed by >>):
->> 
->>    drivers/thermal/intel_powerclamp.c: In function
->> 'clamp_idle_injection_func':
->> >> drivers/thermal/intel_powerclamp.c:448:2: error: implicit
->> >> declaration of function
->> >> 'play_idle' [-Werror=implicit-function-declaration]
->>      play_idle(jiffies_to_msecs(w_data->duration_jiffies));
->>      ^~~~~~~~~
->>    cc1: some warnings being treated as errors
->> 
->> vim +/play_idle +448 drivers/thermal/intel_powerclamp.c
->> 
->>    442			smp_mb();
->>    443		}
->>    444	
->>    445		if (should_skip)
->>    446			goto balance;
->>    447	
->>  > 448
->>  > play_idle(jiffies_to_msecs(w_data->duration_jiffies));
->>    449	
->>    450	balance:
->>    451		if (clamping && w_data->clamping &&
->> cpu_online(w_data->cpu))
->> 
->> ---
->> 0-DAY kernel test infrastructure                Open Source
->> Technology Center
->> https://lists.01.org/pipermail/kbuild-all                   Intel
->> Corporation
->
->[Jacob Pan]
->_______________________________________________
->kbuild-all mailing list
->kbuild-all@lists.01.org
->https://lists.01.org/mailman/listinfo/kbuild-all
+Chanwoo Choi (12):
+  phy: rcar-gen3-usb2: Replace the deprecated extcon API
+  phy: sun4i-usb: Replace the deprecated extcon API
+  power_supply: axp288_charger: Replace the extcon API
+  power_supply: qcom_smbb: Replace the deprecated extcon API
+  usb: chipdata: Replace the extcon API
+  usb: dwc3: omap: Replace the extcon API
+  usb: sunxi: Uses the resource-managed extcon API when registering extcon notifier
+  usb: phy: msm: Replace the extcon API
+  usb: phy: omap-otg: Replace the extcon API
+  usb: phy: qcom-8x16-usb: Replace the extcon API
+  usb: phy: tahvo: Replace the deprecated extcon API
+  usb: renesas_usbhs: Replace the deprecated extcon API
+
+ drivers/phy/phy-rcar-gen3-usb2.c      |  8 +++---
+ drivers/phy/phy-sun4i-usb.c           |  4 +--
+ drivers/power/supply/axp288_charger.c | 51 +++++++++--------------------------
+ drivers/power/supply/qcom_smbb.c      |  2 +-
+ drivers/usb/chipidea/core.c           | 30 +++++----------------
+ drivers/usb/dwc3/dwc3-omap.c          | 20 +++++---------
+ drivers/usb/musb/sunxi.c              | 12 +++------
+ drivers/usb/phy/phy-msm-usb.c         | 33 ++++++++---------------
+ drivers/usb/phy/phy-omap-otg.c        | 24 +++++------------
+ drivers/usb/phy/phy-qcom-8x16-usb.c   | 13 +++------
+ drivers/usb/phy/phy-tahvo.c           | 10 +++----
+ drivers/usb/renesas_usbhs/common.c    |  2 +-
+ 12 files changed, 63 insertions(+), 146 deletions(-)
+
+-- 
+1.9.1
