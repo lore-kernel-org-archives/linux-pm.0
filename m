@@ -1,89 +1,119 @@
-From: Eric Anholt <eric@anholt.net>
-Subject: Re: [PATCH V8 2/6] thermal: bcm2835: add thermal driver for bcm2835
- soc
-Date: Tue, 29 Nov 2016 14:12:46 -0800
-Message-ID: <87lgw2lyu9.fsf@eliezer.anholt.net>
-References: <1478081906-12009-1-git-send-email-kernel@martin.sperl.org>
- <1478081906-12009-3-git-send-email-kernel@martin.sperl.org>
- <20161117021107.GA2647@localhost.localdomain>
- <766e1b70-d83a-eb52-fa2b-aec435e85673@martin.sperl.org>
- <20161117151019.GA3115@localhost.localdomain>
- <7957B3CC-0E18-4B27-82EB-EF88B7695E28@martin.sperl.org>
- <20161119042224.GA25063@localhost.localdomain>
- <28F93ABE-8210-4389-AE77-4D5E830E669B@martin.sperl.org>
- <20161125052008.GA8342@localhost.localdomain>
- <87twarz6s1.fsf@eliezer.anholt.net>
- <20161129013436.GA3080@localhost.localdomain>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Introduce domain-performance-state
+ binding
+Date: Tue, 29 Nov 2016 17:08:04 -0800
+Message-ID: <20161130010804.GI6095@codeaurora.org>
+References: <20161122031717.GE10014@vireshk-i7>
+ <m260nfz8mr.fsf@baylibre.com>
+ <CAKfTPtDR6Y5UgaqJ+D5T0yBeFRSYWm6OT1+r4ZABrtqtvF2D0w@mail.gmail.com>
+ <m2wpfuw5wq.fsf@baylibre.com>
+ <CAKfTPtBMro7+UruF0-E26TJPu6pEAvkjF9V7SKriNBm5q+K9+A@mail.gmail.com>
+ <m2fumhx21h.fsf@baylibre.com>
+ <20161124020322.GI6095@codeaurora.org>
+ <20161124044020.GC9376@vireshk-i7>
+ <4f815e31-22d0-fef7-953c-257fa2bbcb9d@codeaurora.org>
+ <20161129065726.GG3288@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8674237064608735609=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161129013436.GA3080@localhost.localdomain>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Russell King <linux@arm.linux.org.uk>, Pawel Moll <pawel.moll@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-pm@vger.kernel.org, Lee Jones <lee@kernel.org>, Will Deacon <will.deacon@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-rpi-kernel@lists.infradead.org, Martin Sperl <kernel@martin.sperl.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
-List-Id: linux-pm@vger.kernel.org
-
---===============8674237064608735609==
-Content-Type: multipart/signed; boundary="=-=-=";
-	micalg=pgp-sha512; protocol="application/pgp-signature"
-
---=-=-=
-Content-Type: text/plain
-
-Eduardo Valentin <edubezval@gmail.com> writes:
-
-> Hello Eric, Martin,
->
-> On Mon, Nov 28, 2016 at 12:30:38PM -0800, Eric Anholt wrote:
->> Either the device was initialized by the firmware before handing off to
->> ARM (today's firmware) or it never will be (potential future firmware).
->
-> And do you have a way to check if the firmware has the initialization
-> code or not? By firmware version, for example. Or even, chip version,
-> maybe?
-
-We would know if it's not present because the register would be in its
-power-on reset state, which is what the code is checking for.
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE/JuuFDWp9/ZkuCBXtdYpNtH8nugFAlg9/V4ACgkQtdYpNtH8
-nuiB0RAAinlrEOEz0n7DGGsG2RmiOQhfeMedvz/lEmi1LvdvINWjFXDyRTBzmo/0
-MV0Ij3KjptaGpdE4+NUI9VvyuVFcWCPo33Er3ee8to8cswhE+e40+yLhz8O/imQ/
-r3wConMmGrg0tw1po1mvTjHCP3zx9/ZQBiB06Istqyb32o+dipCbiwJ1ZPGyFbi7
-CZ/C3JHpmCHVTBKJYoTVobt2bQ092wjoKTyLXGGw8Fq9jy0Be644Kjqk7BNZM+Aq
-nLakx14D9Qr8pdQEXe/HUuXyPuH5X/p1Qsm3BbUznzk9HjbbqYQn+pilL02ALTYI
-AUQf4pDAZstk1yFpZUZnb7Jsj1kUapm3iMPyL0ybmlWC3q7QpiYEVTiVELxvXEjs
-ll978O9hV9cq7Q0ZvlxqZNCJvMPtHES+dpTLXu3phd5dz1gBFpR8i9yWBOhzLQti
-cCbEK4VXg38++RP7zyaa3xePVjuDCtR9I39ix6KoM6MKzUoNjf1Q4VL920xfL0JW
-/TQu1q/y2fRy69/rMkDudo/igGMFEEYsbhMP/Lf5z/nJKfcGmPdWxq9z+qgENCU1
-5oSLL41Y2Knespl3gA+Y3M+KYRMPmC8wydZLSgoztKFbaLQriY94mhiGzb7tuYTQ
-n+txxNXzk5etfsqIXChXms6YcN7pXjG7xaIfKepk1NhBI0/z6YY=
-=jrZn
------END PGP SIGNATURE-----
---=-=-=--
-
-
---===============8674237064608735609==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56728 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752427AbcK3BIG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Nov 2016 20:08:06 -0500
 Content-Disposition: inline
+In-Reply-To: <20161129065726.GG3288@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nayak Rajendra <rnayak@codeaurora.org>
 
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+On 11/29, Viresh Kumar wrote:
+> On 28-11-16, 10:27, Stephen Boyd wrote:
+> > On 11/23/2016 08:40 PM, Viresh Kumar wrote:
+> > > But even in these cases we wouldn't be using the voltage values within the
+> > > kernel as we will be giving only a performance state to the M3 core, right?
+> > 
+> > Nope. In these cases we need to set a certain voltage and we do that by
+> > requesting it via the M3 core.
+> 
+> Don't we need something like this then ?
 
---===============8674237064608735609==--
+Perhaps. One question is if we consider a shared regulator as a
+regulator in the kernel, or if we want to hide the regulator
+behind some other API that aggregates the users of the voltage. I
+don't see how to draw the line clearly between a regulator and a
+power domain that modifies a regulator underneath. It seems like
+everything that's using a regulator on the SoC could be using a
+power domain instead and then we could be aggregating the voltage
+requirements outside of the regulator APIs.
+
+The only other way I can think of doing it is by having the
+voltages in the OPP tables for each device. That gets sort of
+messy though because all the devices calling
+regulator_set_voltage() have to set the min voltage to be their
+required voltage and the max to be the global max voltage on the
+system. Otherwise a higher voltage may not be used while it may
+be required. Of course, we could encode that as the last value in
+the triplet and everything works.
+
+> 
+> 	parent: power-controller@12340000 {
+> 		compatible = "foo,power-controller";
+> 		reg = <0x12340000 0x1000>;
+> 		#power-domain-cells = <0>;
+> 		domain-performance-states = <&perf_state0>;
+> 	};
+> 
+> 	perf_state0: performance_states {
+> 		pstate1: pstate@1 {
+> 			index = <1>;
+> 			/* Optional */
+> 			microvolt = <970000 975000 985000>;
+> 		};
+> 		pstate2: pstate@2 {
+> 			index = <2>;
+> 			/* Optional */
+> 			microvolt = <970000 975000 985000>;
+> 		};
+> 		pstate3: pstate@3 {
+> 			index = <3>;
+> 			/* Optional */
+> 			microvolt = <970000 975000 985000>;
+> 		};
+> 	}
+> 
+> 	cpus {
+> 		cpu@0 {
+> 			...
+> 			power-domain = <&parent>;
+> 			operating-points-v2 = <&cpu0_opp_table>;
+> 		};
+> 	};
+> 
+> 	cpu0_opp_table: opp_table0 {
+> 		compatible = "operating-points-v2";
+> 		opp-shared;
+> 
+> 		opp@1000000000 {
+> 			opp-hz = /bits/ 64 <1000000000>;
+> 			domain-performance-state = <&pstate1>;
+
+What do we do if the device is part of multiple domains? For
+example it may be part of two power domains for different pieces
+of the silicon within one device, and we may want to
+independently control those domains depending on the clock
+frequency.
+
+> 		};
+> 		opp@1100000000 {
+> 			opp-hz = /bits/ 64 <1100000000>;
+> 			domain-performance-state = <&pstate2>;
+> 		};
+> 		opp@1200000000 {
+> 			opp-hz = /bits/ 64 <1200000000>;
+> 			domain-performance-state = <&pstate3>;
+> 		};
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
