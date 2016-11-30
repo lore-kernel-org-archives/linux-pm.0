@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/3] MAINTAINERS: Add bug tracking system location entries for cpuidle
-Date: Wed, 30 Nov 2016 02:32:17 +0100
-Message-ID: <7223534.Grk4thc3lm@aspire.rjw.lan>
+Subject: [PATCH 1/3] MAINTAINERS: Add bug tracking system location entry for cpufreq
+Date: Wed, 30 Nov 2016 02:31:02 +0100
+Message-ID: <1749629.bXnquB1jqi@aspire.rjw.lan>
 References: <1768401.hlc2LWNWsP@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,31 +15,23 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The kernel Bugzilla is used for tracking bugs in the cpuidle core and
-intel_idle, so document that.
+The kernel Bugzilla is used for tracking cpufreq bugs, so document
+that.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- MAINTAINERS |    2 ++
- 1 file changed, 2 insertions(+)
+ MAINTAINERS |    1 +
+ 1 file changed, 1 insertion(+)
 
 Index: linux-pm/MAINTAINERS
 ===================================================================
 --- linux-pm.orig/MAINTAINERS
 +++ linux-pm/MAINTAINERS
-@@ -3389,6 +3389,7 @@ M:	Daniel Lezcano <daniel.lezcano@linaro
- L:	linux-pm@vger.kernel.org
+@@ -3349,6 +3349,7 @@ L:	linux-pm@vger.kernel.org
  S:	Maintained
  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+ T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
 +B:	https://bugzilla.kernel.org
- F:	drivers/cpuidle/*
- F:	include/linux/cpuidle.h
- 
-@@ -6301,6 +6302,7 @@ INTEL IDLE DRIVER
- M:	Len Brown <lenb@kernel.org>
- L:	linux-pm@vger.kernel.org
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux.git
-+B:	https://bugzilla.kernel.org
- S:	Supported
- F:	drivers/idle/intel_idle.c
- 
+ F:	Documentation/cpu-freq/
+ F:	drivers/cpufreq/
+ F:	include/linux/cpufreq.h
