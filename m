@@ -1,48 +1,47 @@
 From: "Luc, Piotr" <Piotr.Luc@intel.com>
-Subject: RE: [RESEND PATCH 06/11] cpufreq: intel_pstate: Add Knights Mill
- CPUID
-Date: Wed, 30 Nov 2016 22:16:10 +0000
-Message-ID: <0BC42268B923E242A424F71EDDF4784F74ACF307@IRSMSX106.ger.corp.intel.com>
-References: <20161013153105.2517-1-piotr.luc@intel.com>
- <20161013153105.2517-7-piotr.luc@intel.com>
- <1476381119.114531.61.camel@linux.intel.com>
- <1477392172.9496.2.camel@intel.com>
- <CAJZ5v0jDGaM9M_aZz_8mHD1UpY3khRrWNVXR_BQwnMYDx+t0xw@mail.gmail.com>
- <1477395555.26677.2.camel@intel.com> <1480522710.10089.9.camel@intel.com>
- <CAJZ5v0jS+VDEqbqTMv6-KzYSVRxnjv5qFcZUNaR5iFhf7XJ9Ug@mail.gmail.com>
+Subject: Re: [RESEND,10/11] powercap / RAPL: Add Knights Mill CPUID
+Date: Wed, 30 Nov 2016 22:33:45 +0000
+Message-ID: <1480545196.4677.11.camel@intel.com>
+References: <20161013153105.2517-11-piotr.luc@intel.com>
+         <1477391756.3927.40.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:11516 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756512AbcK3WQP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 30 Nov 2016 17:16:15 -0500
-In-Reply-To: <CAJZ5v0jS+VDEqbqTMv6-KzYSVRxnjv5qFcZUNaR5iFhf7XJ9Ug@mail.gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1477391756.3927.40.camel@intel.com>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-ID: <3A20E04EB924A748B2F1AFEED992D44F@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-VGhhbmtzIQ0KUGlvdHINCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBy
-and5c29ja2lAZ21haWwuY29tIFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxm
-IE9mDQo+IFJhZmFlbCBKLiBXeXNvY2tpDQo+IFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1iZXIgMzAs
-IDIwMTYgMTE6MDIgUE0NCj4gVG86IEx1YywgUGlvdHIgPFBpb3RyLkx1Y0BpbnRlbC5jb20+DQo+
-IENjOiByYWZhZWxAa2VybmVsLm9yZzsgc3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5j
-b207DQo+IGxlbmJAa2VybmVsLm9yZzsgdmlyZXNoLmt1bWFyQGxpbmFyby5vcmc7IGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+IHJqd0Byand5c29ja2kubmV0OyB4ODZAa2VybmVsLm9y
-ZzsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBbUkVTRU5EIFBBVENI
-IDA2LzExXSBjcHVmcmVxOiBpbnRlbF9wc3RhdGU6IEFkZCBLbmlnaHRzIE1pbGwNCj4gQ1BVSUQN
-Cj4gDQo+IE9uIFdlZCwgTm92IDMwLCAyMDE2IGF0IDU6MTkgUE0sIEx1YywgUGlvdHIgPFBpb3Ry
-Lkx1Y0BpbnRlbC5jb20+IHdyb3RlOg0KPiA+IEhpIFJhZmFlbCwNCj4gPg0KPiA+PiA+ID4NCj4g
-Pj4gPiA+IFRoZSBtZW50aW9uZWQgcGF0aCAwMy8xMSBpcyBhbHJlYWR5IG1lcmdlZCBpbiA0Ljku
-cmMyLg0KPiA+PiA+DQo+ID4+ID4gSWYgaXQncyBhbHJlYWR5IHRoZXJlLCBJIGNhbiBwaWNrIHVw
-IHRoZSBpbnRlbF9wc3RhdGUgb25lLg0KPiA+PiA+DQo+ID4+ID4gVGhhbmtzLA0KPiA+PiA+ID4N
-Cj4gPj4gPiA+IFJhZmFlbA0KPiA+Pg0KPiA+PiBIZXJlIGlzIHRoZSBjb21taXQgaHR0cDovL2dp
-dC5rZXJuZWwub3JnL2NnaXQvbGludXgva2VybmVsL2dpdC90b3J2YWwNCj4gPj4gZHMNCj4gPj4g
-L2xpbnV4LmdpdC9jb21taXQvP2lkPTAwNDdmNTk4MzRlNTk0N2Q0NWYzNGY1ZjEyZWIzMzBkMTU4
-ZjcwMGINCj4gPj4NCj4gPg0KPiA+IENvdWxkIHlvdSBjb25maXJtIHRoYXQgaXQgaXMgaW4geW91
-ciBxdWV1ZSBvciB0cmVlIGZvciB2NC4xMD8NCj4gDQo+IEluIGZhY3QgaXQgd2Fzbid0LCBzbyBx
-dWV1aW5nIGl0IHVwIG5vdy4NCj4gDQo+IFRoYW5rcyBmb3IgdGhlIHJlbWluZGVyIQ0KPiANCj4g
-UmFmYWVsDQo=
+SGkgUmFmYWVsLA0KDQpLaW5kbHkgcmVtaW5kZXIuDQpDb3VsZCB5b3UgcGljayB0aGlzIHBhdGNo
+IHVwIGZvciBrZXJuZWwgNC4xMD8NClRoZSBSZWRIYXQgYWNjZXB0YW5jZSB3aW5kb3cgaXMgY2xv
+c2luZyBzb29uLCBJIG5lZWQgdG8gcGFzcyB0aGVtIHRoZQ0KY29tbWl0IGlkLg0KDQpUaGFua3Ms
+DQpQaW90cg0KDQpPbiBUdWUsIDIwMTYtMTAtMjUgYXQgMTI6MzUgKzAyMDAsIEx1YywgUGlvdHIg
+d3JvdGU6DQo+IEhpIFJhZmFlbCwNCj4gDQo+IENvdWxkIHlvdSB0ZWxsIG1lIHdoYXQgbW9yZSBk
+byBJIG5lZWQgdG8gZG8gdG8gZ2V0IHRoZSBwYXRjaA0KPiBhY2NlcHRlZD8NCj4gDQo+IFRoZSBt
+ZW50aW9uZWQgcGF0aCAwMy8xMSBpcyBhbHJlYWR5IG1lcmdlZCBpbiA0LjkucmMyLg0KPiANCj4g
+VGhhbmtzLA0KPiBQaW90cg0KPiANCj4gDQo+IE9uIFRodSwgMjAxNi0xMC0xMyBhdCAxNzozMSAr
+MDIwMCwgUGlvdHIgTHVjIHdyb3RlOg0KPiA+IA0KPiA+IEFkZCBLbmlnaHRzIE1pbGwgKEtOTSkg
+dG8gdGhlIGxpc3Qgb2YgQ1BVSURzIHN1cHBvcnRlZCBieQ0KPiA+IGludGVsX3JhcGwNCj4gPiAN
+Cj4gPiBTaWduZWQtb2ZmLWJ5OiBQaW90ciBMdWMgPHBpb3RyLmx1Y0BpbnRlbC5jb20+DQo+ID4g
+UmV2aWV3ZWQtYnk6IERhdmUgSGFuc2VuIDxkYXZlLmhhbnNlbkBpbnRlbC5jb20+DQo+ID4gQ2M6
+ICJSYWZhZWwgSi4gV3lzb2NraSIgPHJqd0Byand5c29ja2kubmV0Pg0KPiA+IENjOiBsaW51eC1w
+bUB2Z2VyLmtlcm5lbC5vcmcNCj4gPiBDYzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0K
+PiA+IC0tLQ0KPiA+IFRoaXMgcGF0Y2ggZGVwZW5kcyBvbiBbUEFUQ0ggMDMvMTFdIHg4Ni9jcHUv
+aW50ZWw6IEFkZCBLbmlnaHRzDQo+ID4gTWlsbMKgDQo+ID4gdG8gSW50ZWwgZmFtaWx5DQo+ID4g
+DQo+ID4gwqBkcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYyB8IDEgKw0KPiA+IMKgMSBmaWxl
+IGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspDQo+ID4gDQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+cG93ZXJjYXAvaW50ZWxfcmFwbC5jDQo+ID4gYi9kcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwu
+Yw0KPiA+IGluZGV4IGZiYWIyOWQuLjZhNThmZjcgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9w
+b3dlcmNhcC9pbnRlbF9yYXBsLmMNCj4gPiArKysgYi9kcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3Jh
+cGwuYw0KPiA+IEBAIC0xMTYwLDYgKzExNjAsNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHg4Nl9j
+cHVfaWQgcmFwbF9pZHNbXQ0KPiA+IF9faW5pdGNvbnN0ID0gew0KPiA+IMKgCVJBUExfQ1BVKElO
+VEVMX0ZBTTZfQVRPTV9ERU5WRVJUT04sCXJhcGxfZGVmYXVsdHNfYw0KPiA+IG9yDQo+ID4gZSks
+DQo+ID4gwqANCj4gPiDCoAlSQVBMX0NQVShJTlRFTF9GQU02X1hFT05fUEhJX0tOTCwJcmFwbF9k
+ZWZhdWx0c19oc3cNCj4gPiBfcw0KPiA+IGVydmVyKSwNCj4gPiArCVJBUExfQ1BVKElOVEVMX0ZB
+TTZfWEVPTl9QSElfS05NLAlyYXBsX2RlZmF1bHRzX2hzdw0KPiA+IF9zDQo+ID4gZXJ2ZXIpLA0K
+PiA+IMKgCXt9DQo+ID4gwqB9Ow0KPiA+IMKgTU9EVUxFX0RFVklDRV9UQUJMRSh4ODZjcHUsIHJh
+cGxfaWRzKTs=
