@@ -1,63 +1,99 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V6 10/10] PM / OPP: Don't assume platform doesn't have regulators
-Date: Wed, 30 Nov 2016 10:44:13 +0530
-Message-ID: <f5e2c0fd4f075fd114a48080c5985af6e5abbadc.1480481312.git.viresh.kumar@linaro.org>
-References: <cover.1480481312.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1480481312.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v3 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
+ thermal driver
+Date: Tue, 29 Nov 2016 21:16:38 -0800
+Message-ID: <20161130051637.GA27252@localhost.localdomain>
+References: <20161128210924.2921-1-wsa+renesas@sang-engineering.com>
+ <20161128210924.2921-3-wsa+renesas@sang-engineering.com>
+ <20161129020652.GA3701@localhost.localdomain>
+ <20161129083241.GA1458@katana>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161129083241.GA1458@katana>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Wolfram Sang <wsa-dev@sang-engineering.com>
+Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-If the regulators aren't set explicitly by the platform, the OPP core
-assumes that the platform doesn't have any regulator and uses the
-clk-only callback.
+Hey,
 
-If the platform failed to register a regulator with the core, then this
-can turn out to be a dangerous assumption as the OPP core will try to
-change clk without changing regulators.
+On Tue, Nov 29, 2016 at 09:32:42AM +0100, Wolfram Sang wrote:
+> Hi Eduardo,
+> 
+> > No commit message ? :-( generally speaking here, it is a good practice
+> > to describe what you are doing, what you have considered, and what you
+> > have tested, just for the sake of code history/documentation.
+> 
+> OK, can do.
 
-Handle that properly by making sure that the DT didn't have any entries
-for supply voltages as well.
+cool!
 
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
----
- drivers/base/power/opp/core.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+> 
+> > > +	spin_lock_irqsave(&tsc->lock, flags);
+> > 
+> > Why do you need a full blown spin lock irqsave? Can this locking be
+> > solved by a simple mutex?
+> 
+> Currently, it can be a mutex, yes. This is a "left-over" from the
+> version which had interrupt support. I am not fully done with
+> refactoring the irqs, but I thought it is likely we need this lock then
+> again, so I chose to leave it. I can use a mutex for now if you prefer.
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index f60d7f943b64..979403448cd6 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -748,7 +748,20 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 
- 	/* Only frequency scaling */
- 	if (!regulators) {
-+		unsigned long u_volt = opp->supplies[0].u_volt;
-+
- 		rcu_read_unlock();
-+
-+		/*
-+		 * DT contained supply ratings? Consider platform failed to set
-+		 * regulators.
-+		 */
-+		if (unlikely(u_volt)) {
-+			dev_err(dev, "%s: Regulator not registered with OPP core\n",
-+				__func__);
-+			return -EINVAL;
-+		}
-+
- 		return _generic_set_opp_clk_only(dev, clk, old_freq, freq);
- 	}
- 
--- 
-2.7.1.410.g6faf27b
+yes, yield the processor when possible, please. So, if your locking
+don't really need to disable IRQs, then avoid doing it. If a mutex is
+enough, use it.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> > 
+> > > +static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+> > > +{
+> > > +	unsigned long flags;
+> > > +
+> > > +	spin_lock_irqsave(&tsc->lock, flags);
+> > > +
+> > > +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
+> > > +	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
+> > > +
+> > > +	udelay(1000);
+> > 
+> > Why do you disable irqs, then busyloop for 1ms?
+> 
+> Uh yes, this is ugly. I don't think we need to lock during init, but
+> I'll double check later.
+> 
+
+OK. You could probably leave the (mutex) lock, if you think you need it.
+But also consider using usleep_range(1000) instead. Have a look at:
+Documentation/timers/timers-howto.txt
+
+for a better explanation.
+
+
+> > > +	/* default values if FUSEs are missing */
+> > > +	int ptat[3] = { 2351, 1509, 435 };
+> > > +	int thcode[TSC_MAX_NUM][3] = {
+> > > +		{ 3248, 2800, 2221 },
+> > > +		{ 3245, 2795, 2216 },
+> > > +		{ 3250, 2805, 2237 },
+> > > +	};
+> > 
+> > are these fuses valid for both? 7796 and 7797? or would you need a
+> > different array for each version?
+> 
+> According to the information I have today, it is the same array. And all
+> later versions are promised to have fuse registers. This is already
+> documented, but such HW is not available to me currently.
+> 
+
+Ok. If you have the confirmation for that, then it is fine. I just asked
+because cases I saw (different manufacturer of course) would have different values
+to be programmed, depending on the chip version.
+
+Anyways, just checking.
+
+> Thanks for the quick review, very much appreciated!
+> 
+>    Wolfram
+> 
