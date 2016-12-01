@@ -1,88 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V7 02/10] PM / OPP: Reword binding supporting multiple regulators per device
-Date: Thu,  1 Dec 2016 16:28:15 +0530
-Message-ID: <838bd6b145f769c6531cec62b009bbec346e28d4.1480564564.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V7 03/10] PM / OPP: Don't use OPP structure outside of rcu protected section
+Date: Thu,  1 Dec 2016 16:28:16 +0530
+Message-ID: <8c81920230d36d7be918296aadc06d6aec1113d0.1480564564.git.viresh.kumar@linaro.org>
 References: <cover.1480564564.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:33885 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757033AbcLAK6e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 05:58:34 -0500
-Received: by mail-pf0-f169.google.com with SMTP id c4so45835998pfb.1
-        for <linux-pm@vger.kernel.org>; Thu, 01 Dec 2016 02:58:33 -0800 (PST)
-In-Reply-To: <cover.1480564564.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1480564564.git.viresh.kumar@linaro.org>
-References: <cover.1480564564.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1480564564.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1480564564.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1480564564.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "# v4 . 6+" <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh@kernel.org, d-gerlach@ti.com, broonie@kernel.org, devicetree@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-On certain platforms (like TI), DVFS for a single device (CPU) requires
-configuring multiple power supplies.
+The OPP structure must not be used out of the rcu protected section.
+Cache the values to be used in separate variables instead.
 
-The OPP bindings already contains binding and example to explain this
-case, but it isn't sufficient.
-
-- There is no way for the code parsing these bindings to know which
-  voltage values belong to which power supply.
-
-- It is not possible to know the order in which the supplies need to be
-  configured while switching OPPs.
-
-This patch clarifies on those details by mentioning that such
-information is left for the implementation specific bindings to explain.
-They may want to hardcode such details or implement their own properties
-to get such information. All implementations using multiple regulators
-for their devices must provide a binding document explaining their
-implementation.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Cc:  # v4.6+ <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Tested-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 21 +++++++++++++++------
- 1 file changed, 15 insertions(+), 6 deletions(-)
+ drivers/base/power/opp/core.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index f0239f68d186..9f5ca4457b5f 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -86,8 +86,14 @@ properties.
-   Single entry is for target voltage and three entries are for <target min max>
-   voltages.
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 2824d3a5e9f0..6441dfda489f 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -584,6 +584,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	struct clk *clk;
+ 	unsigned long freq, old_freq;
+ 	unsigned long u_volt, u_volt_min, u_volt_max;
++	unsigned long old_u_volt, old_u_volt_min, old_u_volt_max;
+ 	int ret;
  
--  Entries for multiple regulators must be present in the same order as
--  regulators are specified in device's DT node.
-+  Entries for multiple regulators shall be provided in the same field separated
-+  by angular brackets <>. The OPP binding doesn't provide any provisions to
-+  relate the values to their power supplies or the order in which the supplies
-+  need to be configured and that is left for the implementation specific
-+  binding.
+ 	if (unlikely(!target_freq)) {
+@@ -633,6 +634,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 		return ret;
+ 	}
+ 
++	if (IS_ERR(old_opp)) {
++		old_u_volt = 0;
++	} else {
++		old_u_volt = old_opp->u_volt;
++		old_u_volt_min = old_opp->u_volt_min;
++		old_u_volt_max = old_opp->u_volt_max;
++	}
 +
-+  Entries for all regulators shall be of the same size, i.e. either all use a
-+  single value or triplets.
+ 	u_volt = opp->u_volt;
+ 	u_volt_min = opp->u_volt_min;
+ 	u_volt_max = opp->u_volt_max;
+@@ -677,9 +686,10 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 			__func__, old_freq);
+ restore_voltage:
+ 	/* This shouldn't harm even if the voltages weren't updated earlier */
+-	if (!IS_ERR(old_opp))
+-		_set_opp_voltage(dev, reg, old_opp->u_volt,
+-				 old_opp->u_volt_min, old_opp->u_volt_max);
++	if (old_u_volt) {
++		_set_opp_voltage(dev, reg, old_u_volt, old_u_volt_min,
++				 old_u_volt_max);
++	}
  
- - opp-microvolt-<name>: Named opp-microvolt property. This is exactly similar to
-   the above opp-microvolt property, but allows multiple voltage ranges to be
-@@ -104,10 +110,13 @@ properties.
- 
-   Should only be set if opp-microvolt is set for the OPP.
- 
--  Entries for multiple regulators must be present in the same order as
--  regulators are specified in device's DT node. If this property isn't required
--  for few regulators, then this should be marked as zero for them. If it isn't
--  required for any regulator, then this property need not be present.
-+  Entries for multiple regulators shall be provided in the same field separated
-+  by angular brackets <>. If current values aren't required for a regulator,
-+  then it shall be filled with 0. If current values aren't required for any of
-+  the regulators, then this field is not required. The OPP binding doesn't
-+  provide any provisions to relate the values to their power supplies or the
-+  order in which the supplies need to be configured and that is left for the
-+  implementation specific binding.
- 
- - opp-microamp-<name>: Named opp-microamp property. Similar to
-   opp-microvolt-<name> property, but for microamp instead.
+ 	return ret;
+ }
 -- 
 2.7.1.410.g6faf27b
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
