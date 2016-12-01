@@ -1,69 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V5] PM / OPP: Pass opp_table to dev_pm_opp_put_regulator()
-Date: Thu, 01 Dec 2016 15:28:53 +0100
-Message-ID: <2821348.smmieO54J1@aspire.rjw.lan>
-References: <480ae6e161788d338fb1637aa2615a75588ac3c6.1480478081.git.viresh.kumar@linaro.org> <20161130220019.GK6095@codeaurora.org> <20161201002548.GO3288@vireshk-i7>
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Subject: Re: [PATCH] x86/suspend: fix false positive KASAN warning on
+ suspend/resume
+Date: Thu, 1 Dec 2016 12:05:34 +0300
+Message-ID: <8f4c4a62-d912-0cd9-3462-8df20a868834@virtuozzo.com>
+References: <20161129181300.GA29095@sbauer-Z170X-UD5>
+ <20161130183507.syv3cdpp3hzxi77k@treble>
+ <20161130190217.GA2756@sbauer-Z170X-UD5>
+ <20161130231011.ofmbmevn3hqasetz@treble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61803 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753456AbcLAOc2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 09:32:28 -0500
-In-Reply-To: <20161201002548.GO3288@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161130231011.ofmbmevn3hqasetz@treble>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Josh Poimboeuf <jpoimboe@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, peterz@infradead.org, mingo@kernel.org, luto@amacapital.net, Scott Bauer <scott.bauer@intel.com>, x86@kernel.org, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, jy0922.shim@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "# v4 . 4+" <stable@vger.kernel.org>
 
-On Thursday, December 01, 2016 05:55:48 AM Viresh Kumar wrote:
-> On 30-11-16, 14:00, Stephen Boyd wrote:
-> > On 11/30, Viresh Kumar wrote:
-> > > From: Stephen Boyd <sboyd@codeaurora.org>
-> > > 
-> > > Joonyoung Shim reported an interesting problem on his ARM octa-core
-> > > Odoroid-XU3 platform. During system suspend, dev_pm_opp_put_regulator()
-> > > was failing for a struct device for which dev_pm_opp_set_regulator() is
-> > > called earlier.
-> > > 
-> > > This happened because an earlier call to
-> > > dev_pm_opp_of_cpumask_remove_table() function (from cpufreq-dt.c file)
-> > > removed all the entries from opp_table->dev_list apart from the last CPU
-> > > device in the cpumask of CPUs sharing the OPP.
-> > > 
-> > > But both dev_pm_opp_set_regulator() and dev_pm_opp_put_regulator()
-> > > routines get CPU device for the first CPU in the cpumask. And so the OPP
-> > > core failed to find the OPP table for the struct device.
-> > > 
-> > > This patch attempts to fix this problem by returning a pointer to the
-> > > opp_table from dev_pm_opp_set_regulator() and using that as the
-> > > parameter to dev_pm_opp_put_regulator(). This ensures that the
-> > > dev_pm_opp_put_regulator() doesn't fail to find the opp table.
-> > > 
-> > > Note that similar design problem also exists with other
-> > > dev_pm_opp_put_*() APIs, but those aren't used currently by anyone and
-> > > so we don't need to update them for now.
-> > > 
-> > > [Viresh]: Written commit log and tested on exynos 5250.
-> > > 
-> > > Cc: # v4.4+ <stable@vger.kernel.org>
-> > > Reported-by: Joonyoung Shim <jy0922.shim@samsung.com>
-> > > Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > 
-> > You should have asked for my Signed-off-by instead of just adding
-> > it.
+
+
+On 12/01/2016 02:10 AM, Josh Poimboeuf wrote:
+> Resuming from a suspend operation is showing a KASAN false positive
+> warning:
 > 
-> I was worried about the 24 hrs that gets wasted because of 12 hrs
-> difference in our time zones and so added you as the author and added
-> your sob. :)
+
+> KASAN instrumentation poisons the stack when entering a function and
+> unpoisons it when exiting the function.  However, in the suspend path,
+> some functions never return, so their stack never gets unpoisoned,
+> resulting in stale KASAN shadow data which can cause false positive
+> warnings like the one above.
 > 
-> > Here it is to make things explicit and recorded:
+> Reported-by: Scott Bauer <scott.bauer@intel.com>
+> Tested-by: Scott Bauer <scott.bauer@intel.com>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+> ---
+>  arch/x86/kernel/acpi/sleep.c | 3 +++
+>  include/linux/kasan.h        | 7 +++++++
+>  2 files changed, 10 insertions(+)
+> 
+> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> index 4858733..62bd046 100644
+> --- a/arch/x86/kernel/acpi/sleep.c
+> +++ b/arch/x86/kernel/acpi/sleep.c
+> @@ -115,6 +115,9 @@ int x86_acpi_suspend_lowlevel(void)
+>  	pause_graph_tracing();
+>  	do_suspend_lowlevel();
+>  	unpause_graph_tracing();
+> +
+> +	kasan_unpoison_stack_below_sp();
+> +
 
-Applied.
-
-Thanks,
-Rafael
-
+I think this might be too late. We may hit stale poison in the first C function called
+after resume (restore_processor_state()). Thus the shadow must be unpoisoned prior such call,
+i.e. somewhere in do_suspend_lowlevel() after .Lresume_point.
