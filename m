@@ -1,57 +1,44 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / Domains: Do not print PM domain add error message if EPROBE_DEFER
-Date: Thu, 01 Dec 2016 15:25 +0100
-Message-ID: <2449753.iPCUDMXyRB@aspire.rjw.lan>
-References: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH] cpufreq: dt: Add support for zx296718
+Date: Thu, 01 Dec 2016 15:25:32 +0100
+Message-ID: <33656568.Mu5lX1GPCY@aspire.rjw.lan>
+References: <1480491329-5242-1-git-send-email-baoyou.xie@linaro.org> <20161130080855.GL3288@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61305 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1756009AbcLAO27 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 09:28:59 -0500
-In-Reply-To: <1480508696-19294-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161130080855.GL3288@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>
+Cc: xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 
-On Wednesday, November 30, 2016 01:24:56 PM Geert Uytterhoeven wrote:
-> EPROBE_DEFER is not an error, hence printing an error message like
+On Wednesday, November 30, 2016 01:38:55 PM Viresh Kumar wrote:
+> On 30-11-16, 15:35, Baoyou Xie wrote:
+> > Add the compatible string for supporting the generic cpufreq driver on
+> > the ZTE's zx296718 SoC.
+> > 
+> > Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > index 7126762..c0a28e23b 100644
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -81,6 +81,8 @@ static const struct of_device_id machines[] __initconst = {
+> >  
+> >  	{ .compatible = "xlnx,zynq-7000", },
+> >  
+> > +	{ .compatible = "zte,zx296718", },
+> > +
+> >  	{ }
+> >  };
 > 
->     renesas_irqc e61c0000.interrupt-controller: failed to add to PM domain always-on: -517
-> 
-> may confuse the user.
-> 
-> Suppress the error message in case of EPROBE_DEFER to fix this.
-> 
-> Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
->  drivers/base/power/domain.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 64164aac6ae3990a..f22137b52dcb641b 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2032,8 +2032,9 @@ int genpd_dev_pm_attach(struct device *dev)
->  	mutex_unlock(&gpd_list_lock);
->  
->  	if (ret < 0) {
-> -		dev_err(dev, "failed to add to PM domain %s: %d",
-> -			pd->name, ret);
-> +		if (ret != -EPROBE_DEFER)
-> +			dev_err(dev, "failed to add to PM domain %s: %d",
-> +				pd->name, ret);
->  		goto out;
->  	}
->  
-> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Applied (with ACKs etc).
+Applied.
 
 Thanks,
 Rafael
-
