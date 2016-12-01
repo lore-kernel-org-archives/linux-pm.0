@@ -1,61 +1,158 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 07/39] Annotate hardware config module parameters in drivers/cpufreq/
-Date: Thu, 1 Dec 2016 15:02:15 +0100
-Message-ID: <CAJZ5v0h+Vfva+xB5_p8383hmoFntjGtSa7hZm0wOne-5x1wRJQ@mail.gmail.com>
-References: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
- <148059543222.31612.3648801189087582676.stgit@warthog.procyon.org.uk>
+Subject: Re: [PATCH] x86/suspend: fix false positive KASAN warning on suspend/resume
+Date: Thu, 1 Dec 2016 15:04:22 +0100
+Message-ID: <CAJZ5v0iW8kNbU6pP96WTc8uLB_0V05vrEyum0d1Q-XKvX0-O-A@mail.gmail.com>
+References: <20161129181300.GA29095@sbauer-Z170X-UD5> <20161130183507.syv3cdpp3hzxi77k@treble>
+ <20161130190217.GA2756@sbauer-Z170X-UD5> <20161130231011.ofmbmevn3hqasetz@treble>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-security-module-owner@vger.kernel.org>
-In-Reply-To: <148059543222.31612.3648801189087582676.stgit@warthog.procyon.org.uk>
-Sender: owner-linux-security-module@vger.kernel.org
-To: David Howells <dhowells@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gnomes@lxorguk.ukuu.org.uk, minyard@acm.org, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161130231011.ofmbmevn3hqasetz@treble>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Andy Lutomirski <luto@amacapital.net>, Scott Bauer <scott.bauer@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, kasan-dev@googlegroups.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 1, 2016 at 1:30 PM, David Howells <dhowells@redhat.com> wrote:
-> When the kernel is running in secure boot mode, we lock down the kernel to
-> prevent userspace from modifying the running kernel image.  Whilst this
-> includes prohibiting access to things like /dev/mem, it must also prevent
-> access by means of configuring driver modules in such a way as to cause a
-> device to access or modify the kernel image.
+On Thu, Dec 1, 2016 at 12:10 AM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
+> Resuming from a suspend operation is showing a KASAN false positive
+> warning:
 >
-> To this end, annotate module_param* statements that refer to hardware
-> configuration and indicate for future reference what type of parameter they
-> specify.  The parameter parser in the core sees this information and can
-> skip such parameters with an error message if the kernel is locked down.
-> The module initialisation then runs as normal, but just sees whatever the
-> default values for those parameters is.
+>   BUG: KASAN: stack-out-of-bounds in unwind_get_return_address+0x11d/0x130 at addr ffff8803867d7878
+>   Read of size 8 by task pm-suspend/7774
+>   page:ffffea000e19f5c0 count:0 mapcount:0 mapping:          (null) index:0x0
+>   flags: 0x2ffff0000000000()
+>   page dumped because: kasan: bad access detected
+>   CPU: 0 PID: 7774 Comm: pm-suspend Tainted: G    B           4.9.0-rc7+ #8
+>   Hardware name: Gigabyte Technology Co., Ltd. Z170X-UD5/Z170X-UD5-CF, BIOS F5 03/07/2016
+>    ffff8803867d7468 ffffffffb4c0d051 ffff8803867d7500 ffff8803867d7878
+>    ffff8803867d74f0 ffffffffb45cbe34 ffffffffb4e64136 ffffffffb4510d42
+>    ffff8803828c3f4c 0000000000000097 0000000041b58ab3 ffffffffb6192731
+>   Call Trace:
+>     dump_stack+0x63/0x82
+>     kasan_report_error+0x4b4/0x4e0
+>     ? acpi_hw_read_port+0xd0/0x1ea
+>     ? kfree_const+0x22/0x30
+>     ? acpi_hw_validate_io_request+0x1a6/0x1a6
+>     __asan_report_load8_noabort+0x61/0x70
+>     ? unwind_get_return_address+0x11d/0x130
+>     unwind_get_return_address+0x11d/0x130
+>     ? unwind_next_frame+0x97/0xf0
+>     __save_stack_trace+0x92/0x100
+>     save_stack_trace+0x1b/0x20
+>     save_stack+0x46/0xd0
+>     ? save_stack_trace+0x1b/0x20
+>     ? save_stack+0x46/0xd0
+>     ? kasan_kmalloc+0xad/0xe0
+>     ? kasan_slab_alloc+0x12/0x20
+>     ? acpi_hw_read+0x2b6/0x3aa
+>     ? acpi_hw_validate_register+0x20b/0x20b
+>     ? acpi_hw_write_port+0x72/0xc7
+>     ? acpi_hw_write+0x11f/0x15f
+>     ? acpi_hw_read_multiple+0x19f/0x19f
+>     ? memcpy+0x45/0x50
+>     ? acpi_hw_write_port+0x72/0xc7
+>     ? acpi_hw_write+0x11f/0x15f
+>     ? acpi_hw_read_multiple+0x19f/0x19f
+>     ? kasan_unpoison_shadow+0x36/0x50
+>     kasan_kmalloc+0xad/0xe0
+>     kasan_slab_alloc+0x12/0x20
+>     kmem_cache_alloc_trace+0xbc/0x1e0
+>     ? acpi_get_sleep_type_data+0x9a/0x578
+>     acpi_get_sleep_type_data+0x9a/0x578
+>     acpi_hw_legacy_wake_prep+0x88/0x22c
+>     ? acpi_hw_legacy_sleep+0x3c7/0x3c7
+>     ? acpi_write_bit_register+0x28d/0x2d3
+>     ? acpi_read_bit_register+0x19b/0x19b
+>     acpi_hw_sleep_dispatch+0xb5/0xba
+>     acpi_leave_sleep_state_prep+0x17/0x19
+>     acpi_suspend_enter+0x154/0x1e0
+>     ? trace_suspend_resume+0xe8/0xe8
+>     suspend_devices_and_enter+0xb09/0xdb0
+>     ? printk+0xa8/0xd8
+>     ? arch_suspend_enable_irqs+0x20/0x20
+>     ? try_to_freeze_tasks+0x295/0x600
+>     pm_suspend+0x6c9/0x780
+>     ? finish_wait+0x1f0/0x1f0
+>     ? suspend_devices_and_enter+0xdb0/0xdb0
+>     state_store+0xa2/0x120
+>     ? kobj_attr_show+0x60/0x60
+>     kobj_attr_store+0x36/0x70
+>     sysfs_kf_write+0x131/0x200
+>     kernfs_fop_write+0x295/0x3f0
+>     __vfs_write+0xef/0x760
+>     ? handle_mm_fault+0x1346/0x35e0
+>     ? do_iter_readv_writev+0x660/0x660
+>     ? __pmd_alloc+0x310/0x310
+>     ? do_lock_file_wait+0x1e0/0x1e0
+>     ? apparmor_file_permission+0x18/0x20
+>     ? security_file_permission+0x73/0x1c0
+>     ? rw_verify_area+0xbd/0x2b0
+>     vfs_write+0x149/0x4a0
+>     SyS_write+0xd9/0x1c0
+>     ? SyS_read+0x1c0/0x1c0
+>     entry_SYSCALL_64_fastpath+0x1e/0xad
+>   Memory state around the buggy address:
+>    ffff8803867d7700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>    ffff8803867d7780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>   >ffff8803867d7800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f4
+>                                                                   ^
+>    ffff8803867d7880: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+>    ffff8803867d7900: 00 00 00 f1 f1 f1 f1 04 f4 f4 f4 f3 f3 f3 f3 00
 >
-> Note that we do still need to do the module initialisation because some
-> drivers have viable defaults set in case parameters aren't specified and
-> some drivers support automatic configuration (e.g. PNP or PCI) in addition
-> to manually coded parameters.
+> KASAN instrumentation poisons the stack when entering a function and
+> unpoisons it when exiting the function.  However, in the suspend path,
+> some functions never return, so their stack never gets unpoisoned,
+> resulting in stale KASAN shadow data which can cause false positive
+> warnings like the one above.
 >
-> This patch annotates drivers in drivers/cpufreq/.
->
-> Suggested-by: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> cc: Viresh Kumar <viresh.kumar@linaro.org>
-> cc: linux-pm@vger.kernel.org
+> Reported-by: Scott Bauer <scott.bauer@intel.com>
+> Tested-by: Scott Bauer <scott.bauer@intel.com>
+> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
 > ---
+>  arch/x86/kernel/acpi/sleep.c | 3 +++
+>  include/linux/kasan.h        | 7 +++++++
+>  2 files changed, 10 insertions(+)
 >
->  drivers/cpufreq/speedstep-smi.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
-> index 770a9ae1999a..37b30071c220 100644
-> --- a/drivers/cpufreq/speedstep-smi.c
-> +++ b/drivers/cpufreq/speedstep-smi.c
-> @@ -378,7 +378,7 @@ static void __exit speedstep_exit(void)
->         cpufreq_unregister_driver(&speedstep_driver);
+> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> index 4858733..62bd046 100644
+> --- a/arch/x86/kernel/acpi/sleep.c
+> +++ b/arch/x86/kernel/acpi/sleep.c
+> @@ -115,6 +115,9 @@ int x86_acpi_suspend_lowlevel(void)
+>         pause_graph_tracing();
+>         do_suspend_lowlevel();
+>         unpause_graph_tracing();
+> +
+> +       kasan_unpoison_stack_below_sp();
+> +
+>         return 0;
 >  }
 >
-> -module_param(smi_port, int, 0444);
-> +module_param_hw(smi_port, int, ioport, 0444);
->  module_param(smi_cmd,  int, 0444);
->  module_param(smi_sig, uint, 0444);
+> diff --git a/include/linux/kasan.h b/include/linux/kasan.h
+> index 820c0ad..e0945d5 100644
+> --- a/include/linux/kasan.h
+> +++ b/include/linux/kasan.h
+> @@ -45,6 +45,12 @@ void kasan_unpoison_shadow(const void *address, size_t size);
+>
+>  void kasan_unpoison_task_stack(struct task_struct *task);
+>  void kasan_unpoison_stack_above_sp_to(const void *watermark);
+> +asmlinkage void kasan_unpoison_task_stack_below(const void *watermark);
+> +
+> +static inline void kasan_unpoison_stack_below_sp(void)
+> +{
+> +       kasan_unpoison_task_stack_below(__builtin_frame_address(0));
+> +}
+>
+>  void kasan_alloc_pages(struct page *page, unsigned int order);
+>  void kasan_free_pages(struct page *page, unsigned int order);
+> @@ -87,6 +93,7 @@ static inline void kasan_unpoison_shadow(const void *address, size_t size) {}
+>
+>  static inline void kasan_unpoison_task_stack(struct task_struct *task) {}
+>  static inline void kasan_unpoison_stack_above_sp_to(const void *watermark) {}
+> +static inline void kasan_unpoison_stack_below_sp(void) {}
+>
+>  static inline void kasan_enable_current(void) {}
+>  static inline void kasan_disable_current(void) {}
+> --
 
 Looks OK to me.
 
