@@ -1,77 +1,60 @@
-From: Fu Wei <fu.wei@linaro.org>
-Subject: Re: [PATCH v14] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Thu, 1 Dec 2016 19:53:47 +0800
-Message-ID: <CADyBb7vYzFnJjQvbMvGkqDvfBWL4jofMDhjPCvwS6u0S-yw3sw@mail.gmail.com>
-References: <1470834168-1780-1-git-send-email-fu.wei@linaro.org> <20161201114137.herpemkbg3rqxrc4@pd.tnic>
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 07/39] Annotate hardware config module parameters in
+ drivers/cpufreq/
+Date: Thu, 01 Dec 2016 12:30:32 +0000
+Message-ID: <148059543222.31612.3648801189087582676.stgit@warthog.procyon.org.uk>
+References: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161201114137.herpemkbg3rqxrc4@pd.tnic>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Borislav Petkov <bp@suse.de>
-Cc: Tomasz Nowicki <tn@semihalf.com>, Tony Luck <tony.luck@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, x86@kernel.org, Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-security-module-owner@vger.kernel.org>
+In-Reply-To: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
+Sender: owner-linux-security-module@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: gnomes@lxorguk.ukuu.org.uk, minyard@acm.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, dhowells@redhat.com, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Borislav,
+When the kernel is running in secure boot mode, we lock down the kernel to
+prevent userspace from modifying the running kernel image.  Whilst this
+includes prohibiting access to things like /dev/mem, it must also prevent
+access by means of configuring driver modules in such a way as to cause a
+device to access or modify the kernel image.
 
-On 1 December 2016 at 19:41, Borislav Petkov <bp@suse.de> wrote:
-> On Wed, Aug 10, 2016 at 09:02:48PM +0800, fu.wei@linaro.org wrote:
->> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
->>
->> This patch provides APEI arch-specific bits for aarch64
->>
->> Meanwhile,
->> (1)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
->> a generic place.
->> (2)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
->> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64=
-.
->
-> ...
->
->> @@ -110,8 +111,27 @@ static inline const char *acpi_get_enable_method(in=
-t cpu)
->>  }
->>
->>  #ifdef       CONFIG_ACPI_APEI
->> +/*
->> + * acpi_disable_cmcff is used in drivers/acpi/apei/hest.c for disabling
->> + * IA-32 Architecture Corrected Machine Check (CMC) Firmware-First mode=
- by
->> + * boot parameter(acpi=3Dnocmcff). But we don't have this IA-32 specifi=
-c
->
-> Make that
->
-> "... with a kernel command line parameter "acpi=3Dnocmcoff"."
->
-> Please fix that up when applying.
->
-> With that:
->
-> Reviewed-by: Borislav Petkov <bp@suse.de>
+To this end, annotate module_param* statements that refer to hardware
+configuration and indicate for future reference what type of parameter they
+specify.  The parameter parser in the core sees this information and can
+skip such parameters with an error message if the kernel is locked down.
+The module initialisation then runs as normal, but just sees whatever the
+default values for those parameters is.
 
-Great thanks for your rapidly feedback :-)
+Note that we do still need to do the module initialisation because some
+drivers have viable defaults set in case parameters aren't specified and
+some drivers support automatic configuration (e.g. PNP or PCI) in addition
+to manually coded parameters.
 
-will send v15 with that fix  immediately
+This patch annotates drivers in drivers/cpufreq/.
 
->
-> Thanks!
->
-> --
-> Regards/Gruss,
->     Boris.
->
-> SUSE Linux GmbH, GF: Felix Imend=C3=B6rffer, Jane Smithard, Graham Norton=
-, HRB 21284 (AG N=C3=BCrnberg)
-> --
+Suggested-by: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Signed-off-by: David Howells <dhowells@redhat.com>
+cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+cc: Viresh Kumar <viresh.kumar@linaro.org>
+cc: linux-pm@vger.kernel.org
+---
 
+ drivers/cpufreq/speedstep-smi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+index 770a9ae1999a..37b30071c220 100644
+--- a/drivers/cpufreq/speedstep-smi.c
++++ b/drivers/cpufreq/speedstep-smi.c
+@@ -378,7 +378,7 @@ static void __exit speedstep_exit(void)
+ 	cpufreq_unregister_driver(&speedstep_driver);
+ }
+ 
+-module_param(smi_port, int, 0444);
++module_param_hw(smi_port, int, ioport, 0444);
+ module_param(smi_cmd,  int, 0444);
+ module_param(smi_sig, uint, 0444);
+ 
 
---=20
-Best regards,
-
-Fu Wei
-Software Engineer
-Red Hat
