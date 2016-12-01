@@ -1,209 +1,65 @@
-From: fu.wei@linaro.org
-Subject: [PATCH v15] acpi, apei, arm64: APEI initial support for aarch64.
-Date: Thu,  1 Dec 2016 21:51:12 +0800
-Message-ID: <20161201135112.15396-1-fu.wei@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:38362 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751758AbcLANvu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Dec 2016 08:51:50 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 07/39] Annotate hardware config module parameters in drivers/cpufreq/
+Date: Thu, 1 Dec 2016 15:02:15 +0100
+Message-ID: <CAJZ5v0h+Vfva+xB5_p8383hmoFntjGtSa7hZm0wOne-5x1wRJQ@mail.gmail.com>
+References: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
+ <148059543222.31612.3648801189087582676.stgit@warthog.procyon.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-security-module-owner@vger.kernel.org>
+In-Reply-To: <148059543222.31612.3648801189087582676.stgit@warthog.procyon.org.uk>
+Sender: owner-linux-security-module@vger.kernel.org
+To: David Howells <dhowells@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gnomes@lxorguk.ukuu.org.uk, minyard@acm.org, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-security-module@vger.kernel.org, keyrings@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tn@semihalf.com, tony.luck@intel.com, bp@suse.de, rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+On Thu, Dec 1, 2016 at 1:30 PM, David Howells <dhowells@redhat.com> wrote:
+> When the kernel is running in secure boot mode, we lock down the kernel to
+> prevent userspace from modifying the running kernel image.  Whilst this
+> includes prohibiting access to things like /dev/mem, it must also prevent
+> access by means of configuring driver modules in such a way as to cause a
+> device to access or modify the kernel image.
+>
+> To this end, annotate module_param* statements that refer to hardware
+> configuration and indicate for future reference what type of parameter they
+> specify.  The parameter parser in the core sees this information and can
+> skip such parameters with an error message if the kernel is locked down.
+> The module initialisation then runs as normal, but just sees whatever the
+> default values for those parameters is.
+>
+> Note that we do still need to do the module initialisation because some
+> drivers have viable defaults set in case parameters aren't specified and
+> some drivers support automatic configuration (e.g. PNP or PCI) in addition
+> to manually coded parameters.
+>
+> This patch annotates drivers in drivers/cpufreq/.
+>
+> Suggested-by: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> cc: Viresh Kumar <viresh.kumar@linaro.org>
+> cc: linux-pm@vger.kernel.org
+> ---
+>
+>  drivers/cpufreq/speedstep-smi.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/speedstep-smi.c b/drivers/cpufreq/speedstep-smi.c
+> index 770a9ae1999a..37b30071c220 100644
+> --- a/drivers/cpufreq/speedstep-smi.c
+> +++ b/drivers/cpufreq/speedstep-smi.c
+> @@ -378,7 +378,7 @@ static void __exit speedstep_exit(void)
+>         cpufreq_unregister_driver(&speedstep_driver);
+>  }
+>
+> -module_param(smi_port, int, 0444);
+> +module_param_hw(smi_port, int, ioport, 0444);
+>  module_param(smi_cmd,  int, 0444);
+>  module_param(smi_sig, uint, 0444);
 
-This patch provides APEI arch-specific bits for aarch64
+Looks OK to me.
 
-Meanwhile,
-(1)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-a generic place.
-(2)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
-because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+Whom do you expect to apply this?
 
-[Fu Wei: improve && upstream]
-
-Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
-Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
-Signed-off-by: Fu Wei <fu.wei@linaro.org>
-Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
-Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
-Acked-by: Will Deacon <will.deacon@arm.com>
-Reviewed-by: Borislav Petkov <bp@suse.de>
----
-This patchset has been tested on the following platforms:
-    (1)ARM Foundation v8 model
-
-Changelog:
-v15:https://lkml.org/lkml/2016/12/1/
-    Improve the comment of acpi_disable_cmcff.
-    Rebase to 4.9.0-rc7-gd7c7bc3
-
-v14:https://lkml.org/lkml/2016/8/10/231
-    Delete hest_ia32_init().
-    Fix a comment typo for acpi_disable_cmcff.
-    Rebase to 4.8.0-rc1-ge6c4d92
-
-v13:https://lkml.org/lkml/2016/8/10/499
-    Fix a comment problem(add a "end").
-    Add a comment for the definition of acpi_disable_cmcff.
-    Rebase to 4.8.0-rc1-g372734a
-
-v12:https://lkml.org/lkml/2016/7/29/97
-    Fix a comment problem(redundant "with").
-    Rebase to 4.7.0-g680eee2.
-
-v11:https://lkml.org/lkml/2016/7/27/427
-    Rebase to v4.7-0e06f5c0.
-
-v10:https://lkml.org/lkml/2016/4/14
-    Fix the Alphabetical order problem in arch/arm64/Kconfig.
-
-v9: https://lkml.org/lkml/2016/4/5/522
-    Improve the comment for arch_apei_flush_tlb_one.
-    Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
-    problem.
-
-v8: https://lkml.org/lkml/2016/3/29/132
-    Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
-    on ARM64.
-
-v7: https://lkml.org/lkml/2016/3/17/183
-    Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h.
-
-v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
-    Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
-    a generic place.
-    Delete HAVE_ACPI_APEI_HEST_IA32.
-
-v5: https://lkml.org/lkml/2015/12/10/131
-    Add "HAVE_ACPI_APEI_HEST_IA32" instead of
-    "#if defined(__i386__) || defined(__x86_64__)".
-
-v4: https://lkml.org/lkml/2015/12/8/188
-    Rebase to latest kernel version(4.4-rc4).
-    Move arch_apei_flush_tlb_one into header file as a inline function
-    Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
-
-v3: https://lkml.org/lkml/2015/12/3/521
-    Remove "acpi_disable_cmcff" from arm64 code,
-    and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
-
-v2: https://lkml.org/lkml/2015/12/2/432
-    Rebase to latest kernel version(4.4-rc3).
-    Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
-
-v1: https://lkml.org/lkml/2015/8/14/199
-    Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
-    Delete arch/arm64/kernel/apei.c.
-    Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
-
- arch/arm64/Kconfig            |  1 +
- arch/arm64/include/asm/acpi.h | 23 ++++++++++++++++++++++-
- arch/x86/kernel/acpi/apei.c   |  3 ---
- drivers/acpi/apei/hest.c      | 13 ++++++++++---
- 4 files changed, 33 insertions(+), 7 deletions(-)
-
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index 969ef88..657be7f 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -52,6 +52,7 @@ config ARM64
- 	select GENERIC_TIME_VSYSCALL
- 	select HANDLE_DOMAIN_IRQ
- 	select HARDIRQS_SW_RESEND
-+	select HAVE_ACPI_APEI if (ACPI && EFI)
- 	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_BITREVERSE
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index e517088..d0de0e0 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -17,6 +17,7 @@
- 
- #include <asm/cputype.h>
- #include <asm/smp_plat.h>
-+#include <asm/tlbflush.h>
- 
- /* Macros for consistency checks of the GICC subtable of MADT */
- #define ACPI_MADT_GICC_LENGTH	\
-@@ -114,8 +115,28 @@ static inline const char *acpi_get_enable_method(int cpu)
- }
- 
- #ifdef	CONFIG_ACPI_APEI
-+/*
-+ * acpi_disable_cmcff is used in drivers/acpi/apei/hest.c for disabling
-+ * IA-32 Architecture Corrected Machine Check (CMC) Firmware-First mode
-+ * with a kernel command line parameter "acpi=nocmcoff". But we don't
-+ * have this IA-32 specific feature on ARM64, this definition is only
-+ * for compatibility.
-+ */
-+#define acpi_disable_cmcff 1
- pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
--#endif
-+
-+/*
-+ * Despite its name, this function must still broadcast the TLB
-+ * invalidation in order to ensure other CPUs don't end up with junk
-+ * entries as a result of speculation. Unusually, its also called in
-+ * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
-+ * TLB broadcasting, then we're in trouble here.
-+ */
-+static inline void arch_apei_flush_tlb_one(unsigned long addr)
-+{
-+	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
-+}
-+#endif /* CONFIG_ACPI_APEI */
- 
- #ifdef CONFIG_ACPI_NUMA
- int arm64_acpi_numa_init(void);
-diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
-index c280df6..ea3046e 100644
---- a/arch/x86/kernel/acpi/apei.c
-+++ b/arch/x86/kernel/acpi/apei.c
-@@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
- 	struct acpi_hest_ia_corrected *cmc;
- 	struct acpi_hest_ia_error_bank *mc_bank;
- 
--	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
--		return 0;
--
- 	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
- 	if (!cmc->enabled)
- 		return 0;
-diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
-index 20b3fcf..8f2a98e 100644
---- a/drivers/acpi/apei/hest.c
-+++ b/drivers/acpi/apei/hest.c
-@@ -123,7 +123,13 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
-  */
- static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
- {
--	return arch_apei_enable_cmcff(hest_hdr, data);
-+	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
-+		return 0;
-+
-+	if (!acpi_disable_cmcff)
-+		return !arch_apei_enable_cmcff(hest_hdr, data);
-+
-+	return 0;
- }
- 
- struct ghes_arr {
-@@ -232,8 +238,9 @@ void __init acpi_hest_init(void)
- 		goto err;
- 	}
- 
--	if (!acpi_disable_cmcff)
--		apei_hest_parse(hest_parse_cmc, NULL);
-+	rc = apei_hest_parse(hest_parse_cmc, NULL);
-+	if (rc)
-+		goto err;
- 
- 	if (!ghes_disable) {
- 		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
--- 
-2.9.3
-
+Thanks,
+Rafael
