@@ -1,44 +1,33 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: dt: Add support for zx296718
-Date: Thu, 01 Dec 2016 15:25:32 +0100
-Message-ID: <33656568.Mu5lX1GPCY@aspire.rjw.lan>
-References: <1480491329-5242-1-git-send-email-baoyou.xie@linaro.org> <20161130080855.GL3288@vireshk-i7>
+Subject: Re: [PATCH 0/3] dev_pm_qos improvements
+Date: Thu, 01 Dec 2016 15:26:13 +0100
+Message-ID: <1593441.WDWLDmRgoD@aspire.rjw.lan>
+References: <cover.1480468027.git.luto@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161130080855.GL3288@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Baoyou Xie <baoyou.xie@linaro.org>
-Cc: xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64590 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753431AbcLAO3w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 09:29:52 -0500
+In-Reply-To: <cover.1480468027.git.luto@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Andy Lutomirski <luto@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Wednesday, November 30, 2016 01:38:55 PM Viresh Kumar wrote:
-> On 30-11-16, 15:35, Baoyou Xie wrote:
-> > Add the compatible string for supporting the generic cpufreq driver on
-> > the ZTE's zx296718 SoC.
-> > 
-> > Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > index 7126762..c0a28e23b 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -81,6 +81,8 @@ static const struct of_device_id machines[] __initconst = {
-> >  
-> >  	{ .compatible = "xlnx,zynq-7000", },
-> >  
-> > +	{ .compatible = "zte,zx296718", },
-> > +
-> >  	{ }
-> >  };
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Tuesday, November 29, 2016 05:11:49 PM Andy Lutomirski wrote:
+> Hi Rafael-
 
-Applied.
+Hi,
+
+> Here are three minor dev_pm_qos improvements that make my upcoming
+> nvme power management code work much better.  Any chance you could
+> take them for 4.10?
+
+Yup, all [1-3/3] applied.
 
 Thanks,
 Rafael
+
