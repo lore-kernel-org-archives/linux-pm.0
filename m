@@ -1,154 +1,216 @@
-From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: [PATCH v2] x86/suspend: fix false positive KASAN warning on
- suspend/resume
-Date: Thu, 1 Dec 2016 14:31:54 -0600
-Message-ID: <20161201203154.mwt5x736g7z6jh3o@treble>
-References: <20161130231011.ofmbmevn3hqasetz@treble>
- <8f4c4a62-d912-0cd9-3462-8df20a868834@virtuozzo.com>
- <20161201145821.imkcgizo4thmiei2@treble>
- <20161201164551.52xlcftamleam6vq@treble>
- <CACT4Y+YXxcFAvBGsStZv8LC_30JvaC==UHznJre1z3UmsoqGsQ@mail.gmail.com>
- <20161201171306.swnvi4f2ezavloxd@treble>
- <CACT4Y+anS0XniR7ZxoEQ1nnAKPsGNvgc5L72uiSThOi3F742gA@mail.gmail.com>
- <20161201173438.bfe5eq23i6ezfxsq@treble>
- <CACT4Y+Z62RBTkiAjTG_ZF1zCZKA=S92fobENzRcq001XOTj36A@mail.gmail.com>
- <20161201175611.gf63mwzomt4wrlxy@treble>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v15] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Thu, 01 Dec 2016 22:19:16 +0100
+Message-ID: <7764242.Y9o2zi7LHj@aspire.rjw.lan>
+References: <20161201135112.15396-1-fu.wei@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51378 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752147AbcLAUb7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Dec 2016 15:31:59 -0500
-Content-Disposition: inline
-In-Reply-To: <20161201175611.gf63mwzomt4wrlxy@treble>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20161201135112.15396-1-fu.wei@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: fu.wei@linaro.org, bp@suse.de
+Cc: tn@semihalf.com, tony.luck@intel.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org, linaro-acpi@lists.linaro.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dmitry Vyukov <dvyukov@google.com>
-Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Andy Lutomirski <luto@amacapital.net>, Scott Bauer <scott.bauer@intel.com>, "x86@kernel.org" <x86@kernel.org>, Alexander Potapenko <glider@google.com>, kasan-dev <kasan-dev@googlegroups.com>
 
-Resuming from a suspend operation is showing a KASAN false positive
-warning:
+On Thursday, December 01, 2016 09:51:12 PM fu.wei@linaro.org wrote:
+> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+> 
+> This patch provides APEI arch-specific bits for aarch64
+> 
+> Meanwhile,
+> (1)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+> a generic place.
+> (2)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+> 
+> [Fu Wei: improve && upstream]
+> 
+> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+> Signed-off-by: Fu Wei <fu.wei@linaro.org>
+> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+> Acked-by: Will Deacon <will.deacon@arm.com>
+> Reviewed-by: Borislav Petkov <bp@suse.de>
 
-  BUG: KASAN: stack-out-of-bounds in unwind_get_return_address+0x11d/0x130 at addr ffff8803867d7878
-  Read of size 8 by task pm-suspend/7774
-  page:ffffea000e19f5c0 count:0 mapcount:0 mapping:          (null) index:0x0
-  flags: 0x2ffff0000000000()
-  page dumped because: kasan: bad access detected
-  CPU: 0 PID: 7774 Comm: pm-suspend Tainted: G    B           4.9.0-rc7+ #8
-  Hardware name: Gigabyte Technology Co., Ltd. Z170X-UD5/Z170X-UD5-CF, BIOS F5 03/07/2016
-  Call Trace:
-    dump_stack+0x63/0x82
-    kasan_report_error+0x4b4/0x4e0
-    ? acpi_hw_read_port+0xd0/0x1ea
-    ? kfree_const+0x22/0x30
-    ? acpi_hw_validate_io_request+0x1a6/0x1a6
-    __asan_report_load8_noabort+0x61/0x70
-    ? unwind_get_return_address+0x11d/0x130
-    unwind_get_return_address+0x11d/0x130
-    ? unwind_next_frame+0x97/0xf0
-    __save_stack_trace+0x92/0x100
-    save_stack_trace+0x1b/0x20
-    save_stack+0x46/0xd0
-    ? save_stack_trace+0x1b/0x20
-    ? save_stack+0x46/0xd0
-    ? kasan_kmalloc+0xad/0xe0
-    ? kasan_slab_alloc+0x12/0x20
-    ? acpi_hw_read+0x2b6/0x3aa
-    ? acpi_hw_validate_register+0x20b/0x20b
-    ? acpi_hw_write_port+0x72/0xc7
-    ? acpi_hw_write+0x11f/0x15f
-    ? acpi_hw_read_multiple+0x19f/0x19f
-    ? memcpy+0x45/0x50
-    ? acpi_hw_write_port+0x72/0xc7
-    ? acpi_hw_write+0x11f/0x15f
-    ? acpi_hw_read_multiple+0x19f/0x19f
-    ? kasan_unpoison_shadow+0x36/0x50
-    kasan_kmalloc+0xad/0xe0
-    kasan_slab_alloc+0x12/0x20
-    kmem_cache_alloc_trace+0xbc/0x1e0
-    ? acpi_get_sleep_type_data+0x9a/0x578
-    acpi_get_sleep_type_data+0x9a/0x578
-    acpi_hw_legacy_wake_prep+0x88/0x22c
-    ? acpi_hw_legacy_sleep+0x3c7/0x3c7
-    ? acpi_write_bit_register+0x28d/0x2d3
-    ? acpi_read_bit_register+0x19b/0x19b
-    acpi_hw_sleep_dispatch+0xb5/0xba
-    acpi_leave_sleep_state_prep+0x17/0x19
-    acpi_suspend_enter+0x154/0x1e0
-    ? trace_suspend_resume+0xe8/0xe8
-    suspend_devices_and_enter+0xb09/0xdb0
-    ? printk+0xa8/0xd8
-    ? arch_suspend_enable_irqs+0x20/0x20
-    ? try_to_freeze_tasks+0x295/0x600
-    pm_suspend+0x6c9/0x780
-    ? finish_wait+0x1f0/0x1f0
-    ? suspend_devices_and_enter+0xdb0/0xdb0
-    state_store+0xa2/0x120
-    ? kobj_attr_show+0x60/0x60
-    kobj_attr_store+0x36/0x70
-    sysfs_kf_write+0x131/0x200
-    kernfs_fop_write+0x295/0x3f0
-    __vfs_write+0xef/0x760
-    ? handle_mm_fault+0x1346/0x35e0
-    ? do_iter_readv_writev+0x660/0x660
-    ? __pmd_alloc+0x310/0x310
-    ? do_lock_file_wait+0x1e0/0x1e0
-    ? apparmor_file_permission+0x18/0x20
-    ? security_file_permission+0x73/0x1c0
-    ? rw_verify_area+0xbd/0x2b0
-    vfs_write+0x149/0x4a0
-    SyS_write+0xd9/0x1c0
-    ? SyS_read+0x1c0/0x1c0
-    entry_SYSCALL_64_fastpath+0x1e/0xad
-  Memory state around the buggy address:
-   ffff8803867d7700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-   ffff8803867d7780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  >ffff8803867d7800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f4
-                                                                  ^
-   ffff8803867d7880: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
-   ffff8803867d7900: 00 00 00 f1 f1 f1 f1 04 f4 f4 f4 f3 f3 f3 f3 00
+Well, am I expected to pick up this one?
 
-KASAN instrumentation poisons the stack when entering a function and
-unpoisons it when exiting the function.  However, in the suspend path,
-some functions never return, so their stack never gets unpoisoned,
-resulting in stale KASAN shadow data which can cause later false
-positive warnings like the one above.
+> ---
+> This patchset has been tested on the following platforms:
+>     (1)ARM Foundation v8 model
+> 
+> Changelog:
+> v15:https://lkml.org/lkml/2016/12/1/
+>     Improve the comment of acpi_disable_cmcff.
+>     Rebase to 4.9.0-rc7-gd7c7bc3
+> 
+> v14:https://lkml.org/lkml/2016/8/10/231
+>     Delete hest_ia32_init().
+>     Fix a comment typo for acpi_disable_cmcff.
+>     Rebase to 4.8.0-rc1-ge6c4d92
+> 
+> v13:https://lkml.org/lkml/2016/8/10/499
+>     Fix a comment problem(add a "end").
+>     Add a comment for the definition of acpi_disable_cmcff.
+>     Rebase to 4.8.0-rc1-g372734a
+> 
+> v12:https://lkml.org/lkml/2016/7/29/97
+>     Fix a comment problem(redundant "with").
+>     Rebase to 4.7.0-g680eee2.
+> 
+> v11:https://lkml.org/lkml/2016/7/27/427
+>     Rebase to v4.7-0e06f5c0.
+> 
+> v10:https://lkml.org/lkml/2016/4/14
+>     Fix the Alphabetical order problem in arch/arm64/Kconfig.
+> 
+> v9: https://lkml.org/lkml/2016/4/5/522
+>     Improve the comment for arch_apei_flush_tlb_one.
+>     Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
+>     problem.
+> 
+> v8: https://lkml.org/lkml/2016/3/29/132
+>     Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+>     on ARM64.
+> 
+> v7: https://lkml.org/lkml/2016/3/17/183
+>     Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h.
+> 
+> v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+>     Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+>     a generic place.
+>     Delete HAVE_ACPI_APEI_HEST_IA32.
+> 
+> v5: https://lkml.org/lkml/2015/12/10/131
+>     Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+>     "#if defined(__i386__) || defined(__x86_64__)".
+> 
+> v4: https://lkml.org/lkml/2015/12/8/188
+>     Rebase to latest kernel version(4.4-rc4).
+>     Move arch_apei_flush_tlb_one into header file as a inline function
+>     Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+> 
+> v3: https://lkml.org/lkml/2015/12/3/521
+>     Remove "acpi_disable_cmcff" from arm64 code,
+>     and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+> 
+> v2: https://lkml.org/lkml/2015/12/2/432
+>     Rebase to latest kernel version(4.4-rc3).
+>     Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+> 
+> v1: https://lkml.org/lkml/2015/8/14/199
+>     Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+>     Delete arch/arm64/kernel/apei.c.
+>     Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+> 
+>  arch/arm64/Kconfig            |  1 +
+>  arch/arm64/include/asm/acpi.h | 23 ++++++++++++++++++++++-
+>  arch/x86/kernel/acpi/apei.c   |  3 ---
+>  drivers/acpi/apei/hest.c      | 13 ++++++++++---
+>  4 files changed, 33 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index 969ef88..657be7f 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -52,6 +52,7 @@ config ARM64
+>  	select GENERIC_TIME_VSYSCALL
+>  	select HANDLE_DOMAIN_IRQ
+>  	select HARDIRQS_SW_RESEND
+> +	select HAVE_ACPI_APEI if (ACPI && EFI)
+>  	select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+>  	select HAVE_ARCH_AUDITSYSCALL
+>  	select HAVE_ARCH_BITREVERSE
+> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+> index e517088..d0de0e0 100644
+> --- a/arch/arm64/include/asm/acpi.h
+> +++ b/arch/arm64/include/asm/acpi.h
+> @@ -17,6 +17,7 @@
+>  
+>  #include <asm/cputype.h>
+>  #include <asm/smp_plat.h>
+> +#include <asm/tlbflush.h>
+>  
+>  /* Macros for consistency checks of the GICC subtable of MADT */
+>  #define ACPI_MADT_GICC_LENGTH	\
+> @@ -114,8 +115,28 @@ static inline const char *acpi_get_enable_method(int cpu)
+>  }
+>  
+>  #ifdef	CONFIG_ACPI_APEI
+> +/*
+> + * acpi_disable_cmcff is used in drivers/acpi/apei/hest.c for disabling
+> + * IA-32 Architecture Corrected Machine Check (CMC) Firmware-First mode
+> + * with a kernel command line parameter "acpi=nocmcoff". But we don't
+> + * have this IA-32 specific feature on ARM64, this definition is only
+> + * for compatibility.
+> + */
+> +#define acpi_disable_cmcff 1
+>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+> -#endif
+> +
+> +/*
+> + * Despite its name, this function must still broadcast the TLB
+> + * invalidation in order to ensure other CPUs don't end up with junk
+> + * entries as a result of speculation. Unusually, its also called in
+> + * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
+> + * TLB broadcasting, then we're in trouble here.
+> + */
+> +static inline void arch_apei_flush_tlb_one(unsigned long addr)
+> +{
+> +	flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> +}
+> +#endif /* CONFIG_ACPI_APEI */
+>  
+>  #ifdef CONFIG_ACPI_NUMA
+>  int arm64_acpi_numa_init(void);
+> diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+> index c280df6..ea3046e 100644
+> --- a/arch/x86/kernel/acpi/apei.c
+> +++ b/arch/x86/kernel/acpi/apei.c
+> @@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+>  	struct acpi_hest_ia_corrected *cmc;
+>  	struct acpi_hest_ia_error_bank *mc_bank;
+>  
+> -	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+> -		return 0;
+> -
+>  	cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+>  	if (!cmc->enabled)
+>  		return 0;
+> diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+> index 20b3fcf..8f2a98e 100644
+> --- a/drivers/acpi/apei/hest.c
+> +++ b/drivers/acpi/apei/hest.c
+> @@ -123,7 +123,13 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+>   */
+>  static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+>  {
+> -	return arch_apei_enable_cmcff(hest_hdr, data);
+> +	if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+> +		return 0;
+> +
+> +	if (!acpi_disable_cmcff)
+> +		return !arch_apei_enable_cmcff(hest_hdr, data);
+> +
+> +	return 0;
+>  }
+>  
+>  struct ghes_arr {
+> @@ -232,8 +238,9 @@ void __init acpi_hest_init(void)
+>  		goto err;
+>  	}
+>  
+> -	if (!acpi_disable_cmcff)
+> -		apei_hest_parse(hest_parse_cmc, NULL);
+> +	rc = apei_hest_parse(hest_parse_cmc, NULL);
+> +	if (rc)
+> +		goto err;
+>  
+>  	if (!ghes_disable) {
+>  		rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
+> 
 
-Reported-by: Scott Bauer <scott.bauer@intel.com>
-Suggested-by: Dmitry Vyukov <dvyukov@google.com>
-Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
----
- arch/x86/kernel/acpi/wakeup_64.S | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
-
-diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
-index 169963f..1df9b75 100644
---- a/arch/x86/kernel/acpi/wakeup_64.S
-+++ b/arch/x86/kernel/acpi/wakeup_64.S
-@@ -109,6 +109,22 @@ ENTRY(do_suspend_lowlevel)
- 	movq	pt_regs_r14(%rax), %r14
- 	movq	pt_regs_r15(%rax), %r15
- 
-+#ifdef CONFIG_KASAN
-+	/*
-+	 * The suspend path may have poisoned some areas deeper in the stack,
-+	 * which we now need to unpoison.
-+	 *
-+	 * We can't call kasan_unpoison_task_stack_below() because it uses %gs
-+	 * for 'current', which hasn't been set up yet.  Instead, calculate the
-+	 * stack range manually and call kasan_unpoison_shadow().
-+	 */
-+	movq	%rsp, %rdi
-+	andq	$CURRENT_MASK, %rdi
-+	movq	%rsp, %rsi
-+	xorq	%rdi, %rsi
-+	call	kasan_unpoison_shadow
-+#endif
-+
- 	xorl	%eax, %eax
- 	addq	$8, %rsp
- 	FRAME_END
--- 
-2.7.4
+Thanks,
+Rafael
 
