@@ -1,23 +1,23 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] devfreq: exynos: Don't use OPP structures outside of RCU locks
-Date: Thu,  1 Dec 2016 15:55:40 +0530
-Message-ID: <9cb02ef0037c8d161f7b57ff3e99c2831661da03.1480587838.git.viresh.kumar@linaro.org>
+Subject: [PATCH] devfreq: rk3399_dmc: Don't use OPP structures outside of RCU locks
+Date: Thu,  1 Dec 2016 16:08:01 +0530
+Message-ID: <22bf6dfc155a6a241c2ee4e2b44a615d0e82064d.1480588658.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f53.google.com ([74.125.83.53]:35489 "EHLO
-        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755413AbcLAKZx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 05:25:53 -0500
-Received: by mail-pg0-f53.google.com with SMTP id p66so93761362pga.2
-        for <linux-pm@vger.kernel.org>; Thu, 01 Dec 2016 02:25:53 -0800 (PST)
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:35503 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751503AbcLAKiG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 05:38:06 -0500
+Received: by mail-pf0-f181.google.com with SMTP id i88so45562620pfk.2
+        for <linux-pm@vger.kernel.org>; Thu, 01 Dec 2016 02:38:06 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
 The OPP structures are abused to the best here, without understanding
 how the OPP core and RCU locks work.
 
-In short, the OPP pointer saved 'struct exynos_bus' can become invalid
+In short, the OPP pointer saved in 'rk3399_dmcfreq' can become invalid
 under your nose, as the OPP core may free it.
 
 Fix various abuses around OPP structures and calls.
@@ -29,116 +29,53 @@ Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 I would like it to go via the PM tree. Perhaps that's already the
 default tree for this.
 
- drivers/devfreq/exynos-bus.c | 29 ++++++++++++++---------------
- 1 file changed, 14 insertions(+), 15 deletions(-)
+ drivers/devfreq/rk3399_dmc.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index 29866f7e6d7e..a8ed7792ece2 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -35,7 +35,7 @@ struct exynos_bus {
- 	unsigned int edev_count;
- 	struct mutex lock;
- 
+diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+index 5063ac1a5939..cf14631b1945 100644
+--- a/drivers/devfreq/rk3399_dmc.c
++++ b/drivers/devfreq/rk3399_dmc.c
+@@ -80,7 +80,6 @@ struct rk3399_dmcfreq {
+ 	struct regulator *vdd_center;
+ 	unsigned long rate, target_rate;
+ 	unsigned long volt, target_volt;
 -	struct dev_pm_opp *curr_opp;
-+	unsigned long curr_freq;
+ };
  
- 	struct regulator *regulator;
- 	struct clk *clk;
-@@ -99,7 +99,7 @@ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
- {
- 	struct exynos_bus *bus = dev_get_drvdata(dev);
- 	struct dev_pm_opp *new_opp;
--	unsigned long old_freq, new_freq, old_volt, new_volt, tol;
-+	unsigned long old_freq, new_freq, new_volt, tol;
- 	int ret = 0;
+ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+@@ -102,9 +101,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 	target_rate = dev_pm_opp_get_freq(opp);
+ 	target_volt = dev_pm_opp_get_voltage(opp);
  
- 	/* Get new opp-bus instance according to new bus clock */
-@@ -113,8 +113,7 @@ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
- 
- 	new_freq = dev_pm_opp_get_freq(new_opp);
- 	new_volt = dev_pm_opp_get_voltage(new_opp);
--	old_freq = dev_pm_opp_get_freq(bus->curr_opp);
--	old_volt = dev_pm_opp_get_voltage(bus->curr_opp);
-+	old_freq = bus->curr_freq;
+-	dmcfreq->rate = dev_pm_opp_get_freq(dmcfreq->curr_opp);
+-	dmcfreq->volt = dev_pm_opp_get_voltage(dmcfreq->curr_opp);
+-
  	rcu_read_unlock();
  
- 	if (old_freq == new_freq)
-@@ -146,7 +145,7 @@ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
- 			goto out;
- 		}
- 	}
--	bus->curr_opp = new_opp;
-+	bus->curr_freq = new_freq;
+ 	if (dmcfreq->rate == target_rate)
+@@ -165,7 +161,9 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+ 	if (err)
+ 		dev_err(dev, "Cannot to set vol %lu uV\n", target_volt);
  
- 	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
- 			old_freq/1000, new_freq/1000);
-@@ -163,9 +162,7 @@ static int exynos_bus_get_dev_status(struct device *dev,
- 	struct devfreq_event_data edata;
- 	int ret;
- 
--	rcu_read_lock();
--	stat->current_frequency = dev_pm_opp_get_freq(bus->curr_opp);
--	rcu_read_unlock();
-+	stat->current_frequency = bus->curr_freq;
- 
- 	ret = exynos_bus_get_event(bus, &edata);
- 	if (ret < 0) {
-@@ -226,7 +223,7 @@ static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
- 	}
- 
- 	new_freq = dev_pm_opp_get_freq(new_opp);
--	old_freq = dev_pm_opp_get_freq(bus->curr_opp);
-+	old_freq = bus->curr_freq;
- 	rcu_read_unlock();
- 
- 	if (old_freq == new_freq)
-@@ -242,7 +239,7 @@ static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
- 	}
- 
- 	*freq = new_freq;
--	bus->curr_opp = new_opp;
-+	bus->curr_freq = new_freq;
- 
- 	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
- 			old_freq/1000, new_freq/1000);
-@@ -335,6 +332,7 @@ static int exynos_bus_parse_of(struct device_node *np,
- 			      struct exynos_bus *bus)
- {
- 	struct device *dev = bus->dev;
-+	struct dev_pm_opp *opp;
- 	unsigned long rate;
- 	int ret;
- 
-@@ -352,22 +350,23 @@ static int exynos_bus_parse_of(struct device_node *np,
- 	}
- 
- 	/* Get the freq and voltage from OPP table to scale the bus freq */
--	rcu_read_lock();
- 	ret = dev_pm_opp_of_add_table(dev);
- 	if (ret < 0) {
- 		dev_err(dev, "failed to get OPP table\n");
--		rcu_read_unlock();
- 		goto err_clk;
- 	}
- 
- 	rate = clk_get_rate(bus->clk);
--	bus->curr_opp = devfreq_recommended_opp(dev, &rate, 0);
--	if (IS_ERR(bus->curr_opp)) {
+-	dmcfreq->curr_opp = opp;
++	dmcfreq->rate = target_rate;
++	dmcfreq->volt = target_volt;
 +
-+	rcu_read_lock();
-+	opp = devfreq_recommended_opp(dev, &rate, 0);
-+	if (IS_ERR(opp)) {
- 		dev_err(dev, "failed to find dev_pm_opp\n");
+ out:
+ 	mutex_unlock(&dmcfreq->lock);
+ 	return err;
+@@ -431,8 +429,9 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
  		rcu_read_unlock();
--		ret = PTR_ERR(bus->curr_opp);
-+		ret = PTR_ERR(opp);
- 		goto err_opp;
+ 		return PTR_ERR(opp);
  	}
-+	bus->curr_freq = dev_pm_opp_get_freq(opp);
++	dmcfreq->rate = dev_pm_opp_get_freq(opp);
++	dmcfreq->volt = dev_pm_opp_get_voltage(opp);
  	rcu_read_unlock();
+-	data->curr_opp = opp;
  
- 	return 0;
+ 	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
+ 
 -- 
 2.7.1.410.g6faf27b
 
