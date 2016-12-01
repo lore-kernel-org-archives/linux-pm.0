@@ -1,40 +1,28 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [RESEND PATCH 11/11] tools/power turbostat: enable turbostat to
- support Knights Mill (KNM)
-Date: Thu, 1 Dec 2016 01:47:09 -0500
-Message-ID: <CAJvTdKmTyVg0UeBWFggj4RsW3hbtK5e+-rAZyfHUFvwAqtEPuw@mail.gmail.com>
-References: <20161013153105.2517-1-piotr.luc@intel.com> <20161013153105.2517-12-piotr.luc@intel.com>
+From: "Luc, Piotr" <Piotr.Luc@intel.com>
+Subject: Re: [RESEND PATCH 04/11] x86/intel_idle: Add Knights Mill CPUID
+Date: Thu, 1 Dec 2016 08:45:02 +0000
+Message-ID: <1480581874.4677.28.camel@intel.com>
+References: <20161013153105.2517-1-piotr.luc@intel.com>
+         <20161013153105.2517-5-piotr.luc@intel.com>
+         <CAJvTdKmDJiSXFkwDPSEkD1rxJMLHsWsA9KrNYKyYZEyyTK3p1A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161013153105.2517-12-piotr.luc@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Piotr Luc <piotr.luc@intel.com>
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, X86 ML <x86@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Doug Thompson <dougthompson@xmission.com>, Borislav Petkov <bp@alien8.de>, linux-edac@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:40625 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932482AbcLAIvC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Dec 2016 03:51:02 -0500
+In-Reply-To: <CAJvTdKmDJiSXFkwDPSEkD1rxJMLHsWsA9KrNYKyYZEyyTK3p1A@mail.gmail.com>
+Content-Language: en-US
+Content-ID: <AE31F9AEBF52044090FC032CEEE47DEA@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "lenb@kernel.org" <lenb@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Piotr,
-Thanks for sending the patch, I've made this change to my turbostat
-branch for 4.10.
-
-I did not apply your patch directly because for some reason it didn't
-appear in patchwork for linux-pm,
-only for lkml, which I do not review.
-
-Also, your patch depended on your style update patch to use the model # macros.
-Unfortunately what you did not know was that I'd already applied a
-slightly different style update patch.
-(and it was my fault that I did not push it upstream before my summer
-sabbatical, sorry)
-
-In general, though, a good strategy when mixing style and functionality patches
-is to do the functionality first.  The reason is both that style
-patches tend to conflict more,
-and you don't want them to hold up the functionality.
-Also, if your functionality patch does not depend on style,
-it is easier to backport to distros who avoid style updates.
-
-Fortunately, this one was trivial.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+T24gVGh1LCAyMDE2LTEyLTAxIGF0IDAwOjI5IC0wNTAwLCBMZW4gQnJvd24gd3JvdGU6DQo+IEFw
+cGxpZWQNCj4gDQo+IFNvcnJ5LCBmb3Igc29tZSByZWFzb24gdGhpcyBwYXRjaCB3YXMgbm90IHBy
+ZXNlbnQgb24gbGludXgtcG0NCj4gcGF0Y2h3b3JrLCBqdXN0IG9uIGxrbWwgcGF0Y2h3b3JrLCB3
+aGljaCBJIGRvIG5vdCByZXZpZXcuDQo+IA0KSGkgTGVuLA0KVGhhbmtzIGZvciBtZXJnaW5nLsKg
+DQoNClBpb3Ry
