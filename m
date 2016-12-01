@@ -1,10 +1,9 @@
 From: Josh Poimboeuf <jpoimboe@redhat.com>
-Subject: Re: [PATCH] x86/suspend: fix false positive KASAN warning on
+Subject: [PATCH v2] x86/suspend: fix false positive KASAN warning on
  suspend/resume
-Date: Thu, 1 Dec 2016 11:56:11 -0600
-Message-ID: <20161201175611.gf63mwzomt4wrlxy@treble>
-References: <20161130190217.GA2756@sbauer-Z170X-UD5>
- <20161130231011.ofmbmevn3hqasetz@treble>
+Date: Thu, 1 Dec 2016 14:31:54 -0600
+Message-ID: <20161201203154.mwt5x736g7z6jh3o@treble>
+References: <20161130231011.ofmbmevn3hqasetz@treble>
  <8f4c4a62-d912-0cd9-3462-8df20a868834@virtuozzo.com>
  <20161201145821.imkcgizo4thmiei2@treble>
  <20161201164551.52xlcftamleam6vq@treble>
@@ -13,104 +12,143 @@ References: <20161130190217.GA2756@sbauer-Z170X-UD5>
  <CACT4Y+anS0XniR7ZxoEQ1nnAKPsGNvgc5L72uiSThOi3F742gA@mail.gmail.com>
  <20161201173438.bfe5eq23i6ezfxsq@treble>
  <CACT4Y+Z62RBTkiAjTG_ZF1zCZKA=S92fobENzRcq001XOTj36A@mail.gmail.com>
+ <20161201175611.gf63mwzomt4wrlxy@treble>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:51378 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752147AbcLAUb7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 1 Dec 2016 15:31:59 -0500
 Content-Disposition: inline
-In-Reply-To: <CACT4Y+Z62RBTkiAjTG_ZF1zCZKA=S92fobENzRcq001XOTj36A@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20161201175611.gf63mwzomt4wrlxy@treble>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Dmitry Vyukov <dvyukov@google.com>
 Cc: Andrey Ryabinin <aryabinin@virtuozzo.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Andy Lutomirski <luto@amacapital.net>, Scott Bauer <scott.bauer@intel.com>, "x86@kernel.org" <x86@kernel.org>, Alexander Potapenko <glider@google.com>, kasan-dev <kasan-dev@googlegroups.com>
-List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 01, 2016 at 06:47:07PM +0100, Dmitry Vyukov wrote:
-> On Thu, Dec 1, 2016 at 6:34 PM, Josh Poimboeuf <jpoimboe@redhat.com> wrote:
-> >> >> >> >
-> >> >> >> > On 12/01/2016 02:10 AM, Josh Poimboeuf wrote:
-> >> >> >> > > Resuming from a suspend operation is showing a KASAN false positive
-> >> >> >> > > warning:
-> >> >> >> > >
-> >> >> >> >
-> >> >> >> > > KASAN instrumentation poisons the stack when entering a function and
-> >> >> >> > > unpoisons it when exiting the function.  However, in the suspend path,
-> >> >> >> > > some functions never return, so their stack never gets unpoisoned,
-> >> >> >> > > resulting in stale KASAN shadow data which can cause false positive
-> >> >> >> > > warnings like the one above.
-> >> >> >> > >
-> >> >> >> > > Reported-by: Scott Bauer <scott.bauer@intel.com>
-> >> >> >> > > Tested-by: Scott Bauer <scott.bauer@intel.com>
-> >> >> >> > > Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-> >> >> >> > > ---
-> >> >> >> > >  arch/x86/kernel/acpi/sleep.c | 3 +++
-> >> >> >> > >  include/linux/kasan.h        | 7 +++++++
-> >> >> >> > >  2 files changed, 10 insertions(+)
-> >> >> >> > >
-> >> >> >> > > diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
-> >> >> >> > > index 4858733..62bd046 100644
-> >> >> >> > > --- a/arch/x86/kernel/acpi/sleep.c
-> >> >> >> > > +++ b/arch/x86/kernel/acpi/sleep.c
-> >> >> >> > > @@ -115,6 +115,9 @@ int x86_acpi_suspend_lowlevel(void)
-> >> >> >> > >   pause_graph_tracing();
-> >> >> >> > >   do_suspend_lowlevel();
-> >> >> >> > >   unpause_graph_tracing();
-> >> >> >> > > +
-> >> >> >> > > + kasan_unpoison_stack_below_sp();
-> >> >> >> > > +
-> >> >> >> >
-> >> >> >> > I think this might be too late. We may hit stale poison in the first C function called
-> >> >> >> > after resume (restore_processor_state()). Thus the shadow must be unpoisoned prior such call,
-> >> >> >> > i.e. somewhere in do_suspend_lowlevel() after .Lresume_point.
-> >> >> >>
-> >> >> >> Yeah, I think you're right.  Will spin a v2.
-> >> >> >
-> >> >> > So I tried calling kasan_unpoison_task_stack_below() from
-> >> >> > do_suspend_lowlevel(), but it hung on the resume.  Presumably because
-> >> >> > restore_processor_state() does some important setup which would be
-> >> >> > needed before calling into kasan_unpoison_task_stack_below().  For
-> >> >> > example, setting up the gs register.  So it's a bit of a catch-22.
-> >> >> >
-> >> >> > It could probably be fixed properly by rewriting do_suspend_lowlevel()
-> >> >> > to call restore_processor_state() with the temporary stack before
-> >> >> > switching to the original stack and doing the unpoison.
-> >> >> >
-> >> >> > (And there are some other issues with do_suspend_lowlevel() and I'd love
-> >> >> > to try taking a scalpel to it.  But I have too many knives in the air
-> >> >> > already to want to try to attempt that right now...)
-> >> >> >
-> >> >> > Unless somebody else wants to take a stab at it, my original patch is
-> >> >> > probably good enough for now, since restore_processor_state() doesn't
-> >> >> > seem to be triggering any KASAN warnings.
-> >> >>
-> >> >> restore_processor_state/__restore_processor_state does not seem to
-> >> >> have any local variables, so KASAN does not do any stack checks there.
-> >> >
-> >> > Actually, looking at the object code, it uses a lot of stack space and
-> >> > has several calls to __asan_report_load*() functions.  Probably due to
-> >> > inlining of other functions which have stack variables.
-> >>
-> >> That can be loads of heap variables (or other non-stack data). KASAN
-> >> will emit these checks for lots of loads, but they don't necessary go
-> >> to stack.
-> >
-> > I also see the stack poisoning instructions:
-> >
-> >  54f:   49 c1 ee 03             shr    $0x3,%r14
-> >  553:   4c 01 f0                add    %r14,%rax
-> >  556:   c7 00 f1 f1 f1 f1       movl   $0xf1f1f1f1,(%rax)
-> >  55c:   c7 40 04 00 00 f4 f4    movl   $0xf4f40000,0x4(%rax)
-> >  563:   c7 40 08 f3 f3 f3 f3    movl   $0xf3f3f3f3,0x8(%rax)
-> 
-> OK, then we are in trouble potentially.
-> It may work as long as as the stack region that is used for local vars
-> in restore_processor_state() does not contain any stale poisoning. But
-> it can break at any moment.
-> 
-> Have you tried kasan_unpoison_task_stack_below() or kasan_unpoison_shadow()?
-> I can see how kasan_unpoison_task_stack_below() can hang (it at least
-> uses current). But kasan_unpoison_shadow() is quite trivial, it
-> computes shadow address with simple math and writes zeroes there.
+Resuming from a suspend operation is showing a KASAN false positive
+warning:
 
-Good idea, I'll give kasan_unpoison_shadow() a shot.
+  BUG: KASAN: stack-out-of-bounds in unwind_get_return_address+0x11d/0x130 at addr ffff8803867d7878
+  Read of size 8 by task pm-suspend/7774
+  page:ffffea000e19f5c0 count:0 mapcount:0 mapping:          (null) index:0x0
+  flags: 0x2ffff0000000000()
+  page dumped because: kasan: bad access detected
+  CPU: 0 PID: 7774 Comm: pm-suspend Tainted: G    B           4.9.0-rc7+ #8
+  Hardware name: Gigabyte Technology Co., Ltd. Z170X-UD5/Z170X-UD5-CF, BIOS F5 03/07/2016
+  Call Trace:
+    dump_stack+0x63/0x82
+    kasan_report_error+0x4b4/0x4e0
+    ? acpi_hw_read_port+0xd0/0x1ea
+    ? kfree_const+0x22/0x30
+    ? acpi_hw_validate_io_request+0x1a6/0x1a6
+    __asan_report_load8_noabort+0x61/0x70
+    ? unwind_get_return_address+0x11d/0x130
+    unwind_get_return_address+0x11d/0x130
+    ? unwind_next_frame+0x97/0xf0
+    __save_stack_trace+0x92/0x100
+    save_stack_trace+0x1b/0x20
+    save_stack+0x46/0xd0
+    ? save_stack_trace+0x1b/0x20
+    ? save_stack+0x46/0xd0
+    ? kasan_kmalloc+0xad/0xe0
+    ? kasan_slab_alloc+0x12/0x20
+    ? acpi_hw_read+0x2b6/0x3aa
+    ? acpi_hw_validate_register+0x20b/0x20b
+    ? acpi_hw_write_port+0x72/0xc7
+    ? acpi_hw_write+0x11f/0x15f
+    ? acpi_hw_read_multiple+0x19f/0x19f
+    ? memcpy+0x45/0x50
+    ? acpi_hw_write_port+0x72/0xc7
+    ? acpi_hw_write+0x11f/0x15f
+    ? acpi_hw_read_multiple+0x19f/0x19f
+    ? kasan_unpoison_shadow+0x36/0x50
+    kasan_kmalloc+0xad/0xe0
+    kasan_slab_alloc+0x12/0x20
+    kmem_cache_alloc_trace+0xbc/0x1e0
+    ? acpi_get_sleep_type_data+0x9a/0x578
+    acpi_get_sleep_type_data+0x9a/0x578
+    acpi_hw_legacy_wake_prep+0x88/0x22c
+    ? acpi_hw_legacy_sleep+0x3c7/0x3c7
+    ? acpi_write_bit_register+0x28d/0x2d3
+    ? acpi_read_bit_register+0x19b/0x19b
+    acpi_hw_sleep_dispatch+0xb5/0xba
+    acpi_leave_sleep_state_prep+0x17/0x19
+    acpi_suspend_enter+0x154/0x1e0
+    ? trace_suspend_resume+0xe8/0xe8
+    suspend_devices_and_enter+0xb09/0xdb0
+    ? printk+0xa8/0xd8
+    ? arch_suspend_enable_irqs+0x20/0x20
+    ? try_to_freeze_tasks+0x295/0x600
+    pm_suspend+0x6c9/0x780
+    ? finish_wait+0x1f0/0x1f0
+    ? suspend_devices_and_enter+0xdb0/0xdb0
+    state_store+0xa2/0x120
+    ? kobj_attr_show+0x60/0x60
+    kobj_attr_store+0x36/0x70
+    sysfs_kf_write+0x131/0x200
+    kernfs_fop_write+0x295/0x3f0
+    __vfs_write+0xef/0x760
+    ? handle_mm_fault+0x1346/0x35e0
+    ? do_iter_readv_writev+0x660/0x660
+    ? __pmd_alloc+0x310/0x310
+    ? do_lock_file_wait+0x1e0/0x1e0
+    ? apparmor_file_permission+0x18/0x20
+    ? security_file_permission+0x73/0x1c0
+    ? rw_verify_area+0xbd/0x2b0
+    vfs_write+0x149/0x4a0
+    SyS_write+0xd9/0x1c0
+    ? SyS_read+0x1c0/0x1c0
+    entry_SYSCALL_64_fastpath+0x1e/0xad
+  Memory state around the buggy address:
+   ffff8803867d7700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+   ffff8803867d7780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  >ffff8803867d7800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f4
+                                                                  ^
+   ffff8803867d7880: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+   ffff8803867d7900: 00 00 00 f1 f1 f1 f1 04 f4 f4 f4 f3 f3 f3 f3 00
 
+KASAN instrumentation poisons the stack when entering a function and
+unpoisons it when exiting the function.  However, in the suspend path,
+some functions never return, so their stack never gets unpoisoned,
+resulting in stale KASAN shadow data which can cause later false
+positive warnings like the one above.
+
+Reported-by: Scott Bauer <scott.bauer@intel.com>
+Suggested-by: Dmitry Vyukov <dvyukov@google.com>
+Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
+---
+ arch/x86/kernel/acpi/wakeup_64.S | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+index 169963f..1df9b75 100644
+--- a/arch/x86/kernel/acpi/wakeup_64.S
++++ b/arch/x86/kernel/acpi/wakeup_64.S
+@@ -109,6 +109,22 @@ ENTRY(do_suspend_lowlevel)
+ 	movq	pt_regs_r14(%rax), %r14
+ 	movq	pt_regs_r15(%rax), %r15
+ 
++#ifdef CONFIG_KASAN
++	/*
++	 * The suspend path may have poisoned some areas deeper in the stack,
++	 * which we now need to unpoison.
++	 *
++	 * We can't call kasan_unpoison_task_stack_below() because it uses %gs
++	 * for 'current', which hasn't been set up yet.  Instead, calculate the
++	 * stack range manually and call kasan_unpoison_shadow().
++	 */
++	movq	%rsp, %rdi
++	andq	$CURRENT_MASK, %rdi
++	movq	%rsp, %rsi
++	xorq	%rdi, %rsi
++	call	kasan_unpoison_shadow
++#endif
++
+ 	xorl	%eax, %eax
+ 	addq	$8, %rsp
+ 	FRAME_END
 -- 
-Josh
+2.7.4
+
