@@ -1,47 +1,47 @@
-From: "Luc, Piotr" <Piotr.Luc@intel.com>
-Subject: Re: [RESEND PATCH 11/11] tools/power turbostat: enable turbostat to
- support Knights Mill (KNM)
-Date: Thu, 1 Dec 2016 11:17:56 +0000
-Message-ID: <1480591045.4677.45.camel@intel.com>
-References: <20161013153105.2517-1-piotr.luc@intel.com>
-         <20161013153105.2517-12-piotr.luc@intel.com>
-         <CAJvTdKmTyVg0UeBWFggj4RsW3hbtK5e+-rAZyfHUFvwAqtEPuw@mail.gmail.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v14] acpi, apei, arm64: APEI initial support for aarch64.
+Date: Thu, 1 Dec 2016 12:41:37 +0100
+Message-ID: <20161201114137.herpemkbg3rqxrc4@pd.tnic>
+References: <1470834168-1780-1-git-send-email-fu.wei@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: base64
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJvTdKmTyVg0UeBWFggj4RsW3hbtK5e+-rAZyfHUFvwAqtEPuw@mail.gmail.com>
-Content-Language: en-US
-Content-ID: <7C5E99D854E1EC40A92F33CF9B95CEFC@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "lenb@kernel.org" <lenb@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "mchehab@kernel.org" <mchehab@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "dougthompson@xmission.com" <dougthompson@xmission.com>, "hpa@zytor.com" <hpa@zytor.com>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "mingo@redhat.com" <mingo@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "bp@alien8.de" <bp@alien8.de>, "linux-edac@vger.kernel.org" <linux-edac@vger.kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1470834168-1780-1-git-send-email-fu.wei@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: fu.wei@linaro.org
+Cc: tony.luck@intel.com, linaro-acpi@lists.linaro.org, tn@semihalf.com, linux-pm@vger.kernel.org, x86@kernel.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCAyMDE2LTEyLTAxIGF0IDAxOjQ3IC0wNTAwLCBMZW4gQnJvd24gd3JvdGU6DQo+IFBp
-b3RyLA0KPiBUaGFua3MgZm9yIHNlbmRpbmcgdGhlIHBhdGNoLCBJJ3ZlIG1hZGUgdGhpcyBjaGFu
-Z2UgdG8gbXkgdHVyYm9zdGF0DQo+IGJyYW5jaCBmb3IgNC4xMC4NCj4gDQo+IEkgZGlkIG5vdCBh
-cHBseSB5b3VyIHBhdGNoIGRpcmVjdGx5IGJlY2F1c2UgZm9yIHNvbWUgcmVhc29uIGl0IGRpZG4n
-dA0KPiBhcHBlYXIgaW4gcGF0Y2h3b3JrIGZvciBsaW51eC1wbSwNCj4gb25seSBmb3IgbGttbCwg
-d2hpY2ggSSBkbyBub3QgcmV2aWV3Lg0KDQpUaGUgbWlzc2luZyBmcm9tIGxpbnV4LXBtIHdhcyBt
-eSBtaXN0YWtlIGR1ZSB0byBsYWNrIG9mIGV4cGVyaWVuY2UgYW5kDQpwZXJzcGljYWNpdHk7IEkg
-ZGlkIG5vdCBhZGQgdGhlIGxpbnV4LXBtIGxpc3QgdG8gY2MgYmVjYXVzZSBJIGNvdWxkIG5vdA0K
-ZmluZCBhbiBlbnRyeSBmb3IgdHVyYm9zdGF0IG9uIE1BSU5UQUlORVJTIGZpbGUuIFByb2JhYmx5
-LCBpdCBpcw0KbWVudGlvbmVkIGltcGxpY2l0bHkgYnV0IEkgZGlkIG5vdCBjb21lIGFjcm9zcyBp
-dC4NCj4gDQo+IEFsc28sIHlvdXIgcGF0Y2ggZGVwZW5kZWQgb24geW91ciBzdHlsZSB1cGRhdGUg
-cGF0Y2ggdG8gdXNlIHRoZSBtb2RlbA0KPiAjIG1hY3Jvcy4NCj4gVW5mb3J0dW5hdGVseSB3aGF0
-IHlvdSBkaWQgbm90IGtub3cgd2FzIHRoYXQgSSdkIGFscmVhZHkgYXBwbGllZCBhDQo+IHNsaWdo
-dGx5IGRpZmZlcmVudCBzdHlsZSB1cGRhdGUgcGF0Y2guDQo+IChhbmQgaXQgd2FzIG15IGZhdWx0
-IHRoYXQgSSBkaWQgbm90IHB1c2ggaXQgdXBzdHJlYW0gYmVmb3JlIG15IHN1bW1lcg0KPiBzYWJi
-YXRpY2FsLCBzb3JyeSkNCg0KTlAsIHRoaXMgd2FzIGFuIGVhc3kgY2hhbmdlIG1hZGUgYXV0b21h
-dGljYWxseSBieSBteSBzY3JpcHQuDQoNCj4gDQo+IEluIGdlbmVyYWwsIHRob3VnaCwgYSBnb29k
-IHN0cmF0ZWd5IHdoZW4gbWl4aW5nIHN0eWxlIGFuZA0KPiBmdW5jdGlvbmFsaXR5IHBhdGNoZXMN
-Cj4gaXMgdG8gZG8gdGhlIGZ1bmN0aW9uYWxpdHkgZmlyc3QuwqDCoFRoZSByZWFzb24gaXMgYm90
-aCB0aGF0IHN0eWxlDQo+IHBhdGNoZXMgdGVuZCB0byBjb25mbGljdCBtb3JlLA0KPiBhbmQgeW91
-IGRvbid0IHdhbnQgdGhlbSB0byBob2xkIHVwIHRoZSBmdW5jdGlvbmFsaXR5Lg0KPiBBbHNvLCBp
-ZiB5b3VyIGZ1bmN0aW9uYWxpdHkgcGF0Y2ggZG9lcyBub3QgZGVwZW5kIG9uIHN0eWxlLA0KPiBp
-dCBpcyBlYXNpZXIgdG8gYmFja3BvcnQgdG8gZGlzdHJvcyB3aG8gYXZvaWQgc3R5bGUgdXBkYXRl
-cy4NCg0KVGhhbmtzIGZvciB0aGUgdGlwLg0KSG93ZXZlciwgaW4gdGhpcyBjYXNlLCBJIGdvdCBj
-b21tZW50cyB0byB1c2UgdGhlIG1hY3JvcyBpbnN0ZWFkIHJhdw0KbnVtYmVycyBpbiBteSBwYXRj
-aCBhbmQgcmVtb3ZlIHVubmVjZXNzYXJ5IGNvbW1lbnRzLiBJdCBjYXVzZWQgdGhhdCB0aGUNCnN0
-eWxlIHBhdGNoIGNhbWUgZmlyc3QuDQoNClRoYW5rcw0KUGlvdHI=
+T24gV2VkLCBBdWcgMTAsIDIwMTYgYXQgMDk6MDI6NDhQTSArMDgwMCwgZnUud2VpQGxpbmFyby5v
+cmcgd3JvdGU6Cj4gRnJvbTogVG9tYXN6IE5vd2lja2kgPHRvbWFzei5ub3dpY2tpQGxpbmFyby5v
+cmc+Cj4gCj4gVGhpcyBwYXRjaCBwcm92aWRlcyBBUEVJIGFyY2gtc3BlY2lmaWMgYml0cyBmb3Ig
+YWFyY2g2NAo+IAo+IE1lYW53aGlsZSwKPiAoMSltb3ZlIEhFU1QgdHlwZSAoQUNQSV9IRVNUX1RZ
+UEVfSUEzMl9DT1JSRUNURURfQ0hFQ0spIGNoZWNraW5nIHRvCj4gYSBnZW5lcmljIHBsYWNlLgo+
+ICgyKXNlbGVjdCBIQVZFX0FDUElfQVBFSSB3aGVuIEVGSSBhbmQgQUNQSSBpcyBzZXQgb24gQVJN
+NjQsCj4gYmVjYXVzZSBhcmNoX2FwZWlfZ2V0X21lbV9hdHRyaWJ1dGUgaXMgdXNpbmcgZWZpX21l
+bV9hdHRyaWJ1dGVzIG9uIEFSTTY0LgoKLi4uCgo+IEBAIC0xMTAsOCArMTExLDI3IEBAIHN0YXRp
+YyBpbmxpbmUgY29uc3QgY2hhciAqYWNwaV9nZXRfZW5hYmxlX21ldGhvZChpbnQgY3B1KQo+ICB9
+Cj4gIAo+ICAjaWZkZWYJQ09ORklHX0FDUElfQVBFSQo+ICsvKgo+ICsgKiBhY3BpX2Rpc2FibGVf
+Y21jZmYgaXMgdXNlZCBpbiBkcml2ZXJzL2FjcGkvYXBlaS9oZXN0LmMgZm9yIGRpc2FibGluZwo+
+ICsgKiBJQS0zMiBBcmNoaXRlY3R1cmUgQ29ycmVjdGVkIE1hY2hpbmUgQ2hlY2sgKENNQykgRmly
+bXdhcmUtRmlyc3QgbW9kZSBieQo+ICsgKiBib290IHBhcmFtZXRlcihhY3BpPW5vY21jZmYpLiBC
+dXQgd2UgZG9uJ3QgaGF2ZSB0aGlzIElBLTMyIHNwZWNpZmljCgpNYWtlIHRoYXQKCiIuLi4gd2l0
+aCBhIGtlcm5lbCBjb21tYW5kIGxpbmUgcGFyYW1ldGVyICJhY3BpPW5vY21jb2ZmIi4iCgpQbGVh
+c2UgZml4IHRoYXQgdXAgd2hlbiBhcHBseWluZy4KCldpdGggdGhhdDoKClJldmlld2VkLWJ5OiBC
+b3Jpc2xhdiBQZXRrb3YgPGJwQHN1c2UuZGU+CgpUaGFua3MhCgotLSAKUmVnYXJkcy9HcnVzcywK
+ICAgIEJvcmlzLgoKU1VTRSBMaW51eCBHbWJILCBHRjogRmVsaXggSW1lbmTDtnJmZmVyLCBKYW5l
+IFNtaXRoYXJkLCBHcmFoYW0gTm9ydG9uLCBIUkIgMjEyODQgKEFHIE7DvHJuYmVyZykKLS0gCgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0t
+a2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcK
+aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2Vy
+bmVsCg==
