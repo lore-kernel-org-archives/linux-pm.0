@@ -1,24 +1,19 @@
 From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH v3 1/1] x86/intel_idle: Add CPU model 0x4a (Atom Z34xx series)
-Date: Thu, 1 Dec 2016 00:29:42 -0500
-Message-ID: <CAJvTdKmk8pBWmxiRdEW_FQ5eQQGQkzSqmg7_OZh_qV=dGiB1ww@mail.gmail.com>
-References: <20161025141139.83436-1-andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 0/3] MAINTAINERS updates for cpufreq and cpuidle
+Date: Thu, 1 Dec 2016 00:58:56 -0500
+Message-ID: <CAJvTdK=QQ5AZDygch3SfUjWfZpPQLfkJNUvpURwqzQZ7L7KFDQ@mail.gmail.com>
+References: <1768401.hlc2LWNWsP@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:35955 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1758846AbcLAF3n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Dec 2016 00:29:43 -0500
-Received: by mail-qt0-f193.google.com with SMTP id n34so22315593qtb.3
-        for <linux-pm@vger.kernel.org>; Wed, 30 Nov 2016 21:29:43 -0800 (PST)
-In-Reply-To: <20161025141139.83436-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1768401.hlc2LWNWsP@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 
-Applied.
+> [1/3] Add a bug tracking system location entry for cpufreq.
+> [2/3] Add a bug tracking system location entry for cpuidle and intel_idle.
+> [3/3] Add a new maintainer of intel_idle.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+Acked-by: Len Brown <len.brown@intel.com>
