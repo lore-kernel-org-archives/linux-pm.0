@@ -1,38 +1,235 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V4] PM / OPP: Pass opp_table to dev_pm_opp_put_regulator()
-Date: Thu, 1 Dec 2016 08:59:08 +0530
-Message-ID: <20161201032908.GR3288@vireshk-i7>
-References: <CGME20161130040034epcas5p4344849b26e8b5c435e658e3a0179cef6@epcas5p4.samsung.com>
- <480ae6e161788d338fb1637aa2615a75588ac3c6.1480478081.git.viresh.kumar@linaro.org>
- <583E6F88.9010805@samsung.com>
- <20161130080543.GJ3288@vireshk-i7>
- <583F80AB.5040408@samsung.com>
+From: Fu Wei <fu.wei@linaro.org>
+Subject: Re: [Linaro-acpi] [PATCH v14] acpi, apei, arm64: APEI initial support
+ for aarch64.
+Date: Thu, 1 Dec 2016 12:02:14 +0800
+Message-ID: <CADyBb7sC=-ywEtHFS2x4dTp=75piOHuSr7AD5HxikEoYWkwAGQ@mail.gmail.com>
+References: <1470834168-1780-1-git-send-email-fu.wei@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f49.google.com ([74.125.83.49]:34214 "EHLO
-        mail-pg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755539AbcLAD3M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Nov 2016 22:29:12 -0500
-Received: by mail-pg0-f49.google.com with SMTP id x23so89527518pgx.1
-        for <linux-pm@vger.kernel.org>; Wed, 30 Nov 2016 19:29:12 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <583F80AB.5040408@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1470834168-1780-1-git-send-email-fu.wei@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tomasz Nowicki <tn@semihalf.com>, Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linaro ACPI Mailman List <linaro-acpi@lists.linaro.org>, linux-pm@vger.kernel.org, x86@kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Joonyoung Shim <jy0922.shim@samsung.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "# v4 . 4+" <stable@vger.kernel.org>
 
-On 01-12-16, 10:45, Joonyoung Shim wrote:
-> Already i tried and the error was gone but sometimes system resume is
-> halt.
+Hi Borislav, Rafael,
 
-That looks to be a different problem which may not be related to
-cpufreq at all.
+any comment or suggestion for this patch?
+I wonder if there is anything I need to improve for it?
+Or will it be accepted ?
 
-> I'm not sure that it has any effect so i need to more dig.
+Great thanks for your attention.
 
-Right.
+On 10 August 2016 at 21:02,  <fu.wei@linaro.org> wrote:
+> From: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+>
+> This patch provides APEI arch-specific bits for aarch64
+>
+> Meanwhile,
+> (1)move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+> a generic place.
+> (2)select HAVE_ACPI_APEI when EFI and ACPI is set on ARM64,
+> because arch_apei_get_mem_attribute is using efi_mem_attributes on ARM64.
+>
+> [Fu Wei: improve && upstream]
+>
+> Signed-off-by: Tomasz Nowicki <tomasz.nowicki@linaro.org>
+> Tested-by: Jonathan (Zhixiong) Zhang <zjzhang@codeaurora.org>
+> Signed-off-by: Fu Wei <fu.wei@linaro.org>
+> Acked-by: Hanjun Guo <hanjun.guo@linaro.org>
+> Tested-by: Tyler Baicar <tbaicar@codeaurora.org>
+> Acked-by: Will Deacon <will.deacon@arm.com>
+> ---
+> This patchset has been tested on the following platforms:
+>     (1)ARM Foundation v8 model
+>
+> Changelog:
+> v14:https://lkml.org/lkml/2016/8/10/
+>     Delete hest_ia32_init().
+>     Fix a comment typo for acpi_disable_cmcff.
+>     Rebase to 4.8.0-rc1-ge6c4d92
+>
+> v13:https://lkml.org/lkml/2016/8/10/
+>     Fix a comment problem(add a "end").
+>     Add a comment for the definition of acpi_disable_cmcff.
+>     Rebase to 4.8.0-rc1-g372734a
+>
+> v12:https://lkml.org/lkml/2016/7/29/97
+>     Fix a comment problem(redundant "with").
+>     Rebase to 4.7.0-g680eee2.
+>
+> v11:https://lkml.org/lkml/2016/7/27/427
+>     Rebase to v4.7-0e06f5c0.
+>
+> v10:https://lkml.org/lkml/2016/4/14
+>     Fix the Alphabetical order problem in arch/arm64/Kconfig.
+>
+> v9: https://lkml.org/lkml/2016/4/5/522
+>     Improve the comment for arch_apei_flush_tlb_one.
+>     Using select "HAVE_ACPI_APEI if (ACPI && EFI)" to fix the EFI dependence
+>     problem.
+>
+> v8: https://lkml.org/lkml/2016/3/29/132
+>     Fix a "undefined reference" bug by selecting EFI when ACPI_APEI is set
+>     on ARM64.
+>
+> v7: https://lkml.org/lkml/2016/3/17/183
+>     Add comment for arch_apei_flush_tlb_one in arch/arm64/include/asm/acpi.h.
+>
+> v6: https://lists.linaro.org/pipermail/linaro-acpi/2016-March/006644.html
+>     Move HEST type (ACPI_HEST_TYPE_IA32_CORRECTED_CHECK) checking to
+>     a generic place.
+>     Delete HAVE_ACPI_APEI_HEST_IA32.
+>
+> v5: https://lkml.org/lkml/2015/12/10/131
+>     Add "HAVE_ACPI_APEI_HEST_IA32" instead of
+>     "#if defined(__i386__) || defined(__x86_64__)".
+>
+> v4: https://lkml.org/lkml/2015/12/8/188
+>     Rebase to latest kernel version(4.4-rc4).
+>     Move arch_apei_flush_tlb_one into header file as a inline function
+>     Add a new subfunction "hest_ia_init" for "acpi_disable_cmcff".
+>
+> v3: https://lkml.org/lkml/2015/12/3/521
+>     Remove "acpi_disable_cmcff" from arm64 code,
+>     and wrap it in hest.c by "#if defined(__i386__) || defined(__x86_64__)"
+>
+> v2: https://lkml.org/lkml/2015/12/2/432
+>     Rebase to latest kernel version(4.4-rc3).
+>     Move arch_apei_flush_tlb_one() to arch/arm64/kernel/acpi.c
+>
+> v1: https://lkml.org/lkml/2015/8/14/199
+>     Move arch_apei_flush_tlb_one() to arch/arm64/include/asm/apci.h.
+>     Delete arch/arm64/kernel/apei.c.
+>     Add "#ifdef CONFIG_ACPI_APEI" for "acpi_disable_cmcff".
+>
+>  arch/arm64/Kconfig            |  1 +
+>  arch/arm64/include/asm/acpi.h | 22 +++++++++++++++++++++-
+>  arch/x86/kernel/acpi/apei.c   |  3 ---
+>  drivers/acpi/apei/hest.c      | 13 ++++++++++---
+>  4 files changed, 32 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index bc3f00f..385cf13 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -51,6 +51,7 @@ config ARM64
+>         select GENERIC_TIME_VSYSCALL
+>         select HANDLE_DOMAIN_IRQ
+>         select HARDIRQS_SW_RESEND
+> +       select HAVE_ACPI_APEI if (ACPI && EFI)
+>         select HAVE_ALIGNED_STRUCT_PAGE if SLUB
+>         select HAVE_ARCH_AUDITSYSCALL
+>         select HAVE_ARCH_BITREVERSE
+> diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
+> index 5420cb0..f435967 100644
+> --- a/arch/arm64/include/asm/acpi.h
+> +++ b/arch/arm64/include/asm/acpi.h
+> @@ -17,6 +17,7 @@
+>
+>  #include <asm/cputype.h>
+>  #include <asm/smp_plat.h>
+> +#include <asm/tlbflush.h>
+>
+>  /* Macros for consistency checks of the GICC subtable of MADT */
+>  #define ACPI_MADT_GICC_LENGTH  \
+> @@ -110,8 +111,27 @@ static inline const char *acpi_get_enable_method(int cpu)
+>  }
+>
+>  #ifdef CONFIG_ACPI_APEI
+> +/*
+> + * acpi_disable_cmcff is used in drivers/acpi/apei/hest.c for disabling
+> + * IA-32 Architecture Corrected Machine Check (CMC) Firmware-First mode by
+> + * boot parameter(acpi=nocmcff). But we don't have this IA-32 specific
+> + * feature on ARM64, this definition is only for compatibility.
+> + */
+> +#define acpi_disable_cmcff 1
+>  pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr);
+> -#endif
+> +
+> +/*
+> + * Despite its name, this function must still broadcast the TLB
+> + * invalidation in order to ensure other CPUs don't end up with junk
+> + * entries as a result of speculation. Unusually, its also called in
+> + * IRQ context (ghes_iounmap_irq) so if we ever need to use IPIs for
+> + * TLB broadcasting, then we're in trouble here.
+> + */
+> +static inline void arch_apei_flush_tlb_one(unsigned long addr)
+> +{
+> +       flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> +}
+> +#endif /* CONFIG_ACPI_APEI */
+>
+>  #ifdef CONFIG_ACPI_NUMA
+>  int arm64_acpi_numa_init(void);
+> diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
+> index c280df6..ea3046e 100644
+> --- a/arch/x86/kernel/acpi/apei.c
+> +++ b/arch/x86/kernel/acpi/apei.c
+> @@ -24,9 +24,6 @@ int arch_apei_enable_cmcff(struct acpi_hest_header *hest_hdr, void *data)
+>         struct acpi_hest_ia_corrected *cmc;
+>         struct acpi_hest_ia_error_bank *mc_bank;
+>
+> -       if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+> -               return 0;
+> -
+>         cmc = (struct acpi_hest_ia_corrected *)hest_hdr;
+>         if (!cmc->enabled)
+>                 return 0;
+> diff --git a/drivers/acpi/apei/hest.c b/drivers/acpi/apei/hest.c
+> index 20b3fcf..8f2a98e 100644
+> --- a/drivers/acpi/apei/hest.c
+> +++ b/drivers/acpi/apei/hest.c
+> @@ -123,7 +123,13 @@ EXPORT_SYMBOL_GPL(apei_hest_parse);
+>   */
+>  static int __init hest_parse_cmc(struct acpi_hest_header *hest_hdr, void *data)
+>  {
+> -       return arch_apei_enable_cmcff(hest_hdr, data);
+> +       if (hest_hdr->type != ACPI_HEST_TYPE_IA32_CORRECTED_CHECK)
+> +               return 0;
+> +
+> +       if (!acpi_disable_cmcff)
+> +               return !arch_apei_enable_cmcff(hest_hdr, data);
+> +
+> +       return 0;
+>  }
+>
+>  struct ghes_arr {
+> @@ -232,8 +238,9 @@ void __init acpi_hest_init(void)
+>                 goto err;
+>         }
+>
+> -       if (!acpi_disable_cmcff)
+> -               apei_hest_parse(hest_parse_cmc, NULL);
+> +       rc = apei_hest_parse(hest_parse_cmc, NULL);
+> +       if (rc)
+> +               goto err;
+>
+>         if (!ghes_disable) {
+>                 rc = apei_hest_parse(hest_parse_ghes_count, &ghes_count);
+> --
+> 2.5.5
+>
+> _______________________________________________
+> Linaro-acpi mailing list
+> Linaro-acpi@lists.linaro.org
+> https://lists.linaro.org/mailman/listinfo/linaro-acpi
+
+
 
 -- 
-viresh
+Best regards,
+
+Fu Wei
+Software Engineer
+Red Hat
