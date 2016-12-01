@@ -1,62 +1,71 @@
 From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V7 10/10] PM / OPP: Don't assume platform doesn't have regulators
-Date: Thu,  1 Dec 2016 16:28:23 +0530
-Message-ID: <6f174b5d2fd2d09332fbc80f074d67c48be63ac7.1480564564.git.viresh.kumar@linaro.org>
-References: <cover.1480564564.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH V6 06/10] PM / OPP: Add infrastructure to manage multiple
+ regulators
+Date: Thu, 1 Dec 2016 16:29:29 +0530
+Message-ID: <20161201105929.GC7682@vireshk-i7>
+References: <cover.1480481312.git.viresh.kumar@linaro.org>
+ <3b3ce1dac198fb668b97e81490bcbcf03d31e40d.1480481312.git.viresh.kumar@linaro.org>
+ <20161130223712.GM6095@codeaurora.org>
+ <20161201005149.GQ3288@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1480564564.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1480564564.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1480564564.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20161201005149.GQ3288@vireshk-i7>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, d-gerlach-l0cyMroinI0@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-If the regulators aren't set explicitly by the platform, the OPP core
-assumes that the platform doesn't have any regulator and uses the
-clk-only callback.
+On 01-12-16, 06:21, Viresh Kumar wrote:
+> On 30-11-16, 14:37, Stephen Boyd wrote:
+> > > +static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
+> > > +				      struct opp_table *opp_table,
+> > > +				      struct dentry *pdentry)
+> > > +{
+> > > +	struct dentry *d;
+> > > +	int i = 0;
+> > > +	char *name;
+> > > +
+> > > +	/* Always create at least supply-0 directory */
+> > > +	do {
+> > > +		name = kasprintf(GFP_KERNEL, "supply-%d", i);
+> > 
+> > Sorry I haven't noticed this before. Wouldn't we want to put the
+> > supply name here instead of a number?
+> 
+> The OPP core provides a way for platforms to use the set-OPP
+> functionality, but that is not compulsory for its user. Which makes it
+> very much possible that the OPP core wouldn't know the names of the
+> supplies at all. And so I used the numbers here. Anyway, the numbers
+> matches the order in which they are passed from DT, so that should be
+> readable.
+> 
+> Here is the new rebased version of the patch. I will send the complete
+> series again later on. Please see if it looks fine.
+> 
+> -------------------------8<-------------------------
+> 
+> From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Date: Tue, 4 Oct 2016 17:07:28 +0530
+> Subject: [PATCH] PM / OPP: Add infrastructure to manage multiple regulators
+> 
+> This patch adds infrastructure to manage multiple regulators and updates
+> the only user (cpufreq-dt) of dev_pm_opp_set{put}_regulator().
+> 
+> This is preparatory work for adding full support for devices with
+> multiple regulators.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Tested-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 
-If the platform failed to register a regulator with the core, then this
-can turn out to be a dangerous assumption as the OPP core will try to
-change clk without changing regulators.
+Ignore this one now. I have resent the series again after resolving
+all the pending issues. Please review that.
 
-Handle that properly by making sure that the DT didn't have any entries
-for supply voltages as well.
+Thanks.
 
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Reviewed-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
----
- drivers/base/power/opp/core.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
-
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 35ff06283738..a0e6294baf1d 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -748,7 +748,20 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 
- 	/* Only frequency scaling */
- 	if (!regulators) {
-+		unsigned long u_volt = opp->supplies[0].u_volt;
-+
- 		rcu_read_unlock();
-+
-+		/*
-+		 * DT contained supply ratings? Consider platform failed to set
-+		 * regulators.
-+		 */
-+		if (unlikely(u_volt)) {
-+			dev_err(dev, "%s: Regulator not registered with OPP core\n",
-+				__func__);
-+			return -EINVAL;
-+		}
-+
- 		return _generic_set_opp_clk_only(dev, clk, old_freq, freq);
- 	}
- 
 -- 
-2.7.1.410.g6faf27b
-
+viresh
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
