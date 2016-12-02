@@ -1,106 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v2] x86/suspend: fix false positive KASAN warning on
- suspend/resume
-Date: Fri, 2 Dec 2016 13:54:31 +0100
-Message-ID: <20161202125431.GB5869@amd>
-References: <8f4c4a62-d912-0cd9-3462-8df20a868834@virtuozzo.com>
- <20161201145821.imkcgizo4thmiei2@treble>
- <20161201164551.52xlcftamleam6vq@treble>
- <CACT4Y+YXxcFAvBGsStZv8LC_30JvaC==UHznJre1z3UmsoqGsQ@mail.gmail.com>
- <20161201171306.swnvi4f2ezavloxd@treble>
- <CACT4Y+anS0XniR7ZxoEQ1nnAKPsGNvgc5L72uiSThOi3F742gA@mail.gmail.com>
- <20161201173438.bfe5eq23i6ezfxsq@treble>
- <CACT4Y+Z62RBTkiAjTG_ZF1zCZKA=S92fobENzRcq001XOTj36A@mail.gmail.com>
- <20161201175611.gf63mwzomt4wrlxy@treble>
- <20161201203154.mwt5x736g7z6jh3o@treble>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH 06/12] usb: dwc3: omap: Replace the extcon API
+Date: Fri, 2 Dec 2016 22:20:56 +0900
+Message-ID: <CAGTfZH0SGB9Wd5ww8rKQOJStCvuFsRzypVBer+nkhnKojkthqA@mail.gmail.com>
+References: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com>
+ <1480485460-2663-7-git-send-email-cw00.choi@samsung.com> <CGME20161130103827epcas4p268ee1cbc6b7b2ace7c987dd7baba82d4@epcas4p2.samsung.com>
+ <877f7lntjq.fsf@linux.intel.com> <58412848.5070209@samsung.com> <87fum6vh1p.fsf@linux.intel.com>
+Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161201203154.mwt5x736g7z6jh3o@treble>
+In-Reply-To: <87fum6vh1p.fsf@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Josh Poimboeuf <jpoimboe@redhat.com>
-Cc: Dmitry Vyukov <dvyukov@google.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Andy Lutomirski <luto@amacapital.net>, Scott Bauer <scott.bauer@intel.com>, "x86@kernel.org" <x86@kernel.org>, Alexander Potapenko <glider@google.com>, kasan-dev <kasan-dev@googlegroups.com>
+To: Felipe Balbi <balbi@kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Greg KH <gregkh@linuxfoundation.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Peter Chen <Peter.Chen@nxp.com>, Chen-Yu Tsai <wens@csie.org>, yoshihiro.shimoda.uh@renesas.com, Maxime Ripard <maxime.ripard@free-electrons.com>, b-liu@ti.com, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Felipe,
 
---7iMSBzlTiPOCCT2k
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+2016-12-02 18:03 GMT+09:00 Felipe Balbi <balbi@kernel.org>:
+>
+> Hi,
+>
+> Chanwoo Choi <cw00.choi@samsung.com> writes:
+>> Hi Felipe,
+>>
+>> On 2016=EB=85=84 11=EC=9B=94 30=EC=9D=BC 19:36, Felipe Balbi wrote:
+>>>
+>>> Hi,
+>>>
+>>> Chanwoo Choi <cw00.choi@samsung.com> writes:
+>>>> This patch uses the resource-managed extcon API for extcon_register_no=
+tifier()
+>>>> and replaces the deprecated extcon API as following:
+>>>> - extcon_get_cable_state_() -> extcon_get_state()
+>>>>
+>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>
+>>> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+>>>
+>>
+>> Thanks for your review.
+>>
+>> Each patch has no any dependency among patches.
+>> So, If possible, could you pick the patch6/8/9/10/11/12 on your tree?
+>
+> my tree is closed for v4.10, I can pick it up for v4.11
 
-Hi!
+Thanks for your pickup to 4.11.
 
-> Resuming from a suspend operation is showing a KASAN false positive
-> warning:
-
-> KASAN instrumentation poisons the stack when entering a function and
-> unpoisons it when exiting the function.  However, in the suspend path,
-> some functions never return, so their stack never gets unpoisoned,
-> resulting in stale KASAN shadow data which can cause later false
-> positive warnings like the one above.
->=20
-> Reported-by: Scott Bauer <scott.bauer@intel.com>
-> Suggested-by: Dmitry Vyukov <dvyukov@google.com>
-> Signed-off-by: Josh Poimboeuf <jpoimboe@redhat.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
-> ---
->  arch/x86/kernel/acpi/wakeup_64.S | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
->=20
-> diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wake=
-up_64.S
-> index 169963f..1df9b75 100644
-> --- a/arch/x86/kernel/acpi/wakeup_64.S
-> +++ b/arch/x86/kernel/acpi/wakeup_64.S
-> @@ -109,6 +109,22 @@ ENTRY(do_suspend_lowlevel)
->  	movq	pt_regs_r14(%rax), %r14
->  	movq	pt_regs_r15(%rax), %r15
-> =20
-> +#ifdef CONFIG_KASAN
-> +	/*
-> +	 * The suspend path may have poisoned some areas deeper in the stack,
-> +	 * which we now need to unpoison.
-> +	 *
-> +	 * We can't call kasan_unpoison_task_stack_below() because it uses %gs
-> +	 * for 'current', which hasn't been set up yet.  Instead, calculate the
-> +	 * stack range manually and call kasan_unpoison_shadow().
-> +	 */
-> +	movq	%rsp, %rdi
-> +	andq	$CURRENT_MASK, %rdi
-> +	movq	%rsp, %rsi
-> +	xorq	%rdi, %rsi
-> +	call	kasan_unpoison_shadow
-> +#endif
-
-Well... you may want to add note to kasan_unpoison_shadow()
-
-/*
-* This is called by early resume code, with cpu not yer properly
-* resumed. In particular, %gs may not be set up, and thus current
-* is not available.
-*/
-
-Thanks,
-									Pavel
 --=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---7iMSBzlTiPOCCT2k
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlhBbwcACgkQMOfwapXb+vLtbwCgkEw5k++uTWiy33jwf1bzxpED
-n4EAnRobrdw/rZAeLR1I/LRLVmYTThV+
-=Qtnr
------END PGP SIGNATURE-----
-
---7iMSBzlTiPOCCT2k--
+Best Regards,
+Chanwoo Choi
