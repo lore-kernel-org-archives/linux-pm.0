@@ -1,15 +1,15 @@
 From: kbuild test robot <fengguang.wu@intel.com>
-Subject: [vireshk:opp/redesign 20/33] fair_share.c:(.text+0x2b5): multiple
- definition of `dev_pm_opp_unregister_notifier'
-Date: Fri, 2 Dec 2016 20:26:49 +0800
-Message-ID: <201612022046.DtplDrll%fengguang.wu@intel.com>
+Subject: [vireshk:opp/redesign 23/33] fair_share.c:(.text+0x2b5): multiple
+ definition of `dev_pm_opp_get_opp_table'
+Date: Fri, 2 Dec 2016 20:46:13 +0800
+Message-ID: <201612022011.J7MHVcHo%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ikeVEW9yuYc//A+q"
+Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:1025 "EHLO mga11.intel.com"
+Received: from mga02.intel.com ([134.134.136.20]:27648 "EHLO mga02.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751056AbcLBM1p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 2 Dec 2016 07:27:45 -0500
+        id S1759492AbcLBMqp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 2 Dec 2016 07:46:45 -0500
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -17,39 +17,99 @@ To: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
 
 
---ikeVEW9yuYc//A+q
+--mP3DRpeJDSE+ciuQ
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
 tree:   https://git.linaro.org/people/vireshk/linux opp/redesign
 head:   fbf8f0c337a7cfcd4cb67865b5ea710e69c21f1f
-commit: 28475c4b5d76a2eef9b35fa198545403e07e1461 [20/33] PM / OPP: Don't expose srcu_head to register notifiers
+commit: d6d3ae1b701cba6d939029d762a256d2320c6535 [23/33] PM / OPP: Add 'struct kref' to OPP table
 config: x86_64-randconfig-i0-201648 (attached as .config)
 compiler: gcc-4.9 (Debian 4.9.4-2) 4.9.4
 reproduce:
-        git checkout 28475c4b5d76a2eef9b35fa198545403e07e1461
+        git checkout d6d3ae1b701cba6d939029d762a256d2320c6535
         # save the attached .config to linux build tree
         make ARCH=x86_64 
 
-All errors (new ones prefixed by >>):
+All error/warnings (new ones prefixed by >>):
 
+   drivers/thermal//fair_share.o: In function `dev_pm_opp_get_opp_table':
+>> fair_share.c:(.text+0x2b5): multiple definition of `dev_pm_opp_get_opp_table'
+   drivers/thermal//thermal_core.o:thermal_core.c:(.text+0x200d): first defined here
+   drivers/thermal//fair_share.o: In function `dev_pm_opp_put_opp_table':
+>> fair_share.c:(.text+0x2c7): multiple definition of `dev_pm_opp_put_opp_table'
+   drivers/thermal//thermal_core.o:thermal_core.c:(.text+0x201f): first defined here
+   drivers/thermal//fair_share.o: In function `dev_pm_opp_unregister_notifier':
+   fair_share.c:(.text+0x2d2): multiple definition of `dev_pm_opp_unregister_notifier'
+   drivers/thermal//thermal_core.o:thermal_core.c:(.text+0x202a): first defined here
+   drivers/thermal//step_wise.o: In function `dev_pm_opp_get_opp_table':
+   step_wise.c:(.text+0x3c8): multiple definition of `dev_pm_opp_get_opp_table'
+   drivers/thermal//thermal_core.o:thermal_core.c:(.text+0x200d): first defined here
+   drivers/thermal//step_wise.o: In function `dev_pm_opp_put_opp_table':
+   step_wise.c:(.text+0x3da): multiple definition of `dev_pm_opp_put_opp_table'
+   drivers/thermal//thermal_core.o:thermal_core.c:(.text+0x201f): first defined here
+   drivers/thermal//step_wise.o: In function `dev_pm_opp_unregister_notifier':
+   step_wise.c:(.text+0x3e5): multiple definition of `dev_pm_opp_unregister_notifier'
+   drivers/thermal//thermal_core.o:thermal_core.c:(.text+0x202a): first defined here
+--
+   In file included from include/linux/devfreq.h:18:0,
+                    from include/trace/events/thermal.h:7,
+                    from drivers/thermal/thermal_core.c:43:
+   include/linux/pm_opp.h: In function 'dev_pm_opp_get_opp_table':
+>> include/linux/pm_opp.h:134:17: warning: passing argument 1 of 'PTR_ERR' makes pointer from integer without a cast
+     return PTR_ERR(-ENOTSUPP);
+                    ^
+   In file included from arch/x86/include/asm/processor.h:30:0,
+                    from arch/x86/include/asm/cpufeature.h:4,
+                    from arch/x86/include/asm/thread_info.h:52,
+                    from include/linux/thread_info.h:58,
+                    from arch/x86/include/asm/preempt.h:6,
+                    from include/linux/preempt.h:59,
+                    from include/linux/spinlock.h:50,
+                    from include/linux/seqlock.h:35,
+                    from include/linux/time.h:5,
+                    from include/linux/stat.h:18,
+                    from include/linux/module.h:10,
+                    from drivers/thermal/thermal_core.c:28:
+   include/linux/err.h:28:33: note: expected 'const void *' but argument is of type 'int'
+    static inline long __must_check PTR_ERR(__force const void *ptr)
+                                    ^
+   In file included from include/linux/devfreq.h:18:0,
+                    from include/trace/events/thermal.h:7,
+                    from drivers/thermal/thermal_core.c:43:
+>> include/linux/pm_opp.h:134:2: warning: return makes pointer from integer without a cast
+     return PTR_ERR(-ENOTSUPP);
+     ^
+--
+   drivers/thermal/fair_share.o: In function `dev_pm_opp_get_opp_table':
+>> fair_share.c:(.text+0x2b5): multiple definition of `dev_pm_opp_get_opp_table'
+   drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x200d): first defined here
+   drivers/thermal/fair_share.o: In function `dev_pm_opp_put_opp_table':
+>> fair_share.c:(.text+0x2c7): multiple definition of `dev_pm_opp_put_opp_table'
+   drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x201f): first defined here
    drivers/thermal/fair_share.o: In function `dev_pm_opp_unregister_notifier':
->> fair_share.c:(.text+0x2b5): multiple definition of `dev_pm_opp_unregister_notifier'
+   fair_share.c:(.text+0x2d2): multiple definition of `dev_pm_opp_unregister_notifier'
+   drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x202a): first defined here
+   drivers/thermal/step_wise.o: In function `dev_pm_opp_get_opp_table':
+   step_wise.c:(.text+0x3c8): multiple definition of `dev_pm_opp_get_opp_table'
    drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x200d): first defined here
+   drivers/thermal/step_wise.o: In function `dev_pm_opp_put_opp_table':
+   step_wise.c:(.text+0x3da): multiple definition of `dev_pm_opp_put_opp_table'
+   drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x201f): first defined here
    drivers/thermal/step_wise.o: In function `dev_pm_opp_unregister_notifier':
-   step_wise.c:(.text+0x3c8): multiple definition of `dev_pm_opp_unregister_notifier'
-   drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x200d): first defined here
+   step_wise.c:(.text+0x3e5): multiple definition of `dev_pm_opp_unregister_notifier'
+   drivers/thermal/thermal_core.o:thermal_core.c:(.text+0x202a): first defined here
 
 ---
 0-DAY kernel test infrastructure                Open Source Technology Center
 https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
 
---ikeVEW9yuYc//A+q
+--mP3DRpeJDSE+ciuQ
 Content-Type: application/gzip
 Content-Disposition: attachment; filename=".config.gz"
 Content-Transfer-Encoding: base64
 
-H4sICEBnQVgAAy5jb25maWcAjDzLctu4svv5ClXmLs5ZZGI7Hk9St7yASFBCRBAMAEq2NyzH
+H4sICExsQVgAAy5jb25maWcAjDzLctu4svv5ClXmLs5ZZGI7Hk9St7yASFBCRBAMAEq2NyzH
 VmZc49g5ljwn+fvbDZAiADZVN4skRDfe/e6Gfv3l1xl73T9/u90/3N0+Pv6c/bl92r7c7rf3
 s68Pj9v/neVqVik747mwvwFy+fD0+uPdjw8X7cX57Py3j7+dvH25+2O22r48bR9n2fPT14c/
 X6H/w/PTL7/+kqmqEAtAnQt7+bP/vHK9o+/hQ1TG6iazQlVtzjOVcz0AVWPrxraF0pLZyzfb
@@ -505,4 +565,4 @@ sqEsMz8CscjlZ8E0/zbeThZJMTQQHjwZx/F45qeOz8/rhJVbzBjBAxg0DFjP6sPBrRqpFcsr
 8i15VgT6TZUgoLftqLhFFwN9YlliQF0cUZ+1xJwnarBYJy4Bwz1dBCrH403NJd2heM2g9nSv
 fYc4wgbA/wMpyAEkrXkBAA==
 
---ikeVEW9yuYc//A+q--
+--mP3DRpeJDSE+ciuQ--
