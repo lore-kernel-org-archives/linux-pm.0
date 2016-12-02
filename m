@@ -1,46 +1,60 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v2 0/3] ARM: da850: fix pll0 rate setting
-Date: Fri,  2 Dec 2016 16:38:51 +0100
-Message-ID: <1480693134-31324-1-git-send-email-bgolaszewski@baylibre.com>
+From: Andrey Ryabinin <aryabinin@virtuozzo.com>
+Subject: Re: [PATCH v3] x86/suspend: fix false positive KASAN warning on
+ suspend/resume
+Date: Fri, 2 Dec 2016 17:45:18 +0300
+Message-ID: <d632571d-43cb-9dec-a51f-7cf8a6f91c0b@virtuozzo.com>
+References: <20161201164551.52xlcftamleam6vq@treble>
+ <CACT4Y+YXxcFAvBGsStZv8LC_30JvaC==UHznJre1z3UmsoqGsQ@mail.gmail.com>
+ <20161201171306.swnvi4f2ezavloxd@treble>
+ <CACT4Y+anS0XniR7ZxoEQ1nnAKPsGNvgc5L72uiSThOi3F742gA@mail.gmail.com>
+ <20161201173438.bfe5eq23i6ezfxsq@treble>
+ <CACT4Y+Z62RBTkiAjTG_ZF1zCZKA=S92fobENzRcq001XOTj36A@mail.gmail.com>
+ <20161201175611.gf63mwzomt4wrlxy@treble>
+ <20161201203154.mwt5x736g7z6jh3o@treble>
+ <5144d695-7ac4-f992-5239-91c772b0c121@virtuozzo.com>
+ <20161202140147.gvj452hmlbxnstrg@treble>
+ <20161202144240.3tect4hx4cks44iu@treble>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Sekhar Nori <nsekhar@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
-Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-db5eur01on0111.outbound.protection.outlook.com ([104.47.2.111]:65109
+        "EHLO EUR01-DB5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1750833AbcLBQTj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 2 Dec 2016 11:19:39 -0500
+In-Reply-To: <20161202144240.3tect4hx4cks44iu@treble>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: Dmitry Vyukov <dvyukov@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, Andy Lutomirski <luto@amacapital.net>, Scott Bauer <scott.bauer@intel.com>, "x86@kernel.org" <x86@kernel.org>, Alexander Potapenko <glider@google.com>, kasan-dev <kasan-dev@googlegroups.com>
 
-While trying to set the pll0 rate from the kernel I noticed there are
-two issues with da850 clocks. The first patch fixes an infinite loop
-in propagate_rate(). The third fixes an oops in da850_set_pll0rate().
-The second patch is just a coding style fix, while we're at it.
 
-v1 -> v2:
-- change the approach in 1/3: create a new clock for nand inheriting
-  the rate from the aemif clock (verified that nand still works on
-  da850-lcdk)
-- patch 3/3: also update the davinci_cpufreq driver - the only
-  (indirect) user of da850_set_pll0rate()
-- s/requested_rate/rate in 3/3
 
-Bartosz Golaszewski (3):
-  ARM: da850: fix infinite loop in clk_set_rate()
-  ARM: da850: coding style fix
-  ARM: da850: fix da850_set_pll0rate()
+On 12/02/2016 05:42 PM, Josh Poimboeuf wrote:
 
- arch/arm/mach-davinci/da850.c     | 31 +++++++++++++++++++++++++------
- drivers/cpufreq/davinci-cpufreq.c |  2 +-
- drivers/mtd/nand/davinci_nand.c   |  2 +-
- 3 files changed, 27 insertions(+), 8 deletions(-)
 
--- 
-2.9.3
+> diff --git a/mm/kasan/kasan.c b/mm/kasan/kasan.c
+> index 0e9505f..e9d8ba0 100644
+> --- a/mm/kasan/kasan.c
+> +++ b/mm/kasan/kasan.c
+> @@ -80,7 +80,14 @@ void kasan_unpoison_task_stack(struct task_struct *task)
+>  /* Unpoison the stack for the current task beyond a watermark sp value. */
+>  asmlinkage void kasan_unpoison_task_stack_below(const void *watermark)
+>  {
+> -	__kasan_unpoison_stack(current, watermark);
+> +	/*
+> +	 * Calculate the task stack base address.  Avoid using 'current'
+> +	 * because this function is called by early resume code which hasn't
+> +	 * yet set up the percpu register (%gs).
+> +	 */
+> +	void *base = (void *)((unsigned long)watermark & CURRENT_MASK);
+
+CURRENT_MASK is defined only on x86...
+
+> +
+> +	kasan_unpoison_shadow(base, watermark - base);
+>  }
+>  
+>  /*
+> 
