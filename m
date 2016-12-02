@@ -1,12 +1,12 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: [RFC PATCH 1/5] regulator: Extend the power-management APIs
-Date: Fri,  2 Dec 2016 14:57:12 +0100
-Message-ID: <1480687036-5037-2-git-send-email-boris.brezillon@free-electrons.com>
+Subject: [RFC PATCH 4/5] regulator: act8945: Implement PM functionalities
+Date: Fri,  2 Dec 2016 14:57:15 +0100
+Message-ID: <1480687036-5037-5-git-send-email-boris.brezillon@free-electrons.com>
 References: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:60729 "EHLO
+Received: from mail.free-electrons.com ([62.4.15.54]:60751 "EHLO
         mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760460AbcLBN5V (ORCPT
+        with ESMTP id S1760723AbcLBN5V (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2016 08:57:21 -0500
 In-Reply-To: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,511 +14,373 @@ List-Id: linux-pm@vger.kernel.org
 To: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>
 
-The regulator framework currently provides the regulator_suspend_prepare()
-and regulator_suspend_finish() which are supposed to be called from the
-platform_suspend_ops ->prepare() and ->finish() hooks.
-The regulator_suspend_prepare() function is calling the different
-->set_suspend_xx() hooks provided by the regulator drivers in order to
-program the regulator suspend state, and ask it to apply this state when
-the system is suspended.
-The regulator_suspend_finish() is trying to restore the runtime state
-when resuming the system.
+The regulator supports a dedicated suspend mode.
+Implement the appropriate ->set_suspend_xx() hooks, add support for
+->set_mode(), and provide basic PM ops (suspend/resume) to setup the
+regulator in a suspend state when the system is entering suspend.
 
-While this worked fine so far, it has some limitations which prevents it
-from being used on some platforms:
+Note that this PMIC is not able to store a new voltage or a new mode
+in its internal suspend state description, which forces us to ask the
+regulator framework to apply suspend voltage and suspend mode at
+runtime (when calling regulator_apply_suspend_state()).
 
-1/ the platform ->prepare() hook is called after all devices have been
-   suspended, and some regulators are accessible through a bus (usually
-   i2c) whose controller might have been suspended, thus preventing
-   proper setup of the regulator (the ->set_suspend_xx() hooks are likely
-   to send i2c messages).
-2/ some regulators do not support (or only partially support) preparing
-   the suspend state and applying it afterwards when the system has been
-   suspended (no ->set_suspend_xx() implementation).
-
-The idea to address #1 is to let each driver apply the suspend state in
-its ->suspend() hook. This should address the bus vs sub-device suspend()
-dependency issue.
-
-The idea to solve #2 is to allow runtime changes. Since this kind of
-change is likely to have an impact on the whole system, we require the
-board to explicitly state that runtime changes are allowed (using a DT
-property).
-
-Allowing runtime changes, may also be a problem if devices are not
-suspended in the correct order: a device using a regulator should be
-suspended before the regulator itself, otherwise we may change the
-regulator state while it's still being used.
-Hopefully, this problem will be solved with the work done on device
-dependency description.
+We also implement the ->shutdown() method to make sure the PMIC will
+not enter the suspend state when the system is shutdown.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
-Mark, Raphael,
+ drivers/regulator/act8945a-regulator.c | 255 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 254 insertions(+), 1 deletion(-)
 
-This is just an attempt at solving the suspend/resume issue I have on
-an atmel platform: the PMIC is only supporting partial "suspend state"
-definition (enable/disable output), and we need to setup the remaining
-parts (voltage and mode) at runtime.
-
-Mark, this patch is trying to implement what I understood of our
-discussion on IRC a few days back. As you might have noticed, I'm not
-yet understanding all the subtleties of the PM hooks, or how they are
-implemented in the regulator framework.
-This patch is clearly not meant to be applied as is, it's more something
-to start a discussion, so feel free to point my misunderstanding or the
-flaws in my approach.
-
-Thanks,
-
-Boris
----
- drivers/regulator/core.c          | 291 ++++++++++++++++++++++++++++++++++++++
- drivers/regulator/of_regulator.c  |   4 +
- include/linux/regulator/driver.h  |  29 ++++
- include/linux/regulator/machine.h |  13 ++
- 4 files changed, 337 insertions(+)
-
-diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-index 67426c0477d3..4ff155c3e43f 100644
---- a/drivers/regulator/core.c
-+++ b/drivers/regulator/core.c
-@@ -729,6 +729,207 @@ static int drms_uA_update(struct regulator_dev *rdev)
- 	return err;
- }
+diff --git a/drivers/regulator/act8945a-regulator.c b/drivers/regulator/act8945a-regulator.c
+index 441864b9fece..26458cbed15c 100644
+--- a/drivers/regulator/act8945a-regulator.c
++++ b/drivers/regulator/act8945a-regulator.c
+@@ -15,6 +15,7 @@
+ #include <linux/module.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
++#include <linux/regmap.h>
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/machine.h>
  
-+/**
-+ * regulator_restore_runtime_state - restore the runtime state on a regulator
-+ * @rdev: regulator device
-+ *
-+ * This function will restore the runtime state that was applied by
-+ * regulator_apply_suspend_state() during the suspend sequence.
-+ * It only restores things that were set at runtime (i.e. everything that was
-+ * not configured with ->set_suspend_xx()). For everything that was set with
-+ * ->set_suspend_xx(), we assume that the regulator will restore the runtime
-+ * state by itself.
-+ *
-+ * This function should be called from the regulator driver ->resume() hook.
-+ *
-+ * This function returns 0 if it managed to restore the state, a negative
-+ * error code otherwise.
-+ */
-+int regulator_restore_runtime_state(struct regulator_dev *rdev)
-+{
-+	struct regulator_state *save;
-+	int ret;
+@@ -23,23 +24,37 @@
+  */
+ #define ACT8945A_SYS_MODE	0x00
+ #define ACT8945A_SYS_CTRL	0x01
++#define ACT8945A_SYS_UNLK_REGS	0x0b
+ #define ACT8945A_DCDC1_VSET1	0x20
+ #define ACT8945A_DCDC1_VSET2	0x21
+ #define ACT8945A_DCDC1_CTRL	0x22
++#define ACT8945A_DCDC1_SUS	0x24
+ #define ACT8945A_DCDC2_VSET1	0x30
+ #define ACT8945A_DCDC2_VSET2	0x31
+ #define ACT8945A_DCDC2_CTRL	0x32
++#define ACT8945A_DCDC2_SUS	0x34
+ #define ACT8945A_DCDC3_VSET1	0x40
+ #define ACT8945A_DCDC3_VSET2	0x41
+ #define ACT8945A_DCDC3_CTRL	0x42
++#define ACT8945A_DCDC3_SUS	0x44
 +
-+	save = &rdev->suspend.save;
-+
-+	if (save->enabled)
-+		ret = rdev->desc->ops->enable(rdev);
-+	else if (save->disabled)
-+		ret = rdev->desc->ops->disable(rdev);
-+	else
-+		ret = 0;
-+
-+	if (ret < 0) {
-+		rdev_err(rdev, "failed to enabled/disable\n");
-+		return ret;
-+	}
-+
-+	if (save->uV > 0) {
-+		ret = _regulator_do_set_voltage(rdev, save->uV, save->uV);
-+		if (ret < 0) {
-+			rdev_err(rdev, "failed to set voltage\n");
-+			return ret;
-+		}
-+	}
-+
-+	if (save->mode > 0) {
-+		ret = rdev->desc->ops->set_mode(rdev, save->mode);
-+		if (ret < 0) {
-+			rdev_err(rdev, "failed to set mode\n");
-+			return ret;
-+		}
-+	}
-+
-+	memset(&rdev->suspend.save, 0, sizeof(rdev->suspend.save));
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(regulator_restore_runtime_state);
-+
-+/**
-+ * regulator_apply_suspend_state - apply the suspend state to a regulator
-+ * @rdev: regulator device
-+ *
-+ * This function will apply the suspend pointed by rdev->suspend.target.
-+ * If the regulator implements the ->set_suspend_xx() hooks, then these methods
-+ * are called, and the regulator will not apply the new state directly, but
-+ * instead store the new configuration internally and apply it afterwards after
-+ * the system has been suspended.
-+ * If the regulator does not support this 'program suspend state' feature, the
-+ * core can apply the new setting at runtime, but this has to be explicitely
-+ * requested (with the ->allow_changes_at_runtime flag) because it can be
-+ * dangerous to do so.
-+ *
-+ * This function should be called from the regulator driver ->suspend() hook
-+ * and after the platform has called regulator_suspend_begin() to properly set
-+ * the rdev->suspend.target field.
-+ *
-+ * This function returns 0 if it managed to apply the new state, a negative
-+ * error code otherwise.
-+ */
-+int regulator_apply_suspend_state(struct regulator_dev *rdev)
-+{
-+	struct regulator_state *target, *save;
-+	const struct regulator_ops *ops = rdev->desc->ops;
-+	int ret;
-+
-+	target = rdev->suspend.target;
-+	save = &rdev->suspend.save;
-+	memset(save, 0, sizeof(*save));
-+
-+	if (!target)
-+		return 0;
-+
-+	if (target->enabled && target->disabled) {
-+		rdev_err(rdev, "invalid configuration\n");
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * If the regulator supports configuring a suspend state that will be
-+	 * applied afterward (->set_suspend_xx() hooks), use this feature.
-+	 * Otherwise, if runtime modifications are allowed, save the current
-+	 * state and use the regular methods to apply the suspend state.
-+	 *
-+	 * Note that we do not care saving the status when the
-+	 * ->set_suspend_xx() methods are implemented because we assume the
-+	 * regulator will automatically restore the runtime state when going
-+	 * out of its suspend mode.
-+	 */
-+	if (target->enabled) {
-+		if (ops->set_suspend_enable) {
-+			ret = ops->set_suspend_enable(rdev);
-+		} else if (target->allow_changes_at_runtime &&
-+			   ops->enable) {
-+			save->enabled = _regulator_is_enabled(rdev);
-+			ret = rdev->desc->ops->enable(rdev);
-+		} else {
-+			ret = 0;
-+		}
-+	} else if (target->disabled) {
-+		if (ops->set_suspend_disable) {
-+			ret = ops->set_suspend_disable(rdev);
-+		} else if (target->allow_changes_at_runtime &&
-+			   ops->disable) {
-+			save->disabled = !_regulator_is_enabled(rdev);
-+			ret = rdev->desc->ops->disable(rdev);
-+		} else {
-+			ret = 0;
-+		}
-+	} else {
-+		ret = 0;
-+	}
-+
-+	if (ret < 0) {
-+		rdev_err(rdev, "failed to enabled/disable\n");
-+		return ret;
-+	}
-+
-+	if (target->uV > 0) {
-+		if (ops->set_suspend_voltage) {
-+			ret = ops->set_suspend_voltage(rdev, target->uV);
-+		} else if (target->allow_changes_at_runtime) {
-+			ret = _regulator_get_voltage(rdev);
-+			if (ret < 0) {
-+				rdev_err(rdev, "failed to get current voltage\n");
-+				goto err_restore;
-+			}
-+
-+			save->uV = ret;
-+
-+			ret = _regulator_do_set_voltage(rdev, target->uV,
-+							target->uV);
-+		} else {
-+			rdev_err(rdev,
-+				 "suspend voltage specified, but no way to set it\n");
-+			goto err_restore;
-+		}
-+
-+		if (ret < 0) {
-+			rdev_err(rdev, "failed to set voltage\n");
-+			save->uV = 0;
-+			goto err_restore;
-+		}
-+	}
-+
-+	if (target->mode > 0 && !rdev->desc->ops->set_suspend_mode &&
-+	    rdev->desc->ops->set_mode) {
-+		if (ops->set_suspend_mode) {
-+			ret = ops->set_suspend_mode(rdev, target->mode);
-+		} else if (target->allow_changes_at_runtime && ops->get_mode &&
-+			   ops->set_mode) {
-+			ret = ops->get_mode(rdev);
-+			if (ret < 0) {
-+				rdev_err(rdev, "failed to get mode\n");
-+				goto err_restore;
-+			}
-+
-+			save->mode = ret;
-+
-+			ret = ops->set_mode(rdev, target->mode);
-+		} else {
-+			rdev_err(rdev,
-+				 "suspend mode specified, but no way to set it\n");
-+			goto err_restore;
-+		}
-+
-+		if (ret < 0) {
-+			rdev_err(rdev, "failed to set mode\n");
-+			save->mode = 0;
-+			goto err_restore;
-+		}
-+	}
++#define ACT8945A_DCDC_MODE_MSK		BIT(5)
++#define ACT8945A_DCDC_MODE_FIXED	(1 << 5)
++#define ACT8945A_DCDC_MODE_POWER_SAVING	(0 << 5)
 +
 +
-+	return 0;
-+
-+err_restore:
-+	regulator_restore_runtime_state(rdev);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_apply_suspend_state);
-+
- static int suspend_set_state(struct regulator_dev *rdev,
- 	struct regulator_state *rstate)
- {
-@@ -801,6 +1002,38 @@ static int suspend_prepare(struct regulator_dev *rdev, suspend_state_t state)
- 	}
- }
+ #define ACT8945A_LDO1_VSET	0x50
+ #define ACT8945A_LDO1_CTRL	0x51
++#define ACT8945A_LDO1_SUS	0x52
+ #define ACT8945A_LDO2_VSET	0x54
+ #define ACT8945A_LDO2_CTRL	0x55
++#define ACT8945A_LDO2_SUS	0x56
+ #define ACT8945A_LDO3_VSET	0x60
+ #define ACT8945A_LDO3_CTRL	0x61
++#define ACT8945A_LDO3_SUS	0x62
+ #define ACT8945A_LDO4_VSET	0x64
+ #define ACT8945A_LDO4_CTRL	0x65
++#define ACT8945A_LDO4_SUS	0x66
  
-+/* locks held by caller */
-+static int suspend_begin(struct regulator_dev *rdev, suspend_state_t state)
+ /**
+  * Field Definitions.
+@@ -63,12 +78,155 @@ enum {
+ 	ACT8945A_REG_NUM,
+ };
+ 
++struct act8945a_pmic {
++	struct regulator_dev *rdevs[ACT8945A_REG_NUM];
++	struct regmap *regmap;
++};
++
+ static const struct regulator_linear_range act8945a_voltage_ranges[] = {
+ 	REGULATOR_LINEAR_RANGE(600000, 0, 23, 25000),
+ 	REGULATOR_LINEAR_RANGE(1200000, 24, 47, 50000),
+ 	REGULATOR_LINEAR_RANGE(2400000, 48, 63, 100000),
+ };
+ 
++
++static int act8945a_set_suspend_state(struct regulator_dev *rdev, bool enable)
 +{
-+	struct regulator_state *target;
++	struct regmap *regmap = rdev->regmap;
++	int id = rdev->desc->id, ret, reg, val;
 +
-+	if (!rdev->constraints)
-+		return -EINVAL;
-+
-+	switch (state) {
-+	case PM_SUSPEND_STANDBY:
-+		target = &rdev->constraints->state_standby;
++	switch (id) {
++	case ACT8945A_ID_DCDC1:
++		reg = ACT8945A_DCDC1_SUS;
++		val = 0xa8;
 +		break;
-+	case PM_SUSPEND_MEM:
-+		target = &rdev->constraints->state_mem;
++	case ACT8945A_ID_DCDC2:
++		reg = ACT8945A_DCDC2_SUS;
++		val = 0xa8;
 +		break;
-+	case PM_SUSPEND_MAX:
-+		target = &rdev->constraints->state_disk;
++	case ACT8945A_ID_DCDC3:
++		reg = ACT8945A_DCDC3_SUS;
++		val = 0xa8;
++		break;
++	case ACT8945A_ID_LDO1:
++		reg = ACT8945A_LDO1_SUS;
++		val = 0xe8;
++		break;
++	case ACT8945A_ID_LDO2:
++		reg = ACT8945A_LDO2_SUS;
++		val = 0xe8;
++		break;
++	case ACT8945A_ID_LDO3:
++		reg = ACT8945A_LDO3_SUS;
++		val = 0xe8;
++		break;
++	case ACT8945A_ID_LDO4:
++		reg = ACT8945A_LDO4_SUS;
++		val = 0xe8;
 +		break;
 +	default:
 +		return -EINVAL;
 +	}
 +
-+	rdev->suspend.target = target;
-+	return 0;
++	if (enable)
++		val |= BIT(4);
++
++	/*
++	 * Ask the PMIC to enable/disable this output when entering hibernate
++	 * mode.
++	 */
++	ret = regmap_write(regmap, reg, val);
++	if (ret < 0)
++		return ret;
++
++	/*
++	 * Ask the PMIC to enter the suspend mode on the next PWRHLD
++	 * transition.
++	 */
++	return regmap_write(regmap, ACT8945A_SYS_CTRL, 0x42);
 +}
 +
-+static void suspend_end(struct regulator_dev *rdev)
++static int act8945a_set_suspend_enable(struct regulator_dev *rdev)
 +{
-+	/* Reset the suspend state. */
-+	memset(&rdev->suspend, 0, sizeof(rdev->suspend));
++	return act8945a_set_suspend_state(rdev, true);
 +}
 +
- static void print_constraints(struct regulator_dev *rdev)
- {
- 	struct regulation_constraints *constraints = rdev->constraints;
-@@ -4139,6 +4372,64 @@ int regulator_suspend_prepare(suspend_state_t state)
- }
- EXPORT_SYMBOL_GPL(regulator_suspend_prepare);
- 
-+static int _regulator_suspend_begin(struct device *dev, void *data)
++static int act8945a_set_suspend_disable(struct regulator_dev *rdev)
 +{
-+	struct regulator_dev *rdev = dev_to_rdev(dev);
-+	const suspend_state_t *state = data;
-+	int ret;
-+
-+	mutex_lock(&rdev->mutex);
-+	ret = suspend_begin(rdev, *state);
-+	mutex_unlock(&rdev->mutex);
-+
-+	return ret;
++	return act8945a_set_suspend_state(rdev, false);
 +}
 +
-+/**
-+ * regulator_suspend_begin - begin a system wide suspend sequence
-+ * @state: system suspend state
-+ *
-+ * Assign rdev->suspend.target for each regulator device. This target state
-+ * can then be used by regulator drivers in their suspend function to
-+ * apply a suspend state.
-+ * All they need to do is call regulator_apply_suspend_state() from their
-+ * ->suspend() hook.
-+ */
-+int regulator_suspend_begin(suspend_state_t state)
++static unsigned int act8945a_of_map_mode(unsigned int mode)
 +{
-+	/* ON is handled by regulator active state */
-+	if (state == PM_SUSPEND_ON)
++	if (mode == ACT8945A_DCDC_MODE_POWER_SAVING)
++		return REGULATOR_MODE_STANDBY;
++
++	return REGULATOR_MODE_NORMAL;
++}
++
++static int act8945a_set_mode(struct regulator_dev *rdev, unsigned int mode)
++{
++	struct regmap *regmap = rdev->regmap;
++	int id = rdev->desc->id;
++	int reg, val;
++
++	switch (mode) {
++	case REGULATOR_MODE_STANDBY:
++		val = ACT8945A_DCDC_MODE_POWER_SAVING;
++		break;
++	case REGULATOR_MODE_NORMAL:
++		val = ACT8945A_DCDC_MODE_FIXED;
++		break;
++	default:
 +		return -EINVAL;
++	}
 +
-+	return class_for_each_device(&regulator_class, NULL, &state,
-+				     _regulator_suspend_begin);
++	switch (id) {
++	case ACT8945A_ID_DCDC1:
++		reg = ACT8945A_DCDC1_CTRL;
++		break;
++	case ACT8945A_ID_DCDC2:
++		reg = ACT8945A_DCDC2_CTRL;
++		break;
++	case ACT8945A_ID_DCDC3:
++		reg = ACT8945A_DCDC3_CTRL;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return regmap_update_bits(regmap, reg, ACT8945A_DCDC_MODE_MSK, val);
 +}
-+EXPORT_SYMBOL_GPL(regulator_suspend_begin);
 +
-+static int _regulator_suspend_end(struct device *dev, void *data)
++static unsigned int act8945a_get_mode(struct regulator_dev *rdev)
 +{
-+	struct regulator_dev *rdev = dev_to_rdev(dev);
++	struct regmap *regmap = rdev->regmap;
++	int id = rdev->desc->id;
++	unsigned int val;
++	int reg;
 +
-+	mutex_lock(&rdev->mutex);
-+	suspend_end(rdev);
-+	mutex_unlock(&rdev->mutex);
++	switch (id) {
++	case ACT8945A_ID_DCDC1:
++		reg = ACT8945A_DCDC1_CTRL;
++		break;
++	case ACT8945A_ID_DCDC2:
++		reg = ACT8945A_DCDC2_CTRL;
++		break;
++	case ACT8945A_ID_DCDC3:
++		reg = ACT8945A_DCDC3_CTRL;
++		break;
++	default:
++		return -EINVAL;
++	}
 +
-+	return 0;
++	regmap_read(regmap, reg, &val);
++
++	if ((val & ACT8945A_DCDC_MODE_MSK) == ACT8945A_DCDC_MODE_POWER_SAVING)
++		return REGULATOR_MODE_STANDBY;
++
++	return REGULATOR_MODE_NORMAL;
 +}
 +
-+/**
-+ * regulator_suspend_end - end a suspend sequence
-+ *
-+ * Reset all regulators suspend state, either because the suspend sequence
-+ * was aborted or because the system resumed from suspend.
-+ */
-+void regulator_suspend_end(void)
-+{
-+	class_for_each_device(&regulator_class, NULL, NULL,
-+			      _regulator_suspend_end);
-+}
-+EXPORT_SYMBOL_GPL(regulator_suspend_end);
-+
- static int _regulator_suspend_finish(struct device *dev, void *data)
- {
- 	struct regulator_dev *rdev = dev_to_rdev(dev);
-diff --git a/drivers/regulator/of_regulator.c b/drivers/regulator/of_regulator.c
-index 4f613ec99500..61634d7e4248 100644
---- a/drivers/regulator/of_regulator.c
-+++ b/drivers/regulator/of_regulator.c
-@@ -163,6 +163,10 @@ static void of_get_regulation_constraints(struct device_node *np,
- 					"regulator-suspend-microvolt", &pval))
- 			suspend_state->uV = pval;
- 
-+		if (of_property_read_bool(suspend_np,
-+					"regulator-allow-changes-at-runtime"))
-+			suspend_state->allow_changes_at_runtime = true;
-+
- 		if (i == PM_SUSPEND_MEM)
- 			constraints->initial_state = PM_SUSPEND_MEM;
- 
-diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
-index 37b532410528..d3550d0e8f3f 100644
---- a/include/linux/regulator/driver.h
-+++ b/include/linux/regulator/driver.h
-@@ -18,6 +18,7 @@
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/regulator/consumer.h>
-+#include <linux/regulator/machine.h>
- 
- struct regmap;
- struct regulator_dev;
-@@ -384,6 +385,29 @@ struct regulator_config {
+ static struct regulator_ops act8945a_ops = {
+ 	.list_voltage		= regulator_list_voltage_linear_range,
+ 	.map_voltage		= regulator_map_voltage_linear_range,
+@@ -76,7 +234,11 @@ static struct regulator_ops act8945a_ops = {
+ 	.set_voltage_sel	= regulator_set_voltage_sel_regmap,
+ 	.enable			= regulator_enable_regmap,
+ 	.disable		= regulator_disable_regmap,
++	.set_mode		= act8945a_set_mode,
++	.get_mode		= act8945a_get_mode,
+ 	.is_enabled		= regulator_is_enabled_regmap,
++	.set_suspend_enable	= act8945a_set_suspend_enable,
++	.set_suspend_disable	= act8945a_set_suspend_disable,
  };
  
- /*
-+ * struct struct regulator_suspend_ctx
-+ *
-+ * The suspend context attached to a regulator device.
-+ *
-+ * This context is used to store the target regulato state which should be
-+ * entered when the system is suspended.
-+ * The regulator_suspend_begin() will make @target point to the appropriate
-+ * suspent state, and the regulator driver is then responsible for calling
-+ * regulator_apply_suspend_state() from its ->suspend() hook.
-+ * regulator_apply_suspend_state() will save the current regulator state, and
-+ * the driver can then restore this state at resume time by calling
-+ * regulator_restore_runtime_state() from its ->resume() hook.
-+ *
-+ *
-+ * @target: target state to apply on suspend
-+ * @save: runtime state that should be restored at resume time
-+ */
-+struct regulator_suspend_ctx {
-+	struct regulator_state *target;
-+	struct regulator_state save;
+ #define ACT89xx_REG(_name, _family, _id, _vsel_reg, _supply)		\
+@@ -84,6 +246,7 @@ static struct regulator_ops act8945a_ops = {
+ 		.name			= _name,			\
+ 		.supply_name		= _supply,			\
+ 		.of_match		= of_match_ptr("REG_"#_id),	\
++		.of_map_mode		= act8945a_of_map_mode,		\
+ 		.regulators_node	= of_match_ptr("regulators"),	\
+ 		.id			= _family##_ID_##_id,		\
+ 		.type			= REGULATOR_VOLTAGE,		\
+@@ -118,14 +281,97 @@ static const struct regulator_desc act8945a_alt_regulators[] = {
+ 	ACT89xx_REG("LDO_REG4", ACT8945A, LDO4, VSET, "inl67"),
+ };
+ 
++static int act8945a_pmic_suspend(struct device *dev)
++{
++	struct act8945a_pmic *act8945a = dev_get_drvdata(dev);
++	int i, ret;
++
++	for (i = 0; i < ARRAY_SIZE(act8945a->rdevs); i++) {
++		struct regulator_dev *rdev;
++
++		rdev = act8945a->rdevs[i];
++		if (!rdev)
++			break;
++
++		/*
++		 * FIXME: maybe we should continue applying suspend state to
++		 * other regulators.
++		 */
++		ret = regulator_apply_suspend_state(rdev);
++		if (ret)
++			return ret;
++
++		act8945a->rdevs[i] = rdev;
++	}
++
++	return 0;
++}
++
++static int act8945a_pmic_resume(struct device *dev)
++{
++	struct act8945a_pmic *act8945a = dev_get_drvdata(dev);
++	int i, ret;
++
++	for (i = 0; i < ARRAY_SIZE(act8945a->rdevs); i++) {
++		struct regulator_dev *rdev;
++
++		rdev = act8945a->rdevs[i];
++		if (!rdev)
++			break;
++
++		/*
++		 * FIXME: maybe we should continue restoring runtime states on
++		 * other regulators.
++		 */
++		ret = regulator_restore_runtime_state(rdev);
++		if (ret)
++			return ret;
++
++		act8945a->rdevs[i] = rdev;
++	}
++
++	return 0;
++}
++
++static const struct dev_pm_ops act8945a_pmic_pm_ops = {
++	.suspend = act8945a_pmic_suspend,
++	.resume = act8945a_pmic_resume,
 +};
 +
-+/*
-  * struct regulator_dev
-  *
-  * Voltage / Current regulator class device. One for each
-@@ -415,6 +439,8 @@ struct regulator_dev {
- 	const char *supply_name;
- 	struct regmap *regmap;
- 
-+	struct regulator_suspend_ctx suspend;
++static void act8945a_pmic_shutdown(struct platform_device *pdev)
++{
++	struct act8945a_pmic *act8945a = platform_get_drvdata(pdev);
++	struct regmap *regmap = act8945a->regmap;
 +
- 	struct delayed_work disable_work;
- 	int deferred_disables;
- 
-@@ -477,4 +503,7 @@ int regulator_set_active_discharge_regmap(struct regulator_dev *rdev,
- 					  bool enable);
- void *regulator_get_init_drvdata(struct regulator_init_data *reg_init_data);
- 
-+int regulator_apply_suspend_state(struct regulator_dev *rdev);
-+int regulator_restore_runtime_state(struct regulator_dev *rdev);
++	/*
++	 * Ask the PMIC to shutdown everything on the next PWRHLD transition.
++	 */
++	regmap_write(regmap, ACT8945A_SYS_CTRL, 0x0);
++}
 +
- #endif
-diff --git a/include/linux/regulator/machine.h b/include/linux/regulator/machine.h
-index ad3e5158e586..e2348cd145a5 100644
---- a/include/linux/regulator/machine.h
-+++ b/include/linux/regulator/machine.h
-@@ -60,12 +60,16 @@ enum regulator_active_discharge {
-  * @mode: Operating mode during suspend.
-  * @enabled: Enabled during suspend.
-  * @disabled: Disabled during suspend.
-+ * @allow_changes_at_runtime: Allow the core to call the ->set_mode() or
-+ *			      ->set_voltage() directly if ->set_suspend_mode()
-+ *			      or ->set_suspend_voltage() are missing.
-  */
- struct regulator_state {
- 	int uV;	/* suspend voltage */
- 	unsigned int mode; /* suspend regulator operating mode */
- 	int enabled; /* is regulator enabled in this suspend state */
- 	int disabled; /* is the regulator disbled in this suspend state */
-+	bool allow_changes_at_runtime;
+ static int act8945a_pmic_probe(struct platform_device *pdev)
+ {
+ 	struct regulator_config config = { };
+ 	const struct regulator_desc *regulators;
+ 	struct regulator_dev *rdev;
++	struct act8945a_pmic *act8945a;
+ 	int i, num_regulators;
+ 	bool voltage_select;
+ 
++	act8945a = devm_kzalloc(&pdev->dev, sizeof(*act8945a), GFP_KERNEL);
++	if (!act8945a) {
++		dev_err(&pdev->dev,
++			"could not allocated the act8945a object\n");
++		return -ENOMEM;
++	}
++
++	act8945a->regmap = dev_get_regmap(pdev->dev.parent, NULL);
++	if (!act8945a->regmap) {
++		dev_err(&pdev->dev,
++			"could not retrieve regmap from parent device\n");
++		return -EINVAL;
++	}
++
+ 	voltage_select = of_property_read_bool(pdev->dev.parent->of_node,
+ 					       "active-semi,vsel-high");
+ 
+@@ -147,16 +393,23 @@ static int act8945a_pmic_probe(struct platform_device *pdev)
+ 				regulators[i].name);
+ 			return PTR_ERR(rdev);
+ 		}
++
++		act8945a->rdevs[i] = rdev;
+ 	}
+ 
+-	return 0;
++	platform_set_drvdata(pdev, act8945a);
++
++	/* Unlock expert registers. */
++	return regmap_write(act8945a->regmap, ACT8945A_SYS_UNLK_REGS, 0xef);
+ }
+ 
+ static struct platform_driver act8945a_pmic_driver = {
+ 	.driver = {
+ 		.name = "act8945a-regulator",
++		.pm = &act8945a_pmic_pm_ops,
+ 	},
+ 	.probe = act8945a_pmic_probe,
++	.shutdown = act8945a_pmic_shutdown,
  };
+ module_platform_driver(act8945a_pmic_driver);
  
- /**
-@@ -216,12 +220,18 @@ struct regulator_init_data {
- 
- #ifdef CONFIG_REGULATOR
- void regulator_has_full_constraints(void);
-+int regulator_suspend_begin(suspend_state_t state);
- int regulator_suspend_prepare(suspend_state_t state);
- int regulator_suspend_finish(void);
-+void regulator_suspend_end(void);
- #else
- static inline void regulator_has_full_constraints(void)
- {
- }
-+static inline int regulator_suspend_begin(suspend_state_t state)
-+{
-+	return 0;
-+}
- static inline int regulator_suspend_prepare(suspend_state_t state)
- {
- 	return 0;
-@@ -230,6 +240,9 @@ static inline int regulator_suspend_finish(void)
- {
- 	return 0;
- }
-+static inline void regulator_suspend_end(void)
-+{
-+}
- #endif
- 
- #endif
 -- 
 2.7.4
 
