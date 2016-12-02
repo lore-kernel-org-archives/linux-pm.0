@@ -1,55 +1,113 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Subject: [RFC PATCH 0/5] ARM: at91: sama5d2_xplained: Put the PMIC a proper suspend state
-Date: Fri,  2 Dec 2016 14:57:11 +0100
-Message-ID: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
+Subject: [RFC PATCH 5/5] ARM: at91/dt: sama5d2_xplained: Add proper regulator states for suspend-to-mem
+Date: Fri,  2 Dec 2016 14:57:16 +0100
+Message-ID: <1480687036-5037-6-git-send-email-boris.brezillon@free-electrons.com>
+References: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:60756 "EHLO
+Received: from mail.free-electrons.com ([62.4.15.54]:60760 "EHLO
         mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760749AbcLBN5V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2016 08:57:21 -0500
+        with ESMTP id S1760762AbcLBN5W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2016 08:57:22 -0500
+In-Reply-To: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Boris Brezillon <boris.brezillon@free-electrons.com>
 
-Mark, Raphael,
+When entering suspend-to-mem, all PMIC outputs are disabled except
+VDDIODDR which is put in power saving mode, and whose voltage is
+increased (probably to counter the poor accuracy of power saving mode).
 
-This is just an attempt at solving the suspend/resume issue I have on
-an atmel platform: the PMIC is only supporting partial "suspend state"
-definition (enable/disable output), and we need to setup the remaining
-parts (voltage and mode) at runtime.
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ arch/arm/boot/dts/at91-sama5d2_xplained.dts | 32 +++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
 
-Mark, this patch is trying to implement what I understood of our
-discussion on IRC a few days back. As you might have noticed, I'm not
-yet understanding all the subtleties of the PM hooks, or how they are
-implemented in the regulator framework.
-This patch is clearly not meant to be applied as is, it's more something
-to start a discussion, so feel free to point my misunderstanding or the
-flaws in my approach.
-
-Thanks,
-
-Boris
-
-Boris Brezillon (5):
-  regulator: Extend the power-management APIs
-  regulator: Document the regulator-allow-changes-at-runtime DT property
-  ARM: at91: Call regulator_suspend_{begin, end}() in the platform pm
-    ops
-  regulator: act8945: Implement PM functionalities
-  ARM: at91/dt: sama5d2_xplained: Add proper regulator states for
-    suspend-to-mem
-
- .../devicetree/bindings/regulator/regulator.txt    |   5 +
- arch/arm/boot/dts/at91-sama5d2_xplained.dts        |  32 +++
- arch/arm/mach-at91/pm.c                            |   4 +-
- drivers/regulator/act8945a-regulator.c             | 255 +++++++++++++++++-
- drivers/regulator/core.c                           | 291 +++++++++++++++++++++
- drivers/regulator/of_regulator.c                   |   4 +
- include/linux/regulator/driver.h                   |  29 ++
- include/linux/regulator/machine.h                  |  13 +
- 8 files changed, 631 insertions(+), 2 deletions(-)
-
+diff --git a/arch/arm/boot/dts/at91-sama5d2_xplained.dts b/arch/arm/boot/dts/at91-sama5d2_xplained.dts
+index da47fa19f474..db1fe0091c2a 100644
+--- a/arch/arm/boot/dts/at91-sama5d2_xplained.dts
++++ b/arch/arm/boot/dts/at91-sama5d2_xplained.dts
+@@ -178,6 +178,14 @@
+ 							regulator-min-microvolt = <1350000>;
+ 							regulator-max-microvolt = <1350000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-on-in-suspend;
++								regulator-suspend-microvolt = <1400000>;
++								/* Power saving mode. */
++								regulator-mode = <0>;
++								regulator-allow-changes-at-runtime;
++							};
+ 						};
+ 
+ 						vdd_1v2_reg: REG_DCDC2 {
+@@ -185,6 +193,10 @@
+ 							regulator-min-microvolt = <1100000>;
+ 							regulator-max-microvolt = <1300000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-off-in-suspend;
++							};
+ 						};
+ 
+ 						vdd_3v3_reg: REG_DCDC3 {
+@@ -192,6 +204,10 @@
+ 							regulator-min-microvolt = <3300000>;
+ 							regulator-max-microvolt = <3300000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-off-in-suspend;
++							};
+ 						};
+ 
+ 						vdd_fuse_reg: REG_LDO1 {
+@@ -199,6 +215,10 @@
+ 							regulator-min-microvolt = <2500000>;
+ 							regulator-max-microvolt = <2500000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-off-in-suspend;
++							};
+ 						};
+ 
+ 						vdd_3v3_lp_reg: REG_LDO2 {
+@@ -206,6 +226,10 @@
+ 							regulator-min-microvolt = <3300000>;
+ 							regulator-max-microvolt = <3300000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-off-in-suspend;
++							};
+ 						};
+ 
+ 						vdd_led_reg: REG_LDO3 {
+@@ -213,6 +237,10 @@
+ 							regulator-min-microvolt = <3300000>;
+ 							regulator-max-microvolt = <3300000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-off-in-suspend;
++							};
+ 						};
+ 
+ 						vdd_sdhc_1v8_reg: REG_LDO4 {
+@@ -220,6 +248,10 @@
+ 							regulator-min-microvolt = <1800000>;
+ 							regulator-max-microvolt = <1800000>;
+ 							regulator-always-on;
++
++							regulator-state-mem {
++								regulator-off-in-suspend;
++							};
+ 						};
+ 					};
+ 				};
 -- 
 2.7.4
 
