@@ -1,120 +1,44 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] devfreq: rk3399_dmc: Don't use OPP structures outside of
- RCU locks
-Date: Fri, 2 Dec 2016 14:30:47 +0530
-Message-ID: <20161202090047.GA22049@vireshk-i7>
-References: <CGME20161201103813epcas4p116430ac17cea842a7f09b35f0969ccb0@epcas4p1.samsung.com>
- <22bf6dfc155a6a241c2ee4e2b44a615d0e82064d.1480588658.git.viresh.kumar@linaro.org>
- <584133F9.4080006@samsung.com>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH 06/12] usb: dwc3: omap: Replace the extcon API
+Date: Fri, 02 Dec 2016 11:03:46 +0200
+Message-ID: <87fum6vh1p.fsf@linux.intel.com>
+References: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com> <1480485460-2663-7-git-send-email-cw00.choi@samsung.com> <CGME20161130103827epcas4p268ee1cbc6b7b2ace7c987dd7baba82d4@epcas4p2.samsung.com> <877f7lntjq.fsf@linux.intel.com> <58412848.5070209@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:34142 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751678AbcLBJAx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2016 04:00:53 -0500
-Received: by mail-pf0-f175.google.com with SMTP id c4so51876802pfb.1
-        for <linux-pm@vger.kernel.org>; Fri, 02 Dec 2016 01:00:52 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <584133F9.4080006@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <58412848.5070209@samsung.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, gregkh@linuxfoundation.org, kishon@ti.com, sre@kernel.org
+Cc: Peter.Chen@nxp.com, wens@csie.org, yoshihiro.shimoda.uh@renesas.com, maxime.ripard@free-electrons.com, b-liu@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-renesas-soc@vger.kernel.org, chanwoo@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, nm@ti.com, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi Chanwoo,
 
-Thanks for trying to review all these patches.
+Hi,
 
-On 02-12-16, 17:42, Chanwoo Choi wrote:
-> Hi Viresh,
-> 
-> On 2016년 12월 01일 19:38, Viresh Kumar wrote:
-> > The OPP structures are abused to the best here, without understanding
-> > how the OPP core and RCU locks work.
-> > 
-> > In short, the OPP pointer saved in 'rk3399_dmcfreq' can become invalid
-> > under your nose, as the OPP core may free it.
-> > 
-> > Fix various abuses around OPP structures and calls.
-> > 
-> > Compile tested only.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > I would like it to go via the PM tree. Perhaps that's already the
-> > default tree for this.
-> > 
-> >  drivers/devfreq/rk3399_dmc.c | 11 +++++------
-> >  1 file changed, 5 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
-> > index 5063ac1a5939..cf14631b1945 100644
-> > --- a/drivers/devfreq/rk3399_dmc.c
-> > +++ b/drivers/devfreq/rk3399_dmc.c
-> > @@ -80,7 +80,6 @@ struct rk3399_dmcfreq {
-> >  	struct regulator *vdd_center;
-> >  	unsigned long rate, target_rate;
-> >  	unsigned long volt, target_volt;
-> > -	struct dev_pm_opp *curr_opp;
-> >  };
-> >  
-> >  static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-> > @@ -102,9 +101,6 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-> >  	target_rate = dev_pm_opp_get_freq(opp);
-> >  	target_volt = dev_pm_opp_get_voltage(opp);
-> >  
-> > -	dmcfreq->rate = dev_pm_opp_get_freq(dmcfreq->curr_opp);
-> > -	dmcfreq->volt = dev_pm_opp_get_voltage(dmcfreq->curr_opp);
-> > -
-> >  	rcu_read_unlock();
-> >  
-> >  	if (dmcfreq->rate == target_rate)
-> 
-> dmcfreq->rate is used on here.
+Chanwoo Choi <cw00.choi@samsung.com> writes:
+> Hi Felipe,
+>
+> On 2016년 11월 30일 19:36, Felipe Balbi wrote:
+>> 
+>> Hi,
+>> 
+>> Chanwoo Choi <cw00.choi@samsung.com> writes:
+>>> This patch uses the resource-managed extcon API for extcon_register_notifier()
+>>> and replaces the deprecated extcon API as following:
+>>> - extcon_get_cable_state_() -> extcon_get_state()
+>>>
+>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> 
+>> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+>> 
+>
+> Thanks for your review.
+>
+> Each patch has no any dependency among patches.
+> So, If possible, could you pick the patch6/8/9/10/11/12 on your tree?
 
-Are you trying to say that dmcfreq->rate is required to have the right value as
-we will be using it here for comparison? If yes, then ...
-
-> Maybe struct rk3399_dmcfreq need to add the new 'curr_freq' field.
-> 
-> 
-> > @@ -165,7 +161,9 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
-> >  	if (err)
-> >  		dev_err(dev, "Cannot to set vol %lu uV\n", target_volt);
-> >  
-> > -	dmcfreq->curr_opp = opp;
-> > +	dmcfreq->rate = target_rate;
-> > +	dmcfreq->volt = target_volt;
-
-This takes care of it for all cases except the first call to target()...
-
-> > +
-> >  out:
-> >  	mutex_unlock(&dmcfreq->lock);
-> >  	return err;
-> > @@ -431,8 +429,9 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
-> >  		rcu_read_unlock();
-> >  		return PTR_ERR(opp);
-> >  	}
-> > +	dmcfreq->rate = dev_pm_opp_get_freq(opp);
-> > +	dmcfreq->volt = dev_pm_opp_get_voltage(opp);
-
-And this takes care of the first call to target().
-
-Am I still missing something ?
-
-> >  	rcu_read_unlock();
-> > -	data->curr_opp = opp;
-> >  
-> >  	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
-> >  
-> > 
-> 
-> -- 
-> Best Regards,
-> Chanwoo Choi
+my tree is closed for v4.10, I can pick it up for v4.11
 
 -- 
-viresh
+balbi
