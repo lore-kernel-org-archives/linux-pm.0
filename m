@@ -1,53 +1,138 @@
 From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH 06/12] usb: dwc3: omap: Replace the extcon API
-Date: Fri, 2 Dec 2016 22:20:56 +0900
-Message-ID: <CAGTfZH0SGB9Wd5ww8rKQOJStCvuFsRzypVBer+nkhnKojkthqA@mail.gmail.com>
-References: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com>
- <1480485460-2663-7-git-send-email-cw00.choi@samsung.com> <CGME20161130103827epcas4p268ee1cbc6b7b2ace7c987dd7baba82d4@epcas4p2.samsung.com>
- <877f7lntjq.fsf@linux.intel.com> <58412848.5070209@samsung.com> <87fum6vh1p.fsf@linux.intel.com>
+Subject: Re: [PATCH] devfreq: rk3399_dmc: Don't use OPP structures outside of
+ RCU locks
+Date: Fri, 2 Dec 2016 22:21:50 +0900
+Message-ID: <CAGTfZH1BHODSgq=ou-63iw2JTBMpzbMkGTmTscALrX3FMG-7AA@mail.gmail.com>
+References: <CGME20161201103813epcas4p116430ac17cea842a7f09b35f0969ccb0@epcas4p1.samsung.com>
+ <22bf6dfc155a6a241c2ee4e2b44a615d0e82064d.1480588658.git.viresh.kumar@linaro.org>
+ <584133F9.4080006@samsung.com> <20161202090047.GA22049@vireshk-i7>
 Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87fum6vh1p.fsf@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Felipe Balbi <balbi@kernel.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Greg KH <gregkh@linuxfoundation.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Peter Chen <Peter.Chen@nxp.com>, Chen-Yu Tsai <wens@csie.org>, yoshihiro.shimoda.uh@renesas.com, Maxime Ripard <maxime.ripard@free-electrons.com>, b-liu@ti.com, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-usb@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f195.google.com ([209.85.216.195]:36081 "EHLO
+        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758705AbcLBNWM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 2 Dec 2016 08:22:12 -0500
+Received: by mail-qt0-f195.google.com with SMTP id n34so27426977qtb.3
+        for <linux-pm@vger.kernel.org>; Fri, 02 Dec 2016 05:22:11 -0800 (PST)
+In-Reply-To: <20161202090047.GA22049@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, nm@ti.com, linaro-kernel@lists.linaro.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>
 
-Hi Felipe,
+Hi Viresh,
 
-2016-12-02 18:03 GMT+09:00 Felipe Balbi <balbi@kernel.org>:
+2016-12-02 18:00 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
+> Hi Chanwoo,
 >
-> Hi,
+> Thanks for trying to review all these patches.
 >
-> Chanwoo Choi <cw00.choi@samsung.com> writes:
->> Hi Felipe,
+> On 02-12-16, 17:42, Chanwoo Choi wrote:
+>> Hi Viresh,
 >>
->> On 2016=EB=85=84 11=EC=9B=94 30=EC=9D=BC 19:36, Felipe Balbi wrote:
->>>
->>> Hi,
->>>
->>> Chanwoo Choi <cw00.choi@samsung.com> writes:
->>>> This patch uses the resource-managed extcon API for extcon_register_no=
-tifier()
->>>> and replaces the deprecated extcon API as following:
->>>> - extcon_get_cable_state_() -> extcon_get_state()
->>>>
->>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>
->>> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
->>>
+>> On 2016=EB=85=84 12=EC=9B=94 01=EC=9D=BC 19:38, Viresh Kumar wrote:
+>> > The OPP structures are abused to the best here, without understanding
+>> > how the OPP core and RCU locks work.
+>> >
+>> > In short, the OPP pointer saved in 'rk3399_dmcfreq' can become invalid
+>> > under your nose, as the OPP core may free it.
+>> >
+>> > Fix various abuses around OPP structures and calls.
+>> >
+>> > Compile tested only.
+>> >
+>> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> > ---
+>> > I would like it to go via the PM tree. Perhaps that's already the
+>> > default tree for this.
+>> >
+>> >  drivers/devfreq/rk3399_dmc.c | 11 +++++------
+>> >  1 file changed, 5 insertions(+), 6 deletions(-)
+>> >
+>> > diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc=
+.c
+>> > index 5063ac1a5939..cf14631b1945 100644
+>> > --- a/drivers/devfreq/rk3399_dmc.c
+>> > +++ b/drivers/devfreq/rk3399_dmc.c
+>> > @@ -80,7 +80,6 @@ struct rk3399_dmcfreq {
+>> >     struct regulator *vdd_center;
+>> >     unsigned long rate, target_rate;
+>> >     unsigned long volt, target_volt;
+>> > -   struct dev_pm_opp *curr_opp;
+>> >  };
+>> >
+>> >  static int rk3399_dmcfreq_target(struct device *dev, unsigned long *f=
+req,
+>> > @@ -102,9 +101,6 @@ static int rk3399_dmcfreq_target(struct device *de=
+v, unsigned long *freq,
+>> >     target_rate =3D dev_pm_opp_get_freq(opp);
+>> >     target_volt =3D dev_pm_opp_get_voltage(opp);
+>> >
+>> > -   dmcfreq->rate =3D dev_pm_opp_get_freq(dmcfreq->curr_opp);
+>> > -   dmcfreq->volt =3D dev_pm_opp_get_voltage(dmcfreq->curr_opp);
+>> > -
+>> >     rcu_read_unlock();
+>> >
+>> >     if (dmcfreq->rate =3D=3D target_rate)
 >>
->> Thanks for your review.
->>
->> Each patch has no any dependency among patches.
->> So, If possible, could you pick the patch6/8/9/10/11/12 on your tree?
+>> dmcfreq->rate is used on here.
 >
-> my tree is closed for v4.10, I can pick it up for v4.11
+> Are you trying to say that dmcfreq->rate is required to have the right va=
+lue as
+> we will be using it here for comparison? If yes, then ...
+>
+>> Maybe struct rk3399_dmcfreq need to add the new 'curr_freq' field.
+>>
+>>
+>> > @@ -165,7 +161,9 @@ static int rk3399_dmcfreq_target(struct device *de=
+v, unsigned long *freq,
+>> >     if (err)
+>> >             dev_err(dev, "Cannot to set vol %lu uV\n", target_volt);
+>> >
+>> > -   dmcfreq->curr_opp =3D opp;
+>> > +   dmcfreq->rate =3D target_rate;
+>> > +   dmcfreq->volt =3D target_volt;
+>
+> This takes care of it for all cases except the first call to target()...
+>
+>> > +
+>> >  out:
+>> >     mutex_unlock(&dmcfreq->lock);
+>> >     return err;
+>> > @@ -431,8 +429,9 @@ static int rk3399_dmcfreq_probe(struct platform_de=
+vice *pdev)
+>> >             rcu_read_unlock();
+>> >             return PTR_ERR(opp);
+>> >     }
+>> > +   dmcfreq->rate =3D dev_pm_opp_get_freq(opp);
+>> > +   dmcfreq->volt =3D dev_pm_opp_get_voltage(opp);
+>
+> And this takes care of the first call to target().
+>
+> Am I still missing something ?
+>
+>> >     rcu_read_unlock();
+>> > -   data->curr_opp =3D opp;
+>> >
+>> >     rk3399_devfreq_dmc_profile.initial_freq =3D data->rate;
+>> >
+>> >
+>>
+>> --
+>> Best Regards,
+>> Chanwoo Choi
+>
+> --
+> viresh
+> _______________________________________________
+> linaro-kernel mailing list
+> linaro-kernel@lists.linaro.org
+> https://lists.linaro.org/mailman/listinfo/linaro-kernel
 
-Thanks for your pickup to 4.11.
+
 
 --=20
 Best Regards,
