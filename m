@@ -1,44 +1,70 @@
-From: Pan Bian <bianpan201602@163.com>
-Subject: [PATCH 1/1] cpuidle: fix improper return value on error
-Date: Sat,  3 Dec 2016 23:02:27 +0800
-Message-ID: <1480777347-7497-1-git-send-email-bianpan201602@163.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH v5] PM/devfreq: add suspend frequency support
+Date: Sat, 3 Dec 2016 21:15:10 +0100
+Message-ID: <20161203201509.GB13417@amd>
+References: <1478599598-26015-1-git-send-email-hl@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="IiVenqGWf+H9Y6IX"
 Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1478599598-26015-1-git-send-email-hl@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Pan Bian <bianpan2016@163.com>
+To: Lin Huang <hl@rock-chips.com>
+Cc: myungjoo.ham@samsung.com, cw00.choi@samsung.com, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, dbasehore@chromium.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Pan Bian <bianpan2016@163.com>
 
-In function cpuidle_add_state_sysfs(), variable ret takes the return
-value. Its value should be negative on errors. Because ret is reset in
-the loop, its value will be 0 during the second and after repeat of the
-loop. If kzalloc() returns a NULL pointer then, it will return 0. It may
-be better to explicitly assign "-ENOMEM" when the call to kzalloc()
-fails.
+--IiVenqGWf+H9Y6IX
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=188901
+Hi!
 
-Signed-off-by: Pan Bian <bianpan2016@163.com>
----
- drivers/cpuidle/sysfs.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+> index 98c6993..8567153 100644
+> --- a/include/linux/devfreq.h
+> +++ b/include/linux/devfreq.h
+> @@ -172,6 +172,7 @@ struct devfreq {
+>  	struct delayed_work work;
+> =20
+>  	unsigned long previous_freq;
+> +	unsigned long suspend_freq;
+>  	struct devfreq_dev_status last_status;
+> =20
+>  	void *data; /* private data for governors */
+> @@ -179,6 +180,7 @@ struct devfreq {
+>  	unsigned long min_freq;
+>  	unsigned long max_freq;
+>  	bool stop_polling;
+> +	bool suspend_flag;
+> =20
+>  	/* information for device frequency transition */
+>  	unsigned int total_trans;
 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index 832a2c3..c5adc8c 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -403,8 +403,10 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
- 	/* state statistics */
- 	for (i = 0; i < drv->state_count; i++) {
- 		kobj = kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
--		if (!kobj)
-+		if (!kobj) {
-+			ret = -ENOMEM;
- 			goto error_state;
-+		}
- 		kobj->state = &drv->states[i];
- 		kobj->state_usage = &device->states_usage[i];
- 		init_completion(&kobj->kobj_unregister);
--- 
-1.9.1
+It would be nice to comment what "suspend_flag" is... plus... Would it
+be possible to rename suspend_freq or suspend_flag? They are really
+really similar visually...
+
+Thanks.
+								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--IiVenqGWf+H9Y6IX
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlhDJ80ACgkQMOfwapXb+vJGqwCglw8JFkNNBEqtkabvIs4+Yk1L
+RuUAoJgsk989wRU5BBhNHpoDscyVv7xZ
+=zWEe
+-----END PGP SIGNATURE-----
+
+--IiVenqGWf+H9Y6IX--
