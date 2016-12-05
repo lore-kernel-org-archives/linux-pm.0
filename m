@@ -1,52 +1,39 @@
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v3 1/3] ARM: da850: fix infinite loop in clk_set_rate()
-Date: Mon,  5 Dec 2016 11:09:07 +0100
-Message-ID: <1480932549-30811-2-git-send-email-bgolaszewski@baylibre.com>
-References: <1480932549-30811-1-git-send-email-bgolaszewski@baylibre.com>
+Subject: [PATCH v3 0/3] ARM: da850: fix pll0 rate setting
+Date: Mon,  5 Dec 2016 11:09:06 +0100
+Message-ID: <1480932549-30811-1-git-send-email-bgolaszewski@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1480932549-30811-1-git-send-email-bgolaszewski@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Sekhar Nori <nsekhar@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-The aemif clock is added twice to the lookup table in da850.c. This
-breaks the children list of pll0_sysclk3 as we're using the same list
-links in struct clk. When calling clk_set_rate(), we get stuck in
-propagate_rate().
+While trying to set the pll0 rate from the kernel I noticed there are
+two issues with da850 clocks. The first patch fixes an infinite loop
+in propagate_rate(). The third fixes an oops in da850_set_pll0rate().
+The second patch is just a coding style fix, while we're at it.
 
-Create a separate clock for nand, inheriting the rate of the aemif
-clock and retrieve it in the davinci_nand module.
+v1 -> v2:
+- change the approach in 1/3: create a new clock for nand inheriting
+  the rate from the aemif clock (verified that nand still works on
+  da850-lcdk)
+- patch 3/3: also update the davinci_cpufreq driver - the only
+  (indirect) user of da850_set_pll0rate()
+- s/requested_rate/rate in 3/3
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- arch/arm/mach-davinci/da850.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+v2 -> v3:
+- 1/3: keep the "aemif" connector id for the nand clock
+- 3/3: instead of multiplying freq->frequency, divide rate by 1000
+- retested both davinci_nand and clk_set_rate() for pll0
 
-diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
-index e770c97..c008e5e 100644
---- a/arch/arm/mach-davinci/da850.c
-+++ b/arch/arm/mach-davinci/da850.c
-@@ -367,6 +367,11 @@ static struct clk aemif_clk = {
- 	.flags		= ALWAYS_ENABLED,
- };
- 
-+static struct clk aemif_nand_clk = {
-+	.name		= "nand",
-+	.parent		= &aemif_clk,
-+};
-+
- static struct clk usb11_clk = {
- 	.name		= "usb11",
- 	.parent		= &pll0_sysclk4,
-@@ -537,7 +542,7 @@ static struct clk_lookup da850_clks[] = {
- 	CLK("da830-mmc.0",	NULL,		&mmcsd0_clk),
- 	CLK("da830-mmc.1",	NULL,		&mmcsd1_clk),
- 	CLK("ti-aemif",		NULL,		&aemif_clk),
--	CLK(NULL,		"aemif",	&aemif_clk),
-+	CLK(NULL,		"aemif",	&aemif_nand_clk),
- 	CLK("ohci-da8xx",	"usb11",	&usb11_clk),
- 	CLK("musb-da8xx",	"usb20",	&usb20_clk),
- 	CLK("spi_davinci.0",	NULL,		&spi0_clk),
+Bartosz Golaszewski (3):
+  ARM: da850: fix infinite loop in clk_set_rate()
+  ARM: da850: coding style fix
+  ARM: da850: fix da850_set_pll0rate()
+
+ arch/arm/mach-davinci/da850.c     | 29 +++++++++++++++++++++++------
+ drivers/cpufreq/davinci-cpufreq.c |  2 +-
+ 2 files changed, 24 insertions(+), 7 deletions(-)
+
 -- 
 2.9.3
