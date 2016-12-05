@@ -1,85 +1,69 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: Re: [PATCH v2 3/3] ARM: da850: fix da850_set_pll0rate()
-Date: Mon, 5 Dec 2016 10:07:46 +0100
-Message-ID: <CAMpxmJWCmhKvM=Dgn+bnFfnuO9NGghPURVXuzxW2Vym0Y-akOg@mail.gmail.com>
-References: <1480693134-31324-1-git-send-email-bgolaszewski@baylibre.com>
- <1480693134-31324-4-git-send-email-bgolaszewski@baylibre.com>
- <130825f1-5c8f-f6bc-1f27-929ff591a9c3@ti.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/3] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+Date: Mon, 5 Dec 2016 14:52:11 +0530
+Message-ID: <20161205092211.GA24305@in.ibm.com>
+References: <cover.1478760806.git.ego@linux.vnet.ibm.com>
+ <e3af60739710139801505562b4f09d59a1786f65.1478760806.git.ego@linux.vnet.ibm.com>
+ <de9bf0bb-d188-86f5-86b1-b5931e587b63@gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <130825f1-5c8f-f6bc-1f27-929ff591a9c3@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sekhar Nori <nsekhar@ti.com>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Marek Vasut <marek.vasut@gmail.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, linux-pm <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Russell King <linux@armlinux.org.uk>, LKML <linux-kernel@vger.kernel.org>, Richard Weinberger <richard@nod.at>, Viresh Kumar <viresh.kumar@linaro.org>, Cyrille Pitchen <cyrille.pitchen@atmel.com>, Brian Norris <computersforpeace@gmail.com>, David Woodhouse <dwmw2@infradead.org>, arm-soc <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <de9bf0bb-d188-86f5-86b1-b5931e587b63@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-2016-12-05 9:45 GMT+01:00 Sekhar Nori <nsekhar@ti.com>:
-> On Friday 02 December 2016 09:08 PM, Bartosz Golaszewski wrote:
->> This function is broken - its second argument is an index to the freq
->> table, not the requested clock rate in Hz. It leads to an oops when
->> called from clk_set_rate() since this argument isn't bounds checked
->> either.
->>
->> Fix it by iterating over the array of supported frequencies and
->> selecting a one that matches or returning -EINVAL for unsupported
->> rates.
->>
->> Also: update the davinci cpufreq driver. It's the only user of this
->> clock and currently it passes the cpufreq table index to
->> clk_set_rate(), which is confusing. Make it pass the requested clock
->> rate in Hz.
->>
->> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->> ---
->>  arch/arm/mach-davinci/da850.c     | 22 ++++++++++++++++++----
->>  drivers/cpufreq/davinci-cpufreq.c |  2 +-
->>  2 files changed, 19 insertions(+), 5 deletions(-)
->>
->> diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
->> index a55101c..92e3303 100644
->> --- a/arch/arm/mach-davinci/da850.c
->> +++ b/arch/arm/mach-davinci/da850.c
->> @@ -1179,14 +1179,28 @@ static int da850_set_armrate(struct clk *clk, unsigned long index)
->>       return clk_set_rate(pllclk, index);
->>  }
->>
->> -static int da850_set_pll0rate(struct clk *clk, unsigned long index)
->> +static int da850_set_pll0rate(struct clk *clk, unsigned long rate)
->>  {
->> -     unsigned int prediv, mult, postdiv;
->> -     struct da850_opp *opp;
->>       struct pll_data *pll = clk->pll_data;
->> +     struct cpufreq_frequency_table *freq;
->> +     unsigned int prediv, mult, postdiv;
->> +     struct da850_opp *opp = NULL;
->>       int ret;
->>
->> -     opp = (struct da850_opp *) cpufreq_info.freq_table[index].driver_data;
->> +     for (freq = da850_freq_table;
->> +          freq->frequency != CPUFREQ_TABLE_END; freq++) {
->> +             /* requested_rate is in Hz, freq->frequency is in KHz */
->> +             unsigned long freq_rate = freq->frequency * 1000;
->
-> A small optimization here. Instead of multiplying potentially every
-> frequency in the table by 1000, you could divide the incoming rate down
-> to KHz. This will also avoid the need for 'freq_rate'. Should have
-> noticed this earlier. Sorry about that.
->
-> Thanks,
-> Sekhar
+Hi Balbir,
 
-I thought about it, but figured the multiplication would be safer. I
-will change it if you prefer this version.
+On Tue, Nov 29, 2016 at 09:42:20PM +1100, Balbir Singh wrote:
+> 
+> 
+> On 10/11/16 18:54, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > Currently all the low-power idle states are expected to wake up
+> > at reset vector 0x100. Which is why the macro IDLE_STATE_ENTER_SEQ
+> > that puts the CPU to an idle state and never returns.
+> > 
+> > On ISA_300, when the ESL and EC bits in the PSSCR are zero, the
+> > CPU is expected to wake up at the next instruction of the idle
+> > instruction.
+> > 
+> > This patch adds a new macro named IDLE_STATE_ENTER_SEQ_NORET for the
+> 
+> I think something like IDLE_STATE_ENTER_SEQ_LOSE_CTX would be better?
 
-Best regards,
-Bartosz Golaszewski
+As you pointed out below, the macro encapsulates the magic sequence
+that needs to be executed to go to a particular idle-state.
+
+The behaviour changes based on ESL=EC=1 (or nap,fastsleep,winkle on
+POWER8) in which case wake up is at 0x100. When ESL=EC=0, the wakeup
+happens at the subsequent instruction.
+
+So, more than whether the context is lost or not, the intent is to
+indicate whether the wakeup happens at the next instruction or at
+0x100.
+
+> 
+> > no-return variant and reuses the name IDLE_STATE_ENTER_SEQ
+> > for a variant that allows resuming operation at the instruction next
+> > to the idle-instruction.
+> > 
+> <snip>
+> > +
+> > +#define	IDLE_STATE_ENTER_SEQ_NORET(IDLE_INST)			\
+> > +	IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+> 
+> So we start off with both as the same?
+> 
+> >  	b	.
+> >  #endif /* CONFIG_PPC_P7_NAP */
+> <snip>
+> Balbir
+> 
+--
+Thanks and Regards
+gautham.
