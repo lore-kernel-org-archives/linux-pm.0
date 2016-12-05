@@ -1,70 +1,42 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/3] dev_pm_qos: Improve sysfs pm_qos_latency_tolerance
- validation
-Date: Mon, 5 Dec 2016 12:19:24 +0100
-Message-ID: <20161205111924.GA9148@amd>
-References: <cover.1480468027.git.luto@kernel.org>
- <9f642daf2787251258336c4ce93b1d3090afd590.1480468027.git.luto@kernel.org>
+From: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+Subject: Re: [PATCH 0/2] Device links documentation
+Date: Mon, 5 Dec 2016 10:03:37 -0200
+Message-ID: <20161205100243.65b54d63@vento.lan>
+References: <cover.1480849144.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41895 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751096AbcLELT1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Dec 2016 06:19:27 -0500
-Content-Disposition: inline
-In-Reply-To: <9f642daf2787251258336c4ce93b1d3090afd590.1480468027.git.luto@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1480849144.git.lukas@wunner.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Silvio Fricke <silvio.fricke@gmail.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andrzej Hajda <a.hajda@samsung.com>, Inki Dae <inki.dae@samsung.com>, Joerg Roedel <joro@8bytes.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Mark Brown <broonie@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Tomasz Figa <tomasz.figa@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Lutomirski <luto@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+Hi Lukas,
 
---sm4nu43k4a2Rpi4c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Em Sun, 4 Dec 2016 13:10:04 +0100
+Lukas Wunner <lukas@wunner.de> escreveu:
 
-On Tue 2016-11-29 17:11:50, Andy Lutomirski wrote:
-> Negative values are special.  Don't let users write them directly.
->=20
-> Signed-off-by: Andy Lutomirski <luto@kernel.org>
+> Here's my suggestion for initial documentation on the device links
+> feature that's queued for 4.10 on Greg KH's driver-core-next branch.
+> Please let me know if you have any additions or corrections.
+> 
+> To read this in rendered form:
+> http://wunner.de/kernel-doc/core-api/device_link.html
+> 
+> Patch [2/2] could go in via driver-core-next, but patch [1/2] would
+> need to go in via docs-next (because the core-api directory doesn't
+> exist yet in driver-core-next).
+>
+> @Jonathan Corbet:  Is core-api the right place to put this? An
+> alternative would be Documentation/driver-api, but unlike core-api
+> it contains less prose text but mostly just bare API docs gleaned
+> from kernel-doc.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Just my 2 cents here, but, IMHO, this belongs to driver-api.
+Yeah, it contains less prose, with is, IMHO, something that should
+be improved ;)
 
-> --- a/drivers/base/power/sysfs.c
-> +++ b/drivers/base/power/sysfs.c
-> @@ -263,7 +263,11 @@ static ssize_t pm_qos_latency_tolerance_store(struct=
- device *dev,
->  	s32 value;
->  	int ret;
-> =20
-> -	if (kstrtos32(buf, 0, &value)) {
-> +	if (kstrtos32(buf, 0, &value) =3D=3D 0) {
-> +		/* Users can't write negative values directly */
-> +		if (value < 0)
-> +			return -EINVAL;
-> +	} else {
->  		if (!strcmp(buf, "auto") || !strcmp(buf, "auto\n"))
->  			value =3D PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
->  		else if (!strcmp(buf, "any") || !strcmp(buf, "any\n"))
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---sm4nu43k4a2Rpi4c
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlhFTTwACgkQMOfwapXb+vIO/wCfS4VH7lD/60hkUkzSCSn3jwxT
-WLcAoIlzXm5KgGZy0WFsTP7sC7F8Z628
-=QRy+
------END PGP SIGNATURE-----
-
---sm4nu43k4a2Rpi4c--
+Regards,
+Mauro
