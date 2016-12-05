@@ -1,33 +1,40 @@
-From: Bin Liu <b-liu@ti.com>
-Subject: Re: [PATCH 07/12] usb: sunxi: Uses the resource-managed extcon API
- when registering extcon notifier
-Date: Mon, 5 Dec 2016 10:32:40 -0600
-Message-ID: <20161205163240.GA5783@uda0271908>
-References: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com>
- <1480485460-2663-8-git-send-email-cw00.choi@samsung.com>
- <20161130084503.v5klzl6silp6323s@lukather>
+From: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH 1/2] Documentation/core-api/device_link: Add initial
+ documentation
+Date: Mon, 5 Dec 2016 14:15:28 -0700
+Message-ID: <20161205141528.1c0e9f52@lwn.net>
+References: <cover.1480849144.git.lukas@wunner.de>
+        <f5b568e349aaeb31039a0c4d01fdb05d8b3bdd2a.1480849144.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161130084503.v5klzl6silp6323s@lukather>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, balbi@kernel.org, gregkh@linuxfoundation.org, kishon@ti.com, sre@kernel.org, Peter.Chen@nxp.com, wens@csie.org, yoshihiro.shimoda.uh@renesas.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-renesas-soc@vger.kernel.org, chanwoo@kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ms.lwn.net ([45.79.88.28]:38150 "EHLO ms.lwn.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751451AbcLEVPc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 5 Dec 2016 16:15:32 -0500
+In-Reply-To: <f5b568e349aaeb31039a0c4d01fdb05d8b3bdd2a.1480849144.git.lukas@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org, linux-samsung-soc@vger.kernel.org
 
-On Wed, Nov 30, 2016 at 09:45:03AM +0100, Maxime Ripard wrote:
-> On Wed, Nov 30, 2016 at 02:57:35PM +0900, Chanwoo Choi wrote:
-> > This patch just uses the resource-managed extcon API when registering
-> > the extcon notifier.
-> > 
-> > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> 
-> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+On Sun, 4 Dec 2016 13:10:04 +0100
+Lukas Wunner <lukas@wunner.de> wrote:
 
-It would be ideal if the subject was "usb: musb: sunxi: ...".
+> Document device links as introduced in v4.10 with commits:
+>     4bdb35506b89 ("driver core: Add a wrapper around
+>                    __device_release_driver()")
+>     9ed9895370ae ("driver core: Functional dependencies tracking
+>                    support")
+>     8c73b4288496 ("PM / sleep: Make async suspend/resume of devices use
+>                    device links")
+>     21d5c57b3726 ("PM / runtime: Use device links")
+>     baa8809f6097 ("PM / runtime: Optimize the use of device links")
 
-Acked-by: Bin Liu <b-liu@ti.com>
+I went ahead and applied this one to docs-next.  I did, however, take the
+liberty of shifting it over to the driver-api manual.
 
-Regards,
--Bin.
+Thanks,
+
+jon
