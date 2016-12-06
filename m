@@ -1,44 +1,54 @@
-From: Andrew Lunn <andrew@lunn.ch>
-Subject: Re: [PATCH 0/3] make kurobox-pro be able to shutdown after
- device-tree migration
-Date: Tue, 6 Dec 2016 18:34:20 +0100
-Message-ID: <20161206173420.GB18817@lunn.ch>
-References: <20161205124528.2999-1-rogershimizu@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/1] cpufreq: Fix NULL pointer comparison warning
+Date: Tue, 6 Dec 2016 22:03:44 +0100
+Message-ID: <CAJZ5v0hrA5iCvE2q6T7sqF2Oq2tenhgF--mw9zRoKb0jJXSK=w@mail.gmail.com>
+References: <1481019475-26636-1-git-send-email-m.wasif@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from vps0.lunn.ch ([178.209.37.122]:44441 "EHLO vps0.lunn.ch"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751618AbcLFRfD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Dec 2016 12:35:03 -0500
-Content-Disposition: inline
-In-Reply-To: <20161205124528.2999-1-rogershimizu@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1481019475-26636-1-git-send-email-m.wasif@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mohamed Wasif <m.wasif@samsung.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, vidushi.koul@samsung.com
 List-Id: linux-pm@vger.kernel.org
-To: Roger Shimizu <rogershimizu@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Ryan Tandy <ryan@nardis.ca>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>
 
-On Mon, Dec 05, 2016 at 09:45:25PM +0900, Roger Shimizu wrote:
-> Dear Sebastian,
-> 
-> Kurobox-Pro (and variants) need more commands sending to UART1 to shutdown.
-> So here I make this patch series to let current qnap-poweroff implementation
-> be able to handle such case.
-> 
-> I already tested this change on Kurobox-Pro and Linkstation LS-GL devices,
-> with a modified device-tree file. (Previous device-tree of kurobox-pro invokes
-> restart-poweroff, so it simply restarts.)
-> 
-> Thank you and look forward to your feedback!
+On Tue, Dec 6, 2016 at 11:17 AM, Mohamed Wasif <m.wasif@samsung.com> wrote:
+> Replace direct comparisons to NULL
+> This problem was detected by checkpatch.
+>
+> Signed-off-by: Mohamed Wasif <m.wasif@samsung.com>
+> ---
+>  drivers/cpufreq/cpufreq.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index 6e6c1fb..ca3542e 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -590,7 +590,7 @@ static int cpufreq_parse_governor(char *str_governor, unsigned int *policy,
+>
+>                 t = find_governor(str_governor);
+>
+> -               if (t == NULL) {
+> +               if (!t) {
+>                         int ret;
+>
+>                         mutex_unlock(&cpufreq_governor_mutex);
+> @@ -601,7 +601,7 @@ static int cpufreq_parse_governor(char *str_governor, unsigned int *policy,
+>                                 t = find_governor(str_governor);
+>                 }
+>
+> -               if (t != NULL) {
+> +               if (t) {
+>                         *governor = t;
+>                         err = 0;
+>                 }
+> --
 
-Hi Roger
+The code is correct as is and this patch doesn't fix anything.
 
-You are adding a lot of new code here, and not actually reusing much
-of that is there, but adding a lot of complexity to what is a simple
-driver.
+Besides, you are supposed to run checkpatch against *patches* and not
+against existing code.
 
-I would prefer if you actually write a new driver which just supports
-Kurobox.
-
-Thanks
-	Andrew
+Thanks,
+Rafael
