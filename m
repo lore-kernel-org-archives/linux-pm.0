@@ -1,394 +1,194 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 07/10] PM / OPP: Don't allocate OPP table from _opp_allocate()
-Date: Tue,  6 Dec 2016 14:45:59 +0530
-Message-ID: <ab1dbd94f4638ac04a9dd4b526ddaaf136154dd1.1481015522.git.viresh.kumar@linaro.org>
+Subject: [PATCH 09/10] PM / OPP: Don't expose srcu_head to register notifiers
+Date: Tue,  6 Dec 2016 14:46:01 +0530
+Message-ID: <5ebbb7e9ed838f27aa26c943247f8c4d1c997f14.1481015522.git.viresh.kumar@linaro.org>
 References: <cover.1481015522.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f53.google.com ([74.125.83.53]:33986 "EHLO
-        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752346AbcLFJQv (ORCPT
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:35116 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752534AbcLFJQv (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 04:16:51 -0500
-Received: by mail-pg0-f53.google.com with SMTP id x23so147427043pgx.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 01:16:37 -0800 (PST)
+Received: by mail-pf0-f181.google.com with SMTP id i88so69356210pfk.2
+        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 01:16:44 -0800 (PST)
 In-Reply-To: <cover.1481015522.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1481015522.git.viresh.kumar@linaro.org>
 References: <cover.1481015522.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-There is no point in trying to find/allocate the table for every OPP
-that is added for a device. It would be far more efficient to allocate
-the table only once and pass its pointer to the routines that add the
-OPP entry.
-
-Locking is removed from _opp_add_static_v2() and _opp_add_v1() now as
-the callers call them with that lock already held.
-
-Call to _remove_opp_table() routine is also removed from _opp_free()
-now, as opp_table isn't allocated from within _opp_allocate(). This is
-handled by the routines which created the OPP table in the first place.
+Let the OPP core provide helpers to register notifiers for any device,
+instead of exposing srcu_head outside of the core.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 68 +++++++++++++++++++-------------------
- drivers/base/power/opp/of.c   | 76 ++++++++++++++++++++++---------------------
- drivers/base/power/opp/opp.h  |  9 +++--
- 3 files changed, 79 insertions(+), 74 deletions(-)
+ drivers/base/power/opp/core.c | 66 ++++++++++++++++++++++++++++++++-----------
+ drivers/devfreq/devfreq.c     | 26 ++---------------
+ include/linux/pm_opp.h        | 14 ++++++---
+ 3 files changed, 62 insertions(+), 44 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index ef114cf9edcd..6bcbb64a5582 100644
+index 6fd098618683..f4b935892f5b 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -842,7 +842,7 @@ struct opp_device *_add_opp_dev(const struct device *dev,
+@@ -1868,29 +1868,63 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+ EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
+ 
+ /**
+- * dev_pm_opp_get_notifier() - find notifier_head of the device with opp
+- * @dev:	device pointer used to lookup OPP table.
++ * dev_pm_opp_register_notifier() - Register OPP notifier for the device
++ * @dev:	Device for which notifier needs to be registered
++ * @nb:		Notifier block to be registered
   *
-  * Return: valid opp_table pointer if success, else NULL.
-  */
--static struct opp_table *_add_opp_table(struct device *dev)
-+struct opp_table *_add_opp_table(struct device *dev)
- {
- 	struct opp_table *opp_table;
- 	struct opp_device *opp_dev;
-@@ -942,10 +942,9 @@ static void _remove_opp_table(struct opp_table *opp_table)
- 		  _kfree_device_rcu);
- }
- 
--void _opp_free(struct dev_pm_opp *opp, struct opp_table *opp_table)
-+void _opp_free(struct dev_pm_opp *opp)
- {
- 	kfree(opp);
--	_remove_opp_table(opp_table);
- }
- 
- /**
-@@ -1030,33 +1029,24 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
- EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
- 
- struct dev_pm_opp *_opp_allocate(struct device *dev,
--				 struct opp_table **opp_table)
-+				 struct opp_table *opp_table)
- {
- 	struct dev_pm_opp *opp;
- 	int count, supply_size;
--	struct opp_table *table;
--
--	table = _add_opp_table(dev);
--	if (!table)
--		return NULL;
- 
- 	/* Allocate space for at least one supply */
--	count = table->regulator_count ? table->regulator_count : 1;
-+	count = opp_table->regulator_count ? opp_table->regulator_count : 1;
- 	supply_size = sizeof(*opp->supplies) * count;
- 
- 	/* allocate new OPP node and supplies structures */
- 	opp = kzalloc(sizeof(*opp) + supply_size, GFP_KERNEL);
--	if (!opp) {
--		kfree(table);
-+	if (!opp)
- 		return NULL;
--	}
- 
- 	/* Put the supplies at the end of the OPP structure as an empty array */
- 	opp->supplies = (struct dev_pm_opp_supply *)(opp + 1);
- 	INIT_LIST_HEAD(&opp->node);
- 
--	*opp_table = table;
--
- 	return opp;
- }
- 
-@@ -1142,6 +1132,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 
- /**
-  * _opp_add_v1() - Allocate a OPP based on v1 bindings.
-+ * @opp_table:	OPP table
-  * @dev:	device for which we do this operation
-  * @freq:	Frequency in Hz for this OPP
-  * @u_volt:	Voltage in uVolts for this OPP
-@@ -1167,22 +1158,16 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
-  *		Duplicate OPPs (both freq and volt are same) and !opp->available
-  * -ENOMEM	Memory allocation failure
-  */
--int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
--		bool dynamic)
-+int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
-+		unsigned long freq, long u_volt, bool dynamic)
- {
--	struct opp_table *opp_table;
- 	struct dev_pm_opp *new_opp;
- 	unsigned long tol;
- 	int ret;
- 
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
--
--	new_opp = _opp_allocate(dev, &opp_table);
--	if (!new_opp) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	new_opp = _opp_allocate(dev, opp_table);
-+	if (!new_opp)
-+		return -ENOMEM;
- 
- 	/* populate the opp table */
- 	new_opp->rate = freq;
-@@ -1201,8 +1186,6 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 		goto free_opp;
- 	}
- 
--	mutex_unlock(&opp_table_lock);
--
- 	/*
- 	 * Notify the changes in the availability of the operable
- 	 * frequency/voltage list.
-@@ -1211,9 +1194,8 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 	return 0;
- 
- free_opp:
--	_opp_free(new_opp, opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	_opp_free(new_opp);
-+
- 	return ret;
- }
- 
-@@ -1731,7 +1713,25 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_register_put_opp_helper);
-  */
- int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
- {
--	return _opp_add_v1(dev, freq, u_volt, true);
+- * Return: pointer to  notifier head if found, otherwise -ENODEV or
+- * -EINVAL based on type of error casted as pointer. value must be checked
+- *  with IS_ERR to determine valid pointer or error result.
++ * Return: 0 on success or a negative error value.
++ */
++int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
++{
 +	struct opp_table *opp_table;
 +	int ret;
 +
-+	/* Hold our table modification lock here */
-+	mutex_lock(&opp_table_lock);
++	rcu_read_lock();
 +
-+	opp_table = _add_opp_table(dev);
-+	if (!opp_table) {
-+		ret = -ENOMEM;
++	opp_table = _find_opp_table(dev);
++	if (IS_ERR(opp_table)) {
++		ret = PTR_ERR(opp_table);
 +		goto unlock;
 +	}
 +
-+	ret = _opp_add_v1(opp_table, dev, freq, u_volt, true);
-+	if (ret)
-+		_remove_opp_table(opp_table);
++	ret = srcu_notifier_chain_register(&opp_table->srcu_head, nb);
 +
 +unlock:
-+	mutex_unlock(&opp_table_lock);
++	rcu_read_unlock();
++
 +	return ret;
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_add);
- 
-@@ -1897,8 +1897,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
-  * Free OPPs either created using static entries present in DT or even the
-  * dynamically added entries based on remove_all param.
-  */
--static void _dev_pm_opp_remove_table(struct opp_table *opp_table,
--				     struct device *dev, bool remove_all)
-+void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
-+			      bool remove_all)
- {
- 	struct dev_pm_opp *opp, *tmp;
- 
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 442fa46c4f5c..37dd79378f39 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -255,6 +255,7 @@ static struct device_node *_of_get_opp_desc_node(struct device *dev)
- 
- /**
-  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
-+ * @opp_table:	OPP table
-  * @dev:	device for which we do this operation
-  * @np:		device node
++}
++EXPORT_SYMBOL(dev_pm_opp_register_notifier);
++
++/**
++ * dev_pm_opp_unregister_notifier() - Unregister OPP notifier for the device
++ * @dev:	Device for which notifier needs to be unregistered
++ * @nb:		Notifier block to be unregistered
   *
-@@ -276,22 +277,17 @@ static struct device_node *_of_get_opp_desc_node(struct device *dev)
-  * -ENOMEM	Memory allocation failure
-  * -EINVAL	Failed parsing the OPP node
+- * Locking: This function must be called under rcu_read_lock(). opp_table is a
+- * RCU protected pointer. The reason for the same is that the opp pointer which
+- * is returned will remain valid for use with opp_get_{voltage, freq} only while
+- * under the locked area. The pointer returned must be used prior to unlocking
+- * with rcu_read_unlock() to maintain the integrity of the pointer.
++ * Return: 0 on success or a negative error value.
   */
--static int _opp_add_static_v2(struct device *dev, struct device_node *np)
-+static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
-+			      struct device_node *np)
+-struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
++int dev_pm_opp_unregister_notifier(struct device *dev,
++				   struct notifier_block *nb)
  {
--	struct opp_table *opp_table;
- 	struct dev_pm_opp *new_opp;
- 	u64 rate;
- 	u32 val;
- 	int ret;
- 
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
--
--	new_opp = _opp_allocate(dev, &opp_table);
--	if (!new_opp) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	new_opp = _opp_allocate(dev, opp_table);
-+	if (!new_opp)
-+		return -ENOMEM;
- 
- 	ret = of_property_read_u64(np, "opp-hz", &rate);
- 	if (ret < 0) {
-@@ -347,8 +343,6 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	if (new_opp->clock_latency_ns > opp_table->clock_latency_ns_max)
- 		opp_table->clock_latency_ns_max = new_opp->clock_latency_ns;
- 
--	mutex_unlock(&opp_table_lock);
--
- 	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu\n",
- 		 __func__, new_opp->turbo, new_opp->rate,
- 		 new_opp->supplies[0].u_volt, new_opp->supplies[0].u_volt_min,
-@@ -362,9 +356,8 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	return 0;
- 
- free_opp:
--	_opp_free(new_opp, opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	_opp_free(new_opp);
-+
- 	return ret;
- }
- 
-@@ -382,16 +375,20 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 		/* OPPs are already managed */
- 		if (!_add_opp_dev(dev, opp_table))
- 			ret = -ENOMEM;
--		mutex_unlock(&opp_table_lock);
--		return ret;
-+		goto unlock;
-+	}
-+
-+	opp_table = _add_opp_table(dev);
-+	if (!opp_table) {
-+		ret = -ENOMEM;
-+		goto unlock;
- 	}
--	mutex_unlock(&opp_table_lock);
- 
- 	/* We have opp-table node now, iterate over it and add OPPs */
- 	for_each_available_child_of_node(opp_np, np) {
- 		count++;
- 
--		ret = _opp_add_static_v2(dev, np);
-+		ret = _opp_add_static_v2(opp_table, dev, np);
- 		if (ret) {
- 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
- 				ret);
-@@ -400,15 +397,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	}
- 
- 	/* There should be one of more OPP defined */
--	if (WARN_ON(!count))
--		return -ENOENT;
--
--	mutex_lock(&opp_table_lock);
--
--	opp_table = _find_opp_table(dev);
--	if (WARN_ON(IS_ERR(opp_table))) {
--		ret = PTR_ERR(opp_table);
--		mutex_unlock(&opp_table_lock);
-+	if (WARN_ON(!count)) {
-+		ret = -ENOENT;
- 		goto free_table;
- 	}
- 
-@@ -418,12 +408,12 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	else
- 		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
- 
--	mutex_unlock(&opp_table_lock);
--
--	return 0;
-+	goto unlock;
- 
- free_table:
--	dev_pm_opp_of_remove_table(dev);
-+	_dev_pm_opp_remove_table(opp_table, dev, false);
-+unlock:
-+	mutex_unlock(&opp_table_lock);
- 
- 	return ret;
- }
-@@ -431,9 +421,10 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- /* Initializes OPP tables based on old-deprecated bindings */
- static int _of_add_opp_table_v1(struct device *dev)
- {
+-	struct opp_table *opp_table = _find_opp_table(dev);
 +	struct opp_table *opp_table;
- 	const struct property *prop;
- 	const __be32 *val;
--	int nr, ret;
-+	int nr, ret = 0;
++	int ret;
  
- 	prop = of_find_property(dev->of_node, "operating-points", NULL);
- 	if (!prop)
-@@ -451,22 +442,33 @@ static int _of_add_opp_table_v1(struct device *dev)
- 		return -EINVAL;
- 	}
- 
-+	/* Hold our table modification lock here */
-+	mutex_lock(&opp_table_lock);
+-	if (IS_ERR(opp_table))
+-		return ERR_CAST(opp_table); /* matching type */
++	rcu_read_lock();
 +
-+	opp_table = _add_opp_table(dev);
-+	if (!opp_table) {
-+		ret = -ENOMEM;
++	opp_table = _find_opp_table(dev);
++	if (IS_ERR(opp_table)) {
++		ret = PTR_ERR(opp_table);
 +		goto unlock;
 +	}
 +
- 	val = prop->value;
- 	while (nr) {
- 		unsigned long freq = be32_to_cpup(val++) * 1000;
- 		unsigned long volt = be32_to_cpup(val++);
++	ret = srcu_notifier_chain_unregister(&opp_table->srcu_head, nb);
  
--		ret = _opp_add_v1(dev, freq, volt, false);
-+		ret = _opp_add_v1(opp_table, dev, freq, volt, false);
- 		if (ret) {
- 			dev_err(dev, "%s: Failed to add OPP %ld (%d)\n",
- 				__func__, freq, ret);
--			dev_pm_opp_of_remove_table(dev);
--			return ret;
-+			_dev_pm_opp_remove_table(opp_table, dev, false);
-+			break;
- 		}
- 		nr -= 2;
- 	}
- 
--	return 0;
+-	return &opp_table->srcu_head;
 +unlock:
-+	mutex_unlock(&opp_table_lock);
++	rcu_read_unlock();
++
 +	return ret;
  }
+-EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
++EXPORT_SYMBOL(dev_pm_opp_unregister_notifier);
  
- /**
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index c4b539a8533a..e32dc80ddc12 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -191,13 +191,16 @@ struct opp_table {
+ /*
+  * Free OPPs either created using static entries present in DT or even the
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index a324801d6a66..b0de42972b74 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1260,18 +1260,7 @@ EXPORT_SYMBOL(devfreq_recommended_opp);
+  */
+ int devfreq_register_opp_notifier(struct device *dev, struct devfreq *devfreq)
+ {
+-	struct srcu_notifier_head *nh;
+-	int ret = 0;
+-
+-	rcu_read_lock();
+-	nh = dev_pm_opp_get_notifier(dev);
+-	if (IS_ERR(nh))
+-		ret = PTR_ERR(nh);
+-	rcu_read_unlock();
+-	if (!ret)
+-		ret = srcu_notifier_chain_register(nh, &devfreq->nb);
+-
+-	return ret;
++	return dev_pm_opp_register_notifier(dev, &devfreq->nb);
+ }
+ EXPORT_SYMBOL(devfreq_register_opp_notifier);
  
- /* Routines internal to opp core */
- struct opp_table *_find_opp_table(struct device *dev);
-+struct opp_table *_add_opp_table(struct device *dev);
- struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_table);
-+void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev, bool remove_all);
- void _dev_pm_opp_find_and_remove_table(struct device *dev, bool remove_all);
--struct dev_pm_opp *_opp_allocate(struct device *dev, struct opp_table **opp_table);
--void _opp_free(struct dev_pm_opp *opp, struct opp_table *opp_table);
-+struct dev_pm_opp *_opp_allocate(struct device *dev, struct opp_table *opp_table);
-+void _opp_free(struct dev_pm_opp *opp);
- int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *opp_table);
--int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt, bool dynamic);
-+int _opp_add_v1(struct opp_table *opp_table, struct device *dev, unsigned long freq, long u_volt, bool dynamic);
- void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of);
-+struct opp_table *_add_opp_table(struct device *dev);
+@@ -1287,18 +1276,7 @@ EXPORT_SYMBOL(devfreq_register_opp_notifier);
+  */
+ int devfreq_unregister_opp_notifier(struct device *dev, struct devfreq *devfreq)
+ {
+-	struct srcu_notifier_head *nh;
+-	int ret = 0;
+-
+-	rcu_read_lock();
+-	nh = dev_pm_opp_get_notifier(dev);
+-	if (IS_ERR(nh))
+-		ret = PTR_ERR(nh);
+-	rcu_read_unlock();
+-	if (!ret)
+-		ret = srcu_notifier_chain_unregister(nh, &devfreq->nb);
+-
+-	return ret;
++	return dev_pm_opp_unregister_notifier(dev, &devfreq->nb);
+ }
+ EXPORT_SYMBOL(devfreq_unregister_opp_notifier);
  
- #ifdef CONFIG_OF
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 7483ff291a8e..66a02deeb03f 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -108,7 +108,9 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+ 
+ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
+ 
+-struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
++int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
++int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
++
+ int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
+ 				unsigned int count);
+ void dev_pm_opp_put_supported_hw(struct device *dev);
+@@ -202,10 +204,14 @@ static inline int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+ 	return 0;
+ }
+ 
+-static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
+-							struct device *dev)
++static inline int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
+ {
+-	return ERR_PTR(-ENOTSUPP);
++	return -ENOTSUPP;
++}
++
++static inline int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb)
++{
++	return -ENOTSUPP;
+ }
+ 
+ static inline int dev_pm_opp_set_supported_hw(struct device *dev,
 -- 
 2.7.1.410.g6faf27b
 
