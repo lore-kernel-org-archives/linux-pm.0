@@ -1,194 +1,136 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 09/10] PM / OPP: Don't expose srcu_head to register notifiers
-Date: Tue,  6 Dec 2016 14:46:01 +0530
-Message-ID: <5ebbb7e9ed838f27aa26c943247f8c4d1c997f14.1481015522.git.viresh.kumar@linaro.org>
+Subject: [PATCH 08/10] PM / OPP: Rename dev_pm_opp_get_suspend_opp() and return OPP rate
+Date: Tue,  6 Dec 2016 14:46:00 +0530
+Message-ID: <1da9ba0dd518f51fa73ca33e06ba868a267fb5d6.1481015522.git.viresh.kumar@linaro.org>
 References: <cover.1481015522.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:35116 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752534AbcLFJQv (ORCPT
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36187 "EHLO
+        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752375AbcLFJQv (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 04:16:51 -0500
-Received: by mail-pf0-f181.google.com with SMTP id i88so69356210pfk.2
-        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 01:16:44 -0800 (PST)
+Received: by mail-pf0-f174.google.com with SMTP id 189so69680189pfz.3
+        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 01:16:40 -0800 (PST)
 In-Reply-To: <cover.1481015522.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1481015522.git.viresh.kumar@linaro.org>
 References: <cover.1481015522.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Let the OPP core provide helpers to register notifiers for any device,
-instead of exposing srcu_head outside of the core.
+There is only one user of dev_pm_opp_get_suspend_opp() and that uses it
+to get the OPP rate for the suspend_opp.
+
+Rename dev_pm_opp_get_suspend_opp() as dev_pm_opp_get_suspend_opp_freq()
+and return the rate directly from it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 66 ++++++++++++++++++++++++++++++++-----------
- drivers/devfreq/devfreq.c     | 26 ++---------------
- include/linux/pm_opp.h        | 14 ++++++---
- 3 files changed, 62 insertions(+), 44 deletions(-)
+ drivers/base/power/opp/core.c | 27 +++++++++++++--------------
+ drivers/cpufreq/cpufreq-dt.c  |  7 +------
+ include/linux/pm_opp.h        |  6 +++---
+ 3 files changed, 17 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 6fd098618683..f4b935892f5b 100644
+index 6bcbb64a5582..6fd098618683 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -1868,29 +1868,63 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq)
- EXPORT_SYMBOL_GPL(dev_pm_opp_disable);
+@@ -328,32 +328,31 @@ unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev)
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_transition_latency);
  
  /**
-- * dev_pm_opp_get_notifier() - find notifier_head of the device with opp
-- * @dev:	device pointer used to lookup OPP table.
-+ * dev_pm_opp_register_notifier() - Register OPP notifier for the device
-+ * @dev:	Device for which notifier needs to be registered
-+ * @nb:		Notifier block to be registered
+- * dev_pm_opp_get_suspend_opp() - Get suspend opp
++ * dev_pm_opp_get_suspend_opp_freq() - Get frequency of suspend opp
+  * @dev:	device for which we do this operation
   *
-- * Return: pointer to  notifier head if found, otherwise -ENODEV or
-- * -EINVAL based on type of error casted as pointer. value must be checked
-- *  with IS_ERR to determine valid pointer or error result.
-+ * Return: 0 on success or a negative error value.
-+ */
-+int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
-+{
-+	struct opp_table *opp_table;
-+	int ret;
-+
-+	rcu_read_lock();
-+
-+	opp_table = _find_opp_table(dev);
-+	if (IS_ERR(opp_table)) {
-+		ret = PTR_ERR(opp_table);
-+		goto unlock;
-+	}
-+
-+	ret = srcu_notifier_chain_register(&opp_table->srcu_head, nb);
-+
-+unlock:
-+	rcu_read_unlock();
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL(dev_pm_opp_register_notifier);
-+
-+/**
-+ * dev_pm_opp_unregister_notifier() - Unregister OPP notifier for the device
-+ * @dev:	Device for which notifier needs to be unregistered
-+ * @nb:		Notifier block to be unregistered
-  *
-- * Locking: This function must be called under rcu_read_lock(). opp_table is a
-- * RCU protected pointer. The reason for the same is that the opp pointer which
-- * is returned will remain valid for use with opp_get_{voltage, freq} only while
+- * Return: This function returns pointer to the suspend opp if it is
+- * defined and available, otherwise it returns NULL.
+- *
+- * Locking: This function must be called under rcu_read_lock(). opp is a rcu
+- * protected pointer. The reason for the same is that the opp pointer which is
+- * returned will remain valid for use with opp_get_{voltage, freq} only while
 - * under the locked area. The pointer returned must be used prior to unlocking
 - * with rcu_read_unlock() to maintain the integrity of the pointer.
-+ * Return: 0 on success or a negative error value.
++ * Return: This function returns the frequency of the OPP marked as suspend_opp
++ * if one is available, else returns 0;
   */
--struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev)
-+int dev_pm_opp_unregister_notifier(struct device *dev,
-+				   struct notifier_block *nb)
+-struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev)
++unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev)
  {
--	struct opp_table *opp_table = _find_opp_table(dev);
-+	struct opp_table *opp_table;
-+	int ret;
+ 	struct opp_table *opp_table;
++	unsigned long freq = 0;
  
--	if (IS_ERR(opp_table))
--		return ERR_CAST(opp_table); /* matching type */
+-	opp_rcu_lockdep_assert();
 +	rcu_read_lock();
-+
-+	opp_table = _find_opp_table(dev);
-+	if (IS_ERR(opp_table)) {
-+		ret = PTR_ERR(opp_table);
-+		goto unlock;
-+	}
-+
-+	ret = srcu_notifier_chain_unregister(&opp_table->srcu_head, nb);
  
--	return &opp_table->srcu_head;
+ 	opp_table = _find_opp_table(dev);
+ 	if (IS_ERR(opp_table) || !opp_table->suspend_opp ||
+ 	    !opp_table->suspend_opp->available)
+-		return NULL;
++		goto unlock;
+ 
+-	return opp_table->suspend_opp;
++	freq = dev_pm_opp_get_freq(opp_table->suspend_opp) / 1000;
++
 +unlock:
 +	rcu_read_unlock();
-+
-+	return ret;
++	return freq;
  }
--EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
-+EXPORT_SYMBOL(dev_pm_opp_unregister_notifier);
+-EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp);
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp_freq);
  
- /*
-  * Free OPPs either created using static entries present in DT or even the
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index a324801d6a66..b0de42972b74 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1260,18 +1260,7 @@ EXPORT_SYMBOL(devfreq_recommended_opp);
-  */
- int devfreq_register_opp_notifier(struct device *dev, struct devfreq *devfreq)
- {
--	struct srcu_notifier_head *nh;
--	int ret = 0;
--
+ /**
+  * dev_pm_opp_get_opp_count() - Get number of opps available in the opp table
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 269013311e79..d0a53119d8a2 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -148,7 +148,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	struct private_data *priv;
+ 	struct device *cpu_dev;
+ 	struct clk *cpu_clk;
+-	struct dev_pm_opp *suspend_opp;
+ 	unsigned int transition_latency;
+ 	bool fallback = false;
+ 	const char *name;
+@@ -252,11 +251,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->driver_data = priv;
+ 	policy->clk = cpu_clk;
+ 
 -	rcu_read_lock();
--	nh = dev_pm_opp_get_notifier(dev);
--	if (IS_ERR(nh))
--		ret = PTR_ERR(nh);
+-	suspend_opp = dev_pm_opp_get_suspend_opp(cpu_dev);
+-	if (suspend_opp)
+-		policy->suspend_freq = dev_pm_opp_get_freq(suspend_opp) / 1000;
 -	rcu_read_unlock();
--	if (!ret)
--		ret = srcu_notifier_chain_register(nh, &devfreq->nb);
--
--	return ret;
-+	return dev_pm_opp_register_notifier(dev, &devfreq->nb);
- }
- EXPORT_SYMBOL(devfreq_register_opp_notifier);
++	policy->suspend_freq = dev_pm_opp_get_suspend_opp_freq(cpu_dev);
  
-@@ -1287,18 +1276,7 @@ EXPORT_SYMBOL(devfreq_register_opp_notifier);
-  */
- int devfreq_unregister_opp_notifier(struct device *dev, struct devfreq *devfreq)
- {
--	struct srcu_notifier_head *nh;
--	int ret = 0;
--
--	rcu_read_lock();
--	nh = dev_pm_opp_get_notifier(dev);
--	if (IS_ERR(nh))
--		ret = PTR_ERR(nh);
--	rcu_read_unlock();
--	if (!ret)
--		ret = srcu_notifier_chain_unregister(nh, &devfreq->nb);
--
--	return ret;
-+	return dev_pm_opp_unregister_notifier(dev, &devfreq->nb);
- }
- EXPORT_SYMBOL(devfreq_unregister_opp_notifier);
- 
+ 	ret = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (ret) {
 diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 7483ff291a8e..66a02deeb03f 100644
+index 0edd88f93904..7483ff291a8e 100644
 --- a/include/linux/pm_opp.h
 +++ b/include/linux/pm_opp.h
-@@ -108,7 +108,9 @@ int dev_pm_opp_enable(struct device *dev, unsigned long freq);
+@@ -88,7 +88,7 @@ int dev_pm_opp_get_opp_count(struct device *dev);
+ unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev);
+-struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev);
++unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev);
  
- int dev_pm_opp_disable(struct device *dev, unsigned long freq);
- 
--struct srcu_notifier_head *dev_pm_opp_get_notifier(struct device *dev);
-+int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
-+int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
-+
- int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
- 				unsigned int count);
- void dev_pm_opp_put_supported_hw(struct device *dev);
-@@ -202,10 +204,14 @@ static inline int dev_pm_opp_disable(struct device *dev, unsigned long freq)
+ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+ 					      unsigned long freq,
+@@ -159,9 +159,9 @@ static inline unsigned long dev_pm_opp_get_max_transition_latency(struct device
  	return 0;
  }
  
--static inline struct srcu_notifier_head *dev_pm_opp_get_notifier(
--							struct device *dev)
-+static inline int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb)
+-static inline struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev)
++static inline unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev)
  {
--	return ERR_PTR(-ENOTSUPP);
-+	return -ENOTSUPP;
-+}
-+
-+static inline int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb)
-+{
-+	return -ENOTSUPP;
+-	return NULL;
++	return 0;
  }
  
- static inline int dev_pm_opp_set_supported_hw(struct device *dev,
+ static inline struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
 -- 
 2.7.1.410.g6faf27b
 
