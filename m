@@ -1,79 +1,44 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH v3 1/3] ARM: da850: fix infinite loop in clk_set_rate()
-Date: Tue, 6 Dec 2016 17:49:20 +0530
-Message-ID: <b7a54fe0-cf4e-6643-355c-7f96d549e724@ti.com>
-References: <1480932549-30811-1-git-send-email-bgolaszewski@baylibre.com>
- <1480932549-30811-2-git-send-email-bgolaszewski@baylibre.com>
- <689efaa1-d8d9-6937-5880-3ed7a1401268@ti.com>
- <CAMpxmJUCE86Y030jpLVD7=S6UThmRB2p-xS-oD3swnUSvMWe2w@mail.gmail.com>
+From: Andrew Lunn <andrew@lunn.ch>
+Subject: Re: [PATCH 0/3] make kurobox-pro be able to shutdown after
+ device-tree migration
+Date: Tue, 6 Dec 2016 18:34:20 +0100
+Message-ID: <20161206173420.GB18817@lunn.ch>
+References: <20161205124528.2999-1-rogershimizu@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMpxmJUCE86Y030jpLVD7=S6UThmRB2p-xS-oD3swnUSvMWe2w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Cc: Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>, LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from vps0.lunn.ch ([178.209.37.122]:44441 "EHLO vps0.lunn.ch"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751618AbcLFRfD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 6 Dec 2016 12:35:03 -0500
+Content-Disposition: inline
+In-Reply-To: <20161205124528.2999-1-rogershimizu@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Roger Shimizu <rogershimizu@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Ryan Tandy <ryan@nardis.ca>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>
 
-On Tuesday 06 December 2016 05:28 PM, Bartosz Golaszewski wrote:
-> 2016-12-05 11:15 GMT+01:00 Sekhar Nori <nsekhar@ti.com>:
->> On Monday 05 December 2016 03:39 PM, Bartosz Golaszewski wrote:
->>> The aemif clock is added twice to the lookup table in da850.c. This
->>> breaks the children list of pll0_sysclk3 as we're using the same list
->>> links in struct clk. When calling clk_set_rate(), we get stuck in
->>> propagate_rate().
->>>
->>> Create a separate clock for nand, inheriting the rate of the aemif
->>> clock and retrieve it in the davinci_nand module.
->>>
->>> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->>> ---
->>>  arch/arm/mach-davinci/da850.c | 7 ++++++-
->>>  1 file changed, 6 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
->>> index e770c97..c008e5e 100644
->>> --- a/arch/arm/mach-davinci/da850.c
->>> +++ b/arch/arm/mach-davinci/da850.c
->>> @@ -367,6 +367,11 @@ static struct clk aemif_clk = {
->>>       .flags          = ALWAYS_ENABLED,
->>>  };
->>>
->>> +static struct clk aemif_nand_clk = {
->>> +     .name           = "nand",
->>> +     .parent         = &aemif_clk,
->>> +};
->>> +
->>>  static struct clk usb11_clk = {
->>>       .name           = "usb11",
->>>       .parent         = &pll0_sysclk4,
->>> @@ -537,7 +542,7 @@ static struct clk_lookup da850_clks[] = {
->>>       CLK("da830-mmc.0",      NULL,           &mmcsd0_clk),
->>>       CLK("da830-mmc.1",      NULL,           &mmcsd1_clk),
->>>       CLK("ti-aemif",         NULL,           &aemif_clk),
->>> -     CLK(NULL,               "aemif",        &aemif_clk),
->>> +     CLK(NULL,               "aemif",        &aemif_nand_clk),
->>
->> Why use a NULL device name here?
+On Mon, Dec 05, 2016 at 09:45:25PM +0900, Roger Shimizu wrote:
+> Dear Sebastian,
 > 
-> Hi Sekhar,
+> Kurobox-Pro (and variants) need more commands sending to UART1 to shutdown.
+> So here I make this patch series to let current qnap-poweroff implementation
+> be able to handle such case.
 > 
-> there's an issue with this bit. I added an of_dev_auxdata entry to
-> da8xx-dt.c for the nand node, but it didn't work (the nand driver
-> could not get the clock). When I dug deeper, it turned out, the nand
-> node is created from aemif_probe() instead of from
-> da850_init_machine() and the lookup table is not passed as argument to
-> of_platform_populate().
+> I already tested this change on Kurobox-Pro and Linkstation LS-GL devices,
+> with a modified device-tree file. (Previous device-tree of kurobox-pro invokes
+> restart-poweroff, so it simply restarts.)
 > 
-> There are two solutions: one is using "620000000.nand" as dev_id in
-> the clock lookup table, but that's ugly. The second is leaving dev_id
-> as NULL - I verified that the nand driver works correctly having only
-> the connector id. Please let me know which one you prefer or if you
-> have other ideas.
+> Thank you and look forward to your feedback!
 
-Alright, I will take a look at whats going on here. This series will
-have to wait for v4.11 anyway.
+Hi Roger
 
-Thanks,
-Sekhar
+You are adding a lot of new code here, and not actually reusing much
+of that is there, but adding a lot of complexity to what is a simple
+driver.
+
+I would prefer if you actually write a new driver which just supports
+Kurobox.
+
+Thanks
+	Andrew
