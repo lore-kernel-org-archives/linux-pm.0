@@ -1,89 +1,49 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH 0/2] PM / sleep: Support for using suspend-to-idle by
- default
-Date: Wed, 7 Dec 2016 23:14:24 +0000
-Message-ID: <545c5a8ded414774a1835cf811cbae1e@ausx13mpc120.AMER.DELL.COM>
-References: <9316960.49SRRJV8RJ@vostro.rjw.lan>
- <71203ae1bfe54eb39d79c54b51ba7ae8@ausx13mpc120.AMER.DELL.COM>
- <CAJZ5v0g-eOciw_3PZBvaHPzh8sMpe0Fbx6RmCTiS1Nax=Bxh3w@mail.gmail.com>
- <c7f7306f2ae9452a838f94d87b3bc737@ausx13mpc120.AMER.DELL.COM>
- <CAJZ5v0irVpD5NqzG6LePkC-FHEekO5RAmkQZurMbd8Fm+QGLhg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] Revert "PM / OPP: Don't assume platform doesn't have regulators"
+Date: Thu, 8 Dec 2016 00:29:15 +0100
+Message-ID: <CAJZ5v0gVxoCD4E7cHec9iFJb8_9G4USyMDJ9mrBNvFB_Pf=uzw@mail.gmail.com>
+References: <1560e022c1584376cf5a55ed048e0b60485adf2b.1481106666.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0irVpD5NqzG6LePkC-FHEekO5RAmkQZurMbd8Fm+QGLhg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org, luto@kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1560e022c1584376cf5a55ed048e0b60485adf2b.1481106666.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, swarren@nvidia.com, Thierry Reding <treding@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiByand5c29ja2lAZ21haWwuY29t
-IFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mDQo+IFJhZmFlbCBKLiBX
-eXNvY2tpDQo+IFNlbnQ6IFdlZG5lc2RheSwgRGVjZW1iZXIgNywgMjAxNiA0OjU3IFBNDQo+IFRv
-OiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPg0KPiBDYzog
-UmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPjsgUmFmYWVsIEouIFd5c29ja2kN
-Cj4gPHJqd0Byand5c29ja2kubmV0PjsgTGludXggUE0gPGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-Zz47IEFDUEkgRGV2ZWwNCj4gTWFsaW5nIExpc3QgPGxpbnV4LWFjcGlAdmdlci5rZXJuZWwub3Jn
-PjsgTGVuIEJyb3duDQo+IDxsZW4uYnJvd25AaW50ZWwuY29tPjsgTGludXggS2VybmVsIE1haWxp
-bmcgTGlzdCA8bGludXgtDQo+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBBbmR5IEx1dG9taXJz
-a2kgPGx1dG9Aa2VybmVsLm9yZz4NCj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzJdIFBNIC8gc2xl
-ZXA6IFN1cHBvcnQgZm9yIHVzaW5nIHN1c3BlbmQtdG8taWRsZSBieQ0KPiBkZWZhdWx0DQo+IA0K
-PiBPbiBXZWQsIERlYyA3LCAyMDE2IGF0IDEwOjM4IFBNLCAgPE1hcmlvLkxpbW9uY2llbGxvQGRl
-bGwuY29tPiB3cm90ZToNCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJv
-bTogcmp3eXNvY2tpQGdtYWlsLmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJl
-aGFsZiBPZg0KPiA+PiBSYWZhZWwgSi4gV3lzb2NraQ0KPiA+PiBTZW50OiBUaHVyc2RheSwgTm92
-ZW1iZXIgMTcsIDIwMTYgMzowNSBQTQ0KPiA+PiBUbzogTGltb25jaWVsbG8sIE1hcmlvIDxNYXJp
-b19MaW1vbmNpZWxsb0BEZWxsLmNvbT4NCj4gPj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyandA
-cmp3eXNvY2tpLm5ldD47IExpbnV4IFBNIDxsaW51eC0NCj4gPj4gcG1Admdlci5rZXJuZWwub3Jn
-PjsgQUNQSSBEZXZlbCBNYWxpbmcgTGlzdCA8bGludXgtDQo+IGFjcGlAdmdlci5rZXJuZWwub3Jn
-PjsNCj4gPj4gTGVuIEJyb3duIDxsZW4uYnJvd25AaW50ZWwuY29tPjsgTGludXggS2VybmVsIE1h
-aWxpbmcgTGlzdCA8bGludXgtDQo+ID4+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBBbmR5IEx1
-dG9taXJza2kgPGx1dG9Aa2VybmVsLm9yZz4NCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzJd
-IFBNIC8gc2xlZXA6IFN1cHBvcnQgZm9yIHVzaW5nIHN1c3BlbmQtdG8taWRsZSBieQ0KPiA+PiBk
-ZWZhdWx0DQo+ID4+DQo+ID4+IE9uIFRodSwgTm92IDE3LCAyMDE2IGF0IDk6NDAgUE0sICA8TWFy
-aW8uTGltb25jaWVsbG9AZGVsbC5jb20+IHdyb3RlOg0KPiA+PiA+IEhpIFJhZmFlbCwNCj4gPj4g
-Pg0KPiA+PiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiA+PiBGcm9tOiBSYWZh
-ZWwgSi4gV3lzb2NraSBbbWFpbHRvOnJqd0Byand5c29ja2kubmV0XQ0KPiA+PiA+PiBTZW50OiBX
-ZWRuZXNkYXksIE5vdmVtYmVyIDE2LCAyMDE2IDg6MTkgUE0NCj4gPj4gPj4gVG86IExpbnV4IFBN
-IGxpc3QgPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz4NCj4gPj4gPj4gQ2M6IEFDUEkgRGV2ZWwg
-TWFsaW5nIExpc3QgPGxpbnV4LWFjcGlAdmdlci5rZXJuZWwub3JnPjsgTGVuIEJyb3duDQo+ID4+
-ID4+IDxsZW4uYnJvd25AaW50ZWwuY29tPjsgTGludXggS2VybmVsIE1haWxpbmcgTGlzdCA8bGlu
-dXgtDQo+ID4+ID4+IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBMaW1vbmNpZWxsbywgTWFyaW8N
-Cj4gPj4gPj4gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPjsgQW5keSBMdXRvbWlyc2tpIDxs
-dXRvQGtlcm5lbC5vcmc+DQo+ID4+ID4+IFN1YmplY3Q6IFtQQVRDSCAwLzJdIFBNIC8gc2xlZXA6
-IFN1cHBvcnQgZm9yIHVzaW5nIHN1c3BlbmQtdG8taWRsZSBieQ0KPiA+PiA+PiBkZWZhdWx0DQo+
-ID4+ID4+DQo+ID4+ID4+IEhpLA0KPiA+PiA+Pg0KPiA+PiA+PiBUaGlzIHNlcmllcyBpcyBhIGZv
-bGxvdy11cCBmb3IgYSBCb0YgZGlzY3Vzc2lvbiBkdXJpbmcgdGhlIExQQy4NCj4gPj4gPj4NCj4g
-Pj4gPj4gVGhlIGRpc2N1c3Npb24gd2FzIGFib3V0IHN1cHBvcnRpbmcgTGludXggb24gbW9kZXJu
-IGxhcHRvcHMgYW5kIG9uZQ0KPiBvZg0KPiA+PiA+PiB0aGUgaXNzdWVzIG1lbnRpb25lZCB3YXMg
-dGhlIGxhY2sgb2Ygc3VwcG9ydCBmb3Igc3VzcGVuZC10by1pZGxlIGluDQo+IHVzZXINCj4gPj4g
-Pj4gc3BhY2UgYW5kIGlmIHRoZXJlJ3MgYW55dGhpbmcgdGhhdCBjYW4gYmUgZG9uZSBhYm91dCB0
-aGF0IGluIHRoZSBrZXJuZWwuDQo+ID4+ID4+DQo+ID4+ID4+IFRoZSBmb2xsb3dpbmcgcGF0Y2hl
-cyBhcmUgbXkgaW5wdXQuIDotKQ0KPiA+PiA+Pg0KPiA+PiA+PiBUaGUgZmlyc3Qgb25lIHJld29y
-a3MgdGhlIHN1c3BlbmQgaW50ZXJmYWNlIHRvIGFsbG93IHRoZSAibWVtIiBzdHJpbmcNCj4gPj4g
-Pj4gaW4gL3N5cy9wb3dlci9zdGF0ZSB0byByZXByZXNlbnQgbXVsdGlwbGUgdGhpbmdzIHRoYXQg
-Y2FuIGJlIHNlbGVjdGVkDQo+IHZpYQ0KPiA+PiA+PiBhbiBhZGRpdGlvbmFsIHN5c2ZzIGF0dHJp
-YnV0ZS4NCj4gPj4gPj4NCj4gPj4gPj4gVGhlIHNlY29uZCBvbmUgbWFrZXMgQUNQSSBzZWxlY3Qg
-c3VzcGVuZC10by1pZGxlIGFzIHRoZSBkZWZhdWx0DQo+ID4+IHN1c3BlbmQNCj4gPj4gPj4gbW9k
-ZQ0KPiA+PiA+PiBpZiBzbyBpbmRpY2F0ZWQgaW4gdGhlIEZBRFQuDQo+ID4+ID4+DQo+ID4+ID4+
-IFBsZWFzZSBsZXQgbWUga25vdyB3aGF0IHlvdSB0aGluay4NCj4gPj4gPj4NCj4gPj4gPj4gVGhh
-bmtzLA0KPiA+PiA+PiBSYWZhZWwNCj4gPj4gPg0KPiA+PiA+IFRoYW5rcyBmb3Igc3VibWl0dGlu
-Zy4gIEkgbGlrZSB0aGUgYXBwcm9hY2gsIGVzcGVjaWFsbHkgdGhhdCBpdCBsZWF2ZXMgcm9vbQ0K
-PiA+PiA+IHRvIGVhc2lseSBtb2RpZnkgdGhlIGJlaGF2aW9yIGZvciBkZWJ1Z2dpbmcgcHVycG9z
-ZXMgYW5kIGFkZGluZyBxdWlya3MuDQo+ID4+DQo+ID4+IFdlbGwsIHRoYXQncyB0aGUgcG9pbnQu
-IDotKQ0KPiA+Pg0KPiA+PiA+IEkgdGVzdGVkIHlvdXIgc2VyaWVzIG9uIGEgbWFjaGluZSB0aGF0
-IGhhZCB0aGlzIGJpdCBzZXQgaW4gdGhlIEZBRFQgYW5kDQo+ID4+ID4gY29uZmlybWVkIHRoYXQg
-aXQgc2V0IHVwIGFuZCB1c2VkIHBvbGljeSBwcm9wZXJseS4NCj4gPj4gPg0KPiA+PiA+IFRlc3Rl
-ZC1CeTogTWFyaW8gTGltb25jaWVsbG8gPG1hcmlvLmxpbW9uY2llbGxvQGRlbGwuY29tPg0KPiA+
-Pg0KPiA+PiBUaGFua3MhDQo+ID4NCj4gPiBSYWZhZWwsDQo+ID4NCj4gPiBJIGhhZG4ndCBub3Rp
-Y2VkIHRoZXNlIG1lcmdlZCBpbnRvIGFueSBvZiB5b3VyIGxpbnV4LXBtLmdpdCBicmFuY2hlcy4N
-Cj4gPg0KPiA+IERvIHlvdSBoYXZlIGEgcGxhbiBmb3IgbWVyZ2luZyB0aGVtPyAgT3Igd2FpdGlu
-ZyBmb3Igb3RoZXIgZmVlZGJhY2s/DQo+IA0KPiBUaGV5IGFyZSBpbiB0aGUgbGludXgtbmV4dCBi
-cmFuY2ggKGFuZCB0aGVyZWZvcmUgaW4gbGludXgtbmV4dCksIHNvIG9uDQo+IHRoZWlyIHdheSB0
-byA0LjEwLXJjMS4NCj4gDQo+IEkgdXN1YWxseSBvbmx5IHVwZGF0ZSB0b3BpYyBicmFuY2hlcyBh
-dCBrZXJuZWwub3JnIHdoZW4gdGhleSBhcmUgcmVhZHkNCj4gdG8gZ28gaW50byB0aGUgbWFpbmxp
-bmUgYW5kIHRoZSBvbmVzIEkgaGF2ZSBsb2NhbGx5IGFyZSBtZXJnZWQgaW50bw0KPiB0aGUgbGlu
-dXgtbmV4dCBvbmUgYmVmb3JlaGFuZC4NCj4gDQo+IFRoYW5rcywNCj4gUmFmYWVsDQoNCkFoIHRo
-YW5rcywgSSBzZWUgJ2VtIG5vdy4gIFNvcnJ5IGZvciB0aGUgbm9pc2UuDQo=
+On Wed, Dec 7, 2016 at 11:31 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> This reverts commit ef3caabee9691386e6801ea92150e37277db9c7a.
+>
+> The commit was based on the assumption that a platform with voltages
+> specified with individual OPPs, would have registered a regulator as
+> well in order to do full DVFS.
+>
+> That assumption is broken by the Tegra124 platform.
+>
+> For Tegra124, the voltage is not scaled via a direct call to the
+> regulator subsystem because the DFLL directly controls the I2C interface
+> that controls the voltage. The DFLL essentially figures out the max
+> frequency for a given voltage. So to run at a particular frequency, the
+> DFLL continuously adjusts the voltage in a control loop fashion to get
+> the desired frequency.
+>
+> Following are the logs from: NVIDIA Tegra124 Jetson TK1
+>
+>   cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 696000 KHz
+>   cpu cpu0: dev_pm_opp_set_rate: Regulator not registered with OPP core
+>   cpufreq: __target_index: Failed to change cpu frequency: -22
+>   ------------[ cut here ]------------
+>   kernel BUG at drivers/cpufreq/cpufreq.c:1235!
+>
+> Fix these by reverting the offending commit.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> ---
+> Rafael, you can simply drop the patch if that is easier for you.
+
+Done.
+
+Thanks,
+Rafael
