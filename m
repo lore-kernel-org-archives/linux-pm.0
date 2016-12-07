@@ -1,77 +1,37 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH v4 2/4] thermal: rcar_gen3_thermal: Add R-Car Gen3
- thermal driver
-Date: Tue, 6 Dec 2016 17:15:46 -0800
-Message-ID: <20161207011544.GC12562@localhost.localdomain>
-References: <20161201220442.22057-1-wsa+renesas@sang-engineering.com>
- <20161201220442.22057-3-wsa+renesas@sang-engineering.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 04/10] PM / OPP: Error out on failing to add static OPPs
+ for v1 bindings
+Date: Tue, 6 Dec 2016 17:17:22 -0800
+Message-ID: <20161207011722.GJ4388@codeaurora.org>
+References: <cover.1481015522.git.viresh.kumar@linaro.org>
+ <1f876a6d176784f9ab901aea7ff521d53522682d.1481015522.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:33514 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751180AbcLGBSP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 20:18:15 -0500
 Content-Disposition: inline
-In-Reply-To: <20161201220442.22057-3-wsa+renesas@sang-engineering.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+In-Reply-To: <1f876a6d176784f9ab901aea7ff521d53522682d.1481015522.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hello Wolfram,
-
-On Thu, Dec 01, 2016 at 11:04:40PM +0100, Wolfram Sang wrote:
-> Add support for R-Car Gen3 thermal sensors. Polling only for now,
-> interrupts will be added incrementally. Same goes for reading fuses.
-> This is documented already, but no hardware available for now.
+On 12/06, Viresh Kumar wrote:
+> The code adding static OPPs for V2 bindings already does so. Make the V1
+> bindings specific code behave the same.
 > 
-> Signed-off-by: Hien Dang <hien.dang.eb@renesas.com>
-> Signed-off-by: Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
-> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
-> 
-> Changes since v3:
-> 
-> * call 'init' callback a tad earlier, avoids need for locking
-> * converted spinlock to mutex and simplified locking (only done against
->   concurrent access in rcar_gen3_thermal_get_temp() now)
-> * use usleep_range instead of udelay
-> * use s64 instead of long (int didn't work)
-> * fixed an error path
-> * simplified rcar_gen3_thermal_update_temp() and its use
-> 
 
-When I try compiling this driver (from this commit only), using
-multi_v7_defconfig, I get this error when set as module:
-ERROR: "__aeabi_ldivmod" [drivers/thermal/rcar_gen3_thermal.ko]
-undefined!
-scripts/Makefile.modpost:91: recipe for target '__modpost' failed
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-And these errors when builtin:
-  LD      init/built-in.o
-  drivers/built-in.o: In function `rcar_gen3_thermal_get_temp':
-  :(.text+0x461778): undefined reference to `__aeabi_ldivmod'
-  :(.text+0x461798): undefined reference to `__aeabi_ldivmod'
-  drivers/built-in.o: In function `rcar_gen3_thermal_probe':
-  :(.text+0x461948): undefined reference to `__aeabi_ldivmod'
-  :(.text+0x461998): undefined reference to `__aeabi_ldivmod'
-  :(.text+0x4619d0): undefined reference to `__aeabi_ldivmod'
-  drivers/built-in.o::(.text+0x4619fc): more undefined references to
-  `__aeabi_ldivmod' follow
-  Makefile:962: recipe for target 'vmlinux' failed
-  make: *** [vmlinux] Error 1
+It looks like that goes back to the original DT OPP binding
+support written by Shawn Guo. Any idea why we kept trying to add
+more OPPs if it failed to add one? Best effort or something?
 
-So, definitely would make sense to squash patch 5 here. BUT,
-
-looking closer to it, I am getting this in the menuconfig on the flag
-you added:
-  │ Symbol: 64BIT [=64BIT]
-  │  
-  │ Type  : unknown   
-
-
-  Am I missing something?
-
-
-  BR,
-
-Eduardo
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
