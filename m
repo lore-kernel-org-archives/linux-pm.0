@@ -1,7 +1,7 @@
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v4 4/4] ARM: da850: fix da850_set_pll0rate()
-Date: Wed,  7 Dec 2016 16:22:18 +0100
-Message-ID: <1481124138-27337-5-git-send-email-bgolaszewski@baylibre.com>
+Subject: [PATCH v4 3/4] ARM: da850: coding style fix
+Date: Wed,  7 Dec 2016 16:22:17 +0100
+Message-ID: <1481124138-27337-4-git-send-email-bgolaszewski@baylibre.com>
 References: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
@@ -10,78 +10,25 @@ To: Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.
 Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-This function is confusing - its second argument is an index to the
-freq table, not the requested clock rate in Hz, but it's used as the
-set_rate callback for the pll0 clock. It leads to an oops when the
-caller doesn't know the internals and passes the rate in Hz as
-argument instead of the cpufreq index since this argument isn't bounds
-checked either.
-
-Fix it by iterating over the array of supported frequencies and
-selecting a one that matches or returning -EINVAL for unsupported
-rates.
-
-Also: update the davinci cpufreq driver. It's the only user of this
-clock and currently it passes the cpufreq table index to
-clk_set_rate(), which is confusing. Make it pass the requested clock
-rate in Hz.
+Fix alignment of the clock lookup table entries.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm/mach-davinci/da850.c     | 22 ++++++++++++++++++----
- drivers/cpufreq/davinci-cpufreq.c |  2 +-
- 2 files changed, 19 insertions(+), 5 deletions(-)
+ arch/arm/mach-davinci/da850.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
-index 5f8ffaa..b410598 100644
+index 6b1fbac..5f8ffaa 100644
 --- a/arch/arm/mach-davinci/da850.c
 +++ b/arch/arm/mach-davinci/da850.c
-@@ -1197,14 +1197,28 @@ static int da850_set_armrate(struct clk *clk, unsigned long index)
- 	return clk_set_rate(pllclk, index);
- }
- 
--static int da850_set_pll0rate(struct clk *clk, unsigned long index)
-+static int da850_set_pll0rate(struct clk *clk, unsigned long rate)
- {
--	unsigned int prediv, mult, postdiv;
--	struct da850_opp *opp;
- 	struct pll_data *pll = clk->pll_data;
-+	struct cpufreq_frequency_table *freq;
-+	unsigned int prediv, mult, postdiv;
-+	struct da850_opp *opp = NULL;
- 	int ret;
- 
--	opp = (struct da850_opp *) cpufreq_info.freq_table[index].driver_data;
-+	rate /= 1000;
-+
-+	for (freq = da850_freq_table;
-+	     freq->frequency != CPUFREQ_TABLE_END; freq++) {
-+		/* rate is in Hz, freq->frequency is in KHz */
-+		if (freq->frequency == rate) {
-+			opp = (struct da850_opp *)freq->driver_data;
-+			break;
-+		}
-+	}
-+
-+	if (!opp)
-+		return -EINVAL;
-+
- 	prediv = opp->prediv;
- 	mult = opp->mult;
- 	postdiv = opp->postdiv;
-diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
-index b95a872..d54a27c 100644
---- a/drivers/cpufreq/davinci-cpufreq.c
-+++ b/drivers/cpufreq/davinci-cpufreq.c
-@@ -55,7 +55,7 @@ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
- 			return ret;
- 	}
- 
--	ret = clk_set_rate(armclk, idx);
-+	ret = clk_set_rate(armclk, new_freq * 1000);
- 	if (ret)
- 		return ret;
- 
+@@ -566,7 +566,7 @@ static struct clk_lookup da850_clks[] = {
+ 	CLK("spi_davinci.0",	NULL,		&spi0_clk),
+ 	CLK("spi_davinci.1",	NULL,		&spi1_clk),
+ 	CLK("vpif",		NULL,		&vpif_clk),
+-	CLK("ahci_da850",		NULL,		&sata_clk),
++	CLK("ahci_da850",	NULL,		&sata_clk),
+ 	CLK("davinci-rproc.0",	NULL,		&dsp_clk),
+ 	CLK(NULL,		NULL,		&ehrpwm_clk),
+ 	CLK("ehrpwm.0",		"fck",		&ehrpwm0_clk),
 -- 
 2.9.3
