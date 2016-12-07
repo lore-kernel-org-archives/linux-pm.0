@@ -1,574 +1,150 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 03/12] PM / OPP: Return opp_table from dev_pm_opp_set_*() routines
-Date: Wed,  7 Dec 2016 16:07:41 +0530
-Message-ID: <32ef11baf0323b81dfb0a3f2371a28ebfb10082b.1481106919.git.viresh.kumar@linaro.org>
+Subject: [PATCH 06/12] PM / OPP: Add 'struct kref' to struct dev_pm_opp
+Date: Wed,  7 Dec 2016 16:07:44 +0530
+Message-ID: <1d5f61440dbfb640c330f77c9090e2ac23482ebc.1481106919.git.viresh.kumar@linaro.org>
 References: <cover.1481106919.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:35087 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932111AbcLGKso (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 05:48:44 -0500
+Received: by mail-pg0-f43.google.com with SMTP id p66so160890034pga.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Dec 2016 02:48:43 -0800 (PST)
 In-Reply-To: <cover.1481106919.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1481106919.git.viresh.kumar@linaro.org>
 References: <cover.1481106919.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Patrice Chotard <patrice.chotard@st.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Now that we have proper kernel reference infrastructure in place for OPP
-tables, use it to guarantee that the OPP table isn't freed while being
-used by the callers of dev_pm_opp_set_*() APIs.
+Add kref to struct dev_pm_opp for easier accounting of the OPPs.
 
-Make them all return the pointer to the OPP table after taking its
-reference and put the reference back with dev_pm_opp_put_*() APIs.
-
-Now that the OPP table wouldn't get freed while these routines are
-executing after dev_pm_opp_get_opp_table() is called, there is no need
-to take opp_table_lock. Drop them as well.
-
-Remove the rcu specific comments from these routines as they aren't
-relevant anymore.
-
-Note that prototypes of dev_pm_opp_{set|put}_regulators() were already
-updated by another patch.
+Note that the OPPs are freed under the opp_table->lock mutex only.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 243 +++++++++---------------------------------
- drivers/cpufreq/sti-cpufreq.c |  13 +--
- include/linux/pm_opp.h        |  35 +++---
- 3 files changed, 74 insertions(+), 217 deletions(-)
+ drivers/base/power/opp/core.c | 27 ++++++++++++---------------
+ drivers/base/power/opp/opp.h  |  3 +++
+ include/linux/pm_opp.h        |  3 +++
+ 3 files changed, 18 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 0d9bc89de41a..472f93755945 100644
+index ec833a8f7aa5..12be0f29f2ad 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -974,18 +974,6 @@ static void _remove_opp_table(struct opp_table *opp_table)
- 	if (!list_empty(&opp_table->opp_list))
- 		return;
- 
--	if (opp_table->supported_hw)
--		return;
--
--	if (opp_table->prop_name)
--		return;
--
--	if (opp_table->regulators)
--		return;
--
--	if (opp_table->set_opp)
--		return;
--
- 	dev_pm_opp_put_opp_table_unlocked(opp_table);
+@@ -949,20 +949,10 @@ static void _kfree_opp_rcu(struct rcu_head *head)
+ 	kfree_rcu(opp, rcu_head);
  }
  
-@@ -1278,27 +1266,16 @@ int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
-  * specify the hierarchy of versions it supports. OPP layer will then enable
-  * OPPs, which are available for those versions, based on its 'opp-supported-hw'
-  * property.
+-/**
+- * _opp_remove()  - Remove an OPP from a table definition
+- * @opp_table:	points back to the opp_table struct this opp belongs to
+- * @opp:	pointer to the OPP to remove
+- *
+- * This function removes an opp definition from the opp table.
 - *
 - * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-  */
--int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
--				unsigned int count)
-+struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev,
-+			const u32 *versions, unsigned int count)
+- * It is assumed that the caller holds required mutex for an RCU updater
+- * strategy.
+- */
+-static void _opp_remove(struct opp_table *opp_table, struct dev_pm_opp *opp)
++static void _opp_kref_release(struct kref *kref)
  {
- 	struct opp_table *opp_table;
--	int ret = 0;
--
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
-+	int ret;
+-	mutex_lock(&opp_table->lock);
++	struct dev_pm_opp *opp = container_of(kref, struct dev_pm_opp, kref);
++	struct opp_table *opp_table = opp->opp_table;
  
--	opp_table = _add_opp_table(dev);
--	if (!opp_table) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	opp_table = dev_pm_opp_get_opp_table(dev);
-+	if (!opp_table)
-+		return ERR_PTR(-ENOMEM);
+ 	/*
+ 	 * Notify the changes in the availability of the operable
+@@ -977,6 +967,12 @@ static void _opp_remove(struct opp_table *opp_table, struct dev_pm_opp *opp)
+ 	dev_pm_opp_put_opp_table(opp_table);
+ }
  
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
-@@ -1319,65 +1296,40 @@ int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
- 	}
- 
- 	opp_table->supported_hw_count = count;
--	mutex_unlock(&opp_table_lock);
--	return 0;
++void dev_pm_opp_put(struct dev_pm_opp *opp)
++{
++	kref_put_mutex(&opp->kref, _opp_kref_release, &opp->opp_table->lock);
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_put);
 +
-+	return opp_table;
- 
- err:
--	_remove_opp_table(opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- 
--	return ret;
-+	return ERR_PTR(ret);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_set_supported_hw);
- 
  /**
-  * dev_pm_opp_put_supported_hw() - Releases resources blocked for supported hw
-- * @dev: Device for which supported-hw has to be put.
-+ * @opp_table: OPP table returned by dev_pm_opp_set_supported_hw().
-  *
-  * This is required only for the V2 bindings, and is called for a matching
-  * dev_pm_opp_set_supported_hw(). Until this is called, the opp_table structure
-  * will not be freed.
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-  */
--void dev_pm_opp_put_supported_hw(struct device *dev)
-+void dev_pm_opp_put_supported_hw(struct opp_table *opp_table)
- {
--	struct opp_table *opp_table;
--
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
--
--	/* Check for existing table for 'dev' first */
--	opp_table = _find_opp_table(dev);
--	if (IS_ERR(opp_table)) {
--		dev_err(dev, "Failed to find opp_table: %ld\n",
--			PTR_ERR(opp_table));
--		goto unlock;
--	}
--
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
- 
- 	if (!opp_table->supported_hw) {
--		dev_err(dev, "%s: Doesn't have supported hardware list\n",
--			__func__);
--		goto unlock;
-+		pr_err("%s: Doesn't have supported hardware list\n",
-+		       __func__);
-+		return;
+  * dev_pm_opp_remove()  - Remove an OPP from OPP table
+  * @dev:	device for which we do this operation
+@@ -1020,7 +1016,7 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
+ 		goto unlock;
  	}
  
- 	kfree(opp_table->supported_hw);
- 	opp_table->supported_hw = NULL;
- 	opp_table->supported_hw_count = 0;
- 
--	/* Try freeing opp_table if this was the last blocking resource */
--	_remove_opp_table(opp_table);
--
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
+-	_opp_remove(opp_table, opp);
++	dev_pm_opp_put(opp);
+ unlock:
+ 	mutex_unlock(&opp_table_lock);
  }
- EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
+@@ -1125,6 +1121,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 	mutex_unlock(&opp_table->lock);
  
-@@ -1390,26 +1342,15 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_supported_hw);
-  * specify the extn to be used for certain property names. The properties to
-  * which the extension will apply are opp-microvolt and opp-microamp. OPP core
-  * should postfix the property name with -<name> while looking for them.
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
+ 	new_opp->opp_table = opp_table;
++	kref_init(&new_opp->kref);
+ 
+ 	/* Get a reference to the OPP table */
+ 	_get_opp_table_kref(opp_table);
+@@ -1820,7 +1817,7 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
+ 		/* Free static OPPs */
+ 		list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
+ 			if (remove_all || !opp->dynamic)
+-				_opp_remove(opp_table, opp);
++				dev_pm_opp_put(opp);
+ 		}
+ 	} else {
+ 		_remove_opp_dev(_find_opp_dev(dev, opp_table), opp_table);
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 8435a0eb27be..bd929ba6efaf 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -16,6 +16,7 @@
+ 
+ #include <linux/device.h>
+ #include <linux/kernel.h>
++#include <linux/kref.h>
+ #include <linux/list.h>
+ #include <linux/limits.h>
+ #include <linux/pm_opp.h>
+@@ -56,6 +57,7 @@ extern struct list_head opp_tables;
+  *		are protected by the opp_table_lock for integrity.
+  *		IMPORTANT: the opp nodes should be maintained in increasing
+  *		order.
++ * @kref:	for reference count of the OPP.
+  * @available:	true/false - marks if this OPP as available or not
+  * @dynamic:	not-created from static DT entries.
+  * @turbo:	true if turbo (boost) OPP
+@@ -73,6 +75,7 @@ extern struct list_head opp_tables;
   */
--int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
-+struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name)
- {
- 	struct opp_table *opp_table;
--	int ret = 0;
--
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
-+	int ret;
+ struct dev_pm_opp {
+ 	struct list_head node;
++	struct kref kref;
  
--	opp_table = _add_opp_table(dev);
--	if (!opp_table) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	opp_table = dev_pm_opp_get_opp_table(dev);
-+	if (!opp_table)
-+		return ERR_PTR(-ENOMEM);
- 
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
-@@ -1428,63 +1369,37 @@ int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
- 		goto err;
- 	}
- 
--	mutex_unlock(&opp_table_lock);
--	return 0;
-+	return opp_table;
- 
- err:
--	_remove_opp_table(opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- 
--	return ret;
-+	return ERR_PTR(ret);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_set_prop_name);
- 
- /**
-  * dev_pm_opp_put_prop_name() - Releases resources blocked for prop-name
-- * @dev: Device for which the prop-name has to be put.
-+ * @opp_table: OPP table returned by dev_pm_opp_set_prop_name().
-  *
-  * This is required only for the V2 bindings, and is called for a matching
-  * dev_pm_opp_set_prop_name(). Until this is called, the opp_table structure
-  * will not be freed.
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-  */
--void dev_pm_opp_put_prop_name(struct device *dev)
-+void dev_pm_opp_put_prop_name(struct opp_table *opp_table)
- {
--	struct opp_table *opp_table;
--
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
--
--	/* Check for existing table for 'dev' first */
--	opp_table = _find_opp_table(dev);
--	if (IS_ERR(opp_table)) {
--		dev_err(dev, "Failed to find opp_table: %ld\n",
--			PTR_ERR(opp_table));
--		goto unlock;
--	}
--
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
- 
- 	if (!opp_table->prop_name) {
--		dev_err(dev, "%s: Doesn't have a prop-name\n", __func__);
--		goto unlock;
-+		pr_err("%s: Doesn't have a prop-name\n", __func__);
-+		return;
- 	}
- 
- 	kfree(opp_table->prop_name);
- 	opp_table->prop_name = NULL;
- 
--	/* Try freeing opp_table if this was the last blocking resource */
--	_remove_opp_table(opp_table);
--
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_put_prop_name);
- 
-@@ -1531,12 +1446,6 @@ static void _free_set_opp_data(struct opp_table *opp_table)
-  * well.
-  *
-  * This must be called before any OPPs are initialized for the device.
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-  */
- struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 					    const char * const names[],
-@@ -1546,13 +1455,9 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 	struct regulator *reg;
- 	int ret, i;
- 
--	mutex_lock(&opp_table_lock);
--
--	opp_table = _add_opp_table(dev);
--	if (!opp_table) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	opp_table = dev_pm_opp_get_opp_table(dev);
-+	if (!opp_table)
-+		return ERR_PTR(-ENOMEM);
- 
- 	/* This should be called before OPPs are initialized */
- 	if (WARN_ON(!list_empty(&opp_table->opp_list))) {
-@@ -1594,7 +1499,6 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 	if (ret)
- 		goto free_regulators;
- 
--	mutex_unlock(&opp_table_lock);
- 	return opp_table;
- 
- free_regulators:
-@@ -1605,9 +1509,7 @@ struct opp_table *dev_pm_opp_set_regulators(struct device *dev,
- 	opp_table->regulators = NULL;
- 	opp_table->regulator_count = 0;
- err:
--	_remove_opp_table(opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- 
- 	return ERR_PTR(ret);
- }
-@@ -1616,22 +1518,14 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_regulators);
- /**
-  * dev_pm_opp_put_regulators() - Releases resources blocked for regulator
-  * @opp_table: OPP table returned from dev_pm_opp_set_regulators().
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-  */
- void dev_pm_opp_put_regulators(struct opp_table *opp_table)
- {
- 	int i;
- 
--	mutex_lock(&opp_table_lock);
--
- 	if (!opp_table->regulators) {
- 		pr_err("%s: Doesn't have regulators set\n", __func__);
--		goto unlock;
-+		return;
- 	}
- 
- 	/* Make sure there are no concurrent readers while updating opp_table */
-@@ -1646,11 +1540,7 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
- 	opp_table->regulators = NULL;
- 	opp_table->regulator_count = 0;
- 
--	/* Try freeing opp_table if this was the last blocking resource */
--	_remove_opp_table(opp_table);
--
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_put_regulators);
- 
-@@ -1663,29 +1553,19 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_regulators);
-  * regulators per device), instead of the generic OPP set rate helper.
-  *
-  * This must be called before any OPPs are initialized for the device.
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-  */
--int dev_pm_opp_register_set_opp_helper(struct device *dev,
-+struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
- 			int (*set_opp)(struct dev_pm_set_opp_data *data))
- {
- 	struct opp_table *opp_table;
- 	int ret;
- 
- 	if (!set_opp)
--		return -EINVAL;
--
--	mutex_lock(&opp_table_lock);
-+		return ERR_PTR(-EINVAL);
- 
--	opp_table = _add_opp_table(dev);
--	if (!opp_table) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	opp_table = dev_pm_opp_get_opp_table(dev);
-+	if (!opp_table)
-+		return ERR_PTR(-ENOMEM);
- 
- 	/* This should be called before OPPs are initialized */
- 	if (WARN_ON(!list_empty(&opp_table->opp_list))) {
-@@ -1701,47 +1581,28 @@ int dev_pm_opp_register_set_opp_helper(struct device *dev,
- 
- 	opp_table->set_opp = set_opp;
- 
--	mutex_unlock(&opp_table_lock);
--	return 0;
-+	return opp_table;
- 
- err:
--	_remove_opp_table(opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- 
--	return ret;
-+	return ERR_PTR(ret);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_register_set_opp_helper);
- 
- /**
-  * dev_pm_opp_register_put_opp_helper() - Releases resources blocked for
-  *					   set_opp helper
-- * @dev: Device for which custom set_opp helper has to be cleared.
-+ * @opp_table: OPP table returned from dev_pm_opp_register_set_opp_helper().
-  *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * Hence this function internally uses RCU updater strategy with mutex locks
-- * to keep the integrity of the internal data structures. Callers should ensure
-- * that this function is *NOT* called under RCU protection or in contexts where
-- * mutex cannot be locked.
-+ * Release resources blocked for platform specific set_opp helper.
-  */
--void dev_pm_opp_register_put_opp_helper(struct device *dev)
-+void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table)
- {
--	struct opp_table *opp_table;
--
--	mutex_lock(&opp_table_lock);
--
--	/* Check for existing table for 'dev' first */
--	opp_table = _find_opp_table(dev);
--	if (IS_ERR(opp_table)) {
--		dev_err(dev, "Failed to find opp_table: %ld\n",
--			PTR_ERR(opp_table));
--		goto unlock;
--	}
--
- 	if (!opp_table->set_opp) {
--		dev_err(dev, "%s: Doesn't have custom set_opp helper set\n",
--			__func__);
--		goto unlock;
-+		pr_err("%s: Doesn't have custom set_opp helper set\n",
-+		       __func__);
-+		return;
- 	}
- 
- 	/* Make sure there are no concurrent readers while updating opp_table */
-@@ -1749,11 +1610,7 @@ void dev_pm_opp_register_put_opp_helper(struct device *dev)
- 
- 	opp_table->set_opp = NULL;
- 
--	/* Try freeing opp_table if this was the last blocking resource */
--	_remove_opp_table(opp_table);
--
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	dev_pm_opp_put_opp_table(opp_table);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_register_put_opp_helper);
- 
-diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
-index b366e6d830ea..a7db9011d5fe 100644
---- a/drivers/cpufreq/sti-cpufreq.c
-+++ b/drivers/cpufreq/sti-cpufreq.c
-@@ -160,6 +160,7 @@ static int sti_cpufreq_set_opp_info(void)
- 	int pcode, substrate, major, minor;
- 	int ret;
- 	char name[MAX_PCODE_NAME_LEN];
-+	struct opp_table *opp_table;
- 
- 	reg_fields = sti_cpufreq_match();
- 	if (!reg_fields) {
-@@ -211,20 +212,20 @@ static int sti_cpufreq_set_opp_info(void)
- 
- 	snprintf(name, MAX_PCODE_NAME_LEN, "pcode%d", pcode);
- 
--	ret = dev_pm_opp_set_prop_name(dev, name);
--	if (ret) {
-+	opp_table = dev_pm_opp_set_prop_name(dev, name);
-+	if (IS_ERR(opp_table)) {
- 		dev_err(dev, "Failed to set prop name\n");
--		return ret;
-+		return PTR_ERR(opp_table);
- 	}
- 
- 	version[0] = BIT(major);
- 	version[1] = BIT(minor);
- 	version[2] = BIT(substrate);
- 
--	ret = dev_pm_opp_set_supported_hw(dev, version, VERSION_ELEMENTS);
--	if (ret) {
-+	opp_table = dev_pm_opp_set_supported_hw(dev, version, VERSION_ELEMENTS);
-+	if (IS_ERR(opp_table)) {
- 		dev_err(dev, "Failed to set supported hardware\n");
--		return ret;
-+		return PTR_ERR(opp_table);
- 	}
- 
- 	dev_dbg(dev, "pcode: %d major: %d minor: %d substrate: %d\n",
+ 	bool available;
+ 	bool dynamic;
 diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index d867c6b25f9a..99787cbcaab2 100644
+index 99787cbcaab2..731d548657aa 100644
 --- a/include/linux/pm_opp.h
 +++ b/include/linux/pm_opp.h
-@@ -114,15 +114,14 @@ int dev_pm_opp_disable(struct device *dev, unsigned long freq);
- int dev_pm_opp_register_notifier(struct device *dev, struct notifier_block *nb);
- int dev_pm_opp_unregister_notifier(struct device *dev, struct notifier_block *nb);
+@@ -102,6 +102,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
  
--int dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions,
--				unsigned int count);
--void dev_pm_opp_put_supported_hw(struct device *dev);
--int dev_pm_opp_set_prop_name(struct device *dev, const char *name);
--void dev_pm_opp_put_prop_name(struct device *dev);
-+struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev, const u32 *versions, unsigned int count);
-+void dev_pm_opp_put_supported_hw(struct opp_table *opp_table);
-+struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name);
-+void dev_pm_opp_put_prop_name(struct opp_table *opp_table);
- struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count);
- void dev_pm_opp_put_regulators(struct opp_table *opp_table);
--int dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
--void dev_pm_opp_register_put_opp_helper(struct device *dev);
-+struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
-+void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table);
- int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
- int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
- int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
-@@ -224,29 +223,29 @@ static inline int dev_pm_opp_unregister_notifier(struct device *dev, struct noti
- 	return -ENOTSUPP;
+ struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
+ 					     unsigned long *freq);
++void dev_pm_opp_put(struct dev_pm_opp *opp);
+ 
+ int dev_pm_opp_add(struct device *dev, unsigned long freq,
+ 		   unsigned long u_volt);
+@@ -193,6 +194,8 @@ static inline struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
+ 	return ERR_PTR(-ENOTSUPP);
  }
  
--static inline int dev_pm_opp_set_supported_hw(struct device *dev,
--					      const u32 *versions,
--					      unsigned int count)
-+static inline struct opp_table *dev_pm_opp_set_supported_hw(struct device *dev,
-+							    const u32 *versions,
-+							    unsigned int count)
- {
--	return -ENOTSUPP;
-+	return ERR_PTR(-ENOTSUPP);
- }
- 
--static inline void dev_pm_opp_put_supported_hw(struct device *dev) {}
-+static inline void dev_pm_opp_put_supported_hw(struct opp_table *opp_table) {}
- 
--static inline int dev_pm_opp_register_set_opp_helper(struct device *dev,
-+static inline struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
- 			int (*set_opp)(struct dev_pm_set_opp_data *data))
- {
--	return -ENOTSUPP;
-+	return ERR_PTR(-ENOTSUPP);
- }
- 
--static inline void dev_pm_opp_register_put_opp_helper(struct device *dev) {}
-+static inline void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table) {}
- 
--static inline int dev_pm_opp_set_prop_name(struct device *dev, const char *name)
-+static inline struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name)
- {
--	return -ENOTSUPP;
-+	return ERR_PTR(-ENOTSUPP);
- }
- 
--static inline void dev_pm_opp_put_prop_name(struct device *dev) {}
-+static inline void dev_pm_opp_put_prop_name(struct opp_table *opp_table) {}
- 
- static inline struct opp_table *dev_pm_opp_set_regulators(struct device *dev, const char * const names[], unsigned int count)
++static inline void dev_pm_opp_put(struct dev_pm_opp *opp) {}
++
+ static inline int dev_pm_opp_add(struct device *dev, unsigned long freq,
+ 					unsigned long u_volt)
  {
 -- 
 2.7.1.410.g6faf27b
+
