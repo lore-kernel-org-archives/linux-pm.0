@@ -1,77 +1,107 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] Revert "PM / OPP: Don't assume platform doesn't have regulators"
-Date: Wed,  7 Dec 2016 16:01:52 +0530
-Message-ID: <1560e022c1584376cf5a55ed048e0b60485adf2b.1481106666.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f47.google.com ([74.125.83.47]:36651 "EHLO
-        mail-pg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752481AbcLGKcJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 05:32:09 -0500
-Received: by mail-pg0-f47.google.com with SMTP id f188so160204119pgc.3
-        for <linux-pm@vger.kernel.org>; Wed, 07 Dec 2016 02:32:09 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH 00/12] PM / OPP: Use kref and move away from RCU locking
+Date: Wed,  7 Dec 2016 16:07:38 +0530
+Message-ID: <cover.1481106919.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, jonathanh@nvidia.com, swarren@nvidia.com, treding@nvidia.com, Viresh Kumar <viresh.kumar@linaro.org>
 
-This reverts commit ef3caabee9691386e6801ea92150e37277db9c7a.
+Hi Rafael,
 
-The commit was based on the assumption that a platform with voltages
-specified with individual OPPs, would have registered a regulator as
-well in order to do full DVFS.
+You can pretty much ignore this series until all other OPP cleanup/fixes
+get merged. I am posting these to get early reviews from Stephen as
+these patches have been lying with me for almost a week now. And I am
+also _not_ pushing these for 4.10-rc1. It all depends on how the reviews
+go.
 
-That assumption is broken by the Tegra124 platform.
+The RCU locking isn't well suited for the OPP core. The RCU locking fits
+better for reader heavy stuff, while the OPP core have at max one or two
+readers only at a time.
 
-For Tegra124, the voltage is not scaled via a direct call to the
-regulator subsystem because the DFLL directly controls the I2C interface
-that controls the voltage. The DFLL essentially figures out the max
-frequency for a given voltage. So to run at a particular frequency, the
-DFLL continuously adjusts the voltage in a control loop fashion to get
-the desired frequency.
+Over that, it was getting very confusing the way RCU locking was used
+within the OPP core. The individual OPPs are mostly well handled, i.e.
+for an update a new structure was created and then that replaced the
+older one. But the OPP tables were updated directly all the time from
+various parts of the core. Though they were mostly used from within RCU
+locked region, they didn't had much to do with RCU and were governed by
+the mutex instead.
 
-Following are the logs from: NVIDIA Tegra124 Jetson TK1
+And that mixed with the 'opp_table_lock' has made the core even more
+confusing.
 
-  cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 696000 KHz
-  cpu cpu0: dev_pm_opp_set_rate: Regulator not registered with OPP core
-  cpufreq: __target_index: Failed to change cpu frequency: -22
-  ------------[ cut here ]------------
-  kernel BUG at drivers/cpufreq/cpufreq.c:1235!
+Similar concerns were shared by Stephen Boyd earlier [1].
 
-Fix these by reverting the offending commit.
+This patchset simplifies the locking in OPP core to great extent using
+Kernel reference counting mechanism along with per OPP table mutex.
+And finally it gets rid of RCU locking as well.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Each and every patch of this series is individually:
+- build tested
+- boot tested with cpufreq-dt.ko module. Insmod and rmmod to make sure
+  the OPPs and the OPP tables are getting freed.
 
----
-Rafael, you can simply drop the patch if that is easier for you.
----
- drivers/base/power/opp/core.c | 13 -------------
- 1 file changed, 13 deletions(-)
+More testing is also done by various build and boot bots for last few
+days. And they reported lots of issues (both build and boot time) that
+helped making this series more robust:
+- Kernel CI (Linaro)
+- Fengguang Wu's bot (Intel)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 7db672f632d9..6af371a55062 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -747,20 +747,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 
- 	/* Only frequency scaling */
- 	if (!regulators) {
--		unsigned long u_volt = opp->supplies[0].u_volt;
--
- 		rcu_read_unlock();
--
--		/*
--		 * DT contained supply ratings? Consider platform failed to set
--		 * regulators.
--		 */
--		if (unlikely(u_volt)) {
--			dev_err(dev, "%s: Regulator not registered with OPP core\n",
--				__func__);
--			return -EINVAL;
--		}
--
- 		return _generic_set_opp_clk_only(dev, clk, old_freq, freq);
- 	}
- 
+This series has few dependencies though. It is rebased over:
+  pm/bleeding-edge
+  + OPP cleanup series [2]
+  + few devfreq fixes [3], [4], and [5].
+  + A recent revert [6]
+
+Though all of those shall get merged before we end up reviewing this
+series.
+
+--
+viresh
+
+[1] https://marc.info/?l=linux-kernel&m=147742717527548&w=2
+[2] https://marc.info/?l=linux-pm&m=148108573618896&w=2
+[3] https://patchwork.kernel.org/patch/9455789/
+[4] https://patchwork.kernel.org/patch/9455757/
+[5] https://marc.info/?l=linux-pm&m=148090824301852&w=2
+[6] https://marc.info/?l=linux-kernel&m=148110674223377&w=2
+
+Viresh Kumar (12):
+  PM / OPP: Add per OPP table mutex
+  PM / OPP: Add 'struct kref' to OPP table
+  PM / OPP: Return opp_table from dev_pm_opp_set_*() routines
+  PM / OPP: Take reference of the OPP table while adding/removing OPPs
+  PM / OPP: Use dev_pm_opp_get_opp_table() instead of _add_opp_table()
+  PM / OPP: Add 'struct kref' to struct dev_pm_opp
+  PM / OPP: Update OPP users to put reference
+  PM / OPP: Take kref from _find_opp_table()
+  PM / OPP: Move away from RCU locking
+  PM / OPP: Simplify _opp_set_availability()
+  PM / OPP: Simplify dev_pm_opp_get_max_volt_latency()
+  PM / OPP: Update Documentation to remove RCU specific bits
+
+ Documentation/power/opp.txt          |  47 +-
+ arch/arm/mach-omap2/pm.c             |   5 +-
+ drivers/base/power/opp/core.c        | 888 +++++++++++------------------------
+ drivers/base/power/opp/cpu.c         |  66 +--
+ drivers/base/power/opp/of.c          |  94 +---
+ drivers/base/power/opp/opp.h         |  31 +-
+ drivers/clk/tegra/clk-dfll.c         |  17 +-
+ drivers/cpufreq/exynos5440-cpufreq.c |   5 +-
+ drivers/cpufreq/imx6q-cpufreq.c      |  10 +-
+ drivers/cpufreq/mt8173-cpufreq.c     |   8 +-
+ drivers/cpufreq/omap-cpufreq.c       |   4 +-
+ drivers/cpufreq/sti-cpufreq.c        |  13 +-
+ drivers/devfreq/devfreq.c            |  14 +-
+ drivers/devfreq/exynos-bus.c         |  14 +-
+ drivers/devfreq/governor_passive.c   |   4 +-
+ drivers/devfreq/rk3399_dmc.c         |  16 +-
+ drivers/devfreq/tegra-devfreq.c      |   4 +-
+ drivers/thermal/cpu_cooling.c        |  11 +-
+ drivers/thermal/devfreq_cooling.c    |  14 +-
+ include/linux/pm_opp.h               |  48 +-
+ 20 files changed, 429 insertions(+), 884 deletions(-)
+
 -- 
 2.7.1.410.g6faf27b
-
