@@ -1,133 +1,60 @@
-From: Atul Raj <atul.r@samsung.com>
-Subject: [PATCH] power: supply: smb347_charger: Use device managed API's
-Date: Wed, 07 Dec 2016 16:48:22 +0530
-Message-ID: <1481109502-23232-1-git-send-email-atul.r@samsung.com>
+From: Xing Wei <xing.wei@intel.com>
+Subject: [PATCH] PM / Sleep: Print active wakeup sources when reading wakeup events blocked
+Date: Wed,  7 Dec 2016 19:31:16 +0800
+Message-ID: <1481110276-5325-1-git-send-email-xing.wei@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:45493 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751512AbcLGLUv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 06:20:51 -0500
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OHT00LIHBIPGY90@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 07 Dec 2016 20:20:49 +0900 (KST)
+Received: from mga03.intel.com ([134.134.136.65]:38871 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752035AbcLGLhu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Dec 2016 06:37:50 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, vidushi.koul@samsung.com, atulraj.nith@gmail.com, pankaj.s4@samsung.com
+To: rafael.j.wysocki@intel.com
+Cc: austin.zhang@intel.com, toddpoynor@google.com, linux-pm@vger.kernel.org, xing wei <xing.wei@intel.com>
 
-Using device manaeged API to make the code simpler
+From: xing wei <xing.wei@intel.com>
 
-using devm_gpio_request_one in place of gpio_request_one
-using devm_request_threaded_irq in place of request_threaded_irq
-using devm_power_supply_register in place of power_supply_register
+If there are any wakeup events being processed, read operation on
+/sys/power/wakeup_count will be blocked, we can print the name of
+all active wakeup sources to help us find out who will block system
+enter sleep.
 
-Signed-off-by: Atul Raj <atul.r@samsung.com>
+Signed-off-by: xing wei <xing.wei@intel.com>
 ---
- drivers/power/supply/smb347-charger.c | 46 +++++++++++------------------------
- 1 file changed, 14 insertions(+), 32 deletions(-)
+ drivers/base/power/wakeup.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
-index 072c518..f39d986 100644
---- a/drivers/power/supply/smb347-charger.c
-+++ b/drivers/power/supply/smb347-charger.c
-@@ -837,19 +837,21 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 	const struct smb347_charger_platform_data *pdata = smb->pdata;
- 	int ret, irq = gpio_to_irq(pdata->irq_gpio);
- 
--	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
-+	ret = devm_gpio_request_one(&client->dev, pdata->irq_gpio, GPIOF_IN,
-+				client->name);
- 	if (ret < 0)
- 		goto fail;
- 
--	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
--				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
--				   client->name, smb);
-+	ret = devm_request_threaded_irq(&client->dev, irq, NULL,
-+				smb347_interrupt,
-+				IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-+				client->name, smb);
- 	if (ret < 0)
--		goto fail_gpio;
-+		goto fail;
- 
- 	ret = smb347_set_writable(smb, true);
- 	if (ret < 0)
--		goto fail_irq;
-+		goto fail;
- 
- 	/*
- 	 * Configure the STAT output to be suitable for interrupts: disable
-@@ -867,10 +869,6 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 
- fail_readonly:
- 	smb347_set_writable(smb, false);
--fail_irq:
--	free_irq(irq, smb);
--fail_gpio:
--	gpio_free(pdata->irq_gpio);
- fail:
- 	client->irq = 0;
- 	return ret;
-@@ -1249,32 +1247,24 @@ static int smb347_probe(struct i2c_client *client,
- 	mains_usb_cfg.num_supplicants = ARRAY_SIZE(battery);
- 	mains_usb_cfg.drv_data = smb;
- 	if (smb->pdata->use_mains) {
--		smb->mains = power_supply_register(dev, &smb347_mains_desc,
-+		smb->mains = devm_power_supply_register(dev, &smb347_mains_desc,
- 						   &mains_usb_cfg);
- 		if (IS_ERR(smb->mains))
- 			return PTR_ERR(smb->mains);
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 62e4de2..bf9ba26 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -811,7 +811,7 @@ void pm_print_active_wakeup_sources(void)
+ 	rcu_read_lock();
+ 	list_for_each_entry_rcu(ws, &wakeup_sources, entry) {
+ 		if (ws->active) {
+-			pr_info("active wakeup source: %s\n", ws->name);
++			pr_debug("active wakeup source: %s\n", ws->name);
+ 			active = 1;
+ 		} else if (!active &&
+ 			   (!last_activity_ws ||
+@@ -822,7 +822,7 @@ void pm_print_active_wakeup_sources(void)
  	}
  
- 	if (smb->pdata->use_usb) {
--		smb->usb = power_supply_register(dev, &smb347_usb_desc,
-+		smb->usb = devm_power_supply_register(dev, &smb347_usb_desc,
- 						 &mains_usb_cfg);
--		if (IS_ERR(smb->usb)) {
--			if (smb->pdata->use_mains)
--				power_supply_unregister(smb->mains);
-+		if (IS_ERR(smb->usb))
- 			return PTR_ERR(smb->usb);
--		}
- 	}
- 
- 	battery_cfg.drv_data = smb;
--	smb->battery = power_supply_register(dev, &smb347_battery_desc,
-+	smb->battery = devm_power_supply_register(dev, &smb347_battery_desc,
- 					     &battery_cfg);
--	if (IS_ERR(smb->battery)) {
--		if (smb->pdata->use_usb)
--			power_supply_unregister(smb->usb);
--		if (smb->pdata->use_mains)
--			power_supply_unregister(smb->mains);
-+	if (IS_ERR(smb->battery))
- 		return PTR_ERR(smb->battery);
--	}
- 
- 	/*
- 	 * Interrupt pin is optional. If it is connected, we setup the
-@@ -1297,17 +1287,9 @@ static int smb347_remove(struct i2c_client *client)
- {
- 	struct smb347_charger *smb = i2c_get_clientdata(client);
- 
--	if (client->irq) {
-+	if (client->irq)
- 		smb347_irq_disable(smb);
--		free_irq(client->irq, smb);
--		gpio_free(smb->pdata->irq_gpio);
--	}
- 
--	power_supply_unregister(smb->battery);
--	if (smb->pdata->use_usb)
--		power_supply_unregister(smb->usb);
--	if (smb->pdata->use_mains)
--		power_supply_unregister(smb->mains);
- 	return 0;
+ 	if (!active && last_activity_ws)
+-		pr_info("last active wakeup source: %s\n",
++		pr_debug("last active wakeup source: %s\n",
+ 			last_activity_ws->name);
+ 	rcu_read_unlock();
  }
- 
+@@ -905,7 +905,7 @@ bool pm_get_wakeup_count(unsigned int *count, bool block)
+ 			split_counters(&cnt, &inpr);
+ 			if (inpr == 0 || signal_pending(current))
+ 				break;
+-
++			pm_print_active_wakeup_sources();
+ 			schedule();
+ 		}
+ 		finish_wait(&wakeup_count_wait_queue, &wait);
 -- 
-2.10.2.windows.1
+1.9.1
 
