@@ -1,150 +1,58 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 06/12] PM / OPP: Add 'struct kref' to struct dev_pm_opp
-Date: Wed,  7 Dec 2016 16:07:44 +0530
-Message-ID: <1d5f61440dbfb640c330f77c9090e2ac23482ebc.1481106919.git.viresh.kumar@linaro.org>
+Subject: [PATCH 04/12] PM / OPP: Take reference of the OPP table while adding/removing OPPs
+Date: Wed,  7 Dec 2016 16:07:42 +0530
+Message-ID: <dad4f39fe50bd499dcc541c3b2622408158a9cba.1481106919.git.viresh.kumar@linaro.org>
 References: <cover.1481106919.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f43.google.com ([74.125.83.43]:35087 "EHLO
-        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932111AbcLGKso (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 05:48:44 -0500
-Received: by mail-pg0-f43.google.com with SMTP id p66so160890034pga.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Dec 2016 02:48:43 -0800 (PST)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1481106919.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1481106919.git.viresh.kumar@linaro.org>
 References: <cover.1481106919.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Add kref to struct dev_pm_opp for easier accounting of the OPPs.
-
-Note that the OPPs are freed under the opp_table->lock mutex only.
+Take reference of the OPP table while adding and removing OPPs, that
+helps us remove special checks in _remove_opp_table().
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 27 ++++++++++++---------------
- drivers/base/power/opp/opp.h  |  3 +++
- include/linux/pm_opp.h        |  3 +++
- 3 files changed, 18 insertions(+), 15 deletions(-)
+ drivers/base/power/opp/core.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index ec833a8f7aa5..12be0f29f2ad 100644
+index 472f93755945..aacca85ebd20 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -949,20 +949,10 @@ static void _kfree_opp_rcu(struct rcu_head *head)
- 	kfree_rcu(opp, rcu_head);
- }
- 
--/**
-- * _opp_remove()  - Remove an OPP from a table definition
-- * @opp_table:	points back to the opp_table struct this opp belongs to
-- * @opp:	pointer to the OPP to remove
-- *
-- * This function removes an opp definition from the opp table.
-- *
-- * Locking: The internal opp_table and opp structures are RCU protected.
-- * It is assumed that the caller holds required mutex for an RCU updater
-- * strategy.
-- */
--static void _opp_remove(struct opp_table *opp_table, struct dev_pm_opp *opp)
-+static void _opp_kref_release(struct kref *kref)
+@@ -971,9 +971,6 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_put_opp_table);
+  */
+ static void _remove_opp_table(struct opp_table *opp_table)
  {
--	mutex_lock(&opp_table->lock);
-+	struct dev_pm_opp *opp = container_of(kref, struct dev_pm_opp, kref);
-+	struct opp_table *opp_table = opp->opp_table;
- 
- 	/*
- 	 * Notify the changes in the availability of the operable
-@@ -977,6 +967,12 @@ static void _opp_remove(struct opp_table *opp_table, struct dev_pm_opp *opp)
- 	dev_pm_opp_put_opp_table(opp_table);
+-	if (!list_empty(&opp_table->opp_list))
+-		return;
+-
+ 	dev_pm_opp_put_opp_table_unlocked(opp_table);
  }
  
-+void dev_pm_opp_put(struct dev_pm_opp *opp)
-+{
-+	kref_put_mutex(&opp->kref, _opp_kref_release, &opp->opp_table->lock);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_put);
-+
- /**
-  * dev_pm_opp_remove()  - Remove an OPP from OPP table
-  * @dev:	device for which we do this operation
-@@ -1020,7 +1016,7 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
- 		goto unlock;
- 	}
+@@ -1018,8 +1015,7 @@ static void _opp_remove(struct opp_table *opp_table, struct dev_pm_opp *opp)
+ 	call_srcu(&opp_table->srcu_head.srcu, &opp->rcu_head, _kfree_opp_rcu);
  
--	_opp_remove(opp_table, opp);
-+	dev_pm_opp_put(opp);
- unlock:
- 	mutex_unlock(&opp_table_lock);
- }
-@@ -1125,6 +1121,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
  	mutex_unlock(&opp_table->lock);
+-
+-	_remove_opp_table(opp_table);
++	dev_pm_opp_put_opp_table(opp_table);
+ }
+ 
+ /**
+@@ -1171,6 +1167,9 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
  
  	new_opp->opp_table = opp_table;
-+	kref_init(&new_opp->kref);
  
- 	/* Get a reference to the OPP table */
- 	_get_opp_table_kref(opp_table);
-@@ -1820,7 +1817,7 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
- 		/* Free static OPPs */
- 		list_for_each_entry_safe(opp, tmp, &opp_table->opp_list, node) {
- 			if (remove_all || !opp->dynamic)
--				_opp_remove(opp_table, opp);
-+				dev_pm_opp_put(opp);
- 		}
- 	} else {
- 		_remove_opp_dev(_find_opp_dev(dev, opp_table), opp_table);
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 8435a0eb27be..bd929ba6efaf 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -16,6 +16,7 @@
- 
- #include <linux/device.h>
- #include <linux/kernel.h>
-+#include <linux/kref.h>
- #include <linux/list.h>
- #include <linux/limits.h>
- #include <linux/pm_opp.h>
-@@ -56,6 +57,7 @@ extern struct list_head opp_tables;
-  *		are protected by the opp_table_lock for integrity.
-  *		IMPORTANT: the opp nodes should be maintained in increasing
-  *		order.
-+ * @kref:	for reference count of the OPP.
-  * @available:	true/false - marks if this OPP as available or not
-  * @dynamic:	not-created from static DT entries.
-  * @turbo:	true if turbo (boost) OPP
-@@ -73,6 +75,7 @@ extern struct list_head opp_tables;
-  */
- struct dev_pm_opp {
- 	struct list_head node;
-+	struct kref kref;
- 
- 	bool available;
- 	bool dynamic;
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 99787cbcaab2..731d548657aa 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -102,6 +102,7 @@ struct dev_pm_opp *dev_pm_opp_find_freq_floor(struct device *dev,
- 
- struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 					     unsigned long *freq);
-+void dev_pm_opp_put(struct dev_pm_opp *opp);
- 
- int dev_pm_opp_add(struct device *dev, unsigned long freq,
- 		   unsigned long u_volt);
-@@ -193,6 +194,8 @@ static inline struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
- 	return ERR_PTR(-ENOTSUPP);
- }
- 
-+static inline void dev_pm_opp_put(struct dev_pm_opp *opp) {}
++	/* Get a reference to the OPP table */
++	_get_opp_table_kref(opp_table);
 +
- static inline int dev_pm_opp_add(struct device *dev, unsigned long freq,
- 					unsigned long u_volt)
- {
+ 	ret = opp_debug_create_one(new_opp, opp_table);
+ 	if (ret)
+ 		dev_err(dev, "%s: Failed to register opp to debugfs (%d)\n",
 -- 
 2.7.1.410.g6faf27b
-
