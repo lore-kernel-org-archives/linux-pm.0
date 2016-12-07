@@ -1,201 +1,241 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH 1/2] Documentation/core-api/device_link: Add initial
- documentation
-Date: Wed, 7 Dec 2016 12:50:17 +0100
-Message-ID: <20161207115017.GA8201@wunner.de>
-References: <cover.1480849144.git.lukas@wunner.de>
- <f5b568e349aaeb31039a0c4d01fdb05d8b3bdd2a.1480849144.git.lukas@wunner.de>
- <20161206014150.GY1402@wotan.suse.de>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 07/12] PM / OPP: Update OPP users to put reference
+Date: Wed, 07 Dec 2016 22:23:53 +0900
+Message-ID: <58480D69.9030801@samsung.com>
+References: <cover.1481106919.git.viresh.kumar@linaro.org>
+ <CGME20161207104429epcas4p1ceff82170121e22ab2a14715fa80050a@epcas4p1.samsung.com>
+ <059cb0d754593a1bbe82e67990729678ce8cef78.1481106919.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161206014150.GY1402@wotan.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jonathan Corbet <corbet@lwn.net>, Marek Szyprowski <m.szyprowski@samsung.com>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Mark Brown <broonie@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Alan Stern <stern@rowland.harvard.edu>, Hanjun Guo <guohanjun@huawei.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:58705 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751372AbcLGNX4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 08:23:56 -0500
+In-reply-to: <059cb0d754593a1bbe82e67990729678ce8cef78.1481106919.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-[got complaints on length of Cc: header, so trimming a bit]
+Hi Viresh,
 
-On Tue, Dec 06, 2016 at 02:41:50AM +0100, Luis R. Rodriguez wrote:
-> On Sun, Dec 04, 2016 at 01:10:04PM +0100, Lukas Wunner wrote:
-> > +============
-> > +Device links
-> > +============
-> > +
-> > +By default, the driver core only enforces dependencies between devices
-> > +that are borne out of a parent/child relationship within the device
-> > +hierarchy: 
-> 
-> This "device hierarchy" was rather confusing to grasp, I specially hard
-> a hard time understanding *why* the device links work did not do any
-> topological sorting at all. I'm also afraid this is not just "tribal
-> knowledge" -- not everyone was able to answer my questions about these
-> things, Rafafel however did do justice to some degree and I did provide notes
-> from this. I think it would be important then to jot down to help humans
-> grok:
-> 
->   o where the implicit order we embrace comes from
->   o what mechanisms are used to help provide some of this order
+[snip]
 
-I'm already explaining this further down in the "Implementation" section:
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index b0de42972b74..89add0d7c017 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -111,18 +111,16 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
+>  		return;
+>  	}
+>  
+> -	rcu_read_lock();
+>  	for (i = 0, freq = 0; i < profile->max_state; i++, freq++) {
+>  		opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &freq);
+> +		dev_pm_opp_put(opp);
 
-	"That is achieved by traversing the ACPI namespace or OpenFirmware
-	 device tree top-down and appending devices to the lists as they
-	 are discovered."
+I think that the dev_pm_opp_put(opp) should be called after if statement
+If dev_pm_opp_find_freq_ceil() return error, I think the calling of
+dev_pm_opp_put(opp) is not necessary.
 
-If this is not sufficiently clear, please let me know how to improve it.
+>  		if (IS_ERR(opp)) {
+>  			devm_kfree(devfreq->dev.parent, profile->freq_table);
+>  			profile->max_state = 0;
+> -			rcu_read_unlock();
+>  			return;
+>  		}
+>  		profile->freq_table[i] = freq;
+>  	}
+> -	rcu_read_unlock();
+>  }
+>  
+>  /**
+> @@ -1107,9 +1105,9 @@ static ssize_t available_frequencies_show(struct device *d,
+>  	ssize_t count = 0;
+>  	unsigned long freq = 0;
+>  
+> -	rcu_read_lock();
+>  	do {
+>  		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+> +		dev_pm_opp_put(opp);
 
-For didactic reasons I can't explain everything in the opening paragraph,
-but the device hierarchy is exposed in sysfs and I think even casual
-users might have seen it, certainly driver authors, and so the term
-"device hierarchy" may evoke the right connotations and readers may even
-realize that it's pre-determined by the platform, the kernel basically
-just discovers it.
+ditto.
 
+>  		if (IS_ERR(opp))
+>  			break;
+>  
+> @@ -1117,7 +1115,6 @@ static ssize_t available_frequencies_show(struct device *d,
+>  				   "%lu ", freq);
+>  		freq++;
+>  	} while (1);
+> -	rcu_read_unlock();
+>  
+>  	/* Truncate the trailing space */
+>  	if (count)
+> @@ -1219,11 +1216,8 @@ subsys_initcall(devfreq_init);
+>   * @freq:	The frequency given to target function
+>   * @flags:	Flags handed from devfreq framework.
+>   *
+> - * Locking: This function must be called under rcu_read_lock(). opp is a rcu
+> - * protected pointer. The reason for the same is that the opp pointer which is
+> - * returned will remain valid for use with opp_get_{voltage, freq} only while
+> - * under the locked area. The pointer returned must be used prior to unlocking
+> - * with rcu_read_unlock() to maintain the integrity of the pointer.
+> + * The callers are required to call dev_pm_opp_put() for the returned OPP after
+> + * use.
+>   */
+>  struct dev_pm_opp *devfreq_recommended_opp(struct device *dev,
+>  					   unsigned long *freq,
+> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+> index a8ed7792ece2..49ce38cef460 100644
+> --- a/drivers/devfreq/exynos-bus.c
+> +++ b/drivers/devfreq/exynos-bus.c
+> @@ -103,18 +103,17 @@ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
+>  	int ret = 0;
+>  
+>  	/* Get new opp-bus instance according to new bus clock */
+> -	rcu_read_lock();
+>  	new_opp = devfreq_recommended_opp(dev, freq, flags);
+>  	if (IS_ERR(new_opp)) {
+>  		dev_err(dev, "failed to get recommended opp instance\n");
+> -		rcu_read_unlock();
+>  		return PTR_ERR(new_opp);
+>  	}
+>  
+>  	new_freq = dev_pm_opp_get_freq(new_opp);
+>  	new_volt = dev_pm_opp_get_voltage(new_opp);
+> +	dev_pm_opp_put(new_opp);
+> +
+>  	old_freq = bus->curr_freq;
+> -	rcu_read_unlock();
+>  
+>  	if (old_freq == new_freq)
+>  		return 0;
+> @@ -214,17 +213,16 @@ static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
+>  	int ret = 0;
+>  
+>  	/* Get new opp-bus instance according to new bus clock */
+> -	rcu_read_lock();
+>  	new_opp = devfreq_recommended_opp(dev, freq, flags);
+>  	if (IS_ERR(new_opp)) {
+>  		dev_err(dev, "failed to get recommended opp instance\n");
+> -		rcu_read_unlock();
+>  		return PTR_ERR(new_opp);
+>  	}
+>  
+>  	new_freq = dev_pm_opp_get_freq(new_opp);
+> +	dev_pm_opp_put(new_opp);
+> +
+>  	old_freq = bus->curr_freq;
+> -	rcu_read_unlock();
+>  
+>  	if (old_freq == new_freq)
+>  		return 0;
+> @@ -358,16 +356,14 @@ static int exynos_bus_parse_of(struct device_node *np,
+>  
+>  	rate = clk_get_rate(bus->clk);
+>  
+> -	rcu_read_lock();
+>  	opp = devfreq_recommended_opp(dev, &rate, 0);
+>  	if (IS_ERR(opp)) {
+>  		dev_err(dev, "failed to find dev_pm_opp\n");
+> -		rcu_read_unlock();
+>  		ret = PTR_ERR(opp);
+>  		goto err_opp;
+>  	}
+>  	bus->curr_freq = dev_pm_opp_get_freq(opp);
+> -	rcu_read_unlock();
+> +	dev_pm_opp_put(opp);
+>  
+>  	return 0;
+>  
+> diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+> index 9ef46e2592c4..671a1e0afc6e 100644
+> --- a/drivers/devfreq/governor_passive.c
+> +++ b/drivers/devfreq/governor_passive.c
+> @@ -59,9 +59,9 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
+>  	 * list of parent device. Because in this case, *freq is temporary
+>  	 * value which is decided by ondemand governor.
+>  	 */
+> -	rcu_read_lock();
+>  	opp = devfreq_recommended_opp(parent_devfreq->dev.parent, freq, 0);
+> -	rcu_read_unlock();
+> +	dev_pm_opp_put(opp);
 
->   o why this is *not* sufficient
+ditto.
 
-Well the introduction section already explains this abstractly:
+> +
+>  	if (IS_ERR(opp)) {
+>  		ret = PTR_ERR(opp);
+>  		goto out;
+> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
+> index 27d2f349b53c..40a2499730fc 100644
+> --- a/drivers/devfreq/rk3399_dmc.c
+> +++ b/drivers/devfreq/rk3399_dmc.c
+> @@ -91,17 +91,13 @@ static int rk3399_dmcfreq_target(struct device *dev, unsigned long *freq,
+>  	unsigned long target_volt, target_rate;
+>  	int err;
+>  
+> -	rcu_read_lock();
+>  	opp = devfreq_recommended_opp(dev, freq, flags);
+> -	if (IS_ERR(opp)) {
+> -		rcu_read_unlock();
+> +	if (IS_ERR(opp))
+>  		return PTR_ERR(opp);
+> -	}
+>  
+>  	target_rate = dev_pm_opp_get_freq(opp);
+>  	target_volt = dev_pm_opp_get_voltage(opp);
+> -
+> -	rcu_read_unlock();
+> +	dev_pm_opp_put(opp);
+>  
+>  	if (dmcfreq->rate == target_rate)
+>  		return 0;
+> @@ -422,15 +418,13 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
+>  
+>  	data->rate = clk_get_rate(data->dmc_clk);
+>  
+> -	rcu_read_lock();
+>  	opp = devfreq_recommended_opp(dev, &data->rate, 0);
+> -	if (IS_ERR(opp)) {
+> -		rcu_read_unlock();
+> +	if (IS_ERR(opp))
+>  		return PTR_ERR(opp);
+> -	}
+> +
+>  	data->rate = dev_pm_opp_get_freq(opp);
+>  	data->volt = dev_pm_opp_get_voltage(opp);
+> -	rcu_read_unlock();
+> +	dev_pm_opp_put(opp);
+>  
+>  	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
+>  
+> diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+> index fe9dce0245bf..214fff96fa4a 100644
+> --- a/drivers/devfreq/tegra-devfreq.c
+> +++ b/drivers/devfreq/tegra-devfreq.c
+> @@ -487,15 +487,13 @@ static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>  	struct dev_pm_opp *opp;
+>  	unsigned long rate = *freq * KHZ;
+>  
+> -	rcu_read_lock();
+>  	opp = devfreq_recommended_opp(dev, &rate, flags);
+>  	if (IS_ERR(opp)) {
+> -		rcu_read_unlock();
+>  		dev_err(dev, "Failed to find opp for %lu KHz\n", *freq);
+>  		return PTR_ERR(opp);
+>  	}
+>  	rate = dev_pm_opp_get_freq(opp);
+> -	rcu_read_unlock();
+> +	dev_pm_opp_put(opp);
+>  
+>  	clk_set_min_rate(tegra->emc_clock, rate);
+>  	clk_set_rate(tegra->emc_clock, 0);
 
-	"Sometimes there is a need to represent device dependencies
-	 beyond the mere parent/child relationship, e.g. between
-	 siblings, and have the driver core automatically take care
-	 of them.  Secondly, the driver core by default does not
-	 enforce any driver presence dependencies, i.e. that one
-	 device must be bound to a driver before another one can
-	 probe or function correctly. [...] Device links allow
-	 representation of such dependencies in the driver core."
+[snip]
 
-And the "Examples" section further down presents specific use cases.
-
-So I'd expect that the need for device links is already made
-sufficiently clear to the reader.  Again, please let me know
-if you have specific ideas to improve this.
-
-
-> > +Limitations
-> > +===========
-> > +
->
-> Well you also forgot to mention the issues with deferred probe. It uses
-> deferred probe so if for whatever reason your subsystem or driver has issues
-> with it, this won't help.
-
-This very section does mention that deferred probing may cause issues:
-
-	"Driver authors should be aware that a driver presence dependency
-	 (i.e. when DL_FLAG_STATELESS is not specified on link addition)
-	 may cause probing of the consumer to be deferred indefinitely.
-	 This can become a problem if the consumer is required to probe
-	 before a certain initcall level is reached.  Worse, if the
-	 supplier driver is blacklisted or missing, the consumer will
-	 never be probed."
-
-Again I'd surmise that the deferred probing issue is sufficiently
-explained, if you think otherwise please explain more specifically
-what is missing.
-
-
-> > +* ACPI allows definition of a device start order by way of _DEP objects.
-> > +  A classical example is when ACPI power management methods on one device
-> > +  are implemented in terms of I\ :sup:`2`\ C accesses and require a specific
-> > +  I\ :sup:`2`\ C controller to be present and functional for the power
-> > +  management of the device in question to work.
-> 
-> Here is an example of current mechanisms used which to driver developers
-> provides implicit order --its all magical. This has can have limitations,
-> its important to annotate how this is limiting and also why this perhaps
-> was not considered as an enhancement in ACPI space. Ie, if semantics
-> existed in ACPI space for dependency info, why are we now left to our hims
-> for some cases on driver code?
-
-If I understood Rafael correctly, Linux currently does not handle _DEP
-objects correctly or at all.  So this isn't an alternative to device links,
-but rather something that we can finally handle correctly with device links.
-(@Rafael:  Please correct me if I'm wrong.)
-
-Hence this is listed in the "Examples" section.  It's a future use case for
-device links.
-
-In drivers/acpi/scan.c I can see that _DEP objects are scanned and stored
-on an acpi_dep_list, but that list isn't used anywhere else.  Presumably
-in the future (once device links have landed in Linus' tree) we're going
-to traverse the list after scanning the namespace and add a device link
-for each dependency.
-
-
-> > +Alternatives
-> > +============
-> > +
-> > +* A :c:type:`struct dev_pm_domain` can be used to override the bus,
-> > +  class or device type callbacks.  It is intended for devices sharing
-> > +  a single on/off switch, however it does not guarantee a specific
-> > +  suspend/resume ordering, this needs to be implemented separately.
-> > +  It also does not by itself track the runtime PM status of the involved
-> > +  devices and turn off the power switch only when all of them are runtime
-> > +  suspended.  Furthermore it cannot be used to enforce a specific shutdown
-> > +  ordering or a driver presence dependency.
-> > +
-> > +* A :c:type:`struct generic_pm_domain` is a lot more heavyweight than a
-> > +  device link and does not allow for shutdown ordering or driver presence
-> > +  dependencies.  It also cannot be used on ACPI systems.
-> 
-> I provided a list of other frameworks in the kernel which have
-> their own solutions which are worth looking into, if anything to at
-> least determine if we have older frameworks to replace or to use
-> them to help complement device links framework to help with other
-> areas other "firmware tools" clearly are lacking.
-
-So you mentioned explicitly "DAPM, the DRM / Audio component framework,
-v4l async solution".
-
-By "DRM / Audio component framework" I assume you're referring to
-vga_switcheroo.  That one I know fairly well and as I've explained
-in previous e-mails it's kind of broken and I'm actually looking
-into replacing it with device links myself.  Therefore I've listed
-this as a use case in the "Examples" section, because we'll hopefully
-get rid of it soon.
-
-The two other ones, "DAPM" and "v4l async solution", I know nothing
-about.
-
-Marek Szyprowski wrote:  "components and v4l-async solutions are for
-resolving only probe and registration issues and they are some kind
-of pool for grouping devices and triggering special callback once all
-requested devices in the pool have probed"
-
-It would probably be good if someone familiar with "DAPM" and
-"v4l async solution" could look at the device links documentation,
-determine whether they're a potential use case of or alternative to
-device links, and amend the documentation accordingly.
-
-
-> > +
-> > +Implementation
-> > +==============
-> > +
-> > +The device hierarchy, which -- as the name implies -- is a tree,
-> > +becomes a directed acyclic graph once device links are added.
-> 
-> <insert sarcasm>
-> 
-> Oh look a DAG without any sort. How did that happen?
-> 
-> </end sarcasm>
-> > +
-> > +Ordering of these devices during suspend/resume is determined by the
-> > +dpm_list.
-> 
-> And where did order from that come from? My notes provided answers to
-> these questions.
-
-Well, see above, the order is achieved by traversing the device tree
-provided by the platform (either ACPI or DT) top-down.  That is already
-mentioned in the "Implementation" section.  So I'm not sure what piece
-of information is missing?
-
-Thanks,
-
-Lukas
+Best Regards,
+Chanwoo Choi
