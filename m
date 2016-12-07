@@ -1,46 +1,87 @@
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH v4 0/4] ARM: da850: fix pll0 rate setting
-Date: Wed,  7 Dec 2016 16:22:14 +0100
-Message-ID: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
+Subject: [PATCH v4 4/4] ARM: da850: fix da850_set_pll0rate()
+Date: Wed,  7 Dec 2016 16:22:18 +0100
+Message-ID: <1481124138-27337-5-git-send-email-bgolaszewski@baylibre.com>
+References: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Sekhar Nori <nsekhar@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-While trying to set the pll0 rate from the kernel I noticed there are
-two issues with da850 clocks. The first patch fixes an infinite loop
-in propagate_rate(). The third fixes an oops in da850_set_pll0rate().
-The second patch is just a coding style fix, while we're at it.
+This function is confusing - its second argument is an index to the
+freq table, not the requested clock rate in Hz, but it's used as the
+set_rate callback for the pll0 clock. It leads to an oops when the
+caller doesn't know the internals and passes the rate in Hz as
+argument instead of the cpufreq index since this argument isn't bounds
+checked either.
 
-v1 -> v2:
-- change the approach in 1/3: create a new clock for nand inheriting
-  the rate from the aemif clock (verified that nand still works on
-  da850-lcdk)
-- patch 3/3: also update the davinci_cpufreq driver - the only
-  (indirect) user of da850_set_pll0rate()
-- s/requested_rate/rate in 3/3
+Fix it by iterating over the array of supported frequencies and
+selecting a one that matches or returning -EINVAL for unsupported
+rates.
 
-v2 -> v3:
-- 1/3: keep the "aemif" connector id for the nand clock
-- 3/3: instead of multiplying freq->frequency, divide rate by 1000
-- retested both davinci_nand and clk_set_rate() for pll0
+Also: update the davinci cpufreq driver. It's the only user of this
+clock and currently it passes the cpufreq table index to
+clk_set_rate(), which is confusing. Make it pass the requested clock
+rate in Hz.
 
-v3 -> v4:
-- 1/4: add a comment explaining why we're leaving a NULL dev_id
-- 2/4: emac_clk is added twice to the clock lookup table too - fix it
-  and verify that davinci_mmdio gets a functional clock
-- 4/4: s/opp == NULL/!opp/
-
-Bartosz Golaszewski (4):
-  ARM: da850: fix infinite loop in clk_set_rate()
-  ARM: da850: don't add the emac clock to the clock lookup table twice
-  ARM: da850: coding style fix
-  ARM: da850: fix da850_set_pll0rate()
-
- arch/arm/mach-davinci/da850.c     | 51 +++++++++++++++++++++++++++++++++------
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ arch/arm/mach-davinci/da850.c     | 22 ++++++++++++++++++----
  drivers/cpufreq/davinci-cpufreq.c |  2 +-
- 2 files changed, 45 insertions(+), 8 deletions(-)
+ 2 files changed, 19 insertions(+), 5 deletions(-)
 
+diff --git a/arch/arm/mach-davinci/da850.c b/arch/arm/mach-davinci/da850.c
+index 5f8ffaa..b410598 100644
+--- a/arch/arm/mach-davinci/da850.c
++++ b/arch/arm/mach-davinci/da850.c
+@@ -1197,14 +1197,28 @@ static int da850_set_armrate(struct clk *clk, unsigned long index)
+ 	return clk_set_rate(pllclk, index);
+ }
+ 
+-static int da850_set_pll0rate(struct clk *clk, unsigned long index)
++static int da850_set_pll0rate(struct clk *clk, unsigned long rate)
+ {
+-	unsigned int prediv, mult, postdiv;
+-	struct da850_opp *opp;
+ 	struct pll_data *pll = clk->pll_data;
++	struct cpufreq_frequency_table *freq;
++	unsigned int prediv, mult, postdiv;
++	struct da850_opp *opp = NULL;
+ 	int ret;
+ 
+-	opp = (struct da850_opp *) cpufreq_info.freq_table[index].driver_data;
++	rate /= 1000;
++
++	for (freq = da850_freq_table;
++	     freq->frequency != CPUFREQ_TABLE_END; freq++) {
++		/* rate is in Hz, freq->frequency is in KHz */
++		if (freq->frequency == rate) {
++			opp = (struct da850_opp *)freq->driver_data;
++			break;
++		}
++	}
++
++	if (!opp)
++		return -EINVAL;
++
+ 	prediv = opp->prediv;
+ 	mult = opp->mult;
+ 	postdiv = opp->postdiv;
+diff --git a/drivers/cpufreq/davinci-cpufreq.c b/drivers/cpufreq/davinci-cpufreq.c
+index b95a872..d54a27c 100644
+--- a/drivers/cpufreq/davinci-cpufreq.c
++++ b/drivers/cpufreq/davinci-cpufreq.c
+@@ -55,7 +55,7 @@ static int davinci_target(struct cpufreq_policy *policy, unsigned int idx)
+ 			return ret;
+ 	}
+ 
+-	ret = clk_set_rate(armclk, idx);
++	ret = clk_set_rate(armclk, new_freq * 1000);
+ 	if (ret)
+ 		return ret;
+ 
 -- 
 2.9.3
