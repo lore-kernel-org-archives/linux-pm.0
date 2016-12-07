@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 03/10] PM / OPP: Rename _allocate_opp() to _opp_allocate()
-Date: Wed,  7 Dec 2016 10:11:59 +0530
-Message-ID: <32fbd8524d2c0575273dab3b580bb70b90316667.1481085478.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 04/10] PM / OPP: Error out on failing to add static OPPs for v1 bindings
+Date: Wed,  7 Dec 2016 10:12:00 +0530
+Message-ID: <e1e0da0d838e8918e6605b6488ec66fc83643386.1481085478.git.viresh.kumar@linaro.org>
 References: <cover.1481085478.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:34757 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751569AbcLGEmX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 23:42:23 -0500
-Received: by mail-pg0-f46.google.com with SMTP id x23so157295111pgx.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 20:42:22 -0800 (PST)
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:35414 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751569AbcLGEm0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 23:42:26 -0500
+Received: by mail-pg0-f43.google.com with SMTP id p66so157300573pga.2
+        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 20:42:25 -0800 (PST)
 In-Reply-To: <cover.1481085478.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1481085478.git.viresh.kumar@linaro.org>
 References: <cover.1481085478.git.viresh.kumar@linaro.org>
@@ -18,64 +18,45 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Make the naming consistent with how other routines are named.
+The code adding static OPPs for V2 bindings already does so. Make the V1
+bindings specific code behave the same.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 4 ++--
- drivers/base/power/opp/of.c   | 2 +-
- drivers/base/power/opp/opp.h  | 2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/base/power/opp/of.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 9ff816217c6e..621a3dc94bfe 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -1027,7 +1027,7 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
- 
--struct dev_pm_opp *_allocate_opp(struct device *dev,
-+struct dev_pm_opp *_opp_allocate(struct device *dev,
- 				 struct opp_table **opp_table)
- {
- 	struct dev_pm_opp *opp;
-@@ -1180,7 +1180,7 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 	/* Hold our table modification lock here */
- 	mutex_lock(&opp_table_lock);
- 
--	new_opp = _allocate_opp(dev, &opp_table);
-+	new_opp = _opp_allocate(dev, &opp_table);
- 	if (!new_opp) {
- 		ret = -ENOMEM;
- 		goto unlock;
 diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 996ca3b42f47..f8512ca2bf41 100644
+index f8512ca2bf41..c8fe815774ff 100644
 --- a/drivers/base/power/opp/of.c
 +++ b/drivers/base/power/opp/of.c
-@@ -287,7 +287,7 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	/* Hold our table modification lock here */
- 	mutex_lock(&opp_table_lock);
+@@ -433,7 +433,7 @@ static int _of_add_opp_table_v1(struct device *dev)
+ {
+ 	const struct property *prop;
+ 	const __be32 *val;
+-	int nr;
++	int nr, ret;
  
--	new_opp = _allocate_opp(dev, &opp_table);
-+	new_opp = _opp_allocate(dev, &opp_table);
- 	if (!new_opp) {
- 		ret = -ENOMEM;
- 		goto unlock;
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index af9f2b849a66..0f23a1059605 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -193,7 +193,7 @@ struct opp_table {
- struct opp_table *_find_opp_table(struct device *dev);
- struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_table);
- void _dev_pm_opp_remove_table(struct device *dev, bool remove_all);
--struct dev_pm_opp *_allocate_opp(struct device *dev, struct opp_table **opp_table);
-+struct dev_pm_opp *_opp_allocate(struct device *dev, struct opp_table **opp_table);
- int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *opp_table);
- void _opp_remove(struct opp_table *opp_table, struct dev_pm_opp *opp, bool notify);
- int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt, bool dynamic);
+ 	prop = of_find_property(dev->of_node, "operating-points", NULL);
+ 	if (!prop)
+@@ -456,9 +456,13 @@ static int _of_add_opp_table_v1(struct device *dev)
+ 		unsigned long freq = be32_to_cpup(val++) * 1000;
+ 		unsigned long volt = be32_to_cpup(val++);
+ 
+-		if (_opp_add_v1(dev, freq, volt, false))
+-			dev_warn(dev, "%s: Failed to add OPP %ld\n",
+-				 __func__, freq);
++		ret = _opp_add_v1(dev, freq, volt, false);
++		if (ret) {
++			dev_err(dev, "%s: Failed to add OPP %ld (%d)\n",
++				__func__, freq, ret);
++			dev_pm_opp_of_remove_table(dev);
++			return ret;
++		}
+ 		nr -= 2;
+ 	}
+ 
 -- 
 2.7.1.410.g6faf27b
 
