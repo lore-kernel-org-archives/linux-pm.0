@@ -1,44 +1,46 @@
-From: Sahitya Tummala <stummala@codeaurora.org>
-Subject: [PATCH] PM: Fix bug in the error handling of async suspend
-Date: Wed,  7 Dec 2016 20:10:32 +0530
-Message-ID: <1481121632-17466-1-git-send-email-stummala@codeaurora.org>
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: [PATCH v4 0/4] ARM: da850: fix pll0 rate setting
+Date: Wed,  7 Dec 2016 16:22:14 +0100
+Message-ID: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki\"" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sahitya Tummala <stummala@codeaurora.org>
+To: Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Sekhar Nori <nsekhar@ti.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 List-Id: linux-pm@vger.kernel.org
 
-If async_suspend is enabled for parent and child devices, then
-PM framework has to ensure that parent's async suspend gets called
-only after child's async suspend is done. In case if child's async
-suspend fails with error, then parent's async suspend must not be
-invoked. The current code uses async_error to ensure this but there
-is a problem with it in __device_suspend(). This function notifies
-the completion of child's async suspend before updating its error
-via async_error variable. As a result, parent's async suspend gets
-invoked even though it's child suspend has failed. Fix this bug by
-updating the async_error before notifying the child's completion.
+While trying to set the pll0 rate from the kernel I noticed there are
+two issues with da850 clocks. The first patch fixes an infinite loop
+in propagate_rate(). The third fixes an oops in da850_set_pll0rate().
+The second patch is just a coding style fix, while we're at it.
 
-Signed-off-by: Sahitya Tummala <stummala@codeaurora.org>
----
- drivers/base/power/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v1 -> v2:
+- change the approach in 1/3: create a new clock for nand inheriting
+  the rate from the aemif clock (verified that nand still works on
+  da850-lcdk)
+- patch 3/3: also update the davinci_cpufreq driver - the only
+  (indirect) user of da850_set_pll0rate()
+- s/requested_rate/rate in 3/3
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index e44944f4be77..f733f50f8321 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1460,9 +1460,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 	dpm_watchdog_clear(&wd);
- 
-  Complete:
--	complete_all(&dev->power.completion);
- 	if (error)
- 		async_error = error;
-+	complete_all(&dev->power.completion);
- 
- 	TRACE_SUSPEND(error);
- 	return error;
+v2 -> v3:
+- 1/3: keep the "aemif" connector id for the nand clock
+- 3/3: instead of multiplying freq->frequency, divide rate by 1000
+- retested both davinci_nand and clk_set_rate() for pll0
+
+v3 -> v4:
+- 1/4: add a comment explaining why we're leaving a NULL dev_id
+- 2/4: emac_clk is added twice to the clock lookup table too - fix it
+  and verify that davinci_mmdio gets a functional clock
+- 4/4: s/opp == NULL/!opp/
+
+Bartosz Golaszewski (4):
+  ARM: da850: fix infinite loop in clk_set_rate()
+  ARM: da850: don't add the emac clock to the clock lookup table twice
+  ARM: da850: coding style fix
+  ARM: da850: fix da850_set_pll0rate()
+
+ arch/arm/mach-davinci/da850.c     | 51 +++++++++++++++++++++++++++++++++------
+ drivers/cpufreq/davinci-cpufreq.c |  2 +-
+ 2 files changed, 45 insertions(+), 8 deletions(-)
+
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.9.3
