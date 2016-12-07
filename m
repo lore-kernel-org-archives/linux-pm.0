@@ -1,15 +1,15 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 07/10] PM / OPP: Don't allocate OPP table from _opp_allocate()
-Date: Wed,  7 Dec 2016 10:12:03 +0530
-Message-ID: <a4535d4b984ba08fa30d844503f1ec5f4756d128.1481085478.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 08/10] PM / OPP: Rename dev_pm_opp_get_suspend_opp() and return OPP rate
+Date: Wed,  7 Dec 2016 10:12:04 +0530
+Message-ID: <e622d7a515012e965d78aa2b0bdb59560d375df1.1481085478.git.viresh.kumar@linaro.org>
 References: <cover.1481085478.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:34473 "EHLO
-        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751618AbcLGEmf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 23:42:35 -0500
-Received: by mail-pf0-f180.google.com with SMTP id c4so74722311pfb.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 20:42:35 -0800 (PST)
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:33547 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751618AbcLGEmi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 23:42:38 -0500
+Received: by mail-pf0-f173.google.com with SMTP id d2so74672237pfd.0
+        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 20:42:38 -0800 (PST)
 In-Reply-To: <cover.1481085478.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1481085478.git.viresh.kumar@linaro.org>
 References: <cover.1481085478.git.viresh.kumar@linaro.org>
@@ -18,376 +18,119 @@ List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-There is no point in trying to find/allocate the table for every OPP
-that is added for a device. It would be far more efficient to allocate
-the table only once and pass its pointer to the routines that add the
-OPP entry.
+There is only one user of dev_pm_opp_get_suspend_opp() and that uses it
+to get the OPP rate for the suspend_opp.
 
-Locking is removed from _opp_add_static_v2() and _opp_add_v1() now as
-the callers call them with that lock already held.
-
-Call to _remove_opp_table() routine is also removed from _opp_free()
-now, as opp_table isn't allocated from within _opp_allocate(). This is
-handled by the routines which created the OPP table in the first place.
+Rename dev_pm_opp_get_suspend_opp() as dev_pm_opp_get_suspend_opp_freq()
+and return the rate directly from it.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 66 +++++++++++++++++++------------------
- drivers/base/power/opp/of.c   | 75 ++++++++++++++++++++++---------------------
- drivers/base/power/opp/opp.h  |  9 ++++--
- 3 files changed, 78 insertions(+), 72 deletions(-)
+ drivers/base/power/opp/core.c | 27 +++++++++++++--------------
+ drivers/cpufreq/cpufreq-dt.c  |  7 +------
+ include/linux/pm_opp.h        |  6 +++---
+ 3 files changed, 17 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 11496fbb2ee2..6f61809c5760 100644
+index 6f61809c5760..dfbe0610b675 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -842,7 +842,7 @@ struct opp_device *_add_opp_dev(const struct device *dev,
+@@ -328,32 +328,31 @@ unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev)
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_max_transition_latency);
+ 
+ /**
+- * dev_pm_opp_get_suspend_opp() - Get suspend opp
++ * dev_pm_opp_get_suspend_opp_freq() - Get frequency of suspend opp in Hz
+  * @dev:	device for which we do this operation
   *
-  * Return: valid opp_table pointer if success, else NULL.
+- * Return: This function returns pointer to the suspend opp if it is
+- * defined and available, otherwise it returns NULL.
+- *
+- * Locking: This function must be called under rcu_read_lock(). opp is a rcu
+- * protected pointer. The reason for the same is that the opp pointer which is
+- * returned will remain valid for use with opp_get_{voltage, freq} only while
+- * under the locked area. The pointer returned must be used prior to unlocking
+- * with rcu_read_unlock() to maintain the integrity of the pointer.
++ * Return: This function returns the frequency of the OPP marked as suspend_opp
++ * if one is available, else returns 0;
   */
--static struct opp_table *_add_opp_table(struct device *dev)
-+struct opp_table *_add_opp_table(struct device *dev)
+-struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev)
++unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev)
  {
  	struct opp_table *opp_table;
- 	struct opp_device *opp_dev;
-@@ -942,10 +942,9 @@ static void _remove_opp_table(struct opp_table *opp_table)
- 		  _kfree_device_rcu);
- }
++	unsigned long freq = 0;
  
--void _opp_free(struct dev_pm_opp *opp, struct opp_table *opp_table)
-+void _opp_free(struct dev_pm_opp *opp)
- {
- 	kfree(opp);
--	_remove_opp_table(opp_table);
- }
+-	opp_rcu_lockdep_assert();
++	rcu_read_lock();
  
- /**
-@@ -1030,15 +1029,10 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
- EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
- 
- struct dev_pm_opp *_opp_allocate(struct device *dev,
--				 struct opp_table **opp_table)
-+				 struct opp_table *table)
- {
- 	struct dev_pm_opp *opp;
- 	int count, supply_size;
--	struct opp_table *table;
--
--	table = _add_opp_table(dev);
--	if (!table)
+ 	opp_table = _find_opp_table(dev);
+ 	if (IS_ERR(opp_table) || !opp_table->suspend_opp ||
+ 	    !opp_table->suspend_opp->available)
 -		return NULL;
++		goto unlock;
  
- 	/* Allocate space for at least one supply */
- 	count = table->regulator_count ? table->regulator_count : 1;
-@@ -1046,17 +1040,13 @@ struct dev_pm_opp *_opp_allocate(struct device *dev,
- 
- 	/* allocate new OPP node and supplies structures */
- 	opp = kzalloc(sizeof(*opp) + supply_size, GFP_KERNEL);
--	if (!opp) {
--		kfree(table);
-+	if (!opp)
- 		return NULL;
--	}
- 
- 	/* Put the supplies at the end of the OPP structure as an empty array */
- 	opp->supplies = (struct dev_pm_opp_supply *)(opp + 1);
- 	INIT_LIST_HEAD(&opp->node);
- 
--	*opp_table = table;
--
- 	return opp;
+-	return opp_table->suspend_opp;
++	freq = dev_pm_opp_get_freq(opp_table->suspend_opp);
++
++unlock:
++	rcu_read_unlock();
++	return freq;
  }
- 
-@@ -1146,6 +1136,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+-EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp);
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_suspend_opp_freq);
  
  /**
-  * _opp_add_v1() - Allocate a OPP based on v1 bindings.
-+ * @opp_table:	OPP table
-  * @dev:	device for which we do this operation
-  * @freq:	Frequency in Hz for this OPP
-  * @u_volt:	Voltage in uVolts for this OPP
-@@ -1171,22 +1162,18 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
-  *		Duplicate OPPs (both freq and volt are same) and !opp->available
-  * -ENOMEM	Memory allocation failure
-  */
--int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
--		bool dynamic)
-+int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
-+		unsigned long freq, long u_volt, bool dynamic)
- {
--	struct opp_table *opp_table;
- 	struct dev_pm_opp *new_opp;
- 	unsigned long tol;
- 	int ret;
+  * dev_pm_opp_get_opp_count() - Get number of opps available in the opp table
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 269013311e79..c943787d761e 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -148,7 +148,6 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	struct private_data *priv;
+ 	struct device *cpu_dev;
+ 	struct clk *cpu_clk;
+-	struct dev_pm_opp *suspend_opp;
+ 	unsigned int transition_latency;
+ 	bool fallback = false;
+ 	const char *name;
+@@ -252,11 +251,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->driver_data = priv;
+ 	policy->clk = cpu_clk;
  
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
-+	opp_rcu_lockdep_assert();
+-	rcu_read_lock();
+-	suspend_opp = dev_pm_opp_get_suspend_opp(cpu_dev);
+-	if (suspend_opp)
+-		policy->suspend_freq = dev_pm_opp_get_freq(suspend_opp) / 1000;
+-	rcu_read_unlock();
++	policy->suspend_freq = dev_pm_opp_get_suspend_opp_freq(cpu_dev) / 1000;
  
--	new_opp = _opp_allocate(dev, &opp_table);
--	if (!new_opp) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	new_opp = _opp_allocate(dev, opp_table);
-+	if (!new_opp)
-+		return -ENOMEM;
+ 	ret = cpufreq_table_validate_and_show(policy, freq_table);
+ 	if (ret) {
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 0edd88f93904..7483ff291a8e 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -88,7 +88,7 @@ int dev_pm_opp_get_opp_count(struct device *dev);
+ unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev);
+-struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev);
++unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev);
  
- 	/* populate the opp table */
- 	new_opp->rate = freq;
-@@ -1205,8 +1192,6 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 		goto free_opp;
- 	}
- 
--	mutex_unlock(&opp_table_lock);
--
- 	/*
- 	 * Notify the changes in the availability of the operable
- 	 * frequency/voltage list.
-@@ -1215,9 +1200,8 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
+ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+ 					      unsigned long freq,
+@@ -159,9 +159,9 @@ static inline unsigned long dev_pm_opp_get_max_transition_latency(struct device
  	return 0;
- 
- free_opp:
--	_opp_free(new_opp, opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	_opp_free(new_opp);
-+
- 	return ret;
  }
  
-@@ -1735,7 +1719,25 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_register_put_opp_helper);
-  */
- int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+-static inline struct dev_pm_opp *dev_pm_opp_get_suspend_opp(struct device *dev)
++static inline unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev)
  {
--	return _opp_add_v1(dev, freq, u_volt, true);
-+	struct opp_table *opp_table;
-+	int ret;
-+
-+	/* Hold our table modification lock here */
-+	mutex_lock(&opp_table_lock);
-+
-+	opp_table = _add_opp_table(dev);
-+	if (!opp_table) {
-+		ret = -ENOMEM;
-+		goto unlock;
-+	}
-+
-+	ret = _opp_add_v1(opp_table, dev, freq, u_volt, true);
-+	if (ret)
-+		_remove_opp_table(opp_table);
-+
-+unlock:
-+	mutex_unlock(&opp_table_lock);
-+	return ret;
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_add);
- 
-@@ -1901,8 +1903,8 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_notifier);
-  * Free OPPs either created using static entries present in DT or even the
-  * dynamically added entries based on remove_all param.
-  */
--static void _dev_pm_opp_remove_table(struct opp_table *opp_table,
--				     struct device *dev, bool remove_all)
-+void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
-+			      bool remove_all)
- {
- 	struct dev_pm_opp *opp, *tmp;
- 
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 442fa46c4f5c..38efc14d829c 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -255,6 +255,7 @@ static struct device_node *_of_get_opp_desc_node(struct device *dev)
- 
- /**
-  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
-+ * @opp_table:	OPP table
-  * @dev:	device for which we do this operation
-  * @np:		device node
-  *
-@@ -276,22 +277,17 @@ static struct device_node *_of_get_opp_desc_node(struct device *dev)
-  * -ENOMEM	Memory allocation failure
-  * -EINVAL	Failed parsing the OPP node
-  */
--static int _opp_add_static_v2(struct device *dev, struct device_node *np)
-+static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
-+			      struct device_node *np)
- {
--	struct opp_table *opp_table;
- 	struct dev_pm_opp *new_opp;
- 	u64 rate;
- 	u32 val;
- 	int ret;
- 
--	/* Hold our table modification lock here */
--	mutex_lock(&opp_table_lock);
--
--	new_opp = _opp_allocate(dev, &opp_table);
--	if (!new_opp) {
--		ret = -ENOMEM;
--		goto unlock;
--	}
-+	new_opp = _opp_allocate(dev, opp_table);
-+	if (!new_opp)
-+		return -ENOMEM;
- 
- 	ret = of_property_read_u64(np, "opp-hz", &rate);
- 	if (ret < 0) {
-@@ -347,8 +343,6 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	if (new_opp->clock_latency_ns > opp_table->clock_latency_ns_max)
- 		opp_table->clock_latency_ns_max = new_opp->clock_latency_ns;
- 
--	mutex_unlock(&opp_table_lock);
--
- 	pr_debug("%s: turbo:%d rate:%lu uv:%lu uvmin:%lu uvmax:%lu latency:%lu\n",
- 		 __func__, new_opp->turbo, new_opp->rate,
- 		 new_opp->supplies[0].u_volt, new_opp->supplies[0].u_volt_min,
-@@ -362,9 +356,8 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 	return 0;
- 
- free_opp:
--	_opp_free(new_opp, opp_table);
--unlock:
--	mutex_unlock(&opp_table_lock);
-+	_opp_free(new_opp);
-+
- 	return ret;
+-	return NULL;
++	return 0;
  }
  
-@@ -382,16 +375,20 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 		/* OPPs are already managed */
- 		if (!_add_opp_dev(dev, opp_table))
- 			ret = -ENOMEM;
--		mutex_unlock(&opp_table_lock);
--		return ret;
-+		goto unlock;
-+	}
-+
-+	opp_table = _add_opp_table(dev);
-+	if (!opp_table) {
-+		ret = -ENOMEM;
-+		goto unlock;
- 	}
--	mutex_unlock(&opp_table_lock);
- 
- 	/* We have opp-table node now, iterate over it and add OPPs */
- 	for_each_available_child_of_node(opp_np, np) {
- 		count++;
- 
--		ret = _opp_add_static_v2(dev, np);
-+		ret = _opp_add_static_v2(opp_table, dev, np);
- 		if (ret) {
- 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
- 				ret);
-@@ -400,15 +397,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	}
- 
- 	/* There should be one of more OPP defined */
--	if (WARN_ON(!count))
--		return -ENOENT;
--
--	mutex_lock(&opp_table_lock);
--
--	opp_table = _find_opp_table(dev);
--	if (WARN_ON(IS_ERR(opp_table))) {
--		ret = PTR_ERR(opp_table);
--		mutex_unlock(&opp_table_lock);
-+	if (WARN_ON(!count)) {
-+		ret = -ENOENT;
- 		goto free_table;
- 	}
- 
-@@ -418,12 +408,12 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- 	else
- 		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
- 
--	mutex_unlock(&opp_table_lock);
--
--	return 0;
-+	goto unlock;
- 
- free_table:
--	dev_pm_opp_of_remove_table(dev);
-+	_dev_pm_opp_remove_table(opp_table, dev, false);
-+unlock:
-+	mutex_unlock(&opp_table_lock);
- 
- 	return ret;
- }
-@@ -431,9 +421,10 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
- /* Initializes OPP tables based on old-deprecated bindings */
- static int _of_add_opp_table_v1(struct device *dev)
- {
-+	struct opp_table *opp_table;
- 	const struct property *prop;
- 	const __be32 *val;
--	int nr, ret;
-+	int nr, ret = 0;
- 
- 	prop = of_find_property(dev->of_node, "operating-points", NULL);
- 	if (!prop)
-@@ -451,22 +442,32 @@ static int _of_add_opp_table_v1(struct device *dev)
- 		return -EINVAL;
- 	}
- 
-+	mutex_lock(&opp_table_lock);
-+
-+	opp_table = _add_opp_table(dev);
-+	if (!opp_table) {
-+		ret = -ENOMEM;
-+		goto unlock;
-+	}
-+
- 	val = prop->value;
- 	while (nr) {
- 		unsigned long freq = be32_to_cpup(val++) * 1000;
- 		unsigned long volt = be32_to_cpup(val++);
- 
--		ret = _opp_add_v1(dev, freq, volt, false);
-+		ret = _opp_add_v1(opp_table, dev, freq, volt, false);
- 		if (ret) {
- 			dev_err(dev, "%s: Failed to add OPP %ld (%d)\n",
- 				__func__, freq, ret);
--			dev_pm_opp_of_remove_table(dev);
--			return ret;
-+			_dev_pm_opp_remove_table(opp_table, dev, false);
-+			break;
- 		}
- 		nr -= 2;
- 	}
- 
--	return 0;
-+unlock:
-+	mutex_unlock(&opp_table_lock);
-+	return ret;
- }
- 
- /**
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index c4b539a8533a..e32dc80ddc12 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -191,13 +191,16 @@ struct opp_table {
- 
- /* Routines internal to opp core */
- struct opp_table *_find_opp_table(struct device *dev);
-+struct opp_table *_add_opp_table(struct device *dev);
- struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_table);
-+void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev, bool remove_all);
- void _dev_pm_opp_find_and_remove_table(struct device *dev, bool remove_all);
--struct dev_pm_opp *_opp_allocate(struct device *dev, struct opp_table **opp_table);
--void _opp_free(struct dev_pm_opp *opp, struct opp_table *opp_table);
-+struct dev_pm_opp *_opp_allocate(struct device *dev, struct opp_table *opp_table);
-+void _opp_free(struct dev_pm_opp *opp);
- int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *opp_table);
--int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt, bool dynamic);
-+int _opp_add_v1(struct opp_table *opp_table, struct device *dev, unsigned long freq, long u_volt, bool dynamic);
- void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, bool of);
-+struct opp_table *_add_opp_table(struct device *dev);
- 
- #ifdef CONFIG_OF
- void _of_init_opp_table(struct opp_table *opp_table, struct device *dev);
+ static inline struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
 -- 
 2.7.1.410.g6faf27b
 
