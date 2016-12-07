@@ -1,47 +1,65 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 04/10] PM / OPP: Error out on failing to add static OPPs
- for v1 bindings
-Date: Wed, 7 Dec 2016 13:13:43 -0800
-Message-ID: <20161207211343.GA5423@codeaurora.org>
-References: <cover.1481015522.git.viresh.kumar@linaro.org>
- <1f876a6d176784f9ab901aea7ff521d53522682d.1481015522.git.viresh.kumar@linaro.org>
- <20161207011722.GJ4388@codeaurora.org>
- <20161207032555.GE31255@vireshk-i7>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: [PATCH 0/2] PM / sleep: Support for using suspend-to-idle by
+ default
+Date: Wed, 7 Dec 2016 21:38:31 +0000
+Message-ID: <c7f7306f2ae9452a838f94d87b3bc737@ausx13mpc120.AMER.DELL.COM>
+References: <9316960.49SRRJV8RJ@vostro.rjw.lan>
+ <71203ae1bfe54eb39d79c54b51ba7ae8@ausx13mpc120.AMER.DELL.COM>
+ <CAJZ5v0g-eOciw_3PZBvaHPzh8sMpe0Fbx6RmCTiS1Nax=Bxh3w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:54086 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752156AbcLGVYe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 16:24:34 -0500
-Content-Disposition: inline
-In-Reply-To: <20161207032555.GE31255@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0g-eOciw_3PZBvaHPzh8sMpe0Fbx6RmCTiS1Nax=Bxh3w@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: rafael@kernel.org
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org, luto@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 12/07, Viresh Kumar wrote:
-> On 06-12-16, 17:17, Stephen Boyd wrote:
-> > On 12/06, Viresh Kumar wrote:
-> > > The code adding static OPPs for V2 bindings already does so. Make the V1
-> > > bindings specific code behave the same.
-> > > 
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > 
-> > Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-> > 
-> > It looks like that goes back to the original DT OPP binding
-> > support written by Shawn Guo. Any idea why we kept trying to add
-> > more OPPs if it failed to add one? Best effort or something?
-> 
-> Not sure, maybe for handling duplicate OPPs.
-> 
-
-So perhaps we should Cc Shawn Guo who wrote the original code
-then?
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiByand5c29ja2lAZ21haWwuY29t
+IFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mDQo+IFJhZmFlbCBKLiBX
+eXNvY2tpDQo+IFNlbnQ6IFRodXJzZGF5LCBOb3ZlbWJlciAxNywgMjAxNiAzOjA1IFBNDQo+IFRv
+OiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPg0KPiBDYzog
+UmFmYWVsIEouIFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0PjsgTGludXggUE0gPGxpbnV4LQ0K
+PiBwbUB2Z2VyLmtlcm5lbC5vcmc+OyBBQ1BJIERldmVsIE1hbGluZyBMaXN0IDxsaW51eC1hY3Bp
+QHZnZXIua2VybmVsLm9yZz47DQo+IExlbiBCcm93biA8bGVuLmJyb3duQGludGVsLmNvbT47IExp
+bnV4IEtlcm5lbCBNYWlsaW5nIExpc3QgPGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3Jn
+PjsgQW5keSBMdXRvbWlyc2tpIDxsdXRvQGtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggMC8yXSBQTSAvIHNsZWVwOiBTdXBwb3J0IGZvciB1c2luZyBzdXNwZW5kLXRvLWlkbGUgYnkN
+Cj4gZGVmYXVsdA0KPiANCj4gT24gVGh1LCBOb3YgMTcsIDIwMTYgYXQgOTo0MCBQTSwgIDxNYXJp
+by5MaW1vbmNpZWxsb0BkZWxsLmNvbT4gd3JvdGU6DQo+ID4gSGkgUmFmYWVsLA0KPiA+DQo+ID4+
+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tp
+IFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+ID4+IFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1i
+ZXIgMTYsIDIwMTYgODoxOSBQTQ0KPiA+PiBUbzogTGludXggUE0gbGlzdCA8bGludXgtcG1Admdl
+ci5rZXJuZWwub3JnPg0KPiA+PiBDYzogQUNQSSBEZXZlbCBNYWxpbmcgTGlzdCA8bGludXgtYWNw
+aUB2Z2VyLmtlcm5lbC5vcmc+OyBMZW4gQnJvd24NCj4gPj4gPGxlbi5icm93bkBpbnRlbC5jb20+
+OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0IDxsaW51eC0NCj4gPj4ga2VybmVsQHZnZXIua2Vy
+bmVsLm9yZz47IExpbW9uY2llbGxvLCBNYXJpbw0KPiA+PiA8TWFyaW9fTGltb25jaWVsbG9ARGVs
+bC5jb20+OyBBbmR5IEx1dG9taXJza2kgPGx1dG9Aa2VybmVsLm9yZz4NCj4gPj4gU3ViamVjdDog
+W1BBVENIIDAvMl0gUE0gLyBzbGVlcDogU3VwcG9ydCBmb3IgdXNpbmcgc3VzcGVuZC10by1pZGxl
+IGJ5DQo+ID4+IGRlZmF1bHQNCj4gPj4NCj4gPj4gSGksDQo+ID4+DQo+ID4+IFRoaXMgc2VyaWVz
+IGlzIGEgZm9sbG93LXVwIGZvciBhIEJvRiBkaXNjdXNzaW9uIGR1cmluZyB0aGUgTFBDLg0KPiA+
+Pg0KPiA+PiBUaGUgZGlzY3Vzc2lvbiB3YXMgYWJvdXQgc3VwcG9ydGluZyBMaW51eCBvbiBtb2Rl
+cm4gbGFwdG9wcyBhbmQgb25lIG9mDQo+ID4+IHRoZSBpc3N1ZXMgbWVudGlvbmVkIHdhcyB0aGUg
+bGFjayBvZiBzdXBwb3J0IGZvciBzdXNwZW5kLXRvLWlkbGUgaW4gdXNlcg0KPiA+PiBzcGFjZSBh
+bmQgaWYgdGhlcmUncyBhbnl0aGluZyB0aGF0IGNhbiBiZSBkb25lIGFib3V0IHRoYXQgaW4gdGhl
+IGtlcm5lbC4NCj4gPj4NCj4gPj4gVGhlIGZvbGxvd2luZyBwYXRjaGVzIGFyZSBteSBpbnB1dC4g
+Oi0pDQo+ID4+DQo+ID4+IFRoZSBmaXJzdCBvbmUgcmV3b3JrcyB0aGUgc3VzcGVuZCBpbnRlcmZh
+Y2UgdG8gYWxsb3cgdGhlICJtZW0iIHN0cmluZw0KPiA+PiBpbiAvc3lzL3Bvd2VyL3N0YXRlIHRv
+IHJlcHJlc2VudCBtdWx0aXBsZSB0aGluZ3MgdGhhdCBjYW4gYmUgc2VsZWN0ZWQgdmlhDQo+ID4+
+IGFuIGFkZGl0aW9uYWwgc3lzZnMgYXR0cmlidXRlLg0KPiA+Pg0KPiA+PiBUaGUgc2Vjb25kIG9u
+ZSBtYWtlcyBBQ1BJIHNlbGVjdCBzdXNwZW5kLXRvLWlkbGUgYXMgdGhlIGRlZmF1bHQNCj4gc3Vz
+cGVuZA0KPiA+PiBtb2RlDQo+ID4+IGlmIHNvIGluZGljYXRlZCBpbiB0aGUgRkFEVC4NCj4gPj4N
+Cj4gPj4gUGxlYXNlIGxldCBtZSBrbm93IHdoYXQgeW91IHRoaW5rLg0KPiA+Pg0KPiA+PiBUaGFu
+a3MsDQo+ID4+IFJhZmFlbA0KPiA+DQo+ID4gVGhhbmtzIGZvciBzdWJtaXR0aW5nLiAgSSBsaWtl
+IHRoZSBhcHByb2FjaCwgZXNwZWNpYWxseSB0aGF0IGl0IGxlYXZlcyByb29tDQo+ID4gdG8gZWFz
+aWx5IG1vZGlmeSB0aGUgYmVoYXZpb3IgZm9yIGRlYnVnZ2luZyBwdXJwb3NlcyBhbmQgYWRkaW5n
+IHF1aXJrcy4NCj4gDQo+IFdlbGwsIHRoYXQncyB0aGUgcG9pbnQuIDotKQ0KPiANCj4gPiBJIHRl
+c3RlZCB5b3VyIHNlcmllcyBvbiBhIG1hY2hpbmUgdGhhdCBoYWQgdGhpcyBiaXQgc2V0IGluIHRo
+ZSBGQURUIGFuZA0KPiA+IGNvbmZpcm1lZCB0aGF0IGl0IHNldCB1cCBhbmQgdXNlZCBwb2xpY3kg
+cHJvcGVybHkuDQo+ID4NCj4gPiBUZXN0ZWQtQnk6IE1hcmlvIExpbW9uY2llbGxvIDxtYXJpby5s
+aW1vbmNpZWxsb0BkZWxsLmNvbT4NCj4gDQo+IFRoYW5rcyENCg0KUmFmYWVsLA0KDQpJIGhhZG4n
+dCBub3RpY2VkIHRoZXNlIG1lcmdlZCBpbnRvIGFueSBvZiB5b3VyIGxpbnV4LXBtLmdpdCBicmFu
+Y2hlcy4NCg0KRG8geW91IGhhdmUgYSBwbGFuIGZvciBtZXJnaW5nIHRoZW0/ICBPciB3YWl0aW5n
+IGZvciBvdGhlciBmZWVkYmFjaz8NCg0KVGhhbmtzLA0K
