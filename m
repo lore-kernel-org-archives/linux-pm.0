@@ -1,39 +1,38 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 01/10] PM / OPP: Fix memory leak while adding duplicate
- OPPs
-Date: Wed, 7 Dec 2016 08:53:15 +0530
-Message-ID: <20161207032315.GC31255@vireshk-i7>
-References: <cover.1481015522.git.viresh.kumar@linaro.org>
- <d4addab7750d63731d8e8562e2600fa8c987f53a.1481015522.git.viresh.kumar@linaro.org>
- <20161207010924.GF4388@codeaurora.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 03/12] power_supply: axp288_charger: Replace the extcon API
+Date: Wed, 07 Dec 2016 12:45:19 +0900
+Message-ID: <584785CF.5040201@samsung.com>
+References: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20161130055742epcas1p3cbb269d69275ed6684a7baab0841519b@epcas1p3.samsung.com>
+ <1480485460-2663-4-git-send-email-cw00.choi@samsung.com>
+ <584605A6.1010803@samsung.com> <20161207030527.n2u4q4tf7po74clg@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f180.google.com ([209.85.192.180]:34485 "EHLO
-        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752017AbcLGDcL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Dec 2016 22:32:11 -0500
-Received: by mail-pf0-f180.google.com with SMTP id c4so74284908pfb.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Dec 2016 19:32:11 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20161207010924.GF4388@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20161207030527.n2u4q4tf7po74clg@earth>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: balbi@kernel.org, gregkh@linuxfoundation.org, kishon@ti.com, Peter.Chen@nxp.com, wens@csie.org, yoshihiro.shimoda.uh@renesas.com, maxime.ripard@free-electrons.com, b-liu@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-renesas-soc@vger.kernel.org, chanwoo@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 06-12-16, 17:09, Stephen Boyd wrote:
-> > @@ -1186,8 +1192,12 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
-> >  	new_opp->dynamic = dynamic;
-> >  
-> >  	ret = _opp_add(dev, new_opp, opp_table);
-> > -	if (ret)
-> > +	if (ret) {
-> > +		/* Don't return error for duplicate OPPs */
+Hi Sebastian,
+
+On 2016년 12월 07일 12:05, Sebastian Reichel wrote:
+> Hi Chanwoo,
 > 
-> Yes, but why?
+> On Tue, Dec 06, 2016 at 09:26:14AM +0900, Chanwoo Choi wrote:
+>> Could you please review and pick the patch3/4 for power-supply driver?
+> 
+> Patches look fine. As I expect the merge window to open next week I
+> would rather not queue this for 4.10 and instead do it once 4.10-rc1
+> has been tagged.
+> 
+> -- Sebastian
+> 
 
-Will update the comment over _opp_add() to describe that.
+Thanks for your pick up.
 
 -- 
-viresh
+Best Regards,
+Chanwoo Choi
