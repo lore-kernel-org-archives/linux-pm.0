@@ -1,65 +1,123 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: [PATCH 0/2] PM / sleep: Support for using suspend-to-idle by
- default
-Date: Wed, 7 Dec 2016 21:38:31 +0000
-Message-ID: <c7f7306f2ae9452a838f94d87b3bc737@ausx13mpc120.AMER.DELL.COM>
-References: <9316960.49SRRJV8RJ@vostro.rjw.lan>
- <71203ae1bfe54eb39d79c54b51ba7ae8@ausx13mpc120.AMER.DELL.COM>
- <CAJZ5v0g-eOciw_3PZBvaHPzh8sMpe0Fbx6RmCTiS1Nax=Bxh3w@mail.gmail.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 07/10] PM / OPP: Don't allocate OPP table from
+ _opp_allocate()
+Date: Wed, 7 Dec 2016 14:05:25 -0800
+Message-ID: <20161207220525.GB5423@codeaurora.org>
+References: <cover.1481015522.git.viresh.kumar@linaro.org>
+ <ab1dbd94f4638ac04a9dd4b526ddaaf136154dd1.1481015522.git.viresh.kumar@linaro.org>
+ <20161207010221.GE4388@codeaurora.org>
+ <20161207041744.GF31255@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g-eOciw_3PZBvaHPzh8sMpe0Fbx6RmCTiS1Nax=Bxh3w@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: rafael@kernel.org
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org, luto@kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56072 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932595AbcLGWF2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 17:05:28 -0500
+Content-Disposition: inline
+In-Reply-To: <20161207041744.GF31255@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiByand5c29ja2lAZ21haWwuY29t
-IFttYWlsdG86cmp3eXNvY2tpQGdtYWlsLmNvbV0gT24gQmVoYWxmIE9mDQo+IFJhZmFlbCBKLiBX
-eXNvY2tpDQo+IFNlbnQ6IFRodXJzZGF5LCBOb3ZlbWJlciAxNywgMjAxNiAzOjA1IFBNDQo+IFRv
-OiBMaW1vbmNpZWxsbywgTWFyaW8gPE1hcmlvX0xpbW9uY2llbGxvQERlbGwuY29tPg0KPiBDYzog
-UmFmYWVsIEouIFd5c29ja2kgPHJqd0Byand5c29ja2kubmV0PjsgTGludXggUE0gPGxpbnV4LQ0K
-PiBwbUB2Z2VyLmtlcm5lbC5vcmc+OyBBQ1BJIERldmVsIE1hbGluZyBMaXN0IDxsaW51eC1hY3Bp
-QHZnZXIua2VybmVsLm9yZz47DQo+IExlbiBCcm93biA8bGVuLmJyb3duQGludGVsLmNvbT47IExp
-bnV4IEtlcm5lbCBNYWlsaW5nIExpc3QgPGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwub3Jn
-PjsgQW5keSBMdXRvbWlyc2tpIDxsdXRvQGtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJlOiBbUEFU
-Q0ggMC8yXSBQTSAvIHNsZWVwOiBTdXBwb3J0IGZvciB1c2luZyBzdXNwZW5kLXRvLWlkbGUgYnkN
-Cj4gZGVmYXVsdA0KPiANCj4gT24gVGh1LCBOb3YgMTcsIDIwMTYgYXQgOTo0MCBQTSwgIDxNYXJp
-by5MaW1vbmNpZWxsb0BkZWxsLmNvbT4gd3JvdGU6DQo+ID4gSGkgUmFmYWVsLA0KPiA+DQo+ID4+
-IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IFJhZmFlbCBKLiBXeXNvY2tp
-IFttYWlsdG86cmp3QHJqd3lzb2NraS5uZXRdDQo+ID4+IFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1i
-ZXIgMTYsIDIwMTYgODoxOSBQTQ0KPiA+PiBUbzogTGludXggUE0gbGlzdCA8bGludXgtcG1Admdl
-ci5rZXJuZWwub3JnPg0KPiA+PiBDYzogQUNQSSBEZXZlbCBNYWxpbmcgTGlzdCA8bGludXgtYWNw
-aUB2Z2VyLmtlcm5lbC5vcmc+OyBMZW4gQnJvd24NCj4gPj4gPGxlbi5icm93bkBpbnRlbC5jb20+
-OyBMaW51eCBLZXJuZWwgTWFpbGluZyBMaXN0IDxsaW51eC0NCj4gPj4ga2VybmVsQHZnZXIua2Vy
-bmVsLm9yZz47IExpbW9uY2llbGxvLCBNYXJpbw0KPiA+PiA8TWFyaW9fTGltb25jaWVsbG9ARGVs
-bC5jb20+OyBBbmR5IEx1dG9taXJza2kgPGx1dG9Aa2VybmVsLm9yZz4NCj4gPj4gU3ViamVjdDog
-W1BBVENIIDAvMl0gUE0gLyBzbGVlcDogU3VwcG9ydCBmb3IgdXNpbmcgc3VzcGVuZC10by1pZGxl
-IGJ5DQo+ID4+IGRlZmF1bHQNCj4gPj4NCj4gPj4gSGksDQo+ID4+DQo+ID4+IFRoaXMgc2VyaWVz
-IGlzIGEgZm9sbG93LXVwIGZvciBhIEJvRiBkaXNjdXNzaW9uIGR1cmluZyB0aGUgTFBDLg0KPiA+
-Pg0KPiA+PiBUaGUgZGlzY3Vzc2lvbiB3YXMgYWJvdXQgc3VwcG9ydGluZyBMaW51eCBvbiBtb2Rl
-cm4gbGFwdG9wcyBhbmQgb25lIG9mDQo+ID4+IHRoZSBpc3N1ZXMgbWVudGlvbmVkIHdhcyB0aGUg
-bGFjayBvZiBzdXBwb3J0IGZvciBzdXNwZW5kLXRvLWlkbGUgaW4gdXNlcg0KPiA+PiBzcGFjZSBh
-bmQgaWYgdGhlcmUncyBhbnl0aGluZyB0aGF0IGNhbiBiZSBkb25lIGFib3V0IHRoYXQgaW4gdGhl
-IGtlcm5lbC4NCj4gPj4NCj4gPj4gVGhlIGZvbGxvd2luZyBwYXRjaGVzIGFyZSBteSBpbnB1dC4g
-Oi0pDQo+ID4+DQo+ID4+IFRoZSBmaXJzdCBvbmUgcmV3b3JrcyB0aGUgc3VzcGVuZCBpbnRlcmZh
-Y2UgdG8gYWxsb3cgdGhlICJtZW0iIHN0cmluZw0KPiA+PiBpbiAvc3lzL3Bvd2VyL3N0YXRlIHRv
-IHJlcHJlc2VudCBtdWx0aXBsZSB0aGluZ3MgdGhhdCBjYW4gYmUgc2VsZWN0ZWQgdmlhDQo+ID4+
-IGFuIGFkZGl0aW9uYWwgc3lzZnMgYXR0cmlidXRlLg0KPiA+Pg0KPiA+PiBUaGUgc2Vjb25kIG9u
-ZSBtYWtlcyBBQ1BJIHNlbGVjdCBzdXNwZW5kLXRvLWlkbGUgYXMgdGhlIGRlZmF1bHQNCj4gc3Vz
-cGVuZA0KPiA+PiBtb2RlDQo+ID4+IGlmIHNvIGluZGljYXRlZCBpbiB0aGUgRkFEVC4NCj4gPj4N
-Cj4gPj4gUGxlYXNlIGxldCBtZSBrbm93IHdoYXQgeW91IHRoaW5rLg0KPiA+Pg0KPiA+PiBUaGFu
-a3MsDQo+ID4+IFJhZmFlbA0KPiA+DQo+ID4gVGhhbmtzIGZvciBzdWJtaXR0aW5nLiAgSSBsaWtl
-IHRoZSBhcHByb2FjaCwgZXNwZWNpYWxseSB0aGF0IGl0IGxlYXZlcyByb29tDQo+ID4gdG8gZWFz
-aWx5IG1vZGlmeSB0aGUgYmVoYXZpb3IgZm9yIGRlYnVnZ2luZyBwdXJwb3NlcyBhbmQgYWRkaW5n
-IHF1aXJrcy4NCj4gDQo+IFdlbGwsIHRoYXQncyB0aGUgcG9pbnQuIDotKQ0KPiANCj4gPiBJIHRl
-c3RlZCB5b3VyIHNlcmllcyBvbiBhIG1hY2hpbmUgdGhhdCBoYWQgdGhpcyBiaXQgc2V0IGluIHRo
-ZSBGQURUIGFuZA0KPiA+IGNvbmZpcm1lZCB0aGF0IGl0IHNldCB1cCBhbmQgdXNlZCBwb2xpY3kg
-cHJvcGVybHkuDQo+ID4NCj4gPiBUZXN0ZWQtQnk6IE1hcmlvIExpbW9uY2llbGxvIDxtYXJpby5s
-aW1vbmNpZWxsb0BkZWxsLmNvbT4NCj4gDQo+IFRoYW5rcyENCg0KUmFmYWVsLA0KDQpJIGhhZG4n
-dCBub3RpY2VkIHRoZXNlIG1lcmdlZCBpbnRvIGFueSBvZiB5b3VyIGxpbnV4LXBtLmdpdCBicmFu
-Y2hlcy4NCg0KRG8geW91IGhhdmUgYSBwbGFuIGZvciBtZXJnaW5nIHRoZW0/ICBPciB3YWl0aW5n
-IGZvciBvdGhlciBmZWVkYmFjaz8NCg0KVGhhbmtzLA0K
+On 12/07, Viresh Kumar wrote:
+> On 06-12-16, 17:02, Stephen Boyd wrote:
+> > On 12/06, Viresh Kumar wrote:
+> > > diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> > > index ef114cf9edcd..6bcbb64a5582 100644
+> > > --- a/drivers/base/power/opp/core.c
+> > > +++ b/drivers/base/power/opp/core.c
+> > > @@ -1030,33 +1029,24 @@ void dev_pm_opp_remove(struct device *dev, unsigned long freq)
+> > >  EXPORT_SYMBOL_GPL(dev_pm_opp_remove);
+> > >  
+> > >  struct dev_pm_opp *_opp_allocate(struct device *dev,
+> > > -				 struct opp_table **opp_table)
+> > > +				 struct opp_table *opp_table)
+> > 
+> > Please call it table instead.
+> 
+> Sure.
+> 
+> > >  {
+> > >  	struct dev_pm_opp *opp;
+> > >  	int count, supply_size;
+> > > -	struct opp_table *table;
+> > > -
+> > > -	table = _add_opp_table(dev);
+> > 
+> > Is this the only user of dev? Why do we keep passing dev to this
+> > function then?
+> 
+> Because we are still working with struct list_dev, which needs to save
+> a pointer to dev. We may simplify that with later series though, not
+> sure yet.
+
+Sorry I don't understand. After this patch it looks like dev is
+unused in the function because we delete the only user
+_add_opp_table().
+
+> 
+> > > +int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
+> > > +		unsigned long freq, long u_volt, bool dynamic)
+> > >  {
+> > > -	struct opp_table *opp_table;
+> > >  	struct dev_pm_opp *new_opp;
+> > >  	unsigned long tol;
+> > >  	int ret;
+> > >  
+> > > -	/* Hold our table modification lock here */
+> > > -	mutex_lock(&opp_table_lock);
+> > 
+> > Can we have a mutex locked assertion here? Or a note in the
+> > comments that we assume the opp table lock is held?
+> 
+> Done.
+> 
+> > > -
+> > > -	new_opp = _opp_allocate(dev, &opp_table);
+> > > -	if (!new_opp) {
+> > > -		ret = -ENOMEM;
+> > > -		goto unlock;
+> > > -	}
+> > > +	new_opp = _opp_allocate(dev, opp_table);
+> > > +	if (!new_opp)
+> > > +		return -ENOMEM;
+> > >  
+> > >  	/* populate the opp table */
+> > >  	new_opp->rate = freq;
+> > 
+> > Also, now we call the srcu notifier chain with the opp_table_lock
+> > held? That seems not so good. Do we need to drop it and reaquire
+> > the lock across the table lock? Or perhaps we should rethink
+> > widening the lock this much across the notifier.
+> 
+> Hmm, fair point but:
+> - The OPP notifiers are used only by devfreq and no one else. So the
+>   most common case of cpufreq will be just fine.
+> - The lock is taken across only OPP_EVENT_ADD event and that doesn't
+>   get called all the time. Normally it will happen only at boot (once
+>   for each OPP) and that's it. I am not sure if we should actually
+>   remove the notifier completely going forward.
+> - Looking at devfreq implementation it seems that they are mostly
+>   interested in the updates to the OPP nodes.
+> - The later series (which I may post today as this one is reviewed
+>   mostly), will simplify it a lot. The lock wouldn't be taken across
+>   any big parts as we will use kref instead.
+> - So, I would like to keep this patch as is as this is going to be
+>   sorted out anyway.
+
+I haven't looked at the next round of patches. If the lock is
+still held across the notifier for OPP_EVENT_ADD then it would
+seem that we should get some sort of lockdep splat if the
+notified functions want to call back into the OPP code and that
+takes the same lock we held across the notifier. Even if it would
+work for the other notifiers that aren't OPP_EVENT_ADD, lockdep
+wouldn't know that because of locking classes, hence the splat.
+That's my only concern. Obviously if the locking is going away
+then it's just a bisection hole problem that I'm willing to
+ignore.
+
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
