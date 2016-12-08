@@ -1,53 +1,56 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] devfreq: rk3399_dmc: Don't use OPP structures outside of RCU locks
-Date: Thu, 08 Dec 2016 01:38:44 +0100
-Message-ID: <2256096.rPjKFAJNx8@aspire.rjw.lan>
-References: <dcd19eb862a0de24b441f4d43473a01ae90e20e9.1480908064.git.viresh.kumar@linaro.org> <CAJZ5v0iL9wvMfwqvpKVMEig=7xcoFtvhbgjOVche1Y58WfHnLw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 04/10] PM / OPP: Error out on failing to add static OPPs
+ for v1 bindings
+Date: Thu, 8 Dec 2016 09:00:59 +0530
+Message-ID: <20161208033059.GA24152@vireshk-i7>
+References: <cover.1481015522.git.viresh.kumar@linaro.org>
+ <1f876a6d176784f9ab901aea7ff521d53522682d.1481015522.git.viresh.kumar@linaro.org>
+ <20161207011722.GJ4388@codeaurora.org>
+ <20161207032555.GE31255@vireshk-i7>
+ <20161207211343.GA5423@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57906 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932141AbcLHAtn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 19:49:43 -0500
-In-Reply-To: <CAJZ5v0iL9wvMfwqvpKVMEig=7xcoFtvhbgjOVche1Y58WfHnLw@mail.gmail.com>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35022 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753274AbcLHDcT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 22:32:19 -0500
+Received: by mail-pf0-f180.google.com with SMTP id i88so80557335pfk.2
+        for <linux-pm@vger.kernel.org>; Wed, 07 Dec 2016 19:31:06 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20161207211343.GA5423@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Kyungmin Park <kyungmin.park@samsung.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Stephen Boyd <sboyd@codeaurora.org>, shawnguo@kernel.org
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Tuesday, December 06, 2016 11:40:18 PM Rafael J. Wysocki wrote:
-> Hi MyungJoo,
+Hi Shawn,
+
+On 07-12-16, 13:13, Stephen Boyd wrote:
+> On 12/07, Viresh Kumar wrote:
+> > On 06-12-16, 17:17, Stephen Boyd wrote:
+> > > On 12/06, Viresh Kumar wrote:
+> > > > The code adding static OPPs for V2 bindings already does so. Make the V1
+> > > > bindings specific code behave the same.
+> > > > 
+> > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > ---
+> > > 
+> > > Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> > > 
+> > > It looks like that goes back to the original DT OPP binding
+> > > support written by Shawn Guo. Any idea why we kept trying to add
+> > > more OPPs if it failed to add one? Best effort or something?
+
+Can you please answer this question from Stephen?
+
+> > Not sure, maybe for handling duplicate OPPs.
+> > 
 > 
-> On Mon, Dec 5, 2016 at 4:23 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > The OPP structures are abused to the best here, without understanding
-> > how the OPP core and RCU locks work.
-> >
-> > In short, the OPP pointer saved in 'rk3399_dmcfreq' can become invalid
-> > under your nose, as the OPP core may free it.
-> >
-> > Fix various abuses around OPP structures and calls.
-> >
-> > Compile tested only.
-> >
-> > Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> > V1->V2:
-> > - Added Reviewed-by from Chanwoo.
-> > - Fixed an issue reported by buildbot.
-> 
-> I think this along with https://patchwork.kernel.org/patch/9455789/
-> and https://patchwork.kernel.org/patch/9455757/ should go into
-> 4.10-rc1.
-> 
-> Are you going to send a pull request for this before the merge window
-> or do you want me to apply them directly?
+> So perhaps we should Cc Shawn Guo who wrote the original code
+> then?
 
-Due to the lack of response, I'm going to apply these three patches
-directly.
+I wouldn't mind doing that, but I don't think it needs to be a blocker for now.
 
-Thanks,
-Rafael
-
+-- 
+viresh
