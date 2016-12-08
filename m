@@ -1,51 +1,84 @@
-From: Tero Kristo <t-kristo@ti.com>
-Subject: Re: Cpufreq regression in next-20161207
-Date: Thu, 8 Dec 2016 10:54:06 +0200
-Message-ID: <bba6373e-3f2e-cbfa-1928-e205b2dc5ff3@ti.com>
-References: <20161208045640.GB4264@atomide.com>
- <20161208050739.GE24152@vireshk-i7> <20161208055220.GD4264@atomide.com>
- <20161208055738.GB31711@vireshk-i7> <20161208060447.GE4264@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Srikant Ritolia <s.ritolia@samsung.com>
+Subject: [PATCH] power: max8997_charger: Using device managed API and remove
+ OOM print
+Date: Thu, 08 Dec 2016 14:42:37 +0530
+Message-ID: <1481188357-11889-1-git-send-email-s.ritolia@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:49386 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750851AbcLHIyP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2016 03:54:15 -0500
-In-Reply-To: <20161208060447.GE4264@atomide.com>
+Received: from mailout1.samsung.com ([203.254.224.24]:39467 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751702AbcLHJPB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2016 04:15:01 -0500
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OHV00ZSC0CXZE00@mailout1.samsung.com> for
+ linux-pm@vger.kernel.org; Thu, 08 Dec 2016 18:14:59 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Srikant Ritolia <s.ritolia@samsung.com>
+Cc: linux-pm@vger.kernel.org, vidushi.koul@samsung.com, srikant.ritolia@gmail.com
 
-On 08/12/16 08:04, Tony Lindgren wrote:
-> * Viresh Kumar <viresh.kumar@linaro.org> [161207 21:58]:
->> On 07-12-16, 21:52, Tony Lindgren wrote:
->>> Hmm good question. Maybe we don't have the regulators configured for
->>> pandaboard?
->>
->> Hmm, and who would be the right person to confirm that? And its not only about
->> pandaboard but the whole OMAP4 family (which is using cpufreq-dt driver).
->
-> Nishanth and Dave in Cc should be able to confirm. Most likely it's some
-> missing .config option for the regulators in multi_v7_defconfig compared
-> to omap2plus_defconfig though.
->
-> Regards,
->
-> Tony
+Use managed resource function devm_power_supply_register instead of
+power_supply_register to simplify the error path by allowing unregistering
+to happen automatically on error and remove.
+Removing max8997_battery_remove function also as it is now redundant.
 
-Pandaboard has a weird configuration, where MPU VDD is controlled by a 
-separate component; TPS62361, but rest of the voltages are provided by 
-TWL6030. The support for this was attempted to be upstreamed along with 
-the required changes for the VC/VP framework under mach-omap2, but this 
-was never accepted.
+Also removing out of memory printk message after kzalloc as there is
+already enough information on failure.
 
-I'm not sure but I recall it wasn't possible to control the MPU voltage 
-via the default I2C interface, instead you had to use the VC/VP path, 
-which isn't fully implemented for OMAP4. As a consequence, none of the 
-OMAP4 boards have a properly functioning MPU voltage supply control in 
-place and you will rely on u-boot provided voltages.
+Signed-off-by: Srikant Ritolia <s.ritolia@samsung.com>
+---
+ drivers/power/max8997_charger.c |   15 ++-------------
+ 1 file changed, 2 insertions(+), 13 deletions(-)
 
--Tero
+diff --git a/drivers/power/max8997_charger.c b/drivers/power/max8997_charger.c
+index 0b2eab5..66567bb 100644
+--- a/drivers/power/max8997_charger.c
++++ b/drivers/power/max8997_charger.c
+@@ -148,10 +148,8 @@ static int max8997_battery_probe(struct platform_device *pdev)
+ 
+ 	charger = devm_kzalloc(&pdev->dev, sizeof(struct charger_data),
+ 				GFP_KERNEL);
+-	if (charger == NULL) {
+-		dev_err(&pdev->dev, "Cannot allocate memory.\n");
++	if (!charger)
+ 		return -ENOMEM;
+-	}
+ 
+ 	platform_set_drvdata(pdev, charger);
+ 
+@@ -161,7 +159,7 @@ static int max8997_battery_probe(struct platform_device *pdev)
+ 
+ 	psy_cfg.drv_data = charger;
+ 
+-	charger->battery = power_supply_register(&pdev->dev,
++	charger->battery = devm_power_supply_register(&pdev->dev,
+ 						 &max8997_battery_desc,
+ 						 &psy_cfg);
+ 	if (IS_ERR(charger->battery)) {
+@@ -172,14 +170,6 @@ static int max8997_battery_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int max8997_battery_remove(struct platform_device *pdev)
+-{
+-	struct charger_data *charger = platform_get_drvdata(pdev);
+-
+-	power_supply_unregister(charger->battery);
+-	return 0;
+-}
+-
+ static const struct platform_device_id max8997_battery_id[] = {
+ 	{ "max8997-battery", 0 },
+ 	{ }
+@@ -190,7 +180,6 @@ static struct platform_driver max8997_battery_driver = {
+ 		.name = "max8997-battery",
+ 	},
+ 	.probe = max8997_battery_probe,
+-	.remove = max8997_battery_remove,
+ 	.id_table = max8997_battery_id,
+ };
+ 
+-- 
+1.7.9.5
+
