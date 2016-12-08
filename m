@@ -1,87 +1,59 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
-Date: Thu, 08 Dec 2016 01:13:01 +0100
-Message-ID: <1526421.aCsca4sLnR@aspire.rjw.lan>
-References: <1478210075-92045-1-git-send-email-lina.iyer@linaro.org> <CAPDyKFqFnk6+Rfdzp-4wzEy8KNkq=03q5qfbkQD4pPNF0Pc6ww@mail.gmail.com> <1616414.c1s7NxTqJS@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/1] cpuidle: fix improper return value on error
+Date: Thu, 08 Dec 2016 01:13:57 +0100
+Message-ID: <1982823.a6RAEseNrp@aspire.rjw.lan>
+References: <1480777347-7497-1-git-send-email-bianpan201602@163.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1616414.c1s7NxTqJS-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Andy Gross <andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Brendan Jackman <brendan.jackman-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Juri Lelli <Juri.Lelli-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59955 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S933854AbcLHARo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 19:17:44 -0500
+In-Reply-To: <1480777347-7497-1-git-send-email-bianpan201602@163.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pan Bian <bianpan201602@163.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pan Bian <bianpan2016@163.com>
 
-On Thursday, December 01, 2016 10:21:59 PM Rafael J. Wysocki wrote:
-> On Tuesday, November 29, 2016 09:47:03 AM Ulf Hansson wrote:
-> > On 10 November 2016 at 20:58, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> > > On Mon, Nov 07, 2016 at 12:14:28PM +0100, Ulf Hansson wrote:
-> > >> On 3 November 2016 at 22:54, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> > >> > Re-using idle state definition provided by arm,idle-state for domain
-> > >> > idle states creates a lot of confusion and limits further evolution of
-> > >> > the domain idle definition. To keep things clear and simple, define a
-> > >> > idle states for domain using a new compatible "domain-idle-state".
-> > >> >
-> > >> > Fix existing PM domains code to look for the newly defined compatible.
-> > >> >
-> > >> > Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-> > >> > Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> > >> > Signed-off-by: Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> > >> > ---
-> > >> >  .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
-> > >> >  .../devicetree/bindings/power/power_domain.txt     |  8 +++---
-> > >> >  drivers/base/power/domain.c                        |  2 +-
-> > >> >  3 files changed, 38 insertions(+), 5 deletions(-)
-> > >> >  create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
-> > >> >
-> > >> > diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
-> > >> > new file mode 100644
-> > >> > index 0000000..eefc7ed
-> > >> > --- /dev/null
-> > >> > +++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
-> > >> > @@ -0,0 +1,33 @@
-> > >> > +PM Domain Idle State Node:
-> > >> > +
-> > >> > +A domain idle state node represents the state parameters that will be used to
-> > >> > +select the state when there are no active components in the domain.
-> > >> > +
-> > >> > +The state node has the following parameters -
-> > >> > +
-> > >> > +- compatible:
-> > >> > +       Usage: Required
-> > >> > +       Value type: <string>
-> > >> > +       Definition: Must be "domain-idle-state".
-> > >> > +
-> > >> > +- entry-latency-us
-> > >> > +       Usage: Required
-> > >> > +       Value type: <prop-encoded-array>
-> > >> > +       Definition: u32 value representing worst case latency in
-> > >> > +                   microseconds required to enter the idle state.
-> > >> > +                   The exit-latency-us duration may be guaranteed
-> > >> > +                   only after entry-latency-us has passed.
-> > >>
-> > >> As we anyway are going to change this, why not use an u64 and have the
-> > >> value in ns instead of us?
-> > >
-> > > I can't imagine that you would need more resolution or range. For times
-> > > less than 1us, s/w and register access times are going to dominate the
-> > > time.
-> > >
-> > > Unless there is a real need, I'd keep alignment with the existing
-> > > binding.
-> > 
-> > Rob, are you fine with this? I thought it would be great to get this
-> > in for 4.10 rc1.
+On Saturday, December 03, 2016 11:02:27 PM Pan Bian wrote:
+> From: Pan Bian <bianpan2016@163.com>
 > 
-> Rob, any objections here?
+> In function cpuidle_add_state_sysfs(), variable ret takes the return
+> value. Its value should be negative on errors. Because ret is reset in
+> the loop, its value will be 0 during the second and after repeat of the
+> loop. If kzalloc() returns a NULL pointer then, it will return 0. It may
+> be better to explicitly assign "-ENOMEM" when the call to kzalloc()
+> fails.
+> 
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=188901
+> 
+> Signed-off-by: Pan Bian <bianpan2016@163.com>
+> ---
+>  drivers/cpuidle/sysfs.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+> index 832a2c3..c5adc8c 100644
+> --- a/drivers/cpuidle/sysfs.c
+> +++ b/drivers/cpuidle/sysfs.c
+> @@ -403,8 +403,10 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
+>  	/* state statistics */
+>  	for (i = 0; i < drv->state_count; i++) {
+>  		kobj = kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
+> -		if (!kobj)
+> +		if (!kobj) {
+> +			ret = -ENOMEM;
+>  			goto error_state;
+> +		}
+>  		kobj->state = &drv->states[i];
+>  		kobj->state_usage = &device->states_usage[i];
+>  		init_completion(&kobj->kobj_unregister);
+> 
 
-Well, no objections, so applied.
+Applied.
 
 Thanks,
 Rafael
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
