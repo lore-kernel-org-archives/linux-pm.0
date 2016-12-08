@@ -1,53 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 04/10] PM / OPP: Error out on failing to add static OPPs
- for v1 bindings
-Date: Thu, 8 Dec 2016 20:17:11 +0530
-Message-ID: <CAKohpo=uoRxhCDL-u33pc9SFCogGkRCVGtyV13D=uGBNrC+-ow@mail.gmail.com>
-References: <cover.1481015522.git.viresh.kumar@linaro.org> <1f876a6d176784f9ab901aea7ff521d53522682d.1481015522.git.viresh.kumar@linaro.org>
- <20161207011722.GJ4388@codeaurora.org> <20161207032555.GE31255@vireshk-i7>
- <20161207211343.GA5423@codeaurora.org> <20161208033059.GA24152@vireshk-i7>
- <20161208063918.GG2749@dragon> <20161208064513.GC31711@vireshk-i7> <20161208142706.GH2749@dragon>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
+Date: Thu, 8 Dec 2016 10:07:28 -0600
+Message-ID: <CAL_Jsq+dEpZ4AG2inixLhThuVc66LYKnDshhk9oJ_f8Dhxig=Q@mail.gmail.com>
+References: <1478210075-92045-1-git-send-email-lina.iyer@linaro.org>
+ <CAPDyKFqFnk6+Rfdzp-4wzEy8KNkq=03q5qfbkQD4pPNF0Pc6ww@mail.gmail.com>
+ <1616414.c1s7NxTqJS@aspire.rjw.lan> <1526421.aCsca4sLnR@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f177.google.com ([209.85.223.177]:34226 "EHLO
-        mail-io0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751367AbcLHOrM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Dec 2016 09:47:12 -0500
-Received: by mail-io0-f177.google.com with SMTP id p42so4696213ioo.1
-        for <linux-pm@vger.kernel.org>; Thu, 08 Dec 2016 06:47:12 -0800 (PST)
-In-Reply-To: <20161208142706.GH2749@dragon>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1526421.aCsca4sLnR@aspire.rjw.lan>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shawn Guo <shawnguo@kernel.org>
-Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 8 December 2016 at 19:57, Shawn Guo <shawnguo@kernel.org> wrote:
-> That's the same case when Performance governor is selected, and should
-> be guaranteed safe, shouldn't it?
-
-Depends on platform I would say. For example for a big LITTLE platform, running
-the big core on max not only increases the amount of power it uses but also the
-amount of heat it generates, which is really scary.
-
-Performance governor is fine for testing but it is not used for battery operated
-devices in production code.
-
->> We will surely overheat most of the SoCs
->> and burn them out.
+On Wed, Dec 7, 2016 at 6:13 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, December 01, 2016 10:21:59 PM Rafael J. Wysocki wrote:
+>> On Tuesday, November 29, 2016 09:47:03 AM Ulf Hansson wrote:
+>> > On 10 November 2016 at 20:58, Rob Herring <robh@kernel.org> wrote:
+>> > > On Mon, Nov 07, 2016 at 12:14:28PM +0100, Ulf Hansson wrote:
+>> > >> On 3 November 2016 at 22:54, Lina Iyer <lina.iyer@linaro.org> wrote:
+>> > >> > Re-using idle state definition provided by arm,idle-state for domain
+>> > >> > idle states creates a lot of confusion and limits further evolution of
+>> > >> > the domain idle definition. To keep things clear and simple, define a
+>> > >> > idle states for domain using a new compatible "domain-idle-state".
+>> > >> >
+>> > >> > Fix existing PM domains code to look for the newly defined compatible.
+>> > >> >
+>> > >> > Cc: <devicetree@vger.kernel.org>
+>> > >> > Cc: Rob Herring <robh@kernel.org>
+>> > >> > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+>> > >> > ---
+>> > >> >  .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
+>> > >> >  .../devicetree/bindings/power/power_domain.txt     |  8 +++---
+>> > >> >  drivers/base/power/domain.c                        |  2 +-
+>> > >> >  3 files changed, 38 insertions(+), 5 deletions(-)
+>> > >> >  create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
+>> > >> >
+>> > >> > diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
+>> > >> > new file mode 100644
+>> > >> > index 0000000..eefc7ed
+>> > >> > --- /dev/null
+>> > >> > +++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
+>> > >> > @@ -0,0 +1,33 @@
+>> > >> > +PM Domain Idle State Node:
+>> > >> > +
+>> > >> > +A domain idle state node represents the state parameters that will be used to
+>> > >> > +select the state when there are no active components in the domain.
+>> > >> > +
+>> > >> > +The state node has the following parameters -
+>> > >> > +
+>> > >> > +- compatible:
+>> > >> > +       Usage: Required
+>> > >> > +       Value type: <string>
+>> > >> > +       Definition: Must be "domain-idle-state".
+>> > >> > +
+>> > >> > +- entry-latency-us
+>> > >> > +       Usage: Required
+>> > >> > +       Value type: <prop-encoded-array>
+>> > >> > +       Definition: u32 value representing worst case latency in
+>> > >> > +                   microseconds required to enter the idle state.
+>> > >> > +                   The exit-latency-us duration may be guaranteed
+>> > >> > +                   only after entry-latency-us has passed.
+>> > >>
+>> > >> As we anyway are going to change this, why not use an u64 and have the
+>> > >> value in ns instead of us?
+>> > >
+>> > > I can't imagine that you would need more resolution or range. For times
+>> > > less than 1us, s/w and register access times are going to dominate the
+>> > > time.
+>> > >
+>> > > Unless there is a real need, I'd keep alignment with the existing
+>> > > binding.
+>> >
+>> > Rob, are you fine with this? I thought it would be great to get this
+>> > in for 4.10 rc1.
+>>
+>> Rob, any objections here?
 >
-> IMO, the problem is on OPP table.  Every entry in the table should be
-> safe for running for any time.
+> Well, no objections, so applied.
 
-Not necessarily. The highest OPPs might be suggested to run only
-for small period of time only. And there is nothing wrong in it.
+Sorry, just found my ack sitting in my drafts. Thought I had sent it.
 
-Over that if some of the OPPs fail to get registered from the OPP
-table in DT, it surely hints at some sort of bugs in the code or DT.
-
-Why should we try to go ahead if only a part of the DT table gets
-registered? I don't find a compelling reason for that. It will never
-happen normally anyway, as we wouldn't have any errors.
-
---
-viresh
+Rob
