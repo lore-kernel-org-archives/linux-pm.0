@@ -1,59 +1,54 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/1] cpuidle: fix improper return value on error
-Date: Thu, 08 Dec 2016 01:13:57 +0100
-Message-ID: <1982823.a6RAEseNrp@aspire.rjw.lan>
-References: <1480777347-7497-1-git-send-email-bianpan201602@163.com>
+Subject: Re: [PATCH] PM: Fix bug in the error handling of async suspend
+Date: Thu, 08 Dec 2016 01:18:59 +0100
+Message-ID: <3147015.xntCBFhHqr@aspire.rjw.lan>
+References: <1481121632-17466-1-git-send-email-stummala@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59955 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S933854AbcLHARo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Dec 2016 19:17:44 -0500
-In-Reply-To: <1480777347-7497-1-git-send-email-bianpan201602@163.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1481121632-17466-1-git-send-email-stummala@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sahitya Tummala <stummala@codeaurora.org>
+Cc: "Rafael J. Wysocki\"" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pan Bian <bianpan201602@163.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pan Bian <bianpan2016@163.com>
 
-On Saturday, December 03, 2016 11:02:27 PM Pan Bian wrote:
-> From: Pan Bian <bianpan2016@163.com>
+On Wednesday, December 07, 2016 08:10:32 PM Sahitya Tummala wrote:
+> If async_suspend is enabled for parent and child devices, then
+> PM framework has to ensure that parent's async suspend gets called
+> only after child's async suspend is done. In case if child's async
+> suspend fails with error, then parent's async suspend must not be
+> invoked. The current code uses async_error to ensure this but there
+> is a problem with it in __device_suspend(). This function notifies
+> the completion of child's async suspend before updating its error
+> via async_error variable. As a result, parent's async suspend gets
+> invoked even though it's child suspend has failed. Fix this bug by
+> updating the async_error before notifying the child's completion.
 > 
-> In function cpuidle_add_state_sysfs(), variable ret takes the return
-> value. Its value should be negative on errors. Because ret is reset in
-> the loop, its value will be 0 during the second and after repeat of the
-> loop. If kzalloc() returns a NULL pointer then, it will return 0. It may
-> be better to explicitly assign "-ENOMEM" when the call to kzalloc()
-> fails.
-> 
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=188901
-> 
-> Signed-off-by: Pan Bian <bianpan2016@163.com>
+> Signed-off-by: Sahitya Tummala <stummala@codeaurora.org>
 > ---
->  drivers/cpuidle/sysfs.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+>  drivers/base/power/main.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-> index 832a2c3..c5adc8c 100644
-> --- a/drivers/cpuidle/sysfs.c
-> +++ b/drivers/cpuidle/sysfs.c
-> @@ -403,8 +403,10 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
->  	/* state statistics */
->  	for (i = 0; i < drv->state_count; i++) {
->  		kobj = kzalloc(sizeof(struct cpuidle_state_kobj), GFP_KERNEL);
-> -		if (!kobj)
-> +		if (!kobj) {
-> +			ret = -ENOMEM;
->  			goto error_state;
-> +		}
->  		kobj->state = &drv->states[i];
->  		kobj->state_usage = &device->states_usage[i];
->  		init_completion(&kobj->kobj_unregister);
-> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index e44944f4be77..f733f50f8321 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1460,9 +1460,9 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>  	dpm_watchdog_clear(&wd);
+>  
+>   Complete:
+> -	complete_all(&dev->power.completion);
+>  	if (error)
+>  		async_error = error;
+> +	complete_all(&dev->power.completion);
+>  
+>  	TRACE_SUSPEND(error);
+>  	return error;
 
-Applied.
+Good catch!
+
+I'm queuing this one up (with some whitespace rearrangements).
 
 Thanks,
 Rafael
-
