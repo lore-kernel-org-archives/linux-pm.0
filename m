@@ -1,37 +1,50 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Cpufreq regression in next-20161207
-Date: Wed, 7 Dec 2016 22:04:48 -0800
-Message-ID: <20161208060447.GE4264@atomide.com>
-References: <20161208045640.GB4264@atomide.com>
- <20161208050739.GE24152@vireshk-i7>
- <20161208055220.GD4264@atomide.com>
- <20161208055738.GB31711@vireshk-i7>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH 04/10] PM / OPP: Error out on failing to add static OPPs
+ for v1 bindings
+Date: Thu, 8 Dec 2016 14:39:19 +0800
+Message-ID: <20161208063918.GG2749@dragon>
+References: <cover.1481015522.git.viresh.kumar@linaro.org>
+ <1f876a6d176784f9ab901aea7ff521d53522682d.1481015522.git.viresh.kumar@linaro.org>
+ <20161207011722.GJ4388@codeaurora.org>
+ <20161207032555.GE31255@vireshk-i7>
+ <20161207211343.GA5423@codeaurora.org>
+ <20161208033059.GA24152@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:53550 "EHLO muru.com"
+Received: from mail.kernel.org ([198.145.29.136]:58800 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750800AbcLHGEw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 8 Dec 2016 01:04:52 -0500
+        id S1751681AbcLHGkJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 8 Dec 2016 01:40:09 -0500
 Content-Disposition: inline
-In-Reply-To: <20161208055738.GB31711@vireshk-i7>
+In-Reply-To: <20161208033059.GA24152@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Stephen Boyd <sboyd@codeaurora.org>, Dave Gerlach <d-gerlach@ti.com>, Nishanth Menon <nm@ti.com>, Tero Kristo <t-kristo@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-* Viresh Kumar <viresh.kumar@linaro.org> [161207 21:58]:
-> On 07-12-16, 21:52, Tony Lindgren wrote:
-> > Hmm good question. Maybe we don't have the regulators configured for
-> > pandaboard?
+On Thu, Dec 08, 2016 at 09:00:59AM +0530, Viresh Kumar wrote:
+> Hi Shawn,
 > 
-> Hmm, and who would be the right person to confirm that? And its not only about
-> pandaboard but the whole OMAP4 family (which is using cpufreq-dt driver).
+> On 07-12-16, 13:13, Stephen Boyd wrote:
+> > On 12/07, Viresh Kumar wrote:
+> > > On 06-12-16, 17:17, Stephen Boyd wrote:
+> > > > On 12/06, Viresh Kumar wrote:
+> > > > > The code adding static OPPs for V2 bindings already does so. Make the V1
+> > > > > bindings specific code behave the same.
+> > > > > 
+> > > > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > > ---
+> > > > 
+> > > > Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> > > > 
+> > > > It looks like that goes back to the original DT OPP binding
+> > > > support written by Shawn Guo. Any idea why we kept trying to add
+> > > > more OPPs if it failed to add one? Best effort or something?
+> 
+> Can you please answer this question from Stephen?
 
-Nishanth and Dave in Cc should be able to confirm. Most likely it's some
-missing .config option for the regulators in multi_v7_defconfig compared
-to omap2plus_defconfig though.
+Yes, it's the best effort.  For example, a duplicated OPP shouldn't be a
+stopper for the driver.
 
-Regards,
-
-Tony
+Shawn
