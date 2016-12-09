@@ -1,7 +1,7 @@
 From: Milo Kim <woogyom.kim@gmail.com>
-Subject: [PATCH v2 1/8] power: supply: tps65217: Support USB charger interrupt
-Date: Fri,  9 Dec 2016 16:48:59 +0900
-Message-ID: <20161209074906.27545-2-woogyom.kim@gmail.com>
+Subject: [PATCH v2 4/8] power: supply: tps65217: Use generic name for charger online
+Date: Fri,  9 Dec 2016 16:49:02 +0900
+Message-ID: <20161209074906.27545-5-woogyom.kim@gmail.com>
 References: <20161209074906.27545-1-woogyom.kim@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161209074906.27545-1-woogyom.kim@gmail.com>
@@ -10,117 +10,77 @@ To: Sebastian Reichel <sre@kernel.org>
 Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Milo Kim <woogyom.kim@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-TPS65217 has two charger interrupts - AC or USB power status change.
-
-Interrupt handler:
-  Check not only AC but also USB charger status.
-  In both cases, enable charging operation.
-
-Interrupt request:
-  If an interrupt number is invalid, then use legacy polling thread.
-  Otherwise, create IRQ threads to handle AC and USB charger event.
+This driver supports AC and USB chargers. Generic name is preferred.
+Replace 'ac_online' with 'online'.
 
 Signed-off-by: Milo Kim <woogyom.kim@gmail.com>
 ---
- drivers/power/supply/tps65217_charger.c | 47 +++++++++++++++++++--------------
- 1 file changed, 27 insertions(+), 20 deletions(-)
+ drivers/power/supply/tps65217_charger.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supply/tps65217_charger.c
-index 9fd019f..2000e59 100644
+index 482ee9f..424a6d3 100644
 --- a/drivers/power/supply/tps65217_charger.c
 +++ b/drivers/power/supply/tps65217_charger.c
-@@ -35,6 +35,8 @@
- #include <linux/mfd/core.h>
- #include <linux/mfd/tps65217.h>
+@@ -44,8 +44,8 @@ struct tps65217_charger {
+ 	struct device *dev;
+ 	struct power_supply *ac;
  
-+#define CHARGER_STATUS_PRESENT	(TPS65217_STATUS_ACPWR | TPS65217_STATUS_USBPWR)
-+#define NUM_CHARGER_IRQS	2
- #define POLL_INTERVAL		(HZ * 2)
+-	int	ac_online;
+-	int	prev_ac_online;
++	int	online;
++	int	prev_online;
  
- struct tps65217_charger {
-@@ -144,8 +146,8 @@ static irqreturn_t tps65217_charger_irq(int irq, void *dev)
- 
- 	dev_dbg(charger->dev, "%s: 0x%x\n", __func__, val);
- 
--	/* check for AC status bit */
--	if (val & TPS65217_STATUS_ACPWR) {
-+	/* check for charger status bit */
-+	if (val & CHARGER_STATUS_PRESENT) {
- 		ret = tps65217_enable_charging(charger);
- 		if (ret) {
- 			dev_err(charger->dev,
-@@ -200,8 +202,9 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
- 	struct tps65217_charger *charger;
- 	struct power_supply_config cfg = {};
--	int irq;
-+	int irq[NUM_CHARGER_IRQS];
+ 	struct task_struct	*poll_task;
+ };
+@@ -95,7 +95,7 @@ static int tps65217_enable_charging(struct tps65217_charger *charger)
  	int ret;
-+	int i;
  
- 	dev_dbg(&pdev->dev, "%s\n", __func__);
+ 	/* charger already enabled */
+-	if (charger->ac_online)
++	if (charger->online)
+ 		return 0;
  
-@@ -224,10 +227,8 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(charger->ac);
- 	}
- 
--	irq = platform_get_irq_byname(pdev, "AC");
--	if (irq < 0)
--		irq = -ENXIO;
--	charger->irq = irq;
-+	irq[0] = platform_get_irq_byname(pdev, "USB");
-+	irq[1] = platform_get_irq_byname(pdev, "AC");
- 
- 	ret = tps65217_config_charger(charger);
- 	if (ret < 0) {
-@@ -235,29 +236,35 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+ 	dev_dbg(charger->dev, "%s: enable charging\n", __func__);
+@@ -110,7 +110,7 @@ static int tps65217_enable_charging(struct tps65217_charger *charger)
  		return ret;
  	}
  
--	if (irq != -ENXIO) {
--		ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
-+	/* Create a polling thread if an interrupt is invalid */
-+	if (irq[0] < 0 || irq[1] < 0) {
-+		charger->poll_task = kthread_run(tps65217_charger_poll_task,
-+						charger, "ktps65217charger");
-+		if (IS_ERR(charger->poll_task)) {
-+			ret = PTR_ERR(charger->poll_task);
-+			dev_err(charger->dev,
-+				"Unable to run kthread err %d\n", ret);
-+			return ret;
-+		}
-+
-+		return 0;
-+	}
-+
-+	/* Create IRQ threads for charger interrupts */
-+	for (i = 0; i < NUM_CHARGER_IRQS; i++) {
-+		ret = devm_request_threaded_irq(&pdev->dev, irq[i], NULL,
- 						tps65217_charger_irq,
- 						0, "tps65217-charger",
- 						charger);
- 		if (ret) {
- 			dev_err(charger->dev,
--				"Unable to register irq %d err %d\n", irq,
-+				"Unable to register irq %d err %d\n", irq[i],
- 				ret);
- 			return ret;
- 		}
- 
- 		/* Check current state */
--		tps65217_charger_irq(irq, charger);
--	} else {
--		charger->poll_task = kthread_run(tps65217_charger_poll_task,
--						charger, "ktps65217charger");
--		if (IS_ERR(charger->poll_task)) {
--			ret = PTR_ERR(charger->poll_task);
--			dev_err(charger->dev,
--				"Unable to run kthread err %d\n", ret);
--			return ret;
--		}
-+		tps65217_charger_irq(-1, charger);
- 	}
+-	charger->ac_online = 1;
++	charger->online = 1;
  
  	return 0;
+ }
+@@ -122,7 +122,7 @@ static int tps65217_ac_get_property(struct power_supply *psy,
+ 	struct tps65217_charger *charger = power_supply_get_drvdata(psy);
+ 
+ 	if (psp == POWER_SUPPLY_PROP_ONLINE) {
+-		val->intval = charger->ac_online;
++		val->intval = charger->online;
+ 		return 0;
+ 	}
+ 	return -EINVAL;
+@@ -133,7 +133,7 @@ static irqreturn_t tps65217_charger_irq(int irq, void *dev)
+ 	int ret, val;
+ 	struct tps65217_charger *charger = dev;
+ 
+-	charger->prev_ac_online = charger->ac_online;
++	charger->prev_online = charger->online;
+ 
+ 	ret = tps65217_reg_read(charger->tps, TPS65217_REG_STATUS, &val);
+ 	if (ret < 0) {
+@@ -153,10 +153,10 @@ static irqreturn_t tps65217_charger_irq(int irq, void *dev)
+ 			return IRQ_HANDLED;
+ 		}
+ 	} else {
+-		charger->ac_online = 0;
++		charger->online = 0;
+ 	}
+ 
+-	if (charger->prev_ac_online != charger->ac_online)
++	if (charger->prev_online != charger->online)
+ 		power_supply_changed(charger->ac);
+ 
+ 	ret = tps65217_reg_read(charger->tps, TPS65217_REG_CHGCONFIG0, &val);
 -- 
 2.9.3
