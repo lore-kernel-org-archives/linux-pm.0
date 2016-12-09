@@ -1,97 +1,144 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 07/11] ARM: dtsi: add DTSI for AXP223
-Date: Fri,  9 Dec 2016 12:04:15 +0100
-Message-ID: <20161209110419.28981-8-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 03/11] power: supply: axp20x_usb_power: set min voltage and max current from sysfs
+Date: Fri,  9 Dec 2016 12:04:11 +0100
+Message-ID: <20161209110419.28981-4-quentin.schulz@free-electrons.com>
 References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:38729 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933371AbcLILEg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2016 06:04:36 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
 Cc: Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com
+List-Id: linux-pm@vger.kernel.org
 
-The AXP223 shares most of its logic with the AXP221 but it has some
-differences for the VBUS driver.
+AXP20X and AXP22X PMICs allow setting the min voltage and max current of
+VBUS power supply. This adds entries in sysfs to allow to do so.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
 ---
 
 v2:
- - adding small explanation of AXP223 variation compared to AXP221,
+ - moving defines from header mfd/axp20x.h to the driver,
+ - adding two functions to reduce indentation in axp20x_usb_power_set_property,
+ - adding new define for VBUS register VHOLD bits offset,
+ - switching return values in case of invalid value from 0 to -EINVAL,
 
- arch/arm/boot/dts/axp223.dtsi | 58 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 58 insertions(+)
- create mode 100644 arch/arm/boot/dts/axp223.dtsi
+ drivers/power/supply/axp20x_usb_power.c | 81 +++++++++++++++++++++++++++++++++
+ 1 file changed, 81 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp223.dtsi b/arch/arm/boot/dts/axp223.dtsi
-new file mode 100644
-index 0000000..b91b6c1
---- /dev/null
-+++ b/arch/arm/boot/dts/axp223.dtsi
-@@ -0,0 +1,58 @@
-+/*
-+ * Copyright 2016 Free Electrons
-+ *
-+ * Quentin Schulz <quentin.schulz@free-electrons.com>
-+ *
-+ * This file is dual-licensed: you can use it either under the terms
-+ * of the GPL or the X11 license, at your option. Note that this dual
-+ * licensing only applies to this file, and not this project as a
-+ * whole.
-+ *
-+ *  a) This file is free software; you can redistribute it and/or
-+ *     modify it under the terms of the GNU General Public License as
-+ *     published by the Free Software Foundation; either version 2 of the
-+ *     License, or (at your option) any later version.
-+ *
-+ *     This file is distributed in the hope that it will be useful,
-+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *     GNU General Public License for more details.
-+ *
-+ * Or, alternatively,
-+ *
-+ *  b) Permission is hereby granted, free of charge, to any person
-+ *     obtaining a copy of this software and associated documentation
-+ *     files (the "Software"), to deal in the Software without
-+ *     restriction, including without limitation the rights to use,
-+ *     copy, modify, merge, publish, distribute, sublicense, and/or
-+ *     sell copies of the Software, and to permit persons to whom the
-+ *     Software is furnished to do so, subject to the following
-+ *     conditions:
-+ *
-+ *     The above copyright notice and this permission notice shall be
-+ *     included in all copies or substantial portions of the Software.
-+ *
-+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-+ *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-+ *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-+ *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-+ *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-+ *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-+ *     OTHER DEALINGS IN THE SOFTWARE.
-+ */
+diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+index 8985646..9e3f4ae 100644
+--- a/drivers/power/supply/axp20x_usb_power.c
++++ b/drivers/power/supply/axp20x_usb_power.c
+@@ -31,6 +31,8 @@
+ #define AXP20X_USB_STATUS_VBUS_VALID	BIT(2)
+ 
+ #define AXP20X_VBUS_VHOLD_uV(b)		(4000000 + (((b) >> 3) & 7) * 100000)
++#define AXP20X_VBUS_VHOLD_MASK		GENMASK(5, 3)
++#define AXP20X_VBUS_VHOLD_OFFSET	3
+ #define AXP20X_VBUS_CLIMIT_MASK		3
+ #define AXP20X_VBUC_CLIMIT_900mA	0
+ #define AXP20X_VBUC_CLIMIT_500mA	1
+@@ -155,6 +157,81 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+ 	return 0;
+ }
+ 
++static int axp20x_usb_power_set_voltage_min(struct axp20x_usb_power *power,
++					    int intval)
++{
++	int val;
 +
-+/*
-+ * AXP223 Integrated Power Management Chip
-+ * http://www.x-powers.com/product/AXP22X.php
-+ * http://dl.linux-sunxi.org/AXP/AXP223-en.pdf
-+ *
-+ * The AXP223 shares most of its logic with the AXP221 but it has some
-+ * differences, for the VBUS driver for example.
-+ */
++	switch (intval) {
++	case 4000000:
++	case 4100000:
++	case 4200000:
++	case 4300000:
++	case 4400000:
++	case 4500000:
++	case 4600000:
++	case 4700000:
++		val = (intval - 4000000) / 100000;
++		return regmap_update_bits(power->regmap,
++					  AXP20X_VBUS_IPSOUT_MGMT,
++					  AXP20X_VBUS_VHOLD_MASK,
++					  val << AXP20X_VBUS_VHOLD_OFFSET);
++	default:
++		return -EINVAL;
++	}
 +
-+#include "axp22x.dtsi"
++	return -EINVAL;
++}
 +
-+&usb_power_supply {
-+	compatible = "x-powers,axp223-usb-power-supply";
-+};
++static int axp20x_usb_power_set_current_max(struct axp20x_usb_power *power,
++					    int intval)
++{
++	int val;
++
++	switch (intval) {
++	case 100000:
++		if (power->axp20x_id == AXP221_ID)
++			return -EINVAL;
++	case 500000:
++	case 900000:
++		val = (900000 - intval) / 400000;
++		return regmap_update_bits(power->regmap,
++					  AXP20X_VBUS_IPSOUT_MGMT,
++					  AXP20X_VBUS_CLIMIT_MASK, val);
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp20x_usb_power_set_property(struct power_supply *psy,
++					 enum power_supply_property psp,
++					 const union power_supply_propval *val)
++{
++	struct axp20x_usb_power *power = power_supply_get_drvdata(psy);
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
++		return axp20x_usb_power_set_voltage_min(power, val->intval);
++
++	case POWER_SUPPLY_PROP_CURRENT_MAX:
++		return axp20x_usb_power_set_current_max(power, val->intval);
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp20x_usb_power_prop_writeable(struct power_supply *psy,
++					   enum power_supply_property psp)
++{
++	return psp == POWER_SUPPLY_PROP_VOLTAGE_MIN ||
++	       psp == POWER_SUPPLY_PROP_CURRENT_MAX;
++}
++
+ static enum power_supply_property axp20x_usb_power_properties[] = {
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_PRESENT,
+@@ -178,7 +255,9 @@ static const struct power_supply_desc axp20x_usb_power_desc = {
+ 	.type = POWER_SUPPLY_TYPE_USB,
+ 	.properties = axp20x_usb_power_properties,
+ 	.num_properties = ARRAY_SIZE(axp20x_usb_power_properties),
++	.property_is_writeable = axp20x_usb_power_prop_writeable,
+ 	.get_property = axp20x_usb_power_get_property,
++	.set_property = axp20x_usb_power_set_property,
+ };
+ 
+ static const struct power_supply_desc axp22x_usb_power_desc = {
+@@ -186,7 +265,9 @@ static const struct power_supply_desc axp22x_usb_power_desc = {
+ 	.type = POWER_SUPPLY_TYPE_USB,
+ 	.properties = axp22x_usb_power_properties,
+ 	.num_properties = ARRAY_SIZE(axp22x_usb_power_properties),
++	.property_is_writeable = axp20x_usb_power_prop_writeable,
+ 	.get_property = axp20x_usb_power_get_property,
++	.set_property = axp20x_usb_power_set_property,
+ };
+ 
+ static int axp20x_usb_power_probe(struct platform_device *pdev)
 -- 
 2.9.3
-
