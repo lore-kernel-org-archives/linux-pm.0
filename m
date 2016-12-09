@@ -1,71 +1,118 @@
-From: Milo Kim <woogyom.kim@gmail.com>
-Subject: [PATCH v2 2/8] power: supply: tps65217: Use 'poll_task' on unloading the module
-Date: Fri,  9 Dec 2016 16:49:00 +0900
-Message-ID: <20161209074906.27545-3-woogyom.kim@gmail.com>
-References: <20161209074906.27545-1-woogyom.kim@gmail.com>
+From: Srikant Ritolia <s.ritolia@samsung.com>
+Subject: [PATCH] power: max77693_charger: Better sysfs creation and using devm
+ APIs
+Date: Fri, 09 Dec 2016 14:21:38 +0530
+Message-ID: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33878 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932667AbcLIHt3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2016 02:49:29 -0500
-In-Reply-To: <20161209074906.27545-1-woogyom.kim@gmail.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:33539 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753308AbcLIIyZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2016 03:54:25 -0500
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OHW018SAU2NO7D0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 09 Dec 2016 17:54:23 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Milo Kim <woogyom.kim@gmail.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Srikant Ritolia <s.ritolia@samsung.com>
+Cc: linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com, srikant.ritolia@gmail.com
 
-TPS65217 has two interrupt numbers so checking single IRQ number is not
-appropriate when the module is removed.
-Use the task_struct variable for running polling thread. If polling task
-is activated, then use it to stop running thread.
+Creating sysfs group instead of creating each attribute one by one
+and then handling its remove and error condition.
 
-Signed-off-by: Milo Kim <woogyom.kim@gmail.com>
+Also using manged resource function devm_power_supply_register API
+instead of power_supply_register which automatically does
+unregister on error and remove.
+
+Signed-off-by: Srikant Ritolia <s.ritolia@samsung.com>
 ---
- drivers/power/supply/tps65217_charger.c | 12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
+ drivers/power/supply/max77693_charger.c |   51 +++++++++++--------------------
+ 1 file changed, 18 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supply/tps65217_charger.c
-index 2000e59..55371d6 100644
---- a/drivers/power/supply/tps65217_charger.c
-+++ b/drivers/power/supply/tps65217_charger.c
-@@ -202,6 +202,7 @@ static int tps65217_charger_probe(struct platform_device *pdev)
- 	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
- 	struct tps65217_charger *charger;
- 	struct power_supply_config cfg = {};
-+	struct task_struct *poll_task;
- 	int irq[NUM_CHARGER_IRQS];
- 	int ret;
- 	int i;
-@@ -238,15 +239,16 @@ static int tps65217_charger_probe(struct platform_device *pdev)
+diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supply/max77693_charger.c
+index 6c78884..f8f7188 100644
+--- a/drivers/power/supply/max77693_charger.c
++++ b/drivers/power/supply/max77693_charger.c
+@@ -445,6 +445,17 @@ static ssize_t top_off_timer_store(struct device *dev,
+ static DEVICE_ATTR_RW(top_off_threshold_current);
+ static DEVICE_ATTR_RW(top_off_timer);
  
- 	/* Create a polling thread if an interrupt is invalid */
- 	if (irq[0] < 0 || irq[1] < 0) {
--		charger->poll_task = kthread_run(tps65217_charger_poll_task,
--						charger, "ktps65217charger");
--		if (IS_ERR(charger->poll_task)) {
--			ret = PTR_ERR(charger->poll_task);
-+		poll_task = kthread_run(tps65217_charger_poll_task,
-+					charger, "ktps65217charger");
-+		if (IS_ERR(poll_task)) {
-+			ret = PTR_ERR(poll_task);
- 			dev_err(charger->dev,
- 				"Unable to run kthread err %d\n", ret);
- 			return ret;
- 		}
++static struct attribute *max77693_charger_attribute[] = {
++	&dev_attr_fast_charge_timer.attr,
++	&dev_attr_top_off_threshold_current.attr,
++	&dev_attr_top_off_timer.attr,
++	NULL,
++};
++
++static const struct attribute_group max77693_attr_group = {
++	.attrs = max77693_charger_attribute,
++};
++
+ static int max77693_set_constant_volt(struct max77693_charger *chg,
+ 		unsigned int uvolt)
+ {
+@@ -699,53 +710,27 @@ static int max77693_charger_probe(struct platform_device *pdev)
  
-+		charger->poll_task = poll_task;
- 		return 0;
+ 	psy_cfg.drv_data = chg;
+ 
+-	ret = device_create_file(&pdev->dev, &dev_attr_fast_charge_timer);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed: create fast charge timer sysfs entry\n");
+-		goto err;
+-	}
+-
+-	ret = device_create_file(&pdev->dev,
+-			&dev_attr_top_off_threshold_current);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed: create top off current sysfs entry\n");
+-		goto err;
+-	}
+-
+-	ret = device_create_file(&pdev->dev, &dev_attr_top_off_timer);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed: create top off timer sysfs entry\n");
+-		goto err;
++	ret = sysfs_create_group(&pdev->dev.kobj, &max77693_attr_group);
++	if (ret != 0) {
++		dev_err(&pdev->dev, "Can't create sysfs entries\n");
++		return ret;
  	}
  
-@@ -274,7 +276,7 @@ static int tps65217_charger_remove(struct platform_device *pdev)
- {
- 	struct tps65217_charger *charger = platform_get_drvdata(pdev);
- 
--	if (charger->irq == -ENXIO)
-+	if (charger->poll_task)
- 		kthread_stop(charger->poll_task);
+-	chg->charger = power_supply_register(&pdev->dev,
++	chg->charger = devm_power_supply_register(&pdev->dev,
+ 						&max77693_charger_desc,
+ 						&psy_cfg);
+ 	if (IS_ERR(chg->charger)) {
+ 		dev_err(&pdev->dev, "failed: power supply register\n");
+ 		ret = PTR_ERR(chg->charger);
+-		goto err;
++		return ret;
+ 	}
  
  	return 0;
+-
+-err:
+-	device_remove_file(&pdev->dev, &dev_attr_top_off_timer);
+-	device_remove_file(&pdev->dev, &dev_attr_top_off_threshold_current);
+-	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+-
+-	return ret;
+ }
+ 
+ static int max77693_charger_remove(struct platform_device *pdev)
+ {
+-	struct max77693_charger *chg = platform_get_drvdata(pdev);
+-
+-	device_remove_file(&pdev->dev, &dev_attr_top_off_timer);
+-	device_remove_file(&pdev->dev, &dev_attr_top_off_threshold_current);
+-	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+-
+-	power_supply_unregister(chg->charger);
++	sysfs_remove_group(&pdev->dev.kobj, &max77693_attr_group);
+ 
+ 	return 0;
+ }
 -- 
-2.9.3
+1.7.9.5
 
