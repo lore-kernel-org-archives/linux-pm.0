@@ -1,162 +1,40 @@
-From: Atul Raj <atul.r@samsung.com>
-Subject: [PATCH v2] power: supply: smb347_charger: Use device managed API's
-Date: Fri, 09 Dec 2016 16:40:03 +0530
-Message-ID: <1481281803-10627-1-git-send-email-atul.r@samsung.com>
+From: =?UTF-8?B?QXR1bCBSYWo=?= <atul.r@samsung.com>
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2Ml0gcG93ZXI6IHN1cHBseTogc21iMzQ3?=
+ =?UTF-8?B?X2NoYXJnZXI6IFVzZSBkZXZpY2UgbWFuYWdlZCBBUEkncw==?=
+Date: Fri, 09 Dec 2016 13:06:34 +0000
+Message-ID: <20161209130634epcms5p48692d7e5ba2e3e3f27619c85062b30c4@epcms5p4>
+References: <CGME20161209130634epcms5p48692d7e5ba2e3e3f27619c85062b30c4@epcms5p4>
+Reply-To: atul.r@samsung.com
+Mime-Version: 1.0
+Content-Type: multipart/related;
+ boundary="----=_Part_470125_1480176834.1481288794054"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:39861 "EHLO
+Received: from mailout3.samsung.com ([203.254.224.33]:57452 "EHLO
         mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753240AbcLILMm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2016 06:12:42 -0500
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+        with ESMTP id S1753633AbcLINGi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2016 08:06:38 -0500
+Received: from epcas5p3.samsung.com (unknown [182.195.41.41])
  by mailout3.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OHX00CCJ0H3ZF40@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 09 Dec 2016 20:12:39 +0900 (KST)
+ with ESMTP id <0OHX00DGP5QZJL70@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 09 Dec 2016 22:06:35 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com, atulraj.nith@gmail.com, pankaj.s4@samsung.com
+To: =?UTF-8?B?c3JlQGtlcm5lbC5vcmc=?= <sre@kernel.org>
+Cc: =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?UGFua2FqIFNpbmdo?= <pankaj.s4@samsung.com>, =?UTF-8?B?VmlkdXNoaSBLb3Vs?= <vidushi.koul@samsung.com>, =?UTF-8?B?YXR1bHJhai5uaXRoQGdtYWlsLmNvbQ==?= <atulraj.nith@gmail.com>
 
-Using device managed API to make the code simpler
+------=_Part_470125_1480176834.1481288794054
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-using devm_gpio_request_one in place of gpio_request_one
-using devm_request_threaded_irq in place of request_threaded_irq
-using devm_power_supply_register in place of power_supply_register
-using gpiod_* API's in place of gpio_* API's
----
-Changes in v2:
-  - using gpiod_* API's in place of gpio_* API's
-
- drivers/power/smb347-charger.c |   59 ++++++++++++++++------------------------
- 1 file changed, 24 insertions(+), 35 deletions(-)
-
-diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
-index 072c518..5b2b5cb 100644
---- a/drivers/power/smb347-charger.c
-+++ b/drivers/power/smb347-charger.c
-@@ -12,7 +12,7 @@
-  */
- 
- #include <linux/err.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -145,6 +145,7 @@ struct smb347_charger {
- 	bool			mains_online;
- 	bool			usb_online;
- 	bool			charging_enabled;
-+	struct gpio_desc	*irq_gpio;
- 	const struct smb347_charger_platform_data *pdata;
- };
- 
-@@ -835,21 +836,29 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 			   struct i2c_client *client)
- {
- 	const struct smb347_charger_platform_data *pdata = smb->pdata;
--	int ret, irq = gpio_to_irq(pdata->irq_gpio);
-+	int ret, irq;
-+	struct gpio_desc *gpiod;
- 
--	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
--	if (ret < 0)
-+	smb->irq_gpio = gpio_to_desc(pdata->irq_gpio);
-+	irq = gpiod_to_irq(smb->irq_gpio);
-+
-+	gpiod = devm_gpiod_get_optional(&client->dev, NULL, GPIOD_IN);
-+	if (IS_ERR(gpiod)) {
-+		ret = PTR_ERR(gpiod);
- 		goto fail;
-+	}
- 
--	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
--				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
--				   client->name, smb);
-+
-+	ret = devm_request_threaded_irq(&client->dev, irq, NULL,
-+				smb347_interrupt,
-+				IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-+				client->name, smb);
- 	if (ret < 0)
--		goto fail_gpio;
-+		goto fail;
- 
- 	ret = smb347_set_writable(smb, true);
- 	if (ret < 0)
--		goto fail_irq;
-+		goto fail;
- 
- 	/*
- 	 * Configure the STAT output to be suitable for interrupts: disable
-@@ -867,10 +876,6 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 
- fail_readonly:
- 	smb347_set_writable(smb, false);
--fail_irq:
--	free_irq(irq, smb);
--fail_gpio:
--	gpio_free(pdata->irq_gpio);
- fail:
- 	client->irq = 0;
- 	return ret;
-@@ -1249,32 +1254,24 @@ static int smb347_probe(struct i2c_client *client,
- 	mains_usb_cfg.num_supplicants = ARRAY_SIZE(battery);
- 	mains_usb_cfg.drv_data = smb;
- 	if (smb->pdata->use_mains) {
--		smb->mains = power_supply_register(dev, &smb347_mains_desc,
-+		smb->mains = devm_power_supply_register(dev, &smb347_mains_desc,
- 						   &mains_usb_cfg);
- 		if (IS_ERR(smb->mains))
- 			return PTR_ERR(smb->mains);
- 	}
- 
- 	if (smb->pdata->use_usb) {
--		smb->usb = power_supply_register(dev, &smb347_usb_desc,
-+		smb->usb = devm_power_supply_register(dev, &smb347_usb_desc,
- 						 &mains_usb_cfg);
--		if (IS_ERR(smb->usb)) {
--			if (smb->pdata->use_mains)
--				power_supply_unregister(smb->mains);
-+		if (IS_ERR(smb->usb))
- 			return PTR_ERR(smb->usb);
--		}
- 	}
- 
- 	battery_cfg.drv_data = smb;
--	smb->battery = power_supply_register(dev, &smb347_battery_desc,
-+	smb->battery = devm_power_supply_register(dev, &smb347_battery_desc,
- 					     &battery_cfg);
--	if (IS_ERR(smb->battery)) {
--		if (smb->pdata->use_usb)
--			power_supply_unregister(smb->usb);
--		if (smb->pdata->use_mains)
--			power_supply_unregister(smb->mains);
-+	if (IS_ERR(smb->battery))
- 		return PTR_ERR(smb->battery);
--	}
- 
- 	/*
- 	 * Interrupt pin is optional. If it is connected, we setup the
-@@ -1297,17 +1294,9 @@ static int smb347_remove(struct i2c_client *client)
- {
- 	struct smb347_charger *smb = i2c_get_clientdata(client);
- 
--	if (client->irq) {
-+	if (client->irq)
- 		smb347_irq_disable(smb);
--		free_irq(client->irq, smb);
--		gpio_free(smb->pdata->irq_gpio);
--	}
- 
--	power_supply_unregister(smb->battery);
--	if (smb->pdata->use_usb)
--		power_supply_unregister(smb->usb);
--	if (smb->pdata->use_mains)
--		power_supply_unregister(smb->mains);
- 	return 0;
- }
- 
--- 
-1.7.9.5
-
+T24gOSBEZWMgMjAxNiA0OjQyIHAubS4sICJBdHVsIFJhaiIgPGF0dWwuckBzYW1zdW5nLmNvbT4g
+d3JvdGU6DQogPg0KID4gVXNpbmcgZGV2aWNlIG1hbmFnZWQgQVBJIHRvIG1ha2UgdGhlIGNvZGUg
+c2ltcGxlcg0KID4NCiA+IHVzaW5nIGRldm1fZ3Bpb19yZXF1ZXN0X29uZSBpbiBwbGFjZSBvZiBn
+cGlvX3JlcXVlc3Rfb25lDQogPiB1c2luZyBkZXZtX3JlcXVlc3RfdGhyZWFkZWRfaXJxIGluIHBs
+YWNlIG9mIHJlcXVlc3RfdGhyZWFkZWRfaXJxDQogPiB1c2luZyBkZXZtX3Bvd2VyX3N1cHBseV9y
+ZWdpc3RlciBpbiBwbGFjZSBvZiBwb3dlcl9zdXBwbHlfcmVnaXN0ZXINCiA+IHVzaW5nIGdwaW9k
+XyogQVBJJ3MgaW4gcGxhY2Ugb2YgZ3Bpb18qIEFQSSdzDQoNCg0KIE1pc3NlZCBzaWdub2ZmLg0K
+IEkgd2lsbCBzZW5kIHYzIHBhdGNoLg0KDQogPiAtLS0NCiA+IENoYW5nZXMgaW4gdjI6DQogPiAg
+IC0gdXNpbmcgZ3Bpb2RfKiBBUEkncyBpbiBwbGFjZSBvZiBncGlvXyogQVBJJ3MNCg0KU29ycnkg
+Zm9yIHRyb3VibGUNCg0KQXR1bCBSYWoNCg==
+------=_Part_470125_1480176834.1481288794054--
