@@ -1,88 +1,162 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 06/11] mfd: axp20x: add separate MFD cell for AXP223
-Date: Fri,  9 Dec 2016 12:04:14 +0100
-Message-ID: <20161209110419.28981-7-quentin.schulz@free-electrons.com>
-References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
-Cc: Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com
+From: Atul Raj <atul.r@samsung.com>
+Subject: [PATCH v2] power: supply: smb347_charger: Use device managed API's
+Date: Fri, 09 Dec 2016 16:40:03 +0530
+Message-ID: <1481281803-10627-1-git-send-email-atul.r@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:39861 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753240AbcLILMm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Dec 2016 06:12:42 -0500
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OHX00CCJ0H3ZF40@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 09 Dec 2016 20:12:39 +0900 (KST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com, atulraj.nith@gmail.com, pankaj.s4@samsung.com
 
-The AXP223 shares most of its logic with the AXP221 but has some
-differences for the VBUS power supply driver. Thus, to probe the driver
-with the correct compatible, the AXP221 and the AXP223 now have separate
-MFD cells.
+Using device managed API to make the code simpler
 
-AXP221 MFD cells are renamed from axp22x_cells to axp221_cells to avoid
-confusion.
-
-Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
+using devm_gpio_request_one in place of gpio_request_one
+using devm_request_threaded_irq in place of request_threaded_irq
+using devm_power_supply_register in place of power_supply_register
+using gpiod_* API's in place of gpio_* API's
 ---
+Changes in v2:
+  - using gpiod_* API's in place of gpio_* API's
 
-v2:
- - correct indentation,
- - renaming axp22x_cells to axp221_cells to avoid confusion between axp22x,
-axp221 and axp223
+ drivers/power/smb347-charger.c |   59 ++++++++++++++++------------------------
+ 1 file changed, 24 insertions(+), 35 deletions(-)
 
- drivers/mfd/axp20x.c | 28 ++++++++++++++++++++++++----
- 1 file changed, 24 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 6ee2cc6..b31f123 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -591,7 +591,22 @@ static struct mfd_cell axp20x_cells[] = {
- 	},
+diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
+index 072c518..5b2b5cb 100644
+--- a/drivers/power/smb347-charger.c
++++ b/drivers/power/smb347-charger.c
+@@ -12,7 +12,7 @@
+  */
+ 
+ #include <linux/err.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+@@ -145,6 +145,7 @@ struct smb347_charger {
+ 	bool			mains_online;
+ 	bool			usb_online;
+ 	bool			charging_enabled;
++	struct gpio_desc	*irq_gpio;
+ 	const struct smb347_charger_platform_data *pdata;
  };
  
--static struct mfd_cell axp22x_cells[] = {
-+static struct mfd_cell axp221_cells[] = {
-+	{
-+		.name		= "axp20x-pek",
-+		.num_resources	= ARRAY_SIZE(axp22x_pek_resources),
-+		.resources	= axp22x_pek_resources,
-+	}, {
-+		.name		= "axp20x-regulator",
-+	}, {
-+		.name		= "axp20x-usb-power-supply",
-+		.of_compatible	= "x-powers,axp221-usb-power-supply",
-+		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
-+		.resources	= axp22x_usb_power_supply_resources,
-+	},
-+};
+@@ -835,21 +836,29 @@ static int smb347_irq_init(struct smb347_charger *smb,
+ 			   struct i2c_client *client)
+ {
+ 	const struct smb347_charger_platform_data *pdata = smb->pdata;
+-	int ret, irq = gpio_to_irq(pdata->irq_gpio);
++	int ret, irq;
++	struct gpio_desc *gpiod;
+ 
+-	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
+-	if (ret < 0)
++	smb->irq_gpio = gpio_to_desc(pdata->irq_gpio);
++	irq = gpiod_to_irq(smb->irq_gpio);
 +
-+static struct mfd_cell axp223_cells[] = {
- 	{
- 		.name			= "axp20x-pek",
- 		.num_resources		= ARRAY_SIZE(axp22x_pek_resources),
-@@ -600,7 +615,7 @@ static struct mfd_cell axp22x_cells[] = {
- 		.name			= "axp20x-regulator",
- 	}, {
- 		.name		= "axp20x-usb-power-supply",
--		.of_compatible	= "x-powers,axp221-usb-power-supply",
-+		.of_compatible	= "x-powers,axp223-usb-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
- 		.resources	= axp22x_usb_power_supply_resources,
- 	},
-@@ -793,9 +808,14 @@ int axp20x_match_device(struct axp20x_dev *axp20x)
- 		axp20x->regmap_irq_chip = &axp20x_regmap_irq_chip;
- 		break;
- 	case AXP221_ID:
-+		axp20x->nr_cells = ARRAY_SIZE(axp221_cells);
-+		axp20x->cells = axp221_cells;
-+		axp20x->regmap_cfg = &axp22x_regmap_config;
-+		axp20x->regmap_irq_chip = &axp22x_regmap_irq_chip;
-+		break;
- 	case AXP223_ID:
--		axp20x->nr_cells = ARRAY_SIZE(axp22x_cells);
--		axp20x->cells = axp22x_cells;
-+		axp20x->nr_cells = ARRAY_SIZE(axp223_cells);
-+		axp20x->cells = axp223_cells;
- 		axp20x->regmap_cfg = &axp22x_regmap_config;
- 		axp20x->regmap_irq_chip = &axp22x_regmap_irq_chip;
- 		break;
++	gpiod = devm_gpiod_get_optional(&client->dev, NULL, GPIOD_IN);
++	if (IS_ERR(gpiod)) {
++		ret = PTR_ERR(gpiod);
+ 		goto fail;
++	}
+ 
+-	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
+-				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+-				   client->name, smb);
++
++	ret = devm_request_threaded_irq(&client->dev, irq, NULL,
++				smb347_interrupt,
++				IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
++				client->name, smb);
+ 	if (ret < 0)
+-		goto fail_gpio;
++		goto fail;
+ 
+ 	ret = smb347_set_writable(smb, true);
+ 	if (ret < 0)
+-		goto fail_irq;
++		goto fail;
+ 
+ 	/*
+ 	 * Configure the STAT output to be suitable for interrupts: disable
+@@ -867,10 +876,6 @@ static int smb347_irq_init(struct smb347_charger *smb,
+ 
+ fail_readonly:
+ 	smb347_set_writable(smb, false);
+-fail_irq:
+-	free_irq(irq, smb);
+-fail_gpio:
+-	gpio_free(pdata->irq_gpio);
+ fail:
+ 	client->irq = 0;
+ 	return ret;
+@@ -1249,32 +1254,24 @@ static int smb347_probe(struct i2c_client *client,
+ 	mains_usb_cfg.num_supplicants = ARRAY_SIZE(battery);
+ 	mains_usb_cfg.drv_data = smb;
+ 	if (smb->pdata->use_mains) {
+-		smb->mains = power_supply_register(dev, &smb347_mains_desc,
++		smb->mains = devm_power_supply_register(dev, &smb347_mains_desc,
+ 						   &mains_usb_cfg);
+ 		if (IS_ERR(smb->mains))
+ 			return PTR_ERR(smb->mains);
+ 	}
+ 
+ 	if (smb->pdata->use_usb) {
+-		smb->usb = power_supply_register(dev, &smb347_usb_desc,
++		smb->usb = devm_power_supply_register(dev, &smb347_usb_desc,
+ 						 &mains_usb_cfg);
+-		if (IS_ERR(smb->usb)) {
+-			if (smb->pdata->use_mains)
+-				power_supply_unregister(smb->mains);
++		if (IS_ERR(smb->usb))
+ 			return PTR_ERR(smb->usb);
+-		}
+ 	}
+ 
+ 	battery_cfg.drv_data = smb;
+-	smb->battery = power_supply_register(dev, &smb347_battery_desc,
++	smb->battery = devm_power_supply_register(dev, &smb347_battery_desc,
+ 					     &battery_cfg);
+-	if (IS_ERR(smb->battery)) {
+-		if (smb->pdata->use_usb)
+-			power_supply_unregister(smb->usb);
+-		if (smb->pdata->use_mains)
+-			power_supply_unregister(smb->mains);
++	if (IS_ERR(smb->battery))
+ 		return PTR_ERR(smb->battery);
+-	}
+ 
+ 	/*
+ 	 * Interrupt pin is optional. If it is connected, we setup the
+@@ -1297,17 +1294,9 @@ static int smb347_remove(struct i2c_client *client)
+ {
+ 	struct smb347_charger *smb = i2c_get_clientdata(client);
+ 
+-	if (client->irq) {
++	if (client->irq)
+ 		smb347_irq_disable(smb);
+-		free_irq(client->irq, smb);
+-		gpio_free(smb->pdata->irq_gpio);
+-	}
+ 
+-	power_supply_unregister(smb->battery);
+-	if (smb->pdata->use_usb)
+-		power_supply_unregister(smb->usb);
+-	if (smb->pdata->use_mains)
+-		power_supply_unregister(smb->mains);
+ 	return 0;
+ }
+ 
 -- 
-2.9.3
+1.7.9.5
+
