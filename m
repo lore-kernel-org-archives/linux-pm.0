@@ -1,169 +1,148 @@
-From: Atul Raj <atul.r@samsung.com>
-Subject: [PATCH v3] power:  smb347_charger: Use device managed API's
-Date: Sat, 10 Dec 2016 16:38:31 +0530
-Message-ID: <1481368111-4996-1-git-send-email-atul.r@samsung.com>
+From: Srikant Ritolia <srikant.ritolia@gmail.com>
+Subject: Re: [PATCH] power: max77693_charger: Better sysfs creation and using
+ devm APIs
+Date: Sat, 10 Dec 2016 19:49:25 +0530
+Message-ID: <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
+References: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com> <20161210074854.GB2991@kozik-lap>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:35730 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752704AbcLJLLA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Dec 2016 06:11:00 -0500
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OHY00ODFV254O60@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Sat, 10 Dec 2016 20:10:57 +0900 (KST)
+Received: from mail-ua0-f196.google.com ([209.85.217.196]:34001 "EHLO
+        mail-ua0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752323AbcLJOT0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Dec 2016 09:19:26 -0500
+Received: by mail-ua0-f196.google.com with SMTP id b35so4443275uaa.1
+        for <linux-pm@vger.kernel.org>; Sat, 10 Dec 2016 06:19:26 -0800 (PST)
+In-Reply-To: <20161210074854.GB2991@kozik-lap>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, vidushi.koul@samsung.com, atulraj.nith@gmail.com, pankaj.s4@samsung.com
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Srikant Ritolia <s.ritolia@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com
 
-Using device managed API to make the code simpler
+On Sat, Dec 10, 2016 at 1:18 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On Fri, Dec 09, 2016 at 02:21:38PM +0530, Srikant Ritolia wrote:
+>> Creating sysfs group instead of creating each attribute one by one
+>> and then handling its remove and error condition.
+>>
+>> Also using manged resource function devm_power_supply_register API
+>> instead of power_supply_register which automatically does
+>> unregister on error and remove.
+>>
+>> Signed-off-by: Srikant Ritolia <s.ritolia@samsung.com>
+>> ---
+>>  drivers/power/supply/max77693_charger.c |   51 +++++++++++--------------------
+>>  1 file changed, 18 insertions(+), 33 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supply/max77693_charger.c
+>> index 6c78884..f8f7188 100644
+>> --- a/drivers/power/supply/max77693_charger.c
+>> +++ b/drivers/power/supply/max77693_charger.c
+>> @@ -445,6 +445,17 @@ static ssize_t top_off_timer_store(struct device *dev,
+>>  static DEVICE_ATTR_RW(top_off_threshold_current);
+>>  static DEVICE_ATTR_RW(top_off_timer);
+>>
+>> +static struct attribute *max77693_charger_attribute[] = {
+>> +     &dev_attr_fast_charge_timer.attr,
+>> +     &dev_attr_top_off_threshold_current.attr,
+>> +     &dev_attr_top_off_timer.attr,
+>> +     NULL,
+>> +};
+>> +
+>> +static const struct attribute_group max77693_attr_group = {
+>> +     .attrs = max77693_charger_attribute,
+>> +};
+>> +
+>>  static int max77693_set_constant_volt(struct max77693_charger *chg,
+>>               unsigned int uvolt)
+>>  {
+>> @@ -699,53 +710,27 @@ static int max77693_charger_probe(struct platform_device *pdev)
+>>
+>>       psy_cfg.drv_data = chg;
+>>
+>> -     ret = device_create_file(&pdev->dev, &dev_attr_fast_charge_timer);
+>> -     if (ret) {
+>> -             dev_err(&pdev->dev, "failed: create fast charge timer sysfs entry\n");
+>> -             goto err;
+>> -     }
+>> -
+>> -     ret = device_create_file(&pdev->dev,
+>> -                     &dev_attr_top_off_threshold_current);
+>> -     if (ret) {
+>> -             dev_err(&pdev->dev, "failed: create top off current sysfs entry\n");
+>> -             goto err;
+>> -     }
+>> -
+>> -     ret = device_create_file(&pdev->dev, &dev_attr_top_off_timer);
+>> -     if (ret) {
+>> -             dev_err(&pdev->dev, "failed: create top off timer sysfs entry\n");
+>> -             goto err;
+>> +     ret = sysfs_create_group(&pdev->dev.kobj, &max77693_attr_group);
+>> +     if (ret != 0) {
+>> +             dev_err(&pdev->dev, "Can't create sysfs entries\n");
+>> +             return ret;
+>>       }
+>>
+>> -     chg->charger = power_supply_register(&pdev->dev,
+>> +     chg->charger = devm_power_supply_register(&pdev->dev,
+>
+> I would prefer splitting this into separate patche. You are altering
+> the order of cleanup in unbind. Previously power supply was unregistered
+> before sysfs, now it will be after. I don't see a problem with that but
+> these as separate ideas with different possible outcomes.
 
-using devm_gpio_request_one in place of gpio_request_one
-using devm_request_threaded_irq in place of request_threaded_irq
-using devm_power_supply_register in place of power_supply_register
-using gpiod_* API's in place of gpio_* API's
+Ok. I will send 2 separate patches for this.
 
-Signed-off-by: Atul Raj <atul.r@samsung.com>
----
-Changes in v2:
-  - using gpiod_* API's in place of gpio_* API's
 
-Changes in v3
-  - chaning suject as per directory in file path in supply git
-    adding signoff
-    sorry for wrong v2 patch. Kindly ignore v2.
+>
+>>                                               &max77693_charger_desc,
+>>                                               &psy_cfg);
+>>       if (IS_ERR(chg->charger)) {
+>>               dev_err(&pdev->dev, "failed: power supply register\n");
+>>               ret = PTR_ERR(chg->charger);
+>> -             goto err;
+>
+> Missing sysfs cleanup.
+>
+> Best regards,
+> Krzysztof
+>
 
- drivers/power/smb347-charger.c |   59 ++++++++++++++++------------------------
- 1 file changed, 24 insertions(+), 35 deletions(-)
+Thanks for pointing this out.
+To overcome this I will use sysfs_create_group after devm_power_supply_register.
+Then I would not need to do this sysfs cleanup on failure of power
+supply register.
 
-diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charger.c
-index 072c518..5b2b5cb 100644
---- a/drivers/power/smb347-charger.c
-+++ b/drivers/power/smb347-charger.c
-@@ -12,7 +12,7 @@
-  */
- 
- #include <linux/err.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
-@@ -145,6 +145,7 @@ struct smb347_charger {
- 	bool			mains_online;
- 	bool			usb_online;
- 	bool			charging_enabled;
-+	struct gpio_desc	*irq_gpio;
- 	const struct smb347_charger_platform_data *pdata;
- };
- 
-@@ -835,21 +836,29 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 			   struct i2c_client *client)
- {
- 	const struct smb347_charger_platform_data *pdata = smb->pdata;
--	int ret, irq = gpio_to_irq(pdata->irq_gpio);
-+	int ret, irq;
-+	struct gpio_desc *gpiod;
- 
--	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
--	if (ret < 0)
-+	smb->irq_gpio = gpio_to_desc(pdata->irq_gpio);
-+	irq = gpiod_to_irq(smb->irq_gpio);
-+
-+	gpiod = devm_gpiod_get_optional(&client->dev, NULL, GPIOD_IN);
-+	if (IS_ERR(gpiod)) {
-+		ret = PTR_ERR(gpiod);
- 		goto fail;
-+	}
- 
--	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
--				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
--				   client->name, smb);
-+
-+	ret = devm_request_threaded_irq(&client->dev, irq, NULL,
-+				smb347_interrupt,
-+				IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
-+				client->name, smb);
- 	if (ret < 0)
--		goto fail_gpio;
-+		goto fail;
- 
- 	ret = smb347_set_writable(smb, true);
- 	if (ret < 0)
--		goto fail_irq;
-+		goto fail;
- 
- 	/*
- 	 * Configure the STAT output to be suitable for interrupts: disable
-@@ -867,10 +876,6 @@ static int smb347_irq_init(struct smb347_charger *smb,
- 
- fail_readonly:
- 	smb347_set_writable(smb, false);
--fail_irq:
--	free_irq(irq, smb);
--fail_gpio:
--	gpio_free(pdata->irq_gpio);
- fail:
- 	client->irq = 0;
- 	return ret;
-@@ -1249,32 +1254,24 @@ static int smb347_probe(struct i2c_client *client,
- 	mains_usb_cfg.num_supplicants = ARRAY_SIZE(battery);
- 	mains_usb_cfg.drv_data = smb;
- 	if (smb->pdata->use_mains) {
--		smb->mains = power_supply_register(dev, &smb347_mains_desc,
-+		smb->mains = devm_power_supply_register(dev, &smb347_mains_desc,
- 						   &mains_usb_cfg);
- 		if (IS_ERR(smb->mains))
- 			return PTR_ERR(smb->mains);
- 	}
- 
- 	if (smb->pdata->use_usb) {
--		smb->usb = power_supply_register(dev, &smb347_usb_desc,
-+		smb->usb = devm_power_supply_register(dev, &smb347_usb_desc,
- 						 &mains_usb_cfg);
--		if (IS_ERR(smb->usb)) {
--			if (smb->pdata->use_mains)
--				power_supply_unregister(smb->mains);
-+		if (IS_ERR(smb->usb))
- 			return PTR_ERR(smb->usb);
--		}
- 	}
- 
- 	battery_cfg.drv_data = smb;
--	smb->battery = power_supply_register(dev, &smb347_battery_desc,
-+	smb->battery = devm_power_supply_register(dev, &smb347_battery_desc,
- 					     &battery_cfg);
--	if (IS_ERR(smb->battery)) {
--		if (smb->pdata->use_usb)
--			power_supply_unregister(smb->usb);
--		if (smb->pdata->use_mains)
--			power_supply_unregister(smb->mains);
-+	if (IS_ERR(smb->battery))
- 		return PTR_ERR(smb->battery);
--	}
- 
- 	/*
- 	 * Interrupt pin is optional. If it is connected, we setup the
-@@ -1297,17 +1294,9 @@ static int smb347_remove(struct i2c_client *client)
- {
- 	struct smb347_charger *smb = i2c_get_clientdata(client);
- 
--	if (client->irq) {
-+	if (client->irq)
- 		smb347_irq_disable(smb);
--		free_irq(client->irq, smb);
--		gpio_free(smb->pdata->irq_gpio);
--	}
- 
--	power_supply_unregister(smb->battery);
--	if (smb->pdata->use_usb)
--		power_supply_unregister(smb->usb);
--	if (smb->pdata->use_mains)
--		power_supply_unregister(smb->mains);
- 	return 0;
- }
- 
--- 
-1.7.9.5
 
+Thanks & Regards,
+Srikant Ritolia
+
+
+>> +             return ret;
+>>       }
+>>
+>>       return 0;
+>> -
+>> -err:
+>> -     device_remove_file(&pdev->dev, &dev_attr_top_off_timer);
+>> -     device_remove_file(&pdev->dev, &dev_attr_top_off_threshold_current);
+>> -     device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+>> -
+>> -     return ret;
+>>  }
+>>
+>>  static int max77693_charger_remove(struct platform_device *pdev)
+>>  {
+>> -     struct max77693_charger *chg = platform_get_drvdata(pdev);
+>> -
+>> -     device_remove_file(&pdev->dev, &dev_attr_top_off_timer);
+>> -     device_remove_file(&pdev->dev, &dev_attr_top_off_threshold_current);
+>> -     device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+>> -
+>> -     power_supply_unregister(chg->charger);
+>> +     sysfs_remove_group(&pdev->dev.kobj, &max77693_attr_group);
+>>
+>>       return 0;
+>>  }
+>> --
+>> 1.7.9.5
+>>
