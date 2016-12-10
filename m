@@ -1,123 +1,133 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / CPPC: Fix per-CPU pointers management
-Date: Sat, 10 Dec 2016 00:52:28 +0100
-Message-ID: <296282606.tnoJCKgU2l@aspire.rjw.lan>
-References: <cover.1479844244.git.tim.c.chen@linux.intel.com> <20161209144551.jhnbfsxdxsk4ld6s@linutronix.de> <CAJZ5v0jUCHSM90yEoygAbKVY3ySaWQk-Cp6qkd+6ESH74J2_8A@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] power: max77693_charger: Better sysfs creation and using
+ devm APIs
+Date: Sat, 10 Dec 2016 09:48:54 +0200
+Message-ID: <20161210074854.GB2991@kozik-lap>
+References: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jUCHSM90yEoygAbKVY3ySaWQk-Cp6qkd+6ESH74J2_8A@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:36575 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751972AbcLJHtL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Dec 2016 02:49:11 -0500
+Received: by mail-wm0-f68.google.com with SMTP id m203so990283wma.3
+        for <linux-pm@vger.kernel.org>; Fri, 09 Dec 2016 23:49:11 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srikant Ritolia <s.ritolia@samsung.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com, srikant.ritolia@gmail.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Dec 09, 2016 at 02:21:38PM +0530, Srikant Ritolia wrote:
+> Creating sysfs group instead of creating each attribute one by one
+> and then handling its remove and error condition.
+> 
+> Also using manged resource function devm_power_supply_register API
+> instead of power_supply_register which automatically does
+> unregister on error and remove.
+> 
+> Signed-off-by: Srikant Ritolia <s.ritolia@samsung.com>
+> ---
+>  drivers/power/supply/max77693_charger.c |   51 +++++++++++--------------------
+>  1 file changed, 18 insertions(+), 33 deletions(-)
+> 
+> diff --git a/drivers/power/supply/max77693_charger.c b/drivers/power/supply/max77693_charger.c
+> index 6c78884..f8f7188 100644
+> --- a/drivers/power/supply/max77693_charger.c
+> +++ b/drivers/power/supply/max77693_charger.c
+> @@ -445,6 +445,17 @@ static ssize_t top_off_timer_store(struct device *dev,
+>  static DEVICE_ATTR_RW(top_off_threshold_current);
+>  static DEVICE_ATTR_RW(top_off_timer);
+>  
+> +static struct attribute *max77693_charger_attribute[] = {
+> +	&dev_attr_fast_charge_timer.attr,
+> +	&dev_attr_top_off_threshold_current.attr,
+> +	&dev_attr_top_off_timer.attr,
+> +	NULL,
+> +};
+> +
+> +static const struct attribute_group max77693_attr_group = {
+> +	.attrs = max77693_charger_attribute,
+> +};
+> +
+>  static int max77693_set_constant_volt(struct max77693_charger *chg,
+>  		unsigned int uvolt)
+>  {
+> @@ -699,53 +710,27 @@ static int max77693_charger_probe(struct platform_device *pdev)
+>  
+>  	psy_cfg.drv_data = chg;
+>  
+> -	ret = device_create_file(&pdev->dev, &dev_attr_fast_charge_timer);
+> -	if (ret) {
+> -		dev_err(&pdev->dev, "failed: create fast charge timer sysfs entry\n");
+> -		goto err;
+> -	}
+> -
+> -	ret = device_create_file(&pdev->dev,
+> -			&dev_attr_top_off_threshold_current);
+> -	if (ret) {
+> -		dev_err(&pdev->dev, "failed: create top off current sysfs entry\n");
+> -		goto err;
+> -	}
+> -
+> -	ret = device_create_file(&pdev->dev, &dev_attr_top_off_timer);
+> -	if (ret) {
+> -		dev_err(&pdev->dev, "failed: create top off timer sysfs entry\n");
+> -		goto err;
+> +	ret = sysfs_create_group(&pdev->dev.kobj, &max77693_attr_group);
+> +	if (ret != 0) {
+> +		dev_err(&pdev->dev, "Can't create sysfs entries\n");
+> +		return ret;
+>  	}
+>  
+> -	chg->charger = power_supply_register(&pdev->dev,
+> +	chg->charger = devm_power_supply_register(&pdev->dev,
 
-Enabling ACPI CPPC on x86 causes a NULL pointer dereference to occur
-(on boot on a "default" KVM setup) in acpi_cppc_processor_exit() due
-to a missing check against NULL in there:
+I would prefer splitting this into separate patche. You are altering
+the order of cleanup in unbind. Previously power supply was unregistered
+before sysfs, now it will be after. I don't see a problem with that but
+these as separate ideas with different possible outcomes.
 
-|BUG: unable to handle kernel NULL pointer dereference at           (null)
-|IP: [<ffffffff812aab6e>] acpi_cppc_processor_exit+0x40/0x60
-|PGD 0 [    0.577616]
-|Oops: 0000 [#1] SMP
-|Modules linked in:
-|CPU: 3 PID: 1 Comm: swapper/0 Not tainted 4.9.0-rc6-00146-g17669006adf6 #51
-|task: ffff88003f878000 task.stack: ffffc90000008000
-|RIP: 0010:[<ffffffff812aab6e>]  [<ffffffff812aab6e>] acpi_cppc_processor_exit+0x40/0x60
-|RSP: 0000:ffffc9000000bd48  EFLAGS: 00010296
-|RAX: 00000000000137e0 RBX: 0000000000000000 RCX: 0000000000000001
-|RDX: ffff88003fc00000 RSI: 0000000000000000 RDI: ffff88003fbca130
-|RBP: ffffc9000000bd60 R08: 0000000000000514 R09: 0000000000000000
-|R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000002
-|R13: 0000000000000020 R14: ffffffff8167cb00 R15: 0000000000000000
-|FS:  0000000000000000(0000) GS:ffff88003fcc0000(0000) knlGS:0000000000000000
-|CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-|CR2: 0000000000000000 CR3: 0000000001618000 CR4: 00000000000406e0
-|Stack:
-| ffff88003f939848 ffff88003fbca130 0000000000000001 ffffc9000000bd80
-| ffffffff812a4ccb ffff88003fc0cee8 0000000000000000 ffffc9000000bdb8
-| ffffffff812dc20d ffff88003fc0cee8 ffffffff8167cb00 ffff88003fc0cf48
-|Call Trace:
-| [<ffffffff812a4ccb>] acpi_processor_stop+0xb2/0xc5
-| [<ffffffff812dc20d>] driver_probe_device+0x14d/0x2f0
-| [<ffffffff812dc41e>] __driver_attach+0x6e/0x90
-| [<ffffffff812da234>] bus_for_each_dev+0x54/0x90
-| [<ffffffff812dbbf9>] driver_attach+0x19/0x20
-| [<ffffffff812db6a6>] bus_add_driver+0xe6/0x200
-| [<ffffffff812dcb23>] driver_register+0x83/0xc0
-| [<ffffffff816f050a>] acpi_processor_driver_init+0x20/0x94
-| [<ffffffff81000487>] do_one_initcall+0x97/0x180
-| [<ffffffff816ccf5c>] kernel_init_freeable+0x112/0x1a6
-| [<ffffffff813a0fc9>] kernel_init+0x9/0xf0
-| [<ffffffff813acf35>] ret_from_fork+0x25/0x30
-|Code: 02 00 00 00 48 8b 14 d5 e0 c3 55 81 48 8b 1c 02 4c 8d 6b 20 eb 15 49 8b 7d 00 48 85 ff 74 05 e8 39 8c d9 ff 41 ff c4 49 83 c5 20 <44> 3b 23 72 e6 48 8d bb a0 02 00 00 e8 b1 6f f9 ff 48 89 df e8
-|RIP  [<ffffffff812aab6e>] acpi_cppc_processor_exit+0x40/0x60
-| RSP <ffffc9000000bd48>
-|CR2: 0000000000000000
+>  						&max77693_charger_desc,
+>  						&psy_cfg);
+>  	if (IS_ERR(chg->charger)) {
+>  		dev_err(&pdev->dev, "failed: power supply register\n");
+>  		ret = PTR_ERR(chg->charger);
+> -		goto err;
 
-Fix that and while at it, fix a possible use-after-free scenario in
-acpi_cppc_processor_probe() that can happen if the function returns
-without cleaning up the per-CPU pointer set by it previously.
+Missing sysfs cleanup.
 
-Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Original-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+Best regards,
+Krzysztof
 
-Hi Thomas,
-
-The crash fixed by this is exposed by the ITMT (asymmetric packing) series
-(which involves using ACPI CPPC on x86), so IMO it would be good to route it
-through tip along with that series.
-
-Thanks,
-Rafael
-
----
- drivers/acpi/cppc_acpi.c |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/acpi/cppc_acpi.c
-===================================================================
---- linux-pm.orig/drivers/acpi/cppc_acpi.c
-+++ linux-pm/drivers/acpi/cppc_acpi.c
-@@ -776,9 +776,6 @@ int acpi_cppc_processor_probe(struct acp
- 		init_waitqueue_head(&pcc_data.pcc_write_wait_q);
- 	}
- 
--	/* Plug PSD data into this CPUs CPC descriptor. */
--	per_cpu(cpc_desc_ptr, pr->id) = cpc_ptr;
--
- 	/* Everything looks okay */
- 	pr_debug("Parsed CPC struct for CPU: %d\n", pr->id);
- 
-@@ -789,10 +786,15 @@ int acpi_cppc_processor_probe(struct acp
- 		goto out_free;
- 	}
- 
-+	/* Plug PSD data into this CPUs CPC descriptor. */
-+	per_cpu(cpc_desc_ptr, pr->id) = cpc_ptr;
-+
- 	ret = kobject_init_and_add(&cpc_ptr->kobj, &cppc_ktype, &cpu_dev->kobj,
- 			"acpi_cppc");
--	if (ret)
-+	if (ret) {
-+		per_cpu(cpc_desc_ptr, pr->id) = NULL;
- 		goto out_free;
-+	}
- 
- 	kfree(output.pointer);
- 	return 0;
-@@ -826,6 +828,8 @@ void acpi_cppc_processor_exit(struct acp
- 	void __iomem *addr;
- 
- 	cpc_ptr = per_cpu(cpc_desc_ptr, pr->id);
-+	if (!cpc_ptr)
-+		return;
- 
- 	/* Free all the mapped sys mem areas for this CPU */
- 	for (i = 2; i < cpc_ptr->num_entries; i++) {
-
+> +		return ret;
+>  	}
+>  
+>  	return 0;
+> -
+> -err:
+> -	device_remove_file(&pdev->dev, &dev_attr_top_off_timer);
+> -	device_remove_file(&pdev->dev, &dev_attr_top_off_threshold_current);
+> -	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+> -
+> -	return ret;
+>  }
+>  
+>  static int max77693_charger_remove(struct platform_device *pdev)
+>  {
+> -	struct max77693_charger *chg = platform_get_drvdata(pdev);
+> -
+> -	device_remove_file(&pdev->dev, &dev_attr_top_off_timer);
+> -	device_remove_file(&pdev->dev, &dev_attr_top_off_threshold_current);
+> -	device_remove_file(&pdev->dev, &dev_attr_fast_charge_timer);
+> -
+> -	power_supply_unregister(chg->charger);
+> +	sysfs_remove_group(&pdev->dev.kobj, &max77693_attr_group);
+>  
+>  	return 0;
+>  }
+> -- 
+> 1.7.9.5
+> 
