@@ -1,32 +1,52 @@
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH] ACPI / CPPC: Fix per-CPU pointers management
-Date: Sat, 10 Dec 2016 19:51:06 +0100
-Message-ID: <20161210185106.eyj356w3ffgibaqi@linutronix.de>
-References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
- <20161209144551.jhnbfsxdxsk4ld6s@linutronix.de>
- <CAJZ5v0jUCHSM90yEoygAbKVY3ySaWQk-Cp6qkd+6ESH74J2_8A@mail.gmail.com>
- <296282606.tnoJCKgU2l@aspire.rjw.lan>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] power: max77693_charger: Better sysfs creation and using
+ devm APIs
+Date: Sat, 10 Dec 2016 21:56:27 +0200
+Message-ID: <20161210195627.GA22744@kozik-lap>
+References: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
+ <20161210074854.GB2991@kozik-lap>
+ <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:35649 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752195AbcLJT4d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Dec 2016 14:56:33 -0500
+Received: by mail-wm0-f67.google.com with SMTP id a20so2870866wme.2
+        for <linux-pm@vger.kernel.org>; Sat, 10 Dec 2016 11:56:32 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <296282606.tnoJCKgU2l@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+In-Reply-To: <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srikant Ritolia <srikant.ritolia@gmail.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Srikant Ritolia <s.ritolia@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com
 
-On 2016-12-10 00:52:28 [+0100], Rafael J. Wysocki wrote:
-> Hi Thomas,
+On Sat, Dec 10, 2016 at 07:49:25PM +0530, Srikant Ritolia wrote:
+> On Sat, Dec 10, 2016 at 1:18 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > On Fri, Dec 09, 2016 at 02:21:38PM +0530, Srikant Ritolia wrote:
+ >
+> >>                                               &max77693_charger_desc,
+> >>                                               &psy_cfg);
+> >>       if (IS_ERR(chg->charger)) {
+> >>               dev_err(&pdev->dev, "failed: power supply register\n");
+> >>               ret = PTR_ERR(chg->charger);
+> >> -             goto err;
+> >
+> > Missing sysfs cleanup.
+> >
+> > Best regards,
+> > Krzysztof
+> >
 > 
-> The crash fixed by this is exposed by the ITMT (asymmetric packing) series
-> (which involves using ACPI CPPC on x86), so IMO it would be good to route it
-> through tip along with that series.
+> Thanks for pointing this out.
+> To overcome this I will use sysfs_create_group after devm_power_supply_register.
+> Then I would not need to do this sysfs cleanup on failure of power
+> supply register.
 
-can we get this merged into the original patch please? This is default y
-and breaks bisecting.
+I am not sure if this is good idea. This patch does not bring any
+particular noticeable benefit except less lines of code. It is not worth
+breaking things just for that reason...
 
-> Thanks,
-> Rafael
-
-Sebastian
+Best regards,
+Krzysztof
