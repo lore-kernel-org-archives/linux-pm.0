@@ -1,52 +1,53 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] power: max77693_charger: Better sysfs creation and using
- devm APIs
-Date: Sat, 10 Dec 2016 21:56:27 +0200
-Message-ID: <20161210195627.GA22744@kozik-lap>
-References: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
- <20161210074854.GB2991@kozik-lap>
- <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:35649 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752195AbcLJT4d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 10 Dec 2016 14:56:33 -0500
-Received: by mail-wm0-f67.google.com with SMTP id a20so2870866wme.2
-        for <linux-pm@vger.kernel.org>; Sat, 10 Dec 2016 11:56:32 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bartosz Golaszewski <bgolaszewski-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH 0/2] iio: GPIO power switch support
+Date: Sun, 11 Dec 2016 23:21:43 +0100
+Message-ID: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Patrick Titiano <ptitiano-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Neil Armstrong <narmstrong-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartosz Golaszewski <bgolaszewski-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srikant Ritolia <srikant.ritolia@gmail.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Srikant Ritolia <s.ritolia@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com
 
-On Sat, Dec 10, 2016 at 07:49:25PM +0530, Srikant Ritolia wrote:
-> On Sat, Dec 10, 2016 at 1:18 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> > On Fri, Dec 09, 2016 at 02:21:38PM +0530, Srikant Ritolia wrote:
- >
-> >>                                               &max77693_charger_desc,
-> >>                                               &psy_cfg);
-> >>       if (IS_ERR(chg->charger)) {
-> >>               dev_err(&pdev->dev, "failed: power supply register\n");
-> >>               ret = PTR_ERR(chg->charger);
-> >> -             goto err;
-> >
-> > Missing sysfs cleanup.
-> >
-> > Best regards,
-> > Krzysztof
-> >
-> 
-> Thanks for pointing this out.
-> To overcome this I will use sysfs_create_group after devm_power_supply_register.
-> Then I would not need to do this sysfs cleanup on failure of power
-> supply register.
+This series is aimed at improving the support for baylibre-acme[1]
+power measurement capes. 
 
-I am not sure if this is good idea. This patch does not bring any
-particular noticeable benefit except less lines of code. It is not worth
-breaking things just for that reason...
+We would like to add support for power-cycling of devices measured
+using TI INA226 ADCs. An example use case would be measuring the power
+consumption of a development board during boot and power-cycling it
+remotely using a GPIO power switch.
 
-Best regards,
-Krzysztof
+The first patch proposes to add a new DT binding for describing simple
+power switches.
+
+The second adds a simple IIO driver exposing a single attribute.
+
+The motivation for using the IIO framework is the fact that we already
+use it for reading the data from the ADC and that power-cycling the
+measured devices is an integral part of our use case. Users would find
+it convenient to be able to use libiio as the single interface.
+
+[1] http://baylibre.com/acme/
+
+Bartosz Golaszewski (2):
+  devicetree: power: add bindings for GPIO-driven power switches
+  iio: misc: add support for GPIO power switches
+
+ .../bindings/power/gpio-power-switch.txt           |  25 ++++
+ drivers/iio/Kconfig                                |   1 +
+ drivers/iio/Makefile                               |   1 +
+ drivers/iio/misc/Kconfig                           |  17 +++
+ drivers/iio/misc/Makefile                          |   6 +
+ drivers/iio/misc/gpio-power-switch.c               | 127 +++++++++++++++++++++
+ 6 files changed, 177 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/gpio-power-switch.txt
+ create mode 100644 drivers/iio/misc/Kconfig
+ create mode 100644 drivers/iio/misc/Makefile
+ create mode 100644 drivers/iio/misc/gpio-power-switch.c
+
+-- 
+2.9.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
