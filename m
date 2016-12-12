@@ -1,66 +1,35 @@
-From: Joe Perches <joe@perches.com>
+From: Nick Desaulniers <nick.desaulniers@gmail.com>
 Subject: Re: [PATCH] ACPI: small formatting fixes
-Date: Mon, 12 Dec 2016 15:13:32 -0800
-Message-ID: <1481584412.29291.7.camel@perches.com>
+Date: Mon, 12 Dec 2016 15:20:44 -0800
+Message-ID: <20161212232043.vc5alwqzvspg2ade@lostoracle.net>
 References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
-         <20161212085620.GA738@amd> <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
-         <1481567955.1764.28.camel@perches.com> <20161212222216.GA18201@amd>
-         <1481581932.29291.6.camel@perches.com> <20161212230840.GB18201@amd>
+ <20161212085620.GA738@amd>
+ <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+ <1481567955.1764.28.camel@perches.com>
+ <20161212222216.GA18201@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0008.hostedemail.com ([216.40.44.8]:59035 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751697AbcLLXNi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 18:13:38 -0500
-In-Reply-To: <20161212230840.GB18201@amd>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:33485 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751779AbcLLXUr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 18:20:47 -0500
+Content-Disposition: inline
+In-Reply-To: <20161212222216.GA18201@amd>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Nick Desaulniers <nick.desaulniers@gmail.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Joe Perches <joe@perches.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 2016-12-13 at 00:08 +0100, Pavel Machek wrote:
-> On Mon 2016-12-12 14:32:12, Joe Perches wrote:
-> > On Mon, 2016-12-12 at 23:22 +0100, Pavel Machek wrote:
-> > > On Mon 2016-12-12 10:39:15, Joe Perches wrote:
-> > > > On Mon, 2016-12-12 at 09:56 -0800, Nick Desaulniers wrote:
-> > > > > A quick cleanup that passes scripts/checkpatch.pl -f <file>.
-> > 
-> > []
-> > > > > diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-> > 
-> > []
-> > > > It's generally better not to convert
-> > > > these printk(KERN_DEBUG uses.
-> > > > 
-> > > > There are behavior differences between
-> > > > 	printk(KERN_DEBUG ...);
-> > > > and
-> > > > 	pr_debug(...);
-> > > > 
-> > > > The first will always be emitted as long
-> > > > as the console level is appropriate.
-> > > > 
-> > > > The second depends on a #define DEBUG
-> > > > before it gets emitted or a kernel 
-> > > > with CONFIG_DYNAMIC_DEBUG enabled and
-> > > > this entry specifically enabled in the
-> > > > control file.
-> > > 
-> > > Hmm. Perhaps pr_debug should be called pr_c_debug() or something? This
-> > > is rather nice trap.
-> > 
-> > Yeah, I've suggested veriants like pr_always_debug (from 2009)
-> > http://lkml.iu.edu/hypermail/linux/kernel/0910.0/00399.html
-> 
-> I'd very much like to see it other way around.
-> 
-> pr_err is equivalent to printk(KERN_ERR)
-> pr_warn is equivalent to printk(KERN_WARN)
+> Please... don't encourage people more, we have enough cleanup patches
+> as is.
 
-That bus left the station more than a decade ago.
+I recognize that this patch is relatively inconsequential, but it is my
+first patch to the Linux kernel, and is teaching me how to wrangle my
+email client and about the development work flow.  I plan to write a
+blog post about my experience to help encourage more people to
+contribute. So I do really appreciate all of the feedback and patience
+for a relatively small patch.  Thanks for your time.  v3 incoming (will
+start a new thread).
 
-> pr_debug _NOT_ beging equivalent to printk(KERN_DEBUG) is a trap :-(.
-
-true
+~Nick
