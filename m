@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Subject: [PATCHv5 4/5] arm64: dts: r8a7796: Add R-Car Gen3 thermal support
-Date: Mon, 12 Dec 2016 15:18:04 +0100
-Message-ID: <20161212141805.14946-5-niklas.soderlund@ragnatech.se>
+Subject: [PATCHv5 3/5] arm64: dts: r8a7795: Add R-Car Gen3 thermal support
+Date: Mon, 12 Dec 2016 15:18:03 +0100
+Message-ID: <20161212141805.14946-4-niklas.soderlund@ragnatech.se>
 References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -21,20 +21,20 @@ Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@renesas.com>
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 ---
- arch/arm64/boot/dts/renesas/r8a7796.dtsi | 58 ++++++++++++++++++++++++++++++++
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi | 58 ++++++++++++++++++++++++++++++++
  1 file changed, 58 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7796.dtsi b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-index 9217da9..5261f0f 100644
---- a/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-@@ -251,5 +251,63 @@
- 			power-domains = <&sysc R8A7796_PD_ALWAYS_ON>;
- 			status = "disabled";
+diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+index 8c15040..0699e04 100644
+--- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+@@ -1541,5 +1541,63 @@
+ 				};
+ 			};
  		};
 +
 +		tsc: thermal@e6198000 {
-+			compatible = "renesas,r8a7796-thermal";
++			compatible = "renesas,r8a7795-thermal";
 +			reg = <0 0xe6198000 0 0x68>,
 +			      <0 0xe61a0000 0 0x5c>,
 +			      <0 0xe61a8000 0 0x5c>;
@@ -42,7 +42,7 @@ index 9217da9..5261f0f 100644
 +				     <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
 +				     <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
 +			clocks = <&cpg CPG_MOD 522>;
-+			power-domains = <&sysc R8A7796_PD_ALWAYS_ON>;
++			power-domains = <&sysc R8A7795_PD_ALWAYS_ON>;
 +			#thermal-sensor-cells = <1>;
 +			status = "okay";
 +		};
