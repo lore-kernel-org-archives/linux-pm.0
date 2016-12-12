@@ -1,137 +1,88 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: [PATCH 2/3] power: supply: bq24735-charger: optionally poll the ac-detect gpio
-Date: Mon, 12 Dec 2016 12:00:23 +0100
-Message-ID: <1481540424-19293-3-git-send-email-peda@axentia.se>
-References: <1481540424-19293-1-git-send-email-peda@axentia.se>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1481540424-19293-1-git-send-email-peda@axentia.se>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: [PATCH v4 0/5] thermal: fixes the rockchip thermal
+Date: Mon, 12 Dec 2016 19:05:30 +0800
+Message-ID: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:33183 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932181AbcLLLF4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 06:05:56 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, Caesar Wang <wxt@rock-chips.com>
 
-If the ac-detect gpio does not support interrupts, provide a fallback
-to poll the gpio at a configurable interval.
+There are five patches posted for upstream.
+89267b5 thermal: rockchip: improve conversion error messages
+a0b5649 thermal: rockchip: don't pass table structs by value
+bceed92 thermal: rockchip: fixes invalid temperature case
+30be6d0 thermal: rockchip: optimize the conversion table
+35636e9 thermal: rockchip: handle the set_trips without the trip points.
+--
 
-Signed-off-by: Peter Rosin <peda@axentia.se>
+History version:
+V1:
+https://lkml.org/lkml/2016/11/22/250
+V2:
+https://lkml.org/lkml/2016/11/23/348
+V3:
+http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1281432.html
 ---
- .../bindings/power/supply/ti,bq24735.txt           |  2 +
- drivers/power/supply/bq24735-charger.c             | 50 +++++++++++++++++++---
- 2 files changed, 47 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-index 3bf55757ceec..59c4dde589cf 100644
---- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-+++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-@@ -25,6 +25,8 @@ Optional properties :
-  - ti,external-control : Indicates that the charger is configured externally
-    and that the host should not attempt to enable/disable charging or set the
-    charge voltage/current.
-+ - ti,poll-interval-ms : In case there is no interrupts specified, poll AC
-+   presense on the ti,ac-detect-gpios GPIO with this interval.
- 
- Example:
- 
-diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
-index 1d5c9206e0ed..3765806d5d46 100644
---- a/drivers/power/supply/bq24735-charger.c
-+++ b/drivers/power/supply/bq24735-charger.c
-@@ -50,6 +50,8 @@ struct bq24735 {
- 	struct bq24735_platform		*pdata;
- 	struct mutex			lock;
- 	struct gpio_desc		*status_gpio;
-+	struct delayed_work		poll;
-+	u32				poll_interval;
- 	bool				charging;
- };
- 
-@@ -209,11 +211,8 @@ static int bq24735_charger_is_charging(struct bq24735 *charger)
- 	return !(ret & BQ24735_CHG_OPT_CHARGE_DISABLE);
- }
- 
--static irqreturn_t bq24735_charger_isr(int irq, void *devid)
-+static void bq24735_update(struct bq24735 *charger)
- {
--	struct power_supply *psy = devid;
--	struct bq24735 *charger = to_bq24735(psy);
--
- 	mutex_lock(&charger->lock);
- 
- 	if (charger->charging && bq24735_charger_is_present(charger))
-@@ -223,11 +222,29 @@ static irqreturn_t bq24735_charger_isr(int irq, void *devid)
- 
- 	mutex_unlock(&charger->lock);
- 
--	power_supply_changed(psy);
-+	power_supply_changed(charger->charger);
-+}
-+
-+static irqreturn_t bq24735_charger_isr(int irq, void *devid)
-+{
-+	struct power_supply *psy = devid;
-+	struct bq24735 *charger = to_bq24735(psy);
-+
-+	bq24735_update(charger);
- 
- 	return IRQ_HANDLED;
- }
- 
-+static void bq24735_poll(struct work_struct *work)
-+{
-+	struct bq24735 *charger = container_of(work, struct bq24735, poll.work);
-+
-+	bq24735_update(charger);
-+
-+	schedule_delayed_work(&charger->poll,
-+			      msecs_to_jiffies(charger->poll_interval));
-+}
-+
- static int bq24735_charger_get_property(struct power_supply *psy,
- 					enum power_supply_property psp,
- 					union power_supply_propval *val)
-@@ -455,11 +472,33 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 				client->irq, ret);
- 			return ret;
- 		}
-+	} else if (charger->status_gpio) {
-+		ret = of_property_read_u32(client->dev.of_node,
-+					   "ti,poll-interval-ms",
-+					   &charger->poll_interval);
-+		if (ret)
-+			return 0;
-+		if (!charger->poll_interval)
-+			return 0;
-+
-+		INIT_DELAYED_WORK(&charger->poll, bq24735_poll);
-+		schedule_delayed_work(&charger->poll,
-+				      msecs_to_jiffies(charger->poll_interval));
- 	}
- 
- 	return 0;
- }
- 
-+static int bq24735_charger_remove(struct i2c_client *client)
-+{
-+	struct bq24735 *charger = i2c_get_clientdata(client);
-+
-+	if (charger->poll_interval)
-+		cancel_delayed_work_sync(&charger->poll);
-+
-+	return 0;
-+}
-+
- static const struct i2c_device_id bq24735_charger_id[] = {
- 	{ "bq24735-charger", 0 },
- 	{}
-@@ -478,6 +517,7 @@ static struct i2c_driver bq24735_charger_driver = {
- 		.of_match_table = bq24735_match_ids,
- 	},
- 	.probe = bq24735_charger_probe,
-+	.remove = bq24735_charger_remove,
- 	.id_table = bq24735_charger_id,
- };
- 
+Brain posted the below patches for upstream.
+89267b5 thermal: rockchip: improve conversion error messages
+a0b5649 thermal: rockchip: don't pass table structs by value
+That make sense to improve efficiency
+
+Caesar post the below patches for upstream.
+bceed92 thermal: rockchip: fixes invalid temperature case
+30be6d0 thermal: rockchip: optimize the conversion table
+35636e9 thermal: rockchip: handle the set_trips without the trip points.
+That will fixes some issues in special cases.
+--
+
+Anyway, this series patches should can improve the rockchip thermal driver.
+
+
+Changes in v4:
+- As Eduardo and Brian commnets on
+  https://patchwork.kernel.org/patch/9449301
+- Print a better name.
+- As Eduardo commented on https://patchwork.kernel.org/patch/9449313/
+- remove the Brain's review for previous version, since the new version
+  update something.
+
+Changes in v3:
+- fix trivial thing for error message nd return value.
+- change the commit.
+- Fixes something as Brian comments on
+
+Changes in v2:
+- As Brian commnets that restructure this to pass error codes back to the
+  upper layers.
+- Improve the commit message.
+- improve the commit as Brian commnets on https://patchwork.kernel.org/patch/9440985
+- Fixes something as Brian comments on
+  https://patchwork.kernel.org/patch/9440989.
+
+Changes in v1:
+- The original Brian posted on https://patchwork.kernel.org/patch/9437686
+  Note: it'd probably be even nicer to know which sensor this was, but we've
+  kinda abstracted that one away by this point...
+- The original Brian posted on https://patchwork.kernel.org/patch/9437687
+
+Brian Norris (2):
+  thermal: rockchip: improve conversion error messages
+  thermal: rockchip: don't pass table structs by value
+
+Caesar Wang (3):
+  thermal: rockchip: fixes invalid temperature case
+  thermal: rockchip: optimize the conversion table
+  thermal: rockchip: handle set_trips without the trip points
+
+ drivers/thermal/rockchip_thermal.c | 153 ++++++++++++++++++++++++-------------
+ 1 file changed, 100 insertions(+), 53 deletions(-)
+
 -- 
-2.1.4
+2.7.4
+
