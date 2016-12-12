@@ -1,52 +1,81 @@
-From: Caesar Wang <sasukewxt@163.com>
-Subject: Re: [PATCH v3 4/5] thermal: rockchip: optimize the conversion table
-Date: Mon, 12 Dec 2016 18:48:53 +0800
-Message-ID: <e5ee84e5-be67-36fa-1173-7d862c1ec26e@163.com>
-References: <1480331524-18741-1-git-send-email-wxt@rock-chips.com>
- <1480331524-18741-5-git-send-email-wxt@rock-chips.com>
- <20161130062911.GB28498@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 0/2] PM / Domains / OPP: Introduce domain-performance-state binding
+Date: Mon, 12 Dec 2016 16:26:17 +0530
+Message-ID: <cover.1481539827.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m50-134.163.com ([123.125.50.134]:43648 "EHLO m50-134.163.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751981AbcLLKvu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Dec 2016 05:51:50 -0500
-In-Reply-To: <20161130062911.GB28498@localhost.localdomain>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:34348 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754192AbcLLK4c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 05:56:32 -0500
+Received: by mail-pf0-f169.google.com with SMTP id c4so12553921pfb.1
+        for <linux-pm@vger.kernel.org>; Mon, 12 Dec 2016 02:56:32 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Caesar Wang <wxt@rock-chips.com>
-Cc: heiko@sntech.de, linux-pm@vger.kernel.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, linux-rockchip@lists.infradead.org, rui.zhang@intel.com
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Nayak Rajendra <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-在 2016年11月30日 14:29, Eduardo Valentin 写道:
-> Hey,
->
-> On Mon, Nov 28, 2016 at 07:12:03PM +0800, Caesar Wang wrote:
->
-> <cut>
->
->> +	num = abs(table->id[mid].code - table->id[mid + 1].code);
->> +	num *= temp - table->id[mid].temp;
->> +	denom = table->id[mid + 1].temp - table->id[mid].temp;
->
-> isn't the above 'mid + 1' off-by-one when mid ends being == table.length - 1?
->
-> You would be accessing table->id[table.length], which is wrong memory
-> access, no?
+Hello,
 
-Yup, that's indeed a real issue for me.
-FIxes on next version.
+Some platforms have the capability to configure the performance state of
+their Power Domains. The performance levels are represented by positive
+integer values, a lower value represents lower performance state.
 
-Thanks.
+We had some discussions about it in the past on the PM list [1], which is
+followed by discussions during the LPC. The outcome of all that was that we
+should extend Power Domain framework to support active state power management
+as well.
 
--Caesar
+The power-domains until now were only concentrating on the idle state
+management of the device and this needs to change in order to reuse the
+infrastructure of power domains for active state management.
 
->
->
-> _______________________________________________
-> Linux-rockchip mailing list
-> Linux-rockchip@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-rockchip
+To get a complete picture of the proposed plan, following is what we
+need to do:
+- Create DT bindings to get domain performance state information for the
+  platforms.
+- Enhance OPP framework to parse these and call into the PM Qos
+  framework with a performance state request.
+- Enhance PM Qos framework to provide the API to be used by consumers
+  (or OPP framework) and pass it on to the (Generic) Power Domain
+  framework.
+- Enhance Generic Power Domain framework to accept such requests,
+  accumulate all belonging to a single power domain and call domain
+  driver specific callback with the performance state we want for the
+  domain.
+- The domain driver shall then, in a platform specific way, set the
+  requested performance level.
+- Note that these features are applicable to the CPU, GPU and other IIO
+  or non-IIO devices.
+- There can be cases where a device can choose between multiple power
+  domains based on what performance level we want for the device. In
+  such cases, we should represent the multiplexer with a separate power
+  domain. In effect, the device (or OPP table) will correspond to a
+  single power domain, but the backend driver of that domain shall
+  implement the multiplexing functionality.
 
+This patchset implements the very first part of this chain and
+introduces a new optional property for the consumers of the
+power-domains: domain-performance-state. This property can be used
+directly by the consumer or its OPP table.
+
+V1->V2:
+- The performance states get their own nodes as they can have multiple
+  values.
+- Allow optional property domain-microvolt for the performance states
+
+--
+viresh
+
+[1] https://marc.info/?l=linux-pm&m=147747923708075&w=2
+
+Viresh Kumar (2):
+  PM / Domains: Introduce domain-performance-states binding
+  PM / OPP: Introduce domain-performance-state binding to OPP nodes
+
+ Documentation/devicetree/bindings/opp/opp.txt      | 59 ++++++++++++++++++
+ .../devicetree/bindings/power/power_domain.txt     | 69 ++++++++++++++++++++++
+ 2 files changed, 128 insertions(+)
+
+-- 
+2.7.1.410.g6faf27b
 
