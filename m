@@ -1,85 +1,99 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
- driver
-Date: Mon, 12 Dec 2016 22:45:14 +0100
-Message-ID: <20161212214514.GA17631@katana>
-References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
- <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI: small formatting fixes
+Date: Mon, 12 Dec 2016 23:22:16 +0100
+Message-ID: <20161212222216.GA18201@amd>
+References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
+ <20161212085620.GA738@amd>
+ <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+ <1481567955.1764.28.camel@perches.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="bg08WKrSYDhXBjb5"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44063 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751702AbcLLWWT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 17:22:19 -0500
 Content-Disposition: inline
-In-Reply-To: <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>, Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+In-Reply-To: <1481567955.1764.28.camel@perches.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Nick Desaulniers <nick.desaulniers@gmail.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=us-ascii
+--bg08WKrSYDhXBjb5
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Niklas,
+On Mon 2016-12-12 10:39:15, Joe Perches wrote:
+> On Mon, 2016-12-12 at 09:56 -0800, Nick Desaulniers wrote:
+> > A quick cleanup that passes scripts/checkpatch.pl -f <file>.
+>=20
+> You might use the --strict option for acpi files.
 
-thanks for this work!
+Please... don't encourage people more, we have enough cleanup patches
+as is.
 
-> +/*
-> + * Linear approximation for temperature
-> + *
-> + * [reg] = [temp] * a + b => [temp] = ([reg] - b) / a
-> + *
-> + * The constants a and b are calculated using two triplets of int values PTAT
-> + * and THCODE. PTAT and THCODE can either be read from hardware or use hard
-> + * coded values from driver. The formula to calculate a and b are taken from
-> + * BSP and sparsely documented and understood.
-> + *
-> + * Examining the linear formula and the formula used to calculate constants a
-> + * and b while knowing that the span for PTAT and THCODE values are between
-> + * 0x000 and 0xfff the largest integer possible is 0xfff * 0xfff == 0xffe001.
-> + * Integer also needs to be signed so that leaves 7 bits for decimal
-> + * fixed point scaling, which amounts to a decimal scaling factor of 100.
-> + */
-> +
-> +#define SCALE_FACTOR 100
-> +#define SCALE_INT(_x) ((_x) * SCALE_FACTOR)
-> +#define SCALE_MUL(_a, _b) (((_a)*(_b)) / SCALE_FACTOR)
-> +#define SCALE_DIV(_a, _b) (((_a)*SCALE_FACTOR)/(_b))
-> +#define SCALE_TO_MCELSIUS(_x) ((_x) * 10)
+> > diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstat=
+e.c
+> []
+> > @@ -103,9 +103,8 @@ static long acpi_processor_ffh_cstate_probe_cpu(voi=
+d *_cx)
+> > =A0
+> > =A0=A0=A0=A0=A0=A0=A0=A0if (!mwait_supported[cstate_type]) {
+> > =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0mwait_supported[cstate_=
+type] =3D 1;
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0printk(KERN_DEBUG
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0"=
+Monitor-Mwait will be used to enter C-%d "
+> > -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0"=
+state\n", cx->type);
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pr_debug("Monitor-Mwait w=
+ill be used to enter C-%d state\n",
+> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0=A0=A0=A0=A0cx->type);
+>=20
+> It's generally better not to convert
+> these printk(KERN_DEBUG uses.
+>=20
+> There are behavior differences between
+> 	printk(KERN_DEBUG ...);
+> and
+> 	pr_debug(...);
+>=20
+> The first will always be emitted as long
+> as the console level is appropriate.
+>=20
+> The second depends on a #define DEBUG
+> before it gets emitted or a kernel
+> with CONFIG_DYNAMIC_DEBUG enabled and
+> this entry specifically enabled in the
+> control file.
 
-Spaces around operators everywhere, please.
+Hmm. Perhaps pr_debug should be called pr_c_debug() or something? This
+is rather nice trap.
 
-I wonder about SCALE_MUL; isn't that more like "unscaling" because _a
-and _b are already scaled?
+Anyway with that fixed,
 
-And since _b is always a constant, couldn't we simply drop this macro
-and simply do _a * _b (with _a being scaled already and _b not)?
+Acked-by: Pavel Machek <pavel@ucw.cz>
 
-Regards,
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-   Wolfram
-
-
---8t9RHnE3ZwKMSgU+
+--bg08WKrSYDhXBjb5
 Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJYTxpqAAoJEBQN5MwUoCm2cuEP/0KoIJXzBWDbBngLHRIzn88O
-vLG0IMj0neB30TV+TLnFYbBMN9nb14cMSKlvB/uI3gNkk07CuFlJ90JlSm6RgRXs
-/22L1VGjmub0ki8v0/6ZUzW490u6oFsFaX2ZPiHLq0o/S5FPaD6fbworCyrwDxzU
-+cKny4fsgsShASFElbB5SrjMHYPSLs6S0BHUWfbiyP6WFIsZ03RzSKFXykspLc3g
-rapmld+SgIL6FbxhvGylUt80f1wGN7BJJTtTXRDlBgLeWmduXwHtuo/Spf7IB9b0
-HZXrV5ZQ2XdGMkzAONxcpcBmnG6k5a2/ieG3qSC1GGsMunvTqy/iajizJ47VRcuL
-OEFlZRm5eg9pNbRrmDVpYBpd/b5m0CxJ/bN5NFkvRDjFL4eHomMRjjbEWohGtVLH
-Lh4D78kds6rhV/Znh2LTX4w70dMkd5cqOKxm4r/4VBz2fZEAAVuqLOYlKz3Mt672
-BglnaOZa5O3AuTZRux/ZEHlR/M4d0xbum+nudYstNO3A/bTladmjUOU7AejRyycG
-lRDC0fvhpJvfLs+xapHvCWG/pvJXUxkiLGi/brQYHkNyKO0hqa2fbaJx6b7nBgRZ
-mkXdoPIz6rjRWypRRN4bxIP/PuFgaOLRUsdN8LaiQebz387H/veiumXlSBqE0lgB
-CquAHYDDwkJPRM+zwokw
-=KSZ6
+iEYEARECAAYFAlhPIxgACgkQMOfwapXb+vKkrQCgpde2Go/XZuQnTWZkhiNHUczq
+FaUAn3qsHp3x03dbSYro114/CwrK9Dlo
+=sD+F
 -----END PGP SIGNATURE-----
 
---8t9RHnE3ZwKMSgU+--
+--bg08WKrSYDhXBjb5--
