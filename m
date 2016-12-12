@@ -1,56 +1,65 @@
-From: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Subject: [PATCHv5 5/5] thermal: rcar_gen3_thermal: Add delay in .thermal_init on r8a7795
-Date: Mon, 12 Dec 2016 15:18:05 +0100
-Message-ID: <20161212141805.14946-6-niklas.soderlund@ragnatech.se>
-References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Subject: Re: [PATCH v2 04/11] Documentation: DT: binding: axp20x_usb_power:
+ add axp223 compatible
+Date: Mon, 12 Dec 2016 16:51:04 +0100
+Message-ID: <20161212155104.knjiwbvpi55vbio7@lukather>
+References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+ <20161209110419.28981-5-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="uz4uvxackn7qdyvf"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-4.sys.kth.se ([130.237.48.193]:52503 "EHLO
-        smtp-4.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752847AbcLLOUQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 09:20:16 -0500
-In-Reply-To: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
+Received: from mail.free-electrons.com ([62.4.15.54]:35963 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751025AbcLLPvR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 10:51:17 -0500
+Content-Disposition: inline
+In-Reply-To: <20161209110419.28981-5-quentin.schulz@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>
-Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, lee.jones@linaro.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com
 
-From: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
-The .thermal_init needs to be delayed a short amount of time after
-setting REG_GEN3_CTSR to allow for the TEMP register to contain
-something useful. If it's not delayed theses warnings are common during
-boot:
+--uz4uvxackn7qdyvf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-thermal thermal_zone0: failed to read out thermal zone (-5)
-thermal thermal_zone1: failed to read out thermal zone (-5)
-thermal thermal_zone2: failed to read out thermal zone (-5)
+On Fri, Dec 09, 2016 at 12:04:12PM +0100, Quentin Schulz wrote:
+> This adds the "x-powers,axp223-usb-power-supply" to the list of
+> compatibles for AXP20X VBUS power supply driver.
+>=20
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 
-The warnings are triggered by the first call to .get_temp while the TEMP
-register contains 0 and rcar_gen3_thermal_get_temp() returns -EIO since
-a TEMP value of 0 will result in a temperature reading which is out of
-specifications.
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/thermal/rcar_gen3_thermal.c | 2 ++
- 1 file changed, 2 insertions(+)
+Thanks,
+Maxime
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 7d78498..085daec 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -199,6 +199,8 @@ static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
- 				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN |
- 				CTSR_VMST | CTSR_THSST);
-+
-+	usleep_range(1000, 2000);
- }
- 
- static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
--- 
-2.10.2
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
 
+--uz4uvxackn7qdyvf
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJYTsdoAAoJEBx+YmzsjxAgPoMP/3AGadOTWhsaiYufBLJIbxIw
+3E8b0jz7rplbG41WZVrwv+TrS9wTZ/qx900Xwl3FGR5jdGdEb8sRhuywzH5JHquv
+MV4U1mbL5mz4J/O0nWf3CnardSYcZ8E2e2TBgndYefei0ZNhwnS8sFcKSq77dV0+
+9nA216FLoIkZNBTn3Q37C84w5fHYN3Gv4wIbz6qGP4mstd75E/upUTqGWvpqdUkI
+8RBPRZspdVBc2K8zulY9lyLcK8KW7GacVMpxT57/1Vn2K0e0kijPGFmpc1GvYWn7
+lkIlofe9YWMPumRkOG7va5x5hsb4al7KyrAJjExsrvaR0UYJr81ZYDti70fHEBWp
+69+1dN/v9hl4yhxgvT0X3cugxDWrFiLo2nKW3M4zqsrEkXzY0wUgEcdZTF/xnxgM
+EW+KV9X9FYrDsv2UQEAtSnnSglNRhikhU3NyIZNoE72cd9/cAuAOVi2EBhwcQivY
+zczGbXUKn0lRtoh599+1Ve7FrpQnvzakY5dt9WQN8ez3sLdREISXoD0pamL8iWnv
+ik0LHyYiMF9h7f9E0MaJiZWdQgJdcQ0jPzybb4qfu6B7Ug/u3d20buF6O8pV/D0/
+uI/oa1ZzLekxsyXXYF1M6VvqYNxQJ3Z1xnDD39b4InPTYic6susUSJKKhVDFLFxv
+Q534UhmuR+nENXVGjnDz
+=d4Yc
+-----END PGP SIGNATURE-----
+
+--uz4uvxackn7qdyvf--
