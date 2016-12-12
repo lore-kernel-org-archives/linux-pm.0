@@ -1,228 +1,62 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: [PATCH 3/3] power: supply: bq24735-charger: allow chargers to share the ac-detect gpio
-Date: Mon, 12 Dec 2016 12:00:24 +0100
-Message-ID: <1481540424-19293-4-git-send-email-peda@axentia.se>
-References: <1481540424-19293-1-git-send-email-peda@axentia.se>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v7 1/8] Documentation: arm: define DT cpu
+ capacity-dmips-mhz bindings
+Date: Mon, 12 Dec 2016 12:40:05 +0000
+Message-ID: <20161212124005.GA19177@red-moon>
+References: <1473085372-2840-1-git-send-email-juri.lelli@arm.com>
+ <1473085372-2840-2-git-send-email-juri.lelli@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1481540424-19293-1-git-send-email-peda@axentia.se>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1473085372-2840-2-git-send-email-juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Paul Walmsley <paul-DWxLp4Yu+b8AvxtiuMwx3w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni@free-ele>
 List-Id: linux-pm@vger.kernel.org
 
-If several parallel bq24735 chargers have their ac-detect gpios wired
-together (or if only one of the parallel bq24735 chargers have its
-ac-detect pin wired to a gpio, and the others are assumed to react the
-same), then all driver instances need to check the same gpio. But the
-gpio subsystem does not allow sharing gpios, so handle that locally.
+On Mon, Sep 05, 2016 at 03:22:45PM +0100, Juri Lelli wrote:
 
-However, only do this for the polling case, sharing is not supported if
-the ac detection is handled with interrupts.
+[...]
 
-Signed-off-by: Peter Rosin <peda@axentia.se>
----
- drivers/power/supply/bq24735-charger.c | 101 +++++++++++++++++++++++++++++----
- 1 file changed, 90 insertions(+), 11 deletions(-)
+> +===========================================
+> +5 - References
+> +===========================================
+> +
+> +[1] ARM Linux Kernel documentation - CPUs bindings
+> +    Documentation/devicetree/bindings/arm/cpus.txt
+> diff --git a/Documentation/devicetree/bindings/arm/cpus.txt b/Documentation/devicetree/bindings/arm/cpus.txt
+> index e6782d50cbcd..c1dcf4cade2e 100644
+> --- a/Documentation/devicetree/bindings/arm/cpus.txt
+> +++ b/Documentation/devicetree/bindings/arm/cpus.txt
+> @@ -241,6 +241,14 @@ nodes to be present and contain the properties described below.
+>  			# List of phandles to idle state nodes supported
+>  			  by this cpu [3].
+>  
+> +	- capacity-dmips-mhz
+> +		Usage: Optional
+> +		Value type: <u32>
+> +		Definition:
+> +			# u32 value representing CPU capacity [3] in
+> +			  DMIPS/MHz, relative to highest capacity-dmips-mhz
+> +			  in the system.
+> +
+>  	- rockchip,pmu
+>  		Usage: optional for systems that have an "enable-method"
+>  		       property value of "rockchip,rk3066-smp"
+> @@ -464,3 +472,5 @@ cpus {
+>  [2] arm/msm/qcom,kpss-acc.txt
+>  [3] ARM Linux kernel documentation - idle states bindings
+>      Documentation/devicetree/bindings/arm/idle-states.txt
+> +[3] ARM Linux kernel documentation - cpu capacity bindings
+> +    Documentation/devicetree/bindings/arm/cpu-capacity.txt
 
-diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
-index 3765806d5d46..3b21a064a9a7 100644
---- a/drivers/power/supply/bq24735-charger.c
-+++ b/drivers/power/supply/bq24735-charger.c
-@@ -25,6 +25,7 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_gpio.h>
- #include <linux/gpio/consumer.h>
- #include <linux/power_supply.h>
- #include <linux/slab.h>
-@@ -43,12 +44,24 @@
- #define BQ24735_MANUFACTURER_ID		0xfe
- #define BQ24735_DEVICE_ID		0xff
- 
-+struct bq24735;
-+
-+struct bq24735_shared {
-+	struct list_head		list;
-+	struct bq24735			*owner;
-+	struct gpio_desc		*status_gpio;
-+};
-+
-+static struct mutex shared_lock;
-+static LIST_HEAD(shared_list);
-+
- struct bq24735 {
- 	struct power_supply		*charger;
- 	struct power_supply_desc	charger_desc;
- 	struct i2c_client		*client;
- 	struct bq24735_platform		*pdata;
- 	struct mutex			lock;
-+	struct bq24735_shared		*shared;
- 	struct gpio_desc		*status_gpio;
- 	struct delayed_work		poll;
- 	u32				poll_interval;
-@@ -346,6 +359,65 @@ static struct bq24735_platform *bq24735_parse_dt_data(struct i2c_client *client)
- 	return pdata;
- }
- 
-+static struct gpio_desc *bq24735_get_status_gpio(struct bq24735 *charger)
-+{
-+	struct device *dev = &charger->client->dev;
-+	struct bq24735_shared *shared;
-+	int gpio;
-+	struct list_head *pos;
-+
-+	if (!of_property_read_bool(dev->of_node, "ti,ac-detect-gpios"))
-+		return NULL;
-+
-+	gpio = of_get_named_gpio(dev->of_node, "ti,ac-detect-gpios", 0);
-+	if (gpio < 0)
-+		return ERR_PTR(gpio);
-+
-+	mutex_lock(&shared_lock);
-+	list_for_each(pos, &shared_list) {
-+		shared = list_entry(pos, struct bq24735_shared, list);
-+		if (gpio != desc_to_gpio(shared->status_gpio))
-+			continue;
-+
-+		get_device(&shared->owner->client->dev);
-+		dev_dbg(dev, "sharing gpio with %s\n",
-+			shared->owner->pdata->name);
-+		charger->shared = shared;
-+		mutex_unlock(&shared_lock);
-+		return shared->status_gpio;
-+	}
-+
-+	shared = devm_kzalloc(dev, sizeof(*shared), GFP_KERNEL);
-+	if (!shared) {
-+		mutex_unlock(&shared_lock);
-+		return ERR_PTR(-ENOMEM);
-+	}
-+	shared->owner = charger;
-+	shared->status_gpio = gpiod_get(dev, "ti,ac-detect", GPIOD_IN);
-+	if (!IS_ERR(shared->status_gpio)) {
-+		charger->shared = shared;
-+		list_add(&shared->list, &shared_list);
-+	}
-+	mutex_unlock(&shared_lock);
-+
-+	return shared->status_gpio;
-+}
-+
-+static void bq24735_put_status_gpio(struct bq24735 *charger)
-+{
-+	if (!charger->shared)
-+		return;
-+
-+	mutex_lock(&shared_lock);
-+	if (charger->shared->owner != charger) {
-+		put_device(&charger->shared->owner->client->dev);
-+	} else {
-+		list_del(&charger->shared->list);
-+		gpiod_put(charger->shared->status_gpio);
-+	}
-+	mutex_unlock(&shared_lock);
-+}
-+
- static int bq24735_charger_probe(struct i2c_client *client,
- 				 const struct i2c_device_id *id)
- {
-@@ -402,9 +474,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 
- 	i2c_set_clientdata(client, charger);
- 
--	charger->status_gpio = devm_gpiod_get_optional(&client->dev,
--						       "ti,ac-detect",
--						       GPIOD_IN);
-+	charger->status_gpio = bq24735_get_status_gpio(charger);
- 	if (IS_ERR(charger->status_gpio)) {
- 		ret = PTR_ERR(charger->status_gpio);
- 		dev_err(&client->dev, "Getting gpio failed: %d\n", ret);
-@@ -416,28 +486,30 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 		if (ret < 0) {
- 			dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
- 				ret);
--			return ret;
-+			goto out;
- 		} else if (ret != 0x0040) {
- 			dev_err(&client->dev,
- 				"manufacturer id mismatch. 0x0040 != 0x%04x\n", ret);
--			return -ENODEV;
-+			ret = -ENODEV;
-+			goto out;
- 		}
- 
- 		ret = bq24735_read_word(client, BQ24735_DEVICE_ID);
- 		if (ret < 0) {
- 			dev_err(&client->dev, "Failed to read device id : %d\n", ret);
--			return ret;
-+			goto out;
- 		} else if (ret != 0x000B) {
- 			dev_err(&client->dev,
- 				"device id mismatch. 0x000b != 0x%04x\n", ret);
--			return -ENODEV;
-+			ret = -ENODEV;
-+			goto out;
- 		}
- 	}
- 
- 	ret = bq24735_config_charger(charger);
- 	if (ret < 0) {
- 		dev_err(&client->dev, "failed in configuring charger");
--		return ret;
-+		goto out;
- 	}
- 
- 	/* check for AC adapter presence */
-@@ -445,7 +517,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 		ret = bq24735_enable_charging(charger);
- 		if (ret < 0) {
- 			dev_err(&client->dev, "Failed to enable charging\n");
--			return ret;
-+			goto out;
- 		}
- 	}
- 
-@@ -455,7 +527,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 		ret = PTR_ERR(charger->charger);
- 		dev_err(&client->dev, "Failed to register power supply: %d\n",
- 			ret);
--		return ret;
-+		goto out;
- 	}
- 
- 	if (client->irq) {
-@@ -470,7 +542,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 			dev_err(&client->dev,
- 				"Unable to register IRQ %d err %d\n",
- 				client->irq, ret);
--			return ret;
-+			goto out;
- 		}
- 	} else if (charger->status_gpio) {
- 		ret = of_property_read_u32(client->dev.of_node,
-@@ -487,6 +559,11 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 	}
- 
- 	return 0;
-+
-+out:
-+	bq24735_put_status_gpio(charger);
-+
-+	return ret;
- }
- 
- static int bq24735_charger_remove(struct i2c_client *client)
-@@ -496,6 +573,8 @@ static int bq24735_charger_remove(struct i2c_client *client)
- 	if (charger->poll_interval)
- 		cancel_delayed_work_sync(&charger->poll);
- 
-+	bq24735_put_status_gpio(charger);
-+
- 	return 0;
- }
- 
--- 
-2.1.4
+Trivia: bumped into this while reviewing something else, too many
+threes, you will have to fix the added reference up.
+
+Thanks,
+Lorenzo
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
