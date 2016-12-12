@@ -1,81 +1,110 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/2] PM / Domains / OPP: Introduce domain-performance-state binding
-Date: Mon, 12 Dec 2016 16:26:17 +0530
-Message-ID: <cover.1481539827.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f169.google.com ([209.85.192.169]:34348 "EHLO
-        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754192AbcLLK4c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 05:56:32 -0500
-Received: by mail-pf0-f169.google.com with SMTP id c4so12553921pfb.1
-        for <linux-pm@vger.kernel.org>; Mon, 12 Dec 2016 02:56:32 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V2 2/2] PM / OPP: Introduce domain-performance-state binding to OPP nodes
+Date: Mon, 12 Dec 2016 16:26:19 +0530
+Message-ID: <0ace336cf1041611fa561a79b38e879d6816b5d0.1481539827.git.viresh.kumar@linaro.org>
+References: <cover.1481539827.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1481539827.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1481539827.git.viresh.kumar@linaro.org>
+References: <cover.1481539827.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Nayak Rajendra <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Nayak Rajendra <rnayak@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>
-
-Hello,
 
 Some platforms have the capability to configure the performance state of
 their Power Domains. The performance levels are represented by positive
 integer values, a lower value represents lower performance state.
 
-We had some discussions about it in the past on the PM list [1], which is
-followed by discussions during the LPC. The outcome of all that was that we
-should extend Power Domain framework to support active state power management
-as well.
+If the consumers don't need the capability of switching to different
+domain performance states at runtime, then they can simply define their
+required domain performance state in their nodes directly.
 
-The power-domains until now were only concentrating on the idle state
-management of the device and this needs to change in order to reuse the
-infrastructure of power domains for active state management.
+But if the device needs the capability of switching to different domain
+performance states, as they may need to support different clock rates,
+then the per OPP node can be used to contain that information.
 
-To get a complete picture of the proposed plan, following is what we
-need to do:
-- Create DT bindings to get domain performance state information for the
-  platforms.
-- Enhance OPP framework to parse these and call into the PM Qos
-  framework with a performance state request.
-- Enhance PM Qos framework to provide the API to be used by consumers
-  (or OPP framework) and pass it on to the (Generic) Power Domain
-  framework.
-- Enhance Generic Power Domain framework to accept such requests,
-  accumulate all belonging to a single power domain and call domain
-  driver specific callback with the performance state we want for the
-  domain.
-- The domain driver shall then, in a platform specific way, set the
-  requested performance level.
-- Note that these features are applicable to the CPU, GPU and other IIO
-  or non-IIO devices.
-- There can be cases where a device can choose between multiple power
-  domains based on what performance level we want for the device. In
-  such cases, we should represent the multiplexer with a separate power
-  domain. In effect, the device (or OPP table) will correspond to a
-  single power domain, but the backend driver of that domain shall
-  implement the multiplexing functionality.
+This patch introduces the domain-performance-state (already defined by
+Power Domain bindings) to the per OPP node.
 
-This patchset implements the very first part of this chain and
-introduces a new optional property for the consumers of the
-power-domains: domain-performance-state. This property can be used
-directly by the consumer or its OPP table.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt | 59 +++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
 
-V1->V2:
-- The performance states get their own nodes as they can have multiple
-  values.
-- Allow optional property domain-microvolt for the performance states
-
---
-viresh
-
-[1] https://marc.info/?l=linux-pm&m=147747923708075&w=2
-
-Viresh Kumar (2):
-  PM / Domains: Introduce domain-performance-states binding
-  PM / OPP: Introduce domain-performance-state binding to OPP nodes
-
- Documentation/devicetree/bindings/opp/opp.txt      | 59 ++++++++++++++++++
- .../devicetree/bindings/power/power_domain.txt     | 69 ++++++++++++++++++++++
- 2 files changed, 128 insertions(+)
-
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 9f5ca4457b5f..43eba7c9fc58 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -154,6 +154,9 @@ properties.
+ 
+ - status: Marks the node enabled/disabled.
+ 
++- domain-performance-state: A phandle of a Performance state node as defined by
++  ../power/power_domain.txt binding document.
++
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 
+ / {
+@@ -528,3 +531,59 @@ Example 5: opp-supported-hw
+ 		};
+ 	};
+ };
++
++Example 7: domain-Performance-state:
++(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
++
++/ {
++	foo_domain: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <0>;
++		domain-performance-states = <&domain_perf_states>;
++	};
++
++	domain_perf_states: performance_states {
++		compatible = "domain-performance-state";
++		domain_perf_state1: pstate@1 {
++			performance-level = <1>;
++			domain-microvolt = <970000 975000 985000>;
++		};
++		domain_perf_state2: pstate@2 {
++			performance-level = <2>;
++			domain-microvolt = <1000000 1075000 1085000>;
++		};
++	}
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			compatible = "arm,cortex-a9";
++			reg = <0>;
++			clocks = <&clk_controller 0>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++			power-domains = <&foo_domain>;
++		};
++	};
++
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			domain-performance-state = <&domain_perf_state1>;
++		};
++		opp@1100000000 {
++			opp-hz = /bits/ 64 <1100000000>;
++			domain-performance-state = <&domain_perf_state2>;
++		};
++		opp@1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			domain-performance-state = <&domain_perf_state2>;
++		};
++	};
++};
 -- 
 2.7.1.410.g6faf27b
-
