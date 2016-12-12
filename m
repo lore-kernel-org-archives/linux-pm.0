@@ -1,254 +1,68 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: [PATCH v4 2/5] thermal: rockchip: don't pass table structs by value
-Date: Mon, 12 Dec 2016 19:05:32 +0800
-Message-ID: <1481540735-12710-3-git-send-email-wxt@rock-chips.com>
+Subject: [PATCH v4 5/5] thermal: rockchip: handle set_trips without the trip points
+Date: Mon, 12 Dec 2016 19:05:35 +0800
+Message-ID: <1481540735-12710-6-git-send-email-wxt@rock-chips.com>
 References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:34778 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932181AbcLLLGN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 06:06:13 -0500
 In-Reply-To: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
 Cc: linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, Caesar Wang <wxt@rock-chips.com>
-List-Id: linux-pm@vger.kernel.org
 
-From: Brian Norris <briannorris@chromium.org>
+In some cases, some sensors didn't need the trip points, the
+set_trips will pass {-INT_MAX, INT_MAX} to trigger tsadc alarm in the end,
+ignore this case and disable the high temperature interrupt.
 
-This driver passes struct chip_tsadc_table by value throughout; this is
-inefficient, and AFAICT, there is no reason for it. Let's pass pointers
-instead.
-
-Signed-off-by: Brian Norris <briannorris@chromium.org>
-Reviewed-by: Caesar Wang <wxt@rock-chips.com>
 Signed-off-by: Caesar Wang <wxt@rock-chips.com>
+Reviewed-by: Brian Norris <briannorris@chromium.org>
 ---
 
 Changes in v4: None
-Changes in v3: None
-Changes in v2: None
-Changes in v1:
-- The original Brian posted on https://patchwork.kernel.org/patch/9437687
+Changes in v3:
+- change the commit.
+- Fixes something as Brian comments on
 
- drivers/thermal/rockchip_thermal.c | 80 +++++++++++++++++++-------------------
- 1 file changed, 40 insertions(+), 40 deletions(-)
+Changes in v2:
+- Fixes something as Brian comments on
+  https://patchwork.kernel.org/patch/9440989.
+
+Changes in v1: None
+
+ drivers/thermal/rockchip_thermal.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 3bbc97c..415e0ce 100644
+index cacc12b..cbbf0ce 100644
 --- a/drivers/thermal/rockchip_thermal.c
 +++ b/drivers/thermal/rockchip_thermal.c
-@@ -118,11 +118,11 @@ struct rockchip_tsadc_chip {
- 	void (*control)(void __iomem *reg, bool on);
- 
- 	/* Per-sensor methods */
--	int (*get_temp)(struct chip_tsadc_table table,
-+	int (*get_temp)(const struct chip_tsadc_table *table,
- 			int chn, void __iomem *reg, int *temp);
--	void (*set_alarm_temp)(struct chip_tsadc_table table,
-+	void (*set_alarm_temp)(const struct chip_tsadc_table *table,
- 			       int chn, void __iomem *reg, int temp);
--	void (*set_tshut_temp)(struct chip_tsadc_table table,
-+	void (*set_tshut_temp)(const struct chip_tsadc_table *table,
- 			       int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
- 
-@@ -397,26 +397,26 @@ static const struct tsadc_table rk3399_code_table[] = {
- 	{TSADCV3_DATA_MASK, 125000},
- };
- 
--static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
-+static u32 rk_tsadcv2_temp_to_code(const struct chip_tsadc_table *table,
- 				   int temp)
+@@ -674,7 +674,21 @@ static int rk_tsadcv2_get_temp(const struct chip_tsadc_table *table,
+ static int rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
+ 				 int chn, void __iomem *regs, int temp)
  {
- 	int high, low, mid;
- 	u32 error = 0;
- 
- 	low = 0;
--	high = table.length - 1;
-+	high = table->length - 1;
- 	mid = (high + low) / 2;
- 
- 	/* Return mask code data when the temp is over table range */
--	if (temp < table.id[low].temp || temp > table.id[high].temp) {
--		error = table.data_mask;
-+	if (temp < table->id[low].temp || temp > table->id[high].temp) {
-+		error = table->data_mask;
- 		goto exit;
- 	}
- 
- 	while (low <= high) {
--		if (temp == table.id[mid].temp)
--			return table.id[mid].code;
--		else if (temp < table.id[mid].temp)
-+		if (temp == table->id[mid].temp)
-+			return table->id[mid].code;
-+		else if (temp < table->id[mid].temp)
- 			high = mid - 1;
- 		else
- 			low = mid + 1;
-@@ -429,28 +429,28 @@ static u32 rk_tsadcv2_temp_to_code(struct chip_tsadc_table table,
- 	return error;
- }
- 
--static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
--				   int *temp)
-+static int rk_tsadcv2_code_to_temp(const struct chip_tsadc_table *table,
-+				   u32 code, int *temp)
- {
- 	unsigned int low = 1;
--	unsigned int high = table.length - 1;
-+	unsigned int high = table->length - 1;
- 	unsigned int mid = (low + high) / 2;
- 	unsigned int num;
- 	unsigned long denom;
- 
--	WARN_ON(table.length < 2);
-+	WARN_ON(table->length < 2);
- 
--	switch (table.mode) {
-+	switch (table->mode) {
- 	case ADC_DECREMENT:
--		code &= table.data_mask;
--		if (code < table.id[high].code)
-+		code &= table->data_mask;
-+		if (code < table->id[high].code)
- 			return -EAGAIN;		/* Incorrect reading */
- 
- 		while (low <= high) {
--			if (code >= table.id[mid].code &&
--			    code < table.id[mid - 1].code)
-+			if (code >= table->id[mid].code &&
-+			    code < table->id[mid - 1].code)
- 				break;
--			else if (code < table.id[mid].code)
-+			else if (code < table->id[mid].code)
- 				low = mid + 1;
- 			else
- 				high = mid - 1;
-@@ -459,15 +459,15 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
- 		}
- 		break;
- 	case ADC_INCREMENT:
--		code &= table.data_mask;
--		if (code < table.id[low].code)
-+		code &= table->data_mask;
-+		if (code < table->id[low].code)
- 			return -EAGAIN;		/* Incorrect reading */
- 
- 		while (low <= high) {
--			if (code <= table.id[mid].code &&
--			    code > table.id[mid - 1].code)
-+			if (code <= table->id[mid].code &&
-+			    code > table->id[mid - 1].code)
- 				break;
--			else if (code > table.id[mid].code)
-+			else if (code > table->id[mid].code)
- 				low = mid + 1;
- 			else
- 				high = mid - 1;
-@@ -476,7 +476,7 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
- 		}
- 		break;
- 	default:
--		pr_err("%s: unknown table mode: %d\n", __func__, table.mode);
-+		pr_err("%s: unknown table mode: %d\n", __func__, table->mode);
- 		return -EINVAL;
- 	}
- 
-@@ -486,10 +486,10 @@ static int rk_tsadcv2_code_to_temp(struct chip_tsadc_table table, u32 code,
- 	 * temperature between 2 table entries is linear and interpolate
- 	 * to produce less granular result.
- 	 */
--	num = table.id[mid].temp - table.id[mid - 1].temp;
--	num *= abs(table.id[mid - 1].code - code);
--	denom = abs(table.id[mid - 1].code - table.id[mid].code);
--	*temp = table.id[mid - 1].temp + (num / denom);
-+	num = table->id[mid].temp - table->id[mid - 1].temp;
-+	num *= abs(table->id[mid - 1].code - code);
-+	denom = abs(table->id[mid - 1].code - table->id[mid].code);
-+	*temp = table->id[mid - 1].temp + (num / denom);
- 
- 	return 0;
- }
-@@ -640,7 +640,7 @@ static void rk_tsadcv3_control(void __iomem *regs, bool enable)
- 	writel_relaxed(val, regs + TSADCV2_AUTO_CON);
- }
- 
--static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
-+static int rk_tsadcv2_get_temp(const struct chip_tsadc_table *table,
- 			       int chn, void __iomem *regs, int *temp)
- {
- 	u32 val;
-@@ -650,17 +650,17 @@ static int rk_tsadcv2_get_temp(struct chip_tsadc_table table,
- 	return rk_tsadcv2_code_to_temp(table, val, temp);
- }
- 
--static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
-+static void rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
- 				  int chn, void __iomem *regs, int temp)
- {
- 	u32 alarm_value, int_en;
+-	u32 alarm_value, int_en;
++	u32 alarm_value;
++	u32 int_en, int_clr;
++
++	/*
++	 * In some cases, some sensors didn't need the trip points, the
++	 * set_trips will pass {-INT_MAX, INT_MAX} to trigger tsadc alarm
++	 * in the end, ignore this case and disable the high temperature
++	 * interrupt.
++	 */
++	if (temp == INT_MAX) {
++		int_clr = readl_relaxed(regs + TSADCV2_INT_EN);
++		int_clr &= ~TSADCV2_INT_SRC_EN(chn);
++		writel_relaxed(int_clr, regs + TSADCV2_INT_EN);
++		return 0;
++	}
  
  	/* Make sure the value is valid */
  	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
--	if (alarm_value == table.data_mask)
-+	if (alarm_value == table->data_mask)
- 		return;
- 
--	writel_relaxed(alarm_value & table.data_mask,
-+	writel_relaxed(alarm_value & table->data_mask,
- 		       regs + TSADCV2_COMP_INT(chn));
- 
- 	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
-@@ -668,14 +668,14 @@ static void rk_tsadcv2_alarm_temp(struct chip_tsadc_table table,
- 	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
- }
- 
--static void rk_tsadcv2_tshut_temp(struct chip_tsadc_table table,
-+static void rk_tsadcv2_tshut_temp(const struct chip_tsadc_table *table,
- 				  int chn, void __iomem *regs, int temp)
- {
- 	u32 tshut_value, val;
- 
- 	/* Make sure the value is valid */
- 	tshut_value = rk_tsadcv2_temp_to_code(table, temp);
--	if (tshut_value == table.data_mask)
-+	if (tshut_value == table->data_mask)
- 		return;
- 
- 	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
-@@ -885,7 +885,7 @@ static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
- 	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
- 		__func__, sensor->id, low, high);
- 
--	tsadc->set_alarm_temp(tsadc->table,
-+	tsadc->set_alarm_temp(&tsadc->table,
- 			      sensor->id, thermal->regs, high);
- 
- 	return 0;
-@@ -898,7 +898,7 @@ static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
- 	const struct rockchip_tsadc_chip *tsadc = sensor->thermal->chip;
- 	int retval;
- 
--	retval = tsadc->get_temp(tsadc->table,
-+	retval = tsadc->get_temp(&tsadc->table,
- 				 sensor->id, thermal->regs, out_temp);
- 	dev_dbg(&thermal->pdev->dev, "sensor %d - temp: %d, retval: %d\n",
- 		sensor->id, *out_temp, retval);
-@@ -984,7 +984,7 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
- 	int error;
- 
- 	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
--	tsadc->set_tshut_temp(tsadc->table, id, thermal->regs,
-+	tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
- 			      thermal->tshut_temp);
- 
- 	sensor->thermal = thermal;
-@@ -1198,7 +1198,7 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 
- 		thermal->chip->set_tshut_mode(id, thermal->regs,
- 					      thermal->tshut_mode);
--		thermal->chip->set_tshut_temp(thermal->chip->table,
-+		thermal->chip->set_tshut_temp(&thermal->chip->table,
- 					      id, thermal->regs,
- 					      thermal->tshut_temp);
- 	}
 -- 
 2.7.4
+
