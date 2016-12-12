@@ -1,98 +1,94 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH v2 00/11] add support for VBUS max current and min voltage
- limits AXP20X and AXP22X PMICs
-Date: Mon, 12 Dec 2016 09:07:45 +0100
-Message-ID: <2189bf2a-b577-85d6-c54a-0440aed05411@free-electrons.com>
-References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI: small formatting fixes
+Date: Mon, 12 Dec 2016 09:56:20 +0100
+Message-ID: <20161212085620.GA738@amd>
+References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="Qxx1br4bt0+wmkIi"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:54233 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753064AbcLLIHs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 03:07:48 -0500
-In-Reply-To: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49070 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752812AbcLLI4X (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 12 Dec 2016 03:56:23 -0500
+Content-Disposition: inline
+In-Reply-To: <20161212072541.28435-1-nick.desaulniers@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com
+To: Nick Desaulniers <nick.desaulniers@gmail.com>
+Cc: rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi all,
 
-I forgot to add a question to my cover letter so here it is:
+--Qxx1br4bt0+wmkIi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The X-Powers AXP209 and AXP223 PMICs allow to not limit the maximal
-current for the VBUS power supply.[1]
-(If a Chinese-speaking person could check it's the same for the AXP221
-that would be great also[2]).
+Hi!
 
-In the get_property (axp20x_usb_power_get_property) of the power supply
-driver, I see that we use -1 as value for "no limit". Should we use the
-same (-1) value for the set_property (axp20x_usb_power_set_property) to
-disable max current limit?
+> A quick cleanup that passes scripts/checkpatch.pl -f <file>.
+>=20
+> Signed-off-by: Nick Desaulniers <nick.desaulniers@gmail.com>
 
-[1] http://dl.linux-sunxi.org/AXP/AXP209_Datasheet_v1.0en.pdf page 33,
-REG 30H, BITS 0 & 1
-[2]
-http://dl.linux-sunxi.org/AXP/AXP221%20Datasheet%20V1.2%2020130326%20.pdf
-page 33, REG 30H, BITS 0 & 1 => 不限流 is written for when the BIT(1) is
-set.
+> --- a/arch/x86/kernel/acpi/cstate.c
+> +++ b/arch/x86/kernel/acpi/cstate.c
+> @@ -1,7 +1,7 @@
+>  /*
+>   * Copyright (C) 2005 Intel Corporation
+> - * 	Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> - * 	- Added _PDC for SMP C-states on Intel CPUs
+> + * Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> + * - Added _PDC for SMP C-states on Intel CPUs
+>   */
+> =20
+>  #include <linux/kernel.h>
 
-Thanks,
-Quentin
+No.
 
-On 09/12/2016 12:04, Quentin Schulz wrote:
-> The X-Powers AXP209 and AXP20X PMICs are able to set a limit for the
-> VBUS power supply for both max current and min voltage supplied. This
-> series of patch adds the possibility to set these limits from sysfs.
-> 
-> Also, the AXP223 PMIC shares most of its behaviour with the AXP221 but
-> the former can set the VBUS power supply max current to 100mA, unlike
-> the latter. The AXP223 VBUS power supply driver used to probe on the
-> AXP221 compatible. This series of patch introduces a new compatible for
-> the AXP223 to be able to set the current max limit to 100mA.
-> 
-> With that new compatible, boards having the AXP223 see their DT updated
-> to use the VBUS power supply driver with the correct compatible.
-> 
-> This series of patch also migrates from of_device_is_compatible function
-> to the data field of of_device_id to identify the compatible used to
-> probe. This improves the code readability.
-> 
-> Mostly cosmetic changes in v2 and adding volatile and writeable regs to
-> AXP20X and AXP22X MFD cells for the VBUS power supply driver.
-> 
-> Quentin Schulz (11):
->   power: supply: axp20x_usb_power: use of_device_id data field instead
->     of device_is_compatible
->   mfd: axp20x: add volatile and writeable reg ranges for VBUS power
->     supply driver
->   power: supply: axp20x_usb_power: set min voltage and max current from
->     sysfs
->   Documentation: DT: binding: axp20x_usb_power: add axp223 compatible
->   power: supply: axp20x_usb_power: add 100mA max current limit for
->     AXP223
->   mfd: axp20x: add separate MFD cell for AXP223
->   ARM: dtsi: add DTSI for AXP223
->   ARM: dts: sun8i-a33-olinuxino: use AXP223 DTSI
->   ARM: dts: sun8i-a33-sinlinx-sina33: use AXP223 DTSI
->   ARM: dts: sun8i-r16-parrot: use AXP223 DTSI
->   ARM: dtsi: sun8i-reference-design-tablet: use AXP223 DTSI
-> 
->  .../bindings/power/supply/axp20x_usb_power.txt     |   5 +
->  arch/arm/boot/dts/axp223.dtsi                      |  58 +++++++++++
->  arch/arm/boot/dts/sun8i-a33-olinuxino.dts          |   2 +-
->  arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts     |   2 +-
->  arch/arm/boot/dts/sun8i-r16-parrot.dts             |   2 +-
->  .../boot/dts/sun8i-reference-design-tablet.dtsi    |   2 +-
->  drivers/mfd/axp20x.c                               |  32 +++++-
->  drivers/power/supply/axp20x_usb_power.c            | 116 ++++++++++++++++++---
->  8 files changed, 197 insertions(+), 22 deletions(-)
->  create mode 100644 arch/arm/boot/dts/axp223.dtsi
-> 
+> @@ -50,8 +49,8 @@ void acpi_processor_power_init_bm_check(struct acpi_pro=
+cessor_flags *flags,
+>  	 * P4, Core and beyond CPUs
+>  	 */
+>  	if (c->x86_vendor =3D=3D X86_VENDOR_INTEL &&
+> -	    (c->x86 > 0xf || (c->x86 =3D=3D 6 && c->x86_model >=3D 0x0f)))
+> -			flags->bm_control =3D 0;
+> +			(c->x86 > 0xf || (c->x86 =3D=3D 6 && c->x86_model >=3D 0x0f)))
+> +		flags->bm_control =3D 0;
+>  }
+>  EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
+>
 
--- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+No.
+
+> @@ -159,13 +158,14 @@ void __cpuidle acpi_processor_ffh_cstate_enter(stru=
+ct acpi_processor_cx *cx)
+> =20
+>  	percpu_entry =3D per_cpu_ptr(cpu_cstate_entry, cpu);
+>  	mwait_idle_with_hints(percpu_entry->states[cx->index].eax,
+> -	                      percpu_entry->states[cx->index].ecx);
+> +		percpu_entry->states[cx->index].ecx);
+>  }
+
+No.
+
+Rest is good.
+									Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--Qxx1br4bt0+wmkIi
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlhOZjQACgkQMOfwapXb+vJHKgCguNfl4tPapnON0dzvRMRh1khi
+V78An0EjEJbpSHf11OWs3XBd0oRoYi6K
+=qiQg
+-----END PGP SIGNATURE-----
+
+--Qxx1br4bt0+wmkIi--
