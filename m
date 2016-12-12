@@ -1,178 +1,228 @@
-From: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: [PATCH v4 3/5] thermal: rockchip: fixes invalid temperature case
-Date: Mon, 12 Dec 2016 19:05:33 +0800
-Message-ID: <1481540735-12710-4-git-send-email-wxt@rock-chips.com>
-References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
+From: Peter Rosin <peda@axentia.se>
+Subject: [PATCH 3/3] power: supply: bq24735-charger: allow chargers to share the ac-detect gpio
+Date: Mon, 12 Dec 2016 12:00:24 +0100
+Message-ID: <1481540424-19293-4-git-send-email-peda@axentia.se>
+References: <1481540424-19293-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <1481540735-12710-1-git-send-email-wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1481540424-19293-1-git-send-email-peda@axentia.se>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The temp_to_code function will return 0 when we set the temperature to a
-invalid value (e.g. 61C, 62C, 63C....), that's unpractical. This patch
-will prevent this case happening. That will return the max analog value to
-indicate the temperature is invalid or over table temperature range.
+If several parallel bq24735 chargers have their ac-detect gpios wired
+together (or if only one of the parallel bq24735 chargers have its
+ac-detect pin wired to a gpio, and the others are assumed to react the
+same), then all driver instances need to check the same gpio. But the
+gpio subsystem does not allow sharing gpios, so handle that locally.
 
-Signed-off-by: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+However, only do this for the polling case, sharing is not supported if
+the ac detection is handled with interrupts.
+
+Signed-off-by: Peter Rosin <peda@axentia.se>
 ---
+ drivers/power/supply/bq24735-charger.c | 101 +++++++++++++++++++++++++++++----
+ 1 file changed, 90 insertions(+), 11 deletions(-)
 
-Changes in v4: None
-Changes in v3:
-- fix trivial thing for error message nd return value.
-
-Changes in v2:
-- As Brian commnets that restructure this to pass error codes back to the
-  upper layers.
-- Improve the commit message.
-
-Changes in v1: None
-
- drivers/thermal/rockchip_thermal.c | 48 ++++++++++++++++++++++----------------
- 1 file changed, 28 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 415e0ce..f027b86 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -120,10 +120,10 @@ struct rockchip_tsadc_chip {
- 	/* Per-sensor methods */
- 	int (*get_temp)(const struct chip_tsadc_table *table,
- 			int chn, void __iomem *reg, int *temp);
--	void (*set_alarm_temp)(const struct chip_tsadc_table *table,
--			       int chn, void __iomem *reg, int temp);
--	void (*set_tshut_temp)(const struct chip_tsadc_table *table,
--			       int chn, void __iomem *reg, int temp);
-+	int (*set_alarm_temp)(const struct chip_tsadc_table *table,
-+			      int chn, void __iomem *reg, int temp);
-+	int (*set_tshut_temp)(const struct chip_tsadc_table *table,
-+			      int chn, void __iomem *reg, int temp);
- 	void (*set_tshut_mode)(int chn, void __iomem *reg, enum tshut_mode m);
+diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
+index 3765806d5d46..3b21a064a9a7 100644
+--- a/drivers/power/supply/bq24735-charger.c
++++ b/drivers/power/supply/bq24735-charger.c
+@@ -25,6 +25,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_gpio.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/power_supply.h>
+ #include <linux/slab.h>
+@@ -43,12 +44,24 @@
+ #define BQ24735_MANUFACTURER_ID		0xfe
+ #define BQ24735_DEVICE_ID		0xff
  
- 	/* Per-table methods */
-@@ -401,17 +401,15 @@ static u32 rk_tsadcv2_temp_to_code(const struct chip_tsadc_table *table,
- 				   int temp)
++struct bq24735;
++
++struct bq24735_shared {
++	struct list_head		list;
++	struct bq24735			*owner;
++	struct gpio_desc		*status_gpio;
++};
++
++static struct mutex shared_lock;
++static LIST_HEAD(shared_list);
++
+ struct bq24735 {
+ 	struct power_supply		*charger;
+ 	struct power_supply_desc	charger_desc;
+ 	struct i2c_client		*client;
+ 	struct bq24735_platform		*pdata;
+ 	struct mutex			lock;
++	struct bq24735_shared		*shared;
+ 	struct gpio_desc		*status_gpio;
+ 	struct delayed_work		poll;
+ 	u32				poll_interval;
+@@ -346,6 +359,65 @@ static struct bq24735_platform *bq24735_parse_dt_data(struct i2c_client *client)
+ 	return pdata;
+ }
+ 
++static struct gpio_desc *bq24735_get_status_gpio(struct bq24735 *charger)
++{
++	struct device *dev = &charger->client->dev;
++	struct bq24735_shared *shared;
++	int gpio;
++	struct list_head *pos;
++
++	if (!of_property_read_bool(dev->of_node, "ti,ac-detect-gpios"))
++		return NULL;
++
++	gpio = of_get_named_gpio(dev->of_node, "ti,ac-detect-gpios", 0);
++	if (gpio < 0)
++		return ERR_PTR(gpio);
++
++	mutex_lock(&shared_lock);
++	list_for_each(pos, &shared_list) {
++		shared = list_entry(pos, struct bq24735_shared, list);
++		if (gpio != desc_to_gpio(shared->status_gpio))
++			continue;
++
++		get_device(&shared->owner->client->dev);
++		dev_dbg(dev, "sharing gpio with %s\n",
++			shared->owner->pdata->name);
++		charger->shared = shared;
++		mutex_unlock(&shared_lock);
++		return shared->status_gpio;
++	}
++
++	shared = devm_kzalloc(dev, sizeof(*shared), GFP_KERNEL);
++	if (!shared) {
++		mutex_unlock(&shared_lock);
++		return ERR_PTR(-ENOMEM);
++	}
++	shared->owner = charger;
++	shared->status_gpio = gpiod_get(dev, "ti,ac-detect", GPIOD_IN);
++	if (!IS_ERR(shared->status_gpio)) {
++		charger->shared = shared;
++		list_add(&shared->list, &shared_list);
++	}
++	mutex_unlock(&shared_lock);
++
++	return shared->status_gpio;
++}
++
++static void bq24735_put_status_gpio(struct bq24735 *charger)
++{
++	if (!charger->shared)
++		return;
++
++	mutex_lock(&shared_lock);
++	if (charger->shared->owner != charger) {
++		put_device(&charger->shared->owner->client->dev);
++	} else {
++		list_del(&charger->shared->list);
++		gpiod_put(charger->shared->status_gpio);
++	}
++	mutex_unlock(&shared_lock);
++}
++
+ static int bq24735_charger_probe(struct i2c_client *client,
+ 				 const struct i2c_device_id *id)
  {
- 	int high, low, mid;
--	u32 error = 0;
-+	u32 error = table->data_mask;
+@@ -402,9 +474,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
  
- 	low = 0;
- 	high = table->length - 1;
- 	mid = (high + low) / 2;
+ 	i2c_set_clientdata(client, charger);
  
- 	/* Return mask code data when the temp is over table range */
--	if (temp < table->id[low].temp || temp > table->id[high].temp) {
--		error = table->data_mask;
-+	if (temp < table->id[low].temp || temp > table->id[high].temp)
- 		goto exit;
--	}
+-	charger->status_gpio = devm_gpiod_get_optional(&client->dev,
+-						       "ti,ac-detect",
+-						       GPIOD_IN);
++	charger->status_gpio = bq24735_get_status_gpio(charger);
+ 	if (IS_ERR(charger->status_gpio)) {
+ 		ret = PTR_ERR(charger->status_gpio);
+ 		dev_err(&client->dev, "Getting gpio failed: %d\n", ret);
+@@ -416,28 +486,30 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
+ 				ret);
+-			return ret;
++			goto out;
+ 		} else if (ret != 0x0040) {
+ 			dev_err(&client->dev,
+ 				"manufacturer id mismatch. 0x0040 != 0x%04x\n", ret);
+-			return -ENODEV;
++			ret = -ENODEV;
++			goto out;
+ 		}
  
- 	while (low <= high) {
- 		if (temp == table->id[mid].temp)
-@@ -650,15 +648,15 @@ static int rk_tsadcv2_get_temp(const struct chip_tsadc_table *table,
- 	return rk_tsadcv2_code_to_temp(table, val, temp);
- }
- 
--static void rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
--				  int chn, void __iomem *regs, int temp)
-+static int rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
-+				 int chn, void __iomem *regs, int temp)
- {
- 	u32 alarm_value, int_en;
- 
- 	/* Make sure the value is valid */
- 	alarm_value = rk_tsadcv2_temp_to_code(table, temp);
- 	if (alarm_value == table->data_mask)
--		return;
-+		return -ERANGE;
- 
- 	writel_relaxed(alarm_value & table->data_mask,
- 		       regs + TSADCV2_COMP_INT(chn));
-@@ -666,23 +664,27 @@ static void rk_tsadcv2_alarm_temp(const struct chip_tsadc_table *table,
- 	int_en = readl_relaxed(regs + TSADCV2_INT_EN);
- 	int_en |= TSADCV2_INT_SRC_EN(chn);
- 	writel_relaxed(int_en, regs + TSADCV2_INT_EN);
-+
-+	return 0;
- }
- 
--static void rk_tsadcv2_tshut_temp(const struct chip_tsadc_table *table,
--				  int chn, void __iomem *regs, int temp)
-+static int rk_tsadcv2_tshut_temp(const struct chip_tsadc_table *table,
-+				 int chn, void __iomem *regs, int temp)
- {
- 	u32 tshut_value, val;
- 
- 	/* Make sure the value is valid */
- 	tshut_value = rk_tsadcv2_temp_to_code(table, temp);
- 	if (tshut_value == table->data_mask)
--		return;
-+		return -ERANGE;
- 
- 	writel_relaxed(tshut_value, regs + TSADCV2_COMP_SHUT(chn));
- 
- 	/* TSHUT will be valid */
- 	val = readl_relaxed(regs + TSADCV2_AUTO_CON);
- 	writel_relaxed(val | TSADCV2_AUTO_SRC_EN(chn), regs + TSADCV2_AUTO_CON);
-+
-+	return 0;
- }
- 
- static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
-@@ -885,10 +887,8 @@ static int rockchip_thermal_set_trips(void *_sensor, int low, int high)
- 	dev_dbg(&thermal->pdev->dev, "%s: sensor %d: low: %d, high %d\n",
- 		__func__, sensor->id, low, high);
- 
--	tsadc->set_alarm_temp(&tsadc->table,
--			      sensor->id, thermal->regs, high);
--
--	return 0;
-+	return tsadc->set_alarm_temp(&tsadc->table,
-+				     sensor->id, thermal->regs, high);
- }
- 
- static int rockchip_thermal_get_temp(void *_sensor, int *out_temp)
-@@ -984,8 +984,12 @@ rockchip_thermal_register_sensor(struct platform_device *pdev,
- 	int error;
- 
- 	tsadc->set_tshut_mode(id, thermal->regs, thermal->tshut_mode);
--	tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
-+
-+	error = tsadc->set_tshut_temp(&tsadc->table, id, thermal->regs,
- 			      thermal->tshut_temp);
-+	if (error)
-+		dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
-+			__func__, thermal->tshut_temp, error);
- 
- 	sensor->thermal = thermal;
- 	sensor->id = id;
-@@ -1198,9 +1202,13 @@ static int __maybe_unused rockchip_thermal_resume(struct device *dev)
- 
- 		thermal->chip->set_tshut_mode(id, thermal->regs,
- 					      thermal->tshut_mode);
--		thermal->chip->set_tshut_temp(&thermal->chip->table,
-+
-+		error = thermal->chip->set_tshut_temp(&thermal->chip->table,
- 					      id, thermal->regs,
- 					      thermal->tshut_temp);
-+		if (error)
-+			dev_err(&pdev->dev, "%s: invalid tshut=%d, error=%d\n",
-+				__func__, thermal->tshut_temp, error);
+ 		ret = bq24735_read_word(client, BQ24735_DEVICE_ID);
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to read device id : %d\n", ret);
+-			return ret;
++			goto out;
+ 		} else if (ret != 0x000B) {
+ 			dev_err(&client->dev,
+ 				"device id mismatch. 0x000b != 0x%04x\n", ret);
+-			return -ENODEV;
++			ret = -ENODEV;
++			goto out;
+ 		}
  	}
  
- 	thermal->chip->control(thermal->regs, true);
+ 	ret = bq24735_config_charger(charger);
+ 	if (ret < 0) {
+ 		dev_err(&client->dev, "failed in configuring charger");
+-		return ret;
++		goto out;
+ 	}
+ 
+ 	/* check for AC adapter presence */
+@@ -445,7 +517,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 		ret = bq24735_enable_charging(charger);
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to enable charging\n");
+-			return ret;
++			goto out;
+ 		}
+ 	}
+ 
+@@ -455,7 +527,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 		ret = PTR_ERR(charger->charger);
+ 		dev_err(&client->dev, "Failed to register power supply: %d\n",
+ 			ret);
+-		return ret;
++		goto out;
+ 	}
+ 
+ 	if (client->irq) {
+@@ -470,7 +542,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 			dev_err(&client->dev,
+ 				"Unable to register IRQ %d err %d\n",
+ 				client->irq, ret);
+-			return ret;
++			goto out;
+ 		}
+ 	} else if (charger->status_gpio) {
+ 		ret = of_property_read_u32(client->dev.of_node,
+@@ -487,6 +559,11 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 	}
+ 
+ 	return 0;
++
++out:
++	bq24735_put_status_gpio(charger);
++
++	return ret;
+ }
+ 
+ static int bq24735_charger_remove(struct i2c_client *client)
+@@ -496,6 +573,8 @@ static int bq24735_charger_remove(struct i2c_client *client)
+ 	if (charger->poll_interval)
+ 		cancel_delayed_work_sync(&charger->poll);
+ 
++	bq24735_put_status_gpio(charger);
++
+ 	return 0;
+ }
+ 
 -- 
-2.7.4
+2.1.4
