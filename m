@@ -1,56 +1,36 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: [PATCH 1/2] devicetree: power: add bindings for GPIO-driven power switches
-Date: Sun, 11 Dec 2016 23:21:44 +0100
-Message-ID: <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
-References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>, Patrick Titiano <ptitiano@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] ACPI / CPPC: Fix per-CPU pointers management
+Date: Mon, 12 Dec 2016 02:00:36 +0100
+Message-ID: <CAJZ5v0iZ31AyuE2fHYLrr=2JKFO==mkjh7G0VHy8bEQjxDfOPA@mail.gmail.com>
+References: <cover.1479844244.git.tim.c.chen@linux.intel.com>
+ <20161209144551.jhnbfsxdxsk4ld6s@linutronix.de> <CAJZ5v0jUCHSM90yEoygAbKVY3ySaWQk-Cp6qkd+6ESH74J2_8A@mail.gmail.com>
+ <296282606.tnoJCKgU2l@aspire.rjw.lan> <20161210185106.eyj356w3ffgibaqi@linutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20161210185106.eyj356w3ffgibaqi@linutronix.de>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Some boards are equipped with simple, GPIO-driven power load switches.
-An example of such ICs is the TI tps229* series.
+On Sat, Dec 10, 2016 at 7:51 PM, Sebastian Andrzej Siewior
+<bigeasy@linutronix.de> wrote:
+> On 2016-12-10 00:52:28 [+0100], Rafael J. Wysocki wrote:
+>> Hi Thomas,
+>>
+>> The crash fixed by this is exposed by the ITMT (asymmetric packing) series
+>> (which involves using ACPI CPPC on x86), so IMO it would be good to route it
+>> through tip along with that series.
+>
+> can we get this merged into the original patch please?
 
-Add device tree bindings allowing to describe them.
+Functionally, that patch has a little to do with the fix, so I'd
+rather not do that.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- .../bindings/power/gpio-power-switch.txt           | 25 ++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/gpio-power-switch.txt
+> This is default y  and breaks bisecting.
 
-diff --git a/Documentation/devicetree/bindings/power/gpio-power-switch.txt b/Documentation/devicetree/bindings/power/gpio-power-switch.txt
-new file mode 100644
-index 0000000..21420ed
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/gpio-power-switch.txt
-@@ -0,0 +1,25 @@
-+GPIO Power Switch
-+-----------------
-+
-+This is the device tree binding for simple, GPIO-driven power load switches
-+that do not have any control signals.
-+
-+Required properties:
-+
-+- compatible:           must be "gpio-power-switch"
-+- power-gpios:          phandle for the GPIO driving the power load switch
-+
-+Optional properties:
-+
-+- power-switch-name:    the name of the power switch
-+- power-switch-on:      the power switch GPIO is driven high by default
-+
-+Example
-+-------
-+
-+acme_probe0_power_switch: gpio_power_switch@0 {
-+	compatible = "gpio-power-switch";
-+	power-switch-name = "acme_probe0_switch";
-+	power-gpios = <&pca9535 1 GPIO_ACTIVE_HIGH>;
-+	power-switch-on;
-+};
--- 
-2.9.3
+Instead, I would reorder the series to put the fix in front of that patch.
+
+Thanks,
+Rafael
