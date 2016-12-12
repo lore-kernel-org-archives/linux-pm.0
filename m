@@ -1,49 +1,35 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] ACPI: small formatting fixes
-Date: Mon, 12 Dec 2016 10:39:15 -0800
-Message-ID: <1481567955.1764.28.camel@perches.com>
-References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
-         <20161212085620.GA738@amd> <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 04/11] Documentation: DT: binding: axp20x_usb_power:
+ add axp223 compatible
+Date: Mon, 12 Dec 2016 12:44:26 -0600
+Message-ID: <20161212184426.s3pdaivchwxmiqr6@rob-hp-laptop>
+References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+ <20161209110419.28981-5-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Desaulniers <nick.desaulniers@gmail.com>, Pavel Machek <pavel@ucw.cz>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20161209110419.28981-5-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2016-12-12 at 09:56 -0800, Nick Desaulniers wrote:
-> A quick cleanup that passes scripts/checkpatch.pl -f <file>.
+On Fri, Dec 09, 2016 at 12:04:12PM +0100, Quentin Schulz wrote:
+> This adds the "x-powers,axp223-usb-power-supply" to the list of
+> compatibles for AXP20X VBUS power supply driver.
+> 
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+> 
+> v2:
+>  - adding small explanation on AXP223 variation compared to the AXP221,
+> 
+>  Documentation/devicetree/bindings/power/supply/axp20x_usb_power.txt | 5 +++++
+>  1 file changed, 5 insertions(+)
 
-You might use the --strict option for acpi files.
-
-> diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-[]
-> @@ -103,9 +103,8 @@ static long acpi_processor_ffh_cstate_probe_cpu(void *_cx)
->  
->         if (!mwait_supported[cstate_type]) {
->                 mwait_supported[cstate_type] = 1;
-> -               printk(KERN_DEBUG
-> -                       "Monitor-Mwait will be used to enter C-%d "
-> -                       "state\n", cx->type);
-> +               pr_debug("Monitor-Mwait will be used to enter C-%d state\n",
-> +                               cx->type);
-
-It's generally better not to convert
-these printk(KERN_DEBUG uses.
-
-There are behavior differences between
-	printk(KERN_DEBUG ...);
-and
-	pr_debug(...);
-
-The first will always be emitted as long
-as the console level is appropriate.
-
-The second depends on a #define DEBUG
-before it gets emitted or a kernel
-with CONFIG_DYNAMIC_DEBUG enabled and
-this entry specifically enabled in the
-control file.
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
