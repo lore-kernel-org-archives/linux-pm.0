@@ -1,107 +1,43 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
-Date: Wed, 14 Dec 2016 11:48:42 +0900
-Message-ID: <5850B30A.20701@samsung.com>
-References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
- <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
- <5850A286.9080302@samsung.com>
+From: Peter Rosin <peda@axentia.se>
+Subject: [PATCH v2 1/3] power: supply: bq24735-charger: simplify register update to stop charging
+Date: Wed, 14 Dec 2016 00:56:43 +0100
+Message-ID: <1481673405-4547-2-git-send-email-peda@axentia.se>
+References: <1481673405-4547-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:36169 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754583AbcLNCsq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 21:48:46 -0500
-Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OI5018G4MGVXXD0@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 14 Dec 2016 11:48:42 +0900 (KST)
-In-reply-to: <5850A286.9080302@samsung.com>
+Received: from mail-ve1eur01on0130.outbound.protection.outlook.com ([104.47.1.130]:39280
+        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751256AbcLNDcu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 13 Dec 2016 22:32:50 -0500
+In-Reply-To: <1481673405-4547-1-git-send-email-peda@axentia.se>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Diamand <chris.diamand@arm.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hi Chris,
+Providing value bits outside of the mask is pointless.
 
-On 2016년 12월 14일 10:38, Chanwoo Choi wrote:
-> Hi Chris,
->
-> On 2016년 12월 14일 02:09, Chris Diamand wrote:
->> The 'userspace' governor adds a sysfs entry, which is removed when
->> the governor is changed, or the devfreq device is released. However,
->> when the latter occurs via device_unregister(), device_del() is
->> called first, which removes the sysfs entries recursively and deletes
->> the kobject.
->>
->> This means we get an Oops when the governor calls
->> sysfs_remove_group() on the deleted kobject. Fix this by explicitly
->> stopping the governor in devfreq_remove_device(), *before* the
->> devfreq entry is removed.
->>
->> Note that we can't just remove the call to sysfs_remove_group() in
->> the userspace governor, as it's needed for when the governor is
->> changed to one without a sysfs entry.
->>
->> Signed-off-by: Chris Diamand <chris.diamand@arm.com>
->> ---
->>  drivers/devfreq/devfreq.c | 6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index 478006b..d8a817c 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -622,6 +622,12 @@ int devfreq_remove_device(struct devfreq *devfreq)
->>  	if (!devfreq)
->>  		return -EINVAL;
->>  
->> +	if (devfreq->governor) {
->> +		devfreq->governor->event_handler(devfreq,
->> +						 DEVFREQ_GOV_STOP, NULL);
->> +		devfreq->governor = NULL;
->> +	}
->> +
->>
-> The devfreq_remove_device has following description:
-> - "* The oppsite of devfreq_add_device()"
->
-> I think that we should call the '_remove_devfreq()' function in the devfreq_remove_device()
-> because '_remove_devfreq()' is in charge of releasing the devfreq instance.
->
-> The '_remove_devfreq() ' function includes the code to stop the governor and following works:
-> - remove the devfreq instance from devfreq list
-> - call the profile->exit function
-> - destroy the muxte of devfreq instance
-> - Free the devfreq memory.
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ drivers/power/supply/bq24735-charger.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-How about following patch?
-I think that this patch covers the all of case when removing the devfreq device.
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 8a456dd55a8d..eea406df0037 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -496,6 +496,7 @@ static void _remove_devfreq(struct devfreq *devfreq)
-                devfreq->profile->exit(devfreq->dev.parent);
+diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
+index eb7783b42e0a..1d5c9206e0ed 100644
+--- a/drivers/power/supply/bq24735-charger.c
++++ b/drivers/power/supply/bq24735-charger.c
+@@ -111,8 +111,7 @@ static inline int bq24735_enable_charging(struct bq24735 *charger)
+ 		return 0;
  
-        mutex_destroy(&devfreq->lock);
-+       device_unregister(&devfreq->dev);
-        kfree(devfreq);
+ 	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
+-				   BQ24735_CHG_OPT_CHARGE_DISABLE,
+-				   ~BQ24735_CHG_OPT_CHARGE_DISABLE);
++				   BQ24735_CHG_OPT_CHARGE_DISABLE, 0);
  }
  
-@@ -634,7 +635,7 @@ int devfreq_remove_device(struct devfreq *devfreq)
-        if (!devfreq)
-                return -EINVAL;
- 
--       device_unregister(&devfreq->dev);
-+       _remove_devfreq(devfreq);
- 
-        return 0;
- }
-
-Regards,
-Chanwoo Choi
+ static inline int bq24735_disable_charging(struct bq24735 *charger)
+-- 
+2.1.4
 
