@@ -1,97 +1,204 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
- driver
-Date: Tue, 13 Dec 2016 06:38:36 +0100
-Message-ID: <20161213053835.GA1439@katana>
-References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
- <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
- <20161213035052.GA22105@localhost.localdomain>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.10-rc1
+Date: Tue, 13 Dec 2016 13:48:06 +0800
+Message-ID: <1481608086.2083.1.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="T4sUOijqQbZv57TR"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161213035052.GA22105@localhost.localdomain>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>, Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi, Linus,
 
---T4sUOijqQbZv57TR
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
 
-Hi,
+to receive the latest Thermal Management updates for v4.10-rc1 with
+top-most commit 0faf7dd5a947006978b549dfe29a01b710becf4a:
 
-> > + *
-> > + * The constants a and b are calculated using two triplets of int valu=
-es PTAT
-> > + * and THCODE. PTAT and THCODE can either be read from hardware or use=
- hard
-> > + * coded values from driver. The formula to calculate a and b are take=
-n from
-> > + * BSP and sparsely documented and understood.
-> > + *
->=20
-> hmmm.. OK. that gets a bit more interesting.=20
->=20
-> So you can get a and b queried from hardware. cool.
->=20
-> but you can also get those hardcoded in the code. In that case, I would
-> suggest hardcode them in DT, instead, using the coefficients property.
+  MAINTAINERS: Samsung: Update maintainer for PWM FAN and SAMSUNG
+THERMAL (2016-12-13 11:20:23 +0800)
 
-It is only the engineering samples which have the coeffs hardcoded. All
-future revisions of the same SoC will have the values as fuses from
-registers. Sadly, we won't have access to newer versions for a while. To
-avoid having seperate DTSI per engineering sample revision, I planned
-for using the new soc_device_match() mechanism which was introduced for
-exactly such use cases.
+on top of commit 23400ac997062647f2b63c82030d189671b1effe:
 
-> > +static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
-> > +{
-> > +	struct rcar_gen3_thermal_tsc *tsc =3D devdata;
-> > +	int mcelsius, val1, val2;
-> > +	u32 reg;
-> > +
-> > +	/* Read register and convert to mili Celsius */
-> > +	mutex_lock(&tsc->lock);
-> > +
-> > +	reg =3D rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
-> > +
-> > +	val1 =3D SCALE_DIV(SCALE_INT(reg) - tsc->coef.b1, tsc->coef.a1);
-> > +	val2 =3D SCALE_DIV(SCALE_INT(reg) - tsc->coef.b2, tsc->coef.a2);
->=20
-> I see. there are actually two sensors here, and=20
+  Merge branch 'for-rc' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux (2016-11-22
+13:53:01 -0800)
 
-Really? val1 and val2 are both based on 'reg'. Also, the datasheet
-explicitly mentions 'three sensors in the LSI'.
+Specifics:
 
-Thanks for the fast response!
+- Thermal core code reorganization and cleanup. Two new files are
+  created for thermal sysfs I/F code and thermal helper functions.
+  From: Eduardo Valentin.
 
-   Wolfram
+- Sanitize hotplug and locking for x86_pkg_temp driver.
+  From: Thomas Gleixner.
 
+- Update MAINTAINER file for pwm-fan driver and Samsung thermal driver.
+  From: Lukasz Majewski.
 
---T4sUOijqQbZv57TR
-Content-Type: application/pgp-signature; name="signature.asc"
+- Fix module auto-load for max77620, tango and db8500 thermal driver.
+  From: Javier Martinez Canillas.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+- Fix a bug that thermal hwmon sysfs I/F returns wrong critical trip
+  point temperature value. From: Krzysztof Kozlowski.
 
-iQIcBAEBAgAGBQJYT4lbAAoJEBQN5MwUoCm2wZkP/1vUew38z51XJKlGQ3oKBekS
-0dlOmptmWOM85iEd5hzvipB7XHTRcfK/SN55SbTyooQOtb9FwxD0Ifga5BNyZ7SH
-WAhoE5SipZhwKy2V4wYy7vq6xTWH7VdpTaJ37CfvgQYbPmqJ4XT/I3pbP0dUMCBr
-GRhFvlNK1fRVNJ6kEyXpXSowmb+bDtHqWjEHTBTJvavV8xPXvK7v1UlVt0A+o/oy
-nRjcrN0wG6jsT+e1xRQIhXddDEMYcLtjqL08D/OnWn5eKZDx4cdQgrQpT6n4ATFX
-tKVY9e+XQgS/kRrUO+xwxvfINMKoj4w1OUiMqPTW+mbBntFNIcu/vuIsp+GVD91q
-S/f1AY2FjznrofakF4IKfshVhKsfdcuDu+7OZ3xnU3/a3bv2n20hn/4eI92O9vqA
-VoqdvOh+rdHz8FC9neJLs5D15bxgIL920Ix5VhtMZ4KHqXZV6bvnDbh0TRt/DApI
-CRBwnTl2AOZlFAODBFPwHi87lGFW+5kdT70qE3LsNgrmBgwcNBvxQkrACOZDeTTW
-dDVYDfHOes5nYQcnam4xp/jNFfffPg1VKwcsovRbgcWybG/W+bk2wx5F3gvHXLAo
-wocRZ2IGqMRyEToNV21Qc6RH9Zf7M9NZHXw20qJurTlI029JMEZcAfWOFzZ0wmRK
-0qcfHfdghbCz4wU706iN
-=MO74
------END PGP SIGNATURE-----
+- Add Skylake PCH 100 series support for intel_pch_thermal driver.
+  From: OGAWA Hirofumi.
 
---T4sUOijqQbZv57TR--
+- Small fixes and cleanups for platform thermal drivers.
+  From Julia Lawall, Luis Henriques, Leo Yan, Stephen Boyd,
+  Shawn Lin, Javi Merino and Lukasz Luba.
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Eduardo Valentin (49):
+      thermal: core: prevent zones with no types to be registered
+      thermal: core: group thermal_zone DEVICE_ATTR's declarations
+      thermal: core: group device_create_file() calls that are always
+created
+      thermal: core: use dev.groups to manage always present tz
+attributes
+      thermal: core: move emul_temp creation to tz->device.groups
+      thermal: core: move mode attribute to tz->device.groups
+      thermal: core: move passive attr to tz->device.groups
+      thermal: core: improve power actor documentation
+      thermal: core: move power actor code out of sysfs I/F section
+      thermal: core: remove useless empty line
+      thermal: core: fix style on remove_trip_attrs()
+      thermal: core: move the trip attrs to the tz sysfs I/F section
+      thermal: core: create tz->device.groups dynamically
+      thermal: core: move trips attributes to tz->device.groups
+      thermal: core: remove unnecessary device_remove() calls
+      thermal: core: split passive_store
+      thermal: core: split policy_store
+      thermal: core: split available_policies_show()
+      thermal: core: move to_thermal_zone() macro to header file
+      thermal: core: treat correctly the return value of *scanf calls
+      thermal: core: match parenthesis on code alignment
+      thermal: core: move thermal_zone sysfs to thermal_sysfs.c
+      thermal: core: move to_cooling_device macro to header file
+      thermal: core: move cooling device sysfs to thermal_sysfs.c
+      thermal: core: remove a couple of style issues on helpers
+      thermal: core: introduce thermal_helpers.c
+      thermal: core: group functions related to governor handling
+      thermal: core: move idr handling to device management section
+      thermal: core: small style fix on __unbind() helper
+      thermal: core: move __unbind() helper to where it is used
+      thermal: core: move bind_cdev() to where it is used
+      thermal: core: move bind_tz() to where it is used
+      thermal: core: fix couple of style issues on __bind() helper
+      thermal: core: move __bind() to where it is used
+      thermal: core: add inline to print_bind_err_msg()
+      thermal: core: move notify to the zone update section
+      thermal: core: add a comment describing the main update loop
+      thermal: core: add a comment describing the power actor section
+      thermal: core: add a comment describing the device management
+section
+      thermal: sysfs: remove symbols of emul_temp when config is
+disabled
+      thermal: core: remove FSF address in the GPL notice
+      thermal: core: small style fix when checking for
+__find_governor()
+      thermal: core: standardize line breaking alignment
+      thermal: core: remove void function return statements
+      thermal: core: remove style warnings and checks
+      thermal: core: improve kerneldoc entry of
+thermal_cooling_device_unregister
+      thermal: core: use kzalloc(sizeof(*ptr),...)
+      thermal: sysfs: use kcalloc() instead of kzalloc()
+      thermal: core: move slop and offset helpers to thermal_helpers.c
+
+Javi Merino (1):
+      devfreq_cooling: pass a pointer to devfreq in the power model
+callbacks
+
+Javier Martinez Canillas (3):
+      thermal: max77620: Fix module autoload
+      thermal: tango: Fix module autoload
+      thermal: db8500: Fix module autoload
+
+Julia Lawall (2):
+      thermal: hwmon: use permission-specific DEVICE_ATTR variants
+      thermal: int340x_thermal: use permission-specific DEVICE_ATTR
+variants
+
+Krzysztof Kozlowski (1):
+      thermal: hwmon: Properly report critical temperature in sysfs
+
+Leo Yan (1):
+      thermal: hisilicon: fix for dependency
+
+Luis Henriques (1):
+      thermal: ti-soc-thermal: add missing clk_put()
+
+Lukasz Luba (1):
+      devfreq_cooling: make the structs devfreq_cooling_xxx visible for
+all
+
+Lukasz Majewski (1):
+      MAINTAINERS: Samsung: Update maintainer for PWM FAN and SAMSUNG
+THERMAL
+
+OGAWA Hirofumi (1):
+      thermal: intel_pch_thermal: Support skylake PCH 100 series
+thermal
+
+Sebastian Andrzej Siewior (1):
+      thermal/x86 pkg temp: Convert to hotplug state machine
+
+Shawn Lin (2):
+      thermal: rockchip: improve the warning log
+      dt-bindings: rockchip-thermal: fix the misleading description
+
+Stephen Boyd (1):
+      thermal: qcom-spmi: Treat reg property as a single cell
+
+Thomas Gleixner (11):
+      thermal/x86_pkg_temp: Cleanup thermal interrupt handling
+      thermal/x86_pkg_temp: Remove redundant package search
+      thermal/x86_pkg_temp: Replace open coded cpu search
+      thermal/x86_pkg_temp: Sanitize callback (de)initialization
+      thermal/x86_pkg_temp: Get rid of ref counting
+      thermal/x86_pkg_temp: Cleanup namespace
+      thermal/x86_pkg_temp: Cleanup code some more
+      thermal/x86_pkg_temp: Sanitize locking
+      thermal/x86_pkg_temp: Move work scheduled flag into package
+struct
+      thermal/x86_pkg_temp: Move work into package struct
+      thermal/x86_pkg_temp: Sanitize package management
+
+Zhang Rui (1):
+      Merge branches 'thermal-core', 'thermal-intel', 'thermal-soc-
+fixes' and 'thermal-reorg' into next
+
+ .../bindings/thermal/rockchip-thermal.txt          |    3 +
+ MAINTAINERS                                        |    4 +-
+ drivers/thermal/Kconfig                            |    4 +-
+ drivers/thermal/Makefile                           |    3 +-
+ drivers/thermal/db8500_thermal.c                   |    1 +
+ drivers/thermal/devfreq_cooling.c                  |    5 +-
+ drivers/thermal/int340x_thermal/int3400_thermal.c  |    2 +-
+ drivers/thermal/intel_pch_thermal.c                |   64 +-
+ drivers/thermal/max77620_thermal.c                 |    1 +
+ drivers/thermal/qcom-spmi-temp-alarm.c             |    6 +-
+ drivers/thermal/rockchip_thermal.c                 |    7 +-
+ drivers/thermal/tango_thermal.c                    |    1 +
+ drivers/thermal/thermal_core.c                     | 1446 +++++-------
+--------
+ drivers/thermal/thermal_core.h                     |   26 +
+ drivers/thermal/thermal_helpers.c                  |  226 +++
+ drivers/thermal/thermal_hwmon.c                    |    4 +-
+ drivers/thermal/thermal_sysfs.c                    |  771 +++++++++++
+ drivers/thermal/ti-soc-thermal/ti-bandgap.c        |    5 +-
+ drivers/thermal/x86_pkg_temp_thermal.c             |  587 ++++----
+ include/linux/devfreq_cooling.h                    |    9 +-
+ include/linux/thermal.h                            |    2 +
+ 21 files changed, 1650 insertions(+), 1527 deletions(-)
+ create mode 100644 drivers/thermal/thermal_helpers.c
+ create mode 100644 drivers/thermal/thermal_sysfs.c
