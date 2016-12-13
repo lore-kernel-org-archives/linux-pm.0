@@ -1,91 +1,77 @@
-From: Niklas =?iso-8859-1?Q?S=F6derlund?=
-        <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
- driver
-Date: Tue, 13 Dec 2016 10:53:05 +0100
-Message-ID: <20161213095305.GA28801@bigcity.dyn.berto.se>
-References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
- <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
- <CAMuHMdVpuWO9Do9VvkVjZoEOCbmd72Gah-d2f4GCZavpo9EGpQ@mail.gmail.com>
+From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
+Subject: Re: [PATCH] ACPI: small formatting fixes
+Date: Tue, 13 Dec 2016 11:00:22 +0100
+Message-ID: <87shpsi1xl.fsf@miraculix.mork.no>
+References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
+        <20161212085620.GA738@amd>
+        <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+        <1481567955.1764.28.camel@perches.com> <20161212222216.GA18201@amd>
+        <1481581932.29291.6.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdVpuWO9Do9VvkVjZoEOCbmd72Gah-d2f4GCZavpo9EGpQ@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from canardo.mork.no ([148.122.252.1]:37715 "EHLO canardo.mork.no"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932469AbcLMKDC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 13 Dec 2016 05:03:02 -0500
+In-Reply-To: <1481581932.29291.6.camel@perches.com> (Joe Perches's message of
+        "Mon, 12 Dec 2016 14:32:12 -0800")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Nick Desaulniers <nick.desaulniers@gmail.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Geert,
+Joe Perches <joe@perches.com> writes:
+> On Mon, 2016-12-12 at 23:22 +0100, Pavel Machek wrote:
+>> On Mon 2016-12-12 10:39:15, Joe Perches wrote:
+>> > On Mon, 2016-12-12 at 09:56 -0800, Nick Desaulniers wrote:
+>> > > A quick cleanup that passes scripts/checkpatch.pl -f <file>.
+> []
+>> > > diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cs=
+tate.c
+> []
+>> > It's generally better not to convert
+>> > these printk(KERN_DEBUG uses.
+>> >=20
+>> > There are behavior differences between
+>> > 	printk(KERN_DEBUG ...);
+>> > and
+>> > 	pr_debug(...);
+>> >=20
+>> > The first will always be emitted as long
+>> > as the console level is appropriate.
+>> >=20
+>> > The second depends on a #define DEBUG
+>> > before it gets emitted or a kernel=20
+>> > with CONFIG_DYNAMIC_DEBUG enabled and
+>> > this entry specifically enabled in the
+>> > control file.
+>>=20
+>> Hmm. Perhaps pr_debug should be called pr_c_debug() or something? This
+>> is rather nice trap.
+>
+> Yeah, I've suggested veriants like pr_always_debug (from 2009)
+> http://lkml.iu.edu/hypermail/linux/kernel/0910.0/00399.html
 
-Thanks for your feedback.
+The ability to strip the kernel from all debugging messages, or to keep
+them and dynamically enabling the interesting ones, are both important
+features *on top of* printk(KERN_DEBUG ...); If you add pr_c_debug() or
+whatever, then you'll only create a use case for another level of "strip
+this out".  Back to square one.
 
-On 2016-12-13 09:19:53 +0100, Geert Uytterhoeven wrote:
-> Hi Niklas,
-> 
-> On Mon, Dec 12, 2016 at 3:18 PM, Niklas Söderlund
-> <niklas.soderlund@ragnatech.se> wrote:
-> > +/*
-> > + * Linear approximation for temperature
-> > + *
-> > + * [reg] = [temp] * a + b => [temp] = ([reg] - b) / a
-> > + *
-> > + * The constants a and b are calculated using two triplets of int values PTAT
-> > + * and THCODE. PTAT and THCODE can either be read from hardware or use hard
-> > + * coded values from driver. The formula to calculate a and b are taken from
-> > + * BSP and sparsely documented and understood.
-> > + *
-> > + * Examining the linear formula and the formula used to calculate constants a
-> > + * and b while knowing that the span for PTAT and THCODE values are between
-> > + * 0x000 and 0xfff the largest integer possible is 0xfff * 0xfff == 0xffe001.
-> > + * Integer also needs to be signed so that leaves 7 bits for decimal
-> > + * fixed point scaling, which amounts to a decimal scaling factor of 100.
-> > + */
-> > +
-> > +#define SCALE_FACTOR 100
-> 
-> What about using 128 instead?
-> Fixed point is much easier with shifts
-> (the compiler will turn multiplications in shifts where appropriate).
+If this is a case of "my debug message is too important to let the user
+strip it from the kernel", then just use pr_info().  If not, then live
+with the additional debug level features leaving the control in the
+hands of the user.
 
-I tried using binary scaled instead of decimal scaled fixed point but 
-noticed that the diff I got compared to the original formula which used 
-decimal scaled (factor 1000) where larger so I picked decimal scaling.  
+Personally, I want to be able to do dynamic debugging without having to
+manually filter out any unconditional debug messages.  Please don't mess
+that up.  There are more than enough levels for unconditional messages.
+we can afford to reserve KERN_DEBUG for the dynamic debug conditional
+ones.
 
-Maybe with feedback from Morimoto-san or Khiem we can switch to binary 
-scaled number as it should over all increase the accuracy of the 
-calculations, but then maybe some of the other hard coded constant also 
-should be updated?
+Thanks.
 
-> 
-> > +#define SCALE_INT(_x) ((_x) * SCALE_FACTOR)
-> > +#define SCALE_MUL(_a, _b) (((_a)*(_b)) / SCALE_FACTOR)
-> > +#define SCALE_DIV(_a, _b) (((_a)*SCALE_FACTOR)/(_b))
-> 
-> DIV_ROUND_CLOSEST()
 
-Don't DIV_ROUND_CLOSEST() require the divisor to be a positive integer?  
-
-  tj_2 = SCALE_DIV(SCALE_MUL(SCALE_INT(ptat[1] - ptat[2]), SCALE_INT(137)),
-                   SCALE_INT(ptat[0] - ptat[2])) - SCALE_INT(41);
-
-In this case if ptat[0] < (ptat[2] + 41) the divisor is negative so I 
-think DIV_ROUND_CLOSEST() can't be used, or am I misunderstanding?
-
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
-
--- 
-Regards,
-Niklas Söderlund
+Bj=C3=B8rn
