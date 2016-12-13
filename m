@@ -1,77 +1,41 @@
-From: =?utf-8?Q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-Subject: Re: [PATCH] ACPI: small formatting fixes
-Date: Tue, 13 Dec 2016 11:00:22 +0100
-Message-ID: <87shpsi1xl.fsf@miraculix.mork.no>
-References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
-        <20161212085620.GA738@amd>
-        <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
-        <1481567955.1764.28.camel@perches.com> <20161212222216.GA18201@amd>
-        <1481581932.29291.6.camel@perches.com>
+From: Niklas =?iso-8859-1?Q?S=F6derlund?=
+        <niklas.soderlund@ragnatech.se>
+Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
+ driver
+Date: Tue, 13 Dec 2016 11:07:13 +0100
+Message-ID: <20161213100713.GC24175@bigcity.dyn.berto.se>
+References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
+ <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
+ <20161212214514.GA17631@katana>
+ <CAMuHMdXPZvHPRNx_VJ5VkowcTZbt_tOtRE1yPPVfv2fMYL8xLA@mail.gmail.com>
+ <20161213083903.GA2773@katana>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from canardo.mork.no ([148.122.252.1]:37715 "EHLO canardo.mork.no"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932469AbcLMKDC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 13 Dec 2016 05:03:02 -0500
-In-Reply-To: <1481581932.29291.6.camel@perches.com> (Joe Perches's message of
-        "Mon, 12 Dec 2016 14:32:12 -0800")
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:37046 "EHLO
+        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753070AbcLMKHQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 05:07:16 -0500
+Received: by mail-wm0-f44.google.com with SMTP id t79so111742428wmt.0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Dec 2016 02:07:15 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20161213083903.GA2773@katana>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Nick Desaulniers <nick.desaulniers@gmail.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 
-Joe Perches <joe@perches.com> writes:
-> On Mon, 2016-12-12 at 23:22 +0100, Pavel Machek wrote:
->> On Mon 2016-12-12 10:39:15, Joe Perches wrote:
->> > On Mon, 2016-12-12 at 09:56 -0800, Nick Desaulniers wrote:
->> > > A quick cleanup that passes scripts/checkpatch.pl -f <file>.
-> []
->> > > diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cs=
-tate.c
-> []
->> > It's generally better not to convert
->> > these printk(KERN_DEBUG uses.
->> >=20
->> > There are behavior differences between
->> > 	printk(KERN_DEBUG ...);
->> > and
->> > 	pr_debug(...);
->> >=20
->> > The first will always be emitted as long
->> > as the console level is appropriate.
->> >=20
->> > The second depends on a #define DEBUG
->> > before it gets emitted or a kernel=20
->> > with CONFIG_DYNAMIC_DEBUG enabled and
->> > this entry specifically enabled in the
->> > control file.
->>=20
->> Hmm. Perhaps pr_debug should be called pr_c_debug() or something? This
->> is rather nice trap.
->
-> Yeah, I've suggested veriants like pr_always_debug (from 2009)
-> http://lkml.iu.edu/hypermail/linux/kernel/0910.0/00399.html
+On 2016-12-13 09:39:04 +0100, Wolfram Sang wrote:
+> 
+> > Perhaps the macros should be called e.g. FIXPT_MUL() and FIXPT_DIV()?
+> 
+> Yes, that naming would be more readable to me.
+> 
 
-The ability to strip the kernel from all debugging messages, or to keep
-them and dynamically enabling the interesting ones, are both important
-features *on top of* printk(KERN_DEBUG ...); If you add pr_c_debug() or
-whatever, then you'll only create a use case for another level of "strip
-this out".  Back to square one.
+FIXPT_ is a much better prefix, will update in next version. Thanks for 
+the suggestion Geert.
 
-If this is a case of "my debug message is too important to let the user
-strip it from the kernel", then just use pr_info().  If not, then live
-with the additional debug level features leaving the control in the
-hands of the user.
-
-Personally, I want to be able to do dynamic debugging without having to
-manually filter out any unconditional debug messages.  Please don't mess
-that up.  There are more than enough levels for unconditional messages.
-we can afford to reserve KERN_DEBUG for the dynamic debug conditional
-ones.
-
-Thanks.
-
-
-Bj=C3=B8rn
+-- 
+Regards,
+Niklas Söderlund
