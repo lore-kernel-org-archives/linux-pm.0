@@ -1,42 +1,60 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/3] power: supply: bq24735-charger: optionally poll the
- ac-detect gpio
-Date: Tue, 13 Dec 2016 13:30:09 -0600
-Message-ID: <20161213193009.5cqyaii3gjrttqyk@rob-hp-laptop>
-References: <1481540424-19293-1-git-send-email-peda@axentia.se>
- <1481540424-19293-3-git-send-email-peda@axentia.se>
+From: Peter Rosin <peda@axentia.se>
+Subject: [PATCH v2 0/3] bq24735-charger: allow gpio polling and sharing
+Date: Wed, 14 Dec 2016 00:56:42 +0100
+Message-ID: <1481673405-4547-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1481540424-19293-3-git-send-email-peda@axentia.se>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-he1eur01on0097.outbound.protection.outlook.com ([104.47.0.97]:18713
+        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751913AbcLNALQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 13 Dec 2016 19:11:16 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Mon, Dec 12, 2016 at 12:00:23PM +0100, Peter Rosin wrote:
-> If the ac-detect gpio does not support interrupts, provide a fallback
-> to poll the gpio at a configurable interval.
-> 
-> Signed-off-by: Peter Rosin <peda@axentia.se>
-> ---
->  .../bindings/power/supply/ti,bq24735.txt           |  2 +
->  drivers/power/supply/bq24735-charger.c             | 50 +++++++++++++++++++---
->  2 files changed, 47 insertions(+), 5 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-> index 3bf55757ceec..59c4dde589cf 100644
-> --- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-> @@ -25,6 +25,8 @@ Optional properties :
->   - ti,external-control : Indicates that the charger is configured externally
->     and that the host should not attempt to enable/disable charging or set the
->     charge voltage/current.
-> + - ti,poll-interval-ms : In case there is no interrupts specified, poll AC
-> +   presense on the ti,ac-detect-gpios GPIO with this interval.
+Hi!
 
-We already have poll-interval and cm-poll-interval properties. Just use 
-poll-interval here.
+v1 -> v2 changes:
+- use poll-interval instead of ti,poll-interval-ms in the bindings
+- properly initialize the shared_lock mutex
+- don't share gpios on active low/high mismatch
+- don't regress users specifying the old ti,ac-detect-gpio form (without
+  the trailing s)
 
-Rob
+I have a board that features a couple of parallel bq24735 chargers.
+However, only one of the chargers has its ACOK pin wired to a gpio,
+the other parallel chargers are expected to just behave the same
+as the charger that has been singled out like this. Another thing
+with the board is that the gpio is not capable of generating an
+interrupt.
+
+This series fixes things for me (ok, the first patch was just a
+fix for a thing that initially had me confused for a bit, and is
+totally unrelated. Ignore if you want to, it's basically just churn).
+
+One thing that I wonder about is if anything should be done to
+prevent unloading of the instance that shares its gpio? I thought
+about adding a device_link_add() call, but am unsure if that would
+be approprite? I'm not unloading drivers at all so it's a total
+non-issue for me...
+
+Cheers,
+peda
+
+Peter Rosin (3):
+  power: supply: bq24735-charger: simplify register update to stop
+    charging
+  power: supply: bq24735-charger: optionally poll the ac-detect gpio
+  power: supply: bq24735-charger: allow chargers to share the ac-detect
+    gpio
+
+ .../bindings/power/supply/ti,bq24735.txt           |   2 +
+ drivers/power/supply/bq24735-charger.c             | 164 ++++++++++++++++++---
+ 2 files changed, 148 insertions(+), 18 deletions(-)
+
+-- 
+2.1.4
+
