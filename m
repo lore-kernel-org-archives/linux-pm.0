@@ -1,28 +1,42 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 1/2] devicetree: power: add bindings for GPIO-driven
- power switches
-Date: Tue, 13 Dec 2016 13:27:12 -0600
-Message-ID: <20161213192712.gbaw4t4awayybnta@rob-hp-laptop>
-References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
- <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
+Subject: Re: [PATCH 2/3] power: supply: bq24735-charger: optionally poll the
+ ac-detect gpio
+Date: Tue, 13 Dec 2016 13:30:09 -0600
+Message-ID: <20161213193009.5cqyaii3gjrttqyk@rob-hp-laptop>
+References: <1481540424-19293-1-git-send-email-peda@axentia.se>
+ <1481540424-19293-3-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
+In-Reply-To: <1481540424-19293-3-git-send-email-peda@axentia.se>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Cc: Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Mark Rutland <mark.rutland@arm.com>, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>, Patrick Titiano <ptitiano@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
+To: Peter Rosin <peda@axentia.se>
+Cc: linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 11, 2016 at 11:21:44PM +0100, Bartosz Golaszewski wrote:
-> Some boards are equipped with simple, GPIO-driven power load switches.
-> An example of such ICs is the TI tps229* series.
+On Mon, Dec 12, 2016 at 12:00:23PM +0100, Peter Rosin wrote:
+> If the ac-detect gpio does not support interrupts, provide a fallback
+> to poll the gpio at a configurable interval.
+> 
+> Signed-off-by: Peter Rosin <peda@axentia.se>
+> ---
+>  .../bindings/power/supply/ti,bq24735.txt           |  2 +
+>  drivers/power/supply/bq24735-charger.c             | 50 +++++++++++++++++++---
+>  2 files changed, 47 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+> index 3bf55757ceec..59c4dde589cf 100644
+> --- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+> @@ -25,6 +25,8 @@ Optional properties :
+>   - ti,external-control : Indicates that the charger is configured externally
+>     and that the host should not attempt to enable/disable charging or set the
+>     charge voltage/current.
+> + - ti,poll-interval-ms : In case there is no interrupts specified, poll AC
+> +   presense on the ti,ac-detect-gpios GPIO with this interval.
 
-How is this different than a GPIO regulator? The input and output 
-voltages just happen to be the same. I could be convinced this is 
-different enough to have a different compatible, but it somewhat seems 
-you want to use this for IIO, so you are creating a different binding 
-for that usecase.
+We already have poll-interval and cm-poll-interval properties. Just use 
+poll-interval here.
 
 Rob
