@@ -1,93 +1,68 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver
-Date: Tue, 13 Dec 2016 11:09:31 +0100
-Message-ID: <CAMuHMdUfFSxT+7F9Zx9JWue0g6rdqwg-NEoBWe2UT-O5RuFOnw@mail.gmail.com>
-References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
- <20161212141805.14946-3-niklas.soderlund@ragnatech.se> <CAMuHMdVpuWO9Do9VvkVjZoEOCbmd72Gah-d2f4GCZavpo9EGpQ@mail.gmail.com>
- <20161213095305.GA28801@bigcity.dyn.berto.se>
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v4 1/4] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+Date: Tue, 13 Dec 2016 21:13:26 +1100
+Message-ID: <f1bc3387-1118-6fd7-8e1b-2e59bfabdad1@gmail.com>
+References: <cover.1481288905.git.ego@linux.vnet.ibm.com>
+ <0947ced2f87c68a0a10ede8e1aaf39838a6f8d52.1481288905.git.ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20161213095305.GA28801@bigcity.dyn.berto.se>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:36672 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932610AbcLMKNt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 05:13:49 -0500
+In-Reply-To: <0947ced2f87c68a0a10ede8e1aaf39838a6f8d52.1481288905.git.ego@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-Hi Niklas,
 
-On Tue, Dec 13, 2016 at 10:53 AM, Niklas S=C3=B6derlund
-<niklas.soderlund@ragnatech.se> wrote:
-> On 2016-12-13 09:19:53 +0100, Geert Uytterhoeven wrote:
->> On Mon, Dec 12, 2016 at 3:18 PM, Niklas S=C3=B6derlund
->> <niklas.soderlund@ragnatech.se> wrote:
->> > +/*
->> > + * Linear approximation for temperature
->> > + *
->> > + * [reg] =3D [temp] * a + b =3D> [temp] =3D ([reg] - b) / a
->> > + *
->> > + * The constants a and b are calculated using two triplets of int val=
-ues PTAT
->> > + * and THCODE. PTAT and THCODE can either be read from hardware or us=
-e hard
->> > + * coded values from driver. The formula to calculate a and b are tak=
-en from
->> > + * BSP and sparsely documented and understood.
->> > + *
->> > + * Examining the linear formula and the formula used to calculate con=
-stants a
->> > + * and b while knowing that the span for PTAT and THCODE values are b=
-etween
->> > + * 0x000 and 0xfff the largest integer possible is 0xfff * 0xfff =3D=
-=3D 0xffe001.
->> > + * Integer also needs to be signed so that leaves 7 bits for decimal
->> > + * fixed point scaling, which amounts to a decimal scaling factor of =
-100.
->> > + */
->> > +
->> > +#define SCALE_FACTOR 100
->>
->> What about using 128 instead?
->> Fixed point is much easier with shifts
->> (the compiler will turn multiplications in shifts where appropriate).
->
-> I tried using binary scaled instead of decimal scaled fixed point but
-> noticed that the diff I got compared to the original formula which used
-> decimal scaled (factor 1000) where larger so I picked decimal scaling.
 
-Interesting...
+On 10/12/16 00:32, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> Currently all the low-power idle states are expected to wake up
+> at reset vector 0x100. Which is why the macro IDLE_STATE_ENTER_SEQ
+> that puts the CPU to an idle state and never returns.
+> 
+> On ISA_300, when the ESL and EC bits in the PSSCR are zero, the
+> CPU is expected to wake up at the next instruction of the idle
+> instruction.
+> 
+> This patch adds a new macro named IDLE_STATE_ENTER_SEQ_NORET for the
+> no-return variant and reuses the name IDLE_STATE_ENTER_SEQ
+> for a variant that allows resuming operation at the instruction next
+> to the idle-instruction.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/cpuidle.h   |  5 ++++-
+>  arch/powerpc/kernel/exceptions-64s.S |  6 +++---
+>  arch/powerpc/kernel/idle_book3s.S    | 10 +++++-----
+>  3 files changed, 12 insertions(+), 9 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> index 3919332..0a3255b 100644
+> --- a/arch/powerpc/include/asm/cpuidle.h
+> +++ b/arch/powerpc/include/asm/cpuidle.h
+> @@ -21,7 +21,7 @@
+>  
+>  /* Idle state entry routines */
+>  #ifdef	CONFIG_PPC_P7_NAP
+> -#define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
+> +#define IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+>  	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
+>  	std	r0,0(r1);					\
+>  	ptesync;						\
+> @@ -29,6 +29,9 @@
+>  1:	cmpd	cr0,r0,r0;					\
+>  	bne	1b;						\
+>  	IDLE_INST;						\
+> +
 
->> > +#define SCALE_INT(_x) ((_x) * SCALE_FACTOR)
->> > +#define SCALE_MUL(_a, _b) (((_a)*(_b)) / SCALE_FACTOR)
->> > +#define SCALE_DIV(_a, _b) (((_a)*SCALE_FACTOR)/(_b))
->>
->> DIV_ROUND_CLOSEST()
->
-> Don't DIV_ROUND_CLOSEST() require the divisor to be a positive integer?
+Is the power saving magic sequence the same as before for power 9
+as well?
 
-Right.
-
->   tj_2 =3D SCALE_DIV(SCALE_MUL(SCALE_INT(ptat[1] - ptat[2]), SCALE_INT(13=
-7)),
->                    SCALE_INT(ptat[0] - ptat[2])) - SCALE_INT(41);
->
-> In this case if ptat[0] < (ptat[2] + 41) the divisor is negative so I
-> think DIV_ROUND_CLOSEST() can't be used, or am I misunderstanding?
-
-Then we need our own macro that can handle that. Or enhance
-DIV_ROUND_CLOSEST().
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+Balbir Singh
