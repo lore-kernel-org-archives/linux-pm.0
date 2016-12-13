@@ -1,41 +1,37 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [RFC v2 00/13] usb/mmc/power: Fix USB/LAN when TFTP booting
-Date: Tue, 13 Dec 2016 15:53:50 +0200
-Message-ID: <CAJKOXPdEy5N3qR3YGWJi41wD3uRDONmd16gC5LuayZ4_krT6YA@mail.gmail.com>
-References: <1462451666-17945-1-git-send-email-k.kozlowski@samsung.com>
- <c956e27e-7e01-2a2f-0e35-796c4a6556ae@xs4all.nl> <b34f49c8-6b37-cabf-2a0f-c8d465c53159@xs4all.nl>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [PATCH] Fix multiple definition error under lto
+Date: Tue, 13 Dec 2016 15:36:57 +0100 (CET)
+Message-ID: <alpine.LRH.2.00.1612131534510.8802@gjva.wvxbf.pm>
+References: <20161126222528.15261-1-pefoley2@pefoley.com> <1481514306.2325.1.camel@intel.com> <20161213031819.GA9668@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <b34f49c8-6b37-cabf-2a0f-c8d465c53159@xs4all.nl>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mark Brown <broonie@kernel.org>, tjakobi@math.uni-bielefeld.de, Marek Szyprowski <m.szyprowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from twin.jikos.cz ([89.185.236.188]:57263 "EHLO twin.jikos.cz"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932346AbcLMPFx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 13 Dec 2016 10:05:53 -0500
+In-Reply-To: <20161213031819.GA9668@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Peter Foley <pefoley2@pefoley.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Dec 13, 2016 at 2:34 PM, Hans Verkuil <hverkuil@xs4all.nl> wrote:
-> Try again, this time with Krzysztof's new email address...
->
->
-> On 13/12/16 13:20, Hans Verkuil wrote:
->>
->> Hi Krzysztof,
->>
->> This still seems to be broken with the latest 4.9 kernel, right?
->>
->> Has there been any progress on this? Do you have an updated patch series
->> for me to use?
+On Mon, 12 Dec 2016, Eduardo Valentin wrote:
 
-Hi,
+> > > drivers/thermal/built-in.o: In function `type_show.lto_priv.33':
+> > > (.text+0x3d80): multiple definition of `type_show.lto_priv.33'
+> > > drivers/base/built-in.o:(.text+0x2a40): first defined here
+> > > 
+> > can you illustrate how to reproduce this problem?
+> 
+> same here. I am not able to see this. Can you please describe your
+> environment?
 
-I think it is not fixed. Still. I left this work to others. AFAIK,
-Peter Chen is working on a new generic approach:
-https://lwn.net/Articles/703556/
-On top of his patchset, Odroid would need some DTS code as well (and
-maybe something in usb3503). However I do not plan to work on this
-anymore as I do not have Odroid U3 anymore. Marek and Bartlomiej from
-Samsung Poland are in CC-list so maybe they would like to continue the
-work?
+I'm pretty sure he's experimenting with LTO and hitting the LTO phase 
+getting link-time symbol conflicts between definitions coming from thermal 
+and base. I'd even say this to be a toolchain bug, given the fact that 
+both symbols are static.
 
-Best regards,
-Krzysztof
+-- 
+Jiri Kosina
+SUSE Labs
