@@ -1,57 +1,72 @@
-From: Chris Diamand <chris.diamand@arm.com>
-Subject: [PATCH] PM / devfreq: Don't delete sysfs group twice
-Date: Tue, 13 Dec 2016 17:09:36 +0000
-Message-ID: <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI: small formatting fixes
+Date: Tue, 13 Dec 2016 20:00:01 +0100
+Message-ID: <20161213190001.GA8676@amd>
+References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
+ <20161212085620.GA738@amd>
+ <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+ <1481567955.1764.28.camel@perches.com>
+ <20161212222216.GA18201@amd>
+ <20161212232043.vc5alwqzvspg2ade@lostoracle.net>
+ <1481584942.29291.9.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56926 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934947AbcLMRJk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 13 Dec 2016 12:09:40 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44777 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752170AbcLMTAH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 14:00:07 -0500
 Content-Disposition: inline
+In-Reply-To: <1481584942.29291.9.camel@perches.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>
+To: Joe Perches <joe@perches.com>
+Cc: Nick Desaulniers <nick.desaulniers@gmail.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The 'userspace' governor adds a sysfs entry, which is removed when
-the governor is changed, or the devfreq device is released. However,
-when the latter occurs via device_unregister(), device_del() is
-called first, which removes the sysfs entries recursively and deletes
-the kobject.
 
-This means we get an Oops when the governor calls
-sysfs_remove_group() on the deleted kobject. Fix this by explicitly
-stopping the governor in devfreq_remove_device(), *before* the
-devfreq entry is removed.
+--bp/iNruPH9dso1Pn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Note that we can't just remove the call to sysfs_remove_group() in
-the userspace governor, as it's needed for when the governor is
-changed to one without a sysfs entry.
+On Mon 2016-12-12 15:22:22, Joe Perches wrote:
+> On Mon, 2016-12-12 at 15:20 -0800, Nick Desaulniers wrote:
+> > > Please... don't encourage people more, we have enough cleanup patches
+> > > as is.
+> >=20
+> > I recognize that this patch is relatively inconsequential, but it is my
+> > first patch to the Linux kernel, and is teaching me how to wrangle my
+> > email client and about the development work flow.  I plan to write a
+> > blog post about my experience to help encourage more people to
+> > contribute. So I do really appreciate all of the feedback and patience
+> > for a relatively small patch.  Thanks for your time.  v3 incoming (will
+> > start a new thread).
+>=20
+> Please create your first patch against something in drivers/staging/
+>=20
+> Use the kernel newbies list and resources too
+> https://kernelnewbies.org/FirstKernelPatch
+> .
 
-Signed-off-by: Chris Diamand <chris.diamand@arm.com>
----
- drivers/devfreq/devfreq.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+Actually.. the ACPI cleanup is fine. You did well :-).
+									Pavel
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 478006b..d8a817c 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -622,6 +622,12 @@ int devfreq_remove_device(struct devfreq *devfreq)
- 	if (!devfreq)
- 		return -EINVAL;
- 
-+	if (devfreq->governor) {
-+		devfreq->governor->event_handler(devfreq,
-+						 DEVFREQ_GOV_STOP, NULL);
-+		devfreq->governor = NULL;
-+	}
-+
- 	device_unregister(&devfreq->dev);
- 
- 	return 0;
--- 
-1.9.1
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
+--bp/iNruPH9dso1Pn
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEUEARECAAYFAlhQRTEACgkQMOfwapXb+vLy3wCVEhF9f9H1/8HP2sVYQV2b3ORf
+WwCeKVC40KKPYcaPcNibJzL3Hr5ie7Q=
+=+6K4
+-----END PGP SIGNATURE-----
+
+--bp/iNruPH9dso1Pn--
