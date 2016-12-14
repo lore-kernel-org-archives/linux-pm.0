@@ -1,208 +1,100 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v4.10-rc1
-Date: Tue, 13 Dec 2016 11:54:18 +0800
-Message-ID: <1481601258.2182.23.camel@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
+ driver
+Date: Tue, 13 Dec 2016 20:38:00 -0800
+Message-ID: <20161214043758.GA2765@localhost.localdomain>
+References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
+ <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
+ <20161213035052.GA22105@localhost.localdomain>
+ <20161213094339.GB24175@bigcity.dyn.berto.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:20764 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932160AbcLNEXg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 13 Dec 2016 23:23:36 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161213094339.GB24175@bigcity.dyn.berto.se>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>
+Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>
 
-Hi, Linus,
+hey,
 
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
+On Tue, Dec 13, 2016 at 10:43:40AM +0100, Niklas S�derlund wrote:
+> Hi Eduardo,
+> 
+> Thanks for your feedback. I will skip commenting where Wolfram already 
+> have.
+> 
+> On 2016-12-12 19:50:54 -0800, Eduardo Valentin wrote:
+> 
+> <snip>
+> 
+> > > +/* Structure for thermal temperature calculation */
+> > > +struct equation_coefs {
+> > > +	int a1;
+> > > +	int b1;
+> > > +	int a2;
+> > > +	int b2;
+> > 
+> > a little description of each coeff would be welcome.
+> 
+> Yes, I too would like to have better documentation of the formulas and 
+> the meaning of the coefficients.
+> 
+> <snip, Wolfram already covert this>
 
-to receive the latest Thermal Management updates for v4.10-rc1 with
-top-most commit 0faf7dd5a947006978b549dfe29a01b710becf4a:
+Ok..
 
-  MAINTAINERS: Samsung: Update maintainer for PWM FAN and SAMSUNG
-THERMAL (2016-12-13 11:20:23 +0800)
+> 
+> > 
+> > > +
+> > > +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
+> > > +	if (!priv)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	platform_set_drvdata(pdev, priv);
+> > > +
+> > > +	pm_runtime_enable(dev);
+> > > +	pm_runtime_get_sync(dev);
+> > > +
+> > > +	for (i = 0; i < TSC_MAX_NUM; i++) {
+> > > +		struct rcar_gen3_thermal_tsc *tsc;
+> > > +
+> > > +		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
+> > > +		if (!tsc) {
+> > > +			ret = -ENOMEM;
+> > > +			goto error_unregister;
+> > > +		}
+> > > +
+> > > +		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
+> > > +		if (!res)
+> > > +			break;
+> > > +
+> > > +		tsc->base = devm_ioremap_resource(dev, res);
+> > > +		if (IS_ERR(tsc->base)) {
+> > > +			ret = PTR_ERR(tsc->base);
+> > > +			goto error_unregister;
+> > > +		}
+> > > +
+> > > +		priv->tscs[i] = tsc;
+> > > +		mutex_init(&tsc->lock);
+> > > +
+> > > +		match_data->thermal_init(tsc);
+> > > +		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
+> > 
+> > oh, the thcode's are currently not read then?
+> 
+> No as Wolfram commented, reading THCODE and PTAT from hardware is not 
+> possible on the boards we have to test on so I think this needs to be 
+> added once we can test it. Do you agree this is the best option?
 
-on top of commit 23400ac997062647f2b63c82030d189671b1effe:
+I agree here. I was under the impression that would be both types of
+chips out there, with and without thcode. But looks like, at the end,
+only a few engineers will have access to those without it, right?
 
-  Merge branch 'for-rc' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux (2016-11-22
-13:53:01 -0800)
-
-Specifics:
-
-- Thermal core code reorganization and cleanup. Two new files are
-  created for thermal sysfs I/F code and thermal helper functions.
-  From: Eduardo Valentin.
-
-- Sanitize hotplug and locking for x86_pkg_temp driver.
-  From: Thomas Gleixner.
-
-- Update MAINTAINER file for pwm-fan driver and Samsung thermal driver.
-  From: Lukasz Majewski.
-
-- Fix module auto-load for max77620, tango and db8500 thermal driver.
-  From: Javier Martinez Canillas.
-
-- Fix a bug that thermal hwmon sysfs I/F returns wrong critical trip
-  point temperature value. From: Krzysztof Kozlowski.
-
-- Add Skylake PCH 100 series support for intel_pch_thermal driver.
-  From: OGAWA Hirofumi.
-
-- Small fixes and cleanups for platform thermal drivers.
-  From Julia Lawall, Luis Henriques, Leo Yan, Stephen Boyd,
-  Shawn Lin, Javi Merino and Lukasz Luba.
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Eduardo Valentin (49):
-      thermal: core: prevent zones with no types to be registered
-      thermal: core: group thermal_zone DEVICE_ATTR's declarations
-      thermal: core: group device_create_file() calls that are always
-created
-      thermal: core: use dev.groups to manage always present tz
-attributes
-      thermal: core: move emul_temp creation to tz->device.groups
-      thermal: core: move mode attribute to tz->device.groups
-      thermal: core: move passive attr to tz->device.groups
-      thermal: core: improve power actor documentation
-      thermal: core: move power actor code out of sysfs I/F section
-      thermal: core: remove useless empty line
-      thermal: core: fix style on remove_trip_attrs()
-      thermal: core: move the trip attrs to the tz sysfs I/F section
-      thermal: core: create tz->device.groups dynamically
-      thermal: core: move trips attributes to tz->device.groups
-      thermal: core: remove unnecessary device_remove() calls
-      thermal: core: split passive_store
-      thermal: core: split policy_store
-      thermal: core: split available_policies_show()
-      thermal: core: move to_thermal_zone() macro to header file
-      thermal: core: treat correctly the return value of *scanf calls
-      thermal: core: match parenthesis on code alignment
-      thermal: core: move thermal_zone sysfs to thermal_sysfs.c
-      thermal: core: move to_cooling_device macro to header file
-      thermal: core: move cooling device sysfs to thermal_sysfs.c
-      thermal: core: remove a couple of style issues on helpers
-      thermal: core: introduce thermal_helpers.c
-      thermal: core: group functions related to governor handling
-      thermal: core: move idr handling to device management section
-      thermal: core: small style fix on __unbind() helper
-      thermal: core: move __unbind() helper to where it is used
-      thermal: core: move bind_cdev() to where it is used
-      thermal: core: move bind_tz() to where it is used
-      thermal: core: fix couple of style issues on __bind() helper
-      thermal: core: move __bind() to where it is used
-      thermal: core: add inline to print_bind_err_msg()
-      thermal: core: move notify to the zone update section
-      thermal: core: add a comment describing the main update loop
-      thermal: core: add a comment describing the power actor section
-      thermal: core: add a comment describing the device management
-section
-      thermal: sysfs: remove symbols of emul_temp when config is
-disabled
-      thermal: core: remove FSF address in the GPL notice
-      thermal: core: small style fix when checking for
-__find_governor()
-      thermal: core: standardize line breaking alignment
-      thermal: core: remove void function return statements
-      thermal: core: remove style warnings and checks
-      thermal: core: improve kerneldoc entry of
-thermal_cooling_device_unregister
-      thermal: core: use kzalloc(sizeof(*ptr),...)
-      thermal: sysfs: use kcalloc() instead of kzalloc()
-      thermal: core: move slop and offset helpers to thermal_helpers.c
-
-Javi Merino (1):
-      devfreq_cooling: pass a pointer to devfreq in the power model
-callbacks
-
-Javier Martinez Canillas (3):
-      thermal: max77620: Fix module autoload
-      thermal: tango: Fix module autoload
-      thermal: db8500: Fix module autoload
-
-Julia Lawall (2):
-      thermal: hwmon: use permission-specific DEVICE_ATTR variants
-      thermal: int340x_thermal: use permission-specific DEVICE_ATTR
-variants
-
-Krzysztof Kozlowski (1):
-      thermal: hwmon: Properly report critical temperature in sysfs
-
-Leo Yan (1):
-      thermal: hisilicon: fix for dependency
-
-Luis Henriques (1):
-      thermal: ti-soc-thermal: add missing clk_put()
-
-Lukasz Luba (1):
-      devfreq_cooling: make the structs devfreq_cooling_xxx visible for
-all
-
-Lukasz Majewski (1):
-      MAINTAINERS: Samsung: Update maintainer for PWM FAN and SAMSUNG
-THERMAL
-
-OGAWA Hirofumi (1):
-      thermal: intel_pch_thermal: Support skylake PCH 100 series
-thermal
-
-Sebastian Andrzej Siewior (1):
-      thermal/x86 pkg temp: Convert to hotplug state machine
-
-Shawn Lin (2):
-      thermal: rockchip: improve the warning log
-      dt-bindings: rockchip-thermal: fix the misleading description
-
-Stephen Boyd (1):
-      thermal: qcom-spmi: Treat reg property as a single cell
-
-Thomas Gleixner (11):
-      thermal/x86_pkg_temp: Cleanup thermal interrupt handling
-      thermal/x86_pkg_temp: Remove redundant package search
-      thermal/x86_pkg_temp: Replace open coded cpu search
-      thermal/x86_pkg_temp: Sanitize callback (de)initialization
-      thermal/x86_pkg_temp: Get rid of ref counting
-      thermal/x86_pkg_temp: Cleanup namespace
-      thermal/x86_pkg_temp: Cleanup code some more
-      thermal/x86_pkg_temp: Sanitize locking
-      thermal/x86_pkg_temp: Move work scheduled flag into package
-struct
-      thermal/x86_pkg_temp: Move work into package struct
-      thermal/x86_pkg_temp: Sanitize package management
-
-Zhang Rui (1):
-      Merge branches 'thermal-core', 'thermal-intel', 'thermal-soc-
-fixes' and 'thermal-reorg' into next
-
- .../bindings/thermal/rockchip-thermal.txt          |    3 +
- MAINTAINERS                                        |    4 +-
- drivers/thermal/Kconfig                            |    4 +-
- drivers/thermal/Makefile                           |    3 +-
- drivers/thermal/db8500_thermal.c                   |    1 +
- drivers/thermal/devfreq_cooling.c                  |    5 +-
- drivers/thermal/int340x_thermal/int3400_thermal.c  |    2 +-
- drivers/thermal/intel_pch_thermal.c                |   64 +-
- drivers/thermal/max77620_thermal.c                 |    1 +
- drivers/thermal/qcom-spmi-temp-alarm.c             |    6 +-
- drivers/thermal/rockchip_thermal.c                 |    7 +-
- drivers/thermal/tango_thermal.c                    |    1 +
- drivers/thermal/thermal_core.c                     | 1446 +++++-------
---------
- drivers/thermal/thermal_core.h                     |   26 +
- drivers/thermal/thermal_helpers.c                  |  226 +++
- drivers/thermal/thermal_hwmon.c                    |    4 +-
- drivers/thermal/thermal_sysfs.c                    |  771 +++++++++++
- drivers/thermal/ti-soc-thermal/ti-bandgap.c        |    5 +-
- drivers/thermal/x86_pkg_temp_thermal.c             |  587 ++++----
- include/linux/devfreq_cooling.h                    |    9 +-
- include/linux/thermal.h                            |    2 +
- 21 files changed, 1650 insertions(+), 1527 deletions(-)
- create mode 100644 drivers/thermal/thermal_helpers.c
- create mode 100644 drivers/thermal/thermal_sysfs.c
+If you still think those without the support need right support, I would
+suggest moving the hardcoded values to DT. Specially if those hardcoded
+values change across chip version (so you can better describe using DT).
+But, in case you think this population of chips wont grow, then might be
+ok to keep the way it is, even though looks not so nice in the code :-).
