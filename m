@@ -1,92 +1,83 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 3/4] power: supply: axp288_fuel_gauge: Read 12 bit values 2 registers at a time
-Date: Wed, 14 Dec 2016 17:38:52 +0100
-Message-ID: <20161214163853.454-3-hdegoede@redhat.com>
-References: <20161214163853.454-1-hdegoede@redhat.com>
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20161214163853.454-1-hdegoede@redhat.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
-Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/3] power: supply: bq24735-charger: simplify register
+ update to stop charging
+Date: Wed, 14 Dec 2016 17:41:33 +0100
+Message-ID: <20161214164132.mxbx4tiwefbe6c2r@earth>
+References: <1481673405-4547-1-git-send-email-peda@axentia.se>
+ <1481673405-4547-2-git-send-email-peda@axentia.se>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="y44t7al2dlzn3ib2"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1481673405-4547-2-git-send-email-peda@axentia.se>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Rosin <peda@axentia.se>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In order for the MSB -> LSB latching to work correctly we must read the
-2 8 bit registers of a 12 bit value in one consecutive read.
 
-This fixes voltage_ocv reporting inconsistent values on my tablet.
+--y44t7al2dlzn3ib2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_fuel_gauge.c | 40 ++++++++++++++++++--------------
- 1 file changed, 22 insertions(+), 18 deletions(-)
+Hi,
 
-diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 99d6d30..089056c 100644
---- a/drivers/power/supply/axp288_fuel_gauge.c
-+++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -210,6 +210,22 @@ static int fuel_gauge_read_15bit_word(struct axp288_fg_info *info, int reg)
- 	return ret & FG_15BIT_VAL_MASK;
- }
- 
-+static int fuel_gauge_read_12bit_word(struct axp288_fg_info *info, int reg)
-+{
-+	unsigned char buf[2];
-+	int ret;
-+
-+	ret = regmap_bulk_read(info->regmap, reg, buf, 2);
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "Error reading reg 0x%02x err: %d\n",
-+			reg, ret);
-+		return ret;
-+	}
-+
-+	/* 12-bit data values have upper 8 bits in buf[0], lower 4 in buf[1] */
-+	return (buf[0] << 4) | ((buf[1] >> 4) & 0x0f);
-+}
-+
- static int pmic_read_adc_val(const char *name, int *raw_val,
- 		struct axp288_fg_info *info)
- {
-@@ -270,12 +286,9 @@ static int fuel_gauge_debug_show(struct seq_file *s, void *data)
- 	seq_printf(s, "    FG_RDC0[%02x] : %02x\n",
- 		AXP288_FG_RDC0_REG,
- 		fuel_gauge_reg_readb(info, AXP288_FG_RDC0_REG));
--	seq_printf(s, "    FG_OCVH[%02x] : %02x\n",
-+	seq_printf(s, "     FG_OCV[%02x] : %04x\n",
- 		AXP288_FG_OCVH_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_OCVH_REG));
--	seq_printf(s, "    FG_OCVL[%02x] : %02x\n",
--		AXP288_FG_OCVL_REG,
--		fuel_gauge_reg_readb(info, AXP288_FG_OCVL_REG));
-+		fuel_gauge_read_12bit_word(info, AXP288_FG_OCVH_REG));
- 	seq_printf(s, " FG_DES_CAP[%02x] : %04x\n",
- 		AXP288_FG_DES_CAP1_REG,
- 		fuel_gauge_read_15bit_word(info, AXP288_FG_DES_CAP1_REG));
-@@ -532,21 +545,12 @@ static int fuel_gauge_get_btemp(struct axp288_fg_info *info, int *btemp)
- 
- static int fuel_gauge_get_vocv(struct axp288_fg_info *info, int *vocv)
- {
--	int ret, value;
--
--	/* 12-bit data value, upper 8 in OCVH, lower 4 in OCVL */
--	ret = fuel_gauge_reg_readb(info, AXP288_FG_OCVH_REG);
--	if (ret < 0)
--		goto vocv_read_fail;
--	value = ret << 4;
-+	int ret;
- 
--	ret = fuel_gauge_reg_readb(info, AXP288_FG_OCVL_REG);
--	if (ret < 0)
--		goto vocv_read_fail;
--	value |= (ret & 0xf);
-+	ret = fuel_gauge_read_12bit_word(info, AXP288_FG_OCVH_REG);
-+	if (ret >= 0)
-+		*vocv = VOLTAGE_FROM_ADC(ret);
- 
--	*vocv = VOLTAGE_FROM_ADC(value);
--vocv_read_fail:
- 	return ret;
- }
- 
--- 
-2.9.3
+On Wed, Dec 14, 2016 at 12:56:43AM +0100, Peter Rosin wrote:
+> Providing value bits outside of the mask is pointless.
+>=20
+> Signed-off-by: Peter Rosin <peda@axentia.se>
+> ---
+>  drivers/power/supply/bq24735-charger.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/suppl=
+y/bq24735-charger.c
+> index eb7783b42e0a..1d5c9206e0ed 100644
+> --- a/drivers/power/supply/bq24735-charger.c
+> +++ b/drivers/power/supply/bq24735-charger.c
+> @@ -111,8 +111,7 @@ static inline int bq24735_enable_charging(struct bq24=
+735 *charger)
+>  		return 0;
+> =20
+>  	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
+> -				   BQ24735_CHG_OPT_CHARGE_DISABLE,
+> -				   ~BQ24735_CHG_OPT_CHARGE_DISABLE);
+> +				   BQ24735_CHG_OPT_CHARGE_DISABLE, 0);
+>  }
+> =20
+>  static inline int bq24735_disable_charging(struct bq24735 *charger)
+
+Thanks for your patch. We are currently in the merge
+window and your patch will appear in linux-next once
+4.10-rc1 has been tagged by Linus Torvalds.
+
+Until then I queued it into this branch:
+
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
+/?h=3Dfor-next-next
+
+-- Sebastian
+
+--y44t7al2dlzn3ib2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhRdjoACgkQ2O7X88g7
++por1BAAn5VDl4+2rzFwZK/VPw2ZloKQhneDz2RRNa7vJyBvZg9+uAlxzfqY+yvu
+mc/G8jKcFaCLDrJnszOTSHizNC1CxtWBlC7jU2eoBTCzCqKqqo2E3o3jewM87LP3
+XtOgsEoo1ks089mvgK6PL8MuxXpsylNZb1OZAmKBDsXCPsuOoMlIMW7EAPU2dnnL
+2gsBCFbaBSQ8Os9CphuTHBhSRhx8hTCoZmhZGEJ2F+VHsw7D5HRPe4Wn6iKZrax8
+HiFZC1gYDrJ0Zm87snbLQwtoUYQvJJxuudRrjRZV3XtnFTk+DXHRAk8kWX6qxMLZ
+k7Wmmdqn8lj8XkJn6MsCl6XBqD/0j0l6etcNoepSU8w6jXCgLy/oHosiCxi3jtD5
+c2NfPCB/3InDW/+nid+yy7yBc077xol120rFL37X/geNwJpsrzPuVgKDwHfM5Qej
+5ghMSme0xlI3zJV8jfFuTFfhyzozrKNJD5E01AyNpyyQJBmPw4SoOgd1JYjPfdVr
+9jFA3nrCNdQBW8ZNQLnngq7ldZL8yWukeIT21krVVOL5jjz/Or55Syhhy0bI4zqh
+V7FnbiOTcCxONgb3cGStxKYhDhhIyUXn4L2GFw0lkHXK7dbCxzEF01xyGSvpbdUz
+vcQXUl7G7eDLaxy+zwFfDAnyQHbIcZx6xpPk0xwPPL0hGjTKfn0=
+=fP/V
+-----END PGP SIGNATURE-----
+
+--y44t7al2dlzn3ib2--
