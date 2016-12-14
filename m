@@ -1,86 +1,107 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] ACPI / CPPC: Fix per-CPU pointers management
-Date: Wed, 14 Dec 2016 03:26:22 +0100
-Message-ID: <11962789.3qxXzldTRG@aspire.rjw.lan>
-References: <cover.1479844244.git.tim.c.chen@linux.intel.com> <CAJZ5v0jUCHSM90yEoygAbKVY3ySaWQk-Cp6qkd+6ESH74J2_8A@mail.gmail.com> <296282606.tnoJCKgU2l@aspire.rjw.lan>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
+Date: Wed, 14 Dec 2016 11:48:42 +0900
+Message-ID: <5850B30A.20701@samsung.com>
+References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
+ <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
+ <5850A286.9080302@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64162 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751977AbcLNCaN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 21:30:13 -0500
-In-Reply-To: <296282606.tnoJCKgU2l@aspire.rjw.lan>
+Received: from mailout3.samsung.com ([203.254.224.33]:36169 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754583AbcLNCsq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 21:48:46 -0500
+Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout3.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OI5018G4MGVXXD0@mailout3.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 14 Dec 2016 11:48:42 +0900 (KST)
+In-reply-to: <5850A286.9080302@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tim Chen <tim.c.chen@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, jolsa@redhat.com, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Chris Diamand <chris.diamand@arm.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
 
-On Saturday, December 10, 2016 12:52:28 AM Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Enabling ACPI CPPC on x86 causes a NULL pointer dereference to occur
-> (on boot on a "default" KVM setup) in acpi_cppc_processor_exit() due
-> to a missing check against NULL in there:
-> 
-> |BUG: unable to handle kernel NULL pointer dereference at           (null)
-> |IP: [<ffffffff812aab6e>] acpi_cppc_processor_exit+0x40/0x60
-> |PGD 0 [    0.577616]
-> |Oops: 0000 [#1] SMP
-> |Modules linked in:
-> |CPU: 3 PID: 1 Comm: swapper/0 Not tainted 4.9.0-rc6-00146-g17669006adf6 #51
-> |task: ffff88003f878000 task.stack: ffffc90000008000
-> |RIP: 0010:[<ffffffff812aab6e>]  [<ffffffff812aab6e>] acpi_cppc_processor_exit+0x40/0x60
-> |RSP: 0000:ffffc9000000bd48  EFLAGS: 00010296
-> |RAX: 00000000000137e0 RBX: 0000000000000000 RCX: 0000000000000001
-> |RDX: ffff88003fc00000 RSI: 0000000000000000 RDI: ffff88003fbca130
-> |RBP: ffffc9000000bd60 R08: 0000000000000514 R09: 0000000000000000
-> |R10: 0000000000000001 R11: 0000000000000000 R12: 0000000000000002
-> |R13: 0000000000000020 R14: ffffffff8167cb00 R15: 0000000000000000
-> |FS:  0000000000000000(0000) GS:ffff88003fcc0000(0000) knlGS:0000000000000000
-> |CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> |CR2: 0000000000000000 CR3: 0000000001618000 CR4: 00000000000406e0
-> |Stack:
-> | ffff88003f939848 ffff88003fbca130 0000000000000001 ffffc9000000bd80
-> | ffffffff812a4ccb ffff88003fc0cee8 0000000000000000 ffffc9000000bdb8
-> | ffffffff812dc20d ffff88003fc0cee8 ffffffff8167cb00 ffff88003fc0cf48
-> |Call Trace:
-> | [<ffffffff812a4ccb>] acpi_processor_stop+0xb2/0xc5
-> | [<ffffffff812dc20d>] driver_probe_device+0x14d/0x2f0
-> | [<ffffffff812dc41e>] __driver_attach+0x6e/0x90
-> | [<ffffffff812da234>] bus_for_each_dev+0x54/0x90
-> | [<ffffffff812dbbf9>] driver_attach+0x19/0x20
-> | [<ffffffff812db6a6>] bus_add_driver+0xe6/0x200
-> | [<ffffffff812dcb23>] driver_register+0x83/0xc0
-> | [<ffffffff816f050a>] acpi_processor_driver_init+0x20/0x94
-> | [<ffffffff81000487>] do_one_initcall+0x97/0x180
-> | [<ffffffff816ccf5c>] kernel_init_freeable+0x112/0x1a6
-> | [<ffffffff813a0fc9>] kernel_init+0x9/0xf0
-> | [<ffffffff813acf35>] ret_from_fork+0x25/0x30
-> |Code: 02 00 00 00 48 8b 14 d5 e0 c3 55 81 48 8b 1c 02 4c 8d 6b 20 eb 15 49 8b 7d 00 48 85 ff 74 05 e8 39 8c d9 ff 41 ff c4 49 83 c5 20 <44> 3b 23 72 e6 48 8d bb a0 02 00 00 e8 b1 6f f9 ff 48 89 df e8
-> |RIP  [<ffffffff812aab6e>] acpi_cppc_processor_exit+0x40/0x60
-> | RSP <ffffc9000000bd48>
-> |CR2: 0000000000000000
-> 
-> Fix that and while at it, fix a possible use-after-free scenario in
-> acpi_cppc_processor_probe() that can happen if the function returns
-> without cleaning up the per-CPU pointer set by it previously.
-> 
-> Reported-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Original-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> Hi Thomas,
-> 
-> The crash fixed by this is exposed by the ITMT (asymmetric packing) series
-> (which involves using ACPI CPPC on x86), so IMO it would be good to route it
-> through tip along with that series.
+Hi Chris,
 
-The problematic commit has gone in already, so I'll route the fix through
-the ACPI tree.
+On 2016년 12월 14일 10:38, Chanwoo Choi wrote:
+> Hi Chris,
+>
+> On 2016년 12월 14일 02:09, Chris Diamand wrote:
+>> The 'userspace' governor adds a sysfs entry, which is removed when
+>> the governor is changed, or the devfreq device is released. However,
+>> when the latter occurs via device_unregister(), device_del() is
+>> called first, which removes the sysfs entries recursively and deletes
+>> the kobject.
+>>
+>> This means we get an Oops when the governor calls
+>> sysfs_remove_group() on the deleted kobject. Fix this by explicitly
+>> stopping the governor in devfreq_remove_device(), *before* the
+>> devfreq entry is removed.
+>>
+>> Note that we can't just remove the call to sysfs_remove_group() in
+>> the userspace governor, as it's needed for when the governor is
+>> changed to one without a sysfs entry.
+>>
+>> Signed-off-by: Chris Diamand <chris.diamand@arm.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 6 ++++++
+>>  1 file changed, 6 insertions(+)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 478006b..d8a817c 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -622,6 +622,12 @@ int devfreq_remove_device(struct devfreq *devfreq)
+>>  	if (!devfreq)
+>>  		return -EINVAL;
+>>  
+>> +	if (devfreq->governor) {
+>> +		devfreq->governor->event_handler(devfreq,
+>> +						 DEVFREQ_GOV_STOP, NULL);
+>> +		devfreq->governor = NULL;
+>> +	}
+>> +
+>>
+> The devfreq_remove_device has following description:
+> - "* The oppsite of devfreq_add_device()"
+>
+> I think that we should call the '_remove_devfreq()' function in the devfreq_remove_device()
+> because '_remove_devfreq()' is in charge of releasing the devfreq instance.
+>
+> The '_remove_devfreq() ' function includes the code to stop the governor and following works:
+> - remove the devfreq instance from devfreq list
+> - call the profile->exit function
+> - destroy the muxte of devfreq instance
+> - Free the devfreq memory.
 
-Thanks,
-Rafael
+How about following patch?
+I think that this patch covers the all of case when removing the devfreq device.
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 8a456dd55a8d..eea406df0037 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -496,6 +496,7 @@ static void _remove_devfreq(struct devfreq *devfreq)
+                devfreq->profile->exit(devfreq->dev.parent);
+ 
+        mutex_destroy(&devfreq->lock);
++       device_unregister(&devfreq->dev);
+        kfree(devfreq);
+ }
+ 
+@@ -634,7 +635,7 @@ int devfreq_remove_device(struct devfreq *devfreq)
+        if (!devfreq)
+                return -EINVAL;
+ 
+-       device_unregister(&devfreq->dev);
++       _remove_devfreq(devfreq);
+ 
+        return 0;
+ }
+
+Regards,
+Chanwoo Choi
 
