@@ -1,100 +1,57 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCHv5 2/5] thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal
- driver
-Date: Tue, 13 Dec 2016 20:38:00 -0800
-Message-ID: <20161214043758.GA2765@localhost.localdomain>
-References: <20161212141805.14946-1-niklas.soderlund@ragnatech.se>
- <20161212141805.14946-3-niklas.soderlund@ragnatech.se>
- <20161213035052.GA22105@localhost.localdomain>
- <20161213094339.GB24175@bigcity.dyn.berto.se>
+From: Gautham R Shenoy <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v4 1/4] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+Date: Wed, 14 Dec 2016 12:05:45 +0530
+Message-ID: <20161214063545.GA26271@in.ibm.com>
+References: <cover.1481288905.git.ego@linux.vnet.ibm.com>
+ <0947ced2f87c68a0a10ede8e1aaf39838a6f8d52.1481288905.git.ego@linux.vnet.ibm.com>
+ <f1bc3387-1118-6fd7-8e1b-2e59bfabdad1@gmail.com>
+Reply-To: ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20161213094339.GB24175@bigcity.dyn.berto.se>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Hien Dang <hien.dang.eb@renesas.com>, Thao Nguyen <thao.nguyen.yb@rvc.renesas.com>
+In-Reply-To: <f1bc3387-1118-6fd7-8e1b-2e59bfabdad1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Balbir Singh <bsingharora-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: "Gautham R. Shenoy" <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michael Neuling <mikey-/owAOxkjmzZAfugRpC6u6w@public.gmane.org>, Vaidyanathan Srinivasan <svaidy-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Shreyas B. Prabhu" <shreyasbp-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shilpasri G Bhat <shilpa.bhat-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Stewart Smith <stewart-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Oliver O'Halloran <oohall-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-hey,
+Hi Balbir,
 
-On Tue, Dec 13, 2016 at 10:43:40AM +0100, Niklas Söderlund wrote:
-> Hi Eduardo,
+On Tue, Dec 13, 2016 at 09:13:26PM +1100, Balbir Singh wrote:
 > 
-> Thanks for your feedback. I will skip commenting where Wolfram already 
-> have.
 > 
-> On 2016-12-12 19:50:54 -0800, Eduardo Valentin wrote:
+> On 10/12/16 00:32, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
+> > diff --git a/arch/powerpc/include/asm/cpuidle.h b/arch/powerpc/include/asm/cpuidle.h
+> > index 3919332..0a3255b 100644
+> > --- a/arch/powerpc/include/asm/cpuidle.h
+> > +++ b/arch/powerpc/include/asm/cpuidle.h
+> > @@ -21,7 +21,7 @@
+> >  
+> >  /* Idle state entry routines */
+> >  #ifdef	CONFIG_PPC_P7_NAP
+> > -#define	IDLE_STATE_ENTER_SEQ(IDLE_INST)				\
+> > +#define IDLE_STATE_ENTER_SEQ(IDLE_INST)                         \
+> >  	/* Magic NAP/SLEEP/WINKLE mode enter sequence */	\
+> >  	std	r0,0(r1);					\
+> >  	ptesync;						\
+> > @@ -29,6 +29,9 @@
+> >  1:	cmpd	cr0,r0,r0;					\
+> >  	bne	1b;						\
+> >  	IDLE_INST;						\
+> > +
 > 
-> <snip>
-> 
-> > > +/* Structure for thermal temperature calculation */
-> > > +struct equation_coefs {
-> > > +	int a1;
-> > > +	int b1;
-> > > +	int a2;
-> > > +	int b2;
-> > 
-> > a little description of each coeff would be welcome.
-> 
-> Yes, I too would like to have better documentation of the formulas and 
-> the meaning of the coefficients.
-> 
-> <snip, Wolfram already covert this>
+> Is the power saving magic sequence the same as before for power 9
+> as well?
 
-Ok..
+Yes, this is the same magic sequence for POWER9.
 
-> 
-> > 
-> > > +
-> > > +	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-> > > +	if (!priv)
-> > > +		return -ENOMEM;
-> > > +
-> > > +	platform_set_drvdata(pdev, priv);
-> > > +
-> > > +	pm_runtime_enable(dev);
-> > > +	pm_runtime_get_sync(dev);
-> > > +
-> > > +	for (i = 0; i < TSC_MAX_NUM; i++) {
-> > > +		struct rcar_gen3_thermal_tsc *tsc;
-> > > +
-> > > +		tsc = devm_kzalloc(dev, sizeof(*tsc), GFP_KERNEL);
-> > > +		if (!tsc) {
-> > > +			ret = -ENOMEM;
-> > > +			goto error_unregister;
-> > > +		}
-> > > +
-> > > +		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
-> > > +		if (!res)
-> > > +			break;
-> > > +
-> > > +		tsc->base = devm_ioremap_resource(dev, res);
-> > > +		if (IS_ERR(tsc->base)) {
-> > > +			ret = PTR_ERR(tsc->base);
-> > > +			goto error_unregister;
-> > > +		}
-> > > +
-> > > +		priv->tscs[i] = tsc;
-> > > +		mutex_init(&tsc->lock);
-> > > +
-> > > +		match_data->thermal_init(tsc);
-> > > +		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
-> > 
-> > oh, the thcode's are currently not read then?
-> 
-> No as Wolfram commented, reading THCODE and PTAT from hardware is not 
-> possible on the boards we have to test on so I think this needs to be 
-> added once we can test it. Do you agree this is the best option?
+--
+Thanks and Regards
+gautham.
 
-I agree here. I was under the impression that would be both types of
-chips out there, with and without thcode. But looks like, at the end,
-only a few engineers will have access to those without it, right?
-
-If you still think those without the support need right support, I would
-suggest moving the hardcoded values to DT. Specially if those hardcoded
-values change across chip version (so you can better describe using DT).
-But, in case you think this population of chips wont grow, then might be
-ok to keep the way it is, even though looks not so nice in the code :-).
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
