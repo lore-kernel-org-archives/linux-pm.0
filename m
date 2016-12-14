@@ -1,631 +1,148 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 4/4] power: supply: axp288_fuel_gauge: Drop platform_data dependency
-Date: Wed, 14 Dec 2016 17:38:53 +0100
-Message-ID: <20161214163853.454-4-hdegoede@redhat.com>
+Subject: [PATCH 2/4] power: supply: axp288_fuel_gauge: Read 15 bit values 2 registers at a time
+Date: Wed, 14 Dec 2016 17:38:51 +0100
+Message-ID: <20161214163853.454-2-hdegoede@redhat.com>
 References: <20161214163853.454-1-hdegoede@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:39230 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:32926 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932486AbcLNQjC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 14 Dec 2016 11:39:02 -0500
+        id S932979AbcLNQjE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Dec 2016 11:39:04 -0500
 In-Reply-To: <20161214163853.454-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
 Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 
-When the axp288_faul_gauge driver was originally merged, it was
-merged with a dependency on some other driver providing platform
-data for it.
+In order for the MSB -> LSB latching to work correctly we must read the
+2 8 bit registers of a 15 bit value in one consecutive read.
 
-However the battery-data-framework which should provide that data
-never got merged, resulting in x86 tablets / laptops with an axp288
-having no working battery monitor, as before this commit the driver
-would simply return -ENODEV if there is no platform data.
+This fixes charge_full reporting 3498768 on some reads and 3354624 one
+other reads on my tablet (for the 3354624 value the raw LSB is 0x00).
 
-This commit removes the dependency on the platform_data instead
-checking that the firmware has initialized the fuel-gauge and
-reading the info back from the pmic.
-
-What is missing from the read-back info is the table to map raw adc
-values to temperature, so this commit drops the temperature and
-temperature limits properties. The min voltage, charge design and
-model name info is also missing. Note that none of these are really
-important for userspace to have.
-
-All other functionality is preserved and actually made available
-by this commit.
-
-BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=88471
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_fuel_gauge.c | 405 +++----------------------------
- include/linux/mfd/axp20x.h               |  22 --
- 2 files changed, 33 insertions(+), 394 deletions(-)
+ drivers/power/supply/axp288_fuel_gauge.c | 63 +++++++++++++++++---------------
+ 1 file changed, 34 insertions(+), 29 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 089056c..1c25443 100644
+index f62f9df..99d6d30 100644
 --- a/drivers/power/supply/axp288_fuel_gauge.c
 +++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -50,11 +50,6 @@
- #define CHRG_CCCV_CV_4350MV			0x3     /* 4.35V */
- #define CHRG_CCCV_CHG_EN			(1 << 7)
+@@ -29,6 +29,7 @@
+ #include <linux/iio/consumer.h>
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
++#include <asm/unaligned.h>
  
--#define CV_4100						4100    /* 4100mV */
--#define CV_4150						4150    /* 4150mV */
--#define CV_4200						4200    /* 4200mV */
--#define CV_4350						4350    /* 4350mV */
--
- #define TEMP_IRQ_CFG_QWBTU			(1 << 0)
- #define TEMP_IRQ_CFG_WBTU			(1 << 1)
- #define TEMP_IRQ_CFG_QWBTO			(1 << 2)
-@@ -103,9 +98,7 @@
+ #define CHRG_STAT_BAT_SAFE_MODE		(1 << 3)
+ #define CHRG_STAT_BAT_VALID			(1 << 4)
+@@ -73,17 +74,15 @@
+ #define FG_CNTL_CC_EN				(1 << 6)
+ #define FG_CNTL_GAUGE_EN			(1 << 7)
  
- /* 1.1mV per LSB expressed in uV */
- #define VOLTAGE_FROM_ADC(a)			((a * 11) / 10)
--/* properties converted to tenths of degrees, uV, uA, uW */
--#define PROP_TEMP(a)		((a) * 10)
--#define UNPROP_TEMP(a)		((a) / 10)
-+/* properties converted to uV, uA */
- #define PROP_VOLT(a)		((a) * 1000)
- #define PROP_CURR(a)		((a) * 1000)
++#define FG_15BIT_WORD_VALID			(1 << 15)
++#define FG_15BIT_VAL_MASK			0x7fff
++
+ #define FG_REP_CAP_VALID			(1 << 7)
+ #define FG_REP_CAP_VAL_MASK			0x7F
  
-@@ -121,13 +114,13 @@ enum {
+ #define FG_DES_CAP1_VALID			(1 << 7)
+-#define FG_DES_CAP1_VAL_MASK		0x7F
+-#define FG_DES_CAP0_VAL_MASK		0xFF
+ #define FG_DES_CAP_RES_LSB			1456    /* 1.456mAhr */
  
- struct axp288_fg_info {
- 	struct platform_device *pdev;
--	struct axp20x_fg_pdata *pdata;
- 	struct regmap *regmap;
- 	struct regmap_irq_chip_data *regmap_irqc;
- 	int irq[AXP288_FG_INTR_NUM];
- 	struct power_supply *bat;
- 	struct mutex lock;
- 	int status;
-+	int max_volt;
- 	struct delayed_work status_monitor;
- 	struct dentry *debug_file;
- };
-@@ -137,22 +130,14 @@ static enum power_supply_property fuel_gauge_props[] = {
- 	POWER_SUPPLY_PROP_PRESENT,
- 	POWER_SUPPLY_PROP_HEALTH,
- 	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
--	POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 	POWER_SUPPLY_PROP_VOLTAGE_OCV,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
- 	POWER_SUPPLY_PROP_CAPACITY,
- 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN,
--	POWER_SUPPLY_PROP_TEMP,
--	POWER_SUPPLY_PROP_TEMP_MAX,
--	POWER_SUPPLY_PROP_TEMP_MIN,
--	POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
--	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
- 	POWER_SUPPLY_PROP_TECHNOLOGY,
- 	POWER_SUPPLY_PROP_CHARGE_FULL,
- 	POWER_SUPPLY_PROP_CHARGE_NOW,
--	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
--	POWER_SUPPLY_PROP_MODEL_NAME,
- };
+-#define FG_CC_MTR1_VALID			(1 << 7)
+-#define FG_CC_MTR1_VAL_MASK			0x7F
+-#define FG_CC_MTR0_VAL_MASK			0xFF
+ #define FG_DES_CC_RES_LSB			1456    /* 1.456mAhr */
  
- static int fuel_gauge_reg_readb(struct axp288_fg_info *info, int reg)
-@@ -447,102 +432,6 @@ static int fuel_gauge_get_current(struct axp288_fg_info *info, int *cur)
+ #define FG_OCV_CAP_VALID			(1 << 7)
+@@ -189,6 +188,28 @@ static int fuel_gauge_reg_writeb(struct axp288_fg_info *info, int reg, u8 val)
  	return ret;
  }
  
--static int temp_to_adc(struct axp288_fg_info *info, int tval)
--{
--	int rntc = 0, i, ret, adc_val;
--	int rmin, rmax, tmin, tmax;
--	int tcsz = info->pdata->tcsz;
--
--	/* get the Rntc resitance value for this temp */
--	if (tval > info->pdata->thermistor_curve[0][1]) {
--		rntc = info->pdata->thermistor_curve[0][0];
--	} else if (tval <= info->pdata->thermistor_curve[tcsz-1][1]) {
--		rntc = info->pdata->thermistor_curve[tcsz-1][0];
--	} else {
--		for (i = 1; i < tcsz; i++) {
--			if (tval > info->pdata->thermistor_curve[i][1]) {
--				rmin = info->pdata->thermistor_curve[i-1][0];
--				rmax = info->pdata->thermistor_curve[i][0];
--				tmin = info->pdata->thermistor_curve[i-1][1];
--				tmax = info->pdata->thermistor_curve[i][1];
--				rntc = rmin + ((rmax - rmin) *
--					(tval - tmin) / (tmax - tmin));
--				break;
--			}
--		}
--	}
--
--	/* we need the current to calculate the proper adc voltage */
--	ret = fuel_gauge_reg_readb(info, AXP20X_ADC_RATE);
--	if (ret < 0) {
--		dev_err(&info->pdev->dev, "%s:read err:%d\n", __func__, ret);
--		ret = 0x30;
--	}
--
--	/*
--	 * temperature is proportional to NTS thermistor resistance
--	 * ADC_RATE[5-4] determines current, 00=20uA,01=40uA,10=60uA,11=80uA
--	 * [12-bit ADC VAL] = R_NTC(Ω) * current / 800
--	 */
--	adc_val = rntc * (20 + (20 * ((ret >> 4) & 0x3))) / 800;
--
--	return adc_val;
--}
--
--static int adc_to_temp(struct axp288_fg_info *info, int adc_val)
--{
--	int ret, r, i, tval = 0;
--	int rmin, rmax, tmin, tmax;
--	int tcsz = info->pdata->tcsz;
--
--	ret = fuel_gauge_reg_readb(info, AXP20X_ADC_RATE);
--	if (ret < 0) {
--		dev_err(&info->pdev->dev, "%s:read err:%d\n", __func__, ret);
--		ret = 0x30;
--	}
--
--	/*
--	 * temperature is proportional to NTS thermistor resistance
--	 * ADC_RATE[5-4] determines current, 00=20uA,01=40uA,10=60uA,11=80uA
--	 * R_NTC(Ω) = [12-bit ADC VAL] * 800 / current
--	 */
--	r = adc_val * 800 / (20 + (20 * ((ret >> 4) & 0x3)));
--
--	if (r < info->pdata->thermistor_curve[0][0]) {
--		tval = info->pdata->thermistor_curve[0][1];
--	} else if (r >= info->pdata->thermistor_curve[tcsz-1][0]) {
--		tval = info->pdata->thermistor_curve[tcsz-1][1];
--	} else {
--		for (i = 1; i < tcsz; i++) {
--			if (r < info->pdata->thermistor_curve[i][0]) {
--				rmin = info->pdata->thermistor_curve[i-1][0];
--				rmax = info->pdata->thermistor_curve[i][0];
--				tmin = info->pdata->thermistor_curve[i-1][1];
--				tmax = info->pdata->thermistor_curve[i][1];
--				tval = tmin + ((tmax - tmin) *
--					(r - rmin) / (rmax - rmin));
--				break;
--			}
--		}
--	}
--
--	return tval;
--}
--
--static int fuel_gauge_get_btemp(struct axp288_fg_info *info, int *btemp)
--{
--	int ret, raw_val = 0;
--
--	ret = pmic_read_adc_val("axp288-batt-temp", &raw_val, info);
--	if (ret < 0)
--		goto temp_read_fail;
--
--	*btemp = adc_to_temp(info, raw_val);
--
--temp_read_fail:
--	return ret;
--}
--
- static int fuel_gauge_get_vocv(struct axp288_fg_info *info, int *vocv)
++static int fuel_gauge_read_15bit_word(struct axp288_fg_info *info, int reg)
++{
++	unsigned char buf[2];
++	int ret;
++
++	ret = regmap_bulk_read(info->regmap, reg, buf, 2);
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "Error reading reg 0x%02x err: %d\n",
++			reg, ret);
++		return ret;
++	}
++
++	ret = get_unaligned_be16(buf);
++	if (!(ret & FG_15BIT_WORD_VALID)) {
++		dev_err(&info->pdev->dev, "Error reg 0x%02x contents not valid\n",
++			reg);
++		return -ENXIO;
++	}
++
++	return ret & FG_15BIT_VAL_MASK;
++}
++
+ static int pmic_read_adc_val(const char *name, int *raw_val,
+ 		struct axp288_fg_info *info)
  {
- 	int ret;
-@@ -556,25 +445,14 @@ static int fuel_gauge_get_vocv(struct axp288_fg_info *info, int *vocv)
- 
- static int fuel_gauge_battery_health(struct axp288_fg_info *info)
- {
--	int temp, vocv;
--	int ret, health = POWER_SUPPLY_HEALTH_UNKNOWN;
--
--	ret = fuel_gauge_get_btemp(info, &temp);
--	if (ret < 0)
--		goto health_read_fail;
-+	int ret, vocv, health = POWER_SUPPLY_HEALTH_UNKNOWN;
- 
- 	ret = fuel_gauge_get_vocv(info, &vocv);
- 	if (ret < 0)
- 		goto health_read_fail;
- 
--	if (vocv > info->pdata->max_volt)
-+	if (vocv > info->max_volt)
- 		health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
--	else if (temp > info->pdata->max_temp)
--		health = POWER_SUPPLY_HEALTH_OVERHEAT;
--	else if (temp < info->pdata->min_temp)
--		health = POWER_SUPPLY_HEALTH_COLD;
--	else if (vocv < info->pdata->min_volt)
--		health = POWER_SUPPLY_HEALTH_DEAD;
- 	else
- 		health = POWER_SUPPLY_HEALTH_GOOD;
- 
-@@ -582,28 +460,6 @@ static int fuel_gauge_battery_health(struct axp288_fg_info *info)
- 	return health;
- }
- 
--static int fuel_gauge_set_high_btemp_alert(struct axp288_fg_info *info)
--{
--	int ret, adc_val;
--
--	/* program temperature threshold as 1/16 ADC value */
--	adc_val = temp_to_adc(info, info->pdata->max_temp);
--	ret = fuel_gauge_reg_writeb(info, AXP20X_V_HTF_DISCHRG, adc_val >> 4);
--
--	return ret;
--}
--
--static int fuel_gauge_set_low_btemp_alert(struct axp288_fg_info *info)
--{
--	int ret, adc_val;
--
--	/* program temperature threshold as 1/16 ADC value */
--	adc_val = temp_to_adc(info, info->pdata->min_temp);
--	ret = fuel_gauge_reg_writeb(info, AXP20X_V_LTF_DISCHRG, adc_val >> 4);
--
--	return ret;
--}
--
- static int fuel_gauge_get_property(struct power_supply *ps,
- 		enum power_supply_property prop,
- 		union power_supply_propval *val)
-@@ -664,20 +520,6 @@ static int fuel_gauge_get_property(struct power_supply *ps,
- 			goto fuel_gauge_read_err;
- 		val->intval = (ret & 0x0f);
- 		break;
--	case POWER_SUPPLY_PROP_TEMP:
--		ret = fuel_gauge_get_btemp(info, &value);
--		if (ret < 0)
--			goto fuel_gauge_read_err;
--		val->intval = PROP_TEMP(value);
--		break;
--	case POWER_SUPPLY_PROP_TEMP_MAX:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--		val->intval = PROP_TEMP(info->pdata->max_temp);
--		break;
--	case POWER_SUPPLY_PROP_TEMP_MIN:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
--		val->intval = PROP_TEMP(info->pdata->min_temp);
--		break;
- 	case POWER_SUPPLY_PROP_TECHNOLOGY:
+@@ -255,18 +276,12 @@ static int fuel_gauge_debug_show(struct seq_file *s, void *data)
+ 	seq_printf(s, "    FG_OCVL[%02x] : %02x\n",
+ 		AXP288_FG_OCVL_REG,
+ 		fuel_gauge_reg_readb(info, AXP288_FG_OCVL_REG));
+-	seq_printf(s, "FG_DES_CAP1[%02x] : %02x\n",
++	seq_printf(s, " FG_DES_CAP[%02x] : %04x\n",
+ 		AXP288_FG_DES_CAP1_REG,
+-		fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP1_REG));
+-	seq_printf(s, "FG_DES_CAP0[%02x] : %02x\n",
+-		AXP288_FG_DES_CAP0_REG,
+-		fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP0_REG));
+-	seq_printf(s, " FG_CC_MTR1[%02x] : %02x\n",
++		fuel_gauge_read_15bit_word(info, AXP288_FG_DES_CAP1_REG));
++	seq_printf(s, "  FG_CC_MTR[%02x] : %04x\n",
+ 		AXP288_FG_CC_MTR1_REG,
+-		fuel_gauge_reg_readb(info, AXP288_FG_CC_MTR1_REG));
+-	seq_printf(s, " FG_CC_MTR0[%02x] : %02x\n",
+-		AXP288_FG_CC_MTR0_REG,
+-		fuel_gauge_reg_readb(info, AXP288_FG_CC_MTR0_REG));
++		fuel_gauge_read_15bit_word(info, AXP288_FG_CC_MTR1_REG));
+ 	seq_printf(s, " FG_OCV_CAP[%02x] : %02x\n",
+ 		AXP288_FG_OCV_CAP_REG,
+ 		fuel_gauge_reg_readb(info, AXP288_FG_OCV_CAP_REG));
+@@ -663,28 +678,18 @@ static int fuel_gauge_get_property(struct power_supply *ps,
  		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
  		break;
-@@ -695,17 +537,8 @@ static int fuel_gauge_get_property(struct power_supply *ps,
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
+-		ret = fuel_gauge_reg_readb(info, AXP288_FG_CC_MTR1_REG);
++		ret = fuel_gauge_read_15bit_word(info, AXP288_FG_CC_MTR1_REG);
+ 		if (ret < 0)
+ 			goto fuel_gauge_read_err;
  
- 		val->intval = ret * FG_DES_CAP_RES_LSB;
- 		break;
--	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
--		val->intval = PROP_CURR(info->pdata->design_cap);
--		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
--		val->intval = PROP_VOLT(info->pdata->max_volt);
--		break;
--	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
--		val->intval = PROP_VOLT(info->pdata->min_volt);
--		break;
--	case POWER_SUPPLY_PROP_MODEL_NAME:
--		val->strval = info->pdata->battid;
-+		val->intval = PROP_VOLT(info->max_volt);
- 		break;
- 	default:
- 		mutex_unlock(&info->lock);
-@@ -729,35 +562,6 @@ static int fuel_gauge_set_property(struct power_supply *ps,
- 
- 	mutex_lock(&info->lock);
- 	switch (prop) {
--	case POWER_SUPPLY_PROP_STATUS:
--		info->status = val->intval;
--		break;
--	case POWER_SUPPLY_PROP_TEMP_MIN:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
--		if ((val->intval < PD_DEF_MIN_TEMP) ||
--			(val->intval > PD_DEF_MAX_TEMP)) {
--			ret = -EINVAL;
--			break;
--		}
--		info->pdata->min_temp = UNPROP_TEMP(val->intval);
--		ret = fuel_gauge_set_low_btemp_alert(info);
+-		value = (ret & FG_CC_MTR1_VAL_MASK) << 8;
+-		ret = fuel_gauge_reg_readb(info, AXP288_FG_CC_MTR0_REG);
 -		if (ret < 0)
--			dev_err(&info->pdev->dev,
--				"temp alert min set fail:%d\n", ret);
--		break;
--	case POWER_SUPPLY_PROP_TEMP_MAX:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
--		if ((val->intval < PD_DEF_MIN_TEMP) ||
--			(val->intval > PD_DEF_MAX_TEMP)) {
--			ret = -EINVAL;
--			break;
--		}
--		info->pdata->max_temp = UNPROP_TEMP(val->intval);
--		ret = fuel_gauge_set_high_btemp_alert(info);
--		if (ret < 0)
--			dev_err(&info->pdev->dev,
--				"temp alert max set fail:%d\n", ret);
--		break;
- 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
- 		if ((val->intval < 0) || (val->intval > 15)) {
- 			ret = -EINVAL;
-@@ -785,11 +589,6 @@ static int fuel_gauge_property_is_writeable(struct power_supply *psy,
- 	int ret;
- 
- 	switch (psp) {
--	case POWER_SUPPLY_PROP_STATUS:
--	case POWER_SUPPLY_PROP_TEMP_MIN:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
--	case POWER_SUPPLY_PROP_TEMP_MAX:
--	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
- 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
- 		ret = 1;
+-			goto fuel_gauge_read_err;
+-		value |= (ret & FG_CC_MTR0_VAL_MASK);
+-		val->intval = value * FG_DES_CAP_RES_LSB;
++		val->intval = ret * FG_DES_CAP_RES_LSB;
  		break;
-@@ -874,158 +673,6 @@ static const struct power_supply_desc fuel_gauge_desc = {
- 	.external_power_changed	= fuel_gauge_external_power_changed,
- };
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+-		ret = fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP1_REG);
++		ret = fuel_gauge_read_15bit_word(info, AXP288_FG_DES_CAP1_REG);
+ 		if (ret < 0)
+ 			goto fuel_gauge_read_err;
  
--static int fuel_gauge_set_lowbatt_thresholds(struct axp288_fg_info *info)
--{
--	int ret;
--	u8 reg_val;
--
--	ret = fuel_gauge_reg_readb(info, AXP20X_FG_RES);
--	if (ret < 0) {
--		dev_err(&info->pdev->dev, "%s:read err:%d\n", __func__, ret);
--		return ret;
--	}
--	ret = (ret & FG_REP_CAP_VAL_MASK);
--
--	if (ret > FG_LOW_CAP_WARN_THR)
--		reg_val = FG_LOW_CAP_WARN_THR;
--	else if (ret > FG_LOW_CAP_CRIT_THR)
--		reg_val = FG_LOW_CAP_CRIT_THR;
--	else
--		reg_val = FG_LOW_CAP_SHDN_THR;
--
--	reg_val |= FG_LOW_CAP_THR1_VAL;
--	ret = fuel_gauge_reg_writeb(info, AXP288_FG_LOW_CAP_REG, reg_val);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "%s:write err:%d\n", __func__, ret);
--
--	return ret;
--}
--
--static int fuel_gauge_program_vbatt_full(struct axp288_fg_info *info)
--{
--	int ret;
--	u8 val;
--
--	ret = fuel_gauge_reg_readb(info, AXP20X_CHRG_CTRL1);
--	if (ret < 0)
--		goto fg_prog_ocv_fail;
--	else
--		val = (ret & ~CHRG_CCCV_CV_MASK);
--
--	switch (info->pdata->max_volt) {
--	case CV_4100:
--		val |= (CHRG_CCCV_CV_4100MV << CHRG_CCCV_CV_BIT_POS);
--		break;
--	case CV_4150:
--		val |= (CHRG_CCCV_CV_4150MV << CHRG_CCCV_CV_BIT_POS);
--		break;
--	case CV_4200:
--		val |= (CHRG_CCCV_CV_4200MV << CHRG_CCCV_CV_BIT_POS);
--		break;
--	case CV_4350:
--		val |= (CHRG_CCCV_CV_4350MV << CHRG_CCCV_CV_BIT_POS);
--		break;
--	default:
--		val |= (CHRG_CCCV_CV_4200MV << CHRG_CCCV_CV_BIT_POS);
--		break;
--	}
--
--	ret = fuel_gauge_reg_writeb(info, AXP20X_CHRG_CTRL1, val);
--fg_prog_ocv_fail:
--	return ret;
--}
--
--static int fuel_gauge_program_design_cap(struct axp288_fg_info *info)
--{
--	int ret;
--
--	ret = fuel_gauge_reg_writeb(info,
--		AXP288_FG_DES_CAP1_REG, info->pdata->cap1);
--	if (ret < 0)
--		goto fg_prog_descap_fail;
--
--	ret = fuel_gauge_reg_writeb(info,
--		AXP288_FG_DES_CAP0_REG, info->pdata->cap0);
--
--fg_prog_descap_fail:
--	return ret;
--}
--
--static int fuel_gauge_program_ocv_curve(struct axp288_fg_info *info)
--{
--	int ret = 0, i;
--
--	for (i = 0; i < OCV_CURVE_SIZE; i++) {
--		ret = fuel_gauge_reg_writeb(info,
--			AXP288_FG_OCV_CURVE_REG + i, info->pdata->ocv_curve[i]);
+-		value = (ret & FG_DES_CAP1_VAL_MASK) << 8;
+-		ret = fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP0_REG);
 -		if (ret < 0)
--			goto fg_prog_ocv_fail;
--	}
--
--fg_prog_ocv_fail:
--	return ret;
--}
--
--static int fuel_gauge_program_rdc_vals(struct axp288_fg_info *info)
--{
--	int ret;
--
--	ret = fuel_gauge_reg_writeb(info,
--		AXP288_FG_RDC1_REG, info->pdata->rdc1);
--	if (ret < 0)
--		goto fg_prog_ocv_fail;
--
--	ret = fuel_gauge_reg_writeb(info,
--		AXP288_FG_RDC0_REG, info->pdata->rdc0);
--
--fg_prog_ocv_fail:
--	return ret;
--}
--
--static void fuel_gauge_init_config_regs(struct axp288_fg_info *info)
--{
--	int ret;
--
--	/*
--	 * check if the config data is already
--	 * programmed and if so just return.
--	 */
--
--	ret = fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP1_REG);
--	if (ret < 0) {
--		dev_warn(&info->pdev->dev, "CAP1 reg read err!!\n");
--	} else if (!(ret & FG_DES_CAP1_VALID)) {
--		dev_info(&info->pdev->dev, "FG data needs to be initialized\n");
--	} else {
--		dev_info(&info->pdev->dev, "FG data is already initialized\n");
--		return;
--	}
--
--	ret = fuel_gauge_program_vbatt_full(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "set vbatt full fail:%d\n", ret);
--
--	ret = fuel_gauge_program_design_cap(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "set design cap fail:%d\n", ret);
--
--	ret = fuel_gauge_program_rdc_vals(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "set rdc fail:%d\n", ret);
--
--	ret = fuel_gauge_program_ocv_curve(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "set ocv curve fail:%d\n", ret);
--
--	ret = fuel_gauge_set_lowbatt_thresholds(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "lowbatt thr set fail:%d\n", ret);
--
--	ret = fuel_gauge_reg_writeb(info, AXP20X_CC_CTRL, 0xef);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "gauge cntl set fail:%d\n", ret);
--}
--
- static void fuel_gauge_init_irq(struct axp288_fg_info *info)
- {
- 	int ret, i, pirq;
-@@ -1065,17 +712,8 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
- 
- static void fuel_gauge_init_hw_regs(struct axp288_fg_info *info)
- {
--	int ret;
- 	unsigned int val;
- 
--	ret = fuel_gauge_set_high_btemp_alert(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "high batt temp set fail:%d\n", ret);
--
--	ret = fuel_gauge_set_low_btemp_alert(info);
--	if (ret < 0)
--		dev_err(&info->pdev->dev, "low batt temp set fail:%d\n", ret);
--
- 	/* enable interrupts */
- 	val = fuel_gauge_reg_readb(info, AXP20X_IRQ3_EN);
- 	val |= TEMP_IRQ_CFG_MASK;
-@@ -1101,15 +739,39 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 	info->regmap = axp20x->regmap;
- 	info->regmap_irqc = axp20x->regmap_irqc;
- 	info->status = POWER_SUPPLY_STATUS_UNKNOWN;
--	info->pdata = pdev->dev.platform_data;
--	if (!info->pdata)
--		return -ENODEV;
- 
- 	platform_set_drvdata(pdev, info);
- 
- 	mutex_init(&info->lock);
- 	INIT_DELAYED_WORK(&info->status_monitor, fuel_gauge_status_monitor);
- 
-+	ret = fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP1_REG);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!(ret & FG_DES_CAP1_VALID)) {
-+		dev_err(&pdev->dev, "axp288 not configured by firmware\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = fuel_gauge_reg_readb(info, AXP20X_CHRG_CTRL1);
-+	if (ret < 0)
-+		return ret;
-+	switch ((ret & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS) {
-+	case CHRG_CCCV_CV_4100MV:
-+		info->max_volt = 4100;
-+		break;
-+	case CHRG_CCCV_CV_4150MV:
-+		info->max_volt = 4150;
-+		break;
-+	case CHRG_CCCV_CV_4200MV:
-+		info->max_volt = 4200;
-+		break;
-+	case CHRG_CCCV_CV_4350MV:
-+		info->max_volt = 4350;
-+		break;
-+	}
-+
- 	psy_cfg.drv_data = info;
- 	info->bat = power_supply_register(&pdev->dev, &fuel_gauge_desc, &psy_cfg);
- 	if (IS_ERR(info->bat)) {
-@@ -1119,12 +781,11 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 	}
- 
- 	fuel_gauge_create_debugfs(info);
--	fuel_gauge_init_config_regs(info);
- 	fuel_gauge_init_irq(info);
- 	fuel_gauge_init_hw_regs(info);
- 	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
- 
--	return ret;
-+	return 0;
- }
- 
- static const struct platform_device_id axp288_fg_id_table[] = {
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index fe93e00..fedc301 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -526,28 +526,6 @@ struct axp20x_dev {
- 	const struct regmap_irq_chip	*regmap_irq_chip;
- };
- 
--#define BATTID_LEN				64
--#define OCV_CURVE_SIZE			32
--#define MAX_THERM_CURVE_SIZE	25
--#define PD_DEF_MIN_TEMP			0
--#define PD_DEF_MAX_TEMP			55
--
--struct axp20x_fg_pdata {
--	char battid[BATTID_LEN + 1];
--	int design_cap;
--	int min_volt;
--	int max_volt;
--	int max_temp;
--	int min_temp;
--	int cap1;
--	int cap0;
--	int rdc1;
--	int rdc0;
--	int ocv_curve[OCV_CURVE_SIZE];
--	int tcsz;
--	int thermistor_curve[MAX_THERM_CURVE_SIZE][2];
--};
--
- struct axp20x_chrg_pdata {
- 	int max_cc;
- 	int max_cv;
+-			goto fuel_gauge_read_err;
+-		value |= (ret & FG_DES_CAP0_VAL_MASK);
+-		val->intval = value * FG_DES_CAP_RES_LSB;
++		val->intval = ret * FG_DES_CAP_RES_LSB;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+ 		val->intval = PROP_CURR(info->pdata->design_cap);
 -- 
 2.9.3
 
