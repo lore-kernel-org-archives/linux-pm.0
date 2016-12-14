@@ -1,27 +1,27 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
 Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
-Date: Wed, 14 Dec 2016 10:37:03 +0900
-Message-ID: <5850A23F.2010903@samsung.com>
+Date: Wed, 14 Dec 2016 10:38:14 +0900
+Message-ID: <5850A286.9080302@samsung.com>
 References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
  <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:49183 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754608AbcLNBhI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 20:37:08 -0500
+Received: from mailout2.samsung.com ([203.254.224.25]:48002 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753149AbcLNBiR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Dec 2016 20:38:17 -0500
 Received: from epcpsbgm2new.samsung.com (epcpsbgm2 [203.254.230.27])
- by mailout4.samsung.com
+ by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OI5028YAJ5RHF40@mailout4.samsung.com> for
- linux-pm@vger.kernel.org; Wed, 14 Dec 2016 10:37:03 +0900 (KST)
+ with ESMTP id <0OI50064NJ7LFM60@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Wed, 14 Dec 2016 10:38:14 +0900 (KST)
 In-reply-to: <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Chris Diamand <chris.diamand@arm.com>, linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
 
 Hi Chris,
 
@@ -59,6 +59,8 @@ On 2016년 12월 14일 02:09, Chris Diamand wrote:
 > +						 DEVFREQ_GOV_STOP, NULL);
 > +		devfreq->governor = NULL;
 > +	}
+> +
+>
 
 The devfreq_remove_device has following description:
 - "* The oppsite of devfreq_add_device()"
@@ -74,6 +76,7 @@ The '_remove_devfreq() ' function includes the code to stop the governor and fol
 
 Best Regards,
 Chanwoo Choi
+
 
 
 
