@@ -1,114 +1,71 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: bq24735 charger and ac-detect
-Date: Wed, 14 Dec 2016 15:59:51 +0100
-Message-ID: <20161214145951.uuoijetzat2bxmbv@earth>
-References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
- <20161214142502.su4auesnlqmgxspv@earth>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 2/3] power: supply: bq24735-charger: optionally poll
+ the ac-detect gpio
+Date: Wed, 14 Dec 2016 16:10:27 +0100
+Message-ID: <20161214151026.5q6goxlfscv53tol@earth>
+References: <1481673405-4547-1-git-send-email-peda@axentia.se>
+ <1481673405-4547-3-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="qwhxxahzxg3qxq3v"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+        protocol="application/pgp-signature"; boundary="htebv6msr22h7zh6"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:60612 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1756338AbcLNPKe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Dec 2016 10:10:34 -0500
 Content-Disposition: inline
-In-Reply-To: <20161214142502.su4auesnlqmgxspv@earth>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1481673405-4547-3-git-send-email-peda@axentia.se>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Rosin <peda@axentia.se>
+Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
 
---qwhxxahzxg3qxq3v
+--htebv6msr22h7zh6
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-Ok, Darbha Sriharsha's mail address no longer works, so I Cc'd
-linux-tegra instead. Maybe some of the people there have the
-schematics for one of the Tegra boards using the bq24735 and/or
-could check if charger presence detection actually works on
-those boards with current mainline kernel.
+On Wed, Dec 14, 2016 at 12:56:44AM +0100, Peter Rosin wrote:
+> If the ac-detect gpio does not support interrupts, provide a fallback
+> to poll the gpio at a configurable interval.
+>=20
+> Signed-off-by: Peter Rosin <peda@axentia.se>
+> ---
+>
+> [...]
+>
+> +	} else if (charger->status_gpio) {
+> +		ret =3D of_property_read_u32(client->dev.of_node,
+> +					   "poll-interval",
+> +					   &charger->poll_interval);
+
+Please use device_property_read_u32() instead.
+
+> [...]
 
 -- Sebastian
 
-On Wed, Dec 14, 2016 at 03:25:02PM +0100, Sebastian Reichel wrote:
-> Hi Peter,
->=20
-> On Mon, Dec 12, 2016 at 12:12:47AM +0100, Peter Rosin wrote:
-> > Hi!
-> >=20
-> > I'm wondering about the dt bindings for the bq24735 charger. Specifical=
-ly
-> > the ac-detect property. The bindings say:
->=20
-> I don't have a device with bq24735 and the driver has been added
-> before I was the maintainer of the power-supply subsystem.
->=20
-> >  - ti,ac-detect-gpios : This GPIO is optionally used to read the AC ada=
-pter
-> >    presence. This is a Host GPIO that is configured as an input and
-> >    connected to the bq24735.
-> >=20
-> > The only way I can make sense of that is if this is the pin on the bq24=
-735
-> > that is named ACOK.
->=20
-> Yes. I would expect the same.
->=20
-> > But that pin is active high, and the code has this:
-> >=20
-> > static bool bq24735_charger_is_present(struct bq24735 *charger)
-> > {
-> > 	if (charger->status_gpio)
-> > 		return !gpiod_get_value_cansleep(charger->status_gpio);
-> > ...
-> >=20
-> >=20
-> > (status_gpio is what holds the gpio_desc of ac-detect)
-> >=20
-> > In other words, the code seems to want a signal that is effectively
-> > active low (the code negates the signal and thus returns "present"
-> > when the signal is zero). The existing dts users all have active high
-> > in their bindings, so it's not like they say active low to work around
-> > the negation in the code...
-> >=20
-> > This just makes no sense to me and I'm wondering what I'm missing and
-> > what pin is really meant to be fed to ac-detect???
-> >=20
-> > Yes, there is a pin on the bq24735 that is named ACDET which seems like
-> > a good match, but that is a signal that is entering the bq24735. And it
-> > is also active high, at least the way I read it so the problem persists=
-=2E..
-> >=20
-> > Cheers,
-> > Peter
->=20
-> As far as I can see all current users are Tegra boards and the
-> driver is also from Nvidia, so let's ask them directly. I guess
-> the driver was ported incorrectly and the "!" should be removed.
->=20
-> -- Sebastian
-
-
-
---qwhxxahzxg3qxq3v
+--htebv6msr22h7zh6
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhRXmQACgkQ2O7X88g7
-+pq6fQ/8CrznY73hQRm+XJj7nrX9rcgOuuE7Y5QNioqGjJmULaQpx4Oh82vjFu7d
-rpGCYbSS/aDZHNQ7oqzl+fXJcXWmw6L56/6FBaSITBXDMQN0J5gVWdyIOQ6z25bU
-HPP0CumvQ5w0zAVuEVi/l7KZjqYsRR9yb2c2TmgwyJ4JCCpDlsjk+8q4yIYEDPv0
-pJguu762hiq/7cLeFeU8XP8gChcX3CkXmd+8y2O+dCCvRNhOHoOeLf2pr287P204
-OdzXSj3rB/qYeHBnrNB3IEaSWOKrWIMnkdcxspVCZ8IUEP9+IRN46y70kyqQjM5y
-LAXDcVkJXYhRTc39ES1JN7tK33T2z0mbnzX8+Bn7w1RdPeS6k4Qv4huJf06DltLO
-do9yvtAhBk+MX6RKQkV+1lb3FBG9pJ/kRIw+oGRdsGpY2z1cWwHr22TUN6W6EmF4
-V2CawC9ehf20v888P0kvHQhQLLGI/jytknTDn+rW0ZyeWOY45OJiE9J5z8krlaHQ
-hqEXgUV0JBl5E8z/uZtxyXttfmmbbJGkOu2SGxstUSszBxAYQ6DauQN+qHcQu4w8
-D4HeZbOQq9439MzJVu7MX2pcjcmLwXaP9G0f6USpVhM/9pLXcs04Js/odIqKN44W
-P5+rKUurdlHEpy6BnSV8AGPg7PrCOhzfIxPp0+/pD/W2RPlug80=
-=Srg5
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhRYOAACgkQ2O7X88g7
++pornw/+Ox8mn0XdhkzmTfKAzGdg+vj5IV2C0qlbOs4kHSVwk14ecdlA8YgJICds
+d2EQkrbSGfz6m5ooSQG485Mpajg3bXs6zEtmDbmCvKZnNYAOxLoo65iFJctRv+Pr
+x/+mLY6Vm+t7ir1KzvdbZTdiYtby+t3kVemuIsr+GWGGtATPRxlWfb2WJQoQHaVh
+CjygyYdi/IjTaUT/+gqNKvlUe4qHkRuEjctUJVdl0Be49mdlLN0pifn4NmV9/sh5
+Zos/ntyWG6JytqDKVWRgdj925JRPjb3BI+s7PeuWBY+l9dxThkqC5IZLLkKaQQsS
+L9LbvlL5+zjp0xGKHck77z1FS4W7XV3A6Wn7CEyyG4OwWrtmGVhYWZlFdJ2TP6Cd
+KGwWBQi8N3zASJbh76ivYl0WtUCrq783Ir/nXnDdMuoNBivzKFy5rWDiam1PKAKF
+KawcXGDhOHeRfMdDa+FJ52KU6hVZYn0CTLtL2YrZyZrOaFEvDhsBGHTfSBNCTnLc
+SzRFO5YnGSrFq1LDNQkvGXkylyYu9s+QNi1lcLM31hUuWui/Vfm/HBc49b/S57p1
+k6S0QpN8b/Lju/O5sAVuAbX8o3Q9WsVRXHy4OAZcyC/y9Hu2zjGZFZvUEzAjJqnV
+sFfRrA+R6liT/8+t3hIsMOmZtQClD5TYP5A0EUKc/vELcA9KbjY=
+=1k0H
 -----END PGP SIGNATURE-----
 
---qwhxxahzxg3qxq3v--
+--htebv6msr22h7zh6--
