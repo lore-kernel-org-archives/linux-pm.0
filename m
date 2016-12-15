@@ -1,36 +1,54 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 0/3] PM / devfreq: Fix the bug and add reviewer for devfreq
- support
-Date: Thu, 15 Dec 2016 18:30:35 +0900
-Message-ID: <1481794238-5005-1-git-send-email-cw00.choi@samsung.com>
+Subject: Re: [PATCH 0/6] PM / devfreq: Modify devfreq/devfreq-event for
+ improvement
+Date: Thu, 15 Dec 2016 18:56:56 +0900
+Message-ID: <8403a6f9-aebd-0b64-4bbb-6f2ea845721f@samsung.com>
+References: <CGME20161124050125epcas1p466fc832e77cfe122454b8d40d0f6744e@epcas1p4.samsung.com>
+ <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:59150 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751501AbcLOJkl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2016 04:40:41 -0500
+Received: from mailout4.samsung.com ([203.254.224.34]:54447 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757561AbcLOJ46 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2016 04:56:58 -0500
+In-reply-to: <1479963668-22845-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patches fix the bug of devfreq_add_device() when governor name is wrong
-and the wrong return value of probe() function for exynos_bus.c driver.
+Dear all,
 
-And I've been helping reviewing and tesing the devfreq support patches
-for the couple of years. Also, I'm going to contribute the improvement
-for devfreq subsystem. It would be easier for me for review if I'm cc'ed
-for patches. So, patch1 adds myself as a reviewer for devfreq support.
+Please ignore this patches.
+I sent the patches[1][2] again.
 
-Chanwoo Choi (3):
-  MAINTAINERS: Add myself as reviewer for DEVFREQ subsystem support
-  PM / devfreq: Fix the bug of devfreq_add_device when governor is NULL
-  PM / devfreq: exynos-bus: Fix the wrong return value
-
- MAINTAINERS                  |  1 +
- drivers/devfreq/devfreq.c    | 15 ++++++++++-----
- drivers/devfreq/exynos-bus.c |  2 +-
- 3 files changed, 12 insertions(+), 6 deletions(-)
+[1] https://lkml.org/lkml/2016/12/15/119
+[2] https://lkml.org/lkml/2016/12/15/122
 
 -- 
-1.9.1
+Regards,
+Chanwoo Choi
+
+On 2016년 11월 24일 14:01, Chanwoo Choi wrote:
+> This patches modify the devfreq and devfreq-event framework for improving
+> them. But, these patches don't make an impact to operation of
+> devfreq/devfreq-event.
+> 
+> Chanwoo Choi (6):
+>   PM / devfreq: Fix the checkpatch warnings
+>   PM / devfreq: Modify the device name as devfreq[X] for sysfs
+>   PM / devfreq: event: Simplify the sysfs name of devfreq-event device
+>   PM / devfreq: Remove the duplicate sysfs entry for current frequency
+>   PM / devfreq: event: exynos-ppmu: Use the regmap interface to handle the registers
+>   PM / devfreq: event: exynos-ppmu: Add the completion log of device registration
+> 
+>  drivers/devfreq/devfreq-event.c     |   2 +-
+>  drivers/devfreq/devfreq.c           |  25 ++-
+>  drivers/devfreq/event/exynos-ppmu.c | 329 ++++++++++++++++++++++++++----------
+>  3 files changed, 251 insertions(+), 105 deletions(-)
+> 
+
+
 
