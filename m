@@ -1,71 +1,61 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: bq24735 charger and ac-detect
-Date: Thu, 15 Dec 2016 10:45:05 +0000
-Message-ID: <21e09552-96b9-fb72-60be-7a4b9347b761@nvidia.com>
-References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
- <20161214142502.su4auesnlqmgxspv@earth>
- <20161214145951.uuoijetzat2bxmbv@earth>
- <ecd18356-6b7a-1a98-f16d-9bb97caa9c00@nvidia.com>
- <84ede737-9e4c-b0ba-5a37-a96a7e86c3ec@axentia.se>
+From: Chris Diamand <chris.diamand@arm.com>
+Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
+Date: Thu, 15 Dec 2016 10:41:47 +0000
+Message-ID: <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
+References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
+ <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
+ <5850A286.9080302@samsung.com>
+ <5850B30A.20701@samsung.com>
+ <420ba56f-70be-0735-ad99-d90dd04113c5@arm.com>
+ <172e4f85358b4f4e9206c4a54b5db056@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+ <20161214113239.GA10108@e107465-lin.cambridge.arm.com>
+ <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <84ede737-9e4c-b0ba-5a37-a96a7e86c3ec-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:33906 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755291AbcLOKtQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Dec 2016 05:49:16 -0500
+Content-Disposition: inline
+In-Reply-To: <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
 
+Hi!
 
-On 14/12/16 21:22, Peter Rosin wrote:
-> On 2016-12-14 18:54, Jon Hunter wrote:
+> As you mentioned, it is right to remain this code in _remove_devfreq()
+> for other case to unregister devfreq device except for devfreq_remove_device().
 
-...
+Sure, I'll send out another patch with a comment.
 
->> Hmmm ... looking closer at the schematics I see a power-MOSFET in the
->> path of the ACOK to the Tegra and it looks like this could be inverting
->> the signal! Seems this was not caught when the code was submitted. This
->> should have been described in the device-tree somewhere :-(
-> 
-> That's what I suspected...
-> 
-> Ok, I expect the ship has sailed and that it's too late to actually fix
-> this up with active-low in various Tegra dts files and removing the negation
-> in the code, without causing ripples and regressions? Because that would
-> be the clean fix!
+Although, if anyone does unregister devfreq without devfreq_remove_device(),
+the userspace governor will still be broken.
 
-Yes, unfortunately it has sailed as we cannot break compatibility AFAIK.
-However, that said, I am not 100% certain for cases where there is a bug
-like this.
+I wonder if it would be better to fix this in the governor instead, because
+this problem only affects things using sysfs entries. Something like this:
 
-I did double check this morning and verified that the gpio is low when
-the charger is connected and so it is inverted.
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -112,7 +112,13 @@ out:
+ 
+ static void userspace_exit(struct devfreq *devfreq)
+ {
+-	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
++	/*
++	 * Remove the sysfs entry, unless this is being called after
++	 * device_del(), which should have done this already via kobject_del().
++	 */
++	if (devfreq->dev.kobj.sd)
++		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
++
+ 	kfree(devfreq->data);
+ 	devfreq->data = NULL;
+ }
 
-> One other thing to possibly do is add a new binding that is not negated,
-> and perhaps named after the pin in the data-sheet, i.e. ti,acok-gpios,
-> and deprecate ti,ac-detect-gpios. But that's no fun as it leaves a bunch of
-> compat code that wastes space and some lucky person has to maintain it.
-> 
-> Perhaps the best thing to do is to just re-document ti,ac-detect-gpios
-> to be the inverse of what is currently described, i.e. to be AC absence
-> instead of AC presence? But that feels like giving up and it isn't really
-> nice from a device-tree point of view either, but I guess those points are
-> fairly accademic? Or are there any non-Linux users of this binding? How are
-> these things handled when they pop up elsewhere?
+It's a bit uglier, but would fix it in all cases - what do you think?
 
-I guess that ideally the polarity should have been specified correctly
-by the gpio property, but even this looks wrong for Tegra as it is
-GPIO_ACTIVE_HIGH and not LOW. The only other option is to add another
-property called something like 'ti,ac-detect-override-pol' to specify
-the polarity you want.
-
-To be honest, I am not sure how this type of thing is normally handled.
-So probably best to put together a patch with whatever option you feel
-best and explain why this is needed and see what the dev-tree folks say.
-
-Cheers
-Jon
-
--- 
-nvpublic
+Cheers,
+Chris
