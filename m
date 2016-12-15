@@ -1,61 +1,77 @@
-From: Chris Diamand <chris.diamand@arm.com>
-Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
-Date: Thu, 15 Dec 2016 10:41:47 +0000
-Message-ID: <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
-References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
- <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
- <5850A286.9080302@samsung.com>
- <5850B30A.20701@samsung.com>
- <420ba56f-70be-0735-ad99-d90dd04113c5@arm.com>
- <172e4f85358b4f4e9206c4a54b5db056@AM4PR0802MB2210.eurprd08.prod.outlook.com>
- <20161214113239.GA10108@e107465-lin.cambridge.arm.com>
- <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Subject: Re: [PATCH 1/2] devicetree: power: add bindings for GPIO-driven power switches
+Date: Thu, 15 Dec 2016 11:57:18 +0100
+Message-ID: <CAMpxmJVwgHGrywDFnE9dNfB9UL89hLyiRO2He7uyiRgBpEfjkg@mail.gmail.com>
+References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
+ <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
+ <20161213192712.gbaw4t4awayybnta@rob-hp-laptop> <CAMpxmJWw3wCE4ch8TVik+2b3BC8Lvxbi13HGd9GxruSRLu95Mg@mail.gmail.com>
+ <54679B04-3A57-4F0E-8EE6-BB37785F8E10@jic23.retrosnub.co.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:33906 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755291AbcLOKtQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Dec 2016 05:49:16 -0500
-Content-Disposition: inline
-In-Reply-To: <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <54679B04-3A57-4F0E-8EE6-BB37785F8E10@jic23.retrosnub.co.uk>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
+Cc: Rob Herring <robh@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Mark Rutland <mark.rutland@arm.com>, linux-iio@vger.kernel.org, linux-devicetree <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>, Patrick Titiano <ptitiano@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio <linux-gpio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
 
-Hi!
+2016-12-14 18:36 GMT+01:00 Jonathan Cameron <jic23@jic23.retrosnub.co.uk>:
+>
+>
+> On 14 December 2016 16:58:21 GMT+00:00, Bartosz Golaszewski
+> <bgolaszewski@baylibre.com> wrote:
+>>2016-12-13 20:27 GMT+01:00 Rob Herring <robh@kernel.org>:
+>>> On Sun, Dec 11, 2016 at 11:21:44PM +0100, Bartosz Golaszewski wrote:
+>>>> Some boards are equipped with simple, GPIO-driven power load
+>>switches.
+>>>> An example of such ICs is the TI tps229* series.
+>>>
+>>> How is this different than a GPIO regulator? The input and output
+>>> voltages just happen to be the same. I could be convinced this is
+>>> different enough to have a different compatible, but it somewhat
+>>seems
+>>> you want to use this for IIO, so you are creating a different binding
+>>> for that usecase.
+>>>
+>>
+>>It's more of a fixed regulator I suppose. Do you mean adding a new
+>>compatible to the fixed-regulator binding (e.g. "gpio-power-switch" or
+>>"simple-power-switch") and then providing an iio driver for toggling
+>>the switch?
+>
+> I am rather torn on whether the IIO interface makes any sense beyond that of
+> convenience.
+>
 
-> As you mentioned, it is right to remain this code in _remove_devfreq()
-> for other case to unregister devfreq device except for devfreq_remove_device().
+The question is: will the iio maintainers be ok with adding support
+for interfaces different than iio (I guess so since Lars already
+mentioned wanting to support the GPIO chardev)? If so, I'm ok with not
+using the iio framework in the kernel.
 
-Sure, I'll send out another patch with a comment.
+> A bridge to a regulator in general might make sense to cover the case of a
+> reg effectively
+> acting as a DAC at the edge of the known hardware.
+>
+> Lars' point about perhaps adding support for the new gpio userspace stuff to
+> libiio would in
+> this case also be rather papering over the issue.
+> There is known hardware there so we should describe it!
+>
+> I think we should be considering this as the general case of the Linux
+> controlled power supply.
+> How do we want to represent that?
+> Ultimately does a general regulator userspace interface make sense?
+>
+> Classic case of people cutting our hardware in half and making boundaries
+> beyond which lie dragons.
+>
+> I would love to see the general case covered.
+>
 
-Although, if anyone does unregister devfreq without devfreq_remove_device(),
-the userspace governor will still be broken.
+It seems as if this is already covered by the userspace-consumer
+regulator driver, but it doesn't speak device tree yet. I guess we
+could reuse it by merging the proposed gpio-power-switch binding and
+extending it to parse DT.
 
-I wonder if it would be better to fix this in the governor instead, because
-this problem only affects things using sysfs entries. Something like this:
-
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -112,7 +112,13 @@ out:
- 
- static void userspace_exit(struct devfreq *devfreq)
- {
--	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-+	/*
-+	 * Remove the sysfs entry, unless this is being called after
-+	 * device_del(), which should have done this already via kobject_del().
-+	 */
-+	if (devfreq->dev.kobj.sd)
-+		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-+
- 	kfree(devfreq->data);
- 	devfreq->data = NULL;
- }
-
-It's a bit uglier, but would fix it in all cases - what do you think?
-
-Cheers,
-Chris
+Best regards,
+Bartosz Golaszewski
