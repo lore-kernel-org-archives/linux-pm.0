@@ -1,50 +1,48 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 4/7] PM / devfreq: exynos-ppmu: Show the registred device for
- ppmu device
-Date: Thu, 15 Dec 2016 18:30:40 +0900
-Message-ID: <1481794243-5046-5-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 6/7] PM / devfreq: Modify the device name as devfreq[X] for
+ sysfs
+Date: Thu, 15 Dec 2016 18:30:42 +0900
+Message-ID: <1481794243-5046-7-git-send-email-cw00.choi@samsung.com>
 References: <1481794243-5046-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1481794243-5046-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-samsung-soc@vger.kernel.org
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch just adds the simple log to show the PPMU device's registration
-during the kernel booting.
+This patch modifies the device name as devfreq[X] for sysfs by using the 'devfreq'
+prefix word instead of separate device name. On user-space aspect, user would
+find the some devfreq drvier with 'devfreq[X]' pattern. So, this patch modify the
+device name as following:
+- /sys/class/devfreq/[non-standard device name] -> /sys/class/devfreq/devfreq[X]
 
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/event/exynos-ppmu.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/devfreq/devfreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
-index fb3706faf5bd..9b5294d0bff4 100644
---- a/drivers/devfreq/event/exynos-ppmu.c
-+++ b/drivers/devfreq/event/exynos-ppmu.c
-@@ -591,7 +591,7 @@ static int exynos_ppmu_parse_dt(struct platform_device *pdev,
- 	info->ppmu.clk = devm_clk_get(dev, "ppmu");
- 	if (IS_ERR(info->ppmu.clk)) {
- 		info->ppmu.clk = NULL;
--		dev_warn(dev, "cannot get PPMU clock\n");
-+		dev_dbg(dev, "cannot get PPMU clock\n");
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 8e5938c9c7d6..4bd7a8f71b07 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -527,6 +527,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ {
+ 	struct devfreq *devfreq;
+ 	struct devfreq_governor *governor;
++	static atomic_t devfreq_no = ATOMIC_INIT(-1);
+ 	int err = 0;
+ 
+ 	if (!dev || !profile || !governor_name) {
+@@ -568,7 +569,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		mutex_lock(&devfreq->lock);
  	}
  
- 	ret = of_get_devfreq_events(np, info);
-@@ -643,6 +643,9 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
- 				"failed to add devfreq-event device\n");
- 			return PTR_ERR(edev[i]);
- 		}
-+
-+		pr_info("exynos-ppmu: new PPMU device registered %s (%s)\n",
-+			dev_name(&pdev->dev), desc[i].name);
- 	}
- 
- 	clk_prepare_enable(info->ppmu.clk);
+-	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
++	dev_set_name(&devfreq->dev, "devfreq%lu",
++			(unsigned long)atomic_inc_return(&devfreq_no));
+ 	err = device_register(&devfreq->dev);
+ 	if (err) {
+ 		mutex_unlock(&devfreq->lock);
 -- 
 1.9.1
