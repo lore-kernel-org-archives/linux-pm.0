@@ -1,97 +1,33 @@
-From: Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v4 1/3] bus: simple-pm: add support to pm clocks
-Date: Thu, 15 Dec 2016 14:26:00 -0800
-Message-ID: <20161215222600.GR3439@tuxbot>
-References: <1479122155-13393-1-git-send-email-srinivas.kandagatla@linaro.org>
- <1479122155-13393-2-git-send-email-srinivas.kandagatla@linaro.org>
- <20161114221447.GH9868@bhelgaas-glaptop.roam.corp.google.com>
- <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, svarbanov-NEYub+7Iv8PQT0dZR+AlfA@public.gmane.org, linux-pci <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Simon Horman <horms+renesas-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Hoan Tran <hotran@apm.com>
+Subject: [PATCH] cpufreq: dt: Add support for APM X-Gene 2
+Date: Thu, 15 Dec 2016 14:55:00 -0800
+Message-ID: <1481842500-11836-1-git-send-email-hotran@apm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lho@apm.com, Duc Dang <dhdang@apm.com>, Hoan Tran <hotran@apm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 15 Nov 00:23 PST 2016, Geert Uytterhoeven wrote:
+Add the compatible string for supporting the generic device tree cpufreq-dt
+driver on APM's X-Gene 2 SoC.
 
-> +cc linux-pm
-> 
-> On Mon, Nov 14, 2016 at 11:14 PM, Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> > [+cc Geert, Kevin, Simon]
-> >
-> > On Mon, Nov 14, 2016 at 11:15:53AM +0000, Srinivas Kandagatla wrote:
-> >> This patch adds support to pm clocks via device tree, so that the clocks
-> >> can be turned on and off during runtime pm. This patch is required for
-> >> Qualcomm msm8996 pcie controller which sits on a bus with its own
-> >> power-domain and clocks.
-> >>
-> >> Without this patch the clock associated with the bus are never turned on.
-> >>
-> >> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> >
-> > I don't see a formal maintainer for drivers/bus/simple-pm-bus.c, but I'd
-> > like an ack or at least a review from Geert or Simon.
-> 
-> Thanks for letting me know!
-> 
-> >> ---
-> >>  drivers/bus/simple-pm-bus.c | 13 ++++++++++++-
-> >>  1 file changed, 12 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/bus/simple-pm-bus.c b/drivers/bus/simple-pm-bus.c
-> >> index c5eb46c..63b7e8c 100644
-> >> --- a/drivers/bus/simple-pm-bus.c
-> >> +++ b/drivers/bus/simple-pm-bus.c
-> >> @@ -11,6 +11,7 @@
-> >>  #include <linux/module.h>
-> >>  #include <linux/of_platform.h>
-> >>  #include <linux/platform_device.h>
-> >> +#include <linux/pm_clock.h>
-> >>  #include <linux/pm_runtime.h>
-> >>
-> >>
-> >> @@ -22,17 +23,26 @@ static int simple_pm_bus_probe(struct platform_device *pdev)
-> >>
-> >>       pm_runtime_enable(&pdev->dev);
-> >>
-> >> -     if (np)
-> >> +     if (np) {
-> >> +             of_pm_clk_add_clks(&pdev->dev);
-> 
-> This should work out-of-the-box (that's the actual purpose of this driver),
-> if the platform code that registers your PM Domain would take care
-> of registering the clocks needed for PM management of the bus.
-> 
+Signed-off-by: Hoan Tran <hotran@apm.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Hi Geert,
-
-I'm having problems finding any code that would make this work
-"out-of-the-box".  The DT binding documents a clocks property but I
-can't find any code referencing this in the kernel.
-
-I see that Srinivas interpreted your response as that we should fold the
-clocks in behind the power-domain, rather than referencing them from the
-bus - but this seems awkward and would indicate the DT binding being
-wrong. Perhaps I'm just misunderstanding the design here?
-
-Which "platform code" do you refer to, can you help me by pointing me to
-the code that handles the zb_clk in the Renesas case?
-
-> Adding of_pm_clk_add_clks() here will start managing all clocks of the bus,
-> which may not be wanted on all platforms.
-> 
-
-It would not be strange to do so in the "simple" implementation for the
-bus, allowing custom behavior to be implemented in a more specific
-driver for a platform with custom needs.
-
-Regards,
-Bjorn
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index bc97b6a..7fcaf26 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -26,6 +26,8 @@
+ 	{ .compatible = "allwinner,sun8i-a83t", },
+ 	{ .compatible = "allwinner,sun8i-h3", },
+ 
++	{ .compatible = "apm,xgene-shadowcat", },
++
+ 	{ .compatible = "arm,integrator-ap", },
+ 	{ .compatible = "arm,integrator-cp", },
+ 
+-- 
+1.9.1
