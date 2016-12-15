@@ -1,172 +1,104 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH v2] ARM: dts: Add missing CPU frequencies for Exynos5422/5800
-Date: Thu, 15 Dec 2016 12:55:59 +0100
-Message-ID: <10512254.nyUcL0zgTP@amdc3058>
+From: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+Subject: Re: bq24735 charger and ac-detect
+Date: Thu, 15 Dec 2016 13:04:41 +0100
+Message-ID: <bfc89f2f-fbcb-2a04-e679-832fef1f0948@axentia.se>
+References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
+ <20161214142502.su4auesnlqmgxspv@earth>
+ <20161214145951.uuoijetzat2bxmbv@earth>
+ <ecd18356-6b7a-1a98-f16d-9bb97caa9c00@nvidia.com>
+ <84ede737-9e4c-b0ba-5a37-a96a7e86c3ec@axentia.se>
+ <21e09552-96b9-fb72-60be-7a4b9347b761@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Andreas Faerber <afaerber-l3A5Bk7waGM@public.gmane.org>, Thomas Abraham <thomas.ab-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Ben Gamari <ben-OfdNVJEh3GKkIYD+M5K+dQ@public.gmane.org>, Arjun K V <arjun.kv-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <21e09552-96b9-fb72-60be-7a4b9347b761-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Add missing 2000MHz & 1900MHz OPPs (for A15 cores) and 1400MHz OPP
-(for A7 cores).  Also update common Odroid-XU3 Lite/XU3/XU4 thermal
-cooling maps to account for new OPPs.
+On 2016-12-15 11:45, Jon Hunter wrote:
+> 
+> On 14/12/16 21:22, Peter Rosin wrote:
+>> On 2016-12-14 18:54, Jon Hunter wrote:
+> 
+> ...
+> 
+>>> Hmmm ... looking closer at the schematics I see a power-MOSFET in the
+>>> path of the ACOK to the Tegra and it looks like this could be inverting
+>>> the signal! Seems this was not caught when the code was submitted. This
+>>> should have been described in the device-tree somewhere :-(
+>>
+>> That's what I suspected...
+>>
+>> Ok, I expect the ship has sailed and that it's too late to actually fix
+>> this up with active-low in various Tegra dts files and removing the negation
+>> in the code, without causing ripples and regressions? Because that would
+>> be the clean fix!
+> 
+> Yes, unfortunately it has sailed as we cannot break compatibility AFAIK.
+> However, that said, I am not 100% certain for cases where there is a bug
+> like this.
+> 
+> I did double check this morning and verified that the gpio is low when
+> the charger is connected and so it is inverted.
 
-Since new OPPs are not available on all Exynos5422/5800 boards modify
-dts files for Odroid-XU3 Lite (limited to 1.8 GHz / 1.3 GHz) & Peach
-Pi (limited to 2.0 GHz / 1.3 GHz) accordingly.
+Thanks!
 
-Tested on Odroid-XU3 and XU3 Lite.
+>> One other thing to possibly do is add a new binding that is not negated,
+>> and perhaps named after the pin in the data-sheet, i.e. ti,acok-gpios,
+>> and deprecate ti,ac-detect-gpios. But that's no fun as it leaves a bunch of
+>> compat code that wastes space and some lucky person has to maintain it.
+>>
+>> Perhaps the best thing to do is to just re-document ti,ac-detect-gpios
+>> to be the inverse of what is currently described, i.e. to be AC absence
+>> instead of AC presence? But that feels like giving up and it isn't really
+>> nice from a device-tree point of view either, but I guess those points are
+>> fairly accademic? Or are there any non-Linux users of this binding? How are
+>> these things handled when they pop up elsewhere?
+> 
+> I guess that ideally the polarity should have been specified correctly
+> by the gpio property, but even this looks wrong for Tegra as it is
+> GPIO_ACTIVE_HIGH and not LOW.
 
-Cc: Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
-Cc: Andreas Faerber <afaerber-l3A5Bk7waGM@public.gmane.org>
-Cc: Thomas Abraham <thomas.ab-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Ben Gamari <ben-OfdNVJEh3GKkIYD+M5K+dQ@public.gmane.org>
-Cc: Arjun K V <arjun.kv-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
----
-v2:
-- added comments about limitations of SoC revisions used by Odroid-XU3 Lite and
-  Peach Pi boards (suggested by Javier)
-- removed redundant opp_a7_14 label
-- added Arjun to Cc:
+It's exactly this GPIO_ACTIVE_HIGH that is wrong. It should have been
+active low since the signal is active high from the charger, but inverted
+on its way to the gpio pin, so from the gpio point of view the signal
+is active-low.
 
-Javier, could you test it on Peach Pi board?
+What a mess, the only thing that is right is the bindings. It says that the
+gpio is active when AC is present, which makes perfect sense and matches the
+name of the property.
 
- arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi |   14 ++++++-------
- arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts    |   22 +++++++++++++++++++++
- arch/arm/boot/dts/exynos5800-peach-pi.dts          |    9 ++++++++
- arch/arm/boot/dts/exynos5800.dtsi                  |   15 ++++++++++++++
- 4 files changed, 53 insertions(+), 7 deletions(-)
+Then all the Tegra dts users violate that and say active-high when in fact
+the signal is inverted on the path to the pin, so should have been active-low.
 
-Index: b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi
-===================================================================
---- a/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi	2016-12-15 12:43:54.365955950 +0100
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu3-common.dtsi	2016-12-15 12:43:54.361955949 +0100
-@@ -118,7 +118,7 @@
- 				/*
- 				 * When reaching cpu_alert3, reduce CPU
- 				 * by 2 steps. On Exynos5422/5800 that would
--				 * be: 1600 MHz and 1100 MHz.
-+				 * (usually) be: 1800 MHz and 1200 MHz.
- 				 */
- 				map3 {
- 					trip = <&cpu_alert3>;
-@@ -131,16 +131,16 @@
- 
- 				/*
- 				 * When reaching cpu_alert4, reduce CPU
--				 * further, down to 600 MHz (11 steps for big,
--				 * 7 steps for LITTLE).
-+				 * further, down to 600 MHz (13 steps for big,
-+				 * 8 steps for LITTLE).
- 				 */
--				map5 {
-+				cooling_map5: map5 {
- 					trip = <&cpu_alert4>;
--					cooling-device = <&cpu0 3 7>;
-+					cooling-device = <&cpu0 3 8>;
- 				};
--				map6 {
-+				cooling_map6: map6 {
- 					trip = <&cpu_alert4>;
--					cooling-device = <&cpu4 3 11>;
-+					cooling-device = <&cpu4 3 13>;
- 				};
- 			};
- 		};
-Index: b/arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts
-===================================================================
---- a/arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts	2016-12-15 12:43:54.365955950 +0100
-+++ b/arch/arm/boot/dts/exynos5422-odroidxu3-lite.dts	2016-12-15 12:43:54.361955949 +0100
-@@ -21,6 +21,28 @@
- 	compatible = "hardkernel,odroid-xu3-lite", "samsung,exynos5800", "samsung,exynos5";
- };
- 
-+/*
-+ * Odroid XU3-Lite board uses SoC revision with lower maximum frequencies
-+ * than Odroid XU3/XU4 boards: 1.8 GHz for A15 cores & 1.3 GHz for A7 cores.
-+ * Therefore we need to update OPPs tables and thermal maps accordingly.
-+ */
-+&cluster_a15_opp_table {
-+	/delete-node/opp@2000000000;
-+	/delete-node/opp@1900000000;
-+};
-+
-+&cluster_a7_opp_table {
-+	/delete-node/opp@1400000000;
-+};
-+
-+&cooling_map5 {
-+	cooling-device = <&cpu0 3 7>;
-+};
-+
-+&cooling_map6 {
-+	cooling-device = <&cpu4 3 11>;
-+};
-+
- &pwm {
- 	/*
- 	 * PWM 0 -- fan
-Index: b/arch/arm/boot/dts/exynos5800-peach-pi.dts
-===================================================================
---- a/arch/arm/boot/dts/exynos5800-peach-pi.dts	2016-12-15 12:43:54.365955950 +0100
-+++ b/arch/arm/boot/dts/exynos5800-peach-pi.dts	2016-12-15 12:43:54.361955949 +0100
-@@ -146,6 +146,15 @@
- 	vdd-supply = <&ldo9_reg>;
- };
- 
-+/*
-+ * Peach Pi board uses SoC revision with lower maximum frequency for A7 cores
-+ * (1.3 GHz instead of 1.4 GHz) than Odroid XU3/XU4 boards.  Thus we need to
-+ * update A7 OPPs table accordingly.
-+ */
-+&cluster_a7_opp_table {
-+	/delete-property/opp@1400000000;
-+};
-+
- &cpu0 {
- 	cpu-supply = <&buck2_reg>;
- };
-Index: b/arch/arm/boot/dts/exynos5800.dtsi
-===================================================================
---- a/arch/arm/boot/dts/exynos5800.dtsi	2016-12-15 12:43:54.365955950 +0100
-+++ b/arch/arm/boot/dts/exynos5800.dtsi	2016-12-15 12:43:54.361955949 +0100
-@@ -24,6 +24,16 @@
- };
- 
- &cluster_a15_opp_table {
-+	opp@2000000000 {
-+		opp-hz = /bits/ 64 <2000000000>;
-+		opp-microvolt = <1250000>;
-+		clock-latency-ns = <140000>;
-+	};
-+	opp@1900000000 {
-+		opp-hz = /bits/ 64 <1900000000>;
-+		opp-microvolt = <1250000>;
-+		clock-latency-ns = <140000>;
-+	};
- 	opp@1700000000 {
- 		opp-microvolt = <1250000>;
- 	};
-@@ -85,6 +95,11 @@
- };
- 
- &cluster_a7_opp_table {
-+	opp@1400000000 {
-+		opp-hz = /bits/ 64 <1400000000>;
-+		opp-microvolt = <1250000>;
-+		clock-latency-ns = <140000>;
-+	};
- 	opp@1300000000 {
- 		opp-microvolt = <1250000>;
- 	};
+Then the driver code "saves the day" for the Tegra users by reversing the
+inversion in the signal-path, but that is of course only helping Tegra and
+and others not following the dt specification.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>                               The only other option is to add another
+> property called something like 'ti,ac-detect-override-pol' to specify
+> the polarity you want.
+
+How is that helping? It's no different that just saying active-low for
+boards that do not invert ACOK (which is what I currently do in my dts,
+but I hate doing it since it doesn't match dt docs and is therefore just
+wrong).
+
+> To be honest, I am not sure how this type of thing is normally handled.
+> So probably best to put together a patch with whatever option you feel
+> best and explain why this is needed and see what the dev-tree folks say.
+
+I suspect that at the end of the day documentation is less important than
+regressions. But if there are more than one implementation of the same
+spec and Linux is not following it, it's kind of harsh to change the spec
+to match Linux. I doubt that there are any other users in this case though,
+but what do I know?
+
+I'll send a patch re-documenting ti,ac-detect-gpios to specify AC absence
+instead of AC presence, let's see what the dt people thinks...
+
+Cheers,
+peda
