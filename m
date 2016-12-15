@@ -1,129 +1,119 @@
-From: Steve Twiss <stwiss.opensource@diasemi.com>
-Subject: [PATCH V5 2/8] Documentation: devicetree: thermal: da9062/61 TJUNC
- temperature binding
-Date: Thu, 15 Dec 2016 19:08:39 +0000
-Message-ID: <ae903f7c3c6325420b90c7f691655d902d137d1f.1481828921.git.stwiss.opensource@diasemi.com>
-References: <cover.1481828921.git.stwiss.opensource@diasemi.com>
+From: Yasuaki Ishimatsu <yasu.isimatu@gmail.com>
+Subject: [PATCH] thermal: add thermal_zone_remove_device_groups()
+Date: Thu, 15 Dec 2016 16:47:08 -0500
+Message-ID: <6c5a1a95-9b03-6f43-8de8-1ab4ac27cc78@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <cover.1481828921.git.stwiss.opensource@diasemi.com>
-Sender: linux-input-owner@vger.kernel.org
-To: DEVICETREE <devicetree@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Mark Brown <broonie@kernel.org>, Support Opensource <support.opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:35484 "EHLO
+        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752219AbcLOVrM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2016 16:47:12 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: rui.zhang@intel.com, edubezval@gmail.com
 
-From: Steve Twiss <stwiss.opensource@diasemi.com>
+When offlining all cores on a CPU, the following system panic
+occurs:
 
-Device tree binding information for DA9062 and DA9061 thermal junction
-temperature monitor.
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: strlen+0x0/0x20
+<snip>
+Call Trace:
+  ? kernfs_name_hash+0x17/0x80
+  kernfs_find_ns+0x3f/0xd0
+  kernfs_remove_by_name_ns+0x36/0xa0
+  remove_files.isra.1+0x36/0x70
+  sysfs_remove_group+0x44/0x90
+  sysfs_remove_groups+0x2e/0x50
+  device_remove_attrs+0x5e/0x90
+  device_del+0x1ea/0x350
+  device_unregister+0x1a/0x60
+  thermal_zone_device_unregister+0x1f2/0x210
+  pkg_thermal_cpu_offline+0x14f/0x1a0 [x86_pkg_temp_thermal]
+  ? kzalloc.constprop.2+0x10/0x10 [x86_pkg_temp_thermal]
+  cpuhp_invoke_callback+0x8d/0x3f0
+  cpuhp_down_callbacks+0x42/0x80
+  cpuhp_thread_fun+0x8b/0xf0
+  smpboot_thread_fn+0x110/0x160
+  kthread+0x101/0x140
+  ? sort_range+0x30/0x30
+  ? kthread_park+0x90/0x90
+  ret_from_fork+0x25/0x30
 
-Binding descriptions for the DA9061 and DA9062 thermal TJUNC supervisor
-device driver, using a single THERMAL_TRIP_HOT trip-wire and allowing for
-a configurable polling period for over-temperature polling.
+thermal_zone_create_device_group() sets attribute_groups in
+thermal_zone_attribute_groups[] to tz->device.groups. But these
+attributes_groups do not have name argument.
 
-This patch also adds two examples, one for DA9062 and one for DA9061. The 
-DA9061 example uses a fall-back compatible string for the DA9062.
+So when offlining all cores on CPU and executing
+thermal_zone_device_unregister(), the panic occurs in strlen()
+called from kernfs_name_hash() because name argument is NULL.
 
-Signed-off-by: Steve Twiss <stwiss.opensource@diasemi.com>
+The patch adds thermal_zone_remove_device_groups() to free
+tz->device.groups and set NULL pointer.
 
+Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+CC: Zhang Rui <rui.zhang@intel.com>
+CC: Eduardo Valentin <edubezval@gmail.com>
 ---
-This patch applies against linux-next and v4.9
+  drivers/thermal/thermal_core.c  | 3 ++-
+  drivers/thermal/thermal_core.h  | 1 +
+  drivers/thermal/thermal_sysfs.c | 6 ++++++
+  3 files changed, 9 insertions(+), 1 deletion(-)
 
-v4 -> v5
- - Rebased from v4.8 to v4.9
- - Updates from comments by Eduardo Valentin
- - Replace vendor defined dlg,tjunc-temp-polling-period-ms with standard
-   thermal core polling-delay-passive as part of the device tree
-   initialisation
- - Remove Acked-by Rob Herring
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 641faab..926e385 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1251,6 +1251,7 @@ struct thermal_zone_device *
 
-v3 -> v4
- - NO CODE CHANGE
- - Patch renamed from [PATCH V3 3/9] to [PATCH V4 2/8]
- - Added Acked-by Rob Herring
+  unregister:
+  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
++	thermal_zone_remove_device_groups(tz);
+  	device_unregister(&tz->device);
+  	return ERR_PTR(result);
+  }
+@@ -1315,8 +1316,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
+  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+  	idr_destroy(&tz->idr);
+  	mutex_destroy(&tz->lock);
++	thermal_zone_remove_device_groups(tz);
+  	device_unregister(&tz->device);
+-	kfree(tz->device.groups);
+  }
+  EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
 
-v2 -> v3
- - Patch renamed from [PATCH V2 03/10] to [PATCH V3 3/9]
- - Changes suggested from other component reviews by Rob Herring:
- - Each compatible line should be a valid combination of compatible
-   strings: alter DA9061 line to include the fall back compatible string
-   and update the commit message accordingly
- - Add e-mail information about associated patches from this set without
-   describing them as being explicitly dependent on this binding
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 2412b37..e3a60db 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -70,6 +70,7 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
+  int thermal_build_list_of_policies(char *buf);
 
-v1 -> v2
- - Patch renamed from [PATCH V1 08/10] to [PATCH V2 03/10] -- these
-   changes were made to fix checkpatch warnings caused by the patch
-   set dependency order
- - A second example for DA9061 is provided to highlight the use of a
-   fall-back compatible option for the DA9062
+  /* sysfs I/F */
++void thermal_zone_remove_device_groups(struct thermal_zone_device *tz);
+  int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *);
+  /* used only at binding time */
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index a694de9..3dfd29b 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -605,6 +605,12 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+  	return 0;
+  }
 
-Hi,
-
-Updates for PATCH V5: the binding has been altered to remove the proposed
-dlg,tjunc-temp-polling-period-ms and replaced with the standard thermal
-core polling-delay-passive instead. This was in response to a request
-from Eduardo Valentin as part of a driver change.
-
-I have also removed a previous Ack by Rob Herring which was valid for
-PATCH V3
-
-As previously:
-The device driver from this patch set (associated with this binding) is:
-  [PATCH V5 7/8] thermal: da9061: TJUNC temperature driver 
-
-Regards,
-Steve Twiss, Dialog Semiconductor Ltd.
-
-
- .../devicetree/bindings/thermal/da9062-thermal.txt | 37 ++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/da9062-thermal.txt
-
-diff --git a/Documentation/devicetree/bindings/thermal/da9062-thermal.txt b/Documentation/devicetree/bindings/thermal/da9062-thermal.txt
-new file mode 100644
-index 0000000..08cc72e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/da9062-thermal.txt
-@@ -0,0 +1,37 @@
-+* Dialog DA9062/61 TJUNC Thermal Module
++void thermal_zone_remove_device_groups(struct thermal_zone_device *tz)
++{
++	kfree(tz->device.groups);
++	tz->device.groups = NULL;
++}
 +
-+This module is part of the DA9061/DA9062. For more details about entire
-+DA9062 and DA9061 chips see Documentation/devicetree/bindings/mfd/da9062.txt
-+
-+Junction temperature thermal module uses an interrupt signal to identify
-+high THERMAL_TRIP_HOT temperatures for the PMIC device.
-+
-+Required properties:
-+
-+- compatible: should be one of the following valid compatible string lines:
-+        "dlg,da9061-thermal", "dlg,da9062-thermal"
-+        "dlg,da9062-thermal"
-+
-+Optional properties:
-+
-+- polling-delay-passive : Specify the polling period, measured in
-+    milliseconds, between thermal zone device update checks.
-+
-+Example: DA9062
-+
-+	pmic0: da9062@58 {
-+		thermal {
-+			compatible = "dlg,da9062-thermal";
-+			polling-delay-passive = <3000>;
-+		};
-+	};
-+
-+Example: DA9061 using a fall-back compatible for the DA9062 onkey driver
-+
-+	pmic0: da9061@58 {
-+		thermal {
-+			compatible = "dlg,da9061-thermal", "dlg,da9062-thermal";
-+			polling-delay-passive = <3000>;
-+		};
-+	};
-+
+  int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
+  				      int mask)
+  {
 -- 
-end-of-patch for PATCH V5
+1.8.3.1
 
