@@ -1,69 +1,84 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Linux fails to start secondary cores when system resumes from
- Suspend-to-RAM
-Date: Thu, 15 Dec 2016 16:18:35 +0100
-Message-ID: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
+From: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+Subject: Re: bq24735 charger and ac-detect
+Date: Thu, 15 Dec 2016 16:34:14 +0100
+Message-ID: <1316ab3d-8a75-6a03-e1d0-7dee55f2c90f@axentia.se>
+References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
+ <20161214142502.su4auesnlqmgxspv@earth>
+ <20161214145951.uuoijetzat2bxmbv@earth>
+ <ecd18356-6b7a-1a98-f16d-9bb97caa9c00@nvidia.com>
+ <84ede737-9e4c-b0ba-5a37-a96a7e86c3ec@axentia.se>
+ <21e09552-96b9-fb72-60be-7a4b9347b761@nvidia.com>
+ <bfc89f2f-fbcb-2a04-e679-832fef1f0948@axentia.se>
+ <721122dd-dda8-1830-9224-40b5ed79e463@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp5-g21.free.fr ([212.27.42.5]:19837 "EHLO smtp5-g21.free.fr"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755576AbcLOPTL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Dec 2016 10:19:11 -0500
-Content-Language: 
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <721122dd-dda8-1830-9224-40b5ed79e463-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Sebastian Frias <sf84@laposte.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Thomas Gambier <thomas_gambier@sigmadesigns.com>, Arnd Bergmann <arnd@arndb.de>, Russell King <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Hello,
+On 2016-12-15 15:04, Jon Hunter wrote:
+> 
+> On 15/12/16 12:04, Peter Rosin wrote:
+> 
+> ...
+> 
+>>>                               The only other option is to add another
+>>> property called something like 'ti,ac-detect-override-pol' to specify
+>>> the polarity you want.
+>>
+>> How is that helping? It's no different that just saying active-low for
+>> boards that do not invert ACOK (which is what I currently do in my dts,
+>> but I hate doing it since it doesn't match dt docs and is therefore just
+>> wrong).
+> 
+> By providing a means for the user to specify the polarity for their
+> board. Of course the documentation would need to be updated as well. I
+> think all solutions will be ugly if we need to preserve compatibility.
+> 
+>>> To be honest, I am not sure how this type of thing is normally handled.
+>>> So probably best to put together a patch with whatever option you feel
+>>> best and explain why this is needed and see what the dev-tree folks say.
+>>
+>> I suspect that at the end of the day documentation is less important than
+>> regressions. But if there are more than one implementation of the same
+>> spec and Linux is not following it, it's kind of harsh to change the spec
+>> to match Linux. I doubt that there are any other users in this case though,
+>> but what do I know?
+>>
+>> I'll send a patch re-documenting ti,ac-detect-gpios to specify AC absence
+>> instead of AC presence, let's see what the dt people thinks...
+> 
+> Fine with me and of course that works for Tegra, but how does that
+> ultimately help you? How do you tell the driver to use active-high
+> instead of the default which is not active-low?
 
-I'm playing with suspend-to-RAM on the tango platform:
+Oh, you didn't know that gpiod_set_value/gpiod_get_value takes care of
+active high/low automatically. That explains the disconnect.
 
-  http://lxr.free-electrons.com/source/arch/arm/mach-tango/platsmp.c
+If I have this in my device tree:
 
-When the system is suspended, the CPU is completely powered down
-(receives no power whatsoever). When the system receives a wake-up
-event, the CPU is powered up, and starts up exactly the same way
-as for a cold boot (I think).
+bq24735-charger@9{
+	compatible = "ti,bq24735";
+	ti,ac-detect-gpios = <&ioexp 3 GPIO_ACTIVE_LOW>;
+};
 
-However, while Linux successfully starts the secondary cores when
-the system first boots, it fails when the system resumes from "S3".
+and do
+	gpiod_get(dev, "ti,ac-detect", GPIOD_IN);
 
-I added printascii() calls inside secondary_start_kernel() and I can
-see that the following instruction are "properly" run:
+then gpiod_get_value() on that gpio descriptor will return 1 (as in
+active) when the signal is low.
 
-	cpu_switch_mm(mm->pgd, mm);
-	local_flush_bp_all();
-	enter_lazy_tlb(mm, current);
+You have to use gpiod_get_raw_value to see what's on the actual line.
+But that is almost always not interesting, the reasons for that should
+be obvious from this discussion...
 
-but it seems local_flush_tlb_all(); never returns... :-(
+So, I lie and say GPIO_ACTIVE_LOW so that gpiod_get_value returns 0 when
+AC is there (signal is high), and the driver inverts that and gets that
+AC is present and starts charging.
 
-  http://lxr.free-electrons.com/source/arch/arm/include/asm/tlbflush.h#L332
-
-
-Looking more closely at that function, it seems to be failing in:
-
-	tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
-
-(meaning: I get a log before, but not after)
-
-On my system, tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
-resolves to:
-
-c010ce18:       e3170602        tst     r7, #2097152    ; 0x200000
-c010ce1c:       1e086f17        mcrne   15, 0, r6, cr8, cr7, {0}
-
-What could be happening?
-Can a core "hang" on this instruction?
-Can a core "crash" on this instruction (meaning, an exception
-is raised, and the core loops inside the exception code without
-Linux noticing... that seems unlikely)
-
-I'm stumped. Could someone throw me a clue?
-
-Mark Rutland offered a guess about IPIs not working correctly.
-Could this explain the behavior I'm seeing?
-
-Regards.
+Cheers,
+peda
