@@ -1,7 +1,7 @@
-From: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 Subject: Re: bq24735 charger and ac-detect
-Date: Thu, 15 Dec 2016 16:34:14 +0100
-Message-ID: <1316ab3d-8a75-6a03-e1d0-7dee55f2c90f@axentia.se>
+Date: Thu, 15 Dec 2016 16:10:54 +0000
+Message-ID: <4a01ae9a-9184-63f3-ecb9-4e5a6e2375e2@nvidia.com>
 References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
  <20161214142502.su4auesnlqmgxspv@earth>
  <20161214145951.uuoijetzat2bxmbv@earth>
@@ -10,75 +10,62 @@ References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
  <21e09552-96b9-fb72-60be-7a4b9347b761@nvidia.com>
  <bfc89f2f-fbcb-2a04-e679-832fef1f0948@axentia.se>
  <721122dd-dda8-1830-9224-40b5ed79e463@nvidia.com>
+ <1316ab3d-8a75-6a03-e1d0-7dee55f2c90f@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <721122dd-dda8-1830-9224-40b5ed79e463-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <1316ab3d-8a75-6a03-e1d0-7dee55f2c90f-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
 Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2016-12-15 15:04, Jon Hunter wrote:
-> 
-> On 15/12/16 12:04, Peter Rosin wrote:
-> 
-> ...
-> 
->>>                               The only other option is to add another
->>> property called something like 'ti,ac-detect-override-pol' to specify
->>> the polarity you want.
+
+On 15/12/16 15:34, Peter Rosin wrote:
+> On 2016-12-15 15:04, Jon Hunter wrote:
 >>
->> How is that helping? It's no different that just saying active-low for
->> boards that do not invert ACOK (which is what I currently do in my dts,
->> but I hate doing it since it doesn't match dt docs and is therefore just
->> wrong).
-> 
-> By providing a means for the user to specify the polarity for their
-> board. Of course the documentation would need to be updated as well. I
-> think all solutions will be ugly if we need to preserve compatibility.
-> 
->>> To be honest, I am not sure how this type of thing is normally handled.
->>> So probably best to put together a patch with whatever option you feel
->>> best and explain why this is needed and see what the dev-tree folks say.
+>> On 15/12/16 12:04, Peter Rosin wrote:
 >>
->> I suspect that at the end of the day documentation is less important than
->> regressions. But if there are more than one implementation of the same
->> spec and Linux is not following it, it's kind of harsh to change the spec
->> to match Linux. I doubt that there are any other users in this case though,
->> but what do I know?
+>> ...
 >>
->> I'll send a patch re-documenting ti,ac-detect-gpios to specify AC absence
->> instead of AC presence, let's see what the dt people thinks...
+>>>>                               The only other option is to add another
+>>>> property called something like 'ti,ac-detect-override-pol' to specify
+>>>> the polarity you want.
+>>>
+>>> How is that helping? It's no different that just saying active-low for
+>>> boards that do not invert ACOK (which is what I currently do in my dts,
+>>> but I hate doing it since it doesn't match dt docs and is therefore just
+>>> wrong).
+>>
+>> By providing a means for the user to specify the polarity for their
+>> board. Of course the documentation would need to be updated as well. I
+>> think all solutions will be ugly if we need to preserve compatibility.
+>>
+>>>> To be honest, I am not sure how this type of thing is normally handled.
+>>>> So probably best to put together a patch with whatever option you feel
+>>>> best and explain why this is needed and see what the dev-tree folks say.
+>>>
+>>> I suspect that at the end of the day documentation is less important than
+>>> regressions. But if there are more than one implementation of the same
+>>> spec and Linux is not following it, it's kind of harsh to change the spec
+>>> to match Linux. I doubt that there are any other users in this case though,
+>>> but what do I know?
+>>>
+>>> I'll send a patch re-documenting ti,ac-detect-gpios to specify AC absence
+>>> instead of AC presence, let's see what the dt people thinks...
+>>
+>> Fine with me and of course that works for Tegra, but how does that
+>> ultimately help you? How do you tell the driver to use active-high
+>> instead of the default which is not active-low?
 > 
-> Fine with me and of course that works for Tegra, but how does that
-> ultimately help you? How do you tell the driver to use active-high
-> instead of the default which is not active-low?
+> Oh, you didn't know that gpiod_set_value/gpiod_get_value takes care of
+> active high/low automatically. That explains the disconnect.
 
-Oh, you didn't know that gpiod_set_value/gpiod_get_value takes care of
-active high/low automatically. That explains the disconnect.
+Ah I see. Yes I see that now in the gpiod_get_value().
 
-If I have this in my device tree:
+Thanks!
+Jon
 
-bq24735-charger@9{
-	compatible = "ti,bq24735";
-	ti,ac-detect-gpios = <&ioexp 3 GPIO_ACTIVE_LOW>;
-};
-
-and do
-	gpiod_get(dev, "ti,ac-detect", GPIOD_IN);
-
-then gpiod_get_value() on that gpio descriptor will return 1 (as in
-active) when the signal is low.
-
-You have to use gpiod_get_raw_value to see what's on the actual line.
-But that is almost always not interesting, the reasons for that should
-be obvious from this discussion...
-
-So, I lie and say GPIO_ACTIVE_LOW so that gpiod_get_value returns 0 when
-AC is there (signal is high), and the driver inverts that and gets that
-AC is present and starts charging.
-
-Cheers,
-peda
+-- 
+nvpublic
