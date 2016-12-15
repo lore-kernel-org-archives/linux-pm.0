@@ -1,65 +1,46 @@
-From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: Re: bq24735 charger and ac-detect
-Date: Thu, 15 Dec 2016 14:07:11 +0000
-Message-ID: <e254aa4c-18ab-0ace-aede-d7d084d7e184@nvidia.com>
-References: <d796f6f9-1b6a-647c-100b-b3e85fc2f4c0@axentia.se>
- <20161214142502.su4auesnlqmgxspv@earth>
- <20161214145951.uuoijetzat2bxmbv@earth>
- <ecd18356-6b7a-1a98-f16d-9bb97caa9c00@nvidia.com>
- <84ede737-9e4c-b0ba-5a37-a96a7e86c3ec@axentia.se>
- <21e09552-96b9-fb72-60be-7a4b9347b761@nvidia.com>
- <bfc89f2f-fbcb-2a04-e679-832fef1f0948@axentia.se>
- <721122dd-dda8-1830-9224-40b5ed79e463@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <721122dd-dda8-1830-9224-40b5ed79e463-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Subject: [PATCH 2/2] cpufreq: Remove cpu hotplug callbacks only if they were initialized
+Date: Thu, 15 Dec 2016 10:00:58 -0500
+Message-ID: <1481814058-4799-3-git-send-email-boris.ostrovsky@oracle.com>
+References: <1481814058-4799-1-git-send-email-boris.ostrovsky@oracle.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from aserp1040.oracle.com ([141.146.126.69]:44927 "EHLO
+        aserp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756240AbcLOOoa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2016 09:44:30 -0500
+In-Reply-To: <1481814058-4799-1-git-send-email-boris.ostrovsky@oracle.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: tglx@linutronix.de, bigeasy@linutronix.de, rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>
 
+Since cpu hotplug callbacks are requested for CPUHP_AP_ONLINE_DYN state,
+successful callback initialization will result in cpuhp_setup_state()
+returning a positive value. Therefore acpi_cpufreq_online being zero
+indicates that callbacks have not been installed.
 
-On 15/12/16 14:04, Jon Hunter wrote:
-> 
-> On 15/12/16 12:04, Peter Rosin wrote:
-> 
-> ...
-> 
->>>                               The only other option is to add another
->>> property called something like 'ti,ac-detect-override-pol' to specify
->>> the polarity you want.
->>
->> How is that helping? It's no different that just saying active-low for
->> boards that do not invert ACOK (which is what I currently do in my dts,
->> but I hate doing it since it doesn't match dt docs and is therefore just
->> wrong).
-> 
-> By providing a means for the user to specify the polarity for their
-> board. Of course the documentation would need to be updated as well. I
-> think all solutions will be ugly if we need to preserve compatibility.
-> 
->>> To be honest, I am not sure how this type of thing is normally handled.
->>> So probably best to put together a patch with whatever option you feel
->>> best and explain why this is needed and see what the dev-tree folks say.
->>
->> I suspect that at the end of the day documentation is less important than
->> regressions. But if there are more than one implementation of the same
->> spec and Linux is not following it, it's kind of harsh to change the spec
->> to match Linux. I doubt that there are any other users in this case though,
->> but what do I know?
->>
->> I'll send a patch re-documenting ti,ac-detect-gpios to specify AC absence
->> instead of AC presence, let's see what the dt people thinks...
-> 
-> Fine with me and of course that works for Tegra, but how does that
-> ultimately help you? How do you tell the driver to use active-high
-> instead of the default which is not active-low?
+This means that acpi_cpufreq_boost_exit() should only remove them if
+acpi_cpufreq_online is positive. Trying to call
+cpuhp_remove_state_nocalls(0) will cause a BUG().
 
-s/which is not/which is now/
+Signed-off-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+---
+ drivers/cpufreq/acpi-cpufreq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Jon
-
+diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+index 3a98702..3a2ca0f 100644
+--- a/drivers/cpufreq/acpi-cpufreq.c
++++ b/drivers/cpufreq/acpi-cpufreq.c
+@@ -930,7 +930,7 @@ static void __init acpi_cpufreq_boost_init(void)
+ 
+ static void acpi_cpufreq_boost_exit(void)
+ {
+-	if (acpi_cpufreq_online >= 0)
++	if (acpi_cpufreq_online > 0)
+ 		cpuhp_remove_state_nocalls(acpi_cpufreq_online);
+ }
+ 
 -- 
-nvpublic
+1.7.1
+
