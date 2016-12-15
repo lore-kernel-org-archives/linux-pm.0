@@ -1,77 +1,157 @@
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Subject: Re: [PATCH 1/2] devicetree: power: add bindings for GPIO-driven power switches
-Date: Thu, 15 Dec 2016 11:57:18 +0100
-Message-ID: <CAMpxmJVwgHGrywDFnE9dNfB9UL89hLyiRO2He7uyiRgBpEfjkg@mail.gmail.com>
-References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
- <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
- <20161213192712.gbaw4t4awayybnta@rob-hp-laptop> <CAMpxmJWw3wCE4ch8TVik+2b3BC8Lvxbi13HGd9GxruSRLu95Mg@mail.gmail.com>
- <54679B04-3A57-4F0E-8EE6-BB37785F8E10@jic23.retrosnub.co.uk>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Thu, 15 Dec 2016 11:38:03 +0000
+Message-ID: <c06d8619-0d2b-7b1c-37d9-da64a15c6db1@nvidia.com>
+References: <CAPDyKFoFPNNnoc-7G34A7a4Yo8f=WUyurNP1evabw3MOEubEoA@mail.gmail.com>
+ <90faea7d-65b6-590a-83f1-24fcdffa0569@nvidia.com>
+ <CAPDyKFr4S3tM7KL2hfwJ3R4e5z1-Zd99aMhMSgVq4XzkrUUdow@mail.gmail.com>
+ <fd7c8f40-2a9f-b71c-bd11-43ee657441ae@nvidia.com>
+ <63670abf-1d58-a7e3-6927-0c815d44d8a1@nvidia.com>
+ <d961715d-820a-dd63-e3a9-c908ce465582@nvidia.com>
+ <CAJZ5v0hqdjGJ8v+k-Nkp_bx-fj_yTD5WoMeVfkmqBuTwCjRoyA@mail.gmail.com>
+ <d9a4c1cd-6682-663d-e30d-cc85f665cf64@nvidia.com>
+ <m2lgwbxtea.fsf@baylibre.com>
+ <f54b4912-bfdd-aa2c-6f04-e09ed4207af6@nvidia.com>
+ <CGME20161124023037epcas4p2891cf07f4bc49115f210c1298b0f9b82@epcas4p2.samsung.com>
+ <20161124023014.GK6095@codeaurora.org>
+ <52af1977-8ca3-40d1-43bb-920c5b933f94@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <54679B04-3A57-4F0E-8EE6-BB37785F8E10@jic23.retrosnub.co.uk>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan Cameron <jic23@jic23.retrosnub.co.uk>
-Cc: Rob Herring <robh@kernel.org>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Mark Rutland <mark.rutland@arm.com>, linux-iio@vger.kernel.org, linux-devicetree <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>, Patrick Titiano <ptitiano@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio <linux-gpio@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-pm <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <52af1977-8ca3-40d1-43bb-920c5b933f94-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-2016-12-14 18:36 GMT+01:00 Jonathan Cameron <jic23@jic23.retrosnub.co.uk>:
->
->
-> On 14 December 2016 16:58:21 GMT+00:00, Bartosz Golaszewski
-> <bgolaszewski@baylibre.com> wrote:
->>2016-12-13 20:27 GMT+01:00 Rob Herring <robh@kernel.org>:
->>> On Sun, Dec 11, 2016 at 11:21:44PM +0100, Bartosz Golaszewski wrote:
->>>> Some boards are equipped with simple, GPIO-driven power load
->>switches.
->>>> An example of such ICs is the TI tps229* series.
+
+On 29/11/16 11:33, Marek Szyprowski wrote:
+> Hi Stephen,
+> 
+> Thanks for pointing to my patches, but I would like to clarify a few
+> things.
+> 
+> On 2016-11-24 03:30, Stephen Boyd wrote:
+>> On 11/22, Jon Hunter wrote:
+>>> On 22/11/16 18:26, Kevin Hilman wrote:
+>>>> Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> writes:
+>>>>> However, I would rather the client of
+>>>>> the power-domains specify which power-domains they require and
+>>>>> dynamically nested the power-domains at runtime. This is slightly
+>>>>> different to what I proposed in this RFC, but it is not really beyond
+>>>>> the bounds of what we support today IMO. What is missing is a means to
+>>>>> do this dynamically and not statically.
+>>>>>
+>>>>> By the way, I am not sure if you are suggesting that for devices that
+>>>>> may need multiple power-domains we should architect the driver
+>>>>> differently and split it up in some way such that we have a
+>>>>> power-domain
+>>>>> per device. But for the case of the Tegra XHCI it is quite complex
+>>>>> because the driver loads firmware which runs on a micro-controller and
+>>>>> we need to manage the various power-domains that are used.
+>>>> IMO, constructing a network of new struct devices just to workaround
+>>>> limitations in the framework doesn't sound quite right either.
+>>> I agree.
 >>>
->>> How is this different than a GPIO regulator? The input and output
->>> voltages just happen to be the same. I could be convinced this is
->>> different enough to have a different compatible, but it somewhat
->>seems
->>> you want to use this for IIO, so you are creating a different binding
->>> for that usecase.
->>>
+>> Marek is attempting to do this for the samsung clock
+>> controller[1] (patch #5 is informative).
+> 
+> You probably meant patch #3 / #4, which is a patch for Exynos 4412
+> ( https://marc.info/?l=linux-arm-kernel&m=147731142926053&w=2 ).
+
+Sorry for the delay, I have been meaning to get back to this thread. Yes
+patch #3 is definitely interesting and highlights power-domain
+complexities with various SoCs ...
+
+https://marc.info/?l=linux-clk&m=147731116925951&w=2
+
+
+> Patch #5 is for Exynos 5433, which already has separate nodes for
+> each clock sub-controller, so there is no problem to add generic
+> power domains there (see multiple CMU nodes):
+> 
+> https://git.kernel.org/cgit/linux/kernel/git/next/linux-next.git/tree/arch/arm64/boot/dts/exynos/exynos5433.dtsi#n261
+> 
+> 
+>>  From what I can tell
+>> they have one DT node for their clock controller because it's one
+>> register address space to control clocks. But, certain clocks
+>> exposed by that driver only work when certain power domains are
+>> enabled. For example, they have a clock controller that exposes
+>> clock signals for multimedia hardware blocks like video
+>> accelerators, gpus, and cameras. The clocks seem to have been
+>> placed inside different power domains for the multimedia hardware
+>> they're associated with, so there may be 10 or so power domains
+>> that need to be enabled at different times for different clocks
+>> to work. If the GPU power domain isn't enabled when the GPU
+>> clocks are touched by the driver, things break, etc.
 >>
->>It's more of a fixed regulator I suppose. Do you mean adding a new
->>compatible to the fixed-regulator binding (e.g. "gpio-power-switch" or
->>"simple-power-switch") and then providing an iio driver for toggling
->>the switch?
->
-> I am rather torn on whether the IIO interface makes any sense beyond that of
-> convenience.
->
+>> In the proposed patchset, we have the top-level clock controller
+>> node with subnodes for each power domain that needs to be
+>> associated with clocks inside these different multimedia blocks.
+> 
+> This is valid only for the Exynos4412 case (and not-yet-posted
+> Exynos5422), which has a single clock controller node and patch #4
+> added a sub-node for ISP clocks part (the only one which in fact
+> is in the other power domain).
+> 
+>> So we end up with one parent device and attached driver for the
+>> clock driver, and then that driver populates child nodes as
+>> devices and matches up clocks with child nodes while registering
+>> clks with clk_register(). Because we pass a dev pointer to
+>> clk_register, we associate different devices with different
+>> clocks all from the same top-level clock controller device
+>> driver. Then clk framework calls runtime_pm APIs with devices
+>> used during clk registration.
+> 
+> Right, this is how I did it for Exynos4412 case.
+> 
+>> Some of those devices don't have
+>> any driver bound to them, which feels odd.
+> 
+> Well, I don't get this. In the proposed patches each sub-node has
+> a separate driver, none is left without a driver.
 
-The question is: will the iio maintainers be ok with adding support
-for interfaces different than iio (I guess so since Lars already
-mentioned wanting to support the GPIO chardev)? If so, I'm ok with not
-using the iio framework in the kernel.
+So it seems in this solution you are creating a pseudo device in order
+to control the pm-domain.
 
-> A bridge to a regulator in general might make sense to cover the case of a
-> reg effectively
-> acting as a DAC at the edge of the known hardware.
->
-> Lars' point about perhaps adding support for the new gpio userspace stuff to
-> libiio would in
-> this case also be rather papering over the issue.
-> There is known hardware there so we should describe it!
->
-> I think we should be considering this as the general case of the Linux
-> controlled power supply.
-> How do we want to represent that?
-> Ultimately does a general regulator userspace interface make sense?
->
-> Classic case of people cutting our hardware in half and making boundaries
-> beyond which lie dragons.
->
-> I would love to see the general case covered.
->
+>> This seems like a case where we really want a better way to
+>> explicitly control power domains without making up subnodes and
+>> registering struct devices just to work around the one device to
+>> one genpd construct we have today. Maybe power domains just don't
+>> map to genpd though and that's the disconnect.
+> 
+> Having an API for full control over multiple power domain assigned to
+> a single device node might indeed solve somehow this problem, but as
+> long as runtime pm is tied to struct device, this will again end in
+> creating virtual sub-devices per each power domain to fit runtime pm
+> principles. However we might be able to avoid creating sub-nodes in
+> the device tree.
 
-It seems as if this is already covered by the userspace-consumer
-regulator driver, but it doesn't speak device tree yet. I guess we
-could reuse it by merging the proposed gpio-power-switch binding and
-extending it to parse DT.
+Right, but what if the device is not bound to the pm-domain? What if due
+to pm-domain complexities we need to have finer granularity over the
+control of pm-domains?
 
-Best regards,
-Bartosz Golaszewski
+It seems to me that because we don't always have foresight into the
+creativeness of the SoC h/w designers, may be the pm-domain framework
+needs to expose APIs to allow direct control of the pm-domains without
+binding the pm-domain to the device, so that these APIs can be called in
+the context on the runtime-pm callbacks as we do for clocks, etc.
+
+Do you see any benefit to being able to directly control the pm-domains?
+
+That said, I did recently add a patch to prevent the expose of the
+pm-domain struct to clients in order to be able to remove them [0].
+However, ref-counting can obviously be used to allow client to request
+handles to pm-domains.
+
+Cheers
+Jon
+
+[0]
+http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/drivers/base/power/domain.c?id=f58d4e5ab0ca3453f091eab514474e9fdbfc539f
+
+-- 
+nvpublic
