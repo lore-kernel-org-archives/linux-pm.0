@@ -1,68 +1,52 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 5/7] PM / devfreq: Fix the checkpatch warnings
-Date: Thu, 15 Dec 2016 18:30:41 +0900
-Message-ID: <1481794243-5046-6-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 3/7] PM / devfreq: exynos-bus: Print the real clock rate of bus
+Date: Thu, 15 Dec 2016 18:30:39 +0900
+Message-ID: <1481794243-5046-4-git-send-email-cw00.choi@samsung.com>
 References: <1481794243-5046-1-git-send-email-cw00.choi@samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1481794243-5046-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch just fixes the checkpatch warnings.
+This patch shows the real clock rate after calling clk_set_rate()
+to debug it.
 
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ drivers/devfreq/exynos-bus.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 47206a21bb90..8e5938c9c7d6 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -538,15 +538,14 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq = find_device_devfreq(dev);
- 	mutex_unlock(&devfreq_list_lock);
- 	if (!IS_ERR(devfreq)) {
--		dev_err(dev, "%s: Unable to create devfreq for the device. It already has one.\n", __func__);
-+		dev_err(dev, "%s: Unable to create devfreq for the device.\n",
-+			__func__);
- 		err = -EINVAL;
- 		goto err_out;
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index 9af86f46fbec..e0d1f4ac1740 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -147,8 +147,8 @@ static int exynos_bus_target(struct device *dev, unsigned long *freq, u32 flags)
  	}
+ 	bus->curr_freq = new_freq;
  
- 	devfreq = kzalloc(sizeof(struct devfreq), GFP_KERNEL);
- 	if (!devfreq) {
--		dev_err(dev, "%s: Unable to create devfreq for the device\n",
--			__func__);
- 		err = -ENOMEM;
- 		goto err_out;
- 	}
-@@ -576,11 +575,13 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		goto err_out;
- 	}
+-	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
+-			old_freq/1000, new_freq/1000);
++	dev_dbg(dev, "Set the frequency of bus (%luHz -> %luHz, %luHz)\n",
++			old_freq, new_freq, clk_get_rate(bus->clk));
+ out:
+ 	mutex_unlock(&bus->lock);
  
--	devfreq->trans_table =	devm_kzalloc(&devfreq->dev, sizeof(unsigned int) *
-+	devfreq->trans_table =	devm_kzalloc(&devfreq->dev,
-+						sizeof(unsigned int) *
- 						devfreq->profile->max_state *
- 						devfreq->profile->max_state,
- 						GFP_KERNEL);
--	devfreq->time_in_state = devm_kzalloc(&devfreq->dev, sizeof(unsigned long) *
-+	devfreq->time_in_state = devm_kzalloc(&devfreq->dev,
-+						sizeof(unsigned long) *
- 						devfreq->profile->max_state,
- 						GFP_KERNEL);
- 	devfreq->last_stat_updated = jiffies;
-@@ -995,7 +996,7 @@ static ssize_t cur_freq_show(struct device *dev, struct device_attribute *attr,
+@@ -241,8 +241,8 @@ static int exynos_bus_passive_target(struct device *dev, unsigned long *freq,
+ 	*freq = new_freq;
+ 	bus->curr_freq = new_freq;
  
- 	if (devfreq->profile->get_cur_freq &&
- 		!devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq))
--			return sprintf(buf, "%lu\n", freq);
-+		return sprintf(buf, "%lu\n", freq);
+-	dev_dbg(dev, "Set the frequency of bus (%lukHz -> %lukHz)\n",
+-			old_freq/1000, new_freq/1000);
++	dev_dbg(dev, "Set the frequency of bus (%luHz -> %luHz, %luHz)\n",
++			old_freq, new_freq, clk_get_rate(bus->clk));
+ out:
+ 	mutex_unlock(&bus->lock);
  
- 	return sprintf(buf, "%lu\n", devfreq->previous_freq);
- }
 -- 
 1.9.1
