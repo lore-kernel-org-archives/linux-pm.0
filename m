@@ -1,43 +1,46 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 3/3] PM / devfreq: exynos-bus: Fix the wrong return value
-Date: Thu, 15 Dec 2016 18:30:38 +0900
-Message-ID: <1481794238-5005-4-git-send-email-cw00.choi@samsung.com>
-References: <1481794238-5005-1-git-send-email-cw00.choi@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1481794238-5005-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, stable@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: [PATCH 0/7] PM / devfreq: Update the devfreq and devfreq-event device
+Date: Thu, 15 Dec 2016 18:30:36 +0900
+Message-ID: <1481794243-5046-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:45696 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934218AbcLOJbU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2016 04:31:20 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-This patch fixes the wrong return value. If devfreq driver requires the wrong
-and non-available governor, it is fail. So, this patch returns the error
-insead of -EPROBE_DEFER.
+This patches update the devfreq and devfreq-event device. I add the summary
+of each patch as following.
 
-Fixes: 403e0689d2a9 ("PM / devfreq: exynos: Add support of bus frequency of
-		      sub-blocks using passive governor")
-Cc: stable@vger.kernel.org
-cc: linux-samsung-soc@vger.kernel.org
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/exynos-bus.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+- Patch1 is documented for bus frequency scaling of Exynos5433's VDD_INT.
+  The related-to patches[1] were merged by Exynos SoC maintainer.
+- Patch2 uses the regmap interface instead of raw_read/write function.
+- Patch3/4 print the useful log for exynos-bus.c and exynos-ppmu.c driver.
+- Patch5 fixes the checkpatch warning of devfreq.c.
+- Patch6/7 modify the name of sysfs entry for devfreq/devfreq-event device
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index a8ed7792ece2..9af86f46fbec 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -497,7 +497,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 	if (IS_ERR(bus->devfreq)) {
- 		dev_err(dev,
- 			"failed to add devfreq dev with passive governor\n");
--		ret = -EPROBE_DEFER;
-+		ret = PTR_ERR(bus->devfreq);
- 		goto err;
- 	}
- 
+[1] https://lkml.org/lkml/2016/12/7/846
+- ("[PATCH v2 0/5] arm64: dts: Enable bus frequency scaling on Exynos5433-based TM2 board")
+
+Chanwoo Choi (7):
+  PM / devfreq: exynos-bus: Add the detailed correlation for Exynos5433
+  PM / devfreq: exynos-ppmu: Use the regmap interface to handle the registers
+  PM / devfreq: exynos-bus: Print the real clock rate of bus
+  PM / devfreq: exynos-ppmu: Show the registred device for ppmu device
+  PM / devfreq: Fix the checkpatch warnings
+  PM / devfreq: Modify the device name as devfreq[X] for sysfs
+  PM / devfreq: Simplify the sysfs name of devfreq-event device
+
+ .../devicetree/bindings/devfreq/exynos-bus.txt     |  14 +
+ drivers/devfreq/devfreq-event.c                    |   2 +-
+ drivers/devfreq/devfreq.c                          |  17 +-
+ drivers/devfreq/event/exynos-ppmu.c                | 331 +++++++++++++++------
+ drivers/devfreq/exynos-bus.c                       |   8 +-
+ 5 files changed, 270 insertions(+), 102 deletions(-)
+
 -- 
 1.9.1
+
