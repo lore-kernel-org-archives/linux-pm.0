@@ -1,41 +1,25 @@
 From: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Subject: [PATCH 1/2] cpu/hotplug: Clarify description of __cpuhp_setup_state() return value
-Date: Thu, 15 Dec 2016 10:00:57 -0500
-Message-ID: <1481814058-4799-2-git-send-email-boris.ostrovsky@oracle.com>
-References: <1481814058-4799-1-git-send-email-boris.ostrovsky@oracle.com>
+Subject: [PATCH 0/2] __cpuhp_setup_state() returns positive value for dynamic state
+Date: Thu, 15 Dec 2016 10:00:56 -0500
+Message-ID: <1481814058-4799-1-git-send-email-boris.ostrovsky@oracle.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1481814058-4799-1-git-send-email-boris.ostrovsky@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: tglx@linutronix.de, bigeasy@linutronix.de, rjw@rjwysocki.net, viresh.kumar@linaro.org
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>
 List-Id: linux-pm@vger.kernel.org
 
-When ivoked with CPUHP_AP_ONLINE_DYN state __cpuhp_setup_state()
-is expected to return positive value which is the hotplug state that
-the routine assigns.
+The first patch corrects description of __cpuhp_setup_state()'s possible
+return values and the second fixes a bug (which causes Xen guests to crash).
 
-Signed-off-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
----
+As a follow-up question for the first patch --- should we allow calling
+__cpuhp_setup_state() with state in [CPUHP_AP_ONLINE_DYN + 1 .. CPUHP_AP_ONLINE_DYN_END]
+range?
 
- kernel/cpu.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+Boris Ostrovsky (2):
+  cpu/hotplug: Clarify description of __cpuhp_setup_state() return
+    value
+  cpufreq: Remove cpu hotplug callbacks only if they were initialized
 
-diff --git a/kernel/cpu.c b/kernel/cpu.c
-index 217fd2e..5339aca 100644
---- a/kernel/cpu.c
-+++ b/kernel/cpu.c
-@@ -1586,7 +1586,11 @@ int __cpuhp_state_add_instance(enum cpuhp_state state, struct hlist_node *node,
-  * @startup:	startup callback function
-  * @teardown:	teardown callback function
-  *
-- * Returns 0 if successful, otherwise a proper error code
-+ * Returns:
-+ *   On success:
-+ *      Positive state number if @state is CPUHP_AP_ONLINE_DYN
-+ *      0 for all other states
-+ *   On failure: proper (negative) error code
-  */
- int __cpuhp_setup_state(enum cpuhp_state state,
- 			const char *name, bool invoke,
--- 
-1.7.1
+ drivers/cpufreq/acpi-cpufreq.c |    2 +-
+ kernel/cpu.c                   |    6 +++++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
