@@ -1,73 +1,114 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] ARM: dts: Add missing CPU frequencies for Exynos5422/5800
-Date: Fri, 16 Dec 2016 09:37:20 +0200
-Message-ID: <20161216073720.GA3489@kozik-lap>
-References: <5220084.l31t5oJbsy@amdc3058>
- <CGME20161213191823epcas5p346582b73ad9b401d9e773a1b076f1f61@epcas5p3.samsung.com>
- <26ffeee4-ff43-b3d3-3267-5fcbc50e2974@osg.samsung.com>
- <2340115.HEG9AYUCMD@amdc3058>
- <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v4 1/3] bus: simple-pm: add support to pm clocks
+Date: Fri, 16 Dec 2016 09:33:46 +0100
+Message-ID: <CAMuHMdWEejo_pwfFfsu7gZnOCDzLExfh+Y4GLD8yzQnNoH++vw@mail.gmail.com>
+References: <1479122155-13393-1-git-send-email-srinivas.kandagatla@linaro.org>
+ <1479122155-13393-2-git-send-email-srinivas.kandagatla@linaro.org>
+ <20161114221447.GH9868@bhelgaas-glaptop.roam.corp.google.com>
+ <CAMuHMdUJ8Qn=dR_OMob4BO_4RmY5XemTf_UGM_oJ2VYtBa7Jiw@mail.gmail.com> <20161215222600.GR3439@tuxbot>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:33594 "EHLO
-        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752870AbcLPHh1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 02:37:27 -0500
-Content-Disposition: inline
-In-Reply-To: <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:34503 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754089AbcLPJAB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 04:00:01 -0500
+In-Reply-To: <20161215222600.GR3439@tuxbot>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Arjun K V <arjun.kv@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alim <alim.akhtar@s>
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, svarbanov@mm-sol.com, linux-pci <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Rob Herring <robh+dt@kernel.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Thu, Dec 15, 2016 at 04:52:58PM -0800, Doug Anderson wrote:
-> > [ I added Arjun to Cc:, maybe he can help in explaining this issue
-> >   (unfortunately Inderpal's email is no longer working). ]
-> >
-> > Please also note that on Exynos5422/5800 SoCs the same ARM rail
-> > voltage is used for 1.9 GHz & 2.0 GHz OPPs as for the 1.8 GHz one.
-> > IOW if the problem exists it is already present in the mainline
-> > kernel.
-> 
-> Interesting.  In the ChromeOS tree I see significantly higher voltages
-> needed...  Note that one might naively look at
-> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/drivers/cpufreq/exynos5420-cpufreq.c#178>.
-> 
-> 1362500, /* L0  2100 */
-> 1312500, /* L1  2000 */
-> 
-> ..but, amazingly enough those voltages aren't used at all.  Surprise!
-> 
-> I believe that the above numbers are actually not used and the ASV
-> numbers are used instead.  See
-> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/arch/arm/mach-exynos/include/mach/asv-exynos542x.h#452>
-> 
-> { 2100000,
-> 1350000, 1350000, 1350000, 1350000, 1350000,
-> 1337500, 1325000, 1312500, 1300000, 1287500,
-> 1275000, 1262500, 1250000, 1237500 },
-> 
-> I believe that interpretation there is: some bins of the CPU can run
-> at 2.1 GHz just fine at 1.25 V but others need up to 1.35V.
+Hi Bjorn,
 
-That is definitely the case. One could just look at vendors ASV table
-(for 1.9 GHz):
-{ 1900000, 1300000, 1287500, 1262500, 1237500, 1225000, 1212500,
-                    1200000, 1187500, 1175000, 1162500, 1150000,
-		             1137500, 1125000, 1112500, 1112500},
+On Thu, Dec 15, 2016 at 11:26 PM, Bjorn Andersson
+<bjorn.andersson@linaro.org> wrote:
+> On Tue 15 Nov 00:23 PST 2016, Geert Uytterhoeven wrote:
+>> On Mon, Nov 14, 2016 at 11:14 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+>> > On Mon, Nov 14, 2016 at 11:15:53AM +0000, Srinivas Kandagatla wrote:
+>> >> This patch adds support to pm clocks via device tree, so that the clocks
+>> >> can be turned on and off during runtime pm. This patch is required for
+>> >> Qualcomm msm8996 pcie controller which sits on a bus with its own
+>> >> power-domain and clocks.
+>> >>
+>> >> Without this patch the clock associated with the bus are never turned on.
+>> >>
+>> >> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+>> >
+>> > I don't see a formal maintainer for drivers/bus/simple-pm-bus.c, but I'd
+>> > like an ack or at least a review from Geert or Simon.
+>>
+>> Thanks for letting me know!
+>>
+>> >> ---
+>> >>  drivers/bus/simple-pm-bus.c | 13 ++++++++++++-
+>> >>  1 file changed, 12 insertions(+), 1 deletion(-)
+>> >>
+>> >> diff --git a/drivers/bus/simple-pm-bus.c b/drivers/bus/simple-pm-bus.c
+>> >> index c5eb46c..63b7e8c 100644
+>> >> --- a/drivers/bus/simple-pm-bus.c
+>> >> +++ b/drivers/bus/simple-pm-bus.c
 
-The theoretical difference is up to 1.875V! From my experiments I saw
-BIN1 chips which should be the same... but some working on 1.2V, some on
-1.225V (@1.9 GHz). I didn't see any requiring higher voltages but that
-does not mean that there aren't such...
+>> >> @@ -22,17 +23,26 @@ static int simple_pm_bus_probe(struct platform_device *pdev)
+>> >>
+>> >>       pm_runtime_enable(&pdev->dev);
+>> >>
+>> >> -     if (np)
+>> >> +     if (np) {
+>> >> +             of_pm_clk_add_clks(&pdev->dev);
+>>
+>> This should work out-of-the-box (that's the actual purpose of this driver),
+>> if the platform code that registers your PM Domain would take care
+>> of registering the clocks needed for PM management of the bus.
 
-> ...so if you're running at 2.1 GHz at 1.25V then perhaps you're just
-> running on a CPU from a nice bin?
+> I'm having problems finding any code that would make this work
+> "out-of-the-box".  The DT binding documents a clocks property but I
+> can't find any code referencing this in the kernel.
+>
+> I see that Srinivas interpreted your response as that we should fold the
+> clocks in behind the power-domain, rather than referencing them from the
+> bus - but this seems awkward and would indicate the DT binding being
+> wrong. Perhaps I'm just misunderstanding the design here?
 
-Would be nice to see a dump of PKG_ID and AUX_INFO chipid registers
-along with name of tested board. Because the "Tested on XU3" is not
-sufficient.
+Platform-wide PM depends heavily on the platform. Instead of adding code to
+handle all relevant platforms to all drivers, the generic PM Domain code is
+used. The "power-domains" and corresponding PM "clocks" properties may be
+added to any device name, depending on the platform.
 
-Best regards,
-Krzysztof
+> Which "platform code" do you refer to, can you help me by pointing me to
+> the code that handles the zb_clk in the Renesas case?
+
+See drivers/clk/renesas/clk-mstp.c:cpg_mstp_attach_dev(), which registers
+the clocks that are used for PM.
+If a PM Domain sets the GENPD_FLAG_PM_CLK flag, these clocks are enabled
+resp. disabled by the genpd code when the device is resumed resp. suspend.
+
+>> Adding of_pm_clk_add_clks() here will start managing all clocks of the bus,
+>> which may not be wanted on all platforms.
+>
+> It would not be strange to do so in the "simple" implementation for the
+> bus, allowing custom behavior to be implemented in a more specific
+> driver for a platform with custom needs.
+
+Doing that means every platform that doesn't want all clocks to be used for
+PM need to add custom drivers, while we already handle this in genpd.
+Moreover, the same functionality (some clocks are used for PM and/or the
+device may be part of a power domain) is needed for non-bus devices, and
+thus handled by genpd.
+
+BTW, actually bus drivers are the case that's currently handled special: I'd
+rather seen the pm_runtime_*() handling being added to plain simple-bus.
+For non-bus drivers, we just add the calls to any driver that may be used on
+platforms with clock and/or power domains, but for bus drivers, people wanted
+a separate driver (with its own DT binding). Sigh...
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
