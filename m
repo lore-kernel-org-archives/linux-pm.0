@@ -1,96 +1,73 @@
-From: Mason <slash.tmp@free.fr>
-Subject: Re: Linux fails to start secondary cores when system resumes from
- Suspend-to-RAM
-Date: Fri, 16 Dec 2016 08:25:23 +0100
-Message-ID: <8c3c6592-1e9a-10d3-2a89-c22a2a23cf4b@free.fr>
-References: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
- <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] ARM: dts: Add missing CPU frequencies for Exynos5422/5800
+Date: Fri, 16 Dec 2016 09:37:20 +0200
+Message-ID: <20161216073720.GA3489@kozik-lap>
+References: <5220084.l31t5oJbsy@amdc3058>
+ <CGME20161213191823epcas5p346582b73ad9b401d9e773a1b076f1f61@epcas5p3.samsung.com>
+ <26ffeee4-ff43-b3d3-3267-5fcbc50e2974@osg.samsung.com>
+ <2340115.HEG9AYUCMD@amdc3058>
+ <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Yu Chen <yu.chen.surf@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, linux-pm <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gambier <thomas_gambier@sigmadesigns.com>, Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:33594 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752870AbcLPHh1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 02:37:27 -0500
+Content-Disposition: inline
+In-Reply-To: <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Arjun K V <arjun.kv@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alim <alim.akhtar@s>
 
-On 16/12/2016 06:14, Yu Chen wrote:
+On Thu, Dec 15, 2016 at 04:52:58PM -0800, Doug Anderson wrote:
+> > [ I added Arjun to Cc:, maybe he can help in explaining this issue
+> >   (unfortunately Inderpal's email is no longer working). ]
+> >
+> > Please also note that on Exynos5422/5800 SoCs the same ARM rail
+> > voltage is used for 1.9 GHz & 2.0 GHz OPPs as for the 1.8 GHz one.
+> > IOW if the problem exists it is already present in the mainline
+> > kernel.
+> 
+> Interesting.  In the ChromeOS tree I see significantly higher voltages
+> needed...  Note that one might naively look at
+> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/drivers/cpufreq/exynos5420-cpufreq.c#178>.
+> 
+> 1362500, /* L0  2100 */
+> 1312500, /* L1  2000 */
+> 
+> ..but, amazingly enough those voltages aren't used at all.  Surprise!
+> 
+> I believe that the above numbers are actually not used and the ASV
+> numbers are used instead.  See
+> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/arch/arm/mach-exynos/include/mach/asv-exynos542x.h#452>
+> 
+> { 2100000,
+> 1350000, 1350000, 1350000, 1350000, 1350000,
+> 1337500, 1325000, 1312500, 1300000, 1287500,
+> 1275000, 1262500, 1250000, 1237500 },
+> 
+> I believe that interpretation there is: some bins of the CPU can run
+> at 2.1 GHz just fine at 1.25 V but others need up to 1.35V.
 
-> On Thu, Dec 15, 2016 at 11:18 PM, Mason wrote:
->
->> I'm playing with suspend-to-RAM on the tango platform:
->>
->>   http://lxr.free-electrons.com/source/arch/arm/mach-tango/platsmp.c
->>
->> When the system is suspended, the CPU is completely powered down
->> (receives no power whatsoever). When the system receives a wake-up
->> event, the CPU is powered up, and starts up exactly the same way
->> as for a cold boot (I think).
->>
->> However, while Linux successfully starts the secondary cores when
->> the system first boots, it fails when the system resumes from "S3".
->>
->> I added printascii() calls inside secondary_start_kernel() and I can
->> see that the following instruction are "properly" run:
->>
->>         cpu_switch_mm(mm->pgd, mm);
->>         local_flush_bp_all();
->>         enter_lazy_tlb(mm, current);
->>
->> but it seems local_flush_tlb_all(); never returns... :-(
->>
->>   http://lxr.free-electrons.com/source/arch/arm/include/asm/tlbflush.h#L332
->>
->>
->> Looking more closely at that function, it seems to be failing in:
->>
->>         tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
->>
->> (meaning: I get a log before, but not after)
->>
->> On my system, tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
->> resolves to:
->>
->> c010ce18:       e3170602        tst     r7, #2097152    ; 0x200000
->> c010ce1c:       1e086f17        mcrne   15, 0, r6, cr8, cr7, {0}
->>
->> What could be happening?
->> Can a core "hang" on this instruction?
->> Can a core "crash" on this instruction (meaning, an exception
->> is raised, and the core loops inside the exception code without
->> Linux noticing... that seems unlikely)
->>
->> I'm stumped. Could someone throw me a clue?
->
-> try online/offline the nonboot CPUs via
-> /sys/devices/system/cpu/cpuX/online
+That is definitely the case. One could just look at vendors ASV table
+(for 1.9 GHz):
+{ 1900000, 1300000, 1287500, 1262500, 1237500, 1225000, 1212500,
+                    1200000, 1187500, 1175000, 1162500, 1150000,
+		             1137500, 1125000, 1112500, 1112500},
 
-offline + online secondary core works.
+The theoretical difference is up to 1.875V! From my experiments I saw
+BIN1 chips which should be the same... but some working on 1.2V, some on
+1.225V (@1.9 GHz). I didn't see any requiring higher voltages but that
+does not mean that there aren't such...
 
-Note: all cores are in the same power domain, so even if all
-secondary cores are offline, the CPU block remains powered up
-(secondary cores are just held in reset, or spinning in WFI,
-depending on the firmware version).
+> ...so if you're running at 2.1 GHz at 1.25V then perhaps you're just
+> running on a CPU from a nice bin?
 
-When the system is suspended, the CPU block (as well as 99%
-of the system) is powered down. Thus, upon resume, all cores
-will run the boot sequence (again).
+Would be nice to see a dump of PKG_ID and AUX_INFO chipid registers
+along with name of tested board. Because the "Tested on XU3" is not
+sufficient.
 
-I'm guessing that something goes wrong during this second
-boot sequence. Could there be a race condition between the
-primary core and one of the secondary cores?
-
-What is different in the Linux boot sequence between cold
-boot and resume? I'm thinking that the state stored in RAM
-is in fact incompatible with what Linux expects when it resumes...
-
-Regards.
+Best regards,
+Krzysztof
