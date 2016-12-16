@@ -1,71 +1,96 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
-Date: Fri, 16 Dec 2016 15:48:59 +0900
-Message-ID: <58538E5B.60102@samsung.com>
-References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
- <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
- <5850A286.9080302@samsung.com> <5850B30A.20701@samsung.com>
- <420ba56f-70be-0735-ad99-d90dd04113c5@arm.com>
- <172e4f85358b4f4e9206c4a54b5db056@AM4PR0802MB2210.eurprd08.prod.outlook.com>
- <20161214113239.GA10108@e107465-lin.cambridge.arm.com>
- <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
- <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Linux fails to start secondary cores when system resumes from
+ Suspend-to-RAM
+Date: Fri, 16 Dec 2016 08:25:23 +0100
+Message-ID: <8c3c6592-1e9a-10d3-2a89-c22a2a23cf4b@free.fr>
+References: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
+ <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:34317 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752577AbcLPGtC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 01:49:02 -0500
-Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OI900F6MMXNZO70@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 16 Dec 2016 15:49:00 +0900 (KST)
-In-reply-to: <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Yu Chen <yu.chen.surf@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, linux-pm <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gambier <thomas_gambier@sigmadesigns.com>, Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chris Diamand <chris.diamand@arm.com>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
 
-Hi Chris,
+On 16/12/2016 06:14, Yu Chen wrote:
 
-On 2016년 12월 15일 19:41, Chris Diamand wrote:
-> Hi!
-> 
->> As you mentioned, it is right to remain this code in _remove_devfreq()
->> for other case to unregister devfreq device except for devfreq_remove_device().
-> 
-> Sure, I'll send out another patch with a comment.
-> 
-> Although, if anyone does unregister devfreq without devfreq_remove_device(),
-> the userspace governor will still be broken.
-> 
-> I wonder if it would be better to fix this in the governor instead, because
-> this problem only affects things using sysfs entries. Something like this:
-> 
-> --- a/drivers/devfreq/governor_userspace.c
-> +++ b/drivers/devfreq/governor_userspace.c
-> @@ -112,7 +112,13 @@ out:
->  
->  static void userspace_exit(struct devfreq *devfreq)
->  {
-> -	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-> +	/*
-> +	 * Remove the sysfs entry, unless this is being called after
-> +	 * device_del(), which should have done this already via kobject_del().
-> +	 */
-> +	if (devfreq->dev.kobj.sd)
-> +		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-> +
->  	kfree(devfreq->data);
->  	devfreq->data = NULL;
->  }
-> 
-> It's a bit uglier, but would fix it in all cases - what do you think?-- 
+> On Thu, Dec 15, 2016 at 11:18 PM, Mason wrote:
+>
+>> I'm playing with suspend-to-RAM on the tango platform:
+>>
+>>   http://lxr.free-electrons.com/source/arch/arm/mach-tango/platsmp.c
+>>
+>> When the system is suspended, the CPU is completely powered down
+>> (receives no power whatsoever). When the system receives a wake-up
+>> event, the CPU is powered up, and starts up exactly the same way
+>> as for a cold boot (I think).
+>>
+>> However, while Linux successfully starts the secondary cores when
+>> the system first boots, it fails when the system resumes from "S3".
+>>
+>> I added printascii() calls inside secondary_start_kernel() and I can
+>> see that the following instruction are "properly" run:
+>>
+>>         cpu_switch_mm(mm->pgd, mm);
+>>         local_flush_bp_all();
+>>         enter_lazy_tlb(mm, current);
+>>
+>> but it seems local_flush_tlb_all(); never returns... :-(
+>>
+>>   http://lxr.free-electrons.com/source/arch/arm/include/asm/tlbflush.h#L332
+>>
+>>
+>> Looking more closely at that function, it seems to be failing in:
+>>
+>>         tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+>>
+>> (meaning: I get a log before, but not after)
+>>
+>> On my system, tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+>> resolves to:
+>>
+>> c010ce18:       e3170602        tst     r7, #2097152    ; 0x200000
+>> c010ce1c:       1e086f17        mcrne   15, 0, r6, cr8, cr7, {0}
+>>
+>> What could be happening?
+>> Can a core "hang" on this instruction?
+>> Can a core "crash" on this instruction (meaning, an exception
+>> is raised, and the core loops inside the exception code without
+>> Linux noticing... that seems unlikely)
+>>
+>> I'm stumped. Could someone throw me a clue?
+>
+> try online/offline the nonboot CPUs via
+> /sys/devices/system/cpu/cpuX/online
 
-I think so too. But, I agree new patch.
+offline + online secondary core works.
 
-Regards,
-Chanwoo Choi
+Note: all cores are in the same power domain, so even if all
+secondary cores are offline, the CPU block remains powered up
+(secondary cores are just held in reset, or spinning in WFI,
+depending on the firmware version).
+
+When the system is suspended, the CPU block (as well as 99%
+of the system) is powered down. Thus, upon resume, all cores
+will run the boot sequence (again).
+
+I'm guessing that something goes wrong during this second
+boot sequence. Could there be a race condition between the
+primary core and one of the secondary cores?
+
+What is different in the Linux boot sequence between cold
+boot and resume? I'm thinking that the state stored in RAM
+is in fact incompatible with what Linux expects when it resumes...
+
+Regards.
