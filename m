@@ -1,78 +1,143 @@
-From: Jon Hunter <jonathanh@nvidia.com>
-Subject: Re: [PATCH v4] dt-bindings: power: supply: bq24735: reverse the
- polarity of ac-detect
-Date: Fri, 16 Dec 2016 10:55:27 +0000
-Message-ID: <68dfd1ae-ab31-c063-5bd6-bc16a62a6dcd@nvidia.com>
-References: <1481881440-13464-1-git-send-email-peda@axentia.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Add boost files to export ultra-turbo frequencies
+Date: Fri, 16 Dec 2016 16:43:08 +0530
+Message-ID: <1481886788-25324-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:18186 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752541AbcLPLEB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 06:04:01 -0500
-In-Reply-To: <1481881440-13464-1-git-send-email-peda@axentia.se>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:53907 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1757443AbcLPLNw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 06:13:52 -0500
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uBGB8TI4082751
+        for <linux-pm@vger.kernel.org>; Fri, 16 Dec 2016 06:13:29 -0500
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 27ca5vf8a7-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Fri, 16 Dec 2016 06:13:29 -0500
+Received: from localhost
+        by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+        Fri, 16 Dec 2016 21:13:26 +1000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, svaidy@linux.vnet.ibm.com, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
+In P8+, Workload Optimized Frequency(WOF) provides the capability to
+boost the cpu frequency based on the utilization of the other cpus
+running in the chip. The On-Chip-Controller(OCC) firmware will control
+the achievability of these frequencies depending on the power headroom
+available in the chip. Currently the ultra-turbo frequencies provided
+by this feature are exported along with the turbo and sub-turbo
+frequencies as scaling_available_frequencies. This patch will export
+the ultra-turbo frequencies separately as scaling_boost_frequencies in
+WOF enabled systems. This patch will add the boost sysfs file which
+can be used to disable/enable ultra-turbo frequencies.
 
-On 16/12/16 09:44, Peter Rosin wrote:
-> The ACOK pin on the bq24735 is active-high, of course meaning that when
-> AC is OK the pin is high. However, all Tegra dts files have incorrectly
-> specified active-high even though the signal is inverted on the Tegra
-> boards. This has worked since the Linux driver has also inverted the
-> meaning of the GPIO. Fix this situation by simply specifying in the
-> bindings what everybody else agrees on; that the ti,ac-detect-gpios is
-> active on AC adapter absence.
-> 
-> Signed-off-by: Peter Rosin <peda@axentia.se>
-> ---
->  Documentation/devicetree/bindings/power/supply/ti,bq24735.txt | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> Hi!
-> 
-> v3 -> v4 changes:
-> - improve the bindings text in the spirit of remarks from Jon Hunter
-> 
-> (There were no v1 nor v2, I made a mistake and started from v3 this time.)
-> 
-> This patch is the result of this discussion:
-> http://marc.info/?t=148152531800002
-> 
-> I don't like how it changes the one thing that is seems correct, but
-> what to do?
-> 
-> Cheers,
-> peda
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-> index 3bf55757ceec..c95e16e2dc56 100644
-> --- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-> @@ -8,8 +8,10 @@ Optional properties :
->   - interrupts : Specify the interrupt to be used to trigger when the AC
->     adapter is either plugged in or removed.
->   - ti,ac-detect-gpios : This GPIO is optionally used to read the AC adapter
-> -   presence. This is a Host GPIO that is configured as an input and
-> -   connected to the bq24735.
-> +   status. This is a Host GPIO that is configured as an input and connected
-> +   to the ACOK pin on the bq24735. Note: for backwards compatibility reasons,
-> +   the GPIO must be active on AC adapter absence despite ACOK being active
-> +   (high) on AC adapter presence.
->   - ti,charge-current : Used to control and set the charging current. This value
->     must be between 128mA and 8.128A with a 64mA step resolution. The POR value
->     is 0x0000h. This number is in mA (e.g. 8192), see spec for more information
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 48 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 45 insertions(+), 3 deletions(-)
 
-Thanks.
-
-Acked-by: Jon Hunter <jonathanh@nvidia.com>
-
-Cheers
-Jon
-
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 37671b5..56dfd91 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -144,6 +144,7 @@ enum throttle_reason_type {
+ 	unsigned int max;
+ 	unsigned int nominal;
+ 	unsigned int nr_pstates;
++	bool wof_enabled;
+ } powernv_pstate_info;
+ 
+ /* Use following macros for conversions between pstate_id and index */
+@@ -203,6 +204,7 @@ static int init_powernv_pstates(void)
+ 	const __be32 *pstate_ids, *pstate_freqs;
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
++	u32 pstate_turbo, pstate_ultra_turbo;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -225,6 +227,25 @@ static int init_powernv_pstates(void)
+ 		pr_warn("ibm,pstate-nominal not found\n");
+ 		return -ENODEV;
+ 	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
++				 &pstate_ultra_turbo)) {
++		powernv_pstate_info.wof_enabled = false;
++		goto next;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-turbo",
++				 &pstate_turbo)) {
++		powernv_pstate_info.wof_enabled = false;
++		goto next;
++	}
++
++	if (pstate_turbo == pstate_ultra_turbo)
++		powernv_pstate_info.wof_enabled = false;
++	else
++		powernv_pstate_info.wof_enabled = true;
++
++next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
+ 
+@@ -268,6 +289,13 @@ static int init_powernv_pstates(void)
+ 			powernv_pstate_info.nominal = i;
+ 		else if (id == pstate_min)
+ 			powernv_pstate_info.min = i;
++
++		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
++			int j;
++
++			for (j = i - 1; j >= (int)powernv_pstate_info.max; j--)
++				powernv_freqs[j].flags = CPUFREQ_BOOST_FREQ;
++		}
+ 	}
+ 
+ 	/* End of list marker entry */
+@@ -305,9 +333,12 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
+ struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
+ 	__ATTR_RO(cpuinfo_nominal_freq);
+ 
++#define SCALING_BOOST_FREQS_ATTR_INDEX		2
++
+ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	&cpufreq_freq_attr_cpuinfo_nominal_freq,
++	&cpufreq_freq_attr_scaling_boost_freqs,
+ 	NULL,
+ };
+ 
+@@ -1013,11 +1044,22 @@ static int __init powernv_cpufreq_init(void)
+ 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
+ 
++	if (powernv_pstate_info.wof_enabled)
++		powernv_cpufreq_driver.boost_enabled = true;
++	else
++		powernv_cpu_freq_attr[SCALING_BOOST_FREQS_ATTR_INDEX] = NULL;
++
+ 	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
+-	if (!rc)
+-		return 0;
++	if (rc) {
++		pr_info("Failed to register the cpufreq driver (%d)\n", rc);
++		goto clean_notifiers;
++	}
+ 
+-	pr_info("Failed to register the cpufreq driver (%d)\n", rc);
++	if (powernv_pstate_info.wof_enabled)
++		cpufreq_enable_boost_support();
++
++	return 0;
++clean_notifiers:
+ 	unregister_all_notifiers();
+ 	clean_chip_info();
+ out:
 -- 
-nvpublic
+1.8.3.1
+
