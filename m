@@ -1,82 +1,78 @@
-From: Markus Reichl <m.reichl@fivetechno.de>
-Subject: Re: [PATCH] ARM: dts: Add missing CPU frequencies for Exynos5422/5800
-Date: Fri, 16 Dec 2016 10:08:07 +0100
-Message-ID: <1b6e8d3a-ec7a-db5d-dd0e-ef9d1480f80a@fivetechno.de>
-References: <5220084.l31t5oJbsy@amdc3058>
- <CGME20161213191823epcas5p346582b73ad9b401d9e773a1b076f1f61@epcas5p3.samsung.com>
- <26ffeee4-ff43-b3d3-3267-5fcbc50e2974@osg.samsung.com>
- <2340115.HEG9AYUCMD@amdc3058>
- <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
- <20161216073720.GA3489@kozik-lap>
+From: Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH v3] dt-bindings: power: supply: bq24735: reverse the
+ polarity of ac-detect
+Date: Fri, 16 Dec 2016 09:09:07 +0000
+Message-ID: <a09d1357-995f-7603-8c40-6d5167a14c2a@nvidia.com>
+References: <1481804479-8711-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <20161216073720.GA3489@kozik-lap>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Doug Anderson <dianders@chromium.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Arjun K V <arjun.kv@samsung.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alim <alim.akhtar@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:14507 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934030AbcLPJJP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 04:09:15 -0500
+In-Reply-To: <1481804479-8711-1-git-send-email-peda@axentia.se>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Rosin <peda@axentia.se>, linux-kernel@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-tegra@vger.kernel.org
 
-Am 16.12.2016 um 08:37 schrieb Krzysztof Kozlowski:
-> On Thu, Dec 15, 2016 at 04:52:58PM -0800, Doug Anderson wrote:
->>> [ I added Arjun to Cc:, maybe he can help in explaining this issue
->>>   (unfortunately Inderpal's email is no longer working). ]
->>>
->>> Please also note that on Exynos5422/5800 SoCs the same ARM rail
->>> voltage is used for 1.9 GHz & 2.0 GHz OPPs as for the 1.8 GHz one.
->>> IOW if the problem exists it is already present in the mainline
->>> kernel.
->>
->> Interesting.  In the ChromeOS tree I see significantly higher voltages
->> needed...  Note that one might naively look at
->> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/drivers/cpufreq/exynos5420-cpufreq.c#178>.
->>
->> 1362500, /* L0  2100 */
->> 1312500, /* L1  2000 */
->>
->> ..but, amazingly enough those voltages aren't used at all.  Surprise!
->>
->> I believe that the above numbers are actually not used and the ASV
->> numbers are used instead.  See
->> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/arch/arm/mach-exynos/include/mach/asv-exynos542x.h#452>
->>
->> { 2100000,
->> 1350000, 1350000, 1350000, 1350000, 1350000,
->> 1337500, 1325000, 1312500, 1300000, 1287500,
->> 1275000, 1262500, 1250000, 1237500 },
->>
->> I believe that interpretation there is: some bins of the CPU can run
->> at 2.1 GHz just fine at 1.25 V but others need up to 1.35V.
-> 
-> That is definitely the case. One could just look at vendors ASV table
-> (for 1.9 GHz):
-> { 1900000, 1300000, 1287500, 1262500, 1237500, 1225000, 1212500,
->                     1200000, 1187500, 1175000, 1162500, 1150000,
-> 		             1137500, 1125000, 1112500, 1112500},
-> 
-> The theoretical difference is up to 1.875V! From my experiments I saw
-> BIN1 chips which should be the same... but some working on 1.2V, some on
-> 1.225V (@1.9 GHz). I didn't see any requiring higher voltages but that
-> does not mean that there aren't such...
-> 
->> ...so if you're running at 2.1 GHz at 1.25V then perhaps you're just
->> running on a CPU from a nice bin?
 
-I've been running the proposed frequency/voltage combinations without any
-stability problems on my XU4, XU3 and even XU3-lite ( I did not delete the
-nodes on XU3-lite dts) with make -j8 kernel and ssvb-cpuburn.
-The chips are poorly cooled, especially the XU4 and quickly step down.
-
+On 15/12/16 12:21, Peter Rosin wrote:
+> The ACOK pin on the bq24735 is active-high, of course meaning that when
+> AC is OK the pin is high. However, all Tegra dts files have incorrectly
+> specified active-high even though the signal is inverted on the Tegra
+> boards. This has worked since the Linux driver has also inverted the
+> meaning of the GPIO. Fix this situation by simply specifying in the
+> bindings what everybody else agrees on; that the ti,ac-detect-gpios is
+> active on AC adapter absence.
 > 
-> Would be nice to see a dump of PKG_ID and AUX_INFO chipid registers
-> along with name of tested board. Because the "Tested on XU3" is not
-> sufficient.
-
-If you point me to how to read these values out, I will publish them.
-
+> Signed-off-by: Peter Rosin <peda@axentia.se>
+> ---
 > 
-> Best regards,
-> Krzysztof
---
-Markus Reichl
+> Hi!
+> 
+> This patch is the result of this discussion:
+> http://marc.info/?t=148152531800002
+> 
+> I don't like how it changes the one thing that is seems correct, but
+> what to do?
+> 
+> Cheers,
+> Peter
+> 
+>  Documentation/devicetree/bindings/power/supply/ti,bq24735.txt | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+> index 3bf55757ceec..43d56c49455b 100644
+> --- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+> @@ -8,8 +8,9 @@ Optional properties :
+>   - interrupts : Specify the interrupt to be used to trigger when the AC
+>     adapter is either plugged in or removed.
+>   - ti,ac-detect-gpios : This GPIO is optionally used to read the AC adapter
+> -   presence. This is a Host GPIO that is configured as an input and
+> -   connected to the bq24735.
+> +   status. This is a Host GPIO that is configured as an input and
+> +   connected to the bq24735, typically the ACOK pin (note: the GPIO should
+> +   be active on AC adapter absence).
+>   - ti,charge-current : Used to control and set the charging current. This value
+>     must be between 128mA and 8.128A with a 64mA step resolution. The POR value
+>     is 0x0000h. This number is in mA (e.g. 8192), see spec for more information
+
+I don't think you need the 'typically' above, and I may have added ...
+
+"the GPIO must be active on AC adapter absence despite the ACOK being
+active-high on AC presence to be compatible with legacy boards".
+
+... but otherwise ...
+
+Acked-by: Jon Hunter <jonathanh@nvidia.com>
+
+Cheers
+Jon
+
+-- 
+nvpublic
