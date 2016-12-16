@@ -1,72 +1,44 @@
-From: Yu Chen <yu.chen.surf@gmail.com>
-Subject: Re: Linux fails to start secondary cores when system resumes from
- Suspend-to-RAM
-Date: Fri, 16 Dec 2016 13:14:06 +0800
-Message-ID: <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
-References: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mason <slash.tmp@free.fr>
-Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, linux-pm <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gambier <thomas_gambier@sigmadesigns.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH] PM / devfreq: Fix the wrong description for userspace governor
+Date: Fri, 16 Dec 2016 14:44:38 +0900
+Message-ID: <1481867078-4016-1-git-send-email-cw00.choi@samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:40705 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752325AbcLPFz5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 00:55:57 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-On Thu, Dec 15, 2016 at 11:18 PM, Mason <slash.tmp@free.fr> wrote:
-> Hello,
->
-> I'm playing with suspend-to-RAM on the tango platform:
->
->   http://lxr.free-electrons.com/source/arch/arm/mach-tango/platsmp.c
->
-> When the system is suspended, the CPU is completely powered down
-> (receives no power whatsoever). When the system receives a wake-up
-> event, the CPU is powered up, and starts up exactly the same way
-> as for a cold boot (I think).
->
-> However, while Linux successfully starts the secondary cores when
-> the system first boots, it fails when the system resumes from "S3".
->
-> I added printascii() calls inside secondary_start_kernel() and I can
-> see that the following instruction are "properly" run:
->
->         cpu_switch_mm(mm->pgd, mm);
->         local_flush_bp_all();
->         enter_lazy_tlb(mm, current);
->
-> but it seems local_flush_tlb_all(); never returns... :-(
->
->   http://lxr.free-electrons.com/source/arch/arm/include/asm/tlbflush.h#L332
->
->
-> Looking more closely at that function, it seems to be failing in:
->
->         tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
->
-> (meaning: I get a log before, but not after)
->
-> On my system, tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
-> resolves to:
->
-> c010ce18:       e3170602        tst     r7, #2097152    ; 0x200000
-> c010ce1c:       1e086f17        mcrne   15, 0, r6, cr8, cr7, {0}
->
-> What could be happening?
-> Can a core "hang" on this instruction?
-> Can a core "crash" on this instruction (meaning, an exception
-> is raised, and the core loops inside the exception code without
-> Linux noticing... that seems unlikely)
->
-> I'm stumped. Could someone throw me a clue?
-try online/offline the nonboot CPUs via
-/sys/devices/system/cpu/cpuX/online
+This patch fixes the wrong description of governor_userspace.c
+and removes the unneeded blank line.
+
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/governor_userspace.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 35de6e83c1fe..c794352c6163 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -1,5 +1,5 @@
+ /*
+- *  linux/drivers/devfreq/governor_simpleondemand.c
++ *  linux/drivers/devfreq/governor_userspace.c
+  *
+  *  Copyright (C) 2011 Samsung Electronics
+  *	MyungJoo Ham <myungjoo.ham@samsung.com>
+@@ -50,7 +50,6 @@ static ssize_t store_freq(struct device *dev, struct device_attribute *attr,
+ 	unsigned long wanted;
+ 	int err = 0;
+ 
+-
+ 	mutex_lock(&devfreq->lock);
+ 	data = devfreq->data;
+ 
+-- 
+1.9.1
+
