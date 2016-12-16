@@ -1,44 +1,71 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH] PM / devfreq: Fix the wrong description for userspace governor
-Date: Fri, 16 Dec 2016 14:44:38 +0900
-Message-ID: <1481867078-4016-1-git-send-email-cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Don't delete sysfs group twice
+Date: Fri, 16 Dec 2016 15:48:59 +0900
+Message-ID: <58538E5B.60102@samsung.com>
+References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
+ <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
+ <5850A286.9080302@samsung.com> <5850B30A.20701@samsung.com>
+ <420ba56f-70be-0735-ad99-d90dd04113c5@arm.com>
+ <172e4f85358b4f4e9206c4a54b5db056@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+ <20161214113239.GA10108@e107465-lin.cambridge.arm.com>
+ <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+ <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:40705 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752325AbcLPFz5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 00:55:57 -0500
+Received: from mailout2.samsung.com ([203.254.224.25]:34317 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752577AbcLPGtC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 01:49:02 -0500
+Received: from epcpsbgm1new.samsung.com (epcpsbgm1 [203.254.230.26])
+ by mailout2.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
+ with ESMTP id <0OI900F6MMXNZO70@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 16 Dec 2016 15:49:00 +0900 (KST)
+In-reply-to: <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+To: Chris Diamand <chris.diamand@arm.com>
+Cc: Sudeep Holla <Sudeep.Holla@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
 
-This patch fixes the wrong description of governor_userspace.c
-and removes the unneeded blank line.
+Hi Chris,
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/governor_userspace.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+On 2016년 12월 15일 19:41, Chris Diamand wrote:
+> Hi!
+> 
+>> As you mentioned, it is right to remain this code in _remove_devfreq()
+>> for other case to unregister devfreq device except for devfreq_remove_device().
+> 
+> Sure, I'll send out another patch with a comment.
+> 
+> Although, if anyone does unregister devfreq without devfreq_remove_device(),
+> the userspace governor will still be broken.
+> 
+> I wonder if it would be better to fix this in the governor instead, because
+> this problem only affects things using sysfs entries. Something like this:
+> 
+> --- a/drivers/devfreq/governor_userspace.c
+> +++ b/drivers/devfreq/governor_userspace.c
+> @@ -112,7 +112,13 @@ out:
+>  
+>  static void userspace_exit(struct devfreq *devfreq)
+>  {
+> -	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
+> +	/*
+> +	 * Remove the sysfs entry, unless this is being called after
+> +	 * device_del(), which should have done this already via kobject_del().
+> +	 */
+> +	if (devfreq->dev.kobj.sd)
+> +		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
+> +
+>  	kfree(devfreq->data);
+>  	devfreq->data = NULL;
+>  }
+> 
+> It's a bit uglier, but would fix it in all cases - what do you think?-- 
 
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 35de6e83c1fe..c794352c6163 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/drivers/devfreq/governor_simpleondemand.c
-+ *  linux/drivers/devfreq/governor_userspace.c
-  *
-  *  Copyright (C) 2011 Samsung Electronics
-  *	MyungJoo Ham <myungjoo.ham@samsung.com>
-@@ -50,7 +50,6 @@ static ssize_t store_freq(struct device *dev, struct device_attribute *attr,
- 	unsigned long wanted;
- 	int err = 0;
- 
--
- 	mutex_lock(&devfreq->lock);
- 	data = devfreq->data;
- 
--- 
-1.9.1
+I think so too. But, I agree new patch.
 
+Regards,
+Chanwoo Choi
