@@ -1,57 +1,72 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFJlOiBbUEFUQ0hdIFBNIC8gZGV2ZnJlcTogRG9uJ3Qg?=
- =?UTF-8?B?ZGVsZXRlIHN5c2ZzIGdyb3VwIHR3aWNl?=
-Date: Fri, 16 Dec 2016 02:17:02 +0000
-Message-ID: <20161216021702epcms1p23155a475519e24519ea745b8e336cd90@epcms1p2>
-References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
- <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
- <5850A286.9080302@samsung.com> <5850B30A.20701@samsung.com>
- <420ba56f-70be-0735-ad99-d90dd04113c5@arm.com>
- <172e4f85358b4f4e9206c4a54b5db056@AM4PR0802MB2210.eurprd08.prod.outlook.com>
- <20161214113239.GA10108@e107465-lin.cambridge.arm.com>
- <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
-Reply-To: myungjoo.ham@samsung.com
+From: Yu Chen <yu.chen.surf@gmail.com>
+Subject: Re: Linux fails to start secondary cores when system resumes from
+ Suspend-to-RAM
+Date: Fri, 16 Dec 2016 13:14:06 +0800
+Message-ID: <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
+References: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_75593_300993182.1481854622202"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:44813 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754211AbcLPCRZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Dec 2016 21:17:25 -0500
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OI902KE4ACEE700@mailout3.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 16 Dec 2016 11:17:02 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Mason <slash.tmp@free.fr>
+Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>, Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>, linux-pm <linux-pm@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gambier <thomas_gambier@sigmadesigns.com>, Pavel Machek <pavel@ucw.cz>, Sebastian Frias <sf84@laposte.net>, Robin Murphy <robin.murphy@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?Q2hyaXMgRGlhbWFuZA==?= <chris.diamand@arm.com>, =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>
-Cc: =?UTF-8?B?U3VkZWVwIEhvbGxh?= <Sudeep.Holla@arm.com>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>, =?UTF-8?B?TmlzaGFudGggTWVub24=?= <nm@ti.com>, =?UTF-8?B?Q2FpIFpoaXlvbmc=?= <caizhiyong@huawei.com>, =?UTF-8?B?Y3BncyAu?= <cpgs@samsung.com>
 
-------=_Part_75593_300993182.1481854622202
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
-
-PiBTdXJlLCBJJ2xsIHNlbmQgb3V0IGFub3RoZXIgcGF0Y2ggd2l0aCBhIGNvbW1lbnQuDQo+IA0K
-PiBBbHRob3VnaCwgaWYgYW55b25lIGRvZXMgdW5yZWdpc3RlciBkZXZmcmVxIHdpdGhvdXQgZGV2
-ZnJlcV9yZW1vdmVfZGV2aWNlKCksDQo+IHRoZSB1c2Vyc3BhY2UgZ292ZXJub3Igd2lsbCBzdGls
-bCBiZSBicm9rZW4uDQo+IA0KPiBJIHdvbmRlciBpZiBpdCB3b3VsZCBiZSBiZXR0ZXIgdG8gZml4
-IHRoaXMgaW4gdGhlIGdvdmVybm9yIGluc3RlYWQsIGJlY2F1c2UNCj4gdGhpcyBwcm9ibGVtIG9u
-bHkgYWZmZWN0cyB0aGluZ3MgdXNpbmcgc3lzZnMgZW50cmllcy4gU29tZXRoaW5nIGxpa2UgdGhp
-czoNCj4gDQo+IC0tLSBhL2RyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vcl91c2Vyc3BhY2UuYw0KPiAr
-KysgYi9kcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfdXNlcnNwYWNlLmMNCj4gQEAgLTExMiw3ICsx
-MTIsMTMgQEAgb3V0Og0KPiAgDQo+ICBzdGF0aWMgdm9pZCB1c2Vyc3BhY2VfZXhpdChzdHJ1Y3Qg
-ZGV2ZnJlcSAqZGV2ZnJlcSkNCj4gIHsNCj4gLQlzeXNmc19yZW1vdmVfZ3JvdXAoJmRldmZyZXEt
-PmRldi5rb2JqLCAmZGV2X2F0dHJfZ3JvdXApOw0KPiArCS8qDQo+ICsJICogUmVtb3ZlIHRoZSBz
-eXNmcyBlbnRyeSwgdW5sZXNzIHRoaXMgaXMgYmVpbmcgY2FsbGVkIGFmdGVyDQo+ICsJICogZGV2
-aWNlX2RlbCgpLCB3aGljaCBzaG91bGQgaGF2ZSBkb25lIHRoaXMgYWxyZWFkeSB2aWEga29iamVj
-dF9kZWwoKS4NCj4gKwkgKi8NCj4gKwlpZiAoZGV2ZnJlcS0+ZGV2LmtvYmouc2QpDQo+ICsJCXN5
-c2ZzX3JlbW92ZV9ncm91cCgmZGV2ZnJlcS0+ZGV2LmtvYmosICZkZXZfYXR0cl9ncm91cCk7DQo+
-ICsNCj4gIAlrZnJlZShkZXZmcmVxLT5kYXRhKTsNCj4gIAlkZXZmcmVxLT5kYXRhID0gTlVMTDsN
-Cj4gIH0NCj4gDQo+IEl0J3MgYSBiaXQgdWdsaWVyLCBidXQgd291bGQgZml4IGl0IGluIGFsbCBj
-YXNlcyAtIHdoYXQgZG8geW91IHRoaW5rPw0KDQpUaGlzIGxvb2tzIGJldHRlciBiZWNhdXNlIHRo
-ZSBwcm9ibGVtIGhlcmUgaXMgb24gdW5kb2luZyB3aGF0DQphIGdvdmVybm9yIGhhcyBpbiBpdHMg
-b3duIGZ1bmN0aW9ucyBhdCB0aGUgZ292ZXJub3IncyBlbnRlcmluZyBmdW5jdGlvbi4NCg0KDQpD
-aGVlcnMsDQpNeXVuZ0pvbw0KDQo+IA0KPiBDaGVlcnMsDQo+IENocmlzDQo=
-------=_Part_75593_300993182.1481854622202--
+On Thu, Dec 15, 2016 at 11:18 PM, Mason <slash.tmp@free.fr> wrote:
+> Hello,
+>
+> I'm playing with suspend-to-RAM on the tango platform:
+>
+>   http://lxr.free-electrons.com/source/arch/arm/mach-tango/platsmp.c
+>
+> When the system is suspended, the CPU is completely powered down
+> (receives no power whatsoever). When the system receives a wake-up
+> event, the CPU is powered up, and starts up exactly the same way
+> as for a cold boot (I think).
+>
+> However, while Linux successfully starts the secondary cores when
+> the system first boots, it fails when the system resumes from "S3".
+>
+> I added printascii() calls inside secondary_start_kernel() and I can
+> see that the following instruction are "properly" run:
+>
+>         cpu_switch_mm(mm->pgd, mm);
+>         local_flush_bp_all();
+>         enter_lazy_tlb(mm, current);
+>
+> but it seems local_flush_tlb_all(); never returns... :-(
+>
+>   http://lxr.free-electrons.com/source/arch/arm/include/asm/tlbflush.h#L332
+>
+>
+> Looking more closely at that function, it seems to be failing in:
+>
+>         tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+>
+> (meaning: I get a log before, but not after)
+>
+> On my system, tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+> resolves to:
+>
+> c010ce18:       e3170602        tst     r7, #2097152    ; 0x200000
+> c010ce1c:       1e086f17        mcrne   15, 0, r6, cr8, cr7, {0}
+>
+> What could be happening?
+> Can a core "hang" on this instruction?
+> Can a core "crash" on this instruction (meaning, an exception
+> is raised, and the core loops inside the exception code without
+> Linux noticing... that seems unlikely)
+>
+> I'm stumped. Could someone throw me a clue?
+try online/offline the nonboot CPUs via
+/sys/devices/system/cpu/cpuX/online
