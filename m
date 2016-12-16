@@ -1,73 +1,95 @@
-From: Chris Diamand <chris.diamand@arm.com>
-Subject: [PATCH v2] PM / devfreq: Don't delete sysfs group twice
-Date: Fri, 16 Dec 2016 19:09:47 +0000
-Message-ID: <20161216190947.GA5454@e107465-lin.cambridge.arm.com>
-References: <CGME20161213171211epcas3p3ed8807883967daca28b7abe211446739@epcas3p3.samsung.com>
- <20161213170935.GA4661@e107465-lin.cambridge.arm.com>
- <5850A286.9080302@samsung.com>
- <5850B30A.20701@samsung.com>
- <420ba56f-70be-0735-ad99-d90dd04113c5@arm.com>
- <172e4f85358b4f4e9206c4a54b5db056@AM4PR0802MB2210.eurprd08.prod.outlook.com>
- <20161214113239.GA10108@e107465-lin.cambridge.arm.com>
- <7a342ead78be4f32a4a37b541fde412b@AM4PR0802MB2210.eurprd08.prod.outlook.com>
- <20161215104147.GA6504@e107465-lin.cambridge.arm.com>
- <f4620f8efbf247119640470ec12810fe@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
+ Exynos5422/5800
+Date: Fri, 16 Dec 2016 16:18:53 -0300
+Message-ID: <65cc16b3-4252-6933-96c8-621e3b694707@osg.samsung.com>
+References: <10512254.nyUcL0zgTP@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:59616 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752131AbcLPTJx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 16 Dec 2016 14:09:53 -0500
-Content-Disposition: inline
-In-Reply-To: <f4620f8efbf247119640470ec12810fe@AM4PR0802MB2210.eurprd08.prod.outlook.com>
+Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:44246
+        "EHLO osg.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1756255AbcLPTTE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 14:19:04 -0500
+In-Reply-To: <10512254.nyUcL0zgTP@amdc3058>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Arjun K V <arjun.kv@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The 'userspace' governor adds a sysfs entry, which is removed when
-the governor is changed, or the devfreq device is released. However,
-when the latter occurs via device_unregister(), device_del() is
-called first, which removes the sysfs entries recursively and deletes
-the kobject.
+Hello Bartlomiej,
 
-This means we get an Oops when the governor calls
-sysfs_remove_group() on the deleted kobject. Fix this by only doing
-the call when kobj *hasn't* been kobject_del()'d.
+On 12/15/2016 08:55 AM, Bartlomiej Zolnierkiewicz wrote:
+> Add missing 2000MHz & 1900MHz OPPs (for A15 cores) and 1400MHz OPP
+> (for A7 cores).  Also update common Odroid-XU3 Lite/XU3/XU4 thermal
+> cooling maps to account for new OPPs.
+> 
+> Since new OPPs are not available on all Exynos5422/5800 boards modify
+> dts files for Odroid-XU3 Lite (limited to 1.8 GHz / 1.3 GHz) & Peach
+> Pi (limited to 2.0 GHz / 1.3 GHz) accordingly.
+> 
+> Tested on Odroid-XU3 and XU3 Lite.
+> 
+> Cc: Doug Anderson <dianders@chromium.org>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: Andreas Faerber <afaerber@suse.de>
+> Cc: Thomas Abraham <thomas.ab@samsung.com>
+> Cc: Ben Gamari <ben@smart-cactus.org>
+> Cc: Arjun K V <arjun.kv@samsung.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+> v2:
+> - added comments about limitations of SoC revisions used by Odroid-XU3 Lite and
+>   Peach Pi boards (suggested by Javier)
+> - removed redundant opp_a7_14 label
+> - added Arjun to Cc:
+> 
+> Javier, could you test it on Peach Pi board?
+> 
 
-Note that we can't just remove the call to sysfs_remove_group()
-entirely - it's needed for when the governor is changed to one which
-doesn't need a sysfs entry.
+I've tested this patch on my Peach Pi by setting the CPUFreq governor to
+performance and checking that the current scaling frequency was 2.0 GHz:
 
-Signed-off-by: Chris Diamand <chris.diamand@arm.com>
----
-This takes a different approach to v1, and fixes the issue in the governor
-instead. This means reference counting should still work as usual, so anything
-which doesn't call devfreq_remove_device() should still work.
+$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq 
+2000000
+2000000
+2000000
+2000000
+1400000
+1400000
+1400000
+1400000
 
- drivers/devfreq/governor_userspace.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+I ran the machine for hours and it didn't became unstable. Also installed
+the stress [0] tool and setting the governor to ondemand, I executed:
 
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 35de6e8..9db4d6f 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -112,7 +112,13 @@ static int userspace_init(struct devfreq *devfreq)
- 
- static void userspace_exit(struct devfreq *devfreq)
- {
--	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-+	/*
-+	 * Remove the sysfs entry, unless this is being called after
-+	 * device_del(), which should have done this already via kobject_del().
-+	 */
-+	if (devfreq->dev.kobj.sd)
-+		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-+
- 	kfree(devfreq->data);
- 	devfreq->data = NULL;
- }
+$ stress --cpu 8
+
+For about 30 minutes, the current frequencies were again the maximum and
+had no issues.
+
+Finally, I tested some devices that are under the INT rail (MFC and GSC)
+by using the following GStreamer pipeline:
+
+$ gst-launch-1.0 filesrc location=test-1080p.mp4 ! qtdemux ! h264parse ! \
+  v4l2video5dec ! v4l2video7convert capture-io-mode=dmabuf ! kmssink
+
+Again, the system keeps working correctly. So I think it's safe to say:
+
+Tested-by: Javier Martinez Canillas <javier@osg.samsung.com>
+
+I can't provide a Reviewed-by since is still not clear to me if these OPP
+values are correct or not due the ChromiumOS tree using higher voltages.
+
+FWIW, the chip ID block information on my Exynos5800 Peach Pi is:
+
+Exynos: CPU[EXYNOS5800] CPU_REV[0x1] PKG_ID[0x350c82f8] AUX_INFO[0x4d]
+
+[0]: http://people.seas.harvard.edu/~apw/stress/
+
+Best regards,
 -- 
-1.9.1
-
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
