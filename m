@@ -1,95 +1,103 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
- Exynos5422/5800
-Date: Fri, 16 Dec 2016 16:18:53 -0300
-Message-ID: <65cc16b3-4252-6933-96c8-621e3b694707@osg.samsung.com>
-References: <10512254.nyUcL0zgTP@amdc3058>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v3] mfd: intel-lpss: Avoid resuming runtime-suspended
+ lpss unnecessarily
+Date: Sat, 17 Dec 2016 00:19:42 +0100
+Message-ID: <20161216231942.GA12460@wunner.de>
+References: <1475125286-12167-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ec2-52-27-115-49.us-west-2.compute.amazonaws.com ([52.27.115.49]:44246
-        "EHLO osg.samsung.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1756255AbcLPTTE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 14:19:04 -0500
-In-Reply-To: <10512254.nyUcL0zgTP@amdc3058>
+Received: from mailout3.hostsharing.net ([176.9.242.54]:45405 "EHLO
+        mailout3.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756971AbcLPXTl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Dec 2016 18:19:41 -0500
+Content-Disposition: inline
+In-Reply-To: <1475125286-12167-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Arjun K V <arjun.kv@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>
 
-Hello Bartlomiej,
+Hi Lee,
 
-On 12/15/2016 08:55 AM, Bartlomiej Zolnierkiewicz wrote:
-> Add missing 2000MHz & 1900MHz OPPs (for A15 cores) and 1400MHz OPP
-> (for A7 cores).  Also update common Odroid-XU3 Lite/XU3/XU4 thermal
-> cooling maps to account for new OPPs.
+you wrote on Oct 4 that you applied the below patch for v4.10.
+However I don't see the patch on your for-mfd-next branch.
+Maybe the patch slipped between the cracks, please double-check.
+I would like to use the DPM_DIRECT_COMPLETE macro introduced by it
+in a patch of my own.
+
+I also don't see a pull from you in Linus' tree yet. Please note
+that this merge window will be shorter than usual and pulls should
+be sent out before coming Friday.
+
+Thanks,
+
+Lukas
+
+On Thu, Sep 29, 2016 at 01:01:26PM +0800, Chen Yu wrote:
+> We have report that the intel_lpss_prepare() takes too much time during
+> suspend, and this is because we first resume the devices from runtime
+> suspend by resume_lpss_device(), to make sure they are in proper state
+> before system suspend, which takes 100ms for each LPSS devices(PCI power
+> state from D3_cold to D0). And since resume_lpss_device() resumes the
+> devices synchronously, we might get huge latency if we have many
+> LPSS devices.
 > 
-> Since new OPPs are not available on all Exynos5422/5800 boards modify
-> dts files for Odroid-XU3 Lite (limited to 1.8 GHz / 1.3 GHz) & Peach
-> Pi (limited to 2.0 GHz / 1.3 GHz) accordingly.
+> So first try is to use pm_request_resume() instead, to make the runtime
+> resume process asynchronously. Unfortunately the asynchronous runtime
+> resume relies on pm_wq, which is freezed at early stage. So we choose
+> another method, that is to avoid resuming runtime-suspended devices,
+> if they are already runtime suspended. This is safe because for LPSS
+> driver, the runtime suspend and system suspend are of the same
+> hook - i.e., intel_lpss_suspend(). And moreover, this device is
+> neither runtime wakeup source nor system wakeup source.
 > 
-> Tested on Odroid-XU3 and XU3 Lite.
-> 
-> Cc: Doug Anderson <dianders@chromium.org>
-> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-> Cc: Andreas Faerber <afaerber@suse.de>
-> Cc: Thomas Abraham <thomas.ab@samsung.com>
-> Cc: Ben Gamari <ben@smart-cactus.org>
-> Cc: Arjun K V <arjun.kv@samsung.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 > ---
-> v2:
-> - added comments about limitations of SoC revisions used by Odroid-XU3 Lite and
->   Peach Pi boards (suggested by Javier)
-> - removed redundant opp_a7_14 label
-> - added Arjun to Cc:
+>  drivers/mfd/intel-lpss.c | 9 +++++++++
+>  include/linux/pm.h       | 7 +++++++
+>  2 files changed, 16 insertions(+)
 > 
-> Javier, could you test it on Peach Pi board?
-> 
-
-I've tested this patch on my Peach Pi by setting the CPUFreq governor to
-performance and checking that the current scaling frequency was 2.0 GHz:
-
-$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq 
-2000000
-2000000
-2000000
-2000000
-1400000
-1400000
-1400000
-1400000
-
-I ran the machine for hours and it didn't became unstable. Also installed
-the stress [0] tool and setting the governor to ondemand, I executed:
-
-$ stress --cpu 8
-
-For about 30 minutes, the current frequencies were again the maximum and
-had no issues.
-
-Finally, I tested some devices that are under the INT rail (MFC and GSC)
-by using the following GStreamer pipeline:
-
-$ gst-launch-1.0 filesrc location=test-1080p.mp4 ! qtdemux ! h264parse ! \
-  v4l2video5dec ! v4l2video7convert capture-io-mode=dmabuf ! kmssink
-
-Again, the system keeps working correctly. So I think it's safe to say:
-
-Tested-by: Javier Martinez Canillas <javier@osg.samsung.com>
-
-I can't provide a Reviewed-by since is still not clear to me if these OPP
-values are correct or not due the ChromiumOS tree using higher voltages.
-
-FWIW, the chip ID block information on my Exynos5800 Peach Pi is:
-
-Exynos: CPU[EXYNOS5800] CPU_REV[0x1] PKG_ID[0x350c82f8] AUX_INFO[0x4d]
-
-[0]: http://people.seas.harvard.edu/~apw/stress/
-
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+> diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
+> index 41b1138..2583db8 100644
+> --- a/drivers/mfd/intel-lpss.c
+> +++ b/drivers/mfd/intel-lpss.c
+> @@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
+>  int intel_lpss_prepare(struct device *dev)
+>  {
+>  	/*
+> +	 * This is safe because:
+> +	 * 1. The runtime suspend and system suspend
+> +	 * are of the same hook.
+> +	 * 2. This device is neither runtime wakeup source
+> +	 * nor system wakeup source.
+> +	 */
+> +	if (pm_runtime_status_suspended(dev))
+> +		return DPM_DIRECT_COMPLETE;
+> +	/*
+>  	 * Resume both child devices before entering system sleep. This
+>  	 * ensures that they are in proper state before they get suspended.
+>  	 */
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 06eb353..4a788b4 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -786,4 +786,11 @@ enum dpm_order {
+>  	DPM_ORDER_DEV_LAST,
+>  };
+>  
+> +/*
+> + * Return this from system suspend/hibernation ->prepare() callback to
+> + * request the core to leave the device runtime-suspended during system
+> + * suspend if possible.
+> + */
+> +#define DPM_DIRECT_COMPLETE 1
+> +
+>  #endif /* _LINUX_PM_H */
