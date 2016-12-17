@@ -1,73 +1,73 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 0/8] power: supply: tps65217: Support USB charger
- feature
-Date: Sat, 17 Dec 2016 17:24:00 +0100
-Message-ID: <20161217162400.7yqiibcrkzp5ac3q@earth>
-References: <20161209074906.27545-1-woogyom.kim@gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] power: max77693_charger: Better sysfs creation and using
+ devm APIs
+Date: Sat, 17 Dec 2016 18:28:47 +0200
+Message-ID: <20161217162847.GA30265@kozik-lap>
+References: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
+ <20161210074854.GB2991@kozik-lap>
+ <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
+ <20161210195627.GA22744@kozik-lap>
+ <20161217160446.hakmgpqp5hvb6h5k@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="je2j4h53n2ygckoz"
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41838 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756897AbcLQQYF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 17 Dec 2016 11:24:05 -0500
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:34104 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755300AbcLQQ2w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Dec 2016 11:28:52 -0500
+Received: by mail-wm0-f66.google.com with SMTP id g23so10898416wme.1
+        for <linux-pm@vger.kernel.org>; Sat, 17 Dec 2016 08:28:52 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20161209074906.27545-1-woogyom.kim@gmail.com>
+In-Reply-To: <20161217160446.hakmgpqp5hvb6h5k@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Milo Kim <woogyom.kim@gmail.com>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Srikant Ritolia <srikant.ritolia@gmail.com>, Srikant Ritolia <s.ritolia@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com
 
+On Sat, Dec 17, 2016 at 05:04:46PM +0100, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Sat, Dec 10, 2016 at 09:56:27PM +0200, Krzysztof Kozlowski wrote:
+> > On Sat, Dec 10, 2016 at 07:49:25PM +0530, Srikant Ritolia wrote:
+> > > On Sat, Dec 10, 2016 at 1:18 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > > > On Fri, Dec 09, 2016 at 02:21:38PM +0530, Srikant Ritolia wrote:
+> >  >
+> > > >>                                               &max77693_charger_desc,
+> > > >>                                               &psy_cfg);
+> > > >>       if (IS_ERR(chg->charger)) {
+> > > >>               dev_err(&pdev->dev, "failed: power supply register\n");
+> > > >>               ret = PTR_ERR(chg->charger);
+> > > >> -             goto err;
+> > > >
+> > > > Missing sysfs cleanup.
+> > > >
+> > > > Best regards,
+> > > > Krzysztof
+> > > >
+> > > 
+> > > Thanks for pointing this out.
+> > > To overcome this I will use sysfs_create_group after devm_power_supply_register.
+> > > Then I would not need to do this sysfs cleanup on failure of power
+> > > supply register.
+> > 
+> > I am not sure if this is good idea. This patch does not bring any
+> > particular noticeable benefit except less lines of code. It is not worth
+> > breaking things just for that reason...
+> 
+> I like less lines of code. How does the changed registration order
+> break anything? The changed registration order makes sense anyways,
+> since it then matches the (reversed) removal order.
 
---je2j4h53n2ygckoz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+By broken things I meant possible errors introduced with devm
+conversion (like that one spotted above). To me personally, converting
+to devm on its own mostly does not bring benefits except few cases when
+a lot of code disappears. On the other hand it hides the order of
+cleanup making it slightly more difficult to review. Overall - not many
+benefits, some things hidden.
 
-Hi,
+However I understand that this is highly subjective so I am not against
+if others like this approach.
 
-On Fri, Dec 09, 2016 at 04:48:58PM +0900, Milo Kim wrote:
-> TPS65217 device supports two charger inputs - AC and USB.
-> Currently, only AC charger is supported. This patch-set adds USB charger=
-=20
-> feature. Tested on Beaglebone black.
->=20
-> Patch 1: Main patch
-> Patch 2, 3: Clean up for charger driver data
-> Patch 4 ~ 8: Naming changes for generic power supply class structure
->=20
-> v2:
->   Regenerate the patchset for better code review
->=20
-> Milo Kim (8):
->   power: supply: tps65217: Support USB charger interrupt
->   power: supply: tps65217: Use 'poll_task' on unloading the module
+Best regards,
+Krzysztof
 
-patches look fine, but these two patches must be reordered to fix
-bisectability. Otherwise after patch 1 the thread is not properly
-killed during driver removal.
-
--- Sebastian
-
---je2j4h53n2ygckoz
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVZp0ACgkQ2O7X88g7
-+pophw/+I80hO/jiVdV1f+vZ+hR5mvtMIkWzvbtD7bDcxguA5nBacpkMNBxe9SvZ
-kWHRX9rda7eoQjemy9aDx1J3vnc0Px6TG+usJeM+K/qIcMjf5yKucWKnFLXA0P84
-s9RCUBLo//6LI43ZHnRWL/n8OQFt222gr+WVmF3YtjMHhNIiCxuolbmIGXqxqy7K
-Nb2oKij/laDOXct8hrKU108HwBTD9DXeOxFnQSS4nnHL5m2sw1VWTzpO3yG3zsfH
-+gaXe4GgeQVJmn78PklcS6YrxkFexBWHwi3x1C5C0m01w4fCnxixmD4oERe6+DPq
-nSEMA/XU5pE/rFJ8Dz6RHmXKNKga/NEDgs1lBrgpMiaDehnQi63RnxH/Frl9NYvY
-k+nFdAwME01SYCIw/ZGBmYTG/dsb8pef5B9ah4otfy1YqBpi9UBA9PqDRyofRePc
-uubohXvZ24J8m4smAKLo6Ofsug2BU2jEq/4YbO2zT89P/4XMWzOvwfwtLoiAVzgE
-b5pl4tGg3u7yW9OoRhu3RWwhnLbYOhz1Q/qokcCF0NbWMelYGuAddsO4eDNzpJQX
-ZS9NF3YXHX/2VkA0f0kZCL9UC41Zrj7MoJJy8EYwh2DiZUorbeXWvmRWk2H+5PV9
-iiO43CPFBTmpA60XI+FozA5987RoLX3k3LStf8/DumZvdvDcfj8=
-=SCu/
------END PGP SIGNATURE-----
-
---je2j4h53n2ygckoz--
