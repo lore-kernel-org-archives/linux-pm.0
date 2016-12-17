@@ -1,160 +1,214 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v3 7/7] thunderbolt: Runtime suspend NHI when idle
-Date: Sat, 17 Dec 2016 15:39:39 +0100
-Message-ID: <541d11e1d18f6bba3cf2454ba8c119ab31dc3655.1481926599.git.lukas@wunner.de>
-References: <cover.1481926599.git.lukas@wunner.de>
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <cover.1481926599.git.lukas@wunner.de>
-Sender: linux-pci-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Amir Levy <amir.jer.levy@intel.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH v1 & v6 1/2] PM/devfreq: add suspend frequency support
+Date: Sat, 17 Dec 2016 23:50:03 +0900
+Message-ID: <CAGTfZH34MvFGGuPgt=qUM6FMmi+Z80akY5ZH1k6gXdzg19fh9Q@mail.gmail.com>
+References: <CGME20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
+ <20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
+ <58368C91.8030502@rock-chips.com> <5836927B.9010205@samsung.com>
+ <5836980F.6050006@rock-chips.com> <5836A1E0.1070707@samsung.com>
+ <5836A622.20007@rock-chips.com> <5836B2C2.6090308@samsung.com> <5836B8D1.9050707@samsung.com>
+Reply-To: cwchoi00@gmail.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f194.google.com ([209.85.220.194]:34610 "EHLO
+        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756616AbcLQOuY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Dec 2016 09:50:24 -0500
+In-Reply-To: <5836B8D1.9050707@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: hl <hl@rock-chips.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "dianders@chromium.org" <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 
-Runtime suspend the NHI when no Thunderbolt devices have been plugged in
-for 10 sec (user-configurable via autosuspend_delay_ms in sysfs).
+Hi Lin,
 
-The NHI is not able to detect plug events while suspended, it relies on
-the GPE handler to resume it on hotplug.
+2016-11-24 18:54 GMT+09:00 Chanwoo Choi <cw00.choi@samsung.com>:
+> Hi Lin,
+>
+> On 2016=EB=85=84 11=EC=9B=94 24=EC=9D=BC 18:28, Chanwoo Choi wrote:
+>> Hi Lin,
+>>
+>> On 2016=EB=85=84 11=EC=9B=94 24=EC=9D=BC 17:34, hl wrote:
+>>> Hi Chanwoo Choi,
+>>>
+>>>
+>>> On 2016=E5=B9=B411=E6=9C=8824=E6=97=A5 16:16, Chanwoo Choi wrote:
+>>>> Hi Lin,
+>>>>
+>>>> On 2016=EB=85=84 11=EC=9B=94 24=EC=9D=BC 16:34, hl wrote:
+>>>>> Hi Chanwoo Choi,
+>>>>>
+>>>>>      I think the dev_pm_opp_get_suspend_opp() have implement most of
+>>>>> the funtion, all we need is just define the node in dts, like followi=
+ng:
+>>>>>
+>>>>> &dmc_opp_table {
+>>>>>      opp06 {
+>>>>>          opp-suspend;
+>>>>>      };
+>>>>> };
+>>>> Two approaches use the 'opp-suspend' property.
+>>>>
+>>>> I think that the method to support suspend-opp have to
+>>>> guarantee following conditions:
+>>>> - Support the all of devfreq's governors.
+>>>     As MyungJoo Ham suggestion, i will set the suspend frequency in dev=
+freq_suspend_device(),
+>>> which will ingore governor.
+>>
+>> Other approach already support the all of governors.
+>> Before calling the mail, I discussed with Myungjoo Ham.
+>> Myungjoo prefer to use the devfreq_suspend/devfreq_resume().
+>
+> It is not correct expression. We need to wait the reply from Myungjoo
+> to clarify this.
+>
+>>
+>> To Myungjoo,
+>> Please add your opinion how to support the suspend frequency.
+>
+>>
+>>>> - Devfreq framework have the responsibility to change the
+>>>>    frequency/voltage for suspend-opp. If we uses the
+>>>>    new devfreq_suspend(), each devfreq device don't care
+>>>>    how to support the suspend-opp. Just the developer of each
+>>>>    devfreq device need to add 'opp-suspend' propet to OPP entry in DT =
+file.
+>>> Why should support change the voltage in devfreq framework, i think it =
+shuold be handle in
+>>> specific driver, i think the devfreq only handle it can get the right f=
+requency, then pass it to
+>>
+>> No, the frequency should be handled by governor or framework.
+>> The each devfreq device has no any responsibility of next frequency/volt=
+age.
+>> The governor and core of devfreq can decide the next frequency/voltage.
+>> You can refer to the cpufreq subsystem.
+>>
+>>> specific driver, i think the voltage should handle in the devfreq->prof=
+ile->target();
+>>
+>> The call of devfreq->profile->target() have to be handled by devfreq fra=
+mework.
+>> If user want to set the suspend frequency, user can add the 'suspend-opp=
+' property.
+>> It think this way is easy.
+>>
+>> But,
+>> If the each devfreq device want to decide the next frequency/voltage onl=
+y for
+>> suspend state. We can check the cpufreq subsystem.
+>>
+>> If specific devfreq device want to handle the suspend frequency,
+>> each devfreq will add the own suspend/resume functions as following:
+>>
+>>       struct devfreq_dev_profile {
+>>               int (*suspend)(struct devfreq *dev);    // new function po=
+inter
+>>               int (*resume)(struct devfreq *dev);     // new function po=
+inter
+>>       } a_profile;
+>>
+>>       a_profile =3D devfreq_generic_suspend;
+>>
+>>       The devfreq framework will provide the devfreq_generic_suspend() f=
+unticon.
+>>               int devfreq_generic_suspend(struce devfreq *dev) {
+>>                       ...
+>>                       devfreq->profile->target(..., devfreq->suspend_fre=
+q);
+>>                       ...
+>>               }
+>>
+>>       or
+>>
+>>       a_profile =3D a_devfreq_suspend; // specific function of each devf=
+req device
+>>
+>>       The devfreq_suspend() will call 'devfreq->profile->suspend()' func=
+tion
+>>       instead of devfreq->profile->target();
+>>
+>>       The devfreq call the 'devfreq->profile->suspend()'
+>>       to support the suspend frequency.
+>>
+>> Regards,
+>> Chanwoo Choi
+>
+> The key difference between two approaches:
+>
+> Your approach:
+> - The each developer should add the 'opp-suspend' property to the dts fil=
+e.
+> - The each devfreq should call the devfreq_suspend_device()
+>   to support the suspend frequency.
+>
+>   If each devfreq doesn't call the devfreq_suspend_device(), devfreq fram=
+ework
+>   can support the suspend frequency.
+>
+> Other approach:
+> - The each developer only should add the 'opp-suspend' property to the dt=
+s file
+>   without the additional behavior.
+>
+> In the cpufreq subsystem,
+> When support the suspend frequency of cpufreq, we just add 'opp-suspend' =
+property
+> without the additional behavior.
 
-After the NHI resumes, it takes about 700 ms until a hotplug event
-appears on the RX ring.  In case autosuspend_delay_ms has been reduced
-to 0 by the user, we need to wait in tb_resume() to avoid going back to
-sleep before we had a chance to detect a hotplugged device.  A runtime
-pm ref is held for the duration of tb_handle_hotplug() to keep the NHI
-awake while the hotplug event is processed.
+I'm missing the use-case when using the devfreq_suspend_device()
+before entering the suspend mode. We should consider the case when
+devfreq device
+calls the devfreq_suspend_device() directly. Because devfreq_suspend_device=
+()
+is exported function, each devfreq device call this function on the fly
+without entering the suspend mode.
 
-Apart from that we acquire a runtime pm ref for each newly allocated
-switch (except for the root switch) and drop one when a switch is freed,
-thereby ensuring the NHI stays active as long as devices are plugged in.
-This behaviour is identical to the macOS driver.
+I correct my opinion. Your approach is necessary. I'm sorry to confuse you.
+So, I make the following patch. This patch set the suspend frequency
+in devfreq_suspend_device() after stoping the governor.
+It consider the all governors of devfreq.
 
-Cc: Andreas Noever <andreas.noever@gmail.com>
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- drivers/thunderbolt/nhi.c    |  2 ++
- drivers/thunderbolt/power.c  |  9 +++++++++
- drivers/thunderbolt/switch.c |  9 +++++++++
- drivers/thunderbolt/tb.c     | 13 +++++++++++++
- 4 files changed, 33 insertions(+)
+What do you think?
+If you are ok, I'll send this patch with your author.
 
-diff --git a/drivers/thunderbolt/nhi.c b/drivers/thunderbolt/nhi.c
-index 88fb2fb..319ed81 100644
---- a/drivers/thunderbolt/nhi.c
-+++ b/drivers/thunderbolt/nhi.c
-@@ -632,6 +632,8 @@ static const struct dev_pm_ops nhi_pm_ops = {
- 					    * pci-tunnels stay alive.
- 					    */
- 	.restore_noirq = nhi_resume_noirq,
-+	.runtime_suspend = nhi_suspend_noirq,
-+	.runtime_resume = nhi_resume_noirq,
- };
- 
- static struct pci_device_id nhi_ids[] = {
-diff --git a/drivers/thunderbolt/power.c b/drivers/thunderbolt/power.c
-index 4d7c6a0..1b5f066 100644
---- a/drivers/thunderbolt/power.c
-+++ b/drivers/thunderbolt/power.c
-@@ -320,6 +320,12 @@ void thunderbolt_power_init(struct tb *tb)
- 
- 	tb->power = power;
- 
-+	pm_runtime_allow(nhi_dev);
-+	pm_runtime_set_autosuspend_delay(nhi_dev, 10000);
-+	pm_runtime_use_autosuspend(nhi_dev);
-+	pm_runtime_mark_last_busy(nhi_dev);
-+	pm_runtime_put_autosuspend(nhi_dev);
-+
- 	return;
- 
- err:
-@@ -336,6 +342,9 @@ void thunderbolt_power_fini(struct tb *tb)
- 	if (!power)
- 		return;
- 
-+	pm_runtime_get(nhi_dev);
-+	pm_runtime_forbid(nhi_dev);
-+
- 	tb->power = NULL;
- 	dev_pm_domain_set(upstream_dev, NULL);
- 
-diff --git a/drivers/thunderbolt/switch.c b/drivers/thunderbolt/switch.c
-index c6f30b1..422fe6e 100644
---- a/drivers/thunderbolt/switch.c
-+++ b/drivers/thunderbolt/switch.c
-@@ -5,6 +5,7 @@
-  */
- 
- #include <linux/delay.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- 
- #include "tb.h"
-@@ -326,6 +327,11 @@ void tb_switch_free(struct tb_switch *sw)
- 	if (!sw->is_unplugged)
- 		tb_plug_events_active(sw, false);
- 
-+	if (sw != sw->tb->root_switch) {
-+		pm_runtime_mark_last_busy(&sw->tb->nhi->pdev->dev);
-+		pm_runtime_put_autosuspend(&sw->tb->nhi->pdev->dev);
-+	}
-+
- 	kfree(sw->ports);
- 	kfree(sw->drom);
- 	kfree(sw);
-@@ -420,6 +426,9 @@ struct tb_switch *tb_switch_alloc(struct tb *tb, u64 route)
- 	if (tb_plug_events_active(sw, true))
- 		goto err;
- 
-+	if (tb->root_switch)
-+		pm_runtime_get(&tb->nhi->pdev->dev);
-+
- 	return sw;
- err:
- 	kfree(sw->ports);
-diff --git a/drivers/thunderbolt/tb.c b/drivers/thunderbolt/tb.c
-index 24b6d30..a3fedf9 100644
---- a/drivers/thunderbolt/tb.c
-+++ b/drivers/thunderbolt/tb.c
-@@ -7,6 +7,7 @@
- #include <linux/slab.h>
- #include <linux/errno.h>
- #include <linux/delay.h>
-+#include <linux/pm_runtime.h>
- 
- #include "tb.h"
- #include "tb_regs.h"
-@@ -217,8 +218,11 @@ static void tb_handle_hotplug(struct work_struct *work)
+ int devfreq_suspend_device(struct devfreq *devfreq)
  {
- 	struct tb_hotplug_event *ev = container_of(work, typeof(*ev), work);
- 	struct tb *tb = ev->tb;
-+	struct device *dev = &tb->nhi->pdev->dev;
- 	struct tb_switch *sw;
- 	struct tb_port *port;
++      int ret =3D 0;
 +
-+	pm_runtime_get(dev);
- 	mutex_lock(&tb->lock);
- 	if (!tb->hotplug_active)
- 		goto out; /* during init, suspend or shutdown */
-@@ -274,6 +278,8 @@ static void tb_handle_hotplug(struct work_struct *work)
- out:
- 	mutex_unlock(&tb->lock);
- 	kfree(ev);
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put_autosuspend(dev);
- }
- 
- /**
-@@ -433,4 +439,11 @@ void thunderbolt_resume(struct tb *tb)
- 	tb->hotplug_active = true;
- 	mutex_unlock(&tb->lock);
- 	tb_info(tb, "resume finished\n");
+        if (!devfreq)
+        return -EINVAL;
+
+        if (!devfreq->governor)
+             return 0;
+
+-      return devfreq->governor->event_handler(devfreq,
++     ret =3D devfreq->governor->event_handler(devfreq,
+                    DEVFREQ_GOV_SUSPEND, NULL);
++      if (ret < 0) {
++           dev_err(devfreq->dev.parent, "failed to suspend governor\n");
++           return ret;
++      }
 +
-+	/*
-+	 * If runtime resuming due to a hotplug event (rather than resuming
-+	 * from system sleep), wait for it to arrive. May take about 700 ms.
-+	 */
-+	if (tb->nhi->pdev->dev.power.runtime_status == RPM_RESUMING)
-+		msleep(1000);
++      if (devfreq->suspend_freq) {
++           ret =3D devfreq->profile->target(devfreq->dev.parent,
++                                      &devfreq->suspend_freq, 0);
++           if (ret < 0) {
++                  dev_err(devfreq->dev.parent,
++                             "failed to set suspend-freq\n");
++                  return ret;
++           }
++           dev_dbg(devfreq->dev.parent, "Setting suspend-freq: %lu\n",
++                          devfreq->suspend_freq);
++      }
++
++      return 0;
  }
--- 
-2.10.2
+ EXPORT_SYMBOL(devfreq_suspend_device);
+
+--=20
+Best Regards,
+Chanwoo Choi
