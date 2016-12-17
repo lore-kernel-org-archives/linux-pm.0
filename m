@@ -1,101 +1,88 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 00/11] add support for VBUS max current and min
- voltage limits AXP20X and AXP22X PMICs
-Date: Sat, 17 Dec 2016 16:54:31 +0100
-Message-ID: <20161217155431.jlkxxdgxzu5aiuke@earth>
-References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: max77693_charger: Better sysfs creation and using
+ devm APIs
+Date: Sat, 17 Dec 2016 17:04:46 +0100
+Message-ID: <20161217160446.hakmgpqp5hvb6h5k@earth>
+References: <1481273498-4957-1-git-send-email-s.ritolia@samsung.com>
+ <20161210074854.GB2991@kozik-lap>
+ <CADeeJYCSaqW+dayookXKVtWaEKrtHKKixBmXY3gQa86v-s7b8w@mail.gmail.com>
+ <20161210195627.GA22744@kozik-lap>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="d7wkknmodmutt4up"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+        protocol="application/pgp-signature"; boundary="2fkrkv5ld7mfi6rv"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:40900 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753384AbcLQQEv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 17 Dec 2016 11:04:51 -0500
 Content-Disposition: inline
-In-Reply-To: <20161209110419.28981-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+In-Reply-To: <20161210195627.GA22744@kozik-lap>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Srikant Ritolia <srikant.ritolia@gmail.com>, Srikant Ritolia <s.ritolia@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, d.wadhawan@samsung.com, vidushi.koul@samsung.com
 
 
---d7wkknmodmutt4up
+--2fkrkv5ld7mfi6rv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Quentin,
+Hi,
 
-On Fri, Dec 09, 2016 at 12:04:08PM +0100, Quentin Schulz wrote:
-> The X-Powers AXP209 and AXP20X PMICs are able to set a limit for the
-> VBUS power supply for both max current and min voltage supplied. This
-> series of patch adds the possibility to set these limits from sysfs.
+On Sat, Dec 10, 2016 at 09:56:27PM +0200, Krzysztof Kozlowski wrote:
+> On Sat, Dec 10, 2016 at 07:49:25PM +0530, Srikant Ritolia wrote:
+> > On Sat, Dec 10, 2016 at 1:18 PM, Krzysztof Kozlowski <krzk@kernel.org> =
+wrote:
+> > > On Fri, Dec 09, 2016 at 02:21:38PM +0530, Srikant Ritolia wrote:
+>  >
+> > >>                                               &max77693_charger_desc,
+> > >>                                               &psy_cfg);
+> > >>       if (IS_ERR(chg->charger)) {
+> > >>               dev_err(&pdev->dev, "failed: power supply register\n");
+> > >>               ret =3D PTR_ERR(chg->charger);
+> > >> -             goto err;
+> > >
+> > > Missing sysfs cleanup.
+> > >
+> > > Best regards,
+> > > Krzysztof
+> > >
+> >=20
+> > Thanks for pointing this out.
+> > To overcome this I will use sysfs_create_group after devm_power_supply_=
+register.
+> > Then I would not need to do this sysfs cleanup on failure of power
+> > supply register.
 >=20
-> Also, the AXP223 PMIC shares most of its behaviour with the AXP221 but
-> the former can set the VBUS power supply max current to 100mA, unlike
-> the latter. The AXP223 VBUS power supply driver used to probe on the
-> AXP221 compatible. This series of patch introduces a new compatible for
-> the AXP223 to be able to set the current max limit to 100mA.
->=20
-> With that new compatible, boards having the AXP223 see their DT updated
-> to use the VBUS power supply driver with the correct compatible.
->=20
-> This series of patch also migrates from of_device_is_compatible function
-> to the data field of of_device_id to identify the compatible used to
-> probe. This improves the code readability.
->=20
-> Mostly cosmetic changes in v2 and adding volatile and writeable regs to
-> AXP20X and AXP22X MFD cells for the VBUS power supply driver.
->=20
-> Quentin Schulz (11):
->   power: supply: axp20x_usb_power: use of_device_id data field instead
->     of device_is_compatible
->   mfd: axp20x: add volatile and writeable reg ranges for VBUS power
->     supply driver
->   power: supply: axp20x_usb_power: set min voltage and max current from
->     sysfs
->   Documentation: DT: binding: axp20x_usb_power: add axp223 compatible
->   power: supply: axp20x_usb_power: add 100mA max current limit for
->     AXP223
->   mfd: axp20x: add separate MFD cell for AXP223
->   ARM: dtsi: add DTSI for AXP223
->   ARM: dts: sun8i-a33-olinuxino: use AXP223 DTSI
->   ARM: dts: sun8i-a33-sinlinx-sina33: use AXP223 DTSI
->   ARM: dts: sun8i-r16-parrot: use AXP223 DTSI
->   ARM: dtsi: sun8i-reference-design-tablet: use AXP223 DTSI
+> I am not sure if this is good idea. This patch does not bring any
+> particular noticeable benefit except less lines of code. It is not worth
+> breaking things just for that reason...
 
-Thanks for your patchset. We are currently in the merge
-window and patches 1 & 3-5 will appear in linux-next once
-4.10-rc1 has been tagged by Linus Torvalds.
-
-Until then I queued them into this branch:
-
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
-/?h=3Dfor-next-next
+I like less lines of code. How does the changed registration order
+break anything? The changed registration order makes sense anyways,
+since it then matches the (reversed) removal order.
 
 -- Sebastian
 
--- Sebastian
-
---d7wkknmodmutt4up
+--2fkrkv5ld7mfi6rv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVX7QACgkQ2O7X88g7
-+pppjA/+JxL7PUScCRUohft1CvgxMqJFpuVYaJ4H5F0BKkYmOHJg6FQNLSryGffK
-VXaGNQ2f20NY5H4gWHUndnp7PssqOXrULkLL3VS5UCYbPkmqeOYrmnRKpuyGWVJy
-PEvsYW6MFwQ96D57CJspQifYMJfxZm4gq4SAlpurwgc4WhbNe9wg+d9nDss8rkgI
-SNDU7fxkpzfSA+vG8aL6h1JBQbzLTls1zqoSUqzBalgkZNXTMEeoltIdH5zHmIqx
-IQ3qunxTAUVNxeugiJAuEktwdTKkDgztvD+SQNJmbJCGlyc/P3gPkgGkv7O1CY0E
-U9CI0CEiBgTQ/CW8a+HI9WakU3NxwFL/KFlLcIWUqxyTrj5jtdR/5tSIeNU60q4u
-6wA8/DT/yc07vRhIF7Cr1nHKva88i+hnkIdEpaqlHuy0xqx2BShKfFsza08Xr6gX
-FFjc5lCcG3FTf73Mp2wJ4wujAFcShIKBaCLFPUv6QGHpqHIEOgg96SxJ6B/llGsy
-92ACA1UREHoO/3w/eZPNe7tFJGTUYxYZZkD2niFIKJ0xcrn9YMRrGRzJJ6lE9Z1e
-leTi5W/Zh5pPncd+7D3/LVGV+v7jmR8K2ALtl6Q2ThUm33TKiVP3FXPFx1gL/LuT
-FFWlFURolO9Ilt/wM/Y7mnB3aPGV9cmCZMS9LTHNJ/fX59et0MM=
-=ResL
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVYhwACgkQ2O7X88g7
++pq3+BAAj/bR9UOjhASLzUNEu8gO2peYHmG5ZNGPOBPIY1lpWKhczJYoa6sKfLvr
+b6dhNNCPBTHhiogUNq7J8Hg+8XFyBlq4J3a1kKZSKlXpGPRXXi/48r5i4IHC0DIg
+gOTXCiLt5V5W2hLascwvk7KuuNu3bDxydm2xwM47PiFX+Z1Orh/eesP8b4atT+7+
+ZoAnW5DUh4mSsjvf7MH5/HqD/JnGtiMI52km9fVBdV/GHWxCyI4eHi+JChgLp381
+GhkOGrG6EyJgcfNOqV8hwLd85yaOEx5OLo8uIY4PvYxDQRgwhUEeMXfLHv3tQlii
++4w6iN7uL5uydAvM7t5tM5YgCxmnWFYuYR08TPt7mL/rkupW27twyc37pcCIXIZF
+2G0bZrPihAkIj3utDLQE4mYBRJzVQPM5SqgNV0daackuypV51Ojs5CoaoRZBb780
+TIDk0jMmUojsQCJZ1s0GaYuGNTSpwDrZtB/YLv89hQgJSwtZiQ8gVd4flEfj1rKw
+HtvkznR2z2zHd1oc5TmuhyPYrMNRaJymt2fOHgBIepqe5BXVepOtsG5GtNzDn41t
+7gZgj5rCLjUsNkgRryV8z5kaootEmXL+zSw3F5OZRNk/6k5a/Db8844OEhvFjljw
+Uy0IzZlMtchMHvTRrAIxcnmeSECculOCHUxJK5SR4l9jggpKfko=
+=v/7i
 -----END PGP SIGNATURE-----
 
---d7wkknmodmutt4up--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--2fkrkv5ld7mfi6rv--
