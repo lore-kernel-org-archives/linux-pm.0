@@ -1,35 +1,35 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/4] power: supply: axp288_fuel_gauge: Fix
- fuel_gauge_reg_readb return on error
-Date: Sat, 17 Dec 2016 15:57:22 +0100
-Message-ID: <20161217145721.6d6htvdt6edrhsxj@earth>
+Subject: Re: [PATCH 2/4] power: supply: axp288_fuel_gauge: Read 15 bit values
+ 2 registers at a time
+Date: Sat, 17 Dec 2016 15:58:04 +0100
+Message-ID: <20161217145804.vusj3ayihnxkmdol@earth>
 References: <20161214163853.454-1-hdegoede@redhat.com>
+ <20161214163853.454-2-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rc4hm2y4tusyxfgx"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:37344 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756275AbcLQO51 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 17 Dec 2016 09:57:27 -0500
+        protocol="application/pgp-signature"; boundary="sjigynujnhkoir5g"
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161214163853.454-1-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20161214163853.454-2-hdegoede@redhat.com>
+Sender: linux-i2c-owner@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
-Cc: Chen-Yu Tsai <wens@csie.org>, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org
+Cc: Chen-Yu Tsai <wens@csie.org>, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---rc4hm2y4tusyxfgx
+--sjigynujnhkoir5g
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Dec 14, 2016 at 05:38:50PM +0100, Hans de Goede wrote:
-> If reading the register fails, return the actual error code, instead
-> of the uninitialized val variable;
+On Wed, Dec 14, 2016 at 05:38:51PM +0100, Hans de Goede wrote:
+> In order for the MSB -> LSB latching to work correctly we must read the
+> 2 8 bit registers of a 15 bit value in one consecutive read.
+>=20
+> This fixes charge_full reporting 3498768 on some reads and 3354624 one
+> other reads on my tablet (for the 3354624 value the raw LSB is 0x00).
 >=20
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
@@ -44,24 +44,24 @@ https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
 
 -- Sebastian
 
---rc4hm2y4tusyxfgx
+--sjigynujnhkoir5g
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVUlEACgkQ2O7X88g7
-+pr0FQ//WRumypN8SVhlsIDjzY0p8+bUK+d7txcCx17E7+Kg6tzCzjuku8ELi/CZ
-kZ0CuizegP6dufne0zvvQnRH/BhSnKPzwT4im1xF8uvigdvEqnGERZvCqX3VxeX5
-9gw7dBlbIL1Le9dxNtbgPgFu6N8QvBCR+moEjU6dFs5r/U4Dk3D+CzHYjHE+wW/h
-mx5aURID7F5BQ9fVPz22YN9QQ+iLL6tFI6zdGMnKXoaI1qWG727gaiikz+tLuieh
-gTeT7b5itN9pCV0Z+IxIbXQuAKlvGgNhndAkibt2EZTK6jEUjib9Shr+p6nIeLW0
-6x5Pna/oaUJN2GAhEvcrdZtD39vlttQ+FRUpmwtrDt2YVxPGMaf1edXb/GOZ/L0s
-uvGfy7QKVRjO7a6yui+uMzloc7ge+a3iqqGTVLclYzo0T7tjJBPTfdaM4UdjLliJ
-h4O5aXQu47/xSZtsAkSJkwReMlvvoeAGLdiqqSD+gpG76u+i0/ulmNPB1d1p3kEh
-krziRFqS9dvTkvMs1MFQml7vdpbinPI3ZNdyqxnLSxwffXAcGOYQD4rW4kEmnN6C
-NJPyaefGfg7BrOw5hYvwXfbDnntqY+NG2c6gtE8qJX4Gl9kmKXYjsb87FSZehJww
-VoWvahuIeO07UjB0vsharwXP8CidyWXuLDhgYN9RlsjqdfCEPI4=
-=pZ+j
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVUnwACgkQ2O7X88g7
++pqEQQ/7BwaE1bEcDfpHDRnEZ2s+aB5XMaSYqmJYCr0o4T4KU4GMehaAbgfcMUtf
+eSBTYynp6Mw2rQTtnk/bjf3Y7wJ6NgIyOKuS2A7JheYnIEk05q0R/GSMeipvILuU
+PBqzmqK7M36EC6iyIhab9tQXO2WelltEpDW9e5yrXXLG9O3Cy5lF/AwYIaL+oyQD
+eWmojdHCfW/0jorhStW0tnC62jGbgWMJOk/Q1c8XkL9LJfZRWxqpfR/jN6gxzg4J
+jx9sUXqnNfmPYufZEhh+QsYWhfrziKa9sh1qfHO1QDQcGz1mlUFi8c8ARAxdowFY
+ymMlwHJqtbOyDgRVM5a8mfzFuWHcawVj4OIiv70DBqAC+oGc/KyVMGH/i6ydylSH
+KlBcCFqfyY4P60Q1IcLTQqHJwoSNNodoCtlL6VImxbZni7tt1GYnGjN6lkpvAF8i
+JKUwh90S0osJrreJfqhw/rBTymXqJYdGscZJjlHaFgzgXtP8WqIl9fNPFWFr6E3A
+brSXiHwQQ6wKpT5hU44WnsbS9HFBklerO7BV2++DvRfkOjPZxSgoJVd5ngE8jYQH
+N9ATnhRclXUU1AiXIEg63J96cGyfkZJSbAy7Q8HqJ+k8hcNktHx7XQR3nN88Wdh+
+u/TaQjphEid9FY95ii6D+rt0yv1uOIKlSIz0se1eKx0qPBUE3x8=
+=Gck8
 -----END PGP SIGNATURE-----
 
---rc4hm2y4tusyxfgx--
+--sjigynujnhkoir5g--
