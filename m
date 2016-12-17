@@ -1,209 +1,134 @@
-From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Subject: Re: [PATCH v1 & v6 1/2] PM/devfreq: add suspend frequency support
-Date: Sat, 17 Dec 2016 16:13:18 +0100
-Message-ID: <5855560E.4050609@math.uni-bielefeld.de>
-References: <CGME20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
- <20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
- <58368C91.8030502@rock-chips.com> <5836927B.9010205@samsung.com>
- <5836980F.6050006@rock-chips.com> <5836A1E0.1070707@samsung.com>
- <5836A622.20007@rock-chips.com> <5836B2C2.6090308@samsung.com>
- <5836B8D1.9050707@samsung.com>
- <CAGTfZH34MvFGGuPgt=qUM6FMmi+Z80akY5ZH1k6gXdzg19fh9Q@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v3] power:  smb347_charger: Use device managed API's
+Date: Sat, 17 Dec 2016 16:35:20 +0100
+Message-ID: <20161217153519.lnpkvqqob3tjgrus@earth>
+References: <1481368111-4996-1-git-send-email-atul.r@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGTfZH34MvFGGuPgt=qUM6FMmi+Z80akY5ZH1k6gXdzg19fh9Q@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: cwchoi00@gmail.com, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: hl <hl@rock-chips.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "dianders@chromium.org" <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lexnthsgwwmm6zv6"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:39250 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752683AbcLQPf1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 17 Dec 2016 10:35:27 -0500
+Content-Disposition: inline
+In-Reply-To: <1481368111-4996-1-git-send-email-atul.r@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hey guys,
-
-Chanwoo Choi wrote:
-> Hi Lin,
-> 
-> 2016-11-24 18:54 GMT+09:00 Chanwoo Choi <cw00.choi@samsung.com>:
->> Hi Lin,
->>
->> On 2016년 11월 24일 18:28, Chanwoo Choi wrote:
->>> Hi Lin,
->>>
->>> On 2016년 11월 24일 17:34, hl wrote:
->>>> Hi Chanwoo Choi,
->>>>
->>>>
->>>> On 2016年11月24日 16:16, Chanwoo Choi wrote:
->>>>> Hi Lin,
->>>>>
->>>>> On 2016년 11월 24일 16:34, hl wrote:
->>>>>> Hi Chanwoo Choi,
->>>>>>
->>>>>>      I think the dev_pm_opp_get_suspend_opp() have implement most of
->>>>>> the funtion, all we need is just define the node in dts, like following:
->>>>>>
->>>>>> &dmc_opp_table {
->>>>>>      opp06 {
->>>>>>          opp-suspend;
->>>>>>      };
->>>>>> };
->>>>> Two approaches use the 'opp-suspend' property.
->>>>>
->>>>> I think that the method to support suspend-opp have to
->>>>> guarantee following conditions:
->>>>> - Support the all of devfreq's governors.
->>>>     As MyungJoo Ham suggestion, i will set the suspend frequency in devfreq_suspend_device(),
->>>> which will ingore governor.
->>>
->>> Other approach already support the all of governors.
->>> Before calling the mail, I discussed with Myungjoo Ham.
->>> Myungjoo prefer to use the devfreq_suspend/devfreq_resume().
->>
->> It is not correct expression. We need to wait the reply from Myungjoo
->> to clarify this.
->>
->>>
->>> To Myungjoo,
->>> Please add your opinion how to support the suspend frequency.
->>
->>>
->>>>> - Devfreq framework have the responsibility to change the
->>>>>    frequency/voltage for suspend-opp. If we uses the
->>>>>    new devfreq_suspend(), each devfreq device don't care
->>>>>    how to support the suspend-opp. Just the developer of each
->>>>>    devfreq device need to add 'opp-suspend' propet to OPP entry in DT file.
->>>> Why should support change the voltage in devfreq framework, i think it shuold be handle in
->>>> specific driver, i think the devfreq only handle it can get the right frequency, then pass it to
->>>
->>> No, the frequency should be handled by governor or framework.
->>> The each devfreq device has no any responsibility of next frequency/voltage.
->>> The governor and core of devfreq can decide the next frequency/voltage.
->>> You can refer to the cpufreq subsystem.
->>>
->>>> specific driver, i think the voltage should handle in the devfreq->profile->target();
->>>
->>> The call of devfreq->profile->target() have to be handled by devfreq framework.
->>> If user want to set the suspend frequency, user can add the 'suspend-opp' property.
->>> It think this way is easy.
->>>
->>> But,
->>> If the each devfreq device want to decide the next frequency/voltage only for
->>> suspend state. We can check the cpufreq subsystem.
->>>
->>> If specific devfreq device want to handle the suspend frequency,
->>> each devfreq will add the own suspend/resume functions as following:
->>>
->>>       struct devfreq_dev_profile {
->>>               int (*suspend)(struct devfreq *dev);    // new function pointer
->>>               int (*resume)(struct devfreq *dev);     // new function pointer
->>>       } a_profile;
->>>
->>>       a_profile = devfreq_generic_suspend;
->>>
->>>       The devfreq framework will provide the devfreq_generic_suspend() funticon.
->>>               int devfreq_generic_suspend(struce devfreq *dev) {
->>>                       ...
->>>                       devfreq->profile->target(..., devfreq->suspend_freq);
->>>                       ...
->>>               }
->>>
->>>       or
->>>
->>>       a_profile = a_devfreq_suspend; // specific function of each devfreq device
->>>
->>>       The devfreq_suspend() will call 'devfreq->profile->suspend()' function
->>>       instead of devfreq->profile->target();
->>>
->>>       The devfreq call the 'devfreq->profile->suspend()'
->>>       to support the suspend frequency.
->>>
->>> Regards,
->>> Chanwoo Choi
->>
->> The key difference between two approaches:
->>
->> Your approach:
->> - The each developer should add the 'opp-suspend' property to the dts file.
->> - The each devfreq should call the devfreq_suspend_device()
->>   to support the suspend frequency.
->>
->>   If each devfreq doesn't call the devfreq_suspend_device(), devfreq framework
->>   can support the suspend frequency.
->>
->> Other approach:
->> - The each developer only should add the 'opp-suspend' property to the dts file
->>   without the additional behavior.
->>
->> In the cpufreq subsystem,
->> When support the suspend frequency of cpufreq, we just add 'opp-suspend' property
->> without the additional behavior.
-> 
-> I'm missing the use-case when using the devfreq_suspend_device()
-> before entering the suspend mode. We should consider the case when
-> devfreq device
-> calls the devfreq_suspend_device() directly. Because devfreq_suspend_device()
-> is exported function, each devfreq device call this function on the fly
-> without entering the suspend mode.
-> 
-> I correct my opinion. Your approach is necessary. I'm sorry to confuse you.
-> So, I make the following patch. This patch set the suspend frequency
-> in devfreq_suspend_device() after stoping the governor.
-> It consider the all governors of devfreq.
-> 
-> What do you think?
-> If you are ok, I'll send this patch with your author.
-The problem I see here is that we need to keep track of the suspended
-state when suspending the (entire) devfreq subsystem. When doing that,
-we don't know if any device driver has previously called
-devfreq_suspend_device() and might end up calling it twice.
-
-Same thing on devfreq subsystem resume.
-
-I've prepared a new RFC of my series (going to send it shortly), but I'm
-not so happy with the current design. I think it would be much cleaner
-to keep some suspend_refcount in struct devfreq so that I can call
-devfreq_suspend_device() multiple times, while keeping a sane internal
-state.
-
-Something like devfreq_device_runtime_{put,get}() perhaps?
-
-- Tobias
+To: Atul Raj <atul.r@samsung.com>
+Cc: linux-pm@vger.kernel.org, vidushi.koul@samsung.com, atulraj.nith@gmail.com, pankaj.s4@samsung.com
 
 
+--lexnthsgwwmm6zv6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
->  int devfreq_suspend_device(struct devfreq *devfreq)
+Hi,
+
+On Sat, Dec 10, 2016 at 04:38:31PM +0530, Atul Raj wrote:
+> Using device managed API to make the code simpler
+>=20
+> using devm_gpio_request_one in place of gpio_request_one
+> using devm_request_threaded_irq in place of request_threaded_irq
+> using devm_power_supply_register in place of power_supply_register
+> using gpiod_* API's in place of gpio_* API's
+>=20
+> Signed-off-by: Atul Raj <atul.r@samsung.com>
+> ---
+> Changes in v2:
+>   - using gpiod_* API's in place of gpio_* API's
+>=20
+> Changes in v3
+>   - chaning suject as per directory in file path in supply git
+>     adding signoff
+>     sorry for wrong v2 patch. Kindly ignore v2.
+>=20
+>  drivers/power/smb347-charger.c |   59 ++++++++++++++++------------------=
+------
+>  1 file changed, 24 insertions(+), 35 deletions(-)
+>=20
+> diff --git a/drivers/power/smb347-charger.c b/drivers/power/smb347-charge=
+r.c
+> index 072c518..5b2b5cb 100644
+> --- a/drivers/power/smb347-charger.c
+> +++ b/drivers/power/smb347-charger.c
+
+Please rebase your patch against a more modern kernel. The supply
+subsystem moved to drivers/power/supply.
+
+> @@ -12,7 +12,7 @@
+>   */
+> =20
+>  #include <linux/err.h>
+> -#include <linux/gpio.h>
+> +#include <linux/gpio/consumer.h>
+>  #include <linux/kernel.h>
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+> @@ -145,6 +145,7 @@ struct smb347_charger {
+>  	bool			mains_online;
+>  	bool			usb_online;
+>  	bool			charging_enabled;
+> +	struct gpio_desc	*irq_gpio;
+>  	const struct smb347_charger_platform_data *pdata;
+>  };
+> =20
+> @@ -835,21 +836,29 @@ static int smb347_irq_init(struct smb347_charger *s=
+mb,
+>  			   struct i2c_client *client)
 >  {
-> +      int ret = 0;
+>  	const struct smb347_charger_platform_data *pdata =3D smb->pdata;
+> -	int ret, irq =3D gpio_to_irq(pdata->irq_gpio);
+> +	int ret, irq;
+> +	struct gpio_desc *gpiod;
+> =20
+> -	ret =3D gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
+> -	if (ret < 0)
+> +	smb->irq_gpio =3D gpio_to_desc(pdata->irq_gpio);
 > +
->         if (!devfreq)
->         return -EINVAL;
-> 
->         if (!devfreq->governor)
->              return 0;
-> 
-> -      return devfreq->governor->event_handler(devfreq,
-> +     ret = devfreq->governor->event_handler(devfreq,
->                     DEVFREQ_GOV_SUSPEND, NULL);
-> +      if (ret < 0) {
-> +           dev_err(devfreq->dev.parent, "failed to suspend governor\n");
-> +           return ret;
-> +      }
+> +	irq =3D gpiod_to_irq(smb->irq_gpio);
 > +
-> +      if (devfreq->suspend_freq) {
-> +           ret = devfreq->profile->target(devfreq->dev.parent,
-> +                                      &devfreq->suspend_freq, 0);
-> +           if (ret < 0) {
-> +                  dev_err(devfreq->dev.parent,
-> +                             "failed to set suspend-freq\n");
-> +                  return ret;
-> +           }
-> +           dev_dbg(devfreq->dev.parent, "Setting suspend-freq: %lu\n",
-> +                          devfreq->suspend_freq);
-> +      }
-> +
-> +      return 0;
->  }
->  EXPORT_SYMBOL(devfreq_suspend_device);
-> 
+> +	gpiod =3D devm_gpiod_get_optional(&client->dev, NULL, GPIOD_IN);
+> +	if (IS_ERR(gpiod)) {
+> +		ret =3D PTR_ERR(gpiod);
+>  		goto fail;
+> +	}
+
+There seems to be a misunderstanding how to use the gpiod API.
+With the gpiod API the gpio description can be removed from the
+platform data. Instead gpios are described in the boardcode file
+similar to e.g. regulators. There are a few examples in the mainline
+tree, just check for board files with "struct gpiod_lookup_table".
+Then you get the correct one using
+
+devm_gpiod_get_optional(&client->dev, "gpio-name", GPIOD_IN);
+
+Actually checking the driver: Please just remove all gpio handling.
+The boardcode can do all of that and put the correct irq number into
+i2c_board_info.irq. This also makes it easier to add ACPI/DT
+bindings, which supports doing this transparently.
+
+-- Sebastian
+
+--lexnthsgwwmm6zv6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVWzUACgkQ2O7X88g7
++prGAhAAmEocz1zwguYDext5VuBO2rJITD4sF4a3d9sVw/V0+Pwtd31eJ6M+YqMt
+EeSDBq/hc0huQ3BDbI4norblJFiIXH6Uqt4XLN8Af/1b8PjjxDpCQPGDIS1GIFmo
+7oW5SJeFGE61TIpzWsZBjf9iH29MTRvS+qOWwLMvfZnyj1qFVLzziyKl6kocCFYc
+EkQE88RLnAyXQAoGUD7IMH0NvSGx9qPcuGxezTTsjJyWoQKsHTfb35j01c7S4bGG
+PEquCXTkuUOA22ikch3YPUSvCevkVjcoUiB4xG8WEd5WRQxF7omrWgcsgxRu4bac
+eVyn2SIjioZ32ZtVw/A9o/Os3SIQTU2si3w+wD8AYZyHFleZRU4aVWKsFTWHcMJR
+QYQf93EEzCRdueZC8xGuQ2MQgB6e987zVnNT/N1HmLdxv1R/ZYp1fIByAtEQyg2F
+2nqmzIgKiWMe5h6jdBguqb7YwUrbiTbAeuTswNebXYuKjFO0Ej9u0l1N1RmdRxZr
+MCQvjIiG+U9SRPATGlwaFBve/tQfQ5QiZEcCa6VsxLqE/0pUuUapJf7bYbBCWG4G
+rB742syvvChcj/TbN+ow5lftnKc5JHJfQidDyYks8FD/TDR7CdS9qPvejeN3pa+R
+JyfOpL2JmlkkHMIJoTWO5KnbsILsLfuVFtagN4/OpsML8WpUDiw=
+=kmEi
+-----END PGP SIGNATURE-----
+
+--lexnthsgwwmm6zv6--
