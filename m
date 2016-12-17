@@ -1,79 +1,122 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v3 0/7] Runtime PM for Thunderbolt on Macs
+Subject: [PATCH v3 1/7] PCI: Recognize Thunderbolt devices
 Date: Sat, 17 Dec 2016 15:39:39 +0100
-Message-ID: <cover.1481926599.git.lukas@wunner.de>
+Message-ID: <7a82ceafe7d9af7609408c042bb9bf55af5a1a86.1481926599.git.lukas@wunner.de>
+References: <cover.1481926599.git.lukas@wunner.de>
 Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <cover.1481926599.git.lukas@wunner.de>
 Sender: linux-pci-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Amir Levy <amir.jer.levy@intel.com>, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Amir Levy <amir.jer.levy@intel.com>, Bjorn Helgaas <helgaas@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Power down Thunderbolt controllers on Macs when nothing is plugged in
-to save around 2W per controller.
+We're about to allow runtime PM on Thunderbolt ports in
+pci_bridge_d3_possible() and unblock runtime PM for Thunderbolt host
+hotplug ports in pci_dev_check_d3cold().  In both cases we need to
+uniquely identify if a PCI device belongs to a Thunderbolt controller.
 
-Apple provides an ACPI-based (but nonstandard) mechanism to cut power
-and signal hotplug during powerdown.  The usual way to implement such
-nonstandard mechanisms seems to be a struct dev_pm_domain.
-E.g. vga_switcheroo uses that for Optimus GPUs which control power
-with ACPI DSMs.  Hence this third iteration of the series uses that
-as well.  In v2 a more complicated approach was employed wherein power
-control was exerted by a PCIe port service driver instead.
+We also have the need to detect presence of a Thunderbolt controller in
+drivers/platform/x86/apple-gmux.c because dual GPU MacBook Pros cannot
+switch external DP/HDMI ports between GPUs if they have Thunderbolt.
 
-All the prep work went into 4.9 and 4.10, shrinking this series to just
-7 patches:
+Furthermore, in multiple places in the DRM subsystem we need to detect
+whether a GPU is on-board or attached with Thunderbolt.  As an example,
+Thunderbolt-attached GPUs shall not be registered with vga_switcheroo.
 
-- The actual "meat" of the series (to borrow a term from Bjorn) is in
-  patches [6/7] and [7/7].  These two need an ack from Andreas.
+Intel uses a Vendor-Specific Extended Capability (VSEC) with ID 0x1234
+on devices belonging to a Thunderbolt controller which allows us to
+recognize them.
 
-- Patches [1/7] to [3/7] need an ack from Bjorn (and possibly Rafael or
-  Mika).  They're fairly small and just add a bit to struct pci_dev
-  signifying that a device is part of a Thunderbolt daisy chain, then
-  use that bit to modify runtime PM for PCIe ports.  I'm also cc'ing
-  Tomas and Amir at Intel Israel, if you guys have comments please shout.
+Detect presence of this VSEC on device probe and cache it in a newly
+added is_thunderbolt bit in struct pci_dev which can then be queried by
+pci_bridge_d3_possible(), pci_dev_check_d3cold(), apple-gmux and others.
 
-- Patches [4/7] and [5/7] need an ack from Rafael.  Their sole purpose
-  is to avoid a gratuitous WARN splat when assigning the struct
-  dev_pm_domain.
+Cc: Andreas Noever <andreas.noever@gmail.com>
+Cc: Tomas Winkler <tomas.winkler@intel.com>
+Cc: Amir Levy <amir.jer.levy@intel.com>
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+---
+ drivers/pci/pci.h   |  2 ++
+ drivers/pci/probe.c | 34 ++++++++++++++++++++++++++++++++++
+ include/linux/pci.h |  1 +
+ 3 files changed, 37 insertions(+)
 
-I've pushed the patches to GitHub to ease reviewing/fetching:
-https://github.com/l1k/linux/commits/thunderbolt_runpm_v3
-
-Link to the previous iteration (v2, May 2016):
-http://www.spinics.net/lists/linux-pci/msg51158.html
-
-Thanks,
-
-Lukas
-
-
-Lukas Wunner (7):
-  PCI: Recognize Thunderbolt devices
-  PCI: Allow runtime PM on Thunderbolt ports
-  PCI: Don't block runtime PM for Thunderbolt host hotplug ports
-  Revert "PM / Runtime: Remove the exported function
-    pm_children_suspended()"
-  PM: Make requirements of dev_pm_domain_set() more precise
-  thunderbolt: Power down controller when idle
-  thunderbolt: Runtime suspend NHI when idle
-
- drivers/base/power/common.c  |  15 +-
- drivers/base/power/runtime.c |   3 +-
- drivers/pci/pci.c            |  20 ++-
- drivers/pci/pci.h            |   2 +
- drivers/pci/probe.c          |  34 +++++
- drivers/thunderbolt/Kconfig  |   3 +-
- drivers/thunderbolt/Makefile |   4 +-
- drivers/thunderbolt/nhi.c    |   5 +
- drivers/thunderbolt/power.c  | 356 +++++++++++++++++++++++++++++++++++++++++++
- drivers/thunderbolt/power.h  |  37 +++++
- drivers/thunderbolt/switch.c |   9 ++
- drivers/thunderbolt/tb.c     |  13 ++
- drivers/thunderbolt/tb.h     |   2 +
- include/linux/pci.h          |   1 +
- include/linux/pm_runtime.h   |   7 +
- 15 files changed, 500 insertions(+), 11 deletions(-)
- create mode 100644 drivers/thunderbolt/power.c
- create mode 100644 drivers/thunderbolt/power.h
-
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index cb17db2..45c2b81 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -3,6 +3,8 @@
+ 
+ #define PCI_FIND_CAP_TTL	48
+ 
++#define PCI_VSEC_ID_INTEL_TBT	0x1234	/* Thunderbolt */
++
+ extern const unsigned char pcie_link_speed[];
+ 
+ bool pcie_cap_has_lnkctl(const struct pci_dev *dev);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index e164b5c..891a8fa 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1206,6 +1206,37 @@ void set_pcie_hotplug_bridge(struct pci_dev *pdev)
+ 		pdev->is_hotplug_bridge = 1;
+ }
+ 
++static void set_pcie_vendor_specific(struct pci_dev *dev)
++{
++	int vsec = 0;
++	u32 header;
++
++	while ((vsec = pci_find_next_ext_capability(dev, vsec,
++						    PCI_EXT_CAP_ID_VNDR))) {
++		pci_read_config_dword(dev, vsec + PCI_VNDR_HEADER, &header);
++
++		/* Is the device part of a Thunderbolt controller? */
++		if (dev->vendor == PCI_VENDOR_ID_INTEL &&
++		    PCI_VNDR_HEADER_ID(header) == PCI_VSEC_ID_INTEL_TBT)
++			dev->is_thunderbolt = 1;
++	}
++
++	/*
++	 * Is the device attached with Thunderbolt?  Walk upwards and check for
++	 * each encountered bridge if it's part of a Thunderbolt controller.
++	 * Reaching the host bridge means dev is soldered to the mainboard.
++	 */
++	if (!dev->is_thunderbolt) {
++		struct pci_dev *parent = dev;
++
++		while ((parent = pci_upstream_bridge(parent)))
++			if (parent->is_thunderbolt) {
++				dev->is_thunderbolt = 1;
++				break;
++			}
++	}
++}
++
+ /**
+  * pci_ext_cfg_is_aliased - is ext config space just an alias of std config?
+  * @dev: PCI device
+@@ -1358,6 +1389,9 @@ int pci_setup_device(struct pci_dev *dev)
+ 	/* need to have dev->class ready */
+ 	dev->cfg_size = pci_cfg_space_size(dev);
+ 
++	/* need to have dev->cfg_size ready */
++	set_pcie_vendor_specific(dev);
++
+ 	/* "Unknown power state" */
+ 	dev->current_state = PCI_UNKNOWN;
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index e2d1a12..3c775e8 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -358,6 +358,7 @@ struct pci_dev {
+ 	unsigned int	is_virtfn:1;
+ 	unsigned int	reset_fn:1;
+ 	unsigned int    is_hotplug_bridge:1;
++	unsigned int	is_thunderbolt:1; /* part of Thunderbolt daisy chain */
+ 	unsigned int    __aer_firmware_first_valid:1;
+ 	unsigned int	__aer_firmware_first:1;
+ 	unsigned int	broken_intx_masking:1;
 -- 
 2.10.2
