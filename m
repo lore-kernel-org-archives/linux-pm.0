@@ -1,38 +1,37 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4] dt-bindings: power: supply: bq24735: reverse the
- polarity of ac-detect
-Date: Sat, 17 Dec 2016 15:50:51 +0100
-Message-ID: <20161217145050.5w7fkumgjipqdmbn@earth>
-References: <1481881440-13464-1-git-send-email-peda@axentia.se>
+Subject: Re: [PATCH 1/4] power: supply: axp288_fuel_gauge: Fix
+ fuel_gauge_reg_readb return on error
+Date: Sat, 17 Dec 2016 15:57:22 +0100
+Message-ID: <20161217145721.6d6htvdt6edrhsxj@earth>
+References: <20161214163853.454-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6pyfoagjgcpud5dn"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="rc4hm2y4tusyxfgx"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:37344 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1756275AbcLQO51 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 17 Dec 2016 09:57:27 -0500
 Content-Disposition: inline
-In-Reply-To: <1481881440-13464-1-git-send-email-peda@axentia.se>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jon Hunter <jonathanh@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+In-Reply-To: <20161214163853.454-1-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Chen-Yu Tsai <wens@csie.org>, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org
 
 
---6pyfoagjgcpud5dn
+--rc4hm2y4tusyxfgx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Dec 16, 2016 at 10:44:00AM +0100, Peter Rosin wrote:
-> The ACOK pin on the bq24735 is active-high, of course meaning that when
-> AC is OK the pin is high. However, all Tegra dts files have incorrectly
-> specified active-high even though the signal is inverted on the Tegra
-> boards. This has worked since the Linux driver has also inverted the
-> meaning of the GPIO. Fix this situation by simply specifying in the
-> bindings what everybody else agrees on; that the ti,ac-detect-gpios is
-> active on AC adapter absence.
+On Wed, Dec 14, 2016 at 05:38:50PM +0100, Hans de Goede wrote:
+> If reading the register fails, return the actual error code, instead
+> of the uninitialized val variable;
 >=20
-> Signed-off-by: Peter Rosin <peda@axentia.se>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
 Thanks for your patch. We are currently in the merge
 window and your patch will appear in linux-next once
@@ -45,24 +44,24 @@ https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
 
 -- Sebastian
 
---6pyfoagjgcpud5dn
+--rc4hm2y4tusyxfgx
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVUMcACgkQ2O7X88g7
-+prBLQ/9FamJiewo5l1chf3Cng/EqtbI5AtxAWwhlDneB1Iwl3+3fAK50Np9bjZp
-usFVevkf9bycdRnOitenjJvcwGEl+hwL6yw+FLsGQH6nCBNEf5huk37Fxkfbu70s
-j3irNao5OkJOagVF/wW82Hwp6b2/CkUuwqCaP1mKv5WJa6Kc1+1n+75A76y0Dmje
-tbEMFDTzma6hh5/579cuebeWUCwuW1rzRlETjGx893IOA2VYHsJtHbeGNCUUckf/
-YDwP9F2A+ZSAJnSiexVCvwx7h02q1680/siynlp+5KwXLvaekmN30U7yjdlVhHMw
-ObGSMo1Zt8Qu82XL7LiBeUShUScgmksQXJF3f1kBYovXGMowObvCuboqkJq/AEZB
-aw0JaLmdG+nrSwumJQu7/YvziyNccCDy3ZC5i5pGD+bCX8NhETc1EWlr5TFV1sWT
-AUDcYWvd5K8Z3CSwe399w3zPcXt0BUIIGW/3Kxs6JaQfAnBbhXvOWxRedvP8ljZC
-DudrKjBoef9dAyWD0ugGkkO/02+Y6pdtkfkcRA9MxnCdUuS9O/8kxO0icMiXXDx0
-Kpd042fIFnTeBfvjbbPS1nklMkNLQRAXNkxlPzPMRgyacEiQE5Gf5i7jidFzbF2v
-gAja+Z7lJSzSqcOApq2NSeZPCsFLA6IT6/Eq5D7MGIFPyTk8A14=
-=T56F
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVUlEACgkQ2O7X88g7
++pr0FQ//WRumypN8SVhlsIDjzY0p8+bUK+d7txcCx17E7+Kg6tzCzjuku8ELi/CZ
+kZ0CuizegP6dufne0zvvQnRH/BhSnKPzwT4im1xF8uvigdvEqnGERZvCqX3VxeX5
+9gw7dBlbIL1Le9dxNtbgPgFu6N8QvBCR+moEjU6dFs5r/U4Dk3D+CzHYjHE+wW/h
+mx5aURID7F5BQ9fVPz22YN9QQ+iLL6tFI6zdGMnKXoaI1qWG727gaiikz+tLuieh
+gTeT7b5itN9pCV0Z+IxIbXQuAKlvGgNhndAkibt2EZTK6jEUjib9Shr+p6nIeLW0
+6x5Pna/oaUJN2GAhEvcrdZtD39vlttQ+FRUpmwtrDt2YVxPGMaf1edXb/GOZ/L0s
+uvGfy7QKVRjO7a6yui+uMzloc7ge+a3iqqGTVLclYzo0T7tjJBPTfdaM4UdjLliJ
+h4O5aXQu47/xSZtsAkSJkwReMlvvoeAGLdiqqSD+gpG76u+i0/ulmNPB1d1p3kEh
+krziRFqS9dvTkvMs1MFQml7vdpbinPI3ZNdyqxnLSxwffXAcGOYQD4rW4kEmnN6C
+NJPyaefGfg7BrOw5hYvwXfbDnntqY+NG2c6gtE8qJX4Gl9kmKXYjsb87FSZehJww
+VoWvahuIeO07UjB0vsharwXP8CidyWXuLDhgYN9RlsjqdfCEPI4=
+=pZ+j
 -----END PGP SIGNATURE-----
 
---6pyfoagjgcpud5dn--
+--rc4hm2y4tusyxfgx--
