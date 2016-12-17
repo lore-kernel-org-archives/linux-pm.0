@@ -1,68 +1,209 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3] power: supply: bq24735-charger: optionally poll the
- ac-detect gpio
-Date: Sat, 17 Dec 2016 16:04:07 +0100
-Message-ID: <20161217150406.6jkmrrphz2obwia6@earth>
-References: <20161214151026.5q6goxlfscv53tol@earth>
- <1481794126-5670-1-git-send-email-peda@axentia.se>
+From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Subject: Re: [PATCH v1 & v6 1/2] PM/devfreq: add suspend frequency support
+Date: Sat, 17 Dec 2016 16:13:18 +0100
+Message-ID: <5855560E.4050609@math.uni-bielefeld.de>
+References: <CGME20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
+ <20161124061416epcms1p44a0152bca14312f1229cab835ea0297f@epcms1p4>
+ <58368C91.8030502@rock-chips.com> <5836927B.9010205@samsung.com>
+ <5836980F.6050006@rock-chips.com> <5836A1E0.1070707@samsung.com>
+ <5836A622.20007@rock-chips.com> <5836B2C2.6090308@samsung.com>
+ <5836B8D1.9050707@samsung.com>
+ <CAGTfZH34MvFGGuPgt=qUM6FMmi+Z80akY5ZH1k6gXdzg19fh9Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="gaxeoruuk32fxboj"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1481794126-5670-1-git-send-email-peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGTfZH34MvFGGuPgt=qUM6FMmi+Z80akY5ZH1k6gXdzg19fh9Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: cwchoi00@gmail.com, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: hl <hl@rock-chips.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "dbasehore@chromium.org" <dbasehore@chromium.org>, "dianders@chromium.org" <dianders@chromium.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hey guys,
 
---gaxeoruuk32fxboj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Chanwoo Choi wrote:
+> Hi Lin,
+> 
+> 2016-11-24 18:54 GMT+09:00 Chanwoo Choi <cw00.choi@samsung.com>:
+>> Hi Lin,
+>>
+>> On 2016년 11월 24일 18:28, Chanwoo Choi wrote:
+>>> Hi Lin,
+>>>
+>>> On 2016년 11월 24일 17:34, hl wrote:
+>>>> Hi Chanwoo Choi,
+>>>>
+>>>>
+>>>> On 2016年11月24日 16:16, Chanwoo Choi wrote:
+>>>>> Hi Lin,
+>>>>>
+>>>>> On 2016년 11월 24일 16:34, hl wrote:
+>>>>>> Hi Chanwoo Choi,
+>>>>>>
+>>>>>>      I think the dev_pm_opp_get_suspend_opp() have implement most of
+>>>>>> the funtion, all we need is just define the node in dts, like following:
+>>>>>>
+>>>>>> &dmc_opp_table {
+>>>>>>      opp06 {
+>>>>>>          opp-suspend;
+>>>>>>      };
+>>>>>> };
+>>>>> Two approaches use the 'opp-suspend' property.
+>>>>>
+>>>>> I think that the method to support suspend-opp have to
+>>>>> guarantee following conditions:
+>>>>> - Support the all of devfreq's governors.
+>>>>     As MyungJoo Ham suggestion, i will set the suspend frequency in devfreq_suspend_device(),
+>>>> which will ingore governor.
+>>>
+>>> Other approach already support the all of governors.
+>>> Before calling the mail, I discussed with Myungjoo Ham.
+>>> Myungjoo prefer to use the devfreq_suspend/devfreq_resume().
+>>
+>> It is not correct expression. We need to wait the reply from Myungjoo
+>> to clarify this.
+>>
+>>>
+>>> To Myungjoo,
+>>> Please add your opinion how to support the suspend frequency.
+>>
+>>>
+>>>>> - Devfreq framework have the responsibility to change the
+>>>>>    frequency/voltage for suspend-opp. If we uses the
+>>>>>    new devfreq_suspend(), each devfreq device don't care
+>>>>>    how to support the suspend-opp. Just the developer of each
+>>>>>    devfreq device need to add 'opp-suspend' propet to OPP entry in DT file.
+>>>> Why should support change the voltage in devfreq framework, i think it shuold be handle in
+>>>> specific driver, i think the devfreq only handle it can get the right frequency, then pass it to
+>>>
+>>> No, the frequency should be handled by governor or framework.
+>>> The each devfreq device has no any responsibility of next frequency/voltage.
+>>> The governor and core of devfreq can decide the next frequency/voltage.
+>>> You can refer to the cpufreq subsystem.
+>>>
+>>>> specific driver, i think the voltage should handle in the devfreq->profile->target();
+>>>
+>>> The call of devfreq->profile->target() have to be handled by devfreq framework.
+>>> If user want to set the suspend frequency, user can add the 'suspend-opp' property.
+>>> It think this way is easy.
+>>>
+>>> But,
+>>> If the each devfreq device want to decide the next frequency/voltage only for
+>>> suspend state. We can check the cpufreq subsystem.
+>>>
+>>> If specific devfreq device want to handle the suspend frequency,
+>>> each devfreq will add the own suspend/resume functions as following:
+>>>
+>>>       struct devfreq_dev_profile {
+>>>               int (*suspend)(struct devfreq *dev);    // new function pointer
+>>>               int (*resume)(struct devfreq *dev);     // new function pointer
+>>>       } a_profile;
+>>>
+>>>       a_profile = devfreq_generic_suspend;
+>>>
+>>>       The devfreq framework will provide the devfreq_generic_suspend() funticon.
+>>>               int devfreq_generic_suspend(struce devfreq *dev) {
+>>>                       ...
+>>>                       devfreq->profile->target(..., devfreq->suspend_freq);
+>>>                       ...
+>>>               }
+>>>
+>>>       or
+>>>
+>>>       a_profile = a_devfreq_suspend; // specific function of each devfreq device
+>>>
+>>>       The devfreq_suspend() will call 'devfreq->profile->suspend()' function
+>>>       instead of devfreq->profile->target();
+>>>
+>>>       The devfreq call the 'devfreq->profile->suspend()'
+>>>       to support the suspend frequency.
+>>>
+>>> Regards,
+>>> Chanwoo Choi
+>>
+>> The key difference between two approaches:
+>>
+>> Your approach:
+>> - The each developer should add the 'opp-suspend' property to the dts file.
+>> - The each devfreq should call the devfreq_suspend_device()
+>>   to support the suspend frequency.
+>>
+>>   If each devfreq doesn't call the devfreq_suspend_device(), devfreq framework
+>>   can support the suspend frequency.
+>>
+>> Other approach:
+>> - The each developer only should add the 'opp-suspend' property to the dts file
+>>   without the additional behavior.
+>>
+>> In the cpufreq subsystem,
+>> When support the suspend frequency of cpufreq, we just add 'opp-suspend' property
+>> without the additional behavior.
+> 
+> I'm missing the use-case when using the devfreq_suspend_device()
+> before entering the suspend mode. We should consider the case when
+> devfreq device
+> calls the devfreq_suspend_device() directly. Because devfreq_suspend_device()
+> is exported function, each devfreq device call this function on the fly
+> without entering the suspend mode.
+> 
+> I correct my opinion. Your approach is necessary. I'm sorry to confuse you.
+> So, I make the following patch. This patch set the suspend frequency
+> in devfreq_suspend_device() after stoping the governor.
+> It consider the all governors of devfreq.
+> 
+> What do you think?
+> If you are ok, I'll send this patch with your author.
+The problem I see here is that we need to keep track of the suspended
+state when suspending the (entire) devfreq subsystem. When doing that,
+we don't know if any device driver has previously called
+devfreq_suspend_device() and might end up calling it twice.
 
-Hi,
+Same thing on devfreq subsystem resume.
 
-On Thu, Dec 15, 2016 at 10:28:46AM +0100, Peter Rosin wrote:
-> If the ac-detect gpio does not support interrupts, provide a fallback
-> to poll the gpio at a configurable interval.
->=20
-> Signed-off-by: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+I've prepared a new RFC of my series (going to send it shortly), but I'm
+not so happy with the current design. I think it would be much cleaner
+to keep some suspend_refcount in struct devfreq so that I can call
+devfreq_suspend_device() multiple times, while keeping a sane internal
+state.
 
-Thanks for your patch. We are currently in the merge
-window and your patch will appear in linux-next once
-4.10-rc1 has been tagged by Linus Torvalds.
+Something like devfreq_device_runtime_{put,get}() perhaps?
 
-Until then I queued it into this branch:
+- Tobias
 
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
-/?h=3Dfor-next-next
 
--- Sebastian
 
---gaxeoruuk32fxboj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVU+YACgkQ2O7X88g7
-+pqOkBAAjNUEQJ47pwj4ifN3YqDmCea/d/t12DlTfuzSzm/LwsB3b586fylV3Xs7
-EvUa2n1CONeXciL2YJHqr5UAw4i1iArjzSGaNf8ppmx7ZbKwgsHQByf5spFQpsYr
-JnPclcsY395EvbkbUMYauFbkTY6S2Tu4Yg7CTLq8+xb7XCI1wIiOVK9/dwa7uaY1
-UHFoQwEH7xrjmqbcFRBnqpnwGyfy0w46haPaZiP7+AJFx6vjsBwrEL0v/F06wbjp
-DQwGIO2vDQKS4OKyuftjAQohAwoKasqMa4hOCLmcvCVvgmSkQ9a7GciKBYb2TK39
-bFs61WB7D8WWv7/U3K/uVD4VDrJEdFFf7xA7KVQHyfcw7MS2YDDWqkM/D8x4U41Z
-iKVpcJGspc9mN3sA6XVdtJMdut0gFSsL5/aqpAKpksiqeug/uT93mgSep3wDOJMG
-wy9SWSs0cxjGCerG+SIy8XDKQm/hwPCYPW9olCCyC8MYF8aOs+S62/QGHD0qEJgc
-74at3u8oomNbg3gpNnO0QH+xD860nCo+RUyapB+TJ09cUSLNljCVUVK4FSMWtYXL
-Dil/6U/Oyffe/rPi3UWIWDqli+zGG+LsY/QlxoVtCX6+ncpVsU23G+JSe0kQiFtT
-oo+ijt7bqMIGzwEboT+HqpsXsVts6EUusrs+1sNRpTee1kTXp38=
-=P6Uu
------END PGP SIGNATURE-----
-
---gaxeoruuk32fxboj--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+>  int devfreq_suspend_device(struct devfreq *devfreq)
+>  {
+> +      int ret = 0;
+> +
+>         if (!devfreq)
+>         return -EINVAL;
+> 
+>         if (!devfreq->governor)
+>              return 0;
+> 
+> -      return devfreq->governor->event_handler(devfreq,
+> +     ret = devfreq->governor->event_handler(devfreq,
+>                     DEVFREQ_GOV_SUSPEND, NULL);
+> +      if (ret < 0) {
+> +           dev_err(devfreq->dev.parent, "failed to suspend governor\n");
+> +           return ret;
+> +      }
+> +
+> +      if (devfreq->suspend_freq) {
+> +           ret = devfreq->profile->target(devfreq->dev.parent,
+> +                                      &devfreq->suspend_freq, 0);
+> +           if (ret < 0) {
+> +                  dev_err(devfreq->dev.parent,
+> +                             "failed to set suspend-freq\n");
+> +                  return ret;
+> +           }
+> +           dev_dbg(devfreq->dev.parent, "Setting suspend-freq: %lu\n",
+> +                          devfreq->suspend_freq);
+> +      }
+> +
+> +      return 0;
+>  }
+>  EXPORT_SYMBOL(devfreq_suspend_device);
+> 
