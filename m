@@ -1,72 +1,73 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: max8997_charger: Using device managed API and
- remove OOM print
-Date: Sat, 17 Dec 2016 17:09:38 +0100
-Message-ID: <20161217160937.sbki4hs6ba7erbuf@earth>
-References: <1481188357-11889-1-git-send-email-s.ritolia@samsung.com>
+Subject: Re: [PATCH v2 0/8] power: supply: tps65217: Support USB charger
+ feature
+Date: Sat, 17 Dec 2016 17:24:00 +0100
+Message-ID: <20161217162400.7yqiibcrkzp5ac3q@earth>
+References: <20161209074906.27545-1-woogyom.kim@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="qwwonzeaycroa22e"
+        protocol="application/pgp-signature"; boundary="je2j4h53n2ygckoz"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41036 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:41838 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752821AbcLQQJn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 17 Dec 2016 11:09:43 -0500
+        id S1756897AbcLQQYF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 17 Dec 2016 11:24:05 -0500
 Content-Disposition: inline
-In-Reply-To: <1481188357-11889-1-git-send-email-s.ritolia@samsung.com>
+In-Reply-To: <20161209074906.27545-1-woogyom.kim@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srikant Ritolia <s.ritolia@samsung.com>
-Cc: linux-pm@vger.kernel.org, vidushi.koul@samsung.com, srikant.ritolia@gmail.com
+To: Milo Kim <woogyom.kim@gmail.com>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---qwwonzeaycroa22e
+--je2j4h53n2ygckoz
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Thu, Dec 08, 2016 at 02:42:37PM +0530, Srikant Ritolia wrote:
-> Use managed resource function devm_power_supply_register instead of
-> power_supply_register to simplify the error path by allowing unregistering
-> to happen automatically on error and remove.
-> Removing max8997_battery_remove function also as it is now redundant.
+On Fri, Dec 09, 2016 at 04:48:58PM +0900, Milo Kim wrote:
+> TPS65217 device supports two charger inputs - AC and USB.
+> Currently, only AC charger is supported. This patch-set adds USB charger=
+=20
+> feature. Tested on Beaglebone black.
 >=20
-> Also removing out of memory printk message after kzalloc as there is
-> already enough information on failure.
+> Patch 1: Main patch
+> Patch 2, 3: Clean up for charger driver data
+> Patch 4 ~ 8: Naming changes for generic power supply class structure
 >=20
-> Signed-off-by: Srikant Ritolia <s.ritolia@samsung.com>
+> v2:
+>   Regenerate the patchset for better code review
+>=20
+> Milo Kim (8):
+>   power: supply: tps65217: Support USB charger interrupt
+>   power: supply: tps65217: Use 'poll_task' on unloading the module
 
-Thanks for your patch. We are currently in the merge
-window and your patch will appear in linux-next once
-4.10-rc1 has been tagged by Linus Torvalds.
-
-Until then I queued it into this branch:
-
-https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
-/?h=3Dfor-next-next
+patches look fine, but these two patches must be reordered to fix
+bisectability. Otherwise after patch 1 the thread is not properly
+killed during driver removal.
 
 -- Sebastian
 
---qwwonzeaycroa22e
+--je2j4h53n2ygckoz
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVY0EACgkQ2O7X88g7
-+ppO+Q/+K17qLabxZp0yI1tJUZj9misFHAr0iznFM39avoQsdaHtsn2teKVQrKr9
-bsaeWq8vspJeVzpr/DTai+DNU3JkmARbLOB8NVEJ+m1G0X4xurzcq7KJHFnf0kMJ
-TawXNeZNND2hPqIBIr9XN2DpG60JmZSlQ0ZsFovX7VS5PvBVrGyInN1h2Fw9F0Hj
-L/Z5nSiGnL2fGP4Oy4oaSVCDLVSOgVpneBLB9Fwaau/AfU6kGFq3sdm3x/wEHln+
-oQU1X+RCo5B6nYE8owe/ver4KUUJVDvXhuks1Mw5MjjPrrtaXWCurYMj7Y4tSpQK
-0GUNADfdAMbSO9wnNGONW1WBG6WUou7Tt+3x5HCggGT+YubX+IdOEXn/pDl4EEBJ
-1olad1o6EwmkH5tNDOsDU60KCxWWL4YxMPlvAGcV5LG1oQqljaj9Db59FHlOAYst
-HO2zxmAsaQ3ymyExz6RDgV7ioM3mHkGspnvW6PKg/yiPGwXtZGDsGo74J3SCHpYf
-coGE+Dc2LIe9ZTPQRV2JnAxJMV8vXi/kbikuTDS4+li2v2KBHqxRa/mB6ONvBFxO
-ywNm06ULHIiUb1FEHVMDMTQl9LoeaT75rCbt69YWSVSCzcEaY5tIhsfurU7tqssg
-fu37Wn8+zOyxBfGxUUBgoIOd+BDAI+itjvrGW4H8KCk1YScAs+s=
-=VhPe
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVZp0ACgkQ2O7X88g7
++pophw/+I80hO/jiVdV1f+vZ+hR5mvtMIkWzvbtD7bDcxguA5nBacpkMNBxe9SvZ
+kWHRX9rda7eoQjemy9aDx1J3vnc0Px6TG+usJeM+K/qIcMjf5yKucWKnFLXA0P84
+s9RCUBLo//6LI43ZHnRWL/n8OQFt222gr+WVmF3YtjMHhNIiCxuolbmIGXqxqy7K
+Nb2oKij/laDOXct8hrKU108HwBTD9DXeOxFnQSS4nnHL5m2sw1VWTzpO3yG3zsfH
++gaXe4GgeQVJmn78PklcS6YrxkFexBWHwi3x1C5C0m01w4fCnxixmD4oERe6+DPq
+nSEMA/XU5pE/rFJ8Dz6RHmXKNKga/NEDgs1lBrgpMiaDehnQi63RnxH/Frl9NYvY
+k+nFdAwME01SYCIw/ZGBmYTG/dsb8pef5B9ah4otfy1YqBpi9UBA9PqDRyofRePc
+uubohXvZ24J8m4smAKLo6Ofsug2BU2jEq/4YbO2zT89P/4XMWzOvwfwtLoiAVzgE
+b5pl4tGg3u7yW9OoRhu3RWwhnLbYOhz1Q/qokcCF0NbWMelYGuAddsO4eDNzpJQX
+ZS9NF3YXHX/2VkA0f0kZCL9UC41Zrj7MoJJy8EYwh2DiZUorbeXWvmRWk2H+5PV9
+iiO43CPFBTmpA60XI+FozA5987RoLX3k3LStf8/DumZvdvDcfj8=
+=SCu/
 -----END PGP SIGNATURE-----
 
---qwwonzeaycroa22e--
+--je2j4h53n2ygckoz--
