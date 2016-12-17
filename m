@@ -1,76 +1,66 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v3 3/7] PCI: Don't block runtime PM for Thunderbolt host
- hotplug ports
+Subject: [PATCH v3 4/7] Revert "PM / Runtime: Remove the exported function
+ pm_children_suspended()"
 Date: Sat, 17 Dec 2016 15:39:39 +0100
-Message-ID: <a3d5ab2363b2155feeb27cd97d503e375570f2d6.1481926599.git.lukas@wunner.de>
+Message-ID: <29673654daf09bb90f975aec3f5ad57b6fc95a83.1481926599.git.lukas@wunner.de>
 References: <cover.1481926599.git.lukas@wunner.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:43991 "EHLO
-        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757298AbcLQOkw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Dec 2016 09:40:52 -0500
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1481926599.git.lukas@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-pci-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Tomas Winkler <tomas.winkler@intel.com>, Amir Levy <amir.jer.levy@intel.com>, Bjorn Helgaas <helgaas@kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-Hotplug ports generally block their parents from suspending to D3hot as
-otherwise their interrupts couldn't be delivered.
+This reverts commit 62006c1702b3b1be0c0726949e0ee0ea2326be9c which
+removed pm_children_suspended() because it had only a single caller.
+We're about to add a second caller, so establish the status quo ante.
 
-An exception are Thunderbolt host controllers:  They have a separate
-GPIO pin to side-band signal plug events even if the controller is
-powered down or its parent ports are suspended to D3.  They can be told
-apart from Thunderbolt controllers in attached devices by checking if
-they're situated below a non-Thunderbolt device (typically a root port,
-or the downstream port of a PCIe switch in the case of the MacPro6,1).
-
-To enable runtime PM for Thunderbolt on the Mac, the downstream bridges
-of a host controller must not block runtime PM on the upstream bridge as
-power to the chip is only cut once the upstream bridge has suspended.
-Amend the condition in pci_dev_check_d3cold() accordingly.
-
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Andreas Noever <andreas.noever@gmail.com>
-Cc: Tomas Winkler <tomas.winkler@intel.com>
-Cc: Amir Levy <amir.jer.levy@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c | 13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
+ drivers/base/power/runtime.c | 3 +--
+ include/linux/pm_runtime.h   | 7 +++++++
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 8ed098d..0b03fe7 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -2271,6 +2271,7 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index 872eac4..03293c3 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -243,8 +243,7 @@ static int rpm_check_suspend_allowed(struct device *dev)
+ 		retval = -EACCES;
+ 	else if (atomic_read(&dev->power.usage_count) > 0)
+ 		retval = -EAGAIN;
+-	else if (!dev->power.ignore_children &&
+-			atomic_read(&dev->power.child_count))
++	else if (!pm_children_suspended(dev))
+ 		retval = -EBUSY;
  
- static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
- {
-+	struct pci_dev *parent, *grandparent;
- 	bool *d3cold_ok = data;
+ 	/* Pending resume requests take precedence over suspends. */
+diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
+index ca4823e..7de2aa5c 100644
+--- a/include/linux/pm_runtime.h
++++ b/include/linux/pm_runtime.h
+@@ -66,6 +66,12 @@ static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
+ 	dev->power.ignore_children = enable;
+ }
  
- 	if (/* The device needs to be allowed to go D3cold ... */
-@@ -2284,7 +2285,17 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
- 	    !pci_power_manageable(dev) ||
- 
- 	    /* Hotplug interrupts cannot be delivered if the link is down. */
--	    dev->is_hotplug_bridge)
-+	    (dev->is_hotplug_bridge &&
++static inline bool pm_children_suspended(struct device *dev)
++{
++	return dev->power.ignore_children
++		|| !atomic_read(&dev->power.child_count);
++}
 +
-+		/*
-+		 * Exception:  Thunderbolt host controllers have a pin to
-+		 * side-band signal plug events.  Their hotplug ports are
-+		 * recognizable by having a non-Thunderbolt device as
-+		 * grandparent.
-+		 */
-+		!(dev->is_thunderbolt && (parent = pci_upstream_bridge(dev)) &&
-+				 (grandparent = pci_upstream_bridge(parent)) &&
-+						!grandparent->is_thunderbolt)))
+ static inline void pm_runtime_get_noresume(struct device *dev)
+ {
+ 	atomic_inc(&dev->power.usage_count);
+@@ -161,6 +167,7 @@ static inline void pm_runtime_allow(struct device *dev) {}
+ static inline void pm_runtime_forbid(struct device *dev) {}
  
- 		*d3cold_ok = false;
- 
+ static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
++static inline bool pm_children_suspended(struct device *dev) { return false; }
+ static inline void pm_runtime_get_noresume(struct device *dev) {}
+ static inline void pm_runtime_put_noidle(struct device *dev) {}
+ static inline bool device_run_wake(struct device *dev) { return false; }
 -- 
 2.10.2
-
