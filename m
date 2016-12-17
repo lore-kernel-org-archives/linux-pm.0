@@ -1,78 +1,68 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 4/4] power: supply: axp288_fuel_gauge: Drop platform_data
- dependency
-Date: Sat, 17 Dec 2016 16:00:47 +0100
-Message-ID: <20161217150046.2eeohjflddcrkjow@earth>
-References: <20161214163853.454-1-hdegoede@redhat.com>
- <20161214163853.454-4-hdegoede@redhat.com>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3] power: supply: bq24735-charger: optionally poll the
+ ac-detect gpio
+Date: Sat, 17 Dec 2016 16:04:07 +0100
+Message-ID: <20161217150406.6jkmrrphz2obwia6@earth>
+References: <20161214151026.5q6goxlfscv53tol@earth>
+ <1481794126-5670-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="tg7ddeqlbq4vpzyu"
-Return-path: <linux-i2c-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="gaxeoruuk32fxboj"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20161214163853.454-4-hdegoede@redhat.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Chen-Yu Tsai <wens@csie.org>, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org
+In-Reply-To: <1481794126-5670-1-git-send-email-peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
 
---tg7ddeqlbq4vpzyu
+--gaxeoruuk32fxboj
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Dec 14, 2016 at 05:38:53PM +0100, Hans de Goede wrote:
-> When the axp288_faul_gauge driver was originally merged, it was
-> merged with a dependency on some other driver providing platform
-> data for it.
+On Thu, Dec 15, 2016 at 10:28:46AM +0100, Peter Rosin wrote:
+> If the ac-detect gpio does not support interrupts, provide a fallback
+> to poll the gpio at a configurable interval.
 >=20
-> However the battery-data-framework which should provide that data
-> never got merged, resulting in x86 tablets / laptops with an axp288
-> having no working battery monitor, as before this commit the driver
-> would simply return -ENODEV if there is no platform data.
->=20
-> This commit removes the dependency on the platform_data instead
-> checking that the firmware has initialized the fuel-gauge and
-> reading the info back from the pmic.
->=20
-> What is missing from the read-back info is the table to map raw adc
-> values to temperature, so this commit drops the temperature and
-> temperature limits properties. The min voltage, charge design and
-> model name info is also missing. Note that none of these are really
-> important for userspace to have.
->=20
-> All other functionality is preserved and actually made available
-> by this commit.
->=20
-> BugLink: https://bugzilla.kernel.org/show_bug.cgi?id=3D88471
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> Signed-off-by: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
 
-Looks fine to me, thanks for the cleanup. I will wait
-a bit with merging it to give others a chance to comment.
+Thanks for your patch. We are currently in the merge
+window and your patch will appear in linux-next once
+4.10-rc1 has been tagged by Linus Torvalds.
+
+Until then I queued it into this branch:
+
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
+/?h=3Dfor-next-next
 
 -- Sebastian
 
---tg7ddeqlbq4vpzyu
+--gaxeoruuk32fxboj
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVUx4ACgkQ2O7X88g7
-+pqSZg//a+/ExQE2GRzD2m6TW0HgqKSVZbJFY6M6gYx+TYLjIVYaKWTp8SbMaVUm
-HY3HKCj5euryIgqOIKKSHDGEhKG+hJohs/89yEYZLYkulYe0B0qfanHvC4MnhtUr
-JzB9BkcumgbxnDw0zeinSfHxA8aB8AepPK9fLObr/dbRDExTFGtKnb9t6XUY2EUB
-GkLAZD18vbELvjmNRhTjRfepQ25z/DJoZA9+/v5+FzstXo0bI767sUREnL8PxjEM
-H8g4wp4YB7snaGtxjDe9l8agp2Ol2281YYv20EcIjyW5y2JFQJhccUICTfpaMl2a
-64M+8IeE/rIQ2Y5EVe/9guGTg3x/T0R3Q55JoWvIob2plPm2xHaSy5UtxLIuFIOE
-9/NEtIT7wRDXubB+f9NU91kSVhXgUEfqOZp8we1k/5Frt4kT9x12aU+yc1DuYkUu
-+Wx0C6xDmosEIXGbTTdprTswPEUtM/SuCYfhNf7gHyup+TlCrm41BHx5nPCy/yrZ
-QoogHAhzZ3bQ6ygL5NaTAsb+Ov4YQzrI1LDa3XE2x2o/lm6kP9sCMmHlUykK4cyx
-fJdR438GVSOQeGyogoz8ltJo0nFFnvhk+0g2FXOy7VCdMM5Ig0OMhz/Wjj1G6LD+
-Ky6AvStBQu62h4DyfbQ4lpzUYPcgbX5/KJCml15AlMQUMNwwmNk=
-=kp/L
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhVU+YACgkQ2O7X88g7
++pqOkBAAjNUEQJ47pwj4ifN3YqDmCea/d/t12DlTfuzSzm/LwsB3b586fylV3Xs7
+EvUa2n1CONeXciL2YJHqr5UAw4i1iArjzSGaNf8ppmx7ZbKwgsHQByf5spFQpsYr
+JnPclcsY395EvbkbUMYauFbkTY6S2Tu4Yg7CTLq8+xb7XCI1wIiOVK9/dwa7uaY1
+UHFoQwEH7xrjmqbcFRBnqpnwGyfy0w46haPaZiP7+AJFx6vjsBwrEL0v/F06wbjp
+DQwGIO2vDQKS4OKyuftjAQohAwoKasqMa4hOCLmcvCVvgmSkQ9a7GciKBYb2TK39
+bFs61WB7D8WWv7/U3K/uVD4VDrJEdFFf7xA7KVQHyfcw7MS2YDDWqkM/D8x4U41Z
+iKVpcJGspc9mN3sA6XVdtJMdut0gFSsL5/aqpAKpksiqeug/uT93mgSep3wDOJMG
+wy9SWSs0cxjGCerG+SIy8XDKQm/hwPCYPW9olCCyC8MYF8aOs+S62/QGHD0qEJgc
+74at3u8oomNbg3gpNnO0QH+xD860nCo+RUyapB+TJ09cUSLNljCVUVK4FSMWtYXL
+Dil/6U/Oyffe/rPi3UWIWDqli+zGG+LsY/QlxoVtCX6+ncpVsU23G+JSe0kQiFtT
+oo+ijt7bqMIGzwEboT+HqpsXsVts6EUusrs+1sNRpTee1kTXp38=
+=P6Uu
 -----END PGP SIGNATURE-----
 
---tg7ddeqlbq4vpzyu--
+--gaxeoruuk32fxboj--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
