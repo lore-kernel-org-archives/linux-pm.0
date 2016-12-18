@@ -1,86 +1,40 @@
 From: Milo Kim <woogyom.kim@gmail.com>
-Subject: [PATCH v3 3/7] power: supply: tps65217: Use generic name for charger online
-Date: Sun, 18 Dec 2016 11:54:28 +0900
-Message-ID: <20161218025432.20780-4-woogyom.kim@gmail.com>
+Subject: [PATCH v3 7/7] power: supply: tps65217: Use generic charger name
+Date: Sun, 18 Dec 2016 11:54:32 +0900
+Message-ID: <20161218025432.20780-8-woogyom.kim@gmail.com>
 References: <20161218025432.20780-1-woogyom.kim@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:35316 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932612AbcLRCzJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 17 Dec 2016 21:55:09 -0500
 In-Reply-To: <20161218025432.20780-1-woogyom.kim@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Milo Kim <woogyom.kim@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
-This driver supports AC and USB chargers. Generic name is preferred.
-Replace 'ac_online' with 'online'.
+"tps65217-charger" is more appropriate name because the driver supports
+not only AC but also USB charger.
 
 Signed-off-by: Milo Kim <woogyom.kim@gmail.com>
 ---
- drivers/power/supply/tps65217_charger.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ drivers/power/supply/tps65217_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/power/supply/tps65217_charger.c b/drivers/power/supply/tps65217_charger.c
-index 482ee9f9edff..424a6d32bb6c 100644
+index 63c555601674..29b61e81b385 100644
 --- a/drivers/power/supply/tps65217_charger.c
 +++ b/drivers/power/supply/tps65217_charger.c
-@@ -44,8 +44,8 @@ struct tps65217_charger {
- 	struct device *dev;
- 	struct power_supply *ac;
- 
--	int	ac_online;
--	int	prev_ac_online;
-+	int	online;
-+	int	prev_online;
- 
- 	struct task_struct	*poll_task;
- };
-@@ -95,7 +95,7 @@ static int tps65217_enable_charging(struct tps65217_charger *charger)
- 	int ret;
- 
- 	/* charger already enabled */
--	if (charger->ac_online)
-+	if (charger->online)
- 		return 0;
- 
- 	dev_dbg(charger->dev, "%s: enable charging\n", __func__);
-@@ -110,7 +110,7 @@ static int tps65217_enable_charging(struct tps65217_charger *charger)
- 		return ret;
- 	}
- 
--	charger->ac_online = 1;
-+	charger->online = 1;
- 
- 	return 0;
+@@ -188,7 +188,7 @@ static int tps65217_charger_poll_task(void *data)
  }
-@@ -122,7 +122,7 @@ static int tps65217_ac_get_property(struct power_supply *psy,
- 	struct tps65217_charger *charger = power_supply_get_drvdata(psy);
  
- 	if (psp == POWER_SUPPLY_PROP_ONLINE) {
--		val->intval = charger->ac_online;
-+		val->intval = charger->online;
- 		return 0;
- 	}
- 	return -EINVAL;
-@@ -133,7 +133,7 @@ static irqreturn_t tps65217_charger_irq(int irq, void *dev)
- 	int ret, val;
- 	struct tps65217_charger *charger = dev;
- 
--	charger->prev_ac_online = charger->ac_online;
-+	charger->prev_online = charger->online;
- 
- 	ret = tps65217_reg_read(charger->tps, TPS65217_REG_STATUS, &val);
- 	if (ret < 0) {
-@@ -153,10 +153,10 @@ static irqreturn_t tps65217_charger_irq(int irq, void *dev)
- 			return IRQ_HANDLED;
- 		}
- 	} else {
--		charger->ac_online = 0;
-+		charger->online = 0;
- 	}
- 
--	if (charger->prev_ac_online != charger->ac_online)
-+	if (charger->prev_online != charger->online)
- 		power_supply_changed(charger->ac);
- 
- 	ret = tps65217_reg_read(charger->tps, TPS65217_REG_CHGCONFIG0, &val);
+ static const struct power_supply_desc tps65217_charger_desc = {
+-	.name			= "tps65217-ac",
++	.name			= "tps65217-charger",
+ 	.type			= POWER_SUPPLY_TYPE_MAINS,
+ 	.get_property		= tps65217_charger_get_property,
+ 	.properties		= tps65217_charger_props,
 -- 
 2.11.0
+
