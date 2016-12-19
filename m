@@ -1,138 +1,126 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [RFC v2 0/7] PM / devfreq: draft for OPP suspend impl (even
- draftier)
-Date: Mon, 19 Dec 2016 20:18:19 +0900
-Message-ID: <5857C1FB.2040101@samsung.com>
-References: <CGME20161219021836epcas1p37f8c12ca0bc7a404fc206f81331811bb@epcas1p3.samsung.com>
- <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 01/14] extcon: Add extcon_get_extcon_dev_by_cable_id
+ function
+Date: Mon, 19 Dec 2016 12:42:49 +0100
+Message-ID: <de06e6f7-8e13-0b69-d1dc-12a26d58ebee@redhat.com>
+References: <20161219000731.10188-1-hdegoede@redhat.com>
+ <CGME20161219000750epcas2p4485a9ceafb718dc5a8926e9a546b3516@epcas2p4.samsung.com>
+ <20161219000731.10188-2-hdegoede@redhat.com> <5857B2AA.3030403@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:36702 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932352AbcLSLSW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 06:18:22 -0500
-In-reply-to: <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5857B2AA.3030403@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, linux-samsung-soc@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com
 
-Hi Tobias,
+Hi,
 
-On 2016년 12월 19일 11:16, Tobias Jakobi wrote:
-> Hello everyone,
-> 
-> this is v2 of the RFC. You can find the first version here:
-> https://www.spinics.net/lists/linux-samsung-soc/msg56331.html
-> 
-> I'm still unhappy with this approach, for multiple reasons:
-> - the global boolean -- cpufreq also has it, but I have the feeling that we don't need it here.
+On 19-12-16 11:12, Chanwoo Choi wrote:
+> Hi Hans,
+>
+> On 2016년 12월 19일 09:07, Hans de Goede wrote:
+>> extcon_register_notifier() allows passing in a NULL pointer for the
+>> extcon_device, so that extcon consumers which want extcon events of a
+>> certain type, but do not know the extcon device name (e.g. because
+>> there are different implementation depending on the board), can still
+>> get such events.
+>>
+>> But most drivers will also want to know the initial state of the cable.
+>> Rather then adding NULL edev argument support to extcon_get_state, which
+>> would require looking up the right edev each call, this commit allows
+>> drivers to get the first extcon device with a requested cable-id through
+>> a new extcon_get_extcon_dev_by_cable_id function.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>> ---
+>>  drivers/extcon/extcon.c | 24 ++++++++++++++++++++++++
+>>  include/linux/extcon.h  |  1 +
+>>  2 files changed, 25 insertions(+)
+>>
+>> diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
+>> index 7829846..505c272 100644
+>> --- a/drivers/extcon/extcon.c
+>> +++ b/drivers/extcon/extcon.c
+>> @@ -890,6 +890,30 @@ struct extcon_dev *extcon_get_extcon_dev(const char *extcon_name)
+>>  EXPORT_SYMBOL_GPL(extcon_get_extcon_dev);
+>>
+>>  /**
+>> + * extcon_get_extcon_dev_by_cable_id() - Get an extcon device by a cable id
+>> + * @id:		the unique id of each external connector in extcon enumeration.
+>> + */
+>> +struct extcon_dev *extcon_get_extcon_dev_by_cable_id(unsigned int id)
+>> +{
+>> +	struct extcon_dev *extd;
+>> +	int idx = -EINVAL;
+>> +
+>> +	mutex_lock(&extcon_dev_list_lock);
+>> +	list_for_each_entry(extd, &extcon_dev_list, entry) {
+>> +		idx = find_cable_index_by_id(extd, id);
+>> +		if (idx >= 0)
+>> +			break;
+>> +	}
+>> +	mutex_unlock(&extcon_dev_list_lock);
+>> +
+>> +	if (idx < 0)
+>> +		return NULL;
+>> +
+>> +	return extd;
+>> +}
+>> +EXPORT_SYMBOL_GPL(extcon_get_extcon_dev_by_cable_id);
+>
+> This function do not guarantee the same operation on all of case.
+>
+> For example,
+> The h/w board has multiple extcon provider which support the same external connector. When using this function, this function don't get the correct extcon instance. Just, this function returns the first extcon instance in the registered extcon list.
+>
+> This function has the potential problem.
 
-> - keeping track of which device was suspended looks convoluted -- some reference counting would definitely help here.
-> - the bus driver (here exynos_bus) sets suspend_freq, but devfreq core actually uses it.
-> - returning -EBUSY from devfreq_{suspend,resume}_device() requires handling this in the device drivers -- again refcounting could solve this.
-> - rather a question: do we need the restore on resume -- or should be just wait for the next update through the governor?
-> - like Chanwoo already suggested, move setting suspend freq to devfreq_suspend_device().
+True, I wanted this function because I'm afraid that on some
+boards using the axp288_charger.c driver the USB_HOST extcon
+cable may be provided by a different extcon device then the
+"intel-int3496" device, but as you said in your reply to
 
-I want to separate the two subject as following:
-- subject1 : Where should devfreq set the suspend-freq for device.
-- subject2 : How can devfreq support the duplicate call of devfreq_{suspend,resume}_device().
+"[PATCH 08/14] power: supply: axp288_charger: Actually get and use the USB_HOST extcon device"
 
-For subject1:
-I explain why devfreq need to set the supend-freq in devfreq_suspend_device().
-Following explanation do not include the refcount of suspend and bit operation.
+If that happens we can add an array of extcon names to try,
+in axp288_charger.c.
 
-The devfreq has two case to enter the suspend mode for devfreq instance as following:
-case 1. Some device driver call the 'devfreq_suspend/resume_device()' directly regardless the sequence of suspend mode (echo mem > /sys/power/state).
-case 2. The system enter the suspend mode by using 'echo mem > /sys/power/state' command.
+So I'll modify this patch to use the existing
+extcon_get_extcon_dev with a name argument of "intel-int3496".
 
-When setting suspend frequency in the devfreq_suspend/resume_device(),
-this suggestion can cover all cases for suspend freq setting.
+Note that currently extcon_register_notifier accepts a NULL
+edev argument and in that case does pick the first edev with
+a matching cable-id, which has the same problem as you pointed
+out. So perhaps see if anyone actually passes in NULL, and if
+not drop support for a NULL edev argument passed to
+extcon_register_notifier ?
 
-I make the separate function[1] to set the frequency.
-[1] https://git.kernel.org/cgit/linux/kernel/git/chanwoo/linux.git/commit/?h=devfreq-test&id=8851e989ccaf0ee23a4278724227e879f8752625
-
-	devfreq_suspend_device(struct devfreq *devfreq) {
-		/* Enter the suspend mode */
-		devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_SUSPEND, NULL);
-
-		/* Set the suspend-freq */
-		devfreq_set_target(devfreq, devfreq->suspend_freq, 0);
-	}
-
-	devfreq_resume_device(struct devfreq *devfreq) {
-		/* Set the resume freq */
-		devfreq_set_target(devfreq, devfreq->resume_freq, 0);
-
-		/* Wakeup from suspend mode */
-		devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_RESUME, NULL);
-	}
-
-And,
-devfreq_suspend() call the devfreq_suspend_device() for all registered devfreq instance.
-
-	void devfreq_suspend(void)
-	{
-		mutex_lock(&devfreq_list_lock);
-
-		list_for_each_entry(devfreq, &devfreq_list, node) {
-			ret = devfreq_suspend_device(devfreq);
-			if (ret < 0)
-				dev_warn(&devfreq->dev, "%s: governor suspend failed\n", __func__);
-		}
-
-		mutex_unlock(&devfreq_list_lock);
-	}
-
-	void devfreq_resume(void)
-	{
-		mutex_lock(&devfreq_list_lock);
-
-		list_for_each_entry(devfreq, &devfreq_list, node) {
-			ret = devfreq_resume_device(devfreq);
-			if (ret < 0)
-				dev_warn(&devfreq->dev, "%s: governor resume failed\n", __func__);
-		}
-
-		mutex_unlock(&devfreq_list_lock);
-	}
-
-
-For subject2:
-- subject2 : How can devfreq support the duplicate call of devfreq_{suspend,resume}_device().
-devfreq_{suspend,resume}_device() have to check whether devfreq device is already suspended or not
-with refcount or enum devfreq_flag_bits.
-
-If devfreq_{suspend,resume}_device() support it, devfreq_suspend/resume() don't need to consider duplicate call.
-
-> 
-> Concerning refcounting, I'm a bit unsure what we wanna count here? Usually we count usage. If usage goes from zero to one, we do something (alloc), and when it goes back from one to zero (free).
-> If we keep the current semantics however we have to count number of suspends. That's kinda unintuitive if you ask me.
-> 
-> With best wishes,
-> Tobias
-> 
-> Tobias Jakobi (7):
->   PM / devfreq: Replace 'stop_polling' boolean with flags
->   PM / devfreq: Track suspend state of DevFreq devices
->   PM / devfreq: Add DevFreq subsystem suspend/resume
->   PM / devfreq: Suspend subsystem on system suspend/hibernate
->   PM / devfreq: exynos-bus: add support for suspend OPP
->   ARM: dts: exynos4x12: add suspend OPP for DMC and leftbus
->   ARM: dts: exynos4x12: add suspend OPP for DMC and leftbus for Prime
-> 
->  arch/arm/boot/dts/exynos4412-prime.dtsi |   2 +
->  arch/arm/boot/dts/exynos4x12.dtsi       |   2 +
->  drivers/base/power/main.c               |   3 +
->  drivers/devfreq/devfreq.c               | 170 ++++++++++++++++++++++++++++++--
->  drivers/devfreq/exynos-bus.c            |   8 ++
->  include/linux/devfreq.h                 |  14 ++-
->  6 files changed, 188 insertions(+), 11 deletions(-)
-> 
-
-
--- 
 Regards,
-Chanwoo Choi
+
+Hans
+
+
+>
+>> +
+>> +/**
+>>   * extcon_register_notifier() - Register a notifiee to get notified by
+>>   *				any attach status changes from the extcon.
+>>   * @edev:	the extcon device that has the external connecotr.
+>> diff --git a/include/linux/extcon.h b/include/linux/extcon.h
+>> index b871c0c..51abda8 100644
+>> --- a/include/linux/extcon.h
+>> +++ b/include/linux/extcon.h
+>> @@ -230,6 +230,7 @@ extern int devm_extcon_dev_register(struct device *dev,
+>>  extern void devm_extcon_dev_unregister(struct device *dev,
+>>  				       struct extcon_dev *edev);
+>>  extern struct extcon_dev *extcon_get_extcon_dev(const char *extcon_name);
+>> +extern struct extcon_dev *extcon_get_extcon_dev_by_cable_id(unsigned int id);
+>>
+>>  /*
+>>   * Following APIs control the memory of extcon device.
+>>
+>
+>
