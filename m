@@ -1,48 +1,48 @@
 From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Subject: [RFC v2 5/7] PM / devfreq: exynos-bus: add support for suspend OPP
-Date: Mon, 19 Dec 2016 03:16:25 +0100
-Message-ID: <1482113787-28422-6-git-send-email-tjakobi@math.uni-bielefeld.de>
+Subject: [RFC v2 6/7] ARM: dts: exynos4x12: add suspend OPP for DMC and leftbus
+Date: Mon, 19 Dec 2016 03:16:26 +0100
+Message-ID: <1482113787-28422-7-git-send-email-tjakobi@math.uni-bielefeld.de>
 References: <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.math.uni-bielefeld.de ([129.70.45.10]:43829 "EHLO
+        smtp.math.uni-bielefeld.de" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1762074AbcLSCSi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Dec 2016 21:18:38 -0500
 In-Reply-To: <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-samsung-soc@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com, cw00.choi@samsung.com, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-List-Id: linux-pm@vger.kernel.org
 
-Set the frequency of the suspend OPP, so that DevFreq
-core can use it during system sleep/reboot/power-off.
+Both DMC and leftbus adjust regulator voltages (MIF and INT
+respectively), which have to be in a safe range to allow the
+BL0 to operate correctly.
 
 Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 ---
- drivers/devfreq/exynos-bus.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/arm/boot/dts/exynos4x12.dtsi | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index 29866f7..16fb37a 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -389,6 +389,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 	struct devfreq_passive_data *passive_data;
- 	struct devfreq *parent_devfreq;
- 	struct exynos_bus *bus;
-+	struct dev_pm_opp *suspend_opp;
- 	int ret, max_state;
- 	unsigned long min_freq, max_freq;
+diff --git a/arch/arm/boot/dts/exynos4x12.dtsi b/arch/arm/boot/dts/exynos4x12.dtsi
+index 46c2ada..35cbe40 100644
+--- a/arch/arm/boot/dts/exynos4x12.dtsi
++++ b/arch/arm/boot/dts/exynos4x12.dtsi
+@@ -378,6 +378,7 @@
+ 		opp@400000000 {
+ 			opp-hz = /bits/ 64 <400000000>;
+ 			opp-microvolt = <1050000>;
++			opp-suspend;
+ 		};
+ 	};
  
-@@ -449,6 +450,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 		goto err;
- 	}
+@@ -466,6 +467,7 @@
+ 		opp@200000000 {
+ 			opp-hz = /bits/ 64 <200000000>;
+ 			opp-microvolt = <1000000>;
++			opp-suspend;
+ 		};
+ 	};
  
-+	/* Check for suspend OPP and store the corresponding frequency. */
-+	rcu_read_lock();
-+	suspend_opp = dev_pm_opp_get_suspend_opp(dev);
-+	if (suspend_opp)
-+		bus->devfreq->suspend_freq = dev_pm_opp_get_freq(suspend_opp);
-+	rcu_read_unlock();
-+
- 	/* Register opp_notifier to catch the change of OPP  */
- 	ret = devm_devfreq_register_opp_notifier(dev, bus->devfreq);
- 	if (ret < 0) {
 -- 
 2.7.3
+
