@@ -1,52 +1,53 @@
-From: Roger Shimizu <rogershimizu@gmail.com>
-Subject: Re: [PATCH v2] power: reset: add linkstation-reset driver
-Date: Mon, 19 Dec 2016 09:34:11 +0900
-Message-ID: <20161219093411.8ab4b73814a9701337f889f2@gmail.com>
-References: <20161207172415.9776-1-rogershimizu@gmail.com>
-        <20161216100501.18173-1-rogershimizu@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Subject: [RFC v2 0/7] PM / devfreq: draft for OPP suspend impl (even draftier)
+Date: Mon, 19 Dec 2016 03:16:20 +0100
+Message-ID: <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34775 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751694AbcLSAeQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Dec 2016 19:34:16 -0500
-Received: by mail-pg0-f65.google.com with SMTP id b1so6495974pgc.1
-        for <linux-pm@vger.kernel.org>; Sun, 18 Dec 2016 16:34:15 -0800 (PST)
-In-Reply-To: <20161216100501.18173-1-rogershimizu@gmail.com>
+Received: from smtp.math.uni-bielefeld.de ([129.70.45.10]:43801 "EHLO
+        smtp.math.uni-bielefeld.de" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1762087AbcLSCQi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Dec 2016 21:16:38 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Andrew Lunn <andrew@lunn.ch>, Ryan Tandy <ryan@nardis.ca>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>
+To: linux-samsung-soc@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com, cw00.choi@samsung.com, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 
-On Fri, 16 Dec 2016 19:05:01 +0900
-Roger Shimizu <rogershimizu@gmail.com> wrote:
+Hello everyone,
 
-> Buffalo Linkstation / KuroBox and their variants need magic command
-> sending to UART1 to power-off.
-> 
-> Power driver linkstation-reset implements the magic command and I/O
-> routine, which come from files listed below:
->   - arch/arm/mach-orion5x/kurobox_pro-setup.c
->   - arch/arm/mach-orion5x/terastation_pro2-setup.c
-> 
-> Cc: Andrew Lunn <andrew@lunn.ch>
-> Cc: Martin Michlmayr <tbm@cyrius.com>
-> Cc: Sylver Bruneau <sylver.bruneau@googlemail.com>
-> Cc: Herbert Valerio Riedel <hvr@gnu.org>
-> Reported-by: Ryan Tandy <ryan@nardis.ca>
-> Signed-off-by: Roger Shimizu <rogershimizu@gmail.com>
-> ---
+this is v2 of the RFC. You can find the first version here:
+https://www.spinics.net/lists/linux-samsung-soc/msg56331.html
 
-Original reporter Ryan Tandy told me in a separate email that he has confirmed my patch works on his Linkstation Pro device.
-So please add:
+I'm still unhappy with this approach, for multiple reasons:
+- the global boolean -- cpufreq also has it, but I have the feeling that we don't need it here.
+- keeping track of which device was suspended looks convoluted -- some reference counting would definitely help here.
+- the bus driver (here exynos_bus) sets suspend_freq, but devfreq core actually uses it.
+- returning -EBUSY from devfreq_{suspend,resume}_device() requires handling this in the device drivers -- again refcounting could solve this.
+- rather a question: do we need the restore on resume -- or should be just wait for the next update through the governor?
+- like Chanwoo already suggested, move setting suspend freq to devfreq_suspend_device().
 
-  Tested-by: Ryan Tandy <ryan@nardis.ca>
+Concerning refcounting, I'm a bit unsure what we wanna count here? Usually we count usage. If usage goes from zero to one, we do something (alloc), and when it goes back from one to zero (free).
+If we keep the current semantics however we have to count number of suspends. That's kinda unintuitive if you ask me.
 
-when merging this patch. Thank you!
+With best wishes,
+Tobias
 
-Cheers,
+Tobias Jakobi (7):
+  PM / devfreq: Replace 'stop_polling' boolean with flags
+  PM / devfreq: Track suspend state of DevFreq devices
+  PM / devfreq: Add DevFreq subsystem suspend/resume
+  PM / devfreq: Suspend subsystem on system suspend/hibernate
+  PM / devfreq: exynos-bus: add support for suspend OPP
+  ARM: dts: exynos4x12: add suspend OPP for DMC and leftbus
+  ARM: dts: exynos4x12: add suspend OPP for DMC and leftbus for Prime
+
+ arch/arm/boot/dts/exynos4412-prime.dtsi |   2 +
+ arch/arm/boot/dts/exynos4x12.dtsi       |   2 +
+ drivers/base/power/main.c               |   3 +
+ drivers/devfreq/devfreq.c               | 170 ++++++++++++++++++++++++++++++--
+ drivers/devfreq/exynos-bus.c            |   8 ++
+ include/linux/devfreq.h                 |  14 ++-
+ 6 files changed, 188 insertions(+), 11 deletions(-)
+
 -- 
-Roger Shimizu, GMT +9 Tokyo
-PGP/GPG: 4096R/6C6ACD6417B3ACB1
+2.7.3
+
