@@ -1,82 +1,94 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH v2 02/11] mfd: axp20x: add volatile and writeable reg
- ranges for VBUS power supply driver
-Date: Mon, 19 Dec 2016 13:28:11 +0100
-Message-ID: <98fa2460-b7fe-3a0b-5b93-7a2e4e6e83ce@free-electrons.com>
-References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
- <20161209110419.28981-3-quentin.schulz@free-electrons.com>
- <CAGb2v66jDsU2rt4d-0ydWR926y-hHTfOBJQmyYVdKd7rcm1WWQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v6 4/5] PM / runtime: Use device links
+Date: Mon, 19 Dec 2016 13:38:50 +0100
+Message-ID: <CAJZ5v0gQ5zSkJ9nkqnCsUXy5VSPt7+Po19wkukVJpuw8fA2pNw@mail.gmail.com>
+References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <11468990.WB1J8sxXpS@vostro.rjw.lan>
+ <5653461.FkScaTIbLn@vostro.rjw.lan> <20161218140122.GA13141@wunner.de>
+ <CAJZ5v0gacPK2BOjZ_=tPbSnRjWjW5BrZQDUnKzD3i0qVcN5nLw@mail.gmail.com> <20161218163725.GA13273@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:43363 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751192AbcLSM2Q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 07:28:16 -0500
-In-Reply-To: <CAGb2v66jDsU2rt4d-0ydWR926y-hHTfOBJQmyYVdKd7rcm1WWQ@mail.gmail.com>
+Received: from mail-qk0-f196.google.com ([209.85.220.196]:35675 "EHLO
+        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751673AbcLSMiv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 07:38:51 -0500
+In-Reply-To: <20161218163725.GA13273@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-Hi Chen-Yu,
+On Sun, Dec 18, 2016 at 5:37 PM, Lukas Wunner <lukas@wunner.de> wrote:
+> On Sun, Dec 18, 2016 at 04:53:26PM +0100, Rafael J. Wysocki wrote:
+>> On Sun, Dec 18, 2016 at 3:01 PM, Lukas Wunner <lukas@wunner.de> wrote:
+>> > Hi Rafael,
+>> >
+>> > spotted what looks like a bug in the device links runtime PM code:
+>> >
+>> > When resuming a device, __rpm_callback() calls rpm_get_suppliers(dev):
+>> >
+>> >> +                     retval = rpm_get_suppliers(dev);
+>> >> +                     if (retval)
+>> >> +                             goto fail;
+>> >
+>> >
+>> > This will walk the list of suppliers and call pm_runtime_get_sync()
+>> > for each of them:
+>> >
+>> >> +static int rpm_get_suppliers(struct device *dev)
+>> >> +{
+>> >> +     struct device_link *link;
+>> >> +
+>> >> +     list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
+>> >> +             int retval;
+>> > [...]
+>> >> +             retval = pm_runtime_get_sync(link->supplier);
+>> >> +             if (retval < 0) {
+>> >> +                     pm_runtime_put_noidle(link->supplier);
+>> >> +                     return retval;
+>> >
+>> >
+>> > If pm_runtime_get_sync() failed, e.g. because runtime PM is disabled
+>> > on a supplier, the function will put the reference of the failed
+>> > supplier and return.
+>> >
+>> > Back in __rpm_callback() we jump to the fail mark, where we call
+>> > rpm_put_suppliers().
+>> >
+>> >> + fail:
+>> >> +                     rpm_put_suppliers(dev);
+>> >> +
+>> >> +                     device_links_read_unlock(idx);
+>> >
+>> >
+>> > This walks the list of suppliers and releases a ref for each of them:
+>> >
+>> >> +static void rpm_put_suppliers(struct device *dev)
+>> >> +{
+>> >> +     struct device_link *link;
+>> >> +
+>> >> +     list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+>> >> +             if (link->rpm_active &&
+>> >> +                 READ_ONCE(link->status) != DL_STATE_SUPPLIER_UNBIND) {
+>> >> +                     pm_runtime_put(link->supplier);
+>> >> +                     link->rpm_active = false;
+>> >> +             }
+>> >> +}
+>> >
+>> >
+>> > This looks wrong:  We've already put a ref on the failed supplier, so here
+>> > we're putting another one.
+>>
+>> Are we?  I would think link->rpm_active would be false for the failed
+>> one, wouldn't it?
+>
+> Ah, so link->rpm_active means the consumer is holding a ref on the supplier.
 
-On 14/12/2016 16:43, Chen-Yu Tsai wrote:
-> On Fri, Dec 9, 2016 at 7:04 PM, Quentin Schulz
-> <quentin.schulz@free-electrons.com> wrote:
->> The X-Powers AXP20X and AXP22X PMICs allow to choose the maximum voltage
->> and minimum current delivered by the VBUS power supply.
->>
->> This adds the register used by the VBUS power supply driver to the range
->> of volatile and writeable regs ranges.
->>
->> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->> ---
->>
->> added in v2
->>
->>  drivers/mfd/axp20x.c | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->> index ba130be..6ee2cc6 100644
->> --- a/drivers/mfd/axp20x.c
->> +++ b/drivers/mfd/axp20x.c
->> @@ -65,12 +65,14 @@ static const struct regmap_access_table axp152_volatile_table = {
->>
->>  static const struct regmap_range axp20x_writeable_ranges[] = {
->>         regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
->> +       regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
-> 
-> This is already covered by the previous entry.
-> 
->>         regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
->>         regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
->>  };
->>
->>  static const struct regmap_range axp20x_volatile_ranges[] = {
->>         regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_USB_OTG_STATUS),
->> +       regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
-> 
-> And I'm not sure why you specify it as volatile? The PMIC doesn't change any
-> of the bits in this register on its own.
-> 
+Yes, that's the idea. :-)
 
-I got things mixed up between the work on the battery driver I'll soon
-send (which actually needs updated reg ranges) and this VBUS driver.
-Sorry for that.
+> Missed that, sorry for the false alarm and thanks for the clarification.
 
-> Same for the AXP22x bits. So basically I think you don't need this patch.
-> 
+No problem.
 
-Indeed. Should I send a v3 to remove this patch or is it fine for you to
-ignore this one?
-
-Thanks!
-Quentin
-
--- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Thanks,
+Rafael
