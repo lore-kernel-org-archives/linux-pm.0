@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 06/14] power: supply: axp288_charger: Register extcon notifers after power_supply
-Date: Mon, 19 Dec 2016 01:07:23 +0100
-Message-ID: <20161219000731.10188-7-hdegoede@redhat.com>
+Subject: [PATCH 04/14] power: supply: axp288_charger: Drop platform_data dependency
+Date: Mon, 19 Dec 2016 01:07:21 +0100
+Message-ID: <20161219000731.10188-5-hdegoede@redhat.com>
 References: <20161219000731.10188-1-hdegoede@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161219000731.10188-1-hdegoede@redhat.com>
@@ -10,84 +10,159 @@ To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo H
 Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-The extcon notifier work calls power_supply_changed on the power_supply
-we register, so the extcon notifiers should be registered after we
-register the power_supply.
+When the axp288_charger driver was originally merged, it was merged with
+a dependency on some other driver providing platform data for it.
 
-While touching this code anyways, refactor the code for the 3 cable types
-into a loop to avoid code repetition.
+However the battery-data-framework which should provide that data never
+got merged, so the axp288_charger as merged upstream has never worked,
+its probe method simply always returns -ENODEV.
+
+This commit removes the dependency on the platform_data instead reading
+back the charging current and charging voltage that the firmware has set
+and using those values as the maximum values the user may set.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 42 +++++++++++++----------------------
- 1 file changed, 15 insertions(+), 27 deletions(-)
+ drivers/power/supply/axp288_charger.c | 88 ++++++++++++-----------------------
+ include/linux/mfd/axp20x.h            |  7 ---
+ 2 files changed, 30 insertions(+), 65 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index e435b1e..5ed0a45 100644
+index f1e3b0e..76f7d29 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -815,6 +815,8 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
- 	struct power_supply_config charger_cfg = {};
-+	unsigned int cable_ids[] = { EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP,
-+				     EXTCON_CHG_USB_DCP };
+@@ -143,7 +143,6 @@ enum {
  
- 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
- 	if (!info)
-@@ -831,33 +833,6 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
+ struct axp288_chrg_info {
+ 	struct platform_device *pdev;
+-	struct axp20x_chrg_pdata *pdata;
+ 	struct regmap *regmap;
+ 	struct regmap_irq_chip_data *regmap_irqc;
+ 	int irq[CHRG_INTR_END];
+@@ -769,60 +768,42 @@ static int charger_init_hw_regs(struct axp288_chrg_info *info)
+ 		return ret;
  	}
  
--	/* Register for extcon notification */
--	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
--	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
--	ret = devm_extcon_register_notifier(dev, info->cable.edev,
--					EXTCON_CHG_USB_SDP, &info->cable.nb);
--	if (ret) {
--		dev_err(&info->pdev->dev,
--			"failed to register extcon notifier for SDP %d\n", ret);
--		return ret;
--	}
+-	/* Init charging current and voltage */
+-	info->max_cc = info->pdata->max_cc;
+-	info->max_cv = info->pdata->max_cv;
 -
--	ret = devm_extcon_register_notifier(dev, info->cable.edev,
--					EXTCON_CHG_USB_CDP, &info->cable.nb);
--	if (ret) {
--		dev_err(&info->pdev->dev,
--			"failed to register extcon notifier for CDP %d\n", ret);
--		return ret;
--	}
+ 	/* Read current charge voltage and current limit */
+ 	ret = regmap_read(info->regmap, AXP20X_CHRG_CTRL1, &val);
+ 	if (ret < 0) {
+-		/* Assume default if cannot read */
+-		info->cc = info->pdata->def_cc;
+-		info->cv = info->pdata->def_cv;
+-	} else {
+-		/* Determine charge voltage */
+-		cv = (val & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS;
+-		switch (cv) {
+-		case CHRG_CCCV_CV_4100MV:
+-			info->cv = CV_4100MV;
+-			break;
+-		case CHRG_CCCV_CV_4150MV:
+-			info->cv = CV_4150MV;
+-			break;
+-		case CHRG_CCCV_CV_4200MV:
+-			info->cv = CV_4200MV;
+-			break;
+-		case CHRG_CCCV_CV_4350MV:
+-			info->cv = CV_4350MV;
+-			break;
+-		default:
+-			info->cv = INT_MAX;
+-			break;
+-		}
 -
--	ret = devm_extcon_register_notifier(dev, info->cable.edev,
--					EXTCON_CHG_USB_DCP, &info->cable.nb);
--	if (ret) {
--		dev_err(&info->pdev->dev,
--			"failed to register extcon notifier for DCP %d\n", ret);
--		return ret;
--	}
--
- 	platform_set_drvdata(pdev, info);
- 	mutex_init(&info->lock);
- 
-@@ -870,6 +845,19 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return PTR_ERR(info->psy_usb);
- 	}
- 
-+	/* Register for extcon notification */
-+	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
-+	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
-+	for (i = 0; i < ARRAY_SIZE(cable_ids); i++) {
-+		ret = devm_extcon_register_notifier(dev, info->cable.edev,
-+						cable_ids[i], &info->cable.nb);
-+		if (ret) {
-+			dev_err(dev, "failed to register extcon notifier for %u: %d\n",
-+				cable_ids[i], ret);
-+			return ret;
-+		}
+-		/* Determine charge current limit */
+-		cc = (ret & CHRG_CCCV_CC_MASK) >> CHRG_CCCV_CC_BIT_POS;
+-		cc = (cc * CHRG_CCCV_CC_LSB_RES) + CHRG_CCCV_CC_OFFSET;
+-		info->cc = cc;
++		dev_err(&info->pdev->dev, "register(%x) read error(%d)\n",
++			AXP20X_CHRG_CTRL1, ret);
++		return ret;
 +	}
-+
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
+ 
+-		/* Program default charging voltage and current */
+-		cc = min(info->pdata->def_cc, info->max_cc);
+-		cv = min(info->pdata->def_cv, info->max_cv);
++	/* Determine charge voltage */
++	cv = (val & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS;
++	switch (cv) {
++	case CHRG_CCCV_CV_4100MV:
++		info->cv = CV_4100MV;
++		break;
++	case CHRG_CCCV_CV_4150MV:
++		info->cv = CV_4150MV;
++		break;
++	case CHRG_CCCV_CV_4200MV:
++		info->cv = CV_4200MV;
++		break;
++	case CHRG_CCCV_CV_4350MV:
++		info->cv = CV_4350MV;
++		break;
++	}
+ 
+-		ret = axp288_charger_set_cc(info, cc);
+-		if (ret < 0) {
+-			dev_err(&info->pdev->dev,
+-					"error(%d) in setting CC\n", ret);
+-			return ret;
+-		}
++	/* Determine charge current limit */
++	cc = (ret & CHRG_CCCV_CC_MASK) >> CHRG_CCCV_CC_BIT_POS;
++	cc = (cc * CHRG_CCCV_CC_LSB_RES) + CHRG_CCCV_CC_OFFSET;
++	info->cc = cc;
+ 
+-		ret = axp288_charger_set_cv(info, cv);
+-		if (ret < 0) {
+-			dev_err(&info->pdev->dev,
+-					"error(%d) in setting CV\n", ret);
+-			return ret;
+-		}
+-	}
++	/*
++	 * Do not allow the user to configure higher settings then those
++	 * set by the firmware
++	 */
++	info->max_cv = info->cv;
++	info->max_cc = info->cc;
+ 
+ 	return 0;
+ }
+@@ -841,15 +822,6 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	info->pdev = pdev;
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
+-	info->pdata = pdev->dev.platform_data;
+-
+-	if (!info->pdata) {
+-		/* Try ACPI provided pdata via device properties */
+-		if (!device_property_present(&pdev->dev,
+-						"axp288_charger_data\n"))
+-			dev_err(&pdev->dev, "failed to get platform data\n");
+-		return -ENODEV;
+-	}
+ 
+ 	info->cable.edev = extcon_get_extcon_dev(AXP288_EXTCON_DEV_NAME);
+ 	if (info->cable.edev == NULL) {
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index 1d07ada..6715df3 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -532,13 +532,6 @@ struct axp20x_dev {
+ 	const struct regmap_irq_chip	*regmap_irq_chip;
+ };
+ 
+-struct axp20x_chrg_pdata {
+-	int max_cc;
+-	int max_cv;
+-	int def_cc;
+-	int def_cv;
+-};
+-
+ struct axp288_extcon_pdata {
+ 	/* GPIO pin control to switch D+/D- lines b/w PMIC and SOC */
+ 	struct gpio_desc *gpio_mux_cntl;
 -- 
 2.9.3
