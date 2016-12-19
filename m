@@ -1,114 +1,82 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH 01/14] extcon: Add extcon_get_extcon_dev_by_cable_id
- function
-Date: Mon, 19 Dec 2016 20:57:06 +0900
-Message-ID: <5857CB12.8070105@samsung.com>
-References: <20161219000731.10188-1-hdegoede@redhat.com>
- <CGME20161219000750epcas2p4485a9ceafb718dc5a8926e9a546b3516@epcas2p4.samsung.com>
- <20161219000731.10188-2-hdegoede@redhat.com> <5857B2AA.3030403@samsung.com>
- <de06e6f7-8e13-0b69-d1dc-12a26d58ebee@redhat.com>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH v2 02/11] mfd: axp20x: add volatile and writeable reg
+ ranges for VBUS power supply driver
+Date: Mon, 19 Dec 2016 13:28:11 +0100
+Message-ID: <98fa2460-b7fe-3a0b-5b93-7a2e4e6e83ce@free-electrons.com>
+References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+ <20161209110419.28981-3-quentin.schulz@free-electrons.com>
+ <CAGb2v66jDsU2rt4d-0ydWR926y-hHTfOBJQmyYVdKd7rcm1WWQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:37080 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754774AbcLSL5J (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 06:57:09 -0500
-In-reply-to: <de06e6f7-8e13-0b69-d1dc-12a26d58ebee@redhat.com>
+Received: from mail.free-electrons.com ([62.4.15.54]:43363 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751192AbcLSM2Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 07:28:16 -0500
+In-Reply-To: <CAGb2v66jDsU2rt4d-0ydWR926y-hHTfOBJQmyYVdKd7rcm1WWQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-Hi,
+Hi Chen-Yu,
 
-On 2016년 12월 19일 20:42, Hans de Goede wrote:
-> Hi,
-> 
-> On 19-12-16 11:12, Chanwoo Choi wrote:
->> Hi Hans,
+On 14/12/2016 16:43, Chen-Yu Tsai wrote:
+> On Fri, Dec 9, 2016 at 7:04 PM, Quentin Schulz
+> <quentin.schulz@free-electrons.com> wrote:
+>> The X-Powers AXP20X and AXP22X PMICs allow to choose the maximum voltage
+>> and minimum current delivered by the VBUS power supply.
 >>
->> On 2016년 12월 19일 09:07, Hans de Goede wrote:
->>> extcon_register_notifier() allows passing in a NULL pointer for the
->>> extcon_device, so that extcon consumers which want extcon events of a
->>> certain type, but do not know the extcon device name (e.g. because
->>> there are different implementation depending on the board), can still
->>> get such events.
->>>
->>> But most drivers will also want to know the initial state of the cable.
->>> Rather then adding NULL edev argument support to extcon_get_state, which
->>> would require looking up the right edev each call, this commit allows
->>> drivers to get the first extcon device with a requested cable-id through
->>> a new extcon_get_extcon_dev_by_cable_id function.
->>>
->>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>> ---
->>>  drivers/extcon/extcon.c | 24 ++++++++++++++++++++++++
->>>  include/linux/extcon.h  |  1 +
->>>  2 files changed, 25 insertions(+)
->>>
->>> diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
->>> index 7829846..505c272 100644
->>> --- a/drivers/extcon/extcon.c
->>> +++ b/drivers/extcon/extcon.c
->>> @@ -890,6 +890,30 @@ struct extcon_dev *extcon_get_extcon_dev(const char *extcon_name)
->>>  EXPORT_SYMBOL_GPL(extcon_get_extcon_dev);
->>>
->>>  /**
->>> + * extcon_get_extcon_dev_by_cable_id() - Get an extcon device by a cable id
->>> + * @id:        the unique id of each external connector in extcon enumeration.
->>> + */
->>> +struct extcon_dev *extcon_get_extcon_dev_by_cable_id(unsigned int id)
->>> +{
->>> +    struct extcon_dev *extd;
->>> +    int idx = -EINVAL;
->>> +
->>> +    mutex_lock(&extcon_dev_list_lock);
->>> +    list_for_each_entry(extd, &extcon_dev_list, entry) {
->>> +        idx = find_cable_index_by_id(extd, id);
->>> +        if (idx >= 0)
->>> +            break;
->>> +    }
->>> +    mutex_unlock(&extcon_dev_list_lock);
->>> +
->>> +    if (idx < 0)
->>> +        return NULL;
->>> +
->>> +    return extd;
->>> +}
->>> +EXPORT_SYMBOL_GPL(extcon_get_extcon_dev_by_cable_id);
+>> This adds the register used by the VBUS power supply driver to the range
+>> of volatile and writeable regs ranges.
 >>
->> This function do not guarantee the same operation on all of case.
+>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>> ---
 >>
->> For example,
->> The h/w board has multiple extcon provider which support the same external connector. When using this function, this function don't get the correct extcon instance. Just, this function returns the first extcon instance in the registered extcon list.
+>> added in v2
 >>
->> This function has the potential problem.
+>>  drivers/mfd/axp20x.c | 4 ++++
+>>  1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+>> index ba130be..6ee2cc6 100644
+>> --- a/drivers/mfd/axp20x.c
+>> +++ b/drivers/mfd/axp20x.c
+>> @@ -65,12 +65,14 @@ static const struct regmap_access_table axp152_volatile_table = {
+>>
+>>  static const struct regmap_range axp20x_writeable_ranges[] = {
+>>         regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
+>> +       regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
 > 
-> True, I wanted this function because I'm afraid that on some
-> boards using the axp288_charger.c driver the USB_HOST extcon
-> cable may be provided by a different extcon device then the
-> "intel-int3496" device, but as you said in your reply to
+> This is already covered by the previous entry.
 > 
-> "[PATCH 08/14] power: supply: axp288_charger: Actually get and use the USB_HOST extcon device"
+>>         regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
+>>         regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
+>>  };
+>>
+>>  static const struct regmap_range axp20x_volatile_ranges[] = {
+>>         regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_USB_OTG_STATUS),
+>> +       regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
 > 
-> If that happens we can add an array of extcon names to try,
-> in axp288_charger.c.
+> And I'm not sure why you specify it as volatile? The PMIC doesn't change any
+> of the bits in this register on its own.
 > 
-> So I'll modify this patch to use the existing
-> extcon_get_extcon_dev with a name argument of "intel-int3496".
-> 
-> Note that currently extcon_register_notifier accepts a NULL
-> edev argument and in that case does pick the first edev with
-> a matching cable-id, which has the same problem as you pointed
-> out. So perhaps see if anyone actually passes in NULL, and if
-> not drop support for a NULL edev argument passed to
-> extcon_register_notifier ?
 
-Right. To remove the potential problem,
-I'll remove the code in the extcon_register_notfier() function when first parameter is NULL.
+I got things mixed up between the work on the battery driver I'll soon
+send (which actually needs updated reg ranges) and this VBUS driver.
+Sorry for that.
+
+> Same for the AXP22x bits. So basically I think you don't need this patch.
+> 
+
+Indeed. Should I send a v3 to remove this patch or is it fine for you to
+ignore this one?
+
+Thanks!
+Quentin
 
 -- 
-Regards,
-Chanwoo Choi
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
