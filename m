@@ -1,94 +1,88 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 4/5] PM / runtime: Use device links
-Date: Mon, 19 Dec 2016 13:38:50 +0100
-Message-ID: <CAJZ5v0gQ5zSkJ9nkqnCsUXy5VSPt7+Po19wkukVJpuw8fA2pNw@mail.gmail.com>
-References: <27296716.H9VWo8ShOm@vostro.rjw.lan> <11468990.WB1J8sxXpS@vostro.rjw.lan>
- <5653461.FkScaTIbLn@vostro.rjw.lan> <20161218140122.GA13141@wunner.de>
- <CAJZ5v0gacPK2BOjZ_=tPbSnRjWjW5BrZQDUnKzD3i0qVcN5nLw@mail.gmail.com> <20161218163725.GA13273@wunner.de>
+From: Alim Akhtar <alim.akhtar@samsung.com>
+Subject: Re: [PATCH] ARM: dts: Add missing CPU frequencies for Exynos5422/5800
+Date: Mon, 19 Dec 2016 19:05:27 +0530
+Message-ID: <5857E21F.2080903@samsung.com>
+References: <5220084.l31t5oJbsy@amdc3058>
+ <CGME20161213191823epcas5p346582b73ad9b401d9e773a1b076f1f61@epcas5p3.samsung.com>
+ <26ffeee4-ff43-b3d3-3267-5fcbc50e2974@osg.samsung.com>
+ <2340115.HEG9AYUCMD@amdc3058>
+ <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
+ <20161216073720.GA3489@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f196.google.com ([209.85.220.196]:35675 "EHLO
-        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751673AbcLSMiv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 07:38:51 -0500
-In-Reply-To: <20161218163725.GA13273@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20161216073720.GA3489@kozik-lap>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>, Doug Anderson <dianders@chromium.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Arjun K V <arjun.kv@samsung.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Mark Brown <broonie@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>
 
-On Sun, Dec 18, 2016 at 5:37 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Sun, Dec 18, 2016 at 04:53:26PM +0100, Rafael J. Wysocki wrote:
->> On Sun, Dec 18, 2016 at 3:01 PM, Lukas Wunner <lukas@wunner.de> wrote:
->> > Hi Rafael,
->> >
->> > spotted what looks like a bug in the device links runtime PM code:
->> >
->> > When resuming a device, __rpm_callback() calls rpm_get_suppliers(dev):
->> >
->> >> +                     retval = rpm_get_suppliers(dev);
->> >> +                     if (retval)
->> >> +                             goto fail;
->> >
->> >
->> > This will walk the list of suppliers and call pm_runtime_get_sync()
->> > for each of them:
->> >
->> >> +static int rpm_get_suppliers(struct device *dev)
->> >> +{
->> >> +     struct device_link *link;
->> >> +
->> >> +     list_for_each_entry_rcu(link, &dev->links.suppliers, c_node) {
->> >> +             int retval;
->> > [...]
->> >> +             retval = pm_runtime_get_sync(link->supplier);
->> >> +             if (retval < 0) {
->> >> +                     pm_runtime_put_noidle(link->supplier);
->> >> +                     return retval;
->> >
->> >
->> > If pm_runtime_get_sync() failed, e.g. because runtime PM is disabled
->> > on a supplier, the function will put the reference of the failed
->> > supplier and return.
->> >
->> > Back in __rpm_callback() we jump to the fail mark, where we call
->> > rpm_put_suppliers().
->> >
->> >> + fail:
->> >> +                     rpm_put_suppliers(dev);
->> >> +
->> >> +                     device_links_read_unlock(idx);
->> >
->> >
->> > This walks the list of suppliers and releases a ref for each of them:
->> >
->> >> +static void rpm_put_suppliers(struct device *dev)
->> >> +{
->> >> +     struct device_link *link;
->> >> +
->> >> +     list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
->> >> +             if (link->rpm_active &&
->> >> +                 READ_ONCE(link->status) != DL_STATE_SUPPLIER_UNBIND) {
->> >> +                     pm_runtime_put(link->supplier);
->> >> +                     link->rpm_active = false;
->> >> +             }
->> >> +}
->> >
->> >
->> > This looks wrong:  We've already put a ref on the failed supplier, so here
->> > we're putting another one.
+Hi,
+
+On 12/16/2016 01:07 PM, Krzysztof Kozlowski wrote:
+> On Thu, Dec 15, 2016 at 04:52:58PM -0800, Doug Anderson wrote:
+>>> [ I added Arjun to Cc:, maybe he can help in explaining this issue
+>>>    (unfortunately Inderpal's email is no longer working). ]
+>>>
+>>> Please also note that on Exynos5422/5800 SoCs the same ARM rail
+>>> voltage is used for 1.9 GHz & 2.0 GHz OPPs as for the 1.8 GHz one.
+>>> IOW if the problem exists it is already present in the mainline
+>>> kernel.
 >>
->> Are we?  I would think link->rpm_active would be false for the failed
->> one, wouldn't it?
+>> Interesting.  In the ChromeOS tree I see significantly higher voltages
+>> needed...  Note that one might naively look at
+>> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/drivers/cpufreq/exynos5420-cpufreq.c#178>.
+>>
+>> 1362500, /* L0  2100 */
+>> 1312500, /* L1  2000 */
+>>
+>> ..but, amazingly enough those voltages aren't used at all.  Surprise!
+>>
+>> I believe that the above numbers are actually not used and the ASV
+>> numbers are used instead.  See
+>> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/arch/arm/mach-exynos/include/mach/asv-exynos542x.h#452>
+>>
+>> { 2100000,
+>> 1350000, 1350000, 1350000, 1350000, 1350000,
+>> 1337500, 1325000, 1312500, 1300000, 1287500,
+>> 1275000, 1262500, 1250000, 1237500 },
+>>
+>> I believe that interpretation there is: some bins of the CPU can run
+>> at 2.1 GHz just fine at 1.25 V but others need up to 1.35V.
 >
-> Ah, so link->rpm_active means the consumer is holding a ref on the supplier.
+> That is definitely the case. One could just look at vendors ASV table
+> (for 1.9 GHz):
+> { 1900000, 1300000, 1287500, 1262500, 1237500, 1225000, 1212500,
+>                      1200000, 1187500, 1175000, 1162500, 1150000,
+> 		             1137500, 1125000, 1112500, 1112500},
+>
+> The theoretical difference is up to 1.875V! From my experiments I saw
+> BIN1 chips which should be the same... but some working on 1.2V, some on
+> 1.225V (@1.9 GHz). I didn't see any requiring higher voltages but that
+> does not mean that there aren't such...
+>
+>> ...so if you're running at 2.1 GHz at 1.25V then perhaps you're just
+>> running on a CPU from a nice bin?
+>
+> Would be nice to see a dump of PKG_ID and AUX_INFO chipid registers
+> along with name of tested board. Because the "Tested on XU3" is not
+> sufficient.
+>
+I agree, we should be dumping PKG_ID and other chip info to know on 
+which BIN sample this patch is tested on...
+As far as Peach-{pit/pi} boards are concerns, this is what I can remember:
+1> 5420 (PIT) -> max recommended target frequency is 1800 MHz for A15
+2> 5800 (PI)-> max recommended target frequency can go upto 2000 MHz, 
+with INT rail locking.
+INT rail locking schemes never made to mainline, so to be safer side 
+instead of bumping the clock and voltages better to keep it at safer 
+range for pit and pi, probably thats why it was kept at 1800MHz.
+I am not sure if the same limitation applies to Odroid-XU3 samples.
 
-Yes, that's the idea. :-)
 
-> Missed that, sorry for the false alarm and thanks for the clarification.
-
-No problem.
-
-Thanks,
-Rafael
+> Best regards,
+> Krzysztof
+>
+>
+>
