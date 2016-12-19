@@ -1,70 +1,52 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 02/14] extcon: Make extcon_register_notifier use extcon_get_extcon_dev_by_cable_id
-Date: Mon, 19 Dec 2016 01:07:19 +0100
-Message-ID: <20161219000731.10188-3-hdegoede@redhat.com>
-References: <20161219000731.10188-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161219000731.10188-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+From: Roger Shimizu <rogershimizu@gmail.com>
+Subject: Re: [PATCH v2] power: reset: add linkstation-reset driver
+Date: Mon, 19 Dec 2016 09:34:11 +0900
+Message-ID: <20161219093411.8ab4b73814a9701337f889f2@gmail.com>
+References: <20161207172415.9776-1-rogershimizu@gmail.com>
+        <20161216100501.18173-1-rogershimizu@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:34775 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751694AbcLSAeQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 18 Dec 2016 19:34:16 -0500
+Received: by mail-pg0-f65.google.com with SMTP id b1so6495974pgc.1
+        for <linux-pm@vger.kernel.org>; Sun, 18 Dec 2016 16:34:15 -0800 (PST)
+In-Reply-To: <20161216100501.18173-1-rogershimizu@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Andrew Lunn <andrew@lunn.ch>, Ryan Tandy <ryan@nardis.ca>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>
 
-Implement extcon_register_notifier's support for a NULL edev argument
-using the new extcon_get_extcon_dev_by_cable_id function.
+On Fri, 16 Dec 2016 19:05:01 +0900
+Roger Shimizu <rogershimizu@gmail.com> wrote:
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/extcon/extcon.c | 35 +++++++++++------------------------
- 1 file changed, 11 insertions(+), 24 deletions(-)
+> Buffalo Linkstation / KuroBox and their variants need magic command
+> sending to UART1 to power-off.
+> 
+> Power driver linkstation-reset implements the magic command and I/O
+> routine, which come from files listed below:
+>   - arch/arm/mach-orion5x/kurobox_pro-setup.c
+>   - arch/arm/mach-orion5x/terastation_pro2-setup.c
+> 
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Martin Michlmayr <tbm@cyrius.com>
+> Cc: Sylver Bruneau <sylver.bruneau@googlemail.com>
+> Cc: Herbert Valerio Riedel <hvr@gnu.org>
+> Reported-by: Ryan Tandy <ryan@nardis.ca>
+> Signed-off-by: Roger Shimizu <rogershimizu@gmail.com>
+> ---
 
-diff --git a/drivers/extcon/extcon.c b/drivers/extcon/extcon.c
-index 505c272..2816187 100644
---- a/drivers/extcon/extcon.c
-+++ b/drivers/extcon/extcon.c
-@@ -933,32 +933,19 @@ int extcon_register_notifier(struct extcon_dev *edev, unsigned int id,
- 	if (!nb)
- 		return -EINVAL;
- 
--	if (edev) {
--		idx = find_cable_index_by_id(edev, id);
--		if (idx < 0)
--			return idx;
-+	if (!edev) {
-+		edev = extcon_get_extcon_dev_by_cable_id(id);
-+		if (!edev)
-+			return -ENODEV;
-+	}
- 
--		spin_lock_irqsave(&edev->lock, flags);
--		ret = raw_notifier_chain_register(&edev->nh[idx], nb);
--		spin_unlock_irqrestore(&edev->lock, flags);
--	} else {
--		struct extcon_dev *extd;
--
--		mutex_lock(&extcon_dev_list_lock);
--		list_for_each_entry(extd, &extcon_dev_list, entry) {
--			idx = find_cable_index_by_id(extd, id);
--			if (idx >= 0)
--				break;
--		}
--		mutex_unlock(&extcon_dev_list_lock);
-+	idx = find_cable_index_by_id(edev, id);
-+	if (idx < 0)
-+		return idx;
- 
--		if (idx >= 0) {
--			edev = extd;
--			return extcon_register_notifier(extd, id, nb);
--		} else {
--			ret = -ENODEV;
--		}
--	}
-+	spin_lock_irqsave(&edev->lock, flags);
-+	ret = raw_notifier_chain_register(&edev->nh[idx], nb);
-+	spin_unlock_irqrestore(&edev->lock, flags);
- 
- 	return ret;
- }
+Original reporter Ryan Tandy told me in a separate email that he has confirmed my patch works on his Linkstation Pro device.
+So please add:
+
+  Tested-by: Ryan Tandy <ryan@nardis.ca>
+
+when merging this patch. Thank you!
+
+Cheers,
 -- 
-2.9.3
+Roger Shimizu, GMT +9 Tokyo
+PGP/GPG: 4096R/6C6ACD6417B3ACB1
