@@ -1,7 +1,7 @@
 From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
-Subject: [RFC v2 4/7] PM / devfreq: Suspend subsystem on system suspend/hibernate
-Date: Mon, 19 Dec 2016 03:16:24 +0100
-Message-ID: <1482113787-28422-5-git-send-email-tjakobi@math.uni-bielefeld.de>
+Subject: [RFC v2 5/7] PM / devfreq: exynos-bus: add support for suspend OPP
+Date: Mon, 19 Dec 2016 03:16:25 +0100
+Message-ID: <1482113787-28422-6-git-send-email-tjakobi@math.uni-bielefeld.de>
 References: <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-Reply-To: <1482113787-28422-1-git-send-email-tjakobi@math.uni-bielefeld.de>
@@ -10,60 +10,39 @@ To: linux-samsung-soc@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, m.reichl@fivetechno.de, myungjoo.ham@gmail.com, cw00.choi@samsung.com, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 List-Id: linux-pm@vger.kernel.org
 
-On the Exynos4412 SoC the DevFreq subsystem adjusts the frequency
-of the various internal busses and the corresponding voltages.
-
-E.g. the clock of the DMC (dynamic memory controller) bus
-together with the voltage of the MIF regulator are controlled
-by this.
-
-If DMC activity is low and DevFreq has set a lower OPP, the
-following can happen.
-
-The transition to the lower OPP has set a voltage V_low. If the
-system now is restarted or goes into a suspend/resume-cycle,
-the first-stage (BL0) bootloader takes over, which also
-initializes clocks to default values, say freq_0 for the DMC.
-Since the PMIC is an external component and not part of the SoC,
-the BL0 doesn't set any default voltages. The BL0 now hangs
-because the required voltage V_0 (corresponding to freq_0) is
-higher than the currently set one V_low.
-
-To fix this, we make sure to only go into suspend with a 'safe'
-DevFreq OPP selected.
+Set the frequency of the suspend OPP, so that DevFreq
+core can use it during system sleep/reboot/power-off.
 
 Signed-off-by: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
 ---
- drivers/base/power/main.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/devfreq/exynos-bus.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 5a94dfa..9cd7e06 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -32,6 +32,7 @@
- #include <trace/events/power.h>
- #include <linux/cpufreq.h>
- #include <linux/cpuidle.h>
-+#include <linux/devfreq.h>
- #include <linux/timer.h>
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index 29866f7..16fb37a 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -389,6 +389,7 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	struct devfreq_passive_data *passive_data;
+ 	struct devfreq *parent_devfreq;
+ 	struct exynos_bus *bus;
++	struct dev_pm_opp *suspend_opp;
+ 	int ret, max_state;
+ 	unsigned long min_freq, max_freq;
  
- #include "../base.h"
-@@ -943,6 +944,7 @@ void dpm_resume(pm_message_t state)
- 	dpm_show_time(starttime, state, NULL);
+@@ -449,6 +450,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 		goto err;
+ 	}
  
- 	cpufreq_resume();
-+	devfreq_resume();
- 	trace_suspend_resume(TPS("dpm_resume"), state.event, false);
- }
- 
-@@ -1582,6 +1584,7 @@ int dpm_suspend(pm_message_t state)
- 	trace_suspend_resume(TPS("dpm_suspend"), state.event, true);
- 	might_sleep();
- 
-+	devfreq_suspend();
- 	cpufreq_suspend();
- 
- 	mutex_lock(&dpm_list_mtx);
++	/* Check for suspend OPP and store the corresponding frequency. */
++	rcu_read_lock();
++	suspend_opp = dev_pm_opp_get_suspend_opp(dev);
++	if (suspend_opp)
++		bus->devfreq->suspend_freq = dev_pm_opp_get_freq(suspend_opp);
++	rcu_read_unlock();
++
+ 	/* Register opp_notifier to catch the change of OPP  */
+ 	ret = devm_devfreq_register_opp_notifier(dev, bus->devfreq);
+ 	if (ret < 0) {
 -- 
 2.7.3
