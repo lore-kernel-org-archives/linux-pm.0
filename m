@@ -1,90 +1,592 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] intel_idle: work around errate VLP52 on Baytrail CPUs
-Date: Mon, 19 Dec 2016 20:43:47 +0100
-Message-ID: <CAJZ5v0jkATWSrGuR_DOfiSUFguRJ1w7gMRth1kjwYh1bSWnvGw@mail.gmail.com>
-References: <838trb233m.fsf@echidna.jochen.org>
+From: Tobias Jakobi <tjakobi@math.uni-bielefeld.de>
+Subject: Re: [PATCH 2/7] PM / devfreq: exynos-ppmu: Use the regmap interface
+ to handle the registers
+Date: Mon, 19 Dec 2016 20:47:13 +0100
+Message-ID: <58583941.1040809@math.uni-bielefeld.de>
+References: <1481794243-5046-1-git-send-email-cw00.choi@samsung.com>
+ <1481794243-5046-3-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f196.google.com ([209.85.216.196]:36535 "EHLO
-        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755441AbcLSTnt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 14:43:49 -0500
-Received: by mail-qt0-f196.google.com with SMTP id n34so20375555qtb.3
-        for <linux-pm@vger.kernel.org>; Mon, 19 Dec 2016 11:43:48 -0800 (PST)
-In-Reply-To: <838trb233m.fsf@echidna.jochen.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1481794243-5046-3-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rjw@rjwysocki.net, chanwoo@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-samsung-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jochen Hein <jochen@jochen.org>
-Cc: Len Brown <lenb@kernel.org>, Vincent Gerris <vgerris@gmail.com>, Linux PM <linux-pm@vger.kernel.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 
-CC Jacob Pan.
+Hello,
 
-On Mon, Dec 19, 2016 at 7:19 PM, Jochen Hein <jochen@jochen.org> wrote:
->
-> There are frequent hangs on Baytrail CPUs according to
-> https://bugzilla.kernel.org/show_bug.cgi?id=109051.
-> This patch works around the errata by disabling C6.
->
-> According to the discussion in the bug and private mail it might be
-> useful to include the workaround in mainline.
->
-> Signed-off-by: Jochen Hein <jochen@jochen.org>
-> Cc: stable@vger.kernel.org
->
-> --- linux-4.7.5/drivers/idle/intel_idle.c.orig  2016-09-24 10:10:18.000000000 +0200
-> +++ linux-4.7.5/drivers/idle/intel_idle.c       2016-10-16 07:36:51.142862573 +0200
-> @@ -1210,6 +1210,34 @@
->
+I was just wondering what is improved by moving to regmap. For me this
+looks like it only complicates the code. Lots of regmap_{read,write}()
+and for each one of these we need to check the return code.
+
+Also when exactly did __raw_writel() and friends become legacy?
+
+With best wishes,
+Tobias
+
+
+Chanwoo Choi wrote:
+> This patch uses the regmap interface to read and write the registers for exynos
+> PPMU device instead of the legacy memory map functions.
+> 
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: linux-samsung-soc@vger.kernel.org
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  drivers/devfreq/event/exynos-ppmu.c | 326 ++++++++++++++++++++++++++----------
+>  1 file changed, 237 insertions(+), 89 deletions(-)
+> 
+> diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+> index 107eb91a9415..fb3706faf5bd 100644
+> --- a/drivers/devfreq/event/exynos-ppmu.c
+> +++ b/drivers/devfreq/event/exynos-ppmu.c
+> @@ -17,13 +17,13 @@
+>  #include <linux/module.h>
+>  #include <linux/of_address.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+>  #include <linux/suspend.h>
+>  #include <linux/devfreq-event.h>
+>  
+>  #include "exynos-ppmu.h"
+>  
+>  struct exynos_ppmu_data {
+> -	void __iomem *base;
+>  	struct clk *clk;
+>  };
+>  
+> @@ -33,6 +33,7 @@ struct exynos_ppmu {
+>  	unsigned int num_events;
+>  
+>  	struct device *dev;
+> +	struct regmap *regmap;
+>  
+>  	struct exynos_ppmu_data ppmu;
+>  };
+> @@ -107,20 +108,28 @@ static int exynos_ppmu_find_ppmu_id(struct devfreq_event_dev *edev)
+>  static int exynos_ppmu_disable(struct devfreq_event_dev *edev)
+>  {
+>  	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
+> +	int ret;
+>  	u32 pmnc;
+>  
+>  	/* Disable all counters */
+> -	__raw_writel(PPMU_CCNT_MASK |
+> -		     PPMU_PMCNT0_MASK |
+> -		     PPMU_PMCNT1_MASK |
+> -		     PPMU_PMCNT2_MASK |
+> -		     PPMU_PMCNT3_MASK,
+> -		     info->ppmu.base + PPMU_CNTENC);
+> +	ret = regmap_write(info->regmap, PPMU_CNTENC,
+> +				PPMU_CCNT_MASK |
+> +				PPMU_PMCNT0_MASK |
+> +				PPMU_PMCNT1_MASK |
+> +				PPMU_PMCNT2_MASK |
+> +				PPMU_PMCNT3_MASK);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Disable PPMU */
+> -	pmnc = __raw_readl(info->ppmu.base + PPMU_PMNC);
+> +	ret = regmap_read(info->regmap, PPMU_PMNC, &pmnc);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>  	pmnc &= ~PPMU_PMNC_ENABLE_MASK;
+> -	__raw_writel(pmnc, info->ppmu.base + PPMU_PMNC);
+> +	ret = regmap_write(info->regmap, PPMU_PMNC, pmnc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	return 0;
 >  }
->  /*
-> + * byt_idle_state_table_update(void)
-> + *
-> + * On BYT, we have errata VLP52 and disable C6.
-> + * https://bugzilla.kernel.org/show_bug.cgi?id=109051A
-> + * http://www.intel.com/content/dam/www/public/us/en/documents/specification-updates/pentium-n3520-j2850-celeron-n2920-n2820-n2815-n2806-j1850-j1750-spec-update.pdf
-> + * VLP52 EOI Transactions May Not be Sent if Software Enters Core C6 During an Interrupt Service Routine.
+> @@ -129,29 +138,42 @@ static int exynos_ppmu_set_event(struct devfreq_event_dev *edev)
+>  {
+>  	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
+>  	int id = exynos_ppmu_find_ppmu_id(edev);
+> +	int ret;
+>  	u32 pmnc, cntens;
+>  
+>  	if (id < 0)
+>  		return id;
+>  
+>  	/* Enable specific counter */
+> -	cntens = __raw_readl(info->ppmu.base + PPMU_CNTENS);
+> +	ret = regmap_read(info->regmap, PPMU_CNTENS, &cntens);
+> +	if (ret < 0)
+> +		return ret;
 > +
-> +Problem:
-> +If core C6 is entered after the start of an interrupt service routine but before a write
-> +to the APIC EOI (End of Interrupt) register, and the core is woken up by an event
-> +other than a fixed interrupt source the core may drop the EOI transaction the next
-> +time APIC EOI register is written and further interrupts from the same or lower
-> +priority level will be blocked.
+>  	cntens |= (PPMU_CCNT_MASK | (PPMU_ENABLE << id));
+> -	__raw_writel(cntens, info->ppmu.base + PPMU_CNTENS);
+> +	ret = regmap_write(info->regmap, PPMU_CNTENS, cntens);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Set the event of Read/Write data count  */
+> -	__raw_writel(PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT,
+> -			info->ppmu.base + PPMU_BEVTxSEL(id));
+> +	ret = regmap_write(info->regmap, PPMU_BEVTxSEL(id),
+> +				PPMU_RO_DATA_CNT | PPMU_WO_DATA_CNT);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Reset cycle counter/performance counter and enable PPMU */
+> -	pmnc = __raw_readl(info->ppmu.base + PPMU_PMNC);
+> +	ret = regmap_read(info->regmap, PPMU_PMNC, &pmnc);
+> +	if (ret < 0)
+> +		return ret;
 > +
-> +Implication:
-> +EOI transactions may be lost and interrupts may be blocked when core C6 is used
-> +during interrupt service routines.
+>  	pmnc &= ~(PPMU_PMNC_ENABLE_MASK
+>  			| PPMU_PMNC_COUNTER_RESET_MASK
+>  			| PPMU_PMNC_CC_RESET_MASK);
+>  	pmnc |= (PPMU_ENABLE << PPMU_PMNC_ENABLE_SHIFT);
+>  	pmnc |= (PPMU_ENABLE << PPMU_PMNC_COUNTER_RESET_SHIFT);
+>  	pmnc |= (PPMU_ENABLE << PPMU_PMNC_CC_RESET_SHIFT);
+> -	__raw_writel(pmnc, info->ppmu.base + PPMU_PMNC);
+> +	ret = regmap_write(info->regmap, PPMU_PMNC, pmnc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	return 0;
+>  }
+> @@ -161,40 +183,64 @@ static int exynos_ppmu_get_event(struct devfreq_event_dev *edev,
+>  {
+>  	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
+>  	int id = exynos_ppmu_find_ppmu_id(edev);
+> -	u32 pmnc, cntenc;
+> +	unsigned int total_count, load_count;
+> +	unsigned int pmcnt3_high, pmcnt3_low;
+> +	unsigned int pmnc, cntenc;
+> +	int ret;
+>  
+>  	if (id < 0)
+>  		return -EINVAL;
+>  
+>  	/* Disable PPMU */
+> -	pmnc = __raw_readl(info->ppmu.base + PPMU_PMNC);
+> +	ret = regmap_read(info->regmap, PPMU_PMNC, &pmnc);
+> +	if (ret < 0)
+> +		return ret;
 > +
-> +Workaround:
-> +It is possible for the firmware to contain a workaround for this erratum.
-> + */
-> +static void byt_idle_state_table_update(void)
-> +{
-> +       printk(PREFIX "byt_idle_state_table_update reached\n");
-> +       byt_cstates[1].disabled = 1;    /* C6N-BYT */
-> +       byt_cstates[2].disabled = 1;    /* C6S-BYT */
-> +}
-> +/*
->   * sklh_idle_state_table_update(void)
->   *
->   * On SKL-H (model 0x5e) disable C8 and C9 if:
-> @@ -1264,6 +1292,10 @@
->         case 0x3e: /* IVT */
->                 ivt_idle_state_table_update();
->                 break;
-> +       case 0x37: /* BYT */
-> +               printk(PREFIX "intel_idle_state_table_update BYT 0x37 reached\n");
-> +               byt_idle_state_table_update();
-> +               break;
->         case 0x5c: /* BXT */
->                 bxt_idle_state_table_update();
->                 break;
->
-> --
-> The only problem with troubleshooting is that the trouble shoots back.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  	pmnc &= ~PPMU_PMNC_ENABLE_MASK;
+> -	__raw_writel(pmnc, info->ppmu.base + PPMU_PMNC);
+> +	ret = regmap_write(info->regmap, PPMU_PMNC, pmnc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Read cycle count */
+> -	edata->total_count = __raw_readl(info->ppmu.base + PPMU_CCNT);
+> +	ret = regmap_read(info->regmap, PPMU_CCNT, &total_count);
+> +	if (ret < 0)
+> +		return ret;
+> +	edata->total_count = total_count;
+>  
+>  	/* Read performance count */
+>  	switch (id) {
+>  	case PPMU_PMNCNT0:
+>  	case PPMU_PMNCNT1:
+>  	case PPMU_PMNCNT2:
+> -		edata->load_count
+> -			= __raw_readl(info->ppmu.base + PPMU_PMNCT(id));
+> +		ret = regmap_read(info->regmap, PPMU_PMNCT(id), &load_count);
+> +		if (ret < 0)
+> +			return ret;
+> +		edata->load_count = load_count;
+>  		break;
+>  	case PPMU_PMNCNT3:
+> -		edata->load_count =
+> -			((__raw_readl(info->ppmu.base + PPMU_PMCNT3_HIGH) << 8)
+> -			| __raw_readl(info->ppmu.base + PPMU_PMCNT3_LOW));
+> +		ret = regmap_read(info->regmap, PPMU_PMCNT3_HIGH, &pmcnt3_high);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		ret = regmap_read(info->regmap, PPMU_PMCNT3_LOW, &pmcnt3_low);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		edata->load_count = ((pmcnt3_high << 8) | pmcnt3_low);
+>  		break;
+>  	default:
+>  		return -EINVAL;
+>  	}
+>  
+>  	/* Disable specific counter */
+> -	cntenc = __raw_readl(info->ppmu.base + PPMU_CNTENC);
+> +	ret = regmap_read(info->regmap, PPMU_CNTENC, &cntenc);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>  	cntenc |= (PPMU_CCNT_MASK | (PPMU_ENABLE << id));
+> -	__raw_writel(cntenc, info->ppmu.base + PPMU_CNTENC);
+> +	ret = regmap_write(info->regmap, PPMU_CNTENC, cntenc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	dev_dbg(&edev->dev, "%s (event: %ld/%ld)\n", edev->desc->name,
+>  					edata->load_count, edata->total_count);
+> @@ -214,36 +260,93 @@ static int exynos_ppmu_get_event(struct devfreq_event_dev *edev,
+>  static int exynos_ppmu_v2_disable(struct devfreq_event_dev *edev)
+>  {
+>  	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
+> +	int ret;
+>  	u32 pmnc, clear;
+>  
+>  	/* Disable all counters */
+>  	clear = (PPMU_CCNT_MASK | PPMU_PMCNT0_MASK | PPMU_PMCNT1_MASK
+>  		| PPMU_PMCNT2_MASK | PPMU_PMCNT3_MASK);
+> +	ret = regmap_write(info->regmap, PPMU_V2_FLAG, clear);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_INTENC, clear);
+> +	if (ret < 0)
+> +		return ret;
+>  
+> -	__raw_writel(clear, info->ppmu.base + PPMU_V2_FLAG);
+> -	__raw_writel(clear, info->ppmu.base + PPMU_V2_INTENC);
+> -	__raw_writel(clear, info->ppmu.base + PPMU_V2_CNTENC);
+> -	__raw_writel(clear, info->ppmu.base + PPMU_V2_CNT_RESET);
+> -
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CIG_CFG0);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CIG_CFG1);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CIG_CFG2);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CIG_RESULT);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CNT_AUTO);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CH_EV0_TYPE);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CH_EV1_TYPE);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CH_EV2_TYPE);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_CH_EV3_TYPE);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_SM_ID_V);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_SM_ID_A);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_SM_OTHERS_V);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_SM_OTHERS_A);
+> -	__raw_writel(0x0, info->ppmu.base + PPMU_V2_INTERRUPT_RESET);
+> +	ret = regmap_write(info->regmap, PPMU_V2_CNTENC, clear);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CNT_RESET, clear);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CIG_CFG0, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CIG_CFG1, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CIG_CFG2, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CIG_RESULT, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CNT_AUTO, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EV0_TYPE, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EV1_TYPE, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EV2_TYPE, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_CH_EV3_TYPE, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_SM_ID_V, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_SM_ID_A, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_SM_OTHERS_V, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_SM_OTHERS_A, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_INTERRUPT_RESET, 0x0);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Disable PPMU */
+> -	pmnc = __raw_readl(info->ppmu.base + PPMU_V2_PMNC);
+> +	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>  	pmnc &= ~PPMU_PMNC_ENABLE_MASK;
+> -	__raw_writel(pmnc, info->ppmu.base + PPMU_V2_PMNC);
+> +	ret = regmap_write(info->regmap, PPMU_V2_PMNC, pmnc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	return 0;
+>  }
+> @@ -251,30 +354,43 @@ static int exynos_ppmu_v2_disable(struct devfreq_event_dev *edev)
+>  static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>  {
+>  	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
+> +	unsigned int pmnc, cntens;
+>  	int id = exynos_ppmu_find_ppmu_id(edev);
+> -	u32 pmnc, cntens;
+> +	int ret;
+>  
+>  	/* Enable all counters */
+> -	cntens = __raw_readl(info->ppmu.base + PPMU_V2_CNTENS);
+> +	ret = regmap_read(info->regmap, PPMU_V2_CNTENS, &cntens);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>  	cntens |= (PPMU_CCNT_MASK | (PPMU_ENABLE << id));
+> -	__raw_writel(cntens, info->ppmu.base + PPMU_V2_CNTENS);
+> +	ret = regmap_write(info->regmap, PPMU_V2_CNTENS, cntens);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Set the event of Read/Write data count  */
+>  	switch (id) {
+>  	case PPMU_PMNCNT0:
+>  	case PPMU_PMNCNT1:
+>  	case PPMU_PMNCNT2:
+> -		__raw_writel(PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT,
+> -				info->ppmu.base + PPMU_V2_CH_EVx_TYPE(id));
+> +		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> +				PPMU_V2_RO_DATA_CNT | PPMU_V2_WO_DATA_CNT);
+> +		if (ret < 0)
+> +			return ret;
+>  		break;
+>  	case PPMU_PMNCNT3:
+> -		__raw_writel(PPMU_V2_EVT3_RW_DATA_CNT,
+> -				info->ppmu.base + PPMU_V2_CH_EVx_TYPE(id));
+> +		ret = regmap_write(info->regmap, PPMU_V2_CH_EVx_TYPE(id),
+> +				PPMU_V2_EVT3_RW_DATA_CNT);
+> +		if (ret < 0)
+> +			return ret;
+>  		break;
+>  	}
+>  
+>  	/* Reset cycle counter/performance counter and enable PPMU */
+> -	pmnc = __raw_readl(info->ppmu.base + PPMU_V2_PMNC);
+> +	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>  	pmnc &= ~(PPMU_PMNC_ENABLE_MASK
+>  			| PPMU_PMNC_COUNTER_RESET_MASK
+>  			| PPMU_PMNC_CC_RESET_MASK
+> @@ -284,7 +400,10 @@ static int exynos_ppmu_v2_set_event(struct devfreq_event_dev *edev)
+>  	pmnc |= (PPMU_ENABLE << PPMU_PMNC_COUNTER_RESET_SHIFT);
+>  	pmnc |= (PPMU_ENABLE << PPMU_PMNC_CC_RESET_SHIFT);
+>  	pmnc |= (PPMU_V2_MODE_MANUAL << PPMU_V2_PMNC_START_MODE_SHIFT);
+> -	__raw_writel(pmnc, info->ppmu.base + PPMU_V2_PMNC);
+> +
+> +	ret = regmap_write(info->regmap, PPMU_V2_PMNC, pmnc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	return 0;
+>  }
+> @@ -294,37 +413,61 @@ static int exynos_ppmu_v2_get_event(struct devfreq_event_dev *edev,
+>  {
+>  	struct exynos_ppmu *info = devfreq_event_get_drvdata(edev);
+>  	int id = exynos_ppmu_find_ppmu_id(edev);
+> -	u32 pmnc, cntenc;
+> -	u32 pmcnt_high, pmcnt_low;
+> -	u64 load_count = 0;
+> +	int ret;
+> +	unsigned int pmnc, cntenc;
+> +	unsigned int pmcnt_high, pmcnt_low;
+> +	unsigned int total_count, count;
+> +	unsigned long load_count = 0;
+>  
+>  	/* Disable PPMU */
+> -	pmnc = __raw_readl(info->ppmu.base + PPMU_V2_PMNC);
+> +	ret = regmap_read(info->regmap, PPMU_V2_PMNC, &pmnc);
+> +	if (ret < 0)
+> +		return ret;
+> +
+>  	pmnc &= ~PPMU_PMNC_ENABLE_MASK;
+> -	__raw_writel(pmnc, info->ppmu.base + PPMU_V2_PMNC);
+> +	ret = regmap_write(info->regmap, PPMU_V2_PMNC, pmnc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	/* Read cycle count and performance count */
+> -	edata->total_count = __raw_readl(info->ppmu.base + PPMU_V2_CCNT);
+> +	ret = regmap_read(info->regmap, PPMU_V2_CCNT, &total_count);
+> +	if (ret < 0)
+> +		return ret;
+> +	edata->total_count = total_count;
+>  
+>  	switch (id) {
+>  	case PPMU_PMNCNT0:
+>  	case PPMU_PMNCNT1:
+>  	case PPMU_PMNCNT2:
+> -		load_count = __raw_readl(info->ppmu.base + PPMU_V2_PMNCT(id));
+> +		ret = regmap_read(info->regmap, PPMU_V2_PMNCT(id), &count);
+> +		if (ret < 0)
+> +			return ret;
+> +		load_count = count;
+>  		break;
+>  	case PPMU_PMNCNT3:
+> -		pmcnt_high = __raw_readl(info->ppmu.base + PPMU_V2_PMCNT3_HIGH);
+> -		pmcnt_low = __raw_readl(info->ppmu.base + PPMU_V2_PMCNT3_LOW);
+> -		load_count = ((u64)((pmcnt_high & 0xff)) << 32)
+> -			   + (u64)pmcnt_low;
+> +		ret = regmap_read(info->regmap, PPMU_V2_PMCNT3_HIGH,
+> +						&pmcnt_high);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		ret = regmap_read(info->regmap, PPMU_V2_PMCNT3_LOW, &pmcnt_low);
+> +		if (ret < 0)
+> +			return ret;
+> +
+> +		load_count = ((u64)((pmcnt_high & 0xff)) << 32)+ (u64)pmcnt_low;
+>  		break;
+>  	}
+>  	edata->load_count = load_count;
+>  
+>  	/* Disable all counters */
+> -	cntenc = __raw_readl(info->ppmu.base + PPMU_V2_CNTENC);
+> +	ret = regmap_read(info->regmap, PPMU_V2_CNTENC, &cntenc);
+> +	if (ret < 0)
+> +		return 0;
+> +
+>  	cntenc |= (PPMU_CCNT_MASK | (PPMU_ENABLE << id));
+> -	__raw_writel(cntenc, info->ppmu.base + PPMU_V2_CNTENC);
+> +	ret = regmap_write(info->regmap, PPMU_V2_CNTENC, cntenc);
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	dev_dbg(&edev->dev, "%25s (load: %ld / %ld)\n", edev->desc->name,
+>  					edata->load_count, edata->total_count);
+> @@ -411,10 +554,19 @@ static int of_get_devfreq_events(struct device_node *np,
+>  	return 0;
+>  }
+>  
+> -static int exynos_ppmu_parse_dt(struct exynos_ppmu *info)
+> +static struct regmap_config exynos_ppmu_regmap_config = {
+> +	.reg_bits = 32,
+> +	.val_bits = 32,
+> +	.reg_stride = 4,
+> +};
+> +
+> +static int exynos_ppmu_parse_dt(struct platform_device *pdev,
+> +				struct exynos_ppmu *info)
+>  {
+>  	struct device *dev = info->dev;
+>  	struct device_node *np = dev->of_node;
+> +	struct resource *res;
+> +	void __iomem *base;
+>  	int ret = 0;
+>  
+>  	if (!np) {
+> @@ -423,10 +575,17 @@ static int exynos_ppmu_parse_dt(struct exynos_ppmu *info)
+>  	}
+>  
+>  	/* Maps the memory mapped IO to control PPMU register */
+> -	info->ppmu.base = of_iomap(np, 0);
+> -	if (IS_ERR_OR_NULL(info->ppmu.base)) {
+> -		dev_err(dev, "failed to map memory region\n");
+> -		return -ENOMEM;
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	base = devm_ioremap_resource(dev, res);
+> +	if (IS_ERR(base))
+> +		return PTR_ERR(base);
+> +
+> +	exynos_ppmu_regmap_config.max_register = resource_size(res) - 4;
+> +	info->regmap = devm_regmap_init_mmio(dev, base,
+> +					&exynos_ppmu_regmap_config);
+> +	if (IS_ERR(info->regmap)) {
+> +		dev_err(dev, "failed to initialize regmap\n");
+> +		return PTR_ERR(info->regmap);
+>  	}
+>  
+>  	info->ppmu.clk = devm_clk_get(dev, "ppmu");
+> @@ -438,15 +597,10 @@ static int exynos_ppmu_parse_dt(struct exynos_ppmu *info)
+>  	ret = of_get_devfreq_events(np, info);
+>  	if (ret < 0) {
+>  		dev_err(dev, "failed to parse exynos ppmu dt node\n");
+> -		goto err;
+> +		return ret;
+>  	}
+>  
+>  	return 0;
+> -
+> -err:
+> -	iounmap(info->ppmu.base);
+> -
+> -	return ret;
+>  }
+>  
+>  static int exynos_ppmu_probe(struct platform_device *pdev)
+> @@ -463,7 +617,7 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+>  	info->dev = &pdev->dev;
+>  
+>  	/* Parse dt data to get resource */
+> -	ret = exynos_ppmu_parse_dt(info);
+> +	ret = exynos_ppmu_parse_dt(pdev, info);
+>  	if (ret < 0) {
+>  		dev_err(&pdev->dev,
+>  			"failed to parse devicetree for resource\n");
+> @@ -476,8 +630,7 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+>  	if (!info->edev) {
+>  		dev_err(&pdev->dev,
+>  			"failed to allocate memory devfreq-event devices\n");
+> -		ret = -ENOMEM;
+> -		goto err;
+> +		return -ENOMEM;
+>  	}
+>  	edev = info->edev;
+>  	platform_set_drvdata(pdev, info);
+> @@ -488,17 +641,13 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+>  			ret = PTR_ERR(edev[i]);
+>  			dev_err(&pdev->dev,
+>  				"failed to add devfreq-event device\n");
+> -			goto err;
+> +			return PTR_ERR(edev[i]);
+>  		}
+>  	}
+>  
+>  	clk_prepare_enable(info->ppmu.clk);
+>  
+>  	return 0;
+> -err:
+> -	iounmap(info->ppmu.base);
+> -
+> -	return ret;
+>  }
+>  
+>  static int exynos_ppmu_remove(struct platform_device *pdev)
+> @@ -506,7 +655,6 @@ static int exynos_ppmu_remove(struct platform_device *pdev)
+>  	struct exynos_ppmu *info = platform_get_drvdata(pdev);
+>  
+>  	clk_disable_unprepare(info->ppmu.clk);
+> -	iounmap(info->ppmu.base);
+>  
+>  	return 0;
+>  }
+> 
