@@ -1,198 +1,154 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 05/14] power: supply: axp288_charger: use devm extcon /
- supply register
-Date: Mon, 19 Dec 2016 09:42:13 +0100
-Message-ID: <25194748-1f85-28a7-7dea-e206c3269e79@redhat.com>
-References: <20161219000731.10188-1-hdegoede@redhat.com>
- <CGME20161219000751epcas2p31f6f4ffcc4f7efc3d030874ce317705a@epcas2p3.samsung.com>
- <20161219000731.10188-6-hdegoede@redhat.com> <58579438.3050205@samsung.com>
+From: Markus Reichl <m.reichl@fivetechno.de>
+Subject: Re: [PATCH] ARM: dts: Add missing CPU frequencies for Exynos5422/5800
+Date: Mon, 19 Dec 2016 10:14:04 +0100
+Message-ID: <027dfa2d-487a-e360-6e4a-4fc44f6622fa@fivetechno.de>
+References: <5220084.l31t5oJbsy@amdc3058>
+ <CGME20161213191823epcas5p346582b73ad9b401d9e773a1b076f1f61@epcas5p3.samsung.com>
+ <26ffeee4-ff43-b3d3-3267-5fcbc50e2974@osg.samsung.com>
+ <2340115.HEG9AYUCMD@amdc3058>
+ <CAD=FV=W6R8cNuR+gTnNRF6d-TNgzUeYTwuCp27efoMsd0YOH3g@mail.gmail.com>
+ <20161216073720.GA3489@kozik-lap>
+ <1b6e8d3a-ec7a-db5d-dd0e-ef9d1480f80a@fivetechno.de>
+ <f4f0dd96-abf1-d1ba-86a6-99f216b5175b@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:58194 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751192AbcLSImR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Dec 2016 03:42:17 -0500
-In-Reply-To: <58579438.3050205@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <f4f0dd96-abf1-d1ba-86a6-99f216b5175b@osg.samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Doug Anderson <dianders@chromium.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ben Gamari <ben@smart-cactus.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, Alim <alim.akhtar@samsung.com>, Arjun K V <arjun.kv@samsung.com>, Andreas Faerber <afaerber@suse.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+Hi Javier,
 
-On 19-12-16 09:03, Chanwoo Choi wrote:
-> Hi Hans,
->
-> For the extcon part, I sent the patch[1].
->
-> [1]https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/commit/?h=for-next-next&id=3164eef74088d9603a16b97e574a4e0067da083a
+Am 16.12.2016 um 17:22 schrieb Javier Martinez Canillas:
+> Hello Markus,
+> 
+> On 12/16/2016 06:08 AM, Markus Reichl wrote:
+>> Am 16.12.2016 um 08:37 schrieb Krzysztof Kozlowski:
+>>> On Thu, Dec 15, 2016 at 04:52:58PM -0800, Doug Anderson wrote:
+>>>>> [ I added Arjun to Cc:, maybe he can help in explaining this issue
+>>>>>   (unfortunately Inderpal's email is no longer working). ]
+>>>>>
+>>>>> Please also note that on Exynos5422/5800 SoCs the same ARM rail
+>>>>> voltage is used for 1.9 GHz & 2.0 GHz OPPs as for the 1.8 GHz one.
+>>>>> IOW if the problem exists it is already present in the mainline
+>>>>> kernel.
+>>>>
+>>>> Interesting.  In the ChromeOS tree I see significantly higher voltages
+>>>> needed...  Note that one might naively look at
+>>>> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/drivers/cpufreq/exynos5420-cpufreq.c#178>.
+>>>>
+>>>> 1362500, /* L0  2100 */
+>>>> 1312500, /* L1  2000 */
+>>>>
+>>>> ..but, amazingly enough those voltages aren't used at all.  Surprise!
+>>>>
+>>>> I believe that the above numbers are actually not used and the ASV
+>>>> numbers are used instead.  See
+>>>> <https://chromium.googlesource.com/chromiumos/third_party/kernel/+/chromeos-3.8/arch/arm/mach-exynos/include/mach/asv-exynos542x.h#452>
+>>>>
+>>>> { 2100000,
+>>>> 1350000, 1350000, 1350000, 1350000, 1350000,
+>>>> 1337500, 1325000, 1312500, 1300000, 1287500,
+>>>> 1275000, 1262500, 1250000, 1237500 },
+>>>>
+>>>> I believe that interpretation there is: some bins of the CPU can run
+>>>> at 2.1 GHz just fine at 1.25 V but others need up to 1.35V.
+>>>
+>>> That is definitely the case. One could just look at vendors ASV table
+>>> (for 1.9 GHz):
+>>> { 1900000, 1300000, 1287500, 1262500, 1237500, 1225000, 1212500,
+>>>                     1200000, 1187500, 1175000, 1162500, 1150000,
+>>> 		             1137500, 1125000, 1112500, 1112500},
+>>>
+>>> The theoretical difference is up to 1.875V! From my experiments I saw
+>>> BIN1 chips which should be the same... but some working on 1.2V, some on
+>>> 1.225V (@1.9 GHz). I didn't see any requiring higher voltages but that
+>>> does not mean that there aren't such...
+>>>
+>>>> ...so if you're running at 2.1 GHz at 1.25V then perhaps you're just
+>>>> running on a CPU from a nice bin?
+>>
+>> I've been running the proposed frequency/voltage combinations without any
+>> stability problems on my XU4, XU3 and even XU3-lite ( I did not delete the
+>> nodes on XU3-lite dts) with make -j8 kernel and ssvb-cpuburn.
+>> The chips are poorly cooled, especially the XU4 and quickly step down.
+>>
+>>>
+>>> Would be nice to see a dump of PKG_ID and AUX_INFO chipid registers
+>>> along with name of tested board. Because the "Tested on XU3" is not
+>>> sufficient.
+>>
+>> If you point me to how to read these values out, I will publish them.
+>>
+> 
+> You can use the exynos-chipid driver posted by Pankaj. Apply patches 1 and
+> 2 from this series (http://www.spinics.net/lists/arm-kernel/msg548384.html)
+> and then this diff to get the values of the registers that Krzysztof asked:
+> 
+Thanks for the code.
 
-Ok, I will cherry pick this one into my tree and rebase the patch-set
-on top of it.
+XU4:	 [    0.080039] Exynos: CPU[EXYNOS5800] CPU_REV[0x1] PKG_ID[0x1c04832a] AUX_INFO[0x43] 
+XU3:	 [    0.080034] Exynos: CPU[EXYNOS5800] CPU_REV[0x1] PKG_ID[0x1604832a] AUX_INFO[0x43] 
+XU3-lite:[    0.080033] Exynos: CPU[EXYNOS5800] CPU_REV[0x1] PKG_ID[0x5a12832a] AUX_INFO[0x13000054] 
 
-Regards,
+Servus,
+--
+Markus Reichl
 
-Hans
-
-
->
-> Regards,
-> Chanwoo Choi
->
-> On 2016년 12월 19일 09:07, Hans de Goede wrote:
->> Use devm_extcon_register_notifier and devm_power_supply_register
->> instead of their non devm counterparts, this avoids the need to do
->> manual cleanup and results in quite a nice code cleanup.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->>  drivers/power/supply/axp288_charger.c | 71 ++++++++---------------------------
->>  1 file changed, 15 insertions(+), 56 deletions(-)
->>
->> diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
->> index 76f7d29..e435b1e 100644
->> --- a/drivers/power/supply/axp288_charger.c
->> +++ b/drivers/power/supply/axp288_charger.c
->> @@ -812,6 +812,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
->>  {
->>  	int ret, i, pirq;
->>  	struct axp288_chrg_info *info;
->> +	struct device *dev = &pdev->dev;
->>  	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
->>  	struct power_supply_config charger_cfg = {};
->>
->> @@ -833,33 +834,27 @@ static int axp288_charger_probe(struct platform_device *pdev)
->>  	/* Register for extcon notification */
->>  	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
->>  	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
->> -	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
->> -					&info->cable.nb);
->> +	ret = devm_extcon_register_notifier(dev, info->cable.edev,
->> +					EXTCON_CHG_USB_SDP, &info->cable.nb);
->>  	if (ret) {
->>  		dev_err(&info->pdev->dev,
->>  			"failed to register extcon notifier for SDP %d\n", ret);
->>  		return ret;
->>  	}
->>
->> -	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
->> -					&info->cable.nb);
->> +	ret = devm_extcon_register_notifier(dev, info->cable.edev,
->> +					EXTCON_CHG_USB_CDP, &info->cable.nb);
->>  	if (ret) {
->>  		dev_err(&info->pdev->dev,
->>  			"failed to register extcon notifier for CDP %d\n", ret);
->> -		extcon_unregister_notifier(info->cable.edev,
->> -				EXTCON_CHG_USB_SDP, &info->cable.nb);
->>  		return ret;
->>  	}
->>
->> -	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
->> -					&info->cable.nb);
->> +	ret = devm_extcon_register_notifier(dev, info->cable.edev,
->> +					EXTCON_CHG_USB_DCP, &info->cable.nb);
->>  	if (ret) {
->>  		dev_err(&info->pdev->dev,
->>  			"failed to register extcon notifier for DCP %d\n", ret);
->> -		extcon_unregister_notifier(info->cable.edev,
->> -				EXTCON_CHG_USB_SDP, &info->cable.nb);
->> -		extcon_unregister_notifier(info->cable.edev,
->> -				EXTCON_CHG_USB_CDP, &info->cable.nb);
->>  		return ret;
->>  	}
->>
->> @@ -868,19 +863,18 @@ static int axp288_charger_probe(struct platform_device *pdev)
->>
->>  	/* Register with power supply class */
->>  	charger_cfg.drv_data = info;
->> -	info->psy_usb = power_supply_register(&pdev->dev, &axp288_charger_desc,
->> -						&charger_cfg);
->> +	info->psy_usb = devm_power_supply_register(dev, &axp288_charger_desc,
->> +						   &charger_cfg);
->>  	if (IS_ERR(info->psy_usb)) {
->>  		dev_err(&pdev->dev, "failed to register power supply charger\n");
->> -		ret = PTR_ERR(info->psy_usb);
->> -		goto psy_reg_failed;
->> +		return PTR_ERR(info->psy_usb);
->>  	}
->>
->>  	/* Register for OTG notification */
->>  	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
->>  	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
->> -	ret = extcon_register_notifier(info->otg.cable, EXTCON_USB_HOST,
->> -				       &info->otg.id_nb);
->> +	ret = devm_extcon_register_notifier(dev, info->otg.cable,
->> +					    EXTCON_USB_HOST, &info->otg.id_nb);
->>  	if (ret)
->>  		dev_warn(&pdev->dev, "failed to register otg notifier\n");
->>
->> @@ -895,8 +889,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
->>  		if (info->irq[i] < 0) {
->>  			dev_warn(&info->pdev->dev,
->>  				"failed to get virtual interrupt=%d\n", pirq);
->> -			ret = info->irq[i];
->> -			goto intr_reg_failed;
->> +			return info->irq[i];
->>  		}
->>  		ret = devm_request_threaded_irq(&info->pdev->dev, info->irq[i],
->>  					NULL, axp288_charger_irq_thread_handler,
->> @@ -904,53 +897,19 @@ static int axp288_charger_probe(struct platform_device *pdev)
->>  		if (ret) {
->>  			dev_err(&pdev->dev, "failed to request interrupt=%d\n",
->>  								info->irq[i]);
->> -			goto intr_reg_failed;
->> +			return ret;
->>  		}
->>  	}
->>
->>  	ret = charger_init_hw_regs(info);
->>  	if (ret)
->> -		goto intr_reg_failed;
->> -
->> -	return 0;
->> -
->> -intr_reg_failed:
->> -	if (info->otg.cable)
->> -		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
->> -					&info->otg.id_nb);
->> -	power_supply_unregister(info->psy_usb);
->> -psy_reg_failed:
->> -	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
->> -					&info->cable.nb);
->> -	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
->> -					&info->cable.nb);
->> -	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
->> -					&info->cable.nb);
->> -	return ret;
->> -}
->> -
->> -static int axp288_charger_remove(struct platform_device *pdev)
->> -{
->> -	struct axp288_chrg_info *info =  dev_get_drvdata(&pdev->dev);
->> -
->> -	if (info->otg.cable)
->> -		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
->> -					&info->otg.id_nb);
->> -
->> -	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
->> -					&info->cable.nb);
->> -	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
->> -					&info->cable.nb);
->> -	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
->> -					&info->cable.nb);
->> -	power_supply_unregister(info->psy_usb);
->> +		return ret;
->>
->>  	return 0;
->>  }
->>
->>  static struct platform_driver axp288_charger_driver = {
->>  	.probe = axp288_charger_probe,
->> -	.remove = axp288_charger_remove,
->>  	.driver = {
->>  		.name = "axp288_charger",
->>  	},
->>
->
+> diff --git a/drivers/soc/samsung/exynos-chipid.c b/drivers/soc/samsung/exynos-chipid.c
+> index cf0128b18ee2..49fa76ec6d49 100644
+> --- a/drivers/soc/samsung/exynos-chipid.c
+> +++ b/drivers/soc/samsung/exynos-chipid.c
+> @@ -22,6 +22,9 @@
+>  #define EXYNOS_MAINREV_MASK	(0xF << 0)
+>  #define EXYNOS_REV_MASK		(EXYNOS_SUBREV_MASK | EXYNOS_MAINREV_MASK)
+>  
+> +#define EXYNOS_PKG_ID		0x04
+> +#define EXYNOS_AUX_INFO		0x1C
+> +
+>  static const struct exynos_soc_id {
+>  	const char *name;
+>  	unsigned int id;
+> @@ -71,6 +74,8 @@ int __init exynos_chipid_early_init(void)
+>  	const struct of_device_id *match;
+>  	u32 product_id;
+>  	u32 revision;
+> +	u32 pkg_id;
+> +	u32 aux_info;
+>  
+>  	np = of_find_matching_node_and_match(NULL,
+>  			of_exynos_chipid_ids, &match);
+> @@ -84,6 +89,8 @@ int __init exynos_chipid_early_init(void)
+>  
+>  	product_id  = readl_relaxed(exynos_chipid_base);
+>  	revision = product_id & EXYNOS_REV_MASK;
+> +	pkg_id = readl_relaxed(exynos_chipid_base + EXYNOS_PKG_ID);
+> +	aux_info = readl_relaxed(exynos_chipid_base + EXYNOS_AUX_INFO);
+>  	iounmap(exynos_chipid_base);
+>  
+>  	soc_dev_attr = kzalloc(sizeof(*soc_dev_attr), GFP_KERNEL);
+> @@ -100,8 +107,8 @@ int __init exynos_chipid_early_init(void)
+>  	soc_dev_attr->soc_id = product_id_to_soc_id(product_id);
+>  
+>  
+> -	pr_info("Exynos: CPU[%s] CPU_REV[0x%x] Detected\n",
+> -			product_id_to_soc_id(product_id), revision);
+> +	pr_info("Exynos: CPU[%s] CPU_REV[0x%x] PKG_ID[0x%x] AUX_INFO[0x%x] \n",
+> +		product_id_to_soc_id(product_id), revision, pkg_id, aux_info);
+>  
+>  	soc_dev = soc_device_register(soc_dev_attr);
+>  	if (IS_ERR(soc_dev)) {
+> 
+> Best regards,
+> 
