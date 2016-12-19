@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 05/14] power: supply: axp288_charger: use devm extcon / supply register
-Date: Mon, 19 Dec 2016 01:07:22 +0100
-Message-ID: <20161219000731.10188-6-hdegoede@redhat.com>
+Subject: [PATCH 03/14] power: supply: axp288_charger: Make charger_init_hw_regs propagate i2c errors
+Date: Mon, 19 Dec 2016 01:07:20 +0100
+Message-ID: <20161219000731.10188-4-hdegoede@redhat.com>
 References: <20161219000731.10188-1-hdegoede@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161219000731.10188-1-hdegoede@redhat.com>
@@ -10,157 +10,143 @@ To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo H
 Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use devm_extcon_register_notifier and devm_power_supply_register
-instead of their non devm counterparts, this avoids the need to do
-manual cleanup and results in quite a nice code cleanup.
+Make charger_init_hw_regs propagate i2c errors, instead of only warning
+about them and then ignoring them.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 71 ++++++++---------------------------
- 1 file changed, 15 insertions(+), 56 deletions(-)
+ drivers/power/supply/axp288_charger.c | 62 ++++++++++++++++++++++++-----------
+ 1 file changed, 42 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 76f7d29..e435b1e 100644
+index 75b8e0c..f1e3b0e 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -812,6 +812,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
- {
- 	int ret, i, pirq;
- 	struct axp288_chrg_info *info;
-+	struct device *dev = &pdev->dev;
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
- 	struct power_supply_config charger_cfg = {};
- 
-@@ -833,33 +834,27 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	/* Register for extcon notification */
- 	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
- 	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
--	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
--					&info->cable.nb);
-+	ret = devm_extcon_register_notifier(dev, info->cable.edev,
-+					EXTCON_CHG_USB_SDP, &info->cable.nb);
- 	if (ret) {
- 		dev_err(&info->pdev->dev,
- 			"failed to register extcon notifier for SDP %d\n", ret);
- 		return ret;
- 	}
- 
--	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
--					&info->cable.nb);
-+	ret = devm_extcon_register_notifier(dev, info->cable.edev,
-+					EXTCON_CHG_USB_CDP, &info->cable.nb);
- 	if (ret) {
- 		dev_err(&info->pdev->dev,
- 			"failed to register extcon notifier for CDP %d\n", ret);
--		extcon_unregister_notifier(info->cable.edev,
--				EXTCON_CHG_USB_SDP, &info->cable.nb);
- 		return ret;
- 	}
- 
--	ret = extcon_register_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
--					&info->cable.nb);
-+	ret = devm_extcon_register_notifier(dev, info->cable.edev,
-+					EXTCON_CHG_USB_DCP, &info->cable.nb);
- 	if (ret) {
- 		dev_err(&info->pdev->dev,
- 			"failed to register extcon notifier for DCP %d\n", ret);
--		extcon_unregister_notifier(info->cable.edev,
--				EXTCON_CHG_USB_SDP, &info->cable.nb);
--		extcon_unregister_notifier(info->cable.edev,
--				EXTCON_CHG_USB_CDP, &info->cable.nb);
- 		return ret;
- 	}
- 
-@@ -868,19 +863,18 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 
- 	/* Register with power supply class */
- 	charger_cfg.drv_data = info;
--	info->psy_usb = power_supply_register(&pdev->dev, &axp288_charger_desc,
--						&charger_cfg);
-+	info->psy_usb = devm_power_supply_register(dev, &axp288_charger_desc,
-+						   &charger_cfg);
- 	if (IS_ERR(info->psy_usb)) {
- 		dev_err(&pdev->dev, "failed to register power supply charger\n");
--		ret = PTR_ERR(info->psy_usb);
--		goto psy_reg_failed;
-+		return PTR_ERR(info->psy_usb);
- 	}
- 
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
--	ret = extcon_register_notifier(info->otg.cable, EXTCON_USB_HOST,
--				       &info->otg.id_nb);
-+	ret = devm_extcon_register_notifier(dev, info->otg.cable,
-+					    EXTCON_USB_HOST, &info->otg.id_nb);
- 	if (ret)
- 		dev_warn(&pdev->dev, "failed to register otg notifier\n");
- 
-@@ -895,8 +889,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		if (info->irq[i] < 0) {
- 			dev_warn(&info->pdev->dev,
- 				"failed to get virtual interrupt=%d\n", pirq);
--			ret = info->irq[i];
--			goto intr_reg_failed;
-+			return info->irq[i];
- 		}
- 		ret = devm_request_threaded_irq(&info->pdev->dev, info->irq[i],
- 					NULL, axp288_charger_irq_thread_handler,
-@@ -904,53 +897,19 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		if (ret) {
- 			dev_err(&pdev->dev, "failed to request interrupt=%d\n",
- 								info->irq[i]);
--			goto intr_reg_failed;
-+			return ret;
- 		}
- 	}
- 
- 	ret = charger_init_hw_regs(info);
- 	if (ret)
--		goto intr_reg_failed;
--
--	return 0;
--
--intr_reg_failed:
--	if (info->otg.cable)
--		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
--					&info->otg.id_nb);
--	power_supply_unregister(info->psy_usb);
--psy_reg_failed:
--	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
--					&info->cable.nb);
--	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
--					&info->cable.nb);
--	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
--					&info->cable.nb);
--	return ret;
--}
--
--static int axp288_charger_remove(struct platform_device *pdev)
--{
--	struct axp288_chrg_info *info =  dev_get_drvdata(&pdev->dev);
--
--	if (info->otg.cable)
--		extcon_unregister_notifier(info->otg.cable, EXTCON_USB_HOST,
--					&info->otg.id_nb);
--
--	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_SDP,
--					&info->cable.nb);
--	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_CDP,
--					&info->cable.nb);
--	extcon_unregister_notifier(info->cable.edev, EXTCON_CHG_USB_DCP,
--					&info->cable.nb);
--	power_supply_unregister(info->psy_usb);
-+		return ret;
- 
- 	return 0;
+@@ -701,59 +701,73 @@ static int axp288_charger_handle_otg_evt(struct notifier_block *nb,
+ 	return NOTIFY_OK;
  }
  
- static struct platform_driver axp288_charger_driver = {
- 	.probe = axp288_charger_probe,
--	.remove = axp288_charger_remove,
- 	.driver = {
- 		.name = "axp288_charger",
- 	},
+-static void charger_init_hw_regs(struct axp288_chrg_info *info)
++static int charger_init_hw_regs(struct axp288_chrg_info *info)
+ {
+ 	int ret, cc, cv;
+ 	unsigned int val;
+ 
+ 	/* Program temperature thresholds */
+ 	ret = regmap_write(info->regmap, AXP20X_V_LTF_CHRG, CHRG_VLTFC_0C);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 							AXP20X_V_LTF_CHRG, ret);
++		return ret;
++	}
+ 
+ 	ret = regmap_write(info->regmap, AXP20X_V_HTF_CHRG, CHRG_VHTFC_45C);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 							AXP20X_V_HTF_CHRG, ret);
++		return ret;
++	}
+ 
+ 	/* Do not turn-off charger o/p after charge cycle ends */
+ 	ret = regmap_update_bits(info->regmap,
+ 				AXP20X_CHRG_CTRL2,
+ 				CNTL2_CHG_OUT_TURNON, 1);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 						AXP20X_CHRG_CTRL2, ret);
++		return ret;
++	}
+ 
+ 	/* Enable interrupts */
+ 	ret = regmap_update_bits(info->regmap,
+ 				AXP20X_IRQ2_EN,
+ 				BAT_IRQ_CFG_BAT_MASK, 1);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 						AXP20X_IRQ2_EN, ret);
++		return ret;
++	}
+ 
+ 	ret = regmap_update_bits(info->regmap, AXP20X_IRQ3_EN,
+ 				TEMP_IRQ_CFG_MASK, 1);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 						AXP20X_IRQ3_EN, ret);
++		return ret;
++	}
+ 
+ 	/* Setup ending condition for charging to be 10% of I(chrg) */
+ 	ret = regmap_update_bits(info->regmap,
+ 				AXP20X_CHRG_CTRL1,
+ 				CHRG_CCCV_ITERM_20P, 0);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 						AXP20X_CHRG_CTRL1, ret);
++		return ret;
++	}
+ 
+ 	/* Disable OCV-SOC curve calibration */
+ 	ret = regmap_update_bits(info->regmap,
+ 				AXP20X_CC_CTRL,
+ 				FG_CNTL_OCV_ADJ_EN, 0);
+-	if (ret < 0)
+-		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
++	if (ret < 0) {
++		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
+ 						AXP20X_CC_CTRL, ret);
++		return ret;
++	}
+ 
+ 	/* Init charging current and voltage */
+ 	info->max_cc = info->pdata->max_cc;
+@@ -796,15 +810,21 @@ static void charger_init_hw_regs(struct axp288_chrg_info *info)
+ 		cv = min(info->pdata->def_cv, info->max_cv);
+ 
+ 		ret = axp288_charger_set_cc(info, cc);
+-		if (ret < 0)
+-			dev_warn(&info->pdev->dev,
++		if (ret < 0) {
++			dev_err(&info->pdev->dev,
+ 					"error(%d) in setting CC\n", ret);
++			return ret;
++		}
+ 
+ 		ret = axp288_charger_set_cv(info, cv);
+-		if (ret < 0)
+-			dev_warn(&info->pdev->dev,
++		if (ret < 0) {
++			dev_err(&info->pdev->dev,
+ 					"error(%d) in setting CV\n", ret);
++			return ret;
++		}
+ 	}
++
++	return 0;
+ }
+ 
+ static int axp288_charger_probe(struct platform_device *pdev)
+@@ -916,7 +936,9 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
+-	charger_init_hw_regs(info);
++	ret = charger_init_hw_regs(info);
++	if (ret)
++		goto intr_reg_failed;
+ 
+ 	return 0;
+ 
 -- 
 2.9.3
