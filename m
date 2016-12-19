@@ -1,79 +1,173 @@
-From: Jochen Hein <jochen@jochen.org>
-Subject: [PATCH] intel_idle: work around errate VLP52 on Baytrail CPUs
-Date: Mon, 19 Dec 2016 19:19:57 +0100
-Message-ID: <838trb233m.fsf@echidna.jochen.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v10 0/8] power: add power sequence library
+Date: Mon, 19 Dec 2016 21:15:04 +0200
+Message-ID: <20161219191504.GA18988@kozik-lap>
+References: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.dinoex.de ([188.40.204.4]:35618 "EHLO smtp.dinoex.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932679AbcLSSwP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 19 Dec 2016 13:52:15 -0500
+Received: from mail-wj0-f194.google.com ([209.85.210.194]:34089 "EHLO
+        mail-wj0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753002AbcLSTPQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 14:15:16 -0500
+Content-Disposition: inline
+In-Reply-To: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Vincent Gerris <vgerris@gmail.com>, linux-pm@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com, heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com
 
+On Mon, Nov 14, 2016 at 09:35:51AM +0800, Peter Chen wrote:
+> Hi all,
+> 
+> This is a follow-up for my last power sequence framework patch set [1].
+> According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+> power sequence instances will be added at postcore_initcall, the match
+> criteria is compatible string first, if the compatible string is not
+> matched between dts and library, it will try to use generic power sequence.
+> 	 
+> The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> if only one power sequence instance is needed, for more power sequences
+> are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
+> 
+> In future, if there are special power sequence requirements, the special
+> power sequence library can be created.
+> 
+> This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> two hot-plug devices to simulate this use case, the related binding
+> change is updated at patch [1/6], The udoo board changes were tested
+> using my last power sequence patch set.[3]
+> 
+> Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> need to power on itself before it can be found by ULPI bus.
+> 
+> [1] http://www.spinics.net/lists/linux-usb/msg142755.html
+> [2] http://www.spinics.net/lists/linux-usb/msg143106.html
+> [3] http://www.spinics.net/lists/linux-usb/msg142815.html
+> 
+> Changes for v10:
+> - Improve the kernel-doc for power sequence core, including exported APIs and
+>   main structure. [Patch 2/8]
+> - Change Kconfig, and let the user choose power sequence. [Patch 2/8]
+> - Delete EXPORT_SYMBOL and change related APIs as local, these APIs do not
+>   be intended to export currently. [Patch 2/8]
+> - Selete POWER_SEQUENCE at USB core's Kconfig. [Patch 4/8]
 
-There are frequent hangs on Baytrail CPUs according to
-https://bugzilla.kernel.org/show_bug.cgi?id=109051.
-This patch works around the errata by disabling C6.
+Hi Peter,
 
-According to the discussion in the bug and private mail it might be
-useful to include the workaround in mainline.
+It is great that you continued the work on this.
 
-Signed-off-by: Jochen Hein <jochen@jochen.org>
-Cc: stable@vger.kernel.org
+I saw (in some previous mails) your repo mentioned:
+https://git.kernel.org/cgit/linux/kernel/git/peter.chen/usb.git/
+Does it contain the recent version of this patchset?
 
---- linux-4.7.5/drivers/idle/intel_idle.c.orig	2016-09-24 10:10:18.000000000 +0200
-+++ linux-4.7.5/drivers/idle/intel_idle.c	2016-10-16 07:36:51.142862573 +0200
-@@ -1210,6 +1210,34 @@
- 
- }
- /*
-+ * byt_idle_state_table_update(void)
-+ *
-+ * On BYT, we have errata VLP52 and disable C6.
-+ * https://bugzilla.kernel.org/show_bug.cgi?id=109051A
-+ * http://www.intel.com/content/dam/www/public/us/en/documents/specification-updates/pentium-n3520-j2850-celeron-n2920-n2820-n2815-n2806-j1850-j1750-spec-update.pdf
-+ * VLP52 EOI Transactions May Not be Sent if Software Enters Core C6 During an Interrupt Service Routine.
-+
-+Problem:
-+If core C6 is entered after the start of an interrupt service routine but before a write
-+to the APIC EOI (End of Interrupt) register, and the core is woken up by an event
-+other than a fixed interrupt source the core may drop the EOI transaction the next
-+time APIC EOI register is written and further interrupts from the same or lower
-+priority level will be blocked.
-+
-+Implication:
-+EOI transactions may be lost and interrupts may be blocked when core C6 is used
-+during interrupt service routines.
-+
-+Workaround:
-+It is possible for the firmware to contain a workaround for this erratum.
-+ */
-+static void byt_idle_state_table_update(void)
-+{
-+	printk(PREFIX "byt_idle_state_table_update reached\n");
-+	byt_cstates[1].disabled = 1;	/* C6N-BYT */
-+	byt_cstates[2].disabled = 1;	/* C6S-BYT */
-+}
-+/*
-  * sklh_idle_state_table_update(void)
-  *
-  * On SKL-H (model 0x5e) disable C8 and C9 if:
-@@ -1264,6 +1292,10 @@
- 	case 0x3e: /* IVT */
- 		ivt_idle_state_table_update();
- 		break;
-+	case 0x37: /* BYT */
-+		printk(PREFIX "intel_idle_state_table_update BYT 0x37 reached\n");
-+		byt_idle_state_table_update();
-+		break;
- 	case 0x5c: /* BXT */
- 		bxt_idle_state_table_update();
- 		break;
+I want to build on top of it fixes for usb3503 on Odroid U3 board.
 
--- 
-The only problem with troubleshooting is that the trouble shoots back.
+Best regards,
+Krzysztof
 
+> 
+> Changes for v9:
+> - Add Vaibhav Hiremath's reviewed-by [Patch 4/8]
+> - Rebase to v4.9-rc1
+> 
+> Changes for v8:
+> - Allocate one extra pwrseq instance if pwrseq_get has succeed, it can avoid
+>   preallocate instances problem which the number of instance is decided at
+>   compile time, thanks for Heiko Stuebner's suggestion [Patch 2/8]
+> - Delete pwrseq_compatible_sample.c which is the demo purpose to show compatible
+>   match method. [Patch 2/8]
+> - Add Maciej S. Szmigiero's tested-by. [Patch 7/8]
+> 
+> Changes for v7:
+> - Create kinds of power sequence instance at postcore_initcall, and match
+>   the instance with node using compatible string, the beneit of this is
+>   the host driver doesn't need to consider which pwrseq instance needs
+>   to be used, and pwrseq core will match it, however, it eats some memories
+>   if less power sequence instances are used. [Patch 2/8]
+> - Add pwrseq_compatible_sample.c to test match pwrseq using device_id. [Patch 2/8]
+> - Fix the comments Vaibhav Hiremath adds for error path for clock and do not
+>   use device_node for parameters at pwrseq_on. [Patch 2/8]
+> - Simplify the caller to use power sequence, follows Alan's commnets [Patch 4/8]
+> - Tested three pwrseq instances together using both specific compatible string and
+>   generic libraries.
+> 
+> Changes for v6:
+> - Add Matthias Kaehlcke's Reviewed-by and Tested-by. (patch [2/6])
+> - Change chipidea core of_node assignment for coming user. (patch [5/6])
+> - Applies Joshua Clayton's three dts changes for two boards,
+>   the USB device's reg has only #address-cells, but without #size-cells.
+> 
+> Changes for v5:
+> - Delete pwrseq_register/pwrseq_unregister, which is useless currently
+> - Fix the linker error when the pwrseq user is compiled as module
+> 
+> Changes for v4:
+> - Create the patch on next-20160722 
+> - Fix the of_node is not NULL after chipidea driver is unbinded [Patch 5/6]
+> - Using more friendly wait method for reset gpio [Patch 2/6]
+> - Support multiple input clocks [Patch 2/6]
+> - Add Rob Herring's ack for DT changes
+> - Add Joshua Clayton's Tested-by
+> 
+> Changes for v3:
+> - Delete "power-sequence" property at binding-doc, and change related code
+>   at both library and user code.
+> - Change binding-doc example node name with Rob's comments
+> - of_get_named_gpio_flags only gets the gpio, but without setting gpio flags,
+>   add additional code request gpio with proper gpio flags
+> - Add Philipp Zabel's Ack and MAINTAINER's entry
+> 
+> Changes for v2:
+> - Delete "pwrseq" prefix and clock-names for properties at dt binding
+> - Should use structure not but its pointer for kzalloc
+> - Since chipidea core has no of_node, let core's of_node equals glue
+>   layer's at core's probe
+> 
+> Joshua Clayton (2):
+>   ARM: dts: imx6qdl: Enable usb node children with <reg>
+>   ARM: dts: imx6q-evi: Fix onboard hub reset line
+> 
+> Peter Chen (6):
+>   binding-doc: power: pwrseq-generic: add binding doc for generic power
+>     sequence library
+>   power: add power sequence library
+>   binding-doc: usb: usb-device: add optional properties for power
+>     sequence
+>   usb: core: add power sequence handling for USB devices
+>   usb: chipidea: let chipidea core device of_node equal's glue layer
+>     device of_node
+>   ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+> 
+>  .../bindings/power/pwrseq/pwrseq-generic.txt       |  48 +++++
+>  .../devicetree/bindings/usb/usb-device.txt         |  10 +-
+>  MAINTAINERS                                        |   9 +
+>  arch/arm/boot/dts/imx6q-evi.dts                    |  25 +--
+>  arch/arm/boot/dts/imx6qdl-udoo.dtsi                |  26 ++-
+>  arch/arm/boot/dts/imx6qdl.dtsi                     |   6 +
+>  drivers/power/Kconfig                              |   1 +
+>  drivers/power/Makefile                             |   1 +
+>  drivers/power/pwrseq/Kconfig                       |  21 ++
+>  drivers/power/pwrseq/Makefile                      |   2 +
+>  drivers/power/pwrseq/core.c                        | 237 +++++++++++++++++++++
+>  drivers/power/pwrseq/pwrseq_generic.c              | 183 ++++++++++++++++
+>  drivers/usb/Kconfig                                |   1 +
+>  drivers/usb/chipidea/core.c                        |  27 ++-
+>  drivers/usb/core/hub.c                             |  41 +++-
+>  drivers/usb/core/hub.h                             |   1 +
+>  include/linux/power/pwrseq.h                       |  60 ++++++
+>  17 files changed, 658 insertions(+), 41 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
+>  create mode 100644 drivers/power/pwrseq/Kconfig
+>  create mode 100644 drivers/power/pwrseq/Makefile
+>  create mode 100644 drivers/power/pwrseq/core.c
+>  create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
+>  create mode 100644 include/linux/power/pwrseq.h
+> 
+> -- 
+> 2.7.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
