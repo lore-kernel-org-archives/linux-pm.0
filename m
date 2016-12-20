@@ -1,48 +1,51 @@
 From: Peter Rosin <peda@axentia.se>
-Subject: [PATCH 0/3] power: supply: bq24735: handle AC adapter absence
-Date: Tue, 20 Dec 2016 12:32:59 +0100
-Message-ID: <1482233582-29770-1-git-send-email-peda@axentia.se>
+Subject: [PATCH 3/3] power: supply: bq24735: always check for AC adapter presence in probe
+Date: Tue, 20 Dec 2016 12:33:02 +0100
+Message-ID: <1482233582-29770-4-git-send-email-peda@axentia.se>
+References: <1482233582-29770-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve1eur01on0124.outbound.protection.outlook.com ([104.47.1.124]:38144
-        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1752210AbcLTSIT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 20 Dec 2016 13:08:19 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1482233582-29770-1-git-send-email-peda@axentia.se>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Hi!
+So what if there is a status_gpio specified? bq24735_charger_is_present()
+do have a working fallback for the case of no status_gpio.
 
-There is provision in the driver for handling the case where the
-chargers are not responding to i2c requests when the AC adapter
-is absent. I think this has been used by some Tegra boards that
-leave the charger handling to some other component and that only
-wants the kernel to be aware of the charging status for reporting
-(or whatever).
+Simplify this by not special casing setups w/o status_gpio, folding
+two consecutive if-blocks in the process.
 
-However, in my case, the kernel should handle configuration and
-enable/disable the charging, but this is not working very well
-when the charger disappears (and is reset) on AC adapter absence.
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ drivers/power/supply/bq24735-charger.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-This series fixes the issues I have found in this area so that I
-can boot without AC adapter and have the correct charging config
-every time I do attach the AC adapter.
-
-Cheers,
-Peter
-
-Peter Rosin (3):
-  power: supply: bq24735: move down bq24735_{en,dis}able_charging
-  power: supply: bq24735: configure the charger as part of enabling it
-  power: supply: bq24735: always check for AC adapter presence in probe
-
- drivers/power/supply/bq24735-charger.c | 56 ++++++++++++++++------------------
- 1 file changed, 26 insertions(+), 30 deletions(-)
-
+diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
+index 71f977d055d7..4f6275e5cf1c 100644
+--- a/drivers/power/supply/bq24735-charger.c
++++ b/drivers/power/supply/bq24735-charger.c
+@@ -416,7 +416,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 		return ret;
+ 	}
+ 
+-	if (!charger->status_gpio || bq24735_charger_is_present(charger)) {
++	if (bq24735_charger_is_present(charger)) {
+ 		ret = bq24735_read_word(client, BQ24735_MANUFACTURER_ID);
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to read manufacturer id : %d\n",
+@@ -437,10 +437,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 				"device id mismatch. 0x000b != 0x%04x\n", ret);
+ 			return -ENODEV;
+ 		}
+-	}
+ 
+-	/* check for AC adapter presence */
+-	if (bq24735_charger_is_present(charger)) {
+ 		ret = bq24735_enable_charging(charger);
+ 		if (ret < 0) {
+ 			dev_err(&client->dev, "Failed to enable charging\n");
 -- 
 2.1.4
-
