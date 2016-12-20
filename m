@@ -1,53 +1,80 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: BQ27xxx registers
-Date: Tue, 20 Dec 2016 12:34:19 +0100
-Message-ID: <201612201234.19759@pali>
-References: <6da60215-4b73-8924-d5ca-48f99c70e7fb@lapa.com.au>
+From: Peter Rosin <peda@axentia.se>
+Subject: [PATCH 1/3] power: supply: bq24735: move down bq24735_{en,dis}able_charging
+Date: Tue, 20 Dec 2016 12:33:00 +0100
+Message-ID: <1482233582-29770-2-git-send-email-peda@axentia.se>
+References: <1482233582-29770-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1760215.LsmGnWy8E9";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f196.google.com ([209.85.210.196]:35648 "EHLO
-        mail-wj0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751701AbcLTLeW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Dec 2016 06:34:22 -0500
-In-Reply-To: <6da60215-4b73-8924-d5ca-48f99c70e7fb@lapa.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1482233582-29770-1-git-send-email-peda@axentia.se>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: chris@lapa.com.au
-Cc: afd@ti.com, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
---nextPart1760215.LsmGnWy8E9
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+bq24735_enable_charging() needs to call bq24735_config_charging(),
+which is something to change later, this is just a preparatory patch.
 
-On Tuesday 20 December 2016 07:00:41 Chris Lapa wrote:
-> I can generate a patch to fix this issue, however the bigger problem
-> exists as to which revision fuel gauge the bq27xxx_battery.c driver
-> is intended to support for each family.
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ drivers/power/supply/bq24735-charger.c | 38 +++++++++++++++++-----------------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
-Hi! I think driver should support all revisions. There can be (and=20
-probably really is) hardware which uses old revision and such hardware=20
-should be still supported...
-
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
-
---nextPart1760215.LsmGnWy8E9
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlhZFzsACgkQi/DJPQPkQ1JATQCgybNCdgbOSTkVBvVoOosZrPC1
-C4UAmwSNuv0mjIVAODr3qky7QDxq7VpZ
-=ug8i
------END PGP SIGNATURE-----
-
---nextPart1760215.LsmGnWy8E9--
+diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
+index 8a0242c13b7e..2787c19d6696 100644
+--- a/drivers/power/supply/bq24735-charger.c
++++ b/drivers/power/supply/bq24735-charger.c
+@@ -107,25 +107,6 @@ static int bq24735_update_word(struct i2c_client *client, u8 reg,
+ 	return bq24735_write_word(client, reg, tmp);
+ }
+ 
+-static inline int bq24735_enable_charging(struct bq24735 *charger)
+-{
+-	if (charger->pdata->ext_control)
+-		return 0;
+-
+-	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
+-				   BQ24735_CHG_OPT_CHARGE_DISABLE, 0);
+-}
+-
+-static inline int bq24735_disable_charging(struct bq24735 *charger)
+-{
+-	if (charger->pdata->ext_control)
+-		return 0;
+-
+-	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
+-				   BQ24735_CHG_OPT_CHARGE_DISABLE,
+-				   BQ24735_CHG_OPT_CHARGE_DISABLE);
+-}
+-
+ static int bq24735_config_charger(struct bq24735 *charger)
+ {
+ 	struct bq24735_platform *pdata = charger->pdata;
+@@ -177,6 +158,25 @@ static int bq24735_config_charger(struct bq24735 *charger)
+ 	return 0;
+ }
+ 
++static inline int bq24735_enable_charging(struct bq24735 *charger)
++{
++	if (charger->pdata->ext_control)
++		return 0;
++
++	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
++				   BQ24735_CHG_OPT_CHARGE_DISABLE, 0);
++}
++
++static inline int bq24735_disable_charging(struct bq24735 *charger)
++{
++	if (charger->pdata->ext_control)
++		return 0;
++
++	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
++				   BQ24735_CHG_OPT_CHARGE_DISABLE,
++				   BQ24735_CHG_OPT_CHARGE_DISABLE);
++}
++
+ static bool bq24735_charger_is_present(struct bq24735 *charger)
+ {
+ 	if (charger->status_gpio) {
+-- 
+2.1.4
