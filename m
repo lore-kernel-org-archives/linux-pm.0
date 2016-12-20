@@ -1,144 +1,75 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: add thermal_zone_remove_device_groups()
-Date: Mon, 19 Dec 2016 20:21:41 -0800
-Message-ID: <20161220042139.GA14319@localhost.localdomain>
-References: <6c5a1a95-9b03-6f43-8de8-1ab4ac27cc78@gmail.com>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v10 0/8] power: add power sequence library
+Date: Tue, 20 Dec 2016 12:31:12 +0800
+Message-ID: <20161220043112.GA10071@b29397-desktop>
+References: <1479087359-7547-1-git-send-email-peter.chen@nxp.com>
+ <20161219191504.GA18988@kozik-lap>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:36188 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755246AbcLTEat (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Dec 2016 23:30:49 -0500
 Content-Disposition: inline
-In-Reply-To: <6c5a1a95-9b03-6f43-8de8-1ab4ac27cc78@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yasuaki Ishimatsu <yasu.isimatu@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com
+In-Reply-To: <20161219191504.GA18988@kozik-lap>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Peter Chen <peter.chen@nxp.com>, mark.rutland@arm.com, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, linux-kernel@vger.kernel.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, rjw@rjwysocki.net, sre@kernel.org, broonie@kernel.org, p.zabel@pengutronix.de, shawnguo@kernel.org
 
-Hey Yasuaki San,
-
-On Thu, Dec 15, 2016 at 04:47:08PM -0500, Yasuaki Ishimatsu wrote:
-> When offlining all cores on a CPU, the following system panic
-> occurs:
+On Mon, Dec 19, 2016 at 09:15:04PM +0200, Krzysztof Kozlowski wrote:
+> On Mon, Nov 14, 2016 at 09:35:51AM +0800, Peter Chen wrote:
+> > Hi all,
+> > 
+> > This is a follow-up for my last power sequence framework patch set [1].
+> > According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+> > power sequence instances will be added at postcore_initcall, the match
+> > criteria is compatible string first, if the compatible string is not
+> > matched between dts and library, it will try to use generic power sequence.
+> > 	 
+> > The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> > if only one power sequence instance is needed, for more power sequences
+> > are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
+> > 
+> > In future, if there are special power sequence requirements, the special
+> > power sequence library can be created.
+> > 
+> > This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> > two hot-plug devices to simulate this use case, the related binding
+> > change is updated at patch [1/6], The udoo board changes were tested
+> > using my last power sequence patch set.[3]
+> > 
+> > Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> > need to power on itself before it can be found by ULPI bus.
+> > 
+> > [1] http://www.spinics.net/lists/linux-usb/msg142755.html
+> > [2] http://www.spinics.net/lists/linux-usb/msg143106.html
+> > [3] http://www.spinics.net/lists/linux-usb/msg142815.html
+> > 
+> > Changes for v10:
+> > - Improve the kernel-doc for power sequence core, including exported APIs and
+> >   main structure. [Patch 2/8]
+> > - Change Kconfig, and let the user choose power sequence. [Patch 2/8]
+> > - Delete EXPORT_SYMBOL and change related APIs as local, these APIs do not
+> >   be intended to export currently. [Patch 2/8]
+> > - Selete POWER_SEQUENCE at USB core's Kconfig. [Patch 4/8]
 > 
-> BUG: unable to handle kernel NULL pointer dereference at (null)
-> IP: strlen+0x0/0x20
-> <snip>
-> Call Trace:
->  ? kernfs_name_hash+0x17/0x80
->  kernfs_find_ns+0x3f/0xd0
->  kernfs_remove_by_name_ns+0x36/0xa0
->  remove_files.isra.1+0x36/0x70
->  sysfs_remove_group+0x44/0x90
->  sysfs_remove_groups+0x2e/0x50
->  device_remove_attrs+0x5e/0x90
->  device_del+0x1ea/0x350
->  device_unregister+0x1a/0x60
->  thermal_zone_device_unregister+0x1f2/0x210
->  pkg_thermal_cpu_offline+0x14f/0x1a0 [x86_pkg_temp_thermal]
->  ? kzalloc.constprop.2+0x10/0x10 [x86_pkg_temp_thermal]
->  cpuhp_invoke_callback+0x8d/0x3f0
->  cpuhp_down_callbacks+0x42/0x80
->  cpuhp_thread_fun+0x8b/0xf0
->  smpboot_thread_fn+0x110/0x160
->  kthread+0x101/0x140
->  ? sort_range+0x30/0x30
->  ? kthread_park+0x90/0x90
->  ret_from_fork+0x25/0x30
+> Hi Peter,
 > 
-> thermal_zone_create_device_group() sets attribute_groups in
-> thermal_zone_attribute_groups[] to tz->device.groups. But these
-> attributes_groups do not have name argument.
+> It is great that you continued the work on this.
 > 
-> So when offlining all cores on CPU and executing
-> thermal_zone_device_unregister(), the panic occurs in strlen()
-> called from kernfs_name_hash() because name argument is NULL.
+> I saw (in some previous mails) your repo mentioned:
+> https://git.kernel.org/cgit/linux/kernel/git/peter.chen/usb.git/
+> Does it contain the recent version of this patchset?
 > 
-> The patch adds thermal_zone_remove_device_groups() to free
-> tz->device.groups and set NULL pointer.
-> 
+> I want to build on top of it fixes for usb3503 on Odroid U3 board.
 
-Thanks for finding this and sending a fix. Overall I am OK with the
-patch, but I have some questions, as follows.
+Krzysztof, I put v10 patch set at branch: pwrseq-lib. 
+It seems there are no more comments I will send my v11 patch set
+after new year holiday.
 
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> CC: Zhang Rui <rui.zhang@intel.com>
-> CC: Eduardo Valentin <edubezval@gmail.com>
-> ---
->  drivers/thermal/thermal_core.c  | 3 ++-
->  drivers/thermal/thermal_core.h  | 1 +
->  drivers/thermal/thermal_sysfs.c | 6 ++++++
+-- 
 
-First question is, are you seeing same problem with cooling devices ?
-They follow same strategy, of setting the groups property, and the
-cooling device groups also have no name.
-
->  3 files changed, 9 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 641faab..926e385 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1251,6 +1251,7 @@ struct thermal_zone_device *
-> 
->  unregister:
->  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
-> +	thermal_zone_remove_device_groups(tz);
->  	device_unregister(&tz->device);
->  	return ERR_PTR(result);
->  }
-> @@ -1315,8 +1316,8 @@ void thermal_zone_device_unregister(struct thermal_zone_device *tz)
->  	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
->  	idr_destroy(&tz->idr);
->  	mutex_destroy(&tz->lock);
-> +	thermal_zone_remove_device_groups(tz);
->  	device_unregister(&tz->device);
-> -	kfree(tz->device.groups);
->  }
->  EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
-> 
-> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 2412b37..e3a60db 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -70,6 +70,7 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
->  int thermal_build_list_of_policies(char *buf);
-> 
->  /* sysfs I/F */
-> +void thermal_zone_remove_device_groups(struct thermal_zone_device *tz);
->  int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
->  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *);
->  /* used only at binding time */
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> index a694de9..3dfd29b 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -605,6 +605,12 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
->  	return 0;
->  }
-> 
-> +void thermal_zone_remove_device_groups(struct thermal_zone_device *tz)
-> +{
-> +	kfree(tz->device.groups);
-
-OK. This part needs to be done regardless
-
-> +	tz->device.groups = NULL;
-
-This almost defeats the purpose of the effort to put all properties to
-device.groups, as we need to care about releasing them. 
-
-I guess the problem is we cannot keep the same sysfs entries if we set a
-name on the thermal device groups. That would break userspace. And if we
-do not set, we need to care about releasing them.
-
-Almost feel like we might consider patching sysfs core.
-Or maybe find another way to setup the device groups for thermal
-devices.
-
-> +}
-> +
->  int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
->  				      int mask)
->  {
-> -- 
-> 1.8.3.1
-> 
+Best Regards,
+Peter Chen
