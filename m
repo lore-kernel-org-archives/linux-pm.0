@@ -1,72 +1,53 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: [PATCH 2/3] power: supply: bq24735: configure the charger as part of enabling it
-Date: Tue, 20 Dec 2016 12:33:01 +0100
-Message-ID: <1482233582-29770-3-git-send-email-peda@axentia.se>
-References: <1482233582-29770-1-git-send-email-peda@axentia.se>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: BQ27xxx registers
+Date: Tue, 20 Dec 2016 12:34:19 +0100
+Message-ID: <201612201234.19759@pali>
+References: <6da60215-4b73-8924-d5ca-48f99c70e7fb@lapa.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1482233582-29770-1-git-send-email-peda@axentia.se>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: multipart/signed;
+  boundary="nextPart1760215.LsmGnWy8E9";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wj0-f196.google.com ([209.85.210.196]:35648 "EHLO
+        mail-wj0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751701AbcLTLeW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 20 Dec 2016 06:34:22 -0500
+In-Reply-To: <6da60215-4b73-8924-d5ca-48f99c70e7fb@lapa.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: chris@lapa.com.au
+Cc: afd@ti.com, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-During probe, it makes no sense to take care to first not issue any
-i2c commands to verify if the connected part really is a bq24735, to
-later simply fail the probe in the next step when trying to configure
-the charger. So, delay configuration of the charging parameters until
-the charger is accessible (i.e. when the AC adapter is present) as
-part of enabling the charging.
+--nextPart1760215.LsmGnWy8E9
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-This also fixes the rather serious issue that the charging parameters
-are lost when the AC adapter is disconnected.
+On Tuesday 20 December 2016 07:00:41 Chris Lapa wrote:
+> I can generate a patch to fix this issue, however the bigger problem
+> exists as to which revision fuel gauge the bq27xxx_battery.c driver
+> is intended to support for each family.
 
-Signed-off-by: Peter Rosin <peda@axentia.se>
----
- drivers/power/supply/bq24735-charger.c | 13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
+Hi! I think driver should support all revisions. There can be (and=20
+probably really is) hardware which uses old revision and such hardware=20
+should be still supported...
 
-diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
-index 2787c19d6696..71f977d055d7 100644
---- a/drivers/power/supply/bq24735-charger.c
-+++ b/drivers/power/supply/bq24735-charger.c
-@@ -160,9 +160,15 @@ static int bq24735_config_charger(struct bq24735 *charger)
- 
- static inline int bq24735_enable_charging(struct bq24735 *charger)
- {
-+	int ret;
-+
- 	if (charger->pdata->ext_control)
- 		return 0;
- 
-+	ret = bq24735_config_charger(charger);
-+	if (ret)
-+		return ret;
-+
- 	return bq24735_update_word(charger->client, BQ24735_CHG_OPT,
- 				   BQ24735_CHG_OPT_CHARGE_DISABLE, 0);
- }
-@@ -292,7 +298,6 @@ static int bq24735_charger_set_property(struct power_supply *psy,
- 			mutex_unlock(&charger->lock);
- 			if (ret)
- 				return ret;
--			bq24735_config_charger(charger);
- 			break;
- 		case POWER_SUPPLY_STATUS_DISCHARGING:
- 		case POWER_SUPPLY_STATUS_NOT_CHARGING:
-@@ -434,12 +439,6 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 		}
- 	}
- 
--	ret = bq24735_config_charger(charger);
--	if (ret < 0) {
--		dev_err(&client->dev, "failed in configuring charger");
--		return ret;
--	}
--
- 	/* check for AC adapter presence */
- 	if (bq24735_charger_is_present(charger)) {
- 		ret = bq24735_enable_charging(charger);
--- 
-2.1.4
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart1760215.LsmGnWy8E9
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlhZFzsACgkQi/DJPQPkQ1JATQCgybNCdgbOSTkVBvVoOosZrPC1
+C4UAmwSNuv0mjIVAODr3qky7QDxq7VpZ
+=ug8i
+-----END PGP SIGNATURE-----
+
+--nextPart1760215.LsmGnWy8E9--
