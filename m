@@ -1,196 +1,59 @@
-From: NeilBrown <neilb@suse.com>
-Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the usb gadget power negotation
-Date: Thu, 22 Dec 2016 10:47:48 +1100
-Message-ID: <87bmw4rgij.fsf@notabene.neil.brown.name>
-References: <cover.1476780088.git.baolin.wang@linaro.org> <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com> <87k2cttptn.fsf@notabene.neil.brown.name> <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com> <87a8dls7yn.fsf@notabene.neil.brown.name> <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com> <871sytqrqh.fsf@notabene.neil.brown.name> <CAMz4kuJcXVammmYRkx+xHRoU9Bb10ck+S3L5VBknuKRXy=hGPA@mail.gmail.com> <87pokms19o.fsf@notabene.neil.brown.name> <CAMz4ku+Tqq4JrbbBBfUJSRs5Aw8s119HAQVaOcqZ-oCPXVV-7g@mail.gmail.com> <878trarlgs.fsf@notabene.neil.brown.name> <CAMz4ku+NC2bu=QP2uNn2qJLOBBw-Z6Vtc-yEBpdu3=DZLsZq-w@mail.gmail.com>
+From: Peter Rosin <peda@axentia.se>
+Subject: [PATCH 1/2] power: supply: bq24735: allow polling even if there is no ac-detect gpio
+Date: Wed, 21 Dec 2016 22:29:52 +0100
+Message-ID: <1482355793-16190-2-git-send-email-peda@axentia.se>
+References: <1482355793-16190-1-git-send-email-peda@axentia.se>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:49164 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1764304AbcLUXsb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 21 Dec 2016 18:48:31 -0500
-In-Reply-To: <CAMz4ku+NC2bu=QP2uNn2qJLOBBw-Z6Vtc-yEBpdu3=DZLsZq-w@mail.gmail.com>
+Received: from mail-db5eur01on0118.outbound.protection.outlook.com ([104.47.2.118]:51776
+        "EHLO EUR01-DB5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1754345AbcLVAEP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Dec 2016 19:04:15 -0500
+In-Reply-To: <1482355793-16190-1-git-send-email-peda@axentia.se>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
+It is possible to verify AC adapter presence via a register read, without
+any physical connection to the ACOK pin on the charger. Allow this.
 
-On Wed, Dec 21 2016, Baolin Wang wrote:
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ Documentation/devicetree/bindings/power/supply/ti,bq24735.txt | 4 ++--
+ drivers/power/supply/bq24735-charger.c                        | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-> On 21 December 2016 at 11:48, NeilBrown <neilb@suse.com> wrote:
->> On Wed, Dec 21 2016, Baolin Wang wrote:
->>
->>> Hi,
->>>
->>> On 21 December 2016 at 06:07, NeilBrown <neilb@suse.com> wrote:
->>>> On Tue, Dec 20 2016, Baolin Wang wrote:
->>>>
->>>>> Hi Neil,
->>>>>
->>>>> On 3 November 2016 at 09:25, NeilBrown <neilb@suse.com> wrote:
->>>>>> On Tue, Nov 01 2016, Baolin Wang wrote:
->>>>>>
->>>>>>
->>>>>>>> So I won't be responding on this topic any further until I see a genuine
->>>>>>>> attempt to understand and resolve the inconsistencies with
->>>>>>>> usb_register_notifier().
->>>>>>>
->>>>>>> Any better solution?
->>>>>>
->>>>>> I'm not sure exactly what you are asking, so I'll assume you are asking
->>>>>> the question I want to answer :-)
->>>>>>
->>>>>> 1/ Liase with the extcon developers to resolve the inconsistencies
->>>>>>   with USB connector types.
->>>>>>   e.g. current there is both "EXTCON_USB" and "EXTCON_CHG_USB_SDP"
->>>>>>   which both seem to suggest a standard downstream port.  There is no
->>>>>>   documentation describing how these relate, and no consistent practice
->>>>>>   to copy.
->>>>>>   I suspect the intention is that
->>>>>>     EXTCON_USB and EXTCON_USB_HOST indicated that data capabilities of
->>>>>>     the cable, while EXTCON_CHG_USB* indicate the power capabilities of
->>>>>>     the cable.
->>>>>>     So EXTCON_CHG_USB_SDP should always appear together with EXTCON_USB
->>>>>>     while EXTCON_CHG_USB_DCP would not, and EXTCON_CHG_USB_ACA
->>>>>>     would normally appear with EXTCON_USB_HOST (I think).
->>>>>>   Some drivers follow this model, particularly extcon-max14577.c
->>>>>>   but it is not consistent.
->>>>>>
->>>>>>   This policy should be well documented and possibly existing drivers
->>>>>>   should be updated to follow it.
->>>>>>
->>>>>>   At the same time it would make sense to resolve EXTCON_CHG_USB_SLOW
->>>>>>   and EXTCON_CHG_USB_FAST.  These names don't mean much.
->>>>>>   They were recently removed from drivers/power/axp288_charger.c
->>>>>>   which is good, but are still used in drivers/extcon/extcon-max*
->>>>>>   Possibly they should be changed to names from the standard, or
->>>>>>   possibly they should be renamed to identify the current they are
->>>>>>   expected to provide. e.g. EXTCON_CHG_USB_500MA and EXTCON_CHG_USB_1A
->>>>>
->>>>> Now I am creating the new patchset with fixing and converting exist drivers.
->>>>
->>>> Thanks!
->>>>
->>>>>
->>>>> I did some investigation about EXTCON subsystem. From your suggestion:
->>>>> 1. EXTCON_CHG_USB_SDP should always appear together with EXTCON_USB.
->>>>> ---- After checking, now all extcon drivers were following this rule.
->>>>
->>>> what about extcon-axp288.c ?
->>>> axp288_handle_chrg_det_event() sets or clears EXTCON_CHG_USB_SDP but
->>>> never sets EXTCON_USB.
->>>> Similarly phy-rockchip-inno-usb2.c never sets EXTCON_USB.
->>>
->>> Ha, sorry, I missed these 2 files, and I will fix them.
->>>
->>>>
->>>>>
->>>>> 2. EXTCON_CHG_USB_ACA would normally appear with EXTCON_USB_HOST.
->>>>> ---- Now no extcon drivers used EXTCON_CHG_USB_ACA, then no need to
->>>>> change.
->>>>
->>>> Agreed.
->>>>
->>>>>
->>>>> 3. Change EXTCON_CHG_USB_SLOW/FAST to EXTCON_CHG_USB_500MA/1A.
->>>>> ---- There are no model that shows the slow charger should be 500mA
->>>>> and fast charger is 1A. (In extcon-max77693.c file, the fast charger
->>>>> can be drawn 2A), so changing to EXTCON_CHG_USB_500MA/1A is not useful
->>>>> I think.
->>>>
->>>> Leaving the names a SLOW/FAST is less useful as those names don't *mean*
->>>> anything.
->>>> The only place where the cable types are registered are in
->>>>  extcon-max{14577,77693,77843,8997}.c
->>>>
->>>> In each case, the code strongly suggests that the meaning is that "slow"
->>>> means "500mA" and that "fast" means "1A" (or sometimes 1A-2A).
->>>>
->>>> With names like "fast" and "slow", any common changer framework cannot
->>>> make use of these cable types as the name doesn't mean anything.
->>>> If the names were changed to 500MA/1A, then common code could reasonably
->>>> assume how much current can safely be drawn from each.
->>>
->>> As I know, some fast charger can be drawn 5A, then do we need another
->>> macro named 5A? then will introduce more macros in future, I am not
->>> true this is helpful.
->>
->> It isn't really a question of what the charger can provide.  It is a
->> question of what the cable reports to the phy.
->
-> Yes, there is no spec to describe fast/slow charger type and how much
-> current fast/slow charger can provide. Maybe some fast charger can
-> provide 1A/2A, others can provide 5A, which depends on users'
-> platform. If we change to EXTCON_CHG_USB_500MA/1A and some fast
-> charger can provide 1.5A on user's platform, will it report the fast
-> charger type by EXTCON_CHG_USB_1A on user's platform (but it can
-> provide 1.5A)? So what I mean, can we keep EXTCON_CHG_USB_SLOW/FAST as
-> they were, and maybe fix them in future? (BTW, I've fixed issue 1 and
-> maintainer has applied them).
+diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+index efc2c6a78661..de45e1a2a4d9 100644
+--- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
++++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
+@@ -27,8 +27,8 @@ Optional properties :
+  - ti,external-control : Indicates that the charger is configured externally
+    and that the host should not attempt to enable/disable charging or set the
+    charge voltage/current.
+- - poll-interval : In case 'interrupts' is not specified, poll AC presence
+-   on the ti,ac-detect-gpios GPIO with this interval (milliseconds).
++ - poll-interval : In case 'interrupts' is not specified, poll AC adapter
++   presence with this interval (milliseconds).
+ 
+ Example:
+ 
+diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
+index 4f6275e5cf1c..d8be81203837 100644
+--- a/drivers/power/supply/bq24735-charger.c
++++ b/drivers/power/supply/bq24735-charger.c
+@@ -468,7 +468,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
+ 				client->irq, ret);
+ 			return ret;
+ 		}
+-	} else if (charger->status_gpio) {
++	} else {
+ 		ret = device_property_read_u32(&client->dev, "poll-interval",
+ 					       &charger->poll_interval);
+ 		if (ret)
+-- 
+2.1.4
 
-I said "It isn't really a question of what the charger can provide."
-and you are still taking about "and some fast charger can provide 1.5A".
-So it seems like you didn't read, or you didn't understand what I wrote.
-I'll try again.
-
-Ignore the chargers.  COMPLETELY.  This not about chargers AT ALL.
-This is about cables and the information that the cable reports.
-
-Some how, and I cannot find the details, these MAXIM devices can report
-things like
-	case MAX14577_CHARGER_TYPE_SPECIAL_500MA:
-and
-	case MAX14577_CHARGER_TYPE_SPECIAL_1A:
-and
-	case MAX77693_CHARGER_TYPE_APPLE_500MA:
-and
-	case MAX77693_CHARGER_TYPE_APPLE_1A_2A:
-
-If this information is to be useful to the USB battery charging
-infrastructure, then it must be communicated unambiguously.  Reporting
-"EXTCON_CHG_USB_SLOW" or "..._FAST" doesn't have an obvious unambiguous
-meaning.
-
-If it were documented somewhere that
-  A cable of type EXTCON_CHG_USB_SLOW can provide at least 500mA of current
-  at 5V.  A cable of type EXTCON_CHG_USB_FAST can provide at least 1A of
-  current at 5V.
-when those cable types could be used by the USB battery chargers.
-If we just changed the names, then we wouldn't really need to document
-it and the intention would be obvious.  Self-documenting names are
-better where possible.
-
-So yes, we could leave it as it is a decide not to fix this bug.  But
-then I would then argue strongly against any attempt for the USB battery
-charging infrastructure to do anything with EXTCON_CHG_USB_SLOW and
-EXTCON_CHG_USB_FAST.  If you are going to fix this thing, you may as
-well fix it properly.
-
-NeilBrown
-
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEG8Yp69OQ2HB7X0l6Oeye3VZigbkFAlhbFKQACgkQOeye3VZi
-gblPHhAAjEkP33gD1kpPIoP8WXqUXqDm8Bfdo+ZU/OcncFH7cmmLHLgoBy8O1T0T
-kaDMDV3ftYANugqrXqk0lftsqhs9IJRq8jxh3eXwiIA9mkzcJKhKBH4W85bUZHPe
-zseLtNSDXkPR8FtioHhxquDZurn1G0AiP0thGEYZ0ysAfYVFL/lfP9c/Rqj0Dx84
-FHbHVZhzjbbFvov28XYbjViCbgvdeKYKjByGbBVqdG/5RAXF7YT8tcwj6rFAtzLN
-JTvBfMRzcNBXEPrfquc72GuhEpKpNq9LR9caLK06I5+jt878MuAb2/Ya5DjwcQr8
-Tyicp9mrqu117CTvKXlldLrFBXpCYVgcMjBF+HkSHsYsV+UOzwa3a4x7jD5/p5T+
-UQb7KxhLKH8wzTpPVBB+zn/pUW+N7PNiGteSW9t40I7WfrUTv1paAXrry0JChpRd
-rK1W6e2p0Den6DDPOzOn4UkNb+AcGOXsUPLp1cqg1PKxZwd+3oXRV2qaGlnQv9hK
-EniKGQ86GnWFfXABMMfECNH/XCt+ahr2ag1wbTMFN8qu2Lj/rEBrJ50PIWJI2Dck
-vIVK0IHvaKVreRN18/Erayp1k6WyIT3XyzdMhgRcCic1CN0ZfokS7+udaS54AoB9
-4oa9flJtJcDqcnTE97foaC7H/SYcqMmVYn+nI9oOicJ2nC96cZs=
-=sWXd
------END PGP SIGNATURE-----
---=-=-=--
