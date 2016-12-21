@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 05/12] power: supply: axp288_charger: Move init_hw_regs call before supply registration
-Date: Wed, 21 Dec 2016 15:36:50 +0100
-Message-ID: <20161221143657.322-6-hdegoede@redhat.com>
+Subject: [PATCH v2 02/12] power: supply: axp288_charger: Drop platform_data dependency
+Date: Wed, 21 Dec 2016 15:36:47 +0100
+Message-ID: <20161221143657.322-3-hdegoede@redhat.com>
 References: <20161221143657.322-1-hdegoede@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161221143657.322-1-hdegoede@redhat.com>
@@ -10,40 +10,159 @@ To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo H
 Cc: linux-pm@vger.kernel.org, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Move the charger_init_hw_regs() above the power_supply_register call,
-the axp288_charger_usb_set_property() uses axp288_chrg_info.max_cv and
-.max_cc which get set by charger_init_hw_regs().
+When the axp288_charger driver was originally merged, it was merged with
+a dependency on some other driver providing platform data for it.
+
+However the battery-data-framework which should provide that data never
+got merged, so the axp288_charger as merged upstream has never worked,
+its probe method simply always returns -ENODEV.
+
+This commit removes the dependency on the platform_data instead reading
+back the charging current and charging voltage that the firmware has set
+and using those values as the maximum values the user may set.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/power/supply/axp288_charger.c | 88 ++++++++++++-----------------------
+ include/linux/mfd/axp20x.h            |  7 ---
+ 2 files changed, 30 insertions(+), 65 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 250dd70..1588efd 100644
+index c0f5a49..5caa154 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -836,6 +836,10 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, info);
- 	mutex_init(&info->lock);
+@@ -143,7 +143,6 @@ enum {
  
-+	ret = charger_init_hw_regs(info);
-+	if (ret)
-+		return ret;
-+
- 	/* Register with power supply class */
- 	charger_cfg.drv_data = info;
- 	info->psy_usb = devm_power_supply_register(dev, &axp288_charger_desc,
-@@ -890,10 +894,6 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		}
+ struct axp288_chrg_info {
+ 	struct platform_device *pdev;
+-	struct axp20x_chrg_pdata *pdata;
+ 	struct regmap *regmap;
+ 	struct regmap_irq_chip_data *regmap_irqc;
+ 	int irq[CHRG_INTR_END];
+@@ -769,60 +768,42 @@ static int charger_init_hw_regs(struct axp288_chrg_info *info)
+ 		return ret;
  	}
  
--	ret = charger_init_hw_regs(info);
--	if (ret)
--		return ret;
+-	/* Init charging current and voltage */
+-	info->max_cc = info->pdata->max_cc;
+-	info->max_cv = info->pdata->max_cv;
 -
+ 	/* Read current charge voltage and current limit */
+ 	ret = regmap_read(info->regmap, AXP20X_CHRG_CTRL1, &val);
+ 	if (ret < 0) {
+-		/* Assume default if cannot read */
+-		info->cc = info->pdata->def_cc;
+-		info->cv = info->pdata->def_cv;
+-	} else {
+-		/* Determine charge voltage */
+-		cv = (val & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS;
+-		switch (cv) {
+-		case CHRG_CCCV_CV_4100MV:
+-			info->cv = CV_4100MV;
+-			break;
+-		case CHRG_CCCV_CV_4150MV:
+-			info->cv = CV_4150MV;
+-			break;
+-		case CHRG_CCCV_CV_4200MV:
+-			info->cv = CV_4200MV;
+-			break;
+-		case CHRG_CCCV_CV_4350MV:
+-			info->cv = CV_4350MV;
+-			break;
+-		default:
+-			info->cv = INT_MAX;
+-			break;
+-		}
+-
+-		/* Determine charge current limit */
+-		cc = (ret & CHRG_CCCV_CC_MASK) >> CHRG_CCCV_CC_BIT_POS;
+-		cc = (cc * CHRG_CCCV_CC_LSB_RES) + CHRG_CCCV_CC_OFFSET;
+-		info->cc = cc;
++		dev_err(&info->pdev->dev, "register(%x) read error(%d)\n",
++			AXP20X_CHRG_CTRL1, ret);
++		return ret;
++	}
+ 
+-		/* Program default charging voltage and current */
+-		cc = min(info->pdata->def_cc, info->max_cc);
+-		cv = min(info->pdata->def_cv, info->max_cv);
++	/* Determine charge voltage */
++	cv = (val & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS;
++	switch (cv) {
++	case CHRG_CCCV_CV_4100MV:
++		info->cv = CV_4100MV;
++		break;
++	case CHRG_CCCV_CV_4150MV:
++		info->cv = CV_4150MV;
++		break;
++	case CHRG_CCCV_CV_4200MV:
++		info->cv = CV_4200MV;
++		break;
++	case CHRG_CCCV_CV_4350MV:
++		info->cv = CV_4350MV;
++		break;
++	}
+ 
+-		ret = axp288_charger_set_cc(info, cc);
+-		if (ret < 0) {
+-			dev_err(&info->pdev->dev,
+-					"error(%d) in setting CC\n", ret);
+-			return ret;
+-		}
++	/* Determine charge current limit */
++	cc = (ret & CHRG_CCCV_CC_MASK) >> CHRG_CCCV_CC_BIT_POS;
++	cc = (cc * CHRG_CCCV_CC_LSB_RES) + CHRG_CCCV_CC_OFFSET;
++	info->cc = cc;
+ 
+-		ret = axp288_charger_set_cv(info, cv);
+-		if (ret < 0) {
+-			dev_err(&info->pdev->dev,
+-					"error(%d) in setting CV\n", ret);
+-			return ret;
+-		}
+-	}
++	/*
++	 * Do not allow the user to configure higher settings then those
++	 * set by the firmware
++	 */
++	info->max_cv = info->cv;
++	info->max_cc = info->cc;
+ 
  	return 0;
  }
+@@ -841,15 +822,6 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	info->pdev = pdev;
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
+-	info->pdata = pdev->dev.platform_data;
+-
+-	if (!info->pdata) {
+-		/* Try ACPI provided pdata via device properties */
+-		if (!device_property_present(&pdev->dev,
+-						"axp288_charger_data\n"))
+-			dev_err(&pdev->dev, "failed to get platform data\n");
+-		return -ENODEV;
+-	}
  
+ 	info->cable.edev = extcon_get_extcon_dev(AXP288_EXTCON_DEV_NAME);
+ 	if (info->cable.edev == NULL) {
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index 1d07ada..6715df3 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -532,13 +532,6 @@ struct axp20x_dev {
+ 	const struct regmap_irq_chip	*regmap_irq_chip;
+ };
+ 
+-struct axp20x_chrg_pdata {
+-	int max_cc;
+-	int max_cv;
+-	int def_cc;
+-	int def_cv;
+-};
+-
+ struct axp288_extcon_pdata {
+ 	/* GPIO pin control to switch D+/D- lines b/w PMIC and SOC */
+ 	struct gpio_desc *gpio_mux_cntl;
 -- 
 2.9.3
