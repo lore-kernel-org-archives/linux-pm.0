@@ -1,58 +1,404 @@
-From: Nicolas Saenz Julienne <nicolas.saenz-gbiq2sxWoaasTnJN9+BGXg@public.gmane.org>
-Subject: Re: [PATCH v4 1/2] power: supply: add sbs-charger driver
-Date: Wed, 21 Dec 2016 10:30:27 +0100
-Message-ID: <72292f5b-3f81-f097-a87e-56b58098ff2b@prodys.net>
-References: <1482247874-28713-1-git-send-email-nicolas.saenz@prodys.net>
- <1482247874-28713-2-git-send-email-nicolas.saenz@prodys.net>
- <CAKDJKT7WWFd2FSAZ6erXF=t1aaCyR0F5px54TiHw7C4PrnKXSQ@mail.gmail.com>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH DEBUG] x86, pat/mtrr: MTRR/PAT init earlier for each APs
+Date: Wed, 21 Dec 2016 10:54:00 +0100
+Message-ID: <20161221095400.GB14781@wunner.de>
+References: <1482229288-30913-1-git-send-email-yu.c.chen@intel.com>
+ <20161220105651.GA14419@wunner.de>
+ <20161221065102.GA4539@yu-desktop-1.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAKDJKT7WWFd2FSAZ6erXF=t1aaCyR0F5px54TiHw7C4PrnKXSQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manish Badarkhe <badarkhe.manish-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.hostsharing.net ([83.223.95.204]:52951 "EHLO
+        mailout1.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751757AbcLUJxy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Dec 2016 04:53:54 -0500
+Content-Disposition: inline
+In-Reply-To: <20161221065102.GA4539@yu-desktop-1.sh.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Suresh Siddha <sbsiddha@gmail.com>, Borislav Petkov <bp@suse.de>, "Brandt, Todd E" <todd.e.brandt@intel.com>, Rui Zhang <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
 
-Hi Manish, thanks for the interest.
-
-On 20/12/16 17:54, Manish Badarkhe wrote:
-> Hi Nicola
+On Wed, Dec 21, 2016 at 02:51:02PM +0800, Chen Yu wrote:
+> On Tue, Dec 20, 2016 at 11:56:51AM +0100, Lukas Wunner wrote:
+> > On Tue, Dec 20, 2016 at 06:21:28PM +0800, Chen Yu wrote:
+> > > This is a debug patch to descibe/workaround the issue
+> > > we encountered recently.
+> > > 
+> > > Problem and the cause:
+> > > Currently we are suffering from *extremely* slow CPU online
+> > > speed during system resuming from S3. Say, the MacBookPro 2015
+> > > has 4 CPUs, and it took more than 1 second each for both CPU1
+> > > and CPU3 to be brought back to idle thread again. Further ftrace
+> > > result showed that, *each* instruction the CPU1 and CPU3 execute
+> > > will take much longer time than it will take during normal cpu
+> > > online via sysfs(without S3 involved). And more interesting
+> > > thing was found that after resumed back, every instruction CPU1 and
+> > > CPU3 execute is back to its normal speed(unixbench has the same score
+> > > before/after S3). So it smells like there is something wrong with
+> > > the cache/tlb settings only during resuming back from S3.
+> > > Finally we have found this might be related to BIOS who has
+> > > scribbled the mtrr/pat before it resumed back to the OS, and every
+> > > instruction seems to be run in an uncached behavior, fortunately
+> > > later after all the APs have been brought up again, mtrr_aps_init()
+> > > will be invoked to synchronize the mtrr on these APs to the value
+> > > once saved by CPU0 before suspended, thus everything is back
+> > > to normal after resumed.
+> > 
+> > I'm seeing the same issue on a MacBookPro9,1 (Ivy Bridge, 2012,
+> > BIOS MBP91.88Z.00D3.B0C.1509111653 09/11/2015).
+> > 
+> > I was already wondering what's going on, so thanks a lot for looking
+> > into this.
+> > 
+> > For me this is a regression because with 4.7.0-rc7 resume was
+> > sufficiently quick.  The issue only started to appear after
+> > I rebased my working branch on 4.8.0-rc8.  I can confirm that
+> > your patch fixes the issue, so FWIW:
+> > 
+> > Tested-by: Lukas Wunner <lukas@wunner.de>
 >
-[...]
->
-> Just some general comment, Can you add some more properties here to
-> know voltage and current?
+> I've tested on 4.7.0-rc7, and the problem is still there,
+> it tooks nearly 2 second to bring up these cpus, after the
+> patch applied on top of 4.7.0-rc7, the time has dropped to 30ms.
+> Maybe because the mtrr after restored are random, thus we see different
+> result. Let's wait if other experts would give any clue on this :)
 
-I assume you are mentioning reading current and voltage values. These
-properties are not supported by the sbs-charger standard. All you can do
-is set (write only) the charging current and charging voltage values.
-Yet in all the boards I've worked with it's the sbs-battery compliant
-chip that takes care of it.
+Feeding /var/log/kern.log into this quick perl hack results in the numbers
+included below.  The 4 sec resume began with 4.8-rc8 for me, but it's
+not 100% reproducible, sometimes it just takes 1 sec even with 4.8-rc8,
+likely as you say because of random content in the relevant registers:
 
-> Also, can you add other properties present in charging status register
-> like POWER_FAIL, VOLTAGE_OR,
-> CURRENT_OR etc.
+perl -n -e '
+if (/Linux version ([^ ]+)/) {
+	$ver = "$1";
+} elsif (/\[ *([0-9.]+)\] ACPI: Low-level/) {
+	$start = $1;
+} elsif (/\[ *([0-9.]+)\] ACPI: Waking up/) {
+	$end = $1;
+	print $ver . "\t" . ($end - $start) . "\n";
+}'
 
-CURRENT_OR and VOLTAGE_OR relate to wrong values in the charging
-voltage/current registers. Since the sbs-battery chip takes care of it I
-don't see any use for it.
-POWER_FAIL marks there is not enough voltage to charge the battery. I
-don't need that information so I did nothing to integrate it. Having a
-quick look at the power supply defines I don't see were it could easily fit.
+Thanks,
 
-> Don't know weather it is feasible to add or not and Also, let me know,
-> if it is already been covered in
-> some part of the code.
-> 
-> Thanks
-> Manish Badarkhe
-> 
+Lukas
 
-Regards,
-Nicolas
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- snip --
+
+4.5.0-rc5-amd64	0.791821999999996
+4.5.0-rc5-amd64	0.784248000000048
+4.5.0-rc5-amd64	0.755302000000029
+4.5.0-rc5-amd64	0.872710000000041
+4.5.0-rc5-amd64	0.811196999999993
+4.5.0-rc5-amd64	0.619765999999998
+4.5.0-rc5-amd64	0.847110000000001
+4.5.0-rc5-amd64	0.583031000000005
+4.5.0-rc5-amd64	0.619109999999999
+4.5.0-rc5-amd64	0.833584999999999
+4.5.0-rc5-amd64	0.899036000000024
+4.5.0-rc5-amd64	0.912164000000004
+4.5.0-rc5-amd64	0.886482999999998
+4.5.0-rc5-amd64	0.724455999999996
+4.5.0-rc5-amd64	0.900266000000002
+4.5.0-rc5-amd64	0.848599000000007
+4.5.0-rc5-amd64	0.805461000000008
+4.5.0-rc5-amd64	0.711756999999992
+4.5.0-rc5-amd64	0.546851000000004
+4.5.0-rc5-amd64	0.779108000000008
+4.5.0-rc5-amd64	0.904349999999795
+4.5.0-rc5-amd64	0.8104629999998
+4.5.0-rc5-amd64	0.810886000000004
+4.5.0-rc5-amd64	0.806125999999999
+4.5.0-rc5-amd64	0.83456000000001
+4.5.0-rc5-amd64	0.809259999999995
+4.5.0-rc5-amd64	0.657921000000002
+4.5.0-rc5-amd64	0.710526999999956
+4.5.0-rc5-amd64	0.827078000000029
+4.5.0-rc5-amd64	0.82047
+4.5.0-rc5-amd64	0.545153999999911
+4.5.0-rc5-amd64	0.617734000000041
+4.5.0-rc5-amd64	0.884256000000001
+4.5.0-rc5-amd64	0.629543999999981
+4.5.0-rc5-amd64	0.902484999999999
+4.5.0-rc5-amd64	0.80895799999999
+4.5.0-rc5-amd64	0.651888999999983
+4.5.0-rc5-amd64	0.681414999999902
+4.5.0-rc5-amd64	0.908006
+4.5.0-rc5-amd64	0.810744
+4.5.0-rc5-amd64	0.673935
+4.5.0-rc5-amd64	0.921460999999994
+4.5.0-rc5-amd64	0.875963999999996
+4.5.0-rc5-amd64	0.904393999999996
+4.5.0-rc5-amd64	0.771819999999998
+4.5.0-rc5-amd64	0.829245999999998
+4.5.0-rc5-amd64	0.884001000000126
+4.5.0-rc5-amd64	0.925242999999995
+4.5.0-rc5-amd64	0.807276999999999
+4.5.0-rc5-amd64	0.77618600000001
+4.5.0-rc5-amd64	0.891590000000008
+4.5.0-rc5-amd64	0.832144999999997
+4.5.0-rc5-amd64	0.664855000000017
+4.5.0-rc5-amd64	0.743611000000016
+4.5.0-rc5-amd64	0.572099999999978
+4.5.0-rc5-amd64	0.968667000000039
+4.5.0-rc5-amd64	0.835151999999994
+4.5.0-rc5-amd64	0.835349000000008
+4.5.0-rc5-amd64	0.698092000000003
+4.5.0-rc5-amd64	0.743515000000002
+4.5.0-rc5-amd64	0.916257999999999
+4.5.0-rc5-amd64	0.801462000000001
+4.5.0-rc5-amd64	0.847062999999999
+4.5.0-rc5-amd64	0.837590999999989
+4.5.0-rc5-amd64	0.878129999999999
+4.5.0-rc5-amd64	0.911189000000007
+4.5.0-rc5-amd64	0.841833000000008
+4.5.0-rc5-amd64	0.69529
+4.5.0-rc5-amd64	0.568078
+4.5.0-rc5-amd64	0.813648999999998
+4.5.0-rc5-amd64	0.801636999999999
+4.5.0-rc5-amd64	0.790887999999995
+4.5.0-rc5-amd64	0.828260999999998
+4.5.0-rc5-amd64	0.950163000000003
+4.5.0-rc5-amd64	0.916289999999996
+4.5.0-rc5-amd64	0.644873000000004
+4.5.0-rc5-amd64	0.61748499999976
+4.5.0-rc5-amd64	0.846859000000009
+4.5.0-rc5-amd64	0.902849000000003
+4.5.0-rc5-amd64	0.903951000000006
+4.5.0-rc5-amd64	0.929685000000006
+4.5.0-rc5-amd64	0.595804000000044
+4.5.0-rc5-amd64	0.807150999999976
+4.5.0-rc5-amd64	0.918833000000006
+4.5.0-rc5-amd64	0.621095000000004
+4.5.0-rc5-amd64	0.797015000000002
+4.5.0-rc5-amd64	0.798920000000066
+4.5.0-rc5-amd64	0.844256999999971
+4.5.0-rc5-amd64	0.545507999999927
+4.5.0-rc5-amd64	0.558537999999999
+4.5.0-rc5-amd64	0.523992000000135
+4.5.0-rc5-amd64	0.862690000000001
+4.5.0-rc5-amd64	0.854602
+4.5.0-rc5-amd64	0.535631999999964
+4.5.0-rc5-amd64	0.758905000000027
+4.5.0-rc5-amd64	0.763448999999923
+4.5.0-rc5-amd64	0.857717000000001
+4.5.0-rc5-amd64	0.934520999999989
+4.5.0-rc5-amd64	0.883544000000001
+4.5.0-rc5-amd64	0.786261000000081
+4.5.0-rc5-amd64	0.620818999999983
+4.5.0-rc5-amd64	0.69337500000006
+4.5.0-rc5-amd64	0.847121000000016
+4.5.0-rc5-amd64	0.811431000000084
+4.5.0-rc5-amd64	0.958880999999991
+4.5.0-rc5-amd64	0.771730999999932
+4.5.0-rc5-amd64	0.916927999999999
+4.5.0-rc5-amd64	0.640732
+4.5.0-rc5-amd64	0.770714999999996
+4.5.0-rc5-amd64	0.822458999999981
+4.5.0-rc5-amd64	0.922315999999995
+4.5.0-rc5-amd64	0.849181999999985
+4.5.0-rc5-amd64	0.898053999999945
+4.5.0-rc5-amd64	0.889291000000014
+4.5.0-rc5-amd64	0.816744999999969
+4.5.0-rc5-amd64	0.603718000000001
+4.5.0-rc5-amd64	0.809477000000001
+4.5.0-rc5-amd64	0.647982999999996
+4.5.0-rc5-amd64	0.569856999999999
+4.5.0-rc5-amd64	0.836538000000004
+4.5.0-rc5-amd64	0.503213000000017
+4.5.0-rc5-amd64	0.921850999999997
+4.5.0-rc5-amd64	0.819006000000002
+4.5.0-rc5-amd64	0.690811000000053
+4.5.0-rc5-amd64	0.844243000000006
+4.5.0-rc5-amd64	0.908578999999918
+4.5.0-rc5-amd64	0.617271000000073
+4.5.0-rc5-amd64	0.916234000000031
+4.5.0-rc5-amd64	0.808912999999961
+4.5.0-rc5-amd64	0.774151999999958
+4.5.0-rc5-amd64	0.905732000000057
+4.5.0-rc5-amd64	0.806829999999991
+4.5.0-rc5-amd64	0.847582999999986
+4.5.0-rc5-amd64	0.898519999999962
+4.5.0-rc5-amd64	0.888661000000013
+4.5.0-rc5-amd64	1.05587100000002
+4.5.0-rc5-amd64	0.831493000000023
+4.5.0-rc5-amd64	0.783102999999983
+4.5.0-rc5-amd64	0.859454000001278
+4.5.0-rc5-amd64	0.903360000000248
+4.5.0-rc5-amd64	0.590835999999399
+4.5.0-rc5-amd64	0.810430999998061
+4.5.0-rc5-amd64	0.868598000000929
+4.6.0-rc6-amd64	0.858732000000032
+4.6.0-rc6-amd64	0.768321000000014
+4.6.0-rc6-amd64	0.999735999999984
+4.6.0-rc6-amd64	0.935766000000058
+4.6.0-rc6-amd64	1.074747
+4.6.0-rc6-amd64	0.871172000000001
+4.6.0-rc6-amd64	0.735118
+4.6.0-rc6-amd64	0.688977000000023
+4.6.0-rc6-amd64	0.98784999999998
+4.6.0-rc6-amd64	0.902268000000007
+4.6.0-rc6-amd64	0.687322000000002
+4.6.0-rc6-amd64	0.966214999999977
+4.6.0-rc6-amd64	0.945695999999998
+4.6.0-rc6-amd64	0.984290999999985
+4.6.0-rc6-amd64	1.00772600000002
+4.6.0-rc6-amd64	0.832724999999982
+4.6.0-rc6-amd64	1.007998
+4.6.0-rc6-amd64	0.928820999999999
+4.6.0-rc6-amd64	0.724267999999995
+4.6.0-rc6-amd64	0.779960000000003
+4.6.0-rc6-amd64	0.928005999999996
+4.6.0-rc6-amd64	0.785260999999998
+4.6.0-rc6-amd64	0.938457999999997
+4.6.0-rc6-amd64	0.718059000000011
+4.6.0-rc6-amd64	0.934480999999998
+4.6.0-rc6-amd64	0.895643999999997
+4.6.0-rc6-amd64	0.776068000000002
+4.6.0-rc6-amd64	0.948469999999986
+4.6.0-rc6-amd64	0.712186999999972
+4.6.0-rc6-amd64	0.749055999999996
+4.6.0-rc6-amd64	1.024166
+4.6.0-rc6-amd64	0.742650000000026
+4.6.0-rc6-amd64	1.108676
+4.6.0-rc6-amd64	1.17285699999996
+4.6.0-rc6-amd64	0.78110300000003
+4.6.0-rc6-amd64	0.811090000000036
+4.6.0-rc6-amd64	0.997298999999998
+4.6.0-rc6-amd64	0.788564000000065
+4.6.0-rc6-amd64	0.864753999999948
+4.6.0-rc6-amd64	0.539875999999936
+4.6.0-rc6-amd64	0.859683000000018
+4.6.0-rc6-amd64	0.84412199999997
+4.6.0-rc6-amd64	0.911157000000003
+4.6.0-rc6-amd64	1.08518399999991
+4.6.0-rc6-amd64	0.975603999999976
+4.6.0-rc6-amd64	1.01276200000001
+4.6.0-rc6-amd64	0.957143000000002
+4.6.0-rc6-amd64	0.838584999999995
+4.6.0-rc6-amd64	1.027795
+4.6.0-rc6-amd64	0.837847999999994
+4.6.0-rc6-amd64	1.00810899999988
+4.6.0-rc6-amd64	1.03576699999999
+4.6.0-rc6-amd64	0.825954000000024
+4.6.0-rc6-amd64	0.915140000000008
+4.6.0-rc6-amd64	0.875745999999999
+4.6.0-rc6-amd64	1.068602
+4.6.0-rc6-amd64	0.880808999999999
+4.6.0-rc6-amd64	0.848484999999997
+4.6.0-rc6-amd64	0.98555300000001
+4.6.0-rc6-amd64	1.098177
+4.6.0-rc6-amd64	0.969982999999999
+4.6.0-rc6-amd64	1.06376
+4.6.0-rc6-amd64	1.03072
+4.6.0-rc6-amd64	0.957211999999998
+4.6.0-rc6-amd64	0.725653000000001
+4.6.0-rc6-amd64	0.739570000000001
+4.6.0-rc6-amd64	0.861633000000005
+4.6.0-rc6-amd64	0.877488
+4.6.0-rc6-amd64	0.962841999999995
+4.7.0-rc7-amd64	0.854735000000005
+4.7.0-rc7-amd64	0.827500000000001
+4.7.0-rc7-amd64	1.057783
+4.7.0-rc7-amd64	0.884496999999982
+4.7.0-rc7-amd64	0.523160000000018
+4.7.0-rc7-amd64	1.05743199999995
+4.7.0-rc7-amd64	1.04921400000001
+4.7.0-rc7-amd64	1.080662
+4.7.0-rc7-amd64	1.043806
+4.7.0-rc7-amd64	1.01401000000001
+4.7.0-rc7-amd64	0.513013999999998
+4.7.0-rc7-amd64	1.042517
+4.7.0-rc7-amd64	0.389202999999981
+4.7.0-rc7-amd64	0.401685999999927
+4.7.0-rc7-amd64	0.67577899999992
+4.7.0-rc7-amd64	1.08775700000001
+4.7.0-rc7-amd64	1.079895
+4.7.0-rc7-amd64	0.929226999999997
+4.7.0-rc7-amd64	1.048232
+4.7.0-rc7-amd64	1.04880600000001
+4.7.0-rc7-amd64	1.02780900000005
+4.7.0-rc7-amd64	1.07356300000001
+4.7.0-rc7-amd64	0.748491999999999
+4.7.0-rc7-amd64	1.06909499999999
+4.7.0-rc7-amd64	0.53069
+4.7.0-rc7-amd64	0.645086000000049
+4.7.0-rc7-amd64	0.772515999999996
+4.7.0-rc7-amd64	1.0279589999999
+4.7.0-rc7-amd64	1.07909899999993
+4.7.0-rc7-amd64	0.989211999999995
+4.7.0-rc7-amd64	0.655788000000001
+4.7.0-rc7-amd64	0.680987999999957
+4.7.0-rc7-amd64	0.530302000000006
+4.7.0-rc7-amd64	1.06296600000002
+4.7.0-rc7-amd64	1.06546299999991
+4.7.0-rc7-amd64	1.09333399999991
+4.7.0-rc7-amd64	1.016413
+4.7.0-rc7-amd64	0.892668000000015
+4.7.0-rc7-amd64	0.411213000000032
+4.7.0-rc7-amd64	0.744064000000002
+4.7.0-rc7-amd64	0.924797000000012
+4.7.0-rc7-amd64	0.953418000000056
+4.7.0-rc7-amd64	1.10205900000005
+4.7.0-rc7-amd64	0.933835999999999
+4.7.0-rc7-amd64	0.937736000000001
+4.7.0-rc7-amd64	1.09499199999999
+4.7.0-rc7-amd64	0.961829999999999
+4.7.0-rc7-amd64	0.515383
+4.7.0-rc7-amd64	0.524988000000008
+4.7.0-rc7-amd64	1.090538
+4.7.0-rc7-amd64	0.527456000000001
+4.7.0-rc7-amd64	1.088252
+4.7.0-rc7-amd64	0.970280000000002
+4.7.0-rc7-amd64	1.50766499999997
+4.7.0-rc7-amd64	0.666339999999991
+4.7.0-rc7-amd64	1.090823
+4.7.0-rc7-amd64	0.53107
+4.7.0-rc7-amd64	1.07499
+4.7.0-rc7-amd64	0.390456
+4.7.0-rc7-amd64	0.991683999999992
+4.7.0-rc7-amd64	1.10761199999999
+4.7.0-rc7-amd64	0.691510999999998
+4.7.0-rc7-amd64	0.543309999999991
+4.7.0-rc7-amd64	1.033035
+4.7.0-rc7-amd64	0.550754999999995
+4.7.0-rc7-amd64	0.931038999999998
+4.7.0-rc7-amd64	0.419938999999999
+4.7.0-rc7-amd64	0.957441000000017
+4.7.0-rc7-amd64	0.953374999999994
+4.7.0-rc7-amd64	1.02400699999998
+4.7.0-rc7-amd64	0.551457999999997
+4.7.0-rc7-amd64	1.09606400000001
+4.7.0-rc7-amd64	1.112664
+4.7.0-rc7-amd64	0.545329000000038
+4.8.0-rc8-amd64	4.15946399999996
+4.8.0-rc8-amd64	1.95669999999996
+4.8.0-rc8-amd64	4.32400200000006
+4.8.0-rc8-amd64	2.02430000000004
+4.8.0-rc8-amd64	1.90040800000008
+4.8.0-rc8-amd64	4.37152000000003
+4.8.0-rc8-amd64	4.383017
+4.8.0-rc8-amd64	4.199254
+4.8.0-rc8-amd64	4.44121400000017
+4.8.0-rc8-amd64	4.14728700000001
+4.8.0-rc8-amd64	4.33939000000009
+4.8.0-rc8-amd64	4.203777
+4.8.0-rc8-amd64	0.587456000000003
+4.8.0-rc8-amd64	4.39352499999998
+4.8.0-rc8-amd64	1.969683
+4.8.0-rc8-amd64	4.31196299999999
+4.8.0-rc8-amd64	4.23275299999997
+4.8.0-rc8-amd64	1.95122600000001
+4.8.0-rc8-amd64	4.515658
+4.8.0-rc8-amd64	3.855763
+4.8.0-rc8-amd64	4.33339400000114
+4.8.0-rc8-amd64	4.10148699999991
+4.8.0-rc8-amd64	1.11672299999998
+4.8.0-rc8-amd64	1.10457399999996
+4.8.0-rc8-amd64	2.56593599999997
+4.8.0-rc8-amd64	1.99261300000035
+4.8.0-rc8-amd64	1.96518300000025
+4.8.0-rc8-amd64	4.36082399999941
+4.8.0-rc8-amd64	4.36475400000018
+4.8.0-rc8-amd64	1.94891699999971
+4.8.0-rc8-amd64	4.06829799999923
