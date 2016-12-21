@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 06/12] power: supply: axp288_charger: Actually get and use the USB_HOST extcon device
-Date: Wed, 21 Dec 2016 15:36:51 +0100
-Message-ID: <20161221143657.322-7-hdegoede@redhat.com>
+Subject: [PATCH v2 03/12] power: supply: axp288_charger: Use devm_power_supply_register
+Date: Wed, 21 Dec 2016 15:36:48 +0100
+Message-ID: <20161221143657.322-4-hdegoede@redhat.com>
 References: <20161221143657.322-1-hdegoede@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161221143657.322-1-hdegoede@redhat.com>
@@ -10,70 +10,99 @@ To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo H
 Cc: linux-pm@vger.kernel.org, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-Nothing was setting info->otg.cable, so the extcon_get_cable_state_
-calls on it would always return -EINVAL.
+Use devm_power_supply_register instead of power_supply_register,
+this avoids the need to do manual cleanup and results in quite
+a nice code cleanup.
 
-This commit fixes this by actually setting info->otg.cable using the new
-extcon_get_extcon_dev_by_cable_id function.
-
-This commit also makes failing to register the extcon notifier for the
-USB_HOST cable an error rather then a warning, because we MUST have this
-notfier to properly disable the VBUS path when in host mode so that we're
-not drawing current from the 5V boost converter which is supplying power
-to the otg port when in host mode.
+Note it may seem excessive to add a "struct device *dev" helper local
+variable for the 1 time it is used in this patch, but future patches
+in this series also use it.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
 Changes in v2:
--Use extcon_get_extcon_dev instead of the new extcon_get_extcon_dev_by_id
- which was not accepted by the extcon upstream maintainer
+-Rebase on top of for-next-next
+-Only switch to devm_power_supply_register, for-next-next has already switched
+ to devm_extcon_register_notifier
 ---
- drivers/power/supply/axp288_charger.c | 19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
+ drivers/power/supply/axp288_charger.c | 31 ++++++++-----------------------
+ 1 file changed, 8 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 1588efd..4443f11 100644
+index 5caa154..d929742 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -127,6 +127,7 @@
- #define ILIM_3000MA			3000	/* 3000mA */
+@@ -812,6 +812,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ {
+ 	int ret, i, pirq;
+ 	struct axp288_chrg_info *info;
++	struct device *dev = &pdev->dev;
+ 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+ 	struct power_supply_config charger_cfg = {};
  
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
-+#define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
+@@ -862,12 +863,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
  
- enum {
- 	VBUS_OV_IRQ = 0,
-@@ -833,6 +834,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
+ 	/* Register with power supply class */
+ 	charger_cfg.drv_data = info;
+-	info->psy_usb = power_supply_register(&pdev->dev, &axp288_charger_desc,
+-						&charger_cfg);
++	info->psy_usb = devm_power_supply_register(dev, &axp288_charger_desc,
++						   &charger_cfg);
+ 	if (IS_ERR(info->psy_usb)) {
+-		dev_err(&pdev->dev, "failed to register power supply charger\n");
+ 		ret = PTR_ERR(info->psy_usb);
+-		goto psy_reg_failed;
++		dev_err(dev, "failed to register power supply: %d\n", ret);
++		return ret;
  	}
  
-+	info->otg.cable = extcon_get_extcon_dev(USB_HOST_EXTCON_DEV_NAME);
-+	if (info->otg.cable == NULL) {
-+		dev_dbg(dev, "EXTCON_USB_HOST is not ready, probe deferred\n");
-+		return -EPROBE_DEFER;
-+	}
-+
- 	platform_set_drvdata(pdev, info);
- 	mutex_init(&info->lock);
+ 	/* Register for OTG notification */
+@@ -889,8 +890,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		if (info->irq[i] < 0) {
+ 			dev_warn(&info->pdev->dev,
+ 				"failed to get virtual interrupt=%d\n", pirq);
+-			ret = info->irq[i];
+-			goto intr_reg_failed;
++			return info->irq[i];
+ 		}
+ 		ret = devm_request_threaded_irq(&info->pdev->dev, info->irq[i],
+ 					NULL, axp288_charger_irq_thread_handler,
+@@ -898,34 +898,19 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		if (ret) {
+ 			dev_err(&pdev->dev, "failed to request interrupt=%d\n",
+ 								info->irq[i]);
+-			goto intr_reg_failed;
++			return ret;
+ 		}
+ 	}
  
-@@ -868,12 +875,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	info->otg.id_nb.notifier_call = axp288_charger_handle_otg_evt;
- 	ret = devm_extcon_register_notifier(&pdev->dev, info->otg.cable,
- 					EXTCON_USB_HOST, &info->otg.id_nb);
--	if (ret)
--		dev_warn(&pdev->dev, "failed to register otg notifier\n");
+ 	ret = charger_init_hw_regs(info);
+ 	if (ret)
+-		goto intr_reg_failed;
 -
--	if (info->otg.cable)
--		info->otg.id_short = extcon_get_state(
--					info->otg.cable, EXTCON_USB_HOST);
-+	if (ret) {
-+		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
+-	return 0;
+-
+-intr_reg_failed:
+-	power_supply_unregister(info->psy_usb);
+-psy_reg_failed:
+-	return ret;
+-}
+-
+-static int axp288_charger_remove(struct platform_device *pdev)
+-{
+-	struct axp288_chrg_info *info =  dev_get_drvdata(&pdev->dev);
+-
+-	power_supply_unregister(info->psy_usb);
 +		return ret;
-+	}
-+	info->otg.id_short = extcon_get_cable_state_(info->otg.cable,
-+						     EXTCON_USB_HOST);
  
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
+ 	return 0;
+ }
+ 
+ static struct platform_driver axp288_charger_driver = {
+ 	.probe = axp288_charger_probe,
+-	.remove = axp288_charger_remove,
+ 	.driver = {
+ 		.name = "axp288_charger",
+ 	},
 -- 
 2.9.3
