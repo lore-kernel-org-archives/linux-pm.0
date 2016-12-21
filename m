@@ -1,168 +1,42 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 02/12] power: supply: axp288_charger: Drop platform_data dependency
-Date: Wed, 21 Dec 2016 15:36:47 +0100
-Message-ID: <20161221143657.322-3-hdegoede@redhat.com>
-References: <20161221143657.322-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161221143657.322-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
-Cc: linux-pm@vger.kernel.org, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+From: Matthew Wilcox <mawilcox@linuxonhyperv.com>
+Subject: [PATCH 0/4] Convert thermal subsystem to the IDA allocator
+Date: Wed, 21 Dec 2016 09:47:02 -0800
+Message-ID: <1482342426-30520-1-git-send-email-mawilcox@linuxonhyperv.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from p3plsmtps2ded01.prod.phx3.secureserver.net ([208.109.80.58]:60884
+        "EHLO p3plsmtps2ded01.prod.phx3.secureserver.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1758860AbcLUPvG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Dec 2016 10:51:06 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Matthew Wilcox <mawilcox@microsoft.com>, linux-pm@vger.kernel.org
 
-When the axp288_charger driver was originally merged, it was merged with
-a dependency on some other driver providing platform data for it.
+From: Matthew Wilcox <mawilcox@microsoft.com>
 
-However the battery-data-framework which should provide that data never
-got merged, so the axp288_charger as merged upstream has never worked,
-its probe method simply always returns -ENODEV.
+None of the ID allocations are in a hot path, so I think it's better
+to use the ida_simple_get/ida_simple_remove API instead of having
+individual mutexes.
 
-This commit removes the dependency on the platform_data instead reading
-back the charging current and charging voltage that the firmware has set
-and using those values as the maximum values the user may set.
+I've only compile-tested these changes ... even that is quite tricky given
+the maze of Kconfig options which make it hard to select those drivers.
+I eventually gave up and played games with the header files to get the
+compiler to compile them cleanly.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_charger.c | 88 ++++++++++++-----------------------
- include/linux/mfd/axp20x.h            |  7 ---
- 2 files changed, 30 insertions(+), 65 deletions(-)
+Matthew Wilcox (4):
+  thermal core: convert ID allocation to IDA
+  thermal: convert clock cooling to use an IDA
+  thermal: convert cpu_cooling to use an IDA
+  thermal: convert devfreq_cooling to use an IDA
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index c0f5a49..5caa154 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -143,7 +143,6 @@ enum {
- 
- struct axp288_chrg_info {
- 	struct platform_device *pdev;
--	struct axp20x_chrg_pdata *pdata;
- 	struct regmap *regmap;
- 	struct regmap_irq_chip_data *regmap_irqc;
- 	int irq[CHRG_INTR_END];
-@@ -769,60 +768,42 @@ static int charger_init_hw_regs(struct axp288_chrg_info *info)
- 		return ret;
- 	}
- 
--	/* Init charging current and voltage */
--	info->max_cc = info->pdata->max_cc;
--	info->max_cv = info->pdata->max_cv;
--
- 	/* Read current charge voltage and current limit */
- 	ret = regmap_read(info->regmap, AXP20X_CHRG_CTRL1, &val);
- 	if (ret < 0) {
--		/* Assume default if cannot read */
--		info->cc = info->pdata->def_cc;
--		info->cv = info->pdata->def_cv;
--	} else {
--		/* Determine charge voltage */
--		cv = (val & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS;
--		switch (cv) {
--		case CHRG_CCCV_CV_4100MV:
--			info->cv = CV_4100MV;
--			break;
--		case CHRG_CCCV_CV_4150MV:
--			info->cv = CV_4150MV;
--			break;
--		case CHRG_CCCV_CV_4200MV:
--			info->cv = CV_4200MV;
--			break;
--		case CHRG_CCCV_CV_4350MV:
--			info->cv = CV_4350MV;
--			break;
--		default:
--			info->cv = INT_MAX;
--			break;
--		}
--
--		/* Determine charge current limit */
--		cc = (ret & CHRG_CCCV_CC_MASK) >> CHRG_CCCV_CC_BIT_POS;
--		cc = (cc * CHRG_CCCV_CC_LSB_RES) + CHRG_CCCV_CC_OFFSET;
--		info->cc = cc;
-+		dev_err(&info->pdev->dev, "register(%x) read error(%d)\n",
-+			AXP20X_CHRG_CTRL1, ret);
-+		return ret;
-+	}
- 
--		/* Program default charging voltage and current */
--		cc = min(info->pdata->def_cc, info->max_cc);
--		cv = min(info->pdata->def_cv, info->max_cv);
-+	/* Determine charge voltage */
-+	cv = (val & CHRG_CCCV_CV_MASK) >> CHRG_CCCV_CV_BIT_POS;
-+	switch (cv) {
-+	case CHRG_CCCV_CV_4100MV:
-+		info->cv = CV_4100MV;
-+		break;
-+	case CHRG_CCCV_CV_4150MV:
-+		info->cv = CV_4150MV;
-+		break;
-+	case CHRG_CCCV_CV_4200MV:
-+		info->cv = CV_4200MV;
-+		break;
-+	case CHRG_CCCV_CV_4350MV:
-+		info->cv = CV_4350MV;
-+		break;
-+	}
- 
--		ret = axp288_charger_set_cc(info, cc);
--		if (ret < 0) {
--			dev_err(&info->pdev->dev,
--					"error(%d) in setting CC\n", ret);
--			return ret;
--		}
-+	/* Determine charge current limit */
-+	cc = (ret & CHRG_CCCV_CC_MASK) >> CHRG_CCCV_CC_BIT_POS;
-+	cc = (cc * CHRG_CCCV_CC_LSB_RES) + CHRG_CCCV_CC_OFFSET;
-+	info->cc = cc;
- 
--		ret = axp288_charger_set_cv(info, cv);
--		if (ret < 0) {
--			dev_err(&info->pdev->dev,
--					"error(%d) in setting CV\n", ret);
--			return ret;
--		}
--	}
-+	/*
-+	 * Do not allow the user to configure higher settings then those
-+	 * set by the firmware
-+	 */
-+	info->max_cv = info->cv;
-+	info->max_cc = info->cc;
- 
- 	return 0;
- }
-@@ -841,15 +822,6 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	info->pdev = pdev;
- 	info->regmap = axp20x->regmap;
- 	info->regmap_irqc = axp20x->regmap_irqc;
--	info->pdata = pdev->dev.platform_data;
--
--	if (!info->pdata) {
--		/* Try ACPI provided pdata via device properties */
--		if (!device_property_present(&pdev->dev,
--						"axp288_charger_data\n"))
--			dev_err(&pdev->dev, "failed to get platform data\n");
--		return -ENODEV;
--	}
- 
- 	info->cable.edev = extcon_get_extcon_dev(AXP288_EXTCON_DEV_NAME);
- 	if (info->cable.edev == NULL) {
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 1d07ada..6715df3 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -532,13 +532,6 @@ struct axp20x_dev {
- 	const struct regmap_irq_chip	*regmap_irq_chip;
- };
- 
--struct axp20x_chrg_pdata {
--	int max_cc;
--	int max_cv;
--	int def_cc;
--	int def_cv;
--};
--
- struct axp288_extcon_pdata {
- 	/* GPIO pin control to switch D+/D- lines b/w PMIC and SOC */
- 	struct gpio_desc *gpio_mux_cntl;
+ drivers/thermal/clock_cooling.c   | 50 +++++---------------------
+ drivers/thermal/cpu_cooling.c     | 63 ++++++--------------------------
+ drivers/thermal/devfreq_cooling.c | 53 +++++----------------------
+ drivers/thermal/thermal_core.c    | 75 ++++++++++++++-------------------------
+ include/linux/thermal.h           |  4 +--
+ 5 files changed, 56 insertions(+), 189 deletions(-)
+
 -- 
-2.9.3
+2.11.0
+
