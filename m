@@ -1,125 +1,159 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 4/5] thermal: devfreq cooling: convert ID allocation to IDA
-Date: Wed, 21 Dec 2016 10:04:14 +0800
-Message-ID: <1482285855-2974-5-git-send-email-rui.zhang@intel.com>
-References: <1482285855-2974-1-git-send-email-rui.zhang@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:65334 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932778AbcLUCEX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 20 Dec 2016 21:04:23 -0500
-In-Reply-To: <1482285855-2974-1-git-send-email-rui.zhang@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH DEBUG] x86, pat/mtrr: MTRR/PAT init earlier for each APs
+Date: Wed, 21 Dec 2016 10:32:29 +0800
+Message-ID: <20161221023228.GA3966@yu-desktop-1.sh.intel.com>
+References: <1482229288-30913-1-git-send-email-yu.c.chen@intel.com>
+ <20161220105651.GA14419@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161220105651.GA14419@wunner.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: x86@kernel.org, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Len Brown <len.brown@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Suresh Siddha <sbsiddha@gmail.com>, Borislav Petkov <bp@suse.de>, "Brandt, Todd E" <todd.e.brandt@intel.com>, Rui Zhang <rui.zhang@intel.com>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Matthew Wilcox <mawilcox@microsoft.com>, Zhang Rui <rui.zhang@intel.com>
 
-thermal devfreq cooling currently uses IDRs to allocate IDs, but it only needs
-to know whether IDs are in use or not; the ID to pointer functionality
-of the IDR is unused. That means it can use the more space-efficient IDA.
+On Tue, Dec 20, 2016 at 11:56:51AM +0100, Lukas Wunner wrote:
+Hi Lukas,
+> On Tue, Dec 20, 2016 at 06:21:28PM +0800, Chen Yu wrote:
+> > This is a debug patch to descibe/workaround the issue
+> > we encountered recently.
+> > 
+> > Problem and the cause:
+> > Currently we are suffering from *extremely* slow CPU online
+> > speed during system resuming from S3. Say, the MacBookPro 2015
+> > has 4 CPUs, and it took more than 1 second each for both CPU1
+> > and CPU3 to be brought back to idle thread again. Further ftrace
+> > result showed that, *each* instruction the CPU1 and CPU3 execute
+> > will take much longer time than it will take during normal cpu
+> > online via sysfs(without S3 involved). And more interesting
+> > thing was found that after resumed back, every instruction CPU1 and
+> > CPU3 execute is back to its normal speed(unixbench has the same score
+> > before/after S3). So it smells like there is something wrong with
+> > the cache/tlb settings only during resuming back from S3.
+> > Finally we have found this might be related to BIOS who has
+> > scribbled the mtrr/pat before it resumed back to the OS, and every
+> > instruction seems to be run in an uncached behavior, fortunately
+> > later after all the APs have been brought up again, mtrr_aps_init()
+> > will be invoked to synchronize the mtrr on these APs to the value
+> > once saved by CPU0 before suspended, thus everything is back
+> > to normal after resumed.
+> 
+> I'm seeing the same issue on a MacBookPro9,1 (Ivy Bridge, 2012,
+> BIOS MBP91.88Z.00D3.B0C.1509111653 09/11/2015).
+> 
+> I was already wondering what's going on, so thanks a lot for looking
+> into this.
+> 
+> For me this is a regression because with 4.7.0-rc7 resume was
+> sufficiently quick.  The issue only started to appear after
+> I rebased my working branch on 4.8.0-rc8.  I can confirm that
+> your patch fixes the issue, so FWIW:
+> 
+> Tested-by: Lukas Wunner <lukas@wunner.de>
+> 
+Thanks for confirming this, and you have also provided an important
+information that, this does not appear in 4.7.0-rc7, so I'll rebase to
+this versin to check if things are better. Could you also send me your
+kernel config when using 4.7.0-rc7? 
 
-CC: Matthew Wilcox <mawilcox@microsoft.com>
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/thermal/devfreq_cooling.c | 49 ++++++---------------------------------
- 1 file changed, 7 insertions(+), 42 deletions(-)
-
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 5a737fd..00832bb 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -26,9 +26,10 @@
- #include <linux/thermal.h>
- 
- #include <trace/events/thermal.h>
-+#include <thermal_core.h>
- 
- static DEFINE_MUTEX(devfreq_lock);
--static DEFINE_IDR(devfreq_idr);
-+static DEFINE_IDA(devfreq_ida);
- 
- /**
-  * struct devfreq_cooling_device - Devfreq cooling device
-@@ -58,42 +59,6 @@ struct devfreq_cooling_device {
- };
- 
- /**
-- * get_idr - function to get a unique id.
-- * @idr: struct idr * handle used to create a id.
-- * @id: int * value generated by this function.
-- *
-- * This function will populate @id with an unique
-- * id, using the idr API.
-- *
-- * Return: 0 on success, an error code on failure.
-- */
--static int get_idr(struct idr *idr, int *id)
--{
--	int ret;
--
--	mutex_lock(&devfreq_lock);
--	ret = idr_alloc(idr, NULL, 0, 0, GFP_KERNEL);
--	mutex_unlock(&devfreq_lock);
--	if (unlikely(ret < 0))
--		return ret;
--	*id = ret;
--
--	return 0;
--}
--
--/**
-- * release_idr - function to free the unique id.
-- * @idr: struct idr * handle used for creating the id.
-- * @id: int value representing the unique id.
-- */
--static void release_idr(struct idr *idr, int id)
--{
--	mutex_lock(&devfreq_lock);
--	idr_remove(idr, id);
--	mutex_unlock(&devfreq_lock);
--}
--
--/**
-  * partition_enable_opps() - disable all opps above a given state
-  * @dfc:	Pointer to devfreq we are operating on
-  * @cdev_state:	cooling device state we're setting
-@@ -496,7 +461,7 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 	if (err)
- 		goto free_dfc;
- 
--	err = get_idr(&devfreq_idr, &dfc->id);
-+	err = get_ida(&devfreq_ida, &devfreq_lock, &dfc->id);
- 	if (err)
- 		goto free_tables;
- 
-@@ -509,15 +474,15 @@ of_devfreq_cooling_register_power(struct device_node *np, struct devfreq *df,
- 		dev_err(df->dev.parent,
- 			"Failed to register devfreq cooling device (%d)\n",
- 			err);
--		goto release_idr;
-+		goto release_ida;
- 	}
- 
- 	dfc->cdev = cdev;
- 
- 	return cdev;
- 
--release_idr:
--	release_idr(&devfreq_idr, dfc->id);
-+release_ida:
-+	release_ida(&devfreq_ida, &devfreq_lock, dfc->id);
- free_tables:
- 	kfree(dfc->power_table);
- 	kfree(dfc->freq_table);
-@@ -565,7 +530,7 @@ void devfreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 	dfc = cdev->devdata;
- 
- 	thermal_cooling_device_unregister(dfc->cdev);
--	release_idr(&devfreq_idr, dfc->id);
-+	release_ida(&devfreq_ida, &devfreq_lock, dfc->id);
- 	kfree(dfc->power_table);
- 	kfree(dfc->freq_table);
- 
--- 
-2.7.4
-
+> 
+> This is with 4.7.0-rc7, resume was consistently at or below 1 sec:
+> 
+> [  107.080920] ACPI: Low-level resume complete
+> [  107.080965] ACPI : EC: EC started
+> [  107.080966] PM: Restoring platform NVS memory
+> [  107.081341] Enabling non-boot CPUs ...
+> [  107.101059] x86: Booting SMP configuration:
+> [  107.101060] smpboot: Booting Node 0 Processor 1 APIC 0x2
+> [  107.108619]  cache: parent cpu1 should not be sleeping
+> [  107.135789] CPU1 is up
+> [  107.199203] smpboot: Booting Node 0 Processor 2 APIC 0x4
+> [  107.209808]  cache: parent cpu2 should not be sleeping
+> [  107.240896] CPU2 is up
+> [  107.314086] smpboot: Booting Node 0 Processor 3 APIC 0x6
+> [  107.326220]  cache: parent cpu3 should not be sleeping
+> [  107.357507] CPU3 is up
+> [  107.449002] smpboot: Booting Node 0 Processor 4 APIC 0x1
+> [  107.451740]  cache: parent cpu4 should not be sleeping
+> [  107.452106] CPU4 is up
+> [  107.549902] smpboot: Booting Node 0 Processor 5 APIC 0x3
+> [  107.566487]  cache: parent cpu5 should not be sleeping
+> [  107.624016] CPU5 is up
+> [  107.787000] smpboot: Booting Node 0 Processor 6 APIC 0x5
+> [  107.804491]  cache: parent cpu6 should not be sleeping
+> [  107.869075] CPU6 is up
+> [  108.057328] smpboot: Booting Node 0 Processor 7 APIC 0x7
+> [  108.075840]  cache: parent cpu7 should not be sleeping
+> [  108.149616] CPU7 is up
+> [  108.155910] ACPI: Waking up from system sleep state S3
+> 
+> 
+> This is with 4.8.0-rc8 without your patch, around 4 sec:
+> 
+> [  608.277228] ACPI: Low-level resume complete
+> [  608.277273] ACPI : EC: EC started
+> [  608.277274] PM: Restoring platform NVS memory
+> [  608.277612] Enabling non-boot CPUs ...
+> [  608.301165] x86: Booting SMP configuration:
+> [  608.301165] smpboot: Booting Node 0 Processor 1 APIC 0x2
+> [  608.350399]  cache: parent cpu1 should not be sleeping
+> [  608.531440] CPU1 is up
+> [  608.761943] smpboot: Booting Node 0 Processor 2 APIC 0x4
+> [  608.806085]  cache: parent cpu2 should not be sleeping
+> [  608.972760] CPU2 is up
+> [  609.276436] smpboot: Booting Node 0 Processor 3 APIC 0x6
+> [  609.323774]  cache: parent cpu3 should not be sleeping
+> [  609.472503] CPU3 is up
+> [  609.824707] smpboot: Booting Node 0 Processor 4 APIC 0x1
+> [  609.828097]  cache: parent cpu4 should not be sleeping
+> [  609.828776] CPU4 is up
+> [  610.223620] smpboot: Booting Node 0 Processor 5 APIC 0x3
+> [  610.292411]  cache: parent cpu5 should not be sleeping
+> [  610.545823] CPU5 is up
+> [  610.981127] smpboot: Booting Node 0 Processor 6 APIC 0x5
+> [  611.049177]  cache: parent cpu6 should not be sleeping
+> [  611.334813] CPU6 is up
+> [  612.049163] smpboot: Booting Node 0 Processor 7 APIC 0x7
+> [  612.123333]  cache: parent cpu7 should not be sleeping
+> [  612.427630] CPU7 is up
+> [  612.436692] ACPI: Waking up from system sleep state S3
+> 
+> 
+> With your patch I'm back to 1 sec:
+> 
+> [   98.177541] ACPI: Low-level resume complete
+> [   98.177585] ACPI : EC: EC started
+> [   98.177585] PM: Restoring platform NVS memory
+> [   98.177951] Enabling non-boot CPUs ...
+> [   98.201608] x86: Booting SMP configuration:
+> [   98.201609] smpboot: Booting Node 0 Processor 1 APIC 0x2
+> [   98.210412]  cache: parent cpu1 should not be sleeping
+> [   98.238198] CPU1 is up
+> [   98.307550] smpboot: Booting Node 0 Processor 2 APIC 0x4
+> [   98.319788]  cache: parent cpu2 should not be sleeping
+> [   98.353269] CPU2 is up
+> [   98.428475] smpboot: Booting Node 0 Processor 3 APIC 0x6
+> [   98.439979]  cache: parent cpu3 should not be sleeping
+> [   98.478572] CPU3 is up
+> [   98.585208] smpboot: Booting Node 0 Processor 4 APIC 0x1
+> [   98.588040]  cache: parent cpu4 should not be sleeping
+> [   98.588412] CPU4 is up
+> [   98.702925] smpboot: Booting Node 0 Processor 5 APIC 0x3
+> [   98.719564]  cache: parent cpu5 should not be sleeping
+> [   98.786342] CPU5 is up
+> [   98.959777] smpboot: Booting Node 0 Processor 6 APIC 0x5
+> [   98.977120]  cache: parent cpu6 should not be sleeping
+> [   99.048355] CPU6 is up
+> [   99.241252] smpboot: Booting Node 0 Processor 7 APIC 0x7
+> [   99.261368]  cache: parent cpu7 should not be sleeping
+> [   99.339541] CPU7 is up
+> [   99.345700] ACPI: Waking up from system sleep state S3
+> 
+> Thanks,
+> 
+> Lukas
+>
+Thanks,
+Yu
