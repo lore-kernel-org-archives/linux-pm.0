@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 10/12] power: supply: axp288_charger: Fix wrong regmap_update_bits
-Date: Wed, 21 Dec 2016 15:36:55 +0100
-Message-ID: <20161221143657.322-11-hdegoede@redhat.com>
+Subject: [PATCH v2 09/12] power: supply: axp288_charger: Get and process initial hardware-state
+Date: Wed, 21 Dec 2016 15:36:54 +0100
+Message-ID: <20161221143657.322-10-hdegoede@redhat.com>
 References: <20161221143657.322-1-hdegoede@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20161221143657.322-1-hdegoede@redhat.com>
@@ -10,26 +10,103 @@ To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo H
 Cc: linux-pm@vger.kernel.org, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
-To set a bit to 1 one needs to pass the mask for the bit to set
-as second argument into regmap_update_bits, not "1".
+Do not wait for an extcon notification before processing the cable
+states, instead queue the otg / cable work on probe to make sure we
+immediately process the initial hardware state.
+
+Note this also requiree moving the getting of the USB_HOST cable state
+from the extcon notifier to the workqueue function.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/axp288_charger.c | 32 +++++++++++++++++---------------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 42a6b92..d3932cd 100644
+index 4dd1a5f..42a6b92 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -706,7 +706,7 @@ static int charger_init_hw_regs(struct axp288_chrg_info *info)
- 	/* Do not turn-off charger o/p after charge cycle ends */
- 	ret = regmap_update_bits(info->regmap,
- 				AXP20X_CHRG_CTRL2,
--				CNTL2_CHG_OUT_TURNON, 1);
-+				CNTL2_CHG_OUT_TURNON, CNTL2_CHG_OUT_TURNON);
- 	if (ret < 0) {
- 		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 						AXP20X_CHRG_CTRL2, ret);
+@@ -172,7 +172,7 @@ struct axp288_chrg_info {
+ 	int cv;
+ 	int max_cc;
+ 	int max_cv;
+-	bool is_charger_enabled;
++	int is_charger_enabled;
+ };
+ 
+ static inline int axp288_charger_set_cc(struct axp288_chrg_info *info, int cc)
+@@ -301,7 +301,7 @@ static int axp288_charger_enable_charger(struct axp288_chrg_info *info,
+ {
+ 	int ret;
+ 
+-	if (enable == info->is_charger_enabled)
++	if ((int)enable == info->is_charger_enabled)
+ 		return 0;
+ 
+ 	if (enable)
+@@ -654,7 +654,17 @@ static void axp288_charger_otg_evt_worker(struct work_struct *work)
+ {
+ 	struct axp288_chrg_info *info =
+ 	    container_of(work, struct axp288_chrg_info, otg.work);
+-	int ret;
++	struct extcon_dev *edev = info->otg.cable;
++	int ret, usb_host = extcon_get_state(edev, EXTCON_USB_HOST);
++
++	dev_dbg(&info->pdev->dev, "external connector USB-Host is %s\n",
++				usb_host ? "attached" : "detached");
++
++	/*
++	 * Set usb_id_short flag to avoid running charger detection logic
++	 * in case usb host.
++	 */
++	info->otg.id_short = usb_host;
+ 
+ 	/* Disable VBUS path before enabling the 5V boost */
+ 	ret = axp288_charger_vbus_path_select(info, !info->otg.id_short);
+@@ -667,17 +677,7 @@ static int axp288_charger_handle_otg_evt(struct notifier_block *nb,
+ {
+ 	struct axp288_chrg_info *info =
+ 	    container_of(nb, struct axp288_chrg_info, otg.id_nb);
+-	struct extcon_dev *edev = info->otg.cable;
+-	int usb_host = extcon_get_state(edev, EXTCON_USB_HOST);
+-
+-	dev_dbg(&info->pdev->dev, "external connector USB-Host is %s\n",
+-				usb_host ? "attached" : "detached");
+ 
+-	/*
+-	 * Set usb_id_short flag to avoid running charger detection logic
+-	 * in case usb host.
+-	 */
+-	info->otg.id_short = usb_host;
+ 	schedule_work(&info->otg.work);
+ 
+ 	return NOTIFY_OK;
+@@ -808,6 +808,8 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 	info->pdev = pdev;
+ 	info->regmap = axp20x->regmap;
+ 	info->regmap_irqc = axp20x->regmap_irqc;
++	info->cable.chg_type = -1;
++	info->is_charger_enabled = -1;
+ 
+ 	info->cable.edev = extcon_get_extcon_dev(AXP288_EXTCON_DEV_NAME);
+ 	if (info->cable.edev == NULL) {
+@@ -851,6 +853,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 			return ret;
+ 		}
+ 	}
++	schedule_work(&info->cable.work);
+ 
+ 	/* Register for OTG notification */
+ 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
+@@ -861,8 +864,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
+ 		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
+ 		return ret;
+ 	}
+-	info->otg.id_short = extcon_get_cable_state_(info->otg.cable,
+-						     EXTCON_USB_HOST);
++	schedule_work(&info->otg.work);
+ 
+ 	/* Register charger interrupts */
+ 	for (i = 0; i < CHRG_INTR_END; i++) {
 -- 
 2.9.3
