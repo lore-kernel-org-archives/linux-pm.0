@@ -1,152 +1,46 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 01/12] power: supply: axp288_charger: Make charger_init_hw_regs propagate i2c errors
-Date: Wed, 21 Dec 2016 15:36:46 +0100
-Message-ID: <20161221143657.322-2-hdegoede@redhat.com>
+Subject: [PATCH v2 12/12] power: supply: axp288_charger: Fix the module not auto-loading
+Date: Wed, 21 Dec 2016 15:36:57 +0100
+Message-ID: <20161221143657.322-13-hdegoede@redhat.com>
 References: <20161221143657.322-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:37534 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S935545AbcLUOhX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Dec 2016 09:37:23 -0500
 In-Reply-To: <20161221143657.322-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 Cc: linux-pm@vger.kernel.org, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
-List-Id: linux-pm@vger.kernel.org
 
-Make charger_init_hw_regs propagate i2c errors, instead of only warning
-about them and then ignoring them.
+Add a MODULE_DEVICE_TABLE to fix the module not auto-loading.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 62 ++++++++++++++++++++++++-----------
- 1 file changed, 42 insertions(+), 20 deletions(-)
+ drivers/power/supply/axp288_charger.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 1115052..c0f5a49 100644
+index 6e588e6..ca4fa51 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -701,59 +701,73 @@ static int axp288_charger_handle_otg_evt(struct notifier_block *nb,
- 	return NOTIFY_OK;
- }
- 
--static void charger_init_hw_regs(struct axp288_chrg_info *info)
-+static int charger_init_hw_regs(struct axp288_chrg_info *info)
- {
- 	int ret, cc, cv;
- 	unsigned int val;
- 
- 	/* Program temperature thresholds */
- 	ret = regmap_write(info->regmap, AXP20X_V_LTF_CHRG, CHRG_VLTFC_0C);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 							AXP20X_V_LTF_CHRG, ret);
-+		return ret;
-+	}
- 
- 	ret = regmap_write(info->regmap, AXP20X_V_HTF_CHRG, CHRG_VHTFC_45C);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 							AXP20X_V_HTF_CHRG, ret);
-+		return ret;
-+	}
- 
- 	/* Do not turn-off charger o/p after charge cycle ends */
- 	ret = regmap_update_bits(info->regmap,
- 				AXP20X_CHRG_CTRL2,
- 				CNTL2_CHG_OUT_TURNON, 1);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 						AXP20X_CHRG_CTRL2, ret);
-+		return ret;
-+	}
- 
- 	/* Enable interrupts */
- 	ret = regmap_update_bits(info->regmap,
- 				AXP20X_IRQ2_EN,
- 				BAT_IRQ_CFG_BAT_MASK, 1);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 						AXP20X_IRQ2_EN, ret);
-+		return ret;
-+	}
- 
- 	ret = regmap_update_bits(info->regmap, AXP20X_IRQ3_EN,
- 				TEMP_IRQ_CFG_MASK, 1);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 						AXP20X_IRQ3_EN, ret);
-+		return ret;
-+	}
- 
- 	/* Setup ending condition for charging to be 10% of I(chrg) */
- 	ret = regmap_update_bits(info->regmap,
- 				AXP20X_CHRG_CTRL1,
- 				CHRG_CCCV_ITERM_20P, 0);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 						AXP20X_CHRG_CTRL1, ret);
-+		return ret;
-+	}
- 
- 	/* Disable OCV-SOC curve calibration */
- 	ret = regmap_update_bits(info->regmap,
- 				AXP20X_CC_CTRL,
- 				FG_CNTL_OCV_ADJ_EN, 0);
--	if (ret < 0)
--		dev_warn(&info->pdev->dev, "register(%x) write error(%d)\n",
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev, "register(%x) write error(%d)\n",
- 						AXP20X_CC_CTRL, ret);
-+		return ret;
-+	}
- 
- 	/* Init charging current and voltage */
- 	info->max_cc = info->pdata->max_cc;
-@@ -796,15 +810,21 @@ static void charger_init_hw_regs(struct axp288_chrg_info *info)
- 		cv = min(info->pdata->def_cv, info->max_cv);
- 
- 		ret = axp288_charger_set_cc(info, cc);
--		if (ret < 0)
--			dev_warn(&info->pdev->dev,
-+		if (ret < 0) {
-+			dev_err(&info->pdev->dev,
- 					"error(%d) in setting CC\n", ret);
-+			return ret;
-+		}
- 
- 		ret = axp288_charger_set_cv(info, cv);
--		if (ret < 0)
--			dev_warn(&info->pdev->dev,
-+		if (ret < 0) {
-+			dev_err(&info->pdev->dev,
- 					"error(%d) in setting CV\n", ret);
-+			return ret;
-+		}
- 	}
-+
-+	return 0;
- }
- 
- static int axp288_charger_probe(struct platform_device *pdev)
-@@ -910,7 +930,9 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		}
- 	}
- 
--	charger_init_hw_regs(info);
-+	ret = charger_init_hw_regs(info);
-+	if (ret)
-+		goto intr_reg_failed;
- 
+@@ -856,8 +856,15 @@ static int axp288_charger_probe(struct platform_device *pdev)
  	return 0;
+ }
  
++static const struct platform_device_id axp288_charger_id_table[] = {
++	{ .name = "axp288_charger" },
++	{},
++};
++MODULE_DEVICE_TABLE(platform, axp288_charger_id_table);
++
+ static struct platform_driver axp288_charger_driver = {
+ 	.probe = axp288_charger_probe,
++	.id_table = axp288_charger_id_table,
+ 	.driver = {
+ 		.name = "axp288_charger",
+ 	},
 -- 
 2.9.3
+
