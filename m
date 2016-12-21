@@ -1,124 +1,47 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH] power: supply: axp288_charger: Use one notifier_block per extcon cable
-Date: Wed, 21 Dec 2016 18:28:23 +0100
-Message-ID: <20161221172823.14406-2-hdegoede@redhat.com>
-References: <20161221172823.14406-1-hdegoede@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:58242 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932886AbcLUR22 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 21 Dec 2016 12:28:28 -0500
-In-Reply-To: <20161221172823.14406-1-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>
+Subject: [PATCH 0/2] power: supply: bq24735: poll register if no ac-detect gpio
+Date: Wed, 21 Dec 2016 22:29:51 +0100
+Message-ID: <1482355793-16190-1-git-send-email-peda@axentia.se>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Peter Rosin <peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
-Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
 
-Prior to this commit the code was using 1 notifier_block for all
-types of charger cable, this is incorrect as the notifier_block
-becomes part of a linked-list and now the same notifier_block
-is part of 3 linked lists.
+Hi!
 
-This commit fixes this by using a separate nb per extcon cable.
+My patch [1] "power: supply: bq24735-charger: allow chargers to share the
+ac-detect gpio" is perhaps a bit hard to digest. And while I still think
+some way of sharing the ac-detect gpio is worthwhile, I thought of another
+way to solve the problem at hand. Instead of polling a shared gpio, it's
+as simple as polling the chip for what it is outputting on the ACOK pin.
+And the code is already there! It just needs a tweak to allow this mode of
+operation.
 
-Note this happened to work fine sofar because axp288_charger was the only
-listener, so when added to each of the 3 notifier chains, the next pointer
-in the nb would be set to 0, so we've 3 heads pointing to the same nb,
-with its next pointing to NULL. But as soon as we mix in a second extcon
-consumer things will go boom.
+This appears to work just fine for me, and the difference is in the noise
+since my shared gpio pin happens to be on an expander on the i2c bus, so
+I end up with i2c traffic for each poll either way.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_charger.c | 41 +++++++++++++++++++++++++++--------
- 1 file changed, 32 insertions(+), 9 deletions(-)
+Cheers,
+peda
 
-diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index ca4fa51..6be2fe2 100644
---- a/drivers/power/supply/axp288_charger.c
-+++ b/drivers/power/supply/axp288_charger.c
-@@ -115,6 +115,9 @@
- #define AXP288_EXTCON_DEV_NAME		"axp288_extcon"
- #define USB_HOST_EXTCON_DEV_NAME	"INT3496:00"
- 
-+static const unsigned int cable_ids[] =
-+	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
-+
- enum {
- 	VBUS_OV_IRQ = 0,
- 	CHARGE_DONE_IRQ,
-@@ -149,7 +152,7 @@ struct axp288_chrg_info {
- 		struct extcon_dev *edev;
- 		bool connected;
- 		enum power_supply_type chg_type;
--		struct notifier_block nb;
-+		struct notifier_block nb[ARRAY_SIZE(cable_ids)];
- 		struct work_struct work;
- 	} cable;
- 
-@@ -625,14 +628,35 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
- 	power_supply_changed(info->psy_usb);
- }
- 
--static int axp288_charger_handle_cable_evt(struct notifier_block *nb,
--					  unsigned long event, void *param)
-+/*
-+ * We need 3 copies of this, because there is no way to find out for which
-+ * cable id we are being called from the passed in arguments; and we must
-+ * have a separate nb for each extcon_register_notifier call.
-+ */
-+static int axp288_charger_handle_cable0_evt(struct notifier_block *nb,
-+					    unsigned long event, void *param)
- {
- 	struct axp288_chrg_info *info =
--	    container_of(nb, struct axp288_chrg_info, cable.nb);
-+		container_of(nb, struct axp288_chrg_info, cable.nb[0]);
-+	schedule_work(&info->cable.work);
-+	return NOTIFY_OK;
-+}
- 
-+static int axp288_charger_handle_cable1_evt(struct notifier_block *nb,
-+					    unsigned long event, void *param)
-+{
-+	struct axp288_chrg_info *info =
-+		container_of(nb, struct axp288_chrg_info, cable.nb[1]);
- 	schedule_work(&info->cable.work);
-+	return NOTIFY_OK;
-+}
- 
-+static int axp288_charger_handle_cable2_evt(struct notifier_block *nb,
-+					    unsigned long event, void *param)
-+{
-+	struct axp288_chrg_info *info =
-+		container_of(nb, struct axp288_chrg_info, cable.nb[2]);
-+	schedule_work(&info->cable.work);
- 	return NOTIFY_OK;
- }
- 
-@@ -766,9 +790,6 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
- 	struct power_supply_config charger_cfg = {};
--	unsigned int cable_ids[] = { EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP,
--				     EXTCON_CHG_USB_DCP };
--
- 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
- 	if (!info)
- 		return -ENOMEM;
-@@ -811,10 +832,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 
- 	/* Register for extcon notification */
- 	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
--	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
-+	info->cable.nb[0].notifier_call = axp288_charger_handle_cable0_evt;
-+	info->cable.nb[1].notifier_call = axp288_charger_handle_cable1_evt;
-+	info->cable.nb[2].notifier_call = axp288_charger_handle_cable2_evt;
- 	for (i = 0; i < ARRAY_SIZE(cable_ids); i++) {
- 		ret = devm_extcon_register_notifier(dev, info->cable.edev,
--						cable_ids[i], &info->cable.nb);
-+					  cable_ids[i], &info->cable.nb[i]);
- 		if (ret) {
- 			dev_err(dev, "failed to register extcon notifier for %u: %d\n",
- 				cable_ids[i], ret);
+[1] https://lkml.org/lkml/2016/12/13/786
+
+Peter Rosin (2):
+  power: supply: bq24735: allow polling even if there is no ac-detect
+    gpio
+  power: supply: bq24735: bring down the noise level
+
+ Documentation/devicetree/bindings/power/supply/ti,bq24735.txt | 4 ++--
+ drivers/power/supply/bq24735-charger.c                        | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
 -- 
-2.9.3
+2.1.4
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
