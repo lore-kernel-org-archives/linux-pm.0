@@ -1,112 +1,116 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 09/12] power: supply: axp288_charger: Get and process initial hardware-state
-Date: Wed, 21 Dec 2016 15:36:54 +0100
-Message-ID: <20161221143657.322-10-hdegoede@redhat.com>
+Subject: [PATCH v2 07/12] power: supply: axp288_charger: Handle charger type changing without disconnect
+Date: Wed, 21 Dec 2016 15:36:52 +0100
+Message-ID: <20161221143657.322-8-hdegoede@redhat.com>
 References: <20161221143657.322-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:41988 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S935318AbcLUOhO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Dec 2016 09:37:14 -0500
 In-Reply-To: <20161221143657.322-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, MyungJoo Ham <myungjoo.ham@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
 Cc: linux-pm@vger.kernel.org, "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
-List-Id: linux-pm@vger.kernel.org
 
-Do not wait for an extcon notification before processing the cable
-states, instead queue the otg / cable work on probe to make sure we
-immediately process the initial hardware state.
+Deal with the charger type changing without a vbus-disconnect being
+reported in between the 2 charger type states:
 
-Note this also requiree moving the getting of the USB_HOST cable state
-from the extcon notifier to the workqueue function.
+-Do not return from axp288_charger_extcon_evt_worker early in this case
+ (track old_chg_type)
+-Make calling axp288_charger_enable_charger with the same value as before
+ a nop, to avoid the need for the caller to check this
+-Do no do a dev_err when axp288_charger_enable_charger returns an error,
+ axp288_charger_enable_charger already returns an error itself
+-Disable the charger before changing the charge-current setting (nop if
+ vbus was seen as disconnected before the change)
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 32 +++++++++++++++++---------------
- 1 file changed, 17 insertions(+), 15 deletions(-)
+ drivers/power/supply/axp288_charger.c | 31 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 4dd1a5f..42a6b92 100644
+index 4443f11..03395d2 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -172,7 +172,7 @@ struct axp288_chrg_info {
- 	int cv;
- 	int max_cc;
+@@ -175,7 +175,6 @@ struct axp288_chrg_info {
  	int max_cv;
--	bool is_charger_enabled;
-+	int is_charger_enabled;
+ 	bool online;
+ 	bool present;
+-	bool enable_charger;
+ 	bool is_charger_enabled;
  };
  
- static inline int axp288_charger_set_cc(struct axp288_chrg_info *info, int cc)
-@@ -301,7 +301,7 @@ static int axp288_charger_enable_charger(struct axp288_chrg_info *info,
+@@ -305,6 +304,9 @@ static int axp288_charger_enable_charger(struct axp288_chrg_info *info,
  {
  	int ret;
  
--	if (enable == info->is_charger_enabled)
-+	if ((int)enable == info->is_charger_enabled)
- 		return 0;
- 
++	if (enable == info->is_charger_enabled)
++		return 0;
++
  	if (enable)
-@@ -654,7 +654,17 @@ static void axp288_charger_otg_evt_worker(struct work_struct *work)
- {
- 	struct axp288_chrg_info *info =
- 	    container_of(work, struct axp288_chrg_info, otg.work);
--	int ret;
-+	struct extcon_dev *edev = info->otg.cable;
-+	int ret, usb_host = extcon_get_state(edev, EXTCON_USB_HOST);
-+
-+	dev_dbg(&info->pdev->dev, "external connector USB-Host is %s\n",
-+				usb_host ? "attached" : "detached");
-+
-+	/*
-+	 * Set usb_id_short flag to avoid running charger detection logic
-+	 * in case usb host.
-+	 */
-+	info->otg.id_short = usb_host;
+ 		ret = regmap_update_bits(info->regmap, AXP20X_CHRG_CTRL1,
+ 				CHRG_CCCV_CHG_EN, CHRG_CCCV_CHG_EN);
+@@ -579,6 +581,7 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
+ 	bool changed = false;
+ 	struct extcon_dev *edev = info->cable.edev;
+ 	bool old_connected = info->cable.connected;
++	enum power_supply_type old_chg_type = info->cable.chg_type;
  
- 	/* Disable VBUS path before enabling the 5V boost */
- 	ret = axp288_charger_vbus_path_select(info, !info->otg.id_short);
-@@ -667,17 +677,7 @@ static int axp288_charger_handle_otg_evt(struct notifier_block *nb,
- {
- 	struct axp288_chrg_info *info =
- 	    container_of(nb, struct axp288_chrg_info, otg.id_nb);
--	struct extcon_dev *edev = info->otg.cable;
--	int usb_host = extcon_get_state(edev, EXTCON_USB_HOST);
--
--	dev_dbg(&info->pdev->dev, "external connector USB-Host is %s\n",
--				usb_host ? "attached" : "detached");
- 
--	/*
--	 * Set usb_id_short flag to avoid running charger detection logic
--	 * in case usb host.
--	 */
--	info->otg.id_short = usb_host;
- 	schedule_work(&info->otg.work);
- 
- 	return NOTIFY_OK;
-@@ -808,6 +808,8 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 	info->pdev = pdev;
- 	info->regmap = axp20x->regmap;
- 	info->regmap_irqc = axp20x->regmap_irqc;
-+	info->cable.chg_type = -1;
-+	info->is_charger_enabled = -1;
- 
- 	info->cable.edev = extcon_get_extcon_dev(AXP288_EXTCON_DEV_NAME);
- 	if (info->cable.edev == NULL) {
-@@ -851,6 +853,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 			return ret;
- 		}
+ 	/* Determine cable/charger type */
+ 	if (extcon_get_state(edev, EXTCON_CHG_USB_SDP) > 0) {
+@@ -601,7 +604,8 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
  	}
-+	schedule_work(&info->cable.work);
  
- 	/* Register for OTG notification */
- 	INIT_WORK(&info->otg.work, axp288_charger_otg_evt_worker);
-@@ -861,8 +864,7 @@ static int axp288_charger_probe(struct platform_device *pdev)
- 		dev_err(dev, "failed to register EXTCON_USB_HOST notifier\n");
- 		return ret;
+ 	/* Cable status changed */
+-	if (old_connected != info->cable.connected)
++	if (old_connected != info->cable.connected ||
++	    old_chg_type != info->cable.chg_type)
+ 		changed = true;
+ 
+ 	if (!changed)
+@@ -609,14 +613,9 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
+ 
+ 	mutex_lock(&info->lock);
+ 
+-	if (info->is_charger_enabled && !info->cable.connected) {
+-		info->enable_charger = false;
+-		ret = axp288_charger_enable_charger(info, info->enable_charger);
+-		if (ret < 0)
+-			dev_err(&info->pdev->dev,
+-				"cannot disable charger (%d)", ret);
++	if (info->cable.connected) {
++		axp288_charger_enable_charger(info, false);
+ 
+-	} else if (!info->is_charger_enabled && info->cable.connected) {
+ 		switch (info->cable.chg_type) {
+ 		case POWER_SUPPLY_TYPE_USB:
+ 			current_limit = ILIM_500MA;
+@@ -635,17 +634,13 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
+ 
+ 		/* Set vbus current limit first, then enable charger */
+ 		ret = axp288_charger_set_vbus_inlmt(info, current_limit);
+-		if (ret < 0) {
++		if (ret == 0)
++			axp288_charger_enable_charger(info, true);
++		else
+ 			dev_err(&info->pdev->dev,
+ 				"error setting current limit (%d)", ret);
+-		} else {
+-			info->enable_charger = (current_limit > 0);
+-			ret = axp288_charger_enable_charger(info,
+-							info->enable_charger);
+-			if (ret < 0)
+-				dev_err(&info->pdev->dev,
+-					"cannot enable charger (%d)", ret);
+-		}
++	} else {
++		axp288_charger_enable_charger(info, false);
  	}
--	info->otg.id_short = extcon_get_cable_state_(info->otg.cable,
--						     EXTCON_USB_HOST);
-+	schedule_work(&info->otg.work);
  
- 	/* Register charger interrupts */
- 	for (i = 0; i < CHRG_INTR_END; i++) {
+ 	if (changed)
 -- 
 2.9.3
+
