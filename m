@@ -1,191 +1,117 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v18 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Thu, 22 Dec 2016 15:06:02 +0800
-Message-ID: <CAMz4ku+JOq3mAkJcbda1Pw0m=btuXZtMVaZA_qZxS7M6eL5U=Q@mail.gmail.com>
-References: <cover.1476780088.git.baolin.wang@linaro.org> <CAMz4ku+5=LebdDB9waDD8GYQmYM=uxuOqN6hYZ+E1HSALa1GMQ@mail.gmail.com>
- <87k2cttptn.fsf@notabene.neil.brown.name> <CAMz4kuJPenbqf935EGW67UeqOiP48_Ti1Jf5YfJ_K=DEcrz++Q@mail.gmail.com>
- <87a8dls7yn.fsf@notabene.neil.brown.name> <CAMz4kuJdp+ijur_mDjcG3aghn8Q1gnJsTfFWBEiKWcdVQPMj7g@mail.gmail.com>
- <871sytqrqh.fsf@notabene.neil.brown.name> <CAMz4kuJcXVammmYRkx+xHRoU9Bb10ck+S3L5VBknuKRXy=hGPA@mail.gmail.com>
- <87pokms19o.fsf@notabene.neil.brown.name> <CAMz4ku+Tqq4JrbbBBfUJSRs5Aw8s119HAQVaOcqZ-oCPXVV-7g@mail.gmail.com>
- <878trarlgs.fsf@notabene.neil.brown.name> <CAMz4ku+NC2bu=QP2uNn2qJLOBBw-Z6Vtc-yEBpdu3=DZLsZq-w@mail.gmail.com>
- <87bmw4rgij.fsf@notabene.neil.brown.name>
+From: Jisheng Zhang <jszhang@marvell.com>
+Subject: Re: How to remove warn msg "cache: parent cpui should not be
+ sleeping" i=1, 2, 3...
+Date: Thu, 22 Dec 2016 15:48:44 +0800
+Message-ID: <20161222154844.36448939@xhacker>
+References: <20161221193703.6eac880c@xhacker>
+        <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f41.google.com ([209.85.218.41]:34269 "EHLO
-        mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S935943AbcLVHGD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Dec 2016 02:06:03 -0500
-Received: by mail-oi0-f41.google.com with SMTP id 3so50987824oih.1
-        for <linux-pm@vger.kernel.org>; Wed, 21 Dec 2016 23:06:03 -0800 (PST)
-In-Reply-To: <87bmw4rgij.fsf@notabene.neil.brown.name>
+Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:42674 "EHLO
+        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1763381AbcLVHxp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Dec 2016 02:53:45 -0500
+In-Reply-To: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: NeilBrown <neilb@suse.com>
-Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, robh@kernel.org, Jun Li <jun.li@nxp.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, grygorii.strashko@ti.com, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 22 December 2016 at 07:47, NeilBrown <neilb@suse.com> wrote:
-> On Wed, Dec 21 2016, Baolin Wang wrote:
->
->> On 21 December 2016 at 11:48, NeilBrown <neilb@suse.com> wrote:
->>> On Wed, Dec 21 2016, Baolin Wang wrote:
->>>
->>>> Hi,
->>>>
->>>> On 21 December 2016 at 06:07, NeilBrown <neilb@suse.com> wrote:
->>>>> On Tue, Dec 20 2016, Baolin Wang wrote:
->>>>>
->>>>>> Hi Neil,
->>>>>>
->>>>>> On 3 November 2016 at 09:25, NeilBrown <neilb@suse.com> wrote:
->>>>>>> On Tue, Nov 01 2016, Baolin Wang wrote:
->>>>>>>
->>>>>>>
->>>>>>>>> So I won't be responding on this topic any further until I see a genuine
->>>>>>>>> attempt to understand and resolve the inconsistencies with
->>>>>>>>> usb_register_notifier().
->>>>>>>>
->>>>>>>> Any better solution?
->>>>>>>
->>>>>>> I'm not sure exactly what you are asking, so I'll assume you are asking
->>>>>>> the question I want to answer :-)
->>>>>>>
->>>>>>> 1/ Liase with the extcon developers to resolve the inconsistencies
->>>>>>>   with USB connector types.
->>>>>>>   e.g. current there is both "EXTCON_USB" and "EXTCON_CHG_USB_SDP"
->>>>>>>   which both seem to suggest a standard downstream port.  There is no
->>>>>>>   documentation describing how these relate, and no consistent practice
->>>>>>>   to copy.
->>>>>>>   I suspect the intention is that
->>>>>>>     EXTCON_USB and EXTCON_USB_HOST indicated that data capabilities of
->>>>>>>     the cable, while EXTCON_CHG_USB* indicate the power capabilities of
->>>>>>>     the cable.
->>>>>>>     So EXTCON_CHG_USB_SDP should always appear together with EXTCON_USB
->>>>>>>     while EXTCON_CHG_USB_DCP would not, and EXTCON_CHG_USB_ACA
->>>>>>>     would normally appear with EXTCON_USB_HOST (I think).
->>>>>>>   Some drivers follow this model, particularly extcon-max14577.c
->>>>>>>   but it is not consistent.
->>>>>>>
->>>>>>>   This policy should be well documented and possibly existing drivers
->>>>>>>   should be updated to follow it.
->>>>>>>
->>>>>>>   At the same time it would make sense to resolve EXTCON_CHG_USB_SLOW
->>>>>>>   and EXTCON_CHG_USB_FAST.  These names don't mean much.
->>>>>>>   They were recently removed from drivers/power/axp288_charger.c
->>>>>>>   which is good, but are still used in drivers/extcon/extcon-max*
->>>>>>>   Possibly they should be changed to names from the standard, or
->>>>>>>   possibly they should be renamed to identify the current they are
->>>>>>>   expected to provide. e.g. EXTCON_CHG_USB_500MA and EXTCON_CHG_USB_1A
->>>>>>
->>>>>> Now I am creating the new patchset with fixing and converting exist drivers.
->>>>>
->>>>> Thanks!
->>>>>
->>>>>>
->>>>>> I did some investigation about EXTCON subsystem. From your suggestion:
->>>>>> 1. EXTCON_CHG_USB_SDP should always appear together with EXTCON_USB.
->>>>>> ---- After checking, now all extcon drivers were following this rule.
->>>>>
->>>>> what about extcon-axp288.c ?
->>>>> axp288_handle_chrg_det_event() sets or clears EXTCON_CHG_USB_SDP but
->>>>> never sets EXTCON_USB.
->>>>> Similarly phy-rockchip-inno-usb2.c never sets EXTCON_USB.
->>>>
->>>> Ha, sorry, I missed these 2 files, and I will fix them.
->>>>
->>>>>
->>>>>>
->>>>>> 2. EXTCON_CHG_USB_ACA would normally appear with EXTCON_USB_HOST.
->>>>>> ---- Now no extcon drivers used EXTCON_CHG_USB_ACA, then no need to
->>>>>> change.
->>>>>
->>>>> Agreed.
->>>>>
->>>>>>
->>>>>> 3. Change EXTCON_CHG_USB_SLOW/FAST to EXTCON_CHG_USB_500MA/1A.
->>>>>> ---- There are no model that shows the slow charger should be 500mA
->>>>>> and fast charger is 1A. (In extcon-max77693.c file, the fast charger
->>>>>> can be drawn 2A), so changing to EXTCON_CHG_USB_500MA/1A is not useful
->>>>>> I think.
->>>>>
->>>>> Leaving the names a SLOW/FAST is less useful as those names don't *mean*
->>>>> anything.
->>>>> The only place where the cable types are registered are in
->>>>>  extcon-max{14577,77693,77843,8997}.c
->>>>>
->>>>> In each case, the code strongly suggests that the meaning is that "slow"
->>>>> means "500mA" and that "fast" means "1A" (or sometimes 1A-2A).
->>>>>
->>>>> With names like "fast" and "slow", any common changer framework cannot
->>>>> make use of these cable types as the name doesn't mean anything.
->>>>> If the names were changed to 500MA/1A, then common code could reasonably
->>>>> assume how much current can safely be drawn from each.
->>>>
->>>> As I know, some fast charger can be drawn 5A, then do we need another
->>>> macro named 5A? then will introduce more macros in future, I am not
->>>> true this is helpful.
->>>
->>> It isn't really a question of what the charger can provide.  It is a
->>> question of what the cable reports to the phy.
->>
->> Yes, there is no spec to describe fast/slow charger type and how much
->> current fast/slow charger can provide. Maybe some fast charger can
->> provide 1A/2A, others can provide 5A, which depends on users'
->> platform. If we change to EXTCON_CHG_USB_500MA/1A and some fast
->> charger can provide 1.5A on user's platform, will it report the fast
->> charger type by EXTCON_CHG_USB_1A on user's platform (but it can
->> provide 1.5A)? So what I mean, can we keep EXTCON_CHG_USB_SLOW/FAST as
->> they were, and maybe fix them in future? (BTW, I've fixed issue 1 and
->> maintainer has applied them).
->
-> I said "It isn't really a question of what the charger can provide."
-> and you are still taking about "and some fast charger can provide 1.5A".
-> So it seems like you didn't read, or you didn't understand what I wrote.
-> I'll try again.
->
-> Ignore the chargers.  COMPLETELY.  This not about chargers AT ALL.
-> This is about cables and the information that the cable reports.
->
-> Some how, and I cannot find the details, these MAXIM devices can report
-> things like
->         case MAX14577_CHARGER_TYPE_SPECIAL_500MA:
-> and
->         case MAX14577_CHARGER_TYPE_SPECIAL_1A:
-> and
->         case MAX77693_CHARGER_TYPE_APPLE_500MA:
-> and
->         case MAX77693_CHARGER_TYPE_APPLE_1A_2A:
->
-> If this information is to be useful to the USB battery charging
-> infrastructure, then it must be communicated unambiguously.  Reporting
-> "EXTCON_CHG_USB_SLOW" or "..._FAST" doesn't have an obvious unambiguous
-> meaning.
->
-> If it were documented somewhere that
->   A cable of type EXTCON_CHG_USB_SLOW can provide at least 500mA of current
->   at 5V.  A cable of type EXTCON_CHG_USB_FAST can provide at least 1A of
->   current at 5V.
-> when those cable types could be used by the USB battery chargers.
-> If we just changed the names, then we wouldn't really need to document
-> it and the intention would be obvious.  Self-documenting names are
-> better where possible.
+On Wed, 21 Dec 2016 16:54:22 +0000 Sudeep Holla wrote:
 
-Fine, I will submit one patch to document EXTCON_CHG_USB_SLOW/FAST as
-you suggested.
+> On 21/12/16 11:37, Jisheng Zhang wrote:
+> > Hi all,
+> > 
+> > I'm not sure this is a bug, when wake up from s2ram, I could get something
+> > like:
+> > 
+> > [  313.271464] Enabling non-boot CPUs ...
+> > [  313.271551] CPU1: Booted secondary processor
+> > [  313.271556] Detected VIPT I-cache on CPU1
+> > [  313.301378]  cache: parent cpu1 should not be sleeping
+> > [  313.301504] CPU1 is up
+> > [  313.301582] CPU2: Booted secondary processor
+> > [  313.301585] Detected VIPT I-cache on CPU2
+> > [  313.331485]  cache: parent cpu2 should not be sleeping
+> > [  313.331605] CPU2 is up
+> > [  313.331683] CPU3: Booted secondary processor
+> > [  313.331686] Detected VIPT I-cache on CPU3
+> > [  313.361599]  cache: parent cpu3 should not be sleeping
+> > [  313.361719] CPU3 is up
+> > 
+> > This is because we call cpu_device_create() when secondary cpu is brought
+> > online, the cpu_cache device's parent device: cpu device isn't already
+> > resumed, all device resume will resume after secondary cores are brought
+> > up.
+> > 
+> > What's the elegant solution to remove this warning msg?
+> >   
+> 
+> It is not a serious warning as you can see a comment in the code:
+> "/*
+>  * This is a fib.  But we'll allow new children to be added below
+>  * a resumed device, even if the device hasn't been completed yet.
+>  */"
+> 
 
->
-> So yes, we could leave it as it is a decide not to fix this bug.  But
-> then I would then argue strongly against any attempt for the USB battery
-> charging infrastructure to do anything with EXTCON_CHG_USB_SLOW and
-> EXTCON_CHG_USB_FAST.  If you are going to fix this thing, you may as
-> well fix it properly.
->
-> NeilBrown
->
+Great, make sense, I agree with "this is not a serious warn msg".
+
+Thanks for the help,
+Jisheng
 
 
+> But if we think it needs to be removed, I have something like below in
+> my mind. I am not sure if this is hacky or not(completely untested, not
+> even compiled).
+> 
+> Regards,
+> Sudeep
+> 
+> -->8  
+> 
+> diff --git i/drivers/base/cpu.c w/drivers/base/cpu.c
+> index 4c28e1a09786..2a5c04377adf 100644
+> --- i/drivers/base/cpu.c
+> +++ w/drivers/base/cpu.c
+> @@ -344,6 +344,14 @@ static int cpu_uevent(struct device *dev, struct
+> kobj_uevent_env *env)
+>  }
+>  #endif
+> 
+> +static int cpu_dev_pm_unset_is_prepared(unsigned int cpu)
+> +{
+> +       struct device *cpu_dev = get_cpu_device(cpu);
+> +
+> +       if(cpu_dev)
+> +               cpu_dev->power.is_prepared = false;
+> +       return 0;
+> +}
+>  /*
+>   * register_cpu - Setup a sysfs device for a CPU.
+>   * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
+> @@ -377,7 +385,9 @@ int register_cpu(struct cpu *cpu, int num)
+>         per_cpu(cpu_sys_devices, num) = &cpu->dev;
+>         register_cpu_under_node(num, cpu_to_node(num));
+> 
+> -       return 0;
+> +       return cpuhp_setup_state_nocalls(CPUHP_CPUDEV_PM_PREPARE,
+> +                                "base/cpu/dev_pm:prepare",
+> +                                cpu_dev_pm_unset_is_prepared, NULL);
+>  }
+> 
+>  struct device *get_cpu_device(unsigned cpu)
+> diff --git i/include/linux/cpuhotplug.h w/include/linux/cpuhotplug.h
+> index 2ab7bf53d529..5bfe3c1aa148 100644
+> --- i/include/linux/cpuhotplug.h
+> +++ w/include/linux/cpuhotplug.h
+> @@ -51,6 +51,7 @@ enum cpuhp_state {
+>         CPUHP_SLAB_PREPARE,
+>         CPUHP_MD_RAID5_PREPARE,
+>         CPUHP_RCUTREE_PREP,
+> +       CPUHP_CPUDEV_PM_PREPARE,
+>         CPUHP_CPUIDLE_COUPLED_PREPARE,
+>         CPUHP_POWERPC_PMAC_PREPARE,
+>         CPUHP_POWERPC_MMU_CTX_PREPARE,
 
--- 
-Baolin.wang
-Best Regards
