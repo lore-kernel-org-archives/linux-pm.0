@@ -1,59 +1,36 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: [PATCH 1/2] power: supply: bq24735: allow polling even if there is no ac-detect gpio
-Date: Wed, 21 Dec 2016 22:29:52 +0100
-Message-ID: <1482355793-16190-2-git-send-email-peda@axentia.se>
-References: <1482355793-16190-1-git-send-email-peda@axentia.se>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2 08/10] PM / OPP: Rename dev_pm_opp_get_suspend_opp()
+ and return OPP rate
+Date: Wed, 21 Dec 2016 16:37:14 -0800
+Message-ID: <20161222003714.GZ8288@codeaurora.org>
+References: <cover.1481085478.git.viresh.kumar@linaro.org>
+ <e622d7a515012e965d78aa2b0bdb59560d375df1.1481085478.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-db5eur01on0118.outbound.protection.outlook.com ([104.47.2.118]:51776
-        "EHLO EUR01-DB5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1754345AbcLVAEP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 21 Dec 2016 19:04:15 -0500
-In-Reply-To: <1482355793-16190-1-git-send-email-peda@axentia.se>
+Received: from smtp.codeaurora.org ([198.145.29.96]:47074 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758236AbcLVAhQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Dec 2016 19:37:16 -0500
+Content-Disposition: inline
+In-Reply-To: <e622d7a515012e965d78aa2b0bdb59560d375df1.1481085478.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-It is possible to verify AC adapter presence via a register read, without
-any physical connection to the ACOK pin on the charger. Allow this.
+On 12/07, Viresh Kumar wrote:
+> There is only one user of dev_pm_opp_get_suspend_opp() and that uses it
+> to get the OPP rate for the suspend_opp.
+> 
+> Rename dev_pm_opp_get_suspend_opp() as dev_pm_opp_get_suspend_opp_freq()
+> and return the rate directly from it.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-Signed-off-by: Peter Rosin <peda@axentia.se>
----
- Documentation/devicetree/bindings/power/supply/ti,bq24735.txt | 4 ++--
- drivers/power/supply/bq24735-charger.c                        | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-index efc2c6a78661..de45e1a2a4d9 100644
---- a/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-+++ b/Documentation/devicetree/bindings/power/supply/ti,bq24735.txt
-@@ -27,8 +27,8 @@ Optional properties :
-  - ti,external-control : Indicates that the charger is configured externally
-    and that the host should not attempt to enable/disable charging or set the
-    charge voltage/current.
-- - poll-interval : In case 'interrupts' is not specified, poll AC presence
--   on the ti,ac-detect-gpios GPIO with this interval (milliseconds).
-+ - poll-interval : In case 'interrupts' is not specified, poll AC adapter
-+   presence with this interval (milliseconds).
- 
- Example:
- 
-diff --git a/drivers/power/supply/bq24735-charger.c b/drivers/power/supply/bq24735-charger.c
-index 4f6275e5cf1c..d8be81203837 100644
---- a/drivers/power/supply/bq24735-charger.c
-+++ b/drivers/power/supply/bq24735-charger.c
-@@ -468,7 +468,7 @@ static int bq24735_charger_probe(struct i2c_client *client,
- 				client->irq, ret);
- 			return ret;
- 		}
--	} else if (charger->status_gpio) {
-+	} else {
- 		ret = device_property_read_u32(&client->dev, "poll-interval",
- 					       &charger->poll_interval);
- 		if (ret)
 -- 
-2.1.4
-
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
