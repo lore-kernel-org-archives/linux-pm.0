@@ -1,80 +1,111 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH] power: supply: axp288_fuel_gauge: Remove unnecessary irq?_en register writes
-Date: Thu, 22 Dec 2016 13:00:11 +0100
-Message-ID: <20161222120011.11652-2-hdegoede@redhat.com>
-References: <20161222120011.11652-1-hdegoede@redhat.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 0/3] DMA Engine: switch PL330 driver to non-irq-safe runtime PM
+Date: Thu, 22 Dec 2016 13:11:26 +0100
+Message-ID: <1482408689-21971-1-git-send-email-m.szyprowski@samsung.com>
+References: <CGME20161222121148epcas5p11d4e49a3724e375a989aa173f731346f@epcas5p1.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:45292 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934708AbcLVMAP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Dec 2016 07:00:15 -0500
-In-Reply-To: <20161222120011.11652-1-hdegoede@redhat.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:32881 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S938739AbcLVMLv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Dec 2016 07:11:51 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>
-Cc: "russianneuromancer @ ya . ru" <russianneuromancer@ya.ru>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>
+To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 
-Setting the irq_enable bits is taken care of by the irq chip when we
-request the irqs and the driver should not be meddling with the
-irq?_en registers itself.
+Hello,
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_fuel_gauge.c | 27 ---------------------------
- 1 file changed, 27 deletions(-)
+This patchset changes the way the runtime PM is implemented in PL330 DMA
+engine driver. The main goal of such change is to add support for audio
+power domain to Exynos5 SoCs (5250, 542x, 5433, probably others) and let
+it to be properly turned off, when no audio is being used. Switching to
+non-irq-safe runtime PM is needed to properly let power domain to be
+turned off (irqsafe runtime PM keeps power domain turned on all the time)
+and to integrate with clock controller's runtime PM (this cannot be
+workarounded any other way, PL330 uses clocks from the controller, which
+belongs to the same power domain).
 
-diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index abff422..a8dcabc 100644
---- a/drivers/power/supply/axp288_fuel_gauge.c
-+++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -50,18 +50,6 @@
- #define CHRG_CCCV_CV_4350MV			0x3     /* 4.35V */
- #define CHRG_CCCV_CHG_EN			(1 << 7)
- 
--#define TEMP_IRQ_CFG_QWBTU			(1 << 0)
--#define TEMP_IRQ_CFG_WBTU			(1 << 1)
--#define TEMP_IRQ_CFG_QWBTO			(1 << 2)
--#define TEMP_IRQ_CFG_WBTO			(1 << 3)
--#define TEMP_IRQ_CFG_MASK			0xf
--
--#define FG_IRQ_CFG_LOWBATT_WL2		(1 << 0)
--#define FG_IRQ_CFG_LOWBATT_WL1		(1 << 1)
--#define FG_IRQ_CFG_LOWBATT_MASK		0x3
--#define LOWBAT_IRQ_STAT_LOWBATT_WL2	(1 << 0)
--#define LOWBAT_IRQ_STAT_LOWBATT_WL1	(1 << 1)
--
- #define FG_CNTL_OCV_ADJ_STAT		(1 << 2)
- #define FG_CNTL_OCV_ADJ_EN			(1 << 3)
- #define FG_CNTL_CAP_ADJ_STAT		(1 << 4)
-@@ -710,20 +698,6 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
- 	}
- }
- 
--static void fuel_gauge_init_hw_regs(struct axp288_fg_info *info)
--{
--	unsigned int val;
--
--	/* enable interrupts */
--	val = fuel_gauge_reg_readb(info, AXP20X_IRQ3_EN);
--	val |= TEMP_IRQ_CFG_MASK;
--	fuel_gauge_reg_writeb(info, AXP20X_IRQ3_EN, val);
--
--	val = fuel_gauge_reg_readb(info, AXP20X_IRQ4_EN);
--	val |= FG_IRQ_CFG_LOWBATT_MASK;
--	val = fuel_gauge_reg_writeb(info, AXP20X_IRQ4_EN, val);
--}
--
- static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- {
- 	int ret = 0;
-@@ -782,7 +756,6 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 
- 	fuel_gauge_create_debugfs(info);
- 	fuel_gauge_init_irq(info);
--	fuel_gauge_init_hw_regs(info);
- 	schedule_delayed_work(&info->status_monitor, STATUS_MON_DELAY_JIFFIES);
- 
- 	return 0;
+For more details of the proposed change to PL330 driver see patch #3.
+
+Audio power domain on Exynos5 SoCs contains following hardware modules:
+1. clock controller
+2. pin controller
+3. PL330 DMA controller
+4. I2S audio controller
+
+Patches for adding/fixing runtime PM for each of the above device will be
+handled separately.
+
+Runtime PM patches for clock controllers is possible and has been proposed
+in the following thread (pending review, patch for runtime PM for Exynos
+Audio subsystem will be added in v4 soon):
+https://www.spinics.net/lists/arm-kernel/msg538122.html
+
+Runtime PM support for Exynos pin controller will be posted soon in
+a separate thread.
+
+Exynos I2S driver already supports runtime PM, but some fixes are needed
+for it and they will be also posted soon.
+
+Patches are based on linux-next with my PL330 runtime PM fix patch
+applied (which I assume will be merged as a fix to v4.10):
+https://patchwork.kernel.org/patch/9477695/
+
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+
+
+Patch summary:
+
+Marek Szyprowski (3):
+  dmaengine: pl330: remove pdata based initialization
+  dmaengine: Forward slave device pointer to of_xlate callback
+  dmaengine: pl330: Don't require irq-safe runtime PM
+
+ drivers/dma/amba-pl08x.c        |   2 +-
+ drivers/dma/at_hdmac.c          |   4 +-
+ drivers/dma/at_xdmac.c          |   2 +-
+ drivers/dma/bcm2835-dma.c       |   2 +-
+ drivers/dma/coh901318.c         |   2 +-
+ drivers/dma/cppi41.c            |   2 +-
+ drivers/dma/dma-jz4780.c        |   2 +-
+ drivers/dma/dmaengine.c         |   2 +-
+ drivers/dma/dw/platform.c       |   2 +-
+ drivers/dma/edma.c              |   4 +-
+ drivers/dma/fsl-edma.c          |   2 +-
+ drivers/dma/img-mdc-dma.c       |   2 +-
+ drivers/dma/imx-dma.c           |   2 +-
+ drivers/dma/imx-sdma.c          |   2 +-
+ drivers/dma/k3dma.c             |   2 +-
+ drivers/dma/mmp_pdma.c          |   2 +-
+ drivers/dma/mmp_tdma.c          |   2 +-
+ drivers/dma/moxart-dma.c        |   2 +-
+ drivers/dma/mxs-dma.c           |   2 +-
+ drivers/dma/nbpfaxi.c           |   2 +-
+ drivers/dma/of-dma.c            |  20 +++--
+ drivers/dma/pl330.c             | 166 +++++++++++++++++++---------------------
+ drivers/dma/pxa_dma.c           |   2 +-
+ drivers/dma/qcom/bam_dma.c      |   2 +-
+ drivers/dma/sh/rcar-dmac.c      |   2 +-
+ drivers/dma/sh/shdma-of.c       |   2 +-
+ drivers/dma/sh/usb-dmac.c       |   2 +-
+ drivers/dma/sirf-dma.c          |   2 +-
+ drivers/dma/st_fdma.c           |   2 +-
+ drivers/dma/ste_dma40.c         |   2 +-
+ drivers/dma/stm32-dma.c         |   2 +-
+ drivers/dma/sun4i-dma.c         |   2 +-
+ drivers/dma/sun6i-dma.c         |   2 +-
+ drivers/dma/tegra20-apb-dma.c   |   2 +-
+ drivers/dma/tegra210-adma.c     |   2 +-
+ drivers/dma/xilinx/xilinx_dma.c |   2 +-
+ drivers/dma/xilinx/zynqmp_dma.c |   2 +-
+ drivers/dma/zx296702_dma.c      |   2 +-
+ include/linux/amba/pl330.h      |  35 ---------
+ include/linux/of_dma.h          |  17 ++--
+ 40 files changed, 139 insertions(+), 175 deletions(-)
+ delete mode 100644 include/linux/amba/pl330.h
+
 -- 
-2.9.3
+1.9.1
 
