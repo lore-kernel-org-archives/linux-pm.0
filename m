@@ -1,58 +1,47 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/3] power: supply: bq24735: handle AC adapter absence
-Date: Thu, 22 Dec 2016 16:47:16 +0100
-Message-ID: <20161222154715.sowhh2kil4r7ovdx@earth>
-References: <1482233582-29770-1-git-send-email-peda@axentia.se>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 0/2] power: supply: add sbs-charger driver
+Date: Thu, 22 Dec 2016 19:04:02 +0100
+Message-ID: <20161222180402.yn6jnjpk4tgqba7l@earth>
+References: <1482247874-28713-1-git-send-email-nicolas.saenz@prodys.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="z6v3fqa7sv7tvulp"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:41684 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752929AbcLVPrV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Dec 2016 10:47:21 -0500
+        protocol="application/pgp-signature"; boundary="ro6e4rasvs2ecpuw"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1482233582-29770-1-git-send-email-peda@axentia.se>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1482247874-28713-1-git-send-email-nicolas.saenz-gbiq2sxWoaasTnJN9+BGXg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Nicolas Saenz Julienne <nicolas.saenz-gbiq2sxWoaasTnJN9+BGXg@public.gmane.org>
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
---z6v3fqa7sv7tvulp
+--ro6e4rasvs2ecpuw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Dec 20, 2016 at 12:32:59PM +0100, Peter Rosin wrote:
-> There is provision in the driver for handling the case where the
-> chargers are not responding to i2c requests when the AC adapter
-> is absent. I think this has been used by some Tegra boards that
-> leave the charger handling to some other component and that only
-> wants the kernel to be aware of the charging status for reporting
-> (or whatever).
+On Tue, Dec 20, 2016 at 04:31:12PM +0100, Nicolas Saenz Julienne wrote:
+> This series adds support for all SBS compatible battery chargers, as defi=
+ned
+> here: http://sbs-forum.org/specs/sbc110.pdf.
+>
+> [...]
+>
+> Nicolas Saenz Julienne (2):
+>   power: supply: add sbs-charger driver
+>   dt-bindings: power: add bindings for sbs-charger
 >=20
-> However, in my case, the kernel should handle configuration and
-> enable/disable the charging, but this is not working very well
-> when the charger disappears (and is reset) on AC adapter absence.
->=20
-> This series fixes the issues I have found in this area so that I
-> can boot without AC adapter and have the correct charging config
-> every time I do attach the AC adapter.
->=20
-> Cheers,
-> Peter
->=20
-> Peter Rosin (3):
->   power: supply: bq24735: move down bq24735_{en,dis}able_charging
->   power: supply: bq24735: configure the charger as part of enabling it
->   power: supply: bq24735: always check for AC adapter presence in probe
->=20
->  drivers/power/supply/bq24735-charger.c | 56 ++++++++++++++++------------=
-------
->  1 file changed, 26 insertions(+), 30 deletions(-)
+>  .../bindings/power/supply/sbs_sbs-charger.txt      |  23 ++
+>  drivers/power/supply/Kconfig                       |   6 +
+>  drivers/power/supply/Makefile                      |   1 +
+>  drivers/power/supply/sbs-charger.c                 | 274 +++++++++++++++=
+++++++
+>  4 files changed, 304 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/sbs_sb=
+s-charger.txt
+>  create mode 100644 drivers/power/supply/sbs-charger.c
 
 Thanks for your patchset. We are currently in the merge
 window and your patchset will appear in linux-next once
@@ -65,24 +54,28 @@ https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
 
 -- Sebastian
 
---z6v3fqa7sv7tvulp
+--ro6e4rasvs2ecpuw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhb9YEACgkQ2O7X88g7
-+popMA//SngizE6jNyQA7ifjNsfnXwpZCTCmBwB/YVw4h/bR9bf9CWU/S9mvp9iA
-BZVkNpxzQ/830wMn766nz3luokuayHJW58H16/XAOjeiMuu08TCafT7YfzE+o1sb
-fhAvV9OgBmz0bM6W604bNMJv+9rAdGF8osw47mpbJq1TcvnqFqg1laDVaszi50Sq
-RQMW43nW8q48xOznyqWSOpfRdQ6PiE0T/700HrafQqb5aPcAXJ8f9PZtMIGu2Sz+
-sOwexHjvWF20psQeh+7RrJm3BQNTx+wGjysz+MENZT9DV3mSaLETmJ39V48jSbXG
-/hKmfq1wnGashfIJcdwp866dxMim0cJUzUgJZ1wWdxx5E8/isW6pWdf6+2+oHmQJ
-KX9gb+Rt36z+iMpZyuGQlstFmlcjTqWGGtRPAwrjetQ9H0bi8qWdo4vfXbI5sFJ1
-H9E6G5Q8iWlB6BigZ4LB5/03ibcW41cZs36dW8fKjb6funJLtGAvPxbxV81uz5Kq
-VgERFymu/06ZlzJ7GrBw0Z3BaJzQp3IlzejzvYaRZOnl6SnM3hbSARJiW+XcZXhH
-twmNTAWicrNUMw/9Vrxx7rbJAGbytVg3fuThX3Q5vALr4WhaZupvJWhHlJS8+JTE
-GcRB5z4oTMP3FJ7C4gMv8zs7NXEuzLo+grOym00dKKQgYK7LLUY=
-=zq0E
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhcFY4ACgkQ2O7X88g7
++poZJg//fEKBJ5Z/Czltb8z/DRc2Y6pfrC9e8JXWpoo8BWeaB+2zrK5R2X6gb6Rq
+Cfg3LZXMubfz8obyNxBy22+4sqYpTeXYgqjJOy2yzfW0LunFvqgRIsjpwtRSXAl6
+hvI5R1kpz1odXXy8e/QOUgu/CoYqFE1F2tDCOLTuu/LbKxJPCMlTPW6wj4Ajnv+a
+iEW8pPodQ7BJvV/ebEAmtFz8O00zggwbWIcE/TKqCTuq/zv913Bd3YBG0xDcsR0M
+PA1NgmbK7MOyEFyqRuxB0yrbyyzp1arAnAqt/wPaPktQP2uprGYj+dYey6RR/FXG
+rbWP5eEg2ifL9cBYXW6huYd0pULjd8ZOLXK5PK6wwfmJriLfMAO8ss3sElSZO1bv
+/TdzR72I6PF+OM72JPTlE1hHIIl16OEVn1SQj9uSfIkPqot7sRC4TVT13b/NCzS+
+t1qOgGEEtC3rcjOGsImigxY6DyFnFiRxVxszpxvLcnP99CY+qnzGgqR2fxLm8bB5
+YSmNCJl+XuArgLxovyIXTCyNflQYtQuoUOvHwwcDErb0zgyZFHi6imlJREdXsFY/
+Pimw/x4JGWKYt7vTbQ29Hcaky5DOtVObO7Q/3AwmtWwjoYd0/otuk6oRIlsOQkJJ
+bWo8HRPZQausRkbQtg76GoMift4PuoFLmX8jRw75UPyRz8mxwMg=
+=gPwY
 -----END PGP SIGNATURE-----
 
---z6v3fqa7sv7tvulp--
+--ro6e4rasvs2ecpuw--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
