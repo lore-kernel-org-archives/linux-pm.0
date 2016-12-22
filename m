@@ -1,117 +1,59 @@
-From: Jisheng Zhang <jszhang@marvell.com>
-Subject: Re: How to remove warn msg "cache: parent cpui should not be
- sleeping" i=1, 2, 3...
-Date: Thu, 22 Dec 2016 15:48:44 +0800
-Message-ID: <20161222154844.36448939@xhacker>
-References: <20161221193703.6eac880c@xhacker>
-        <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH 09/10] power: supplies: bq275xx: adds specific support for bq27520-g4 revision.
+Date: Thu, 22 Dec 2016 09:57:41 +0100
+Message-ID: <201612220957.42162@pali>
+References: <1482369743-79764-1-git-send-email-chris@lapa.com.au> <1482369743-79764-10-git-send-email-chris@lapa.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: multipart/signed;
+  boundary="nextPart2862707.7t0sM6UTiJ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-0016f401.pphosted.com ([67.231.148.174]:42674 "EHLO
-        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1763381AbcLVHxp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Dec 2016 02:53:45 -0500
-In-Reply-To: <a793d088-2faf-3ea8-41b6-f0b614a71e19@arm.com>
+Received: from mail-wj0-f194.google.com ([209.85.210.194]:35180 "EHLO
+        mail-wj0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752694AbcLVI5q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Dec 2016 03:57:46 -0500
+In-Reply-To: <1482369743-79764-10-git-send-email-chris@lapa.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Chris Lapa <chris@lapa.com.au>
+Cc: afd@ti.com, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, 21 Dec 2016 16:54:22 +0000 Sudeep Holla wrote:
+--nextPart2862707.7t0sM6UTiJ
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-> On 21/12/16 11:37, Jisheng Zhang wrote:
-> > Hi all,
-> > 
-> > I'm not sure this is a bug, when wake up from s2ram, I could get something
-> > like:
-> > 
-> > [  313.271464] Enabling non-boot CPUs ...
-> > [  313.271551] CPU1: Booted secondary processor
-> > [  313.271556] Detected VIPT I-cache on CPU1
-> > [  313.301378]  cache: parent cpu1 should not be sleeping
-> > [  313.301504] CPU1 is up
-> > [  313.301582] CPU2: Booted secondary processor
-> > [  313.301585] Detected VIPT I-cache on CPU2
-> > [  313.331485]  cache: parent cpu2 should not be sleeping
-> > [  313.331605] CPU2 is up
-> > [  313.331683] CPU3: Booted secondary processor
-> > [  313.331686] Detected VIPT I-cache on CPU3
-> > [  313.361599]  cache: parent cpu3 should not be sleeping
-> > [  313.361719] CPU3 is up
-> > 
-> > This is because we call cpu_device_create() when secondary cpu is brought
-> > online, the cpu_cache device's parent device: cpu device isn't already
-> > resumed, all device resume will resume after secondary cores are brought
-> > up.
-> > 
-> > What's the elegant solution to remove this warning msg?
-> >   
-> 
-> It is not a serious warning as you can see a comment in the code:
-> "/*
->  * This is a fib.  But we'll allow new children to be added below
->  * a resumed device, even if the device hasn't been completed yet.
->  */"
-> 
+On Thursday 22 December 2016 02:22:22 Chris Lapa wrote:
+> @@ -925,7 +963,7 @@ static bool bq27xxx_battery_overtemp(struct
+> if (di->chip =3D=3D BQ275XX || di->chip =3D=3D BQ27500 || di->chip =3D=3D=
+ BQ27510G1
+>=20
+>  			|| di->chip =3D=3D BQ27510G2 || di->chip =3D=3D BQ27510G3 || di->chip=
+ =3D=3D
+>  			|| BQ27541 di->chip =3D=3D BQ27520G1 || di->chip =3D=3D BQ27520G2 ||
+>  			|| di->chip =3D=3D BQ27520G3
+>=20
+> -			|| di->chip =3D=3D BQ27545)
+> +			|| di->chip =3D=3D BQ27520G4 || di->chip =3D=3D BQ27545)
 
-Great, make sense, I agree with "this is not a serious warn msg".
+Please move this check for BQ275XX into static inline function.
 
-Thanks for the help,
-Jisheng
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
 
+--nextPart2862707.7t0sM6UTiJ
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> But if we think it needs to be removed, I have something like below in
-> my mind. I am not sure if this is hacky or not(completely untested, not
-> even compiled).
-> 
-> Regards,
-> Sudeep
-> 
-> -->8  
-> 
-> diff --git i/drivers/base/cpu.c w/drivers/base/cpu.c
-> index 4c28e1a09786..2a5c04377adf 100644
-> --- i/drivers/base/cpu.c
-> +++ w/drivers/base/cpu.c
-> @@ -344,6 +344,14 @@ static int cpu_uevent(struct device *dev, struct
-> kobj_uevent_env *env)
->  }
->  #endif
-> 
-> +static int cpu_dev_pm_unset_is_prepared(unsigned int cpu)
-> +{
-> +       struct device *cpu_dev = get_cpu_device(cpu);
-> +
-> +       if(cpu_dev)
-> +               cpu_dev->power.is_prepared = false;
-> +       return 0;
-> +}
->  /*
->   * register_cpu - Setup a sysfs device for a CPU.
->   * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
-> @@ -377,7 +385,9 @@ int register_cpu(struct cpu *cpu, int num)
->         per_cpu(cpu_sys_devices, num) = &cpu->dev;
->         register_cpu_under_node(num, cpu_to_node(num));
-> 
-> -       return 0;
-> +       return cpuhp_setup_state_nocalls(CPUHP_CPUDEV_PM_PREPARE,
-> +                                "base/cpu/dev_pm:prepare",
-> +                                cpu_dev_pm_unset_is_prepared, NULL);
->  }
-> 
->  struct device *get_cpu_device(unsigned cpu)
-> diff --git i/include/linux/cpuhotplug.h w/include/linux/cpuhotplug.h
-> index 2ab7bf53d529..5bfe3c1aa148 100644
-> --- i/include/linux/cpuhotplug.h
-> +++ w/include/linux/cpuhotplug.h
-> @@ -51,6 +51,7 @@ enum cpuhp_state {
->         CPUHP_SLAB_PREPARE,
->         CPUHP_MD_RAID5_PREPARE,
->         CPUHP_RCUTREE_PREP,
-> +       CPUHP_CPUDEV_PM_PREPARE,
->         CPUHP_CPUIDLE_COUPLED_PREPARE,
->         CPUHP_POWERPC_PMAC_PREPARE,
->         CPUHP_POWERPC_MMU_CTX_PREPARE,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
 
+iEYEABECAAYFAlhblYYACgkQi/DJPQPkQ1JJiACgzhEzY5mjZxg83cowOgsAf16I
+0MwAmgORaegQz6iLCvzBBgo9ovIrwFNh
+=bGFo
+-----END PGP SIGNATURE-----
+
+--nextPart2862707.7t0sM6UTiJ--
