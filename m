@@ -1,571 +1,179 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 5/9] pinctrl: samsung: Move retention control from mach-exynos
- to the pinctrl driver
-Date: Fri, 23 Dec 2016 13:24:45 +0100
-Message-ID: <1482495889-6201-6-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH 6/9] pinctrl: samsung: Replace syscore ops with standard
+ platform device pm_ops
+Date: Fri, 23 Dec 2016 13:24:46 +0100
+Message-ID: <1482495889-6201-7-git-send-email-m.szyprowski@samsung.com>
 References: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161223122531epcas1p4b8fad6664dad3408acb7a1b9f140884a@epcas1p4.samsung.com>
-Return-path: <linux-gpio-owner@vger.kernel.org>
+ <CGME20161223122535epcas1p475bc33007e9ea9b206dec6d10d019d7f@epcas1p4.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:57400 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S941579AbcLWMZh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Dec 2016 07:25:37 -0500
 In-reply-to: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-gpio-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-Pad retention control after suspend/resume cycle should be done from pin
-controller driver instead of PMU (power management unit) driver to avoid
-possible ordering and logical dependencies. Till now it worked fine only
-because PMU driver registered its sys_ops after pin controller.
-
-This patch moves pad retention control from PMU driver to Exynos pin
-controller driver. This is a preparation for adding new features to Exynos
-pin controller driver, like runtime power management and suspending
-individual pin controllers, which might be a part of some power domain.
+Once the dependency on PMU driver (for pad retention control) has been
+removed, there is no reason to use syscore_ops based suspend/resume.
+This patch replaces it with standard platform device pm_ops based solution.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- .../bindings/pinctrl/samsung-pinctrl.txt           |   4 +
- arch/arm/mach-exynos/suspend.c                     |  64 ---------
- drivers/pinctrl/samsung/pinctrl-exynos.c           | 148 +++++++++++++++++++++
- drivers/pinctrl/samsung/pinctrl-samsung.c          |  16 ++-
- drivers/pinctrl/samsung/pinctrl-samsung.h          |  13 ++
- 5 files changed, 178 insertions(+), 67 deletions(-)
+ drivers/pinctrl/samsung/pinctrl-samsung.c | 72 ++++++-------------------------
+ 1 file changed, 13 insertions(+), 59 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
-index 1baf19eecabf..b7bd2e12a269 100644
---- a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
-+++ b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
-@@ -43,6 +43,10 @@ Required Properties:
- 		};
- 	};
- 
-+- samsung,pmu-syscon: Phandle to the PMU system controller, to let driver
-+  to control pad retention after system suspend/resume cycle (only for Exynos
-+  SoC series).
-+
- - Pin banks as child nodes: Pin banks of the controller are represented by child
-   nodes of the controller node. Bank name is taken from name of the node. Each
-   bank node must contain following properties:
-diff --git a/arch/arm/mach-exynos/suspend.c b/arch/arm/mach-exynos/suspend.c
-index 06332f626565..10bc753624be 100644
---- a/arch/arm/mach-exynos/suspend.c
-+++ b/arch/arm/mach-exynos/suspend.c
-@@ -57,7 +57,6 @@ struct exynos_wkup_irq {
- struct exynos_pm_data {
- 	const struct exynos_wkup_irq *wkup_irq;
- 	unsigned int wake_disable_mask;
--	unsigned int *release_ret_regs;
- 
- 	void (*pm_prepare)(void);
- 	void (*pm_resume_prepare)(void);
-@@ -95,47 +94,6 @@ struct exynos_pm_data {
- 	{ /* sentinel */ },
- };
- 
--static unsigned int exynos_release_ret_regs[] = {
--	S5P_PAD_RET_MAUDIO_OPTION,
--	S5P_PAD_RET_GPIO_OPTION,
--	S5P_PAD_RET_UART_OPTION,
--	S5P_PAD_RET_MMCA_OPTION,
--	S5P_PAD_RET_MMCB_OPTION,
--	S5P_PAD_RET_EBIA_OPTION,
--	S5P_PAD_RET_EBIB_OPTION,
--	REG_TABLE_END,
--};
--
--static unsigned int exynos3250_release_ret_regs[] = {
--	S5P_PAD_RET_MAUDIO_OPTION,
--	S5P_PAD_RET_GPIO_OPTION,
--	S5P_PAD_RET_UART_OPTION,
--	S5P_PAD_RET_MMCA_OPTION,
--	S5P_PAD_RET_MMCB_OPTION,
--	S5P_PAD_RET_EBIA_OPTION,
--	S5P_PAD_RET_EBIB_OPTION,
--	S5P_PAD_RET_MMC2_OPTION,
--	S5P_PAD_RET_SPI_OPTION,
--	REG_TABLE_END,
--};
--
--static unsigned int exynos5420_release_ret_regs[] = {
--	EXYNOS_PAD_RET_DRAM_OPTION,
--	EXYNOS_PAD_RET_MAUDIO_OPTION,
--	EXYNOS_PAD_RET_JTAG_OPTION,
--	EXYNOS5420_PAD_RET_GPIO_OPTION,
--	EXYNOS5420_PAD_RET_UART_OPTION,
--	EXYNOS5420_PAD_RET_MMCA_OPTION,
--	EXYNOS5420_PAD_RET_MMCB_OPTION,
--	EXYNOS5420_PAD_RET_MMCC_OPTION,
--	EXYNOS5420_PAD_RET_HSI_OPTION,
--	EXYNOS_PAD_RET_EBIA_OPTION,
--	EXYNOS_PAD_RET_EBIB_OPTION,
--	EXYNOS5420_PAD_RET_SPI_OPTION,
--	EXYNOS5420_PAD_RET_DRAM_COREBLK_OPTION,
--	REG_TABLE_END,
--};
--
- static int exynos_irq_set_wake(struct irq_data *data, unsigned int state)
- {
- 	const struct exynos_wkup_irq *wkup_irq;
-@@ -442,15 +400,6 @@ static int exynos5420_pm_suspend(void)
- 	return 0;
- }
- 
--static void exynos_pm_release_retention(void)
--{
--	unsigned int i;
--
--	for (i = 0; (pm_data->release_ret_regs[i] != REG_TABLE_END); i++)
--		pmu_raw_writel(EXYNOS_WAKEUP_FROM_LOWPWR,
--				pm_data->release_ret_regs[i]);
--}
--
- static void exynos_pm_resume(void)
- {
- 	u32 cpuid = read_cpuid_part();
-@@ -458,9 +407,6 @@ static void exynos_pm_resume(void)
- 	if (exynos_pm_central_resume())
- 		goto early_wakeup;
- 
--	/* For release retention */
--	exynos_pm_release_retention();
--
- 	if (cpuid == ARM_CPU_PART_CORTEX_A9)
- 		scu_enable(S5P_VA_SCU);
- 
-@@ -482,9 +428,6 @@ static void exynos3250_pm_resume(void)
- 	if (exynos_pm_central_resume())
- 		goto early_wakeup;
- 
--	/* For release retention */
--	exynos_pm_release_retention();
--
- 	pmu_raw_writel(S5P_USE_STANDBY_WFI_ALL, S5P_CENTRAL_SEQ_OPTION);
- 
- 	if (call_firmware_op(resume) == -ENOSYS
-@@ -522,9 +465,6 @@ static void exynos5420_pm_resume(void)
- 	if (exynos_pm_central_resume())
- 		goto early_wakeup;
- 
--	/* For release retention */
--	exynos_pm_release_retention();
--
- 	pmu_raw_writel(exynos_pmu_spare3, S5P_PMU_SPARE3);
- 
- early_wakeup:
-@@ -637,7 +577,6 @@ static void exynos_suspend_finish(void)
- static const struct exynos_pm_data exynos3250_pm_data = {
- 	.wkup_irq	= exynos3250_wkup_irq,
- 	.wake_disable_mask = ((0xFF << 8) | (0x1F << 1)),
--	.release_ret_regs = exynos3250_release_ret_regs,
- 	.pm_suspend	= exynos_pm_suspend,
- 	.pm_resume	= exynos3250_pm_resume,
- 	.pm_prepare	= exynos3250_pm_prepare,
-@@ -647,7 +586,6 @@ static void exynos_suspend_finish(void)
- static const struct exynos_pm_data exynos4_pm_data = {
- 	.wkup_irq	= exynos4_wkup_irq,
- 	.wake_disable_mask = ((0xFF << 8) | (0x1F << 1)),
--	.release_ret_regs = exynos_release_ret_regs,
- 	.pm_suspend	= exynos_pm_suspend,
- 	.pm_resume	= exynos_pm_resume,
- 	.pm_prepare	= exynos_pm_prepare,
-@@ -657,7 +595,6 @@ static void exynos_suspend_finish(void)
- static const struct exynos_pm_data exynos5250_pm_data = {
- 	.wkup_irq	= exynos5250_wkup_irq,
- 	.wake_disable_mask = ((0xFF << 8) | (0x1F << 1)),
--	.release_ret_regs = exynos_release_ret_regs,
- 	.pm_suspend	= exynos_pm_suspend,
- 	.pm_resume	= exynos_pm_resume,
- 	.pm_prepare	= exynos_pm_prepare,
-@@ -667,7 +604,6 @@ static void exynos_suspend_finish(void)
- static const struct exynos_pm_data exynos5420_pm_data = {
- 	.wkup_irq	= exynos5250_wkup_irq,
- 	.wake_disable_mask = (0x7F << 7) | (0x1F << 1),
--	.release_ret_regs = exynos5420_release_ret_regs,
- 	.pm_resume_prepare = exynos5420_prepare_pm_resume,
- 	.pm_resume	= exynos5420_pm_resume,
- 	.pm_suspend	= exynos5420_pm_suspend,
-diff --git a/drivers/pinctrl/samsung/pinctrl-exynos.c b/drivers/pinctrl/samsung/pinctrl-exynos.c
-index 12f7d1eb65bc..55c1104a1ccf 100644
---- a/drivers/pinctrl/samsung/pinctrl-exynos.c
-+++ b/drivers/pinctrl/samsung/pinctrl-exynos.c
-@@ -24,11 +24,15 @@
- #include <linux/irqdomain.h>
- #include <linux/irq.h>
- #include <linux/irqchip/chained_irq.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/of_irq.h>
- #include <linux/io.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
-+#include <linux/regmap.h>
- #include <linux/err.h>
-+#include <linux/soc/samsung/exynos-regs-pmu.h>
-+
- 
- #include "pinctrl-samsung.h"
- #include "pinctrl-exynos.h"
-@@ -633,6 +637,46 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 			exynos_pinctrl_resume_bank(drvdata, bank);
- }
- 
-+static atomic_t exynos_retention_refcnt;
-+static struct regmap *pmu_regs;
-+
-+static int exynos_retention_init(struct samsung_pinctrl_drv_data *drvdata)
-+{
-+	struct device *dev = drvdata->dev;
-+
-+	pmu_regs = syscon_regmap_lookup_by_phandle(dev->of_node,
-+						   "samsung,pmu-syscon");
-+	if (IS_ERR(pmu_regs)) {
-+		dev_err(dev, "failed to lookup PMU regmap, no support for pad retention\n");
-+		return PTR_ERR(pmu_regs);
-+	}
-+	return 0;
-+}
-+
-+static void exynos_retention_on(struct samsung_pinctrl_drv_data *drvdata)
-+{
-+	atomic_inc(&exynos_retention_refcnt);
-+}
-+
-+static void exynos_retention_off(struct samsung_pinctrl_drv_data *drvdata)
-+{
-+	int i;
-+
-+	if (!atomic_dec_and_test(&exynos_retention_refcnt) || IS_ERR(pmu_regs))
-+		return;
-+
-+	for (i = 0; i < drvdata->nr_retention_regs; i++)
-+		regmap_write(pmu_regs, drvdata->retention_regs[i],
-+			     EXYNOS_WAKEUP_FROM_LOWPWR);
-+}
-+
-+static void exynos_retention_audio_off(struct samsung_pinctrl_drv_data *drvdata)
-+{
-+	if (!IS_ERR(pmu_regs))
-+		regmap_write(pmu_regs, S5P_PAD_RET_MAUDIO_OPTION,
-+			     EXYNOS_WAKEUP_FROM_LOWPWR);
-+}
-+
- /* pin banks of s5pv210 pin-controller */
- static const struct samsung_pin_bank_data s5pv210_pin_bank[] __initconst = {
- 	EXYNOS_PIN_BANK_EINTG(8, 0x000, "gpa0", 0x00),
-@@ -714,6 +758,18 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 	EXYNOS_PIN_BANK_EINTW(8, 0xc60, "gpx3", 0x0c),
- };
- 
-+static const u32 exynos3250_retention_regs[] = {
-+	S5P_PAD_RET_MAUDIO_OPTION,
-+	S5P_PAD_RET_GPIO_OPTION,
-+	S5P_PAD_RET_UART_OPTION,
-+	S5P_PAD_RET_MMCA_OPTION,
-+	S5P_PAD_RET_MMCB_OPTION,
-+	S5P_PAD_RET_EBIA_OPTION,
-+	S5P_PAD_RET_EBIB_OPTION,
-+	S5P_PAD_RET_MMC2_OPTION,
-+	S5P_PAD_RET_SPI_OPTION,
-+};
-+
- /*
-  * Samsung pinctrl driver data for Exynos3250 SoC. Exynos3250 SoC includes
-  * two gpio/pin-mux/pinconfig controllers.
-@@ -726,6 +782,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos3250_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos3250_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 1 data */
- 		.pin_banks	= exynos3250_pin_banks1,
-@@ -734,6 +795,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_wkup_init = exynos_eint_wkup_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos3250_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos3250_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	},
- };
- 
-@@ -786,6 +852,15 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 	EXYNOS_PIN_BANK_EINTN(7, 0x000, "gpz"),
- };
- 
-+static const u32 exynos4_retention_regs[] = {
-+	S5P_PAD_RET_GPIO_OPTION,
-+	S5P_PAD_RET_UART_OPTION,
-+	S5P_PAD_RET_MMCA_OPTION,
-+	S5P_PAD_RET_MMCB_OPTION,
-+	S5P_PAD_RET_EBIA_OPTION,
-+	S5P_PAD_RET_EBIB_OPTION,
-+};
-+
- /*
-  * Samsung pinctrl driver data for Exynos4210 SoC. Exynos4210 SoC includes
-  * three gpio/pin-mux/pinconfig controllers.
-@@ -798,6 +873,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos4_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos4_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 1 data */
- 		.pin_banks	= exynos4210_pin_banks1,
-@@ -806,10 +886,17 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_wkup_init = exynos_eint_wkup_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos4_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos4_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 2 data */
- 		.pin_banks	= exynos4210_pin_banks2,
- 		.nr_banks	= ARRAY_SIZE(exynos4210_pin_banks2),
-+		.retention_init = exynos_retention_init,
-+		.retention_off   = exynos_retention_audio_off,
- 	},
- };
- 
-@@ -883,6 +970,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos4_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos4_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 1 data */
- 		.pin_banks	= exynos4x12_pin_banks1,
-@@ -891,6 +983,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_wkup_init = exynos_eint_wkup_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos4_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos4_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 2 data */
- 		.pin_banks	= exynos4x12_pin_banks2,
-@@ -898,6 +995,8 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_init = exynos_retention_init,
-+		.retention_off   = exynos_retention_audio_off,
- 	}, {
- 		/* pin-controller instance 3 data */
- 		.pin_banks	= exynos4x12_pin_banks3,
-@@ -1052,6 +1151,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_wkup_init = exynos_eint_wkup_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos4_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos4_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 1 data */
- 		.pin_banks	= exynos5250_pin_banks1,
-@@ -1059,6 +1163,11 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_regs = exynos4_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos4_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 2 data */
- 		.pin_banks	= exynos5250_pin_banks2,
-@@ -1073,6 +1182,8 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_init = exynos_retention_init,
-+		.retention_off   = exynos_retention_audio_off,
- 	},
- };
- 
-@@ -1299,6 +1410,21 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 	EXYNOS_PIN_BANK_EINTG(7, 0x000, "gpz", 0x00),
- };
- 
-+static const u32 exynos5420_retention_regs[] = {
-+	EXYNOS_PAD_RET_DRAM_OPTION,
-+	EXYNOS_PAD_RET_JTAG_OPTION,
-+	EXYNOS5420_PAD_RET_GPIO_OPTION,
-+	EXYNOS5420_PAD_RET_UART_OPTION,
-+	EXYNOS5420_PAD_RET_MMCA_OPTION,
-+	EXYNOS5420_PAD_RET_MMCB_OPTION,
-+	EXYNOS5420_PAD_RET_MMCC_OPTION,
-+	EXYNOS5420_PAD_RET_HSI_OPTION,
-+	EXYNOS_PAD_RET_EBIA_OPTION,
-+	EXYNOS_PAD_RET_EBIB_OPTION,
-+	EXYNOS5420_PAD_RET_SPI_OPTION,
-+	EXYNOS5420_PAD_RET_DRAM_COREBLK_OPTION,
-+};
-+
- /*
-  * Samsung pinctrl driver data for Exynos5420 SoC. Exynos5420 SoC includes
-  * four gpio/pin-mux/pinconfig controllers.
-@@ -1310,26 +1436,48 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.nr_banks	= ARRAY_SIZE(exynos5420_pin_banks0),
- 		.eint_gpio_init = exynos_eint_gpio_init,
- 		.eint_wkup_init = exynos_eint_wkup_init,
-+		.retention_regs = exynos5420_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos5420_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 1 data */
- 		.pin_banks	= exynos5420_pin_banks1,
- 		.nr_banks	= ARRAY_SIZE(exynos5420_pin_banks1),
- 		.eint_gpio_init = exynos_eint_gpio_init,
-+		.retention_regs = exynos5420_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos5420_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 2 data */
- 		.pin_banks	= exynos5420_pin_banks2,
- 		.nr_banks	= ARRAY_SIZE(exynos5420_pin_banks2),
- 		.eint_gpio_init = exynos_eint_gpio_init,
-+		.retention_regs = exynos5420_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos5420_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 3 data */
- 		.pin_banks	= exynos5420_pin_banks3,
- 		.nr_banks	= ARRAY_SIZE(exynos5420_pin_banks3),
- 		.eint_gpio_init = exynos_eint_gpio_init,
-+		.retention_regs = exynos5420_retention_regs,
-+		.nr_retention_regs = ARRAY_SIZE(exynos5420_retention_regs),
-+		.retention_init = exynos_retention_init,
-+		.retention_on   = exynos_retention_on,
-+		.retention_off   = exynos_retention_off,
- 	}, {
- 		/* pin-controller instance 4 data */
- 		.pin_banks	= exynos5420_pin_banks4,
- 		.nr_banks	= ARRAY_SIZE(exynos5420_pin_banks4),
- 		.eint_gpio_init = exynos_eint_gpio_init,
-+		.retention_init = exynos_retention_init,
-+		.retention_off  = exynos_retention_audio_off,
- 	},
- };
- 
 diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
-index a6c2ea74e0f3..cb425e6837f9 100644
+index cb425e6837f9..a7b7d75373f2 100644
 --- a/drivers/pinctrl/samsung/pinctrl-samsung.c
 +++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
-@@ -1011,6 +1011,11 @@ static int samsung_gpiolib_unregister(struct platform_device *pdev,
- 			return ERR_PTR(-EIO);
- 	}
+@@ -29,7 +29,6 @@
+ #include <linux/irqdomain.h>
+ #include <linux/of_device.h>
+ #include <linux/spinlock.h>
+-#include <linux/syscore_ops.h>
  
-+	d->retention_regs = ctrl->retention_regs;
-+	d->nr_retention_regs = ctrl->nr_retention_regs;
-+	d->retention_on = ctrl->retention_on;
-+	d->retention_off = ctrl->retention_off;
-+
- 	bank = d->pin_banks;
- 	bdata = ctrl->pin_banks;
- 	for (i = 0; i < ctrl->nr_banks; ++i, ++bdata, ++bank) {
-@@ -1087,6 +1092,8 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
- 		ctrl->eint_gpio_init(drvdata);
- 	if (ctrl->eint_wkup_init)
- 		ctrl->eint_wkup_init(drvdata);
-+	if (ctrl->retention_init)
-+		ctrl->retention_init(drvdata);
+ #include "../core.h"
+ #include "pinctrl-samsung.h"
+@@ -49,9 +48,6 @@
+ 	{ "samsung,pin-val", PINCFG_TYPE_DAT },
+ };
+ 
+-/* Global list of devices (struct samsung_pinctrl_drv_data) */
+-static LIST_HEAD(drvdata_list);
+-
+ static unsigned int pin_base;
+ 
+ static int samsung_get_group_count(struct pinctrl_dev *pctldev)
+@@ -1097,22 +1093,18 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
  
  	platform_set_drvdata(pdev, drvdata);
  
-@@ -1139,15 +1146,15 @@ static void samsung_pinctrl_suspend_dev(
+-	/* Add to the global list */
+-	list_add_tail(&drvdata->node, &drvdata_list);
+-
+ 	return 0;
+ }
  
- 	if (drvdata->suspend)
- 		drvdata->suspend(drvdata);
-+	if (drvdata->retention_on)
-+		drvdata->retention_on(drvdata);
-+
+ #ifdef CONFIG_PM
+-
+ /**
+- * samsung_pinctrl_suspend_dev - save pinctrl state for suspend for a device
++ * samsung_pinctrl_suspend - save pinctrl state for suspend
+  *
+  * Save data for all banks handled by this device.
+  */
+-static void samsung_pinctrl_suspend_dev(
+-	struct samsung_pinctrl_drv_data *drvdata)
++static int samsung_pinctrl_suspend(struct device *dev)
+ {
++	struct samsung_pinctrl_drv_data *drvdata = dev_get_drvdata(dev);
+ 	int i;
+ 
+ 	for (i = 0; i < drvdata->nr_banks; i++) {
+@@ -1149,15 +1141,17 @@ static void samsung_pinctrl_suspend_dev(
+ 	if (drvdata->retention_on)
+ 		drvdata->retention_on(drvdata);
+ 
++	return 0;
  }
  
  /**
-  * samsung_pinctrl_resume_dev - restore pinctrl state from suspend for a device
+- * samsung_pinctrl_resume_dev - restore pinctrl state from suspend for a device
++ * samsung_pinctrl_resume - restore pinctrl state from suspend
   *
   * Restore one of the banks that was saved during suspend.
-- *
-- * We don't bother doing anything complicated to avoid glitching lines since
-- * we're called before pad retention is turned off.
   */
- static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
+-static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
++static int samsung_pinctrl_resume(struct device *dev)
  {
-@@ -1186,6 +1193,9 @@ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
- 			if (widths[type])
- 				writel(bank->pm_save[type], reg + offs[type]);
- 	}
-+
-+	if (drvdata->retention_off)
-+		drvdata->retention_off(drvdata);
++	struct samsung_pinctrl_drv_data *drvdata = dev_get_drvdata(dev);
+ 	int i;
+ 
+ 	if (drvdata->resume)
+@@ -1196,48 +1190,10 @@ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
+ 
+ 	if (drvdata->retention_off)
+ 		drvdata->retention_off(drvdata);
+-}
+-
+-/**
+- * samsung_pinctrl_suspend - save pinctrl state for suspend
+- *
+- * Save data for all banks across all devices.
+- */
+-static int samsung_pinctrl_suspend(void)
+-{
+-	struct samsung_pinctrl_drv_data *drvdata;
+-
+-	list_for_each_entry(drvdata, &drvdata_list, node) {
+-		samsung_pinctrl_suspend_dev(drvdata);
+-	}
+-
+ 	return 0;
  }
+-
+-/**
+- * samsung_pinctrl_resume - restore pinctrl state for suspend
+- *
+- * Restore data for all banks across all devices.
+- */
+-static void samsung_pinctrl_resume(void)
+-{
+-	struct samsung_pinctrl_drv_data *drvdata;
+-
+-	list_for_each_entry_reverse(drvdata, &drvdata_list, node) {
+-		samsung_pinctrl_resume_dev(drvdata);
+-	}
+-}
+-
+-#else
+-#define samsung_pinctrl_suspend		NULL
+-#define samsung_pinctrl_resume		NULL
+ #endif
  
- /**
-diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.h b/drivers/pinctrl/samsung/pinctrl-samsung.h
-index 043cb6c11180..32b949e2a89b 100644
---- a/drivers/pinctrl/samsung/pinctrl-samsung.h
-+++ b/drivers/pinctrl/samsung/pinctrl-samsung.h
-@@ -199,10 +199,17 @@ struct samsung_pin_ctrl {
- 	u32		nr_banks;
- 	int		nr_ext_resources;
+-static struct syscore_ops samsung_pinctrl_syscore_ops = {
+-	.suspend	= samsung_pinctrl_suspend,
+-	.resume		= samsung_pinctrl_resume,
+-};
+-
+ static const struct of_device_id samsung_pinctrl_dt_match[] = {
+ #ifdef CONFIG_PINCTRL_EXYNOS
+ 	{ .compatible = "samsung,exynos3250-pinctrl",
+@@ -1281,25 +1237,23 @@ static void samsung_pinctrl_resume(void)
+ };
+ MODULE_DEVICE_TABLE(of, samsung_pinctrl_dt_match);
  
-+	const u32	*retention_regs;
-+	int		nr_retention_regs;
++static const struct dev_pm_ops samsung_pinctrl_pm_ops = {
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(samsung_pinctrl_suspend,
++				     samsung_pinctrl_resume)
++};
 +
- 	int		(*eint_gpio_init)(struct samsung_pinctrl_drv_data *);
- 	int		(*eint_wkup_init)(struct samsung_pinctrl_drv_data *);
- 	void		(*suspend)(struct samsung_pinctrl_drv_data *);
- 	void		(*resume)(struct samsung_pinctrl_drv_data *);
-+
-+	int		(*retention_init)(struct samsung_pinctrl_drv_data *);
-+	void		(*retention_on)(struct samsung_pinctrl_drv_data *);
-+	void		(*retention_off)(struct samsung_pinctrl_drv_data *);
+ static struct platform_driver samsung_pinctrl_driver = {
+ 	.probe		= samsung_pinctrl_probe,
+ 	.driver = {
+ 		.name	= "samsung-pinctrl",
+ 		.of_match_table = samsung_pinctrl_dt_match,
+ 		.suppress_bind_attrs = true,
++		.pm = &samsung_pinctrl_pm_ops,
+ 	},
  };
  
- /**
-@@ -238,6 +245,12 @@ struct samsung_pinctrl_drv_data {
- 	unsigned int			pin_base;
- 	unsigned int			nr_pins;
- 
-+	const u32			*retention_regs;
-+	int				nr_retention_regs;
-+
-+	void (*retention_on)(struct samsung_pinctrl_drv_data *);
-+	void (*retention_off)(struct samsung_pinctrl_drv_data *);
-+
- 	void (*suspend)(struct samsung_pinctrl_drv_data *);
- 	void (*resume)(struct samsung_pinctrl_drv_data *);
- };
+ static int __init samsung_pinctrl_drv_register(void)
+ {
+-	/*
+-	 * Register syscore ops for save/restore of registers across suspend.
+-	 * It's important to ensure that this driver is running at an earlier
+-	 * initcall level than any arch-specific init calls that install syscore
+-	 * ops that turn off pad retention (like exynos_pm_resume).
+-	 */
+-	register_syscore_ops(&samsung_pinctrl_syscore_ops);
+-
+ 	return platform_driver_register(&samsung_pinctrl_driver);
+ }
+ postcore_initcall(samsung_pinctrl_drv_register);
 -- 
 1.9.1
 
