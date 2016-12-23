@@ -1,9 +1,10 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 8/9] pinctrl: samsung: Add runtime PM support
-Date: Fri, 23 Dec 2016 13:24:48 +0100
-Message-ID: <1482495889-6201-9-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH 9/9] ARM: dts: exynos: Add audio power domain support to
+ Exynos542x SoCs
+Date: Fri, 23 Dec 2016 13:24:49 +0100
+Message-ID: <1482495889-6201-10-git-send-email-m.szyprowski@samsung.com>
 References: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161223122542epcas1p444c9d8c91c2983f9934e68a6bb882726@epcas1p4.samsung.com>
+ <CGME20161223122546epcas5p2ebbcb8ca510646698bbd1ddbe0a0e889@epcas5p2.samsung.com>
 Return-path: <linux-gpio-owner@vger.kernel.org>
 In-reply-to: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-gpio-owner@vger.kernel.org
@@ -11,106 +12,64 @@ To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@v
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds runtime power management support to Samsung pin controller
-driver. It uses recently introduced property to mark some pin states as
-suitable for power off. When all pins for given controller are set to this
-special state, the controller is able to enter runtime suspend state. This
-in turn might allow to turn respective power domain off to reduce power
-consumption.
-
-This patch moves saving driver state to runtime pm callbacks and implements
-system sleep suspend/resume callbacks with pm_runtime_force_suspend/resume
-helpers to keep the runtime pm state consistent with the hardware both
-during runtime and system sleep transitions.
+Audio power domain includes following hardware modules: Pin controller
+for GPZ bank, AudioSS clock controller, PL330 ADMA device and Exynos I2S
+controller.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/pinctrl/samsung/pinctrl-samsung.c | 24 ++++++++++++++++++++++--
- drivers/pinctrl/samsung/pinctrl-samsung.h |  1 +
- 2 files changed, 23 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/exynos5420.dtsi | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
-index 301169d2b6e1..c741e93d65b8 100644
---- a/drivers/pinctrl/samsung/pinctrl-samsung.c
-+++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
-@@ -28,6 +28,7 @@
- #include <linux/gpio.h>
- #include <linux/irqdomain.h>
- #include <linux/of_device.h>
-+#include <linux/pm_runtime.h>
- #include <linux/spinlock.h>
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index 0a7ecdd4c5de..1b6bd9aa42d1 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -188,6 +188,7 @@
+ 			clocks = <&clock CLK_FIN_PLL>, <&clock CLK_MAU_EPLL>,
+ 				 <&clock CLK_SCLK_MAUDIO0>, <&clock CLK_SCLK_MAUPCM0>;
+ 			clock-names = "pll_ref", "pll_in", "sclk_audio", "sclk_pcm_in";
++			power-domains = <&mau_pd>;
+ 		};
  
- #include "../core.h"
-@@ -378,6 +379,17 @@ static void samsung_pinmux_setup(struct pinctrl_dev *pctldev, unsigned selector,
- 		shift -= 32;
- 		reg += 4;
- 	}
-+	if (func->rpm_active) {
-+		if (!(bank->rpm_map & (1 << pin_offset))) {
-+			bank->rpm_map |= 1 << pin_offset;
-+			pm_runtime_get_sync(drvdata->dev);
-+		}
-+	} else {
-+		if ((bank->rpm_map & (1 << pin_offset))) {
-+			bank->rpm_map &= ~(1 << pin_offset);
-+			pm_runtime_put(drvdata->dev);
-+		}
-+	}
+ 		mfc: codec@11000000 {
+@@ -317,6 +318,12 @@
+ 			clock-names = "oscclk", "clk0", "clk1", "clk2", "asb0", "asb1";
+ 		};
  
- 	spin_lock_irqsave(&bank->slock, flags);
- 
-@@ -427,6 +439,8 @@ static int samsung_pinconf_rw(struct pinctrl_dev *pctldev, unsigned int pin,
- 	if (cfg_type >= PINCFG_TYPE_NUM || !type->fld_width[cfg_type])
- 		return -EINVAL;
- 
-+	pm_runtime_get_sync(drvdata->dev);
++		mau_pd: power-domain@100440E0 {
++			compatible = "samsung,exynos4210-pd";
++			reg = <0x100440E0 0x20>;
++			#power-domain-cells = <0>;
++		};
 +
- 	width = type->fld_width[cfg_type];
- 	cfg_reg = type->reg_offset[cfg_type];
+ 		pinctrl_0: pinctrl@13400000 {
+ 			compatible = "samsung,exynos5420-pinctrl";
+ 			reg = <0x13400000 0x1000>;
+@@ -356,6 +363,7 @@
+ 			reg = <0x03860000 0x1000>;
+ 			interrupts = <0 47 IRQ_TYPE_LEVEL_HIGH>;
+ 			samsung,pmu-syscon = <&pmu_system_controller>;
++			power-domains = <&mau_pd>;
+ 		};
  
-@@ -449,6 +463,8 @@ static int samsung_pinconf_rw(struct pinctrl_dev *pctldev, unsigned int pin,
+ 		amba {
+@@ -374,6 +382,7 @@
+ 				#dma-cells = <1>;
+ 				#dma-channels = <6>;
+ 				#dma-requests = <16>;
++				power-domains = <&mau_pd>;
+ 			};
  
- 	spin_unlock_irqrestore(&bank->slock, flags);
+ 			pdma0: pdma@121A0000 {
+@@ -447,6 +456,7 @@
+ 			pinctrl-names = "default", "sleep";
+ 			pinctrl-0 = <&i2s0_bus>;
+ 			pinctrl-1 = <&i2s0_bus_slp>;
++			power-domains = <&mau_pd>;
+ 			status = "disabled";
+ 		};
  
-+	pm_runtime_put(drvdata->dev);
-+
- 	return 0;
- }
- 
-@@ -1096,6 +1112,8 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
- 		ctrl->retention_init(drvdata);
- 
- 	platform_set_drvdata(pdev, drvdata);
-+	pm_runtime_set_active(dev);
-+	pm_runtime_enable(dev);
- 
- 	return 0;
- }
-@@ -1242,8 +1260,10 @@ static int samsung_pinctrl_resume(struct device *dev)
- MODULE_DEVICE_TABLE(of, samsung_pinctrl_dt_match);
- 
- static const struct dev_pm_ops samsung_pinctrl_pm_ops = {
--	SET_LATE_SYSTEM_SLEEP_PM_OPS(samsung_pinctrl_suspend,
--				     samsung_pinctrl_resume)
-+	SET_RUNTIME_PM_OPS(samsung_pinctrl_suspend,
-+			   samsung_pinctrl_resume, NULL)
-+	SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-+				     pm_runtime_force_resume)
- };
- 
- static struct platform_driver samsung_pinctrl_driver = {
-diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.h b/drivers/pinctrl/samsung/pinctrl-samsung.h
-index edeafa00abd3..ccb24ec46796 100644
---- a/drivers/pinctrl/samsung/pinctrl-samsung.h
-+++ b/drivers/pinctrl/samsung/pinctrl-samsung.h
-@@ -172,6 +172,7 @@ struct samsung_pin_bank {
- 	const char	*name;
- 
- 	u32		pin_base;
-+	u32		rpm_map;
- 	void		*soc_priv;
- 	struct device_node *of_node;
- 	struct samsung_pinctrl_drv_data *drvdata;
 -- 
 1.9.1
 
