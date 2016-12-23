@@ -1,169 +1,67 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: Add boost files to export ultra-turbo
- frequencies
-Date: Fri, 23 Dec 2016 09:59:10 +0530
-Message-ID: <20161223042910.GC6433@in.ibm.com>
-References: <1481886788-25324-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH 1/2] devicetree: power: add bindings for GPIO-driven power switches
+Date: Fri, 23 Dec 2016 10:07:16 +0100
+Message-ID: <CAMuHMdWfAwPE2N-_0WhW5+EEK3bqWoo9HpQZTgLzRRutCg++qg@mail.gmail.com>
+References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
+ <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
+ <20161213192712.gbaw4t4awayybnta@rob-hp-laptop> <CAMpxmJWw3wCE4ch8TVik+2b3BC8Lvxbi13HGd9GxruSRLu95Mg@mail.gmail.com>
+ <CAL_JsqLwS51MhOJQb-Lmo=osHiYKcAcCJaxKJFdSvZBpafz7Gw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:45560 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1757448AbcLWE3V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Dec 2016 23:29:21 -0500
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id uBN4SgYA090881
-        for <linux-pm@vger.kernel.org>; Thu, 22 Dec 2016 23:29:20 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 27gqsp0gr3-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 22 Dec 2016 23:29:19 -0500
-Received: from localhost
-        by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Thu, 22 Dec 2016 21:29:19 -0700
-Content-Disposition: inline
-In-Reply-To: <1481886788-25324-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqLwS51MhOJQb-Lmo=osHiYKcAcCJaxKJFdSvZBpafz7Gw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Bartosz Golaszewski <bgolaszewski-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Patrick Titiano <ptitiano-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Neil Armstrong <narmstrong-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-gpio <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood@>
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, viresh.kumar@linaro.org, ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, svaidy@linux.vnet.ibm.com
 
-Hi Shilpa,
+On Thu, Dec 15, 2016 at 4:05 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Wed, Dec 14, 2016 at 10:58 AM, Bartosz Golaszewski
+> <bgolaszewski-rdvid1DuHRBWk0Htik3J/w@public.gmane.org> wrote:
+>> 2016-12-13 20:27 GMT+01:00 Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>:
+>>> On Sun, Dec 11, 2016 at 11:21:44PM +0100, Bartosz Golaszewski wrote:
+>>>> Some boards are equipped with simple, GPIO-driven power load switches.
+>>>> An example of such ICs is the TI tps229* series.
+>>>
+>>> How is this different than a GPIO regulator? The input and output
+>>> voltages just happen to be the same. I could be convinced this is
+>>> different enough to have a different compatible, but it somewhat seems
+>>> you want to use this for IIO, so you are creating a different binding
+>>> for that usecase.
+>>
+>> It's more of a fixed regulator I suppose. Do you mean adding a new
+>> compatible to the fixed-regulator binding (e.g. "gpio-power-switch" or
+>> "simple-power-switch") and then providing an iio driver for toggling
+>> the switch?
+>
+> Yes, at least the first part. I view the switch as just a more
+> specific subtype of a fixed-regulator. Whether an IIO driver is a
+> separate discussion which is happening.
 
-On Fri, Dec 16, 2016 at 04:43:08PM +0530, Shilpasri G Bhat wrote:
-> In P8+, Workload Optimized Frequency(WOF) provides the capability to
-> boost the cpu frequency based on the utilization of the other cpus
-> running in the chip. The On-Chip-Controller(OCC) firmware will control
-> the achievability of these frequencies depending on the power headroom
-> available in the chip. Currently the ultra-turbo frequencies provided
-> by this feature are exported along with the turbo and sub-turbo
-> frequencies as scaling_available_frequencies. This patch will export
-> the ultra-turbo frequencies separately as scaling_boost_frequencies in
-> WOF enabled systems. This patch will add the boost sysfs file which
-> can be used to disable/enable ultra-turbo frequencies.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 48 ++++++++++++++++++++++++++++++++++++---
->  1 file changed, 45 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 37671b5..56dfd91 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -144,6 +144,7 @@ enum throttle_reason_type {
->  	unsigned int max;
->  	unsigned int nominal;
->  	unsigned int nr_pstates;
-> +	bool wof_enabled;
->  } powernv_pstate_info;
-> 
->  /* Use following macros for conversions between pstate_id and index */
-> @@ -203,6 +204,7 @@ static int init_powernv_pstates(void)
->  	const __be32 *pstate_ids, *pstate_freqs;
->  	u32 len_ids, len_freqs;
->  	u32 pstate_min, pstate_max, pstate_nominal;
-> +	u32 pstate_turbo, pstate_ultra_turbo;
-> 
->  	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
->  	if (!power_mgt) {
-> @@ -225,6 +227,25 @@ static int init_powernv_pstates(void)
->  		pr_warn("ibm,pstate-nominal not found\n");
->  		return -ENODEV;
->  	}
-> +
-> +	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
-> +				 &pstate_ultra_turbo)) {
-> +		powernv_pstate_info.wof_enabled = false;
-> +		goto next;
-> +	}
-> +
-> +	if (of_property_read_u32(power_mgt, "ibm,pstate-turbo",
-> +				 &pstate_turbo)) {
-> +		powernv_pstate_info.wof_enabled = false;
-> +		goto next;
-> +	}
-> +
-> +	if (pstate_turbo == pstate_ultra_turbo)
-> +		powernv_pstate_info.wof_enabled = false;
-> +	else
-> +		powernv_pstate_info.wof_enabled = true;
-> +
-> +next:
->  	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
->  		pstate_nominal, pstate_max);
+The switch could also be an opto-isolator (for which I could use gpio-leds,
+too, although also without libiio control ;-) or a relay.
 
-Could you also print if ultra_turbo is enabled ?
+While I agree a switch is a degenerate regulator, modelling it as a regulator
+feels a bit weird to me. Switches could be extended to e.g. double throw
+relays, or H-bridges using 4 GPIOs.
 
-> 
-> @@ -268,6 +289,13 @@ static int init_powernv_pstates(void)
->  			powernv_pstate_info.nominal = i;
->  		else if (id == pstate_min)
->  			powernv_pstate_info.min = i;
-> +
-> +		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
+BTW, I'm not an IIO expert, but from my limited knowledge, it looks like "O"
+support in IIO is limited to DACs?
 
-powernv_pstate_info.wof_enabled check is not required since we will
-bail out of the loop below as j < powernv_pstate_info.max in case when
-turbo = ultra-turbo or if ultra-turbo is not defined.
+P.S. My motiviation is using libiio to control my board farm, which has a bank
+     of opto-isolators in addition to BayLibre's ACME.
 
-That said, it makes the code more readable so let us keep it.
+Gr{oetje,eeting}s,
 
-> +			int j;
-> +
-> +			for (j = i - 1; j >= (int)powernv_pstate_info.max; j--)
-> +				powernv_freqs[j].flags = CPUFREQ_BOOST_FREQ;
-> +		}
-> 
->  	/* End of list marker entry */
-> @@ -305,9 +333,12 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
->  struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
->  	__ATTR_RO(cpuinfo_nominal_freq);
-> 
-> +#define SCALING_BOOST_FREQS_ATTR_INDEX		2
-> +
->  static struct freq_attr *powernv_cpu_freq_attr[] = {
->  	&cpufreq_freq_attr_scaling_available_freqs,
->  	&cpufreq_freq_attr_cpuinfo_nominal_freq,
-> +	&cpufreq_freq_attr_scaling_boost_freqs,
->  	NULL,
->  };
-> 
-> @@ -1013,11 +1044,22 @@ static int __init powernv_cpufreq_init(void)
->  	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
->  	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
-> 
-> +	if (powernv_pstate_info.wof_enabled)
-> +		powernv_cpufreq_driver.boost_enabled = true;
-> +	else
-> +		powernv_cpu_freq_attr[SCALING_BOOST_FREQS_ATTR_INDEX] = NULL;
-> +
->  	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
-> -	if (!rc)
-> -		return 0;
-> +	if (rc) {
-> +		pr_info("Failed to register the cpufreq driver (%d)\n", rc);
-> +		goto clean_notifiers;
+                        Geert
 
-cleanup_notifiers ?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
 
-> +	}
-> 
-> -	pr_info("Failed to register the cpufreq driver (%d)\n", rc);
-> +	if (powernv_pstate_info.wof_enabled)
-> +		cpufreq_enable_boost_support();
-> +
-> +	return 0;
-> +clean_notifiers:
->  	unregister_all_notifiers();
->  	clean_chip_info();
->  out:
-> -- 
-> 1.8.3.1
-> 
-
-Looks good otherwise.
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
