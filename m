@@ -1,43 +1,79 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] ACPI: small formatting fixes
-Date: Fri, 23 Dec 2016 13:10:56 +0100
-Message-ID: <CAJZ5v0hPYkF0CkhN7aWmvmhVcnq5SbwjQFgbJwK_9gbW-Ci2hw@mail.gmail.com>
-References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
- <20161212085620.GA738@amd> <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
- <1481567955.1764.28.camel@perches.com> <20161212222216.GA18201@amd>
- <20161212232043.vc5alwqzvspg2ade@lostoracle.net> <1481584942.29291.9.camel@perches.com>
- <20161213190001.GA8676@amd> <20161223031942.jrgjt567m6bdeke3@lostoracle.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20161223031942.jrgjt567m6bdeke3@lostoracle.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Nick Desaulniers <nick.desaulniers@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 0/9] Runtime PM for Exynos pin controller driver
+Date: Fri, 23 Dec 2016 13:24:40 +0100
+Message-ID: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
+References: <CGME20161223122513epcas1p394d93d72d2d32c8910aafd1f6cc6b5e2@epcas1p3.samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 23, 2016 at 4:19 AM, Nick Desaulniers
-<nick.desaulniers@gmail.com> wrote:
-> On Tue, Dec 13, 2016 at 08:00:01PM +0100, Pavel Machek wrote:
->> Actually.. the ACPI cleanup is fine. You did well :-).
->>                                                                       Pavel
->
-> Cool, so (forgive the naive question) what happens next?  Maybe I'm too
-> used to the immediate gratification from Github of having a Pull Request
-> get merged.  Is this something that you have cherry picked into your
-> tree, then will ask Linus to pull from at the end of the merge window?
->
-> Do you have a tree that public that I am able to view? On
-> git.kernel.org, there seems to be one tree with your name on it but it
-> seems to be related to the (Nokia?) n900 and it's latest updated branch
-> is from 9 weeks ago.
->
-> Or is there more approvals I have to get to get the patch merged?
+Hello,
 
-Somebody has to decide that your patch is worth merging and take it.
+This patchset is a next step to add support for audio power domain on
+Exynos5 SoCs.
 
-For ACPI-related patches that usually is me, but I haven't looked at
-it yet.  I'll do that next week and let you know if all goes well.
+Audio power domain on Exynos5 SoCs contains following hardware modules:
+1. clock controller
+2. pin controller
+3. PL330 DMA controller
+4. I2S audio controller
 
-Thanks,
-Rafael
+Till now it was assumed that pin controller is located in the "always on"
+power domain and lacked runtime power management. This patch finally
+removes such assumption and adds runtime pm support and awareness to this
+driver. To achieve this, some changes in the Exynos platform support code
+were needed, like moving pad retention control to the pin controller driver.
+Some cleanup to the pin controller driver has been also done while changing
+the code. This new feature requires some additional information in the
+device tree, what is handled by patches 1,2 and 9.
+
+Please note that patches are ordered in such a way that the changes can be
+bisected, so the properties are added to dts before the code requiring them.
+
+The other patches related to enabling full support for audio power domain
+can be found here:
+1. PL330 ADMA controller non-irqsafe runtime PM:
+   https://www.spinics.net/lists/arm-kernel/msg550008.html
+2. Runtime PM for clock controllers (Exynos Audio subsystem will be added
+   in v4 soon): https://www.spinics.net/lists/arm-kernel/msg538122.html
+
+Patches are based on linux-next from 2016.12.22.
+
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+
+
+Patch summary:
+
+Marek Szyprowski (9):
+  ARM: dts: exynos: Add PMU syscon to pinctrl nodes
+  ARM: dts: exynos: Add pinctrl sleep state for 542x i2s module
+  pinctrl: samsung: Remove dead code
+  pinctrl: samsung: Use generic of_device_get_match_data helper
+  pinctrl: samsung: Move retention control from mach-exynos to the
+    pinctrl driver
+  pinctrl: samsung: Replace syscore ops with standard platform device
+    pm_ops
+  pinctrl: samsung: Add property to mark pad state as suitable for power
+    down
+  pinctrl: samsung: Add runtime PM support
+  ARM: dts: exynos: Add audio power domain support to Exynos542x SoCs
+
+ .../bindings/pinctrl/samsung-pinctrl.txt           |  12 ++
+ arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
+ arch/arm/boot/dts/exynos4210.dtsi                  |   3 +
+ arch/arm/boot/dts/exynos4x12.dtsi                  |   3 +
+ arch/arm/boot/dts/exynos5250.dtsi                  |   4 +
+ arch/arm/boot/dts/exynos5420-pinctrl.dtsi          |  11 ++
+ arch/arm/boot/dts/exynos5420.dtsi                  |  18 ++-
+ arch/arm/mach-exynos/suspend.c                     |  64 ---------
+ drivers/pinctrl/samsung/pinctrl-exynos.c           | 148 +++++++++++++++++++++
+ drivers/pinctrl/samsung/pinctrl-samsung.c          | 126 ++++++++----------
+ drivers/pinctrl/samsung/pinctrl-samsung.h          |  15 +++
+ 11 files changed, 271 insertions(+), 135 deletions(-)
+
+-- 
+1.9.1
