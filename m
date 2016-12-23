@@ -1,32 +1,43 @@
-From: Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>
-Subject: Re: [PATCH 1/2] devicetree: power: add bindings for GPIO-driven power
- switches
-Date: Fri, 23 Dec 2016 12:40:53 +0100
-Message-ID: <505b7c02-e7dd-b0a5-8009-dca9101b0dd4@metafoo.de>
-References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
- <1481494905-18037-2-git-send-email-bgolaszewski@baylibre.com>
- <20161213192712.gbaw4t4awayybnta@rob-hp-laptop>
- <CAMpxmJWw3wCE4ch8TVik+2b3BC8Lvxbi13HGd9GxruSRLu95Mg@mail.gmail.com>
- <CAL_JsqLwS51MhOJQb-Lmo=osHiYKcAcCJaxKJFdSvZBpafz7Gw@mail.gmail.com>
- <CAMuHMdWfAwPE2N-_0WhW5+EEK3bqWoo9HpQZTgLzRRutCg++qg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] ACPI: small formatting fixes
+Date: Fri, 23 Dec 2016 13:10:56 +0100
+Message-ID: <CAJZ5v0hPYkF0CkhN7aWmvmhVcnq5SbwjQFgbJwK_9gbW-Ci2hw@mail.gmail.com>
+References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
+ <20161212085620.GA738@amd> <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+ <1481567955.1764.28.camel@perches.com> <20161212222216.GA18201@amd>
+ <20161212232043.vc5alwqzvspg2ade@lostoracle.net> <1481584942.29291.9.camel@perches.com>
+ <20161213190001.GA8676@amd> <20161223031942.jrgjt567m6bdeke3@lostoracle.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAMuHMdWfAwPE2N-_0WhW5+EEK3bqWoo9HpQZTgLzRRutCg++qg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Bartosz Golaszewski <bgolaszewski-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Patrick Titiano <ptitiano-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Neil Armstrong <narmstrong-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-gpio <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20161223031942.jrgjt567m6bdeke3@lostoracle.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nick Desaulniers <nick.desaulniers@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Joe Perches <joe@perches.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 12/23/2016 10:07 AM, Geert Uytterhoeven wrote:
-> BTW, I'm not an IIO expert, but from my limited knowledge, it looks like "O"
-> support in IIO is limited to DACs?
+On Fri, Dec 23, 2016 at 4:19 AM, Nick Desaulniers
+<nick.desaulniers@gmail.com> wrote:
+> On Tue, Dec 13, 2016 at 08:00:01PM +0100, Pavel Machek wrote:
+>> Actually.. the ACPI cleanup is fine. You did well :-).
+>>                                                                       Pavel
+>
+> Cool, so (forgive the naive question) what happens next?  Maybe I'm too
+> used to the immediate gratification from Github of having a Pull Request
+> get merged.  Is this something that you have cherry picked into your
+> tree, then will ask Linus to pull from at the end of the merge window?
+>
+> Do you have a tree that public that I am able to view? On
+> git.kernel.org, there seems to be one tree with your name on it but it
+> seems to be related to the (Nokia?) n900 and it's latest updated branch
+> is from 9 weeks ago.
+>
+> Or is there more approvals I have to get to get the patch merged?
 
-Depends on what you categorize as DACs. There are also
-potentiometer/rheostat drivers. They are kind of like DACs but the unit you
-control are ohm, rather than current or voltage.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Somebody has to decide that your patch is worth merging and take it.
+
+For ACPI-related patches that usually is me, but I haven't looked at
+it yet.  I'll do that next week and let you know if all goes well.
+
+Thanks,
+Rafael
