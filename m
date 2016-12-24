@@ -1,16 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 12/17] tools/power turbostat: Support Knights Mill (KNM)
-Date: Sat, 24 Dec 2016 15:53:40 -0500
-Message-ID: <005c82d64d1aa49290a39573019f73b5088beeff.1482612381.git.len.brown@intel.com>
+Subject: [PATCH 17/17] tools/power turbostat: remove obsolete -M, -m, -C, -c options
+Date: Sat, 24 Dec 2016 15:53:45 -0500
+Message-ID: <6886fee4d7a3afaf905a8e0bec62dc8fdc39878d.1482612381.git.len.brown@intel.com>
 References: <20161224205345.29129-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:33546 "EHLO
+Received: from mail-qt0-f193.google.com ([209.85.216.193]:34604 "EHLO
         mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753441AbcLXU4M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:12 -0500
-Received: by mail-qt0-f193.google.com with SMTP id 41so9409472qtn.0
-        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:11 -0800 (PST)
+        with ESMTP id S1753669AbcLXU4P (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:15 -0500
+Received: by mail-qt0-f193.google.com with SMTP id p16so14974478qta.1
+        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:15 -0800 (PST)
 In-Reply-To: <20161224205345.29129-1-lenb@kernel.org>
 In-Reply-To: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
 References: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
@@ -21,72 +21,273 @@ Cc: Len Brown <len.brown@intel.com>
 
 From: Len Brown <len.brown@intel.com>
 
-Original-author: Piotr Luc <piotr.luc@intel.com>
+The new --add option has replaced the -M, -m, -C, -c options
+Eg.
+
+-M 0x10 is now --add msr0x10,raw
+-m 0x10 is now --add msr0x10,raw,u32
+-C 0x10 is now --add msr0x10,delta
+-c 0x10 is now --add msr0x10,delta,u32
+
+The --add option can be repeated to add any number of counters,
+while the previous options were limited to adding one of each type.
+
+In addition, the --add option can accept a column label,
+and can also display a counter as a percentage of elapsed cycles.
+
+Eg. --add msr0x3fe,core,percent,MY_CC3
+
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+ tools/power/x86/turbostat/turbostat.8 |   8 ---
+ tools/power/x86/turbostat/turbostat.c | 104 +---------------------------------
+ 2 files changed, 2 insertions(+), 110 deletions(-)
 
+diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
+index 39f7daeb6fbd..03cb639b292e 100644
+--- a/tools/power/x86/turbostat/turbostat.8
++++ b/tools/power/x86/turbostat/turbostat.8
+@@ -47,10 +47,6 @@ name as necessary to disambiguate it from others is necessary.  Note that option
+ 		default: delta
+ .fi
+ .PP
+-\fB--Counter MSR#\fP shows the delta of the specified 64-bit MSR counter.
+-.PP
+-\fB--counter MSR#\fP shows the delta of the specified 32-bit MSR counter.
+-.PP
+ \fB--Dump\fP displays the raw counter values.
+ .PP
+ \fB--debug\fP displays additional system configuration information.  Invoking this parameter
+@@ -65,10 +61,6 @@ The file is truncated if it already exists, and it is created if it does not exi
+ .PP
+ \fB--Joules\fP displays energy in Joules, rather than dividing Joules by time to print power in Watts.
+ .PP
+-\fB--MSR MSR#\fP shows the specified 64-bit MSR value.
+-.PP
+-\fB--msr MSR#\fP shows the specified 32-bit MSR value.
+-.PP
+ \fB--Package\fP limits output to the system summary plus the 1st thread in each Package.
+ .PP
+ \fB--processor\fP limits output to the system summary plus the 1st thread in each processor of each package.  Ie. it skips hyper-threaded siblings.
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 83d1fb9750aa..a54ca3775521 100644
+index 4490a776bbae..f13f61b065c6 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2202,6 +2202,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
- 		pkg_cstate_limits = amt_pkg_cstate_limits;
- 		break;
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* PHI */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		pkg_cstate_limits = phi_pkg_cstate_limits;
- 		break;
- 	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
-@@ -2228,6 +2229,7 @@ int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_NEHALEM_EX:	/* Nehalem-EX Xeon - Beckton */
- 	case INTEL_FAM6_WESTMERE_EX:	/* Westmere-EX Xeon - Eagleton */
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* PHI - Knights Landing (different MSR definition) */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		return 0;
- 	default:
- 		return 1;
-@@ -2275,6 +2277,7 @@ int has_knl_turbo_ratio_limit(unsigned int family, unsigned int model)
+@@ -71,10 +71,6 @@ unsigned int units = 1000000;	/* MHz etc */
+ unsigned int genuine_intel;
+ unsigned int has_invariant_tsc;
+ unsigned int do_nhm_platform_info;
+-unsigned int extra_msr_offset32;
+-unsigned int extra_msr_offset64;
+-unsigned int extra_delta_offset32;
+-unsigned int extra_delta_offset64;
+ unsigned int aperf_mperf_multiplier = 1;
+ int do_irq = 1;
+ int do_smi;
+@@ -164,10 +160,6 @@ struct thread_data {
+ 	unsigned long long aperf;
+ 	unsigned long long mperf;
+ 	unsigned long long c1;
+-	unsigned long long extra_msr64;
+-	unsigned long long extra_delta64;
+-	unsigned long long extra_msr32;
+-	unsigned long long extra_delta32;
+ 	unsigned int irq_count;
+ 	unsigned int smi_count;
+ 	unsigned int cpu_id;
+@@ -372,15 +364,6 @@ void print_header(void)
+ 		outp += sprintf(outp, "\tBzy_MHz");
+ 	outp += sprintf(outp, "\tTSC_MHz");
  
- 	switch (model) {
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* Knights Landing */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		return 1;
- 	default:
- 		return 0;
-@@ -2305,6 +2308,7 @@ int has_config_tdp(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
+-	if (extra_delta_offset32)
+-		outp += sprintf(outp, "\tcount 0x%03X", extra_delta_offset32);
+-	if (extra_delta_offset64)
+-		outp += sprintf(outp, "\tCOUNT 0x%03X", extra_delta_offset64);
+-	if (extra_msr_offset32)
+-		outp += sprintf(outp, "\t         MSR 0x%03X", extra_msr_offset32);
+-	if (extra_msr_offset64)
+-		outp += sprintf(outp, "\tMSR 0x%03X", extra_msr_offset64);
+-
+ 	if (!debug)
+ 		goto done;
  
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* Knights Landing */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		return 1;
- 	default:
- 		return 0;
-@@ -2606,6 +2610,7 @@ rapl_dram_energy_units_probe(int  model, double rapl_energy_units)
- 	case INTEL_FAM6_BROADWELL_X:	/* BDX */
- 	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* KNL */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		return (rapl_dram_energy_units = 15.3 / 1000000);
- 	default:
- 		return (rapl_energy_units);
-@@ -2654,6 +2659,7 @@ void rapl_probe(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
- 	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* KNL */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		do_rapl = RAPL_PKG | RAPL_DRAM | RAPL_DRAM_POWER_INFO | RAPL_DRAM_PERF_STATUS | RAPL_PKG_PERF_STATUS | RAPL_PKG_POWER_INFO;
- 		break;
- 	case INTEL_FAM6_SANDYBRIDGE_X:
-@@ -3017,6 +3023,7 @@ int is_knl(unsigned int family, unsigned int model)
- 		return 0;
- 	switch (model) {
- 	case INTEL_FAM6_XEON_PHI_KNL:	/* KNL */
-+	case INTEL_FAM6_XEON_PHI_KNM:
- 		return 1;
+@@ -510,14 +493,7 @@ int dump_counters(struct thread_data *t, struct core_data *c,
+ 		outp += sprintf(outp, "aperf: %016llX\n", t->aperf);
+ 		outp += sprintf(outp, "mperf: %016llX\n", t->mperf);
+ 		outp += sprintf(outp, "c1: %016llX\n", t->c1);
+-		outp += sprintf(outp, "msr0x%x: %08llX\n",
+-			extra_delta_offset32, t->extra_delta32);
+-		outp += sprintf(outp, "msr0x%x: %016llX\n",
+-			extra_delta_offset64, t->extra_delta64);
+-		outp += sprintf(outp, "msr0x%x: %08llX\n",
+-			extra_msr_offset32, t->extra_msr32);
+-		outp += sprintf(outp, "msr0x%x: %016llX\n",
+-			extra_msr_offset64, t->extra_msr64);
++
+ 		if (do_irq)
+ 			outp += sprintf(outp, "IRQ: %08X\n", t->irq_count);
+ 		if (do_smi)
+@@ -648,21 +624,6 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 	/* TSC_MHz */
+ 	outp += sprintf(outp, "\t%.0f", 1.0 * t->tsc/units/interval_float);
+ 
+-	/* delta */
+-	if (extra_delta_offset32)
+-		outp += sprintf(outp, "\t%11llu", t->extra_delta32);
+-
+-	/* DELTA */
+-	if (extra_delta_offset64)
+-		outp += sprintf(outp, "\t%11llu", t->extra_delta64);
+-	/* msr */
+-	if (extra_msr_offset32)
+-		outp += sprintf(outp, "\t0x%08llx", t->extra_msr32);
+-
+-	/* MSR */
+-	if (extra_msr_offset64)
+-		outp += sprintf(outp, "\t0x%016llx", t->extra_msr64);
+-
+ 	if (!debug)
+ 		goto done;
+ 
+@@ -991,17 +952,6 @@ delta_thread(struct thread_data *new, struct thread_data *old,
+ 		old->mperf = 1;	/* divide by 0 protection */
  	}
- 	return 0;
+ 
+-	old->extra_delta32 = new->extra_delta32 - old->extra_delta32;
+-	old->extra_delta32 &= 0xFFFFFFFF;
+-
+-	old->extra_delta64 = new->extra_delta64 - old->extra_delta64;
+-
+-	/*
+-	 * Extra MSR is just a snapshot, simply copy latest w/o subtracting
+-	 */
+-	old->extra_msr32 = new->extra_msr32;
+-	old->extra_msr64 = new->extra_msr64;
+-
+ 	if (do_irq)
+ 		old->irq_count = new->irq_count - old->irq_count;
+ 
+@@ -1049,9 +999,6 @@ void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data
+ 	t->mperf = 0;
+ 	t->c1 = 0;
+ 
+-	t->extra_delta32 = 0;
+-	t->extra_delta64 = 0;
+-
+ 	t->irq_count = 0;
+ 	t->smi_count = 0;
+ 
+@@ -1110,9 +1057,6 @@ int sum_counters(struct thread_data *t, struct core_data *c,
+ 	average.threads.mperf += t->mperf;
+ 	average.threads.c1 += t->c1;
+ 
+-	average.threads.extra_delta32 += t->extra_delta32;
+-	average.threads.extra_delta64 += t->extra_delta64;
+-
+ 	average.threads.irq_count += t->irq_count;
+ 	average.threads.smi_count += t->smi_count;
+ 
+@@ -1199,11 +1143,6 @@ void compute_average(struct thread_data *t, struct core_data *c,
+ 	average.threads.mperf /= topo.num_cpus;
+ 	average.threads.c1 /= topo.num_cpus;
+ 
+-	average.threads.extra_delta32 /= topo.num_cpus;
+-	average.threads.extra_delta32 &= 0xFFFFFFFF;
+-
+-	average.threads.extra_delta64 /= topo.num_cpus;
+-
+ 	average.cores.c3 /= topo.num_cores;
+ 	average.cores.c6 /= topo.num_cores;
+ 	average.cores.c7 /= topo.num_cores;
+@@ -1337,25 +1276,6 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+ 			return -5;
+ 		t->smi_count = msr & 0xFFFFFFFF;
+ 	}
+-	if (extra_delta_offset32) {
+-		if (get_msr(cpu, extra_delta_offset32, &msr))
+-			return -5;
+-		t->extra_delta32 = msr & 0xFFFFFFFF;
+-	}
+-
+-	if (extra_delta_offset64)
+-		if (get_msr(cpu, extra_delta_offset64, &t->extra_delta64))
+-			return -5;
+-
+-	if (extra_msr_offset32) {
+-		if (get_msr(cpu, extra_msr_offset32, &msr))
+-			return -5;
+-		t->extra_msr32 = msr & 0xFFFFFFFF;
+-	}
+-
+-	if (extra_msr_offset64)
+-		if (get_msr(cpu, extra_msr_offset64, &t->extra_msr64))
+-			return -5;
+ 
+ 	if (use_c1_residency_msr) {
+ 		if (get_msr(cpu, MSR_CORE_C1_RES, &t->c1))
+@@ -3619,11 +3539,7 @@ void help()
+ 	"--debug	run in \"debug\" mode\n"
+ 	"--interval sec	Override default 5-second measurement interval\n"
+ 	"--help		print this help message\n"
+-	"--counter msr	print 32-bit counter at address \"msr\"\n"
+-	"--Counter msr	print 64-bit Counter at address \"msr\"\n"
+ 	"--out file	create or truncate \"file\" for all output\n"
+-	"--msr msr	print 32-bit value at address \"msr\"\n"
+-	"--MSR msr	print 64-bit Value at address \"msr\"\n"
+ 	"--version	print version information\n"
+ 	"\n"
+ 	"For more help, run \"man turbostat\"\n");
+@@ -3960,7 +3876,7 @@ int get_and_dump_counters(void)
+ }
+ 
+ void print_version() {
+-	fprintf(outf, "turbostat version 4.15 21 Dec 2016"
++	fprintf(outf, "turbostat version 4.16 24 Dec 2016"
+ 		" - Len Brown <lenb@kernel.org>\n");
+ }
+ 
+@@ -4119,15 +4035,11 @@ void cmdline(int argc, char **argv)
+ 	int option_index = 0;
+ 	static struct option long_options[] = {
+ 		{"add",		required_argument,	0, 'a'},
+-		{"Counter",	required_argument,	0, 'C'},
+-		{"counter",	required_argument,	0, 'c'},
+ 		{"Dump",	no_argument,		0, 'D'},
+ 		{"debug",	no_argument,		0, 'd'},
+ 		{"interval",	required_argument,	0, 'i'},
+ 		{"help",	no_argument,		0, 'h'},
+ 		{"Joules",	no_argument,		0, 'J'},
+-		{"MSR",		required_argument,	0, 'M'},
+-		{"msr",		required_argument,	0, 'm'},
+ 		{"out",		required_argument,	0, 'o'},
+ 		{"Package",	no_argument,		0, 'p'},
+ 		{"processor",	no_argument,		0, 'p'},
+@@ -4145,12 +4057,6 @@ void cmdline(int argc, char **argv)
+ 		case 'a':
+ 			parse_add_command(optarg);
+ 			break;
+-		case 'C':
+-			sscanf(optarg, "%x", &extra_delta_offset64);
+-			break;
+-		case 'c':
+-			sscanf(optarg, "%x", &extra_delta_offset32);
+-			break;
+ 		case 'D':
+ 			dump_only++;
+ 			break;
+@@ -4178,12 +4084,6 @@ void cmdline(int argc, char **argv)
+ 		case 'J':
+ 			rapl_joules++;
+ 			break;
+-		case 'M':
+-			sscanf(optarg, "%x", &extra_msr_offset64);
+-			break;
+-		case 'm':
+-			sscanf(optarg, "%x", &extra_msr_offset32);
+-			break;
+ 		case 'o':
+ 			outf = fopen_or_die(optarg, "w");
+ 			break;
 -- 
 2.11.0.161.g6610af872
 
