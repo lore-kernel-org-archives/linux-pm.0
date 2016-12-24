@@ -1,16 +1,16 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 16/17] tools/power turbostat: Make extensible via the --add parameter
-Date: Sat, 24 Dec 2016 15:53:44 -0500
-Message-ID: <388e9c8134be6bbc3751ba7072f5fa9bc8ecbe01.1482612381.git.len.brown@intel.com>
+Subject: [PATCH 09/17] tools/power turbostat: use intel-family.h model strings
+Date: Sat, 24 Dec 2016 15:53:37 -0500
+Message-ID: <869ce69e1e8ae7e6fa4a1a90887e5f94eac653eb.1482612381.git.len.brown@intel.com>
 References: <20161224205345.29129-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f195.google.com ([209.85.216.195]:33555 "EHLO
-        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752424AbcLXU4P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:15 -0500
-Received: by mail-qt0-f195.google.com with SMTP id 41so9409573qtn.0
-        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:14 -0800 (PST)
+Received: from mail-qk0-f195.google.com ([209.85.220.195]:35656 "EHLO
+        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753002AbcLXU4K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:10 -0500
+Received: by mail-qk0-f195.google.com with SMTP id u25so21303408qki.2
+        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:10 -0800 (PST)
 In-Reply-To: <20161224205345.29129-1-lenb@kernel.org>
 In-Reply-To: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
 References: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
@@ -21,743 +21,436 @@ Cc: Len Brown <len.brown@intel.com>
 
 From: Len Brown <len.brown@intel.com>
 
-Create the "--add" parameter.  This can be used to teach an existing
-turbostat binary about any number of any type of counter.
-
-turbostat(8) details the syntax for --add.
+All except for model 1F, a Nehalem, which is currently incorrectly
+indentified as a Westmere in that new header.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.8 |  22 ++
- tools/power/x86/turbostat/turbostat.c | 396 +++++++++++++++++++++++++++++++++-
- 2 files changed, 409 insertions(+), 9 deletions(-)
+ tools/power/x86/turbostat/Makefile    |   1 +
+ tools/power/x86/turbostat/turbostat.c | 249 +++++++++++++++++-----------------
+ 2 files changed, 126 insertions(+), 124 deletions(-)
 
-diff --git a/tools/power/x86/turbostat/turbostat.8 b/tools/power/x86/turbostat/turbostat.8
-index 492e84fbebfa..39f7daeb6fbd 100644
---- a/tools/power/x86/turbostat/turbostat.8
-+++ b/tools/power/x86/turbostat/turbostat.8
-@@ -25,6 +25,28 @@ Some information is not available on older processors.
- .SS Options
- Options can be specified with a single or double '-', and only as much of the option
- name as necessary to disambiguate it from others is necessary.  Note that options are case-sensitive.
-+.PP
-+\fB--add attributes\fP add column with counter having specified 'attributes'.  The 'location' attribute is required, all others are optional.
-+.nf
-+	location: {\fBmsrDDD\fP | \fBmsr0xXXX\fP}
-+		msrDDD is a decimal offset, eg. msr16
-+		msr0xXXX is a hex offset, eg. msr0x10
-+
-+	scope: {\fBcpu\fP | \fBcore\fP | \fBpackage\fP}
-+		sample and print the counter for every cpu, core, or package.
-+		default: cpu
-+
-+	size: {\fBu32\fP | \fBu64\fP }
-+		MSRs are read as 64-bits, u32 truncates the displayed value to 32-bits.
-+		default: u64
-+
-+	format: {\fBraw\fP | \fBdelta\fP | \fBpercent\fP}
-+		'raw' shows the MSR contents in hex.
-+		'delta' shows the difference in values during the measurement interval.
-+		'percent' shows the delta as a percentage of the cycles elapsed.
-+		default: delta
-+.fi
-+.PP
- \fB--Counter MSR#\fP shows the delta of the specified 64-bit MSR counter.
- .PP
- \fB--counter MSR#\fP shows the delta of the specified 32-bit MSR counter.
+diff --git a/tools/power/x86/turbostat/Makefile b/tools/power/x86/turbostat/Makefile
+index 8561e7ddca59..8792ad8dbf83 100644
+--- a/tools/power/x86/turbostat/Makefile
++++ b/tools/power/x86/turbostat/Makefile
+@@ -10,6 +10,7 @@ endif
+ turbostat : turbostat.c
+ CFLAGS +=	-Wall
+ CFLAGS +=	-DMSRHEADER='"../../../../arch/x86/include/asm/msr-index.h"'
++CFLAGS +=	-DINTEL_FAMILY_HEADER='"../../../../arch/x86/include/asm/intel-family.h"'
+ 
+ %: %.c
+ 	@mkdir -p $(BUILD_OUTPUT)
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 3708386531f2..4490a776bbae 100644
+index 70a6699c528c..2056c148c684 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -147,6 +147,12 @@ unsigned int has_hwp_pkg;		/* IA32_HWP_REQUEST_PKG */
+@@ -21,6 +21,7 @@
  
- #define MAX(a, b) ((a) > (b) ? (a) : (b))
+ #define _GNU_SOURCE
+ #include MSRHEADER
++#include INTEL_FAMILY_HEADER
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <err.h>
+@@ -2163,48 +2164,48 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ 	bclk = discover_bclk(family, model);
  
-+/*
-+ * buffer size used by sscanf() for added column names
-+ * Usually truncated to 7 characters, but also handles 18 columns for raw 64-bit counters
-+ */
-+#define	NAME_BYTES 20
-+
- int backwards_count;
- char *progname;
+ 	switch (model) {
+-	case 0x1A:	/* Core i7, Xeon 5500 series - Bloomfield, Gainstown NHM-EP */
+-	case 0x1E:	/* Core i7 and i5 Processor - Clarksfield, Lynnfield, Jasper Forest */
++	case INTEL_FAM6_NEHALEM_EP:	/* Core i7, Xeon 5500 series - Bloomfield, Gainstown NHM-EP */
++	case INTEL_FAM6_NEHALEM:	/* Core i7 and i5 Processor - Clarksfield, Lynnfield, Jasper Forest */
+ 	case 0x1F:	/* Core i7 and i5 Processor - Nehalem */
+-	case 0x25:	/* Westmere Client - Clarkdale, Arrandale */
+-	case 0x2C:	/* Westmere EP - Gulftown */
+-	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
+-	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
++	case INTEL_FAM6_WESTMERE:	/* Westmere Client - Clarkdale, Arrandale */
++	case INTEL_FAM6_WESTMERE_EP:	/* Westmere EP - Gulftown */
++	case INTEL_FAM6_NEHALEM_EX:	/* Nehalem-EX Xeon - Beckton */
++	case INTEL_FAM6_WESTMERE_EX:	/* Westmere-EX Xeon - Eagleton */
+ 		pkg_cstate_limits = nhm_pkg_cstate_limits;
+ 		break;
+-	case 0x2A:	/* SNB */
+-	case 0x2D:	/* SNB Xeon */
+-	case 0x3A:	/* IVB */
+-	case 0x3E:	/* IVB Xeon */
++	case INTEL_FAM6_SANDYBRIDGE:	/* SNB */
++	case INTEL_FAM6_SANDYBRIDGE_X:	/* SNB Xeon */
++	case INTEL_FAM6_IVYBRIDGE:	/* IVB */
++	case INTEL_FAM6_IVYBRIDGE_X:	/* IVB Xeon */
+ 		pkg_cstate_limits = snb_pkg_cstate_limits;
+ 		break;
+-	case 0x3C:	/* HSW */
+-	case 0x3F:	/* HSX */
+-	case 0x45:	/* HSW */
+-	case 0x46:	/* HSW */
+-	case 0x3D:	/* BDW */
+-	case 0x47:	/* BDW */
+-	case 0x4F:	/* BDX */
+-	case 0x56:	/* BDX-DE */
+-	case 0x4E:	/* SKL */
+-	case 0x5E:	/* SKL */
+-	case 0x8E:	/* KBL */
+-	case 0x9E:	/* KBL */
+-	case 0x55:	/* SKX */
++	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_X:	/* HSX */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
++	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
++	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
++	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
++	case INTEL_FAM6_BROADWELL_X:	/* BDX */
++	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
++	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
++	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
+ 		pkg_cstate_limits = hsw_pkg_cstate_limits;
+ 		break;
+-	case 0x37:	/* BYT */
+-	case 0x4D:	/* AVN */
++	case INTEL_FAM6_ATOM_SILVERMONT1:	/* BYT */
++	case INTEL_FAM6_ATOM_SILVERMONT2:	/* AVN */
+ 		pkg_cstate_limits = slv_pkg_cstate_limits;
+ 		break;
+-	case 0x4C:	/* AMT */
++	case INTEL_FAM6_ATOM_AIRMONT:	/* AMT */
+ 		pkg_cstate_limits = amt_pkg_cstate_limits;
+ 		break;
+-	case 0x57:	/* PHI */
++	case INTEL_FAM6_XEON_PHI_KNL:	/* PHI */
+ 		pkg_cstate_limits = phi_pkg_cstate_limits;
+ 		break;
+-	case 0x5C:	/* BXT */
+-	case 0x5F:	/* DNV */
++	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
++	case INTEL_FAM6_ATOM_DENVERTON:	/* DNV */
+ 		pkg_cstate_limits = bxt_pkg_cstate_limits;
+ 		break;
+ 	default:
+@@ -2224,9 +2225,9 @@ int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
+ {
+ 	switch (model) {
+ 	/* Nehalem compatible, but do not include turbo-ratio limit support */
+-	case 0x2E:	/* Nehalem-EX Xeon - Beckton */
+-	case 0x2F:	/* Westmere-EX Xeon - Eagleton */
+-	case 0x57:	/* PHI - Knights Landing (different MSR definition) */
++	case INTEL_FAM6_NEHALEM_EX:	/* Nehalem-EX Xeon - Beckton */
++	case INTEL_FAM6_WESTMERE_EX:	/* Westmere-EX Xeon - Eagleton */
++	case INTEL_FAM6_XEON_PHI_KNL:	/* PHI - Knights Landing (different MSR definition) */
+ 		return 0;
+ 	default:
+ 		return 1;
+@@ -2241,8 +2242,8 @@ int has_ivt_turbo_ratio_limit(unsigned int family, unsigned int model)
+ 		return 0;
  
-@@ -168,6 +174,7 @@ struct thread_data {
- 	unsigned int flags;
- #define CPU_IS_FIRST_THREAD_IN_CORE	0x2
- #define CPU_IS_FIRST_CORE_IN_PACKAGE	0x4
-+	unsigned long long counter[1];
- } *thread_even, *thread_odd;
+ 	switch (model) {
+-	case 0x3E:	/* IVB Xeon */
+-	case 0x3F:	/* HSW Xeon */
++	case INTEL_FAM6_IVYBRIDGE_X:	/* IVB Xeon */
++	case INTEL_FAM6_HASWELL_X:	/* HSW Xeon */
+ 		return 1;
+ 	default:
+ 		return 0;
+@@ -2257,7 +2258,7 @@ int has_hsw_turbo_ratio_limit(unsigned int family, unsigned int model)
+ 		return 0;
  
- struct core_data {
-@@ -176,6 +183,7 @@ struct core_data {
- 	unsigned long long c7;
- 	unsigned int core_temp_c;
- 	unsigned int core_id;
-+	unsigned long long counter[1];
- } *core_even, *core_odd;
+ 	switch (model) {
+-	case 0x3F:	/* HSW Xeon */
++	case INTEL_FAM6_HASWELL_X:	/* HSW Xeon */
+ 		return 1;
+ 	default:
+ 		return 0;
+@@ -2273,7 +2274,7 @@ int has_knl_turbo_ratio_limit(unsigned int family, unsigned int model)
+ 		return 0;
  
- struct pkg_data {
-@@ -200,7 +208,7 @@ struct pkg_data {
- 	unsigned int rapl_pkg_perf_status;	/* MSR_PKG_PERF_STATUS */
- 	unsigned int rapl_dram_perf_status;	/* MSR_DRAM_PERF_STATUS */
- 	unsigned int pkg_temp_c;
+ 	switch (model) {
+-	case 0x57:	/* Knights Landing */
++	case INTEL_FAM6_XEON_PHI_KNL:	/* Knights Landing */
+ 		return 1;
+ 	default:
+ 		return 0;
+@@ -2288,22 +2289,22 @@ int has_config_tdp(unsigned int family, unsigned int model)
+ 		return 0;
+ 
+ 	switch (model) {
+-	case 0x3A:	/* IVB */
+-	case 0x3C:	/* HSW */
+-	case 0x3F:	/* HSX */
+-	case 0x45:	/* HSW */
+-	case 0x46:	/* HSW */
+-	case 0x3D:	/* BDW */
+-	case 0x47:	/* BDW */
+-	case 0x4F:	/* BDX */
+-	case 0x56:	/* BDX-DE */
+-	case 0x4E:	/* SKL */
+-	case 0x5E:	/* SKL */
+-	case 0x8E:	/* KBL */
+-	case 0x9E:	/* KBL */
+-	case 0x55:	/* SKX */
 -
-+	unsigned long long counter[1];
- } *package_even, *package_odd;
- 
- #define ODD_COUNTERS thread_odd, core_odd, package_odd
-@@ -214,11 +222,33 @@ struct pkg_data {
- 	(core_base + (pkg_no) * topo.num_cores_per_pkg + (core_no))
- #define GET_PKG(pkg_base, pkg_no) (pkg_base + pkg_no)
- 
-+enum counter_scope {SCOPE_CPU, SCOPE_CORE, SCOPE_PACKAGE};
-+enum counter_type {COUNTER_CYCLES, COUNTER_SECONDS};
-+enum counter_format {FORMAT_RAW, FORMAT_DELTA, FORMAT_PERCENT};
+-	case 0x57:	/* Knights Landing */
++	case INTEL_FAM6_IVYBRIDGE:	/* IVB */
++	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_X:	/* HSX */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
++	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
++	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
++	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
++	case INTEL_FAM6_BROADWELL_X:	/* BDX */
++	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
++	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
++	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
 +
-+struct msr_counter {
-+	unsigned int msr_num;
-+	char name[NAME_BYTES];
-+	unsigned int width;
-+	enum counter_type type;
-+	enum counter_format format;
-+	struct msr_counter *next;
-+};
-+
-+struct sys_counters {
-+	unsigned int thread_counter_bytes;
-+	unsigned int core_counter_bytes;
-+	unsigned int package_counter_bytes;
-+	struct msr_counter *tp;
-+	struct msr_counter *cp;
-+	struct msr_counter *pp;
-+} sys;
-+
- struct system_summary {
- 	struct thread_data threads;
- 	struct core_data cores;
- 	struct pkg_data packages;
--} sum, average;
-+} average;
- 
- 
- struct topo_params {
-@@ -320,12 +350,14 @@ int get_msr(int cpu, off_t offset, unsigned long long *msr)
- /*
-  * Example Format w/ field column widths:
-  *
-- *  Package    Core     CPU Avg_MHz Bzy_MHz TSC_MHz     IRQ   SMI   Busy% CPU_%c1 CPU_%c3 CPU_%c6 CPU_%c7 CoreTmp  PkgTmp  GFXMHz Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWatt CorWatt GFXWatt
-+ *  Package    Core     CPU Avg_MHz Bzy_MHz TSC_MHz     IRQ   SMI   Busy% CPU_%c1 CPU_%c3 CPU_%c6 CPU_%c7 ThreadC CoreTmp  CoreCnt PkgTmp  GFXMHz Pkg%pc2 Pkg%pc3 Pkg%pc6 Pkg%pc7 PkgWatt CorWatt GFXWatt PkgCnt
-  * 12345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678123456781234567812345678
-  */
- 
- void print_header(void)
- {
-+	struct msr_counter *mp;
-+
- 	if (show_pkg)
- 		outp += sprintf(outp, "\tPackage");
- 	if (show_core)
-@@ -366,8 +398,31 @@ void print_header(void)
- 	if (do_snb_cstates)
- 		outp += sprintf(outp, "\tCPU%%c7");
- 
-+	for (mp = sys.tp; mp; mp = mp->next) {
-+		if (mp->format == FORMAT_RAW) {
-+			if (mp->width == 64)
-+				outp += sprintf(outp, "\t%18.18s", mp->name);
-+			else
-+				outp += sprintf(outp, "\t%10.10s", mp->name);
-+		} else {
-+			outp += sprintf(outp, "\t%-7.7s", mp->name);
-+		}
-+	}
-+
- 	if (do_dts)
- 		outp += sprintf(outp, "\tCoreTmp");
-+
-+	for (mp = sys.cp; mp; mp = mp->next) {
-+		if (mp->format == FORMAT_RAW) {
-+			if (mp->width == 64)
-+				outp += sprintf(outp, "\t%18.18s", mp->name);
-+			else
-+				outp += sprintf(outp, "\t%10.10s", mp->name);
-+		} else {
-+			outp += sprintf(outp, "\t%-7.7s", mp->name);
-+		}
-+	}
-+
- 	if (do_ptm)
- 		outp += sprintf(outp, "\tPkgTmp");
- 
-@@ -425,13 +480,27 @@ void print_header(void)
- 		if (do_rapl & RAPL_DRAM_PERF_STATUS)
- 			outp += sprintf(outp, "\tRAM_%%");
- 	}
--    done:
-+	for (mp = sys.pp; mp; mp = mp->next) {
-+		if (mp->format == FORMAT_RAW) {
-+			if (mp->width == 64)
-+				outp += sprintf(outp, "\t%18.18s", mp->name);
-+			else
-+				outp += sprintf(outp, "\t%10.10s", mp->name);
-+		} else {
-+			outp += sprintf(outp, "\t%-7.7s", mp->name);
-+		}
-+	}
-+
-+done:
- 	outp += sprintf(outp, "\n");
- }
- 
- int dump_counters(struct thread_data *t, struct core_data *c,
- 	struct pkg_data *p)
- {
-+	int i;
-+	struct msr_counter *mp;
-+
- 	outp += sprintf(outp, "t %p, c %p, p %p\n", t, c, p);
- 
- 	if (t) {
-@@ -453,6 +522,11 @@ int dump_counters(struct thread_data *t, struct core_data *c,
- 			outp += sprintf(outp, "IRQ: %08X\n", t->irq_count);
- 		if (do_smi)
- 			outp += sprintf(outp, "SMI: %08X\n", t->smi_count);
-+
-+		for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
-+			outp += sprintf(outp, "tADDED [%d] msr0x%x: %08llX\n",
-+				i, mp->msr_num, t->counter[i]);
-+		}
- 	}
- 
- 	if (c) {
-@@ -461,6 +535,11 @@ int dump_counters(struct thread_data *t, struct core_data *c,
- 		outp += sprintf(outp, "c6: %016llX\n", c->c6);
- 		outp += sprintf(outp, "c7: %016llX\n", c->c7);
- 		outp += sprintf(outp, "DTS: %dC\n", c->core_temp_c);
-+
-+		for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
-+			outp += sprintf(outp, "cADDED [%d] msr0x%x: %08llX\n",
-+				i, mp->msr_num, c->counter[i]);
-+		}
- 	}
- 
- 	if (p) {
-@@ -490,6 +569,11 @@ int dump_counters(struct thread_data *t, struct core_data *c,
- 		outp += sprintf(outp, "Throttle RAM: %0X\n",
- 			p->rapl_dram_perf_status);
- 		outp += sprintf(outp, "PTM: %dC\n", p->pkg_temp_c);
-+
-+		for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
-+			outp += sprintf(outp, "pADDED [%d] msr0x%x: %08llX\n",
-+				i, mp->msr_num, p->counter[i]);
-+		}
- 	}
- 
- 	outp += sprintf(outp, "\n");
-@@ -505,6 +589,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
- {
- 	double interval_float;
- 	char *fmt8;
-+	int i;
-+	struct msr_counter *mp;
- 
- 	 /* if showing only 1st thread in core and this isn't one, bail out */
- 	if (show_core_only && !(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
-@@ -602,9 +688,36 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 	if (do_snb_cstates)
- 		outp += sprintf(outp, "\t%.2f", 100.0 * c->c7/t->tsc);
- 
-+	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW) {
-+			if (mp->width == 32)
-+				outp += sprintf(outp, "\t0x%08lx", (unsigned long) t->counter[i]);
-+			else
-+				outp += sprintf(outp, "\t0x%016llx", t->counter[i]);
-+		} else if (mp->format == FORMAT_DELTA) {
-+			outp += sprintf(outp, "\t%8lld", t->counter[i]);
-+		} else if (mp->format == FORMAT_PERCENT) {
-+			outp += sprintf(outp, "\t%.2f", 100.0 * t->counter[i]/t->tsc);
-+		}
-+	}
-+
-+
- 	if (do_dts)
- 		outp += sprintf(outp, "\t%d", c->core_temp_c);
- 
-+	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW) {
-+			if (mp->width == 32)
-+				outp += sprintf(outp, "\t0x%08lx", (unsigned long) c->counter[i]);
-+			else
-+				outp += sprintf(outp, "\t0x%016llx", c->counter[i]);
-+		} else if (mp->format == FORMAT_DELTA) {
-+			outp += sprintf(outp, "\t%8lld", c->counter[i]);
-+		} else if (mp->format == FORMAT_PERCENT) {
-+			outp += sprintf(outp, "\t%.2f", 100.0 * c->counter[i]/t->tsc);
-+		}
-+	}
-+
- 	/* print per-package data only for 1st core in package */
- 	if (!(t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE))
- 		goto done;
-@@ -689,6 +802,19 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 		if (do_rapl & RAPL_DRAM_PERF_STATUS)
- 			outp += sprintf(outp, fmt8, 100.0 * p->rapl_dram_perf_status * rapl_time_units / interval_float);
- 	}
-+	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW) {
-+			if (mp->width == 32)
-+				outp += sprintf(outp, "\t0x%08lx", (unsigned long) p->counter[i]);
-+			else
-+				outp += sprintf(outp, "\t0x%016llx", p->counter[i]);
-+		} else if (mp->format == FORMAT_DELTA) {
-+			outp += sprintf(outp, "\t%8lld", p->counter[i]);
-+		} else if (mp->format == FORMAT_PERCENT) {
-+			outp += sprintf(outp, "\t%.2f", 100.0 * p->counter[i]/t->tsc);
-+		}
-+	}
-+
- done:
- 	outp += sprintf(outp, "\n");
- 
-@@ -744,6 +870,8 @@ void format_all_counters(struct thread_data *t, struct core_data *c, struct pkg_
- int
- delta_package(struct pkg_data *new, struct pkg_data *old)
- {
-+	int i;
-+	struct msr_counter *mp;
- 
- 	if (do_skl_residency) {
- 		old->pkg_wtd_core_c0 = new->pkg_wtd_core_c0 - old->pkg_wtd_core_c0;
-@@ -778,16 +906,33 @@ delta_package(struct pkg_data *new, struct pkg_data *old)
- 	DELTA_WRAP32(new->rapl_pkg_perf_status, old->rapl_pkg_perf_status);
- 	DELTA_WRAP32(new->rapl_dram_perf_status, old->rapl_dram_perf_status);
- 
-+	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			old->counter[i] = new->counter[i];
-+		else
-+			old->counter[i] = new->counter[i] - old->counter[i];
-+	}
-+
- 	return 0;
- }
- 
- void
- delta_core(struct core_data *new, struct core_data *old)
- {
-+	int i;
-+	struct msr_counter *mp;
-+
- 	old->c3 = new->c3 - old->c3;
- 	old->c6 = new->c6 - old->c6;
- 	old->c7 = new->c7 - old->c7;
- 	old->core_temp_c = new->core_temp_c;
-+
-+	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			old->counter[i] = new->counter[i];
-+		else
-+			old->counter[i] = new->counter[i] - old->counter[i];
-+	}
- }
- 
- /*
-@@ -797,6 +942,9 @@ int
- delta_thread(struct thread_data *new, struct thread_data *old,
- 	struct core_data *core_delta)
- {
-+	int i;
-+	struct msr_counter *mp;
-+
- 	old->tsc = new->tsc - old->tsc;
- 
- 	/* check for TSC < 1 Mcycles over interval */
-@@ -860,6 +1008,12 @@ delta_thread(struct thread_data *new, struct thread_data *old,
- 	if (do_smi)
- 		old->smi_count = new->smi_count - old->smi_count;
- 
-+	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			old->counter[i] = new->counter[i];
-+		else
-+			old->counter[i] = new->counter[i] - old->counter[i];
-+	}
- 	return 0;
- }
- 
-@@ -887,6 +1041,9 @@ int delta_cpu(struct thread_data *t, struct core_data *c,
- 
- void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- {
-+	int i;
-+	struct msr_counter  *mp;
-+
- 	t->tsc = 0;
- 	t->aperf = 0;
- 	t->mperf = 0;
-@@ -932,10 +1089,22 @@ void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data
- 
- 	p->gfx_rc6_ms = 0;
- 	p->gfx_mhz = 0;
-+
-+	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next)
-+		t->counter[i] = 0;
-+
-+	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next)
-+		c->counter[i] = 0;
-+
-+	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next)
-+		p->counter[i] = 0;
- }
- int sum_counters(struct thread_data *t, struct core_data *c,
- 	struct pkg_data *p)
- {
-+	int i;
-+	struct msr_counter *mp;
-+
- 	average.threads.tsc += t->tsc;
- 	average.threads.aperf += t->aperf;
- 	average.threads.mperf += t->mperf;
-@@ -947,6 +1116,12 @@ int sum_counters(struct thread_data *t, struct core_data *c,
- 	average.threads.irq_count += t->irq_count;
- 	average.threads.smi_count += t->smi_count;
- 
-+	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			continue;
-+		average.threads.counter[i] += t->counter[i];
-+	}
-+
- 	/* sum per-core values only for 1st thread in core */
- 	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
++	case INTEL_FAM6_XEON_PHI_KNL:	/* Knights Landing */
+ 		return 1;
+ 	default:
  		return 0;
-@@ -957,6 +1132,12 @@ int sum_counters(struct thread_data *t, struct core_data *c,
+@@ -2583,8 +2584,8 @@ double get_tdp(unsigned int model)
+ 			return ((msr >> 0) & RAPL_POWER_GRANULARITY) * rapl_power_units;
  
- 	average.cores.core_temp_c = MAX(average.cores.core_temp_c, c->core_temp_c);
+ 	switch (model) {
+-	case 0x37:
+-	case 0x4D:
++	case INTEL_FAM6_ATOM_SILVERMONT1:
++	case INTEL_FAM6_ATOM_SILVERMONT2:
+ 		return 30.0;
+ 	default:
+ 		return 135.0;
+@@ -2601,10 +2602,10 @@ rapl_dram_energy_units_probe(int  model, double rapl_energy_units)
+ 	/* only called for genuine_intel, family 6 */
  
-+	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			continue;
-+		average.cores.counter[i] += c->counter[i];
-+	}
-+
- 	/* sum per-pkg values only for 1st core in pkg */
- 	if (!(t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE))
- 		return 0;
-@@ -991,6 +1172,12 @@ int sum_counters(struct thread_data *t, struct core_data *c,
+ 	switch (model) {
+-	case 0x3F:	/* HSX */
+-	case 0x4F:	/* BDX */
+-	case 0x56:	/* BDX-DE */
+-	case 0x57:	/* KNL */
++	case INTEL_FAM6_HASWELL_X:	/* HSX */
++	case INTEL_FAM6_BROADWELL_X:	/* BDX */
++	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
++	case INTEL_FAM6_XEON_PHI_KNL:	/* KNL */
+ 		return (rapl_dram_energy_units = 15.3 / 1000000);
+ 	default:
+ 		return (rapl_energy_units);
+@@ -2630,40 +2631,40 @@ void rapl_probe(unsigned int family, unsigned int model)
+ 		return;
  
- 	average.packages.rapl_pkg_perf_status += p->rapl_pkg_perf_status;
- 	average.packages.rapl_dram_perf_status += p->rapl_dram_perf_status;
-+
-+	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			continue;
-+		average.packages.counter[i] += p->counter[i];
-+	}
- 	return 0;
- }
- /*
-@@ -1000,6 +1187,9 @@ int sum_counters(struct thread_data *t, struct core_data *c,
- void compute_average(struct thread_data *t, struct core_data *c,
- 	struct pkg_data *p)
- {
-+	int i;
-+	struct msr_counter *mp;
-+
- 	clear_counters(&average.threads, &average.cores, &average.packages);
+ 	switch (model) {
+-	case 0x2A:
+-	case 0x3A:
+-	case 0x3C:	/* HSW */
+-	case 0x45:	/* HSW */
+-	case 0x46:	/* HSW */
+-	case 0x3D:	/* BDW */
+-	case 0x47:	/* BDW */
++	case INTEL_FAM6_SANDYBRIDGE:
++	case INTEL_FAM6_IVYBRIDGE:
++	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
++	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
++	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
++	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
+ 		do_rapl = RAPL_PKG | RAPL_CORES | RAPL_CORE_POLICY | RAPL_GFX | RAPL_PKG_POWER_INFO;
+ 		break;
+-	case 0x5C:	/* BXT */
++	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
+ 		do_rapl = RAPL_PKG | RAPL_PKG_POWER_INFO;
+ 		break;
+-	case 0x4E:	/* SKL */
+-	case 0x5E:	/* SKL */
+-	case 0x8E:	/* KBL */
+-	case 0x9E:	/* KBL */
++	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
+ 		do_rapl = RAPL_PKG | RAPL_DRAM | RAPL_DRAM_PERF_STATUS | RAPL_PKG_PERF_STATUS | RAPL_PKG_POWER_INFO;
+ 		break;
+-	case 0x3F:	/* HSX */
+-	case 0x4F:	/* BDX */
+-	case 0x56:	/* BDX-DE */
+-	case 0x55:	/* SKX */
+-	case 0x57:	/* KNL */
++	case INTEL_FAM6_HASWELL_X:	/* HSX */
++	case INTEL_FAM6_BROADWELL_X:	/* BDX */
++	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
++	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
++	case INTEL_FAM6_XEON_PHI_KNL:	/* KNL */
+ 		do_rapl = RAPL_PKG | RAPL_DRAM | RAPL_DRAM_POWER_INFO | RAPL_DRAM_PERF_STATUS | RAPL_PKG_PERF_STATUS | RAPL_PKG_POWER_INFO;
+ 		break;
+-	case 0x2D:
+-	case 0x3E:
++	case INTEL_FAM6_SANDYBRIDGE_X:
++	case INTEL_FAM6_IVYBRIDGE_X:
+ 		do_rapl = RAPL_PKG | RAPL_CORES | RAPL_CORE_POLICY | RAPL_DRAM | RAPL_DRAM_POWER_INFO | RAPL_PKG_PERF_STATUS | RAPL_DRAM_PERF_STATUS | RAPL_PKG_POWER_INFO;
+ 		break;
+-	case 0x37:	/* BYT */
+-	case 0x4D:	/* AVN */
++	case INTEL_FAM6_ATOM_SILVERMONT1:	/* BYT */
++	case INTEL_FAM6_ATOM_SILVERMONT2:	/* AVN */
+ 		do_rapl = RAPL_PKG | RAPL_CORES;
+ 		break;
+-	case 0x5f:	/* DNV */
++	case INTEL_FAM6_ATOM_DENVERTON:	/* DNV */
+ 		do_rapl = RAPL_PKG | RAPL_DRAM | RAPL_DRAM_POWER_INFO | RAPL_DRAM_PERF_STATUS | RAPL_PKG_PERF_STATUS | RAPL_PKG_POWER_INFO | RAPL_CORES_ENERGY_STATUS;
+ 		break;
+ 	default:
+@@ -2675,7 +2676,7 @@ void rapl_probe(unsigned int family, unsigned int model)
+ 		return;
  
- 	for_all_cpus(sum_counters, t, c, p);
-@@ -1036,6 +1226,22 @@ void compute_average(struct thread_data *t, struct core_data *c,
- 	average.packages.pc8 /= topo.num_packages;
- 	average.packages.pc9 /= topo.num_packages;
- 	average.packages.pc10 /= topo.num_packages;
-+
-+	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			continue;
-+		average.threads.counter[i] /= topo.num_cpus;
-+	}
-+	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			continue;
-+		average.cores.counter[i] /= topo.num_cores;
-+	}
-+	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
-+		if (mp->format == FORMAT_RAW)
-+			continue;
-+		average.packages.counter[i] /= topo.num_packages;
-+	}
- }
+ 	rapl_power_units = 1.0 / (1 << (msr & 0xF));
+-	if (model == 0x37)
++	if (model == INTEL_FAM6_ATOM_SILVERMONT1)
+ 		rapl_energy_units = 1.0 * (1 << (msr >> 8 & 0x1F)) / 1000000;
+ 	else
+ 		rapl_energy_units = 1.0 / (1 << (msr >> 8 & 0x1F));
+@@ -2706,11 +2707,11 @@ void perf_limit_reasons_probe(unsigned int family, unsigned int model)
+ 		return;
  
- static unsigned long long rdtsc(void)
-@@ -1057,6 +1263,8 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 	int cpu = t->cpu_id;
- 	unsigned long long msr;
- 	int aperf_mperf_retry_count = 0;
-+	struct msr_counter *mp;
-+	int i;
- 
- 	if (cpu_migrate(cpu)) {
- 		fprintf(outf, "Could not migrate to CPU %d\n", cpu);
-@@ -1154,6 +1362,12 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 			return -6;
- 	}
- 
-+	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
-+		if (get_msr(cpu, mp->msr_num, &t->counter[i]))
-+			return -10;
-+	}
-+
-+
- 	/* collect core counters only for 1st thread in core */
- 	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
- 		return 0;
-@@ -1181,6 +1395,10 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 		c->core_temp_c = tcc_activation_temp - ((msr >> 16) & 0x7F);
- 	}
- 
-+	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
-+		if (get_msr(cpu, mp->msr_num, &c->counter[i]))
-+			return -10;
-+	}
- 
- 	/* collect package counters only for 1st core in package */
- 	if (!(t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE))
-@@ -1258,6 +1476,11 @@ int get_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
- 	if (do_gfx_mhz)
- 		p->gfx_mhz = gfx_cur_mhz;
- 
-+	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
-+		if (get_msr(cpu, mp->msr_num, &p->counter[i]))
-+			return -10;
-+	}
-+
- 	return 0;
- }
- 
-@@ -2740,7 +2963,7 @@ int print_thermal(struct thread_data *t, struct core_data *c, struct pkg_data *p
- 	cpu = t->cpu_id;
- 
- 	/* DTS is per-core, no need to print for each thread */
--	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE)) 
-+	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
+ 	switch (model) {
+-	case 0x3C:	/* HSW */
+-	case 0x45:	/* HSW */
+-	case 0x46:	/* HSW */
++	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
++	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
+ 		do_gfx_perf_limit_reasons = 1;
+-	case 0x3F:	/* HSX */
++	case INTEL_FAM6_HASWELL_X:	/* HSX */
+ 		do_core_perf_limit_reasons = 1;
+ 		do_ring_perf_limit_reasons = 1;
+ 	default:
+@@ -2919,24 +2920,24 @@ int has_snb_msrs(unsigned int family, unsigned int model)
  		return 0;
  
- 	if (cpu_migrate(cpu)) {
-@@ -3391,6 +3614,8 @@ void help()
- 	"when COMMAND completes.\n"
- 	"If no COMMAND is specified, turbostat wakes every 5-seconds\n"
- 	"to print statistics, until interrupted.\n"
-+	"--add		add a counter\n"
-+	"		eg. --add msr0x10,u64,cpu,delta,MY_TSC\n"
- 	"--debug	run in \"debug\" mode\n"
- 	"--interval sec	Override default 5-second measurement interval\n"
- 	"--help		print this help message\n"
-@@ -3521,7 +3746,7 @@ allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data
- 	int i;
+ 	switch (model) {
+-	case 0x2A:
+-	case 0x2D:
+-	case 0x3A:	/* IVB */
+-	case 0x3E:	/* IVB Xeon */
+-	case 0x3C:	/* HSW */
+-	case 0x3F:	/* HSW */
+-	case 0x45:	/* HSW */
+-	case 0x46:	/* HSW */
+-	case 0x3D:	/* BDW */
+-	case 0x47:	/* BDW */
+-	case 0x4F:	/* BDX */
+-	case 0x56:	/* BDX-DE */
+-	case 0x4E:	/* SKL */
+-	case 0x5E:	/* SKL */
+-	case 0x8E:	/* KBL */
+-	case 0x9E:	/* KBL */
+-	case 0x55:	/* SKX */
+-	case 0x5C:	/* BXT */
++	case INTEL_FAM6_SANDYBRIDGE:
++	case INTEL_FAM6_SANDYBRIDGE_X:
++	case INTEL_FAM6_IVYBRIDGE:	/* IVB */
++	case INTEL_FAM6_IVYBRIDGE_X:	/* IVB Xeon */
++	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
++	case INTEL_FAM6_HASWELL_X:	/* HSW */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
++	case INTEL_FAM6_HASWELL_GT3E:	/* HSW */
++	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
++	case INTEL_FAM6_BROADWELL_GT3E:	/* BDW */
++	case INTEL_FAM6_BROADWELL_X:	/* BDX */
++	case INTEL_FAM6_BROADWELL_XEON_D:	/* BDX-DE */
++	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
++	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
++	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -2960,13 +2961,13 @@ int has_hsw_msrs(unsigned int family, unsigned int model)
+ 		return 0;
  
- 	*t = calloc(topo.num_threads_per_core * topo.num_cores_per_pkg *
--		topo.num_packages, sizeof(struct thread_data));
-+		topo.num_packages, sizeof(struct thread_data) + sys.thread_counter_bytes);
- 	if (*t == NULL)
- 		goto error;
+ 	switch (model) {
+-	case 0x45:	/* HSW */
+-	case 0x3D:	/* BDW */
+-	case 0x4E:	/* SKL */
+-	case 0x5E:	/* SKL */
+-	case 0x8E:	/* KBL */
+-	case 0x9E:	/* KBL */
+-	case 0x5C:	/* BXT */
++	case INTEL_FAM6_HASWELL_ULT:	/* HSW */
++	case INTEL_FAM6_BROADWELL_CORE:	/* BDW */
++	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
++	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -2986,10 +2987,10 @@ int has_skl_msrs(unsigned int family, unsigned int model)
+ 		return 0;
  
-@@ -3530,14 +3755,14 @@ allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data
- 		(*t)[i].cpu_id = -1;
+ 	switch (model) {
+-	case 0x4E:	/* SKL */
+-	case 0x5E:	/* SKL */
+-	case 0x8E:	/* KBL */
+-	case 0x9E:	/* KBL */
++	case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -3002,8 +3003,8 @@ int is_slm(unsigned int family, unsigned int model)
+ 	if (!genuine_intel)
+ 		return 0;
+ 	switch (model) {
+-	case 0x37:	/* BYT */
+-	case 0x4D:	/* AVN */
++	case INTEL_FAM6_ATOM_SILVERMONT1:	/* BYT */
++	case INTEL_FAM6_ATOM_SILVERMONT2:	/* AVN */
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -3014,7 +3015,7 @@ int is_knl(unsigned int family, unsigned int model)
+ 	if (!genuine_intel)
+ 		return 0;
+ 	switch (model) {
+-	case 0x57:	/* KNL */
++	case INTEL_FAM6_XEON_PHI_KNL:	/* KNL */
+ 		return 1;
+ 	}
+ 	return 0;
+@@ -3295,17 +3296,17 @@ void process_cpuid()
  
- 	*c = calloc(topo.num_cores_per_pkg * topo.num_packages,
--		sizeof(struct core_data));
-+		sizeof(struct core_data) + sys.core_counter_bytes);
- 	if (*c == NULL)
- 		goto error;
- 
- 	for (i = 0; i < topo.num_cores_per_pkg * topo.num_packages; i++)
- 		(*c)[i].core_id = -1;
- 
--	*p = calloc(topo.num_packages, sizeof(struct pkg_data));
-+	*p = calloc(topo.num_packages, sizeof(struct pkg_data) + sys.package_counter_bytes);
- 	if (*p == NULL)
- 		goto error;
- 
-@@ -3735,15 +3960,165 @@ int get_and_dump_counters(void)
- }
- 
- void print_version() {
--	fprintf(outf, "turbostat version 4.14 22 Apr 2016"
-+	fprintf(outf, "turbostat version 4.15 21 Dec 2016"
- 		" - Len Brown <lenb@kernel.org>\n");
- }
- 
-+int add_counter(unsigned int msr_num, char *name, unsigned int width,
-+	enum counter_scope scope, enum counter_type type,
-+	enum counter_format format)
-+{
-+	struct msr_counter *msrp;
-+
-+	msrp = calloc(1, sizeof(struct msr_counter));
-+	if (msrp == NULL) {
-+		perror("calloc");
-+		exit(1);
-+	}
-+
-+	msrp->msr_num = msr_num;
-+	strncpy(msrp->name, name, NAME_BYTES);
-+	msrp->width = width;
-+	msrp->type = type;
-+	msrp->format = format;
-+
-+	switch (scope) {
-+
-+	case SCOPE_CPU:
-+		sys.thread_counter_bytes += 64;
-+		msrp->next = sys.tp;
-+		sys.tp = msrp;
-+		sys.thread_counter_bytes += sizeof(unsigned long long);
-+		break;
-+
-+	case SCOPE_CORE:
-+		sys.core_counter_bytes += 64;
-+		msrp->next = sys.cp;
-+		sys.cp = msrp;
-+		sys.core_counter_bytes += sizeof(unsigned long long);
-+		break;
-+
-+	case SCOPE_PACKAGE:
-+		sys.package_counter_bytes += 64;
-+		msrp->next = sys.pp;
-+		sys.pp = msrp;
-+		sys.package_counter_bytes += sizeof(unsigned long long);
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+void parse_add_command(char *add_command)
-+{
-+	int msr_num = 0;
-+	char name_buffer[NAME_BYTES];
-+	int width = 64;
-+	int fail = 0;
-+	enum counter_scope scope = SCOPE_CPU;
-+	enum counter_type type = COUNTER_CYCLES;
-+	enum counter_format format = FORMAT_DELTA;
-+
-+	while (add_command) {
-+
-+		if (sscanf(add_command, "msr0x%x", &msr_num) == 1)
-+			goto next;
-+
-+		if (sscanf(add_command, "msr%d", &msr_num) == 1)
-+			goto next;
-+
-+		if (sscanf(add_command, "u%d", &width) == 1) {
-+			if ((width == 32) || (width == 64))
-+				goto next;
-+			width = 64;
-+		}
-+		if (!strncmp(add_command, "cpu", strlen("cpu"))) {
-+			scope = SCOPE_CPU;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "core", strlen("core"))) {
-+			scope = SCOPE_CORE;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "package", strlen("package"))) {
-+			scope = SCOPE_PACKAGE;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "cycles", strlen("cycles"))) {
-+			type = COUNTER_CYCLES;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "seconds", strlen("seconds"))) {
-+			type = COUNTER_SECONDS;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "raw", strlen("raw"))) {
-+			format = FORMAT_RAW;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "delta", strlen("delta"))) {
-+			format = FORMAT_DELTA;
-+			goto next;
-+		}
-+		if (!strncmp(add_command, "percent", strlen("percent"))) {
-+			format = FORMAT_PERCENT;
-+			goto next;
-+		}
-+
-+		if (sscanf(add_command, "%18s,%*s", name_buffer) == 1) {	/* 18 < NAME_BYTES */
-+			char *eos;
-+
-+			eos = strchr(name_buffer, ',');
-+			if (eos)
-+				*eos = '\0';
-+			goto next;
-+		}
-+
-+next:
-+		add_command = strchr(add_command, ',');
-+		if (add_command)
-+			add_command++;
-+
-+	}
-+	if (msr_num == 0) {
-+		fprintf(stderr, "--add: (msrDDD | msr0xXXX) required\n");
-+		fail++;
-+	}
-+
-+	/* generate default column header */
-+	if (*name_buffer == '\0') {
-+		if (format == FORMAT_RAW) {
-+			if (width == 32)
-+				sprintf(name_buffer, "msr%d", msr_num);
-+			else
-+				sprintf(name_buffer, "MSR%d", msr_num);
-+		} else if (format == FORMAT_DELTA) {
-+			if (width == 32)
-+				sprintf(name_buffer, "cnt%d", msr_num);
-+			else
-+				sprintf(name_buffer, "CNT%d", msr_num);
-+		} else if (format == FORMAT_PERCENT) {
-+			if (width == 32)
-+				sprintf(name_buffer, "msr%d%%", msr_num);
-+			else
-+				sprintf(name_buffer, "MSR%d%%", msr_num);
-+		}
-+	}
-+
-+	if (add_counter(msr_num, name_buffer, width, scope, type, format))
-+		fail++;
-+
-+	if (fail) {
-+		help();
-+		exit(1);
-+	}
-+}
- void cmdline(int argc, char **argv)
- {
- 	int opt;
- 	int option_index = 0;
- 	static struct option long_options[] = {
-+		{"add",		required_argument,	0, 'a'},
- 		{"Counter",	required_argument,	0, 'C'},
- 		{"counter",	required_argument,	0, 'c'},
- 		{"Dump",	no_argument,		0, 'D'},
-@@ -3767,6 +4142,9 @@ void cmdline(int argc, char **argv)
- 	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:PpST:v",
- 				long_options, &option_index)) != -1) {
- 		switch (opt) {
-+		case 'a':
-+			parse_add_command(optarg);
-+			break;
- 		case 'C':
- 			sscanf(optarg, "%x", &extra_delta_offset64);
- 			break;
+ 			if (crystal_hz == 0)
+ 				switch(model) {
+-				case 0x4E:	/* SKL */
+-				case 0x5E:	/* SKL */
+-				case 0x8E:	/* KBL */
+-				case 0x9E:	/* KBL */
++				case INTEL_FAM6_SKYLAKE_MOBILE:	/* SKL */
++				case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
++				case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
++				case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
+ 					crystal_hz = 24000000;	/* 24.0 MHz */
+ 					break;
+-				case 0x55:	/* SKX */
++				case INTEL_FAM6_SKYLAKE_X:	/* SKX */
+ 					crystal_hz = 25000000;	/* 25.0 MHz */
+ 					break;
+-				case 0x5C:	/* BXT */
+-				case 0x5F:	/* DNV */
++				case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
++				case INTEL_FAM6_ATOM_DENVERTON:	/* DNV */
+ 					crystal_hz = 19200000;	/* 19.2 MHz */
+ 					break;
+ 				default:
 -- 
 2.11.0.161.g6610af872
 
