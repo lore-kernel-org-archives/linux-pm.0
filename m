@@ -1,15 +1,15 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 03/17] tools/power turbostat: switch to tab delimited output
-Date: Sat, 24 Dec 2016 15:53:31 -0500
-Message-ID: <3d109de23c93e9196c370fd729fbd7ecf7371701.1482612381.git.len.brown@intel.com>
+Subject: [PATCH 02/17] tools/power turbostat: Gracefully handle ACPI S3
+Date: Sat, 24 Dec 2016 15:53:30 -0500
+Message-ID: <ba3dec99fc99fbe5a08d6c37f06feeb4d4bcb921.1482612381.git.len.brown@intel.com>
 References: <20161224205345.29129-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f194.google.com ([209.85.216.194]:33531 "EHLO
+Received: from mail-qt0-f194.google.com ([209.85.216.194]:34578 "EHLO
         mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751696AbcLXU4G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:06 -0500
-Received: by mail-qt0-f194.google.com with SMTP id 41so9409376qtn.0
+        with ESMTP id S1752151AbcLXU4F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:05 -0500
+Received: by mail-qt0-f194.google.com with SMTP id p16so14974173qta.1
         for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:05 -0800 (PST)
 In-Reply-To: <20161224205345.29129-1-lenb@kernel.org>
 In-Reply-To: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
@@ -21,358 +21,239 @@ Cc: Len Brown <len.brown@intel.com>
 
 From: Len Brown <len.brown@intel.com>
 
-Switch to tab-delimited output from fixed-width columns
-to make it simpler to import into spreadsheets.
+turbostat gives valid results across suspend to idle, aka freeze,
+whether invoked in  interval mode, or in command mode.
+Indeed, this can be used to measure suspend to idle:
 
-As the fixed width columnns were 8-spaces wide,
-the output on the screen should not change.
+turbostat echo freeze > /sys/power/state
+
+But this does not work across suspend to ACPI S3, because the
+processor counters, including the TSC, are reset on resume.
+Further, when turbostat detects a problem, it does't forgive
+the hardware, and interval mode will print *'s from there on out.
+
+Instead, upon detecting counters going backwards, simply
+reset and start over.
+
+Interval mode across ACPI S3: (observe TSC going backwards)
+
+root@sharkbay:/home/lenb/turbostat-src# ./turbostat -M 0x10
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz           MSR 0x010
+       -       1    0.06     858    2294  0x0000000000000000
+       0       0    0.06     847    2294  0x0000002a254b98ac
+       1       1    0.06     878    2294  0x0000002a254efa3a
+       2       1    0.07     843    2294  0x0000002a2551df65
+       3       0    0.05     863    2294  0x0000002a2553fea2
+turbostat: re-initialized with num_cpus 4
+     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz           MSR 0x010
+       -       2    0.20     849    2294  0x0000000000000000
+       0       2    0.26     856    2294  0x0000000449abb60d
+       1       2    0.20     844    2294  0x0000000449b087ec
+       2       2    0.21     850    2294  0x0000000449b35d5d
+       3       1    0.12     839    2294  0x0000000449b5fd5a
+^C
+
+Command mode across ACPI S3:
+root@sharkbay:/home/lenb/turbostat-src# ./turbostat -M 0x10 sleep 10
+./turbostat: Counter reset detected
+14.196299 sec
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 170 +++++++++++++++++-----------------
- 1 file changed, 85 insertions(+), 85 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 77 ++++++++++++++++-------------------
+ 1 file changed, 35 insertions(+), 42 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index c0dade0c1921..be50892f27aa 100644
+index a302a333c084..c0dade0c1921 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -323,103 +323,103 @@ int get_msr(int cpu, off_t offset, unsigned long long *msr)
- void print_header(void)
- {
- 	if (show_pkg)
--		outp += sprintf(outp, " Package");
-+		outp += sprintf(outp, "\tPackage");
- 	if (show_core)
--		outp += sprintf(outp, "    Core");
-+		outp += sprintf(outp, "\tCore");
- 	if (show_cpu)
--		outp += sprintf(outp, "     CPU");
-+		outp += sprintf(outp, "\tCPU");
- 	if (has_aperf)
--		outp += sprintf(outp, " Avg_MHz");
-+		outp += sprintf(outp, "\tAvg_MHz");
- 	if (has_aperf)
--		outp += sprintf(outp, "   Busy%%");
-+		outp += sprintf(outp, "\tBusy%%");
- 	if (has_aperf)
--		outp += sprintf(outp, " Bzy_MHz");
--	outp += sprintf(outp, " TSC_MHz");
-+		outp += sprintf(outp, "\tBzy_MHz");
-+	outp += sprintf(outp, "\tTSC_MHz");
+@@ -51,8 +51,6 @@ unsigned int debug;
+ unsigned int rapl_joules;
+ unsigned int summary_only;
+ unsigned int dump_only;
+-unsigned int skip_c0;
+-unsigned int skip_c1;
+ unsigned int do_nhm_cstates;
+ unsigned int do_snb_cstates;
+ unsigned int do_knl_cstates;
+@@ -145,7 +143,6 @@ unsigned int has_hwp_pkg;		/* IA32_HWP_REQUEST_PKG */
  
- 	if (extra_delta_offset32)
--		outp += sprintf(outp, "  count 0x%03X", extra_delta_offset32);
-+		outp += sprintf(outp, "\tcount 0x%03X", extra_delta_offset32);
- 	if (extra_delta_offset64)
--		outp += sprintf(outp, "  COUNT 0x%03X", extra_delta_offset64);
-+		outp += sprintf(outp, "\tCOUNT 0x%03X", extra_delta_offset64);
- 	if (extra_msr_offset32)
--		outp += sprintf(outp, "   MSR 0x%03X", extra_msr_offset32);
-+		outp += sprintf(outp, "\tMSR 0x%03X", extra_msr_offset32);
- 	if (extra_msr_offset64)
--		outp += sprintf(outp, "           MSR 0x%03X", extra_msr_offset64);
-+		outp += sprintf(outp, "\tMSR 0x%03X", extra_msr_offset64);
+ #define MAX(a, b) ((a) > (b) ? (a) : (b))
  
- 	if (!debug)
- 		goto done;
+-int aperf_mperf_unstable;
+ int backwards_count;
+ char *progname;
  
- 	if (do_irq)
--		outp += sprintf(outp, "     IRQ");
-+		outp += sprintf(outp, "\tIRQ");
- 	if (do_smi)
--		outp += sprintf(outp, "     SMI");
-+		outp += sprintf(outp, "\tSMI");
- 
- 	if (do_nhm_cstates)
--		outp += sprintf(outp, "  CPU%%c1");
-+		outp += sprintf(outp, "\tCPU%%c1");
- 	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
--		outp += sprintf(outp, "  CPU%%c3");
-+		outp += sprintf(outp, "\tCPU%%c3");
- 	if (do_nhm_cstates)
--		outp += sprintf(outp, "  CPU%%c6");
-+		outp += sprintf(outp, "\tCPU%%c6");
- 	if (do_snb_cstates)
--		outp += sprintf(outp, "  CPU%%c7");
-+		outp += sprintf(outp, "\tCPU%%c7");
- 
- 	if (do_dts)
--		outp += sprintf(outp, " CoreTmp");
-+		outp += sprintf(outp, "\tCoreTmp");
- 	if (do_ptm)
--		outp += sprintf(outp, "  PkgTmp");
-+		outp += sprintf(outp, "\tPkgTmp");
- 
- 	if (do_gfx_rc6_ms)
--		outp += sprintf(outp, " GFX%%rc6");
-+		outp += sprintf(outp, "\tGFX%%rc6");
- 
- 	if (do_gfx_mhz)
--		outp += sprintf(outp, "  GFXMHz");
-+		outp += sprintf(outp, "\tGFXMHz");
- 
- 	if (do_skl_residency) {
--		outp += sprintf(outp, " Totl%%C0");
--		outp += sprintf(outp, "  Any%%C0");
--		outp += sprintf(outp, "  GFX%%C0");
--		outp += sprintf(outp, " CPUGFX%%");
-+		outp += sprintf(outp, "\tTotl%%C0");
-+		outp += sprintf(outp, "\tAny%%C0");
-+		outp += sprintf(outp, "\tGFX%%C0");
-+		outp += sprintf(outp, "\tCPUGFX%%");
- 	}
- 
- 	if (do_pc2)
--		outp += sprintf(outp, " Pkg%%pc2");
-+		outp += sprintf(outp, "\tPkg%%pc2");
- 	if (do_pc3)
--		outp += sprintf(outp, " Pkg%%pc3");
-+		outp += sprintf(outp, "\tPkg%%pc3");
- 	if (do_pc6)
--		outp += sprintf(outp, " Pkg%%pc6");
-+		outp += sprintf(outp, "\tPkg%%pc6");
- 	if (do_pc7)
--		outp += sprintf(outp, " Pkg%%pc7");
-+		outp += sprintf(outp, "\tPkg%%pc7");
- 	if (do_c8_c9_c10) {
--		outp += sprintf(outp, " Pkg%%pc8");
--		outp += sprintf(outp, " Pkg%%pc9");
--		outp += sprintf(outp, " Pk%%pc10");
-+		outp += sprintf(outp, "\tPkg%%pc8");
-+		outp += sprintf(outp, "\tPkg%%pc9");
-+		outp += sprintf(outp, "\tPk%%pc10");
- 	}
- 
- 	if (do_rapl && !rapl_joules) {
- 		if (do_rapl & RAPL_PKG)
--			outp += sprintf(outp, " PkgWatt");
-+			outp += sprintf(outp, "\tPkgWatt");
- 		if (do_rapl & RAPL_CORES)
--			outp += sprintf(outp, " CorWatt");
-+			outp += sprintf(outp, "\tCorWatt");
- 		if (do_rapl & RAPL_GFX)
--			outp += sprintf(outp, " GFXWatt");
-+			outp += sprintf(outp, "\tGFXWatt");
- 		if (do_rapl & RAPL_DRAM)
--			outp += sprintf(outp, " RAMWatt");
-+			outp += sprintf(outp, "\tRAMWatt");
- 		if (do_rapl & RAPL_PKG_PERF_STATUS)
--			outp += sprintf(outp, "   PKG_%%");
-+			outp += sprintf(outp, "\tPKG_%%");
- 		if (do_rapl & RAPL_DRAM_PERF_STATUS)
--			outp += sprintf(outp, "   RAM_%%");
-+			outp += sprintf(outp, "\tRAM_%%");
- 	} else if (do_rapl && rapl_joules) {
- 		if (do_rapl & RAPL_PKG)
--			outp += sprintf(outp, "   Pkg_J");
-+			outp += sprintf(outp, "\tPkg_J");
- 		if (do_rapl & RAPL_CORES)
--			outp += sprintf(outp, "   Cor_J");
-+			outp += sprintf(outp, "\tCor_J");
- 		if (do_rapl & RAPL_GFX)
--			outp += sprintf(outp, "   GFX_J");
-+			outp += sprintf(outp, "\tGFX_J");
- 		if (do_rapl & RAPL_DRAM)
--			outp += sprintf(outp, "   RAM_J");
-+			outp += sprintf(outp, "\tRAM_J");
- 		if (do_rapl & RAPL_PKG_PERF_STATUS)
--			outp += sprintf(outp, "   PKG_%%");
-+			outp += sprintf(outp, "\tPKG_%%");
- 		if (do_rapl & RAPL_DRAM_PERF_STATUS)
--			outp += sprintf(outp, "   RAM_%%");
-+			outp += sprintf(outp, "\tRAM_%%");
- 	}
-     done:
- 	outp += sprintf(outp, "\n");
-@@ -515,91 +515,91 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 	/* topo columns, print blanks on 1st (average) line */
- 	if (t == &average.threads) {
- 		if (show_pkg)
--			outp += sprintf(outp, "       -");
-+			outp += sprintf(outp, "\t-");
- 		if (show_core)
--			outp += sprintf(outp, "       -");
-+			outp += sprintf(outp, "\t-");
- 		if (show_cpu)
--			outp += sprintf(outp, "       -");
-+			outp += sprintf(outp, "\t-");
- 	} else {
- 		if (show_pkg) {
- 			if (p)
--				outp += sprintf(outp, "%8d", p->package_id);
-+				outp += sprintf(outp, "\t%d", p->package_id);
- 			else
--				outp += sprintf(outp, "       -");
-+				outp += sprintf(outp, "\t-");
- 		}
- 		if (show_core) {
- 			if (c)
--				outp += sprintf(outp, "%8d", c->core_id);
-+				outp += sprintf(outp, "\t%d", c->core_id);
- 			else
--				outp += sprintf(outp, "       -");
-+				outp += sprintf(outp, "\t-");
- 		}
- 		if (show_cpu)
--			outp += sprintf(outp, "%8d", t->cpu_id);
-+			outp += sprintf(outp, "\t%d", t->cpu_id);
- 	}
- 
- 	/* Avg_MHz */
- 	if (has_aperf)
--		outp += sprintf(outp, "%8.0f",
-+		outp += sprintf(outp, "\t%.0f",
+@@ -546,12 +543,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
  			1.0 / units * t->aperf / interval_float);
  
  	/* Busy% */
- 	if (has_aperf)
--		outp += sprintf(outp, "%8.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
+-	if (has_aperf) {
+-		if (!skip_c0)
+-			outp += sprintf(outp, "%8.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
+-		else
+-			outp += sprintf(outp, "********");
+-	}
++	if (has_aperf)
++		outp += sprintf(outp, "%8.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
  
  	/* Bzy_MHz */
  	if (has_aperf) {
- 		if (has_base_hz)
--			outp += sprintf(outp, "%8.0f", base_hz / units * t->aperf / t->mperf);
-+			outp += sprintf(outp, "\t%.0f", base_hz / units * t->aperf / t->mperf);
- 		else
--			outp += sprintf(outp, "%8.0f",
-+			outp += sprintf(outp, "\t%.0f",
- 				1.0 * t->tsc / units * t->aperf / t->mperf / interval_float);
- 	}
- 
- 	/* TSC_MHz */
--	outp += sprintf(outp, "%8.0f", 1.0 * t->tsc/units/interval_float);
-+	outp += sprintf(outp, "\t%.0f", 1.0 * t->tsc/units/interval_float);
- 
- 	/* delta */
- 	if (extra_delta_offset32)
--		outp += sprintf(outp, "  %11llu", t->extra_delta32);
-+		outp += sprintf(outp, "\t%11llu", t->extra_delta32);
- 
- 	/* DELTA */
- 	if (extra_delta_offset64)
--		outp += sprintf(outp, "  %11llu", t->extra_delta64);
-+		outp += sprintf(outp, "\t%11llu", t->extra_delta64);
- 	/* msr */
- 	if (extra_msr_offset32)
--		outp += sprintf(outp, "  0x%08llx", t->extra_msr32);
-+		outp += sprintf(outp, "\t0x%08llx", t->extra_msr32);
- 
- 	/* MSR */
- 	if (extra_msr_offset64)
--		outp += sprintf(outp, "  0x%016llx", t->extra_msr64);
-+		outp += sprintf(outp, "\t0x%016llx", t->extra_msr64);
- 
- 	if (!debug)
- 		goto done;
- 
- 	/* IRQ */
- 	if (do_irq)
--		outp += sprintf(outp, "%8d", t->irq_count);
-+		outp += sprintf(outp, "\t%d", t->irq_count);
- 
- 	/* SMI */
+@@ -591,12 +584,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
  	if (do_smi)
--		outp += sprintf(outp, "%8d", t->smi_count);
-+		outp += sprintf(outp, "\t%d", t->smi_count);
+ 		outp += sprintf(outp, "%8d", t->smi_count);
  
- 	if (do_nhm_cstates)
--		outp += sprintf(outp, "%8.2f", 100.0 * t->c1/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * t->c1/t->tsc);
+-	if (do_nhm_cstates) {
+-		if (!skip_c1)
+-			outp += sprintf(outp, "%8.2f", 100.0 * t->c1/t->tsc);
+-		else
+-			outp += sprintf(outp, "********");
+-	}
++	if (do_nhm_cstates)
++		outp += sprintf(outp, "%8.2f", 100.0 * t->c1/t->tsc);
  
  	/* print per-core data only for 1st thread in core */
  	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
- 		goto done;
- 
- 	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
--		outp += sprintf(outp, "%8.2f", 100.0 * c->c3/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * c->c3/t->tsc);
- 	if (do_nhm_cstates)
--		outp += sprintf(outp, "%8.2f", 100.0 * c->c6/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * c->c6/t->tsc);
- 	if (do_snb_cstates)
--		outp += sprintf(outp, "%8.2f", 100.0 * c->c7/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * c->c7/t->tsc);
- 
- 	if (do_dts)
--		outp += sprintf(outp, "%8d", c->core_temp_c);
-+		outp += sprintf(outp, "\t%d", c->core_temp_c);
- 
- 	/* print per-package data only for 1st core in package */
- 	if (!(t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE))
-@@ -607,42 +607,42 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 
- 	/* PkgTmp */
- 	if (do_ptm)
--		outp += sprintf(outp, "%8d", p->pkg_temp_c);
-+		outp += sprintf(outp, "\t%d", p->pkg_temp_c);
+@@ -622,8 +611,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
  
  	/* GFXrc6 */
  	if (do_gfx_rc6_ms) {
- 		if (p->gfx_rc6_ms == -1) {	/* detect GFX counter reset */
--			outp += sprintf(outp, "   **.**");
-+			outp += sprintf(outp, "\t**.**");
+-		if (p->gfx_rc6_ms == -1) {	/* detect counter reset */
+-			outp += sprintf(outp, "  ***.**");
++		if (p->gfx_rc6_ms == -1) {	/* detect GFX counter reset */
++			outp += sprintf(outp, "   **.**");
  		} else {
--			outp += sprintf(outp, "%8.2f",
-+			outp += sprintf(outp, "\t%.2f",
+ 			outp += sprintf(outp, "%8.2f",
  				p->gfx_rc6_ms / 10.0 / interval_float);
+@@ -748,7 +737,7 @@ void format_all_counters(struct thread_data *t, struct core_data *c, struct pkg_
+ 		old = 0x100000000 + new - old;	\
+ 	}
+ 
+-void
++int
+ delta_package(struct pkg_data *new, struct pkg_data *old)
+ {
+ 
+@@ -784,6 +773,8 @@ delta_package(struct pkg_data *new, struct pkg_data *old)
+ 	DELTA_WRAP32(new->energy_dram, old->energy_dram);
+ 	DELTA_WRAP32(new->rapl_pkg_perf_status, old->rapl_pkg_perf_status);
+ 	DELTA_WRAP32(new->rapl_dram_perf_status, old->rapl_dram_perf_status);
++
++	return 0;
+ }
+ 
+ void
+@@ -798,7 +789,7 @@ delta_core(struct core_data *new, struct core_data *old)
+ /*
+  * old = new - old
+  */
+-void
++int
+ delta_thread(struct thread_data *new, struct thread_data *old,
+ 	struct core_data *core_delta)
+ {
+@@ -817,20 +808,7 @@ delta_thread(struct thread_data *new, struct thread_data *old,
+ 			old->aperf = new->aperf - old->aperf;
+ 			old->mperf = new->mperf - old->mperf;
+ 		} else {
+-
+-			if (!aperf_mperf_unstable) {
+-				fprintf(outf, "%s: APERF or MPERF went backwards *\n", progname);
+-				fprintf(outf, "* Frequency results do not cover entire interval *\n");
+-				fprintf(outf, "* fix this by running Linux-2.6.30 or later *\n");
+-
+-				aperf_mperf_unstable = 1;
+-			}
+-			/*
+-			 * mperf delta is likely a huge "positive" number
+-			 * can not use it for calculating c0 time
+-			 */
+-			skip_c0 = 1;
+-			skip_c1 = 1;
++			return -1;
  		}
  	}
  
- 	/* GFXMHz */
- 	if (do_gfx_mhz)
--		outp += sprintf(outp, "%8d", p->gfx_mhz);
-+		outp += sprintf(outp, "\t%d", p->gfx_mhz);
+@@ -877,24 +855,30 @@ delta_thread(struct thread_data *new, struct thread_data *old,
  
- 	/* Totl%C0, Any%C0 GFX%C0 CPUGFX% */
- 	if (do_skl_residency) {
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pkg_wtd_core_c0/t->tsc);
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pkg_any_core_c0/t->tsc);
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pkg_any_gfxe_c0/t->tsc);
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pkg_both_core_gfxe_c0/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pkg_wtd_core_c0/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pkg_any_core_c0/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pkg_any_gfxe_c0/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pkg_both_core_gfxe_c0/t->tsc);
- 	}
+ 	if (do_smi)
+ 		old->smi_count = new->smi_count - old->smi_count;
++
++	return 0;
+ }
  
- 	if (do_pc2)
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc2/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc2/t->tsc);
- 	if (do_pc3)
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc3/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc3/t->tsc);
- 	if (do_pc6)
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc6/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc6/t->tsc);
- 	if (do_pc7)
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc7/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc7/t->tsc);
- 	if (do_c8_c9_c10) {
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc8/t->tsc);
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc9/t->tsc);
--		outp += sprintf(outp, "%8.2f", 100.0 * p->pc10/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc8/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc9/t->tsc);
-+		outp += sprintf(outp, "\t%.2f", 100.0 * p->pc10/t->tsc);
- 	}
+ int delta_cpu(struct thread_data *t, struct core_data *c,
+ 	struct pkg_data *p, struct thread_data *t2,
+ 	struct core_data *c2, struct pkg_data *p2)
+ {
++	int retval = 0;
++
+ 	/* calculate core delta only for 1st thread in core */
+ 	if (t->flags & CPU_IS_FIRST_THREAD_IN_CORE)
+ 		delta_core(c, c2);
  
- 	/*
-@@ -650,7 +650,7 @@ int format_counters(struct thread_data *t, struct core_data *c,
-  	 * indicate that results are suspect by printing "**" in fraction place.
-  	 */
- 	if (interval_float < rapl_joule_counter_range)
--		fmt8 = "%8.2f";
-+		fmt8 = "\t%.2f";
- 	else
- 		fmt8 = "%6.0f**";
+ 	/* always calculate thread delta */
+-	delta_thread(t, t2, c2);	/* c2 is core delta */
++	retval = delta_thread(t, t2, c2);	/* c2 is core delta */
++	if (retval)
++		return retval;
  
-@@ -3715,7 +3715,7 @@ int get_and_dump_counters(void)
+ 	/* calculate package delta only for 1st core in package */
+ 	if (t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE)
+-		delta_package(p, p2);
++		retval = delta_package(p, p2);
+ 
+-	return 0;
++	return retval;
+ }
+ 
+ void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+@@ -2067,7 +2051,10 @@ void turbostat_loop()
+ 		}
+ 		gettimeofday(&tv_odd, (struct timezone *)NULL);
+ 		timersub(&tv_odd, &tv_even, &tv_delta);
+-		for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS);
++		if (for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS)) {
++			re_initialize();
++			goto restart;
++		}
+ 		compute_average(EVEN_COUNTERS);
+ 		format_all_counters(EVEN_COUNTERS);
+ 		flush_output_stdout();
+@@ -2083,7 +2070,10 @@ void turbostat_loop()
+ 		}
+ 		gettimeofday(&tv_even, (struct timezone *)NULL);
+ 		timersub(&tv_even, &tv_odd, &tv_delta);
+-		for_all_cpus_2(delta_cpu, EVEN_COUNTERS, ODD_COUNTERS);
++		if (for_all_cpus_2(delta_cpu, EVEN_COUNTERS, ODD_COUNTERS)) {
++			re_initialize();
++			goto restart;
++		}
+ 		compute_average(ODD_COUNTERS);
+ 		format_all_counters(ODD_COUNTERS);
+ 		flush_output_stdout();
+@@ -3693,9 +3683,12 @@ int fork_it(char **argv)
+ 	for_all_cpus(get_counters, ODD_COUNTERS);
+ 	gettimeofday(&tv_odd, (struct timezone *)NULL);
+ 	timersub(&tv_odd, &tv_even, &tv_delta);
+-	for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS);
+-	compute_average(EVEN_COUNTERS);
+-	format_all_counters(EVEN_COUNTERS);
++	if (for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS))
++		fprintf(outf, "%s: Counter reset detected\n", progname);
++	else {
++		compute_average(EVEN_COUNTERS);
++		format_all_counters(EVEN_COUNTERS);
++	}
+ 
+ 	fprintf(outf, "%.6f sec\n", tv_delta.tv_sec + tv_delta.tv_usec/1000000.0);
+ 
+@@ -3722,7 +3715,7 @@ int get_and_dump_counters(void)
  }
  
  void print_version() {
--	fprintf(outf, "turbostat version 4.13 22 Apr 2016"
-+	fprintf(outf, "turbostat version 4.14 22 Apr 2016"
+-	fprintf(outf, "turbostat version 4.12 5 Apr 2016"
++	fprintf(outf, "turbostat version 4.13 22 Apr 2016"
  		" - Len Brown <lenb@kernel.org>\n");
  }
  
