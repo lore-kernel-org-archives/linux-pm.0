@@ -1,72 +1,61 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 04/17] tools/power turbostat: Allocate correct amount of fd and irq entries
-Date: Sat, 24 Dec 2016 15:53:32 -0500
-Message-ID: <01a67adfc5d73d24e999d9cf65b5b8a6687187b8.1482612381.git.len.brown@intel.com>
+Subject: [PATCH 13/17] tools/power turbostat: fix SKX PKG_CSTATE_LIMIT decoding
+Date: Sat, 24 Dec 2016 15:53:41 -0500
+Message-ID: <d8ebb442264de62d5d0157adb8f0df96e831b3d3.1482612381.git.len.brown@intel.com>
 References: <20161224205345.29129-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f196.google.com ([209.85.220.196]:32828 "EHLO
-        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751708AbcLXU4G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:06 -0500
-Received: by mail-qk0-f196.google.com with SMTP id n21so21671355qka.0
-        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:06 -0800 (PST)
+Received: from mail-qt0-f195.google.com ([209.85.216.195]:34596 "EHLO
+        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751708AbcLXU4M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:12 -0500
+Received: by mail-qt0-f195.google.com with SMTP id p16so14974369qta.1
+        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:12 -0800 (PST)
 In-Reply-To: <20161224205345.29129-1-lenb@kernel.org>
 In-Reply-To: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
 References: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Len Brown <len.brown@intel.com>
+Cc: Len Brown <len.brown@intel.com>
 
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
+From: Len Brown <len.brown@intel.com>
 
-The tool uses topo.max_cpu_num to determine number of entries needed for
-fd_percpu[] and irqs_per_cpu[]. For example on a system with 4 CPUs
-topo.max_cpu_num is 3 so we get too small array for holding per-CPU items.
+SKX has fewer package C-states than previous generations,
+and so the decoding of PKG_CSTATE_LIMIT has changed.
 
-Fix this to use right number of entries, which is topo.max_cpu_num + 1.
+This changes the line ending with pkg-cstate-limit=XXX: pcYYY
 
-Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index be50892f27aa..741fefa2f07e 100644
+index a54ca3775521..10ae4ffe137c 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1618,7 +1618,7 @@ void free_fd_percpu(void)
- {
- 	int i;
+@@ -1294,6 +1294,7 @@ int slv_pkg_cstate_limits[16] = {PCL__0, PCL__1, PCLRSV, PCLRSV, PCL__4, PCLRSV,
+ int amt_pkg_cstate_limits[16] = {PCL__0, PCL__1, PCL__2, PCLRSV, PCLRSV, PCLRSV, PCL__6, PCL__7, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ int phi_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ int bxt_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
++int skx_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
  
--	for (i = 0; i < topo.max_cpu_num; ++i) {
-+	for (i = 0; i < topo.max_cpu_num + 1; ++i) {
- 		if (fd_percpu[i] != 0)
- 			close(fd_percpu[i]);
- 	}
-@@ -3584,7 +3584,7 @@ void allocate_output_buffer()
- }
- void allocate_fd_percpu(void)
- {
--	fd_percpu = calloc(topo.max_cpu_num, sizeof(int));
-+	fd_percpu = calloc(topo.max_cpu_num + 1, sizeof(int));
- 	if (fd_percpu == NULL)
- 		err(-1, "calloc fd_percpu");
- }
-@@ -3594,9 +3594,9 @@ void allocate_irq_buffers(void)
- 	if (irq_column_2_cpu == NULL)
- 		err(-1, "calloc %d", topo.num_cpus);
  
--	irqs_per_cpu = calloc(topo.max_cpu_num, sizeof(int));
-+	irqs_per_cpu = calloc(topo.max_cpu_num + 1, sizeof(int));
- 	if (irqs_per_cpu == NULL)
--		err(-1, "calloc %d", topo.max_cpu_num);
-+		err(-1, "calloc %d", topo.max_cpu_num + 1);
- }
- void setup_all_buffers(void)
- {
+ static void
+@@ -2191,9 +2192,11 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ 	case INTEL_FAM6_SKYLAKE_DESKTOP:	/* SKL */
+ 	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
+ 	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
+-	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
+ 		pkg_cstate_limits = hsw_pkg_cstate_limits;
+ 		break;
++	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
++		pkg_cstate_limits = skx_pkg_cstate_limits;
++		break;
+ 	case INTEL_FAM6_ATOM_SILVERMONT1:	/* BYT */
+ 	case INTEL_FAM6_ATOM_SILVERMONT2:	/* AVN */
+ 		pkg_cstate_limits = slv_pkg_cstate_limits;
 -- 
 2.11.0.161.g6610af872
 
