@@ -1,262 +1,72 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 02/17] tools/power turbostat: Gracefully handle ACPI S3
-Date: Sat, 24 Dec 2016 15:53:30 -0500
-Message-ID: <ba3dec99fc99fbe5a08d6c37f06feeb4d4bcb921.1482612381.git.len.brown@intel.com>
+Subject: [PATCH 04/17] tools/power turbostat: Allocate correct amount of fd and irq entries
+Date: Sat, 24 Dec 2016 15:53:32 -0500
+Message-ID: <01a67adfc5d73d24e999d9cf65b5b8a6687187b8.1482612381.git.len.brown@intel.com>
 References: <20161224205345.29129-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f194.google.com ([209.85.216.194]:34578 "EHLO
-        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752151AbcLXU4F (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:05 -0500
-Received: by mail-qt0-f194.google.com with SMTP id p16so14974173qta.1
-        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:05 -0800 (PST)
+Received: from mail-qk0-f196.google.com ([209.85.220.196]:32828 "EHLO
+        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751708AbcLXU4G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 24 Dec 2016 15:56:06 -0500
+Received: by mail-qk0-f196.google.com with SMTP id n21so21671355qka.0
+        for <linux-pm@vger.kernel.org>; Sat, 24 Dec 2016 12:56:06 -0800 (PST)
 In-Reply-To: <20161224205345.29129-1-lenb@kernel.org>
 In-Reply-To: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
 References: <e975db5d528abf5c42adfc50a6b0384993b6280b.1482612381.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>, Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-turbostat gives valid results across suspend to idle, aka freeze,
-whether invoked in  interval mode, or in command mode.
-Indeed, this can be used to measure suspend to idle:
+The tool uses topo.max_cpu_num to determine number of entries needed for
+fd_percpu[] and irqs_per_cpu[]. For example on a system with 4 CPUs
+topo.max_cpu_num is 3 so we get too small array for holding per-CPU items.
 
-turbostat echo freeze > /sys/power/state
+Fix this to use right number of entries, which is topo.max_cpu_num + 1.
 
-But this does not work across suspend to ACPI S3, because the
-processor counters, including the TSC, are reset on resume.
-Further, when turbostat detects a problem, it does't forgive
-the hardware, and interval mode will print *'s from there on out.
-
-Instead, upon detecting counters going backwards, simply
-reset and start over.
-
-Interval mode across ACPI S3: (observe TSC going backwards)
-
-root@sharkbay:/home/lenb/turbostat-src# ./turbostat -M 0x10
-     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz           MSR 0x010
-       -       1    0.06     858    2294  0x0000000000000000
-       0       0    0.06     847    2294  0x0000002a254b98ac
-       1       1    0.06     878    2294  0x0000002a254efa3a
-       2       1    0.07     843    2294  0x0000002a2551df65
-       3       0    0.05     863    2294  0x0000002a2553fea2
-turbostat: re-initialized with num_cpus 4
-     CPU Avg_MHz   Busy% Bzy_MHz TSC_MHz           MSR 0x010
-       -       2    0.20     849    2294  0x0000000000000000
-       0       2    0.26     856    2294  0x0000000449abb60d
-       1       2    0.20     844    2294  0x0000000449b087ec
-       2       2    0.21     850    2294  0x0000000449b35d5d
-       3       1    0.12     839    2294  0x0000000449b5fd5a
-^C
-
-Command mode across ACPI S3:
-root@sharkbay:/home/lenb/turbostat-src# ./turbostat -M 0x10 sleep 10
-./turbostat: Counter reset detected
-14.196299 sec
-
+Signed-off-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 77 ++++++++++++++++-------------------
- 1 file changed, 35 insertions(+), 42 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index a302a333c084..c0dade0c1921 100644
+index be50892f27aa..741fefa2f07e 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -51,8 +51,6 @@ unsigned int debug;
- unsigned int rapl_joules;
- unsigned int summary_only;
- unsigned int dump_only;
--unsigned int skip_c0;
--unsigned int skip_c1;
- unsigned int do_nhm_cstates;
- unsigned int do_snb_cstates;
- unsigned int do_knl_cstates;
-@@ -145,7 +143,6 @@ unsigned int has_hwp_pkg;		/* IA32_HWP_REQUEST_PKG */
+@@ -1618,7 +1618,7 @@ void free_fd_percpu(void)
+ {
+ 	int i;
  
- #define MAX(a, b) ((a) > (b) ? (a) : (b))
- 
--int aperf_mperf_unstable;
- int backwards_count;
- char *progname;
- 
-@@ -546,12 +543,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 			1.0 / units * t->aperf / interval_float);
- 
- 	/* Busy% */
--	if (has_aperf) {
--		if (!skip_c0)
--			outp += sprintf(outp, "%8.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
--		else
--			outp += sprintf(outp, "********");
--	}
-+	if (has_aperf)
-+		outp += sprintf(outp, "%8.2f", 100.0 * t->mperf/t->tsc/tsc_tweak);
- 
- 	/* Bzy_MHz */
- 	if (has_aperf) {
-@@ -591,12 +584,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 	if (do_smi)
- 		outp += sprintf(outp, "%8d", t->smi_count);
- 
--	if (do_nhm_cstates) {
--		if (!skip_c1)
--			outp += sprintf(outp, "%8.2f", 100.0 * t->c1/t->tsc);
--		else
--			outp += sprintf(outp, "********");
--	}
-+	if (do_nhm_cstates)
-+		outp += sprintf(outp, "%8.2f", 100.0 * t->c1/t->tsc);
- 
- 	/* print per-core data only for 1st thread in core */
- 	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
-@@ -622,8 +611,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 
- 	/* GFXrc6 */
- 	if (do_gfx_rc6_ms) {
--		if (p->gfx_rc6_ms == -1) {	/* detect counter reset */
--			outp += sprintf(outp, "  ***.**");
-+		if (p->gfx_rc6_ms == -1) {	/* detect GFX counter reset */
-+			outp += sprintf(outp, "   **.**");
- 		} else {
- 			outp += sprintf(outp, "%8.2f",
- 				p->gfx_rc6_ms / 10.0 / interval_float);
-@@ -748,7 +737,7 @@ void format_all_counters(struct thread_data *t, struct core_data *c, struct pkg_
- 		old = 0x100000000 + new - old;	\
+-	for (i = 0; i < topo.max_cpu_num; ++i) {
++	for (i = 0; i < topo.max_cpu_num + 1; ++i) {
+ 		if (fd_percpu[i] != 0)
+ 			close(fd_percpu[i]);
  	}
- 
--void
-+int
- delta_package(struct pkg_data *new, struct pkg_data *old)
+@@ -3584,7 +3584,7 @@ void allocate_output_buffer()
+ }
+ void allocate_fd_percpu(void)
  {
- 
-@@ -784,6 +773,8 @@ delta_package(struct pkg_data *new, struct pkg_data *old)
- 	DELTA_WRAP32(new->energy_dram, old->energy_dram);
- 	DELTA_WRAP32(new->rapl_pkg_perf_status, old->rapl_pkg_perf_status);
- 	DELTA_WRAP32(new->rapl_dram_perf_status, old->rapl_dram_perf_status);
-+
-+	return 0;
+-	fd_percpu = calloc(topo.max_cpu_num, sizeof(int));
++	fd_percpu = calloc(topo.max_cpu_num + 1, sizeof(int));
+ 	if (fd_percpu == NULL)
+ 		err(-1, "calloc fd_percpu");
  }
+@@ -3594,9 +3594,9 @@ void allocate_irq_buffers(void)
+ 	if (irq_column_2_cpu == NULL)
+ 		err(-1, "calloc %d", topo.num_cpus);
  
- void
-@@ -798,7 +789,7 @@ delta_core(struct core_data *new, struct core_data *old)
- /*
-  * old = new - old
-  */
--void
-+int
- delta_thread(struct thread_data *new, struct thread_data *old,
- 	struct core_data *core_delta)
+-	irqs_per_cpu = calloc(topo.max_cpu_num, sizeof(int));
++	irqs_per_cpu = calloc(topo.max_cpu_num + 1, sizeof(int));
+ 	if (irqs_per_cpu == NULL)
+-		err(-1, "calloc %d", topo.max_cpu_num);
++		err(-1, "calloc %d", topo.max_cpu_num + 1);
+ }
+ void setup_all_buffers(void)
  {
-@@ -817,20 +808,7 @@ delta_thread(struct thread_data *new, struct thread_data *old,
- 			old->aperf = new->aperf - old->aperf;
- 			old->mperf = new->mperf - old->mperf;
- 		} else {
--
--			if (!aperf_mperf_unstable) {
--				fprintf(outf, "%s: APERF or MPERF went backwards *\n", progname);
--				fprintf(outf, "* Frequency results do not cover entire interval *\n");
--				fprintf(outf, "* fix this by running Linux-2.6.30 or later *\n");
--
--				aperf_mperf_unstable = 1;
--			}
--			/*
--			 * mperf delta is likely a huge "positive" number
--			 * can not use it for calculating c0 time
--			 */
--			skip_c0 = 1;
--			skip_c1 = 1;
-+			return -1;
- 		}
- 	}
- 
-@@ -877,24 +855,30 @@ delta_thread(struct thread_data *new, struct thread_data *old,
- 
- 	if (do_smi)
- 		old->smi_count = new->smi_count - old->smi_count;
-+
-+	return 0;
- }
- 
- int delta_cpu(struct thread_data *t, struct core_data *c,
- 	struct pkg_data *p, struct thread_data *t2,
- 	struct core_data *c2, struct pkg_data *p2)
- {
-+	int retval = 0;
-+
- 	/* calculate core delta only for 1st thread in core */
- 	if (t->flags & CPU_IS_FIRST_THREAD_IN_CORE)
- 		delta_core(c, c2);
- 
- 	/* always calculate thread delta */
--	delta_thread(t, t2, c2);	/* c2 is core delta */
-+	retval = delta_thread(t, t2, c2);	/* c2 is core delta */
-+	if (retval)
-+		return retval;
- 
- 	/* calculate package delta only for 1st core in package */
- 	if (t->flags & CPU_IS_FIRST_CORE_IN_PACKAGE)
--		delta_package(p, p2);
-+		retval = delta_package(p, p2);
- 
--	return 0;
-+	return retval;
- }
- 
- void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data *p)
-@@ -2067,7 +2051,10 @@ void turbostat_loop()
- 		}
- 		gettimeofday(&tv_odd, (struct timezone *)NULL);
- 		timersub(&tv_odd, &tv_even, &tv_delta);
--		for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS);
-+		if (for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS)) {
-+			re_initialize();
-+			goto restart;
-+		}
- 		compute_average(EVEN_COUNTERS);
- 		format_all_counters(EVEN_COUNTERS);
- 		flush_output_stdout();
-@@ -2083,7 +2070,10 @@ void turbostat_loop()
- 		}
- 		gettimeofday(&tv_even, (struct timezone *)NULL);
- 		timersub(&tv_even, &tv_odd, &tv_delta);
--		for_all_cpus_2(delta_cpu, EVEN_COUNTERS, ODD_COUNTERS);
-+		if (for_all_cpus_2(delta_cpu, EVEN_COUNTERS, ODD_COUNTERS)) {
-+			re_initialize();
-+			goto restart;
-+		}
- 		compute_average(ODD_COUNTERS);
- 		format_all_counters(ODD_COUNTERS);
- 		flush_output_stdout();
-@@ -3693,9 +3683,12 @@ int fork_it(char **argv)
- 	for_all_cpus(get_counters, ODD_COUNTERS);
- 	gettimeofday(&tv_odd, (struct timezone *)NULL);
- 	timersub(&tv_odd, &tv_even, &tv_delta);
--	for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS);
--	compute_average(EVEN_COUNTERS);
--	format_all_counters(EVEN_COUNTERS);
-+	if (for_all_cpus_2(delta_cpu, ODD_COUNTERS, EVEN_COUNTERS))
-+		fprintf(outf, "%s: Counter reset detected\n", progname);
-+	else {
-+		compute_average(EVEN_COUNTERS);
-+		format_all_counters(EVEN_COUNTERS);
-+	}
- 
- 	fprintf(outf, "%.6f sec\n", tv_delta.tv_sec + tv_delta.tv_usec/1000000.0);
- 
-@@ -3722,7 +3715,7 @@ int get_and_dump_counters(void)
- }
- 
- void print_version() {
--	fprintf(outf, "turbostat version 4.12 5 Apr 2016"
-+	fprintf(outf, "turbostat version 4.13 22 Apr 2016"
- 		" - Len Brown <lenb@kernel.org>\n");
- }
- 
 -- 
 2.11.0.161.g6610af872
 
