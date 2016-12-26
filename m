@@ -1,81 +1,35 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 4/9] pinctrl: samsung: Use generic of_device_get_match_data
- helper
-Date: Mon, 26 Dec 2016 14:44:26 +0900
-Message-ID: <CA+Ln22FfYkxJAOtpfr1UUai6vZej09NSZa6cz2cuO2aHN8Trmw@mail.gmail.com>
-References: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161223122527epcas1p441f0ee34c5738645163ef40c94591183@epcas1p4.samsung.com>
- <1482495889-6201-5-git-send-email-m.szyprowski@samsung.com> <20161225125607.a66kwtweizran4qw@kozik-lap>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20161225125607.a66kwtweizran4qw@kozik-lap>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Subject: [PATCH 0/3] power: bq27xxx: add support for NVRAM R/W access
+Date: Sun, 25 Dec 2016 21:44:39 -0800
+Message-ID: <20161226054442.23599-1-matt@ranostay.consulting>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-2016-12-25 21:56 GMT+09:00 Krzysztof Kozlowski <krzk@kernel.org>:
-> On Fri, Dec 23, 2016 at 01:24:44PM +0100, Marek Szyprowski wrote:
->> Replace custom code with generic helper.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
->>  drivers/pinctrl/samsung/pinctrl-samsung.c | 9 ++++-----
->>  1 file changed, 4 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
->> index 4d9262051ff1..a6c2ea74e0f3 100644
->> --- a/drivers/pinctrl/samsung/pinctrl-samsung.c
->> +++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
->> @@ -27,6 +27,7 @@
->>  #include <linux/err.h>
->>  #include <linux/gpio.h>
->>  #include <linux/irqdomain.h>
->> +#include <linux/of_device.h>
->>  #include <linux/spinlock.h>
->>  #include <linux/syscore_ops.h>
->>
->> @@ -967,15 +968,13 @@ static int samsung_gpiolib_unregister(struct platform_device *pdev,
->>       return 0;
->>  }
->>
->> -static const struct of_device_id samsung_pinctrl_dt_match[];
->> -
->>  /* retrieve the soc specific data */
->>  static const struct samsung_pin_ctrl *
->>  samsung_pinctrl_get_soc_data(struct samsung_pinctrl_drv_data *d,
->>                            struct platform_device *pdev)
->>  {
->>       int id;
->> -     const struct of_device_id *match;
->> +     const struct samsung_pin_ctrl *match_data;
->>       struct device_node *node = pdev->dev.of_node;
->>       struct device_node *np;
->>       const struct samsung_pin_bank_data *bdata;
->> @@ -990,8 +989,8 @@ static int samsung_gpiolib_unregister(struct platform_device *pdev,
->>               dev_err(&pdev->dev, "failed to get alias id\n");
->>               return ERR_PTR(-ENOENT);
->>       }
->> -     match = of_match_node(samsung_pinctrl_dt_match, node);
->> -     ctrl = (struct samsung_pin_ctrl *)match->data + id;
->> +     match_data = of_device_get_match_data(&pdev->dev);
->> +     ctrl = match_data + id;
->
-> Either you need a check for match_data != NULL or just remove match_data
-> and:
->         ctrl = of_device_get_match_data();
->         ctrl += id;
->
-> Actually match_data can be removed even with the check for non-NULL...
+Enable access to the NVRAM for the bq27425 chipset which allows to
+update the battery metrics that are used in the state machine.
 
-I don't think this function can ever return NULL if the match array
-contains a non-NULL value for each compatible string and the driver
-can be probed only by DT.
-But you still need to cast the match data pointer to the correct type
-and using a variable for it IMHO makes the code cleaner.
+This allows adjustments of a termination voltage, design energy, and
+design voltage.
 
-Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
+Matt Ranostay (3):
+  bq27xxx_battery: add BQ27425 chip id
+  devicetree: bq27425: add documentation for bq27425 fuel gauge
+  power: bq27xxx: add support for NVRAM R/W access
 
-Best regards,
-Tomasz
+ .../devicetree/bindings/power/bq27425.txt          |  25 ++
+ drivers/power/supply/bq27xxx_battery.c             |  24 +-
+ drivers/power/supply/bq27xxx_battery_i2c.c         | 336 ++++++++++++++++++++-
+ include/linux/power/bq27xxx_battery.h              |   7 +-
+ 4 files changed, 388 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/bq27425.txt
+
+-- 
+2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
