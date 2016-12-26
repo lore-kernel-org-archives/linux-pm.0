@@ -1,111 +1,94 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: [PATCH 1/3] bq27xxx_battery: add BQ27425 chip id
-Date: Sun, 25 Dec 2016 21:44:40 -0800
-Message-ID: <20161226054442.23599-2-matt@ranostay.consulting>
-References: <20161226054442.23599-1-matt@ranostay.consulting>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20161226054442.23599-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH 5/9] pinctrl: samsung: Move retention control from
+ mach-exynos to the pinctrl driver
+Date: Mon, 26 Dec 2016 14:55:15 +0900
+Message-ID: <CA+Ln22HQPHF_Vj0kS834SH=4=hcNOpe_vL8P3fbS-jFhQLVyXA@mail.gmail.com>
+References: <CGME20161223122531epcas1p4b8fad6664dad3408acb7a1b9f140884a@epcas1p4.samsung.com>
+ <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com> <1482495889-6201-6-git-send-email-m.szyprowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f195.google.com ([209.85.161.195]:36531 "EHLO
+        mail-yw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752016AbcLZFzQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 26 Dec 2016 00:55:16 -0500
+In-Reply-To: <1482495889-6201-6-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
----
- drivers/power/supply/bq27xxx_battery.c     | 24 ++++++++++++++++++++++--
- drivers/power/supply/bq27xxx_battery_i2c.c |  2 +-
- include/linux/power/bq27xxx_battery.h      |  3 ++-
- 3 files changed, 25 insertions(+), 4 deletions(-)
+Hi,
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 08c36b8e04bd..721cf6f67874 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -259,6 +259,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_DCAP] = 0x3c,
- 		[BQ27XXX_REG_AP] = 0x18,
- 	},
-+	[BQ27425] = {
-+		[BQ27XXX_REG_CTRL] = 0x00,
-+		[BQ27XXX_REG_TEMP] = 0x02,
-+		[BQ27XXX_REG_INT_TEMP] = 0x1e,
-+		[BQ27XXX_REG_VOLT] = 0x04,
-+		[BQ27XXX_REG_AI] = 0x10,
-+		[BQ27XXX_REG_FLAGS] = 0x06,
-+		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_NAC] = 0x08,
-+		[BQ27XXX_REG_FCC] = 0x0e,
-+		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_SOC] = 0x1c,
-+		[BQ27XXX_REG_DCAP] = 0x3c,
-+		[BQ27XXX_REG_AP] = 0x18,
-+	},
- };
- 
- static enum power_supply_property bq27000_battery_props[] = {
-@@ -427,6 +446,7 @@ static struct {
- 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
- 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
- 	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
-+	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
- };
- 
- static DEFINE_MUTEX(bq27xxx_list_lock);
-@@ -677,7 +697,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
- 	if (di->chip == BQ27500 || di->chip == BQ27510 ||
- 	    di->chip == BQ27541 || di->chip == BQ27545)
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
--	if (di->chip == BQ27530 || di->chip == BQ27421)
-+	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
- 		return flags & BQ27XXX_FLAG_OT;
- 
- 	return false;
-@@ -688,7 +708,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
-  */
- static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
- {
--	if (di->chip == BQ27530 || di->chip == BQ27421)
-+	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
- 		return flags & BQ27XXX_FLAG_UT;
- 
- 	return false;
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 5c5c3a6f9923..27143230839a 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -159,9 +159,9 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27742", BQ27541 },
- 	{ "bq27545", BQ27545 },
- 	{ "bq27421", BQ27421 },
--	{ "bq27425", BQ27421 },
- 	{ "bq27441", BQ27421 },
- 	{ "bq27621", BQ27421 },
-+	{ "bq27425", BQ27425 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index bed9557b69e7..14ecac158150 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -9,7 +9,8 @@ enum bq27xxx_chip {
- 	BQ27530, /* bq27530, bq27531 */
- 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
- 	BQ27545, /* bq27545 */
--	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-+	BQ27421, /* bq27421, bq27441, bq27621 */
-+	BQ27425, /* bq27425 */
- };
- 
- /**
--- 
-2.7.4
+2016-12-23 21:24 GMT+09:00 Marek Szyprowski <m.szyprowski@samsung.com>:
+> Pad retention control after suspend/resume cycle should be done from pin
+> controller driver instead of PMU (power management unit) driver to avoid
+> possible ordering and logical dependencies. Till now it worked fine only
+> because PMU driver registered its sys_ops after pin controller.
+>
+> This patch moves pad retention control from PMU driver to Exynos pin
+> controller driver. This is a preparation for adding new features to Exynos
+> pin controller driver, like runtime power management and suspending
+> individual pin controllers, which might be a part of some power domain.
+>
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+It looks like this change will essentially break the compatibility
+with DTBs that don't have the pmu syscon specified in pin controller
+nodes.
+
+On the other hand, moving this code to where it actually belongs
+really makes sense, so maybe we could just avoid the need of having
+this property, by looking up the PMU manually, by hardcoded string or
+so, if the proper property is not present?
+
+[...]
+
+> diff --git a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+> index 1baf19eecabf..b7bd2e12a269 100644
+> --- a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+> +++ b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+> @@ -43,6 +43,10 @@ Required Properties:
+>                 };
+>         };
+>
+> +- samsung,pmu-syscon: Phandle to the PMU system controller, to let driver
+> +  to control pad retention after system suspend/resume cycle (only for Exynos
+> +  SoC series).
+> +
+
+Ah, here it is. I think adding relevant binding documentation at the
+beginning of the series would make it much easier for reviewers to
+understand the change.
+
+>  - Pin banks as child nodes: Pin banks of the controller are represented by child
+>    nodes of the controller node. Bank name is taken from name of the node. Each
+>    bank node must contain following properties:
+
+[...]
+
+> +static void exynos_retention_audio_off(struct samsung_pinctrl_drv_data *drvdata)
+> +{
+> +       if (!IS_ERR(pmu_regs))
+
+nit: Negated conditions make the code more difficult to read. Also it
+would be consistent with exynos_retention_off() to just bail out if
+(IS_ERR(pmu_regs)).
+
+> +               regmap_write(pmu_regs, S5P_PAD_RET_MAUDIO_OPTION,
+> +                            EXYNOS_WAKEUP_FROM_LOWPWR);
+> +}
+
+[...]
+
+> @@ -1139,15 +1146,15 @@ static void samsung_pinctrl_suspend_dev(
+>
+>         if (drvdata->suspend)
+>                 drvdata->suspend(drvdata);
+> +       if (drvdata->retention_on)
+> +               drvdata->retention_on(drvdata);
+> +
+
+nit: Unnecessary blank line.
+
+Best regards,
+Tomasz
