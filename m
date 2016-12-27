@@ -1,117 +1,100 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 7/9] pinctrl: samsung: Add property to mark pad state as
- suitable for power down
-Date: Tue, 27 Dec 2016 17:33:31 +0200
-Message-ID: <20161227153331.jbh7ei6oh3obmnri@kozik-lap>
-References: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161223122538epcas5p29515ceff21963ab035b3b32878830ce2@epcas5p2.samsung.com>
- <1482495889-6201-8-git-send-email-m.szyprowski@samsung.com>
- <20161225191914.5bzl6fso36ozuum6@kozik-lap>
- <bd48fe32-5296-fc23-dbb8-d212292d76cd@samsung.com>
+Subject: Re: [PATCH 5/9] pinctrl: samsung: Move retention control from
+ mach-exynos to the pinctrl driver
+Date: Tue, 27 Dec 2016 17:39:49 +0200
+Message-ID: <20161227153949.wbxvaabawquscpsn@kozik-lap>
+References: <CGME20161223122531epcas1p4b8fad6664dad3408acb7a1b9f140884a@epcas1p4.samsung.com>
+ <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
+ <1482495889-6201-6-git-send-email-m.szyprowski@samsung.com>
+ <CA+Ln22HQPHF_Vj0kS834SH=4=hcNOpe_vL8P3fbS-jFhQLVyXA@mail.gmail.com>
+ <5d09e29f-5796-cce6-75d5-ed5a0145092f@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <bd48fe32-5296-fc23-dbb8-d212292d76cd@samsung.com>
+In-Reply-To: <5d09e29f-5796-cce6-75d5-ed5a0145092f@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, devicetree@vger.kernel.org
+Cc: Tomasz Figa <tomasz.figa@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 27, 2016 at 11:30:57AM +0100, Marek Szyprowski wrote:
-> Hi Krzysztof,
+On Tue, Dec 27, 2016 at 11:12:26AM +0100, Marek Szyprowski wrote:
+> Hi Tomasz,
 > 
 > 
-> On 2016-12-25 20:19, Krzysztof Kozlowski wrote:
-> > On Fri, Dec 23, 2016 at 01:24:47PM +0100, Marek Szyprowski wrote:
-> > > Add support for special property "samsung,off-state", which indicates a special
-> > > state suitable for device's "sleep" state. Its pin values/properties should
-> > > match the configuration in power down mode. It indicates that pin controller
-> > > can notify runtime power management subsystem, that it is ready for runtime
-> > > suspend if its all pins are configured for such state. This in turn might
-> > > allow to turn respective power domain off to reduce power consumption.
+> On 2016-12-26 06:55, Tomasz Figa wrote:
+> > 2016-12-23 21:24 GMT+09:00 Marek Szyprowski <m.szyprowski@samsung.com>:
+> > > Pad retention control after suspend/resume cycle should be done from pin
+> > > controller driver instead of PMU (power management unit) driver to avoid
+> > > possible ordering and logical dependencies. Till now it worked fine only
+> > > because PMU driver registered its sys_ops after pin controller.
 > > > 
-> > > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> > > ---
-> > >   Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt | 8 ++++++++
-> > >   drivers/pinctrl/samsung/pinctrl-samsung.c                     | 4 ++++
-> > >   drivers/pinctrl/samsung/pinctrl-samsung.h                     | 1 +
-> > >   3 files changed, 13 insertions(+)
+> > > This patch moves pad retention control from PMU driver to Exynos pin
+> > > controller driver. This is a preparation for adding new features to Exynos
+> > > pin controller driver, like runtime power management and suspending
+> > > individual pin controllers, which might be a part of some power domain.
 > > > 
+> > It looks like this change will essentially break the compatibility
+> > with DTBs that don't have the pmu syscon specified in pin controller
+> > nodes.
+> > 
+> > On the other hand, moving this code to where it actually belongs
+> > really makes sense, so maybe we could just avoid the need of having
+> > this property, by looking up the PMU manually, by hardcoded string or
+> > so, if the proper property is not present?
+> 
+> Well, once again the topic of mythical device tree compatibility appearch.
+> 
+> There are imho following possibilities:
+> 
+> 1. https://patchwork.kernel.org/patch/9477963/ ("Explicitly mark Samsung
+>    Exynos SoC bindings as unstable"), simply apply this approach and ignore
+>    users, who don't update their device tree blobs (are there any??).
+
+That is not how it works. Assuming that there was this "mythical
+compatibility" then you would have to wait a few moments between marking
+something "to be broken" and actually breaking it. In other words, if
+you wanted to silence the "breaking compatibility" folks, then the patch
+above should have been sent a while ago.
+
+> 2. Switch to syscon_regmap_lookup_by_compatible() lookup and hardcode PMU
+>    compatible id for all Exynos SoCs in the pin control driver. Then maybe,
+>    while unifying the code, switch other Exynos drivers to this approach
+>    and remove PMU phandles from device tree to make the code a bit more
+>    consistent across drivers and easier to understand.
+> 
+> 3. Mixed approach, which combines drawbacks of both approaches. Additional
+>    dead code for handling mythical compatibility and harder to understand
+>    relations between the drivers.
+> 
+> 
+> > [...]
+> > 
 > > > diff --git a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
-> > > index b7bd2e12a269..354eea0e7798 100644
+> > > index 1baf19eecabf..b7bd2e12a269 100644
 > > > --- a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
 > > > +++ b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
-> > > @@ -105,6 +105,7 @@ Required Properties:
-> > >     - samsung,pin-drv: Drive strength configuration.
-> > >     - samsung,pin-pud-pdn: Pull up/down configuration in power down mode.
-> > >     - samsung,pin-drv-pdn: Drive strength configuration in power down mode.
-> > > +  - samsung,off-state: Mark this configuration as suitable for bank power off.
-> > >     The values specified by these config properties should be derived from the
-> > >     hardware manual and these values are programmed as-is into the pin
-> > > @@ -113,6 +114,13 @@ Required Properties:
-> > >     Note: A child should include atleast a pin function selection property or
-> > >     pin configuration property (one or more) or both.
-> > > +  Note: Special property "samsung,off-state" indicates that this state can
-> > > +  be used for device's "sleep" pins state. Its pin values/properties should
-> > > +  match the configuration in power down mode.
-> > Why power down values cannot be used for sleep state? Why you need
-> > separate pin control state? If pins values should match power down
-> > configuration, then they could just be added to default state, couldn't
-> > they?
+> > > @@ -43,6 +43,10 @@ Required Properties:
+> > >                  };
+> > >          };
+> > > 
+> > > +- samsung,pmu-syscon: Phandle to the PMU system controller, to let driver
+> > > +  to control pad retention after system suspend/resume cycle (only for Exynos
+> > > +  SoC series).
+> > > +
+> > Ah, here it is. I think adding relevant binding documentation at the
+> > beginning of the series would make it much easier for reviewers to
+> > understand the change.
 > 
-> Separate sleep state is needed because of the pin control bindings and
-> design.
-> 
-> A separate sleep state is required to let pin control client driver (in this
-> case
-> Exynos I2S driver) let to choose when it is okay to switch pads into sleep
-> state and I see no other way to achieve this.
+> I already pointed that patches are ordered to make the changes bisectable,
+> what
+> usually means that new properties are added first, before being required by
+> the
+> drivers.
 
-Maybe the pinctrl API should be extended for this? Doing this in DTS
-just for purpose of passing information between drivers (consumer and
-provider) looks odd.
-
-Anyway, you are proposing a new binding so please Cc devicetree mailing
-list and device tree maintainers.
-
-> > In the patch 2/9, existing configuration:
-> > 716         i2s0_bus: i2s0-bus {
-> > (...)
-> > 719                 samsung,pin-function = <EXYNOS_PIN_FUNC_2>;
-> > 720                 samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> > 721                 samsung,pin-drv = <EXYNOS5420_PIN_DRV_LV1>;
-> > 722         };
-> > 
-> > additional configuration:
-> > +       i2s0_bus_slp: i2s0-bus-slp {
-> > +               samsung,pin-function = <EXYNOS_PIN_FUNC_INPUT>;
-> > +               samsung,pin-pud = <EXYNOS_PIN_PULL_NONE>;
-> > +               samsung,pin-drv = <EXYNOS5420_PIN_DRV_LV1>;
-> > +               samsung,pin-con-pdn = <EXYNOS_PIN_PDN_INPUT>;
-> > +               samsung,pin-pud-pdn = <EXYNOS_PIN_PULL_NONE>;
-> > +               samsung,off-state;
-> > +       };
-> 
-> I agree that it would be possible to get rid of "samsung,off-state" property
-> and
-> just detect off state when func/pud pair matches power down func/pud.
-> 
-> > > It indicates that pin control
-> > > +  can notify runtime power management subsystem, that it is ready for runtime
-> > > +  suspend if its all pins are configured for such state. This in turn might
-> > > +  allow to turn respective power domain off to reduce power consumption.
-> > What do you mean by "notifying RPM subsystem"? Either this is
-> > description of hardware in certain mode (sleep state) or this is not
-> > device tree property.
-> 
-> Maybe I wrote the description with a view too limited to the kernel
-> operation
-> perspective, but if we remove the need to mark state as off, the above
-> description
-> will not be needed.
-
-But still it wouldn't be describing any hardware property, would it?
+I saw the explanation for this order and I don't have problems with it.
+However you can always split to separate patch the documentation for
+bindings. It won't break bisectability.
 
 Best regards,
 Krzysztof
