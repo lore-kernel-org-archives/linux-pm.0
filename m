@@ -1,97 +1,58 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: [PATCH v2] thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()
-Date: Tue, 27 Dec 2016 15:31:49 -0200
-Message-ID: <1482859909-6924-1-git-send-email-festevam@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:34624 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933349AbcL0Rbu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 12:31:50 -0500
-Received: by mail-qt0-f193.google.com with SMTP id p16so21670736qta.1
-        for <linux-pm@vger.kernel.org>; Tue, 27 Dec 2016 09:31:50 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH] irqchip: mxs: Enable SKIP_SET_WAKE and MASK_ON_SUSPEND
+Date: Tue, 27 Dec 2016 18:29:57 +0000
+Message-ID: <1482863397-11400-1-git-send-email-stefan.wahren@i2se.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>
+Cc: Marek Vasut <marex@denx.de>, Stefan Wahren <stefan.wahren@i2se.com>, linux-pm@vger.kernel.org, Oleksij Rempel <linux@rempel-privat.de>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org, =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <lw@karo-electronics.de>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com
-Cc: rui.zhang@intel.com, linux@roeck-us.net, linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>
 
-From: Fabio Estevam <fabio.estevam@nxp.com>
+The ICOLL controller doesn't provide any facility to configure the
+wakeup sources. That's the reason why this implementation lacks
+the irq_set_wake implementation. But this prevent us from properly
+entering power management states like "suspend to idle".
 
-Booting Linux on a mx6q based board leads to the following warning:
+So enable the flags IRQCHIP_SKIP_SET_WAKE and
+IRQCHIP_MASK_ON_SUSPEND to let the irqchip core allows and handles
+the power management.
 
-(NULL device *): hwmon_device_register() is deprecated. Please convert the
-driver to use hwmon_device_register_with_info().
-
-,so do as suggested.
-
-Also, this results in the core taking care of creating the 'name'
-attribute, so drop the code doing that from the thermal driver.
-
-Suggested-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
-Changes since v1:
-- Remove dev_set_drvdata() as it is also taken care by the hwmon core.
+ drivers/irqchip/irq-mxs.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
- drivers/thermal/thermal_hwmon.c | 20 +++-----------------
- 1 file changed, 3 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 541af59..c4a508a 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
- static DEFINE_MUTEX(thermal_hwmon_list_lock);
+diff --git a/drivers/irqchip/irq-mxs.c b/drivers/irqchip/irq-mxs.c
+index 1730470..05fa9f7 100644
+--- a/drivers/irqchip/irq-mxs.c
++++ b/drivers/irqchip/irq-mxs.c
+@@ -131,12 +131,16 @@ static void asm9260_unmask_irq(struct irq_data *d)
+ 	.irq_ack = icoll_ack_irq,
+ 	.irq_mask = icoll_mask_irq,
+ 	.irq_unmask = icoll_unmask_irq,
++	.flags = IRQCHIP_MASK_ON_SUSPEND |
++		 IRQCHIP_SKIP_SET_WAKE,
+ };
  
- static ssize_t
--name_show(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
--	return sprintf(buf, "%s\n", hwmon->type);
--}
--static DEVICE_ATTR_RO(name);
--
--static ssize_t
- temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	int temperature;
-@@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ static struct irq_chip asm9260_icoll_chip = {
+ 	.irq_ack = icoll_ack_irq,
+ 	.irq_mask = asm9260_mask_irq,
+ 	.irq_unmask = asm9260_unmask_irq,
++	.flags = IRQCHIP_MASK_ON_SUSPEND |
++		 IRQCHIP_SKIP_SET_WAKE,
+ };
  
- 	INIT_LIST_HEAD(&hwmon->tz_list);
- 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
--	hwmon->device = hwmon_device_register(NULL);
-+	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
-+							hwmon, NULL, NULL);
- 	if (IS_ERR(hwmon->device)) {
- 		result = PTR_ERR(hwmon->device);
- 		goto free_mem;
- 	}
--	dev_set_drvdata(hwmon->device, hwmon);
--	result = device_create_file(hwmon->device, &dev_attr_name);
--	if (result)
--		goto free_mem;
- 
-  register_sys_interface:
- 	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
-@@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
-  free_temp_mem:
- 	kfree(temp);
-  unregister_name:
--	if (new_hwmon_device) {
--		device_remove_file(hwmon->device, &dev_attr_name);
-+	if (new_hwmon_device)
- 		hwmon_device_unregister(hwmon->device);
--	}
-  free_mem:
- 	if (new_hwmon_device)
- 		kfree(hwmon);
-@@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
- 	list_del(&hwmon->node);
- 	mutex_unlock(&thermal_hwmon_list_lock);
- 
--	device_remove_file(hwmon->device, &dev_attr_name);
- 	hwmon_device_unregister(hwmon->device);
- 	kfree(hwmon);
- }
+ asmlinkage void __exception_irq_entry icoll_handle_irq(struct pt_regs *regs)
 -- 
-2.7.4
-
+1.7.9.5
