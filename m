@@ -1,108 +1,62 @@
-From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
-Subject: Re: [PATCH v2 1/3] PM suspend/hibernate: Call notifier after freezing processes
-Date: Tue, 27 Dec 2016 15:29:59 +0100
-Message-ID: <201612271529.59652@pali>
-References: <1428254419-7334-1-git-send-email-pali.rohar@gmail.com> <CAJZ5v0h-0Jo7A0hmPSfHcZbkRU7wKwVtSqTCCwX1rs=iBE9G5g@mail.gmail.com> <CAJZ5v0jGuLTJbsjW3WPe2Y8OgwMgcSSwTRNB8+PWaxwKpSDP-g@mail.gmail.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC] thermal: thermal_hwmon: Convert to
+ hwmon_device_register_with_info()
+Date: Tue, 27 Dec 2016 07:24:18 -0800
+Message-ID: <a48feeaa-c2b4-c8b1-bb18-915bf84e64de@roeck-us.net>
+References: <1482843640-25255-1-git-send-email-festevam@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4057816.mhXr7E65Lq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:34828 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932449AbcL0OaF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 09:30:05 -0500
-In-Reply-To: <CAJZ5v0jGuLTJbsjW3WPe2Y8OgwMgcSSwTRNB8+PWaxwKpSDP-g@mail.gmail.com>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:52955 "EHLO
+        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753057AbcL0PYU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 10:24:20 -0500
+In-Reply-To: <1482843640-25255-1-git-send-email-festevam@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: NeilBrown <neilb@suse.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Alasdair Kergon <agk@redhat.com>, Mike Snitzer <snitzer@redhat.com>, Neil Brown <neilb@suse.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, dm-devel@redhat.com, linux-raid@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Fabio Estevam <festevam@gmail.com>, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>
 
---nextPart4057816.mhXr7E65Lq
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+On 12/27/2016 05:00 AM, Fabio Estevam wrote:
+> From: Fabio Estevam <fabio.estevam@nxp.com>
+>
+> Booting Linux on a mx6q based board leads to the following warning:
+>
+> (NULL device *): hwmon_device_register() is deprecated. Please convert the
+> driver to use hwmon_device_register_with_info().
+>
+> ,so do as suggested.
+>
+> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+> ---
+>  drivers/thermal/thermal_hwmon.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+> index 541af59..22397dd 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -165,7 +165,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+>
+>  	INIT_LIST_HEAD(&hwmon->tz_list);
+>  	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+> -	hwmon->device = hwmon_device_register(NULL);
+> +	hwmon->device = hwmon_device_register_with_info(NULL, NULL, NULL,
+> +							NULL, NULL);
 
-On Wednesday 22 July 2015 01:03:23 Rafael J. Wysocki wrote:
-> On Wed, Jul 22, 2015 at 1:00 AM, Rafael J. Wysocki <rafael@kernel.org>
-> wrote:
-> > Hi Neil,
-> >=20
-> > On Wed, Jul 22, 2015 at 12:08 AM, NeilBrown <neilb@suse.com> wrote:
-> >> On Mon, 20 Jul 2015 23:46:32 +0200 "Rafael J. Wysocki"
-> >>=20
-> >> <rjw@rjwysocki.net> wrote:
-> >>> On Monday, July 20, 2015 09:32:26 AM Pali Roh=C3=A1r wrote:
-> >>> > On Saturday 18 July 2015 01:27:15 Rafael J. Wysocki wrote:
-> >>> > > On Thursday, July 16, 2015 09:33:02 AM Pali Roh=C3=A1r wrote:
-> >>> > > > On Thursday 16 July 2015 03:02:03 Rafael J. Wysocki wrote:
-> >>> > > > > Also, if you're adding AFTER_FREEZE, it would be good to
-> >>> > > > > add BEFORE_THAW too for symmetry.
-> >>> > > >=20
-> >>> > > > But there is no use case for BEFORE_THAW. At least it is
-> >>> > > > not needed for now.
-> >>> > >=20
-> >>> > > For your use case, a single function pointer would be
-> >>> > > sufficient too.
-> >>> >=20
-> >>> > What do you mean by single function pointer? kernel/power is
-> >>> > part of kernel image and dm-crypt is external kernel module.
-> >>>=20
-> >>> Well, if there is a function pointer in the core suspend code
-> >>> initially set to NULL and exported to modules such that the
-> >>> dm-crypt code can set it to something else, that should be
-> >>> sufficient, shouldn't it?
-> >>=20
-> >> As long as the dm-crypt module is never unloaded.
-> >=20
-> > OK, there is a race related to that.
-> >=20
-> >> And as long as no other module could very possible want
-> >> functionality like this. Ever.
-> >=20
-> > The point was that there were no other users currently, so dm-crypt
-> > is going to be the only user for the time being.
-> >=20
-> >> If a module wants to be notified - the providing a notifier chain
-> >> really seems like the right thing to do...
-> >=20
-> > Well, so please see my last response in this thread. :-)
->=20
-> So it was below: "Anyway, I guess the "post freeze" new one should be
-> enough for now" which doesn't mean I'm really against the notifier.
-> Or at least it is not supposed to mean so.  If there's any confusion
-> related to that, I'm sorry.
->=20
-> Thanks,
-> Rafael
+Interesting way of defeating the purpose ;-).
 
-In that case we are not able to distinguish if computer is going to be=20
-hibernated or just suspended to RAM.
+Any interest in at least trying (NULL, hwmon->type, hwmon, NULL, NULL) ?
 
-If we have both notifier (one for suspend and for hibernate) then=20
-different actions can be configured for suspend and hibernate.
+This should result in the core taking care of creating the 'name'
+attribute, so it should be possible to drop the code doing that from
+the thermal driver.
 
-And it makes sense to configure different behaviour for suspend and for=20
-hibernate. E.g. when you have encrypted partition where is stored=20
-hibernation image then you do not have to wipe keys before going to do=20
-hibernation. But for suspend to RAM you may want to wipe them.
+Guenter
 
-=2D-=20
-Pali Roh=C3=A1r
-pali.rohar@gmail.com
+>  	if (IS_ERR(hwmon->device)) {
+>  		result = PTR_ERR(hwmon->device);
+>  		goto free_mem;
+>
 
---nextPart4057816.mhXr7E65Lq
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.11 (GNU/Linux)
-
-iEYEABECAAYFAlhieucACgkQi/DJPQPkQ1JBTQCfR4Ic5rHsu15SxmiTkMkc5p1e
-SgMAnjr32h44Mspa3FV/NART53tkYicj
-=tOeL
------END PGP SIGNATURE-----
-
---nextPart4057816.mhXr7E65Lq--
