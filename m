@@ -1,37 +1,99 @@
-From: Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH v1 03/54] kernel/power/swap.c: comment on direct access to bvec table
-Date: Tue, 27 Dec 2016 23:55:52 +0800
-Message-ID: <1482854250-13481-4-git-send-email-tom.leiming@gmail.com>
-References: <1482854250-13481-1-git-send-email-tom.leiming@gmail.com>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH] thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()
+Date: Tue, 27 Dec 2016 14:24:12 -0200
+Message-ID: <1482855852-26188-1-git-send-email-festevam@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34056 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933003AbcL0QGz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 11:06:55 -0500
-In-Reply-To: <1482854250-13481-1-git-send-email-tom.leiming@gmail.com>
+Received: from mail-qk0-f196.google.com ([209.85.220.196]:35747 "EHLO
+        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932900AbcL0QYZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 11:24:25 -0500
+Received: by mail-qk0-f196.google.com with SMTP id u25so28767608qki.2
+        for <linux-pm@vger.kernel.org>; Tue, 27 Dec 2016 08:24:25 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org
-Cc: linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
+To: edubezval@gmail.com
+Cc: rui.zhang@intel.com, linux@roeck-us.net, linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+From: Fabio Estevam <fabio.estevam@nxp.com>
+
+Booting Linux on a mx6q based board leads to the following warning:
+
+(NULL device *): hwmon_device_register() is deprecated. Please convert the
+driver to use hwmon_device_register_with_info().
+
+,so do as suggested.
+
+Also, this results in the core taking care of creating the 'name'
+attribute, so drop the code doing that from the thermal driver.
+
+Suggested-by: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
 ---
- kernel/power/swap.c | 2 ++
- 1 file changed, 2 insertions(+)
+Changes since RFC:
+- Properly use hwmon_device_register_with_info()
+- Remove device_create_file() from the thermal driver as the hwmon core
+will take care of it
 
-diff --git a/kernel/power/swap.c b/kernel/power/swap.c
-index 32e0c232efba..031e709c9fc4 100644
---- a/kernel/power/swap.c
-+++ b/kernel/power/swap.c
-@@ -238,6 +238,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
- static void hib_end_io(struct bio *bio)
- {
- 	struct hib_bio_batch *hb = bio->bi_private;
-+
-+	/* single page bio, safe for multipage bvec */
- 	struct page *page = bio->bi_io_vec[0].bv_page;
+ drivers/thermal/thermal_hwmon.c | 19 +++----------------
+ 1 file changed, 3 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index 541af59..39d8a90 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
+ static DEFINE_MUTEX(thermal_hwmon_list_lock);
  
- 	if (bio->bi_error) {
+ static ssize_t
+-name_show(struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
+-	return sprintf(buf, "%s\n", hwmon->type);
+-}
+-static DEVICE_ATTR_RO(name);
+-
+-static ssize_t
+ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	int temperature;
+@@ -165,15 +157,13 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 
+ 	INIT_LIST_HEAD(&hwmon->tz_list);
+ 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+-	hwmon->device = hwmon_device_register(NULL);
++	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
++							hwmon, NULL, NULL);
+ 	if (IS_ERR(hwmon->device)) {
+ 		result = PTR_ERR(hwmon->device);
+ 		goto free_mem;
+ 	}
+ 	dev_set_drvdata(hwmon->device, hwmon);
+-	result = device_create_file(hwmon->device, &dev_attr_name);
+-	if (result)
+-		goto free_mem;
+ 
+  register_sys_interface:
+ 	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
+@@ -222,10 +212,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+  free_temp_mem:
+ 	kfree(temp);
+  unregister_name:
+-	if (new_hwmon_device) {
+-		device_remove_file(hwmon->device, &dev_attr_name);
++	if (new_hwmon_device)
+ 		hwmon_device_unregister(hwmon->device);
+-	}
+  free_mem:
+ 	if (new_hwmon_device)
+ 		kfree(hwmon);
+@@ -267,7 +255,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	list_del(&hwmon->node);
+ 	mutex_unlock(&thermal_hwmon_list_lock);
+ 
+-	device_remove_file(hwmon->device, &dev_attr_name);
+ 	hwmon_device_unregister(hwmon->device);
+ 	kfree(hwmon);
+ }
 -- 
 2.7.4
 
