@@ -1,99 +1,129 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 0/9] Runtime PM for Exynos pin controller driver
-Date: Tue, 27 Dec 2016 09:29:07 +0100
-Message-ID: <29869e29-8294-528e-fb95-e355a3844071@samsung.com>
-References: <CGME20161223122513epcas1p394d93d72d2d32c8910aafd1f6cc6b5e2@epcas1p3.samsung.com>
+Subject: Re: [PATCH 5/9] pinctrl: samsung: Move retention control from
+ mach-exynos to the pinctrl driver
+Date: Tue, 27 Dec 2016 11:12:26 +0100
+Message-ID: <5d09e29f-5796-cce6-75d5-ed5a0145092f@samsung.com>
+References: <CGME20161223122531epcas1p4b8fad6664dad3408acb7a1b9f140884a@epcas1p4.samsung.com>
  <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
- <CANAwSgRQuoriU923XT1B_0CVX2rzOR+8j2YHLMYRUu3gGySEBw@mail.gmail.com>
+ <1482495889-6201-6-git-send-email-m.szyprowski@samsung.com>
+ <CA+Ln22HQPHF_Vj0kS834SH=4=hcNOpe_vL8P3fbS-jFhQLVyXA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <CANAwSgRQuoriU923XT1B_0CVX2rzOR+8j2YHLMYRUu3gGySEBw@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: linux-gpio@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <CA+Ln22HQPHF_Vj0kS834SH=4=hcNOpe_vL8P3fbS-jFhQLVyXA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Tomasz Figa <tomasz.figa@gmail.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Anand,
+Hi Tomasz,
 
 
-On 2016-12-24 11:10, Anand Moon wrote:
-> Hi Marek
+On 2016-12-26 06:55, Tomasz Figa wrote:
+> 2016-12-23 21:24 GMT+09:00 Marek Szyprowski <m.szyprowski@samsung.com>:
+>> Pad retention control after suspend/resume cycle should be done from pin
+>> controller driver instead of PMU (power management unit) driver to avoid
+>> possible ordering and logical dependencies. Till now it worked fine only
+>> because PMU driver registered its sys_ops after pin controller.
+>>
+>> This patch moves pad retention control from PMU driver to Exynos pin
+>> controller driver. This is a preparation for adding new features to Exynos
+>> pin controller driver, like runtime power management and suspending
+>> individual pin controllers, which might be a part of some power domain.
+>>
+> It looks like this change will essentially break the compatibility
+> with DTBs that don't have the pmu syscon specified in pin controller
+> nodes.
 >
-> On 23 December 2016 at 17:54, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
->> Hello,
->>
->> This patchset is a next step to add support for audio power domain on
->> Exynos5 SoCs.
->>
->> Audio power domain on Exynos5 SoCs contains following hardware modules:
->> 1. clock controller
->> 2. pin controller
->> 3. PL330 DMA controller
->> 4. I2S audio controller
->>
->> Till now it was assumed that pin controller is located in the "always on"
->> power domain and lacked runtime power management. This patch finally
->> removes such assumption and adds runtime pm support and awareness to this
->> driver. To achieve this, some changes in the Exynos platform support code
->> were needed, like moving pad retention control to the pin controller driver.
->> Some cleanup to the pin controller driver has been also done while changing
->> the code. This new feature requires some additional information in the
->> device tree, what is handled by patches 1,2 and 9.
->>
->> Please note that patches are ordered in such a way that the changes can be
->> bisected, so the properties are added to dts before the code requiring them.
->>
->> The other patches related to enabling full support for audio power domain
->> can be found here:
->> 1. PL330 ADMA controller non-irqsafe runtime PM:
->>     https://www.spinics.net/lists/arm-kernel/msg550008.html
->> 2. Runtime PM for clock controllers (Exynos Audio subsystem will be added
->>     in v4 soon): https://www.spinics.net/lists/arm-kernel/msg538122.html
->>
->> Patches are based on linux-next from 2016.12.22.
->>
->> Best regards
->> Marek Szyprowski
->> Samsung R&D Institute Poland
->>
->>
->> Patch summary:
->>
->> Marek Szyprowski (9):
->>    ARM: dts: exynos: Add PMU syscon to pinctrl nodes
->>    ARM: dts: exynos: Add pinctrl sleep state for 542x i2s module
->>    pinctrl: samsung: Remove dead code
->>    pinctrl: samsung: Use generic of_device_get_match_data helper
->>    pinctrl: samsung: Move retention control from mach-exynos to the
->>      pinctrl driver
->>    pinctrl: samsung: Replace syscore ops with standard platform device
->>      pm_ops
->>    pinctrl: samsung: Add property to mark pad state as suitable for power
->>      down
->>    pinctrl: samsung: Add runtime PM support
->>    ARM: dts: exynos: Add audio power domain support to Exynos542x SoCs
->>
->>   .../bindings/pinctrl/samsung-pinctrl.txt           |  12 ++
->>   arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
->>   arch/arm/boot/dts/exynos4210.dtsi                  |   3 +
->>   arch/arm/boot/dts/exynos4x12.dtsi                  |   3 +
->>   arch/arm/boot/dts/exynos5250.dtsi                  |   4 +
->>   arch/arm/boot/dts/exynos5420-pinctrl.dtsi          |  11 ++
->>   arch/arm/boot/dts/exynos5420.dtsi                  |  18 ++-
->>   arch/arm/mach-exynos/suspend.c                     |  64 ---------
->>   drivers/pinctrl/samsung/pinctrl-exynos.c           | 148 +++++++++++++++++++++
->>   drivers/pinctrl/samsung/pinctrl-samsung.c          | 126 ++++++++----------
->>   drivers/pinctrl/samsung/pinctrl-samsung.h          |  15 +++
->>   11 files changed, 271 insertions(+), 135 deletions(-)
->>
-> Is their core configuration missing to enable audio through HDMI on
-> Odroid Boards.
-> I could not get the sound working on Odroid XU4.
+> On the other hand, moving this code to where it actually belongs
+> really makes sense, so maybe we could just avoid the need of having
+> this property, by looking up the PMU manually, by hardcoded string or
+> so, if the proper property is not present?
 
-Audio support for HDMI on Exynos requires some additional code. We will take
-a look at this too.
+Well, once again the topic of mythical device tree compatibility appearch.
+
+There are imho following possibilities:
+
+1. https://patchwork.kernel.org/patch/9477963/ ("Explicitly mark Samsung
+    Exynos SoC bindings as unstable"), simply apply this approach and ignore
+    users, who don't update their device tree blobs (are there any??).
+
+2. Switch to syscon_regmap_lookup_by_compatible() lookup and hardcode PMU
+    compatible id for all Exynos SoCs in the pin control driver. Then maybe,
+    while unifying the code, switch other Exynos drivers to this approach
+    and remove PMU phandles from device tree to make the code a bit more
+    consistent across drivers and easier to understand.
+
+3. Mixed approach, which combines drawbacks of both approaches. Additional
+    dead code for handling mythical compatibility and harder to understand
+    relations between the drivers.
+
+
+> [...]
+>
+>> diff --git a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+>> index 1baf19eecabf..b7bd2e12a269 100644
+>> --- a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+>> +++ b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+>> @@ -43,6 +43,10 @@ Required Properties:
+>>                  };
+>>          };
+>>
+>> +- samsung,pmu-syscon: Phandle to the PMU system controller, to let driver
+>> +  to control pad retention after system suspend/resume cycle (only for Exynos
+>> +  SoC series).
+>> +
+> Ah, here it is. I think adding relevant binding documentation at the
+> beginning of the series would make it much easier for reviewers to
+> understand the change.
+
+I already pointed that patches are ordered to make the changes 
+bisectable, what
+usually means that new properties are added first, before being required 
+by the
+drivers.
+
+>
+>>   - Pin banks as child nodes: Pin banks of the controller are represented by child
+>>     nodes of the controller node. Bank name is taken from name of the node. Each
+>>     bank node must contain following properties:
+> [...]
+>
+>> +static void exynos_retention_audio_off(struct samsung_pinctrl_drv_data *drvdata)
+>> +{
+>> +       if (!IS_ERR(pmu_regs))
+> nit: Negated conditions make the code more difficult to read. Also it
+> would be consistent with exynos_retention_off() to just bail out if
+> (IS_ERR(pmu_regs)).
+>
+>> +               regmap_write(pmu_regs, S5P_PAD_RET_MAUDIO_OPTION,
+>> +                            EXYNOS_WAKEUP_FROM_LOWPWR);
+>> +}
+> [...]
+>
+>> @@ -1139,15 +1146,15 @@ static void samsung_pinctrl_suspend_dev(
+>>
+>>          if (drvdata->suspend)
+>>                  drvdata->suspend(drvdata);
+>> +       if (drvdata->retention_on)
+>> +               drvdata->retention_on(drvdata);
+>> +
+> nit: Unnecessary blank line.
+>
+> Best regards,
+> Tomasz
+>
+>
+>
 
 Best regards
 -- 
