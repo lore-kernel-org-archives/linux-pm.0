@@ -1,39 +1,37 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [RFC] thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()
-Date: Tue, 27 Dec 2016 14:04:50 -0200
-Message-ID: <CAOMZO5DA6aaMt=YEAKcormYUcmN0uuRBHqi=yFB78-peyRohHg@mail.gmail.com>
-References: <1482843640-25255-1-git-send-email-festevam@gmail.com> <a48feeaa-c2b4-c8b1-bb18-915bf84e64de@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH v1 03/54] kernel/power/swap.c: comment on direct access to bvec table
+Date: Tue, 27 Dec 2016 23:55:52 +0800
+Message-ID: <1482854250-13481-4-git-send-email-tom.leiming@gmail.com>
+References: <1482854250-13481-1-git-send-email-tom.leiming@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:34424 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753224AbcL0QEw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 11:04:52 -0500
-Received: by mail-oi0-f66.google.com with SMTP id 3so19640578oih.1
-        for <linux-pm@vger.kernel.org>; Tue, 27 Dec 2016 08:04:52 -0800 (PST)
-In-Reply-To: <a48feeaa-c2b4-c8b1-bb18-915bf84e64de@roeck-us.net>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34056 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933003AbcL0QGz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 11:06:55 -0500
+In-Reply-To: <1482854250-13481-1-git-send-email-tom.leiming@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
+To: Jens Axboe <axboe@fb.com>, linux-kernel@vger.kernel.org
+Cc: linux-block@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, Ming Lei <tom.leiming@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "open list:SUSPEND TO RAM" <linux-pm@vger.kernel.org>
 
-On Tue, Dec 27, 2016 at 1:24 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ kernel/power/swap.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-> Interesting way of defeating the purpose ;-).
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index 32e0c232efba..031e709c9fc4 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -238,6 +238,8 @@ static void hib_init_batch(struct hib_bio_batch *hb)
+ static void hib_end_io(struct bio *bio)
+ {
+ 	struct hib_bio_batch *hb = bio->bi_private;
++
++	/* single page bio, safe for multipage bvec */
+ 	struct page *page = bio->bi_io_vec[0].bv_page;
+ 
+ 	if (bio->bi_error) {
+-- 
+2.7.4
 
-Yes, that's why I marked it as RFC. Thanks for your feedback.
-
-
-> Any interest in at least trying (NULL, hwmon->type, hwmon, NULL, NULL) ?
-
-Yes, it works.
-
-> This should result in the core taking care of creating the 'name'
-> attribute, so it should be possible to drop the code doing that from
-> the thermal driver.
-
-Correct. I had to remove the device_create_file() call from the
-thermal driver so that it can successfully probe.
-
-Will resend it soon, thanks!
