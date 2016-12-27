@@ -1,356 +1,101 @@
-From: Roger Shimizu <rogershimizu@gmail.com>
-Subject: [PATCH v3 1/3] power: reset: add linkstation-reset driver
-Date: Tue, 27 Dec 2016 16:06:09 +0900
-Message-ID: <20161227070611.14852-2-rogershimizu@gmail.com>
-References: <20161216100501.18173-1-rogershimizu@gmail.com>
- <20161227070611.14852-1-rogershimizu@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:34763 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751648AbcL0HHN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Dec 2016 02:07:13 -0500
-In-Reply-To: <20161227070611.14852-1-rogershimizu@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH 0/9] Runtime PM for Exynos pin controller driver
+Date: Tue, 27 Dec 2016 09:29:07 +0100
+Message-ID: <29869e29-8294-528e-fb95-e355a3844071@samsung.com>
+References: <CGME20161223122513epcas1p394d93d72d2d32c8910aafd1f6cc6b5e2@epcas1p3.samsung.com>
+ <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
+ <CANAwSgRQuoriU923XT1B_0CVX2rzOR+8j2YHLMYRUu3gGySEBw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <CANAwSgRQuoriU923XT1B_0CVX2rzOR+8j2YHLMYRUu3gGySEBw@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Anand Moon <linux.amoon@gmail.com>
+Cc: linux-gpio@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Roger Shimizu <rogershimizu@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>, Ryan Tandy <ryan@nardis.ca>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Buffalo Linkstation / KuroBox and their variants need magic command
-sending to UART1 to power-off.
+Hi Anand,
 
-Power driver linkstation-reset implements the magic command and I/O
-routine, which come from files listed below:
-  - arch/arm/mach-orion5x/kurobox_pro-setup.c
-  - arch/arm/mach-orion5x/terastation_pro2-setup.c
 
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Andrew Lunn <andrew@lunn.ch>
-Cc: Martin Michlmayr <tbm@cyrius.com>
-Cc: Sylver Bruneau <sylver.bruneau@googlemail.com>
-Cc: Herbert Valerio Riedel <hvr@gnu.org>
-Cc: Ryan Tandy <ryan@nardis.ca>
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
+On 2016-12-24 11:10, Anand Moon wrote:
+> Hi Marek
+>
+> On 23 December 2016 at 17:54, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>> Hello,
+>>
+>> This patchset is a next step to add support for audio power domain on
+>> Exynos5 SoCs.
+>>
+>> Audio power domain on Exynos5 SoCs contains following hardware modules:
+>> 1. clock controller
+>> 2. pin controller
+>> 3. PL330 DMA controller
+>> 4. I2S audio controller
+>>
+>> Till now it was assumed that pin controller is located in the "always on"
+>> power domain and lacked runtime power management. This patch finally
+>> removes such assumption and adds runtime pm support and awareness to this
+>> driver. To achieve this, some changes in the Exynos platform support code
+>> were needed, like moving pad retention control to the pin controller driver.
+>> Some cleanup to the pin controller driver has been also done while changing
+>> the code. This new feature requires some additional information in the
+>> device tree, what is handled by patches 1,2 and 9.
+>>
+>> Please note that patches are ordered in such a way that the changes can be
+>> bisected, so the properties are added to dts before the code requiring them.
+>>
+>> The other patches related to enabling full support for audio power domain
+>> can be found here:
+>> 1. PL330 ADMA controller non-irqsafe runtime PM:
+>>     https://www.spinics.net/lists/arm-kernel/msg550008.html
+>> 2. Runtime PM for clock controllers (Exynos Audio subsystem will be added
+>>     in v4 soon): https://www.spinics.net/lists/arm-kernel/msg538122.html
+>>
+>> Patches are based on linux-next from 2016.12.22.
+>>
+>> Best regards
+>> Marek Szyprowski
+>> Samsung R&D Institute Poland
+>>
+>>
+>> Patch summary:
+>>
+>> Marek Szyprowski (9):
+>>    ARM: dts: exynos: Add PMU syscon to pinctrl nodes
+>>    ARM: dts: exynos: Add pinctrl sleep state for 542x i2s module
+>>    pinctrl: samsung: Remove dead code
+>>    pinctrl: samsung: Use generic of_device_get_match_data helper
+>>    pinctrl: samsung: Move retention control from mach-exynos to the
+>>      pinctrl driver
+>>    pinctrl: samsung: Replace syscore ops with standard platform device
+>>      pm_ops
+>>    pinctrl: samsung: Add property to mark pad state as suitable for power
+>>      down
+>>    pinctrl: samsung: Add runtime PM support
+>>    ARM: dts: exynos: Add audio power domain support to Exynos542x SoCs
+>>
+>>   .../bindings/pinctrl/samsung-pinctrl.txt           |  12 ++
+>>   arch/arm/boot/dts/exynos3250.dtsi                  |   2 +
+>>   arch/arm/boot/dts/exynos4210.dtsi                  |   3 +
+>>   arch/arm/boot/dts/exynos4x12.dtsi                  |   3 +
+>>   arch/arm/boot/dts/exynos5250.dtsi                  |   4 +
+>>   arch/arm/boot/dts/exynos5420-pinctrl.dtsi          |  11 ++
+>>   arch/arm/boot/dts/exynos5420.dtsi                  |  18 ++-
+>>   arch/arm/mach-exynos/suspend.c                     |  64 ---------
+>>   drivers/pinctrl/samsung/pinctrl-exynos.c           | 148 +++++++++++++++++++++
+>>   drivers/pinctrl/samsung/pinctrl-samsung.c          | 126 ++++++++----------
+>>   drivers/pinctrl/samsung/pinctrl-samsung.h          |  15 +++
+>>   11 files changed, 271 insertions(+), 135 deletions(-)
+>>
+> Is their core configuration missing to enable audio through HDMI on
+> Odroid Boards.
+> I could not get the sound working on Odroid XU4.
 
-Reported-by: Ryan Tandy <ryan@nardis.ca>
-Tested-by: Ryan Tandy <ryan@nardis.ca>
-Signed-off-by: Roger Shimizu <rogershimizu@gmail.com>
----
- drivers/power/reset/Kconfig             |  10 ++
- drivers/power/reset/Makefile            |   1 +
- drivers/power/reset/linkstation-reset.c | 269 ++++++++++++++++++++++++++++++++
- 3 files changed, 280 insertions(+)
- create mode 100644 drivers/power/reset/linkstation-reset.c
+Audio support for HDMI on Exynos requires some additional code. We will take
+a look at this too.
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index c74c3f67b8da..77c44cad7ece 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -98,6 +98,16 @@ config POWER_RESET_IMX
- 	  say N here or disable in dts to make sure pm_power_off never be
- 	  overwrote wrongly by this driver.
- 
-+config POWER_RESET_LINKSTATION
-+	bool "Buffalo Linkstation and its variants reset driver"
-+	depends on OF_GPIO && PLAT_ORION
-+	help
-+	  This driver supports power off Buffalo Linkstation / KuroBox Pro
-+	  NAS and their variants by sending commands to the micro-controller
-+	  which controls the main power.
-+
-+	  Say Y if you have a Buffalo Linkstation / KuroBox Pro NAS.
-+
- config POWER_RESET_MSM
- 	bool "Qualcomm MSM power-off driver"
- 	depends on ARCH_QCOM
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 1be307c7fc25..692ba6417cfb 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -9,6 +9,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
-+obj-$(CONFIG_POWER_RESET_LINKSTATION) += linkstation-reset.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-diff --git a/drivers/power/reset/linkstation-reset.c b/drivers/power/reset/linkstation-reset.c
-new file mode 100644
-index 000000000000..4390495dfe0e
---- /dev/null
-+++ b/drivers/power/reset/linkstation-reset.c
-@@ -0,0 +1,269 @@
-+/*
-+ * Buffalo Linkstation power reset driver.
-+ * It may also be used on following devices:
-+ *  - KuroBox Pro
-+ *  - Buffalo Linkstation Pro (LS-GL)
-+ *  - Buffalo Terastation Pro II/Live
-+ *  - Buffalo Linkstation Duo (LS-WTGL)
-+ *  - Buffalo Linkstation Mini (LS-WSGL)
-+ *
-+ * Copyright (C) 2016  Roger Shimizu <rogershimizu@gmail.com>
-+ *
-+ * Based on the code from:
-+ *
-+ * Copyright (C) 2012  Andrew Lunn <andrew@lunn.ch>
-+ * Copyright (C) 2009  Martin Michlmayr <tbm@cyrius.com>
-+ * Copyright (C) 2008  Byron Bradley <byron.bbradley@gmail.com>
-+ * Copyright (C) 2008  Sylver Bruneau <sylver.bruneau@googlemail.com>
-+ * Copyright (C) 2007  Herbert Valerio Riedel <hvr@gnu.org>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/serial_reg.h>
-+#include <linux/kallsyms.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+
-+#define UART1_REG(x)	(base + ((UART_##x) << 2))
-+#define MICON_CMD_SIZE	4
-+
-+/* 4-byte magic hello command to UART1-attached microcontroller */
-+static const unsigned char linkstation_micon_magic[] = {
-+	0x1b,
-+	0x00,
-+	0x07,
-+	0x00
-+};
-+
-+/* for each row, first byte is the size of command */
-+static const unsigned char linkstation_power_off_cmd[][MICON_CMD_SIZE] = {
-+	{ 3,	0x01, 0x35, 0x00},
-+	{ 2,	0x00, 0x0c},
-+	{ 2,	0x00, 0x06},
-+	{}
-+};
-+
-+struct reset_cfg {
-+	u32 baud;
-+	const unsigned char *magic;
-+	const unsigned char (*cmd)[MICON_CMD_SIZE];
-+};
-+
-+static const struct reset_cfg linkstation_power_off_cfg = {
-+	.baud = 38400,
-+	.magic = linkstation_micon_magic,
-+	.cmd = linkstation_power_off_cmd,
-+};
-+
-+static const struct of_device_id linkstation_reset_of_match_table[] = {
-+	{ .compatible = "linkstation,power-off",
-+	  .data = &linkstation_power_off_cfg,
-+	},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, linkstation_reset_of_match_table);
-+
-+static int uart1_micon_read(void *base, unsigned char *buf, int count)
-+{
-+	int i;
-+	int timeout;
-+
-+	for (i = 0; i < count; i++) {
-+		timeout = 10;
-+
-+		while (!(readl(UART1_REG(LSR)) & UART_LSR_DR)) {
-+			if (--timeout == 0)
-+				break;
-+			udelay(1000);
-+		}
-+
-+		if (timeout == 0)
-+			break;
-+		buf[i] = readl(UART1_REG(RX));
-+	}
-+
-+	/* return read bytes */
-+	return i;
-+}
-+
-+static int uart1_micon_write(void *base, const unsigned char *buf, int count)
-+{
-+	int i = 0;
-+
-+	while (count--) {
-+		while (!(readl(UART1_REG(LSR)) & UART_LSR_THRE))
-+			barrier();
-+		writel(buf[i++], UART1_REG(TX));
-+	}
-+
-+	return 0;
-+}
-+
-+int uart1_micon_send(void *base, const unsigned char *data, int count)
-+{
-+	int i;
-+	unsigned char checksum = 0;
-+	unsigned char recv_buf[40];
-+	unsigned char send_buf[40];
-+	unsigned char correct_ack[3];
-+	int retry = 2;
-+
-+	/* Generate checksum */
-+	for (i = 0; i < count; i++)
-+		checksum -=  data[i];
-+
-+	do {
-+		/* Send data */
-+		uart1_micon_write(base, data, count);
-+
-+		/* send checksum */
-+		uart1_micon_write(base, &checksum, 1);
-+
-+		if (uart1_micon_read(base, recv_buf, sizeof(recv_buf)) <= 3) {
-+			printk(KERN_ERR ">%s: receive failed.\n", __func__);
-+
-+			/* send preamble to clear the receive buffer */
-+			memset(&send_buf, 0xff, sizeof(send_buf));
-+			uart1_micon_write(base, send_buf, sizeof(send_buf));
-+
-+			/* make dummy reads */
-+			mdelay(100);
-+			uart1_micon_read(base, recv_buf, sizeof(recv_buf));
-+		} else {
-+			/* Generate expected ack */
-+			correct_ack[0] = 0x01;
-+			correct_ack[1] = data[1];
-+			correct_ack[2] = 0x00;
-+
-+			/* checksum Check */
-+			if ((recv_buf[0] + recv_buf[1] + recv_buf[2] +
-+			     recv_buf[3]) & 0xFF) {
-+				printk(KERN_ERR ">%s: Checksum Error : "
-+					"Received data[%02x, %02x, %02x, %02x]"
-+					"\n", __func__, recv_buf[0],
-+					recv_buf[1], recv_buf[2], recv_buf[3]);
-+			} else {
-+				/* Check Received Data */
-+				if (correct_ack[0] == recv_buf[0] &&
-+				    correct_ack[1] == recv_buf[1] &&
-+				    correct_ack[2] == recv_buf[2]) {
-+					/* Interval for next command */
-+					mdelay(10);
-+
-+					/* Receive ACK */
-+					return 0;
-+				}
-+			}
-+			/* Received NAK or illegal Data */
-+			printk(KERN_ERR ">%s: Error : NAK or Illegal Data "
-+					"Received\n", __func__);
-+		}
-+	} while (retry--);
-+
-+	/* Interval for next command */
-+	mdelay(10);
-+
-+	return -1;
-+}
-+
-+static void __iomem *base;
-+static unsigned long tclk;
-+static const struct reset_cfg *cfg;
-+
-+static void linkstation_reset(void)
-+{
-+	const unsigned divisor = ((tclk + (8 * cfg->baud)) / (16 * cfg->baud));
-+	int i;
-+
-+	pr_err("%s: triggering power-off...\n", __func__);
-+
-+	/* hijack UART1 and reset into sane state */
-+	writel(0x83, UART1_REG(LCR));
-+	writel(divisor & 0xff, UART1_REG(DLL));
-+	writel((divisor >> 8) & 0xff, UART1_REG(DLM));
-+	writel(cfg->magic[0], UART1_REG(LCR));
-+	writel(cfg->magic[1], UART1_REG(IER));
-+	writel(cfg->magic[2], UART1_REG(FCR));
-+	writel(cfg->magic[3], UART1_REG(MCR));
-+
-+	/* send the power-off command to PIC */
-+	for(i = 0; cfg->cmd[i][0] > 0; i ++) {
-+		/* [0] is size of the command; command starts from [1] */
-+		uart1_micon_send(base, &(cfg->cmd[i][1]), cfg->cmd[i][0]);
-+	}
-+}
-+
-+static int linkstation_reset_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct resource *res;
-+	struct clk *clk;
-+	char symname[KSYM_NAME_LEN];
-+
-+	const struct of_device_id *match =
-+		of_match_node(linkstation_reset_of_match_table, np);
-+	cfg = match->data;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!res) {
-+		dev_err(&pdev->dev, "Missing resource");
-+		return -EINVAL;
-+	}
-+
-+	base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
-+	if (!base) {
-+		dev_err(&pdev->dev, "Unable to map resource");
-+		return -EINVAL;
-+	}
-+
-+	/* We need to know tclk in order to calculate the UART divisor */
-+	clk = devm_clk_get(&pdev->dev, NULL);
-+	if (IS_ERR(clk)) {
-+		dev_err(&pdev->dev, "Clk missing");
-+		return PTR_ERR(clk);
-+	}
-+
-+	tclk = clk_get_rate(clk);
-+
-+	/* Check that nothing else has already setup a handler */
-+	if (pm_power_off) {
-+		lookup_symbol_name((ulong)pm_power_off, symname);
-+		dev_err(&pdev->dev,
-+			"pm_power_off already claimed %p %s",
-+			pm_power_off, symname);
-+		return -EBUSY;
-+	}
-+	pm_power_off = linkstation_reset;
-+
-+	return 0;
-+}
-+
-+static int linkstation_reset_remove(struct platform_device *pdev)
-+{
-+	pm_power_off = NULL;
-+	return 0;
-+}
-+
-+static struct platform_driver linkstation_reset_driver = {
-+	.probe	= linkstation_reset_probe,
-+	.remove	= linkstation_reset_remove,
-+	.driver	= {
-+		.name	= "linkstation_reset",
-+		.of_match_table = of_match_ptr(linkstation_reset_of_match_table),
-+	},
-+};
-+
-+module_platform_driver(linkstation_reset_driver);
-+
-+MODULE_AUTHOR("Roger Shimizu <rogershimizu@gmail.com>");
-+MODULE_DESCRIPTION("Linkstation Reset driver");
-+MODULE_LICENSE("GPL v2");
+Best regards
 -- 
-2.11.0
-
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
