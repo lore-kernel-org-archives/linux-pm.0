@@ -1,49 +1,45 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 6/8] PM / devfreq: Modify the device name as devfreq[X] for
- sysfs
-Date: Wed, 28 Dec 2016 20:56:50 +0900
-Message-ID: <1482926212-19223-7-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 7/8] PM / devfreq: Simplify the sysfs name of devfreq-event
+ device
+Date: Wed, 28 Dec 2016 20:56:51 +0900
+Message-ID: <1482926212-19223-8-git-send-email-cw00.choi@samsung.com>
 References: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
- <CGME20161228115654epcas1p17e52fdc6039cb252d130218325cf1186@epcas1p1.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+ <CGME20161228115654epcas1p1a55cebc1270e16435d13e6d4d2197b74@epcas1p1.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout3.samsung.com ([203.254.224.33]:58637 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751472AbcL1L47 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 06:56:59 -0500
 In-reply-to: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
 Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch modifies the device name as devfreq[X] for sysfs by using the 'devfreq'
-prefix word instead of separate device name. On user-space aspect, user would
-find the some devfreq drvier with 'devfreq[X]' pattern. So, this patch modify the
-device name as following:
-- /sys/class/devfreq/[non-standard device name] -> /sys/class/devfreq/devfreq[X]
+This patch just removes '.' character from the sysfs name of devfreq-event
+device as following. Usually, the subsystem uses the similiar naming style
+such as {framework name}{Number}.
+- old : /sys/class/devfreq-event/event.X
+- new : /sys/class/devfreq-event/eventX
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/devfreq/devfreq-event.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 8e5938c9c7d6..4bd7a8f71b07 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -527,6 +527,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- {
- 	struct devfreq *devfreq;
- 	struct devfreq_governor *governor;
-+	static atomic_t devfreq_no = ATOMIC_INIT(-1);
- 	int err = 0;
+diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+index 9aea2c7ecbe6..39f8704ad664 100644
+--- a/drivers/devfreq/devfreq-event.c
++++ b/drivers/devfreq/devfreq-event.c
+@@ -329,7 +329,7 @@ struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
+ 	edev->dev.class = devfreq_event_class;
+ 	edev->dev.release = devfreq_event_release_edev;
  
- 	if (!dev || !profile || !governor_name) {
-@@ -568,7 +569,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		mutex_lock(&devfreq->lock);
- 	}
- 
--	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
-+	dev_set_name(&devfreq->dev, "devfreq%lu",
-+			(unsigned long)atomic_inc_return(&devfreq_no));
- 	err = device_register(&devfreq->dev);
- 	if (err) {
- 		mutex_unlock(&devfreq->lock);
+-	dev_set_name(&edev->dev, "event.%d", atomic_inc_return(&event_no) - 1);
++	dev_set_name(&edev->dev, "event%d", atomic_inc_return(&event_no) - 1);
+ 	ret = device_register(&edev->dev);
+ 	if (ret < 0) {
+ 		put_device(&edev->dev);
 -- 
 1.9.1
+
