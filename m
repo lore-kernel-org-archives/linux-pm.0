@@ -1,58 +1,64 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 2/3] PM / devfreq: Fix the bug of devfreq_add_device when
- governor is NULL
-Date: Wed, 28 Dec 2016 20:52:35 +0900
-Message-ID: <1482925956-19044-3-git-send-email-cw00.choi@samsung.com>
-References: <1482925956-19044-1-git-send-email-cw00.choi@samsung.com>
- <CGME20161228115241epcas5p488b90c45e4f8c4189f18ceaf464fecd7@epcas5p4.samsung.com>
+Subject: [PATCH v2 0/8] PM / devfreq: Update the devfreq and devfreq-event
+ device
+Date: Wed, 28 Dec 2016 20:56:44 +0900
+Message-ID: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
+References: <CGME20161228115654epcas1p1dbe96f4f79ee451bd8eac960f1ea80c5@epcas1p1.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:33003 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751352AbcL1Lxd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 06:53:33 -0500
-In-reply-to: <1482925956-19044-1-git-send-email-cw00.choi@samsung.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:52987 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751346AbcL1L44 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 06:56:56 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, stable@vger.kernel.org
+Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
 
-This patch fixes the bug of devfreq_add_device(). The devfreq device must
-have the default governor. If find_devfreq_governor() returns error,
-devfreq_add_device() fail to add the devfreq instance.
+This patches update the devfreq and devfreq-event device. I add the summary
+of each patch as following.
 
-Fixes: 1b5c1be2c88e ("PM / devfreq: map devfreq drivers to governor using name")
-Cc: stable@vger.kernel.org
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+- Patch1 is documented for bus frequency scaling of Exynos5433's VDD_INT.
+  The related-to patches[1] were merged by Exynos SoC maintainer.
+- Patch2 uses the regmap interface instead of raw_read/write function.
+- Patch3/4 print the useful log for exynos-bus.c and exynos-ppmu.c driver.
+- Patch5 fixes the checkpatch warning of devfreq.c.
+- Patch6/7 modify the name of sysfs entry for devfreq/devfreq-event device
+- Patch8 fixes the wrong description of govenro_userspace.c.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index a324801d6a66..47206a21bb90 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -593,11 +593,16 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	list_add(&devfreq->node, &devfreq_list);
- 
- 	governor = find_devfreq_governor(devfreq->governor_name);
--	if (!IS_ERR(governor))
--		devfreq->governor = governor;
--	if (devfreq->governor)
--		err = devfreq->governor->event_handler(devfreq,
--					DEVFREQ_GOV_START, NULL);
-+	if (IS_ERR(governor)) {
-+		dev_err(dev, "%s: Unable to find governor for the device\n",
-+			__func__);
-+		err = PTR_ERR(governor);
-+		goto err_init;
-+	}
-+
-+	devfreq->governor = governor;
-+	err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_START,
-+						NULL);
- 	if (err) {
- 		dev_err(dev, "%s: Unable to start governor for the device\n",
- 			__func__);
+Changes from v1:
+- Rebase these patches on v4.10-rc1.
+- Include the separate patch[2] in these patches.
+
+[1] https://lkml.org/lkml/2016/12/7/846
+- [PATCH v2 0/5] arm64: dts: Enable bus frequency scaling on Exynos5433-based TM2 board
+[2] https://lkml.org/lkml/2016/12/16/7
+- [PATCH] PM / devfreq: Fix the wrong description for userspace governor
+
+
+Depends on:
+- These patches depend on both v4.10-rc1 and patches[3].
+
+[3] https://lkml.org/lkml/2016/12/28/91
+- [PATCH v2 0/3] PM / devfreq: Fix the bug and add reviewer for devfreq support
+
+Chanwoo Choi (8):
+  PM / devfreq: exynos-bus: Add the detailed correlation for Exynos5433
+  PM / devfreq: exynos-ppmu: Use the regmap interface to handle the registers
+  PM / devfreq: exynos-bus: Print the real clock rate of bus
+  PM / devfreq: exynos-ppmu: Show the registred device for ppmu device
+  PM / devfreq: Fix the checkpatch warnings
+  PM / devfreq: Modify the device name as devfreq[X] for sysfs
+  PM / devfreq: Simplify the sysfs name of devfreq-event device
+  PM / devfreq: Fix the wrong description for userspace governor
+
+ .../devicetree/bindings/devfreq/exynos-bus.txt     |  14 +
+ drivers/devfreq/devfreq-event.c                    |   2 +-
+ drivers/devfreq/devfreq.c                          |  17 +-
+ drivers/devfreq/event/exynos-ppmu.c                | 331 +++++++++++++++------
+ drivers/devfreq/exynos-bus.c                       |   8 +-
+ drivers/devfreq/governor_userspace.c               |   3 +-
+ 6 files changed, 271 insertions(+), 104 deletions(-)
+
 -- 
 1.9.1
 
