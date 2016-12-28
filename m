@@ -1,89 +1,82 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: [Linux v4.10.0-rc1] call-traces after suspend-resume (pm? i915? cpu/hotplug?)
-Date: Wed, 28 Dec 2016 09:07:13 +0100
-Message-ID: <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
+From: Jani Nikula <jani.nikula@intel.com>
+Subject: Re: [Linux v4.10.0-rc1] call-traces after
+	suspend-resume (pm? i915? cpu/hotplug?)
+Date: Wed, 28 Dec 2016 10:29:34 +0200
+Message-ID: <87r34sjw29.fsf@intel.com>
 References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com>
  <20161227211329.GA8195@amd>
-Reply-To: sedat.dilek@gmail.com
+ <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f193.google.com ([209.85.217.193]:34046 "EHLO
-        mail-ua0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750895AbcL1IHO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 03:07:14 -0500
-In-Reply-To: <20161227211329.GA8195@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: sedat.dilek@gmail.com, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
+Cc: the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Chris Wilson <chris@chris-wilson.co.uk>, Thomas Gleixner <tglx@linutronix.de>, intel-gfx <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Mika Kuoppala <mika.kuoppala@linux.intel.com>, Jani Nikula <jani.nikula@intel.com>, linux-pm@vger.kernel.org
 
-On Tue, Dec 27, 2016 at 10:13 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> [ Add some pm | i915 | x86 folks ]
->>
->> Hi,
->>
->> I have built Linux v4.10-rc1 today on my Ubuntu/precise AMD64 system
->> and I see some call-traces.
->> It is reproducible on suspend and resume.
->>
->> I cannot say which area touches the problem or if these are several
->> independent problems.
->>
->> For a full dmesg-log see attachments (my linux-config is attached, too).
->>
->> Here some hunks...
->>
->> [   29.003601] BUG: sleeping function called from invalid context at
->> drivers/base/power/runtime.c:1032
->> [   29.003608] in_atomic(): 1, irqs_disabled(): 0, pid: 1469, name: Xorg
->> [   29.003610] 1 lock held by Xorg/1469:
->> [   29.003611]  #0:  (&dev->struct_mutex){+.+.+.}, at:
->> [<ffffffffa0623c13>] i915_mutex_lock_interruptible+0x43/0x140 [i915]
->> [   29.003653] CPU: 0 PID: 1469 Comm: Xorg Not tainted
->> 4.10.0-rc1-1-iniza-small #1
->> [   29.003655] Hardware name: SAMSUNG ELECTRONICS CO., LTD.
->> 530U3BI/530U4BI/530U4BH/530U3BI/530U4BI/530U4BH, BIOS 13XK 03/28/2013
->> [   29.003656] Call Trace:
->
-> Just a note, at least 2 machines here refuse to resume with
-> v4.10-rc1. One has intel graphics, one has AMD. It may or may not have
-> common cause...
->
-
-[ Correct linux-pm ML and add Mika & Jani ]
-
-Thanks for the feedback.
-
-There are some cpu/hotplug fixes post-v4.10-rc1.
-Give that a try.
-
-Yesterday, after answers from drm-intel folks I have seen that a
-cpu/hotplug commit [1] was reverted in
-drm-intel.git#drm-intel-nightly.
-I haven't tried that.
-
-It's good when Thomas knows of this and gets in contact with drm-intel folks.
-
-Regards,
-- Sedat -
-
-[1] https://cgit.freedesktop.org/drm-intel/commit/?h=drm-intel-nightly&id=e558f178f5390185b7324ff4b816b52c6ae3a928
-[2] https://cgit.freedesktop.org/drm-intel/log/?h=drm-intel-nightly
-
-P.S.: Revert "cpu/hotplug: Prevent overwriting of callbacks"
-
-This reverts commit dc280d93623927570da279e99393879dbbab39e7
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed Dec 21 20:19:49 2016 +0100
-cpu/hotplug: Prevent overwriting of callbacks
-
-It started hanging all machines in CI s3 test:
-https://intel-gfx-ci.01.org/CI/igt@gem_exec_suspend@basic-s3.html
-
-Bisected-by: Mika Kuoppala <mika.kuoppala@linux.intel.com>
-Signed-off-by: Jani Nikula <jani.nikula@intel.com>
-
-- EOT -
+T24gV2VkLCAyOCBEZWMgMjAxNiwgU2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWlsLmNvbT4g
+d3JvdGU6Cj4gT24gVHVlLCBEZWMgMjcsIDIwMTYgYXQgMTA6MTMgUE0sIFBhdmVsIE1hY2hlayA8
+cGF2ZWxAdWN3LmN6PiB3cm90ZToKPj4gSGkhCj4+Cj4+PiBbIEFkZCBzb21lIHBtIHwgaTkxNSB8
+IHg4NiBmb2xrcyBdCj4+Pgo+Pj4gSGksCj4+Pgo+Pj4gSSBoYXZlIGJ1aWx0IExpbnV4IHY0LjEw
+LXJjMSB0b2RheSBvbiBteSBVYnVudHUvcHJlY2lzZSBBTUQ2NCBzeXN0ZW0KPj4+IGFuZCBJIHNl
+ZSBzb21lIGNhbGwtdHJhY2VzLgo+Pj4gSXQgaXMgcmVwcm9kdWNpYmxlIG9uIHN1c3BlbmQgYW5k
+IHJlc3VtZS4KPj4+Cj4+PiBJIGNhbm5vdCBzYXkgd2hpY2ggYXJlYSB0b3VjaGVzIHRoZSBwcm9i
+bGVtIG9yIGlmIHRoZXNlIGFyZSBzZXZlcmFsCj4+PiBpbmRlcGVuZGVudCBwcm9ibGVtcy4KPj4+
+Cj4+PiBGb3IgYSBmdWxsIGRtZXNnLWxvZyBzZWUgYXR0YWNobWVudHMgKG15IGxpbnV4LWNvbmZp
+ZyBpcyBhdHRhY2hlZCwgdG9vKS4KPj4+Cj4+PiBIZXJlIHNvbWUgaHVua3MuLi4KPj4+Cj4+PiBb
+ICAgMjkuMDAzNjAxXSBCVUc6IHNsZWVwaW5nIGZ1bmN0aW9uIGNhbGxlZCBmcm9tIGludmFsaWQg
+Y29udGV4dCBhdAo+Pj4gZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYzoxMDMyCj4+PiBbICAg
+MjkuMDAzNjA4XSBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNhYmxlZCgpOiAwLCBwaWQ6IDE0Njks
+IG5hbWU6IFhvcmcKPj4+IFsgICAyOS4wMDM2MTBdIDEgbG9jayBoZWxkIGJ5IFhvcmcvMTQ2OToK
+Pj4+IFsgICAyOS4wMDM2MTFdICAjMDogICgmZGV2LT5zdHJ1Y3RfbXV0ZXgpeysuKy4rLn0sIGF0
+Ogo+Pj4gWzxmZmZmZmZmZmEwNjIzYzEzPl0gaTkxNV9tdXRleF9sb2NrX2ludGVycnVwdGlibGUr
+MHg0My8weDE0MCBbaTkxNV0KPj4+IFsgICAyOS4wMDM2NTNdIENQVTogMCBQSUQ6IDE0NjkgQ29t
+bTogWG9yZyBOb3QgdGFpbnRlZAo+Pj4gNC4xMC4wLXJjMS0xLWluaXphLXNtYWxsICMxCj4+PiBb
+ICAgMjkuMDAzNjU1XSBIYXJkd2FyZSBuYW1lOiBTQU1TVU5HIEVMRUNUUk9OSUNTIENPLiwgTFRE
+Lgo+Pj4gNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgvNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgsIEJJ
+T1MgMTNYSyAwMy8yOC8yMDEzCj4+PiBbICAgMjkuMDAzNjU2XSBDYWxsIFRyYWNlOgo+Pgo+PiBK
+dXN0IGEgbm90ZSwgYXQgbGVhc3QgMiBtYWNoaW5lcyBoZXJlIHJlZnVzZSB0byByZXN1bWUgd2l0
+aAo+PiB2NC4xMC1yYzEuIE9uZSBoYXMgaW50ZWwgZ3JhcGhpY3MsIG9uZSBoYXMgQU1ELiBJdCBt
+YXkgb3IgbWF5IG5vdCBoYXZlCj4+IGNvbW1vbiBjYXVzZS4uLgo+Pgo+Cj4gWyBDb3JyZWN0IGxp
+bnV4LXBtIE1MIGFuZCBhZGQgTWlrYSAmIEphbmkgXQo+Cj4gVGhhbmtzIGZvciB0aGUgZmVlZGJh
+Y2suCj4KPiBUaGVyZSBhcmUgc29tZSBjcHUvaG90cGx1ZyBmaXhlcyBwb3N0LXY0LjEwLXJjMS4K
+PiBHaXZlIHRoYXQgYSB0cnkuCj4KPiBZZXN0ZXJkYXksIGFmdGVyIGFuc3dlcnMgZnJvbSBkcm0t
+aW50ZWwgZm9sa3MgSSBoYXZlIHNlZW4gdGhhdCBhCj4gY3B1L2hvdHBsdWcgY29tbWl0IFsxXSB3
+YXMgcmV2ZXJ0ZWQgaW4KPiBkcm0taW50ZWwuZ2l0I2RybS1pbnRlbC1uaWdodGx5Lgo+IEkgaGF2
+ZW4ndCB0cmllZCB0aGF0Lgo+Cj4gSXQncyBnb29kIHdoZW4gVGhvbWFzIGtub3dzIG9mIHRoaXMg
+YW5kIGdldHMgaW4gY29udGFjdCB3aXRoIGRybS1pbnRlbCBmb2xrcy4KPgo+IFJlZ2FyZHMsCj4g
+LSBTZWRhdCAtCj4KPiBbMV0gaHR0cHM6Ly9jZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0taW50ZWwv
+Y29tbWl0Lz9oPWRybS1pbnRlbC1uaWdodGx5JmlkPWU1NThmMTc4ZjUzOTAxODViNzMyNGZmNGI4
+MTZiNTJjNmFlM2E5MjgKPiBbMl0gaHR0cHM6Ly9jZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0taW50
+ZWwvbG9nLz9oPWRybS1pbnRlbC1uaWdodGx5Cj4KPiBQLlMuOiBSZXZlcnQgImNwdS9ob3RwbHVn
+OiBQcmV2ZW50IG92ZXJ3cml0aW5nIG9mIGNhbGxiYWNrcyIKPgo+IFRoaXMgcmV2ZXJ0cyBjb21t
+aXQgZGMyODBkOTM2MjM5Mjc1NzBkYTI3OWU5OTM5Mzg3OWRiYmFiMzllNwo+IEF1dGhvcjogVGhv
+bWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+Cj4gRGF0ZTogV2VkIERlYyAyMSAyMDox
+OTo0OSAyMDE2ICswMTAwCj4gY3B1L2hvdHBsdWc6IFByZXZlbnQgb3ZlcndyaXRpbmcgb2YgY2Fs
+bGJhY2tzCj4KPiBJdCBzdGFydGVkIGhhbmdpbmcgYWxsIG1hY2hpbmVzIGluIENJIHMzIHRlc3Q6
+Cj4gaHR0cHM6Ly9pbnRlbC1nZngtY2kuMDEub3JnL0NJL2lndEBnZW1fZXhlY19zdXNwZW5kQGJh
+c2ljLXMzLmh0bWwKPgo+IEJpc2VjdGVkLWJ5OiBNaWthIEt1b3BwYWxhIDxtaWthLmt1b3BwYWxh
+QGxpbnV4LmludGVsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBKYW5pIE5pa3VsYSA8amFuaS5uaWt1
+bGFAaW50ZWwuY29tPgoKVGhvbWFzIC0KCkluZGVlZCwgYmFzaWNhbGx5IGFsbCBvZiB0aGUgYm94
+ZXMgaW4gdGhlIGludGVsLWdmeCBDSSBoYW5nIGF0IHRoZQpzdXNwZW5kL3Jlc3VtZSB0ZXN0IHdp
+dGggZGMyODBkOTM2MjM5ICgiY3B1L2hvdHBsdWc6IFByZXZlbnQgb3ZlcndyaXRpbmcKb2YgY2Fs
+bGJhY2tzIiksIGFuZCBhZnRlciB0aGUgcmV2ZXJ0IGluIHRoZSB0cmVlIHRoYXQgZmVlZHMgdG8g
+dGhlIENJLAp3ZSdyZSBiYWNrIG9uIHRyYWNrLgoKSSBmb3VuZCBbMV0sIHdhcyBob3BpbmcgdG8g
+Z2V0IGZlZWRiYWNrIGZyb20gTWlrYSB3aGV0aGVyIHRoYXQgaGVscHMKYmVmb3JlIHJlcG9ydGlu
+Zy4gQ2hyaXMgYWxzbyBzdWdnZXN0ZWQgWzJdIGFzIGEgcXVpY2sgZml4IGJ1dCBJIGRvbid0Cmtu
+b3cgaWYgYW55b25lIHRyaWVkIHRoYXQuCgpCUiwKSmFuaS4KCgpbMV0gaHR0cHM6Ly9sa21sLm9y
+Zy9sa21sLzIwMTYvMTIvMjYvMTU2ClsyXSBodHRwOi8vcGFzdGUuZGViaWFuLm5ldC85MDQ5NzMv
+CgoKLS0gCkphbmkgTmlrdWxhLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlcgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZngg
+bWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
+cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
