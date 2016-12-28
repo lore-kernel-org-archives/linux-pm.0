@@ -1,55 +1,67 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] intel_idle: work around errate VLP52 on Baytrail CPUs
-Date: Wed, 28 Dec 2016 10:47:05 -0800
-Message-ID: <20161228104705.57b101d3@jacob-builder>
-References: <838trb233m.fsf@echidna.jochen.org>
-        <CAJZ5v0jkATWSrGuR_DOfiSUFguRJ1w7gMRth1kjwYh1bSWnvGw@mail.gmail.com>
-        <CA+8K-g=fXN9TWWxkV1AEEjXJLhwJEQ2PB434gKQ9Z7bL=yf+zA@mail.gmail.com>
-        <CA+8K-g=VVC-13J+jU+KGyk49xHPhm5uojj0h9FcWZiC91NTiQw@mail.gmail.com>
-        <CAJvTdK=sFHRo3FQ-ebWM7qVY3iLadWUFA+iacB8jwfHtJyNWGA@mail.gmail.com>
-        <83ful9yue7.fsf@echidna.jochen.org>
-        <CAJvTdKkJv+WfvvibR9Ly9AS5ncp1UTsm74XMX=pg8uyV9Mxupw@mail.gmail.com>
-        <CA+8K-gntePuqdij7SijqcT0RXPoKi163UPwoBnBCk04zBp0BvA@mail.gmail.com>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] power: fix spelling mistake: supply: "Celcius" -> "Celsius"
+Date: Wed, 28 Dec 2016 21:59:26 +0000
+Message-ID: <20161228215926.8111-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:62820 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751446AbcL1SqC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Dec 2016 13:46:02 -0500
-In-Reply-To: <CA+8K-gntePuqdij7SijqcT0RXPoKi163UPwoBnBCk04zBp0BvA@mail.gmail.com>
+Received: from youngberry.canonical.com ([91.189.89.112]:36792 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750735AbcL1WAM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 17:00:12 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vincent Gerris <vgerris@gmail.com>
-Cc: Len Brown <lenb@kernel.org>, Hans de Goede <hdegoede@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Jochen Hein <jochen@jochen.org>, Linux PM <linux-pm@vger.kernel.org>, jacob.jun.pan@linux.intel.com
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-On Wed, 28 Dec 2016 13:56:25 +0100
-Vincent Gerris <vgerris@gmail.com> wrote:
+From: Colin Ian King <colin.king@canonical.com>
 
-> > >> If the right strategy were to disable C6 for all of BYT, then the
-> > >> right implementation
-> > >> would be to delete those states from byt_cstates[], rather than
-> > >> for a routine to mark
-> > >> them as disabled.  Note that a user can not later enable a state
-> > >> that is marked as disabled here, it is never registered with
-> > >> cpuidle, and thus the effect is exactly the same as if the entry
-> > >> were never in the table in the first place.  
-> I don't fully grasp this, but if the errata causes this, wouldn't it
-> be more transparent to mark it as such so disable it?
-> Are we really sure the errata does not cause this? If so, is there a
-> recommended way from intel on how to patch this?
-I don't think the EOI errata is relevant to this issue. As Len pointed
-out, it is impossible to enter C6 or run idle task during ISR.
+trivial fix to spelling mistake in comments in the headers
 
-However, this errata might be the cause of the issue you seen, as you
-mentioned you encounter the issue while playing media with audio i
-presume? While I am looking for a fix, could you try without audio see
-if it still hangs?
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/power/supply/ab8500_btemp.c    | 6 +++---
+ drivers/power/supply/bq24190_charger.c | 2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-"VLP70. LPE Audio Playback May Result in System Hang
-Problem: Extended audio playback with the LPE (Low Power Engine) may
-result in a system hang if the SOC concurrently enters C6 or deeper
-sleep states. Implication: The system may hang when this erratum occurs.
-Workaround: It is possible for the driver to contain a workaround for
-this erratum."
+diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
+index 6ffdc18..ae0a84f 100644
+--- a/drivers/power/supply/ab8500_btemp.c
++++ b/drivers/power/supply/ab8500_btemp.c
+@@ -76,8 +76,8 @@ struct ab8500_btemp_ranges {
+  * @dev:		Pointer to the structure device
+  * @node:		List of AB8500 BTEMPs, hence prepared for reentrance
+  * @curr_source:	What current source we use, in uA
+- * @bat_temp:		Dispatched battery temperature in degree Celcius
+- * @prev_bat_temp	Last measured battery temperature in degree Celcius
++ * @bat_temp:		Dispatched battery temperature in degree Celsius
++ * @prev_bat_temp	Last measured battery temperature in degree Celsius
+  * @parent:		Pointer to the struct ab8500
+  * @gpadc:		Pointer to the struct gpadc
+  * @fg:			Pointer to the struct fg
+@@ -464,7 +464,7 @@ static int ab8500_btemp_get_batctrl_res(struct ab8500_btemp *di)
+  * @tbl_size:	size of the resistance to temperature table
+  * @res:	resistance to calculate the temperature from
+  *
+- * This function returns the battery temperature in degrees Celcius
++ * This function returns the battery temperature in degrees Celsius
+  * based on the NTC resistance.
+  */
+ static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index e958433..2f333ef 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -199,7 +199,7 @@ static const int bq24190_cvc_vreg_values[] = {
+ 	4400000
+ };
+ 
+-/* REG06[1:0] (TREG) in tenths of degrees Celcius */
++/* REG06[1:0] (TREG) in tenths of degrees Celsius */
+ static const int bq24190_ictrc_treg_values[] = {
+ 	600, 800, 1000, 1200
+ };
+-- 
+2.10.2
+
