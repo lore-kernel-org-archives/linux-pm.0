@@ -1,53 +1,55 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [RESEND] thermal: hwmon: Properly report critical temperature in sysfs
-Date: Wed, 28 Dec 2016 19:35:28 +0200
-Message-ID: <20161228173528.4419-1-krzk@kernel.org>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] intel_idle: work around errate VLP52 on Baytrail CPUs
+Date: Wed, 28 Dec 2016 10:47:05 -0800
+Message-ID: <20161228104705.57b101d3@jacob-builder>
+References: <838trb233m.fsf@echidna.jochen.org>
+        <CAJZ5v0jkATWSrGuR_DOfiSUFguRJ1w7gMRth1kjwYh1bSWnvGw@mail.gmail.com>
+        <CA+8K-g=fXN9TWWxkV1AEEjXJLhwJEQ2PB434gKQ9Z7bL=yf+zA@mail.gmail.com>
+        <CA+8K-g=VVC-13J+jU+KGyk49xHPhm5uojj0h9FcWZiC91NTiQw@mail.gmail.com>
+        <CAJvTdK=sFHRo3FQ-ebWM7qVY3iLadWUFA+iacB8jwfHtJyNWGA@mail.gmail.com>
+        <83ful9yue7.fsf@echidna.jochen.org>
+        <CAJvTdKkJv+WfvvibR9Ly9AS5ncp1UTsm74XMX=pg8uyV9Mxupw@mail.gmail.com>
+        <CA+8K-gntePuqdij7SijqcT0RXPoKi163UPwoBnBCk04zBp0BvA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:45854 "EHLO mail.kernel.org"
+Received: from mga04.intel.com ([192.55.52.120]:62820 "EHLO mga04.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751534AbcL1Rfj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Dec 2016 12:35:39 -0500
+        id S1751446AbcL1SqC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Dec 2016 13:46:02 -0500
+In-Reply-To: <CA+8K-gntePuqdij7SijqcT0RXPoKi163UPwoBnBCk04zBp0BvA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, stable@vger.kernel.org
+To: Vincent Gerris <vgerris@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, Hans de Goede <hdegoede@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Jochen Hein <jochen@jochen.org>, Linux PM <linux-pm@vger.kernel.org>, jacob.jun.pan@linux.intel.com
 
-In the critical sysfs entry the thermal hwmon was returning wrong
-temperature to the user-space.  It was reporting the temperature of the
-first trip point instead of the temperature of critical trip point.
+On Wed, 28 Dec 2016 13:56:25 +0100
+Vincent Gerris <vgerris@gmail.com> wrote:
 
-For example:
-	/sys/class/hwmon/hwmon0/temp1_crit:50000
-	/sys/class/thermal/thermal_zone0/trip_point_0_temp:50000
-	/sys/class/thermal/thermal_zone0/trip_point_0_type:active
-	/sys/class/thermal/thermal_zone0/trip_point_3_temp:120000
-	/sys/class/thermal/thermal_zone0/trip_point_3_type:critical
+> > >> If the right strategy were to disable C6 for all of BYT, then the
+> > >> right implementation
+> > >> would be to delete those states from byt_cstates[], rather than
+> > >> for a routine to mark
+> > >> them as disabled.  Note that a user can not later enable a state
+> > >> that is marked as disabled here, it is never registered with
+> > >> cpuidle, and thus the effect is exactly the same as if the entry
+> > >> were never in the table in the first place.  
+> I don't fully grasp this, but if the errata causes this, wouldn't it
+> be more transparent to mark it as such so disable it?
+> Are we really sure the errata does not cause this? If so, is there a
+> recommended way from intel on how to patch this?
+I don't think the EOI errata is relevant to this issue. As Len pointed
+out, it is impossible to enter C6 or run idle task during ISR.
 
-Since commit e68b16abd91d ("thermal: add hwmon sysfs I/F") the driver
-have been registering a sysfs entry if get_crit_temp() callback was
-provided.  However when accessed, it was calling get_trip_temp() instead
-of the get_crit_temp().
+However, this errata might be the cause of the issue you seen, as you
+mentioned you encounter the issue while playing media with audio i
+presume? While I am looking for a fix, could you try without audio see
+if it still hangs?
 
-Fixes: e68b16abd91d ("thermal: add hwmon sysfs I/F")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- drivers/thermal/thermal_hwmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index c41c7742903a..2dcd4194d103 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -98,7 +98,7 @@ temp_crit_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	int temperature;
- 	int ret;
- 
--	ret = tz->ops->get_trip_temp(tz, 0, &temperature);
-+	ret = tz->ops->get_crit_temp(tz, &temperature);
- 	if (ret)
- 		return ret;
- 
--- 
-2.9.3
-
+"VLP70. LPE Audio Playback May Result in System Hang
+Problem: Extended audio playback with the LPE (Low Power Engine) may
+result in a system hang if the SOC concurrently enters C6 or deeper
+sleep states. Implication: The system may hang when this erratum occurs.
+Workaround: It is possible for the driver to contain a workaround for
+this erratum."
