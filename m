@@ -1,48 +1,51 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 8/8] PM / devfreq: Fix the wrong description for userspace
- governor
-Date: Wed, 28 Dec 2016 20:56:52 +0900
-Message-ID: <1482926212-19223-9-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 4/8] PM / devfreq: exynos-ppmu: Show the registred device
+ for ppmu device
+Date: Wed, 28 Dec 2016 20:56:48 +0900
+Message-ID: <1482926212-19223-5-git-send-email-cw00.choi@samsung.com>
 References: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
- <CGME20161228115654epcas1p1ac0c112753ca3dd694f604b84239bd18@epcas1p1.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:47434 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751446AbcL1L46 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 06:56:58 -0500
+ <CGME20161228115654epcas1p1fcd9be231f97e6782e06d75ace95a9ba@epcas1p1.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-samsung-soc@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This patch fixes the wrong description of governor_userspace.c
-and removes the unneeded blank line.
+This patch just adds the simple log to show the PPMU device's registration
+during the kernel booting.
 
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/governor_userspace.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/devfreq/event/exynos-ppmu.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-index 35de6e83c1fe..c794352c6163 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/drivers/devfreq/governor_simpleondemand.c
-+ *  linux/drivers/devfreq/governor_userspace.c
-  *
-  *  Copyright (C) 2011 Samsung Electronics
-  *	MyungJoo Ham <myungjoo.ham@samsung.com>
-@@ -50,7 +50,6 @@ static ssize_t store_freq(struct device *dev, struct device_attribute *attr,
- 	unsigned long wanted;
- 	int err = 0;
+diff --git a/drivers/devfreq/event/exynos-ppmu.c b/drivers/devfreq/event/exynos-ppmu.c
+index fb3706faf5bd..9b5294d0bff4 100644
+--- a/drivers/devfreq/event/exynos-ppmu.c
++++ b/drivers/devfreq/event/exynos-ppmu.c
+@@ -591,7 +591,7 @@ static int exynos_ppmu_parse_dt(struct platform_device *pdev,
+ 	info->ppmu.clk = devm_clk_get(dev, "ppmu");
+ 	if (IS_ERR(info->ppmu.clk)) {
+ 		info->ppmu.clk = NULL;
+-		dev_warn(dev, "cannot get PPMU clock\n");
++		dev_dbg(dev, "cannot get PPMU clock\n");
+ 	}
  
--
- 	mutex_lock(&devfreq->lock);
- 	data = devfreq->data;
+ 	ret = of_get_devfreq_events(np, info);
+@@ -643,6 +643,9 @@ static int exynos_ppmu_probe(struct platform_device *pdev)
+ 				"failed to add devfreq-event device\n");
+ 			return PTR_ERR(edev[i]);
+ 		}
++
++		pr_info("exynos-ppmu: new PPMU device registered %s (%s)\n",
++			dev_name(&pdev->dev), desc[i].name);
+ 	}
  
+ 	clk_prepare_enable(info->ppmu.clk);
 -- 
 1.9.1
-
