@@ -1,82 +1,94 @@
-From: Jani Nikula <jani.nikula@intel.com>
-Subject: Re: [Linux v4.10.0-rc1] call-traces after
-	suspend-resume (pm? i915? cpu/hotplug?)
-Date: Wed, 28 Dec 2016 10:29:34 +0200
-Message-ID: <87r34sjw29.fsf@intel.com>
-References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com>
- <20161227211329.GA8195@amd>
- <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: [PATCH] thermal: mtk_thermal: Staticise a number of data variables
+Date: Wed, 28 Dec 2016 14:16:45 +0530
+Message-ID: <1482914805-21950-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: sedat.dilek@gmail.com, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
-Cc: the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rui.zhang@intel.com, matthias.bgg@gmail.com, edubezval@gmail.com, dawei.chien@mediatek.com
+Cc: Vivek Gautam <vivek.gautam@codeaurora.org>, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCAyOCBEZWMgMjAxNiwgU2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWlsLmNvbT4g
-d3JvdGU6Cj4gT24gVHVlLCBEZWMgMjcsIDIwMTYgYXQgMTA6MTMgUE0sIFBhdmVsIE1hY2hlayA8
-cGF2ZWxAdWN3LmN6PiB3cm90ZToKPj4gSGkhCj4+Cj4+PiBbIEFkZCBzb21lIHBtIHwgaTkxNSB8
-IHg4NiBmb2xrcyBdCj4+Pgo+Pj4gSGksCj4+Pgo+Pj4gSSBoYXZlIGJ1aWx0IExpbnV4IHY0LjEw
-LXJjMSB0b2RheSBvbiBteSBVYnVudHUvcHJlY2lzZSBBTUQ2NCBzeXN0ZW0KPj4+IGFuZCBJIHNl
-ZSBzb21lIGNhbGwtdHJhY2VzLgo+Pj4gSXQgaXMgcmVwcm9kdWNpYmxlIG9uIHN1c3BlbmQgYW5k
-IHJlc3VtZS4KPj4+Cj4+PiBJIGNhbm5vdCBzYXkgd2hpY2ggYXJlYSB0b3VjaGVzIHRoZSBwcm9i
-bGVtIG9yIGlmIHRoZXNlIGFyZSBzZXZlcmFsCj4+PiBpbmRlcGVuZGVudCBwcm9ibGVtcy4KPj4+
-Cj4+PiBGb3IgYSBmdWxsIGRtZXNnLWxvZyBzZWUgYXR0YWNobWVudHMgKG15IGxpbnV4LWNvbmZp
-ZyBpcyBhdHRhY2hlZCwgdG9vKS4KPj4+Cj4+PiBIZXJlIHNvbWUgaHVua3MuLi4KPj4+Cj4+PiBb
-ICAgMjkuMDAzNjAxXSBCVUc6IHNsZWVwaW5nIGZ1bmN0aW9uIGNhbGxlZCBmcm9tIGludmFsaWQg
-Y29udGV4dCBhdAo+Pj4gZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYzoxMDMyCj4+PiBbICAg
-MjkuMDAzNjA4XSBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNhYmxlZCgpOiAwLCBwaWQ6IDE0Njks
-IG5hbWU6IFhvcmcKPj4+IFsgICAyOS4wMDM2MTBdIDEgbG9jayBoZWxkIGJ5IFhvcmcvMTQ2OToK
-Pj4+IFsgICAyOS4wMDM2MTFdICAjMDogICgmZGV2LT5zdHJ1Y3RfbXV0ZXgpeysuKy4rLn0sIGF0
-Ogo+Pj4gWzxmZmZmZmZmZmEwNjIzYzEzPl0gaTkxNV9tdXRleF9sb2NrX2ludGVycnVwdGlibGUr
-MHg0My8weDE0MCBbaTkxNV0KPj4+IFsgICAyOS4wMDM2NTNdIENQVTogMCBQSUQ6IDE0NjkgQ29t
-bTogWG9yZyBOb3QgdGFpbnRlZAo+Pj4gNC4xMC4wLXJjMS0xLWluaXphLXNtYWxsICMxCj4+PiBb
-ICAgMjkuMDAzNjU1XSBIYXJkd2FyZSBuYW1lOiBTQU1TVU5HIEVMRUNUUk9OSUNTIENPLiwgTFRE
-Lgo+Pj4gNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgvNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgsIEJJ
-T1MgMTNYSyAwMy8yOC8yMDEzCj4+PiBbICAgMjkuMDAzNjU2XSBDYWxsIFRyYWNlOgo+Pgo+PiBK
-dXN0IGEgbm90ZSwgYXQgbGVhc3QgMiBtYWNoaW5lcyBoZXJlIHJlZnVzZSB0byByZXN1bWUgd2l0
-aAo+PiB2NC4xMC1yYzEuIE9uZSBoYXMgaW50ZWwgZ3JhcGhpY3MsIG9uZSBoYXMgQU1ELiBJdCBt
-YXkgb3IgbWF5IG5vdCBoYXZlCj4+IGNvbW1vbiBjYXVzZS4uLgo+Pgo+Cj4gWyBDb3JyZWN0IGxp
-bnV4LXBtIE1MIGFuZCBhZGQgTWlrYSAmIEphbmkgXQo+Cj4gVGhhbmtzIGZvciB0aGUgZmVlZGJh
-Y2suCj4KPiBUaGVyZSBhcmUgc29tZSBjcHUvaG90cGx1ZyBmaXhlcyBwb3N0LXY0LjEwLXJjMS4K
-PiBHaXZlIHRoYXQgYSB0cnkuCj4KPiBZZXN0ZXJkYXksIGFmdGVyIGFuc3dlcnMgZnJvbSBkcm0t
-aW50ZWwgZm9sa3MgSSBoYXZlIHNlZW4gdGhhdCBhCj4gY3B1L2hvdHBsdWcgY29tbWl0IFsxXSB3
-YXMgcmV2ZXJ0ZWQgaW4KPiBkcm0taW50ZWwuZ2l0I2RybS1pbnRlbC1uaWdodGx5Lgo+IEkgaGF2
-ZW4ndCB0cmllZCB0aGF0Lgo+Cj4gSXQncyBnb29kIHdoZW4gVGhvbWFzIGtub3dzIG9mIHRoaXMg
-YW5kIGdldHMgaW4gY29udGFjdCB3aXRoIGRybS1pbnRlbCBmb2xrcy4KPgo+IFJlZ2FyZHMsCj4g
-LSBTZWRhdCAtCj4KPiBbMV0gaHR0cHM6Ly9jZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0taW50ZWwv
-Y29tbWl0Lz9oPWRybS1pbnRlbC1uaWdodGx5JmlkPWU1NThmMTc4ZjUzOTAxODViNzMyNGZmNGI4
-MTZiNTJjNmFlM2E5MjgKPiBbMl0gaHR0cHM6Ly9jZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0taW50
-ZWwvbG9nLz9oPWRybS1pbnRlbC1uaWdodGx5Cj4KPiBQLlMuOiBSZXZlcnQgImNwdS9ob3RwbHVn
-OiBQcmV2ZW50IG92ZXJ3cml0aW5nIG9mIGNhbGxiYWNrcyIKPgo+IFRoaXMgcmV2ZXJ0cyBjb21t
-aXQgZGMyODBkOTM2MjM5Mjc1NzBkYTI3OWU5OTM5Mzg3OWRiYmFiMzllNwo+IEF1dGhvcjogVGhv
-bWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+Cj4gRGF0ZTogV2VkIERlYyAyMSAyMDox
-OTo0OSAyMDE2ICswMTAwCj4gY3B1L2hvdHBsdWc6IFByZXZlbnQgb3ZlcndyaXRpbmcgb2YgY2Fs
-bGJhY2tzCj4KPiBJdCBzdGFydGVkIGhhbmdpbmcgYWxsIG1hY2hpbmVzIGluIENJIHMzIHRlc3Q6
-Cj4gaHR0cHM6Ly9pbnRlbC1nZngtY2kuMDEub3JnL0NJL2lndEBnZW1fZXhlY19zdXNwZW5kQGJh
-c2ljLXMzLmh0bWwKPgo+IEJpc2VjdGVkLWJ5OiBNaWthIEt1b3BwYWxhIDxtaWthLmt1b3BwYWxh
-QGxpbnV4LmludGVsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBKYW5pIE5pa3VsYSA8amFuaS5uaWt1
-bGFAaW50ZWwuY29tPgoKVGhvbWFzIC0KCkluZGVlZCwgYmFzaWNhbGx5IGFsbCBvZiB0aGUgYm94
-ZXMgaW4gdGhlIGludGVsLWdmeCBDSSBoYW5nIGF0IHRoZQpzdXNwZW5kL3Jlc3VtZSB0ZXN0IHdp
-dGggZGMyODBkOTM2MjM5ICgiY3B1L2hvdHBsdWc6IFByZXZlbnQgb3ZlcndyaXRpbmcKb2YgY2Fs
-bGJhY2tzIiksIGFuZCBhZnRlciB0aGUgcmV2ZXJ0IGluIHRoZSB0cmVlIHRoYXQgZmVlZHMgdG8g
-dGhlIENJLAp3ZSdyZSBiYWNrIG9uIHRyYWNrLgoKSSBmb3VuZCBbMV0sIHdhcyBob3BpbmcgdG8g
-Z2V0IGZlZWRiYWNrIGZyb20gTWlrYSB3aGV0aGVyIHRoYXQgaGVscHMKYmVmb3JlIHJlcG9ydGlu
-Zy4gQ2hyaXMgYWxzbyBzdWdnZXN0ZWQgWzJdIGFzIGEgcXVpY2sgZml4IGJ1dCBJIGRvbid0Cmtu
-b3cgaWYgYW55b25lIHRyaWVkIHRoYXQuCgpCUiwKSmFuaS4KCgpbMV0gaHR0cHM6Ly9sa21sLm9y
-Zy9sa21sLzIwMTYvMTIvMjYvMTU2ClsyXSBodHRwOi8vcGFzdGUuZGViaWFuLm5ldC85MDQ5NzMv
-CgoKLS0gCkphbmkgTmlrdWxhLCBJbnRlbCBPcGVuIFNvdXJjZSBUZWNobm9sb2d5IENlbnRlcgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpJbnRlbC1nZngg
-bWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0
-cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngK
+Sparse throws following warnings:
+drivers/thermal/mtk_thermal.c:186:11: warning: symbol 'mt8173_bank_data' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:193:11: warning: symbol 'mt8173_msr' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:197:11: warning: symbol 'mt8173_adcpnp' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:201:11: warning: symbol 'mt8173_mux_values' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:204:11: warning: symbol 'mt2701_bank_data' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:208:11: warning: symbol 'mt2701_msr' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:212:11: warning: symbol 'mt2701_adcpnp' was not declared. Should it be static?
+drivers/thermal/mtk_thermal.c:216:11: warning: symbol 'mt2701_mux_values' was not declared. Should it be static?
+
+Make these variables as static to fix these warnings.
+
+Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+---
+
+Based on Torvald's master branch. Build tested.
+
+ drivers/thermal/mtk_thermal.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+index 34169c32d495..1aff7fde54b1 100644
+--- a/drivers/thermal/mtk_thermal.c
++++ b/drivers/thermal/mtk_thermal.c
+@@ -183,37 +183,37 @@ struct mtk_thermal {
+ };
+ 
+ /* MT8173 thermal sensor data */
+-const int mt8173_bank_data[MT8173_NUM_ZONES][3] = {
++static const int mt8173_bank_data[MT8173_NUM_ZONES][3] = {
+ 	{ MT8173_TS2, MT8173_TS3 },
+ 	{ MT8173_TS2, MT8173_TS4 },
+ 	{ MT8173_TS1, MT8173_TS2, MT8173_TSABB },
+ 	{ MT8173_TS2 },
+ };
+ 
+-const int mt8173_msr[MT8173_NUM_SENSORS_PER_ZONE] = {
++static const int mt8173_msr[MT8173_NUM_SENSORS_PER_ZONE] = {
+ 	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2, TEMP_MSR2
+ };
+ 
+-const int mt8173_adcpnp[MT8173_NUM_SENSORS_PER_ZONE] = {
++static const int mt8173_adcpnp[MT8173_NUM_SENSORS_PER_ZONE] = {
+ 	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2, TEMP_ADCPNP3
+ };
+ 
+-const int mt8173_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
++static const int mt8173_mux_values[MT8173_NUM_SENSORS] = { 0, 1, 2, 3, 16 };
+ 
+ /* MT2701 thermal sensor data */
+-const int mt2701_bank_data[MT2701_NUM_SENSORS] = {
++static const int mt2701_bank_data[MT2701_NUM_SENSORS] = {
+ 	MT2701_TS1, MT2701_TS2, MT2701_TSABB
+ };
+ 
+-const int mt2701_msr[MT2701_NUM_SENSORS_PER_ZONE] = {
++static const int mt2701_msr[MT2701_NUM_SENSORS_PER_ZONE] = {
+ 	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2
+ };
+ 
+-const int mt2701_adcpnp[MT2701_NUM_SENSORS_PER_ZONE] = {
++static const int mt2701_adcpnp[MT2701_NUM_SENSORS_PER_ZONE] = {
+ 	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2
+ };
+ 
+-const int mt2701_mux_values[MT2701_NUM_SENSORS] = { 0, 1, 16 };
++static const int mt2701_mux_values[MT2701_NUM_SENSORS] = { 0, 1, 16 };
+ 
+ /**
+  * The MT8173 thermal controller has four banks. Each bank can read up to
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
