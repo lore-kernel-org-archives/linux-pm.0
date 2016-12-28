@@ -1,33 +1,53 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH] irqchip: mxs: Enable SKIP_SET_WAKE and MASK_ON_SUSPEND
-Date: Wed, 28 Dec 2016 13:47:32 -0200
-Message-ID: <CAOMZO5C-TyDk5=kCuraOb_L8icCPrvBKryhhn-s-C76EGta8=Q@mail.gmail.com>
-References: <1482863397-11400-1-git-send-email-stefan.wahren@i2se.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [RESEND] thermal: hwmon: Properly report critical temperature in sysfs
+Date: Wed, 28 Dec 2016 19:35:28 +0200
+Message-ID: <20161228173528.4419-1-krzk@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:33068 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751091AbcL1Prd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 10:47:33 -0500
-Received: by mail-oi0-f66.google.com with SMTP id f201so51708930oib.0
-        for <linux-pm@vger.kernel.org>; Wed, 28 Dec 2016 07:47:33 -0800 (PST)
-In-Reply-To: <1482863397-11400-1-git-send-email-stefan.wahren@i2se.com>
+Received: from mail.kernel.org ([198.145.29.136]:45854 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751534AbcL1Rfj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Dec 2016 12:35:39 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Marek Vasut <marex@denx.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Oleksij Rempel <linux@rempel-privat.de>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, =?UTF-8?Q?Lothar_Wa=C3=9Fmann?= <lw@karo-electronics.de>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, stable@vger.kernel.org
 
-On Tue, Dec 27, 2016 at 4:29 PM, Stefan Wahren <stefan.wahren@i2se.com> wrote:
-> The ICOLL controller doesn't provide any facility to configure the
-> wakeup sources. That's the reason why this implementation lacks
-> the irq_set_wake implementation. But this prevent us from properly
-> entering power management states like "suspend to idle".
->
-> So enable the flags IRQCHIP_SKIP_SET_WAKE and
-> IRQCHIP_MASK_ON_SUSPEND to let the irqchip core allows and handles
-> the power management.
->
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+In the critical sysfs entry the thermal hwmon was returning wrong
+temperature to the user-space.  It was reporting the temperature of the
+first trip point instead of the temperature of critical trip point.
 
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+For example:
+	/sys/class/hwmon/hwmon0/temp1_crit:50000
+	/sys/class/thermal/thermal_zone0/trip_point_0_temp:50000
+	/sys/class/thermal/thermal_zone0/trip_point_0_type:active
+	/sys/class/thermal/thermal_zone0/trip_point_3_temp:120000
+	/sys/class/thermal/thermal_zone0/trip_point_3_type:critical
+
+Since commit e68b16abd91d ("thermal: add hwmon sysfs I/F") the driver
+have been registering a sysfs entry if get_crit_temp() callback was
+provided.  However when accessed, it was calling get_trip_temp() instead
+of the get_crit_temp().
+
+Fixes: e68b16abd91d ("thermal: add hwmon sysfs I/F")
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/thermal/thermal_hwmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index c41c7742903a..2dcd4194d103 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -98,7 +98,7 @@ temp_crit_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	int temperature;
+ 	int ret;
+ 
+-	ret = tz->ops->get_trip_temp(tz, 0, &temperature);
++	ret = tz->ops->get_crit_temp(tz, &temperature);
+ 	if (ret)
+ 		return ret;
+ 
+-- 
+2.9.3
+
