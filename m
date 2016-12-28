@@ -1,60 +1,69 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 1/8] PM / devfreq: exynos-bus: Add the detailed correlation
- for Exynos5433
-Date: Wed, 28 Dec 2016 20:56:45 +0900
-Message-ID: <1482926212-19223-2-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 5/8] PM / devfreq: Fix the checkpatch warnings
+Date: Wed, 28 Dec 2016 20:56:49 +0900
+Message-ID: <1482926212-19223-6-git-send-email-cw00.choi@samsung.com>
 References: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
- <CGME20161228115654epcas1p13fa3cb3615ddf89ebdf747c72b60d809@epcas1p1.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:58637 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751352AbcL1L45 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 06:56:57 -0500
+ <CGME20161228115654epcas1p1fd3636bca6d05331fcd9b629a8aeb921@epcas1p1.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>, Rob Herring <robh+dt@kernel.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org
+Cc: chanwoo@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch adds the detailed corrleation between sub-blocks and VDD_INT power
-line for Exynos5433. VDD_INT provided the power source to INT (Internal) block.
+This patch just fixes the checkpatch warnings.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org
-Cc: devicetree@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- Documentation/devicetree/bindings/devfreq/exynos-bus.txt | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ drivers/devfreq/devfreq.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-index d3ec8e676b6b..d085ef90d27c 100644
---- a/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-+++ b/Documentation/devicetree/bindings/devfreq/exynos-bus.txt
-@@ -123,6 +123,20 @@ Detailed correlation between sub-blocks and power line according to Exynos SoC:
- 		|--- FSYS
- 		|--- FSYS2
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 47206a21bb90..8e5938c9c7d6 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -538,15 +538,14 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq = find_device_devfreq(dev);
+ 	mutex_unlock(&devfreq_list_lock);
+ 	if (!IS_ERR(devfreq)) {
+-		dev_err(dev, "%s: Unable to create devfreq for the device. It already has one.\n", __func__);
++		dev_err(dev, "%s: Unable to create devfreq for the device.\n",
++			__func__);
+ 		err = -EINVAL;
+ 		goto err_out;
+ 	}
  
-+- In case of Exynos5433, there is VDD_INT power line as following:
-+	VDD_INT |--- G2D (parent device)
-+		|--- MSCL
-+		|--- GSCL
-+		|--- JPEG
-+		|--- MFC
-+		|--- HEVC
-+		|--- BUS0
-+		|--- BUS1
-+		|--- BUS2
-+		|--- PERIS (Fixed clock rate)
-+		|--- PERIC (Fixed clock rate)
-+		|--- FSYS  (Fixed clock rate)
-+
- Example1:
- 	Show the AXI buses of Exynos3250 SoC. Exynos3250 divides the buses to
- 	power line (regulator). The MIF (Memory Interface) AXI bus is used to
+ 	devfreq = kzalloc(sizeof(struct devfreq), GFP_KERNEL);
+ 	if (!devfreq) {
+-		dev_err(dev, "%s: Unable to create devfreq for the device\n",
+-			__func__);
+ 		err = -ENOMEM;
+ 		goto err_out;
+ 	}
+@@ -576,11 +575,13 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		goto err_out;
+ 	}
+ 
+-	devfreq->trans_table =	devm_kzalloc(&devfreq->dev, sizeof(unsigned int) *
++	devfreq->trans_table =	devm_kzalloc(&devfreq->dev,
++						sizeof(unsigned int) *
+ 						devfreq->profile->max_state *
+ 						devfreq->profile->max_state,
+ 						GFP_KERNEL);
+-	devfreq->time_in_state = devm_kzalloc(&devfreq->dev, sizeof(unsigned long) *
++	devfreq->time_in_state = devm_kzalloc(&devfreq->dev,
++						sizeof(unsigned long) *
+ 						devfreq->profile->max_state,
+ 						GFP_KERNEL);
+ 	devfreq->last_stat_updated = jiffies;
+@@ -995,7 +996,7 @@ static ssize_t cur_freq_show(struct device *dev, struct device_attribute *attr,
+ 
+ 	if (devfreq->profile->get_cur_freq &&
+ 		!devfreq->profile->get_cur_freq(devfreq->dev.parent, &freq))
+-			return sprintf(buf, "%lu\n", freq);
++		return sprintf(buf, "%lu\n", freq);
+ 
+ 	return sprintf(buf, "%lu\n", devfreq->previous_freq);
+ }
 -- 
 1.9.1
-
