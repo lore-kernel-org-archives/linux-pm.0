@@ -1,51 +1,104 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [Linux v4.10.0-rc1] call-traces after suspend-resume (pm? i915? cpu/hotplug?)
-Date: Wed, 28 Dec 2016 16:28:21 -0800
-Message-ID: <001d01d2616a$78fefc50$6afcf4f0$@net>
-References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com> <20161227211329.GA8195@amd> <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com> <87r34sjw29.fsf@intel.com> <CA+icZUWtOMcr0cE_S8Zbqsce1ETX2i_3hboj+suVoZSgXprZTA@mail.gmail.com> MMlxcy4WIL5mtMMlycGjUh
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [Linux v4.10.0-rc1] call-traces after
+	suspend-resume (pm? i915? cpu/hotplug?)
+Date: Thu, 29 Dec 2016 01:43:43 +0100
+Message-ID: <CA+icZUXzuC+SxjQS=ZUYvx8f6kVjbrqUfKEa0uHKXC6a3b2=ug@mail.gmail.com>
+References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com>
+ <20161227211329.GA8195@amd>
+ <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
+ <87r34sjw29.fsf@intel.com>
+ <CA+icZUWtOMcr0cE_S8Zbqsce1ETX2i_3hboj+suVoZSgXprZTA@mail.gmail.com>
+ <CAJZ5v0hzUzPQGZxeU3W-jEAx6338qbNoJ7MAtwv_UtnSkXP=5w@mail.gmail.com>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta19.telus.net ([209.171.16.92]:56342 "EHLO cmta19.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752252AbcL2AeA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Dec 2016 19:34:00 -0500
-In-Reply-To: MMlxcy4WIL5mtMMlycGjUh
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <CAJZ5v0hzUzPQGZxeU3W-jEAx6338qbNoJ7MAtwv_UtnSkXP=5w@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>, sedat.dilek@gmail.com, 'Thomas Gleixner' <tglx@linutronix.de>
-Cc: 'Jani Nikula' <jani.nikula@intel.com>, 'Pavel Machek' <pavel@ucw.cz>, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Daniel Vetter' <daniel.vetter@ffwll.ch>, 'Chris Wilson' <chris@chris-wilson.co.uk>, 'intel-gfx' <intel-gfx@lists.freedesktop.org>, 'LKML' <linux-kernel@vger.kernel.org>, 'the arch/x86 maintainers' <x86@kernel.org>, 'Mika Kuoppala' <mika.kuoppala@linux.intel.com>, 'Linux PM' <linux-pm@vger.kernel.org>
 
-On 2016.12.28 14:33 Rafael J. Wysocki wrote:
-> On Wed, Dec 28, 2016 at 11:00 AM, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->> On Wed, Dec 28, 2016 at 9:29 AM, Jani Nikula <jani.nikula@intel.com> wrote:
->>> On Wed, 28 Dec 2016, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->>>> On Tue, Dec 27, 2016 at 10:13 PM, Pavel Machek <pavel@ucw.cz> wrote:
->>>>
->>>> P.S.: Revert "cpu/hotplug: Prevent overwriting of callbacks"
->>>>
->>>> This reverts commit dc280d93623927570da279e99393879dbbab39e7
->>>> Author: Thomas Gleixner <tglx@linutronix.de>
->>>> Date: Wed Dec 21 20:19:49 2016 +0100
->>>> cpu/hotplug: Prevent overwriting of callbacks
-
-With respect to kernel 4.10-rc1 and the above referenced commit:
-
-On my computer rdmsr was not working, and therefore many tools
-that use it (i.e. turbostat) were also broken.
-
-I bisected the kernel down to the same above referenced commit.
-After finding some potentially related e-mails, I built a
-4.10-rc1+ kernel with these:
-
-0dad3a3 x86/mce/AMD: Make the init code more robust
-b9d9d69 smp/hotplug: Undo tglxs brainfart
-b4b8664 arm64: don't pull uaccess.h into *.S
-7ce7d89 Linux 4.10-rc1
-
-And now rdmsr is working fine, as is trubostat.
-
-
+T24gV2VkLCBEZWMgMjgsIDIwMTYgYXQgMTE6MzIgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZh
+ZWxAa2VybmVsLm9yZz4gd3JvdGU6Cj4gT24gV2VkLCBEZWMgMjgsIDIwMTYgYXQgMTE6MDAgQU0s
+IFNlZGF0IERpbGVrIDxzZWRhdC5kaWxla0BnbWFpbC5jb20+IHdyb3RlOgo+PiBPbiBXZWQsIERl
+YyAyOCwgMjAxNiBhdCA5OjI5IEFNLCBKYW5pIE5pa3VsYSA8amFuaS5uaWt1bGFAaW50ZWwuY29t
+PiB3cm90ZToKPj4+IE9uIFdlZCwgMjggRGVjIDIwMTYsIFNlZGF0IERpbGVrIDxzZWRhdC5kaWxl
+a0BnbWFpbC5jb20+IHdyb3RlOgo+Pj4+IE9uIFR1ZSwgRGVjIDI3LCAyMDE2IGF0IDEwOjEzIFBN
+LCBQYXZlbCBNYWNoZWsgPHBhdmVsQHVjdy5jej4gd3JvdGU6Cj4+Pj4+IEhpIQo+Pj4+Pgo+Pj4+
+Pj4gWyBBZGQgc29tZSBwbSB8IGk5MTUgfCB4ODYgZm9sa3MgXQo+Pj4+Pj4KPj4+Pj4+IEhpLAo+
+Pj4+Pj4KPj4+Pj4+IEkgaGF2ZSBidWlsdCBMaW51eCB2NC4xMC1yYzEgdG9kYXkgb24gbXkgVWJ1
+bnR1L3ByZWNpc2UgQU1ENjQgc3lzdGVtCj4+Pj4+PiBhbmQgSSBzZWUgc29tZSBjYWxsLXRyYWNl
+cy4KPj4+Pj4+IEl0IGlzIHJlcHJvZHVjaWJsZSBvbiBzdXNwZW5kIGFuZCByZXN1bWUuCj4+Pj4+
+Pgo+Pj4+Pj4gSSBjYW5ub3Qgc2F5IHdoaWNoIGFyZWEgdG91Y2hlcyB0aGUgcHJvYmxlbSBvciBp
+ZiB0aGVzZSBhcmUgc2V2ZXJhbAo+Pj4+Pj4gaW5kZXBlbmRlbnQgcHJvYmxlbXMuCj4+Pj4+Pgo+
+Pj4+Pj4gRm9yIGEgZnVsbCBkbWVzZy1sb2cgc2VlIGF0dGFjaG1lbnRzIChteSBsaW51eC1jb25m
+aWcgaXMgYXR0YWNoZWQsIHRvbykuCj4+Pj4+Pgo+Pj4+Pj4gSGVyZSBzb21lIGh1bmtzLi4uCj4+
+Pj4+Pgo+Pj4+Pj4gWyAgIDI5LjAwMzYwMV0gQlVHOiBzbGVlcGluZyBmdW5jdGlvbiBjYWxsZWQg
+ZnJvbSBpbnZhbGlkIGNvbnRleHQgYXQKPj4+Pj4+IGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
+LmM6MTAzMgo+Pj4+Pj4gWyAgIDI5LjAwMzYwOF0gaW5fYXRvbWljKCk6IDEsIGlycXNfZGlzYWJs
+ZWQoKTogMCwgcGlkOiAxNDY5LCBuYW1lOiBYb3JnCj4+Pj4+PiBbICAgMjkuMDAzNjEwXSAxIGxv
+Y2sgaGVsZCBieSBYb3JnLzE0Njk6Cj4+Pj4+PiBbICAgMjkuMDAzNjExXSAgIzA6ICAoJmRldi0+
+c3RydWN0X211dGV4KXsrLisuKy59LCBhdDoKPj4+Pj4+IFs8ZmZmZmZmZmZhMDYyM2MxMz5dIGk5
+MTVfbXV0ZXhfbG9ja19pbnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVdCj4+Pj4+PiBbICAg
+MjkuMDAzNjUzXSBDUFU6IDAgUElEOiAxNDY5IENvbW06IFhvcmcgTm90IHRhaW50ZWQKPj4+Pj4+
+IDQuMTAuMC1yYzEtMS1pbml6YS1zbWFsbCAjMQo+Pj4+Pj4gWyAgIDI5LjAwMzY1NV0gSGFyZHdh
+cmUgbmFtZTogU0FNU1VORyBFTEVDVFJPTklDUyBDTy4sIExURC4KPj4+Pj4+IDUzMFUzQkkvNTMw
+VTRCSS81MzBVNEJILzUzMFUzQkkvNTMwVTRCSS81MzBVNEJILCBCSU9TIDEzWEsgMDMvMjgvMjAx
+Mwo+Pj4+Pj4gWyAgIDI5LjAwMzY1Nl0gQ2FsbCBUcmFjZToKPj4+Pj4KPj4+Pj4gSnVzdCBhIG5v
+dGUsIGF0IGxlYXN0IDIgbWFjaGluZXMgaGVyZSByZWZ1c2UgdG8gcmVzdW1lIHdpdGgKPj4+Pj4g
+djQuMTAtcmMxLiBPbmUgaGFzIGludGVsIGdyYXBoaWNzLCBvbmUgaGFzIEFNRC4gSXQgbWF5IG9y
+IG1heSBub3QgaGF2ZQo+Pj4+PiBjb21tb24gY2F1c2UuLi4KPj4+Pj4KPj4+Pgo+Pj4+IFsgQ29y
+cmVjdCBsaW51eC1wbSBNTCBhbmQgYWRkIE1pa2EgJiBKYW5pIF0KPj4+Pgo+Pj4+IFRoYW5rcyBm
+b3IgdGhlIGZlZWRiYWNrLgo+Pj4+Cj4+Pj4gVGhlcmUgYXJlIHNvbWUgY3B1L2hvdHBsdWcgZml4
+ZXMgcG9zdC12NC4xMC1yYzEuCj4+Pj4gR2l2ZSB0aGF0IGEgdHJ5Lgo+Pj4+Cj4+Pj4gWWVzdGVy
+ZGF5LCBhZnRlciBhbnN3ZXJzIGZyb20gZHJtLWludGVsIGZvbGtzIEkgaGF2ZSBzZWVuIHRoYXQg
+YQo+Pj4+IGNwdS9ob3RwbHVnIGNvbW1pdCBbMV0gd2FzIHJldmVydGVkIGluCj4+Pj4gZHJtLWlu
+dGVsLmdpdCNkcm0taW50ZWwtbmlnaHRseS4KPj4+PiBJIGhhdmVuJ3QgdHJpZWQgdGhhdC4KPj4+
+Pgo+Pj4+IEl0J3MgZ29vZCB3aGVuIFRob21hcyBrbm93cyBvZiB0aGlzIGFuZCBnZXRzIGluIGNv
+bnRhY3Qgd2l0aCBkcm0taW50ZWwgZm9sa3MuCj4+Pj4KPj4+PiBSZWdhcmRzLAo+Pj4+IC0gU2Vk
+YXQgLQo+Pj4+Cj4+Pj4gWzFdIGh0dHBzOi8vY2dpdC5mcmVlZGVza3RvcC5vcmcvZHJtLWludGVs
+L2NvbW1pdC8/aD1kcm0taW50ZWwtbmlnaHRseSZpZD1lNTU4ZjE3OGY1MzkwMTg1YjczMjRmZjRi
+ODE2YjUyYzZhZTNhOTI4Cj4+Pj4gWzJdIGh0dHBzOi8vY2dpdC5mcmVlZGVza3RvcC5vcmcvZHJt
+LWludGVsL2xvZy8/aD1kcm0taW50ZWwtbmlnaHRseQo+Pj4+Cj4+Pj4gUC5TLjogUmV2ZXJ0ICJj
+cHUvaG90cGx1ZzogUHJldmVudCBvdmVyd3JpdGluZyBvZiBjYWxsYmFja3MiCj4+Pj4KPj4+PiBU
+aGlzIHJldmVydHMgY29tbWl0IGRjMjgwZDkzNjIzOTI3NTcwZGEyNzllOTkzOTM4NzlkYmJhYjM5
+ZTcKPj4+PiBBdXRob3I6IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPgo+Pj4+
+IERhdGU6IFdlZCBEZWMgMjEgMjA6MTk6NDkgMjAxNiArMDEwMAo+Pj4+IGNwdS9ob3RwbHVnOiBQ
+cmV2ZW50IG92ZXJ3cml0aW5nIG9mIGNhbGxiYWNrcwo+Pj4+Cj4+Pj4gSXQgc3RhcnRlZCBoYW5n
+aW5nIGFsbCBtYWNoaW5lcyBpbiBDSSBzMyB0ZXN0Ogo+Pj4+IGh0dHBzOi8vaW50ZWwtZ2Z4LWNp
+LjAxLm9yZy9DSS9pZ3RAZ2VtX2V4ZWNfc3VzcGVuZEBiYXNpYy1zMy5odG1sCj4+Pj4KPj4+PiBC
+aXNlY3RlZC1ieTogTWlrYSBLdW9wcGFsYSA8bWlrYS5rdW9wcGFsYUBsaW51eC5pbnRlbC5jb20+
+Cj4+Pj4gU2lnbmVkLW9mZi1ieTogSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVsLmNvbT4K
+Pj4+Cj4+PiBUaG9tYXMgLQo+Pj4KPj4+IEluZGVlZCwgYmFzaWNhbGx5IGFsbCBvZiB0aGUgYm94
+ZXMgaW4gdGhlIGludGVsLWdmeCBDSSBoYW5nIGF0IHRoZQo+Pj4gc3VzcGVuZC9yZXN1bWUgdGVz
+dCB3aXRoIGRjMjgwZDkzNjIzOSAoImNwdS9ob3RwbHVnOiBQcmV2ZW50IG92ZXJ3cml0aW5nCj4+
+PiBvZiBjYWxsYmFja3MiKSwgYW5kIGFmdGVyIHRoZSByZXZlcnQgaW4gdGhlIHRyZWUgdGhhdCBm
+ZWVkcyB0byB0aGUgQ0ksCj4+PiB3ZSdyZSBiYWNrIG9uIHRyYWNrLgo+Pj4KPj4+IEkgZm91bmQg
+WzFdLCB3YXMgaG9waW5nIHRvIGdldCBmZWVkYmFjayBmcm9tIE1pa2Egd2hldGhlciB0aGF0IGhl
+bHBzCj4+PiBiZWZvcmUgcmVwb3J0aW5nLiBDaHJpcyBhbHNvIHN1Z2dlc3RlZCBbMl0gYXMgYSBx
+dWljayBmaXggYnV0IEkgZG9uJ3QKPj4+IGtub3cgaWYgYW55b25lIHRyaWVkIHRoYXQuCj4+Pgo+
+Pgo+PiBIaSBKYW5pLAo+Pgo+PiBJIGtub3cgeW91IHdlcmUgbm90IENDZWQgaW4gdGhlIG9yaWdp
+bmFsIHRocmVhZCwgcGxlYXNlIHNlZSBbNV0uCj4+Cj4+IFRoZSBwYXRjaHNldCBmcm9tIFRob21h
+cyB5b3UgbWVudGlvbiBbMV0gZG9lcyBmaXggb25lIG9mIHRoZSBwcm9ibGVtcwo+PiBJIGhhdmUg
+c2VlbiwgcGxlYXNlIHNlZSBbNl0uCj4+IFdpdGggdGhlc2UgcG9zdC12NC4xMC1yYzEgcGF0Y2hl
+cyBhcHBsaWVkIGEgY2xlYW4gcmV2ZXJ0IG9mIFJldmVydAo+PiAiY3B1L2hvdHBsdWc6IFByZXZl
+bnQgb3ZlcndyaXRpbmcgb2YgY2FsbGJhY2tzIiBpcyBub3QgcG9zc2libGUuCj4+Cj4+IENhbiB5
+b3UgZ2l2ZSBhIGNsZWFyIHN0YXRlbWVudCBpZiB0aGUgcXVpY2stZml4IGZyb20gQ2hyaXMgaXMg
+aW4KPj4gY29tYmluYXRpb24gd2l0aCB0aGUgYWJvdmUgcmV2ZXJ0IG9yIG5vdD8KPj4gQWdhaW5z
+dCB2NC4xMC1yYzE/Cj4+IFRlc3RlZCB0b2dldGhlciB3aXRoIHRoZSBwYXRjaHNldCBvZiBUaG9t
+YXM/Cj4KPiBQbGVhc2UgdGVzdCB0aGUgTGludXMnIHRyZWUgZnJvbSB0b2RheSwgaXQgc2hvdWxk
+IHdvcmsuCj4KCkxhdGVzdCBMaW51cyB0cmVlICh2NC4xMC1yYzEtMTctZzJkNzA2ZTc5MGYwNSkg
+ZG9lcyBub3QgZml4IGl0LgoKLSBTZWRhdCAtCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3Rz
+LmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xp
+c3RpbmZvL2ludGVsLWdmeAo=
