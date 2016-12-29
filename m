@@ -1,64 +1,77 @@
-From: Sylwester Nawrocki <s.nawrocki@samsung.com>
-Subject: Re: [PATCH 2/2] ARM: dts: Add CPU OPPs for Exynos4412 Prime
-Date: Thu, 29 Dec 2016 17:23:34 +0100
-Message-ID: <6892749a-a8bd-cfb3-551c-f0b1ca6d2b84@samsung.com>
-References: <1483018611-27998-1-git-send-email-b.zolnierkie@samsung.com>
- <1483018611-27998-3-git-send-email-b.zolnierkie@samsung.com>
- <20161229144908.6gkvjpso7ikdmfp7@kozik-lap>
- <CGME20161229150623epcas1p2b2f0fbb6f9ddd11caffdc93487e2cf77@epcas1p2.samsung.com>
- <1840714.lHhVv9oNko@amdc3058>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 2/2] iio: misc: add support for GPIO power switches
+Date: Thu, 29 Dec 2016 17:29:20 +0100
+Message-ID: <20161229162919.j2ej2cyeuoqnxykf@earth>
+References: <1481494905-18037-1-git-send-email-bgolaszewski@baylibre.com>
+ <1481494905-18037-3-git-send-email-bgolaszewski@baylibre.com>
+ <CACRpkdZ7JrNfCKPuuCmkZd_7+NV0QLUN8ZMukFA0TcqS9SYXcQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1840714.lHhVv9oNko@amdc3058>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lb4vfyzhy2tybpcz"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CACRpkdZ7JrNfCKPuuCmkZd_7+NV0QLUN8ZMukFA0TcqS9SYXcQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, Jonathan Cameron <jic23@kernel.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Kevin Hilman <khilman@baylibre.com>, Patrick Titiano <ptitiano@baylibre.com>, Neil Armstrong <narmstrong@baylibre.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Mark Brown <broonie@kernel.org>, Lia
 List-Id: linux-pm@vger.kernel.org
 
-On 12/29/2016 04:06 PM, Bartlomiej Zolnierkiewicz wrote:
->>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->>> ---
->>>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  4 +--
->>>  arch/arm/boot/dts/exynos4412-odroidu3.dts       |  5 +--
->>>  arch/arm/boot/dts/exynos4412-odroidx2.dts       |  1 +
->>>  arch/arm/boot/dts/exynos4412-prime.dtsi         | 41 +++++++++++++++++++++++++
->>>  arch/arm/boot/dts/exynos4412.dtsi               |  2 +-
->>>  5 files changed, 48 insertions(+), 5 deletions(-)
->>>  create mode 100644 arch/arm/boot/dts/exynos4412-prime.dtsi
->>>
->> Looks okay. Is the clock patch needed for this?
-> Yep.
 
-I applied the clock patch and here is a stable tag if it needs
-to be pulled as a dependency.
+--lb4vfyzhy2tybpcz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Linux,
 
-The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
+On Wed, Dec 28, 2016 at 01:50:17PM +0100, Linus Walleij wrote:
+> On Sun, Dec 11, 2016 at 11:21 PM, Bartosz Golaszewski
+> <bgolaszewski@baylibre.com> wrote:
+>=20
+> > Some power-measuring ADCs work together with power load switches which
+> > allow to power-cycle measured devices.
+> >
+> > An example use case would be measuring the power consumption of a
+> > development board during boot using a power monitor such as TI INA226
+> > and power-cycling the board remotely using a TPS229* power switch.
+> >
+> > Add an iio driver for simple GPIO power switches and expose a sysfs
+> > attribute allowing to toggle their state.
+> >
+> > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>=20
+> I don't get this, isn't this doing the same as
+> drivers/power/reset/gpio-poweroff.c
+> ?
+>=20
+> With the only difference that the latter uses the standard syscall
+> from pm_power_off to reboot the system instead of some random
+> sysfs file.
 
-  Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
+As far as I understand it, the TPS229 is used by Barzosz to poweroff
+a remote system. The gpio-poweroff driver is used to poweroff the
+local system.
 
-are available in the git repository at:
+-- Sebastian
 
-  git://linuxtv.org/snawrocki/samsung.git tags/clk-v4.11-exynos4-pll
+--lb4vfyzhy2tybpcz
+Content-Type: application/pgp-signature; name="signature.asc"
 
-for you to fetch changes up to c369596f895be88d09f4165b223fa31c64aaefd4:
+-----BEGIN PGP SIGNATURE-----
 
-  clk: samsung: Add CPU clk configuration data for Exynos4412 Prime (2016-12-29
-16:34:06 +0100)
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhlOd8ACgkQ2O7X88g7
++poLnA/+PczlGKFDmT/RhKMoBhYGAKqa02N/XFLAqeAHHijUHnkynyQuJCy4Z+du
+zN83tRGzpGNGNivQrQ7+50ClROqR6Qg/IJUueK/ma8kR3UM8xzW7hylyfxo978Iu
+sjquC1lgS2J7FCBUoP3x+W7XC/ScGwit6ANpso/43BaSAghSNKs7ypI0bQvOzURS
+eKgiFBXkVU1NIUbcXI91hZB/gBsrCI6DGj48eW1+WKrFze+NwW6VenuXs3OrqruU
+mtiZmlxBtlhjIczwhxTN/TyGbRIXaKewj2fs45uDOM15SMVmA7sd9H/kzfkO3vLt
+w7YDNkbnKuKS4ptB9dVeOsFHruTJKWJloQmxhyAX8RQq/MU39xTxxpJVJpyZXxVj
++GP9c+T++OVhKJHkL3JZ03EcFpFlZshNS9KzpUqAokZ6YTZ0sKJs9YfMxrXEz694
+xTifMSKbhELgCevzFldXGDoknJa8JmJuZ3LxxpJq/caLDxa9KjIG2V5ykVw6me4E
+8nvRZnLVSgYFCgC1wJblnkgFa40XGSWMieuaz1ucb2+CynIQtbwD0j6XgVTeUdQM
+qN93281DJT0dmQ0n/dtDcZcGu32qhXx9WSPmZJpptuV9cusMZsUklUaP3nKhNVYO
+YVaV7x3ohxPYmiarJfVRCA+kXnXUSHnMD6jCRoqmGSB7TRNaq6c=
+=eV4Y
+-----END PGP SIGNATURE-----
 
-----------------------------------------------------------------
-Addition of the CPU clock configuration data for Exynos4412
-Prime SoC variant.
-
-----------------------------------------------------------------
-Bartlomiej Zolnierkiewicz (1):
-      clk: samsung: Add CPU clk configuration data for Exynos4412 Prime
-
- drivers/clk/samsung/clk-exynos4.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
--- 
-Regards,
-Sylwester
+--lb4vfyzhy2tybpcz--
