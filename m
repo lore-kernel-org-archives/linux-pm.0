@@ -1,48 +1,64 @@
-From: Colin King <colin.king@canonical.com>
-Subject: [PATCH] power_supply: wm97xx_battery: remove redundant 2nd null check on pdata
-Date: Thu, 29 Dec 2016 15:23:12 +0000
-Message-ID: <20161229152312.20537-1-colin.king@canonical.com>
+From: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Subject: Re: [PATCH 2/2] ARM: dts: Add CPU OPPs for Exynos4412 Prime
+Date: Thu, 29 Dec 2016 17:23:34 +0100
+Message-ID: <6892749a-a8bd-cfb3-551c-f0b1ca6d2b84@samsung.com>
+References: <1483018611-27998-1-git-send-email-b.zolnierkie@samsung.com>
+ <1483018611-27998-3-git-send-email-b.zolnierkie@samsung.com>
+ <20161229144908.6gkvjpso7ikdmfp7@kozik-lap>
+ <CGME20161229150623epcas1p2b2f0fbb6f9ddd11caffdc93487e2cf77@epcas1p2.samsung.com>
+ <1840714.lHhVv9oNko@amdc3058>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from youngberry.canonical.com ([91.189.89.112]:53502 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752311AbcL2PYA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Dec 2016 10:24:00 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1840714.lHhVv9oNko@amdc3058>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+On 12/29/2016 04:06 PM, Bartlomiej Zolnierkiewicz wrote:
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>>> ---
+>>>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  4 +--
+>>>  arch/arm/boot/dts/exynos4412-odroidu3.dts       |  5 +--
+>>>  arch/arm/boot/dts/exynos4412-odroidx2.dts       |  1 +
+>>>  arch/arm/boot/dts/exynos4412-prime.dtsi         | 41 +++++++++++++++++++++++++
+>>>  arch/arm/boot/dts/exynos4412.dtsi               |  2 +-
+>>>  5 files changed, 48 insertions(+), 5 deletions(-)
+>>>  create mode 100644 arch/arm/boot/dts/exynos4412-prime.dtsi
+>>>
+>> Looks okay. Is the clock patch needed for this?
+> Yep.
 
-pdata is being null checked twice, the 2nd check is redundant code
-and can be removed.
+I applied the clock patch and here is a stable tag if it needs
+to be pulled as a dependency.
 
-Fixes CoverityScan CID 1392340 "Logically dead code"
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/power/supply/wm97xx_battery.c | 5 -----
- 1 file changed, 5 deletions(-)
+The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
 
-diff --git a/drivers/power/supply/wm97xx_battery.c b/drivers/power/supply/wm97xx_battery.c
-index e3edb31..bd4f666 100644
---- a/drivers/power/supply/wm97xx_battery.c
-+++ b/drivers/power/supply/wm97xx_battery.c
-@@ -175,11 +175,6 @@ static int wm97xx_bat_probe(struct platform_device *dev)
- 	if (dev->id != -1)
- 		return -EINVAL;
- 
--	if (!pdata) {
--		dev_err(&dev->dev, "No platform_data supplied\n");
--		return -EINVAL;
--	}
--
- 	if (gpio_is_valid(pdata->charge_gpio)) {
- 		ret = gpio_request(pdata->charge_gpio, "BATT CHRG");
- 		if (ret)
+  Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
+
+are available in the git repository at:
+
+  git://linuxtv.org/snawrocki/samsung.git tags/clk-v4.11-exynos4-pll
+
+for you to fetch changes up to c369596f895be88d09f4165b223fa31c64aaefd4:
+
+  clk: samsung: Add CPU clk configuration data for Exynos4412 Prime (2016-12-29
+16:34:06 +0100)
+
+----------------------------------------------------------------
+Addition of the CPU clock configuration data for Exynos4412
+Prime SoC variant.
+
+----------------------------------------------------------------
+Bartlomiej Zolnierkiewicz (1):
+      clk: samsung: Add CPU clk configuration data for Exynos4412 Prime
+
+ drivers/clk/samsung/clk-exynos4.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
 -- 
-2.10.2
-
+Regards,
+Sylwester
