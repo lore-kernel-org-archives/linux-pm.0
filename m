@@ -1,113 +1,193 @@
-From: Mika Kuoppala <mika.kuoppala@linux.intel.com>
-Subject: Re: [Linux v4.10.0-rc1] call-traces after
-	suspend-resume (pm? i915? cpu/hotplug?)
-Date: Thu, 29 Dec 2016 13:58:49 +0200
-Message-ID: <8737h7eykm.fsf@gaia.fi.intel.com>
-References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com>
- <20161227211329.GA8195@amd>
- <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
- <87r34sjw29.fsf@intel.com>
- <CA+icZUWtOMcr0cE_S8Zbqsce1ETX2i_3hboj+suVoZSgXprZTA@mail.gmail.com>
- <CAJZ5v0hzUzPQGZxeU3W-jEAx6338qbNoJ7MAtwv_UtnSkXP=5w@mail.gmail.com>
- <CA+icZUXzuC+SxjQS=ZUYvx8f6kVjbrqUfKEa0uHKXC6a3b2=ug@mail.gmail.com>
+From: Mason <slash.tmp@free.fr>
+Subject: Re: Linux fails to start secondary cores when system resumes from
+ Suspend-to-RAM
+Date: Thu, 29 Dec 2016 13:10:27 +0100
+Message-ID: <9134f2dd-73f6-73d5-30a0-3129d5440d0a@free.fr>
+References: <d4db03ce-80fc-2968-c5c2-84f79272ce8d@free.fr>
+ <CADjb_WQ8ZTtcXYQ_3iobLCW7+rnG8FqyFQ1E47AZVGxP0JyB0w@mail.gmail.com>
+ <8c3c6592-1e9a-10d3-2a89-c22a2a23cf4b@free.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CA+icZUXzuC+SxjQS=ZUYvx8f6kVjbrqUfKEa0uHKXC6a3b2=ug@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: sedat.dilek@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp5-g21.free.fr ([212.27.42.5]:26648 "EHLO smtp5-g21.free.fr"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752563AbcL2MLR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Dec 2016 07:11:17 -0500
+In-Reply-To: <8c3c6592-1e9a-10d3-2a89-c22a2a23cf4b@free.fr>
+Content-Language: 
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-pm <linux-pm@vger.kernel.org>
+Cc: Yu Chen <yu.chen.surf@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, Sebastian Frias <sf84@laposte.net>, Thibaud Cornic <thibaud_cornic@sigmadesigns.com>, Thomas Gambier <thomas_gambier@sigmadesigns.com>, Arnd Bergmann <arnd@arndb.de>, Russell King <linux@arm.linux.org.uk>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Kevin Hilman <khilman@kernel.org>, Mark Brown <broonie@kernel.org>
 
-U2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWlsLmNvbT4gd3JpdGVzOgoKPiBPbiBXZWQsIERl
-YyAyOCwgMjAxNiBhdCAxMTozMiBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwu
-b3JnPiB3cm90ZToKPj4gT24gV2VkLCBEZWMgMjgsIDIwMTYgYXQgMTE6MDAgQU0sIFNlZGF0IERp
-bGVrIDxzZWRhdC5kaWxla0BnbWFpbC5jb20+IHdyb3RlOgo+Pj4gT24gV2VkLCBEZWMgMjgsIDIw
-MTYgYXQgOToyOSBBTSwgSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVsLmNvbT4gd3JvdGU6
-Cj4+Pj4gT24gV2VkLCAyOCBEZWMgMjAxNiwgU2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWls
-LmNvbT4gd3JvdGU6Cj4+Pj4+IE9uIFR1ZSwgRGVjIDI3LCAyMDE2IGF0IDEwOjEzIFBNLCBQYXZl
-bCBNYWNoZWsgPHBhdmVsQHVjdy5jej4gd3JvdGU6Cj4+Pj4+PiBIaSEKPj4+Pj4+Cj4+Pj4+Pj4g
-WyBBZGQgc29tZSBwbSB8IGk5MTUgfCB4ODYgZm9sa3MgXQo+Pj4+Pj4+Cj4+Pj4+Pj4gSGksCj4+
-Pj4+Pj4KPj4+Pj4+PiBJIGhhdmUgYnVpbHQgTGludXggdjQuMTAtcmMxIHRvZGF5IG9uIG15IFVi
-dW50dS9wcmVjaXNlIEFNRDY0IHN5c3RlbQo+Pj4+Pj4+IGFuZCBJIHNlZSBzb21lIGNhbGwtdHJh
-Y2VzLgo+Pj4+Pj4+IEl0IGlzIHJlcHJvZHVjaWJsZSBvbiBzdXNwZW5kIGFuZCByZXN1bWUuCj4+
-Pj4+Pj4KPj4+Pj4+PiBJIGNhbm5vdCBzYXkgd2hpY2ggYXJlYSB0b3VjaGVzIHRoZSBwcm9ibGVt
-IG9yIGlmIHRoZXNlIGFyZSBzZXZlcmFsCj4+Pj4+Pj4gaW5kZXBlbmRlbnQgcHJvYmxlbXMuCj4+
-Pj4+Pj4KPj4+Pj4+PiBGb3IgYSBmdWxsIGRtZXNnLWxvZyBzZWUgYXR0YWNobWVudHMgKG15IGxp
-bnV4LWNvbmZpZyBpcyBhdHRhY2hlZCwgdG9vKS4KPj4+Pj4+Pgo+Pj4+Pj4+IEhlcmUgc29tZSBo
-dW5rcy4uLgo+Pj4+Pj4+Cj4+Pj4+Pj4gWyAgIDI5LjAwMzYwMV0gQlVHOiBzbGVlcGluZyBmdW5j
-dGlvbiBjYWxsZWQgZnJvbSBpbnZhbGlkIGNvbnRleHQgYXQKPj4+Pj4+PiBkcml2ZXJzL2Jhc2Uv
-cG93ZXIvcnVudGltZS5jOjEwMzIKPj4+Pj4+PiBbICAgMjkuMDAzNjA4XSBpbl9hdG9taWMoKTog
-MSwgaXJxc19kaXNhYmxlZCgpOiAwLCBwaWQ6IDE0NjksIG5hbWU6IFhvcmcKPj4+Pj4+PiBbICAg
-MjkuMDAzNjEwXSAxIGxvY2sgaGVsZCBieSBYb3JnLzE0Njk6Cj4+Pj4+Pj4gWyAgIDI5LjAwMzYx
-MV0gICMwOiAgKCZkZXYtPnN0cnVjdF9tdXRleCl7Ky4rLisufSwgYXQ6Cj4+Pj4+Pj4gWzxmZmZm
-ZmZmZmEwNjIzYzEzPl0gaTkxNV9tdXRleF9sb2NrX2ludGVycnVwdGlibGUrMHg0My8weDE0MCBb
-aTkxNV0KPj4+Pj4+PiBbICAgMjkuMDAzNjUzXSBDUFU6IDAgUElEOiAxNDY5IENvbW06IFhvcmcg
-Tm90IHRhaW50ZWQKPj4+Pj4+PiA0LjEwLjAtcmMxLTEtaW5pemEtc21hbGwgIzEKPj4+Pj4+PiBb
-ICAgMjkuMDAzNjU1XSBIYXJkd2FyZSBuYW1lOiBTQU1TVU5HIEVMRUNUUk9OSUNTIENPLiwgTFRE
-Lgo+Pj4+Pj4+IDUzMFUzQkkvNTMwVTRCSS81MzBVNEJILzUzMFUzQkkvNTMwVTRCSS81MzBVNEJI
-LCBCSU9TIDEzWEsgMDMvMjgvMjAxMwo+Pj4+Pj4+IFsgICAyOS4wMDM2NTZdIENhbGwgVHJhY2U6
-Cj4+Pj4+Pgo+Pj4+Pj4gSnVzdCBhIG5vdGUsIGF0IGxlYXN0IDIgbWFjaGluZXMgaGVyZSByZWZ1
-c2UgdG8gcmVzdW1lIHdpdGgKPj4+Pj4+IHY0LjEwLXJjMS4gT25lIGhhcyBpbnRlbCBncmFwaGlj
-cywgb25lIGhhcyBBTUQuIEl0IG1heSBvciBtYXkgbm90IGhhdmUKPj4+Pj4+IGNvbW1vbiBjYXVz
-ZS4uLgo+Pj4+Pj4KPj4+Pj4KPj4+Pj4gWyBDb3JyZWN0IGxpbnV4LXBtIE1MIGFuZCBhZGQgTWlr
-YSAmIEphbmkgXQo+Pj4+Pgo+Pj4+PiBUaGFua3MgZm9yIHRoZSBmZWVkYmFjay4KPj4+Pj4KPj4+
-Pj4gVGhlcmUgYXJlIHNvbWUgY3B1L2hvdHBsdWcgZml4ZXMgcG9zdC12NC4xMC1yYzEuCj4+Pj4+
-IEdpdmUgdGhhdCBhIHRyeS4KPj4+Pj4KPj4+Pj4gWWVzdGVyZGF5LCBhZnRlciBhbnN3ZXJzIGZy
-b20gZHJtLWludGVsIGZvbGtzIEkgaGF2ZSBzZWVuIHRoYXQgYQo+Pj4+PiBjcHUvaG90cGx1ZyBj
-b21taXQgWzFdIHdhcyByZXZlcnRlZCBpbgo+Pj4+PiBkcm0taW50ZWwuZ2l0I2RybS1pbnRlbC1u
-aWdodGx5Lgo+Pj4+PiBJIGhhdmVuJ3QgdHJpZWQgdGhhdC4KPj4+Pj4KPj4+Pj4gSXQncyBnb29k
-IHdoZW4gVGhvbWFzIGtub3dzIG9mIHRoaXMgYW5kIGdldHMgaW4gY29udGFjdCB3aXRoIGRybS1p
-bnRlbCBmb2xrcy4KPj4+Pj4KPj4+Pj4gUmVnYXJkcywKPj4+Pj4gLSBTZWRhdCAtCj4+Pj4+Cj4+
-Pj4+IFsxXSBodHRwczovL2NnaXQuZnJlZWRlc2t0b3Aub3JnL2RybS1pbnRlbC9jb21taXQvP2g9
-ZHJtLWludGVsLW5pZ2h0bHkmaWQ9ZTU1OGYxNzhmNTM5MDE4NWI3MzI0ZmY0YjgxNmI1MmM2YWUz
-YTkyOAo+Pj4+PiBbMl0gaHR0cHM6Ly9jZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0taW50ZWwvbG9n
-Lz9oPWRybS1pbnRlbC1uaWdodGx5Cj4+Pj4+Cj4+Pj4+IFAuUy46IFJldmVydCAiY3B1L2hvdHBs
-dWc6IFByZXZlbnQgb3ZlcndyaXRpbmcgb2YgY2FsbGJhY2tzIgo+Pj4+Pgo+Pj4+PiBUaGlzIHJl
-dmVydHMgY29tbWl0IGRjMjgwZDkzNjIzOTI3NTcwZGEyNzllOTkzOTM4NzlkYmJhYjM5ZTcKPj4+
-Pj4gQXV0aG9yOiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25peC5kZT4KPj4+Pj4gRGF0
-ZTogV2VkIERlYyAyMSAyMDoxOTo0OSAyMDE2ICswMTAwCj4+Pj4+IGNwdS9ob3RwbHVnOiBQcmV2
-ZW50IG92ZXJ3cml0aW5nIG9mIGNhbGxiYWNrcwo+Pj4+Pgo+Pj4+PiBJdCBzdGFydGVkIGhhbmdp
-bmcgYWxsIG1hY2hpbmVzIGluIENJIHMzIHRlc3Q6Cj4+Pj4+IGh0dHBzOi8vaW50ZWwtZ2Z4LWNp
-LjAxLm9yZy9DSS9pZ3RAZ2VtX2V4ZWNfc3VzcGVuZEBiYXNpYy1zMy5odG1sCj4+Pj4+Cj4+Pj4+
-IEJpc2VjdGVkLWJ5OiBNaWthIEt1b3BwYWxhIDxtaWthLmt1b3BwYWxhQGxpbnV4LmludGVsLmNv
-bT4KPj4+Pj4gU2lnbmVkLW9mZi1ieTogSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVsLmNv
-bT4KPj4+Pgo+Pj4+IFRob21hcyAtCj4+Pj4KPj4+PiBJbmRlZWQsIGJhc2ljYWxseSBhbGwgb2Yg
-dGhlIGJveGVzIGluIHRoZSBpbnRlbC1nZnggQ0kgaGFuZyBhdCB0aGUKPj4+PiBzdXNwZW5kL3Jl
-c3VtZSB0ZXN0IHdpdGggZGMyODBkOTM2MjM5ICgiY3B1L2hvdHBsdWc6IFByZXZlbnQgb3Zlcndy
-aXRpbmcKPj4+PiBvZiBjYWxsYmFja3MiKSwgYW5kIGFmdGVyIHRoZSByZXZlcnQgaW4gdGhlIHRy
-ZWUgdGhhdCBmZWVkcyB0byB0aGUgQ0ksCj4+Pj4gd2UncmUgYmFjayBvbiB0cmFjay4KPj4+Pgo+
-Pj4+IEkgZm91bmQgWzFdLCB3YXMgaG9waW5nIHRvIGdldCBmZWVkYmFjayBmcm9tIE1pa2Egd2hl
-dGhlciB0aGF0IGhlbHBzCj4+Pj4gYmVmb3JlIHJlcG9ydGluZy4gQ2hyaXMgYWxzbyBzdWdnZXN0
-ZWQgWzJdIGFzIGEgcXVpY2sgZml4IGJ1dCBJIGRvbid0Cj4+Pj4ga25vdyBpZiBhbnlvbmUgdHJp
-ZWQgdGhhdC4KPj4+Pgo+Pj4KPj4+IEhpIEphbmksCj4+Pgo+Pj4gSSBrbm93IHlvdSB3ZXJlIG5v
-dCBDQ2VkIGluIHRoZSBvcmlnaW5hbCB0aHJlYWQsIHBsZWFzZSBzZWUgWzVdLgo+Pj4KPj4+IFRo
-ZSBwYXRjaHNldCBmcm9tIFRob21hcyB5b3UgbWVudGlvbiBbMV0gZG9lcyBmaXggb25lIG9mIHRo
-ZSBwcm9ibGVtcwo+Pj4gSSBoYXZlIHNlZW4sIHBsZWFzZSBzZWUgWzZdLgo+Pj4gV2l0aCB0aGVz
-ZSBwb3N0LXY0LjEwLXJjMSBwYXRjaGVzIGFwcGxpZWQgYSBjbGVhbiByZXZlcnQgb2YgUmV2ZXJ0
-Cj4+PiAiY3B1L2hvdHBsdWc6IFByZXZlbnQgb3ZlcndyaXRpbmcgb2YgY2FsbGJhY2tzIiBpcyBu
-b3QgcG9zc2libGUuCj4+Pgo+Pj4gQ2FuIHlvdSBnaXZlIGEgY2xlYXIgc3RhdGVtZW50IGlmIHRo
-ZSBxdWljay1maXggZnJvbSBDaHJpcyBpcyBpbgo+Pj4gY29tYmluYXRpb24gd2l0aCB0aGUgYWJv
-dmUgcmV2ZXJ0IG9yIG5vdD8KPj4+IEFnYWluc3QgdjQuMTAtcmMxPwo+Pj4gVGVzdGVkIHRvZ2V0
-aGVyIHdpdGggdGhlIHBhdGNoc2V0IG9mIFRob21hcz8KPj4KPj4gUGxlYXNlIHRlc3QgdGhlIExp
-bnVzJyB0cmVlIGZyb20gdG9kYXksIGl0IHNob3VsZCB3b3JrLgo+Pgo+Cj4gTGF0ZXN0IExpbnVz
-IHRyZWUgKHY0LjEwLXJjMS0xNy1nMmQ3MDZlNzkwZjA1KSBkb2VzIG5vdCBmaXggaXQuCj4KCkxh
-dGVzdCBMaW51cyB0cmVlIDJkNzA2ZTc5MGYwNTA4ZGZmNGZiNzJlY2E5YjQ4OTJiNzk3NTdmZWIg
-Zml4ZXMgb3VyIFMzCnByb2JsZW1zLiBJdCBzdXJ2aXZlcyBnZW1fZXhlY19zdXNwZW5kIC0tciBi
-YXNpYy1TMyBvbiBrYWJ5bGFrZS4KCkl0IGNvbnRhaW5zIHRoZSBmaXggdG8gdGhlIGJpc2VjdGVk
-IGNvbW1pdDoKCmNvbW1pdCBiOWQ5ZDY5MTFiZDVjMzcwYWQ0YjNhYTU3ZDc1OGMwOTNkMTdhZWQ1
-CkF1dGhvcjogVGhvbWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+CkRhdGU6ICAgTW9u
-IERlYyAyNiAyMjo1ODoxOSAyMDE2ICswMTAwCgogICAgc21wL2hvdHBsdWc6IFVuZG8gdGdseHMg
-YnJhaW5mYXJ0CgoKLU1pa2EKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0
-b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50
-ZWwtZ2Z4Cg==
+On 16/12/2016 08:25, Mason wrote:
+
+> On 16/12/2016 06:14, Yu Chen wrote:
+> 
+>> On Thu, Dec 15, 2016 at 11:18 PM, Mason wrote:
+>>
+>>> I'm playing with suspend-to-RAM on the tango platform:
+>>>
+>>>   http://lxr.free-electrons.com/source/arch/arm/mach-tango/platsmp.c
+>>>
+>>> When the system is suspended, the CPU is completely powered down
+>>> (receives no power whatsoever). When the system receives a wake-up
+>>> event, the CPU is powered up, and starts up exactly the same way
+>>> as for a cold boot (I think).
+>>>
+>>> However, while Linux successfully starts the secondary cores when
+>>> the system first boots, it fails when the system resumes from "S3".
+>>>
+>>> I added printascii() calls inside secondary_start_kernel() and I can
+>>> see that the following instruction are "properly" run:
+>>>
+>>>         cpu_switch_mm(mm->pgd, mm);
+>>>         local_flush_bp_all();
+>>>         enter_lazy_tlb(mm, current);
+>>>
+>>> but it seems local_flush_tlb_all(); never returns... :-(
+>>>
+>>>   http://lxr.free-electrons.com/source/arch/arm/include/asm/tlbflush.h#L332
+>>>
+>>>
+>>> Looking more closely at that function, it seems to be failing in:
+>>>
+>>>         tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+>>>
+>>> (meaning: I get a log before, but not after)
+>>>
+>>> On my system, tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+>>> resolves to:
+>>>
+>>> c010ce18:       e3170602        tst     r7, #2097152    ; 0x200000
+>>> c010ce1c:       1e086f17        mcrne   15, 0, r6, cr8, cr7, {0}
+>>>
+>>> What could be happening?
+>>> Can a core "hang" on this instruction?
+>>> Can a core "crash" on this instruction (meaning, an exception
+>>> is raised, and the core loops inside the exception code without
+>>> Linux noticing... that seems unlikely)
+>>
+>> try online/offline the nonboot CPUs via
+>> /sys/devices/system/cpu/cpuX/online
+> 
+> offline + online secondary core works.
+> 
+> Note: all cores are in the same power domain, so even if all
+> secondary cores are offline, the CPU block remains powered up
+> (secondary cores are just held in reset, or spinning in WFI,
+> depending on the firmware version).
+> 
+> When the system is suspended, the CPU block (as well as 99%
+> of the system) is powered down. Thus, upon resume, all cores
+> will run the boot sequence (again).
+> 
+> I'm guessing that something goes wrong during this second
+> boot sequence. Could there be a race condition between the
+> primary core and one of the secondary cores?
+> 
+> What is different in the Linux boot sequence between cold
+> boot and resume? I'm thinking that the state stored in RAM
+> is in fact incompatible with what Linux expects when it resumes...
+
+I've taken a closer look at the MCR instruction.
+
+    tlb_op(TLB_V7_UIS_FULL, "c8, c7, 0", zero);
+
+#define tlb_op(f, regs, arg)	__tlb_op(f, "p15, 0, %0, " regs, arg)
+
+#define __tlb_op(f, insnarg, arg)					\
+	do {								\
+		if (always_tlb_flags & (f))				\
+			asm("mcr " insnarg				\
+			    : : "r" (arg) : "cc");			\
+		else if (possible_tlb_flags & (f))			\
+			asm("tst %1, %2\n\t"				\
+			    "mcrne " insnarg				\
+			    : : "r" (arg), "r" (__tlb_flag), "Ir" (f)	\
+			    : "cc");					\
+	} while (0)
+
+
+c010dd64:       e3130c12        tst     r3, #4608       ; 0x1200
+c010dd68:       1e081f17        mcrne   15, 0, r1, cr8, cr7, {0}
+c010dd6c:       e3120602        tst     r2, #2097152    ; 0x200000
+c010dd70:       1e081f17        mcrne   15, 0, r1, cr8, cr7, {0}
+c010dd74:       f57ff047        dsb     un
+c010dd78:       f57ff06f        isb     sy
+
+A8.6.92 MCR, MCR2
+
+Move to Coprocessor from ARM core register passes the value of an ARM core register to a coprocessor.
+If no coprocessor can execute the instruction, an Undefined Instruction exception is generated.
+
+This is a generic coprocessor instruction. Some of the fields have no functionality defined by the architecture
+and are free for use by the coprocessor instruction set designer. These fields are the opc1, opc2, CRn, and
+CRm fields.
+
+Operation
+
+if ConditionPassed() then
+	EncodingSpecificOperations();
+	if !Coproc_Accepted(cp, ThisInstr()) then
+		GenerateCoprocessorException();
+	else
+		Coproc_SendOneWord(R[t], cp, ThisInstr());
+
+
+I.7.5 Coproc_Accepted()
+
+This function determines, for a coprocessor and one of its coprocessor instructions:
+- Whether access to the coprocessor is permitted by the CPACR and, if the Security Extensions are
+implemented, the NSACR.
+- If access is permitted, whether the instruction is accepted by the coprocessor. The coprocessor
+architecture definition specifies which instructions it accepts and in what circumstances.
+It returns TRUE if access is permitted and the coprocessor accepts the instruction, and FALSE otherwise.
+
+boolean Coproc_Accepted(integer cp_num, bits(32) instr)
+
+
+I.7.17 GenerateCoprocessorException()
+
+This procedure generates the appropriate exception for a rejected coprocessor instruction.
+In all architecture variants and profiles described in this manual, GenerateCoprocessorException() generates
+an Undefined Instruction exception.
+
+
+Assuming I'm hitting this, I would expect the kernel to print something
+if the secondary cores trigger an exception. Am I mistaken?
+
+
+mov     r1, #0
+mcrne   15, 0, r1, cr8, cr7, {0}
+
+B3.12.34 CP15 c8, TLB maintenance operations
+On ARMv7-A implementations, CP15 c8 operations are used for TLB maintenance functions. Figure B3-20
+shows the CP15 c8 encodings.
+
+TLBIALL*, invalidate unified TLB
+* See text for more information about these mnemonics
+Invalidate entire unified TLB
+(When separate instruction and data TLBs are implemented,
+these operations are performed on both TLBs.)
+Rt data = Ignore
+
+Invalidate entire TLB
+The Invalidate entire TLB operations invalidate all unlocked entries in the TLB. The value in the register Rt
+specified by the MCR instruction used to perform the operation is ignored. You do not have to write a value
+to the register before issuing the MCR instruction.
+
+
+Maybe this is a red herring... I don't see why the TLBIALL would
+raise an exception when the system resumes... I first suspected
+TrustZone shenanigans, but it looks like TLBIALL just flushes
+what it can, so TrustZone seems to be a non-issue.
+
+I'm stumped... Still looking for a clue :-(
+
+Maybe I should instrument the exception handler...
+if I only knew where it was.
+
+Regards.
+
