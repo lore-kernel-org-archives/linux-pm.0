@@ -1,51 +1,113 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [RESEND] thermal: hwmon: Properly report critical temperature in sysfs
-Date: Thu, 29 Dec 2016 13:45:49 +0200
-Message-ID: <CAJKOXPess6_N2VyZDviS2Y8gxwsRKrG9jKuyEacE8xo2-7LaAw@mail.gmail.com>
-References: <20161228173528.4419-1-krzk@kernel.org> <1483011829.2342.0.camel@intel.com>
+From: Mika Kuoppala <mika.kuoppala@linux.intel.com>
+Subject: Re: [Linux v4.10.0-rc1] call-traces after
+	suspend-resume (pm? i915? cpu/hotplug?)
+Date: Thu, 29 Dec 2016 13:58:49 +0200
+Message-ID: <8737h7eykm.fsf@gaia.fi.intel.com>
+References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com>
+ <20161227211329.GA8195@amd>
+ <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
+ <87r34sjw29.fsf@intel.com>
+ <CA+icZUWtOMcr0cE_S8Zbqsce1ETX2i_3hboj+suVoZSgXprZTA@mail.gmail.com>
+ <CAJZ5v0hzUzPQGZxeU3W-jEAx6338qbNoJ7MAtwv_UtnSkXP=5w@mail.gmail.com>
+ <CA+icZUXzuC+SxjQS=ZUYvx8f6kVjbrqUfKEa0uHKXC6a3b2=ug@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43030 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752053AbcL2Lpx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Dec 2016 06:45:53 -0500
-In-Reply-To: <1483011829.2342.0.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <CA+icZUXzuC+SxjQS=ZUYvx8f6kVjbrqUfKEa0uHKXC6a3b2=ug@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: sedat.dilek@gmail.com, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-On Thu, Dec 29, 2016 at 1:43 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Wed, 2016-12-28 at 19:35 +0200, Krzysztof Kozlowski wrote:
->> In the critical sysfs entry the thermal hwmon was returning wrong
->> temperature to the user-space.  It was reporting the temperature of
->> the
->> first trip point instead of the temperature of critical trip point.
->>
->> For example:
->>       /sys/class/hwmon/hwmon0/temp1_crit:50000
->>       /sys/class/thermal/thermal_zone0/trip_point_0_temp:50000
->>       /sys/class/thermal/thermal_zone0/trip_point_0_type:active
->>       /sys/class/thermal/thermal_zone0/trip_point_3_temp:120000
->>       /sys/class/thermal/thermal_zone0/trip_point_3_type:critical
->>
->> Since commit e68b16abd91d ("thermal: add hwmon sysfs I/F") the driver
->> have been registering a sysfs entry if get_crit_temp() callback was
->> provided.  However when accessed, it was calling get_trip_temp()
->> instead
->> of the get_crit_temp().
->>
->> Fixes: e68b16abd91d ("thermal: add hwmon sysfs I/F")
->> Cc: <stable@vger.kernel.org>
->> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
->
-> The patch is already in upstream kernel.
->
-> thanks,
-> rui
-
-Ahh, indeed.
-
-Thanks!
-Krzysztof
+U2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWlsLmNvbT4gd3JpdGVzOgoKPiBPbiBXZWQsIERl
+YyAyOCwgMjAxNiBhdCAxMTozMiBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwu
+b3JnPiB3cm90ZToKPj4gT24gV2VkLCBEZWMgMjgsIDIwMTYgYXQgMTE6MDAgQU0sIFNlZGF0IERp
+bGVrIDxzZWRhdC5kaWxla0BnbWFpbC5jb20+IHdyb3RlOgo+Pj4gT24gV2VkLCBEZWMgMjgsIDIw
+MTYgYXQgOToyOSBBTSwgSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVsLmNvbT4gd3JvdGU6
+Cj4+Pj4gT24gV2VkLCAyOCBEZWMgMjAxNiwgU2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWls
+LmNvbT4gd3JvdGU6Cj4+Pj4+IE9uIFR1ZSwgRGVjIDI3LCAyMDE2IGF0IDEwOjEzIFBNLCBQYXZl
+bCBNYWNoZWsgPHBhdmVsQHVjdy5jej4gd3JvdGU6Cj4+Pj4+PiBIaSEKPj4+Pj4+Cj4+Pj4+Pj4g
+WyBBZGQgc29tZSBwbSB8IGk5MTUgfCB4ODYgZm9sa3MgXQo+Pj4+Pj4+Cj4+Pj4+Pj4gSGksCj4+
+Pj4+Pj4KPj4+Pj4+PiBJIGhhdmUgYnVpbHQgTGludXggdjQuMTAtcmMxIHRvZGF5IG9uIG15IFVi
+dW50dS9wcmVjaXNlIEFNRDY0IHN5c3RlbQo+Pj4+Pj4+IGFuZCBJIHNlZSBzb21lIGNhbGwtdHJh
+Y2VzLgo+Pj4+Pj4+IEl0IGlzIHJlcHJvZHVjaWJsZSBvbiBzdXNwZW5kIGFuZCByZXN1bWUuCj4+
+Pj4+Pj4KPj4+Pj4+PiBJIGNhbm5vdCBzYXkgd2hpY2ggYXJlYSB0b3VjaGVzIHRoZSBwcm9ibGVt
+IG9yIGlmIHRoZXNlIGFyZSBzZXZlcmFsCj4+Pj4+Pj4gaW5kZXBlbmRlbnQgcHJvYmxlbXMuCj4+
+Pj4+Pj4KPj4+Pj4+PiBGb3IgYSBmdWxsIGRtZXNnLWxvZyBzZWUgYXR0YWNobWVudHMgKG15IGxp
+bnV4LWNvbmZpZyBpcyBhdHRhY2hlZCwgdG9vKS4KPj4+Pj4+Pgo+Pj4+Pj4+IEhlcmUgc29tZSBo
+dW5rcy4uLgo+Pj4+Pj4+Cj4+Pj4+Pj4gWyAgIDI5LjAwMzYwMV0gQlVHOiBzbGVlcGluZyBmdW5j
+dGlvbiBjYWxsZWQgZnJvbSBpbnZhbGlkIGNvbnRleHQgYXQKPj4+Pj4+PiBkcml2ZXJzL2Jhc2Uv
+cG93ZXIvcnVudGltZS5jOjEwMzIKPj4+Pj4+PiBbICAgMjkuMDAzNjA4XSBpbl9hdG9taWMoKTog
+MSwgaXJxc19kaXNhYmxlZCgpOiAwLCBwaWQ6IDE0NjksIG5hbWU6IFhvcmcKPj4+Pj4+PiBbICAg
+MjkuMDAzNjEwXSAxIGxvY2sgaGVsZCBieSBYb3JnLzE0Njk6Cj4+Pj4+Pj4gWyAgIDI5LjAwMzYx
+MV0gICMwOiAgKCZkZXYtPnN0cnVjdF9tdXRleCl7Ky4rLisufSwgYXQ6Cj4+Pj4+Pj4gWzxmZmZm
+ZmZmZmEwNjIzYzEzPl0gaTkxNV9tdXRleF9sb2NrX2ludGVycnVwdGlibGUrMHg0My8weDE0MCBb
+aTkxNV0KPj4+Pj4+PiBbICAgMjkuMDAzNjUzXSBDUFU6IDAgUElEOiAxNDY5IENvbW06IFhvcmcg
+Tm90IHRhaW50ZWQKPj4+Pj4+PiA0LjEwLjAtcmMxLTEtaW5pemEtc21hbGwgIzEKPj4+Pj4+PiBb
+ICAgMjkuMDAzNjU1XSBIYXJkd2FyZSBuYW1lOiBTQU1TVU5HIEVMRUNUUk9OSUNTIENPLiwgTFRE
+Lgo+Pj4+Pj4+IDUzMFUzQkkvNTMwVTRCSS81MzBVNEJILzUzMFUzQkkvNTMwVTRCSS81MzBVNEJI
+LCBCSU9TIDEzWEsgMDMvMjgvMjAxMwo+Pj4+Pj4+IFsgICAyOS4wMDM2NTZdIENhbGwgVHJhY2U6
+Cj4+Pj4+Pgo+Pj4+Pj4gSnVzdCBhIG5vdGUsIGF0IGxlYXN0IDIgbWFjaGluZXMgaGVyZSByZWZ1
+c2UgdG8gcmVzdW1lIHdpdGgKPj4+Pj4+IHY0LjEwLXJjMS4gT25lIGhhcyBpbnRlbCBncmFwaGlj
+cywgb25lIGhhcyBBTUQuIEl0IG1heSBvciBtYXkgbm90IGhhdmUKPj4+Pj4+IGNvbW1vbiBjYXVz
+ZS4uLgo+Pj4+Pj4KPj4+Pj4KPj4+Pj4gWyBDb3JyZWN0IGxpbnV4LXBtIE1MIGFuZCBhZGQgTWlr
+YSAmIEphbmkgXQo+Pj4+Pgo+Pj4+PiBUaGFua3MgZm9yIHRoZSBmZWVkYmFjay4KPj4+Pj4KPj4+
+Pj4gVGhlcmUgYXJlIHNvbWUgY3B1L2hvdHBsdWcgZml4ZXMgcG9zdC12NC4xMC1yYzEuCj4+Pj4+
+IEdpdmUgdGhhdCBhIHRyeS4KPj4+Pj4KPj4+Pj4gWWVzdGVyZGF5LCBhZnRlciBhbnN3ZXJzIGZy
+b20gZHJtLWludGVsIGZvbGtzIEkgaGF2ZSBzZWVuIHRoYXQgYQo+Pj4+PiBjcHUvaG90cGx1ZyBj
+b21taXQgWzFdIHdhcyByZXZlcnRlZCBpbgo+Pj4+PiBkcm0taW50ZWwuZ2l0I2RybS1pbnRlbC1u
+aWdodGx5Lgo+Pj4+PiBJIGhhdmVuJ3QgdHJpZWQgdGhhdC4KPj4+Pj4KPj4+Pj4gSXQncyBnb29k
+IHdoZW4gVGhvbWFzIGtub3dzIG9mIHRoaXMgYW5kIGdldHMgaW4gY29udGFjdCB3aXRoIGRybS1p
+bnRlbCBmb2xrcy4KPj4+Pj4KPj4+Pj4gUmVnYXJkcywKPj4+Pj4gLSBTZWRhdCAtCj4+Pj4+Cj4+
+Pj4+IFsxXSBodHRwczovL2NnaXQuZnJlZWRlc2t0b3Aub3JnL2RybS1pbnRlbC9jb21taXQvP2g9
+ZHJtLWludGVsLW5pZ2h0bHkmaWQ9ZTU1OGYxNzhmNTM5MDE4NWI3MzI0ZmY0YjgxNmI1MmM2YWUz
+YTkyOAo+Pj4+PiBbMl0gaHR0cHM6Ly9jZ2l0LmZyZWVkZXNrdG9wLm9yZy9kcm0taW50ZWwvbG9n
+Lz9oPWRybS1pbnRlbC1uaWdodGx5Cj4+Pj4+Cj4+Pj4+IFAuUy46IFJldmVydCAiY3B1L2hvdHBs
+dWc6IFByZXZlbnQgb3ZlcndyaXRpbmcgb2YgY2FsbGJhY2tzIgo+Pj4+Pgo+Pj4+PiBUaGlzIHJl
+dmVydHMgY29tbWl0IGRjMjgwZDkzNjIzOTI3NTcwZGEyNzllOTkzOTM4NzlkYmJhYjM5ZTcKPj4+
+Pj4gQXV0aG9yOiBUaG9tYXMgR2xlaXhuZXIgPHRnbHhAbGludXRyb25peC5kZT4KPj4+Pj4gRGF0
+ZTogV2VkIERlYyAyMSAyMDoxOTo0OSAyMDE2ICswMTAwCj4+Pj4+IGNwdS9ob3RwbHVnOiBQcmV2
+ZW50IG92ZXJ3cml0aW5nIG9mIGNhbGxiYWNrcwo+Pj4+Pgo+Pj4+PiBJdCBzdGFydGVkIGhhbmdp
+bmcgYWxsIG1hY2hpbmVzIGluIENJIHMzIHRlc3Q6Cj4+Pj4+IGh0dHBzOi8vaW50ZWwtZ2Z4LWNp
+LjAxLm9yZy9DSS9pZ3RAZ2VtX2V4ZWNfc3VzcGVuZEBiYXNpYy1zMy5odG1sCj4+Pj4+Cj4+Pj4+
+IEJpc2VjdGVkLWJ5OiBNaWthIEt1b3BwYWxhIDxtaWthLmt1b3BwYWxhQGxpbnV4LmludGVsLmNv
+bT4KPj4+Pj4gU2lnbmVkLW9mZi1ieTogSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVsLmNv
+bT4KPj4+Pgo+Pj4+IFRob21hcyAtCj4+Pj4KPj4+PiBJbmRlZWQsIGJhc2ljYWxseSBhbGwgb2Yg
+dGhlIGJveGVzIGluIHRoZSBpbnRlbC1nZnggQ0kgaGFuZyBhdCB0aGUKPj4+PiBzdXNwZW5kL3Jl
+c3VtZSB0ZXN0IHdpdGggZGMyODBkOTM2MjM5ICgiY3B1L2hvdHBsdWc6IFByZXZlbnQgb3Zlcndy
+aXRpbmcKPj4+PiBvZiBjYWxsYmFja3MiKSwgYW5kIGFmdGVyIHRoZSByZXZlcnQgaW4gdGhlIHRy
+ZWUgdGhhdCBmZWVkcyB0byB0aGUgQ0ksCj4+Pj4gd2UncmUgYmFjayBvbiB0cmFjay4KPj4+Pgo+
+Pj4+IEkgZm91bmQgWzFdLCB3YXMgaG9waW5nIHRvIGdldCBmZWVkYmFjayBmcm9tIE1pa2Egd2hl
+dGhlciB0aGF0IGhlbHBzCj4+Pj4gYmVmb3JlIHJlcG9ydGluZy4gQ2hyaXMgYWxzbyBzdWdnZXN0
+ZWQgWzJdIGFzIGEgcXVpY2sgZml4IGJ1dCBJIGRvbid0Cj4+Pj4ga25vdyBpZiBhbnlvbmUgdHJp
+ZWQgdGhhdC4KPj4+Pgo+Pj4KPj4+IEhpIEphbmksCj4+Pgo+Pj4gSSBrbm93IHlvdSB3ZXJlIG5v
+dCBDQ2VkIGluIHRoZSBvcmlnaW5hbCB0aHJlYWQsIHBsZWFzZSBzZWUgWzVdLgo+Pj4KPj4+IFRo
+ZSBwYXRjaHNldCBmcm9tIFRob21hcyB5b3UgbWVudGlvbiBbMV0gZG9lcyBmaXggb25lIG9mIHRo
+ZSBwcm9ibGVtcwo+Pj4gSSBoYXZlIHNlZW4sIHBsZWFzZSBzZWUgWzZdLgo+Pj4gV2l0aCB0aGVz
+ZSBwb3N0LXY0LjEwLXJjMSBwYXRjaGVzIGFwcGxpZWQgYSBjbGVhbiByZXZlcnQgb2YgUmV2ZXJ0
+Cj4+PiAiY3B1L2hvdHBsdWc6IFByZXZlbnQgb3ZlcndyaXRpbmcgb2YgY2FsbGJhY2tzIiBpcyBu
+b3QgcG9zc2libGUuCj4+Pgo+Pj4gQ2FuIHlvdSBnaXZlIGEgY2xlYXIgc3RhdGVtZW50IGlmIHRo
+ZSBxdWljay1maXggZnJvbSBDaHJpcyBpcyBpbgo+Pj4gY29tYmluYXRpb24gd2l0aCB0aGUgYWJv
+dmUgcmV2ZXJ0IG9yIG5vdD8KPj4+IEFnYWluc3QgdjQuMTAtcmMxPwo+Pj4gVGVzdGVkIHRvZ2V0
+aGVyIHdpdGggdGhlIHBhdGNoc2V0IG9mIFRob21hcz8KPj4KPj4gUGxlYXNlIHRlc3QgdGhlIExp
+bnVzJyB0cmVlIGZyb20gdG9kYXksIGl0IHNob3VsZCB3b3JrLgo+Pgo+Cj4gTGF0ZXN0IExpbnVz
+IHRyZWUgKHY0LjEwLXJjMS0xNy1nMmQ3MDZlNzkwZjA1KSBkb2VzIG5vdCBmaXggaXQuCj4KCkxh
+dGVzdCBMaW51cyB0cmVlIDJkNzA2ZTc5MGYwNTA4ZGZmNGZiNzJlY2E5YjQ4OTJiNzk3NTdmZWIg
+Zml4ZXMgb3VyIFMzCnByb2JsZW1zLiBJdCBzdXJ2aXZlcyBnZW1fZXhlY19zdXNwZW5kIC0tciBi
+YXNpYy1TMyBvbiBrYWJ5bGFrZS4KCkl0IGNvbnRhaW5zIHRoZSBmaXggdG8gdGhlIGJpc2VjdGVk
+IGNvbW1pdDoKCmNvbW1pdCBiOWQ5ZDY5MTFiZDVjMzcwYWQ0YjNhYTU3ZDc1OGMwOTNkMTdhZWQ1
+CkF1dGhvcjogVGhvbWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+CkRhdGU6ICAgTW9u
+IERlYyAyNiAyMjo1ODoxOSAyMDE2ICswMTAwCgogICAgc21wL2hvdHBsdWc6IFVuZG8gdGdseHMg
+YnJhaW5mYXJ0CgoKLU1pa2EKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0
+b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50
+ZWwtZ2Z4Cg==
