@@ -1,57 +1,54 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [PATCH 0/2] ARM: add Exynos4412 Prime SoC support
-Date: Thu, 29 Dec 2016 14:36:49 +0100
-Message-ID: <1483018611-27998-1-git-send-email-b.zolnierkie@samsung.com>
-References: <CGME20161229133722epcas5p1e138af585fea93a42962f3a7414a081f@epcas5p1.samsung.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
+ Exynos5422/5800
+Date: Thu, 29 Dec 2016 16:17:07 +0200
+Message-ID: <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
+References: <10512254.nyUcL0zgTP@amdc3058>
+ <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Ben Gamari <ben@smart-cactus.org>, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, Doug Anderson <dianders@chromium.org>, linux-clk@vger.kernel.org, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Thomas Abraham <thomas.ab@samsung.com>, Andreas Faerber <afaerber@suse.de>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:36123 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752668AbcL2ORQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Dec 2016 09:17:16 -0500
+Content-Disposition: inline
+In-Reply-To: <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Arjun K V <arjun.kv@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi,
+On Thu, Dec 15, 2016 at 04:54:30PM -0800, Doug Anderson wrote:
+> > Index: b/arch/arm/boot/dts/exynos5800.dtsi
+> > ===================================================================
+> > --- a/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.365955950 +0100
+> > +++ b/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.361955949 +0100
+> > @@ -24,6 +24,16 @@
+> >  };
+> >
+> >  &cluster_a15_opp_table {
+> > +       opp@2000000000 {
+> > +               opp-hz = /bits/ 64 <2000000000>;
+> > +               opp-microvolt = <1250000>;
+> > +               clock-latency-ns = <140000>;
+> > +       };
+> > +       opp@1900000000 {
+> > +               opp-hz = /bits/ 64 <1900000000>;
+> > +               opp-microvolt = <1250000>;
+> > +               clock-latency-ns = <140000>;
+> > +       };
+> 
+> I don't think the voltages you listed are high enough for all peach pi
+> boards for A15 at 1.9 GHz and 2.0 GHz, at least based on the research
+> I did.  See my response to v1.
 
-This patchset adds support for Exynos4412 Prime SoC (it supports
-additional 1704MHz & 1600MHz CPU OPPs and 1500MHz CPU OPP is just
-a regular non-turbo OPP on this SoC).
+I wanted to apply this but saw this remaining issue. Javier tested it
+on Peach Pi so is this concern still valid?
 
-ODROID-X2/U2/U3 boards use Exynos4412 Prime SoC version so their
-board files are updated accordingly.
-
-This patchset brings 21% CPU performance increase on affected
-boards (as tested on ODROID-U3 board).
+Bartlomiej,
+When sending dts patches please stick to the common subsystem prefix
+(git log --oneline arch/arm/boot/dts/exynos*).
 
 Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-Bartlomiej Zolnierkiewicz (2):
-  clk: samsung: exynos4412: add cpu clock configuration data for
-    Exynos4412 Prime
-  ARM: dts: Add CPU OPPs for Exynos4412 Prime
-
- arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  4 +--
- arch/arm/boot/dts/exynos4412-odroidu3.dts       |  5 +--
- arch/arm/boot/dts/exynos4412-odroidx2.dts       |  1 +
- arch/arm/boot/dts/exynos4412-prime.dtsi         | 41 +++++++++++++++++++++++++
- arch/arm/boot/dts/exynos4412.dtsi               |  2 +-
- drivers/clk/samsung/clk-exynos4.c               |  4 +++
- 6 files changed, 52 insertions(+), 5 deletions(-)
- create mode 100644 arch/arm/boot/dts/exynos4412-prime.dtsi
-
--- 
-1.9.1
+Krzysztof
