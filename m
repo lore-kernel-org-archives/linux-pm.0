@@ -1,104 +1,48 @@
-From: Sedat Dilek <sedat.dilek@gmail.com>
-Subject: Re: [Linux v4.10.0-rc1] call-traces after
-	suspend-resume (pm? i915? cpu/hotplug?)
-Date: Thu, 29 Dec 2016 01:43:43 +0100
-Message-ID: <CA+icZUXzuC+SxjQS=ZUYvx8f6kVjbrqUfKEa0uHKXC6a3b2=ug@mail.gmail.com>
-References: <CA+icZUVdjS8Wjjw5WxLZmv6JHV3ybFGnG8fi6TuafXDgGSV4SQ@mail.gmail.com>
- <20161227211329.GA8195@amd>
- <CA+icZUVb+zDRWV8SNVWx-U6w+i794OQ=ua4a+fTL2y5KihFAGA@mail.gmail.com>
- <87r34sjw29.fsf@intel.com>
- <CA+icZUWtOMcr0cE_S8Zbqsce1ETX2i_3hboj+suVoZSgXprZTA@mail.gmail.com>
- <CAJZ5v0hzUzPQGZxeU3W-jEAx6338qbNoJ7MAtwv_UtnSkXP=5w@mail.gmail.com>
-Reply-To: sedat.dilek@gmail.com
+From: Wanpeng Li <kernellwp@gmail.com>
+Subject: Re: [PATCH] cpufreq: schedutil: add up/down frequency transition rate limits
+Date: Thu, 29 Dec 2016 11:24:56 +0800
+Message-ID: <CANRm+CzQ3H1YJEcAJk4pwFJ+v4c0nFSNu5G+kx_e7Y1XWz1rNQ@mail.gmail.com>
+References: <c6248ec9475117a1d6c9ff9aafa8894f6574a82f.1479359903.git.viresh.kumar@linaro.org>
+ <20161121100805.GB10014@vireshk-i7> <20161121101946.GI3102@twins.programming.kicks-ass.net>
+ <20161121121432.GK24383@e106622-lin> <20161121122622.GC3092@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CAJZ5v0hzUzPQGZxeU3W-jEAx6338qbNoJ7MAtwv_UtnSkXP=5w@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wj0-f195.google.com ([209.85.210.195]:34261 "EHLO
+        mail-wj0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752218AbcL2DY7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Dec 2016 22:24:59 -0500
+In-Reply-To: <20161121122622.GC3092@twins.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <Juri.Lelli@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Robin Randhawa <robin.randhawa@arm.com>, Steve Muckle <smuckle.linux@gmail.com>, tkjos@google.com, Morten Rasmussen <morten.rasmussen@arm.com>
 
-T24gV2VkLCBEZWMgMjgsIDIwMTYgYXQgMTE6MzIgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZh
-ZWxAa2VybmVsLm9yZz4gd3JvdGU6Cj4gT24gV2VkLCBEZWMgMjgsIDIwMTYgYXQgMTE6MDAgQU0s
-IFNlZGF0IERpbGVrIDxzZWRhdC5kaWxla0BnbWFpbC5jb20+IHdyb3RlOgo+PiBPbiBXZWQsIERl
-YyAyOCwgMjAxNiBhdCA5OjI5IEFNLCBKYW5pIE5pa3VsYSA8amFuaS5uaWt1bGFAaW50ZWwuY29t
-PiB3cm90ZToKPj4+IE9uIFdlZCwgMjggRGVjIDIwMTYsIFNlZGF0IERpbGVrIDxzZWRhdC5kaWxl
-a0BnbWFpbC5jb20+IHdyb3RlOgo+Pj4+IE9uIFR1ZSwgRGVjIDI3LCAyMDE2IGF0IDEwOjEzIFBN
-LCBQYXZlbCBNYWNoZWsgPHBhdmVsQHVjdy5jej4gd3JvdGU6Cj4+Pj4+IEhpIQo+Pj4+Pgo+Pj4+
-Pj4gWyBBZGQgc29tZSBwbSB8IGk5MTUgfCB4ODYgZm9sa3MgXQo+Pj4+Pj4KPj4+Pj4+IEhpLAo+
-Pj4+Pj4KPj4+Pj4+IEkgaGF2ZSBidWlsdCBMaW51eCB2NC4xMC1yYzEgdG9kYXkgb24gbXkgVWJ1
-bnR1L3ByZWNpc2UgQU1ENjQgc3lzdGVtCj4+Pj4+PiBhbmQgSSBzZWUgc29tZSBjYWxsLXRyYWNl
-cy4KPj4+Pj4+IEl0IGlzIHJlcHJvZHVjaWJsZSBvbiBzdXNwZW5kIGFuZCByZXN1bWUuCj4+Pj4+
-Pgo+Pj4+Pj4gSSBjYW5ub3Qgc2F5IHdoaWNoIGFyZWEgdG91Y2hlcyB0aGUgcHJvYmxlbSBvciBp
-ZiB0aGVzZSBhcmUgc2V2ZXJhbAo+Pj4+Pj4gaW5kZXBlbmRlbnQgcHJvYmxlbXMuCj4+Pj4+Pgo+
-Pj4+Pj4gRm9yIGEgZnVsbCBkbWVzZy1sb2cgc2VlIGF0dGFjaG1lbnRzIChteSBsaW51eC1jb25m
-aWcgaXMgYXR0YWNoZWQsIHRvbykuCj4+Pj4+Pgo+Pj4+Pj4gSGVyZSBzb21lIGh1bmtzLi4uCj4+
-Pj4+Pgo+Pj4+Pj4gWyAgIDI5LjAwMzYwMV0gQlVHOiBzbGVlcGluZyBmdW5jdGlvbiBjYWxsZWQg
-ZnJvbSBpbnZhbGlkIGNvbnRleHQgYXQKPj4+Pj4+IGRyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
-LmM6MTAzMgo+Pj4+Pj4gWyAgIDI5LjAwMzYwOF0gaW5fYXRvbWljKCk6IDEsIGlycXNfZGlzYWJs
-ZWQoKTogMCwgcGlkOiAxNDY5LCBuYW1lOiBYb3JnCj4+Pj4+PiBbICAgMjkuMDAzNjEwXSAxIGxv
-Y2sgaGVsZCBieSBYb3JnLzE0Njk6Cj4+Pj4+PiBbICAgMjkuMDAzNjExXSAgIzA6ICAoJmRldi0+
-c3RydWN0X211dGV4KXsrLisuKy59LCBhdDoKPj4+Pj4+IFs8ZmZmZmZmZmZhMDYyM2MxMz5dIGk5
-MTVfbXV0ZXhfbG9ja19pbnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVdCj4+Pj4+PiBbICAg
-MjkuMDAzNjUzXSBDUFU6IDAgUElEOiAxNDY5IENvbW06IFhvcmcgTm90IHRhaW50ZWQKPj4+Pj4+
-IDQuMTAuMC1yYzEtMS1pbml6YS1zbWFsbCAjMQo+Pj4+Pj4gWyAgIDI5LjAwMzY1NV0gSGFyZHdh
-cmUgbmFtZTogU0FNU1VORyBFTEVDVFJPTklDUyBDTy4sIExURC4KPj4+Pj4+IDUzMFUzQkkvNTMw
-VTRCSS81MzBVNEJILzUzMFUzQkkvNTMwVTRCSS81MzBVNEJILCBCSU9TIDEzWEsgMDMvMjgvMjAx
-Mwo+Pj4+Pj4gWyAgIDI5LjAwMzY1Nl0gQ2FsbCBUcmFjZToKPj4+Pj4KPj4+Pj4gSnVzdCBhIG5v
-dGUsIGF0IGxlYXN0IDIgbWFjaGluZXMgaGVyZSByZWZ1c2UgdG8gcmVzdW1lIHdpdGgKPj4+Pj4g
-djQuMTAtcmMxLiBPbmUgaGFzIGludGVsIGdyYXBoaWNzLCBvbmUgaGFzIEFNRC4gSXQgbWF5IG9y
-IG1heSBub3QgaGF2ZQo+Pj4+PiBjb21tb24gY2F1c2UuLi4KPj4+Pj4KPj4+Pgo+Pj4+IFsgQ29y
-cmVjdCBsaW51eC1wbSBNTCBhbmQgYWRkIE1pa2EgJiBKYW5pIF0KPj4+Pgo+Pj4+IFRoYW5rcyBm
-b3IgdGhlIGZlZWRiYWNrLgo+Pj4+Cj4+Pj4gVGhlcmUgYXJlIHNvbWUgY3B1L2hvdHBsdWcgZml4
-ZXMgcG9zdC12NC4xMC1yYzEuCj4+Pj4gR2l2ZSB0aGF0IGEgdHJ5Lgo+Pj4+Cj4+Pj4gWWVzdGVy
-ZGF5LCBhZnRlciBhbnN3ZXJzIGZyb20gZHJtLWludGVsIGZvbGtzIEkgaGF2ZSBzZWVuIHRoYXQg
-YQo+Pj4+IGNwdS9ob3RwbHVnIGNvbW1pdCBbMV0gd2FzIHJldmVydGVkIGluCj4+Pj4gZHJtLWlu
-dGVsLmdpdCNkcm0taW50ZWwtbmlnaHRseS4KPj4+PiBJIGhhdmVuJ3QgdHJpZWQgdGhhdC4KPj4+
-Pgo+Pj4+IEl0J3MgZ29vZCB3aGVuIFRob21hcyBrbm93cyBvZiB0aGlzIGFuZCBnZXRzIGluIGNv
-bnRhY3Qgd2l0aCBkcm0taW50ZWwgZm9sa3MuCj4+Pj4KPj4+PiBSZWdhcmRzLAo+Pj4+IC0gU2Vk
-YXQgLQo+Pj4+Cj4+Pj4gWzFdIGh0dHBzOi8vY2dpdC5mcmVlZGVza3RvcC5vcmcvZHJtLWludGVs
-L2NvbW1pdC8/aD1kcm0taW50ZWwtbmlnaHRseSZpZD1lNTU4ZjE3OGY1MzkwMTg1YjczMjRmZjRi
-ODE2YjUyYzZhZTNhOTI4Cj4+Pj4gWzJdIGh0dHBzOi8vY2dpdC5mcmVlZGVza3RvcC5vcmcvZHJt
-LWludGVsL2xvZy8/aD1kcm0taW50ZWwtbmlnaHRseQo+Pj4+Cj4+Pj4gUC5TLjogUmV2ZXJ0ICJj
-cHUvaG90cGx1ZzogUHJldmVudCBvdmVyd3JpdGluZyBvZiBjYWxsYmFja3MiCj4+Pj4KPj4+PiBU
-aGlzIHJldmVydHMgY29tbWl0IGRjMjgwZDkzNjIzOTI3NTcwZGEyNzllOTkzOTM4NzlkYmJhYjM5
-ZTcKPj4+PiBBdXRob3I6IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPgo+Pj4+
-IERhdGU6IFdlZCBEZWMgMjEgMjA6MTk6NDkgMjAxNiArMDEwMAo+Pj4+IGNwdS9ob3RwbHVnOiBQ
-cmV2ZW50IG92ZXJ3cml0aW5nIG9mIGNhbGxiYWNrcwo+Pj4+Cj4+Pj4gSXQgc3RhcnRlZCBoYW5n
-aW5nIGFsbCBtYWNoaW5lcyBpbiBDSSBzMyB0ZXN0Ogo+Pj4+IGh0dHBzOi8vaW50ZWwtZ2Z4LWNp
-LjAxLm9yZy9DSS9pZ3RAZ2VtX2V4ZWNfc3VzcGVuZEBiYXNpYy1zMy5odG1sCj4+Pj4KPj4+PiBC
-aXNlY3RlZC1ieTogTWlrYSBLdW9wcGFsYSA8bWlrYS5rdW9wcGFsYUBsaW51eC5pbnRlbC5jb20+
-Cj4+Pj4gU2lnbmVkLW9mZi1ieTogSmFuaSBOaWt1bGEgPGphbmkubmlrdWxhQGludGVsLmNvbT4K
-Pj4+Cj4+PiBUaG9tYXMgLQo+Pj4KPj4+IEluZGVlZCwgYmFzaWNhbGx5IGFsbCBvZiB0aGUgYm94
-ZXMgaW4gdGhlIGludGVsLWdmeCBDSSBoYW5nIGF0IHRoZQo+Pj4gc3VzcGVuZC9yZXN1bWUgdGVz
-dCB3aXRoIGRjMjgwZDkzNjIzOSAoImNwdS9ob3RwbHVnOiBQcmV2ZW50IG92ZXJ3cml0aW5nCj4+
-PiBvZiBjYWxsYmFja3MiKSwgYW5kIGFmdGVyIHRoZSByZXZlcnQgaW4gdGhlIHRyZWUgdGhhdCBm
-ZWVkcyB0byB0aGUgQ0ksCj4+PiB3ZSdyZSBiYWNrIG9uIHRyYWNrLgo+Pj4KPj4+IEkgZm91bmQg
-WzFdLCB3YXMgaG9waW5nIHRvIGdldCBmZWVkYmFjayBmcm9tIE1pa2Egd2hldGhlciB0aGF0IGhl
-bHBzCj4+PiBiZWZvcmUgcmVwb3J0aW5nLiBDaHJpcyBhbHNvIHN1Z2dlc3RlZCBbMl0gYXMgYSBx
-dWljayBmaXggYnV0IEkgZG9uJ3QKPj4+IGtub3cgaWYgYW55b25lIHRyaWVkIHRoYXQuCj4+Pgo+
-Pgo+PiBIaSBKYW5pLAo+Pgo+PiBJIGtub3cgeW91IHdlcmUgbm90IENDZWQgaW4gdGhlIG9yaWdp
-bmFsIHRocmVhZCwgcGxlYXNlIHNlZSBbNV0uCj4+Cj4+IFRoZSBwYXRjaHNldCBmcm9tIFRob21h
-cyB5b3UgbWVudGlvbiBbMV0gZG9lcyBmaXggb25lIG9mIHRoZSBwcm9ibGVtcwo+PiBJIGhhdmUg
-c2VlbiwgcGxlYXNlIHNlZSBbNl0uCj4+IFdpdGggdGhlc2UgcG9zdC12NC4xMC1yYzEgcGF0Y2hl
-cyBhcHBsaWVkIGEgY2xlYW4gcmV2ZXJ0IG9mIFJldmVydAo+PiAiY3B1L2hvdHBsdWc6IFByZXZl
-bnQgb3ZlcndyaXRpbmcgb2YgY2FsbGJhY2tzIiBpcyBub3QgcG9zc2libGUuCj4+Cj4+IENhbiB5
-b3UgZ2l2ZSBhIGNsZWFyIHN0YXRlbWVudCBpZiB0aGUgcXVpY2stZml4IGZyb20gQ2hyaXMgaXMg
-aW4KPj4gY29tYmluYXRpb24gd2l0aCB0aGUgYWJvdmUgcmV2ZXJ0IG9yIG5vdD8KPj4gQWdhaW5z
-dCB2NC4xMC1yYzE/Cj4+IFRlc3RlZCB0b2dldGhlciB3aXRoIHRoZSBwYXRjaHNldCBvZiBUaG9t
-YXM/Cj4KPiBQbGVhc2UgdGVzdCB0aGUgTGludXMnIHRyZWUgZnJvbSB0b2RheSwgaXQgc2hvdWxk
-IHdvcmsuCj4KCkxhdGVzdCBMaW51cyB0cmVlICh2NC4xMC1yYzEtMTctZzJkNzA2ZTc5MGYwNSkg
-ZG9lcyBub3QgZml4IGl0LgoKLSBTZWRhdCAtCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3Rz
-LmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xp
-c3RpbmZvL2ludGVsLWdmeAo=
+2016-11-21 20:26 GMT+08:00 Peter Zijlstra <peterz@infradead.org>:
+> On Mon, Nov 21, 2016 at 12:14:32PM +0000, Juri Lelli wrote:
+>> On 21/11/16 11:19, Peter Zijlstra wrote:
+>
+>> > So no tunables and rate limits here at all please.
+>> >
+>> > During LPC we discussed the rampup and decay issues and decided that we
+>> > should very much first address them by playing with the PELT stuff.
+>> > Morton was going to play with capping the decay on the util signal. This
+>> > should greatly improve the ramp-up scenario and cure some other wobbles.
+>> >
+>> > The decay can be set by changing the over-all pelt decay, if so desired.
+>> >
+>>
+>> Do you mean we might want to change the decay (make it different from
+>> ramp-up) once for all, or maybe we make it tunable so that we can
+>> address different power/perf requirements?
+>
+> So the limited decay would be the dominant factor in ramp-up time,
+> leaving the regular PELT period the dominant factor for ramp-down.
+>
+> (Note that the decay limit would only be applied on the per-task signal,
+> not the accumulated signal.)
+
+What's the meaning of "signal" in this thread?
+
+Regards,
+Wanpeng Li
