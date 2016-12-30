@@ -1,80 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Linux v4.10.0-rc1+] Still call-traces after
- suspend-resume (pm? i915? cpu/hotplug?)
-Date: Fri, 30 Dec 2016 15:02:06 +0100
-Message-ID: <CAJZ5v0gp_BwxR+B3wtoLRh2B_ojY7cd9E5shJ8zsBeGL_LtnGg@mail.gmail.com>
-References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 2/2] ARM: dts: Add CPU OPPs for Exynos4412 Prime
+Date: Fri, 30 Dec 2016 16:47:19 +0200
+Message-ID: <20161230144719.amcn3q4vn6wgxnon@kozik-lap>
+References: <1483018611-27998-1-git-send-email-b.zolnierkie@samsung.com>
+ <1483018611-27998-3-git-send-email-b.zolnierkie@samsung.com>
+ <20161229144908.6gkvjpso7ikdmfp7@kozik-lap>
+ <CGME20161229150623epcas1p2b2f0fbb6f9ddd11caffdc93487e2cf77@epcas1p2.samsung.com>
+ <1840714.lHhVv9oNko@amdc3058>
+ <6892749a-a8bd-cfb3-551c-f0b1ca6d2b84@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: sedat.dilek@gmail.com
-Cc: the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6892749a-a8bd-cfb3-551c-f0b1ca6d2b84@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Chanwoo Choi <cw00.choi@samsung.com>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Kukjin Kim <kgene.kim@samsung.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Doug Anderson <dianders@chromium.org>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Tobias Jakobi <tjakobi@math.uni-bielefeld.de>, Ben Gamari <ben@smart-cactus.org>, linux-samsung-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCBEZWMgMzAsIDIwMTYgYXQgMTI6NDAgUE0sIFNlZGF0IERpbGVrIDxzZWRhdC5kaWxl
-a0BnbWFpbC5jb20+IHdyb3RlOgo+IEhpLAo+Cj4gSSBoYXZlIGFscmVhZHkgcmVwb3J0ZWQgdGhp
-cyBpc3N1ZSBpbiBbMV0uCj4gT25lIG9mIHRoZSBpc3N1ZSB3YXMgc29sdmVkLgo+IFVuZm9ydHVu
-YXRlbHksIGl0IGxvb2tzIGxpa2UgdGhlcmUgaXMgc3RpbGwgYSBkaWZmZXJlbnQgcHJvYmxlbSBo
-ZXJlCj4gKFVidW50dS9wcmVjaXNlIEFNRDY0KS4KPgo+IEkgdHJpZWQgdjQuMTAtcmMxIGFuZCBs
-YXRlc3QgTGludXMgdHJlZSB1cCB0by4uLgo+Cj4gY29tbWl0IDk4NDczZjlmM2Y5YmQ0MDQ4NzNj
-ZDExNzhjOGJlN2Q2ZDYxOWYwZDEKPiAibW0vZmlsZW1hcDogZml4IHBhcmFtZXRlcnMgdG8gdGVz
-dF9iaXQoKSIKPgo+IEhlcmUgd2UgZ28uLi4KPgo+IFsgICAyOS42MzYwNDddIEJVRzogc2xlZXBp
-bmcgZnVuY3Rpb24gY2FsbGVkIGZyb20gaW52YWxpZCBjb250ZXh0IGF0Cj4gZHJpdmVycy9iYXNl
-L3Bvd2VyL3J1bnRpbWUuYzoxMDMyCj4gWyAgIDI5LjYzNjA1NV0gaW5fYXRvbWljKCk6IDEsIGly
-cXNfZGlzYWJsZWQoKTogMCwgcGlkOiAxNTAwLCBuYW1lOiBYb3JnCj4gWyAgIDI5LjYzNjA1OF0g
-MSBsb2NrIGhlbGQgYnkgWG9yZy8xNTAwOgo+IFsgICAyOS42MzYwNjBdICAjMDogICgmZGV2LT5z
-dHJ1Y3RfbXV0ZXgpeysuKy4rLn0sIGF0Ogo+IFs8ZmZmZmZmZmZhMDY4MGMxMz5dIGk5MTVfbXV0
-ZXhfbG9ja19pbnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVdCj4gWyAgIDI5LjYzNjEwN10g
-Q1BVOiAwIFBJRDogMTUwMCBDb21tOiBYb3JnIE5vdCB0YWludGVkCj4gNC4xMC4wLXJjMS02LWlu
-aXphLWFtZDY0ICMxCj4gWyAgIDI5LjYzNjEwOV0gSGFyZHdhcmUgbmFtZTogU0FNU1VORyBFTEVD
-VFJPTklDUyBDTy4sIExURC4KPiA1MzBVM0JJLzUzMFU0QkkvNTMwVTRCSC81MzBVM0JJLzUzMFU0
-QkkvNTMwVTRCSCwgQklPUyAxM1hLIDAzLzI4LzIwMTMKPiBbICAgMjkuNjM2MTExXSBDYWxsIFRy
-YWNlOgo+IFsgICAyOS42MzYxMjBdICBkdW1wX3N0YWNrKzB4ODUvMHhjMgo+IFsgICAyOS42MzYx
-MjRdICBfX19taWdodF9zbGVlcCsweDE5Ni8weDI2MAo+IFsgICAyOS42MzYxMjddICBfX21pZ2h0
-X3NsZWVwKzB4NTMvMHhiMAo+IFsgICAyOS42MzYxMzFdICBfX3BtX3J1bnRpbWVfcmVzdW1lKzB4
-N2EvMHg5MAo+IFsgICAyOS42MzYxNTldICBpbnRlbF9ydW50aW1lX3BtX2dldCsweDI1LzB4OTAg
-W2k5MTVdCj4gWyAgIDI5LjYzNjE4OV0gIGFsaWFzaW5nX2d0dF9iaW5kX3ZtYSsweGFhLzB4ZjAg
-W2k5MTVdCj4gWyAgIDI5LjYzNjIyMF0gIGk5MTVfdm1hX2JpbmQrMHhhZi8weDFlMCBbaTkxNV0K
-PiBbICAgMjkuNjM2MjQ4XSAgaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZWxvY2F0ZV9lbnRyeSsweDUx
-My8weDZmMCBbaTkxNV0KPiBbICAgMjkuNjM2MjcyXSAgaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZWxv
-Y2F0ZV92bWEuaXNyYS4zNCsweDE4OC8weDI1MCBbaTkxNV0KPiBbICAgMjkuNjM2Mjc1XSAgPyB0
-cmFjZV9oYXJkaXJxc19vbisweGQvMHgxMAo+IFsgICAyOS42MzYyOTRdICA/IGk5MTVfZ2VtX2V4
-ZWNidWZmZXJfcmVzZXJ2ZV92bWEuaXNyYS4zMSsweDE1Mi8weDFmMCBbaTkxNV0KPiBbICAgMjku
-NjM2MzE2XSAgPyBpOTE1X2dlbV9leGVjYnVmZmVyX3Jlc2VydmUuaXNyYS4zMisweDM3Mi8weDNh
-MCBbaTkxNV0KPiBbICAgMjkuNjM2MzQyXSAgaTkxNV9nZW1fZG9fZXhlY2J1ZmZlci5pc3JhLjM4
-KzB4YTcwLzB4MWE0MCBbaTkxNV0KPiBbICAgMjkuNjM2MzQ3XSAgPyBfX21pZ2h0X2ZhdWx0KzB4
-NGUvMHhiMAo+IFsgICAyOS42MzYzNzNdICBpOTE1X2dlbV9leGVjYnVmZmVyMisweGM1LzB4MjYw
-IFtpOTE1XQo+IFsgICAyOS42MzYzNzZdICA/IF9fbWlnaHRfZmF1bHQrMHg0ZS8weGIwCj4gWyAg
-IDI5LjYzNjM5NV0gIGRybV9pb2N0bCsweDIwNi8weDQ1MCBbZHJtXQo+IFsgICAyOS42MzY0MjBd
-ICA/IGk5MTVfZ2VtX2V4ZWNidWZmZXIrMHgzNDAvMHgzNDAgW2k5MTVdCj4gWyAgIDI5LjYzNjQy
-NV0gID8gX19mZ2V0KzB4NS8weDIwMAo+IFsgICAyOS42MzY0MjldICBkb192ZnNfaW9jdGwrMHg5
-MS8weDZmMAo+IFsgICAyOS42MzY0MzFdICA/IF9fZmdldCsweDExMS8weDIwMAo+IFsgICAyOS42
-MzY0MzNdICA/IF9fZmdldCsweDUvMHgyMDAKPiBbICAgMjkuNjM2NDM2XSAgU3lTX2lvY3RsKzB4
-NzkvMHg5MAo+IFsgICAyOS42MzY0NDFdICBlbnRyeV9TWVNDQUxMXzY0X2Zhc3RwYXRoKzB4MjMv
-MHhjNgo+Cj4gT24gc3VzcGVuZC9yZXN1bWUgSSBzZWUgdGhlIHNhbWUgY2FsbCB0cmFjZS4KPiBb
-Ml0gcG9pbnRzIHRvIHRoZSAiQlVHIiBsaW5lLgoKV2VsbCwgdGhpcyBhcHBlYXJzIHRvIGJlIGFu
-IGk5MTUgaXNzdWUsIGJ1dCBub3QgYSBzZXJpb3VzIG9uZS4KCkNsZWFybHksIGEgZnVuY3Rpb24g
-dGhhdCBtYXkgc2xlZXAgKHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSBpbgppbnRlbF9ydW50aW1lX3Bt
-X2dldCgpKSBpcyBjYWxsZWQgd2l0aCBkaXNhYmxlZCBpbnRlcnJ1cHRzLiAgSWYgSQp1bmRlcnN0
-YW5kIHRoZSBjb2RlIGNvcnJlY3RseSwgdGhvdWdoLCBpdCBhY3R1YWxseSBpcyBub3QgZ29pbmcg
-dG8Kc2xlZXAgaW4gdGhpcyBwYXJ0aWN1bGFyIGNhc2UsIGJlY2F1c2UgcG1fcnVudGltZV9nZXRf
-c3luYygpIGhhcwphbHJlYWR5IGJlZW4gY2FsbGVkIG9uY2UgZm9yIHRoaXMgZGV2aWNlIGluIHRo
-ZSBzYW1lIGNvZGUgcGF0aCB3aGljaAptZWFucyB0aGF0IHRoaXMgcGFydGljdWxhciBpbnN0YW5j
-ZSB3aWxsIHJldHVybiBpbW1lZGlhdGVseSwgc28gdGhpcwppcyBhIGZhbHNlLXBvc2l0aXZlICht
-b3N0IGxpa2VseSkuCgpMZXQgbWUgc2VlIGlmIEkgdGhlIG1pZ2h0X3NsZWVwX2lmKCkgYXNzZXJ0
-aW9uIGluCl9fcG1fcnVudGltZV9yZXN1bWUoKCkgY2FuIGJlIG1vdmVkIHRvIGEgYmV0dGVyIHBs
-YWNlLgoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRl
-c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
-aW50ZWwtZ2Z4Cg==
+On Thu, Dec 29, 2016 at 05:23:34PM +0100, Sylwester Nawrocki wrote:
+> On 12/29/2016 04:06 PM, Bartlomiej Zolnierkiewicz wrote:
+> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> >>> ---
+> >>>  arch/arm/boot/dts/exynos4412-odroid-common.dtsi |  4 +--
+> >>>  arch/arm/boot/dts/exynos4412-odroidu3.dts       |  5 +--
+> >>>  arch/arm/boot/dts/exynos4412-odroidx2.dts       |  1 +
+> >>>  arch/arm/boot/dts/exynos4412-prime.dtsi         | 41 +++++++++++++++++++++++++
+> >>>  arch/arm/boot/dts/exynos4412.dtsi               |  2 +-
+> >>>  5 files changed, 48 insertions(+), 5 deletions(-)
+> >>>  create mode 100644 arch/arm/boot/dts/exynos4412-prime.dtsi
+> >>>
+> >> Looks okay. Is the clock patch needed for this?
+> > Yep.
+> 
+> I applied the clock patch and here is a stable tag if it needs
+> to be pulled as a dependency.
+>
+
+Thanks, merged!
+
+BR,
+Krzysztof
