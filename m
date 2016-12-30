@@ -1,112 +1,80 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v4 2/4] clk: samsung: Add support for runtime PM
-Date: Fri, 30 Dec 2016 14:33:34 +0100
-Message-ID: <1483104816-20885-3-git-send-email-m.szyprowski@samsung.com>
-References: <1483104816-20885-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161230133345eucas1p22d8435055ed43b8c91cc3264d22467dd@eucas1p2.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:13313 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754108AbcL3Ndu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Dec 2016 08:33:50 -0500
-In-reply-to: <1483104816-20885-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Linux v4.10.0-rc1+] Still call-traces after
+ suspend-resume (pm? i915? cpu/hotplug?)
+Date: Fri, 30 Dec 2016 15:02:06 +0100
+Message-ID: <CAJZ5v0gp_BwxR+B3wtoLRh2B_ojY7cd9E5shJ8zsBeGL_LtnGg@mail.gmail.com>
+References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: sedat.dilek@gmail.com
+Cc: the arch/x86 maintainers <x86@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-This patch adds struct device pointer to samsung_clk_provider and forwarding it
-to clk_register_* functions, so drivers can register clocks, which use runtime
-pm feature.
-
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- drivers/clk/samsung/clk-pll.c |  2 +-
- drivers/clk/samsung/clk.c     | 12 ++++++------
- drivers/clk/samsung/clk.h     |  1 +
- 3 files changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/clk/samsung/clk-pll.c b/drivers/clk/samsung/clk-pll.c
-index 9617825daabb..f5249a7e545d 100644
---- a/drivers/clk/samsung/clk-pll.c
-+++ b/drivers/clk/samsung/clk-pll.c
-@@ -1345,7 +1345,7 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
- 	pll->lock_reg = base + pll_clk->lock_offset;
- 	pll->con_reg = base + pll_clk->con_offset;
- 
--	clk = clk_register(NULL, &pll->hw);
-+	clk = clk_register(ctx->dev, &pll->hw);
- 	if (IS_ERR(clk)) {
- 		pr_err("%s: failed to register pll clock %s : %ld\n",
- 			__func__, pll_clk->name, PTR_ERR(clk));
-diff --git a/drivers/clk/samsung/clk.c b/drivers/clk/samsung/clk.c
-index b7d87d6db9dc..e6923714f024 100644
---- a/drivers/clk/samsung/clk.c
-+++ b/drivers/clk/samsung/clk.c
-@@ -143,7 +143,7 @@ void __init samsung_clk_register_fixed_rate(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
- 
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_fixed_rate(NULL, list->name,
-+		clk = clk_register_fixed_rate(ctx->dev, list->name,
- 			list->parent_name, list->flags, list->fixed_rate);
- 		if (IS_ERR(clk)) {
- 			pr_err("%s: failed to register clock %s\n", __func__,
-@@ -172,7 +172,7 @@ void __init samsung_clk_register_fixed_factor(struct samsung_clk_provider *ctx,
- 	unsigned int idx;
- 
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_fixed_factor(NULL, list->name,
-+		clk = clk_register_fixed_factor(ctx->dev, list->name,
- 			list->parent_name, list->flags, list->mult, list->div);
- 		if (IS_ERR(clk)) {
- 			pr_err("%s: failed to register clock %s\n", __func__,
-@@ -193,7 +193,7 @@ void __init samsung_clk_register_mux(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
- 
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_mux(NULL, list->name, list->parent_names,
-+		clk = clk_register_mux(ctx->dev, list->name, list->parent_names,
- 			list->num_parents, list->flags,
- 			ctx->reg_base + list->offset,
- 			list->shift, list->width, list->mux_flags, &ctx->lock);
-@@ -226,13 +226,13 @@ void __init samsung_clk_register_div(struct samsung_clk_provider *ctx,
- 
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
- 		if (list->table)
--			clk = clk_register_divider_table(NULL, list->name,
-+			clk = clk_register_divider_table(ctx->dev, list->name,
- 				list->parent_name, list->flags,
- 				ctx->reg_base + list->offset,
- 				list->shift, list->width, list->div_flags,
- 				list->table, &ctx->lock);
- 		else
--			clk = clk_register_divider(NULL, list->name,
-+			clk = clk_register_divider(ctx->dev, list->name,
- 				list->parent_name, list->flags,
- 				ctx->reg_base + list->offset, list->shift,
- 				list->width, list->div_flags, &ctx->lock);
-@@ -264,7 +264,7 @@ void __init samsung_clk_register_gate(struct samsung_clk_provider *ctx,
- 	unsigned int idx, ret;
- 
- 	for (idx = 0; idx < nr_clk; idx++, list++) {
--		clk = clk_register_gate(NULL, list->name, list->parent_name,
-+		clk = clk_register_gate(ctx->dev, list->name, list->parent_name,
- 				list->flags, ctx->reg_base + list->offset,
- 				list->bit_idx, list->gate_flags, &ctx->lock);
- 		if (IS_ERR(clk)) {
-diff --git a/drivers/clk/samsung/clk.h b/drivers/clk/samsung/clk.h
-index da3bdebabf1e..9263d8a27c6b 100644
---- a/drivers/clk/samsung/clk.h
-+++ b/drivers/clk/samsung/clk.h
-@@ -26,6 +26,7 @@
-  */
- struct samsung_clk_provider {
- 	void __iomem *reg_base;
-+	struct device *dev;
- 	struct clk_onecell_data clk_data;
- 	spinlock_t lock;
- };
--- 
-1.9.1
-
+T24gRnJpLCBEZWMgMzAsIDIwMTYgYXQgMTI6NDAgUE0sIFNlZGF0IERpbGVrIDxzZWRhdC5kaWxl
+a0BnbWFpbC5jb20+IHdyb3RlOgo+IEhpLAo+Cj4gSSBoYXZlIGFscmVhZHkgcmVwb3J0ZWQgdGhp
+cyBpc3N1ZSBpbiBbMV0uCj4gT25lIG9mIHRoZSBpc3N1ZSB3YXMgc29sdmVkLgo+IFVuZm9ydHVu
+YXRlbHksIGl0IGxvb2tzIGxpa2UgdGhlcmUgaXMgc3RpbGwgYSBkaWZmZXJlbnQgcHJvYmxlbSBo
+ZXJlCj4gKFVidW50dS9wcmVjaXNlIEFNRDY0KS4KPgo+IEkgdHJpZWQgdjQuMTAtcmMxIGFuZCBs
+YXRlc3QgTGludXMgdHJlZSB1cCB0by4uLgo+Cj4gY29tbWl0IDk4NDczZjlmM2Y5YmQ0MDQ4NzNj
+ZDExNzhjOGJlN2Q2ZDYxOWYwZDEKPiAibW0vZmlsZW1hcDogZml4IHBhcmFtZXRlcnMgdG8gdGVz
+dF9iaXQoKSIKPgo+IEhlcmUgd2UgZ28uLi4KPgo+IFsgICAyOS42MzYwNDddIEJVRzogc2xlZXBp
+bmcgZnVuY3Rpb24gY2FsbGVkIGZyb20gaW52YWxpZCBjb250ZXh0IGF0Cj4gZHJpdmVycy9iYXNl
+L3Bvd2VyL3J1bnRpbWUuYzoxMDMyCj4gWyAgIDI5LjYzNjA1NV0gaW5fYXRvbWljKCk6IDEsIGly
+cXNfZGlzYWJsZWQoKTogMCwgcGlkOiAxNTAwLCBuYW1lOiBYb3JnCj4gWyAgIDI5LjYzNjA1OF0g
+MSBsb2NrIGhlbGQgYnkgWG9yZy8xNTAwOgo+IFsgICAyOS42MzYwNjBdICAjMDogICgmZGV2LT5z
+dHJ1Y3RfbXV0ZXgpeysuKy4rLn0sIGF0Ogo+IFs8ZmZmZmZmZmZhMDY4MGMxMz5dIGk5MTVfbXV0
+ZXhfbG9ja19pbnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVdCj4gWyAgIDI5LjYzNjEwN10g
+Q1BVOiAwIFBJRDogMTUwMCBDb21tOiBYb3JnIE5vdCB0YWludGVkCj4gNC4xMC4wLXJjMS02LWlu
+aXphLWFtZDY0ICMxCj4gWyAgIDI5LjYzNjEwOV0gSGFyZHdhcmUgbmFtZTogU0FNU1VORyBFTEVD
+VFJPTklDUyBDTy4sIExURC4KPiA1MzBVM0JJLzUzMFU0QkkvNTMwVTRCSC81MzBVM0JJLzUzMFU0
+QkkvNTMwVTRCSCwgQklPUyAxM1hLIDAzLzI4LzIwMTMKPiBbICAgMjkuNjM2MTExXSBDYWxsIFRy
+YWNlOgo+IFsgICAyOS42MzYxMjBdICBkdW1wX3N0YWNrKzB4ODUvMHhjMgo+IFsgICAyOS42MzYx
+MjRdICBfX19taWdodF9zbGVlcCsweDE5Ni8weDI2MAo+IFsgICAyOS42MzYxMjddICBfX21pZ2h0
+X3NsZWVwKzB4NTMvMHhiMAo+IFsgICAyOS42MzYxMzFdICBfX3BtX3J1bnRpbWVfcmVzdW1lKzB4
+N2EvMHg5MAo+IFsgICAyOS42MzYxNTldICBpbnRlbF9ydW50aW1lX3BtX2dldCsweDI1LzB4OTAg
+W2k5MTVdCj4gWyAgIDI5LjYzNjE4OV0gIGFsaWFzaW5nX2d0dF9iaW5kX3ZtYSsweGFhLzB4ZjAg
+W2k5MTVdCj4gWyAgIDI5LjYzNjIyMF0gIGk5MTVfdm1hX2JpbmQrMHhhZi8weDFlMCBbaTkxNV0K
+PiBbICAgMjkuNjM2MjQ4XSAgaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZWxvY2F0ZV9lbnRyeSsweDUx
+My8weDZmMCBbaTkxNV0KPiBbICAgMjkuNjM2MjcyXSAgaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZWxv
+Y2F0ZV92bWEuaXNyYS4zNCsweDE4OC8weDI1MCBbaTkxNV0KPiBbICAgMjkuNjM2Mjc1XSAgPyB0
+cmFjZV9oYXJkaXJxc19vbisweGQvMHgxMAo+IFsgICAyOS42MzYyOTRdICA/IGk5MTVfZ2VtX2V4
+ZWNidWZmZXJfcmVzZXJ2ZV92bWEuaXNyYS4zMSsweDE1Mi8weDFmMCBbaTkxNV0KPiBbICAgMjku
+NjM2MzE2XSAgPyBpOTE1X2dlbV9leGVjYnVmZmVyX3Jlc2VydmUuaXNyYS4zMisweDM3Mi8weDNh
+MCBbaTkxNV0KPiBbICAgMjkuNjM2MzQyXSAgaTkxNV9nZW1fZG9fZXhlY2J1ZmZlci5pc3JhLjM4
+KzB4YTcwLzB4MWE0MCBbaTkxNV0KPiBbICAgMjkuNjM2MzQ3XSAgPyBfX21pZ2h0X2ZhdWx0KzB4
+NGUvMHhiMAo+IFsgICAyOS42MzYzNzNdICBpOTE1X2dlbV9leGVjYnVmZmVyMisweGM1LzB4MjYw
+IFtpOTE1XQo+IFsgICAyOS42MzYzNzZdICA/IF9fbWlnaHRfZmF1bHQrMHg0ZS8weGIwCj4gWyAg
+IDI5LjYzNjM5NV0gIGRybV9pb2N0bCsweDIwNi8weDQ1MCBbZHJtXQo+IFsgICAyOS42MzY0MjBd
+ICA/IGk5MTVfZ2VtX2V4ZWNidWZmZXIrMHgzNDAvMHgzNDAgW2k5MTVdCj4gWyAgIDI5LjYzNjQy
+NV0gID8gX19mZ2V0KzB4NS8weDIwMAo+IFsgICAyOS42MzY0MjldICBkb192ZnNfaW9jdGwrMHg5
+MS8weDZmMAo+IFsgICAyOS42MzY0MzFdICA/IF9fZmdldCsweDExMS8weDIwMAo+IFsgICAyOS42
+MzY0MzNdICA/IF9fZmdldCsweDUvMHgyMDAKPiBbICAgMjkuNjM2NDM2XSAgU3lTX2lvY3RsKzB4
+NzkvMHg5MAo+IFsgICAyOS42MzY0NDFdICBlbnRyeV9TWVNDQUxMXzY0X2Zhc3RwYXRoKzB4MjMv
+MHhjNgo+Cj4gT24gc3VzcGVuZC9yZXN1bWUgSSBzZWUgdGhlIHNhbWUgY2FsbCB0cmFjZS4KPiBb
+Ml0gcG9pbnRzIHRvIHRoZSAiQlVHIiBsaW5lLgoKV2VsbCwgdGhpcyBhcHBlYXJzIHRvIGJlIGFu
+IGk5MTUgaXNzdWUsIGJ1dCBub3QgYSBzZXJpb3VzIG9uZS4KCkNsZWFybHksIGEgZnVuY3Rpb24g
+dGhhdCBtYXkgc2xlZXAgKHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSBpbgppbnRlbF9ydW50aW1lX3Bt
+X2dldCgpKSBpcyBjYWxsZWQgd2l0aCBkaXNhYmxlZCBpbnRlcnJ1cHRzLiAgSWYgSQp1bmRlcnN0
+YW5kIHRoZSBjb2RlIGNvcnJlY3RseSwgdGhvdWdoLCBpdCBhY3R1YWxseSBpcyBub3QgZ29pbmcg
+dG8Kc2xlZXAgaW4gdGhpcyBwYXJ0aWN1bGFyIGNhc2UsIGJlY2F1c2UgcG1fcnVudGltZV9nZXRf
+c3luYygpIGhhcwphbHJlYWR5IGJlZW4gY2FsbGVkIG9uY2UgZm9yIHRoaXMgZGV2aWNlIGluIHRo
+ZSBzYW1lIGNvZGUgcGF0aCB3aGljaAptZWFucyB0aGF0IHRoaXMgcGFydGljdWxhciBpbnN0YW5j
+ZSB3aWxsIHJldHVybiBpbW1lZGlhdGVseSwgc28gdGhpcwppcyBhIGZhbHNlLXBvc2l0aXZlICht
+b3N0IGxpa2VseSkuCgpMZXQgbWUgc2VlIGlmIEkgdGhlIG1pZ2h0X3NsZWVwX2lmKCkgYXNzZXJ0
+aW9uIGluCl9fcG1fcnVudGltZV9yZXN1bWUoKCkgY2FuIGJlIG1vdmVkIHRvIGEgYmV0dGVyIHBs
+YWNlLgoKVGhhbmtzLApSYWZhZWwKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcgbGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8v
+aW50ZWwtZ2Z4Cg==
