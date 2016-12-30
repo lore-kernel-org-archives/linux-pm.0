@@ -1,35 +1,55 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2MiAxLzhdIFBNIC8gZGV2ZnJlcTogZXh5?=
- =?UTF-8?B?bm9zLWJ1czogQWRkIHRoZSBkZXRhaWxlZCBjb3JyZWxhdGlv?=
- =?UTF-8?B?biBmb3IgRXh5bm9zNTQzMw==?=
-Date: Fri, 30 Dec 2016 01:02:30 +0000
-Message-ID: <20161230010230epcms1p3e70e0a18571ccf724c0362a82edcefec@epcms1p3>
-References: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
- <CGME20161228115654epcas1p13fa3cb3615ddf89ebdf747c72b60d809@epcas1p1.samsung.com>
-Reply-To: myungjoo.ham@samsung.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 06/12] usb: dwc3: omap: Replace the extcon API
+Date: Fri, 30 Dec 2016 11:46:14 +0900
+Message-ID: <5865CA76.1020001@samsung.com>
+References: <1480485460-2663-1-git-send-email-cw00.choi@samsung.com>
+ <1480485460-2663-7-git-send-email-cw00.choi@samsung.com>
+ <CGME20161130103827epcas4p268ee1cbc6b7b2ace7c987dd7baba82d4@epcas4p2.samsung.com>
+ <877f7lntjq.fsf@linux.intel.com> <58412848.5070209@samsung.com>
+ <87fum6vh1p.fsf@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_1069419_310737217.1483059750424"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <87fum6vh1p.fsf@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>
-Cc: =?UTF-8?B?Y2hhbndvb0BrZXJuZWwub3Jn?= <chanwoo@kernel.org>, =?UTF-8?B?cmp3QHJqd3lzb2NraS5uZXQ=?= <rjw@rjwysocki.net>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>, =?UTF-8?B?bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw==?= <linux-kernel@vger.kernel.org>, =?UTF-8?B?Um9iIEhlcnJpbmc=?= <robh+dt@kernel.org>, =?UTF-8?B?S3VramluIEtpbQ==?= <kgene@kernel.org>, =?UTF-8?B?S3J6eXN6dG9mIEtvemxvd3NraQ==?= <krzk@kernel.org>, =?UTF-8?B?SmF2aWVyIE1hcnRpbmV6IENhbmlsbGFz?= <javier@osg.samsung.com>, =?UTF-8?B?bGludXgtc2Ftc3VuZy1zb2NAdmdlci5rZXJuZWwub3Jn?= <linux-samsung-soc@vger.kernel.org>, =?UTF-8?B?ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc=?= <devicetree@vger.kernel.org>
+To: Felipe Balbi <balbi@kernel.org>, gregkh@linuxfoundation.org, kishon@ti.com, sre@kernel.org
+Cc: Peter.Chen@nxp.com, wens@csie.org, yoshihiro.shimoda.uh@renesas.com, maxime.ripard@free-electrons.com, b-liu@ti.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-renesas-soc@vger.kernel.org, chanwoo@kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-------=_Part_1069419_310737217.1483059750424
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+Hi Felipe,
 
-PlRoaXMgcGF0Y2ggYWRkcyB0aGUgZGV0YWlsZWQgY29ycmxlYXRpb24gYmV0d2VlbiBzdWItYmxv
-Y2tzIGFuZCBWRERfSU5UIHBvd2VyDQo+bGluZSBmb3IgRXh5bm9zNTQzMy4gVkREX0lOVCBwcm92
-aWRlZCB0aGUgcG93ZXIgc291cmNlIHRvIElOVCAoSW50ZXJuYWwpIGJsb2NrLg0KPg0KPkNjOiBS
-b2IgSGVycmluZyA8cm9iaCtkdEBrZXJuZWwub3JnPg0KPkNjOiBLdWtqaW4gS2ltIDxrZ2VuZUBr
-ZXJuZWwub3JnPg0KPkNjOiBLcnp5c3p0b2YgS296bG93c2tpIDxrcnprQGtlcm5lbC5vcmc+DQo+
-Q2M6IEphdmllciBNYXJ0aW5leiBDYW5pbGxhcyA8amF2aWVyQG9zZy5zYW1zdW5nLmNvbT4NCj5D
-YzogbGludXgtc2Ftc3VuZy1zb2NAdmdlci5rZXJuZWwub3JnDQo+Q2M6IGRldmljZXRyZWVAdmdl
-ci5rZXJuZWwub3JnDQo+U2lnbmVkLW9mZi1ieTogQ2hhbndvbyBDaG9pIDxjdzAwLmNob2lAc2Ft
-c3VuZy5jb20+DQo+LS0tDQo+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kZXZm
-cmVxL2V4eW5vcy1idXMudHh0IHwgMTQgKysrKysrKysrKysrKysNCj4gMSBmaWxlIGNoYW5nZWQs
-IDE0IGluc2VydGlvbnMoKykNCg0KQWNrZWQtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
-QHNhbXN1bmcuY29tPg0KDQo=
-------=_Part_1069419_310737217.1483059750424--
+On 2016년 12월 02일 18:03, Felipe Balbi wrote:
+> 
+> Hi,
+> 
+> Chanwoo Choi <cw00.choi@samsung.com> writes:
+>> Hi Felipe,
+>>
+>> On 2016년 11월 30일 19:36, Felipe Balbi wrote:
+>>>
+>>> Hi,
+>>>
+>>> Chanwoo Choi <cw00.choi@samsung.com> writes:
+>>>> This patch uses the resource-managed extcon API for extcon_register_notifier()
+>>>> and replaces the deprecated extcon API as following:
+>>>> - extcon_get_cable_state_() -> extcon_get_state()
+>>>>
+>>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>
+>>> Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+>>>
+>>
+>> Thanks for your review.
+>>
+>> Each patch has no any dependency among patches.
+>> So, If possible, could you pick the patch6/8/9/10/11/12 on your tree?
+> 
+> my tree is closed for v4.10, I can pick it up for v4.11
+
+Could you please pick up these patches(patch6/8/9/10/11/12)?
+These patches were already reviewed by you.
+
+-- 
+Regards,
+Chanwoo Choi
