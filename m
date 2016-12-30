@@ -1,41 +1,38 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 7/9] pinctrl: samsung: Add property to mark pad state as
- suitable for power down
-Date: Fri, 30 Dec 2016 10:23:05 +0100
-Message-ID: <CACRpkdYzGjxyePcc-WiWDoX9rF6mP+mqCtk=zBUGb0-DvAjxvA@mail.gmail.com>
-References: <1482495889-6201-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20161223122538epcas5p29515ceff21963ab035b3b32878830ce2@epcas5p2.samsung.com>
- <1482495889-6201-8-git-send-email-m.szyprowski@samsung.com>
- <20161225191914.5bzl6fso36ozuum6@kozik-lap> <bd48fe32-5296-fc23-dbb8-d212292d76cd@samsung.com>
- <20161227153331.jbh7ei6oh3obmnri@kozik-lap>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: Re: [PATCH v2 2/8] PM / devfreq: exynos-ppmu: Use the regmap
+ interface to handle the registers
+Date: Fri, 30 Dec 2016 19:25:42 +0900
+Message-ID: <CAJ0PZbSpub+=iY_s_rGEY6eympHer2+EVuM-VZkbEF0o0hVVQA@mail.gmail.com>
+References: <CGME20161228115654epcas1p1752ca85fc1cb3757a9b460584abcb7cc@epcas1p1.samsung.com>
+ <1482926212-19223-1-git-send-email-cw00.choi@samsung.com> <1482926212-19223-3-git-send-email-cw00.choi@samsung.com>
+Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20161227153331.jbh7ei6oh3obmnri@kozik-lap>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:36732 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752007AbcL3KZ6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Dec 2016 05:25:58 -0500
+In-Reply-To: <1482926212-19223-3-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, chanwoo@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>
 
-On Tue, Dec 27, 2016 at 4:33 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> On Tue, Dec 27, 2016 at 11:30:57AM +0100, Marek Szyprowski wrote:
-
->> Separate sleep state is needed because of the pin control bindings and
->> design.
->>
->> A separate sleep state is required to let pin control client driver (in this
->> case
->> Exynos I2S driver) let to choose when it is okay to switch pads into sleep
->> state and I see no other way to achieve this.
+On Wed, Dec 28, 2016 at 8:56 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> This patch uses the regmap interface to read and write the registers for exynos
+> PPMU device instead of the legacy memory map functions.
 >
-> Maybe the pinctrl API should be extended for this? Doing this in DTS
-> just for purpose of passing information between drivers (consumer and
-> provider) looks odd.
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: Javier Martinez Canillas <javier@osg.samsung.com>
+> Cc: linux-samsung-soc@vger.kernel.org
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-I don't understand what is going on but you are all smart people so I
-guess you're right :)
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 
-Tell me if I can help clarifying something...
 
-Yours,
-Linus Walleij
+> ---
+>  drivers/devfreq/event/exynos-ppmu.c | 326 ++++++++++++++++++++++++++----------
+>  1 file changed, 237 insertions(+), 89 deletions(-)
+>
