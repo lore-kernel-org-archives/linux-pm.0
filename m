@@ -1,7 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 10/22] ARM: dtsi: axp209: add AC power supply subnode
-Date: Mon,  2 Jan 2017 17:37:10 +0100
-Message-ID: <20170102163723.7939-11-quentin.schulz@free-electrons.com>
+Subject: [PATCH 09/22] mfd: axp20x: add AC power supply cells for AXP22X PMICs
+Date: Mon,  2 Jan 2017 17:37:09 +0100
+Message-ID: <20170102163723.7939-10-quentin.schulz@free-electrons.com>
 References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,34 +21,44 @@ To: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X PMIC exposes the status of AC power supply, the
-current current and voltage supplied to the board by the AC power
+The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
 supply.
 
-This adds the AC power supply subnode for AXP20X PMIC.
+This adds the AC power supply driver to the MFD cells of the AXP22X
+PMICs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
- arch/arm/boot/dts/axp209.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/mfd/axp20x.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 2a4e8ee..1bfdc85 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -53,6 +53,13 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
- 
-+	ac_power_supply: ac_power_supply {
-+		compatible = "x-powers,axp202-ac-power-supply";
-+		io-channels = <&axp209_adc 0>, <&axp209_adc 1>;
-+		io-channel-names = "acin_v", "acin_i";
-+		status = "disabled";
-+	};
-+
- 	axp209_adc: axp209_adc {
- 		compatible = "x-powers,axp209-adc";
- 		#io-channel-cells = <1>;
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 31a84d81..65c57d0 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -608,6 +608,11 @@ static struct mfd_cell axp221_cells[] = {
+ 		.name		= "axp20x-adc",
+ 		.of_compatible	= "x-powers,axp221-adc"
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp221-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp221-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
+@@ -626,6 +631,11 @@ static struct mfd_cell axp223_cells[] = {
+ 	}, {
+ 		.name			= "axp20x-regulator",
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp221-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp223-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
 -- 
 2.9.3
