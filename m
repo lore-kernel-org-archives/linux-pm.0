@@ -1,44 +1,68 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH v4 4/4] ARM: da850: fix da850_set_pll0rate()
-Date: Mon, 2 Jan 2017 15:42:47 +0530
-Message-ID: <a04624ec-6c6e-6a5b-0626-cc3520cccb29@ti.com>
-References: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
- <1481124138-27337-5-git-send-email-bgolaszewski@baylibre.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 0/2] PM / Domains / OPP: Introduce
+ domain-performance-state binding
+Date: Mon, 2 Jan 2017 16:14:12 +0530
+Message-ID: <20170102104412.GH13679@vireshk-i7>
+References: <cover.1481539827.git.viresh.kumar@linaro.org>
+ <20161222181422.2cpmdfzeyxdi6vpa@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:23753 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932208AbdABKN7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 05:13:59 -0500
-In-Reply-To: <1481124138-27337-5-git-send-email-bgolaszewski@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161222181422.2cpmdfzeyxdi6vpa@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Nayak Rajendra <rnayak@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bartosz Golaszewski <bgolaszewski@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On Wednesday 07 December 2016 08:52 PM, Bartosz Golaszewski wrote:
-> This function is confusing - its second argument is an index to the
-> freq table, not the requested clock rate in Hz, but it's used as the
-> set_rate callback for the pll0 clock. It leads to an oops when the
-> caller doesn't know the internals and passes the rate in Hz as
-> argument instead of the cpufreq index since this argument isn't bounds
-> checked either.
+On 22-12-16, 12:14, Rob Herring wrote:
+> On Mon, Dec 12, 2016 at 04:26:17PM +0530, Viresh Kumar wrote:
+> > Hello,
+> > 
+> > Some platforms have the capability to configure the performance state of
+> > their Power Domains. The performance levels are represented by positive
+> > integer values, a lower value represents lower performance state.
+> > 
+> > We had some discussions about it in the past on the PM list [1], which is
+> > followed by discussions during the LPC. The outcome of all that was that we
+> > should extend Power Domain framework to support active state power management
+> > as well.
+> > 
+> > The power-domains until now were only concentrating on the idle state
+> > management of the device and this needs to change in order to reuse the
+> > infrastructure of power domains for active state management.
 > 
-> Fix it by iterating over the array of supported frequencies and
-> selecting a one that matches or returning -EINVAL for unsupported
-> rates.
-> 
-> Also: update the davinci cpufreq driver. It's the only user of this
-> clock and currently it passes the cpufreq table index to
-> clk_set_rate(), which is confusing. Make it pass the requested clock
-> rate in Hz.
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> From a h/w perspective, are idle states really different from 
+> performance states? 
 
-Applied to v4.11/fixes-non-critical
+Its a tricky question TBH :)
 
-Thanks,
-Sekhar
+The device is almost powered off during the idle states, while
+performance states here are the functioning of the device. I haven't
+answered your question well, perhaps I need a more direct question :)
+
+> > To get a complete picture of the proposed plan, following is what we
+> > need to do:
+> > - Create DT bindings to get domain performance state information for the
+> >   platforms.
+> 
+> I would do this last so you can evolve things if you're not certain 
+> about what the bindings should look like. You can always start with 
+> things in the kernel and add to DT later.
+
+I didn't knew that and it looks like a very good option. I am not sure
+if I would like to do that for this series though. Maybe lets discuss
+the bindings a bit more and if we aren't able to find a common ground,
+I can try code first.
+
+> While in theory we should be able to just "describe the h/w" in DT and 
+
+Right.
+
+> develop the Linux side independently, this feels too much like the 
+> bindings are just evolving with Linux needs.
+
+:)
+
+-- 
+viresh
