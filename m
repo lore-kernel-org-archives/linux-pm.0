@@ -1,57 +1,36 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: Re: [PATCH v2 3/3] power: supply: bq24735-charger: allow chargers to
- share the ac-detect gpio
-Date: Mon, 2 Jan 2017 09:31:24 +0100
-Message-ID: <c3d66181-3076-0d0f-d74e-ec0205b3f547@axentia.se>
-References: <1481673405-4547-1-git-send-email-peda@axentia.se>
- <1481673405-4547-4-git-send-email-peda@axentia.se>
- <20161214165921.jsatcznbljd7anqi@earth>
- <20161214170114.ckozfple475kqajh@earth>
- <e1667d9d-17bf-2fe5-8a65-af73b6507cbd@axentia.se>
- <CACRpkda+7XLBMo11vB_V030or3b+-LRufrziVVgct4Gr_2E+KQ@mail.gmail.com>
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH v4 1/4] ARM: da850: fix infinite loop in clk_set_rate()
+Date: Mon, 2 Jan 2017 14:22:06 +0530
+Message-ID: <b04c878f-97cf-f0a1-4968-154d96eda8d4@ti.com>
+References: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
+ <1481124138-27337-2-git-send-email-bgolaszewski@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CACRpkda+7XLBMo11vB_V030or3b+-LRufrziVVgct4Gr_2E+KQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Alexandre Courbot <gnurou@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:60772 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751208AbdABIxb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 03:53:31 -0500
+In-Reply-To: <1481124138-27337-2-git-send-email-bgolaszewski@baylibre.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bartosz Golaszewski <bgolaszewski@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
 
-On 2016-12-30 08:49, Linus Walleij wrote:
-> On Wed, Dec 14, 2016 at 6:41 PM, Peter Rosin <peda@axentia.se> wrote:
->> On 2016-12-14 18:01, Sebastian Reichel wrote:
->>> [of course I forgot to actually add gpio people, let's try again]
->>>
->>> On Wed, Dec 14, 2016 at 05:59:21PM +0100, Sebastian Reichel wrote:
->>>> Hi,
->>>>
->>>> On Wed, Dec 14, 2016 at 12:56:45AM +0100, Peter Rosin wrote:
->>>>> If several parallel bq24735 chargers have their ac-detect gpios wired
->>>>> together (or if only one of the parallel bq24735 chargers have its
->>>>> ac-detect pin wired to a gpio, and the others are assumed to react the
->>>>> same), then all driver instances need to check the same gpio. But the
->>>>> gpio subsystem does not allow sharing gpios, so handle that locally.
->>>>
->>>> Adding GPIO subsystem people to see if they can come up with
->>>> something in the gpiod API for this usecase.
->>
->> Right, I don't like how my new code steps away from gpio descriptors.
+On Wednesday 07 December 2016 08:52 PM, Bartosz Golaszewski wrote:
+> The aemif clock is added twice to the lookup table in da850.c. This
+> breaks the children list of pll0_sysclk3 as we're using the same list
+> links in struct clk. When calling clk_set_rate(), we get stuck in
+> propagate_rate().
 > 
-> The issue of shared gpiods have come up over and over again.
-> For example the messy regulator code needs this too.
+> Create a separate clock for nand, inheriting the rate of the aemif
+> clock and retrieve it in the davinci_nand module.
 > 
-> It is better if we implement something like gpiod_get_shared()
-> in the gpiolib of these cases.
-> 
-> Just put a refcount in struct gpio_desc in drivers/gpio/gpiolib.h
-> for this case I guess?
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-I actually tried that, but ran into atomicy issues with the
-FLAG_REQUESTED bit and gave up. Didn't really try all that hard
-though, but I simply didn't feel comfortable with going near such
-fundamental designs...
+Applied to fixes branch. The prefix for mach-davinci patches is "ARM:
+davinci: ...". I fixed it up when applying. Please take care for future.
 
-Cheers,
-peda
+Thanks,
+Sekhar
