@@ -1,11 +1,14 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 00/22] add support for AXP20X and AXP22X power supply drivers
-Date: Mon,  2 Jan 2017 17:37:00 +0100
-Message-ID: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+Subject: [PATCH 03/22] iio: adc: add support for X-Powers AXP20X and AXP22X
+ PMICs ADCs
+Date: Mon,  2 Jan 2017 17:37:03 +0100
+Message-ID: <20170102163723.7939-4-quentin.schulz@free-electrons.com>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,152 +22,564 @@ To: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIFgtUG93ZXJzIEFYUDIwWCBhbmQgQVhQMjJYIFBNSUNzIGhhdmUgbXVsdGlwbGUgQURDcy4g
-VGhleSBleHBvc2UKaW5mb3JtYXRpb24gYW5kIGRhdGEgb2YgdGhlIHZhcmlvdXMgcG93ZXIgc3Vw
-cGxpZXMgdGhleSBzdXBwb3J0IHN1Y2ggYXMKQUNJTiwgYmF0dGVyeSBhbmQgVkJVUy4gRm9yIGV4
-YW1wbGUsIHRoZXkgZXhwb3NlIHRoZSBjdXJyZW50IGJhdHRlcnkKdm9sdGFnZSwgY2hhcmdlIG9y
-IGRpc2NoYXJnZSwgYXMgd2VsbCBhcyBBQ0lOIGFuZCBWQlVTIGN1cnJlbnQgdm9sdGFnZXMKYW5k
-IGN1cnJlbnRzLCBpbnRlcm5hbCBQTUlDIHRlbXBlcmF0dXJlIGFuZCBBREMgb24gMiBkaWZmZXJl
-bnQgR1BJT3MKd2hlbiBpbiB0aGUgcmlnaHQgbW9kZSAoZm9yIHRoZSBBWFAyMDkgb25seSkuCgpU
-aGUgQUNJTiBwb3dlciBzdXBwbHkgZHJpdmVyIGlzIGFkZGVkIGJ5IHRoaXMgcGF0Y2guIFRoZSBB
-WFAyMFggYW5kCkFYUDIyWCBjYW4gYm90aCByZWFkIHRoZSBzdGF0dXMgYW5kIHRoZSAidXNhYmls
-aXR5IiBvZiB0aGUgcG93ZXIgc3VwcGx5CmJ1dCBvbmx5IHRoZSBBWFAyMDkgd2lsbCBiZSBhYmxl
-IHRvIHRlbGwgdGhlIGN1cnJlbnQgY3VycmVudCBhbmQgdm9sdGFnZQpvZiB0aGUgcG93ZXIgc3Vw
-cGx5IGJ5IHJlYWRpbmcgQURDIGNoYW5uZWxzLiBJdCBpcyBzaW1wbHkgbm90IHN1cHBvcnRlZApi
-eSB0aGUgQVhQMjJYIFBNSUNzLgoKVGhlIGJhdHRlcnkgcG93ZXIgc3VwcGx5IGRyaXZlciBpcyBh
-bHNvIGFkZGVkIGJ5IHRoaXMgcGF0Y2guIFRoZSBBWFAyMFgKYW5kIEFYUDIyWCBzaGFyZSBtb3N0
-IG9mIHRoZWlyIGJlaGF2aW91ciBidXQgaGF2ZSBzbGlnaHQgdmFyaWF0aW9ucy4gVGhlCmFsbG93
-ZWQgdGFyZ2V0IHZvbHRhZ2VzIGZvciBiYXR0ZXJ5IGNoYXJnaW5nIGFyZSBub3QgdGhlIHNhbWUs
-IHRoZQpBWFAyMlggUE1JQyBhcmUgYWJsZSB0byB0ZWxsIGlmIHRoZSBiYXR0ZXJ5IHBlcmNlbnRh
-Z2UgY29tcHV0ZWQgYnkgdGhlClBNSUMgaXMgdHJ1c3R3b3J0aHkgYW5kIHRoZXkgaGF2ZSBkaWZm
-ZXJlbnQgZm9ybXVsYXMgZm9yIGNvbXB1dGluZyBtYXgKY3VycmVudCBmb3IgYmF0dGVyeSBwb3dl
-ciBzdXBwbHkuIFRoZSBkcml2ZXIgaXMgYWJsZSB0byBnaXZlIHRoZSBjdXJyZW50CnZvbHRhZ2Ug
-YW5kIGN1cnJlbnQgb2YgdGhlIGJhdHRlcnkgKGJlIGl0IGNoYXJnaW5nIG9yIGRpc2NoYXJnaW5n
-KSwgdGhlCm1heGltYWwgYW5kIG1pbmltYWwgdm9sdGFnZSBhbmQgbWF4aW1hbCBjdXJyZW50IGFs
-bG93ZWQgZm9yIHRoZSBiYXR0ZXJ5LAp3aGV0aGVyIHRoZSBiYXR0ZXJ5IGlzIHByZXNlbnQgYW5k
-IHVzYWJsZSBhbmQgaXRzIGNhcGFjaXR5LiBJdCB3aWxsIGdldAp0aGUgYmF0dGVyeSBjdXJyZW50
-IGN1cnJlbnQgYW5kIHZvbHRhZ2UgYnkgcmVhZGluZyB0aGUgQURDIGNoYW5uZWxzLiBUaGUKUE1J
-QyBhbGxvd3MgbWF4aW1hbCB2b2x0YWdlcyAoNC4zNlYgZm9yIEFYUDIwWCBhbmQgNC4yMlYgYW5k
-IDQuMjRWIGZvcgpBWFAyMlgpIHRoYXQgc2hvdWxkIG5vdCBiZSB1c2VkIHdpdGggTGl0aGl1bS1i
-YXNlZCBiYXR0ZXJpZXMgYW5kIHNpbmNlCnRoaXMgUE1JQyBpcyBzdXBwb3NlZCB0byBiZSB1c2Vk
-IHdpdGggTGl0aGl1bS1iYXNlZCBiYXR0ZXJpZXMsIHRoZXkgaGF2ZQpiZWVuIGRpc2FibGVkLiBU
-aGUgdmFsdWVzIHJldHVybmVkIGJ5IHRoZSBBREMgZHJpdmVyIGFyZSBtdWx0aXBsZWQgYnkKMTAw
-MCB0byBzY2FsZSBmcm9tIHRoZSBtViByZXR1cm5lZCBieSB0aGUgQURDIHRvIHRoZSB1ViBleHBl
-Y3RlZCBieSB0aGUKcG93ZXIgc3VwcGx5IGZyYW1ld29yay4KClRoaXMgc2VyaWVzIG9mIHBhdGNo
-IGFkZHMgRFQgYmluZGluZ3MgZm9yIEFDSU4gcG93ZXIgc3VwcGx5LCBBREMgYW5kCmJhdHRlcnkg
-cG93ZXIgc3VwcGx5IGRyaXZlcnMgZm9yIEFYUDIwWCBhbmQgQVhQMjJYIFBNSUNzIGFuZCB0aGVp
-cgpkb2N1bWVudGF0aW9uLiBJdCBhbHNvIGVuYWJsZXMgdGhlIHN1cHBvcnRlZCBwb3dlciBzdXBw
-bGllcyBmb3IgdGhlCk5leHR0aGluZyBDby4gQ0hJUCBhbmQgU2lubGlueCBTaW5BMzMgYm9hcmRz
-LgoKVGhlIGRpZmZlcmVudCBkcml2ZXJzIGFyZSBhbHNvIGFkZGVkIHRvIHRoZSBNRkQgY2VsbHMg
-b2YgdGhlIEFYUDIwWCBhbmQKQVhQMjJYIGNlbGxzIGFuZCB0aGUgd3JpdGVhYmxlIGFuZCB2b2xh
-dGlsZSByZWdzIHVwZGF0ZWQgdG8gd29yayB3aXRoCnRoZSBuZXdseSBhZGRlZCBkcml2ZXJzLgoK
-VkJVUyBkcml2ZXIgaGFzIGludGVudGlvbmFsbHkgbm90IGJlZW4gbW9kaWZpZWQgdG8gdXNlIHRo
-ZSBBREMgY2hhbm5lbHMKYmVjYXVzZSBhIERUIGJpbmRpbmcgYWxyZWFkeSBleGlzdHMgZm9yIHRo
-aXMgZHJpdmVyLiBNaWdyYXRpbmcgdGhlCmRyaXZlciB3b3VsZCBtZWFuIHRvIGFkZCBhbiBpaW9f
-bWFwIHRvIG1hcCB0aGUgQURDIGNoYW5uZWxzIHRvIHRoZSBWQlVTCmRyaXZlciAoc28gd2UgY2Fu
-IHVzZSBpaW9fY2hhbm5lbF9nZXQgYW5kIGlpb19yZWFkX2NoYW5uZWxfcHJvY2Vzc2VkCmZ1bmN0
-aW9ucykuIFRoaXMgc2xpZ2h0bHkgY29tcGxleGlmaWVzIHRoZSBWQlVTIGRyaXZlciBvbmx5IGZv
-cgoiY29zbWV0aWMiIGNoYW5nZXMuIEZlZWwgZnJlZSB0byBnaXZlIHlvdXIgdHdvIGNlbnRzIG9u
-IHRoZSBtYXR0ZXIuCgpUaGlzIHNlcmllcyBvZiBwYXRjaCBpcyBiYXNlZCBvbiBhIHByZXZpb3Vz
-IHVwc3RyZWFtaW5nIGF0dGVtcHQgZG9uZSBieQpCcnVubyBQcsOpbW9udCBmZXcgbW9udGhzIGFn
-by4gSXQgZGlmZmVycyBpbiB0aHJlZSBwb2ludHM6IHRoZSBBREMKZHJpdmVyIGRvZXMgbm90IHRl
-bGwgdGhlIGJhdHRlcnkgdGVtcGVyYXR1cmUgKFRTX0lOKSBhcyBJIGRvIG5vdCBoYXZlIGEKYm9h
-cmQgdG8gdGVzdCBpdCB3aXRoLCBpdCBkb2VzIG5vdCB0ZWxsIHRoZSBpbnN0YW50YW5lb3VzIGJh
-dHRlcnkgcG93ZXIKYXMgaXQgcmV0dXJucyBjcmF6eSB2YWx1ZXMgZm9yIG1lIGFuZCBmaW5hbGx5
-IG5vIHN1cHBvcnQgZm9yIE9DViBjdXJ2ZXMKZm9yIHRoZSBiYXR0ZXJ5LgoKW1JGQ10KSSB3YW50
-IHRvIHRha2UgdGhpcyBzZXJpZXMgb2YgcGF0Y2ggYXMgYW4gb3Bwb3J0dW5pdHkgdG8gYXNrIHdo
-YXQgd2Ugc2hvdWxkCmRvIHdpdGggdGhlIE9DViBjdXJ2ZXMuCgpBIGJhdHRlcnkgdm9sdGFnZSBk
-b2VzIG5vdCBkZWNyZWFzZSBsaW5lYXJseSBidXQgZGVjcmVhc2VzIHNsb3dseSBuZWFyCm1heGlt
-dW0gYW5kIG1pbmltYWwgdm9sdGFnZSBhbmQgcXVpY2tseSBtb3N0IG9mIHRoZSB0aW1lLgpCeSB0
-YWtpbmcgcmF3IHZhbHVlcyB3aXRob3V0IGFuIE9DViBjdXJ2ZSwgdGhlIGJhdHRlcnkgcGVyY2Vu
-dGFnZSAob3IKb2Z0ZW4gd3JvbmdseSBuYW1lZCAiY2FwYWNpdHkiKSBpcyBjb21wdXRlZCBieSBh
-cHByb3hpbWF0aW5nIGJ5IGEgbGluZWFyCmZ1bmN0aW9uLiBUaGlzIHJlc3VsdHMgaW4gYmF0dGVy
-eSBwZXJjZW50YWdlIG5vdCBsYXN0aW5nIHRoZSBzYW1lCmRlcGVuZGluZyBpZiB0aGUgYmF0dGVy
-eSBpcyBmdWxsLCBhbG1vc3QgZW1wdHkgb3Igd2l0aGluIHRob3NlIHR3bwpzdGF0ZXMuIEZvciBl
-eGFtcGxlLCBhIGRlY3JlYXNlIG9mIDQwIHBvaW50cyBjb3VsZCB0YWtlIGFzIG11Y2ggdGltZSBh
-cwphIGRlY3JlYXNlIG9mIDUgcG9pbnRzIHdoZW4gaW4gbG93IGJhdHRlcnkuIFdpdGhvdXQgYW4g
-T0NWIGN1cnZlLCB0aGUKYmF0dGVyeSBwZXJjZW50YWdlIHJldHVybmVkIGJ5IHRoZSBiYXR0ZXJ5
-IGRyaXZlciAoYXMgaXQgaXMgZG9uZSB0b2RheSkKaXMgYWJzb2x1dGUgbm9uLXNlbnNlLgpXaGVu
-IGFuIE9DViBjdXJ2ZSBpcyBwcm92aWRlZCwgdGhlIHBlcmNlbnRhZ2UgaXMgYXBwcm94aW1hdGVk
-IGJ5IHRoaXMKT0NWIGN1cnZlIGFuZCBiYXR0ZXJ5IHBlcmNlbnRhZ2UgYXJlIHZlcnkgbW9yZSBs
-aWtlbHkgdG8gbGFzdCB0aGUgc2FtZQp0aW1lIGFuZCB0aHVzLCBiZWluZyB0cnVzdHdvcnRoeS4K
-CldoaWxlIEkgdW5kZXJzdGFuZCB0aGUga2VybmVsIGhhcyBhYnNvbHV0ZWx5IG5vdGhpbmcgdG8g
-ZG8gd2l0aCBPQ1YKY29tcHV0YXRpb24sIHRoZSBBWFAyMFgvQVhQMjJYIFBNSUNzIHJhaXNlIGEg
-cXVlc3Rpb24gZHVlIHRvIHRoZWlyCmFiaWxpdHkgdG8gY29tcHV0ZSB0aGUgYXBwcm94aW1hdGVk
-IGJhdHRlcnkgcGVyY2VudGFnZSBpZiB3ZSBnaXZlIHRoZW0KdGhlIE9DViBjdXJ2ZSBvZiB0aGUg
-YmF0dGVyeSBpbiBzb21lIG9mIHRoZWlyIHJlZ2lzdGVycy4gTm8gY29tcHV0aW5nCmhhcyB0byBi
-ZSBkb25lIGluIHRoZSBrZXJuZWwsIHdlIGp1c3QgaGF2ZSB0byBnaXZlIHRoZW0gdGhlIE9DViBj
-dXJ2ZSBvZgp0aGUgYmF0dGVyeSBhbmQgdGhlIFBNSUMgd2lsbCByZXR1cm4gdGhlIGFwcHJveGlt
-YXRlZCBwZXJjZW50YWdlLgoKVGhlIHF1ZXN0aW9uIGlzIGhvdyB0byBkbyBpdD8gSU1ITywgdHdv
-IGRpZmZlcmVudCBhcHByb2FjaGVzIGFyZSBwb3NzaWJsZToKCiAtIGdpdmUgdGhlIE9DViBjdXJ2
-ZSBwb2ludHMgaW4gdGhlIERldmljZSBUcmVlLAogICBUaGlzIGFsbG93cyB0aGUgT0NWIGN1cnZl
-IHRvIGJlIGZpeGVkIGZvciBib2FyZHMgd2l0aCBhIG5vbi1yZW1vdmFibGUKICAgYmF0dGVyeS4g
-SG93ZXZlciwgaXQgYWxzbyBhdm9pZHMgY2hhbmdpbmcgYmF0dGVyaWVzIHdpdGhvdXQKICAgcmVj
-b21waWxpbmcgdGhlIERULCB3aGljaCBpcyBkZWZpbml0ZWx5IG5vdCBlbmQtdXNlciBmcmllbmRs
-eS4KICAgVGhlIERUIGlzIGhlcmUgZm9yIGhhcmR3YXJlIGRlZmluaXRpb24gYW5kIGJhdHRlcnkg
-aXMgaGFyZHdhcmUKICAgZGVmaW5pdGlvbiBJIGd1ZXNzLCBzbyBpdCBtYWtlcyBzZW5zZSBpbiBh
-IHdheSwgYnV0IGl0IGRvZXMgbm90IHdvcmsKICAgZm9yIHJlbW92YWJsZSBiYXR0ZXJpZXMuCgog
-LSBnaXZlIHRoZSBPQ1YgY3VydmUgcG9pbnRzIHZpYSB0aGUgUE9XRVJfU1VQUExZX1BST1BfVk9M
-VEFHRV9PQ1Ygc3lzZnMKIGVudHJ5IGluIHRoZSBQb3dlciBTdXBwbHkgZnJhbWV3b3JrLAogICBU
-aGlzIGFsbG93cyB0aGUgT0NWIGN1cnZlIHRvIGJlIGNoYW5nZWQgd2hlbiBhIHVzZXIgc3dpdGNo
-ZXMgdGhlCiAgIGJhdHRlcmllcywgYnV0IGl0IGFsc28gbWVhbnMgdGhhdCB0aGUgT0NWIGN1cnZl
-IHdpbGwgYWx3YXlzIGhhdmUgdG8KICAgYmUgc3VibWl0dGVkIGJ5IGEgc21hbGwgYm9vdCBzY3Jp
-cHQgd2hpY2ggbWVhbnMgaXQgaXMKICAgcm9vdGZzLWRlcGVuZGVudC4gTm90IHJlYWxseSBjb29s
-IGZvciBhIGhhcmR3YXJlIGNvbXBvbmVudCB3aGljaCBpbgogICBlbWJlZGRlZCBzeXN0ZW1zIGlz
-IG1vcmUgdGhhbiBsaWtlbHkgbm90IHRvIGNoYW5nZSAoSU1ITykuCgpNYXliZSwgdGhlIGJlc3Qg
-d291bGQgYmUgdGhlIHR3byBhcHByb2FjaGVzIGF0IHRoZSBzYW1lIHRpbWU6IHRoZQpPQ1YgY3Vy
-dmUgb2YgdGhlIGRlZmF1bHQgYmF0dGVyeSBpbiB0aGUgRFQgYW5kIHRoZSBwb3NzaWJpbGl0eSB0
-byBtb2RpZnkKdGhlIE9DViBjdXJ2ZSB2aWEgdGhlIFBPV0VSX1NVUFBMWV9QUk9QX1ZPTFRBR0Vf
-T0NWIHN5c2ZzIGVudHJ5PwoKVGhhbmtzLApRdWVudGluCgpRdWVudGluIFNjaHVseiAoMjIpOgog
-IGR0LWJpbmRpbmdzOiBpaW86IGFkYzogYWRkIEFYUDIwWC9BWFAyMlggQURDIERUIGJpbmRpbmcK
-ICBtZmQ6IGF4cDIweDogYWRkIEFEQyBkYXRhIHJlZ3MgdG8gdm9sYXRpbGUgcmVncyBmb3IgQVhQ
-MjJYCiAgaWlvOiBhZGM6IGFkZCBzdXBwb3J0IGZvciBYLVBvd2VycyBBWFAyMFggYW5kIEFYUDIy
-WCBQTUlDcyBBRENzCiAgbWZkOiBheHAyMHg6IGFkZCBBREMgY2VsbHMgZm9yIEFYUDIwWCBhbmQg
-QVhQMjJYIFBNSUNzCiAgQVJNOiBkdHNpOiBheHAyMDk6IGFkZCBBWFAyMDkgQURDIHN1Ym5vZGUK
-ICBBUk06IGR0c2k6IGF4cDIyeDogYWRkIEFYUDIyWCBBREMgc3Vibm9kZQogIGR0LWJpbmRpbmdz
-OiBwb3dlcjogc3VwcGx5OiBhZGQgQVhQMjBYL0FYUDIyWCBBQyBwb3dlciBzdXBwbHkKICBwb3dl
-cjogc3VwcGx5OiBhZGQgQUMgcG93ZXIgc3VwcGx5IGRyaXZlciBmb3IgQVhQMjBYIGFuZCBBWFAy
-MlggUE1JQ3MKICBtZmQ6IGF4cDIweDogYWRkIEFDIHBvd2VyIHN1cHBseSBjZWxscyBmb3IgQVhQ
-MjJYIFBNSUNzCiAgQVJNOiBkdHNpOiBheHAyMDk6IGFkZCBBQyBwb3dlciBzdXBwbHkgc3Vibm9k
-ZQogIEFSTTogZHRzaTogYXhwMjJ4OiBhZGQgQUMgcG93ZXIgc3VwcGx5IHN1Ym5vZGUKICBBUk06
-IGR0czogc3VuOGk6IHNpbmEzMzogZW5hYmxlIEFDSU4gcG93ZXIgc3VwcGx5IHN1Ym5vZGUKICBB
-Uk06IHN1bjVpOiBjaGlwOiBlbmFibGUgQUNJTiBwb3dlciBzdXBwbHkgc3Vibm9kZQogIGR0LWJp
-bmRpbmdzOiBwb3dlcjogc3VwcGx5OiBhZGQgQVhQMjBYL0FYUDIyWCBiYXR0ZXJ5IERUIGJpbmRp
-bmcKICBtZmQ6IGF4cDIweDogYWRkIENIUkdfQ1RSTDEgdG8gd3JpdGVhYmxlIHJlZ3MgZm9yIEFY
-UDIwWC9BWFAyMlgKICBtZmQ6IGF4cDIweDogYWRkIFZfT0ZGIHRvIHdyaXRlYWJsZSByZWdzIGZv
-ciBBWFAyMFggYW5kIEFYUDIyWAogIHBvd2VyOiBzdXBwbHk6IGFkZCBiYXR0ZXJ5IGRyaXZlciBm
-b3IgQVhQMjBYIGFuZCBBWFAyMlggUE1JQ3MKICBtZmQ6IGF4cDIweDogYWRkIE1GRCBjZWxscyBm
-b3IgQVhQMjBYIGFuZCBBWFAyMlggYmF0dGVyeSBkcml2ZXIKICBBUk06IGR0c2k6IGF4cDIwOTog
-YWRkIGJhdHRlcnkgcG93ZXIgc3VwcGx5IHN1Ym5vZGUKICBBUk06IGR0c2k6IGF4cDIyeDogYWRk
-IGJhdHRlcnkgcG93ZXIgc3VwcGx5IHN1Ym5vZGUKICBBUk06IGR0czogc3VuOGk6IHNpbmEzMzog
-ZW5hYmxlIGJhdHRlcnkgcG93ZXIgc3VwcGx5IHN1Ym5vZGUKICBBUk06IHN1bjVpOiBjaGlwOiBl
-bmFibGUgYmF0dGVyeSBwb3dlciBzdXBwbHkgc3Vibm9kZQoKIC4uLi9kZXZpY2V0cmVlL2JpbmRp
-bmdzL2lpby9hZGMvYXhwMjB4X2FkYy50eHQgICAgIHwgIDI0ICsKIC4uLi9iaW5kaW5ncy9wb3dl
-ci9zdXBwbHkvYXhwMjB4X2FjX3Bvd2VyLnR4dCAgICAgIHwgIDI3ICsrCiAuLi4vYmluZGluZ3Mv
-cG93ZXIvc3VwcGx5L2F4cDIweF9iYXR0ZXJ5LnR4dCAgICAgICB8ICAyNCArCiBhcmNoL2FybS9i
-b290L2R0cy9heHAyMDkuZHRzaSAgICAgICAgICAgICAgICAgICAgICB8ICAxOSArCiBhcmNoL2Fy
-bS9ib290L2R0cy9heHAyMnguZHRzaSAgICAgICAgICAgICAgICAgICAgICB8ICAxNyArCiBhcmNo
-L2FybS9ib290L2R0cy9zdW41aS1yOC1jaGlwLmR0cyAgICAgICAgICAgICAgICB8ICAgOCArCiBh
-cmNoL2FybS9ib290L2R0cy9zdW44aS1hMzMtc2lubGlueC1zaW5hMzMuZHRzICAgICB8ICAgOCAr
-CiBkcml2ZXJzL2lpby9hZGMvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAx
-MCArCiBkcml2ZXJzL2lpby9hZGMvTWFrZWZpbGUgICAgICAgICAgICAgICAgICAgICAgICAgICB8
-ICAgMSArCiBkcml2ZXJzL2lpby9hZGMvYXhwMjB4X2FkYy5jICAgICAgICAgICAgICAgICAgICAg
-ICB8IDQ5MCArKysrKysrKysrKysrKysrKysrKysKIGRyaXZlcnMvbWZkL2F4cDIweC5jICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDM1ICstCiBkcml2ZXJzL3Bvd2VyL3N1cHBseS9L
-Y29uZmlnICAgICAgICAgICAgICAgICAgICAgICB8ICAyNCArCiBkcml2ZXJzL3Bvd2VyL3N1cHBs
-eS9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICB8ICAgMiArCiBkcml2ZXJzL3Bvd2VyL3N1
-cHBseS9heHAyMHhfYWNfcG93ZXIuYyAgICAgICAgICAgICB8IDI1MSArKysrKysrKysrKwogZHJp
-dmVycy9wb3dlci9zdXBwbHkvYXhwMjB4X2JhdHRlcnkuYyAgICAgICAgICAgICAgfCA0NTggKysr
-KysrKysrKysrKysrKysrKwogaW5jbHVkZS9saW51eC9tZmQvYXhwMjB4LmggICAgICAgICAgICAg
-ICAgICAgICAgICAgfCAgIDQgKwogMTYgZmlsZXMgY2hhbmdlZCwgMTQwMCBpbnNlcnRpb25zKCsp
-LCAyIGRlbGV0aW9ucygtKQogY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNl
-dHJlZS9iaW5kaW5ncy9paW8vYWRjL2F4cDIweF9hZGMudHh0CiBjcmVhdGUgbW9kZSAxMDA2NDQg
-RG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3N1cHBseS9heHAyMHhfYWNf
-cG93ZXIudHh0CiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3Bvd2VyL3N1cHBseS9heHAyMHhfYmF0dGVyeS50eHQKIGNyZWF0ZSBtb2RlIDEwMDY0
-NCBkcml2ZXJzL2lpby9hZGMvYXhwMjB4X2FkYy5jCiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVy
-cy9wb3dlci9zdXBwbHkvYXhwMjB4X2FjX3Bvd2VyLmMKIGNyZWF0ZSBtb2RlIDEwMDY0NCBkcml2
-ZXJzL3Bvd2VyL3N1cHBseS9heHAyMHhfYmF0dGVyeS5jCgotLSAKMi45LjMKCgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1h
-aWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xp
-c3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
+battery voltage, battery charge and discharge currents, AC-in and VBUS
+voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
+
+This adds support for most of AXP20X and AXP22X ADCs.
+
+Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+---
+ drivers/iio/adc/Kconfig      |  10 +
+ drivers/iio/adc/Makefile     |   1 +
+ drivers/iio/adc/axp20x_adc.c | 490 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/axp20x.h   |   4 +
+ 4 files changed, 505 insertions(+)
+ create mode 100644 drivers/iio/adc/axp20x_adc.c
+
+diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+index 38bc319..5c5b51f 100644
+--- a/drivers/iio/adc/Kconfig
++++ b/drivers/iio/adc/Kconfig
+@@ -154,6 +154,16 @@ config AT91_SAMA5D2_ADC
+ 	  To compile this driver as a module, choose M here: the module will be
+ 	  called at91-sama5d2_adc.
+ 
++config AXP20X_ADC
++	tristate "X-Powers AXP20X and AXP22X ADC driver"
++	depends on MFD_AXP20X
++	help
++	  Say yes here to have support for X-Powers power management IC (PMIC)
++	  AXP20X and AXP22X ADC devices.
++
++	  To compile this driver as a module, choose M here: the module will be
++	  called axp20x_adc.
++
+ config AXP288_ADC
+ 	tristate "X-Powers AXP288 ADC driver"
+ 	depends on MFD_AXP20X
+diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
+index d36c4be..f5c28a5 100644
+--- a/drivers/iio/adc/Makefile
++++ b/drivers/iio/adc/Makefile
+@@ -16,6 +16,7 @@ obj-$(CONFIG_AD7887) += ad7887.o
+ obj-$(CONFIG_AD799X) += ad799x.o
+ obj-$(CONFIG_AT91_ADC) += at91_adc.o
+ obj-$(CONFIG_AT91_SAMA5D2_ADC) += at91-sama5d2_adc.o
++obj-$(CONFIG_AXP20X_ADC) += axp20x_adc.o
+ obj-$(CONFIG_AXP288_ADC) += axp288_adc.o
+ obj-$(CONFIG_BCM_IPROC_ADC) += bcm_iproc_adc.o
+ obj-$(CONFIG_BERLIN2_ADC) += berlin2-adc.o
+diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+new file mode 100644
+index 0000000..8df972a
+--- /dev/null
++++ b/drivers/iio/adc/axp20x_adc.c
+@@ -0,0 +1,490 @@
++/* ADC driver for AXP20X and AXP22X PMICs
++ *
++ * Copyright (c) 2016 Free Electrons NextThing Co.
++ *	Quentin Schulz <quentin.schulz@free-electrons.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it under
++ * the terms of the GNU General Public License version 2 as published by the
++ * Free Software Foundation.
++ *
++ */
++
++#include <linux/completion.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
++#include <linux/regmap.h>
++#include <linux/thermal.h>
++
++#include <linux/iio/iio.h>
++#include <linux/mfd/axp20x.h>
++
++#define AXP20X_ADC_EN1_MASK			GENMASK(7, 0)
++
++#define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
++#define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
++#define AXP20X_ADC_EN2_TEMP_ADC			BIT(7)
++#define AXP20X_ADC_EN2_GPIO0_ADC		BIT(3)
++#define AXP20X_ADC_EN2_GPIO1_ADC		BIT(2)
++
++#define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
++#define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
++#define AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(x)	((x) & BIT(0))
++#define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
++
++#define AXP20X_ADC_RATE_MASK			(3 << 6)
++#define AXP20X_ADC_RATE_25HZ			(0 << 6)
++#define AXP20X_ADC_RATE_50HZ			BIT(6)
++#define AXP20X_ADC_RATE_100HZ			(2 << 6)
++#define AXP20X_ADC_RATE_200HZ			(3 << 6)
++
++#define AXP22X_ADC_RATE_100HZ			(0 << 6)
++#define AXP22X_ADC_RATE_200HZ			BIT(6)
++#define AXP22X_ADC_RATE_400HZ			(2 << 6)
++#define AXP22X_ADC_RATE_800HZ			(3 << 6)
++
++#define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
++	{							\
++		.type = _type,					\
++		.indexed = 1,					\
++		.channel = _channel,				\
++		.address = _reg,				\
++		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
++				      BIT(IIO_CHAN_INFO_SCALE),	\
++		.datasheet_name = _name,			\
++	}
++
++#define AXP20X_ADC_CHANNEL_OFFSET(_channel, _name, _type, _reg) \
++	{							\
++		.type = _type,					\
++		.indexed = 1,					\
++		.channel = _channel,				\
++		.address = _reg,				\
++		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
++				      BIT(IIO_CHAN_INFO_SCALE) |\
++				      BIT(IIO_CHAN_INFO_OFFSET),\
++		.datasheet_name = _name,			\
++	}
++
++struct axp20x_adc_iio {
++	struct iio_dev		*indio_dev;
++	struct regmap		*regmap;
++};
++
++enum axp20x_adc_channel {
++	AXP20X_ACIN_V = 0,
++	AXP20X_ACIN_I,
++	AXP20X_VBUS_V,
++	AXP20X_VBUS_I,
++	AXP20X_TEMP_ADC,
++	AXP20X_GPIO0_V,
++	AXP20X_GPIO1_V,
++	AXP20X_BATT_V,
++	AXP20X_BATT_CHRG_I,
++	AXP20X_BATT_DISCHRG_I,
++	AXP20X_IPSOUT_V,
++};
++
++enum axp22x_adc_channel {
++	AXP22X_TEMP_ADC = 0,
++	AXP22X_BATT_V,
++	AXP22X_BATT_CHRG_I,
++	AXP22X_BATT_DISCHRG_I,
++};
++
++static const struct iio_chan_spec axp20x_adc_channels[] = {
++	AXP20X_ADC_CHANNEL(AXP20X_ACIN_V, "acin_v", IIO_VOLTAGE,
++			   AXP20X_ACIN_V_ADC_H),
++	AXP20X_ADC_CHANNEL(AXP20X_ACIN_I, "acin_i", IIO_CURRENT,
++			   AXP20X_ACIN_I_ADC_H),
++	AXP20X_ADC_CHANNEL(AXP20X_VBUS_V, "vbus_v", IIO_VOLTAGE,
++			   AXP20X_VBUS_V_ADC_H),
++	AXP20X_ADC_CHANNEL(AXP20X_VBUS_I, "vbus_i", IIO_CURRENT,
++			   AXP20X_VBUS_I_ADC_H),
++	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_TEMP_ADC, "temp_adc", IIO_TEMP,
++				  AXP20X_TEMP_ADC_H),
++	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
++				  AXP20X_GPIO0_V_ADC_H),
++	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO1_V, "gpio1_v", IIO_VOLTAGE,
++				  AXP20X_GPIO1_V_ADC_H),
++	AXP20X_ADC_CHANNEL(AXP20X_BATT_V, "batt_v", IIO_VOLTAGE,
++			   AXP20X_BATT_V_H),
++	AXP20X_ADC_CHANNEL(AXP20X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
++			   AXP20X_BATT_CHRG_I_H),
++	AXP20X_ADC_CHANNEL(AXP20X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
++			   AXP20X_BATT_DISCHRG_I_H),
++	AXP20X_ADC_CHANNEL(AXP20X_IPSOUT_V, "ipsout_v", IIO_VOLTAGE,
++			   AXP20X_IPSOUT_V_HIGH_H),
++};
++
++static const struct iio_chan_spec axp22x_adc_channels[] = {
++	AXP20X_ADC_CHANNEL_OFFSET(AXP22X_TEMP_ADC, "temp_adc", IIO_TEMP,
++				  AXP22X_TEMP_ADC_H),
++	AXP20X_ADC_CHANNEL(AXP22X_BATT_V, "batt_v", IIO_VOLTAGE,
++			   AXP20X_BATT_V_H),
++	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
++			   AXP20X_BATT_CHRG_I_H),
++	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
++			   AXP20X_BATT_DISCHRG_I_H),
++};
++
++static int axp20x_adc_read_raw(struct iio_dev *indio_dev,
++			       struct iio_chan_spec const *channel, int *val,
++			       int *val2)
++{
++	struct axp20x_adc_iio *info = iio_priv(indio_dev);
++	int size = 12, ret;
++
++	switch (channel->channel) {
++	case AXP20X_BATT_DISCHRG_I:
++		size = 13;
++	case AXP20X_ACIN_V:
++	case AXP20X_ACIN_I:
++	case AXP20X_VBUS_V:
++	case AXP20X_VBUS_I:
++	case AXP20X_TEMP_ADC:
++	case AXP20X_BATT_V:
++	case AXP20X_BATT_CHRG_I:
++	case AXP20X_IPSOUT_V:
++	case AXP20X_GPIO0_V:
++	case AXP20X_GPIO1_V:
++		ret = axp20x_read_variable_width(info->regmap, channel->address,
++						 size);
++		if (ret < 0)
++			return ret;
++		*val = ret;
++		return IIO_VAL_INT;
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp22x_adc_read_raw(struct iio_dev *indio_dev,
++			       struct iio_chan_spec const *channel, int *val,
++			       int *val2)
++{
++	struct axp20x_adc_iio *info = iio_priv(indio_dev);
++	int size = 12, ret;
++
++	switch (channel->channel) {
++	case AXP22X_BATT_DISCHRG_I:
++		size = 13;
++	case AXP22X_TEMP_ADC:
++	case AXP22X_BATT_V:
++	case AXP22X_BATT_CHRG_I:
++		ret = axp20x_read_variable_width(info->regmap, channel->address,
++						 size);
++		if (ret < 0)
++			return ret;
++		*val = ret;
++		return IIO_VAL_INT;
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp20x_adc_scale(int channel, int *val, int *val2)
++{
++	switch (channel) {
++	case AXP20X_ACIN_V:
++	case AXP20X_VBUS_V:
++		*val = 1;
++		*val2 = 700000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP20X_ACIN_I:
++		*val = 0;
++		*val2 = 625000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP20X_VBUS_I:
++		*val = 0;
++		*val2 = 375000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP20X_TEMP_ADC:
++		*val = 100;
++		return IIO_VAL_INT;
++
++	case AXP20X_GPIO0_V:
++	case AXP20X_GPIO1_V:
++		*val = 0;
++		*val2 = 500000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP20X_BATT_V:
++		*val = 1;
++		*val2 = 100000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP20X_BATT_DISCHRG_I:
++	case AXP20X_BATT_CHRG_I:
++		*val = 0;
++		*val2 = 500000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP20X_IPSOUT_V:
++		*val = 1;
++		*val2 = 400000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp22x_adc_scale(int channel, int *val, int *val2)
++{
++	switch (channel) {
++	case AXP22X_TEMP_ADC:
++		*val = 100;
++		return IIO_VAL_INT;
++
++	case AXP22X_BATT_V:
++		*val = 1;
++		*val2 = 100000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	case AXP22X_BATT_DISCHRG_I:
++	case AXP22X_BATT_CHRG_I:
++		*val = 0;
++		*val2 = 500000;
++		return IIO_VAL_INT_PLUS_MICRO;
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp20x_adc_offset(struct iio_dev *indio_dev, int channel, int *val)
++{
++	struct axp20x_adc_iio *info = iio_priv(indio_dev);
++	int ret, reg;
++
++	switch (channel) {
++	case AXP20X_TEMP_ADC:
++		*val = -1447;
++		return IIO_VAL_INT;
++
++	case AXP20X_GPIO0_V:
++	case AXP20X_GPIO1_V:
++		ret = regmap_read(info->regmap, AXP20X_GPIO10_IN_RANGE, &reg);
++		if (ret < 0)
++			return ret;
++
++		if (channel == AXP20X_GPIO0_V)
++			*val = reg & AXP20X_GPIO10_IN_RANGE_GPIO0;
++		else
++			*val = reg & AXP20X_GPIO10_IN_RANGE_GPIO1;
++
++		*val = !!(*val) * 700000;
++
++		return IIO_VAL_INT;
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp20x_read_raw(struct iio_dev *indio_dev,
++			   struct iio_chan_spec const *chan, int *val,
++			   int *val2, long mask)
++{
++	switch (mask) {
++	case IIO_CHAN_INFO_OFFSET:
++		return axp20x_adc_offset(indio_dev, chan->channel, val);
++
++	case IIO_CHAN_INFO_SCALE:
++		return axp20x_adc_scale(chan->channel, val, val2);
++
++	case IIO_CHAN_INFO_RAW:
++		return axp20x_adc_read_raw(indio_dev, chan, val, val2);
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp22x_read_raw(struct iio_dev *indio_dev,
++			   struct iio_chan_spec const *chan, int *val,
++			   int *val2, long mask)
++{
++	switch (mask) {
++	case IIO_CHAN_INFO_OFFSET:
++		*val = -2667;
++		return IIO_VAL_INT;
++
++	case IIO_CHAN_INFO_SCALE:
++		return axp22x_adc_scale(chan->channel, val, val2);
++
++	case IIO_CHAN_INFO_RAW:
++		return axp22x_adc_read_raw(indio_dev, chan, val, val2);
++
++	default:
++		return -EINVAL;
++	}
++
++	return -EINVAL;
++}
++
++static int axp20x_write_raw(struct iio_dev *indio_dev,
++			    struct iio_chan_spec const *chan, int val, int val2,
++			    long mask)
++{
++	struct axp20x_adc_iio *info = iio_priv(indio_dev);
++
++	/*
++	 * The AXP20X PMIC allows the user to choose between 0V and 0.7V offsets
++	 * for (independently) GPIO0 and GPIO1 when in ADC mode.
++	 */
++	if (mask != IIO_CHAN_INFO_OFFSET)
++		return -EINVAL;
++
++	if (chan->channel != AXP20X_GPIO0_V && chan->channel != AXP20X_GPIO1_V)
++		return -EINVAL;
++
++	if (val != 0 && val != 700000)
++		return -EINVAL;
++
++	if (chan->channel == AXP20X_GPIO0_V)
++		return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE,
++					  AXP20X_GPIO10_IN_RANGE_GPIO0,
++					  AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(!!val));
++
++	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE,
++				  AXP20X_GPIO10_IN_RANGE_GPIO1,
++				  AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(!!val));
++}
++
++static const struct iio_info axp20x_adc_iio_info = {
++	.read_raw = axp20x_read_raw,
++	.write_raw = axp20x_write_raw,
++	.driver_module = THIS_MODULE,
++};
++
++static const struct iio_info axp22x_adc_iio_info = {
++	.read_raw = axp22x_read_raw,
++	.driver_module = THIS_MODULE,
++};
++
++static const struct of_device_id axp20x_adc_of_match[] = {
++	{ .compatible = "x-powers,axp209-adc", .data = (void *)AXP209_ID, },
++	{ .compatible = "x-powers,axp221-adc", .data = (void *)AXP221_ID, },
++	{ /* sentinel */ },
++};
++
++static int axp20x_probe(struct platform_device *pdev)
++{
++	struct axp20x_adc_iio *info;
++	struct iio_dev *indio_dev;
++	struct axp20x_dev *axp20x_dev;
++	int ret, axp20x_id;
++
++	axp20x_dev = dev_get_drvdata(pdev->dev.parent);
++
++	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*info));
++	if (!indio_dev)
++		return -ENOMEM;
++
++	info = iio_priv(indio_dev);
++	platform_set_drvdata(pdev, indio_dev);
++
++	info->regmap = axp20x_dev->regmap;
++	info->indio_dev = indio_dev;
++	indio_dev->name = dev_name(&pdev->dev);
++	indio_dev->dev.parent = &pdev->dev;
++	indio_dev->dev.of_node = pdev->dev.of_node;
++	indio_dev->modes = INDIO_DIRECT_MODE;
++
++	axp20x_id = (int)of_device_get_match_data(&pdev->dev);
++
++	switch (axp20x_id) {
++	case AXP209_ID:
++		indio_dev->info = &axp20x_adc_iio_info;
++		indio_dev->num_channels = ARRAY_SIZE(axp20x_adc_channels);
++		indio_dev->channels = axp20x_adc_channels;
++
++		/* Enable the ADCs on IP */
++		regmap_write(info->regmap, AXP20X_ADC_EN1, AXP20X_ADC_EN1_MASK);
++
++		/* Enable GPIO0/1 and internal temperature ADCs */
++		regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
++				   AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
++
++		/* Configure ADCs rate */
++		regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
++				   AXP20X_ADC_RATE_MASK, AXP20X_ADC_RATE_50HZ);
++		break;
++
++	case AXP221_ID:
++		indio_dev->info = &axp22x_adc_iio_info;
++		indio_dev->num_channels = ARRAY_SIZE(axp22x_adc_channels);
++		indio_dev->channels = axp22x_adc_channels;
++
++		/* Enable the ADCs on IP */
++		regmap_write(info->regmap, AXP20X_ADC_EN1, AXP22X_ADC_EN1_MASK);
++
++		/* Configure ADCs rate */
++		regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
++				   AXP20X_ADC_RATE_MASK, AXP22X_ADC_RATE_200HZ);
++		break;
++
++	default:
++		return -EINVAL;
++	}
++
++	ret = devm_iio_device_register(&pdev->dev, indio_dev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "could not register the device\n");
++		regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
++		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
++		return ret;
++	}
++
++	return 0;
++}
++
++static int axp20x_remove(struct platform_device *pdev)
++{
++	struct axp20x_adc_iio *info;
++	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
++
++	info = iio_priv(indio_dev);
++	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
++	regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
++
++	return 0;
++}
++
++static struct platform_driver axp20x_adc_driver = {
++	.driver = {
++		.name = "axp20x-adc",
++		.of_match_table = axp20x_adc_of_match,
++	},
++	.probe = axp20x_probe,
++	.remove = axp20x_remove,
++};
++
++module_platform_driver(axp20x_adc_driver);
++
++MODULE_DESCRIPTION("ADC driver for AXP20X and AXP22X PMICs");
++MODULE_AUTHOR("Quentin Schulz <quentin.schulz@free-electrons.com>");
++MODULE_LICENSE("GPL");
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index a4860bc..650c6f6 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -150,6 +150,10 @@ enum {
+ #define AXP20X_VBUS_I_ADC_L		0x5d
+ #define AXP20X_TEMP_ADC_H		0x5e
+ #define AXP20X_TEMP_ADC_L		0x5f
++
++#define AXP22X_TEMP_ADC_H		0x56
++#define AXP22X_TEMP_ADC_L		0x57
++
+ #define AXP20X_TS_IN_H			0x62
+ #define AXP20X_TS_IN_L			0x63
+ #define AXP20X_GPIO0_V_ADC_H		0x64
+-- 
+2.9.3
