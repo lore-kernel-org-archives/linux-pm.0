@@ -1,8 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 16/22] mfd: axp20x: add V_OFF to writeable regs for AXP20X and
- AXP22X
-Date: Mon,  2 Jan 2017 17:37:16 +0100
-Message-ID: <20170102163723.7939-17-quentin.schulz@free-electrons.com>
+Subject: [PATCH 20/22] ARM: dtsi: axp22x: add battery power supply subnode
+Date: Mon,  2 Jan 2017 17:37:20 +0100
+Message-ID: <20170102163723.7939-21-quentin.schulz@free-electrons.com>
 References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,39 +21,35 @@ To: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The V_OFF register has its first 3 read-write bits for the minimal
-voltage (Voff) of the battery before the system is automatically shut
-down due to the power being too low.
+The X-Powers AXP22X PMIC exposes battery supply various data such as
+the battery status (charging, discharging, full, dead), current max
+limit, current current, battery capacity (in percentage), voltage max
+limit, current voltage, and battery capacity (in Ah).
 
-This adds V_OFF register to the writeable registers of AXP20X and AXP22X
-PMICs.
+This adds the battery power supply subnode for AXP22X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
- drivers/mfd/axp20x.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/axp22x.dtsi | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 19bdba3..7f0f05f 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -65,7 +65,7 @@ static const struct regmap_access_table axp152_volatile_table = {
+diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
+index aba7fde..c4a64a5 100644
+--- a/arch/arm/boot/dts/axp22x.dtsi
++++ b/arch/arm/boot/dts/axp22x.dtsi
+@@ -62,6 +62,13 @@
+ 		#io-channel-cells = <1>;
+ 	};
  
- static const struct regmap_range axp20x_writeable_ranges[] = {
- 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
--	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
-+	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_V_OFF),
- 	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL1),
- 	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
- 	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
-@@ -94,7 +94,7 @@ static const struct regmap_access_table axp20x_volatile_table = {
- /* AXP22x ranges are shared with the AXP809, as they cover the same range */
- static const struct regmap_range axp22x_writeable_ranges[] = {
- 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
--	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
-+	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_V_OFF),
- 	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL1),
- 	regmap_reg_range(AXP20X_DCDC_MODE, AXP22X_BATLOW_THRES1),
- };
++	battery_power_supply: battery_power_supply {
++		compatible = "x-powers,axp221-battery-power-supply";
++		io-channels = <&axp221_adc 1>, <&axp221_adc 2>, <&axp221_adc 3>;
++		io-channel-names = "batt_v", "batt_chrg_i", "batt_dischrg_i";
++		status = "disabled";
++	};
++
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
 -- 
 2.9.3
