@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 04/10] PM / OPP: Error out on failing to add static OPPs for v1 bindings
-Date: Mon,  2 Jan 2017 14:40:58 +0530
-Message-ID: <a3297d2bdc8275fe249e0aafbd8ea5559db0e585.1483348138.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 01/10] PM / OPP: Fix memory leak while adding duplicate OPPs
+Date: Mon,  2 Jan 2017 14:40:55 +0530
+Message-ID: <83cb1a5f9d4b8e957a6e875e2391d6349b158dae.1483348138.git.viresh.kumar@linaro.org>
 References: <cover.1483348138.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1483348138.git.viresh.kumar@linaro.org>
@@ -12,44 +12,89 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nisha
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The code adding static OPPs for V2 bindings already does so. Make the V1
-bindings specific code behave the same.
+There are two types of duplicate OPPs that get different behavior from
+the core:
+A) An earlier OPP is marked 'available' and has same freq/voltages as
+   the new one.
+B) An earlier OPP with same frequency, but is marked 'unavailable' OR
+   doesn't have same voltages as the new one.
+
+The OPP core returns 0 for the first one, but -EEXIST for the second.
+
+While the OPP core returns 0 for the first case, its callers don't free
+the newly allocated OPP structure which isn't used anymore. Fix that by
+returning -EBUSY instead of 0, but make the callers return 0 eventually.
+
+As this isn't a critical fix, its not getting marked for stable kernel.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/of.c | 12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+ drivers/base/power/opp/core.c | 18 ++++++++++++++++--
+ drivers/base/power/opp/of.c   |  6 +++++-
+ 2 files changed, 21 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index f8512ca2bf41..c8fe815774ff 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -433,7 +433,7 @@ static int _of_add_opp_table_v1(struct device *dev)
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 35ff06283738..a8a5e01b7756 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1067,6 +1067,16 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
+ 	return true;
+ }
+ 
++/*
++ * Returns:
++ * 0: On success. And appropriate error message for duplicate OPPs.
++ * -EBUSY: For OPP with same freq/volt and is available. The callers of
++ *  _opp_add() must return 0 if they receive -EBUSY from it. This is to make
++ *  sure we don't print error messages unnecessarily if different parts of
++ *  kernel try to initialize the OPP table.
++ * -EEXIST: For OPP with same freq but different volt or is unavailable. This
++ *  should be considered an error by the callers of _opp_add().
++ */
+ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 	     struct opp_table *opp_table)
  {
- 	const struct property *prop;
- 	const __be32 *val;
--	int nr;
-+	int nr, ret;
+@@ -1099,7 +1109,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
  
- 	prop = of_find_property(dev->of_node, "operating-points", NULL);
- 	if (!prop)
-@@ -456,9 +456,13 @@ static int _of_add_opp_table_v1(struct device *dev)
- 		unsigned long freq = be32_to_cpup(val++) * 1000;
- 		unsigned long volt = be32_to_cpup(val++);
- 
--		if (_opp_add_v1(dev, freq, volt, false))
--			dev_warn(dev, "%s: Failed to add OPP %ld\n",
--				 __func__, freq);
-+		ret = _opp_add_v1(dev, freq, volt, false);
-+		if (ret) {
-+			dev_err(dev, "%s: Failed to add OPP %ld (%d)\n",
-+				__func__, freq, ret);
-+			dev_pm_opp_of_remove_table(dev);
-+			return ret;
-+		}
- 		nr -= 2;
+ 		/* Should we compare voltages for all regulators here ? */
+ 		return opp->available &&
+-		       new_opp->supplies[0].u_volt == opp->supplies[0].u_volt ? 0 : -EEXIST;
++		       new_opp->supplies[0].u_volt == opp->supplies[0].u_volt ? -EBUSY : -EEXIST;
  	}
  
+ 	new_opp->opp_table = opp_table;
+@@ -1173,8 +1183,12 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
+ 	new_opp->dynamic = dynamic;
+ 
+ 	ret = _opp_add(dev, new_opp, opp_table);
+-	if (ret)
++	if (ret) {
++		/* Don't return error for duplicate OPPs */
++		if (ret == -EBUSY)
++			ret = 0;
+ 		goto free_opp;
++	}
+ 
+ 	mutex_unlock(&opp_table_lock);
+ 
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index 3f7d2591b173..356c75edd656 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -327,8 +327,12 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
+ 		goto free_opp;
+ 
+ 	ret = _opp_add(dev, new_opp, opp_table);
+-	if (ret)
++	if (ret) {
++		/* Don't return error for duplicate OPPs */
++		if (ret == -EBUSY)
++			ret = 0;
+ 		goto free_opp;
++	}
+ 
+ 	/* OPP to select on device suspend */
+ 	if (of_property_read_bool(np, "opp-suspend")) {
 -- 
 2.7.1.410.g6faf27b
