@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 01/10] PM / OPP: Fix memory leak while adding duplicate OPPs
-Date: Mon,  2 Jan 2017 14:40:55 +0530
-Message-ID: <83cb1a5f9d4b8e957a6e875e2391d6349b158dae.1483348138.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 10/10] PM / OPP: Split out part of _add_opp_table() and _remove_opp_table()
+Date: Mon,  2 Jan 2017 14:41:04 +0530
+Message-ID: <7d4e1b547d5a5e0519edf42cbb2e9ce6e609a901.1483348138.git.viresh.kumar@linaro.org>
 References: <cover.1483348138.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1483348138.git.viresh.kumar@linaro.org>
@@ -12,89 +12,136 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nisha
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-There are two types of duplicate OPPs that get different behavior from
-the core:
-A) An earlier OPP is marked 'available' and has same freq/voltages as
-   the new one.
-B) An earlier OPP with same frequency, but is marked 'unavailable' OR
-   doesn't have same voltages as the new one.
+Split out parts of _add_opp_table() and _remove_opp_table() into
+separate routines. This improves readability as well.
 
-The OPP core returns 0 for the first one, but -EEXIST for the second.
-
-While the OPP core returns 0 for the first case, its callers don't free
-the newly allocated OPP structure which isn't used anymore. Fix that by
-returning -EBUSY instead of 0, but make the callers return 0 eventually.
-
-As this isn't a critical fix, its not getting marked for stable kernel.
+Should result in no functional changes.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 18 ++++++++++++++++--
- drivers/base/power/opp/of.c   |  6 +++++-
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ drivers/base/power/opp/core.c | 76 +++++++++++++++++++++++++------------------
+ 1 file changed, 44 insertions(+), 32 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 35ff06283738..a8a5e01b7756 100644
+index f35effad60d1..622dd32f8dda 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -1067,6 +1067,16 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- 	return true;
+@@ -819,26 +819,12 @@ struct opp_device *_add_opp_dev(const struct device *dev,
+ 	return opp_dev;
  }
  
-+/*
-+ * Returns:
-+ * 0: On success. And appropriate error message for duplicate OPPs.
-+ * -EBUSY: For OPP with same freq/volt and is available. The callers of
-+ *  _opp_add() must return 0 if they receive -EBUSY from it. This is to make
-+ *  sure we don't print error messages unnecessarily if different parts of
-+ *  kernel try to initialize the OPP table.
-+ * -EEXIST: For OPP with same freq but different volt or is unavailable. This
-+ *  should be considered an error by the callers of _opp_add().
-+ */
- int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
- 	     struct opp_table *opp_table)
+-/**
+- * _add_opp_table() - Find OPP table or allocate a new one
+- * @dev:	device for which we do this operation
+- *
+- * It tries to find an existing table first, if it couldn't find one, it
+- * allocates a new OPP table and returns that.
+- *
+- * Return: valid opp_table pointer if success, else NULL.
+- */
+-struct opp_table *_add_opp_table(struct device *dev)
++static struct opp_table *_allocate_opp_table(struct device *dev)
  {
-@@ -1099,7 +1109,7 @@ int _opp_add(struct device *dev, struct dev_pm_opp *new_opp,
+ 	struct opp_table *opp_table;
+ 	struct opp_device *opp_dev;
+ 	int ret;
  
- 		/* Should we compare voltages for all regulators here ? */
- 		return opp->available &&
--		       new_opp->supplies[0].u_volt == opp->supplies[0].u_volt ? 0 : -EEXIST;
-+		       new_opp->supplies[0].u_volt == opp->supplies[0].u_volt ? -EBUSY : -EEXIST;
- 	}
+-	/* Check for existing table for 'dev' first */
+-	opp_table = _find_opp_table(dev);
+-	if (!IS_ERR(opp_table))
+-		return opp_table;
+-
+ 	/*
+ 	 * Allocate a new OPP table. In the infrequent case where a new
+ 	 * device is needed to be added, we pay this penalty.
+@@ -875,6 +861,27 @@ struct opp_table *_add_opp_table(struct device *dev)
+ }
  
- 	new_opp->opp_table = opp_table;
-@@ -1173,8 +1183,12 @@ int _opp_add_v1(struct device *dev, unsigned long freq, long u_volt,
- 	new_opp->dynamic = dynamic;
+ /**
++ * _add_opp_table() - Find OPP table or allocate a new one
++ * @dev:	device for which we do this operation
++ *
++ * It tries to find an existing table first, if it couldn't find one, it
++ * allocates a new OPP table and returns that.
++ *
++ * Return: valid opp_table pointer if success, else NULL.
++ */
++struct opp_table *_add_opp_table(struct device *dev)
++{
++	struct opp_table *opp_table;
++
++	/* Check for existing table for 'dev' first */
++	opp_table = _find_opp_table(dev);
++	if (!IS_ERR(opp_table))
++		return opp_table;
++
++	return _allocate_opp_table(dev);
++}
++
++/**
+  * _kfree_device_rcu() - Free opp_table RCU handler
+  * @head:	RCU head
+  */
+@@ -886,6 +893,27 @@ static void _kfree_device_rcu(struct rcu_head *head)
+ 	kfree_rcu(opp_table, rcu_head);
+ }
  
- 	ret = _opp_add(dev, new_opp, opp_table);
--	if (ret)
-+	if (ret) {
-+		/* Don't return error for duplicate OPPs */
-+		if (ret == -EBUSY)
-+			ret = 0;
- 		goto free_opp;
-+	}
++static void _free_opp_table(struct opp_table *opp_table)
++{
++	struct opp_device *opp_dev;
++
++	/* Release clk */
++	if (!IS_ERR(opp_table->clk))
++		clk_put(opp_table->clk);
++
++	opp_dev = list_first_entry(&opp_table->dev_list, struct opp_device,
++				   node);
++
++	_remove_opp_dev(opp_dev, opp_table);
++
++	/* dev_list must be empty now */
++	WARN_ON(!list_empty(&opp_table->dev_list));
++
++	list_del_rcu(&opp_table->node);
++	call_srcu(&opp_table->srcu_head.srcu, &opp_table->rcu_head,
++		  _kfree_device_rcu);
++}
++
+ /**
+  * _remove_opp_table() - Removes a OPP table
+  * @opp_table: OPP table to be removed.
+@@ -894,8 +922,6 @@ static void _kfree_device_rcu(struct rcu_head *head)
+  */
+ static void _remove_opp_table(struct opp_table *opp_table)
+ {
+-	struct opp_device *opp_dev;
+-
+ 	if (!list_empty(&opp_table->opp_list))
+ 		return;
  
- 	mutex_unlock(&opp_table_lock);
+@@ -911,21 +937,7 @@ static void _remove_opp_table(struct opp_table *opp_table)
+ 	if (opp_table->set_opp)
+ 		return;
  
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 3f7d2591b173..356c75edd656 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -327,8 +327,12 @@ static int _opp_add_static_v2(struct device *dev, struct device_node *np)
- 		goto free_opp;
+-	/* Release clk */
+-	if (!IS_ERR(opp_table->clk))
+-		clk_put(opp_table->clk);
+-
+-	opp_dev = list_first_entry(&opp_table->dev_list, struct opp_device,
+-				   node);
+-
+-	_remove_opp_dev(opp_dev, opp_table);
+-
+-	/* dev_list must be empty now */
+-	WARN_ON(!list_empty(&opp_table->dev_list));
+-
+-	list_del_rcu(&opp_table->node);
+-	call_srcu(&opp_table->srcu_head.srcu, &opp_table->rcu_head,
+-		  _kfree_device_rcu);
++	_free_opp_table(opp_table);
+ }
  
- 	ret = _opp_add(dev, new_opp, opp_table);
--	if (ret)
-+	if (ret) {
-+		/* Don't return error for duplicate OPPs */
-+		if (ret == -EBUSY)
-+			ret = 0;
- 		goto free_opp;
-+	}
- 
- 	/* OPP to select on device suspend */
- 	if (of_property_read_bool(np, "opp-suspend")) {
+ void _opp_free(struct dev_pm_opp *opp)
 -- 
 2.7.1.410.g6faf27b
