@@ -1,39 +1,40 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: dt: Add support for APM X-Gene 2
-Date: Mon, 2 Jan 2017 12:36:20 +0530
-Message-ID: <20170102070620.GA8588@vireshk-i7>
-References: <1481842500-11836-1-git-send-email-hotran@apm.com>
+Subject: Re: [PATCH] Documentation: cpufreq: Update supported powernv
+ processors
+Date: Mon, 2 Jan 2017 12:38:15 +0530
+Message-ID: <20170102070815.GB8588@vireshk-i7>
+References: <1481887062-25522-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1481842500-11836-1-git-send-email-hotran@apm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hoan Tran <hotran@apm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, lho@apm.com, Duc Dang <dhdang@apm.com>
+In-Reply-To: <1481887062-25522-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, corbet@lwn.net, linux-pm@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 15-12-16, 14:55, Hoan Tran wrote:
-> Add the compatible string for supporting the generic device tree cpufreq-dt
-> driver on APM's X-Gene 2 SoC.
-> 
-> Signed-off-by: Hoan Tran <hotran@apm.com>
+On 16-12-16, 16:47, Shilpasri G Bhat wrote:
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 > ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 2 ++
->  1 file changed, 2 insertions(+)
+>  Documentation/cpu-freq/user-guide.txt | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index bc97b6a..7fcaf26 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -26,6 +26,8 @@
->  	{ .compatible = "allwinner,sun8i-a83t", },
->  	{ .compatible = "allwinner,sun8i-h3", },
+> diff --git a/Documentation/cpu-freq/user-guide.txt b/Documentation/cpu-freq/user-guide.txt
+> index 109e97b..5e10d5f 100644
+> --- a/Documentation/cpu-freq/user-guide.txt
+> +++ b/Documentation/cpu-freq/user-guide.txt
+> @@ -87,7 +87,9 @@ UltraSPARC-III
+>  -------
 >  
-> +	{ .compatible = "apm,xgene-shadowcat", },
-> +
->  	{ .compatible = "arm,integrator-ap", },
->  	{ .compatible = "arm,integrator-cp", },
+>  Several "PowerBook" and "iBook2" notebooks are supported.
+> -
+> +The following POWER processors are supported in powernv mode:
+> +POWER8
+> +POWER9
+>  
+>  1.5 SuperH
+>  ----------
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
