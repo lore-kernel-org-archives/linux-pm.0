@@ -1,68 +1,127 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/2] PM / Domains / OPP: Introduce
- domain-performance-state binding
-Date: Mon, 2 Jan 2017 16:14:12 +0530
-Message-ID: <20170102104412.GH13679@vireshk-i7>
-References: <cover.1481539827.git.viresh.kumar@linaro.org>
- <20161222181422.2cpmdfzeyxdi6vpa@rob-hp-laptop>
+From: Caesar Wang <wxt@rock-chips.com>
+Subject: Re: [PATCH v4 0/5] thermal: fixes the rockchip thermal
+Date: Mon, 2 Jan 2017 21:16:06 +0800
+Message-ID: <8bdcea3e-0f06-da29-cb17-6b258440900a@rock-chips.com>
+References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
+ <f68125d7-01bb-d0d9-d04f-8d1b5cff19a2@soulik.info>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20161222181422.2cpmdfzeyxdi6vpa@rob-hp-laptop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Nayak Rajendra <rnayak@codeaurora.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.137]:48360 "EHLO
+        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755294AbdABNQs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 08:16:48 -0500
+In-Reply-To: <f68125d7-01bb-d0d9-d04f-8d1b5cff19a2@soulik.info>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ayaka <ayaka@soulik.info>
+Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-pm@vger.kernel.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, linux-rockchip@lists.infradead.org, "randy.li@rock-chips.com" <randy.li@rock-chips.com>
 
-On 22-12-16, 12:14, Rob Herring wrote:
-> On Mon, Dec 12, 2016 at 04:26:17PM +0530, Viresh Kumar wrote:
-> > Hello,
-> > 
-> > Some platforms have the capability to configure the performance state of
-> > their Power Domains. The performance levels are represented by positive
-> > integer values, a lower value represents lower performance state.
-> > 
-> > We had some discussions about it in the past on the PM list [1], which is
-> > followed by discussions during the LPC. The outcome of all that was that we
-> > should extend Power Domain framework to support active state power management
-> > as well.
-> > 
-> > The power-domains until now were only concentrating on the idle state
-> > management of the device and this needs to change in order to reuse the
-> > infrastructure of power domains for active state management.
-> 
-> From a h/w perspective, are idle states really different from 
-> performance states? 
+在 2016年12月31日 00:11, ayaka 写道:
+>
+> BTW, Caesar have you ever met this at RK3288 at booting time?
+> [    8.430582] thermal thermal_zone1: critical temperature reached(125 
+> C),shutting down
+> [    8.439038] thermal thermal_zone2: critical temperature reached(125 
+> C),shutting down
+> [    8.456344] thermal thermal_zone1: critical temperature reached(125 
+> C),shutting down
+> [    8.465298] thermal thermal_zone2: critical temperature reached(125 
+> C),shutting down
 
-Its a tricky question TBH :)
+125C? the thermal zone isn't the upstream kernel, what's the kernel 
+version?
+Anyway, look like,  the TSHUT issue. Do you have the below patches for 
+your linux kernel?
+http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/380446.html
 
-The device is almost powered off during the idle states, while
-performance states here are the functioning of the device. I haven't
-answered your question well, perhaps I need a more direct question :)
 
-> > To get a complete picture of the proposed plan, following is what we
-> > need to do:
-> > - Create DT bindings to get domain performance state information for the
-> >   platforms.
-> 
-> I would do this last so you can evolve things if you're not certain 
-> about what the bindings should look like. You can always start with 
-> things in the kernel and add to DT later.
+-Caesar
 
-I didn't knew that and it looks like a very good option. I am not sure
-if I would like to do that for this series though. Maybe lets discuss
-the bindings a bit more and if we aren't able to find a common ground,
-I can try code first.
+>
+> On 12/12/2016 07:05 PM, Caesar Wang wrote:
+>> There are five patches posted for upstream.
+>> 89267b5 thermal: rockchip: improve conversion error messages
+>> a0b5649 thermal: rockchip: don't pass table structs by value
+>> bceed92 thermal: rockchip: fixes invalid temperature case
+>> 30be6d0 thermal: rockchip: optimize the conversion table
+>> 35636e9 thermal: rockchip: handle the set_trips without the trip points.
+>> -- 
+>>
+>> History version:
+>> V1:
+>> https://lkml.org/lkml/2016/11/22/250
+>> V2:
+>> https://lkml.org/lkml/2016/11/23/348
+>> V3:
+>> http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1281432.html
+>> ---
+>>
+>> Brain posted the below patches for upstream.
+>> 89267b5 thermal: rockchip: improve conversion error messages
+>> a0b5649 thermal: rockchip: don't pass table structs by value
+>> That make sense to improve efficiency
+>>
+>> Caesar post the below patches for upstream.
+>> bceed92 thermal: rockchip: fixes invalid temperature case
+>> 30be6d0 thermal: rockchip: optimize the conversion table
+>> 35636e9 thermal: rockchip: handle the set_trips without the trip points.
+>> That will fixes some issues in special cases.
+>> -- 
+>>
+>> Anyway, this series patches should can improve the rockchip thermal 
+>> driver.
+>>
+>>
+>> Changes in v4:
+>> - As Eduardo and Brian commnets on
+>>    https://patchwork.kernel.org/patch/9449301
+>> - Print a better name.
+>> - As Eduardo commented on https://patchwork.kernel.org/patch/9449313/
+>> - remove the Brain's review for previous version, since the new version
+>>    update something.
+>>
+>> Changes in v3:
+>> - fix trivial thing for error message nd return value.
+>> - change the commit.
+>> - Fixes something as Brian comments on
+>>
+>> Changes in v2:
+>> - As Brian commnets that restructure this to pass error codes back to 
+>> the
+>>    upper layers.
+>> - Improve the commit message.
+>> - improve the commit as Brian commnets on 
+>> https://patchwork.kernel.org/patch/9440985
+>> - Fixes something as Brian comments on
+>>    https://patchwork.kernel.org/patch/9440989.
+>>
+>> Changes in v1:
+>> - The original Brian posted on 
+>> https://patchwork.kernel.org/patch/9437686
+>>    Note: it'd probably be even nicer to know which sensor this was, 
+>> but we've
+>>    kinda abstracted that one away by this point...
+>> - The original Brian posted on 
+>> https://patchwork.kernel.org/patch/9437687
+>>
+>> Brian Norris (2):
+>>    thermal: rockchip: improve conversion error messages
+>>    thermal: rockchip: don't pass table structs by value
+>>
+>> Caesar Wang (3):
+>>    thermal: rockchip: fixes invalid temperature case
+>>    thermal: rockchip: optimize the conversion table
+>>    thermal: rockchip: handle set_trips without the trip points
+>>
+>>   drivers/thermal/rockchip_thermal.c | 153 
+>> ++++++++++++++++++++++++-------------
+>>   1 file changed, 100 insertions(+), 53 deletions(-)
+>>
+>
+>
+>
+>
 
-> While in theory we should be able to just "describe the h/w" in DT and 
 
-Right.
-
-> develop the Linux side independently, this feels too much like the 
-> bindings are just evolving with Linux needs.
-
-:)
-
--- 
-viresh
