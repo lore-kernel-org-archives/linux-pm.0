@@ -1,36 +1,67 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH v4 1/4] ARM: da850: fix infinite loop in clk_set_rate()
-Date: Mon, 2 Jan 2017 14:22:06 +0530
-Message-ID: <b04c878f-97cf-f0a1-4968-154d96eda8d4@ti.com>
-References: <1481124138-27337-1-git-send-email-bgolaszewski@baylibre.com>
- <1481124138-27337-2-git-send-email-bgolaszewski@baylibre.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 00/10] PM / OPP: Fixes and cleanups
+Date: Mon,  2 Jan 2017 14:40:54 +0530
+Message-ID: <cover.1483348138.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:60772 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751208AbdABIxb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 03:53:31 -0500
-In-Reply-To: <1481124138-27337-2-git-send-email-bgolaszewski@baylibre.com>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:35186 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755399AbdABJLO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 04:11:14 -0500
+Received: by mail-pf0-f180.google.com with SMTP id i88so72246808pfk.2
+        for <linux-pm@vger.kernel.org>; Mon, 02 Jan 2017 01:11:14 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bartosz Golaszewski <bgolaszewski@baylibre.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Russell King <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Cyrille Pitchen <cyrille.pitchen@atmel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, arm-soc <linux-arm-kernel@lists.infradead.org>, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Wednesday 07 December 2016 08:52 PM, Bartosz Golaszewski wrote:
-> The aemif clock is added twice to the lookup table in da850.c. This
-> breaks the children list of pll0_sysclk3 as we're using the same list
-> links in struct clk. When calling clk_set_rate(), we get stuck in
-> propagate_rate().
-> 
-> Create a separate clock for nand, inheriting the rate of the aemif
-> clock and retrieve it in the davinci_nand module.
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Hi,
 
-Applied to fixes branch. The prefix for mach-davinci patches is "ARM:
-davinci: ...". I fixed it up when applying. Please take care for future.
+Happy new year guys !!
 
-Thanks,
-Sekhar
+This series fixes a memory leak (first patch) and does some cleanups to
+the OPP core.
+
+It is based of pm/linux-next branch.
+
+This series is tested for few days by various build and boot bots:
+- Kernel CI (Linaro)
+- Fengguang Wu's bot (Intel)
+
+V2->V3:
+- Only the 7th patch is updated based on Stephen's comment.
+- All the patches now have a Reviewed-by tag.
+
+V1->V2:
+- 6 out of 10 patches have received Acks from Stephen/MyungJoo.
+- dev_pm_opp_get_suspend_opp_freq() return freq in Hz now
+- s/opp_table/table in _opp_allocate()
+- Improved comment over _opp_add() defining its return types
+- opp_rcu_lockdep_assert() added at few places
+- Dropped a useless comment
+
+--
+viresh
+
+Viresh Kumar (10):
+  PM / OPP: Fix memory leak while adding duplicate OPPs
+  PM / OPP: Remove useless TODO
+  PM / OPP: Rename _allocate_opp() to _opp_allocate()
+  PM / OPP: Error out on failing to add static OPPs for v1 bindings
+  PM / OPP: Add light weight _opp_free() routine
+  PM / OPP: Rename and split _dev_pm_opp_remove_table()
+  PM / OPP: Don't allocate OPP table from _opp_allocate()
+  PM / OPP: Rename dev_pm_opp_get_suspend_opp() and return OPP rate
+  PM / OPP: Don't expose srcu_head to register notifiers
+  PM / OPP: Split out part of _add_opp_table() and _remove_opp_table()
+
+ drivers/base/power/opp/core.c | 293 ++++++++++++++++++++++++++----------------
+ drivers/base/power/opp/of.c   |  89 +++++++------
+ drivers/base/power/opp/opp.h  |  11 +-
+ drivers/cpufreq/cpufreq-dt.c  |   7 +-
+ drivers/devfreq/devfreq.c     |  26 +---
+ include/linux/pm_opp.h        |  20 ++-
+ 6 files changed, 253 insertions(+), 193 deletions(-)
+
+-- 
+2.7.1.410.g6faf27b
+
