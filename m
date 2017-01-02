@@ -1,8 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 07/22] dt-bindings: power: supply: add AXP20X/AXP22X AC power
- supply
-Date: Mon,  2 Jan 2017 17:37:07 +0100
-Message-ID: <20170102163723.7939-8-quentin.schulz@free-electrons.com>
+Subject: [PATCH 05/22] ARM: dtsi: axp209: add AXP209 ADC subnode
+Date: Mon,  2 Jan 2017 17:37:05 +0100
+Message-ID: <20170102163723.7939-6-quentin.schulz@free-electrons.com>
 References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,52 +21,31 @@ To: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X and AXP22X PMICs have an AC entry to supply power to
-the board. They have a few registers dedicated to the status of the AC
-power supply.
+X-Powers AXP209 PMIC has multiple ADCs, each one exposing data from the
+different power supplies connected to the PMIC.
 
-This adds the DT binding documentation for the AC power supply for
-AXP20X and AXP22X PMICs.
+This adds the ADC subnode for AXP20X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
- .../bindings/power/supply/axp20x_ac_power.txt      | 28 ++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+ arch/arm/boot/dts/axp209.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-new file mode 100644
-index 0000000..16d0de4
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-@@ -0,0 +1,28 @@
-+AXP20X and AXP22X PMICs' AC power supply
-+
-+Required Properties:
-+ - compatible: One of:
-+			"x-powers,axp202-ac-power-supply"
-+			"x-powers,axp221-ac-power-supply"
-+
-+More Required Properties for AXP20X PMICs:
-+ - io-channels: phandles to ACIN voltage and current ADC channels
-+ - io-channel-names = "acin_v", "acin_i";
-+
-+This node is a subnode of the axp20x PMIC.
-+
-+The AXP20X can read the current current and voltage supplied by AC by
-+reading ADC channels from the AXP20X ADC.
-+
-+The AXP22X is only able to tell if an AC power supply is present and
-+usable.
-+
-+Example:
-+
-+&axp209 {
-+	ac_power_supply: ac_power_supply {
-+		compatible = "x-powers,axp202-ac-power-supply";
-+		io-channels = <&axp209_adc 0>, <&axp209_adc 1>;
-+		io-channel-names = "acin_v", "acin_i";
+diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+index 675bb0f..2a4e8ee 100644
+--- a/arch/arm/boot/dts/axp209.dtsi
++++ b/arch/arm/boot/dts/axp209.dtsi
+@@ -53,6 +53,11 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
+ 
++	axp209_adc: axp209_adc {
++		compatible = "x-powers,axp209-adc";
++		#io-channel-cells = <1>;
 +	};
-+};
++
+ 	axp_gpio: gpio {
+ 		compatible = "x-powers,axp209-gpio";
+ 		gpio-controller;
 -- 
 2.9.3
