@@ -1,21 +1,64 @@
-From: "Dr. David White" <"wd."@eagle.ocn.ne.jp>
-Subject: Urgent Please;;
-Date: Tue, 3 Jan 2017 02:34:44 +0900 (JST)
-Message-ID: <196117354.116392318.1483378484299.JavaMail.root__34269.7792257697$1483379804$gmane$org@eagle.ocn.ne.jp>
-Reply-To: "Dr. David White" <david_white34@mynet.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] cpufreq: s3c64xx: remove incorrect __init annotation
+Date: Mon, 2 Jan 2017 22:19:29 +0100
+Message-ID: <CAJZ5v0jaKnn+LTTdpgxaFLNaYSuqV8d9PKphOnHrPw0Zp_Uj5w@mail.gmail.com>
+References: <20161216090625.2235668-1-arnd@arndb.de>
+ <20170102070903.GC8588@vireshk-i7>
+ <20170102173651.hvsfalhcmisv4mtv@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mbkd0128.ocn.ad.jp ([153.149.230.29]:33607 "EHLO
-        mbkd0128.ocn.ad.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756103AbdABR4V (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 12:56:21 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170102173651.hvsfalhcmisv4mtv@kozik-lap>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Kukjin Kim <kgene@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear,
-With due respect to your person and much sincerity of purpose. I have a business proposal which I will like to handle with you and $14.5 Million USD is involve. But be rest assured that everything is legal and risk free as I have concluded all the arrangements and the legal papers that will back the transaction up. Kindly indicate your interest as to enable me tell you more detail of the proposal. Waiting for your urgent response.
+On Mon, Jan 2, 2017 at 6:36 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> On Mon, Jan 02, 2017 at 12:39:03PM +0530, Viresh Kumar wrote:
+>> On 16-12-16, 10:06, Arnd Bergmann wrote:
+>> > s3c64xx_cpufreq_config_regulator is incorrectly annotated
+>> > as __init, since the caller is also not init:
+>> >
+>> > WARNING: vmlinux.o(.text+0x92fe1c): Section mismatch in reference from the function s3c64xx_cpufreq_driver_init() to the function .init.text:s3c64xx_cpufreq_config_regulator()
+>> >
+>> > With modern gcc versions, the function gets inline, so we don't
+>> > see the warning, this only happens with gcc-4.6 and older.
+>> >
+>> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> > ---
+>> >  drivers/cpufreq/s3c64xx-cpufreq.c | 2 +-
+>> >  1 file changed, 1 insertion(+), 1 deletion(-)
+>> >
+>> > diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
+>> > index 176e84cc3991..0cb9040eca49 100644
+>> > --- a/drivers/cpufreq/s3c64xx-cpufreq.c
+>> > +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
+>> > @@ -107,7 +107,7 @@ static int s3c64xx_cpufreq_set_target(struct cpufreq_policy *policy,
+>> >  }
+>> >
+>> >  #ifdef CONFIG_REGULATOR
+>> > -static void __init s3c64xx_cpufreq_config_regulator(void)
+>> > +static void s3c64xx_cpufreq_config_regulator(void)
+>> >  {
+>> >     int count, v, i, found;
+>> >     struct cpufreq_frequency_table *freq;
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> Rafael,
+> Are you going to pick it up?
 
-Yours Faithfully,
-Dr. David White
+I thought I did, didn't I?
+
+Thanks,
+Rafael
