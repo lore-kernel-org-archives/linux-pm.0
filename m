@@ -1,52 +1,21 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] cpufreq: s3c64xx: remove incorrect __init annotation
-Date: Mon, 2 Jan 2017 19:36:51 +0200
-Message-ID: <20170102173651.hvsfalhcmisv4mtv@kozik-lap>
-References: <20161216090625.2235668-1-arnd@arndb.de>
- <20170102070903.GC8588@vireshk-i7>
+From: "Dr. David White" <"wd."@eagle.ocn.ne.jp>
+Subject: Urgent Please;;
+Date: Tue, 3 Jan 2017 02:34:44 +0900 (JST)
+Message-ID: <196117354.116392318.1483378484299.JavaMail.root__34269.7792257697$1483379804$gmane$org@eagle.ocn.ne.jp>
+Reply-To: "Dr. David White" <david_white34@mynet.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170102070903.GC8588@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Arnd Bergmann <arnd@arndb.de>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mbkd0128.ocn.ad.jp ([153.149.230.29]:33607 "EHLO
+        mbkd0128.ocn.ad.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756103AbdABR4V (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 12:56:21 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 02, 2017 at 12:39:03PM +0530, Viresh Kumar wrote:
-> On 16-12-16, 10:06, Arnd Bergmann wrote:
-> > s3c64xx_cpufreq_config_regulator is incorrectly annotated
-> > as __init, since the caller is also not init:
-> > 
-> > WARNING: vmlinux.o(.text+0x92fe1c): Section mismatch in reference from the function s3c64xx_cpufreq_driver_init() to the function .init.text:s3c64xx_cpufreq_config_regulator()
-> > 
-> > With modern gcc versions, the function gets inline, so we don't
-> > see the warning, this only happens with gcc-4.6 and older.
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  drivers/cpufreq/s3c64xx-cpufreq.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> > index 176e84cc3991..0cb9040eca49 100644
-> > --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> > +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> > @@ -107,7 +107,7 @@ static int s3c64xx_cpufreq_set_target(struct cpufreq_policy *policy,
-> >  }
-> >  
-> >  #ifdef CONFIG_REGULATOR
-> > -static void __init s3c64xx_cpufreq_config_regulator(void)
-> > +static void s3c64xx_cpufreq_config_regulator(void)
-> >  {
-> >  	int count, v, i, found;
-> >  	struct cpufreq_frequency_table *freq;
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Dear,
+With due respect to your person and much sincerity of purpose. I have a business proposal which I will like to handle with you and $14.5 Million USD is involve. But be rest assured that everything is legal and risk free as I have concluded all the arrangements and the legal papers that will back the transaction up. Kindly indicate your interest as to enable me tell you more detail of the proposal. Waiting for your urgent response.
 
-Rafael,
-Are you going to pick it up?
-
-Best regards,
-Krzysztof
+Yours Faithfully,
+Dr. David White
