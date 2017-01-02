@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 14/22] dt-bindings: power: supply: add AXP20X/AXP22X battery
- DT binding
-Date: Mon,  2 Jan 2017 17:37:14 +0100
-Message-ID: <20170102163723.7939-15-quentin.schulz@free-electrons.com>
+Subject: [PATCH 07/22] dt-bindings: power: supply: add AXP20X/AXP22X AC power
+ supply
+Date: Mon,  2 Jan 2017 17:37:07 +0100
+Message-ID: <20170102163723.7939-8-quentin.schulz@free-electrons.com>
 References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,52 +22,52 @@ To: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+The X-Powers AXP20X and AXP22X PMICs have an AC entry to supply power to
+the board. They have a few registers dedicated to the status of the AC
+power supply.
 
-This patch adds the DT binding documentation for the battery power
-supply which gets various data from the PMIC, such as the battery status
-(charging, discharging, full, dead), current max limit, current current,
-battery capacity (in percentage), voltage max and min limits, current
-voltage and battery capacity (in Ah).
+This adds the DT binding documentation for the AC power supply for
+AXP20X and AXP22X PMICs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
- .../bindings/power/supply/axp20x_battery.txt       | 27 ++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+ .../bindings/power/supply/axp20x_ac_power.txt      | 28 ++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
 new file mode 100644
-index 0000000..5489d0d
+index 0000000..16d0de4
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-@@ -0,0 +1,27 @@
-+AXP20x and AXP22x battery power supply
++++ b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+@@ -0,0 +1,28 @@
++AXP20X and AXP22X PMICs' AC power supply
 +
 +Required Properties:
-+ - compatible, one of:
-+			"x-powers,axp209-battery-power-supply"
-+			"x-powers,axp221-battery-power-supply"
-+ - io-channels: phandles to battery voltage, charge and discharge
-+ currents ADC channels
-+ - io-channel-names = "batt_v", "batt_chrg_i", "batt_dischrg_i";
++ - compatible: One of:
++			"x-powers,axp202-ac-power-supply"
++			"x-powers,axp221-ac-power-supply"
 +
-+This node is a subnode of the axp20x/axp22x PMIC.
++More Required Properties for AXP20X PMICs:
++ - io-channels: phandles to ACIN voltage and current ADC channels
++ - io-channel-names = "acin_v", "acin_i";
 +
-+The AXP20X and AXP22X can read the battery voltage, charge and discharge
-+currents of the battery by reading ADC channels from the AXP20X/AXP22X
-+ADC.
++This node is a subnode of the axp20x PMIC.
++
++The AXP20X can read the current current and voltage supplied by AC by
++reading ADC channels from the AXP20X ADC.
++
++The AXP22X is only able to tell if an AC power supply is present and
++usable.
 +
 +Example:
 +
 +&axp209 {
-+	battery_power_supply: battery_power_supply {
-+		compatible = "x-powers,axp209-battery-power-supply";
-+		io-channels = <&axp209_adc 7>, <&axp209_adc 8>,
-+			<&axp209_adc 9>;
-+		io-channel-names = "batt_v", "batt_chrg_i",
-+			"batt_dischrg_i";
-+	}
++	ac_power_supply: ac_power_supply {
++		compatible = "x-powers,axp202-ac-power-supply";
++		io-channels = <&axp209_adc 0>, <&axp209_adc 1>;
++		io-channel-names = "acin_v", "acin_i";
++	};
 +};
 -- 
 2.9.3
