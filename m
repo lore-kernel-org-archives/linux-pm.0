@@ -1,53 +1,57 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: s3c64xx: remove incorrect __init annotation
-Date: Mon, 2 Jan 2017 12:39:03 +0530
-Message-ID: <20170102070903.GC8588@vireshk-i7>
-References: <20161216090625.2235668-1-arnd@arndb.de>
+From: Peter Rosin <peda@axentia.se>
+Subject: Re: [PATCH v2 3/3] power: supply: bq24735-charger: allow chargers to
+ share the ac-detect gpio
+Date: Mon, 2 Jan 2017 09:31:24 +0100
+Message-ID: <c3d66181-3076-0d0f-d74e-ec0205b3f547@axentia.se>
+References: <1481673405-4547-1-git-send-email-peda@axentia.se>
+ <1481673405-4547-4-git-send-email-peda@axentia.se>
+ <20161214165921.jsatcznbljd7anqi@earth>
+ <20161214170114.ckozfple475kqajh@earth>
+ <e1667d9d-17bf-2fe5-8a65-af73b6507cbd@axentia.se>
+ <CACRpkda+7XLBMo11vB_V030or3b+-LRufrziVVgct4Gr_2E+KQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f41.google.com ([74.125.83.41]:36450 "EHLO
-        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750883AbdABHJH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 02:09:07 -0500
-Received: by mail-pg0-f41.google.com with SMTP id f188so201059210pgc.3
-        for <linux-pm@vger.kernel.org>; Sun, 01 Jan 2017 23:09:07 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20161216090625.2235668-1-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CACRpkda+7XLBMo11vB_V030or3b+-LRufrziVVgct4Gr_2E+KQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Alexandre Courbot <gnurou@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 16-12-16, 10:06, Arnd Bergmann wrote:
-> s3c64xx_cpufreq_config_regulator is incorrectly annotated
-> as __init, since the caller is also not init:
+On 2016-12-30 08:49, Linus Walleij wrote:
+> On Wed, Dec 14, 2016 at 6:41 PM, Peter Rosin <peda@axentia.se> wrote:
+>> On 2016-12-14 18:01, Sebastian Reichel wrote:
+>>> [of course I forgot to actually add gpio people, let's try again]
+>>>
+>>> On Wed, Dec 14, 2016 at 05:59:21PM +0100, Sebastian Reichel wrote:
+>>>> Hi,
+>>>>
+>>>> On Wed, Dec 14, 2016 at 12:56:45AM +0100, Peter Rosin wrote:
+>>>>> If several parallel bq24735 chargers have their ac-detect gpios wired
+>>>>> together (or if only one of the parallel bq24735 chargers have its
+>>>>> ac-detect pin wired to a gpio, and the others are assumed to react the
+>>>>> same), then all driver instances need to check the same gpio. But the
+>>>>> gpio subsystem does not allow sharing gpios, so handle that locally.
+>>>>
+>>>> Adding GPIO subsystem people to see if they can come up with
+>>>> something in the gpiod API for this usecase.
+>>
+>> Right, I don't like how my new code steps away from gpio descriptors.
 > 
-> WARNING: vmlinux.o(.text+0x92fe1c): Section mismatch in reference from the function s3c64xx_cpufreq_driver_init() to the function .init.text:s3c64xx_cpufreq_config_regulator()
+> The issue of shared gpiods have come up over and over again.
+> For example the messy regulator code needs this too.
 > 
-> With modern gcc versions, the function gets inline, so we don't
-> see the warning, this only happens with gcc-4.6 and older.
+> It is better if we implement something like gpiod_get_shared()
+> in the gpiolib of these cases.
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->  drivers/cpufreq/s3c64xx-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> index 176e84cc3991..0cb9040eca49 100644
-> --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> @@ -107,7 +107,7 @@ static int s3c64xx_cpufreq_set_target(struct cpufreq_policy *policy,
->  }
->  
->  #ifdef CONFIG_REGULATOR
-> -static void __init s3c64xx_cpufreq_config_regulator(void)
-> +static void s3c64xx_cpufreq_config_regulator(void)
->  {
->  	int count, v, i, found;
->  	struct cpufreq_frequency_table *freq;
+> Just put a refcount in struct gpio_desc in drivers/gpio/gpiolib.h
+> for this case I guess?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I actually tried that, but ran into atomicy issues with the
+FLAG_REQUESTED bit and gave up. Didn't really try all that hard
+though, but I simply didn't feel comfortable with going near such
+fundamental designs...
 
--- 
-viresh
+Cheers,
+peda
