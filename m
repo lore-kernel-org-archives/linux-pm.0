@@ -1,7 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH 20/22] ARM: dtsi: axp22x: add battery power supply subnode
-Date: Mon,  2 Jan 2017 17:37:20 +0100
-Message-ID: <20170102163723.7939-21-quentin.schulz@free-electrons.com>
+Subject: [PATCH 21/22] ARM: dts: sun8i: sina33: enable battery power supply
+ subnode
+Date: Mon,  2 Jan 2017 17:37:21 +0100
+Message-ID: <20170102163723.7939-22-quentin.schulz@free-electrons.com>
 References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,35 +22,28 @@ To: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP22X PMIC exposes battery supply various data such as
-the battery status (charging, discharging, full, dead), current max
-limit, current current, battery capacity (in percentage), voltage max
-limit, current voltage, and battery capacity (in Ah).
-
-This adds the battery power supply subnode for AXP22X PMIC.
+The Sinlinx SinA33 has an AXP223 PMIC and a battery connector, thus, we
+enable the battery power supply subnode in its Device Tree.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
- arch/arm/boot/dts/axp22x.dtsi | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
-index aba7fde..c4a64a5 100644
---- a/arch/arm/boot/dts/axp22x.dtsi
-+++ b/arch/arm/boot/dts/axp22x.dtsi
-@@ -62,6 +62,13 @@
- 		#io-channel-cells = <1>;
- 	};
+diff --git a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
+index bf53408..2fe9299 100644
+--- a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
++++ b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
+@@ -151,6 +151,10 @@
+ 	status = "okay";
+ };
  
-+	battery_power_supply: battery_power_supply {
-+		compatible = "x-powers,axp221-battery-power-supply";
-+		io-channels = <&axp221_adc 1>, <&axp221_adc 2>, <&axp221_adc 3>;
-+		io-channel-names = "batt_v", "batt_chrg_i", "batt_dischrg_i";
-+		status = "disabled";
-+	};
++&battery_power_supply {
++	status = "okay";
++};
 +
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
+ &reg_aldo1 {
+ 	regulator-always-on;
+ 	regulator-min-microvolt = <3000000>;
 -- 
 2.9.3
