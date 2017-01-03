@@ -1,51 +1,66 @@
-From: Roger Shimizu <rogershimizu@gmail.com>
-Subject: Re: [PATCH v3 2/3] DT: bingdings: power: reset: add linkstation-reset
- doc
-Date: Tue, 3 Jan 2017 23:11:19 +0900
-Message-ID: <CAEQ9gEnKSDefeF_5WVRiu8pw5gnBWRoqYgMufoowox1ArD6e7w@mail.gmail.com>
-References: <20161216100501.18173-1-rogershimizu@gmail.com>
- <20161227070611.14852-1-rogershimizu@gmail.com>
- <20161227070611.14852-3-rogershimizu@gmail.com>
- <519e07d0-9b73-4445-ec5e-7ea2cbc1b814@gmail.com>
- <20170103131256.GB30197@lunn.ch>
+From: ayaka <ayaka-xPW3/0Ywev/iB9QmIjCX8w@public.gmane.org>
+Subject: Re: [PATCH v4 0/5] thermal: fixes the rockchip thermal
+Date: Wed, 4 Jan 2017 00:30:40 +0800
+Message-ID: <cfa99a04-b865-c2e3-274a-a8550649bf12@soulik.info>
+References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
+ <f68125d7-01bb-d0d9-d04f-8d1b5cff19a2@soulik.info>
+ <8bdcea3e-0f06-da29-cb17-6b258440900a@rock-chips.com>
+ <8e34e000-c1c7-20c9-2168-a31c85b3fa9a@rock-chips.com>
+ <c2b13d66-e89e-02c8-3a68-6eb57627aaf2@163.com>
+ <9ee3d263-8de3-eb95-034d-774ae216329f@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170103131256.GB30197@lunn.ch>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Ryan Tandy <ryan@nardis.ca>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <9ee3d263-8de3-eb95-034d-774ae216329f-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Caesar Wang <sasukewxt-9Onoh4P/yGk@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Randy Li <randy.li-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Florian, Andrew,
-
-Thanks for your comments!
-
-On Tue, Jan 3, 2017 at 10:12 PM, Andrew Lunn <andrew@lunn.ch> wrote:
->> > +
->> > +Required Properties:
->> > +- compatible: Should be "linkstation,power-off"
->> > +- reg: Address and length of the register set for UART1
->>
->> Humm, should we instead have a phandle to the uart1 node?
->
-> Probably. Again, this is to do with copying the QNAP driver. I was
-> young, new to device tree, and i just did a logical conversion of the
-> existing code, and did not at the time understand phandles, etc.
-
-Can you tell me where should I place this document?
-or simply remove it?
-
-Cheers,
--- 
-Roger Shimizu, GMT +9 Tokyo
-PGP/GPG: 4096R/6C6ACD6417B3ACB1
+CgpPbiAwMS8wMy8yMDE3IDA5OjEzIEFNLCBSYW5keSBMaSB3cm90ZToKPgo+Cj4gT24gMDEvMDMv
+MjAxNyAwOTowMiBBTSwgQ2Flc2FyIFdhbmcgd3JvdGU6Cj4+Cj4+IOWcqCAyMDE35bm0MDHmnIgw
+M+aXpSAwNzo1NywgUmFuZHkgTGkg5YaZ6YGTOgo+Pj4KPj4+IE9uIDAxLzAyLzIwMTcgMDk6MTYg
+UE0sIENhZXNhciBXYW5nIHdyb3RlOgo+Pj4+IOWcqCAyMDE25bm0MTLmnIgzMeaXpSAwMDoxMSwg
+YXlha2Eg5YaZ6YGTOgo+Pj4+Pgo+Pj4+PiBCVFcsIENhZXNhciBoYXZlIHlvdSBldmVyIG1ldCB0
+aGlzIGF0IFJLMzI4OCBhdCBib290aW5nIHRpbWU/Cj4+Pj4+IFsgICAgOC40MzA1ODJdIHRoZXJt
+YWwgdGhlcm1hbF96b25lMTogY3JpdGljYWwgdGVtcGVyYXR1cmUKPj4+Pj4gcmVhY2hlZCgxMjUg
+Qyksc2h1dHRpbmcgZG93bgo+Pj4+PiBbICAgIDguNDM5MDM4XSB0aGVybWFsIHRoZXJtYWxfem9u
+ZTI6IGNyaXRpY2FsIHRlbXBlcmF0dXJlCj4+Pj4+IHJlYWNoZWQoMTI1IEMpLHNodXR0aW5nIGRv
+d24KPj4+Pj4gWyAgICA4LjQ1NjM0NF0gdGhlcm1hbCB0aGVybWFsX3pvbmUxOiBjcml0aWNhbCB0
+ZW1wZXJhdHVyZQo+Pj4+PiByZWFjaGVkKDEyNSBDKSxzaHV0dGluZyBkb3duCj4+Pj4+IFsgICAg
+OC40NjUyOThdIHRoZXJtYWwgdGhlcm1hbF96b25lMjogY3JpdGljYWwgdGVtcGVyYXR1cmUKPj4+
+Pj4gcmVhY2hlZCgxMjUgQyksc2h1dHRpbmcgZG93bgo+Pj4+Cj4+Pj4gMTI1Qz8gdGhlIHRoZXJt
+YWwgem9uZSBpc24ndCB0aGUgdXBzdHJlYW0ga2VybmVsLCB3aGF0J3MgdGhlIGtlcm5lbAo+Pj4+
+IHZlcnNpb24/Cj4+PiBUaGV5IGhhdmUgYmVlbiBtZXJnZWQgaW50byB0aGUgbGludXgtbmV4dC4K
+Pj4KPj4gUmVhbGx5Pwo+PiBJIHNhdyB0aGUgOTAgZGVncmVlIGlzIHRoZSBjcml0aWNhbCB0ZW1w
+ZXJhdHVyZSBvbiByazMyODggZHRzIC4KPiBZZXMgSSBkby4KPj4ga2VybmVsJCB2aSBhcmNoL2Fy
+bS9ib290L2R0cy9yazMyODguZHRzaQo+PiAgICAgICAgICAgICBjcHVfY3JpdDogY3B1X2NyaXQg
+ewo+PiAgICAgICAgICAgICAgICAgICAgIHRlbXBlcmF0dXJlID0gPDkwMDAwPjsgLyogbWlsbGlj
+ZWxzaXVzICovCj4+ICAgICAgICAgICAgICAgICAgICAgaHlzdGVyZXNpcyA9IDwyMDAwPjsgLyog
+bWlsbGljZWxzaXVzICovCj4+ICAgICAgICAgICAgICAgICAgICAgdHlwZSA9ICJjcml0aWNhbCI7
+Cj4+ICAgICAgICAgICAgICAgICB9Owo+Pgo+Pj4+IEFueXdheSwgbG9vayBsaWtlLCAgdGhlIFRT
+SFVUIGlzc3VlLiBEbyB5b3UgaGF2ZSB0aGUgYmVsb3cgcGF0Y2hlcwo+Pj4+IGZvciB5b3VyIGxp
+bnV4IGtlcm5lbD8KPj4+PiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGlu
+dXgtYXJtLWtlcm5lbC8yMDE1LU9jdG9iZXIvMzgwNDQ2Lmh0bWwgCj4+Pj4KPj4+Pgo+Pj4gTm8s
+IGNvdWxkIHlvdSByZXN1Ym1pdCB0aG9zZSBwYXRjaGVzID8KPj4KPj4gVGhlc2UgcGF0Y2hlcyBo
+YWQgbWVyZ2VkIGZvciB1cHN0cmVhbS4KPiBTb3JyeSwgaXQgaXMgbXkgZmF1bHQsIEkgbWlzdGFr
+ZSB0aGF0IGNvbW1pdC4gVGhvc2UgcGF0Y2hlcyBhcmUgbWVyZ2VkIAo+IGluIG5leHQtMjAxNjEy
+MjQuIEkgd291bGQgYnJpbmcgYSBib2FyZCBmb3IgeW91IGxhdGVyLgpJIGNoZWNrIHRoZSBzY2hl
+bWF0aWMsIHRoZSBvdHAgaW50ZXJydXB0IGlzIG5vdCB1c2VkIGF0IGZpcmVmbHkgcmVsb2FkIApu
+b3IgY29ubmVjdGVkIHRvIHRoZSBjb250cm9sIG9mIFBNSUMuCkkgYWxzbyBjaGVjayBwb3dlciBz
+dXBwbHksIHRoZSBwb3dlciBpcyBQRF9QRVJJIGRvbWFpbiBjb21lcyBmcm9tIApWRF9MT0dJQyB3
+aGljaCBpcyBhbHdheXMgb24gYWxsIHRoZSBwbGF0Zm9ybS4KSXQgbW9yZSBsaWtlbHkgdGhlIHRz
+YWRjIGRvZXNuJ3QgcmVwb3J0IGNvcnJlY3RseSB0ZW1wZXJhdHVyZSB2YWx1ZT8KPj4KPj4gLUNh
+ZXNhcgo+Pgo+Pgo+CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KTGludXgtcm9ja2NoaXAgbWFpbGluZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxpc3RzLmlu
+ZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1yb2NrY2hpcAo=
