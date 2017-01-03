@@ -1,99 +1,61 @@
-From: Randy Li <randy.li-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+From: Caesar Wang <sasukewxt@163.com>
 Subject: Re: [PATCH v4 0/5] thermal: fixes the rockchip thermal
-Date: Tue, 3 Jan 2017 07:57:00 +0800
-Message-ID: <8e34e000-c1c7-20c9-2168-a31c85b3fa9a@rock-chips.com>
+Date: Tue, 3 Jan 2017 09:02:22 +0800
+Message-ID: <c2b13d66-e89e-02c8-3a68-6eb57627aaf2@163.com>
 References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
  <f68125d7-01bb-d0d9-d04f-8d1b5cff19a2@soulik.info>
  <8bdcea3e-0f06-da29-cb17-6b258440900a@rock-chips.com>
+ <8e34e000-c1c7-20c9-2168-a31c85b3fa9a@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <8bdcea3e-0f06-da29-cb17-6b258440900a-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, ayaka <ayaka-xPW3/0Ywev/iB9QmIjCX8w@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from m50-132.163.com ([123.125.50.132]:59408 "EHLO m50-132.163.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751960AbdACBGR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 2 Jan 2017 20:06:17 -0500
+In-Reply-To: <8e34e000-c1c7-20c9-2168-a31c85b3fa9a@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Randy Li <randy.li@rock-chips.com>, ayaka <ayaka@soulik.info>
+Cc: Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, rui.zhang@intel.com
 
-CgpPbiAwMS8wMi8yMDE3IDA5OjE2IFBNLCBDYWVzYXIgV2FuZyB3cm90ZToKPiDlnKggMjAxNuW5
-tDEy5pyIMzHml6UgMDA6MTEsIGF5YWthIOWGmemBkzoKPj4KPj4gQlRXLCBDYWVzYXIgaGF2ZSB5
-b3UgZXZlciBtZXQgdGhpcyBhdCBSSzMyODggYXQgYm9vdGluZyB0aW1lPwo+PiBbICAgIDguNDMw
-NTgyXSB0aGVybWFsIHRoZXJtYWxfem9uZTE6IGNyaXRpY2FsIHRlbXBlcmF0dXJlIAo+PiByZWFj
-aGVkKDEyNSBDKSxzaHV0dGluZyBkb3duCj4+IFsgICAgOC40MzkwMzhdIHRoZXJtYWwgdGhlcm1h
-bF96b25lMjogY3JpdGljYWwgdGVtcGVyYXR1cmUgCj4+IHJlYWNoZWQoMTI1IEMpLHNodXR0aW5n
-IGRvd24KPj4gWyAgICA4LjQ1NjM0NF0gdGhlcm1hbCB0aGVybWFsX3pvbmUxOiBjcml0aWNhbCB0
-ZW1wZXJhdHVyZSAKPj4gcmVhY2hlZCgxMjUgQyksc2h1dHRpbmcgZG93bgo+PiBbICAgIDguNDY1
-Mjk4XSB0aGVybWFsIHRoZXJtYWxfem9uZTI6IGNyaXRpY2FsIHRlbXBlcmF0dXJlIAo+PiByZWFj
-aGVkKDEyNSBDKSxzaHV0dGluZyBkb3duCj4KPiAxMjVDPyB0aGUgdGhlcm1hbCB6b25lIGlzbid0
-IHRoZSB1cHN0cmVhbSBrZXJuZWwsIHdoYXQncyB0aGUga2VybmVsIAo+IHZlcnNpb24/ClRoZXkg
-aGF2ZSBiZWVuIG1lcmdlZCBpbnRvIHRoZSBsaW51eC1uZXh0Lgo+IEFueXdheSwgbG9vayBsaWtl
-LCAgdGhlIFRTSFVUIGlzc3VlLiBEbyB5b3UgaGF2ZSB0aGUgYmVsb3cgcGF0Y2hlcyBmb3IgCj4g
-eW91ciBsaW51eCBrZXJuZWw/Cj4gaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvcGlwZXJtYWls
-L2xpbnV4LWFybS1rZXJuZWwvMjAxNS1PY3RvYmVyLzM4MDQ0Ni5odG1sIAo+Ck5vLCBjb3VsZCB5
-b3UgcmVzdWJtaXQgdGhvc2UgcGF0Y2hlcyA/Cj4KPgo+IC1DYWVzYXIKPgo+Pgo+PiBPbiAxMi8x
-Mi8yMDE2IDA3OjA1IFBNLCBDYWVzYXIgV2FuZyB3cm90ZToKPj4+IFRoZXJlIGFyZSBmaXZlIHBh
-dGNoZXMgcG9zdGVkIGZvciB1cHN0cmVhbS4KPj4+IDg5MjY3YjUgdGhlcm1hbDogcm9ja2NoaXA6
-IGltcHJvdmUgY29udmVyc2lvbiBlcnJvciBtZXNzYWdlcwo+Pj4gYTBiNTY0OSB0aGVybWFsOiBy
-b2NrY2hpcDogZG9uJ3QgcGFzcyB0YWJsZSBzdHJ1Y3RzIGJ5IHZhbHVlCj4+PiBiY2VlZDkyIHRo
-ZXJtYWw6IHJvY2tjaGlwOiBmaXhlcyBpbnZhbGlkIHRlbXBlcmF0dXJlIGNhc2UKPj4+IDMwYmU2
-ZDAgdGhlcm1hbDogcm9ja2NoaXA6IG9wdGltaXplIHRoZSBjb252ZXJzaW9uIHRhYmxlCj4+PiAz
-NTYzNmU5IHRoZXJtYWw6IHJvY2tjaGlwOiBoYW5kbGUgdGhlIHNldF90cmlwcyB3aXRob3V0IHRo
-ZSB0cmlwIAo+Pj4gcG9pbnRzLgo+Pj4gLS0gCj4+Pgo+Pj4gSGlzdG9yeSB2ZXJzaW9uOgo+Pj4g
-VjE6Cj4+PiBodHRwczovL2xrbWwub3JnL2xrbWwvMjAxNi8xMS8yMi8yNTAKPj4+IFYyOgo+Pj4g
-aHR0cHM6Ly9sa21sLm9yZy9sa21sLzIwMTYvMTEvMjMvMzQ4Cj4+PiBWMzoKPj4+IGh0dHA6Ly93
-d3cubWFpbC1hcmNoaXZlLmNvbS9saW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnL21zZzEyODE0
-MzIuaHRtbCAKPj4+Cj4+PiAtLS0KPj4+Cj4+PiBCcmFpbiBwb3N0ZWQgdGhlIGJlbG93IHBhdGNo
-ZXMgZm9yIHVwc3RyZWFtLgo+Pj4gODkyNjdiNSB0aGVybWFsOiByb2NrY2hpcDogaW1wcm92ZSBj
-b252ZXJzaW9uIGVycm9yIG1lc3NhZ2VzCj4+PiBhMGI1NjQ5IHRoZXJtYWw6IHJvY2tjaGlwOiBk
-b24ndCBwYXNzIHRhYmxlIHN0cnVjdHMgYnkgdmFsdWUKPj4+IFRoYXQgbWFrZSBzZW5zZSB0byBp
-bXByb3ZlIGVmZmljaWVuY3kKPj4+Cj4+PiBDYWVzYXIgcG9zdCB0aGUgYmVsb3cgcGF0Y2hlcyBm
-b3IgdXBzdHJlYW0uCj4+PiBiY2VlZDkyIHRoZXJtYWw6IHJvY2tjaGlwOiBmaXhlcyBpbnZhbGlk
-IHRlbXBlcmF0dXJlIGNhc2UKPj4+IDMwYmU2ZDAgdGhlcm1hbDogcm9ja2NoaXA6IG9wdGltaXpl
-IHRoZSBjb252ZXJzaW9uIHRhYmxlCj4+PiAzNTYzNmU5IHRoZXJtYWw6IHJvY2tjaGlwOiBoYW5k
-bGUgdGhlIHNldF90cmlwcyB3aXRob3V0IHRoZSB0cmlwIAo+Pj4gcG9pbnRzLgo+Pj4gVGhhdCB3
-aWxsIGZpeGVzIHNvbWUgaXNzdWVzIGluIHNwZWNpYWwgY2FzZXMuCj4+PiAtLSAKPj4+Cj4+PiBB
-bnl3YXksIHRoaXMgc2VyaWVzIHBhdGNoZXMgc2hvdWxkIGNhbiBpbXByb3ZlIHRoZSByb2NrY2hp
-cCB0aGVybWFsIAo+Pj4gZHJpdmVyLgo+Pj4KPj4+Cj4+PiBDaGFuZ2VzIGluIHY0Ogo+Pj4gLSBB
-cyBFZHVhcmRvIGFuZCBCcmlhbiBjb21tbmV0cyBvbgo+Pj4gICAgaHR0cHM6Ly9wYXRjaHdvcmsu
-a2VybmVsLm9yZy9wYXRjaC85NDQ5MzAxCj4+PiAtIFByaW50IGEgYmV0dGVyIG5hbWUuCj4+PiAt
-IEFzIEVkdWFyZG8gY29tbWVudGVkIG9uIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0
-Y2gvOTQ0OTMxMy8KPj4+IC0gcmVtb3ZlIHRoZSBCcmFpbidzIHJldmlldyBmb3IgcHJldmlvdXMg
-dmVyc2lvbiwgc2luY2UgdGhlIG5ldyB2ZXJzaW9uCj4+PiAgICB1cGRhdGUgc29tZXRoaW5nLgo+
-Pj4KPj4+IENoYW5nZXMgaW4gdjM6Cj4+PiAtIGZpeCB0cml2aWFsIHRoaW5nIGZvciBlcnJvciBt
-ZXNzYWdlIG5kIHJldHVybiB2YWx1ZS4KPj4+IC0gY2hhbmdlIHRoZSBjb21taXQuCj4+PiAtIEZp
-eGVzIHNvbWV0aGluZyBhcyBCcmlhbiBjb21tZW50cyBvbgo+Pj4KPj4+IENoYW5nZXMgaW4gdjI6
-Cj4+PiAtIEFzIEJyaWFuIGNvbW1uZXRzIHRoYXQgcmVzdHJ1Y3R1cmUgdGhpcyB0byBwYXNzIGVy
-cm9yIGNvZGVzIGJhY2sgCj4+PiB0byB0aGUKPj4+ICAgIHVwcGVyIGxheWVycy4KPj4+IC0gSW1w
-cm92ZSB0aGUgY29tbWl0IG1lc3NhZ2UuCj4+PiAtIGltcHJvdmUgdGhlIGNvbW1pdCBhcyBCcmlh
-biBjb21tbmV0cyBvbiAKPj4+IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvOTQ0
-MDk4NQo+Pj4gLSBGaXhlcyBzb21ldGhpbmcgYXMgQnJpYW4gY29tbWVudHMgb24KPj4+ICAgIGh0
-dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvOTQ0MDk4OS4KPj4+Cj4+PiBDaGFuZ2Vz
-IGluIHYxOgo+Pj4gLSBUaGUgb3JpZ2luYWwgQnJpYW4gcG9zdGVkIG9uIAo+Pj4gaHR0cHM6Ly9w
-YXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC85NDM3Njg2Cj4+PiAgICBOb3RlOiBpdCdkIHByb2Jh
-Ymx5IGJlIGV2ZW4gbmljZXIgdG8ga25vdyB3aGljaCBzZW5zb3IgdGhpcyB3YXMsIAo+Pj4gYnV0
-IHdlJ3ZlCj4+PiAgICBraW5kYSBhYnN0cmFjdGVkIHRoYXQgb25lIGF3YXkgYnkgdGhpcyBwb2lu
-dC4uLgo+Pj4gLSBUaGUgb3JpZ2luYWwgQnJpYW4gcG9zdGVkIG9uIAo+Pj4gaHR0cHM6Ly9wYXRj
-aHdvcmsua2VybmVsLm9yZy9wYXRjaC85NDM3Njg3Cj4+Pgo+Pj4gQnJpYW4gTm9ycmlzICgyKToK
-Pj4+ICAgIHRoZXJtYWw6IHJvY2tjaGlwOiBpbXByb3ZlIGNvbnZlcnNpb24gZXJyb3IgbWVzc2Fn
-ZXMKPj4+ICAgIHRoZXJtYWw6IHJvY2tjaGlwOiBkb24ndCBwYXNzIHRhYmxlIHN0cnVjdHMgYnkg
-dmFsdWUKPj4+Cj4+PiBDYWVzYXIgV2FuZyAoMyk6Cj4+PiAgICB0aGVybWFsOiByb2NrY2hpcDog
-Zml4ZXMgaW52YWxpZCB0ZW1wZXJhdHVyZSBjYXNlCj4+PiAgICB0aGVybWFsOiByb2NrY2hpcDog
-b3B0aW1pemUgdGhlIGNvbnZlcnNpb24gdGFibGUKPj4+ICAgIHRoZXJtYWw6IHJvY2tjaGlwOiBo
-YW5kbGUgc2V0X3RyaXBzIHdpdGhvdXQgdGhlIHRyaXAgcG9pbnRzCj4+Pgo+Pj4gICBkcml2ZXJz
-L3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5jIHwgMTUzIAo+Pj4gKysrKysrKysrKysrKysrKysr
-KysrKysrLS0tLS0tLS0tLS0tLQo+Pj4gICAxIGZpbGUgY2hhbmdlZCwgMTAwIGluc2VydGlvbnMo
-KyksIDUzIGRlbGV0aW9ucygtKQo+Pj4KPj4KPj4KPj4KPj4KPgo+Cj4KPiBfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IExpbnV4LXJvY2tjaGlwIG1haWxp
-bmcgbGlzdAo+IExpbnV4LXJvY2tjaGlwQGxpc3RzLmluZnJhZGVhZC5vcmcKPiBodHRwOi8vbGlz
-dHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LXJvY2tjaGlwCgoKCl9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkxpbnV4LXJvY2tjaGlw
-IG1haWxpbmcgbGlzdApMaW51eC1yb2NrY2hpcEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9s
-aXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtcm9ja2NoaXAK
+
+在 2017年01月03日 07:57, Randy Li 写道:
+>
+> On 01/02/2017 09:16 PM, Caesar Wang wrote:
+>> 在 2016年12月31日 00:11, ayaka 写道:
+>>>
+>>> BTW, Caesar have you ever met this at RK3288 at booting time?
+>>> [    8.430582] thermal thermal_zone1: critical temperature 
+>>> reached(125 C),shutting down
+>>> [    8.439038] thermal thermal_zone2: critical temperature 
+>>> reached(125 C),shutting down
+>>> [    8.456344] thermal thermal_zone1: critical temperature 
+>>> reached(125 C),shutting down
+>>> [    8.465298] thermal thermal_zone2: critical temperature 
+>>> reached(125 C),shutting down
+>>
+>> 125C? the thermal zone isn't the upstream kernel, what's the kernel 
+>> version?
+> They have been merged into the linux-next.
+
+Really?
+I saw the 90 degree is the critical temperature on rk3288 dts .
+kernel$ vi arch/arm/boot/dts/rk3288.dtsi
+             cpu_crit: cpu_crit {
+                     temperature = <90000>; /* millicelsius */
+                     hysteresis = <2000>; /* millicelsius */
+                     type = "critical";
+                 };
+
+>> Anyway, look like,  the TSHUT issue. Do you have the below patches 
+>> for your linux kernel?
+>> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/380446.html 
+>>
+> No, could you resubmit those patches ?
+
+These patches had merged for upstream.
+
+-Caesar
+
