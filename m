@@ -1,82 +1,137 @@
-From: Randy Li <randy.li@rock-chips.com>
-Subject: Re: [PATCH v4 0/5] thermal: fixes the rockchip thermal
-Date: Tue, 3 Jan 2017 09:13:59 +0800
-Message-ID: <9ee3d263-8de3-eb95-034d-774ae216329f@rock-chips.com>
-References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
- <f68125d7-01bb-d0d9-d04f-8d1b5cff19a2@soulik.info>
- <8bdcea3e-0f06-da29-cb17-6b258440900a@rock-chips.com>
- <8e34e000-c1c7-20c9-2168-a31c85b3fa9a@rock-chips.com>
- <c2b13d66-e89e-02c8-3a68-6eb57627aaf2@163.com>
+From: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v3 1/3] power: reset: add linkstation-reset driver
+Date: Mon, 2 Jan 2017 21:19:10 -0800
+Message-ID: <fff132e9-a178-6948-676e-6a4d24b6c4d6@gmail.com>
+References: <20161216100501.18173-1-rogershimizu@gmail.com>
+ <20161227070611.14852-1-rogershimizu@gmail.com>
+ <20161227070611.14852-2-rogershimizu@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.135]:54817 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756034AbdACBOJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Jan 2017 20:14:09 -0500
-In-Reply-To: <c2b13d66-e89e-02c8-3a68-6eb57627aaf2@163.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20161227070611.14852-2-rogershimizu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Roger Shimizu <rogershimizu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Martin Michlmayr <tbm-R+vWnYXSFMfQT0dZR+AlfA@public.gmane.org>, Sylver Bruneau <sylver.bruneau-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>, Herbert Valerio Riedel <hvr-mXXj517/zsQ@public.gmane.org>, Ryan Tandy <ryan-pRYBVO4bdZ33fQ9qLvQP4Q@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Caesar Wang <sasukewxt@163.com>
-Cc: ayaka <ayaka@soulik.info>, Caesar Wang <wxt@rock-chips.com>, linux-pm@vger.kernel.org, briannorris@chromium.org, linux-kernel@vger.kernel.org, smbarber@chromium.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, rui.zhang@intel.com
 
+Hi Roger,
 
+On 12/26/2016 11:06 PM, Roger Shimizu wrote:
+> Buffalo Linkstation / KuroBox and their variants need magic command
+> sending to UART1 to power-off.
+> 
+> Power driver linkstation-reset implements the magic command and I/O
+> routine, which come from files listed below:
+>   - arch/arm/mach-orion5x/kurobox_pro-setup.c
+>   - arch/arm/mach-orion5x/terastation_pro2-setup.c
 
-On 01/03/2017 09:02 AM, Caesar Wang wrote:
->
-> 在 2017年01月03日 07:57, Randy Li 写道:
->>
->> On 01/02/2017 09:16 PM, Caesar Wang wrote:
->>> 在 2016年12月31日 00:11, ayaka 写道:
->>>>
->>>> BTW, Caesar have you ever met this at RK3288 at booting time?
->>>> [    8.430582] thermal thermal_zone1: critical temperature
->>>> reached(125 C),shutting down
->>>> [    8.439038] thermal thermal_zone2: critical temperature
->>>> reached(125 C),shutting down
->>>> [    8.456344] thermal thermal_zone1: critical temperature
->>>> reached(125 C),shutting down
->>>> [    8.465298] thermal thermal_zone2: critical temperature
->>>> reached(125 C),shutting down
->>>
->>> 125C? the thermal zone isn't the upstream kernel, what's the kernel
->>> version?
->> They have been merged into the linux-next.
->
-> Really?
-> I saw the 90 degree is the critical temperature on rk3288 dts .
-Yes I do.
-> kernel$ vi arch/arm/boot/dts/rk3288.dtsi
->             cpu_crit: cpu_crit {
->                     temperature = <90000>; /* millicelsius */
->                     hysteresis = <2000>; /* millicelsius */
->                     type = "critical";
->                 };
->
->>> Anyway, look like,  the TSHUT issue. Do you have the below patches
->>> for your linux kernel?
->>> http://lists.infradead.org/pipermail/linux-arm-kernel/2015-October/380446.html
->>>
->> No, could you resubmit those patches ?
->
-> These patches had merged for upstream.
-Sorry, it is my fault, I mistake that commit. Those patches are merged 
-in next-20161224. I would bring a board for you later.
->
-> -Caesar
->
->
+Interestingly, I submitted a patch doing nearly the same thing recently
+after hacking on a Buffalo Terastation Pro II two days after yours
+without seeing yours:
 
+https://lkml.org/lkml/2016/12/28/273
+
+Some comments below.
+
+> +
+> +static void __iomem *base;
+> +static unsigned long tclk;
+> +static const struct reset_cfg *cfg;
+
+How about avoiding the singletons here and pass this down from the
+platform driver's private data after we (see below) also make use of a
+reboot notifier?
+
+> +
+> +static void linkstation_reset(void)
+> +{
+> +	const unsigned divisor = ((tclk + (8 * cfg->baud)) / (16 * cfg->baud));
+> +	int i;
+> +
+> +	pr_err("%s: triggering power-off...\n", __func__);
+> +
+> +	/* hijack UART1 and reset into sane state */
+> +	writel(0x83, UART1_REG(LCR));
+> +	writel(divisor & 0xff, UART1_REG(DLL));
+> +	writel((divisor >> 8) & 0xff, UART1_REG(DLM));
+> +	writel(cfg->magic[0], UART1_REG(LCR));
+> +	writel(cfg->magic[1], UART1_REG(IER));
+> +	writel(cfg->magic[2], UART1_REG(FCR));
+> +	writel(cfg->magic[3], UART1_REG(MCR));
+> +
+> +	/* send the power-off command to PIC */
+> +	for(i = 0; cfg->cmd[i][0] > 0; i ++) {
+> +		/* [0] is size of the command; command starts from [1] */
+> +		uart1_micon_send(base, &(cfg->cmd[i][1]), cfg->cmd[i][0]);
+> +	}
+> +}
+> +
+> +static int linkstation_reset_probe(struct platform_device *pdev)
+> +{
+> +	struct device_node *np = pdev->dev.of_node;
+> +	struct resource *res;
+> +	struct clk *clk;
+> +	char symname[KSYM_NAME_LEN];
+> +
+> +	const struct of_device_id *match =
+> +		of_match_node(linkstation_reset_of_match_table, np);
+> +	cfg = match->data;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	if (!res) {
+> +		dev_err(&pdev->dev, "Missing resource");
+> +		return -EINVAL;
+> +	}
+> +
+> +	base = devm_ioremap(&pdev->dev, res->start, resource_size(res));
+> +	if (!base) {
+> +		dev_err(&pdev->dev, "Unable to map resource");
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* We need to know tclk in order to calculate the UART divisor */
+> +	clk = devm_clk_get(&pdev->dev, NULL);
+> +	if (IS_ERR(clk)) {
+> +		dev_err(&pdev->dev, "Clk missing");
+> +		return PTR_ERR(clk);
+> +	}
+> +
+> +	tclk = clk_get_rate(clk);
+
+Does this work with the Terastation II which has not been converted to
+DT yet? Is tclk available through the CLK API there?
+
+> +
+> +	/* Check that nothing else has already setup a handler */
+> +	if (pm_power_off) {
+> +		lookup_symbol_name((ulong)pm_power_off, symname);
+> +		dev_err(&pdev->dev,
+> +			"pm_power_off already claimed %p %s",
+> +			pm_power_off, symname);
+> +		return -EBUSY;
+> +	}
+> +	pm_power_off = linkstation_reset;
+
+That seems a bit complicated, why not just assume that there will be
+either this driver used, or not at all?
+
+Also, you are supposed to register a reboot notifier to which you can
+pass private context:
+
+https://lkml.org/lkml/2016/12/28/275
+
+As indicated in my patch series, the UART1-attached micro controller
+does a lot more things that just providing reboot, which is why I chose
+to move this code to a MFD driver, as the starting point before adding
+support for LEDs, FAN, PWM, beeper which would be other types of devices.
+
+Is adding support for other peripherals on your TODO as well?
+
+Thanks!
 -- 
-Randy Li
-The third produce department
-===========================================================================
-This email message, including any attachments, is for the sole
-use of the intended recipient(s) and may contain confidential and
-privileged information. Any unauthorized review, use, disclosure or
-distribution is prohibited. If you are not the intended recipient, please
-contact the sender by reply e-mail and destroy all copies of the original
-message. [Fuzhou Rockchip Electronics, INC. China mainland]
-===========================================================================
-
+Florian
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
