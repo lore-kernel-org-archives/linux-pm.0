@@ -1,59 +1,48 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2 0/2] PM / Domains / OPP: Introduce
- domain-performance-state binding
-Date: Tue, 3 Jan 2017 16:37:54 +0530
-Message-ID: <20170103110754.GA14137@vireshk-i7>
-References: <cover.1481539827.git.viresh.kumar@linaro.org>
- <20161222181422.2cpmdfzeyxdi6vpa@rob-hp-laptop>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2] cpufreq: powernv: Add boost files to export
+ ultra-turbo frequencies
+Date: Tue, 3 Jan 2017 16:38:59 +0530
+Message-ID: <20170103110859.GB14137@vireshk-i7>
+References: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f48.google.com ([74.125.83.48]:35557 "EHLO
+        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934854AbdACLJD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 06:09:03 -0500
+Received: by mail-pg0-f48.google.com with SMTP id i5so149119712pgh.2
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2017 03:09:03 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20161222181422.2cpmdfzeyxdi6vpa@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nayak Rajendra <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+In-Reply-To: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Cc: rjw@rjwysocki.net, ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, svaidy@linux.vnet.ibm.com
 
-On 22-12-16, 12:14, Rob Herring wrote:
-> On Mon, Dec 12, 2016 at 04:26:17PM +0530, Viresh Kumar wrote:
-> > Hello,
-> > 
-> > Some platforms have the capability to configure the performance state of
-> > their Power Domains. The performance levels are represented by positive
-> > integer values, a lower value represents lower performance state.
-> > 
-> > We had some discussions about it in the past on the PM list [1], which is
-> > followed by discussions during the LPC. The outcome of all that was that we
-> > should extend Power Domain framework to support active state power management
-> > as well.
-> > 
-> > The power-domains until now were only concentrating on the idle state
-> > management of the device and this needs to change in order to reuse the
-> > infrastructure of power domains for active state management.
+On 03-01-17, 16:36, Shilpasri G Bhat wrote:
+> In P8+, Workload Optimized Frequency(WOF) provides the capability to
+> boost the cpu frequency based on the utilization of the other cpus
+> running in the chip. The On-Chip-Controller(OCC) firmware will control
+> the achievability of these frequencies depending on the power headroom
+> available in the chip. Currently the ultra-turbo frequencies provided
+> by this feature are exported along with the turbo and sub-turbo
+> frequencies as scaling_available_frequencies. This patch will export
+> the ultra-turbo frequencies separately as scaling_boost_frequencies in
+> WOF enabled systems. This patch will add the boost sysfs file which
+> can be used to disable/enable ultra-turbo frequencies.
 > 
-> >From a h/w perspective, are idle states really different from 
-> performance states? 
+> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+> Changes from v1:
+> - Print if WOF is enabled
+> - s/clean_notifiers/cleanup_notifiers
 > 
-> > 
-> > To get a complete picture of the proposed plan, following is what we
-> > need to do:
-> > - Create DT bindings to get domain performance state information for the
-> >   platforms.
-> 
-> I would do this last so you can evolve things if you're not certain 
-> about what the bindings should look like. You can always start with 
-> things in the kernel and add to DT later.
+>  drivers/cpufreq/powernv-cpufreq.c | 50 ++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 47 insertions(+), 3 deletions(-)
 
-Okay, I have just posted some code for this:
-
-lkml.kernel.org/r/cover.1483439894.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-
-Thanks for your inputs.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
