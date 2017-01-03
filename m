@@ -1,93 +1,152 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH 8/8] ARM: dts: imx6q-evi: Fix onboard hub reset line
-Date: Tue, 3 Jan 2017 14:33:31 +0800
-Message-ID: <1483425211-14473-9-git-send-email-peter.chen@nxp.com>
-References: <1483425211-14473-1-git-send-email-peter.chen@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1483425211-14473-1-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, heiko@sntech.de, stephen.boyd@linaro.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH V2] cpufreq: powernv: Add boost files to export ultra-turbo frequencies
+Date: Tue,  3 Jan 2017 16:36:00 +0530
+Message-ID: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:53911 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1756113AbdACLGS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 06:06:18 -0500
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.17/8.16.0.17) with SMTP id v03B41vh139631
+        for <linux-pm@vger.kernel.org>; Tue, 3 Jan 2017 06:06:17 -0500
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [125.16.236.5])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 27r9r2amg6-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2017 06:06:17 -0500
+Received: from localhost
+        by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+        Tue, 3 Jan 2017 16:36:14 +0530
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, svaidy@linux.vnet.ibm.com
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 
-From: Joshua Clayton <stillcompiling@gmail.com>
+In P8+, Workload Optimized Frequency(WOF) provides the capability to
+boost the cpu frequency based on the utilization of the other cpus
+running in the chip. The On-Chip-Controller(OCC) firmware will control
+the achievability of these frequencies depending on the power headroom
+available in the chip. Currently the ultra-turbo frequencies provided
+by this feature are exported along with the turbo and sub-turbo
+frequencies as scaling_available_frequencies. This patch will export
+the ultra-turbo frequencies separately as scaling_boost_frequencies in
+WOF enabled systems. This patch will add the boost sysfs file which
+can be used to disable/enable ultra-turbo frequencies.
 
-Previously the onboard hub was made to work by treating its
-reset gpio as a regulator enable.
-Get rid of that kludge now that pwseq has added reset gpio support
-Move pin muxing the hub reset pin into the usbh1 group
-
-Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
 ---
- arch/arm/boot/dts/imx6q-evi.dts | 25 +++++++------------------
- 1 file changed, 7 insertions(+), 18 deletions(-)
+Changes from v1:
+- Print if WOF is enabled
+- s/clean_notifiers/cleanup_notifiers
 
-diff --git a/arch/arm/boot/dts/imx6q-evi.dts b/arch/arm/boot/dts/imx6q-evi.dts
-index 7c7c1a8..79a0bd5 100644
---- a/arch/arm/boot/dts/imx6q-evi.dts
-+++ b/arch/arm/boot/dts/imx6q-evi.dts
-@@ -54,18 +54,6 @@
- 		reg = <0x10000000 0x40000000>;
- 	};
+ drivers/cpufreq/powernv-cpufreq.c | 50 ++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 47 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 37671b5..3ff5160 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -144,6 +144,7 @@ enum throttle_reason_type {
+ 	unsigned int max;
+ 	unsigned int nominal;
+ 	unsigned int nr_pstates;
++	bool wof_enabled;
+ } powernv_pstate_info;
  
--	reg_usbh1_vbus: regulator-usbhubreset {
--		compatible = "regulator-fixed";
--		regulator-name = "usbh1_vbus";
--		regulator-min-microvolt = <5000000>;
--		regulator-max-microvolt = <5000000>;
--		enable-active-high;
--		startup-delay-us = <2>;
--		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_usbh1_hubreset>;
--		gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
--	};
--
- 	reg_usb_otg_vbus: regulator-usbotgvbus {
- 		compatible = "regulator-fixed";
- 		regulator-name = "usb_otg_vbus";
-@@ -207,12 +195,18 @@
- };
+ /* Use following macros for conversions between pstate_id and index */
+@@ -203,6 +204,7 @@ static int init_powernv_pstates(void)
+ 	const __be32 *pstate_ids, *pstate_freqs;
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
++	u32 pstate_turbo, pstate_ultra_turbo;
  
- &usbh1 {
--	vbus-supply = <&reg_usbh1_vbus>;
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh1>;
- 	dr_mode = "host";
- 	disable-over-current;
- 	status = "okay";
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -225,8 +227,29 @@ static int init_powernv_pstates(void)
+ 		pr_warn("ibm,pstate-nominal not found\n");
+ 		return -ENODEV;
+ 	}
 +
-+	usb2415host: hub@1 {
-+		compatible = "usb424,2513";
-+		reg = <1>;
-+		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-+		reset-duration-us = <3000>;
-+	};
++	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
++				 &pstate_ultra_turbo)) {
++		powernv_pstate_info.wof_enabled = false;
++		goto next;
++	}
++
++	if (of_property_read_u32(power_mgt, "ibm,pstate-turbo",
++				 &pstate_turbo)) {
++		powernv_pstate_info.wof_enabled = false;
++		goto next;
++	}
++
++	if (pstate_turbo == pstate_ultra_turbo)
++		powernv_pstate_info.wof_enabled = false;
++	else
++		powernv_pstate_info.wof_enabled = true;
++
++next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
++	pr_info("Workload Optimized Frequency is %s in the platform\n",
++		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
+ 
+ 	pstate_ids = of_get_property(power_mgt, "ibm,pstate-ids", &len_ids);
+ 	if (!pstate_ids) {
+@@ -268,6 +291,13 @@ static int init_powernv_pstates(void)
+ 			powernv_pstate_info.nominal = i;
+ 		else if (id == pstate_min)
+ 			powernv_pstate_info.min = i;
++
++		if (powernv_pstate_info.wof_enabled && id == pstate_turbo) {
++			int j;
++
++			for (j = i - 1; j >= (int)powernv_pstate_info.max; j--)
++				powernv_freqs[j].flags = CPUFREQ_BOOST_FREQ;
++		}
+ 	}
+ 
+ 	/* End of list marker entry */
+@@ -305,9 +335,12 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
+ struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
+ 	__ATTR_RO(cpuinfo_nominal_freq);
+ 
++#define SCALING_BOOST_FREQS_ATTR_INDEX		2
++
+ static struct freq_attr *powernv_cpu_freq_attr[] = {
+ 	&cpufreq_freq_attr_scaling_available_freqs,
+ 	&cpufreq_freq_attr_cpuinfo_nominal_freq,
++	&cpufreq_freq_attr_scaling_boost_freqs,
+ 	NULL,
  };
  
- &usbotg {
-@@ -468,11 +462,6 @@
- 			MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0
- 			/* usbh1_b OC */
- 			MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x1b0b0
--		>;
--	};
--
--	pinctrl_usbh1_hubreset: usbh1hubresetgrp {
--		fsl,pins = <
- 			MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x1b0b0
- 		>;
- 	};
+@@ -1013,11 +1046,22 @@ static int __init powernv_cpufreq_init(void)
+ 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
+ 	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
+ 
++	if (powernv_pstate_info.wof_enabled)
++		powernv_cpufreq_driver.boost_enabled = true;
++	else
++		powernv_cpu_freq_attr[SCALING_BOOST_FREQS_ATTR_INDEX] = NULL;
++
+ 	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
+-	if (!rc)
+-		return 0;
++	if (rc) {
++		pr_info("Failed to register the cpufreq driver (%d)\n", rc);
++		goto cleanup_notifiers;
++	}
+ 
+-	pr_info("Failed to register the cpufreq driver (%d)\n", rc);
++	if (powernv_pstate_info.wof_enabled)
++		cpufreq_enable_boost_support();
++
++	return 0;
++cleanup_notifiers:
+ 	unregister_all_notifiers();
+ 	clean_chip_info();
+ out:
 -- 
-2.7.4
+1.8.3.1
+
