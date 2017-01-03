@@ -1,48 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2] cpufreq: powernv: Add boost files to export
- ultra-turbo frequencies
-Date: Tue, 3 Jan 2017 16:38:59 +0530
-Message-ID: <20170103110859.GB14137@vireshk-i7>
-References: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH v2 0/3] PM / devfreq: Fix the bug and add reviewer for
+ devfreq support
+Date: Tue, 3 Jan 2017 20:54:49 +0900
+Message-ID: <CAGTfZH14OyJGwfSVoSuF2C0k9WGrDJAm4ks=3Se+4i-V1yXrHA@mail.gmail.com>
+References: <CGME20161228115241epcas5p4f9f5a1f76e262f9dff92a59bdbec30d7@epcas5p4.samsung.com>
+ <1482925956-19044-1-git-send-email-cw00.choi@samsung.com>
+Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f48.google.com ([74.125.83.48]:35557 "EHLO
-        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934854AbdACLJD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 06:09:03 -0500
-Received: by mail-pg0-f48.google.com with SMTP id i5so149119712pgh.2
-        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2017 03:09:03 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1483441560-11957-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Received: from mail-qk0-f195.google.com ([209.85.220.195]:32775 "EHLO
+        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750718AbdACLzL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 06:55:11 -0500
+In-Reply-To: <1482925956-19044-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Cc: rjw@rjwysocki.net, ego@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, svaidy@linux.vnet.ibm.com
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On 03-01-17, 16:36, Shilpasri G Bhat wrote:
-> In P8+, Workload Optimized Frequency(WOF) provides the capability to
-> boost the cpu frequency based on the utilization of the other cpus
-> running in the chip. The On-Chip-Controller(OCC) firmware will control
-> the achievability of these frequencies depending on the power headroom
-> available in the chip. Currently the ultra-turbo frequencies provided
-> by this feature are exported along with the turbo and sub-turbo
-> frequencies as scaling_available_frequencies. This patch will export
-> the ultra-turbo frequencies separately as scaling_boost_frequencies in
-> WOF enabled systems. This patch will add the boost sysfs file which
-> can be used to disable/enable ultra-turbo frequencies.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
+Dear Myungjoo,
+
+Thanks for your review for patch1.
+But, patch2/3 is not yet reviewed. Could you please review these patches?
+
+2016-12-28 20:52 GMT+09:00 Chanwoo Choi <cw00.choi@samsung.com>:
+> This patches fix the bug of devfreq_add_device() when governor name is wrong
+> and the wrong return value of probe() function for exynos_bus.c driver.
+>
+> And I've been helping reviewing and tesing the devfreq support patches
+> for the couple of years. Also, I'm going to contribute the improvement
+> for devfreq subsystem. It would be easier for me for review if I'm cc'ed
+> for patches. So, patch1 adds myself as a reviewer for devfreq support.
+>
 > Changes from v1:
-> - Print if WOF is enabled
-> - s/clean_notifiers/cleanup_notifiers
-> 
->  drivers/cpufreq/powernv-cpufreq.c | 50 ++++++++++++++++++++++++++++++++++++---
->  1 file changed, 47 insertions(+), 3 deletions(-)
+> (https://lkml.org/lkml/2016/12/15/122)
+> - Rebase these patches on v4.10-rc1.
+>
+> Chanwoo Choi (3):
+>   MAINTAINERS: Add myself as reviewer for DEVFREQ subsystem support
+>   PM / devfreq: Fix the bug of devfreq_add_device when governor is NULL
+>   PM / devfreq: exynos-bus: Fix the wrong return value
+>
+>  MAINTAINERS                  |  1 +
+>  drivers/devfreq/devfreq.c    | 15 ++++++++++-----
+>  drivers/devfreq/exynos-bus.c |  2 +-
+>  3 files changed, 12 insertions(+), 6 deletions(-)
+>
+> --
+> 1.9.1
+>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
 
 -- 
-viresh
+Best Regards,
+Chanwoo Choi
