@@ -1,83 +1,112 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH v2 0/8] PM / devfreq: Update the devfreq and devfreq-event device
-Date: Tue, 3 Jan 2017 20:57:36 +0900
-Message-ID: <CAGTfZH0CEZguE1otuCSEOtuU+ed_cy_pAE59q02baA-p74K2Fg@mail.gmail.com>
-References: <CGME20161228115654epcas1p1dbe96f4f79ee451bd8eac960f1ea80c5@epcas1p1.samsung.com>
- <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
-Reply-To: cwchoi00@gmail.com
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3] mfd: intel-lpss: Avoid resuming runtime-suspended
+ lpss unnecessarily
+Date: Tue, 3 Jan 2017 12:29:03 +0000
+Message-ID: <20170103122903.GE2977@dell>
+References: <1475125286-12167-1-git-send-email-yu.c.chen@intel.com>
+ <20161216231942.GA12460@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:33199 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752568AbdACL55 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 06:57:57 -0500
-In-Reply-To: <1482926212-19223-1-git-send-email-cw00.choi@samsung.com>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:38012 "EHLO
+        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758455AbdACMZW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 07:25:22 -0500
+Received: by mail-wm0-f44.google.com with SMTP id k184so232375634wme.1
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2017 04:25:22 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20161216231942.GA12460@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Chen Yu <yu.c.chen@intel.com>
 
-Dear Myungjoo,
+On Sat, 17 Dec 2016, Lukas Wunner wrote:
+> you wrote on Oct 4 that you applied the below patch for v4.10.
+> However I don't see the patch on your for-mfd-next branch.
+> Maybe the patch slipped between the cracks, please double-check.
+> I would like to use the DPM_DIRECT_COMPLETE macro introduced by it
+> in a patch of my own.
 
-Thanks for your review for patch1/2/3/4/5.
+Chen asked me to remove the patch.
 
-But, patch6/7/8 are not yet reviewed. The patch4 should be resent
-according to your comment.
-So, Could you please review these patch6/7/8?
+> I also don't see a pull from you in Linus' tree yet. Please note
+> that this merge window will be shorter than usual and pulls should
+> be sent out before coming Friday.
 
-2016-12-28 20:56 GMT+09:00 Chanwoo Choi <cw00.choi@samsung.com>:
-> This patches update the devfreq and devfreq-event device. I add the summary
-> of each patch as following.
->
-> - Patch1 is documented for bus frequency scaling of Exynos5433's VDD_INT.
->   The related-to patches[1] were merged by Exynos SoC maintainer.
-> - Patch2 uses the regmap interface instead of raw_read/write function.
-> - Patch3/4 print the useful log for exynos-bus.c and exynos-ppmu.c driver.
-> - Patch5 fixes the checkpatch warning of devfreq.c.
-> - Patch6/7 modify the name of sysfs entry for devfreq/devfreq-event device
-> - Patch8 fixes the wrong description of govenro_userspace.c.
->
-> Changes from v1:
-> - Rebase these patches on v4.10-rc1.
-> - Include the separate patch[2] in these patches.
->
-> [1] https://lkml.org/lkml/2016/12/7/846
-> - [PATCH v2 0/5] arm64: dts: Enable bus frequency scaling on Exynos5433-based TM2 board
-> [2] https://lkml.org/lkml/2016/12/16/7
-> - [PATCH] PM / devfreq: Fix the wrong description for userspace governor
->
->
-> Depends on:
-> - These patches depend on both v4.10-rc1 and patches[3].
->
-> [3] https://lkml.org/lkml/2016/12/28/91
-> - [PATCH v2 0/3] PM / devfreq: Fix the bug and add reviewer for devfreq support
->
-> Chanwoo Choi (8):
->   PM / devfreq: exynos-bus: Add the detailed correlation for Exynos5433
->   PM / devfreq: exynos-ppmu: Use the regmap interface to handle the registers
->   PM / devfreq: exynos-bus: Print the real clock rate of bus
->   PM / devfreq: exynos-ppmu: Show the registred device for ppmu device
->   PM / devfreq: Fix the checkpatch warnings
->   PM / devfreq: Modify the device name as devfreq[X] for sysfs
->   PM / devfreq: Simplify the sysfs name of devfreq-event device
->   PM / devfreq: Fix the wrong description for userspace governor
->
->  .../devicetree/bindings/devfreq/exynos-bus.txt     |  14 +
->  drivers/devfreq/devfreq-event.c                    |   2 +-
->  drivers/devfreq/devfreq.c                          |  17 +-
->  drivers/devfreq/event/exynos-ppmu.c                | 331 +++++++++++++++------
->  drivers/devfreq/exynos-bus.c                       |   8 +-
->  drivers/devfreq/governor_userspace.c               |   3 +-
->  6 files changed, 271 insertions(+), 104 deletions(-)
->
-> --
-> 1.9.1
->
+Right, I was on vacation.  All sorted now.
 
-
+> On Thu, Sep 29, 2016 at 01:01:26PM +0800, Chen Yu wrote:
+> > We have report that the intel_lpss_prepare() takes too much time during
+> > suspend, and this is because we first resume the devices from runtime
+> > suspend by resume_lpss_device(), to make sure they are in proper state
+> > before system suspend, which takes 100ms for each LPSS devices(PCI power
+> > state from D3_cold to D0). And since resume_lpss_device() resumes the
+> > devices synchronously, we might get huge latency if we have many
+> > LPSS devices.
+> > 
+> > So first try is to use pm_request_resume() instead, to make the runtime
+> > resume process asynchronously. Unfortunately the asynchronous runtime
+> > resume relies on pm_wq, which is freezed at early stage. So we choose
+> > another method, that is to avoid resuming runtime-suspended devices,
+> > if they are already runtime suspended. This is safe because for LPSS
+> > driver, the runtime suspend and system suspend are of the same
+> > hook - i.e., intel_lpss_suspend(). And moreover, this device is
+> > neither runtime wakeup source nor system wakeup source.
+> > 
+> > Suggested-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Lee Jones <lee.jones@linaro.org>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> >  drivers/mfd/intel-lpss.c | 9 +++++++++
+> >  include/linux/pm.h       | 7 +++++++
+> >  2 files changed, 16 insertions(+)
+> > 
+> > diff --git a/drivers/mfd/intel-lpss.c b/drivers/mfd/intel-lpss.c
+> > index 41b1138..2583db8 100644
+> > --- a/drivers/mfd/intel-lpss.c
+> > +++ b/drivers/mfd/intel-lpss.c
+> > @@ -485,6 +485,15 @@ static int resume_lpss_device(struct device *dev, void *data)
+> >  int intel_lpss_prepare(struct device *dev)
+> >  {
+> >  	/*
+> > +	 * This is safe because:
+> > +	 * 1. The runtime suspend and system suspend
+> > +	 * are of the same hook.
+> > +	 * 2. This device is neither runtime wakeup source
+> > +	 * nor system wakeup source.
+> > +	 */
+> > +	if (pm_runtime_status_suspended(dev))
+> > +		return DPM_DIRECT_COMPLETE;
+> > +	/*
+> >  	 * Resume both child devices before entering system sleep. This
+> >  	 * ensures that they are in proper state before they get suspended.
+> >  	 */
+> > diff --git a/include/linux/pm.h b/include/linux/pm.h
+> > index 06eb353..4a788b4 100644
+> > --- a/include/linux/pm.h
+> > +++ b/include/linux/pm.h
+> > @@ -786,4 +786,11 @@ enum dpm_order {
+> >  	DPM_ORDER_DEV_LAST,
+> >  };
+> >  
+> > +/*
+> > + * Return this from system suspend/hibernation ->prepare() callback to
+> > + * request the core to leave the device runtime-suspended during system
+> > + * suspend if possible.
+> > + */
+> > +#define DPM_DIRECT_COMPLETE 1
+> > +
+> >  #endif /* _LINUX_PM_H */
 
 -- 
-Best Regards,
-Chanwoo Choi
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
