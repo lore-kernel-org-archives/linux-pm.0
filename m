@@ -1,219 +1,101 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/6] PM / QOS: Add 'performance' request
-Date: Tue,  3 Jan 2017 16:36:09 +0530
-Message-ID: <8270700e3dd2064c2865326d0903bd47d00269be.1483439894.git.viresh.kumar@linaro.org>
+Subject: [PATCH 5/6] PM / domain: Save/restore performance state at runtime suspend/resume
+Date: Tue,  3 Jan 2017 16:36:11 +0530
+Message-ID: <dd5ae96e358f9c1e2e92d9ce523f7784dc05baf4.1483439894.git.viresh.kumar@linaro.org>
 References: <cover.1483439894.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:35198 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934803AbdACLGu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 06:06:50 -0500
+Received: by mail-pg0-f46.google.com with SMTP id i5so149100341pgh.2
+        for <linux-pm@vger.kernel.org>; Tue, 03 Jan 2017 03:06:50 -0800 (PST)
 In-Reply-To: <cover.1483439894.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1483439894.git.viresh.kumar@linaro.org>
 References: <cover.1483439894.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, mark.rutland@arm.com, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, mark.rutland@arm.com, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Add a new QOS request type: DEV_PM_QOS_PERFORMANCE.
+With runtime PM, the devices get suspended while the system is up and
+running in order to save power. At such times, it is important to
+re-evaluate the required performance state of the domain, in order to
+choose a lower state if possible.
 
-This is required to support runtime performance constraints for the
-devices. Also allow notifiers to be registered against it, which can be
-used by frameworks like genpd.
+This patch updates the genpd suspend/resume callbacks to do that.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/power/pm_qos_interface.txt |  2 +-
- drivers/base/power/qos.c                 | 69 +++++++++++++++++++++++++++-----
- include/linux/pm_qos.h                   |  4 ++
- 3 files changed, 63 insertions(+), 12 deletions(-)
+ drivers/base/power/domain.c | 19 +++++++++++++++++--
+ include/linux/pm_domain.h   |  1 +
+ 2 files changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index c7989d140428..a0a45ecbc1a8 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -172,7 +172,7 @@ type.
- 
- The callback is called when the aggregated value of the device constraints list
- is changed. Currently it only supports the notifier to be registered for resume
--latency device PM QoS.
-+latency and performance device PM QoS.
- 
- int dev_pm_qos_remove_notifier(device, notifier, type):
- Removes the notification callback function for the device.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 9adc208cf1fc..cf070468a7ca 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -163,6 +163,10 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 			req->dev->power.set_latency_tolerance(req->dev, value);
- 		}
- 		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		ret = pm_qos_update_target(&qos->performance, &req->data.pnode,
-+					   action, value);
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
-@@ -191,12 +195,13 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	if (!qos)
- 		return -ENOMEM;
- 
--	n = kzalloc(sizeof(*n), GFP_KERNEL);
-+	n = kzalloc(2 * sizeof(*n), GFP_KERNEL);
- 	if (!n) {
- 		kfree(qos);
- 		return -ENOMEM;
- 	}
- 	BLOCKING_INIT_NOTIFIER_HEAD(n);
-+	BLOCKING_INIT_NOTIFIER_HEAD(n + 1);
- 
- 	c = &qos->resume_latency;
- 	plist_head_init(&c->list);
-@@ -213,6 +218,14 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 
-+	c = &qos->performance;
-+	plist_head_init(&c->list);
-+	c->target_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->default_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->no_constraint_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->type = PM_QOS_MAX;
-+	c->notifiers = n + 1;
-+
- 	INIT_LIST_HEAD(&qos->flags.list);
- 
- 	spin_lock_irq(&dev->power.lock);
-@@ -271,6 +284,11 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-+	c = &qos->performance;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-@@ -382,6 +400,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+	case DEV_PM_QOS_PERFORMANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
- 	case DEV_PM_QOS_FLAGS:
-@@ -492,11 +511,9 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
- int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
- 			    enum dev_pm_qos_req_type type)
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index f460be4ca5f7..ef4062927713 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -576,7 +576,8 @@ static int genpd_runtime_suspend(struct device *dev)
  {
-+	struct dev_pm_qos *qos;
- 	int ret = 0;
+ 	struct generic_pm_domain *genpd;
+ 	bool (*suspend_ok)(struct device *__dev);
+-	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
++	struct generic_pm_domain_data *pd_data = dev_gpd_data(dev);
++	struct gpd_timing_data *td = &pd_data->td;
+ 	bool runtime_pm = pm_runtime_enabled(dev);
+ 	ktime_t time_start;
+ 	s64 elapsed_ns;
+@@ -633,7 +634,14 @@ static int genpd_runtime_suspend(struct device *dev)
+ 		return 0;
  
--	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
--		return -EINVAL;
--
- 	mutex_lock(&dev_pm_qos_mtx);
- 
- 	if (IS_ERR(dev->power.qos))
-@@ -504,10 +521,26 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
- 	else if (!dev->power.qos)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
--	if (!ret)
--		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
-+	if (ret)
-+		goto unlock;
+ 	genpd_lock(genpd);
 +
-+	qos = dev->power.qos;
++	/* Re-evaluate performance state of the domain */
++	pd_data->cached_performance_state = pd_data->performance_state;
++	pd_data->performance_state = 0;
++	update_domain_performance_state(genpd);
 +
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
-+		ret = blocking_notifier_chain_register(qos->resume_latency.notifiers,
-+						       notifier);
-+		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		ret = blocking_notifier_chain_register(qos->performance.notifiers,
- 						       notifier);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		ret = -EINVAL;
-+	}
+ 	genpd_poweroff(genpd, false);
++
+ 	genpd_unlock(genpd);
  
-+unlock:
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	return ret;
- }
-@@ -528,18 +561,32 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 			       struct notifier_block *notifier,
- 			       enum dev_pm_qos_req_type type)
+ 	return 0;
+@@ -650,7 +658,8 @@ static int genpd_runtime_suspend(struct device *dev)
+ static int genpd_runtime_resume(struct device *dev)
  {
-+	struct dev_pm_qos *qos;
- 	int retval = 0;
+ 	struct generic_pm_domain *genpd;
+-	struct gpd_timing_data *td = &dev_gpd_data(dev)->td;
++	struct generic_pm_domain_data *pd_data = dev_gpd_data(dev);
++	struct gpd_timing_data *td = &pd_data->td;
+ 	bool runtime_pm = pm_runtime_enabled(dev);
+ 	ktime_t time_start;
+ 	s64 elapsed_ns;
+@@ -673,7 +682,13 @@ static int genpd_runtime_resume(struct device *dev)
+ 	}
  
--	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
--		return -EINVAL;
--
- 	mutex_lock(&dev_pm_qos_mtx);
- 
-+	qos = dev->power.qos;
+ 	genpd_lock(genpd);
 +
- 	/* Silently return if the constraints object is not present. */
--	if (!IS_ERR_OR_NULL(dev->power.qos))
--		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
-+	if (IS_ERR_OR_NULL(qos))
-+		goto unlock;
+ 	ret = genpd_poweron(genpd, 0);
 +
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
-+		retval = blocking_notifier_chain_unregister(qos->resume_latency.notifiers,
-+							    notifier);
-+		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		retval = blocking_notifier_chain_unregister(qos->performance.notifiers,
- 							    notifier);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		retval = -EINVAL;
-+	}
++	/* Re-evaluate performance state of the domain */
++	pd_data->performance_state = pd_data->cached_performance_state;
++	update_domain_performance_state(genpd);
++
+ 	genpd_unlock(genpd);
  
-+unlock:
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	return retval;
- }
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 3b24f7d20299..42733f572d86 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -37,6 +37,7 @@ enum pm_qos_flags_status {
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
-+#define PM_QOS_PERFORMANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
-@@ -56,6 +57,7 @@ struct pm_qos_flags_request {
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
- 	DEV_PM_QOS_LATENCY_TOLERANCE,
-+	DEV_PM_QOS_PERFORMANCE,
- 	DEV_PM_QOS_FLAGS,
+ 	if (ret)
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index d994ad5ba1c0..69b453d44adb 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -122,6 +122,7 @@ struct generic_pm_domain_data {
+ 	struct notifier_block nb;
+ 	struct notifier_block perf_nb;
+ 	unsigned int performance_state;
++	unsigned int cached_performance_state;
  };
  
-@@ -97,9 +99,11 @@ struct pm_qos_flags {
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
- 	struct pm_qos_constraints latency_tolerance;
-+	struct pm_qos_constraints performance;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
-+	struct dev_pm_qos_request *performance_req;
- 	struct dev_pm_qos_request *flags_req;
- };
- 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
 -- 
 2.7.1.410.g6faf27b
+
