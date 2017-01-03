@@ -1,60 +1,30 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] cpufreq: s3c64xx: remove incorrect __init annotation
-Date: Tue, 3 Jan 2017 21:20:08 +0200
-Message-ID: <20170103192008.3taowqq4kjggv6fh@kozik-lap>
-References: <20161216090625.2235668-1-arnd@arndb.de>
- <20170102070903.GC8588@vireshk-i7>
- <20170102173651.hvsfalhcmisv4mtv@kozik-lap>
- <CAJZ5v0jaKnn+LTTdpgxaFLNaYSuqV8d9PKphOnHrPw0Zp_Uj5w@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 0/3] PM / devfreq: Fix the bug and add reviewer for
+ devfreq support
+Date: Tue, 3 Jan 2017 22:58:46 +0100
+Message-ID: <CAJZ5v0haS0uALoi=+Jz15NfS+eC6+xSsFYDmMFzXZFk=CMVFaw@mail.gmail.com>
+References: <CGME20161228115241epcas5p4f9f5a1f76e262f9dff92a59bdbec30d7@epcas5p4.samsung.com>
+ <1482925956-19044-1-git-send-email-cw00.choi@samsung.com> <CAGTfZH14OyJGwfSVoSuF2C0k9WGrDJAm4ks=3Se+4i-V1yXrHA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jaKnn+LTTdpgxaFLNaYSuqV8d9PKphOnHrPw0Zp_Uj5w@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:36301 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S966498AbdACV6s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 16:58:48 -0500
+In-Reply-To: <CAGTfZH14OyJGwfSVoSuF2C0k9WGrDJAm4ks=3Se+4i-V1yXrHA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cwchoi00@gmail.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On Mon, Jan 02, 2017 at 10:19:29PM +0100, Rafael J. Wysocki wrote:
-> On Mon, Jan 2, 2017 at 6:36 PM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> > On Mon, Jan 02, 2017 at 12:39:03PM +0530, Viresh Kumar wrote:
-> >> On 16-12-16, 10:06, Arnd Bergmann wrote:
-> >> > s3c64xx_cpufreq_config_regulator is incorrectly annotated
-> >> > as __init, since the caller is also not init:
-> >> >
-> >> > WARNING: vmlinux.o(.text+0x92fe1c): Section mismatch in reference from the function s3c64xx_cpufreq_driver_init() to the function .init.text:s3c64xx_cpufreq_config_regulator()
-> >> >
-> >> > With modern gcc versions, the function gets inline, so we don't
-> >> > see the warning, this only happens with gcc-4.6 and older.
-> >> >
-> >> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> >> > ---
-> >> >  drivers/cpufreq/s3c64xx-cpufreq.c | 2 +-
-> >> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >> >
-> >> > diff --git a/drivers/cpufreq/s3c64xx-cpufreq.c b/drivers/cpufreq/s3c64xx-cpufreq.c
-> >> > index 176e84cc3991..0cb9040eca49 100644
-> >> > --- a/drivers/cpufreq/s3c64xx-cpufreq.c
-> >> > +++ b/drivers/cpufreq/s3c64xx-cpufreq.c
-> >> > @@ -107,7 +107,7 @@ static int s3c64xx_cpufreq_set_target(struct cpufreq_policy *policy,
-> >> >  }
-> >> >
-> >> >  #ifdef CONFIG_REGULATOR
-> >> > -static void __init s3c64xx_cpufreq_config_regulator(void)
-> >> > +static void s3c64xx_cpufreq_config_regulator(void)
-> >> >  {
-> >> >     int count, v, i, found;
-> >> >     struct cpufreq_frequency_table *freq;
-> >>
-> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >
-> > Rafael,
-> > Are you going to pick it up?
-> 
-> I thought I did, didn't I?
+On Tue, Jan 3, 2017 at 12:54 PM, Chanwoo Choi <cwchoi00@gmail.com> wrote:
+> Dear Myungjoo,
+>
+> Thanks for your review for patch1.
+> But, patch2/3 is not yet reviewed. Could you please review these patches?
 
-Right, you did. I missed that. Thanks!
+I queued them up as 4.10 fixes in the meantime.
 
-Best regards,
-Krzysztof
+Thanks,
+Rafael
