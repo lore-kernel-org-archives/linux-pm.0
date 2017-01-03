@@ -1,103 +1,180 @@
-From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Subject: [PATCH 5/8] usb: chipidea: let chipidea core device of_node equal's glue layer device of_node
-Date: Tue, 3 Jan 2017 14:33:28 +0800
-Message-ID: <1483425211-14473-6-git-send-email-peter.chen@nxp.com>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH 4/8] usb: core: add power sequence handling for USB devices
+Date: Tue, 3 Jan 2017 14:33:27 +0800
+Message-ID: <1483425211-14473-5-git-send-email-peter.chen@nxp.com>
 References: <1483425211-14473-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1483425211-14473-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1483425211-14473-1-git-send-email-peter.chen@nxp.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
+Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, heiko@sntech.de, stephen.boyd@linaro.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 List-Id: linux-pm@vger.kernel.org
 
-From: Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
+Some hard-wired USB devices need to do power sequence to let the
+device work normally, the typical power sequence like: enable USB
+PHY clock, toggle reset pin, etc. But current Linux USB driver
+lacks of such code to do it, it may cause some hard-wired USB devices
+works abnormal or can't be recognized by controller at all.
 
-At device tree, we have no device node for chipidea core,
-the glue layer's node is the parent node for host and udc
-device. But in related driver, the parent device is chipidea
-core. So, in order to let the common driver get parent's node,
-we let the core's device node equals glue layer device node.
+In this patch, it calls power sequence library APIs to finish
+the power sequence events. It will do power on sequence at hub's
+probe for all devices under this hub (includes root hub).
+At hub_disconnect, it will do power off sequence which is at powered
+on list.
 
-Signed-off-by: Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>
-Tested-by: Maciej S. Szmigiero <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
-Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Tested-by Joshua Clayton <stillcompiling@gmail.com>
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+Reviewed-by: Vaibhav Hiremath <hvaibhav.linux@gmail.com>
 ---
- drivers/usb/chipidea/core.c | 27 ++++++++++++++++++++++-----
- 1 file changed, 22 insertions(+), 5 deletions(-)
+ drivers/usb/Kconfig    |  1 +
+ drivers/usb/core/hub.c | 48 ++++++++++++++++++++++++++++++++++++++++++++----
+ drivers/usb/core/hub.h |  1 +
+ 3 files changed, 46 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index 3dbb4a2..fdffc67 100644
---- a/drivers/usb/chipidea/core.c
-+++ b/drivers/usb/chipidea/core.c
-@@ -928,6 +928,16 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index fbe493d..706f261 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -40,6 +40,7 @@ config USB
+ 	tristate "Support for Host-side USB"
+ 	depends on USB_ARCH_HAS_HCD
+ 	select USB_COMMON
++	select POWER_SEQUENCE
+ 	select NLS  # for UTF-8 strings
+ 	---help---
+ 	  Universal Serial Bus (USB) is a specification for a serial bus
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 1fa5c0f..cec2fad 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -28,6 +28,7 @@
+ #include <linux/mutex.h>
+ #include <linux/random.h>
+ #include <linux/pm_qos.h>
++#include <linux/power/pwrseq.h>
  
-+	/*
-+	 * At device tree, we have no device node for chipidea core,
-+	 * the glue layer's node is the parent node for host and udc
-+	 * device. But in related driver, the parent device is chipidea
-+	 * core. So, in order to let the common driver get parent's node,
-+	 * we let the core's device node equals glue layer's node.
-+	 */
-+	if (dev->parent && dev->parent->of_node)
-+		dev->of_node = dev->parent->of_node;
-+
- 	if (ci->platdata->phy) {
- 		ci->phy = ci->platdata->phy;
- 	} else if (ci->platdata->usb_phy) {
-@@ -938,11 +948,15 @@ static int ci_hdrc_probe(struct platform_device *pdev)
+ #include <linux/uaccess.h>
+ #include <asm/byteorder.h>
+@@ -1645,6 +1646,7 @@ static void hub_disconnect(struct usb_interface *intf)
+ 	hub->error = 0;
+ 	hub_quiesce(hub, HUB_DISCONNECT);
  
- 		/* if both generic PHY and USB PHY layers aren't enabled */
- 		if (PTR_ERR(ci->phy) == -ENOSYS &&
--				PTR_ERR(ci->usb_phy) == -ENXIO)
--			return -ENXIO;
-+				PTR_ERR(ci->usb_phy) == -ENXIO) {
-+			ret = -ENXIO;
-+			goto clear_of_node;
-+		}
++	of_pwrseq_off_list(&hub->pwrseq_on_list);
+ 	mutex_lock(&usb_port_peer_mutex);
  
--		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy))
--			return -EPROBE_DEFER;
-+		if (IS_ERR(ci->phy) && IS_ERR(ci->usb_phy)) {
-+			ret = -EPROBE_DEFER;
-+			goto clear_of_node;
-+		}
- 
- 		if (IS_ERR(ci->phy))
- 			ci->phy = NULL;
-@@ -953,7 +967,7 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 	ret = ci_usb_phy_init(ci);
- 	if (ret) {
- 		dev_err(dev, "unable to init phy: %d\n", ret);
--		return ret;
-+		goto clear_of_node;
- 	}
- 
- 	ci->hw_bank.phys = res->start;
-@@ -1059,6 +1073,8 @@ static int ci_hdrc_probe(struct platform_device *pdev)
- 	ci_role_destroy(ci);
- deinit_phy:
- 	ci_usb_phy_exit(ci);
-+clear_of_node:
-+	dev->of_node = NULL;
- 
- 	return ret;
+ 	/* Avoid races with recursively_mark_NOTATTACHED() */
+@@ -1672,12 +1674,41 @@ static void hub_disconnect(struct usb_interface *intf)
+ 	kref_put(&hub->kref, hub_release);
  }
-@@ -1077,6 +1093,7 @@ static int ci_hdrc_remove(struct platform_device *pdev)
- 	ci_extcon_unregister(ci);
- 	ci_role_destroy(ci);
- 	ci_hdrc_enter_lpm(ci, true);
-+	ci->dev->of_node = NULL;
- 	ci_usb_phy_exit(ci);
  
++#ifdef CONFIG_OF
++static int hub_of_pwrseq_on(struct usb_hub *hub)
++{
++	struct device *parent;
++	struct usb_device *hdev = hub->hdev;
++	struct device_node *np;
++	int ret;
++
++	if (hdev->parent)
++		parent = &hdev->dev;
++	else
++		parent = bus_to_hcd(hdev->bus)->self.controller;
++
++	for_each_child_of_node(parent->of_node, np) {
++		ret = of_pwrseq_on_list(np, &hub->pwrseq_on_list);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++#else
++static int hub_of_pwrseq_on(struct usb_hub *hub)
++{
++	return 0;
++}
++#endif
++
+ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
+ {
+ 	struct usb_host_interface *desc;
+ 	struct usb_endpoint_descriptor *endpoint;
+ 	struct usb_device *hdev;
+ 	struct usb_hub *hub;
++	int ret = -ENODEV;
+ 
+ 	desc = intf->cur_altsetting;
+ 	hdev = interface_to_usbdev(intf);
+@@ -1782,6 +1813,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
+ 	INIT_DELAYED_WORK(&hub->leds, led_work);
+ 	INIT_DELAYED_WORK(&hub->init_work, NULL);
+ 	INIT_WORK(&hub->events, hub_event);
++	INIT_LIST_HEAD(&hub->pwrseq_on_list);
+ 	usb_get_intf(intf);
+ 	usb_get_dev(hdev);
+ 
+@@ -1795,11 +1827,14 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
+ 	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
+ 		hub->quirk_check_port_auto_suspend = 1;
+ 
+-	if (hub_configure(hub, endpoint) >= 0)
+-		return 0;
++	if (hub_configure(hub, endpoint) >= 0) {
++		ret = hub_of_pwrseq_on(hub);
++		if (!ret)
++			return 0;
++	}
+ 
+ 	hub_disconnect(intf);
+-	return -ENODEV;
++	return ret;
+ }
+ 
+ static int
+@@ -3613,14 +3648,19 @@ static int hub_suspend(struct usb_interface *intf, pm_message_t msg)
+ 
+ 	/* stop hub_wq and related activity */
+ 	hub_quiesce(hub, HUB_SUSPEND);
+-	return 0;
++	return pwrseq_suspend_list(&hub->pwrseq_on_list);
+ }
+ 
+ static int hub_resume(struct usb_interface *intf)
+ {
+ 	struct usb_hub *hub = usb_get_intfdata(intf);
++	int ret;
+ 
+ 	dev_dbg(&intf->dev, "%s\n", __func__);
++	ret = pwrseq_resume_list(&hub->pwrseq_on_list);
++	if (ret)
++		return ret;
++
+ 	hub_activate(hub, HUB_RESUME);
  	return 0;
+ }
+diff --git a/drivers/usb/core/hub.h b/drivers/usb/core/hub.h
+index 34c1a7e..cd86f91 100644
+--- a/drivers/usb/core/hub.h
++++ b/drivers/usb/core/hub.h
+@@ -78,6 +78,7 @@ struct usb_hub {
+ 	struct delayed_work	init_work;
+ 	struct work_struct      events;
+ 	struct usb_port		**ports;
++	struct list_head	pwrseq_on_list; /* powered pwrseq node list */
+ };
+ 
+ /**
 -- 
 2.7.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
