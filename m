@@ -1,80 +1,50 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 01/22] dt-bindings: iio: adc: add AXP20X/AXP22X ADC DT
- binding
-Date: Tue, 3 Jan 2017 17:20:35 -0600
-Message-ID: <20170103232035.wwsqmea5dxzu2r5m@rob-hp-laptop>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-2-quentin.schulz@free-electrons.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] Allow userspace control of runtime disabling/enabling of
+ driver probing
+Date: Wed, 4 Jan 2017 00:34:04 +0100
+Message-ID: <CAJZ5v0gwEh+rq=J-Jp2Usv42xiqKfLA4L0rZ0o9cANdnt3D7EQ@mail.gmail.com>
+References: <20170103225831.GA113525@beast>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20170102163723.7939-2-quentin.schulz@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux@armlinux.org.uk, wens@csie.org, linux-arm-kernel@lists.infradead.org, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, jic23@kernel.org, icenowy@aosc.xyz
+Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-5858-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: rjwysocki@gmail.com
+In-Reply-To: <20170103225831.GA113525@beast>
+To: Kees Cook <keescook@chromium.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@coreos.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Madalin Bucur <madalin.bucur@nxp.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Petr Tesarik <ptesarik@suse.com>, Linux PM <linux-pm@vger.kernel.org>, Kernel Hardening <kernel-hardening@lists.openwall.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 02, 2017 at 05:37:01PM +0100, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
-> battery voltage, battery charge and discharge currents, AC-in and VBUS
-> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
-> 
-> This adds the device tree binding documentation for the X-Powers AXP20X
-> and AXP22X PMICs ADCs.
-> 
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> ---
->  .../devicetree/bindings/iio/adc/axp20x_adc.txt     | 24 ++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
-> new file mode 100644
-> index 0000000..1b60065
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
-> @@ -0,0 +1,24 @@
-> +X-Powers AXP20X and AXP22X PMIC Analog to Digital Converter (ADC)
-> +
-> +The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
-> +battery voltage, battery charge and discharge currents, AC-in and VBUS
-> +voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
-> +
-> +The AXP22X PMICs do not have all ADCs of the AXP20X though.
-> +
-> +Required properties:
-> + - compatible, one of:
-> +			"x-powers,axp209-adc"
-> +			"x-powers,axp221-adc"
-> + - #io-channel-cells = <1>;
-> +
-> +This is a subnode of the AXP20X PMIC.
-> +
-> +Example:
-> +
-> +&axp209 {
-> +	axp209_adc: axp209_adc {
+On Tue, Jan 3, 2017 at 11:58 PM, Kees Cook <keescook@chromium.org> wrote:
+> From: Matthew Garrett <mjg59@coreos.com>
+>
+> Various attacks are made possible due to the large attack surface of
+> kernel drivers and the easy availability of hotpluggable hardware that can
+> be programmed to mimic arbitrary devices. This allows attackers to find a
+> single vulnerable driver and then produce a device that can exploit it by
+> plugging into a hotpluggable bus (such as PCI or USB). This violates user
+> assumptions about unattended systems being secure as long as the screen
+> is locked.
+>
+> The kernel already has support for deferring driver binding in order
+> to avoid problems over suspend/resume. By exposing this to userspace we
+> can disable probing when the screen is locked and simply reenable it on
+> unlock.
+>
+> This is not a complete solution - since this still permits device
+> creation and simply blocks driver binding, it won't stop userspace
+> drivers from attaching to devices and it won't protect against any kernel
+> vulnerabilities in the core bus code. However, it should be sufficient to
+> block attacks like Poisontap (https://samy.pl/poisontap/).
 
-Use 'adc' for node name:
+It also looks like this may be worked around by tricking the user to
+unlock the screen while the malicious device is still attached to the
+system.
 
-With that,
+If that really is the case, I wonder if it's worth the extra complexity.
 
-Acked-by: Rob Herring <robh@kernel.org>
-
-> +		compatible = "x-powers,axp209-adc";
-> +		#io-channel-cells = <1>;
-> +	};
-> +};
-> -- 
-> 2.9.3
-> 
+Thanks,
+Rafael
