@@ -1,73 +1,69 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/3] devicetree: bq27425: add documentation for bq27425
- fuel gauge
-Date: Tue, 3 Jan 2017 10:47:15 -0600
-Message-ID: <20170103164715.pypb5zt22hg4zqlh@rob-hp-laptop>
-References: <20161226054442.23599-1-matt@ranostay.consulting>
- <20161226054442.23599-3-matt@ranostay.consulting>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 2/3] DT: bingdings: power: reset: add
+ linkstation-reset doc
+Date: Tue, 3 Jan 2017 11:09:52 -0600
+Message-ID: <20170103170952.7svgaa247ewlht7f@rob-hp-laptop>
+References: <20161216100501.18173-1-rogershimizu@gmail.com>
+ <20161227070611.14852-1-rogershimizu@gmail.com>
+ <20161227070611.14852-3-rogershimizu@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20161226054442.23599-3-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+In-Reply-To: <20161227070611.14852-3-rogershimizu@gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Roger Shimizu <rogershimizu@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Ryan Tandy <ryan@nardis.ca>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Dec 25, 2016 at 09:44:41PM -0800, Matt Ranostay wrote:
-> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+On Tue, Dec 27, 2016 at 04:06:10PM +0900, Roger Shimizu wrote:
+> Add linkstation-reset doc to describe the newly added
+> POWER_RESET_LINKSTATION driver, which controls magic command
+> sending to UART1 to power-off Buffalo Linkstation / KuroBox
+> and their variants.
+> 
+> To: Sebastian Reichel <sre@kernel.org>
+> To: Rob Herring <robh+dt@kernel.org>
+> To: Mark Rutland <mark.rutland@arm.com>
+> Cc: Andrew Lunn <andrew@lunn.ch>
+> Cc: Ryan Tandy <ryan@nardis.ca>
+> Cc: linux-pm@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> 
+> Signed-off-by: Roger Shimizu <rogershimizu@gmail.com>
 > ---
->  .../devicetree/bindings/power/bq27425.txt          | 25 ++++++++++++++++++++++
->  1 file changed, 25 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/bq27425.txt
+>  .../bindings/power/reset/linkstation-reset.txt     | 26 ++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/linkstation-reset.txt
 > 
-> diff --git a/Documentation/devicetree/bindings/power/bq27425.txt b/Documentation/devicetree/bindings/power/bq27425.txt
+> diff --git a/Documentation/devicetree/bindings/power/reset/linkstation-reset.txt b/Documentation/devicetree/bindings/power/reset/linkstation-reset.txt
 > new file mode 100644
-> index 000000000000..f09f787a9378
+> index 000000000000..815e340318f3
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/bq27425.txt
-> @@ -0,0 +1,25 @@
-> +* TI BQ27425 Fuel Gauge
+> +++ b/Documentation/devicetree/bindings/power/reset/linkstation-reset.txt
+> @@ -0,0 +1,26 @@
+> +* Buffalo Linkstation Reset Driver
 > +
-> +http://www.ti.com/lit/ds/symlink/bq27425-g2a.pdf
-> +
-> +Please note that if any of the optional properties are defined
-> +then all settings must be.
-> +
-> +Required properties:
-> +- compatible: Should be "ti,bq27425"
-> +- reg: integer, i2c of the device
+> +Power of some Buffalo Linkstation or KuroBox Pro is managed by
+> +micro-controller, which connects to UART1. After being fed from UART1
+> +by a few magic numbers, the so-called power-off command,
+> +the micro-controller will turn power off the device.
 
-s/i2c/I2C address/
+This needs to model the uC connected to the UART rather than some node 
+that defines only some portion of the functionality. I'm working on 
+bindings and proper bus support for this[1], but it's not done yet. 
+Though, the binding side is pretty simple.
 
-> +
-> +Optional properties:
-> +- ti,design-capacity: integer of mAh of the battery
-> +- ti,design-energy: integer of the mWh of the battery
-> +- ti,terminate-voltage: integer of mV of the dead voltage of
-> +			the battery
+Rob
 
-These all need unit suffixes. mAh and mWh may need to be added to 
-property-units.txt.
-
-> +
-> +bq27425 {
-> +	compatible = "ti,bq27425";
-> +	reg = <0x55>;
-> +
-> +	ti,design-capacity = <1360>;
-> +	ti,design-energy = <4970>;
-> +	ti,terminate-voltage = <3200>;
-> +};
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[1] https://git.kernel.org/cgit/linux/kernel/git/robh/linux.git/log/?h=serial-bus-v2
