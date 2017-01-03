@@ -1,66 +1,73 @@
-From: ayaka <ayaka-xPW3/0Ywev/iB9QmIjCX8w@public.gmane.org>
-Subject: Re: [PATCH v4 0/5] thermal: fixes the rockchip thermal
-Date: Wed, 4 Jan 2017 00:30:40 +0800
-Message-ID: <cfa99a04-b865-c2e3-274a-a8550649bf12@soulik.info>
-References: <1481540735-12710-1-git-send-email-wxt@rock-chips.com>
- <f68125d7-01bb-d0d9-d04f-8d1b5cff19a2@soulik.info>
- <8bdcea3e-0f06-da29-cb17-6b258440900a@rock-chips.com>
- <8e34e000-c1c7-20c9-2168-a31c85b3fa9a@rock-chips.com>
- <c2b13d66-e89e-02c8-3a68-6eb57627aaf2@163.com>
- <9ee3d263-8de3-eb95-034d-774ae216329f@rock-chips.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/3] devicetree: bq27425: add documentation for bq27425
+ fuel gauge
+Date: Tue, 3 Jan 2017 10:47:15 -0600
+Message-ID: <20170103164715.pypb5zt22hg4zqlh@rob-hp-laptop>
+References: <20161226054442.23599-1-matt@ranostay.consulting>
+ <20161226054442.23599-3-matt@ranostay.consulting>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <9ee3d263-8de3-eb95-034d-774ae216329f-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Caesar Wang <sasukewxt-9Onoh4P/yGk@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Randy Li <randy.li-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20161226054442.23599-3-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-CgpPbiAwMS8wMy8yMDE3IDA5OjEzIEFNLCBSYW5keSBMaSB3cm90ZToKPgo+Cj4gT24gMDEvMDMv
-MjAxNyAwOTowMiBBTSwgQ2Flc2FyIFdhbmcgd3JvdGU6Cj4+Cj4+IOWcqCAyMDE35bm0MDHmnIgw
-M+aXpSAwNzo1NywgUmFuZHkgTGkg5YaZ6YGTOgo+Pj4KPj4+IE9uIDAxLzAyLzIwMTcgMDk6MTYg
-UE0sIENhZXNhciBXYW5nIHdyb3RlOgo+Pj4+IOWcqCAyMDE25bm0MTLmnIgzMeaXpSAwMDoxMSwg
-YXlha2Eg5YaZ6YGTOgo+Pj4+Pgo+Pj4+PiBCVFcsIENhZXNhciBoYXZlIHlvdSBldmVyIG1ldCB0
-aGlzIGF0IFJLMzI4OCBhdCBib290aW5nIHRpbWU/Cj4+Pj4+IFsgICAgOC40MzA1ODJdIHRoZXJt
-YWwgdGhlcm1hbF96b25lMTogY3JpdGljYWwgdGVtcGVyYXR1cmUKPj4+Pj4gcmVhY2hlZCgxMjUg
-Qyksc2h1dHRpbmcgZG93bgo+Pj4+PiBbICAgIDguNDM5MDM4XSB0aGVybWFsIHRoZXJtYWxfem9u
-ZTI6IGNyaXRpY2FsIHRlbXBlcmF0dXJlCj4+Pj4+IHJlYWNoZWQoMTI1IEMpLHNodXR0aW5nIGRv
-d24KPj4+Pj4gWyAgICA4LjQ1NjM0NF0gdGhlcm1hbCB0aGVybWFsX3pvbmUxOiBjcml0aWNhbCB0
-ZW1wZXJhdHVyZQo+Pj4+PiByZWFjaGVkKDEyNSBDKSxzaHV0dGluZyBkb3duCj4+Pj4+IFsgICAg
-OC40NjUyOThdIHRoZXJtYWwgdGhlcm1hbF96b25lMjogY3JpdGljYWwgdGVtcGVyYXR1cmUKPj4+
-Pj4gcmVhY2hlZCgxMjUgQyksc2h1dHRpbmcgZG93bgo+Pj4+Cj4+Pj4gMTI1Qz8gdGhlIHRoZXJt
-YWwgem9uZSBpc24ndCB0aGUgdXBzdHJlYW0ga2VybmVsLCB3aGF0J3MgdGhlIGtlcm5lbAo+Pj4+
-IHZlcnNpb24/Cj4+PiBUaGV5IGhhdmUgYmVlbiBtZXJnZWQgaW50byB0aGUgbGludXgtbmV4dC4K
-Pj4KPj4gUmVhbGx5Pwo+PiBJIHNhdyB0aGUgOTAgZGVncmVlIGlzIHRoZSBjcml0aWNhbCB0ZW1w
-ZXJhdHVyZSBvbiByazMyODggZHRzIC4KPiBZZXMgSSBkby4KPj4ga2VybmVsJCB2aSBhcmNoL2Fy
-bS9ib290L2R0cy9yazMyODguZHRzaQo+PiAgICAgICAgICAgICBjcHVfY3JpdDogY3B1X2NyaXQg
-ewo+PiAgICAgICAgICAgICAgICAgICAgIHRlbXBlcmF0dXJlID0gPDkwMDAwPjsgLyogbWlsbGlj
-ZWxzaXVzICovCj4+ICAgICAgICAgICAgICAgICAgICAgaHlzdGVyZXNpcyA9IDwyMDAwPjsgLyog
-bWlsbGljZWxzaXVzICovCj4+ICAgICAgICAgICAgICAgICAgICAgdHlwZSA9ICJjcml0aWNhbCI7
-Cj4+ICAgICAgICAgICAgICAgICB9Owo+Pgo+Pj4+IEFueXdheSwgbG9vayBsaWtlLCAgdGhlIFRT
-SFVUIGlzc3VlLiBEbyB5b3UgaGF2ZSB0aGUgYmVsb3cgcGF0Y2hlcwo+Pj4+IGZvciB5b3VyIGxp
-bnV4IGtlcm5lbD8KPj4+PiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGlu
-dXgtYXJtLWtlcm5lbC8yMDE1LU9jdG9iZXIvMzgwNDQ2Lmh0bWwgCj4+Pj4KPj4+Pgo+Pj4gTm8s
-IGNvdWxkIHlvdSByZXN1Ym1pdCB0aG9zZSBwYXRjaGVzID8KPj4KPj4gVGhlc2UgcGF0Y2hlcyBo
-YWQgbWVyZ2VkIGZvciB1cHN0cmVhbS4KPiBTb3JyeSwgaXQgaXMgbXkgZmF1bHQsIEkgbWlzdGFr
-ZSB0aGF0IGNvbW1pdC4gVGhvc2UgcGF0Y2hlcyBhcmUgbWVyZ2VkIAo+IGluIG5leHQtMjAxNjEy
-MjQuIEkgd291bGQgYnJpbmcgYSBib2FyZCBmb3IgeW91IGxhdGVyLgpJIGNoZWNrIHRoZSBzY2hl
-bWF0aWMsIHRoZSBvdHAgaW50ZXJydXB0IGlzIG5vdCB1c2VkIGF0IGZpcmVmbHkgcmVsb2FkIApu
-b3IgY29ubmVjdGVkIHRvIHRoZSBjb250cm9sIG9mIFBNSUMuCkkgYWxzbyBjaGVjayBwb3dlciBz
-dXBwbHksIHRoZSBwb3dlciBpcyBQRF9QRVJJIGRvbWFpbiBjb21lcyBmcm9tIApWRF9MT0dJQyB3
-aGljaCBpcyBhbHdheXMgb24gYWxsIHRoZSBwbGF0Zm9ybS4KSXQgbW9yZSBsaWtlbHkgdGhlIHRz
-YWRjIGRvZXNuJ3QgcmVwb3J0IGNvcnJlY3RseSB0ZW1wZXJhdHVyZSB2YWx1ZT8KPj4KPj4gLUNh
-ZXNhcgo+Pgo+Pgo+CgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KTGludXgtcm9ja2NoaXAgbWFpbGluZyBsaXN0CkxpbnV4LXJvY2tjaGlwQGxpc3RzLmlu
-ZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9s
-aW51eC1yb2NrY2hpcAo=
+On Sun, Dec 25, 2016 at 09:44:41PM -0800, Matt Ranostay wrote:
+> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+> ---
+>  .../devicetree/bindings/power/bq27425.txt          | 25 ++++++++++++++++++++++
+>  1 file changed, 25 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/bq27425.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/power/bq27425.txt b/Documentation/devicetree/bindings/power/bq27425.txt
+> new file mode 100644
+> index 000000000000..f09f787a9378
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/bq27425.txt
+> @@ -0,0 +1,25 @@
+> +* TI BQ27425 Fuel Gauge
+> +
+> +http://www.ti.com/lit/ds/symlink/bq27425-g2a.pdf
+> +
+> +Please note that if any of the optional properties are defined
+> +then all settings must be.
+> +
+> +Required properties:
+> +- compatible: Should be "ti,bq27425"
+> +- reg: integer, i2c of the device
+
+s/i2c/I2C address/
+
+> +
+> +Optional properties:
+> +- ti,design-capacity: integer of mAh of the battery
+> +- ti,design-energy: integer of the mWh of the battery
+> +- ti,terminate-voltage: integer of mV of the dead voltage of
+> +			the battery
+
+These all need unit suffixes. mAh and mWh may need to be added to 
+property-units.txt.
+
+> +
+> +bq27425 {
+> +	compatible = "ti,bq27425";
+> +	reg = <0x55>;
+> +
+> +	ti,design-capacity = <1360>;
+> +	ti,design-energy = <4970>;
+> +	ti,terminate-voltage = <3200>;
+> +};
+> -- 
+> 2.7.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
