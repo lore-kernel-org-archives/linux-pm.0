@@ -1,64 +1,35 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] Allow userspace control of runtime disabling/enabling of
- driver probing
-Date: Wed, 4 Jan 2017 02:45:56 +0100
-Message-ID: <CAJZ5v0hEuDuqyTyUmBYqJ9BELqs=bx5d7rtpqhrYJufd0bR1Uw@mail.gmail.com>
-References: <20170103225831.GA113525@beast> <CAJZ5v0gwEh+rq=J-Jp2Usv42xiqKfLA4L0rZ0o9cANdnt3D7EQ@mail.gmail.com>
- <CAGXu5jKuTf-d1sES3vdB7i1dqKWxc1=ukULPr11v6sgtjDYQuQ@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 0/3] PM / devfreq: Fix the bug and add reviewer for
+ devfreq support
+Date: Wed, 04 Jan 2017 10:48:46 +0900
+Message-ID: <9567e4ab-13fd-50d8-71de-b30de22ad9f2@samsung.com>
+References: <CGME20161228115241epcas5p4f9f5a1f76e262f9dff92a59bdbec30d7@epcas5p4.samsung.com>
+ <1482925956-19044-1-git-send-email-cw00.choi@samsung.com>
+ <CAGTfZH14OyJGwfSVoSuF2C0k9WGrDJAm4ks=3Se+4i-V1yXrHA@mail.gmail.com>
+ <CAJZ5v0haS0uALoi=+Jz15NfS+eC6+xSsFYDmMFzXZFk=CMVFaw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:35217 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753158AbdADBp5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Jan 2017 20:45:57 -0500
-In-Reply-To: <CAGXu5jKuTf-d1sES3vdB7i1dqKWxc1=ukULPr11v6sgtjDYQuQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <CAJZ5v0haS0uALoi=+Jz15NfS+eC6+xSsFYDmMFzXZFk=CMVFaw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Chanwoo Choi <cwchoi00@gmail.com>
+Cc: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@coreos.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Madalin Bucur <madalin.bucur@nxp.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Petr Tesarik <ptesarik@suse.com>, Linux PM <linux-pm@vger.kernel.org>
 
-On Wed, Jan 4, 2017 at 12:38 AM, Kees Cook <keescook@chromium.org> wrote:
-> On Tue, Jan 3, 2017 at 3:34 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Tue, Jan 3, 2017 at 11:58 PM, Kees Cook <keescook@chromium.org> wrote:
->>> From: Matthew Garrett <mjg59@coreos.com>
->>>
->>> Various attacks are made possible due to the large attack surface of
->>> kernel drivers and the easy availability of hotpluggable hardware that can
->>> be programmed to mimic arbitrary devices. This allows attackers to find a
->>> single vulnerable driver and then produce a device that can exploit it by
->>> plugging into a hotpluggable bus (such as PCI or USB). This violates user
->>> assumptions about unattended systems being secure as long as the screen
->>> is locked.
->>>
->>> The kernel already has support for deferring driver binding in order
->>> to avoid problems over suspend/resume. By exposing this to userspace we
->>> can disable probing when the screen is locked and simply reenable it on
->>> unlock.
->>>
->>> This is not a complete solution - since this still permits device
->>> creation and simply blocks driver binding, it won't stop userspace
->>> drivers from attaching to devices and it won't protect against any kernel
->>> vulnerabilities in the core bus code. However, it should be sufficient to
->>> block attacks like Poisontap (https://samy.pl/poisontap/).
+Dear Rafael,
+
+On 2017년 01월 04일 06:58, Rafael J. Wysocki wrote:
+> On Tue, Jan 3, 2017 at 12:54 PM, Chanwoo Choi <cwchoi00@gmail.com> wrote:
+>> Dear Myungjoo,
 >>
->> It also looks like this may be worked around by tricking the user to
->> unlock the screen while the malicious device is still attached to the
->> system.
->
-> It certainly changes the temporal aspect of the attack (i.e. there is
-> a delay and must be "silent" in that the local user cannot notice it).
+>> Thanks for your review for patch1.
+>> But, patch2/3 is not yet reviewed. Could you please review these patches?
+> 
+> I queued them up as 4.10 fixes in the meantime.
 
-It will be silent until a driver binds to it anyway, won't it?
+Thanks for picking up the patches.
 
->> If that really is the case, I wonder if it's worth the extra complexity.
->
-> I think so, since it's not that much more complexity (it uses the
-> existing deferral mechanism).
-
-But that existing mechanism certainly wasn't designed to be turned on
-and off at random and concurrently etc.  The way it is going to be
-used now is far more complex IMO.
-
-Thanks,
-Rafael
+-- 
+Regards,
+Chanwoo Choi
