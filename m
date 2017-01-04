@@ -1,56 +1,71 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCHv6 0/4] thermal: add driver for R-Car Gen3
-Date: Thu, 5 Jan 2017 00:41:42 +0100
-Message-ID: <20170104234142.j4tyhhxbfjk4dz5j@ninjato>
-References: <20161222103823.8300-1-niklas.soderlund+renesas@ragnatech.se>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
+ Exynos5422/5800
+Date: Wed, 4 Jan 2017 20:57:47 -0300
+Message-ID: <2c85559a-dc12-610b-c842-c89d078e1c2a@osg.samsung.com>
+References: <10512254.nyUcL0zgTP@amdc3058>
+ <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
+ <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
+ <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.zeus03.de ([194.117.254.33]:35850 "EHLO mail.zeus03.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752291AbdADXlq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Jan 2017 18:41:46 -0500
-Content-Disposition: inline
-In-Reply-To: <20161222103823.8300-1-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Doug Anderson <dianders@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Arjun K V <arjun.kv@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
-Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Thu, Dec 22, 2016 at 11:38:19AM +0100, Niklas Söderlund wrote:
-> Hi all,
-> 
-> The series adds thermal support to Renesas R-Car Gen3 SoCs. It's tested
-> on Salvator-X H3 and M3-W SoC.
-> 
-> Wolfram asked me to have a look at the comments for v4 and to try and
-> rework the temperature formulas to work with only ints and if it worked
-> out resend the series. I have reworked code in 2/4 but kept Wolfram as
-> the author and added my SoB, hope this is OK.
-> 
-> Reworking the formulas involved moving from s64 to int as the data type
-> used to store coefficients used in binary scaled fixed point
-> calculations. By examining the largest values which could be produced in
-> these calculations a shift of 7 is the maximum scaling which is
-> possible and still fit inside an int, previously with s64 the decimal scaling
-> was 1000.
-> 
-> Changing the decimal scaling also reduces the accuracy of the
-> calculations. In my tests this was hardly noticeable as the granularity
-> of the reported temperature to user-space is 0.5C, comparing the value
-> reported in the s64 vs int implementation only differ very slightly when
-> it rounded the value to the next 0.5C level.
-> 
-> However the formulas used to calculate the coefficients are not
-> documented and none obvious (at lest not to me) so given different
-> initial values to calculate the coefficients the error might become
-> larger. Therefore I would like to ask Morimoto-san and/or Khiem to
-> provide or proxy testing of this less accurate formula and feedback if
-> it's OK, let me know if there is anything I can do to help out.
+Hello Doug,
 
-Tested on H3 and M3-W. The temperatures I get when plugging the fan
-on/off are very very similar to previous versions of this driver. Thus:
+On 01/04/2017 06:05 PM, Doug Anderson wrote:
+> Hi,
+> 
+> On Thu, Dec 29, 2016 at 6:17 AM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>> On Thu, Dec 15, 2016 at 04:54:30PM -0800, Doug Anderson wrote:
+>>>> Index: b/arch/arm/boot/dts/exynos5800.dtsi
+>>>> ===================================================================
+>>>> --- a/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.365955950 +0100
+>>>> +++ b/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.361955949 +0100
+>>>> @@ -24,6 +24,16 @@
+>>>>  };
+>>>>
+>>>>  &cluster_a15_opp_table {
+>>>> +       opp@2000000000 {
+>>>> +               opp-hz = /bits/ 64 <2000000000>;
+>>>> +               opp-microvolt = <1250000>;
+>>>> +               clock-latency-ns = <140000>;
+>>>> +       };
+>>>> +       opp@1900000000 {
+>>>> +               opp-hz = /bits/ 64 <1900000000>;
+>>>> +               opp-microvolt = <1250000>;
+>>>> +               clock-latency-ns = <140000>;
+>>>> +       };
+>>>
+>>> I don't think the voltages you listed are high enough for all peach pi
+>>> boards for A15 at 1.9 GHz and 2.0 GHz, at least based on the research
+>>> I did.  See my response to v1.
+>>
+>> I wanted to apply this but saw this remaining issue. Javier tested it
+>> on Peach Pi so is this concern still valid?
+> 
+> I'm not sure.  It's been years since I did anything with exynos, so I
+> won't stand in the way if everyone else agrees that this patch is
+> good, but I will point out that testing on a single Peach Pi board is
+> not really enough given the massive difference in voltage needed
+> between the highest ASV group and the lowest (a whopping 112.5 mV from
+> looking in the Chrome OS source tree).
+> 
 
-Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+I agree. That's why answered that I wasn't able to find regressions on the
+Peach Pi I've access to, but I couldn't provide a Reviewed-by tag since it
+wasn't clear to me that the values were safe for any Exynos5420/5422/5800.
 
+> -Doug
+
+Best regards,
+-- 
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
