@@ -1,54 +1,53 @@
-From: Matthew Garrett <mjg59@coreos.com>
-Subject: Re: [PATCH] Allow userspace control of runtime disabling/enabling of
- driver probing
-Date: Wed, 4 Jan 2017 15:53:19 -0600
-Message-ID: <CAPeXnHsd_W4zKBDrn5jpLSi_VjzW+2O6znqs4zGeJhOt5USRYQ@mail.gmail.com>
-References: <20170103225831.GA113525@beast> <20170104093236.GB31677@kroah.com>
- <CAPeXnHudW-YDmoK8NrFzQgAq4WuRDgFNC5-0GaG0+jVkq+3meQ@mail.gmail.com>
- <CAPeXnHue8hKFiMsddMTN7Hb5RWBGXWUgy2-kpXNLwBfOdf0QVA@mail.gmail.com>
- <20170104194707.GD25268@kroah.com> <CAPeXnHs1=jCGtSgOO859bp2chMWBX1L6VaKn65RKoLaTbVq_0A@mail.gmail.com>
- <20170104204704.GA17642@kroah.com>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Santosh Shilimkar <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH v3 0/4] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Wed, 4 Jan 2017 13:54:09 -0800
+Message-ID: <6fc7a6cb-1856-1377-b00c-8166dbb23ea2@oracle.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <kernel-hardening-return-5879-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20170104204704.GA17642@kroah.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Kees Cook <keescook@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Madalin Bucur <madalin.bucur@nxp.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Petr Tesarik <ptesarik@suse.com>, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170104205536.15963-1-d-gerlach@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Lokesh Vutla <lokeshvutla@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Ugh let's try that again in plain text (How does the Android gmail
-client still not get this right=E2=80=BD)
-
-On Wed, Jan 4, 2017 at 2:47 PM, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
-> On Wed, Jan 04, 2017 at 02:01:00PM -0600, Matthew Garrett wrote:
->> On Wed, Jan 4, 2017 at 1:47 PM, Greg Kroah-Hartman
->> <gregkh@linuxfoundation.org> wrote:
->> > You know the device type and vendor/product id before you authorize it=
-,
->> > you should be able to do this type of detection otherwise it seems
->> > pretty pointless :)
->>
->> You know the vendor and product ID, which doesn't tell you whether one
->> of the endpoints is a network device or a keyboard. You need to know
->> that.
+On 1/4/2017 12:55 PM, Dave Gerlach wrote:
+> Hi,
+> This is v3 of the series to add support for TI-SCI Generic PM Domains.
+> Previous versions can be found here:
 >
-> Are you sure you don't have the configuration information as well?  That
-> should tell you...
+> v2: https://www.spinics.net/lists/kernel/msg2364612.html
+> v1: http://www.spinics.net/lists/arm-kernel/msg525204.html
+>
+> This version is rebased on v4.10-rc2 but is the same as v2 with the
+> exception of patch 2 in which the devicetree binding documentation
+> needed to be updated to show the k2g_pds node should be a child of
+> the pmmc node. Apart from that, the acks provided by Ulf were added
+> to patches 1 and 3.
+>
+> Now that the TI-SCI series has been merged [1] this series will be ready
+> to go in with an ack on the DT binding. Rob had raised some questions on
+> the necessity ti,sci-id property but I believe these were properly
+> addressed during the discussion of v2 so hopefully an ack is in order now.
+>
+How do you plan to merge this series with below patch ?
 
-usb_choose_configuration() hasn't been called at this point, so no -
-we don't create any device entries, so there's no way for userspace to
-know anything (there isn't even a uevent on device plug). And even if
-you could scrape the info, you still have no way of knowing what
-configuration the kernel will choose if the device has multiple.
+>   PM / Domains: Add generic data pointer to genpd data struct
+I think this one goes via Rafael's tree. If you want me to merge this
+along with other patches then will need his ack.
 
-> And for network devices, they are almost all just vendor/product ids,
-> not many use the class protocol.
+Other way is to get that merged first via Rafael's tree and then
+the remainder series.
 
-Plenty of stuff uses CDC.
+Regards,
+Santosh
