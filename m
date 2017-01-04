@@ -1,72 +1,60 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 14/22] dt-bindings: power: supply: add AXP20X/AXP22X
- battery DT binding
-Date: Wed, 4 Jan 2017 07:21:07 -0600
-Message-ID: <20170104132107.tciklylgqvhftb6f@rob-hp-laptop>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-15-quentin.schulz@free-electrons.com>
+From: Matthew Garrett <mjg59@coreos.com>
+Subject: Re: [PATCH] Allow userspace control of runtime disabling/enabling of
+ driver probing
+Date: Wed, 4 Jan 2017 12:10:04 -0600
+Message-ID: <CAPeXnHudW-YDmoK8NrFzQgAq4WuRDgFNC5-0GaG0+jVkq+3meQ@mail.gmail.com>
+References: <20170103225831.GA113525@beast> <20170104093236.GB31677@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170102163723.7939-15-quentin.schulz@free-electrons.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, icenowy@aosc.xyz, bonbons@linux-vserver.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-vk0-f53.google.com ([209.85.213.53]:33391 "EHLO
+        mail-vk0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S968759AbdADSKG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2017 13:10:06 -0500
+Received: by mail-vk0-f53.google.com with SMTP id 137so290730237vkl.0
+        for <linux-pm@vger.kernel.org>; Wed, 04 Jan 2017 10:10:05 -0800 (PST)
+In-Reply-To: <20170104093236.GB31677@kroah.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Kees Cook <keescook@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>, Lukas Wunner <lukas@wunner.de>, Madalin Bucur <madalin.bucur@nxp.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Petr Tesarik <ptesarik@suse.com>, linux-pm@vger.kernel.org, kernel-hardening@lists.openwall.com
 
-On Mon, Jan 02, 2017 at 05:37:14PM +0100, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
-> 
-> This patch adds the DT binding documentation for the battery power
-> supply which gets various data from the PMIC, such as the battery status
-> (charging, discharging, full, dead), current max limit, current current,
-> battery capacity (in percentage), voltage max and min limits, current
-> voltage and battery capacity (in Ah).
-> 
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> ---
->  .../bindings/power/supply/axp20x_battery.txt       | 27 ++++++++++++++++++++++
->  1 file changed, 27 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-> new file mode 100644
-> index 0000000..5489d0d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-> @@ -0,0 +1,27 @@
-> +AXP20x and AXP22x battery power supply
-> +
-> +Required Properties:
-> + - compatible, one of:
-> +			"x-powers,axp209-battery-power-supply"
-> +			"x-powers,axp221-battery-power-supply"
-> + - io-channels: phandles to battery voltage, charge and discharge
-> + currents ADC channels
-> + - io-channel-names = "batt_v", "batt_chrg_i", "batt_dischrg_i";
-> +
-> +This node is a subnode of the axp20x/axp22x PMIC.
-> +
-> +The AXP20X and AXP22X can read the battery voltage, charge and discharge
-> +currents of the battery by reading ADC channels from the AXP20X/AXP22X
-> +ADC.
-> +
-> +Example:
-> +
-> +&axp209 {
-> +	battery_power_supply: battery_power_supply {
+On Wed, Jan 4, 2017 at 3:32 AM, Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+> Ick, hiding this in the power management code?  That's messy, and
+> complex, as Rafael pointed out.
 
-Humm, I guess you power-supply is not sufficient, so 
-'battery-power-supply' and similar for ac.
+It's in code that's used in the power management layer, not in power
+management code. This is all in the driver core.
 
-> +		compatible = "x-powers,axp209-battery-power-supply";
-> +		io-channels = <&axp209_adc 7>, <&axp209_adc 8>,
-> +			<&axp209_adc 9>;
-> +		io-channel-names = "batt_v", "batt_chrg_i",
-> +			"batt_dischrg_i";
-> +	}
-> +};
-> -- 
-> 2.9.3
-> 
+> Turning on and off at random times "new devices can not be bound, wait,
+> now they can!" is ripe for loads of issues and is going to be a pain to
+> properly maintain over time.
+
+What kind of issues?
+
+> What's wrong with the facility that the USB layer provides today to
+> allow only "authenticated" devices to be enabled?  That has been used
+> for a few years now to prevent these "don't allow random devices that
+> are plugged into the computer to be enabled" type attacks.  Doing much
+> the same thing, in a different manner, is ripe for problems (how do the
+> two interact now?)
+
+The USB authentication feature was intended for handling wireless USB
+devices - it can be reused for this, but the code isn't generic enough
+to apply to other bus types. The two interact in exactly the way you'd
+expect, ie they don't. If you use both, then you need to handle both.
+
+> If you are worried about PCI devices, why not just implement what USB
+> did for PCI?  Or better yet, move the USB functionality into the driver
+> core, adding that type of authentication ability to any bus that wishes
+> to have it (and not break existing working systems that are using the
+> USB solution today.)
+
+The USB approach requires userspace to keep track of which devices
+were added while the session was locked, whereas the kernel already
+has the logic to do all of this. All the complexity already exists and
+is used every time anybody suspends and resumes, so why add additional
+complexity?
+
+I'm not clear on how this patch breaks anybody using the existing USB solution?
