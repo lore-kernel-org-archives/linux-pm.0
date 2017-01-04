@@ -1,64 +1,65 @@
-From: Doug Anderson <dianders@chromium.org>
-Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
- Exynos5422/5800
-Date: Wed, 4 Jan 2017 13:05:41 -0800
-Message-ID: <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
-References: <10512254.nyUcL0zgTP@amdc3058>
- <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
- <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: fix spelling mistake: supply: "Celcius" ->
+ "Celsius"
+Date: Wed, 4 Jan 2017 22:19:11 +0100
+Message-ID: <20170104211911.4zu6dyz5aya5uobq@earth>
+References: <20161228215926.8111-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ben Gamari <ben@smart-cactus.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Russell King <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Kukjin Kim <kgene@kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, Arjun K V <arjun.kv@samsung.com>, Andreas Faerber <afaerber@suse.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="b2vfv45hk72y3mre"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:50460 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753543AbdADVTQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Jan 2017 16:19:16 -0500
+Content-Disposition: inline
+In-Reply-To: <20161228215926.8111-1-colin.king@canonical.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
 
-On Thu, Dec 29, 2016 at 6:17 AM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> On Thu, Dec 15, 2016 at 04:54:30PM -0800, Doug Anderson wrote:
->> > Index: b/arch/arm/boot/dts/exynos5800.dtsi
->> > ===================================================================
->> > --- a/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.365955950 +0100
->> > +++ b/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.361955949 +0100
->> > @@ -24,6 +24,16 @@
->> >  };
->> >
->> >  &cluster_a15_opp_table {
->> > +       opp@2000000000 {
->> > +               opp-hz = /bits/ 64 <2000000000>;
->> > +               opp-microvolt = <1250000>;
->> > +               clock-latency-ns = <140000>;
->> > +       };
->> > +       opp@1900000000 {
->> > +               opp-hz = /bits/ 64 <1900000000>;
->> > +               opp-microvolt = <1250000>;
->> > +               clock-latency-ns = <140000>;
->> > +       };
->>
->> I don't think the voltages you listed are high enough for all peach pi
->> boards for A15 at 1.9 GHz and 2.0 GHz, at least based on the research
->> I did.  See my response to v1.
->
-> I wanted to apply this but saw this remaining issue. Javier tested it
-> on Peach Pi so is this concern still valid?
+--b2vfv45hk72y3mre
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm not sure.  It's been years since I did anything with exynos, so I
-won't stand in the way if everyone else agrees that this patch is
-good, but I will point out that testing on a single Peach Pi board is
-not really enough given the massive difference in voltage needed
-between the highest ASV group and the lowest (a whopping 112.5 mV from
-looking in the Chrome OS source tree).
+Hi Colin,
 
--Doug
+On Wed, Dec 28, 2016 at 09:59:26PM +0000, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>=20
+> trivial fix to spelling mistake in comments in the headers
+>=20
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+
+Thanks for your patch. I have queued it into power-supply's
+for-next branch:
+
+https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git/log=
+/?h=3Dfor-next
+
+-- Sebastian
+
+--b2vfv45hk72y3mre
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhtZs8ACgkQ2O7X88g7
++prQ+BAAoGm2qe7j0KMcPU9r9nrr1gmAdC4Pl+VbhPWhhcdoccbherCBGlw/5OfG
+Ahgh37cD5uGgdJZ5YsIqPKZN3kooYauMSlNhS/enqvWXvhU2/Owwq+LYOV+/UTeV
+JIEuUU0mMMOc1+VwIqo4IVNMlWO7l+rUHSUtZPchvoYYhNA35/voc9Z41bHmDK5D
+i0tbmpzcH4hUD0Nmbc7k6gzM8dr1g6xZP51eK5OU3jGKylTlYSDPQsA1WiguXvjp
+SfxnBmhGziJdpPIgogxePPq1TIy8eaIMQ+VsXIvJI+a7H58dS1JGj3kbmMVkQk5x
+/BxiAHp5653bMLxCBd63rtxhlANCJ4bNzDk8TMLnp5uAJ071E1XmPDDdJbqBv+gI
+RCEfzhA4MEsYJXukic1xZFaVwWajxqwy9VPUs1MmQVmoy+kHQ+nh95bgGgZ+8J+W
+RZT9SISCpk7np9jIPdYweO6Xs5OYb2I5sA4AhnqSGDay0+hB3XP/+bWUJQN3RxWL
+3sVK0p4eKfGBTJlFCCxBb0dzg/Tfu68wR0Y5Be1XgJp09rCNYQahJCKBzwyaAilS
+Yb36Tz6RL3ZkjnLZdBStPJf2f5zF1Ih9UE6+i5Lz3Cxr6w/7vo+3v47NuPKb37hM
+eSFPoPCAQyxg/a901OnjD/ZaceF7XhEcdlIvTpcoZodKrXKut/s=
+=ctjq
+-----END PGP SIGNATURE-----
+
+--b2vfv45hk72y3mre--
