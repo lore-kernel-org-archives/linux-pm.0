@@ -1,48 +1,53 @@
-From: Scott Wood <oss-fOR+EgIDQEHk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [PATCH 1/3] dt-bindings: Update QorIQ TMU thermal bindings
-Date: Wed, 04 Jan 2017 04:37:54 -0600
-Message-ID: <1483526274.17813.1.camel@buserror.net>
-References: <1483520271-3838-1-git-send-email-hongtao.jia@nxp.com>
-         <1483520271-3838-2-git-send-email-hongtao.jia@nxp.com>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 02/22] mfd: axp20x: add ADC data regs to volatile regs
+ for AXP22X
+Date: Wed, 4 Jan 2017 11:55:39 +0000
+Message-ID: <20170104115539.GA24058@dell>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-3-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1483520271-3838-2-git-send-email-hongtao.jia-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jia Hongtao <hongtao.jia-3arQi8VN3Tc@public.gmane.org>, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, yuantian.tang-3arQi8VN3Tc@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170102163723.7939-3-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, icenowy-ymACFijhrKM@public.gmane.org, bonbons-ud5FBsm0p/xEiooADzr8i9i2O/JbrIOy@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2017-01-04 at 16:57 +0800, Jia Hongtao wrote:
-> For different types of SoC the sensor id and endianness may vary.
-> "#thermal-sensor-cells" is used to provide sensor id information.
-> "little-endian" property is to tell the endianness of TMU.
+On Mon, 02 Jan 2017, Quentin Schulz wrote:
+
+> The AXP22X PMICs have multiple ADCs, each one exposing data from the
+> different power supplies connected to the PMIC.
 > 
-> Signed-off-by: Jia Hongtao <hongtao.jia-3arQi8VN3Tc@public.gmane.org>
-> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> This adds the different ADC data registers to the volatile registers of
+> the AXP22X PMIC.
+> 
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+  
 > ---
->  Documentation/devicetree/bindings/thermal/qoriq-thermal.txt | 7 +++++++
->  1 file changed, 7 insertions(+)
+>  drivers/mfd/axp20x.c | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-> b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-> index 66223d5..20ca4ef 100644
-> --- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-> +++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-> @@ -17,6 +17,12 @@ Required properties:
->  	calibration data, as specified by the SoC reference manual.
->  	The first cell of each pair is the value to be written to TTCFGR,
->  	and the second is the value to be written to TSCFGR.
-> +- #thermal-sensor-cells : Must be 1. The sensor specifier is the monitoring
-> +	site ID, and represents the "n" in TRITSRn and TRATSRn.
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 619a83e..a33db5e 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -100,6 +100,7 @@ static const struct regmap_range axp22x_writeable_ranges[] = {
+>  static const struct regmap_range axp22x_volatile_ranges[] = {
+>  	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
+>  	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
+> +	regmap_reg_range(AXP22X_TEMP_ADC_H, AXP20X_BATT_DISCHRG_I_L),
+>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
+>  	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
+>  	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
 
-I assume the driver will continue to work with existing device trees where
-this information is absent?  If so, ACK for the whole series.
-
--Scott
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
