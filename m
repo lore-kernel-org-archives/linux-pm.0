@@ -1,44 +1,57 @@
-From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Subject: [PATCH v3 1/4] PM / Domains: Add generic data pointer to genpd data struct
-Date: Wed, 4 Jan 2017 14:55:33 -0600
-Message-ID: <20170104205536.15963-2-d-gerlach@ti.com>
-References: <20170104205536.15963-1-d-gerlach@ti.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH v3 0/4] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Wed, 4 Jan 2017 14:55:32 -0600
+Message-ID: <20170104205536.15963-1-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170104205536.15963-1-d-gerlach-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add a void *data pointer to struct generic_pm_domain_data. Because this
-exists for each device associated with a genpd it will allow us to
-assign per-device data if needed on a platform for control of that
-specific device.
+Hi,
+This is v3 of the series to add support for TI-SCI Generic PM Domains.
+Previous versions can be found here:
 
-Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
----
- include/linux/pm_domain.h | 1 +
- 1 file changed, 1 insertion(+)
+v2: https://www.spinics.net/lists/kernel/msg2364612.html
+v1: http://www.spinics.net/lists/arm-kernel/msg525204.html
 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 81ece61075df..73c9dba5cfcc 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -117,6 +117,7 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
-+	void *data;
- };
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS
+This version is rebased on v4.10-rc2 but is the same as v2 with the
+exception of patch 2 in which the devicetree binding documentation
+needed to be updated to show the k2g_pds node should be a child of
+the pmmc node. Apart from that, the acks provided by Ulf were added
+to patches 1 and 3.
+
+Now that the TI-SCI series has been merged [1] this series will be ready
+to go in with an ack on the DT binding. Rob had raised some questions on
+the necessity ti,sci-id property but I believe these were properly
+addressed during the discussion of v2 so hopefully an ack is in order now.
+
+Regards,
+Dave
+
+[1] http://www.spinics.net/lists/arm-kernel/msg536851.html
+
+Dave Gerlach (4):
+  PM / Domains: Add generic data pointer to genpd data struct
+  dt-bindings: Add TI SCI PM Domains
+  soc: ti: Add ti_sci_pm_domains driver
+  ARM: keystone: Drop PM domain support for k2g
+
+ .../devicetree/bindings/soc/ti/sci-pm-domain.txt   |  59 ++++++
+ MAINTAINERS                                        |   3 +
+ arch/arm/mach-keystone/Kconfig                     |   1 +
+ arch/arm/mach-keystone/pm_domain.c                 |   4 +-
+ drivers/soc/ti/Kconfig                             |  12 ++
+ drivers/soc/ti/Makefile                            |   1 +
+ drivers/soc/ti/ti_sci_pm_domains.c                 | 198 +++++++++++++++++++++
+ include/dt-bindings/genpd/k2g.h                    |  90 ++++++++++
+ include/linux/pm_domain.h                          |   1 +
+ 9 files changed, 368 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+ create mode 100644 drivers/soc/ti/ti_sci_pm_domains.c
+ create mode 100644 include/dt-bindings/genpd/k2g.h
+
 -- 
 2.11.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
