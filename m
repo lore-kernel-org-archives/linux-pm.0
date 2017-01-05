@@ -1,76 +1,36 @@
-From: Alex Shi <alex.shi@linaro.org>
-Subject: [PATCH 2/3] cpu: expose pm_qos_resume_latency for each cpu
-Date: Thu,  5 Jan 2017 23:29:46 +0800
-Message-ID: <1483630187-29622-3-git-send-email-alex.shi@linaro.org>
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 1/3] cpuidle/menu: stop seeking deeper idle if current
+ state is too deep
+Date: Thu, 05 Jan 2017 10:43:59 -0500
+Message-ID: <1483631039.25514.1.camel@redhat.com>
 References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
+         <1483630187-29622-2-git-send-email-alex.shi@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f181.google.com ([209.85.223.181]:34015 "EHLO
-        mail-io0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S969440AbdAEPaX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 10:30:23 -0500
-Received: by mail-io0-f181.google.com with SMTP id f103so13219371ioi.1
-        for <linux-pm@vger.kernel.org>; Thu, 05 Jan 2017 07:30:23 -0800 (PST)
-In-Reply-To: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
+Received: from mx1.redhat.com ([209.132.183.28]:40122 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S968105AbdAEPoC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 5 Jan 2017 10:44:02 -0500
+In-Reply-To: <1483630187-29622-2-git-send-email-alex.shi@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>
-Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: Alex Shi <alex.shi@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, open list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>
 
-The cpu-dma PM QoS constraint impacts all the cpus in the system. There
-is no way to let the user to choose a PM QoS constraint per cpu.
+On Thu, 2017-01-05 at 23:29 +0800, Alex Shi wrote:
+> The obsolete commit 71abbbf85 want to introduce a dynamic cstates,
+> but it was removed for long time. Just left the nonsense deeper
+> cstate
+> checking.
+> 
+> Since all target_residency and exit_latency are going longer in
+> deeper
+> idle state, no needs to waste some cpu cycle on useless seeking.
 
-The following patch exposes to the userspace a per cpu based sysfs file
-in order to let the userspace to change the value of the PM QoS latency
-constraint.
+Makes me wonder if it would be worth documenting the
+requirement that c-states be listed in increasing
+order?
 
-This change is inoperative in its form and the cpuidle governors have to
-take into account the per cpu latency constraint in addition to the
-global cpu-dma latency constraint in order to operate properly.
-
-BTW
-The pm_qos_resume_latency usage defined in
-Documentation/ABI/testing/sysfs-devices-power
-The /sys/devices/.../power/pm_qos_resume_latency_us attribute
-contains the PM QoS resume latency limit for the given device,
-which is the maximum allowed time it can take to resume the
-device, after it has been suspended at run time, from a resume
-request to the moment the device will be ready to process I/O,
-in microseconds.  If it is equal to 0, however, this means that
-the PM QoS resume latency may be arbitrary.
-
-Signed-off-by: Alex Shi <alex.shi@linaro.org>
-To: linux-kernel@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
----
- drivers/base/cpu.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 4c28e1a..29cf3459 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -17,6 +17,7 @@
- #include <linux/of.h>
- #include <linux/cpufeature.h>
- #include <linux/tick.h>
-+#include <linux/pm_qos.h>
- 
- #include "base.h"
- 
-@@ -376,6 +377,9 @@ int register_cpu(struct cpu *cpu, int num)
- 
- 	per_cpu(cpu_sys_devices, num) = &cpu->dev;
- 	register_cpu_under_node(num, cpu_to_node(num));
-+#ifdef CONFIG_CPU_IDLE_GOV_MENU
-+	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
-+#endif
- 
- 	return 0;
- }
--- 
-2.8.1.101.g72d917a
-
+Acked-by: Rik van Riel <riel@redhat.com>
