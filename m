@@ -1,165 +1,135 @@
-From: Yasuaki Ishimatsu <yasu.isimatu@gmail.com>
-Subject: Re: [PATCH] thermal: add thermal_zone_remove_device_groups()
-Date: Thu, 5 Jan 2017 11:58:48 -0500
-Message-ID: <7116979e-5405-a02b-17f1-2fe663334907@gmail.com>
-References: <6c5a1a95-9b03-6f43-8de8-1ab4ac27cc78@gmail.com>
- <1483504508.2320.41.camel@intel.com> <1483505107.2320.50.camel@intel.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Subject: Re: [PATCH 17/22] power: supply: add battery driver for AXP20X and
+ AXP22X PMICs
+Date: Thu, 5 Jan 2017 18:02:24 +0100
+Message-ID: <20170105170224.wq45m3pg6sjnuhyh@lukather>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-18-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1483505107.2320.50.camel@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com
+Content-Type: multipart/mixed; boundary="===============0172696973153841119=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170102163723.7939-18-quentin.schulz@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux@armlinux.org.uk, wens@csie.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, pmeerw@pmeerw.net, knaack.h@gmx.de, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, jic23@kernel.org, icenowy@aosc.xyz
 List-Id: linux-pm@vger.kernel.org
 
 
+--===============0172696973153841119==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="4ydonvtwzvx2n2jl"
+Content-Disposition: inline
 
-On 01/03/2017 11:45 PM, Zhang Rui wrote:
-> On Wed, 2017-01-04 at 12:35 +0800, Zhang Rui wrote:
->> On Thu, 2016-12-15 at 16:47 -0500, Yasuaki Ishimatsu wrote:
->>>
->>> When offlining all cores on a CPU, the following system panic
->>> occurs:
->>>
->>> BUG: unable to handle kernel NULL pointer dereference at (null)
->>> IP: strlen+0x0/0x20
->>> <snip>
->>> Call Trace:
->>>   ? kernfs_name_hash+0x17/0x80
->>>   kernfs_find_ns+0x3f/0xd0
->>>   kernfs_remove_by_name_ns+0x36/0xa0
->>>   remove_files.isra.1+0x36/0x70
->>>   sysfs_remove_group+0x44/0x90
->>>   sysfs_remove_groups+0x2e/0x50
->>>   device_remove_attrs+0x5e/0x90
->>>   device_del+0x1ea/0x350
->>>   device_unregister+0x1a/0x60
->>>   thermal_zone_device_unregister+0x1f2/0x210
->>>   pkg_thermal_cpu_offline+0x14f/0x1a0 [x86_pkg_temp_thermal]
->>>   ? kzalloc.constprop.2+0x10/0x10 [x86_pkg_temp_thermal]
->>>   cpuhp_invoke_callback+0x8d/0x3f0
->>>   cpuhp_down_callbacks+0x42/0x80
->>>   cpuhp_thread_fun+0x8b/0xf0
->>>   smpboot_thread_fn+0x110/0x160
->>>   kthread+0x101/0x140
->>>   ? sort_range+0x30/0x30
->>>   ? kthread_park+0x90/0x90
->>>   ret_from_fork+0x25/0x30
->>>
->>> thermal_zone_create_device_group() sets attribute_groups in
->>> thermal_zone_attribute_groups[] to tz->device.groups. But these
->>> attributes_groups do not have name argument.
->>>
->> I'm a little confused here, in remove_files(),
->> it is the (struct attribute *)->name which is passed into
->> kernfs_remove_by_name, instead of attributes_groups->name.
->>
->> IMO, a NULL-name attribute group won't bring any problem.
->>
-> hah, I see what the problem is here.
-> Just like the problem illustrated in this one
-> https://patchwork.kernel.org/patch/9492439/
-> The root cause is that, the trip point attributes are cleared and freed
-> BEFORE device_unregister(), this results in NULL trip point attributes
-> when removing the thermal zone device sysfs groups.
->
-> And I believe https://patchwork.kernel.org/patch/9492439/ should fix
-> the problem for you, right?
 
-Thank you for the information.
-I confirmed that the patch fixes the issue.
+--4ydonvtwzvx2n2jl
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-Yasuaki Ishimatsu
->
-> thanks,
-> rui> >
->>> So when offlining all cores on CPU and executing
->>> thermal_zone_device_unregister(), the panic occurs in strlen()
->>> called from kernfs_name_hash() because name argument is NULL.
->>>
->>> The patch adds thermal_zone_remove_device_groups() to free
->>> tz->device.groups and set NULL pointer.
->>>
->>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>> CC: Zhang Rui <rui.zhang@intel.com>
->>> CC: Eduardo Valentin <edubezval@gmail.com>
->>> ---
->>>   drivers/thermal/thermal_core.c  | 3 ++-
->>>   drivers/thermal/thermal_core.h  | 1 +
->>>   drivers/thermal/thermal_sysfs.c | 6 ++++++
->>>   3 files changed, 9 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/thermal/thermal_core.c
->>> b/drivers/thermal/thermal_core.c
->>> index 641faab..926e385 100644
->>> --- a/drivers/thermal/thermal_core.c
->>> +++ b/drivers/thermal/thermal_core.c
->>> @@ -1251,6 +1251,7 @@ struct thermal_zone_device *
->>>
->>>   unregister:
->>>   	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
->>> +	thermal_zone_remove_device_groups(tz);
->>>   	device_unregister(&tz->device);
->>>   	return ERR_PTR(result);
->>>   }
->>> @@ -1315,8 +1316,8 @@ void thermal_zone_device_unregister(struct
->>> thermal_zone_device *tz)
->>>   	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
->>>   	idr_destroy(&tz->idr);
->>>   	mutex_destroy(&tz->lock);
->>> +	thermal_zone_remove_device_groups(tz);
->>>   	device_unregister(&tz->device);
->>> -	kfree(tz->device.groups);
->>>   }
->>>   EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
->>>
->>> diff --git a/drivers/thermal/thermal_core.h
->>> b/drivers/thermal/thermal_core.h
->>> index 2412b37..e3a60db 100644
->>> --- a/drivers/thermal/thermal_core.h
->>> +++ b/drivers/thermal/thermal_core.h
->>> @@ -70,6 +70,7 @@ void thermal_zone_device_unbind_exception(struct
->>> thermal_zone_device *,
->>>   int thermal_build_list_of_policies(char *buf);
->>>
->>>   /* sysfs I/F */
->>> +void thermal_zone_remove_device_groups(struct thermal_zone_device
->>> *tz);
->>>   int thermal_zone_create_device_groups(struct thermal_zone_device
->>> *,
->>> int);
->>>   void thermal_cooling_device_setup_sysfs(struct
->>> thermal_cooling_device *);
->>>   /* used only at binding time */
->>> diff --git a/drivers/thermal/thermal_sysfs.c
->>> b/drivers/thermal/thermal_sysfs.c
->>> index a694de9..3dfd29b 100644
->>> --- a/drivers/thermal/thermal_sysfs.c
->>> +++ b/drivers/thermal/thermal_sysfs.c
->>> @@ -605,6 +605,12 @@ static int create_trip_attrs(struct
->>> thermal_zone_device *tz, int mask)
->>>   	return 0;
->>>   }
->>>
->>> +void thermal_zone_remove_device_groups(struct thermal_zone_device
->>> *tz)
->>> +{
->>> +	kfree(tz->device.groups);
->>> +	tz->device.groups = NULL;
->>> +}
->>> +
->>>   int thermal_zone_create_device_groups(struct thermal_zone_device
->>> *tz,
->>>   				      int mask)
->>>   {
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pm"
->> in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->
+On Mon, Jan 02, 2017 at 05:37:17PM +0100, Quentin Schulz wrote:
+> +		/*
+> +		 * IIO framework gives mV but Power Supply framework gives =B5V.
+> +		 */
+> +		val->intval *=3D 1000;
+
+s/gives/wants/ ?
+
+> +static int axp20x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_=
+batt,
+> +					  int val)
+> +{
+> +	switch (val) {
+> +	case 4100000:
+> +		return regmap_update_bits(axp20x_batt->regmap,
+> +					  AXP20X_CHRG_CTRL1,
+> +					  AXP20X_CHRG_CTRL1_TGT_VOLT,
+> +					  AXP20X_CHRG_CTRL1_TGT_4_1V);
+> +	case 4150000:
+> +		if (axp20x_batt->axp_id =3D=3D AXP221_ID)
+> +			return -EINVAL;
+> +
+> +		return regmap_update_bits(axp20x_batt->regmap,
+> +					  AXP20X_CHRG_CTRL1,
+> +					  AXP20X_CHRG_CTRL1_TGT_VOLT,
+> +					  AXP20X_CHRG_CTRL1_TGT_4_15V);
+> +	case 4200000:
+> +		return regmap_update_bits(axp20x_batt->regmap,
+> +					  AXP20X_CHRG_CTRL1,
+> +					  AXP20X_CHRG_CTRL1_TGT_VOLT,
+> +					  AXP20X_CHRG_CTRL1_TGT_4_2V);
+> +	default:
+> +		/*
+> +		 * AXP20x max voltage can be set to 4.36V and AXP22X max voltage
+> +		 * can be set to 4.22V and 4.24V, but these voltages are too
+> +		 * high for Lithium based batteries (AXP PMICs are supposed to
+> +		 * be used with these kinds of battery).
+> +		 */
+> +		return -EINVAL;
+> +	}
+
+Since all your calls to regmap are the same, something like:
+
+case 4100000:
+	val =3D AXP20X_CHRG_CTRL1_TGT_4_1V;
+	break;
+
+case 4150000:
+	val =3D AXP20X_CHRG_CTRL1_TGT_4_15V;
+	break;
+
+regmap_update_bits(axp20x_batt->regmap, AXP20X_CHRG_CTRL1,
+		   AXP20X_CHRG_CTRL1_TGT_VOLT, val);
+
+
+It would also get rid of your warnings in checkpatch.
+
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+
+--4ydonvtwzvx2n2jl
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJYbnwbAAoJEBx+YmzsjxAgjkYQALMF1anuaoZC9l++9J6su0Vh
+FgfjsnT7qYWz+qzBFoF42u1ujZSsNrOhlqIKh5lXciCe69Cx6RBxXJgGAkYIxrlO
+kXLcHttap+RU7RYQJ4S4YwKwgksffDw0jx8th5hxZOowBogqG7zDn5H5dz/3wSyf
+qVcyBTwKilIAId6AbUy+T6ptWMMYVt1SPLZVK2bPnQKo+a1f+KScCJ92pfl228vM
+8xGkgHVUgc73a6zePin3oF4d2oRmwYgTdJFiJCXduXwxlfIynwAonDPynu52hdGI
+S7KPI7aIUKWR/fFIQYSU1jFBbBt0h1YXrQFIrGO2f9+Ow2f98vkU9j7Q7mzOOdyc
+33F2VSeSTR3SJarhaQUOsPFScLUo8deNQVE7nv6uBKn8+EId6BvORQ2q3LMEfF2F
+9RZaBBxZ48Qnp14BZrAemiAHccy8bczy465HGqfSVO3hyrHPsEdSL08rF09RaxcU
+9fD56VopraViiomKLKVLYSrHWP8YLXbtAd/vcdDvJNleun1GEk4amLh6xHVI3zE1
+/M6xm4a28vVWOnlW0D4s+PNG7vJp7+mXQ2hAu2ZvaUzhtPIkdHf6w9/y1ytBW2I9
+Kf8CiwFr002dtf3tridrFzoePr9n4ZQvouUGBnMVp2K3cZtYUcxeKbdeH92ZRErw
+cCw+Jgqy3HHTZnG3IoOe
+=ThAR
+-----END PGP SIGNATURE-----
+
+--4ydonvtwzvx2n2jl--
+
+
+--===============0172696973153841119==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============0172696973153841119==--
