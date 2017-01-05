@@ -1,62 +1,63 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH 05/22] ARM: dtsi: axp209: add AXP209 ADC subnode
-Date: Thu, 5 Jan 2017 09:08:19 +0100
-Message-ID: <1ddf7012-3336-84c2-6392-353b01beea93@free-electrons.com>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-6-quentin.schulz@free-electrons.com>
- <CAGb2v66dw=DECuHpLDzHnMP-O4UwZ+RkPsH0RofOGdBa7z7OHw@mail.gmail.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: Immutable branch for axp288 power-supply/mfd
+Date: Thu, 5 Jan 2017 08:13:30 +0000
+Message-ID: <20170105081330.GM24225@dell>
+References: <20170104211349.mwqlokjwytg2sn2e@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGb2v66dw=DECuHpLDzHnMP-O4UwZ+RkPsH0RofOGdBa7z7OHw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wj0-f171.google.com ([209.85.210.171]:34336 "EHLO
+        mail-wj0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1761059AbdAEIJt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 03:09:49 -0500
+Received: by mail-wj0-f171.google.com with SMTP id tn15so29006662wjb.1
+        for <linux-pm@vger.kernel.org>; Thu, 05 Jan 2017 00:09:46 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20170104211349.mwqlokjwytg2sn2e@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
 
-On 05/01/2017 06:51, Chen-Yu Tsai wrote:
-> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
-> <quentin.schulz@free-electrons.com> wrote:
->> X-Powers AXP209 PMIC has multiple ADCs, each one exposing data from the
->> different power supplies connected to the PMIC.
->>
->> This adds the ADC subnode for AXP20X PMIC.
->>
->> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->> ---
->>  arch/arm/boot/dts/axp209.dtsi | 5 +++++
->>  1 file changed, 5 insertions(+)
->>
->> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
->> index 675bb0f..2a4e8ee 100644
->> --- a/arch/arm/boot/dts/axp209.dtsi
->> +++ b/arch/arm/boot/dts/axp209.dtsi
->> @@ -53,6 +53,11 @@
->>         interrupt-controller;
->>         #interrupt-cells = <1>;
->>
->> +       axp209_adc: axp209_adc {
+On Wed, 04 Jan 2017, Sebastian Reichel wrote:
+
+> Hi Lee,
 > 
-> Node name should be generic. Please change it to "adc".
+> Here is the promised immutable branch for the axp288 power-supply
+> changes, that also touch the mfd subsystem.
 > 
+> -- Sebastian
+> 
+> The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
+> 
+>   Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git psy-mfd-axp288-immutable
 
-OK, do I keep the label as is?
+Did you tag the branch and push the tag?
 
-axp209_adc: adc {
+> for you to fetch changes up to 888f97435a856c2c5c6ca0b3337b68d595b5639e:
+> 
+>   power: supply: axp288_fuel_gauge: Drop platform_data dependency (2017-01-04 21:56:10 +0100)
+> 
+> ----------------------------------------------------------------
+> Hans de Goede (3):
+>       power: supply: axp288_charger: Make charger_init_hw_regs propagate i2c errors
+>       power: supply: axp288_charger: Drop platform_data dependency
+>       power: supply: axp288_fuel_gauge: Drop platform_data dependency
+> 
+>  drivers/power/supply/axp288_charger.c    | 132 +++++-----
+>  drivers/power/supply/axp288_fuel_gauge.c | 405 +++----------------------------
+>  include/linux/mfd/axp20x.h               |  29 ---
+>  3 files changed, 96 insertions(+), 470 deletions(-)
 
-Thanks,
-Quentin
+
 
 -- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
