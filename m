@@ -1,16 +1,14 @@
 From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 04/22] mfd: axp20x: add ADC cells for AXP20X and AXP22X
- PMICs
-Date: Thu, 5 Jan 2017 13:51:17 +0800
-Message-ID: <CAGb2v67VM1+ohk3=UK4GD7w_k+bvhQJp+ViF0z0+d5FL5k3pjQ@mail.gmail.com>
+Subject: Re: [PATCH 05/22] ARM: dtsi: axp209: add AXP209 ADC subnode
+Date: Thu, 5 Jan 2017 13:51:57 +0800
+Message-ID: <CAGb2v66dw=DECuHpLDzHnMP-O4UwZ+RkPsH0RofOGdBa7z7OHw@mail.gmail.com>
 References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-5-quentin.schulz@free-electrons.com>
- <20170104115602.GB24058@dell> <20170104115637.GC24058@dell>
+ <20170102163723.7939-6-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170104115637.GC24058@dell>
+In-Reply-To: <20170102163723.7939-6-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,53 +18,43 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Quentin Schulz <quentin.schulz@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBKYW4gNCwgMjAxNyBhdCA3OjU2IFBNLCBMZWUgSm9uZXMgPGxlZS5qb25lc0BsaW5h
-cm8ub3JnPiB3cm90ZToKPiBPbiBXZWQsIDA0IEphbiAyMDE3LCBMZWUgSm9uZXMgd3JvdGU6Cj4K
-Pj4gT24gTW9uLCAwMiBKYW4gMjAxNywgUXVlbnRpbiBTY2h1bHogd3JvdGU6Cj4+Cj4+ID4gVGhp
-cyBhZGRzIHRoZSBBWFAyMFgvQVhQMjJ4IEFEQ3MgZHJpdmVyIHRvIHRoZSBtZmQgY2VsbHMgb2Yg
-dGhlIEFYUDIwOSwKPj4gPiBBWFAyMjEgYW5kIEFYUDIyMyBNRkQuCj4+ID4KPj4gPiBTaWduZWQt
-b2ZmLWJ5OiBRdWVudGluIFNjaHVseiA8cXVlbnRpbi5zY2h1bHpAZnJlZS1lbGVjdHJvbnMuY29t
-Pgo+PiA+IC0tLQo+PiA+ICBkcml2ZXJzL21mZC9heHAyMHguYyB8IDkgKysrKysrKysrCj4+ID4g
-IDEgZmlsZSBjaGFuZ2VkLCA5IGluc2VydGlvbnMoKykKPj4KPj4gQXBwbGllZCwgdGhhbmtzLgo+
-Cj4gV2hvb3BzLCB3cm9uZyBrZXkgY29tYm8hICBTaG91bGQgaGF2ZSBiZWVuOgo+Cj4gRm9yIG15
-IG93biByZWZlcmVuY2U6Cj4gICBBY2tlZC1mb3ItTUZELWJ5OiBMZWUgSm9uZXMgPGxlZS5qb25l
-c0BsaW5hcm8ub3JnPgoKQWNrZWQtYnk6IENoZW4tWXUgVHNhaSA8d2Vuc0Bjc2llLm9yZz4KCj4K
-Pj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tZmQvYXhwMjB4LmMgYi9kcml2ZXJzL21mZC9heHAy
-MHguYwo+PiA+IGluZGV4IGEzM2RiNWUuLjMxYTg0ZDgxIDEwMDY0NAo+PiA+IC0tLSBhL2RyaXZl
-cnMvbWZkL2F4cDIweC5jCj4+ID4gKysrIGIvZHJpdmVycy9tZmQvYXhwMjB4LmMKPj4gPiBAQCAt
-NTgyLDYgKzU4Miw5IEBAIHN0YXRpYyBzdHJ1Y3QgbWZkX2NlbGwgYXhwMjB4X2NlbGxzW10gPSB7
-Cj4+ID4gICAgIH0sIHsKPj4gPiAgICAgICAgICAgICAubmFtZSAgICAgICAgICAgPSAiYXhwMjB4
-LXJlZ3VsYXRvciIsCj4+ID4gICAgIH0sIHsKPj4gPiArICAgICAgICAgICAubmFtZSAgICAgICAg
-ICAgPSAiYXhwMjB4LWFkYyIsCj4+ID4gKyAgICAgICAgICAgLm9mX2NvbXBhdGlibGUgID0gIngt
-cG93ZXJzLGF4cDIwOS1hZGMiLAo+PiA+ICsgICB9LCB7Cj4+ID4gICAgICAgICAgICAgLm5hbWUg
-ICAgICAgICAgID0gImF4cDIweC1hYy1wb3dlci1zdXBwbHkiLAo+PiA+ICAgICAgICAgICAgIC5v
-Zl9jb21wYXRpYmxlICA9ICJ4LXBvd2VycyxheHAyMDItYWMtcG93ZXItc3VwcGx5IiwKPj4gPiAg
-ICAgICAgICAgICAubnVtX3Jlc291cmNlcyAgPSBBUlJBWV9TSVpFKGF4cDIweF9hY19wb3dlcl9z
-dXBwbHlfcmVzb3VyY2VzKSwKPj4gPiBAQCAtNjAyLDYgKzYwNSw5IEBAIHN0YXRpYyBzdHJ1Y3Qg
-bWZkX2NlbGwgYXhwMjIxX2NlbGxzW10gPSB7Cj4+ID4gICAgIH0sIHsKPj4gPiAgICAgICAgICAg
-ICAubmFtZSAgICAgICAgICAgPSAiYXhwMjB4LXJlZ3VsYXRvciIsCj4+ID4gICAgIH0sIHsKPj4g
-PiArICAgICAgICAgICAubmFtZSAgICAgICAgICAgPSAiYXhwMjB4LWFkYyIsCj4+ID4gKyAgICAg
-ICAgICAgLm9mX2NvbXBhdGlibGUgID0gIngtcG93ZXJzLGF4cDIyMS1hZGMiCj4+ID4gKyAgIH0s
-IHsKPj4gPiAgICAgICAgICAgICAubmFtZSAgICAgICAgICAgPSAiYXhwMjB4LXVzYi1wb3dlci1z
-dXBwbHkiLAo+PiA+ICAgICAgICAgICAgIC5vZl9jb21wYXRpYmxlICA9ICJ4LXBvd2VycyxheHAy
-MjEtdXNiLXBvd2VyLXN1cHBseSIsCj4+ID4gICAgICAgICAgICAgLm51bV9yZXNvdXJjZXMgID0g
-QVJSQVlfU0laRShheHAyMnhfdXNiX3Bvd2VyX3N1cHBseV9yZXNvdXJjZXMpLAo+PiA+IEBAIC02
-MTUsNiArNjIxLDkgQEAgc3RhdGljIHN0cnVjdCBtZmRfY2VsbCBheHAyMjNfY2VsbHNbXSA9IHsK
-Pj4gPiAgICAgICAgICAgICAubnVtX3Jlc291cmNlcyAgICAgICAgICA9IEFSUkFZX1NJWkUoYXhw
-MjJ4X3Bla19yZXNvdXJjZXMpLAo+PiA+ICAgICAgICAgICAgIC5yZXNvdXJjZXMgICAgICAgICAg
-ICAgID0gYXhwMjJ4X3Bla19yZXNvdXJjZXMsCj4+ID4gICAgIH0sIHsKPj4gPiArICAgICAgICAg
-ICAubmFtZSAgICAgICAgICAgPSAiYXhwMjB4LWFkYyIsCj4+ID4gKyAgICAgICAgICAgLm9mX2Nv
-bXBhdGlibGUgID0gIngtcG93ZXJzLGF4cDIyMS1hZGMiCj4+ID4gKyAgIH0sIHsKPj4gPiAgICAg
-ICAgICAgICAubmFtZSAgICAgICAgICAgICAgICAgICA9ICJheHAyMHgtcmVndWxhdG9yIiwKPj4g
-PiAgICAgfSwgewo+PiA+ICAgICAgICAgICAgIC5uYW1lICAgICAgICAgICA9ICJheHAyMHgtdXNi
-LXBvd2VyLXN1cHBseSIsCj4+Cj4KPiAtLQo+IExlZSBKb25lcwo+IExpbmFybyBTVE1pY3JvZWxl
-Y3Ryb25pY3MgTGFuZGluZyBUZWFtIExlYWQKPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBz
-b2Z0d2FyZSBmb3IgQVJNIFNvQ3MKPiBGb2xsb3cgTGluYXJvOiBGYWNlYm9vayB8IFR3aXR0ZXIg
-fCBCbG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwps
-aW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJh
-ZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51
-eC1hcm0ta2VybmVsCg==
+On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> X-Powers AXP209 PMIC has multiple ADCs, each one exposing data from the
+> different power supplies connected to the PMIC.
+>
+> This adds the ADC subnode for AXP20X PMIC.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> ---
+>  arch/arm/boot/dts/axp209.dtsi | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+> index 675bb0f..2a4e8ee 100644
+> --- a/arch/arm/boot/dts/axp209.dtsi
+> +++ b/arch/arm/boot/dts/axp209.dtsi
+> @@ -53,6 +53,11 @@
+>         interrupt-controller;
+>         #interrupt-cells = <1>;
+>
+> +       axp209_adc: axp209_adc {
+
+Node name should be generic. Please change it to "adc".
+
+ChenYu
+
+> +               compatible = "x-powers,axp209-adc";
+> +               #io-channel-cells = <1>;
+> +       };
+> +
+>         axp_gpio: gpio {
+>                 compatible = "x-powers,axp209-gpio";
+>                 gpio-controller;
+> --
+> 2.9.3
+>
