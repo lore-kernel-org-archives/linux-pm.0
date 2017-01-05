@@ -1,63 +1,70 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: Immutable branch for axp288 power-supply/mfd
-Date: Thu, 5 Jan 2017 08:13:30 +0000
-Message-ID: <20170105081330.GM24225@dell>
-References: <20170104211349.mwqlokjwytg2sn2e@earth>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH 15/22] mfd: axp20x: add CHRG_CTRL1 to writeable regs for
+ AXP20X/AXP22X
+Date: Thu, 5 Jan 2017 09:10:35 +0100
+Message-ID: <304cdd9e-93a7-f554-99ce-e3e01762761d@free-electrons.com>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-16-quentin.schulz@free-electrons.com>
+ <CAGb2v67KmaECfFO+QBxKbtKscD0O=KNVHO1TS4FspYEdaLWUCA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f171.google.com ([209.85.210.171]:34336 "EHLO
-        mail-wj0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1761059AbdAEIJt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 03:09:49 -0500
-Received: by mail-wj0-f171.google.com with SMTP id tn15so29006662wjb.1
-        for <linux-pm@vger.kernel.org>; Thu, 05 Jan 2017 00:09:46 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20170104211349.mwqlokjwytg2sn2e@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAGb2v67KmaECfFO+QBxKbtKscD0O=KNVHO1TS4FspYEdaLWUCA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
 
-On Wed, 04 Jan 2017, Sebastian Reichel wrote:
+On 05/01/2017 07:10, Chen-Yu Tsai wrote:
+> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
+> <quentin.schulz@free-electrons.com> wrote:
+>> The CHR_CTRL1 register is made of 7 read-write bits with one being used
+>> to set the target voltage for battery charging.
+> 
+> The description is incorrect.
+> 
+> All 8 bits are read-write:
+> 
+>   - The highest bit enables the charger module
+>   - Bits [6:5] set the target voltage
+>   - Bits [4:3] set when the charge cycle ends, based on percentage
+>     of charge current
+>   - Bits [2:0] set the charge current
+> 
+> Feel free to use the above in the commit message.
+> 
 
-> Hi Lee,
-> 
-> Here is the promised immutable branch for the axp288 power-supply
-> changes, that also touch the mfd subsystem.
-> 
-> -- Sebastian
-> 
-> The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
-> 
->   Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git psy-mfd-axp288-immutable
+Thanks for the correction.
 
-Did you tag the branch and push the tag?
-
-> for you to fetch changes up to 888f97435a856c2c5c6ca0b3337b68d595b5639e:
+>>
+>> This adds the CHRG_CTRL1 register to the list of writeable registers for
+>> AXP20X and AXP22X PMICs.
 > 
->   power: supply: axp288_fuel_gauge: Drop platform_data dependency (2017-01-04 21:56:10 +0100)
+> You might want to add up to CHRG_CTRL3 for the AXP22x and CHRG_CTRL2
+> for the AXP20x. These control additional aspects of the charger.
 > 
-> ----------------------------------------------------------------
-> Hans de Goede (3):
->       power: supply: axp288_charger: Make charger_init_hw_regs propagate i2c errors
->       power: supply: axp288_charger: Drop platform_data dependency
->       power: supply: axp288_fuel_gauge: Drop platform_data dependency
-> 
->  drivers/power/supply/axp288_charger.c    | 132 +++++-----
->  drivers/power/supply/axp288_fuel_gauge.c | 405 +++----------------------------
->  include/linux/mfd/axp20x.h               |  29 ---
->  3 files changed, 96 insertions(+), 470 deletions(-)
 
+ACK.
 
+> AXP20X_CHRG_BAK_CTRL controls the charger for the RTC battery. You
+> could add this now, or let the person doing the RTC battery driver
+> add it.
+
+I'll let the person adding the RTC battery driver add it.
+
+Thanks,
+Quentin
 
 -- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
