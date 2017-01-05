@@ -1,375 +1,864 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 03/22] iio: adc: add support for X-Powers AXP20X and
- AXP22X PMICs ADCs
-Date: Thu, 5 Jan 2017 18:28:21 +0800
-Message-ID: <CAGb2v654a898jhPL+CJ0K4acTENq+sRo+ZJ4EG1zHqu73o=CGA@mail.gmail.com>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-4-quentin.schulz@free-electrons.com>
- <CAGb2v67S==AG=jZA=mO-bB4u1F2TOwhmBXg385W1xhUa3RAFbA@mail.gmail.com>
- <9acfe5e0-dc56-bd63-02b4-7bf34d49d62c@free-electrons.com>
- <CAGb2v66n46KQAzQBUrDwx7sYADkRm3_XyCHf9imN+FiDkHfP1w@mail.gmail.com>
- <cf4590d1-5381-f1da-7271-e6e7fee0c479@free-electrons.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/1] power: Remove Intel Moorestown battery support
+Date: Thu,  5 Jan 2017 13:38:06 +0200
+Message-ID: <20170105113806.139384-1-andriy.shevchenko@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cf4590d1-5381-f1da-7271-e6e7fee0c479@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:5338 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S970497AbdAELik (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 5 Jan 2017 06:38:40 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On Thu, Jan 5, 2017 at 5:50 PM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> On 05/01/2017 09:27, Chen-Yu Tsai wrote:
->> On Thu, Jan 5, 2017 at 4:06 PM, Quentin Schulz
->> <quentin.schulz@free-electrons.com> wrote:
->>> Hi Chen-Yu,
->>>
->>> On 05/01/2017 06:42, Chen-Yu Tsai wrote:
->>>> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
->>>> <quentin.schulz@free-electrons.com> wrote:
->>> [...]
->>>>> +
->>>>> +#define AXP20X_ADC_RATE_MASK                   (3 << 6)
->>>>> +#define AXP20X_ADC_RATE_25HZ                   (0 << 6)
->>>>> +#define AXP20X_ADC_RATE_50HZ                   BIT(6)
->>>>
->>>> Please be consistent with the format.
->>>>
->>>>> +#define AXP20X_ADC_RATE_100HZ                  (2 << 6)
->>>>> +#define AXP20X_ADC_RATE_200HZ                  (3 << 6)
->>>>> +
->>>>> +#define AXP22X_ADC_RATE_100HZ                  (0 << 6)
->>>>> +#define AXP22X_ADC_RATE_200HZ                  BIT(6)
->>>>> +#define AXP22X_ADC_RATE_400HZ                  (2 << 6)
->>>>> +#define AXP22X_ADC_RATE_800HZ                  (3 << 6)
->>>>
->>>> These are power-of-2 multiples of some base rate. May I suggest
->>>> a formula macro instead. Either way, you seem to be using only
->>>> one value. Will this be made configurable in the future?
->>>>
->>>
->>> Yes, I could use a formula macro instead. No plan to make it
->>> configurable, should I make it configurable?
->>
->> I don't see a use case for that atm.
->>
->>>>> +
->>>>> +#define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)       \
->>>>> +       {                                                       \
->>>>> +               .type = _type,                                  \
->>>>> +               .indexed = 1,                                   \
->>>>> +               .channel = _channel,                            \
->>>>> +               .address = _reg,                                \
->>>>> +               .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |  \
->>>>> +                                     BIT(IIO_CHAN_INFO_SCALE), \
->>>>> +               .datasheet_name = _name,                        \
->>>>> +       }
->>>>> +
->>>>> +#define AXP20X_ADC_CHANNEL_OFFSET(_channel, _name, _type, _reg) \
->>>>> +       {                                                       \
->>>>> +               .type = _type,                                  \
->>>>> +               .indexed = 1,                                   \
->>>>> +               .channel = _channel,                            \
->>>>> +               .address = _reg,                                \
->>>>> +               .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |  \
->>>>> +                                     BIT(IIO_CHAN_INFO_SCALE) |\
->>>>> +                                     BIT(IIO_CHAN_INFO_OFFSET),\
->>>>> +               .datasheet_name = _name,                        \
->>>>> +       }
->>>>> +
->>>>> +struct axp20x_adc_iio {
->>>>> +       struct iio_dev          *indio_dev;
->>>>> +       struct regmap           *regmap;
->>>>> +};
->>>>> +
->>>>> +enum axp20x_adc_channel {
->>>>> +       AXP20X_ACIN_V = 0,
->>>>> +       AXP20X_ACIN_I,
->>>>> +       AXP20X_VBUS_V,
->>>>> +       AXP20X_VBUS_I,
->>>>> +       AXP20X_TEMP_ADC,
->>>>
->>>> PMIC_TEMP would be better. And please save a slot for TS input.
->>>>
->>>
->>> ACK.
->>>
->>> Hum.. I'm wondering what should be the IIO type of the TS input channel
->>> then? The TS Pin can be used in two modes: either to monitor the
->>> temperature of the battery or as an external ADC, at least that's what I
->>> understand from the datasheet.
->>
->> AFAIK the battery charge/discharge high/low temperature threshold
->> registers take values in terms of voltage, not actual temperature.
->> And the temperature readout kind of depends on the thermoresistor
->> one is using. So I think "voltage" would be the proper type.
->>
->
-> ACK. Should I just add TS_IN in axp20x_adc_channel enum but not add it
-> in the exposed IIO channels ("saving" the slot but not using it)?
+The Moorestown support was removed by commit 1a8359e411eb ("x86/mid: Remove
+Intel Moorestown").
 
-Sure. Or you could skip the number with
+Remove this leftover.
 
-    AXP20X_GPIO0_V = 6,
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/power/supply/Kconfig             |   7 -
+ drivers/power/supply/Makefile            |   1 -
+ drivers/power/supply/intel_mid_battery.c | 795 -------------------------------
+ 3 files changed, 803 deletions(-)
+ delete mode 100644 drivers/power/supply/intel_mid_battery.c
 
->>>
->>>>> +       AXP20X_GPIO0_V,
->>>>> +       AXP20X_GPIO1_V,
->>>>
->>>> Please skip a slot for "battery instantaneous power".
->>>>
->>>>> +       AXP20X_BATT_V,
->>>>> +       AXP20X_BATT_CHRG_I,
->>>>> +       AXP20X_BATT_DISCHRG_I,
->>>>> +       AXP20X_IPSOUT_V,
->>>>> +};
->>>>> +
->>>>> +enum axp22x_adc_channel {
->>>>> +       AXP22X_TEMP_ADC = 0,
->>>>
->>>> Same comments as AXP20X_TEMP_ADC.
->>>>
->>>>> +       AXP22X_BATT_V,
->>>>> +       AXP22X_BATT_CHRG_I,
->>>>> +       AXP22X_BATT_DISCHRG_I,
->>>>> +};
->>>>
->>>> Shouldn't these channel numbers be exported as part of the device tree
->>>> bindings? At the very least, they shouldn't be changed.
->>>>
->>>
->>> I don't understand what you mean by that. Do you mean you want a
->>> consistent numbering between the AXP20X and the AXP22X, so that
->>> AXP22X_BATT_V would have the same channel number than AXP20X_BATT_V?
->>>
->>> Could you explain a bit more your thoughts on the channel numbers being
->>> exported as part of the device tree bindings?
->>
->> What I meant was that, since you are referencing the channels in the
->> device tree, the numbering scheme would be part of the device tree
->> binding, and should never be changed. So either these would be macros
->> in include/dt-bindings/, or a big warning should be put before it.
->>
->
-> ACK.
->
->> But see my reply on patch 7, about do we actually need to expose this
->> in the device tree.
->>
->
-> I don't know what's the best.
+diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+index 42877ff757b1..1add5e48e099 100644
+--- a/drivers/power/supply/Kconfig
++++ b/drivers/power/supply/Kconfig
+@@ -298,13 +298,6 @@ config BATTERY_JZ4740
+ 	  This driver can be build as a module. If so, the module will be
+ 	  called jz4740-battery.
+ 
+-config BATTERY_INTEL_MID
+-	tristate "Battery driver for Intel MID platforms"
+-	depends on INTEL_SCU_IPC && SPI
+-	help
+-	  Say Y here to enable the battery driver on Intel MID
+-	  platforms.
+-
+ config BATTERY_RX51
+ 	tristate "Nokia RX-51 (N900) battery driver"
+ 	depends on TWL4030_MADC
+diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+index 06d9ef5a61d8..8af6cdbb39b3 100644
+--- a/drivers/power/supply/Makefile
++++ b/drivers/power/supply/Makefile
+@@ -48,7 +48,6 @@ obj-$(CONFIG_BATTERY_TWL4030_MADC)	+= twl4030_madc_battery.o
+ obj-$(CONFIG_CHARGER_88PM860X)	+= 88pm860x_charger.o
+ obj-$(CONFIG_CHARGER_PCF50633)	+= pcf50633-charger.o
+ obj-$(CONFIG_BATTERY_JZ4740)	+= jz4740-battery.o
+-obj-$(CONFIG_BATTERY_INTEL_MID)	+= intel_mid_battery.o
+ obj-$(CONFIG_BATTERY_RX51)	+= rx51_battery.o
+ obj-$(CONFIG_AB8500_BM)		+= ab8500_bmdata.o ab8500_charger.o ab8500_fg.o ab8500_btemp.o abx500_chargalg.o pm2301_charger.o
+ obj-$(CONFIG_CHARGER_ISP1704)	+= isp1704_charger.o
+diff --git a/drivers/power/supply/intel_mid_battery.c b/drivers/power/supply/intel_mid_battery.c
+deleted file mode 100644
+index dc7feef1bea4..000000000000
+--- a/drivers/power/supply/intel_mid_battery.c
++++ /dev/null
+@@ -1,795 +0,0 @@
+-/*
+- * intel_mid_battery.c - Intel MID PMIC Battery Driver
+- *
+- * Copyright (C) 2009 Intel Corporation
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; version 2 of the License.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the GNU
+- * General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- * Author: Nithish Mahalingam <nithish.mahalingam@intel.com>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/err.h>
+-#include <linux/interrupt.h>
+-#include <linux/workqueue.h>
+-#include <linux/jiffies.h>
+-#include <linux/param.h>
+-#include <linux/device.h>
+-#include <linux/spi/spi.h>
+-#include <linux/platform_device.h>
+-#include <linux/power_supply.h>
+-
+-#include <asm/intel_scu_ipc.h>
+-
+-#define DRIVER_NAME "pmic_battery"
+-
+-/*********************************************************************
+- *		Generic defines
+- *********************************************************************/
+-
+-static int debug;
+-module_param(debug, int, 0444);
+-MODULE_PARM_DESC(debug, "Flag to enable PMIC Battery debug messages.");
+-
+-#define PMIC_BATT_DRV_INFO_UPDATED	1
+-#define PMIC_BATT_PRESENT		1
+-#define PMIC_BATT_NOT_PRESENT		0
+-#define PMIC_USB_PRESENT		PMIC_BATT_PRESENT
+-#define PMIC_USB_NOT_PRESENT		PMIC_BATT_NOT_PRESENT
+-
+-/* pmic battery register related */
+-#define PMIC_BATT_CHR_SCHRGINT_ADDR	0xD2
+-#define PMIC_BATT_CHR_SBATOVP_MASK	(1 << 1)
+-#define PMIC_BATT_CHR_STEMP_MASK	(1 << 2)
+-#define PMIC_BATT_CHR_SCOMP_MASK	(1 << 3)
+-#define PMIC_BATT_CHR_SUSBDET_MASK	(1 << 4)
+-#define PMIC_BATT_CHR_SBATDET_MASK	(1 << 5)
+-#define PMIC_BATT_CHR_SDCLMT_MASK	(1 << 6)
+-#define PMIC_BATT_CHR_SUSBOVP_MASK	(1 << 7)
+-#define PMIC_BATT_CHR_EXCPT_MASK	0x86
+-
+-#define PMIC_BATT_ADC_ACCCHRG_MASK	(1 << 31)
+-#define PMIC_BATT_ADC_ACCCHRGVAL_MASK	0x7FFFFFFF
+-
+-/* pmic ipc related */
+-#define PMIC_BATT_CHR_IPC_FCHRG_SUBID	0x4
+-#define PMIC_BATT_CHR_IPC_TCHRG_SUBID	0x6
+-
+-/* types of battery charging */
+-enum batt_charge_type {
+-	BATT_USBOTG_500MA_CHARGE,
+-	BATT_USBOTG_TRICKLE_CHARGE,
+-};
+-
+-/* valid battery events */
+-enum batt_event {
+-	BATT_EVENT_BATOVP_EXCPT,
+-	BATT_EVENT_USBOVP_EXCPT,
+-	BATT_EVENT_TEMP_EXCPT,
+-	BATT_EVENT_DCLMT_EXCPT,
+-	BATT_EVENT_EXCPT
+-};
+-
+-
+-/*********************************************************************
+- *		Battery properties
+- *********************************************************************/
+-
+-/*
+- * pmic battery info
+- */
+-struct pmic_power_module_info {
+-	bool is_dev_info_updated;
+-	struct device *dev;
+-	/* pmic battery data */
+-	unsigned long update_time;		/* jiffies when data read */
+-	unsigned int usb_is_present;
+-	unsigned int batt_is_present;
+-	unsigned int batt_health;
+-	unsigned int usb_health;
+-	unsigned int batt_status;
+-	unsigned int batt_charge_now;		/* in mAS */
+-	unsigned int batt_prev_charge_full;	/* in mAS */
+-	unsigned int batt_charge_rate;		/* in units per second */
+-
+-	struct power_supply *usb;
+-	struct power_supply *batt;
+-	int irq;				/* GPE_ID or IRQ# */
+-	struct workqueue_struct *monitor_wqueue;
+-	struct delayed_work monitor_battery;
+-	struct work_struct handler;
+-};
+-
+-static unsigned int delay_time = 2000;	/* in ms */
+-
+-/*
+- * pmic ac properties
+- */
+-static enum power_supply_property pmic_usb_props[] = {
+-	POWER_SUPPLY_PROP_PRESENT,
+-	POWER_SUPPLY_PROP_HEALTH,
+-};
+-
+-/*
+- * pmic battery properties
+- */
+-static enum power_supply_property pmic_battery_props[] = {
+-	POWER_SUPPLY_PROP_STATUS,
+-	POWER_SUPPLY_PROP_HEALTH,
+-	POWER_SUPPLY_PROP_PRESENT,
+-	POWER_SUPPLY_PROP_CHARGE_NOW,
+-	POWER_SUPPLY_PROP_CHARGE_FULL,
+-};
+-
+-
+-/*
+- * Glue functions for talking to the IPC
+- */
+-
+-struct battery_property {
+-	u32 capacity;	/* Charger capacity */
+-	u8  crnt;	/* Quick charge current value*/
+-	u8  volt;	/* Fine adjustment of constant charge voltage */
+-	u8  prot;	/* CHRGPROT register value */
+-	u8  prot2;	/* CHRGPROT1 register value */
+-	u8  timer;	/* Charging timer */
+-};
+-
+-#define IPCMSG_BATTERY		0xEF
+-
+-/* Battery coulomb counter accumulator commands */
+-#define IPC_CMD_CC_WR		  0 /* Update coulomb counter value */
+-#define IPC_CMD_CC_RD		  1 /* Read coulomb counter value */
+-#define IPC_CMD_BATTERY_PROPERTY  2 /* Read Battery property */
+-
+-/**
+- *	pmic_scu_ipc_battery_cc_read	-	read battery cc
+- *	@value: battery coulomb counter read
+- *
+- *	Reads the battery couloumb counter value, returns 0 on success, or
+- *	an error code
+- *
+- *	This function may sleep. Locking for SCU accesses is handled for
+- *	the caller.
+- */
+-static int pmic_scu_ipc_battery_cc_read(u32 *value)
+-{
+-	return intel_scu_ipc_command(IPCMSG_BATTERY, IPC_CMD_CC_RD,
+-					NULL, 0, value, 1);
+-}
+-
+-/**
+- *	pmic_scu_ipc_battery_property_get	-	fetch properties
+- *	@prop: battery properties
+- *
+- *	Retrieve the battery properties from the power management
+- *
+- *	This function may sleep. Locking for SCU accesses is handled for
+- *	the caller.
+- */
+-static int pmic_scu_ipc_battery_property_get(struct battery_property *prop)
+-{
+-	u32 data[3];
+-	u8 *p = (u8 *)&data[1];
+-	int err = intel_scu_ipc_command(IPCMSG_BATTERY,
+-				IPC_CMD_BATTERY_PROPERTY, NULL, 0, data, 3);
+-
+-	prop->capacity = data[0];
+-	prop->crnt = *p++;
+-	prop->volt = *p++;
+-	prop->prot = *p++;
+-	prop->prot2 = *p++;
+-	prop->timer = *p++;
+-
+-	return err;
+-}
+-
+-/**
+- *	pmic_scu_ipc_set_charger	-	set charger
+- *	@charger: charger to select
+- *
+- *	Switch the charging mode for the SCU
+- */
+-
+-static int pmic_scu_ipc_set_charger(int charger)
+-{
+-	return intel_scu_ipc_simple_command(IPCMSG_BATTERY, charger);
+-}
+-
+-/**
+- * pmic_battery_log_event - log battery events
+- * @event: battery event to be logged
+- * Context: can sleep
+- *
+- * There are multiple battery events which may be of interest to users;
+- * this battery function logs the different battery events onto the
+- * kernel log messages.
+- */
+-static void pmic_battery_log_event(enum batt_event event)
+-{
+-	printk(KERN_WARNING "pmic-battery: ");
+-	switch (event) {
+-	case BATT_EVENT_BATOVP_EXCPT:
+-		printk(KERN_CONT "battery overvoltage condition\n");
+-		break;
+-	case BATT_EVENT_USBOVP_EXCPT:
+-		printk(KERN_CONT "usb charger overvoltage condition\n");
+-		break;
+-	case BATT_EVENT_TEMP_EXCPT:
+-		printk(KERN_CONT "high battery temperature condition\n");
+-		break;
+-	case BATT_EVENT_DCLMT_EXCPT:
+-		printk(KERN_CONT "over battery charge current condition\n");
+-		break;
+-	default:
+-		printk(KERN_CONT "charger/battery exception %d\n", event);
+-		break;
+-	}
+-}
+-
+-/**
+- * pmic_battery_read_status - read battery status information
+- * @pbi: device info structure to update the read information
+- * Context: can sleep
+- *
+- * PMIC power source information need to be updated based on the data read
+- * from the PMIC battery registers.
+- *
+- */
+-static void pmic_battery_read_status(struct pmic_power_module_info *pbi)
+-{
+-	unsigned int update_time_intrvl;
+-	unsigned int chrg_val;
+-	u32 ccval;
+-	u8 r8;
+-	struct battery_property batt_prop;
+-	int batt_present = 0;
+-	int usb_present = 0;
+-	int batt_exception = 0;
+-
+-	/* make sure the last batt_status read happened delay_time before */
+-	if (pbi->update_time && time_before(jiffies, pbi->update_time +
+-						msecs_to_jiffies(delay_time)))
+-		return;
+-
+-	update_time_intrvl = jiffies_to_msecs(jiffies -	pbi->update_time);
+-	pbi->update_time = jiffies;
+-
+-	/* read coulomb counter registers and schrgint register */
+-	if (pmic_scu_ipc_battery_cc_read(&ccval)) {
+-		dev_warn(pbi->dev, "%s(): ipc config cmd failed\n",
+-								__func__);
+-		return;
+-	}
+-
+-	if (intel_scu_ipc_ioread8(PMIC_BATT_CHR_SCHRGINT_ADDR, &r8)) {
+-		dev_warn(pbi->dev, "%s(): ipc pmic read failed\n",
+-								__func__);
+-		return;
+-	}
+-
+-	/*
+-	 * set pmic_power_module_info members based on pmic register values
+-	 * read.
+-	 */
+-
+-	/* set batt_is_present */
+-	if (r8 & PMIC_BATT_CHR_SBATDET_MASK) {
+-		pbi->batt_is_present = PMIC_BATT_PRESENT;
+-		batt_present = 1;
+-	} else {
+-		pbi->batt_is_present = PMIC_BATT_NOT_PRESENT;
+-		pbi->batt_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+-		pbi->batt_status = POWER_SUPPLY_STATUS_UNKNOWN;
+-	}
+-
+-	/* set batt_health */
+-	if (batt_present) {
+-		if (r8 & PMIC_BATT_CHR_SBATOVP_MASK) {
+-			pbi->batt_health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+-			pbi->batt_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-			pmic_battery_log_event(BATT_EVENT_BATOVP_EXCPT);
+-			batt_exception = 1;
+-		} else if (r8 & PMIC_BATT_CHR_STEMP_MASK) {
+-			pbi->batt_health = POWER_SUPPLY_HEALTH_OVERHEAT;
+-			pbi->batt_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-			pmic_battery_log_event(BATT_EVENT_TEMP_EXCPT);
+-			batt_exception = 1;
+-		} else {
+-			pbi->batt_health = POWER_SUPPLY_HEALTH_GOOD;
+-			if (r8 & PMIC_BATT_CHR_SDCLMT_MASK) {
+-				/* PMIC will change charging current automatically */
+-				pmic_battery_log_event(BATT_EVENT_DCLMT_EXCPT);
+-			}
+-		}
+-	}
+-
+-	/* set usb_is_present */
+-	if (r8 & PMIC_BATT_CHR_SUSBDET_MASK) {
+-		pbi->usb_is_present = PMIC_USB_PRESENT;
+-		usb_present = 1;
+-	} else {
+-		pbi->usb_is_present = PMIC_USB_NOT_PRESENT;
+-		pbi->usb_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+-	}
+-
+-	if (usb_present) {
+-		if (r8 & PMIC_BATT_CHR_SUSBOVP_MASK) {
+-			pbi->usb_health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
+-			pmic_battery_log_event(BATT_EVENT_USBOVP_EXCPT);
+-		} else {
+-			pbi->usb_health = POWER_SUPPLY_HEALTH_GOOD;
+-		}
+-	}
+-
+-	chrg_val = ccval & PMIC_BATT_ADC_ACCCHRGVAL_MASK;
+-
+-	/* set batt_prev_charge_full to battery capacity the first time */
+-	if (!pbi->is_dev_info_updated) {
+-		if (pmic_scu_ipc_battery_property_get(&batt_prop)) {
+-			dev_warn(pbi->dev, "%s(): ipc config cmd failed\n",
+-								__func__);
+-			return;
+-		}
+-		pbi->batt_prev_charge_full = batt_prop.capacity;
+-	}
+-
+-	/* set batt_status */
+-	if (batt_present && !batt_exception) {
+-		if (r8 & PMIC_BATT_CHR_SCOMP_MASK) {
+-			pbi->batt_status = POWER_SUPPLY_STATUS_FULL;
+-			pbi->batt_prev_charge_full = chrg_val;
+-		} else if (ccval & PMIC_BATT_ADC_ACCCHRG_MASK) {
+-			pbi->batt_status = POWER_SUPPLY_STATUS_DISCHARGING;
+-		} else {
+-			pbi->batt_status = POWER_SUPPLY_STATUS_CHARGING;
+-		}
+-	}
+-
+-	/* set batt_charge_rate */
+-	if (pbi->is_dev_info_updated && batt_present && !batt_exception) {
+-		if (pbi->batt_status == POWER_SUPPLY_STATUS_DISCHARGING) {
+-			if (pbi->batt_charge_now - chrg_val) {
+-				pbi->batt_charge_rate = ((pbi->batt_charge_now -
+-					chrg_val) * 1000 * 60) /
+-					update_time_intrvl;
+-			}
+-		} else if (pbi->batt_status == POWER_SUPPLY_STATUS_CHARGING) {
+-			if (chrg_val - pbi->batt_charge_now) {
+-				pbi->batt_charge_rate = ((chrg_val -
+-					pbi->batt_charge_now) * 1000 * 60) /
+-					update_time_intrvl;
+-			}
+-		} else
+-			pbi->batt_charge_rate = 0;
+-	} else {
+-		pbi->batt_charge_rate = -1;
+-	}
+-
+-	/* batt_charge_now */
+-	if (batt_present && !batt_exception)
+-		pbi->batt_charge_now = chrg_val;
+-	else
+-		pbi->batt_charge_now = -1;
+-
+-	pbi->is_dev_info_updated = PMIC_BATT_DRV_INFO_UPDATED;
+-}
+-
+-/**
+- * pmic_usb_get_property - usb power source get property
+- * @psy: usb power supply context
+- * @psp: usb power source property
+- * @val: usb power source property value
+- * Context: can sleep
+- *
+- * PMIC usb power source property needs to be provided to power_supply
+- * subsytem for it to provide the information to users.
+- */
+-static int pmic_usb_get_property(struct power_supply *psy,
+-				enum power_supply_property psp,
+-				union power_supply_propval *val)
+-{
+-	struct pmic_power_module_info *pbi = power_supply_get_drvdata(psy);
+-
+-	/* update pmic_power_module_info members */
+-	pmic_battery_read_status(pbi);
+-
+-	switch (psp) {
+-	case POWER_SUPPLY_PROP_PRESENT:
+-		val->intval = pbi->usb_is_present;
+-		break;
+-	case POWER_SUPPLY_PROP_HEALTH:
+-		val->intval = pbi->usb_health;
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+-static inline unsigned long mAStouAh(unsigned long v)
+-{
+-	/* seconds to hours, mA to µA */
+-	return (v * 1000) / 3600;
+-}
+-
+-/**
+- * pmic_battery_get_property - battery power source get property
+- * @psy: battery power supply context
+- * @psp: battery power source property
+- * @val: battery power source property value
+- * Context: can sleep
+- *
+- * PMIC battery power source property needs to be provided to power_supply
+- * subsytem for it to provide the information to users.
+- */
+-static int pmic_battery_get_property(struct power_supply *psy,
+-				enum power_supply_property psp,
+-				union power_supply_propval *val)
+-{
+-	struct pmic_power_module_info *pbi = power_supply_get_drvdata(psy);
+-
+-	/* update pmic_power_module_info members */
+-	pmic_battery_read_status(pbi);
+-
+-	switch (psp) {
+-	case POWER_SUPPLY_PROP_STATUS:
+-		val->intval = pbi->batt_status;
+-		break;
+-	case POWER_SUPPLY_PROP_HEALTH:
+-		val->intval = pbi->batt_health;
+-		break;
+-	case POWER_SUPPLY_PROP_PRESENT:
+-		val->intval = pbi->batt_is_present;
+-		break;
+-	case POWER_SUPPLY_PROP_CHARGE_NOW:
+-		val->intval = mAStouAh(pbi->batt_charge_now);
+-		break;
+-	case POWER_SUPPLY_PROP_CHARGE_FULL:
+-		val->intval = mAStouAh(pbi->batt_prev_charge_full);
+-		break;
+-	default:
+-		return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * pmic_battery_monitor - monitor battery status
+- * @work: work structure
+- * Context: can sleep
+- *
+- * PMIC battery status needs to be monitored for any change
+- * and information needs to be frequently updated.
+- */
+-static void pmic_battery_monitor(struct work_struct *work)
+-{
+-	struct pmic_power_module_info *pbi = container_of(work,
+-			struct pmic_power_module_info, monitor_battery.work);
+-
+-	/* update pmic_power_module_info members */
+-	pmic_battery_read_status(pbi);
+-	queue_delayed_work(pbi->monitor_wqueue, &pbi->monitor_battery, HZ * 10);
+-}
+-
+-/**
+- * pmic_battery_set_charger - set battery charger
+- * @pbi: device info structure
+- * @chrg: charge mode to set battery charger in
+- * Context: can sleep
+- *
+- * PMIC battery charger needs to be enabled based on the usb charge
+- * capabilities connected to the platform.
+- */
+-static int pmic_battery_set_charger(struct pmic_power_module_info *pbi,
+-						enum batt_charge_type chrg)
+-{
+-	int retval;
+-
+-	/* set usblmt bits and chrgcntl register bits appropriately */
+-	switch (chrg) {
+-	case BATT_USBOTG_500MA_CHARGE:
+-		retval = pmic_scu_ipc_set_charger(PMIC_BATT_CHR_IPC_FCHRG_SUBID);
+-		break;
+-	case BATT_USBOTG_TRICKLE_CHARGE:
+-		retval = pmic_scu_ipc_set_charger(PMIC_BATT_CHR_IPC_TCHRG_SUBID);
+-		break;
+-	default:
+-		dev_warn(pbi->dev, "%s(): out of range usb charger "
+-						"charge detected\n", __func__);
+-		return -EINVAL;
+-	}
+-
+-	if (retval) {
+-		dev_warn(pbi->dev, "%s(): ipc pmic read failed\n",
+-								__func__);
+-		return retval;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * pmic_battery_interrupt_handler - pmic battery interrupt handler
+- * Context: interrupt context
+- *
+- * PMIC battery interrupt handler which will be called with either
+- * battery full condition occurs or usb otg & battery connect
+- * condition occurs.
+- */
+-static irqreturn_t pmic_battery_interrupt_handler(int id, void *dev)
+-{
+-	struct pmic_power_module_info *pbi = dev;
+-
+-	schedule_work(&pbi->handler);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-/**
+- * pmic_battery_handle_intrpt - pmic battery service interrupt
+- * @work: work structure
+- * Context: can sleep
+- *
+- * PMIC battery needs to either update the battery status as full
+- * if it detects battery full condition caused the interrupt or needs
+- * to enable battery charger if it detects usb and battery detect
+- * caused the source of interrupt.
+- */
+-static void pmic_battery_handle_intrpt(struct work_struct *work)
+-{
+-	struct pmic_power_module_info *pbi = container_of(work,
+-				struct pmic_power_module_info, handler);
+-	enum batt_charge_type chrg;
+-	u8 r8;
+-
+-	if (intel_scu_ipc_ioread8(PMIC_BATT_CHR_SCHRGINT_ADDR, &r8)) {
+-		dev_warn(pbi->dev, "%s(): ipc pmic read failed\n",
+-								__func__);
+-		return;
+-	}
+-	/* find the cause of the interrupt */
+-	if (r8 & PMIC_BATT_CHR_SBATDET_MASK) {
+-		pbi->batt_is_present = PMIC_BATT_PRESENT;
+-	} else {
+-		pbi->batt_is_present = PMIC_BATT_NOT_PRESENT;
+-		pbi->batt_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+-		pbi->batt_status = POWER_SUPPLY_STATUS_UNKNOWN;
+-		return;
+-	}
+-
+-	if (r8 & PMIC_BATT_CHR_EXCPT_MASK) {
+-		pbi->batt_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+-		pbi->batt_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
+-		pbi->usb_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+-		pmic_battery_log_event(BATT_EVENT_EXCPT);
+-		return;
+-	} else {
+-		pbi->batt_health = POWER_SUPPLY_HEALTH_GOOD;
+-		pbi->usb_health = POWER_SUPPLY_HEALTH_GOOD;
+-	}
+-
+-	if (r8 & PMIC_BATT_CHR_SCOMP_MASK) {
+-		u32 ccval;
+-		pbi->batt_status = POWER_SUPPLY_STATUS_FULL;
+-
+-		if (pmic_scu_ipc_battery_cc_read(&ccval)) {
+-			dev_warn(pbi->dev, "%s(): ipc config cmd "
+-							"failed\n", __func__);
+-			return;
+-		}
+-		pbi->batt_prev_charge_full = ccval &
+-						PMIC_BATT_ADC_ACCCHRGVAL_MASK;
+-		return;
+-	}
+-
+-	if (r8 & PMIC_BATT_CHR_SUSBDET_MASK) {
+-		pbi->usb_is_present = PMIC_USB_PRESENT;
+-	} else {
+-		pbi->usb_is_present = PMIC_USB_NOT_PRESENT;
+-		pbi->usb_health = POWER_SUPPLY_HEALTH_UNKNOWN;
+-		return;
+-	}
+-
+-	/* setup battery charging */
+-
+-#if 0
+-	/* check usb otg power capability and set charger accordingly */
+-	retval = langwell_udc_maxpower(&power);
+-	if (retval) {
+-		dev_warn(pbi->dev,
+-		    "%s(): usb otg power query failed with error code %d\n",
+-			__func__, retval);
+-		return;
+-	}
+-
+-	if (power >= 500)
+-		chrg = BATT_USBOTG_500MA_CHARGE;
+-	else
+-#endif
+-		chrg = BATT_USBOTG_TRICKLE_CHARGE;
+-
+-	/* enable battery charging */
+-	if (pmic_battery_set_charger(pbi, chrg)) {
+-		dev_warn(pbi->dev,
+-			"%s(): failed to set up battery charging\n", __func__);
+-		return;
+-	}
+-
+-	dev_dbg(pbi->dev,
+-		"pmic-battery: %s() - setting up battery charger successful\n",
+-			__func__);
+-}
+-
+-/*
+- * Description of power supplies
+- */
+-static const struct power_supply_desc pmic_usb_desc = {
+-	.name		= "pmic-usb",
+-	.type		= POWER_SUPPLY_TYPE_USB,
+-	.properties	= pmic_usb_props,
+-	.num_properties	= ARRAY_SIZE(pmic_usb_props),
+-	.get_property	= pmic_usb_get_property,
+-};
+-
+-static const struct power_supply_desc pmic_batt_desc = {
+-	.name		= "pmic-batt",
+-	.type		= POWER_SUPPLY_TYPE_BATTERY,
+-	.properties	= pmic_battery_props,
+-	.num_properties	= ARRAY_SIZE(pmic_battery_props),
+-	.get_property	= pmic_battery_get_property,
+-};
+-
+-/**
+- * pmic_battery_probe - pmic battery initialize
+- * @irq: pmic battery device irq
+- * @dev: pmic battery device structure
+- * Context: can sleep
+- *
+- * PMIC battery initializes its internal data structue and other
+- * infrastructure components for it to work as expected.
+- */
+-static int probe(int irq, struct device *dev)
+-{
+-	int retval = 0;
+-	struct pmic_power_module_info *pbi;
+-	struct power_supply_config psy_cfg = {};
+-
+-	dev_dbg(dev, "pmic-battery: found pmic battery device\n");
+-
+-	pbi = kzalloc(sizeof(*pbi), GFP_KERNEL);
+-	if (!pbi) {
+-		dev_err(dev, "%s(): memory allocation failed\n",
+-								__func__);
+-		return -ENOMEM;
+-	}
+-
+-	pbi->dev = dev;
+-	pbi->irq = irq;
+-	dev_set_drvdata(dev, pbi);
+-	psy_cfg.drv_data = pbi;
+-
+-	/* initialize all required framework before enabling interrupts */
+-	INIT_WORK(&pbi->handler, pmic_battery_handle_intrpt);
+-	INIT_DELAYED_WORK(&pbi->monitor_battery, pmic_battery_monitor);
+-	pbi->monitor_wqueue = alloc_workqueue(dev_name(dev), WQ_MEM_RECLAIM, 0);
+-	if (!pbi->monitor_wqueue) {
+-		dev_err(dev, "%s(): wqueue init failed\n", __func__);
+-		retval = -ESRCH;
+-		goto wqueue_failed;
+-	}
+-
+-	/* register interrupt */
+-	retval = request_irq(pbi->irq, pmic_battery_interrupt_handler,
+-							0, DRIVER_NAME, pbi);
+-	if (retval) {
+-		dev_err(dev, "%s(): cannot get IRQ\n", __func__);
+-		goto requestirq_failed;
+-	}
+-
+-	/* register pmic-batt with power supply subsystem */
+-	pbi->batt = power_supply_register(dev, &pmic_usb_desc, &psy_cfg);
+-	if (IS_ERR(pbi->batt)) {
+-		dev_err(dev,
+-			"%s(): failed to register pmic battery device with power supply subsystem\n",
+-				__func__);
+-		retval = PTR_ERR(pbi->batt);
+-		goto power_reg_failed;
+-	}
+-
+-	dev_dbg(dev, "pmic-battery: %s() - pmic battery device "
+-		"registration with power supply subsystem successful\n",
+-		__func__);
+-
+-	queue_delayed_work(pbi->monitor_wqueue, &pbi->monitor_battery, HZ * 1);
+-
+-	/* register pmic-usb with power supply subsystem */
+-	pbi->usb = power_supply_register(dev, &pmic_batt_desc, &psy_cfg);
+-	if (IS_ERR(pbi->usb)) {
+-		dev_err(dev,
+-			"%s(): failed to register pmic usb device with power supply subsystem\n",
+-				__func__);
+-		retval = PTR_ERR(pbi->usb);
+-		goto power_reg_failed_1;
+-	}
+-
+-	if (debug)
+-		printk(KERN_INFO "pmic-battery: %s() - pmic usb device "
+-			"registration with power supply subsystem successful\n",
+-			__func__);
+-
+-	return retval;
+-
+-power_reg_failed_1:
+-	power_supply_unregister(pbi->batt);
+-power_reg_failed:
+-	cancel_delayed_work_sync(&pbi->monitor_battery);
+-requestirq_failed:
+-	destroy_workqueue(pbi->monitor_wqueue);
+-wqueue_failed:
+-	kfree(pbi);
+-
+-	return retval;
+-}
+-
+-static int platform_pmic_battery_probe(struct platform_device *pdev)
+-{
+-	return probe(pdev->id, &pdev->dev);
+-}
+-
+-/**
+- * pmic_battery_remove - pmic battery finalize
+- * @dev: pmic battery device structure
+- * Context: can sleep
+- *
+- * PMIC battery finalizes its internal data structue and other
+- * infrastructure components that it initialized in
+- * pmic_battery_probe.
+- */
+-
+-static int platform_pmic_battery_remove(struct platform_device *pdev)
+-{
+-	struct pmic_power_module_info *pbi = platform_get_drvdata(pdev);
+-
+-	free_irq(pbi->irq, pbi);
+-	cancel_delayed_work_sync(&pbi->monitor_battery);
+-	destroy_workqueue(pbi->monitor_wqueue);
+-
+-	power_supply_unregister(pbi->usb);
+-	power_supply_unregister(pbi->batt);
+-
+-	cancel_work_sync(&pbi->handler);
+-	kfree(pbi);
+-	return 0;
+-}
+-
+-static struct platform_driver platform_pmic_battery_driver = {
+-	.driver = {
+-		.name = DRIVER_NAME,
+-	},
+-	.probe = platform_pmic_battery_probe,
+-	.remove = platform_pmic_battery_remove,
+-};
+-
+-module_platform_driver(platform_pmic_battery_driver);
+-
+-MODULE_AUTHOR("Nithish Mahalingam <nithish.mahalingam@intel.com>");
+-MODULE_DESCRIPTION("Intel Moorestown PMIC Battery Driver");
+-MODULE_LICENSE("GPL");
+-- 
+2.11.0
 
-Then let's not expose it in the device tree for now. It's easier to
-add it later than to remove it.
-
->
->>>> Also please add a comment saying that the channels are numbered
->>>> in the order of their respective registers, and not the table
->>>> describing the ADCs in the datasheet (9.7 Signal Capture for AXP209
->>>> and 9.5 E-Gauge for AXP221).
->>>>
->>>
->>> Yes I can.
->>>
->>> What about Rob wanting channel numbers to start at zero for each
->>> different IIO type (i.e., today we have AXP22X_BATT_CHRG_I being
->>> exported as in_current1_raw whereas he wants in_current0_raw).
->>
->> Hmm... I missed this. Are you talking about IIO or hwmon? IIRC
->> hwmon numbers things starting at 1.
->>
->
-> About IIO.
->
-> Today, we have exposed:
-> in_voltage0_raw for acin_v
-> in_current1_raw for acin_i
-> in_voltage2_raw for vbus_v
-> in_current3_raw for vbus_i
-> in_temp4_raw for adc_temp
-> in_voltage5_raw for gpio0_v
-> in_voltage6_raw for gpio1_v
-> in_voltage7_raw for batt_v
-> in_current8_raw for batt_chrg_i
-> in_current9_raw for batt_dischrg_i
-> in_voltage10_raw for ipsout_v
->
-> but I think what Rob wants is:
->
-> in_voltage0_raw acin_v
-> in_current0_raw for acin_i
-> in_voltage1_raw for vbus_v
-> in_current1_raw for vbus_i
-> in_temp_raw for adc_temp
-> in_voltage2_raw for gpio0_v
-> in_voltage3_raw for gpio1_v
-> in_voltage4_raw for batt_v
-> in_current2_raw for batt_chrg_i
-> in_current3_raw for batt_dischrg_i
-> in_voltage5_raw for ipsout_v
-
-I think that's doable. If I understand IIO code correctly, the channel
-number is not used anywhere in the core code for dereferencing. It's
-used for sysfs entries (when .indexed is set) and events. However
-the twl4030 and twl6030 drivers use our current exposed scheme.
-I suppose its best to get some input from the IIO maintainer.
-
-So if we want, we could have the following channel mapping:
-
-  0 -> acin
-  1 -> vbus
-  2 -> pmic
-  3 -> gpio0
-  4 -> gpio1
-  5 -> ipsout
-  6 -> battery
-
-Each channel could have mulitple entries in axp20x_adc_channels[],
-one for each type of reading. You might need multiple channels for
-the battery to cover charge and discharge currents.
-
-Your callback functions would get a bit messier though.
-
->
->>> [...]
->>>>> +static int axp22x_adc_read_raw(struct iio_dev *indio_dev,
->>>>> +                              struct iio_chan_spec const *channel, int *val,
->>>>> +                              int *val2)
->>>>> +{
->>>>> +       struct axp20x_adc_iio *info = iio_priv(indio_dev);
->>>>> +       int size = 12, ret;
->>>>> +
->>>>> +       switch (channel->channel) {
->>>>> +       case AXP22X_BATT_DISCHRG_I:
->>>>> +               size = 13;
->>>>> +       case AXP22X_TEMP_ADC:
->>>>> +       case AXP22X_BATT_V:
->>>>> +       case AXP22X_BATT_CHRG_I:
->>>>
->>>> According to the datasheet, AXP22X_BATT_CHRG_I is also 13 bits wide.
->>>>
->>>
->>> Where did you get that?
->>>
->>> Also, the datasheet is inconsistent:
->>>  - 9.5 E-Gauge Fuel Gauge system => the min value is at 0x0 and the max
->>> value at 0xfff for all channels, that's 12 bits.
->>>  - 10.1.4 ADC Data => all channels except battery discharge current are
->>> on 12 bits (8 high, 4 low).
->>
->> My datasheets (AXP221 v1.6, AXP221s v1.2, AXP223 v1.1, all Chinese) say
->> in 10.1.4:
->>
->>   - 7A: battery charge current high 5 bits
->>   - 7B: battery charge current low 8 bits
->>   - 7C: battery discharge current high 5 bits
->>   - 7D: battery discharge current low 8 bits
->>
->
-> AXP223 v1.1 in English in 10.1.4[1]:
->     - 7A: battery charge current high 8 bits
->     - 7B: battery charge current low 4 bits
->     - 7C: battery discharge current high 8 bits
->     - 7D: battery discharge current low 5 bits
->
-> Note that it's 8 bits for high and 4/5 bits for low while you wrote 4/5
-> bits high and low 8 bits (typos or actually what's written in the
-> datasheet?).
-
-Typo on my end, sorry. It's high 8bits and low 5/4 bits.
-
-Apart from that, the Chinese and English versions don't match for the
-battery charge current. :(
-
-Would it be possible for you to test this? As in, have the module running,
-and charging a battery, and have a multimeter in series with the battery
-to verify the readings.
-
-Regards
-ChenYu
-
->
-> Hum.. from the reg reading function[2] I would say that the correct
-> formula is high on 8 bits and low on 4/5 bits.
->
-> So hum.. what do we do?
->
-> [1] http://dl.linux-sunxi.org/AXP/AXP223-en.pdf
-> [2] http://lxr.free-electrons.com/source/include/linux/mfd/axp20x.h#L564
->
->>>
->>> [...]
->>>>> +static int axp22x_read_raw(struct iio_dev *indio_dev,
->>>>> +                          struct iio_chan_spec const *chan, int *val,
->>>>> +                          int *val2, long mask)
->>>>> +{
->>>>> +       switch (mask) {
->>>>> +       case IIO_CHAN_INFO_OFFSET:
->>>>> +               *val = -2667;
->>>>
->>>> Datasheet says -267.7 C, or -2677 here.
->>>>
->>>
->>> The formula in the datasheet is (in milli Celsius):
->>>  processed = raw * 100 - 266700;
->>>
->>> while the IIO framework asks for a scale and an offset which are then
->>> applied as:
->>>  processed = (raw + offset) * scale;
->>>
->>> Thus by factorizing, we get:
->>>  processed = (raw - 2667) * 100;
->>
->> What I meant was that your lower end value is off by one degree,
->> -266.7 in your code vs -267.7 in the datasheet.
->>
->
-> Indeed. Thanks.
->
->>>
->>> [...]
->>>>> +static int axp20x_remove(struct platform_device *pdev)
->>>>> +{
->>>>> +       struct axp20x_adc_iio *info;
->>>>> +       struct iio_dev *indio_dev = platform_get_drvdata(pdev);
->>>>> +
->>>>> +       info = iio_priv(indio_dev);
->>>>
->>>> Nit: you could just reverse the 2 declarations above and join this
->>>> line after struct axp20x_adc_iio *info;
->>>>
->>>>> +       regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
->>>>> +       regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
->>>>
->>>> The existing VBUS power supply driver enables the VBUS ADC bits itself,
->>>> and does not check them later on. This means if one were to remove this
->>>> axp20x-adc module, the voltage/current readings in the VBUS power supply
->>>> would be invalid. Some sort of workaround would be needed here in this
->>>> driver of the VBUS driver.
->>>>
->>>
->>> That would be one reason to migrate the VBUS driver to use the IIO
->>> channels, wouldn't it?
->>
->> It is, preferably without changing the device tree.
->>
->
-> Yes, of course.
->
-> Thanks,
-> Quentin
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
