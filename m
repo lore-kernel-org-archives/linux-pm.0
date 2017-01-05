@@ -1,311 +1,280 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 03/22] iio: adc: add support for X-Powers AXP20X and
- AXP22X PMICs ADCs
-Date: Thu, 5 Jan 2017 16:27:50 +0800
-Message-ID: <CAGb2v66n46KQAzQBUrDwx7sYADkRm3_XyCHf9imN+FiDkHfP1w@mail.gmail.com>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-4-quentin.schulz@free-electrons.com>
- <CAGb2v67S==AG=jZA=mO-bB4u1F2TOwhmBXg385W1xhUa3RAFbA@mail.gmail.com>
- <9acfe5e0-dc56-bd63-02b4-7bf34d49d62c@free-electrons.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH] cpufreq: Remove CONFIG_CPU_FREQ_STAT_DETAILS config option
+Date: Thu, 05 Jan 2017 10:50:25 +0100
+Message-ID: <877f69esym.fsf@free-electrons.com>
+References: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <9acfe5e0-dc56-bd63-02b4-7bf34d49d62c@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+Content-Type: text/plain
+Return-path: <linux-mips-bounce@linux-mips.org>
+In-Reply-To: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
+        (Viresh Kumar's message of "Thu, 5 Jan 2017 13:57:41 +0530")
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, arnd.bergmann@linaro.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 5, 2017 at 4:06 PM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> Hi Chen-Yu,
->
-> On 05/01/2017 06:42, Chen-Yu Tsai wrote:
->> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
->> <quentin.schulz@free-electrons.com> wrote:
-> [...]
->>> +
->>> +#define AXP20X_ADC_RATE_MASK                   (3 << 6)
->>> +#define AXP20X_ADC_RATE_25HZ                   (0 << 6)
->>> +#define AXP20X_ADC_RATE_50HZ                   BIT(6)
->>
->> Please be consistent with the format.
->>
->>> +#define AXP20X_ADC_RATE_100HZ                  (2 << 6)
->>> +#define AXP20X_ADC_RATE_200HZ                  (3 << 6)
->>> +
->>> +#define AXP22X_ADC_RATE_100HZ                  (0 << 6)
->>> +#define AXP22X_ADC_RATE_200HZ                  BIT(6)
->>> +#define AXP22X_ADC_RATE_400HZ                  (2 << 6)
->>> +#define AXP22X_ADC_RATE_800HZ                  (3 << 6)
->>
->> These are power-of-2 multiples of some base rate. May I suggest
->> a formula macro instead. Either way, you seem to be using only
->> one value. Will this be made configurable in the future?
->>
->
-> Yes, I could use a formula macro instead. No plan to make it
-> configurable, should I make it configurable?
+Hi Viresh,
+ 
+ On jeu., janv. 05 2017, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-I don't see a use case for that atm.
+> This doesn't have any benefit apart from saving a small amount of memory
+> when it is disabled. The ifdef hackery in the code makes it dirty
+> unnecessarily.
+>
+> Clean it up by removing the Kconfig option completely. Few defconfigs
+> are also updated and CONFIG_CPU_FREQ_STAT_DETAILS is replaced with
+> CONFIG_CPU_FREQ_STAT now in them, as users wanted stats to be enabled.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  arch/arm/configs/exynos_defconfig         |  2 +-
+>  arch/arm/configs/multi_v5_defconfig       |  2 +-
+>  arch/arm/configs/multi_v7_defconfig       |  2 +-
 
->>> +
->>> +#define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)       \
->>> +       {                                                       \
->>> +               .type = _type,                                  \
->>> +               .indexed = 1,                                   \
->>> +               .channel = _channel,                            \
->>> +               .address = _reg,                                \
->>> +               .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |  \
->>> +                                     BIT(IIO_CHAN_INFO_SCALE), \
->>> +               .datasheet_name = _name,                        \
->>> +       }
->>> +
->>> +#define AXP20X_ADC_CHANNEL_OFFSET(_channel, _name, _type, _reg) \
->>> +       {                                                       \
->>> +               .type = _type,                                  \
->>> +               .indexed = 1,                                   \
->>> +               .channel = _channel,                            \
->>> +               .address = _reg,                                \
->>> +               .info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |  \
->>> +                                     BIT(IIO_CHAN_INFO_SCALE) |\
->>> +                                     BIT(IIO_CHAN_INFO_OFFSET),\
->>> +               .datasheet_name = _name,                        \
->>> +       }
->>> +
->>> +struct axp20x_adc_iio {
->>> +       struct iio_dev          *indio_dev;
->>> +       struct regmap           *regmap;
->>> +};
->>> +
->>> +enum axp20x_adc_channel {
->>> +       AXP20X_ACIN_V = 0,
->>> +       AXP20X_ACIN_I,
->>> +       AXP20X_VBUS_V,
->>> +       AXP20X_VBUS_I,
->>> +       AXP20X_TEMP_ADC,
->>
->> PMIC_TEMP would be better. And please save a slot for TS input.
->>
->
-> ACK.
->
-> Hum.. I'm wondering what should be the IIO type of the TS input channel
-> then? The TS Pin can be used in two modes: either to monitor the
-> temperature of the battery or as an external ADC, at least that's what I
-> understand from the datasheet.
+>  arch/arm/configs/mvebu_v5_defconfig       |  2 +-
+For this file:
 
-AFAIK the battery charge/discharge high/low temperature threshold
-registers take values in terms of voltage, not actual temperature.
-And the temperature readout kind of depends on the thermoresistor
-one is using. So I think "voltage" would be the proper type.
+Acked-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 
->
->>> +       AXP20X_GPIO0_V,
->>> +       AXP20X_GPIO1_V,
->>
->> Please skip a slot for "battery instantaneous power".
->>
->>> +       AXP20X_BATT_V,
->>> +       AXP20X_BATT_CHRG_I,
->>> +       AXP20X_BATT_DISCHRG_I,
->>> +       AXP20X_IPSOUT_V,
->>> +};
->>> +
->>> +enum axp22x_adc_channel {
->>> +       AXP22X_TEMP_ADC = 0,
->>
->> Same comments as AXP20X_TEMP_ADC.
->>
->>> +       AXP22X_BATT_V,
->>> +       AXP22X_BATT_CHRG_I,
->>> +       AXP22X_BATT_DISCHRG_I,
->>> +};
->>
->> Shouldn't these channel numbers be exported as part of the device tree
->> bindings? At the very least, they shouldn't be changed.
->>
->
-> I don't understand what you mean by that. Do you mean you want a
-> consistent numbering between the AXP20X and the AXP22X, so that
-> AXP22X_BATT_V would have the same channel number than AXP20X_BATT_V?
->
-> Could you explain a bit more your thoughts on the channel numbers being
-> exported as part of the device tree bindings?
+Gregory
 
-What I meant was that, since you are referencing the channels in the
-device tree, the numbering scheme would be part of the device tree
-binding, and should never be changed. So either these would be macros
-in include/dt-bindings/, or a big warning should be put before it.
 
-But see my reply on patch 7, about do we actually need to expose this
-in the device tree.
+>  arch/arm/configs/pxa_defconfig            |  2 +-
+>  arch/arm/configs/shmobile_defconfig       |  2 +-
+>  arch/mips/configs/lemote2f_defconfig      |  1 -
+>  arch/powerpc/configs/ppc6xx_defconfig     |  1 -
+>  arch/sh/configs/sh7785lcr_32bit_defconfig |  2 +-
+>  drivers/cpufreq/Kconfig                   |  8 --------
+>  drivers/cpufreq/cpufreq_stats.c           | 14 --------------
+>  11 files changed, 7 insertions(+), 31 deletions(-)
+>
+> diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+> index 79c415c33f69..809f0bf3042a 100644
+> --- a/arch/arm/configs/exynos_defconfig
+> +++ b/arch/arm/configs/exynos_defconfig
+> @@ -24,7 +24,7 @@ CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_CMDLINE="root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M console=ttySAC1,115200 init=/linuxrc mem=256M"
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+>  CONFIG_CPU_FREQ_GOV_USERSPACE=m
+> diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+> index 361686a362f1..69a4bd13eea5 100644
+> --- a/arch/arm/configs/multi_v5_defconfig
+> +++ b/arch/arm/configs/multi_v5_defconfig
+> @@ -58,7 +58,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+>  CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_IDLE=y
+>  CONFIG_ARM_KIRKWOOD_CPUIDLE=y
+> diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+> index b01a43851294..2dcac90eba01 100644
+> --- a/arch/arm/configs/multi_v7_defconfig
+> +++ b/arch/arm/configs/multi_v7_defconfig
+> @@ -132,7 +132,7 @@ CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_KEXEC=y
+>  CONFIG_EFI=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+>  CONFIG_CPU_FREQ_GOV_USERSPACE=m
+> diff --git a/arch/arm/configs/mvebu_v5_defconfig b/arch/arm/configs/mvebu_v5_defconfig
+> index f7f6039419aa..4b598da0d086 100644
+> --- a/arch/arm/configs/mvebu_v5_defconfig
+> +++ b/arch/arm/configs/mvebu_v5_defconfig
+> @@ -44,7 +44,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+>  CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_ARM_ATAG_DTB_COMPAT=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_IDLE=y
+>  CONFIG_ARM_KIRKWOOD_CPUIDLE=y
+> diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+> index e4314b1227a3..271dc7e78e43 100644
+> --- a/arch/arm/configs/pxa_defconfig
+> +++ b/arch/arm/configs/pxa_defconfig
+> @@ -97,7 +97,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+>  CONFIG_CMDLINE="root=/dev/ram0 ro"
+>  CONFIG_KEXEC=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+>  CONFIG_CPU_FREQ_GOV_USERSPACE=m
+> diff --git a/arch/arm/configs/shmobile_defconfig b/arch/arm/configs/shmobile_defconfig
+> index 1b0f8ae36fb3..adeaecd831a4 100644
+> --- a/arch/arm/configs/shmobile_defconfig
+> +++ b/arch/arm/configs/shmobile_defconfig
+> @@ -38,7 +38,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+>  CONFIG_ARM_APPENDED_DTB=y
+>  CONFIG_KEXEC=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+>  CONFIG_CPU_FREQ_GOV_USERSPACE=y
+>  CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+> diff --git a/arch/mips/configs/lemote2f_defconfig b/arch/mips/configs/lemote2f_defconfig
+> index 5da76e0e120f..bed745596d86 100644
+> --- a/arch/mips/configs/lemote2f_defconfig
+> +++ b/arch/mips/configs/lemote2f_defconfig
+> @@ -40,7 +40,6 @@ CONFIG_PM_STD_PARTITION="/dev/hda3"
+>  CONFIG_CPU_FREQ=y
+>  CONFIG_CPU_FREQ_DEBUG=y
+>  CONFIG_CPU_FREQ_STAT=m
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+>  CONFIG_CPU_FREQ_GOV_USERSPACE=m
+> diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+> index 3ce91a3df27f..1d2d69dd6409 100644
+> --- a/arch/powerpc/configs/ppc6xx_defconfig
+> +++ b/arch/powerpc/configs/ppc6xx_defconfig
+> @@ -62,7 +62,6 @@ CONFIG_MPC8610_HPCD=y
+>  CONFIG_GEF_SBC610=y
+>  CONFIG_CPU_FREQ=y
+>  CONFIG_CPU_FREQ_STAT=m
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+>  CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+>  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+> diff --git a/arch/sh/configs/sh7785lcr_32bit_defconfig b/arch/sh/configs/sh7785lcr_32bit_defconfig
+> index 9bdcf72ec06a..2fce54d9c388 100644
+> --- a/arch/sh/configs/sh7785lcr_32bit_defconfig
+> +++ b/arch/sh/configs/sh7785lcr_32bit_defconfig
+> @@ -25,7 +25,7 @@ CONFIG_SH_SH7785LCR=y
+>  CONFIG_NO_HZ=y
+>  CONFIG_HIGH_RES_TIMERS=y
+>  CONFIG_CPU_FREQ=y
+> -CONFIG_CPU_FREQ_STAT_DETAILS=y
+> +CONFIG_CPU_FREQ_STAT=y
+>  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+>  CONFIG_SH_CPU_FREQ=y
+>  CONFIG_HEARTBEAT=y
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index d8b164a7c4e5..15adef473d42 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -37,14 +37,6 @@ config CPU_FREQ_STAT
+>  
+>  	  If in doubt, say N.
+>  
+> -config CPU_FREQ_STAT_DETAILS
+> -	bool "CPU frequency transition statistics details"
+> -	depends on CPU_FREQ_STAT
+> -	help
+> -	  Show detailed CPU frequency transition table in sysfs.
+> -
+> -	  If in doubt, say N.
+> -
+>  choice
+>  	prompt "Default CPUFreq governor"
+>  	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> index ac284e66839c..18abd454da43 100644
+> --- a/drivers/cpufreq/cpufreq_stats.c
+> +++ b/drivers/cpufreq/cpufreq_stats.c
+> @@ -25,9 +25,7 @@ struct cpufreq_stats {
+>  	unsigned int last_index;
+>  	u64 *time_in_state;
+>  	unsigned int *freq_table;
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	unsigned int *trans_table;
+> -#endif
+>  };
+>  
+>  static int cpufreq_stats_update(struct cpufreq_stats *stats)
+> @@ -46,9 +44,7 @@ static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
+>  	unsigned int count = stats->max_state;
+>  
+>  	memset(stats->time_in_state, 0, count * sizeof(u64));
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	memset(stats->trans_table, 0, count * count * sizeof(int));
+> -#endif
+>  	stats->last_time = get_jiffies_64();
+>  	stats->total_trans = 0;
+>  }
+> @@ -84,7 +80,6 @@ static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
+>  	return count;
+>  }
+>  
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+>  {
+>  	struct cpufreq_stats *stats = policy->stats;
+> @@ -129,7 +124,6 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+>  	return len;
+>  }
+>  cpufreq_freq_attr_ro(trans_table);
+> -#endif
+>  
+>  cpufreq_freq_attr_ro(total_trans);
+>  cpufreq_freq_attr_ro(time_in_state);
+> @@ -139,9 +133,7 @@ static struct attribute *default_attrs[] = {
+>  	&total_trans.attr,
+>  	&time_in_state.attr,
+>  	&reset.attr,
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	&trans_table.attr,
+> -#endif
+>  	NULL
+>  };
+>  static struct attribute_group stats_attr_group = {
+> @@ -200,9 +192,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
+>  
+>  	alloc_size = count * sizeof(int) + count * sizeof(u64);
+>  
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	alloc_size += count * count * sizeof(int);
+> -#endif
+>  
+>  	/* Allocate memory for time_in_state/freq_table/trans_table in one go */
+>  	stats->time_in_state = kzalloc(alloc_size, GFP_KERNEL);
+> @@ -211,9 +201,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
+>  
+>  	stats->freq_table = (unsigned int *)(stats->time_in_state + count);
+>  
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	stats->trans_table = stats->freq_table + count;
+> -#endif
+>  
+>  	stats->max_state = count;
+>  
+> @@ -259,8 +247,6 @@ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
+>  	cpufreq_stats_update(stats);
+>  
+>  	stats->last_index = new_index;
+> -#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+>  	stats->trans_table[old_index * stats->max_state + new_index]++;
+> -#endif
+>  	stats->total_trans++;
+>  }
+> -- 
+> 2.7.1.410.g6faf27b
+>
 
->> Also please add a comment saying that the channels are numbered
->> in the order of their respective registers, and not the table
->> describing the ADCs in the datasheet (9.7 Signal Capture for AXP209
->> and 9.5 E-Gauge for AXP221).
->>
->
-> Yes I can.
->
-> What about Rob wanting channel numbers to start at zero for each
-> different IIO type (i.e., today we have AXP22X_BATT_CHRG_I being
-> exported as in_current1_raw whereas he wants in_current0_raw).
-
-Hmm... I missed this. Are you talking about IIO or hwmon? IIRC
-hwmon numbers things starting at 1.
-
-> [...]
->>> +static int axp22x_adc_read_raw(struct iio_dev *indio_dev,
->>> +                              struct iio_chan_spec const *channel, int *val,
->>> +                              int *val2)
->>> +{
->>> +       struct axp20x_adc_iio *info = iio_priv(indio_dev);
->>> +       int size = 12, ret;
->>> +
->>> +       switch (channel->channel) {
->>> +       case AXP22X_BATT_DISCHRG_I:
->>> +               size = 13;
->>> +       case AXP22X_TEMP_ADC:
->>> +       case AXP22X_BATT_V:
->>> +       case AXP22X_BATT_CHRG_I:
->>
->> According to the datasheet, AXP22X_BATT_CHRG_I is also 13 bits wide.
->>
->
-> Where did you get that?
->
-> Also, the datasheet is inconsistent:
->  - 9.5 E-Gauge Fuel Gauge system => the min value is at 0x0 and the max
-> value at 0xfff for all channels, that's 12 bits.
->  - 10.1.4 ADC Data => all channels except battery discharge current are
-> on 12 bits (8 high, 4 low).
-
-My datasheets (AXP221 v1.6, AXP221s v1.2, AXP223 v1.1, all Chinese) say
-in 10.1.4:
-
-  - 7A: battery charge current high 5 bits
-  - 7B: battery charge current low 8 bits
-  - 7C: battery discharge current high 5 bits
-  - 7D: battery discharge current low 8 bits
-
->
-> [...]
->>> +static int axp22x_read_raw(struct iio_dev *indio_dev,
->>> +                          struct iio_chan_spec const *chan, int *val,
->>> +                          int *val2, long mask)
->>> +{
->>> +       switch (mask) {
->>> +       case IIO_CHAN_INFO_OFFSET:
->>> +               *val = -2667;
->>
->> Datasheet says -267.7 C, or -2677 here.
->>
->
-> The formula in the datasheet is (in milli Celsius):
->  processed = raw * 100 - 266700;
->
-> while the IIO framework asks for a scale and an offset which are then
-> applied as:
->  processed = (raw + offset) * scale;
->
-> Thus by factorizing, we get:
->  processed = (raw - 2667) * 100;
-
-What I meant was that your lower end value is off by one degree,
--266.7 in your code vs -267.7 in the datasheet.
-
->
-> [...]
->>> +static int axp20x_remove(struct platform_device *pdev)
->>> +{
->>> +       struct axp20x_adc_iio *info;
->>> +       struct iio_dev *indio_dev = platform_get_drvdata(pdev);
->>> +
->>> +       info = iio_priv(indio_dev);
->>
->> Nit: you could just reverse the 2 declarations above and join this
->> line after struct axp20x_adc_iio *info;
->>
->>> +       regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
->>> +       regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
->>
->> The existing VBUS power supply driver enables the VBUS ADC bits itself,
->> and does not check them later on. This means if one were to remove this
->> axp20x-adc module, the voltage/current readings in the VBUS power supply
->> would be invalid. Some sort of workaround would be needed here in this
->> driver of the VBUS driver.
->>
->
-> That would be one reason to migrate the VBUS driver to use the IIO
-> channels, wouldn't it?
-
-It is, preferably without changing the device tree.
-
-Regards
-ChenYu
-
->
-> But ACK, I'll think about something to work around this issue.
->
->>> +
->>> +       return 0;
->>> +}
->>> +
->>> +static struct platform_driver axp20x_adc_driver = {
->>> +       .driver = {
->>> +               .name = "axp20x-adc",
->>> +               .of_match_table = axp20x_adc_of_match,
->>> +       },
->>> +       .probe = axp20x_probe,
->>> +       .remove = axp20x_remove,
->>> +};
->>> +
->>> +module_platform_driver(axp20x_adc_driver);
->>> +
->>> +MODULE_DESCRIPTION("ADC driver for AXP20X and AXP22X PMICs");
->>> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz@free-electrons.com>");
->>> +MODULE_LICENSE("GPL");
->>> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
->>> index a4860bc..650c6f6 100644
->>> --- a/include/linux/mfd/axp20x.h
->>> +++ b/include/linux/mfd/axp20x.h
->>> @@ -150,6 +150,10 @@ enum {
->>>  #define AXP20X_VBUS_I_ADC_L            0x5d
->>>  #define AXP20X_TEMP_ADC_H              0x5e
->>>  #define AXP20X_TEMP_ADC_L              0x5f
->>> +
->>> +#define AXP22X_TEMP_ADC_H              0x56
->>> +#define AXP22X_TEMP_ADC_L              0x57
->>> +
->>
->> This is in the wrong patch. Also we already have
->>
->> /* AXP22X specific registers */
->> #define AXP22X_PMIC_ADC_H               0x56
->> #define AXP22X_PMIC_ADC_L               0x57
->> #define AXP22X_TS_ADC_H                 0x58
->> #define AXP22X_TS_ADC_L                 0x59
->>
->> If you want, you could just rename them to be consistent.
->>
->
-> ACK.
->
-> Thanks,
-> Quentin
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
