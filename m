@@ -1,16 +1,11 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 05/22] ARM: dtsi: axp209: add AXP209 ADC subnode
-Date: Thu, 5 Jan 2017 16:16:07 +0800
-Message-ID: <CAGb2v67zHf9maNvTVKBZWUTAZFP++PsJt+e3_Mt=Mv4FQ-6FZQ@mail.gmail.com>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-6-quentin.schulz@free-electrons.com>
- <CAGb2v66dw=DECuHpLDzHnMP-O4UwZ+RkPsH0RofOGdBa7z7OHw@mail.gmail.com>
- <1ddf7012-3336-84c2-6392-353b01beea93@free-electrons.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Remove CONFIG_CPU_FREQ_STAT_DETAILS config option
+Date: Thu,  5 Jan 2017 13:57:41 +0530
+Message-ID: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1ddf7012-3336-84c2-6392-353b01beea93@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -20,52 +15,245 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-mips@linux-mips.org, linaro-kernel@lists.linaro.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-pm@vger.kernel.org, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-samsung-soc@vger.kernel.org, arnd.bergmann@linaro.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 5, 2017 at 4:08 PM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> On 05/01/2017 06:51, Chen-Yu Tsai wrote:
->> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
->> <quentin.schulz@free-electrons.com> wrote:
->>> X-Powers AXP209 PMIC has multiple ADCs, each one exposing data from the
->>> different power supplies connected to the PMIC.
->>>
->>> This adds the ADC subnode for AXP20X PMIC.
->>>
->>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->>> ---
->>>  arch/arm/boot/dts/axp209.dtsi | 5 +++++
->>>  1 file changed, 5 insertions(+)
->>>
->>> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
->>> index 675bb0f..2a4e8ee 100644
->>> --- a/arch/arm/boot/dts/axp209.dtsi
->>> +++ b/arch/arm/boot/dts/axp209.dtsi
->>> @@ -53,6 +53,11 @@
->>>         interrupt-controller;
->>>         #interrupt-cells = <1>;
->>>
->>> +       axp209_adc: axp209_adc {
->>
->> Node name should be generic. Please change it to "adc".
->>
->
-> OK, do I keep the label as is?
->
-> axp209_adc: adc {
+This doesn't have any benefit apart from saving a small amount of memory
+when it is disabled. The ifdef hackery in the code makes it dirty
+unnecessarily.
 
-Yup. The label is for dereferencing and stuff, and exists in a global scope.
-You wouldn't want 2 label names clashing.
+Clean it up by removing the Kconfig option completely. Few defconfigs
+are also updated and CONFIG_CPU_FREQ_STAT_DETAILS is replaced with
+CONFIG_CPU_FREQ_STAT now in them, as users wanted stats to be enabled.
 
-ChenYu
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ arch/arm/configs/exynos_defconfig         |  2 +-
+ arch/arm/configs/multi_v5_defconfig       |  2 +-
+ arch/arm/configs/multi_v7_defconfig       |  2 +-
+ arch/arm/configs/mvebu_v5_defconfig       |  2 +-
+ arch/arm/configs/pxa_defconfig            |  2 +-
+ arch/arm/configs/shmobile_defconfig       |  2 +-
+ arch/mips/configs/lemote2f_defconfig      |  1 -
+ arch/powerpc/configs/ppc6xx_defconfig     |  1 -
+ arch/sh/configs/sh7785lcr_32bit_defconfig |  2 +-
+ drivers/cpufreq/Kconfig                   |  8 --------
+ drivers/cpufreq/cpufreq_stats.c           | 14 --------------
+ 11 files changed, 7 insertions(+), 31 deletions(-)
 
->
-> Thanks,
-> Quentin
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
+diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+index 79c415c33f69..809f0bf3042a 100644
+--- a/arch/arm/configs/exynos_defconfig
++++ b/arch/arm/configs/exynos_defconfig
+@@ -24,7 +24,7 @@ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CMDLINE="root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M console=ttySAC1,115200 init=/linuxrc mem=256M"
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_USERSPACE=m
+diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+index 361686a362f1..69a4bd13eea5 100644
+--- a/arch/arm/configs/multi_v5_defconfig
++++ b/arch/arm/configs/multi_v5_defconfig
+@@ -58,7 +58,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_ARM_KIRKWOOD_CPUIDLE=y
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index b01a43851294..2dcac90eba01 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -132,7 +132,7 @@ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_KEXEC=y
+ CONFIG_EFI=y
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_USERSPACE=m
+diff --git a/arch/arm/configs/mvebu_v5_defconfig b/arch/arm/configs/mvebu_v5_defconfig
+index f7f6039419aa..4b598da0d086 100644
+--- a/arch/arm/configs/mvebu_v5_defconfig
++++ b/arch/arm/configs/mvebu_v5_defconfig
+@@ -44,7 +44,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_IDLE=y
+ CONFIG_ARM_KIRKWOOD_CPUIDLE=y
+diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+index e4314b1227a3..271dc7e78e43 100644
+--- a/arch/arm/configs/pxa_defconfig
++++ b/arch/arm/configs/pxa_defconfig
+@@ -97,7 +97,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+ CONFIG_CMDLINE="root=/dev/ram0 ro"
+ CONFIG_KEXEC=y
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_USERSPACE=m
+diff --git a/arch/arm/configs/shmobile_defconfig b/arch/arm/configs/shmobile_defconfig
+index 1b0f8ae36fb3..adeaecd831a4 100644
+--- a/arch/arm/configs/shmobile_defconfig
++++ b/arch/arm/configs/shmobile_defconfig
+@@ -38,7 +38,7 @@ CONFIG_ZBOOT_ROM_BSS=0x0
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_KEXEC=y
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+ CONFIG_CPU_FREQ_GOV_USERSPACE=y
+ CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+diff --git a/arch/mips/configs/lemote2f_defconfig b/arch/mips/configs/lemote2f_defconfig
+index 5da76e0e120f..bed745596d86 100644
+--- a/arch/mips/configs/lemote2f_defconfig
++++ b/arch/mips/configs/lemote2f_defconfig
+@@ -40,7 +40,6 @@ CONFIG_PM_STD_PARTITION="/dev/hda3"
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_DEBUG=y
+ CONFIG_CPU_FREQ_STAT=m
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_USERSPACE=m
+diff --git a/arch/powerpc/configs/ppc6xx_defconfig b/arch/powerpc/configs/ppc6xx_defconfig
+index 3ce91a3df27f..1d2d69dd6409 100644
+--- a/arch/powerpc/configs/ppc6xx_defconfig
++++ b/arch/powerpc/configs/ppc6xx_defconfig
+@@ -62,7 +62,6 @@ CONFIG_MPC8610_HPCD=y
+ CONFIG_GEF_SBC610=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_STAT=m
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE=y
+ CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+diff --git a/arch/sh/configs/sh7785lcr_32bit_defconfig b/arch/sh/configs/sh7785lcr_32bit_defconfig
+index 9bdcf72ec06a..2fce54d9c388 100644
+--- a/arch/sh/configs/sh7785lcr_32bit_defconfig
++++ b/arch/sh/configs/sh7785lcr_32bit_defconfig
+@@ -25,7 +25,7 @@ CONFIG_SH_SH7785LCR=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_CPU_FREQ=y
+-CONFIG_CPU_FREQ_STAT_DETAILS=y
++CONFIG_CPU_FREQ_STAT=y
+ CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
+ CONFIG_SH_CPU_FREQ=y
+ CONFIG_HEARTBEAT=y
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index d8b164a7c4e5..15adef473d42 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -37,14 +37,6 @@ config CPU_FREQ_STAT
+ 
+ 	  If in doubt, say N.
+ 
+-config CPU_FREQ_STAT_DETAILS
+-	bool "CPU frequency transition statistics details"
+-	depends on CPU_FREQ_STAT
+-	help
+-	  Show detailed CPU frequency transition table in sysfs.
+-
+-	  If in doubt, say N.
+-
+ choice
+ 	prompt "Default CPUFreq governor"
+ 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index ac284e66839c..18abd454da43 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -25,9 +25,7 @@ struct cpufreq_stats {
+ 	unsigned int last_index;
+ 	u64 *time_in_state;
+ 	unsigned int *freq_table;
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	unsigned int *trans_table;
+-#endif
+ };
+ 
+ static int cpufreq_stats_update(struct cpufreq_stats *stats)
+@@ -46,9 +44,7 @@ static void cpufreq_stats_clear_table(struct cpufreq_stats *stats)
+ 	unsigned int count = stats->max_state;
+ 
+ 	memset(stats->time_in_state, 0, count * sizeof(u64));
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	memset(stats->trans_table, 0, count * count * sizeof(int));
+-#endif
+ 	stats->last_time = get_jiffies_64();
+ 	stats->total_trans = 0;
+ }
+@@ -84,7 +80,6 @@ static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
+ 	return count;
+ }
+ 
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct cpufreq_stats *stats = policy->stats;
+@@ -129,7 +124,6 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 	return len;
+ }
+ cpufreq_freq_attr_ro(trans_table);
+-#endif
+ 
+ cpufreq_freq_attr_ro(total_trans);
+ cpufreq_freq_attr_ro(time_in_state);
+@@ -139,9 +133,7 @@ static struct attribute *default_attrs[] = {
+ 	&total_trans.attr,
+ 	&time_in_state.attr,
+ 	&reset.attr,
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	&trans_table.attr,
+-#endif
+ 	NULL
+ };
+ static struct attribute_group stats_attr_group = {
+@@ -200,9 +192,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
+ 
+ 	alloc_size = count * sizeof(int) + count * sizeof(u64);
+ 
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	alloc_size += count * count * sizeof(int);
+-#endif
+ 
+ 	/* Allocate memory for time_in_state/freq_table/trans_table in one go */
+ 	stats->time_in_state = kzalloc(alloc_size, GFP_KERNEL);
+@@ -211,9 +201,7 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
+ 
+ 	stats->freq_table = (unsigned int *)(stats->time_in_state + count);
+ 
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	stats->trans_table = stats->freq_table + count;
+-#endif
+ 
+ 	stats->max_state = count;
+ 
+@@ -259,8 +247,6 @@ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
+ 	cpufreq_stats_update(stats);
+ 
+ 	stats->last_index = new_index;
+-#ifdef CONFIG_CPU_FREQ_STAT_DETAILS
+ 	stats->trans_table[old_index * stats->max_state + new_index]++;
+-#endif
+ 	stats->total_trans++;
+ }
+-- 
+2.7.1.410.g6faf27b
