@@ -1,65 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: Remove CPUFREQ_START notifier event
-Date: Thu,  5 Jan 2017 11:34:31 +0530
-Message-ID: <2188a4e88d725062c400bcb50cc41477346e36c1.1483596168.git.viresh.kumar@linaro.org>
-References: <c62a8f8b1bf699b0c7834c87096d4f144c02bf1d.1483596168.git.viresh.kumar@linaro.org>
+From: Peter Chen <peter.chen@nxp.com>
+Subject: [PATCH v11 7/8] ARM: dts: imx6qdl-udoo.dtsi: fix onboard USB HUB property
+Date: Thu, 5 Jan 2017 14:01:58 +0800
+Message-ID: <1483596119-27508-8-git-send-email-peter.chen@nxp.com>
+References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <c62a8f8b1bf699b0c7834c87096d4f144c02bf1d.1483596168.git.viresh.kumar@linaro.org>
-In-Reply-To: <c62a8f8b1bf699b0c7834c87096d4f144c02bf1d.1483596168.git.viresh.kumar@linaro.org>
-References: <c62a8f8b1bf699b0c7834c87096d4f144c02bf1d.1483596168.git.viresh.kumar@linaro.org>
+In-Reply-To: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
+Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, hverkuil@xs4all.nl, krzk@kernel.org, Peter Chen <peter.chen@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-Its not used anymore, remove it.
+The current dts describes USB HUB's property at USB controller's
+entry, it is improper. The USB HUB should be the child node
+under USB controller, and power sequence properties are under
+it. Besides, using gpio pinctrl setting for USB2415's reset pin.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Peter Chen <peter.chen@nxp.com>
+Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
+Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
 ---
- drivers/cpufreq/cpufreq.c             | 3 ---
- drivers/cpufreq/ppc_cbe_cpufreq_pmi.c | 3 ---
- include/linux/cpufreq.h               | 1 -
- 3 files changed, 7 deletions(-)
+ arch/arm/boot/dts/imx6qdl-udoo.dtsi | 26 ++++++++++++--------------
+ 1 file changed, 12 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 53268bebdf1e..408479540566 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1246,9 +1246,6 @@ static int cpufreq_online(unsigned int cpu)
- 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 	}
+diff --git a/arch/arm/boot/dts/imx6qdl-udoo.dtsi b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+index c96c91d..a173de2 100644
+--- a/arch/arm/boot/dts/imx6qdl-udoo.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-udoo.dtsi
+@@ -9,6 +9,8 @@
+  *
+  */
  
--	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
--				     CPUFREQ_START, policy);
++#include <dt-bindings/gpio/gpio.h>
++
+ / {
+ 	aliases {
+ 		backlight = &backlight;
+@@ -58,17 +60,6 @@
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+ 
+-		reg_usb_h1_vbus: regulator@0 {
+-			compatible = "regulator-fixed";
+-			reg = <0>;
+-			regulator-name = "usb_h1_vbus";
+-			regulator-min-microvolt = <5000000>;
+-			regulator-max-microvolt = <5000000>;
+-			enable-active-high;
+-			startup-delay-us = <2>; /* USB2415 requires a POR of 1 us minimum */
+-			gpio = <&gpio7 12 0>;
+-		};
 -
- 	ret = cpufreq_init_policy(policy);
- 	if (ret) {
- 		pr_err("%s: Failed to initialize policy for cpu: %d (%d)\n",
-diff --git a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-index dc112481a408..eeaa92251512 100644
---- a/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-+++ b/drivers/cpufreq/ppc_cbe_cpufreq_pmi.c
-@@ -100,9 +100,6 @@ static int pmi_notifier(struct notifier_block *nb,
- 	/* Should this really be called for CPUFREQ_ADJUST and CPUFREQ_NOTIFY
- 	 * policy events?)
- 	 */
--	if (event == CPUFREQ_START)
--		return 0;
--
- 	node = cbe_cpu_to_node(policy->cpu);
+ 		reg_panel: regulator@1 {
+ 			compatible = "regulator-fixed";
+ 			reg = <1>;
+@@ -188,7 +179,7 @@
  
- 	pr_debug("got notified, event=%lu, node=%u\n", event, node);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 0183986b3ba6..61009c0b82c8 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -415,7 +415,6 @@ static inline void cpufreq_resume(void) {}
- /* Policy Notifiers  */
- #define CPUFREQ_ADJUST			(0)
- #define CPUFREQ_NOTIFY			(1)
--#define CPUFREQ_START			(2)
+ 		pinctrl_usbh: usbhgrp {
+ 			fsl,pins = <
+-				MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x80000000
++				MX6QDL_PAD_GPIO_17__GPIO7_IO12	0x1b0b0
+ 				MX6QDL_PAD_NANDF_CS2__CCM_CLKO2 0x130b0
+ 			>;
+ 		};
+@@ -259,9 +250,16 @@
+ &usbh1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_usbh>;
+-	vbus-supply = <&reg_usb_h1_vbus>;
+-	clocks = <&clks IMX6QDL_CLK_CKO>;
+ 	status = "okay";
++
++	usb2415: hub@1 {
++		compatible = "usb424,2514";
++		reg = <1>;
++
++		clocks = <&clks IMX6QDL_CLK_CKO>;
++		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
++		reset-duration-us = <3000>;
++	};
+ };
  
- #ifdef CONFIG_CPU_FREQ
- int cpufreq_register_notifier(struct notifier_block *nb, unsigned int list);
+ &usdhc3 {
 -- 
-2.7.1.410.g6faf27b
+2.7.4
