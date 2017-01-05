@@ -1,54 +1,71 @@
-From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
-Subject: Re: [PATCH] Allow userspace control of runtime disabling/enabling of
- driver probing
-Date: Thu, 5 Jan 2017 09:13:00 +0100
-Message-ID: <CAAObsKDuqX+EgNctsXofDV8sXnArvgNMAOphgPDgsuz33wCjzw@mail.gmail.com>
-References: <20170103225831.GA113525@beast> <20170104093236.GB31677@kroah.com>
- <CAPeXnHudW-YDmoK8NrFzQgAq4WuRDgFNC5-0GaG0+jVkq+3meQ@mail.gmail.com>
- <20170104194600.GC25268@kroah.com> <CAPeXnHt+urPvRJKDmYHEAuLvkTe7mhp+0_yFD5VboQzt_-cRnA@mail.gmail.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH 05/22] ARM: dtsi: axp209: add AXP209 ADC subnode
+Date: Thu, 5 Jan 2017 16:16:07 +0800
+Message-ID: <CAGb2v67zHf9maNvTVKBZWUTAZFP++PsJt+e3_Mt=Mv4FQ-6FZQ@mail.gmail.com>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-6-quentin.schulz@free-electrons.com>
+ <CAGb2v66dw=DECuHpLDzHnMP-O4UwZ+RkPsH0RofOGdBa7z7OHw@mail.gmail.com>
+ <1ddf7012-3336-84c2-6392-353b01beea93@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f196.google.com ([209.85.210.196]:36857 "EHLO
-        mail-wj0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S935583AbdAEIN7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 03:13:59 -0500
-In-Reply-To: <CAPeXnHt+urPvRJKDmYHEAuLvkTe7mhp+0_yFD5VboQzt_-cRnA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1ddf7012-3336-84c2-6392-353b01beea93@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
 List-Id: linux-pm@vger.kernel.org
-To: Matthew Garrett <mjg59@coreos.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook <keescook@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Lukas Wunner <lukas@wunner.de>, Madalin Bucur <madalin.bucur@nxp.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Petr Tesarik <ptesarik@suse.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
 
-On 4 January 2017 at 20:59, Matthew Garrett <mjg59@coreos.com> wrote:
-> On Wed, Jan 4, 2017 at 1:46 PM, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
->> On Wed, Jan 04, 2017 at 12:10:04PM -0600, Matthew Garrett wrote:
->>> On Wed, Jan 4, 2017 at 3:32 AM, Greg Kroah-Hartman
->>> <gregkh@linuxfoundation.org> wrote:
->>> > Turning on and off at random times "new devices can not be bound, wait,
->>> > now they can!" is ripe for loads of issues and is going to be a pain to
->>> > properly maintain over time.
+On Thu, Jan 5, 2017 at 4:08 PM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> On 05/01/2017 06:51, Chen-Yu Tsai wrote:
+>> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
+>> <quentin.schulz@free-electrons.com> wrote:
+>>> X-Powers AXP209 PMIC has multiple ADCs, each one exposing data from the
+>>> different power supplies connected to the PMIC.
 >>>
->>> What kind of issues?
+>>> This adds the ADC subnode for AXP20X PMIC.
+>>>
+>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>>> ---
+>>>  arch/arm/boot/dts/axp209.dtsi | 5 +++++
+>>>  1 file changed, 5 insertions(+)
+>>>
+>>> diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
+>>> index 675bb0f..2a4e8ee 100644
+>>> --- a/arch/arm/boot/dts/axp209.dtsi
+>>> +++ b/arch/arm/boot/dts/axp209.dtsi
+>>> @@ -53,6 +53,11 @@
+>>>         interrupt-controller;
+>>>         #interrupt-cells = <1>;
+>>>
+>>> +       axp209_adc: axp209_adc {
 >>
->> How are you going to test this to ensure it continues to work properly?
+>> Node name should be generic. Please change it to "adc".
+>>
 >
-> It's code that's already used over every suspend and resume. What kind
-> of breakage are you expecting? How do we test any feature to ensure it
-> continues to work properly?
+> OK, do I keep the label as is?
+>
+> axp209_adc: adc {
 
-In this specific case, we could use the Chamelium board to emulate USB
-devices, automating the plugging of various USB device types at
-different system states:
+Yup. The label is for dereferencing and stuff, and exists in a global scope.
+You wouldn't want 2 label names clashing.
 
-https://www.chromium.org/chromium-os/testing/chamelium
+ChenYu
 
-We are currently working on improving LAVA support for helper devices
-such as the Chamelium, mainly for emulating displays in graphics
-tests, but it can be useful for exercising other kernel ABIs such as
-disable_device_probe. The goal is to have the result of these tests
-reported to kernelci.org for spotting regressions early.
-
-Regards,
-
-Tomeu
+>
+> Thanks,
+> Quentin
+>
+> --
+> Quentin Schulz, Free Electrons
+> Embedded Linux and Kernel engineering
+> http://free-electrons.com
