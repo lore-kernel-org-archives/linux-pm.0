@@ -1,71 +1,208 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
- Exynos5422/5800
-Date: Wed, 4 Jan 2017 20:57:47 -0300
-Message-ID: <2c85559a-dc12-610b-c842-c89d078e1c2a@osg.samsung.com>
-References: <10512254.nyUcL0zgTP@amdc3058>
- <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
- <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
- <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC][PATCH 1/2] cpufreq: intel_pstate: Expose global sysfs attributes upfront
+Date: Thu, 05 Jan 2017 02:51:38 +0100
+Message-ID: <2389828.jxMzLa8mev@aspire.rjw.lan>
+References: <21825845.nN3skUNMsO@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kukjin Kim <kgene@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King <linux@armlinux.org.uk>, Andreas Faerber <afaerber@suse.de>, Thomas Abraham <thomas.ab@samsung.com>, Ben Gamari <ben@smart-cactus.org>, Arjun K V <arjun.kv@samsung.com>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53997 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1758918AbdAEB5b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Jan 2017 20:57:31 -0500
+In-Reply-To: <21825845.nN3skUNMsO@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 
-Hello Doug,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 01/04/2017 06:05 PM, Doug Anderson wrote:
-> Hi,
-> 
-> On Thu, Dec 29, 2016 at 6:17 AM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->> On Thu, Dec 15, 2016 at 04:54:30PM -0800, Doug Anderson wrote:
->>>> Index: b/arch/arm/boot/dts/exynos5800.dtsi
->>>> ===================================================================
->>>> --- a/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.365955950 +0100
->>>> +++ b/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.361955949 +0100
->>>> @@ -24,6 +24,16 @@
->>>>  };
->>>>
->>>>  &cluster_a15_opp_table {
->>>> +       opp@2000000000 {
->>>> +               opp-hz = /bits/ 64 <2000000000>;
->>>> +               opp-microvolt = <1250000>;
->>>> +               clock-latency-ns = <140000>;
->>>> +       };
->>>> +       opp@1900000000 {
->>>> +               opp-hz = /bits/ 64 <1900000000>;
->>>> +               opp-microvolt = <1250000>;
->>>> +               clock-latency-ns = <140000>;
->>>> +       };
->>>
->>> I don't think the voltages you listed are high enough for all peach pi
->>> boards for A15 at 1.9 GHz and 2.0 GHz, at least based on the research
->>> I did.  See my response to v1.
->>
->> I wanted to apply this but saw this remaining issue. Javier tested it
->> on Peach Pi so is this concern still valid?
-> 
-> I'm not sure.  It's been years since I did anything with exynos, so I
-> won't stand in the way if everyone else agrees that this patch is
-> good, but I will point out that testing on a single Peach Pi board is
-> not really enough given the massive difference in voltage needed
-> between the highest ASV group and the lowest (a whopping 112.5 mV from
-> looking in the Chrome OS source tree).
-> 
+Expose the intel_pstate's global sysfs attributes before registering
+the driver to prepare for the addition of an attribute that also will
+have to work if the driver is not registered.
 
-I agree. That's why answered that I wasn't able to find regressions on the
-Peach Pi I've access to, but I couldn't provide a Reviewed-by tag since it
-wasn't clear to me that the values were safe for any Exynos5420/5422/5800.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   67 +++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 65 insertions(+), 2 deletions(-)
 
-> -Doug
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -358,6 +358,8 @@ static struct pstate_funcs pstate_funcs
+ static int hwp_active __read_mostly;
+ static bool per_cpu_limits __read_mostly;
+ 
++static bool driver_registered __read_mostly;
++
+ #ifdef CONFIG_ACPI
+ static bool acpi_ppc;
+ #endif
+@@ -394,6 +396,7 @@ static struct perf_limits *limits = &per
+ static struct perf_limits *limits = &powersave_limits;
+ #endif
+ 
++static DEFINE_MUTEX(intel_pstate_driver_lock);
+ static DEFINE_MUTEX(intel_pstate_limits_lock);
+ 
+ #ifdef CONFIG_ACPI
+@@ -1055,12 +1058,22 @@ static ssize_t show_turbo_pct(struct kob
+ 	int total, no_turbo, turbo_pct;
+ 	uint32_t turbo_fp;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++
++	if (!driver_registered) {
++		mutex_unlock(&intel_pstate_limits_lock);
++		return -EAGAIN;
++	}
++
+ 	cpu = all_cpu_data[0];
+ 
+ 	total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate + 1;
+ 	no_turbo = cpu->pstate.max_pstate - cpu->pstate.min_pstate + 1;
+ 	turbo_fp = div_fp(no_turbo, total);
+ 	turbo_pct = 100 - fp_toint(mul_fp(turbo_fp, int_tofp(100)));
++
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	return sprintf(buf, "%u\n", turbo_pct);
+ }
+ 
+@@ -1070,8 +1083,18 @@ static ssize_t show_num_pstates(struct k
+ 	struct cpudata *cpu;
+ 	int total;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++
++	if (!driver_registered) {
++		mutex_unlock(&intel_pstate_limits_lock);
++		return -EAGAIN;
++	}
++
+ 	cpu = all_cpu_data[0];
+ 	total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate + 1;
++
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	return sprintf(buf, "%u\n", total);
+ }
+ 
+@@ -1080,12 +1103,21 @@ static ssize_t show_no_turbo(struct kobj
+ {
+ 	ssize_t ret;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++
++	if (!driver_registered) {
++		mutex_unlock(&intel_pstate_limits_lock);
++		return -EAGAIN;
++	}
++
+ 	update_turbo_state();
+ 	if (limits->turbo_disabled)
+ 		ret = sprintf(buf, "%u\n", limits->turbo_disabled);
+ 	else
+ 		ret = sprintf(buf, "%u\n", limits->no_turbo);
+ 
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	return ret;
+ }
+ 
+@@ -1099,6 +1131,13 @@ static ssize_t store_no_turbo(struct kob
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++
++	if (!driver_registered) {
++		mutex_unlock(&intel_pstate_driver_lock);
++		return -EAGAIN;
++	}
++
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+ 	update_turbo_state();
+@@ -1114,6 +1153,8 @@ static ssize_t store_no_turbo(struct kob
+ 
+ 	intel_pstate_update_policies();
+ 
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	return count;
+ }
+ 
+@@ -1127,6 +1168,13 @@ static ssize_t store_max_perf_pct(struct
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++
++	if (!driver_registered) {
++		mutex_unlock(&intel_pstate_driver_lock);
++		return -EAGAIN;
++	}
++
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+ 	limits->max_sysfs_pct = clamp_t(int, input, 0 , 100);
+@@ -1142,6 +1190,8 @@ static ssize_t store_max_perf_pct(struct
+ 
+ 	intel_pstate_update_policies();
+ 
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	return count;
+ }
+ 
+@@ -1155,6 +1205,13 @@ static ssize_t store_min_perf_pct(struct
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++
++	if (!driver_registered) {
++		mutex_unlock(&intel_pstate_driver_lock);
++		return -EAGAIN;
++	}
++
+ 	mutex_lock(&intel_pstate_limits_lock);
+ 
+ 	limits->min_sysfs_pct = clamp_t(int, input, 0 , 100);
+@@ -1170,6 +1227,8 @@ static ssize_t store_min_perf_pct(struct
+ 
+ 	intel_pstate_update_policies();
+ 
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	return count;
+ }
+ 
+@@ -2489,16 +2548,20 @@ hwp_cpu_matched:
+ 
+ 	intel_pstate_request_control_from_smm();
+ 
++	intel_pstate_sysfs_expose_params();
++
+ 	rc = cpufreq_register_driver(intel_pstate_driver);
+ 	if (rc)
+ 		goto out;
+ 
++	mutex_lock(&intel_pstate_driver_lock);
++	driver_registered = true;
++	mutex_unlock(&intel_pstate_driver_lock);
++
+ 	if (intel_pstate_driver == &intel_pstate && !hwp_active &&
+ 	    pstate_funcs.get_target_pstate != get_target_pstate_use_cpu_load)
+ 		intel_pstate_debug_expose_params();
+ 
+-	intel_pstate_sysfs_expose_params();
+-
+ 	if (hwp_active)
+ 		pr_info("HWP enabled\n");
+ 
 
-Best regards,
--- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
