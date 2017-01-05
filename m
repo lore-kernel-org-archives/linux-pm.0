@@ -1,14 +1,19 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] cpufreq: Remove CONFIG_CPU_FREQ_STAT_DETAILS config option
-Date: Thu, 5 Jan 2017 20:32:42 +0200
-Message-ID: <20170105183242.cwyymvr37mdqb6mj@kozik-lap>
-References: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
+ Exynos5422/5800
+Date: Thu, 5 Jan 2017 21:40:59 +0200
+Message-ID: <20170105194059.bwpotpv3zjtvg5oz@kozik-lap>
+References: <10512254.nyUcL0zgTP@amdc3058>
+ <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
+ <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
+ <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
+ <2c85559a-dc12-610b-c842-c89d078e1c2a@osg.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <d4299228a500a889c2b4b9e305674f3d1ea9ae06.1483604760.git.viresh.kumar@linaro.org>
+In-Reply-To: <2c85559a-dc12-610b-c842-c89d078e1c2a@osg.samsung.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -18,50 +23,59 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Andrew Lunn <andrew@lunn.ch>, linux-samsung-soc@vger.kernel.org, linaro-kernel@lists.linaro.org, Vincent Guittot <vincent.guittot@linaro.org>, Jason Cooper <jason@lakedaemon.net>, Simon Horman <horms@verge.net.au>, linux-pm@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-sh@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, linux-renesas-soc@vger.kernel.org, Javier Martinez Canillas <javier@osg.samsung.com>, Kukjin Kim <kgene@kernel.org>, linux-mips@linux-mips.org, Gregory Clement <gregory.clement@free-electrons.com>, arnd.bergmann@linaro.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ben Gamari <ben@smart-cactus.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Kukjin Kim <kgene@kernel.org>, Arjun K V <arjun.kv@samsung.com>, Andreas Faerber <afaerber@suse.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 05, 2017 at 01:57:41PM +0530, Viresh Kumar wrote:
-> This doesn't have any benefit apart from saving a small amount of memory
-> when it is disabled. The ifdef hackery in the code makes it dirty
-> unnecessarily.
+On Wed, Jan 04, 2017 at 08:57:47PM -0300, Javier Martinez Canillas wrote:
+> Hello Doug,
 > 
-> Clean it up by removing the Kconfig option completely. Few defconfigs
-> are also updated and CONFIG_CPU_FREQ_STAT_DETAILS is replaced with
-> CONFIG_CPU_FREQ_STAT now in them, as users wanted stats to be enabled.
+> On 01/04/2017 06:05 PM, Doug Anderson wrote:
+> > Hi,
+> > 
+> > On Thu, Dec 29, 2016 at 6:17 AM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> >> On Thu, Dec 15, 2016 at 04:54:30PM -0800, Doug Anderson wrote:
+> >>>> Index: b/arch/arm/boot/dts/exynos5800.dtsi
+> >>>> ===================================================================
+> >>>> --- a/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.365955950 +0100
+> >>>> +++ b/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.361955949 +0100
+> >>>> @@ -24,6 +24,16 @@
+> >>>>  };
+> >>>>
+> >>>>  &cluster_a15_opp_table {
+> >>>> +       opp@2000000000 {
+> >>>> +               opp-hz = /bits/ 64 <2000000000>;
+> >>>> +               opp-microvolt = <1250000>;
+> >>>> +               clock-latency-ns = <140000>;
+> >>>> +       };
+> >>>> +       opp@1900000000 {
+> >>>> +               opp-hz = /bits/ 64 <1900000000>;
+> >>>> +               opp-microvolt = <1250000>;
+> >>>> +               clock-latency-ns = <140000>;
+> >>>> +       };
+> >>>
+> >>> I don't think the voltages you listed are high enough for all peach pi
+> >>> boards for A15 at 1.9 GHz and 2.0 GHz, at least based on the research
+> >>> I did.  See my response to v1.
+> >>
+> >> I wanted to apply this but saw this remaining issue. Javier tested it
+> >> on Peach Pi so is this concern still valid?
+> > 
+> > I'm not sure.  It's been years since I did anything with exynos, so I
+> > won't stand in the way if everyone else agrees that this patch is
+> > good, but I will point out that testing on a single Peach Pi board is
+> > not really enough given the massive difference in voltage needed
+> > between the highest ASV group and the lowest (a whopping 112.5 mV from
+> > looking in the Chrome OS source tree).
+> > 
 > 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  arch/arm/configs/exynos_defconfig         |  2 +-
->  arch/arm/configs/multi_v5_defconfig       |  2 +-
->  arch/arm/configs/multi_v7_defconfig       |  2 +-
->  arch/arm/configs/mvebu_v5_defconfig       |  2 +-
->  arch/arm/configs/pxa_defconfig            |  2 +-
->  arch/arm/configs/shmobile_defconfig       |  2 +-
->  arch/mips/configs/lemote2f_defconfig      |  1 -
->  arch/powerpc/configs/ppc6xx_defconfig     |  1 -
->  arch/sh/configs/sh7785lcr_32bit_defconfig |  2 +-
->  drivers/cpufreq/Kconfig                   |  8 --------
->  drivers/cpufreq/cpufreq_stats.c           | 14 --------------
->  11 files changed, 7 insertions(+), 31 deletions(-)
-> 
-> diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
-> index 79c415c33f69..809f0bf3042a 100644
-> --- a/arch/arm/configs/exynos_defconfig
-> +++ b/arch/arm/configs/exynos_defconfig
-> @@ -24,7 +24,7 @@ CONFIG_ARM_APPENDED_DTB=y
->  CONFIG_ARM_ATAG_DTB_COMPAT=y
->  CONFIG_CMDLINE="root=/dev/ram0 rw ramdisk=8192 initrd=0x41000000,8M console=ttySAC1,115200 init=/linuxrc mem=256M"
->  CONFIG_CPU_FREQ=y
-> -CONFIG_CPU_FREQ_STAT_DETAILS=y
-> +CONFIG_CPU_FREQ_STAT=y
->  CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
->  CONFIG_CPU_FREQ_GOV_POWERSAVE=m
->  CONFIG_CPU_FREQ_GOV_USERSPACE=m
+> I agree. That's why answered that I wasn't able to find regressions on the
+> Peach Pi I've access to, but I couldn't provide a Reviewed-by tag since it
+> wasn't clear to me that the values were safe for any Exynos5420/5422/5800.
 
-For Exynos:
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+The value of 1.250 V seems to be covering only half of ASV values for
+2.0 GHz so indeed it might be insufficient for some of the chips.
+Unfortunately...
 
 Best regards,
 Krzysztof
