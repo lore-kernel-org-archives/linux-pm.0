@@ -1,108 +1,39 @@
-From: Alex Shi <alex.shi@linaro.org>
-Subject: Re: [PATCH 0/3] per cpu resume latency
-Date: Thu, 5 Jan 2017 23:48:34 +0800
-Message-ID: <8b471c83-8e62-bf93-b502-0bb7e9c271d6@linaro.org>
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH 1/3] cpuidle/menu: stop seeking deeper idle if current
+ state is too deep
+Date: Thu, 5 Jan 2017 07:55:24 -0800
+Message-ID: <a0804d15-c048-1de1-e30a-a1bbeb45c5a9@linux.intel.com>
 References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
+ <1483630187-29622-2-git-send-email-alex.shi@linaro.org>
+ <1483631039.25514.1.camel@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f171.google.com ([209.85.223.171]:33025 "EHLO
-        mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1032915AbdAEPsn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 10:48:43 -0500
-Received: by mail-io0-f171.google.com with SMTP id v96so11550212ioi.0
-        for <linux-pm@vger.kernel.org>; Thu, 05 Jan 2017 07:48:43 -0800 (PST)
-In-Reply-To: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
+Received: from mga05.intel.com ([192.55.52.43]:48167 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1161609AbdAEPz0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 5 Jan 2017 10:55:26 -0500
+In-Reply-To: <1483631039.25514.1.camel@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Rik van Riel <riel@redhat.com>, Alex Shi <alex.shi@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, open list <linux-kernel@vger.kernel.org>
+Cc: linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-Sorry for missing the mailing list.
+On 1/5/2017 7:43 AM, Rik van Riel wrote:
+> On Thu, 2017-01-05 at 23:29 +0800, Alex Shi wrote:
+>> The obsolete commit 71abbbf85 want to introduce a dynamic cstates,
+>> but it was removed for long time. Just left the nonsense deeper
+>> cstate
+>> checking.
+>>
+>> Since all target_residency and exit_latency are going longer in
+>> deeper
+>> idle state, no needs to waste some cpu cycle on useless seeking.
+>
+> Makes me wonder if it would be worth documenting the
+> requirement that c-states be listed in increasing
+> order?
 
-Add linux-kernel and linux-pm.
+or better, a boot time quick check...
 
-
-On 01/05/2017 11:29 PM, Alex Shi wrote:
-> cpu_dma_latency is designed to keep all cpu awake from deep c-state.
-> That is good keep system with short response latency. But sometime we
-> don't need all cpu power especially in a more and more multi-core day.
-> So set all cpu restless that lead to a big power waste.
-> 
-> A better way is to keep the short cpu response latency on needed cpu, 
-> while let other unnecesscary cpus go to deep idle. That is this 
-> patchset. We just use the pm_qos_resume_latency on cpu. Giving the 
-> short cpu latency on appointed cpu via setting value on
-> /sys/devices/system/cpu/cpuX/power/pm_qos_resume_latency_us
-> We can set we wanted latency value according to the value of
-> /sys/devices/system/cpu/cpuX/cpuidle/stateX/latency. to just a bit
-> less related state's latency value. Then cpu can get to this state or
-> higher.
-> 
-> Here is some testing data on my dragonboard 410c, the latency of state1
-> is 280us. It has 4 cores.
-> 
-> Benchmark: cyclictest -t 1  -n -i 10000 -l 1000 -q --latency=10000
-> 
-> without the patch:
-> Latency (us) Min:     87 Act:  209 Avg:  205 Max:     239
-> With the patch and cpu0/power/pm_qos_resume_latency_us is lower than
-> 280us, like set to 279
-> benchmark result on cpu0:
-> Latency (us) Min:     82 Act:   91 Avg:   95 Max:     110
-> In repeat testing, the Avg latency always drop to half of vanilla kernel
-> value, as well as Max latency value, although sometime the Max latency
-> is similar with vanilla kernel. 
-> 
-> Also we could use the cpu_dma_latency to get the similar short latency.
-> But 'idlestate' show all cpu are restless. Here is the idle status 
-> compression between cpu_dma_latency and this feature:
-> 
-> To record idlestate
-> #./idlestat --trace -t 10 -f /tmp/mytracepmlat -p -c -w -- cyclictest -t 1  -n -i 10000 -l 1000 -q --latency=10000
-> 
-> To compare the idle state, the 'total' colum show cpu1~3 nearly stay
-> in WFI state with cpu_dma_latency. but w/ my patch, they can get about
-> 10 second sleep in 'spc' state.
-> # ./idlestat --import -f /tmp/mytracepmlat -b /tmp/mytrace -r comparison
-> Log is 10.055305 secs long with 7514 events
-> Log is 10.055370 secs long with 7545 events
-> --------------------------------------------------------------------------------
-> | C-state  |   min    |   max    |   avg    |   total  | hits  |  over | under |
-> --------------------------------------------------------------------------------
-> | clusterA                                                                     |
-> --------------------------------------------------------------------------------
-> |      WFI |      2us |  12.88ms |   4.18ms |    9.76s |  2334 |     0 |     0 |
-> |          |     -2us |  -14.4ms |    -17us |  -72.5ms |    -8 |     0 |     0 |
-> --------------------------------------------------------------------------------
-> |             cpu0                                                             |
-> --------------------------------------------------------------------------------
-> |      WFI |      3us | 100.98ms |  26.81ms |   10.03s |   374 |     0 |     0 |
-> |          |     -1us |     -1us |   -350us |   +5.0ms |    +5 |     0 |     0 |
-> --------------------------------------------------------------------------------
-> |             cpu1                                                             |
-> --------------------------------------------------------------------------------
-> |      WFI |    280us |   3.96ms |   1.96ms |  19.64ms |    10 |     0 |     5 |
-> |          |   +221us | -891.7ms |   -9.1ms |    -9.9s |  -889 |     0 |     0 |
-> |      spc |    234us |  19.71ms |   9.79ms |    9.91s |  1012 |     4 |     0 |
-> |          |   +167us |  +17.9ms |   +8.6ms |    +9.9s | +1009 |    +1 |     0 |
-> --------------------------------------------------------------------------------
-> |             cpu2                                                             |
-> --------------------------------------------------------------------------------
-> |      WFI |     86us |   1.01ms |    637us |   1.91ms |     3 |     0 |     0 |
-> |          |    -16us |  -26.5ms |   -8.8ms |   -10.0s | -1057 |     0 |     0 |
-> |      spc |    930us |  47.67ms |  10.05ms |    9.92s |   987 |     2 |     0 |
-> |          |   -1.4ms |  +43.7ms |   +6.9ms |    +9.9s |  +985 |    +2 |     0 |
-> --------------------------------------------------------------------------------
-> |             cpu3                                                             |
-> --------------------------------------------------------------------------------
-> |      WFI |      0us |      0us |      0us |      0us |     0 |     0 |     0 |
-> |          |          |    -4.0s | -152.1ms |   -10.0s |   -66 |     0 |     0 |
-> |      spc |    420us |    3.50s | 913.74ms |   10.05s |    11 |     3 |     0 |
-> |          |   -891us |    +3.5s | +911.0ms |   +10.0s |    +8 |    +1 |     0 |
-> --------------------------------------------------------------------------------
-> 
-> 
-> Thanks
-> Alex
-> 
