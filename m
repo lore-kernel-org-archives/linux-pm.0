@@ -1,70 +1,54 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH 15/22] mfd: axp20x: add CHRG_CTRL1 to writeable regs for
- AXP20X/AXP22X
-Date: Thu, 5 Jan 2017 09:10:35 +0100
-Message-ID: <304cdd9e-93a7-f554-99ce-e3e01762761d@free-electrons.com>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-16-quentin.schulz@free-electrons.com>
- <CAGb2v67KmaECfFO+QBxKbtKscD0O=KNVHO1TS4FspYEdaLWUCA@mail.gmail.com>
+From: Tomeu Vizoso <tomeu.vizoso@collabora.com>
+Subject: Re: [PATCH] Allow userspace control of runtime disabling/enabling of
+ driver probing
+Date: Thu, 5 Jan 2017 09:13:00 +0100
+Message-ID: <CAAObsKDuqX+EgNctsXofDV8sXnArvgNMAOphgPDgsuz33wCjzw@mail.gmail.com>
+References: <20170103225831.GA113525@beast> <20170104093236.GB31677@kroah.com>
+ <CAPeXnHudW-YDmoK8NrFzQgAq4WuRDgFNC5-0GaG0+jVkq+3meQ@mail.gmail.com>
+ <20170104194600.GC25268@kroah.com> <CAPeXnHt+urPvRJKDmYHEAuLvkTe7mhp+0_yFD5VboQzt_-cRnA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGb2v67KmaECfFO+QBxKbtKscD0O=KNVHO1TS4FspYEdaLWUCA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wj0-f196.google.com ([209.85.210.196]:36857 "EHLO
+        mail-wj0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S935583AbdAEIN7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 03:13:59 -0500
+In-Reply-To: <CAPeXnHt+urPvRJKDmYHEAuLvkTe7mhp+0_yFD5VboQzt_-cRnA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Matthew Garrett <mjg59@coreos.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook <keescook@chromium.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Lukas Wunner <lukas@wunner.de>, Madalin Bucur <madalin.bucur@nxp.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Petr Tesarik <ptesarik@suse.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, kernel-hardening@lists.openwall.com
 
-On 05/01/2017 07:10, Chen-Yu Tsai wrote:
-> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
-> <quentin.schulz@free-electrons.com> wrote:
->> The CHR_CTRL1 register is made of 7 read-write bits with one being used
->> to set the target voltage for battery charging.
-> 
-> The description is incorrect.
-> 
-> All 8 bits are read-write:
-> 
->   - The highest bit enables the charger module
->   - Bits [6:5] set the target voltage
->   - Bits [4:3] set when the charge cycle ends, based on percentage
->     of charge current
->   - Bits [2:0] set the charge current
-> 
-> Feel free to use the above in the commit message.
-> 
-
-Thanks for the correction.
-
+On 4 January 2017 at 20:59, Matthew Garrett <mjg59@coreos.com> wrote:
+> On Wed, Jan 4, 2017 at 1:46 PM, Greg Kroah-Hartman
+> <gregkh@linuxfoundation.org> wrote:
+>> On Wed, Jan 04, 2017 at 12:10:04PM -0600, Matthew Garrett wrote:
+>>> On Wed, Jan 4, 2017 at 3:32 AM, Greg Kroah-Hartman
+>>> <gregkh@linuxfoundation.org> wrote:
+>>> > Turning on and off at random times "new devices can not be bound, wait,
+>>> > now they can!" is ripe for loads of issues and is going to be a pain to
+>>> > properly maintain over time.
+>>>
+>>> What kind of issues?
 >>
->> This adds the CHRG_CTRL1 register to the list of writeable registers for
->> AXP20X and AXP22X PMICs.
-> 
-> You might want to add up to CHRG_CTRL3 for the AXP22x and CHRG_CTRL2
-> for the AXP20x. These control additional aspects of the charger.
-> 
+>> How are you going to test this to ensure it continues to work properly?
+>
+> It's code that's already used over every suspend and resume. What kind
+> of breakage are you expecting? How do we test any feature to ensure it
+> continues to work properly?
 
-ACK.
+In this specific case, we could use the Chamelium board to emulate USB
+devices, automating the plugging of various USB device types at
+different system states:
 
-> AXP20X_CHRG_BAK_CTRL controls the charger for the RTC battery. You
-> could add this now, or let the person doing the RTC battery driver
-> add it.
+https://www.chromium.org/chromium-os/testing/chamelium
 
-I'll let the person adding the RTC battery driver add it.
+We are currently working on improving LAVA support for helper devices
+such as the Chamelium, mainly for emulating displays in graphics
+tests, but it can be useful for exercising other kernel ABIs such as
+disable_device_probe. The goal is to have the result of these tests
+reported to kernelci.org for spotting regressions early.
 
-Thanks,
-Quentin
+Regards,
 
--- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Tomeu
