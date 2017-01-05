@@ -1,73 +1,165 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: Immutable branch for axp288 power-supply/mfd
-Date: Thu, 5 Jan 2017 17:57:27 +0100
-Message-ID: <20170105165727.fdngupvzd7gf4kgt@earth>
-References: <20170104211349.mwqlokjwytg2sn2e@earth>
- <20170105081330.GM24225@dell>
+From: Yasuaki Ishimatsu <yasu.isimatu@gmail.com>
+Subject: Re: [PATCH] thermal: add thermal_zone_remove_device_groups()
+Date: Thu, 5 Jan 2017 11:58:48 -0500
+Message-ID: <7116979e-5405-a02b-17f1-2fe663334907@gmail.com>
+References: <6c5a1a95-9b03-6f43-8de8-1ab4ac27cc78@gmail.com>
+ <1483504508.2320.41.camel@intel.com> <1483505107.2320.50.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6d66mo6o6ivg63lm"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:56344 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1761522AbdAEQ6M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 5 Jan 2017 11:58:12 -0500
-Content-Disposition: inline
-In-Reply-To: <20170105081330.GM24225@dell>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1483505107.2320.50.camel@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: edubezval@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-pm@vger.kernel.org
 
 
---6d66mo6o6ivg63lm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On 01/03/2017 11:45 PM, Zhang Rui wrote:
+> On Wed, 2017-01-04 at 12:35 +0800, Zhang Rui wrote:
+>> On Thu, 2016-12-15 at 16:47 -0500, Yasuaki Ishimatsu wrote:
+>>>
+>>> When offlining all cores on a CPU, the following system panic
+>>> occurs:
+>>>
+>>> BUG: unable to handle kernel NULL pointer dereference at (null)
+>>> IP: strlen+0x0/0x20
+>>> <snip>
+>>> Call Trace:
+>>>   ? kernfs_name_hash+0x17/0x80
+>>>   kernfs_find_ns+0x3f/0xd0
+>>>   kernfs_remove_by_name_ns+0x36/0xa0
+>>>   remove_files.isra.1+0x36/0x70
+>>>   sysfs_remove_group+0x44/0x90
+>>>   sysfs_remove_groups+0x2e/0x50
+>>>   device_remove_attrs+0x5e/0x90
+>>>   device_del+0x1ea/0x350
+>>>   device_unregister+0x1a/0x60
+>>>   thermal_zone_device_unregister+0x1f2/0x210
+>>>   pkg_thermal_cpu_offline+0x14f/0x1a0 [x86_pkg_temp_thermal]
+>>>   ? kzalloc.constprop.2+0x10/0x10 [x86_pkg_temp_thermal]
+>>>   cpuhp_invoke_callback+0x8d/0x3f0
+>>>   cpuhp_down_callbacks+0x42/0x80
+>>>   cpuhp_thread_fun+0x8b/0xf0
+>>>   smpboot_thread_fn+0x110/0x160
+>>>   kthread+0x101/0x140
+>>>   ? sort_range+0x30/0x30
+>>>   ? kthread_park+0x90/0x90
+>>>   ret_from_fork+0x25/0x30
+>>>
+>>> thermal_zone_create_device_group() sets attribute_groups in
+>>> thermal_zone_attribute_groups[] to tz->device.groups. But these
+>>> attributes_groups do not have name argument.
+>>>
+>> I'm a little confused here, in remove_files(),
+>> it is the (struct attribute *)->name which is passed into
+>> kernfs_remove_by_name, instead of attributes_groups->name.
+>>
+>> IMO, a NULL-name attribute group won't bring any problem.
+>>
+> hah, I see what the problem is here.
+> Just like the problem illustrated in this one
+> https://patchwork.kernel.org/patch/9492439/
+> The root cause is that, the trip point attributes are cleared and freed
+> BEFORE device_unregister(), this results in NULL trip point attributes
+> when removing the thermal zone device sysfs groups.
+>
+> And I believe https://patchwork.kernel.org/patch/9492439/ should fix
+> the problem for you, right?
 
-On Thu, Jan 05, 2017 at 08:13:30AM +0000, Lee Jones wrote:
-> On Wed, 04 Jan 2017, Sebastian Reichel wrote:
-> > Here is the promised immutable branch for the axp288 power-supply
-> > changes, that also touch the mfd subsystem.
-> >=20
-> > -- Sebastian
-> >=20
-> > The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382e=
-df77:
-> >=20
-> >   Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
-> >=20
-> > are available in the git repository at:
-> >=20
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.=
-git psy-mfd-axp288-immutable
->=20
-> Did you tag the branch and push the tag?
+Thank you for the information.
+I confirmed that the patch fixes the issue.
 
-I just pushed "ib-psy-mfd-axp288-4.11" as signed tag.
-
--- Sebastian
-
---6d66mo6o6ivg63lm
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhuevcACgkQ2O7X88g7
-+pqIEQ/+Jdr8gxk0z+q3/S/4YsbRCYI3G0gBG6t69QQ0MjwBPEmT5pVWLS3d7UMg
-yrmlTgUkvwTCsByfdxLGYM9fXtUeeL4R/hHqGve62E1jdWgj3C6K//vstdsuyzcv
-p3rcj11fJpi71ZVl1lN+PCidKjA/ULCQjY8eChKr6VHVDmogK5FF7+Lg38yHjovI
-mlzuawayWAGnSiG9VKcH9OVtglh5Ms7Qjgx3H/kedJeffRCFA4T7Tra6abNMQkT5
-hZVpjXW6pRWMGjph7YucjMS+06ljC6QdS1GyZjNv5EgnxDEelM1VL2+pcaexeXrq
-6/L9wywaNUm5gZd8nmOd3/4z60kcgZCr77k0DKzR2Y+RfCYIPS0A/FaeAIbwRfj1
-+vpO2P2yptofR4wbY3r2GwOhF4yXxyoY8QYhhugF5OQzG8dBCobeMRAomXWUFRgU
-Ul0T/5X4pMcHWY55dcQqESChGCILaTWqKuCR1Ii7+weMBYD4T7fJw8sPqgTrOYtF
-zAxXOBL/PVMJBAn7M04yIC8ikMJkL1d8XsEkLypShl3WvvDa9jU+QSfv3Lapukbt
-KOihmWgoTDzJA3wZN56IC+vPLTeyR1bCweqsrP0FgGIE0HZRoA2bwak0DtnhRLtK
-/LKkxw9fmQfxmmYjGGeziedTyulFvqUa8g96H93XGsLtx+SEU4k=
-=xNRF
------END PGP SIGNATURE-----
-
---6d66mo6o6ivg63lm--
+Thanks,
+Yasuaki Ishimatsu
+>
+> thanks,
+> rui> >
+>>> So when offlining all cores on CPU and executing
+>>> thermal_zone_device_unregister(), the panic occurs in strlen()
+>>> called from kernfs_name_hash() because name argument is NULL.
+>>>
+>>> The patch adds thermal_zone_remove_device_groups() to free
+>>> tz->device.groups and set NULL pointer.
+>>>
+>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>> CC: Zhang Rui <rui.zhang@intel.com>
+>>> CC: Eduardo Valentin <edubezval@gmail.com>
+>>> ---
+>>>   drivers/thermal/thermal_core.c  | 3 ++-
+>>>   drivers/thermal/thermal_core.h  | 1 +
+>>>   drivers/thermal/thermal_sysfs.c | 6 ++++++
+>>>   3 files changed, 9 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/thermal/thermal_core.c
+>>> b/drivers/thermal/thermal_core.c
+>>> index 641faab..926e385 100644
+>>> --- a/drivers/thermal/thermal_core.c
+>>> +++ b/drivers/thermal/thermal_core.c
+>>> @@ -1251,6 +1251,7 @@ struct thermal_zone_device *
+>>>
+>>>   unregister:
+>>>   	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+>>> +	thermal_zone_remove_device_groups(tz);
+>>>   	device_unregister(&tz->device);
+>>>   	return ERR_PTR(result);
+>>>   }
+>>> @@ -1315,8 +1316,8 @@ void thermal_zone_device_unregister(struct
+>>> thermal_zone_device *tz)
+>>>   	release_idr(&thermal_tz_idr, &thermal_idr_lock, tz->id);
+>>>   	idr_destroy(&tz->idr);
+>>>   	mutex_destroy(&tz->lock);
+>>> +	thermal_zone_remove_device_groups(tz);
+>>>   	device_unregister(&tz->device);
+>>> -	kfree(tz->device.groups);
+>>>   }
+>>>   EXPORT_SYMBOL_GPL(thermal_zone_device_unregister);
+>>>
+>>> diff --git a/drivers/thermal/thermal_core.h
+>>> b/drivers/thermal/thermal_core.h
+>>> index 2412b37..e3a60db 100644
+>>> --- a/drivers/thermal/thermal_core.h
+>>> +++ b/drivers/thermal/thermal_core.h
+>>> @@ -70,6 +70,7 @@ void thermal_zone_device_unbind_exception(struct
+>>> thermal_zone_device *,
+>>>   int thermal_build_list_of_policies(char *buf);
+>>>
+>>>   /* sysfs I/F */
+>>> +void thermal_zone_remove_device_groups(struct thermal_zone_device
+>>> *tz);
+>>>   int thermal_zone_create_device_groups(struct thermal_zone_device
+>>> *,
+>>> int);
+>>>   void thermal_cooling_device_setup_sysfs(struct
+>>> thermal_cooling_device *);
+>>>   /* used only at binding time */
+>>> diff --git a/drivers/thermal/thermal_sysfs.c
+>>> b/drivers/thermal/thermal_sysfs.c
+>>> index a694de9..3dfd29b 100644
+>>> --- a/drivers/thermal/thermal_sysfs.c
+>>> +++ b/drivers/thermal/thermal_sysfs.c
+>>> @@ -605,6 +605,12 @@ static int create_trip_attrs(struct
+>>> thermal_zone_device *tz, int mask)
+>>>   	return 0;
+>>>   }
+>>>
+>>> +void thermal_zone_remove_device_groups(struct thermal_zone_device
+>>> *tz)
+>>> +{
+>>> +	kfree(tz->device.groups);
+>>> +	tz->device.groups = NULL;
+>>> +}
+>>> +
+>>>   int thermal_zone_create_device_groups(struct thermal_zone_device
+>>> *tz,
+>>>   				      int mask)
+>>>   {
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pm"
+>> in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+>
