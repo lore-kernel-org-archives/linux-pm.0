@@ -1,81 +1,37 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2] ARM: dts: Add missing CPU frequencies for
- Exynos5422/5800
-Date: Thu, 5 Jan 2017 21:40:59 +0200
-Message-ID: <20170105194059.bwpotpv3zjtvg5oz@kozik-lap>
-References: <10512254.nyUcL0zgTP@amdc3058>
- <CAD=FV=Wo273T20fe8D2v5Pn1HYR==7PHtr7WZGwzFPRspAYPzg@mail.gmail.com>
- <20161229141707.qjrtjz7dik6a7l5s@kozik-lap>
- <CAD=FV=WM_K_f0NQ0mxB55Ksbqg1gYJHs5d66ARYsa1=5hKLjXA@mail.gmail.com>
- <2c85559a-dc12-610b-c842-c89d078e1c2a@osg.samsung.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [RFC][PATCH 0/2] cpufreq: intel_pstate: Make it possible to
+ change operation mode on the fly
+Date: Thu, 05 Jan 2017 13:29:47 -0800
+Message-ID: <1483651787.4497.118.camel@linux.intel.com>
+References: <21825845.nN3skUNMsO@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <2c85559a-dc12-610b-c842-c89d078e1c2a@osg.samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Javier Martinez Canillas <javier@osg.samsung.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Thomas Abraham <thomas.ab@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ben Gamari <ben@smart-cactus.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Doug Anderson <dianders@chromium.org>, Krzysztof Kozlowski <krzk@kernel.org>, Russell King <linux@armlinux.org.uk>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Kukjin Kim <kgene@kernel.org>, Arjun K V <arjun.kv@samsung.com>, Andreas Faerber <afaerber@suse.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:39586 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S938913AbdAEVaU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 5 Jan 2017 16:30:20 -0500
+In-Reply-To: <21825845.nN3skUNMsO@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-On Wed, Jan 04, 2017 at 08:57:47PM -0300, Javier Martinez Canillas wrote:
-> Hello Doug,
+On Thu, 2017-01-05 at 02:50 +0100, Rafael J. Wysocki wrote:
+> Hi,
 > 
-> On 01/04/2017 06:05 PM, Doug Anderson wrote:
-> > Hi,
-> > 
-> > On Thu, Dec 29, 2016 at 6:17 AM, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> >> On Thu, Dec 15, 2016 at 04:54:30PM -0800, Doug Anderson wrote:
-> >>>> Index: b/arch/arm/boot/dts/exynos5800.dtsi
-> >>>> ===================================================================
-> >>>> --- a/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.365955950 +0100
-> >>>> +++ b/arch/arm/boot/dts/exynos5800.dtsi 2016-12-15 12:43:54.361955949 +0100
-> >>>> @@ -24,6 +24,16 @@
-> >>>>  };
-> >>>>
-> >>>>  &cluster_a15_opp_table {
-> >>>> +       opp@2000000000 {
-> >>>> +               opp-hz = /bits/ 64 <2000000000>;
-> >>>> +               opp-microvolt = <1250000>;
-> >>>> +               clock-latency-ns = <140000>;
-> >>>> +       };
-> >>>> +       opp@1900000000 {
-> >>>> +               opp-hz = /bits/ 64 <1900000000>;
-> >>>> +               opp-microvolt = <1250000>;
-> >>>> +               clock-latency-ns = <140000>;
-> >>>> +       };
-> >>>
-> >>> I don't think the voltages you listed are high enough for all peach pi
-> >>> boards for A15 at 1.9 GHz and 2.0 GHz, at least based on the research
-> >>> I did.  See my response to v1.
-> >>
-> >> I wanted to apply this but saw this remaining issue. Javier tested it
-> >> on Peach Pi so is this concern still valid?
-> > 
-> > I'm not sure.  It's been years since I did anything with exynos, so I
-> > won't stand in the way if everyone else agrees that this patch is
-> > good, but I will point out that testing on a single Peach Pi board is
-> > not really enough given the massive difference in voltage needed
-> > between the highest ASV group and the lowest (a whopping 112.5 mV from
-> > looking in the Chrome OS source tree).
-> > 
+> This two-patch series adds a sysfs attribute to intel_pstate to allow
+> user space
+> to change the way the driver works or disable it altogether.
 > 
-> I agree. That's why answered that I wasn't able to find regressions on the
-> Peach Pi I've access to, but I couldn't provide a Reviewed-by tag since it
-> wasn't clear to me that the values were safe for any Exynos5420/5422/5800.
+> Refer to the changelog of patch [2/2] for details.
+> 
+> The patches are on top of the linux-next branch of the linux-pm.git
+> tree.
+Tested this change and works as described in the change log.
+So looks fine to me.
 
-The value of 1.250 V seems to be covering only half of ASV values for
-2.0 GHz so indeed it might be insufficient for some of the chips.
-Unfortunately...
+Thanks,
+Srinivas
 
-Best regards,
-Krzysztof
