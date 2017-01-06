@@ -1,205 +1,100 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Resend][PATCH 1/3] PM / core: Update kerneldoc comments in pm.h
-Date: Fri, 06 Jan 2017 02:39:54 +0100
-Message-ID: <36199870.vclTjsxryJ@aspire.rjw.lan>
-References: <17467778.bsRBpnPicc@aspire.rjw.lan>
+From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 3/3] power: bq27xxx: add support for NVRAM R/W access
+Date: Fri, 6 Jan 2017 02:53:14 +0100
+Message-ID: <20170106015314.7qju6eodkwldty6h@earth>
+References: <20170105021007.22088-1-matt@ranostay.consulting>
+ <20170105021007.22088-4-matt@ranostay.consulting>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <17467778.bsRBpnPicc@aspire.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
-Cc: Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="jxjlxtimakzalopx"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170105021007.22088-4-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Cc: tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Refresh the struct dev_pm_ops kerneldoc comment, so that it looks
-better and is more readable after processing by Sphinx, and drop
-the kerneldoc marker from a few other comments ("PM_EVENT_ messages"
-and a couple of enum types declarations) which are not proper
-kerneldoc and generally confuse Sphinx.
+--jxjlxtimakzalopx
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also change the comment describing struct dev_pm_domain into
-a kerneldoc one.
+On Wed, Jan 04, 2017 at 06:10:07PM -0800, Matt Ranostay wrote:
+> Initial support for access and modification of the non-volatile regions
+> of the bq27425 fuel gauge DesignEnergy, DesignCapacity, and
+> TerminateVoltage settings.
+>=20
+> This is intended for fine tuning the fuel gauge state machine for the
+> respective battery specifications.
+>=20
+> Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+> ---
+>  drivers/power/supply/bq27xxx_battery_i2c.c | 335 +++++++++++++++++++++++=
+++++++
+>  include/linux/power/bq27xxx_battery.h      |   4 +
+>  2 files changed, 339 insertions(+)
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- include/linux/pm.h |  113 ++++++++++++++++++++++++++---------------------------
- 1 file changed, 57 insertions(+), 56 deletions(-)
+I only skipped over this one, as the changed DT binding requires
+quite some changes in this patch anyways. Here are a couple of
+comments how I would like to see this implemented:
 
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -64,24 +64,7 @@ typedef struct pm_message {
- } pm_message_t;
- 
- /**
-- * struct dev_pm_ops - device PM callbacks
-- *
-- * Several device power state transitions are externally visible, affecting
-- * the state of pending I/O queues and (for drivers that touch hardware)
-- * interrupts, wakeups, DMA, and other hardware state.  There may also be
-- * internal transitions to various low-power modes which are transparent
-- * to the rest of the driver stack (such as a driver that's ON gating off
-- * clocks which are not in active use).
-- *
-- * The externally visible transitions are handled with the help of callbacks
-- * included in this structure in such a way that two levels of callbacks are
-- * involved.  First, the PM core executes callbacks provided by PM domains,
-- * device types, classes and bus types.  They are the subsystem-level callbacks
-- * supposed to execute callbacks provided by device drivers, although they may
-- * choose not to do that.  If the driver callbacks are executed, they have to
-- * collaborate with the subsystem-level callbacks to achieve the goals
-- * appropriate for the given system transition, given transition phase and the
-- * subsystem the device belongs to.
-+ * struct dev_pm_ops - device PM callbacks.
-  *
-  * @prepare: The principal role of this callback is to prevent new children of
-  *	the device from being registered after it has returned (the driver's
-@@ -240,34 +223,6 @@ typedef struct pm_message {
-  *	driver's interrupt handler, which is guaranteed not to run while
-  *	@restore_noirq() is being executed.  Analogous to @resume_noirq().
-  *
-- * All of the above callbacks, except for @complete(), return error codes.
-- * However, the error codes returned by the resume operations, @resume(),
-- * @thaw(), @restore(), @resume_noirq(), @thaw_noirq(), and @restore_noirq(), do
-- * not cause the PM core to abort the resume transition during which they are
-- * returned.  The error codes returned in those cases are only printed by the PM
-- * core to the system logs for debugging purposes.  Still, it is recommended
-- * that drivers only return error codes from their resume methods in case of an
-- * unrecoverable failure (i.e. when the device being handled refuses to resume
-- * and becomes unusable) to allow us to modify the PM core in the future, so
-- * that it can avoid attempting to handle devices that failed to resume and
-- * their children.
-- *
-- * It is allowed to unregister devices while the above callbacks are being
-- * executed.  However, a callback routine must NOT try to unregister the device
-- * it was called for, although it may unregister children of that device (for
-- * example, if it detects that a child was unplugged while the system was
-- * asleep).
-- *
-- * Refer to Documentation/power/admin-guide/devices.rst for more information about the role
-- * of the above callbacks in the system suspend process.
-- *
-- * There also are callbacks related to runtime power management of devices.
-- * Again, these callbacks are executed by the PM core only for subsystems
-- * (PM domains, device types, classes and bus types) and the subsystem-level
-- * callbacks are supposed to invoke the driver callbacks.  Moreover, the exact
-- * actions to be performed by a device driver's callbacks generally depend on
-- * the platform and subsystem the device belongs to.
-- *
-  * @runtime_suspend: Prepare the device for a condition in which it won't be
-  *	able to communicate with the CPU(s) and RAM due to power management.
-  *	This need not mean that the device should be put into a low-power state.
-@@ -287,11 +242,54 @@ typedef struct pm_message {
-  *	Check these conditions, and return 0 if it's appropriate to let the PM
-  *	core queue a suspend request for the device.
-  *
-- * Refer to Documentation/power/runtime_pm.txt for more information about the
-- * role of the above callbacks in device runtime power management.
-+ * Several device power state transitions are externally visible, affecting
-+ * the state of pending I/O queues and (for drivers that touch hardware)
-+ * interrupts, wakeups, DMA, and other hardware state.  There may also be
-+ * internal transitions to various low-power modes which are transparent
-+ * to the rest of the driver stack (such as a driver that's ON gating off
-+ * clocks which are not in active use).
-  *
-+ * The externally visible transitions are handled with the help of callbacks
-+ * included in this structure in such a way that, typically, two levels of
-+ * callbacks are involved.  First, the PM core executes callbacks provided by PM
-+ * domains, device types, classes and bus types.  They are the subsystem-level
-+ * callbacks expected to execute callbacks provided by device drivers, although
-+ * they may choose not to do that.  If the driver callbacks are executed, they
-+ * have to collaborate with the subsystem-level callbacks to achieve the goals
-+ * appropriate for the given system transition, given transition phase and the
-+ * subsystem the device belongs to.
-+ *
-+ * All of the above callbacks, except for @complete(), return error codes.
-+ * However, the error codes returned by @resume(), @thaw(), @restore(),
-+ * @resume_noirq(), @thaw_noirq(), and @restore_noirq(), do not cause the PM
-+ * core to abort the resume transition during which they are returned.  The
-+ * error codes returned in those cases are only printed to the system logs for
-+ * debugging purposes.  Still, it is recommended that drivers only return error
-+ * codes from their resume methods in case of an unrecoverable failure (i.e.
-+ * when the device being handled refuses to resume and becomes unusable) to
-+ * allow the PM core to be modified in the future, so that it can avoid
-+ * attempting to handle devices that failed to resume and their children.
-+ *
-+ * It is allowed to unregister devices while the above callbacks are being
-+ * executed.  However, a callback routine MUST NOT try to unregister the device
-+ * it was called for, although it may unregister children of that device (for
-+ * example, if it detects that a child was unplugged while the system was
-+ * asleep).
-+ *
-+ * Refer to Documentation/power/devices.txt for more information about the role
-+ * of the above callbacks in the system suspend process.
-+ *
-+ * There also are callbacks related to runtime power management of devices.
-+ * Again, as a rule these callbacks are executed by the PM core for subsystems
-+ * (PM domains, device types, classes and bus types) and the subsystem-level
-+ * callbacks are expected to invoke the driver callbacks.  Moreover, the exact
-+ * actions to be performed by a device driver's callbacks generally depend on
-+ * the platform and subsystem the device belongs to.
-+ *
-+ * Refer to Documentation/power/runtime_pm.txt for more information about the
-+ * role of the @runtime_suspend(), @runtime_resume() and @runtime_idle()
-+ * callbacks in device runtime power management.
-  */
--
- struct dev_pm_ops {
- 	int (*prepare)(struct device *dev);
- 	void (*complete)(struct device *dev);
-@@ -391,7 +389,7 @@ const struct dev_pm_ops name = { \
- 	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
- }
- 
--/**
-+/*
-  * PM_EVENT_ messages
-  *
-  * The following PM_EVENT_ messages are defined for the internal use of the PM
-@@ -487,7 +485,7 @@ const struct dev_pm_ops name = { \
- 
- #define PMSG_IS_AUTO(msg)	(((msg).event & PM_EVENT_AUTO) != 0)
- 
--/**
-+/*
-  * Device run-time power management status.
-  *
-  * These status labels are used internally by the PM core to indicate the
-@@ -517,7 +515,7 @@ enum rpm_status {
- 	RPM_SUSPENDING,
- };
- 
--/**
-+/*
-  * Device run-time power management request types.
-  *
-  * RPM_REQ_NONE		Do nothing.
-@@ -616,15 +614,18 @@ extern void update_pm_runtime_accounting
- extern int dev_pm_get_subsys_data(struct device *dev);
- extern void dev_pm_put_subsys_data(struct device *dev);
- 
--/*
-- * Power domains provide callbacks that are executed during system suspend,
-- * hibernation, system resume and during runtime PM transitions along with
-- * subsystem-level and driver-level callbacks.
-+/**
-+ * struct dev_pm_domain - power management domain representation.
-  *
-+ * @ops: Power management operations associated with this domain.
-  * @detach: Called when removing a device from the domain.
-  * @activate: Called before executing probe routines for bus types and drivers.
-  * @sync: Called after successful driver probe.
-  * @dismiss: Called after unsuccessful driver probe and after driver removal.
-+ *
-+ * Power domains provide callbacks that are executed during system suspend,
-+ * hibernation, system resume and during runtime PM transitions instead of
-+ * subsystem-level and driver-level callbacks.
-  */
- struct dev_pm_domain {
- 	struct dev_pm_ops	ops;
+Add a patch for the power-supply core, which implements a
+structure for the battery info. Something like this:
 
+struct power_supply_battery_info {
+    uint32 energy; /* =B5Wh */
+    uint32 power;  /* =B5Ah */
+    uint32 nominal_voltage; /* =B5V */
+    /* ... */
+};
+
+And a function in the core framework, which gets the information
+=66rom DT. The function itself should *not* be DT specific, so that
+ACPI/platformdata/whatever support can be added later without
+modifying every single driver.
+
+static struct power_supply_battery_info*
+power_supply_get_battery_info(struct power_supply *psy) {
+    if (psy->dt) {
+        /* get battery phandle or return -ENXIO */
+        /* fill and return struct */
+    }
+
+    return -ENOTSUP;
+}
+
+Then call power_supply_get_battery_info() during bq27xxx probe and
+use the struct to initialize the registers. Also I expect that
+functionality in bq27xxx_battery.c instead of bq27xxx_battery_i2c.c,
+since it's not I=B2C specific.
+
+-- Sebastian
+
+--jxjlxtimakzalopx
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhu+IcACgkQ2O7X88g7
++ppnEQ//VrdWF6o0Gqzg0xUzU/Gnob0kOmEeJrRBZyDIjWnNyz3ADMlhu0ahw1a8
+oXhHOoyg2myb+fhwRwz9oRh+CcWi5gw7whKvjcf1u6VY6LoQQakwlENMRw2RASfd
+bO3RH4NLius1y0GIWRJRDf9Dy9BYtkmp+bdMJSjOJCGXCevTy38xfCGZV3mbQ/x9
+bnjJJDCkB/xkQCLzTVK5pQsz6k1+xmX7VktOB4s1MMg+1DLyhdr8bOVlz9Kk3Orn
+7eDstSD5PYE/CVz2xQy53qDmU/Ho2KAyFeH+EtMkIyBrWc4VxTJlwlLcYSvrrgU1
+6IQq59Y+Prn6D1p4Bur9LJOCO7jQE8/eZwGVCyas3BTh9W07YC/8Rz9cyYLKCV07
+5zamVg+fBoP1dyHWEU4SvPRxjTjT9WX9hLwpZ+6IkceTVPmEb9gyzvYbhpZuiLnc
+scP1fa44eECRbDXY6WUwd6w6ay8Jfo3wDvt3Z6eOXfe4/8zM2Rdl6YMyTQ0QFz5i
+gAlnaFXpDxtBP0a5QpuGHfPy32AS45PaQi3vnWrLyS9SoJzyXWyAu3GfEUYO96Xv
+hJxkbNiJZXgifpsqiCsscWyLU8b5MKcBNgNewDLivtp3YVIv1GRE92WBEy/HxySJ
+4QBAEcukLwMmzYywZzj83sy1Av1txtChtvoByP6ssgI618gPoUU=
+=MQ8Y
+-----END PGP SIGNATURE-----
+
+--jxjlxtimakzalopx--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
