@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/3] PM / sleep / docs: Convert PM notifiers document to reST
-Date: Fri, 06 Jan 2017 02:44:18 +0100
-Message-ID: <2662281.jbhQuLRcYj@aspire.rjw.lan>
+Subject: [Resend][PATCH 1/3] PM / core: Update kerneldoc comments in pm.h
+Date: Fri, 06 Jan 2017 02:39:54 +0100
+Message-ID: <36199870.vclTjsxryJ@aspire.rjw.lan>
 References: <17467778.bsRBpnPicc@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,222 +15,191 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Move the document describing PM notifiers (used during system sleep
-state transitions) to Documentation/driver-api/pm/, convert it to reST
-and update it to (a) follow the actual code better and (b) use current
-terminology.
+Refresh the struct dev_pm_ops kerneldoc comment, so that it looks
+better and is more readable after processing by Sphinx, and drop
+the kerneldoc marker from a few other comments ("PM_EVENT_ messages"
+and a couple of enum types declarations) which are not proper
+kerneldoc and generally confuse Sphinx.
 
-Also replace the remaining references to the old version of it in .txt
-documents with references to the new one.
+Also change the comment describing struct dev_pm_domain into
+a kerneldoc one.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- Documentation/driver-api/pm/devices.rst   |    2 
- Documentation/driver-api/pm/index.rst     |    1 
- Documentation/driver-api/pm/notifiers.rst |   70 ++++++++++++++++++++++++++++++
- Documentation/power/00-INDEX              |    2 
- Documentation/power/freezing-of-tasks.txt |    3 -
- Documentation/power/notifiers.txt         |   55 -----------------------
- Documentation/power/pci.txt               |    2 
- 7 files changed, 75 insertions(+), 60 deletions(-)
+ include/linux/pm.h |  113 ++++++++++++++++++++++++++---------------------------
+ 1 file changed, 57 insertions(+), 56 deletions(-)
 
-Index: linux-pm/Documentation/driver-api/pm/notifiers.rst
+Index: linux-pm/include/linux/pm.h
 ===================================================================
---- /dev/null
-+++ linux-pm/Documentation/driver-api/pm/notifiers.rst
-@@ -0,0 +1,70 @@
-+=============================
-+Suspend/Hibernation Notifiers
-+=============================
-+
-+::
-+
-+ Copyright (c) 2016 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+
-+There are some operations that subsystems or drivers may want to carry out
-+before hibernation/suspend or after restore/resume, but they require the system
-+to be fully functional, so the drivers' and subsystems' ``->suspend()`` and
-+``->resume()`` or even ``->prepare()`` and ``->complete()`` callbacks are not
-+suitable for this purpose.
-+
-+For example, device drivers may want to upload firmware to their devices after
-+resume/restore, but they cannot do it by calling :c:func:`request_firmware()`
-+from their ``->resume()`` or ``->complete()`` callback routines (user land
-+processes are frozen at these points).  The solution may be to load the firmware
-+into memory before processes are frozen and upload it from there in the
-+``->resume()`` routine.  A suspend/hibernation notifier may be used for that.
-+
-+Subsystems or drivers having such needs can register suspend notifiers that
-+will be called upon the following events by the PM core:
-+
-+``PM_HIBERNATION_PREPARE``
-+	The system is going to hibernate, tasks will be frozen immediately. This
-+	is different from ``PM_SUSPEND_PREPARE`` below,	because in this case
-+	additional work is done between the notifiers and the invocation of PM
-+	callbacks for the "freeze" transition.
-+
-+``PM_POST_HIBERNATION``
-+	The system memory state has been restored from a hibernation image or an
-+	error occurred during hibernation.  Device restore callbacks have been
-+	executed and tasks have been thawed.
-+
-+``PM_RESTORE_PREPARE``
-+	The system is going to restore a hibernation image.  If all goes well,
-+	the restored image kernel will issue a ``PM_POST_HIBERNATION``
-+	notification.
-+
-+``PM_POST_RESTORE``
-+	An error occurred during restore from hibernation.  Device restore
-+	callbacks have been executed and tasks have been thawed.
-+
-+``PM_SUSPEND_PREPARE``
-+	The system is preparing for suspend.
-+
-+``PM_POST_SUSPEND``
-+	The system has just resumed or an error occurred during suspend.  Device
-+	resume callbacks have been executed and tasks have been thawed.
-+
-+It is generally assumed that whatever the notifiers do for
-+``PM_HIBERNATION_PREPARE``, should be undone for ``PM_POST_HIBERNATION``.
-+Analogously, operations carried out for ``PM_SUSPEND_PREPARE`` should be
-+reversed for ``PM_POST_SUSPEND``.
-+
-+Moreover, if one of the notifiers fails for the ``PM_HIBERNATION_PREPARE`` or
-+``PM_SUSPEND_PREPARE`` event, the notifiers that have already succeeded for that
-+event will be called for ``PM_POST_HIBERNATION`` or ``PM_POST_SUSPEND``,
-+respectively.
-+
-+The hibernation and suspend notifiers are called with :c:data:`pm_mutex` held.
-+They are defined in the usual way, but their last argument is meaningless (it is
-+always NULL).
-+
-+To register and/or unregister a suspend notifier use
-+:c:func:`register_pm_notifier()` and :c:func:`unregister_pm_notifier()`,
-+respectively (both defined in :file:`include/linux/suspend.h`).  If you don't
-+need to unregister the notifier, you can also use the :c:func:`pm_notifier()`
-+macro defined in :file:`include/linux/suspend.h`.
-Index: linux-pm/Documentation/driver-api/pm/index.rst
-===================================================================
---- linux-pm.orig/Documentation/driver-api/pm/index.rst
-+++ linux-pm/Documentation/driver-api/pm/index.rst
-@@ -6,6 +6,7 @@ Device Power Management
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -64,24 +64,7 @@ typedef struct pm_message {
+ } pm_message_t;
  
-    types
-    devices
-+   notifiers
- 
- .. only::  subproject and html
- 
-Index: linux-pm/Documentation/driver-api/pm/devices.rst
-===================================================================
---- linux-pm.orig/Documentation/driver-api/pm/devices.rst
-+++ linux-pm/Documentation/driver-api/pm/devices.rst
-@@ -617,7 +617,7 @@ been thawed.  Generally speaking, the PM
- actions that either require user space to be available, or at least won't
- interfere with user space.
- 
--For details refer to :file:`Documentation/power/notifiers.txt`.
-+For details refer to :doc:`notifiers`.
- 
- 
- Device Low-Power (suspend) States
-Index: linux-pm/Documentation/power/00-INDEX
-===================================================================
---- linux-pm.orig/Documentation/power/00-INDEX
-+++ linux-pm/Documentation/power/00-INDEX
-@@ -14,8 +14,6 @@ freezing-of-tasks.txt
- 	- How processes and controlled during suspend
- interface.txt
- 	- Power management user interface in /sys/power
--notifiers.txt
--	- Registering suspend notifiers in device drivers
- opp.txt
- 	- Operating Performance Point library
- pci.txt
-Index: linux-pm/Documentation/power/notifiers.txt
-===================================================================
---- linux-pm.orig/Documentation/power/notifiers.txt
-+++ /dev/null
-@@ -1,55 +0,0 @@
--Suspend notifiers
--	(C) 2007-2011 Rafael J. Wysocki <rjw@sisk.pl>, GPL
+ /**
+- * struct dev_pm_ops - device PM callbacks
+- *
+- * Several device power state transitions are externally visible, affecting
+- * the state of pending I/O queues and (for drivers that touch hardware)
+- * interrupts, wakeups, DMA, and other hardware state.  There may also be
+- * internal transitions to various low-power modes which are transparent
+- * to the rest of the driver stack (such as a driver that's ON gating off
+- * clocks which are not in active use).
+- *
+- * The externally visible transitions are handled with the help of callbacks
+- * included in this structure in such a way that two levels of callbacks are
+- * involved.  First, the PM core executes callbacks provided by PM domains,
+- * device types, classes and bus types.  They are the subsystem-level callbacks
+- * supposed to execute callbacks provided by device drivers, although they may
+- * choose not to do that.  If the driver callbacks are executed, they have to
+- * collaborate with the subsystem-level callbacks to achieve the goals
+- * appropriate for the given system transition, given transition phase and the
+- * subsystem the device belongs to.
++ * struct dev_pm_ops - device PM callbacks.
+  *
+  * @prepare: The principal role of this callback is to prevent new children of
+  *	the device from being registered after it has returned (the driver's
+@@ -240,34 +223,6 @@ typedef struct pm_message {
+  *	driver's interrupt handler, which is guaranteed not to run while
+  *	@restore_noirq() is being executed.  Analogous to @resume_noirq().
+  *
+- * All of the above callbacks, except for @complete(), return error codes.
+- * However, the error codes returned by the resume operations, @resume(),
+- * @thaw(), @restore(), @resume_noirq(), @thaw_noirq(), and @restore_noirq(), do
+- * not cause the PM core to abort the resume transition during which they are
+- * returned.  The error codes returned in those cases are only printed by the PM
+- * core to the system logs for debugging purposes.  Still, it is recommended
+- * that drivers only return error codes from their resume methods in case of an
+- * unrecoverable failure (i.e. when the device being handled refuses to resume
+- * and becomes unusable) to allow us to modify the PM core in the future, so
+- * that it can avoid attempting to handle devices that failed to resume and
+- * their children.
+- *
+- * It is allowed to unregister devices while the above callbacks are being
+- * executed.  However, a callback routine must NOT try to unregister the device
+- * it was called for, although it may unregister children of that device (for
+- * example, if it detects that a child was unplugged while the system was
+- * asleep).
+- *
+- * Refer to Documentation/power/admin-guide/devices.rst for more information about the role
+- * of the above callbacks in the system suspend process.
+- *
+- * There also are callbacks related to runtime power management of devices.
+- * Again, these callbacks are executed by the PM core only for subsystems
+- * (PM domains, device types, classes and bus types) and the subsystem-level
+- * callbacks are supposed to invoke the driver callbacks.  Moreover, the exact
+- * actions to be performed by a device driver's callbacks generally depend on
+- * the platform and subsystem the device belongs to.
+- *
+  * @runtime_suspend: Prepare the device for a condition in which it won't be
+  *	able to communicate with the CPU(s) and RAM due to power management.
+  *	This need not mean that the device should be put into a low-power state.
+@@ -287,11 +242,54 @@ typedef struct pm_message {
+  *	Check these conditions, and return 0 if it's appropriate to let the PM
+  *	core queue a suspend request for the device.
+  *
+- * Refer to Documentation/power/runtime_pm.txt for more information about the
+- * role of the above callbacks in device runtime power management.
++ * Several device power state transitions are externally visible, affecting
++ * the state of pending I/O queues and (for drivers that touch hardware)
++ * interrupts, wakeups, DMA, and other hardware state.  There may also be
++ * internal transitions to various low-power modes which are transparent
++ * to the rest of the driver stack (such as a driver that's ON gating off
++ * clocks which are not in active use).
+  *
++ * The externally visible transitions are handled with the help of callbacks
++ * included in this structure in such a way that, typically, two levels of
++ * callbacks are involved.  First, the PM core executes callbacks provided by PM
++ * domains, device types, classes and bus types.  They are the subsystem-level
++ * callbacks expected to execute callbacks provided by device drivers, although
++ * they may choose not to do that.  If the driver callbacks are executed, they
++ * have to collaborate with the subsystem-level callbacks to achieve the goals
++ * appropriate for the given system transition, given transition phase and the
++ * subsystem the device belongs to.
++ *
++ * All of the above callbacks, except for @complete(), return error codes.
++ * However, the error codes returned by @resume(), @thaw(), @restore(),
++ * @resume_noirq(), @thaw_noirq(), and @restore_noirq(), do not cause the PM
++ * core to abort the resume transition during which they are returned.  The
++ * error codes returned in those cases are only printed to the system logs for
++ * debugging purposes.  Still, it is recommended that drivers only return error
++ * codes from their resume methods in case of an unrecoverable failure (i.e.
++ * when the device being handled refuses to resume and becomes unusable) to
++ * allow the PM core to be modified in the future, so that it can avoid
++ * attempting to handle devices that failed to resume and their children.
++ *
++ * It is allowed to unregister devices while the above callbacks are being
++ * executed.  However, a callback routine MUST NOT try to unregister the device
++ * it was called for, although it may unregister children of that device (for
++ * example, if it detects that a child was unplugged while the system was
++ * asleep).
++ *
++ * Refer to Documentation/power/devices.txt for more information about the role
++ * of the above callbacks in the system suspend process.
++ *
++ * There also are callbacks related to runtime power management of devices.
++ * Again, as a rule these callbacks are executed by the PM core for subsystems
++ * (PM domains, device types, classes and bus types) and the subsystem-level
++ * callbacks are expected to invoke the driver callbacks.  Moreover, the exact
++ * actions to be performed by a device driver's callbacks generally depend on
++ * the platform and subsystem the device belongs to.
++ *
++ * Refer to Documentation/power/runtime_pm.txt for more information about the
++ * role of the @runtime_suspend(), @runtime_resume() and @runtime_idle()
++ * callbacks in device runtime power management.
+  */
 -
--There are some operations that subsystems or drivers may want to carry out
--before hibernation/suspend or after restore/resume, but they require the system
--to be fully functional, so the drivers' and subsystems' .suspend() and .resume()
--or even .prepare() and .complete() callbacks are not suitable for this purpose.
--For example, device drivers may want to upload firmware to their devices after
--resume/restore, but they cannot do it by calling request_firmware() from their
--.resume() or .complete() routines (user land processes are frozen at these
--points).  The solution may be to load the firmware into memory before processes
--are frozen and upload it from there in the .resume() routine.
--A suspend/hibernation notifier may be used for this purpose.
--
--The subsystems or drivers having such needs can register suspend notifiers that
--will be called upon the following events by the PM core:
--
--PM_HIBERNATION_PREPARE	The system is going to hibernate, tasks will be frozen
--			immediately. This is different from PM_SUSPEND_PREPARE
--			below because here we do additional work between notifiers
--			and drivers freezing.
--
--PM_POST_HIBERNATION	The system memory state has been restored from a
--			hibernation image or an error occurred during
--			hibernation.  Device drivers' restore callbacks have
--			been executed and tasks have been thawed.
--
--PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
--			If all goes well, the restored kernel will issue a
--			PM_POST_HIBERNATION notification.
--
--PM_POST_RESTORE		An error occurred during restore from hibernation.
--			Device drivers' restore callbacks have been executed
--			and tasks have been thawed.
--
--PM_SUSPEND_PREPARE	The system is preparing for suspend.
--
--PM_POST_SUSPEND		The system has just resumed or an error occurred during
--			suspend.  Device drivers' resume callbacks have been
--			executed and tasks have been thawed.
--
--It is generally assumed that whatever the notifiers do for
--PM_HIBERNATION_PREPARE, should be undone for PM_POST_HIBERNATION.  Analogously,
--operations performed for PM_SUSPEND_PREPARE should be reversed for
--PM_POST_SUSPEND.  Additionally, all of the notifiers are called for
--PM_POST_HIBERNATION if one of them fails for PM_HIBERNATION_PREPARE, and
--all of the notifiers are called for PM_POST_SUSPEND if one of them fails for
--PM_SUSPEND_PREPARE.
--
--The hibernation and suspend notifiers are called with pm_mutex held.  They are
--defined in the usual way, but their last argument is meaningless (it is always
--NULL).  To register and/or unregister a suspend notifier use the functions
--register_pm_notifier() and unregister_pm_notifier(), respectively, defined in
--include/linux/suspend.h .  If you don't need to unregister the notifier, you can
--also use the pm_notifier() macro defined in include/linux/suspend.h .
-Index: linux-pm/Documentation/power/freezing-of-tasks.txt
-===================================================================
---- linux-pm.orig/Documentation/power/freezing-of-tasks.txt
-+++ linux-pm/Documentation/power/freezing-of-tasks.txt
-@@ -197,7 +197,8 @@ tasks, since it generally exists anyway.
+ struct dev_pm_ops {
+ 	int (*prepare)(struct device *dev);
+ 	void (*complete)(struct device *dev);
+@@ -391,7 +389,7 @@ const struct dev_pm_ops name = { \
+ 	SET_RUNTIME_PM_OPS(suspend_fn, resume_fn, idle_fn) \
+ }
  
- A driver must have all firmwares it may need in RAM before suspend() is called.
- If keeping them is not practical, for example due to their size, they must be
--requested early enough using the suspend notifier API described in notifiers.txt.
-+requested early enough using the suspend notifier API described in
-+Documentation/driver-api/pm/notifiers.rst.
+-/**
++/*
+  * PM_EVENT_ messages
+  *
+  * The following PM_EVENT_ messages are defined for the internal use of the PM
+@@ -487,7 +485,7 @@ const struct dev_pm_ops name = { \
  
- VI. Are there any precautions to be taken to prevent freezing failures?
+ #define PMSG_IS_AUTO(msg)	(((msg).event & PM_EVENT_AUTO) != 0)
  
-Index: linux-pm/Documentation/power/pci.txt
-===================================================================
---- linux-pm.orig/Documentation/power/pci.txt
-+++ linux-pm/Documentation/power/pci.txt
-@@ -713,7 +713,7 @@ In addition to that the prepare() callba
- preparing the device to be suspended, although it should not allocate memory
- (if additional memory is required to suspend the device, it has to be
- preallocated earlier, for example in a suspend/hibernate notifier as described
--in Documentation/power/notifiers.txt).
-+in Documentation/driver-api/pm/notifiers.rst).
+-/**
++/*
+  * Device run-time power management status.
+  *
+  * These status labels are used internally by the PM core to indicate the
+@@ -517,7 +515,7 @@ enum rpm_status {
+ 	RPM_SUSPENDING,
+ };
  
- 3.1.2. suspend()
+-/**
++/*
+  * Device run-time power management request types.
+  *
+  * RPM_REQ_NONE		Do nothing.
+@@ -616,15 +614,18 @@ extern void update_pm_runtime_accounting
+ extern int dev_pm_get_subsys_data(struct device *dev);
+ extern void dev_pm_put_subsys_data(struct device *dev);
  
+-/*
+- * Power domains provide callbacks that are executed during system suspend,
+- * hibernation, system resume and during runtime PM transitions along with
+- * subsystem-level and driver-level callbacks.
++/**
++ * struct dev_pm_domain - power management domain representation.
+  *
++ * @ops: Power management operations associated with this domain.
+  * @detach: Called when removing a device from the domain.
+  * @activate: Called before executing probe routines for bus types and drivers.
+  * @sync: Called after successful driver probe.
+  * @dismiss: Called after unsuccessful driver probe and after driver removal.
++ *
++ * Power domains provide callbacks that are executed during system suspend,
++ * hibernation, system resume and during runtime PM transitions instead of
++ * subsystem-level and driver-level callbacks.
+  */
+ struct dev_pm_domain {
+ 	struct dev_pm_ops	ops;
+
