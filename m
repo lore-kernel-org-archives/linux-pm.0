@@ -1,69 +1,101 @@
-From: "Y.T. Tang" <yuantian.tang@nxp.com>
-Subject: RE: [PATCH 1/3] dt-bindings: Update QorIQ TMU thermal bindings
-Date: Fri, 6 Jan 2017 06:56:06 +0000
-Message-ID: <DB6PR0402MB283733DE2C198228CBDC7BB9F0630@DB6PR0402MB2837.eurprd04.prod.outlook.com>
-References: <1483520271-3838-1-git-send-email-hongtao.jia@nxp.com>
-         <1483520271-3838-2-git-send-email-hongtao.jia@nxp.com>
- <1483526274.17813.1.camel@buserror.net>
- <AM4PR0401MB184304CF8DAB4FE6B6ECC13DEB600@AM4PR0401MB1843.eurprd04.prod.outlook.com>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH 17/22] power: supply: add battery driver for AXP20X and
+ AXP22X PMICs
+Date: Fri, 6 Jan 2017 09:29:07 +0100
+Message-ID: <b26272cc-d8c9-f213-ab66-a24d7bc30dc4@free-electrons.com>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-18-quentin.schulz@free-electrons.com>
+ <CAGb2v66XnWOGcaLeRo+cb6NGqfm_cyJVoK+GURUo5iV4pdZzew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-he1eur01on0061.outbound.protection.outlook.com ([104.47.0.61]:15699
-        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1750715AbdAFG62 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 6 Jan 2017 01:58:28 -0500
-In-Reply-To: <AM4PR0401MB184304CF8DAB4FE6B6ECC13DEB600@AM4PR0401MB1843.eurprd04.prod.outlook.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAGb2v66XnWOGcaLeRo+cb6NGqfm_cyJVoK+GURUo5iV4pdZzew@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
 List-Id: linux-pm@vger.kernel.org
-To: Troy Jia <hongtao.jia@nxp.com>, Scott Wood <oss@buserror.net>, "rui.zhang@intel.com" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-U2VlbXMgbGlrZSBUcm95J3MgZW1haWwgY2xpZW50IGhhcyBpc3N1ZXMgd2hpY2ggY2F1c2VzIGhp
-cyByZXBseSBpcyB1bnJlYWRhYmxlIGluIHBhdGNod29yay4NClBsZWFzZSBpZ25vcmUgaXQgaW4g
-cGF0Y2h3b3JrLiANCg0KUmVnYXJkcywNCll1YW50aWFuDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gRnJvbTogVHJveSBKaWENCj4gU2VudDogVGh1cnNkYXksIEphbnVhcnkgMDUs
-IDIwMTcgMTA6MjkgQU0NCj4gVG86IFNjb3R0IFdvb2QgPG9zc0BidXNlcnJvci5uZXQ+OyBydWku
-emhhbmdAaW50ZWwuY29tOw0KPiBlZHViZXp2YWxAZ21haWwuY29tOyBZLlQuIFRhbmcgPHl1YW50
-aWFuLnRhbmdAbnhwLmNvbT47DQo+IHJvYmgrZHRAa2VybmVsLm9yZw0KPiBDYzogbGludXgtcG1A
-dmdlci5rZXJuZWwub3JnOyBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUkU6IFtQQVRDSCAxLzNdIGR0LWJpbmRp
-bmdzOiBVcGRhdGUgUW9ySVEgVE1VIHRoZXJtYWwgYmluZGluZ3MNCj4gDQo+IA0KPiANCj4gPiAt
-LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+IEZyb206IFNjb3R0IFdvb2QgW21haWx0bzpv
-c3NAYnVzZXJyb3IubmV0XQ0KPiA+IFNlbnQ6IFdlZG5lc2RheSwgSmFudWFyeSAwNCwgMjAxNyA2
-OjM4IFBNDQo+ID4gVG86IFRyb3kgSmlhIDxob25ndGFvLmppYUBueHAuY29tPjsgcnVpLnpoYW5n
-QGludGVsLmNvbTsNCj4gPiBlZHViZXp2YWxAZ21haWwuY29tOyBZLlQuIFRhbmcgPHl1YW50aWFu
-LnRhbmdAbnhwLmNvbT47DQo+ID4gcm9iaCtkdEBrZXJuZWwub3JnDQo+ID4gQ2M6IGxpbnV4LXBt
-QHZnZXIua2VybmVsLm9yZzsgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LQ0KPiA+
-IGtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gPiBTdWJqZWN0OiBSZTogW1BBVENIIDEvM10gZHQt
-YmluZGluZ3M6IFVwZGF0ZSBRb3JJUSBUTVUgdGhlcm1hbA0KPiA+IGJpbmRpbmdzDQo+ID4NCj4g
-PiBPbiBXZWQsIDIwMTctMDEtMDQgYXQgMTY6NTcgKzA4MDAsIEppYSBIb25ndGFvIHdyb3RlOg0K
-PiA+ID4gRm9yIGRpZmZlcmVudCB0eXBlcyBvZiBTb0MgdGhlIHNlbnNvciBpZCBhbmQgZW5kaWFu
-bmVzcyBtYXkgdmFyeS4NCj4gPiA+ICIjdGhlcm1hbC1zZW5zb3ItY2VsbHMiIGlzIHVzZWQgdG8g
-cHJvdmlkZSBzZW5zb3IgaWQgaW5mb3JtYXRpb24uDQo+ID4gPiAibGl0dGxlLWVuZGlhbiIgcHJv
-cGVydHkgaXMgdG8gdGVsbCB0aGUgZW5kaWFubmVzcyBvZiBUTVUuDQo+ID4gPg0KPiA+ID4gU2ln
-bmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPGhvbmd0YW8uamlhQG54cC5jb20+DQo+ID4gPiBBY2tl
-ZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4NCj4gPiA+IC0tLQ0KPiA+ID4gwqBE
-b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9xb3JpcS10aGVybWFsLnR4
-dCB8IDcNCj4gPiA+ICsrKysrKysNCj4gPiA+IMKgMSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0aW9u
-cygrKQ0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQNCj4gPiA+IGEvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQNCj4gPiA+IGIvRG9jdW1l
-bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQNCj4g
-PiA+IGluZGV4IDY2MjIzZDUuLjIwY2E0ZWYgMTAwNjQ0DQo+ID4gPiAtLS0gYS9Eb2N1bWVudGF0
-aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9xb3JpcS10aGVybWFsLnR4dA0KPiA+ID4g
-KysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhl
-cm1hbC50eHQNCj4gPiA+IEBAIC0xNyw2ICsxNywxMiBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOg0K
-PiA+ID4gwqAJY2FsaWJyYXRpb24gZGF0YSwgYXMgc3BlY2lmaWVkIGJ5IHRoZSBTb0MgcmVmZXJl
-bmNlIG1hbnVhbC4NCj4gPiA+IMKgCVRoZSBmaXJzdCBjZWxsIG9mIGVhY2ggcGFpciBpcyB0aGUg
-dmFsdWUgdG8gYmUgd3JpdHRlbiB0byBUVENGR1IsDQo+ID4gPiDCoAlhbmQgdGhlIHNlY29uZCBp
-cyB0aGUgdmFsdWUgdG8gYmUgd3JpdHRlbiB0byBUU0NGR1IuDQo+ID4gPiArLSAjdGhlcm1hbC1z
-ZW5zb3ItY2VsbHMgOiBNdXN0IGJlIDEuIFRoZSBzZW5zb3Igc3BlY2lmaWVyIGlzIHRoZQ0KPiBt
-b25pdG9yaW5nDQo+ID4gPiArCXNpdGUgSUQsIGFuZCByZXByZXNlbnRzIHRoZSAibiIgaW4gVFJJ
-VFNSbiBhbmQgVFJBVFNSbi4NCj4gPg0KPiA+IEkgYXNzdW1lIHRoZSBkcml2ZXIgd2lsbCBjb250
-aW51ZSB0byB3b3JrIHdpdGggZXhpc3RpbmcgZGV2aWNlIHRyZWVzDQo+ID4gd2hlcmUgdGhpcyBp
-bmZvcm1hdGlvbiBpcyBhYnNlbnQ/IMKgSWYgc28sIEFDSyBmb3IgdGhlIHdob2xlIHNlcmllcy4N
-Cj4gDQo+IFllcy4gVGhlIGRyaXZlciB3b3JrcyBmb3IgYWxsIGV4aXN0aW5nIGRldmljZSB0cmVl
-cy4NCj4gDQo+IFRoYW5rcyBmb3IgdGhlIEFDSy4NCj4gDQo+ID4NCj4gPiAtU2NvdHQNCg0K
+Hi,
+
+On 06/01/2017 04:39, Chen-Yu Tsai wrote:
+>  Hi,
+> 
+> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
+> <quentin.schulz@free-electrons.com> wrote:
+[...]
+>> +       case POWER_SUPPLY_PROP_CURRENT_MAX:
+>> +               ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
+>> +               if (ret)
+>> +                       return ret;
+>> +
+>> +               reg &= AXP20X_CHRG_CTRL1_TGT_CURR;
+>> +               val->intval = reg * 100000 + 300000;
+>> +               break;
+> 
+> 
+> This controls the charge current. I believe the correct property to use
+> is CONSTANT_CHARGE_CURRENT. And you should add CONSTANT_CHARGE_CURRENT_MAX
+> which returns the highest possible setting.
+> 
+
+ACK.
+
+> Also letting the user control this might not always be a good idea.
+> IIUC, LiPo batteries can only be charged at 1C, where C is the
+> rated capacity (X mAh).
+> 
+
+OK. Should I get the charge current from a DT property then?
+
+Like "x-powers,charge-current = <300000>;"
+It's close to what has been done in bq24257_charger for example.
+
+[...]
+>> +static enum power_supply_property axp20x_battery_props[] = {
+>> +       POWER_SUPPLY_PROP_PRESENT,
+>> +       POWER_SUPPLY_PROP_ONLINE,
+>> +       POWER_SUPPLY_PROP_STATUS,
+>> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>> +       POWER_SUPPLY_PROP_CURRENT_NOW,
+>> +       POWER_SUPPLY_PROP_CURRENT_MAX,
+>> +       POWER_SUPPLY_PROP_HEALTH,
+>> +       POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+>> +       POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
+>> +       POWER_SUPPLY_PROP_CAPACITY,
+> 
+> You can also add POWER_SUPPLY_PROP_TECHNOLOGY, which would return
+> POWER_SUPPLY_TECHNOLOGY_LIPO.
+> 
+
+Hum.. There are also POWER_SUPPLY_TECHNOLOGY_LION,
+POWER_SUPPLY_TECHNOLOGY_LiFe and POWER_SUPPLY_TECHNOLOGY_LiMn which are
+all Lithium-based batteries. From the datasheet, it can take a "single
+cell Li-battery (Li-Ion/Polymer)". So I guess it's either
+POWER_SUPPLY_TECHNOLOGY_LION or POWER_SUPPLY_TECHNOLOGY_LIPO.
+
+> It is also possible to do POWER_SUPPLY_PROP_CHARGE_TYPE. According
+> to the manual, if the battery is charging, it is in constant current
+> mode (POWER_SUPPLY_CHARGE_TYPE_FAST) when V_battery < V_target.
+> When V_battery == V_target, it is in constant voltage mode, though
+> I don't think this is the same as POWER_SUPPLY_CHARGE_TYPE_TRICKLE.
+> When it is not charging, you can return POWER_SUPPLY_CHARGE_TYPE_NONE.
+> 
+
+ACK, I'll look into that.
+
+Thanks,
+Quentin
+
+-- 
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
