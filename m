@@ -1,101 +1,138 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH 17/22] power: supply: add battery driver for AXP20X and
- AXP22X PMICs
-Date: Fri, 6 Jan 2017 09:29:07 +0100
-Message-ID: <b26272cc-d8c9-f213-ab66-a24d7bc30dc4@free-electrons.com>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-18-quentin.schulz@free-electrons.com>
- <CAGb2v66XnWOGcaLeRo+cb6NGqfm_cyJVoK+GURUo5iV4pdZzew@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH V2 1/2] PM / Domains: Introduce domain-performance-states
+ binding
+Date: Fri, 06 Jan 2017 14:16:36 +0530
+Message-ID: <586F596C.7000807@codeaurora.org>
+References: <cover.1481539827.git.viresh.kumar@linaro.org> <dd95df02a1c3efd00bd4890f8aceeb717ad38788.1481539827.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGb2v66XnWOGcaLeRo+cb6NGqfm_cyJVoK+GURUo5iV4pdZzew@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <dd95df02a1c3efd00bd4890f8aceeb717ad38788.1481539827.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
 
-On 06/01/2017 04:39, Chen-Yu Tsai wrote:
->  Hi,
+On 12/12/2016 04:26 PM, Viresh Kumar wrote:
+> Some platforms have the capability to configure the performance state of
+> their Power Domains. The performance levels are represented by positive
+> integer values, a lower value represents lower performance state.
 > 
-> On Tue, Jan 3, 2017 at 12:37 AM, Quentin Schulz
-> <quentin.schulz@free-electrons.com> wrote:
-[...]
->> +       case POWER_SUPPLY_PROP_CURRENT_MAX:
->> +               ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
->> +               if (ret)
->> +                       return ret;
->> +
->> +               reg &= AXP20X_CHRG_CTRL1_TGT_CURR;
->> +               val->intval = reg * 100000 + 300000;
->> +               break;
+> The power-domains until now were only concentrating on the idle state
+> management of the device and this needs to change in order to reuse the
+> infrastructure of power domains for active state management.
 > 
+> This patch adds binding to describe the performance states of a power
+> domain.
+
+The bindings would also need to take into account the fact that a device
+could (and is quite often the case with qcom platforms) have 2 separate
+powerdomains, one for idle state management and another to manage active
+states. I guess the below bindings assume that there's just one.
+
+- Rajendra
+
 > 
-> This controls the charge current. I believe the correct property to use
-> is CONSTANT_CHARGE_CURRENT. And you should add CONSTANT_CHARGE_CURRENT_MAX
-> which returns the highest possible setting.
+> If the consumers don't need the capability of switching to different
+> domain performance states at runtime, then they can simply define their
+> required domain performance state in their node directly. Otherwise the
+> consumers can define their requirements with help of other
+> infrastructure, for example the OPP table.
 > 
-
-ACK.
-
-> Also letting the user control this might not always be a good idea.
-> IIUC, LiPo batteries can only be charged at 1C, where C is the
-> rated capacity (X mAh).
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  .../devicetree/bindings/power/power_domain.txt     | 69 ++++++++++++++++++++++
+>  1 file changed, 69 insertions(+)
 > 
-
-OK. Should I get the charge current from a DT property then?
-
-Like "x-powers,charge-current = <300000>;"
-It's close to what has been done in bq24257_charger for example.
-
-[...]
->> +static enum power_supply_property axp20x_battery_props[] = {
->> +       POWER_SUPPLY_PROP_PRESENT,
->> +       POWER_SUPPLY_PROP_ONLINE,
->> +       POWER_SUPPLY_PROP_STATUS,
->> +       POWER_SUPPLY_PROP_VOLTAGE_NOW,
->> +       POWER_SUPPLY_PROP_CURRENT_NOW,
->> +       POWER_SUPPLY_PROP_CURRENT_MAX,
->> +       POWER_SUPPLY_PROP_HEALTH,
->> +       POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
->> +       POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
->> +       POWER_SUPPLY_PROP_CAPACITY,
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 723e1ad937da..a456e0dc04e0 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -38,6 +38,40 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+>    domain's idle states. In the absence of this property, the domain would be
+>    considered as capable of being powered-on or powered-off.
+>  
+> +- domain-performance-states : A phandle of the performance states node, which
+> +		defines all the performance states associated with a power
+> +		domain.
+> +  The domain-performance-states property reflects the performance states of this
+> +  PM domain and not the performance states of the devices or sub-domains in the
+> +  PM domain. Devices and sub-domains have their own performance states, which
+> +  are dependent on the performance state of the PM domain.
+> +
+> +* PM domain performance states node
+> +
+> +This describes the performance states of a PM domain.
+> +
+> +Required properties:
+> +- compatible: Allow performance states to express their compatibility. It should
+> +  be: "domain-performance-state".
+> +
+> +- Performance state nodes: This node shall have one or more "Performance State"
+> +  nodes.
+> +
+> +* Performance state node
+> +
+> +Required properties:
+> +- performance-level: A positive integer value representing the performance level
+> +  associated with a performance state. The integer value '1' represents the
+> +  lowest performance level and the highest value represents the highest
+> +  performance level.
+> +
+> +Optional properties:
+> +- domain-microvolt: voltage in micro Volts.
+> +
+> +  A single regulator's voltage is specified with an array of size one or three.
+> +  Single entry is for target voltage and three entries are for <target min max>
+> +  voltages.
+> +
+>  Example:
+>  
+>  	power: power-controller@12340000 {
+> @@ -118,4 +152,39 @@ The node above defines a typical PM domain consumer device, which is located
+>  inside a PM domain with index 0 of a power controller represented by a node
+>  with the label "power".
+>  
+> +Optional properties:
+> +- domain-performance-state: A phandle of a Performance state node.
+> +
+> +Example:
+> +
+> +	parent: power-controller@12340000 {
+> +		compatible = "foo,power-controller";
+> +		reg = <0x12340000 0x1000>;
+> +		#power-domain-cells = <0>;
+> +		domain-performance-states = <&domain_perf_states>;
+> +	};
+> +
+> +	domain_perf_states: performance_states {
+> +		compatible = "domain-performance-state";
+> +		domain_perf_state1: pstate@1 {
+> +			performance-level = <1>;
+> +			domain-microvolt = <970000 975000 985000>;
+> +		};
+> +		domain_perf_state2: pstate@2 {
+> +			performance-level = <2>;
+> +			domain-microvolt = <1000000 1075000 1085000>;
+> +		};
+> +		domain_perf_state3: pstate@3 {
+> +			performance-level = <3>;
+> +			domain-microvolt = <1100000 1175000 1185000>;
+> +		};
+> +	}
+> +
+> +	leaky-device@12350000 {
+> +		compatible = "foo,i-leak-current";
+> +		reg = <0x12350000 0x1000>;
+> +		power-domains = <&power 0>;
+> +		domain-performance-state = <&domain_perf_state2>;
+> +	};
+> +
+>  [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
 > 
-> You can also add POWER_SUPPLY_PROP_TECHNOLOGY, which would return
-> POWER_SUPPLY_TECHNOLOGY_LIPO.
-> 
-
-Hum.. There are also POWER_SUPPLY_TECHNOLOGY_LION,
-POWER_SUPPLY_TECHNOLOGY_LiFe and POWER_SUPPLY_TECHNOLOGY_LiMn which are
-all Lithium-based batteries. From the datasheet, it can take a "single
-cell Li-battery (Li-Ion/Polymer)". So I guess it's either
-POWER_SUPPLY_TECHNOLOGY_LION or POWER_SUPPLY_TECHNOLOGY_LIPO.
-
-> It is also possible to do POWER_SUPPLY_PROP_CHARGE_TYPE. According
-> to the manual, if the battery is charging, it is in constant current
-> mode (POWER_SUPPLY_CHARGE_TYPE_FAST) when V_battery < V_target.
-> When V_battery == V_target, it is in constant voltage mode, though
-> I don't think this is the same as POWER_SUPPLY_CHARGE_TYPE_TRICKLE.
-> When it is not charging, you can return POWER_SUPPLY_CHARGE_TYPE_NONE.
-> 
-
-ACK, I'll look into that.
-
-Thanks,
-Quentin
 
 -- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
