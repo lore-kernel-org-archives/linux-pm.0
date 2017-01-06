@@ -1,91 +1,91 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 17/22] power: supply: add battery driver for AXP20X and
- AXP22X PMICs
-Date: Fri, 6 Jan 2017 03:46:58 +0100
-Message-ID: <20170106024657.y72pxkh6xeexwpp4@earth>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-18-quentin.schulz@free-electrons.com>
- <CAAEAJfBeu7Z_JeM55Tyj4a2ZOxNWhq7qoPDwFyftoO8sCumVQw@mail.gmail.com>
+From: Matt Ranostay <matt@ranostay.consulting>
+Subject: Re: [PATCH v2 3/3] power: bq27xxx: add support for NVRAM R/W access
+Date: Thu, 5 Jan 2017 19:23:48 -0800
+Message-ID: <CAJ_EiSQjRn=rot7Zu+oB80DruN0qexd+3_PxjXS6_JaF7CY1Bw@mail.gmail.com>
+References: <20170105021007.22088-1-matt@ranostay.consulting>
+ <20170105021007.22088-4-matt@ranostay.consulting> <20170106015314.7qju6eodkwldty6h@earth>
+ <CAJ_EiSTVv90QSB6TY7+5KXWPbLkkr5vEXpDQrQ0VCvtAkddt5A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============3491315155080701418=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAAEAJfBeu7Z_JeM55Tyj4a2ZOxNWhq7qoPDwFyftoO8sCumVQw@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Cc: Mark Rutland <mark.rutland@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, lars@metafoo.de, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-iio@vger.kernel.org, linux-pm@vger.kernel.org, linux@armlinux.org.uk, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, bonbons@linux-vserver.org, Lee Jones <lee.jones@linaro.org>, jic23@kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
-List-Id: linux-pm@vger.kernel.org
-
-
---===============3491315155080701418==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="khfwpblf4d6qwfaw"
-Content-Disposition: inline
-
-
---khfwpblf4d6qwfaw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f174.google.com ([209.85.220.174]:34575 "EHLO
+        mail-qk0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754330AbdAFDXt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Jan 2017 22:23:49 -0500
+Received: by mail-qk0-f174.google.com with SMTP id a20so64225969qkc.1
+        for <linux-pm@vger.kernel.org>; Thu, 05 Jan 2017 19:23:49 -0800 (PST)
+In-Reply-To: <CAJ_EiSTVv90QSB6TY7+5KXWPbLkkr5vEXpDQrQ0VCvtAkddt5A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Jan 5, 2017 at 6:34 PM, Matt Ranostay <matt@ranostay.consulting> wr=
+ote:
+> On Thu, Jan 5, 2017 at 5:53 PM, Sebastian Reichel <sre@kernel.org> wrote:
+>> On Wed, Jan 04, 2017 at 06:10:07PM -0800, Matt Ranostay wrote:
+>>> Initial support for access and modification of the non-volatile regions
+>>> of the bq27425 fuel gauge DesignEnergy, DesignCapacity, and
+>>> TerminateVoltage settings.
+>>>
+>>> This is intended for fine tuning the fuel gauge state machine for the
+>>> respective battery specifications.
+>>>
+>>> Cc: Sebastian Reichel <sre@kernel.org>
+>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>> ---
+>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 335 +++++++++++++++++++++=
+++++++++
+>>>  include/linux/power/bq27xxx_battery.h      |   4 +
+>>>  2 files changed, 339 insertions(+)
+>>
+>> I only skipped over this one, as the changed DT binding requires
+>> quite some changes in this patch anyways. Here are a couple of
+>> comments how I would like to see this implemented:
+>>
+>> Add a patch for the power-supply core, which implements a
+>> structure for the battery info. Something like this:
+>>
+>> struct power_supply_battery_info {
+>>     uint32 energy; /* =C2=B5Wh */
+>>     uint32 power;  /* =C2=B5Ah */
+>>     uint32 nominal_voltage; /* =C2=B5V */
+>>     /* ... */
+>> };
+>>
+>> And a function in the core framework, which gets the information
+>> from DT. The function itself should *not* be DT specific, so that
+>> ACPI/platformdata/whatever support can be added later without
+>> modifying every single driver.
+>>
+>> static struct power_supply_battery_info*
+>> power_supply_get_battery_info(struct power_supply *psy) {
+>>     if (psy->dt) {
+>>         /* get battery phandle or return -ENXIO */
+>>         /* fill and return struct */
+>>     }
+>>
+>>     return -ENOTSUP;
+>> }
+>>
+>> Then call power_supply_get_battery_info() during bq27xxx probe and
+>> use the struct to initialize the registers. Also I expect that
+>> functionality in bq27xxx_battery.c instead of bq27xxx_battery_i2c.c,
+>> since it's not I=C2=B2C specific.
+>
+> They may not be i2c specific but they are only used by the i2c path of
+> the code currently. Do you think that platform data would ever have a
+> struct to pass with the respective data?
+>
+> Also it would have to be in bq27xxx_battery_setup() and not
+> bq27xxx_battery_platform_probe() since the former is only thing called
+> by both code paths.
 
-On Thu, Jan 05, 2017 at 02:34:48PM -0300, Ezequiel Garcia wrote:
-> > +static int axp20x_power_probe(struct platform_device *pdev)
-> > +{
-> > +       struct axp20x_dev *axp20x =3D dev_get_drvdata(pdev->dev.parent);
-> > +       struct axp20x_batt_ps *axp20x_batt;
-> > +       struct power_supply_config psy_cfg =3D {};
-> > +
->=20
-> To be consistent with the AC power supply and USB power supply,
-> you might want to call of_device_is_available() here.
-> Otherwise, the device probes even if "disabled" in the DTS.
+Also there is no bq27xxx_battery_platform_write to even write the
+configuration data.
 
-I would expect that check in the mfd code. Probe should not be
-called at all if the sub-device is disabled.
-
--- Sebastian
-
---khfwpblf4d6qwfaw
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlhvBR4ACgkQ2O7X88g7
-+pp8QRAAk17mkOlg3XNw78yV3odE5Y7CZ96debdw6VTJudUxCVGpvG2TDcnUQfJ0
-6YGPzqJuEROEx02kqnBxHKX0rorAW65Hay+rXk9MWguj7xTAzuYy4Ghb5H4Gnrbp
-f7mXPVBKUFyP5fUWgFDlxzi5rdfcAfDGyBXS4emUDGbCLFMkMZ5/hivCe8V254ne
-e1jOGUeyjIV8xO6FovjO+pHRx6HCS+9O2fGhznNd4JXAtKVNqEC0rBAdP3fqIM/0
-gj3Xs6zTkonoFEnUmhufyNIYz4aQf2qH356PkYTrMCYBqeSZSTVC0biZEKCJ/sEt
-FBmdR1SBP7Xm9H3ExF6UrJ7aZFF0PRK2Y42K60/hUoAwKUqjrK5WPx6GjuMBXky3
-1ABHUU0PVZCCfO3KKF6YJNbtcd0164jb2ruqTokx45Vghg+V5l72i/Pd0/mD0eU5
-Bnee9g+JearygAqES4xaMOrjOQT9//6OToP7jBPVKpoWcQAuY2TE14NAd63UzgOr
-MXGeCDFOqyS8PGkkgRCwsUjJhKCQJrNb0yxKTnl9mHwX8/SF5Di3dYJh0cBpaVmz
-8g0BIIXTkXaH8ki6zsiGb6L8tmBP674PLy+SpKMJtW6yvkRGS5GUvtH8CLgCER2w
-RZHMCzlYMYBNN9TDoZQHzDh03SxxXRz8FxeaaaXsWlK1DwqyvGA=
-=l1Nc
------END PGP SIGNATURE-----
-
---khfwpblf4d6qwfaw--
-
-
---===============3491315155080701418==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============3491315155080701418==--
+>
+>
+>>
+>> -- Sebastian
