@@ -1,51 +1,85 @@
-From: Roger Shimizu <rogershimizu@gmail.com>
-Subject: Re: [PATCH v3 2/3] DT: bingdings: power: reset: add linkstation-reset
- doc
-Date: Fri, 6 Jan 2017 21:18:15 +0900
-Message-ID: <CAEQ9gEkGKHXEqjcuR6nrV5XpLRvCFhaONjpPkeCx46ygD0K1UA@mail.gmail.com>
-References: <20161216100501.18173-1-rogershimizu@gmail.com>
- <20161227070611.14852-1-rogershimizu@gmail.com>
- <20161227070611.14852-3-rogershimizu@gmail.com>
- <20170103170952.7svgaa247ewlht7f@rob-hp-laptop>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.10-rc3
+Date: Fri, 6 Jan 2017 15:35:39 +0100
+Message-ID: <CAJZ5v0gdCVHRv8h8Tqw6cYcNyn-UknqEBi5BQSP7zpPuYda7+A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170103170952.7svgaa247ewlht7f@rob-hp-laptop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Ryan Tandy <ryan@nardis.ca>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Dear Rob,
+Hi Linus,
 
-Thanks for your comments!
+Please pull from the tag
 
-On Wed, Jan 4, 2017 at 2:09 AM, Rob Herring <robh@kernel.org> wrote:
->
-> This needs to model the uC connected to the UART rather than some node
-> that defines only some portion of the functionality. I'm working on
-> bindings and proper bus support for this[1], but it's not done yet.
-> Though, the binding side is pretty simple.
->
-> Rob
->
-> [1] https://git.kernel.org/cgit/linux/kernel/git/robh/linux.git/log/?h=serial-bus-v2
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.10-rc3
 
-Actually I have limited knowledge on DT binding.
-I think it should be OK to remove the 2/3 patch (this thread) in my
-next series, and I'll do my homework when you finish it.
-Thank you!
+with top-most commit 7e2b9d85550ee267ec3b5aba6362fdaeb1559f46
 
-Cheers,
--- 
-Roger Shimizu, GMT +9 Tokyo
-PGP/GPG: 4096R/6C6ACD6417B3ACB1
+ Merge branches 'pm-domains', 'pm-docs' and 'pm-devfreq'
+
+on top of commit 0c744ea4f77d72b3dcebb7a8f2684633ec79be88
+
+ Linux 4.10-rc2
+
+to receive power management fixes for v4.10-rc3.
+
+They fix a few issues in the intel_pstate driver, a documetation issue,
+a false-positive compiler warning in the generic power domains framework and
+two problems in the devfreq subsystem.  They also update the MAINTAINERS
+entry for devfreq and add a new "compatible" string to the generic cpufreq-dt
+driver.
+
+Specifics:
+
+ - Fix a few intel_pstate driver issues: add missing locking it two places,
+   avoid exposing a useless debugfs interface and keep the attribute
+   values in sysfs in sync (Rafael Wysocki).
+
+ - Drop confusing kernel-doc references related to power management and
+   ACPI from the driver API manual (Rafael Wysocki).
+
+ - Make a false-positive compiler warning in the generic power domains
+   framework go away (Augusto Mecking Caringi).
+
+ - Fix two initialization issues in the devfreq subsystem and update
+   the MAINTAINERS entry for it (Chanwoo Choi).
+
+ - Add a new "compatible" string for APM X-Gene 2 to the generic DT
+   cpufreq driver (Hoan Tran).
+
+Thanks!
+
+---------------
+
+Augusto Mecking Caringi (1):
+      PM / domains: Fix 'may be used uninitialized' build warning
+
+Chanwoo Choi (3):
+      MAINTAINERS: Add myself as reviewer for DEVFREQ subsystem support
+      PM / devfreq: Fix the bug of devfreq_add_device when governor is NULL
+      PM / devfreq: exynos-bus: Fix the wrong return value
+
+Hoan Tran (1):
+      cpufreq: dt: Add support for APM X-Gene 2
+
+Rafael J. Wysocki (5):
+      cpufreq: intel_pstate: Do not expose PID parameters in passive mode
+      cpufreq: intel_pstate: Use locking in intel_pstate_resume()
+      cpufreq: intel_pstate: Use locking in intel_cpufreq_verify_policy()
+      cpufreq: intel_pstate: Always keep all limits settings in sync
+      PM / docs: Drop confusing kernel-doc references from infrastructure.rst
+
+---------------
+
+ Documentation/driver-api/infrastructure.rst | 15 --------
+ MAINTAINERS                                 |  1 +
+ drivers/base/power/domain.c                 |  1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c        |  2 ++
+ drivers/cpufreq/intel_pstate.c              | 53 +++++++++++++++++------------
+ drivers/devfreq/devfreq.c                   | 15 +++++---
+ drivers/devfreq/exynos-bus.c                |  2 +-
+ 7 files changed, 46 insertions(+), 43 deletions(-)
