@@ -1,50 +1,37 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/2] cpufreq: brcmstb-avs-cpufreq: extend sysfs entry
- brcm_avs_pmap
-Date: Fri, 6 Jan 2017 09:34:49 +0530
-Message-ID: <20170106040449.GB21926@vireshk-i7>
-References: <20161219201028.18885-1-code@mmayer.net>
- <20161219201028.18885-2-code@mmayer.net>
+Subject: Re: [PATCH v4 2/2] cpufreq: brcmstb-cpufreq: CPUfreq driver for
+ older Broadcom STB SoCs
+Date: Fri, 6 Jan 2017 09:44:42 +0530
+Message-ID: <20170106041442.GD21926@vireshk-i7>
+References: <20161220225530.96699-1-code@mmayer.net>
+ <20161220225530.96699-3-code@mmayer.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-clk-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20161219201028.18885-2-code@mmayer.net>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20161220225530.96699-3-code@mmayer.net>
+Sender: linux-clk-owner@vger.kernel.org
 To: Markus Mayer <code@mmayer.net>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Clock List <linux-clk@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-12-16, 12:10, Markus Mayer wrote:
+On 20-12-16, 14:55, Markus Mayer wrote:
 > From: Markus Mayer <mmayer@broadcom.com>
 > 
-> We extend the brcm_avs_pmap sysfs entry (which issues the GET_PMAP
-> command to AVS) to include all fields from struct pmap. This means
-> adding mode (AVS, DVS, DVFS) and state (the P-state) to the output.
+> This CPUfreq driver provides basic frequency scaling for older Broadcom
+> STB SoCs that do not use AVS firmware with DVFS support. There is no
+> support for voltage scaling.
 > 
 > Signed-off-by: Markus Mayer <mmayer@broadcom.com>
 > ---
->  drivers/cpufreq/brcmstb-avs-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> index 4fda623..2c6e325 100644
-> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
-> @@ -954,9 +954,9 @@ static ssize_t show_brcm_avs_pmap(struct cpufreq_policy *policy, char *buf)
->  	brcm_avs_parse_p1(pmap.p1, &mdiv_p0, &pdiv, &ndiv);
->  	brcm_avs_parse_p2(pmap.p2, &mdiv_p1, &mdiv_p2, &mdiv_p3, &mdiv_p4);
->  
-> -	return sprintf(buf, "0x%08x 0x%08x %u %u %u %u %u %u %u\n",
-> +	return sprintf(buf, "0x%08x 0x%08x %u %u %u %u %u %u %u %u %u\n",
->  		pmap.p1, pmap.p2, ndiv, pdiv, mdiv_p0, mdiv_p1, mdiv_p2,
-> -		mdiv_p3, mdiv_p4);
-> +		mdiv_p3, mdiv_p4, pmap.mode, pmap.state);
->  }
->  
->  static ssize_t show_brcm_avs_voltage(struct cpufreq_policy *policy, char *buf)
+>  drivers/cpufreq/Kconfig.arm       |  12 ++
+>  drivers/cpufreq/Makefile          |   1 +
+>  drivers/cpufreq/brcmstb-cpufreq.c | 377 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 390 insertions(+)
+>  create mode 100644 drivers/cpufreq/brcmstb-cpufreq.c
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I am fine with this patch as I have already Acked V3 of it. But please fix the
+bindings improvement suggested by Stephen first.
 
 -- 
 viresh
