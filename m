@@ -1,51 +1,53 @@
-From: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v11 4/8] usb: core: add power sequence handling for USB
- devices
-Date: Sat, 7 Jan 2017 10:56:16 +0200
-Message-ID: <20170107085616.jvercrfl3huzubkr@kozik-lap>
-References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
- <1483596119-27508-5-git-send-email-peter.chen@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1483596119-27508-5-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v1.1] ARM: multi_v7_defconfig: Enable power sequence for Odroid U3
+Date: Sat,  7 Jan 2017 11:16:51 +0200
+Message-ID: <20170107091651.10560-1-krzk@kernel.org>
+References: <20170107085203.4431-5-krzk@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:34406 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932214AbdAGJRS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 7 Jan 2017 04:17:18 -0500
+In-Reply-To: <20170107085203.4431-5-krzk@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Anand Moon <linux.amoon@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, hverkuil@xs4all.nl, Markus Reichl <m.reichl@fivetechno.de>
 
-On Thu, Jan 05, 2017 at 02:01:55PM +0800, Peter Chen wrote:
-> Some hard-wired USB devices need to do power sequence to let the
-> device work normally, the typical power sequence like: enable USB
-> PHY clock, toggle reset pin, etc. But current Linux USB driver
-> lacks of such code to do it, it may cause some hard-wired USB devices
-> works abnormal or can't be recognized by controller at all.
-> 
-> In this patch, it calls power sequence library APIs to finish
-> the power sequence events. It will do power on sequence at hub's
-> probe for all devices under this hub (includes root hub).
-> At hub_disconnect, it will do power off sequence which is at powered
-> on list.
-> 
-> Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
-> Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Tested-by: Maciej S. Szmigiero <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
-> Reviewed-by: Vaibhav Hiremath <hvaibhav.linux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> ---
->  drivers/usb/Kconfig    |  1 +
->  drivers/usb/core/hub.c | 48 ++++++++++++++++++++++++++++++++++++++++++++----
->  drivers/usb/core/hub.h |  1 +
->  3 files changed, 46 insertions(+), 4 deletions(-)
-> 
+Odroid U3 needs a power sequence for lan9730, if it was enabled by
+bootloader.  Also enable the USB3503 HSCI to USB2.0 driver (device
+is present on Odroid U3).
 
-Acked-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Tested on Odroid U3 (reset sequence for LAN9730):
-Tested-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Best regards,
-Krzysztof
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---
+
+Changes since v1 (v1 -> v1.1):
+1. Enable also usb3503 driver.
+---
+ arch/arm/configs/multi_v7_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index b01a43851294..8cc73e084b25 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -443,6 +443,7 @@ CONFIG_POWER_RESET_RMOBILE=y
+ CONFIG_POWER_RESET_ST=y
+ CONFIG_POWER_AVS=y
+ CONFIG_ROCKCHIP_IODOMAIN=y
++CONFIG_PWRSEQ_GENERIC=y
+ CONFIG_SENSORS_IIO_HWMON=y
+ CONFIG_SENSORS_LM90=y
+ CONFIG_SENSORS_LM95245=y
+@@ -686,6 +687,7 @@ CONFIG_USB_DWC2=y
+ CONFIG_USB_CHIPIDEA=y
+ CONFIG_USB_CHIPIDEA_UDC=y
+ CONFIG_USB_CHIPIDEA_HOST=y
++CONFIG_USB_HSIC_USB3503=m
+ CONFIG_AB8500_USB=y
+ CONFIG_KEYSTONE_USB_PHY=y
+ CONFIG_OMAP_USB3=y
+-- 
+2.9.3
+
