@@ -1,120 +1,467 @@
-From: Roger Shimizu <rogershimizu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH v4 2/2] ARM: DT: add power-off support to linkstation lsgl and kuroboxpro
-Date: Sun,  8 Jan 2017 00:04:51 +0900
-Message-ID: <20170107150451.17912-3-rogershimizu@gmail.com>
-References: <20161227070611.14852-1-rogershimizu@gmail.com>
- <20170107150451.17912-1-rogershimizu@gmail.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170107150451.17912-1-rogershimizu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Roger Shimizu <rogershimizu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ryan Tandy <ryan-pRYBVO4bdZ33fQ9qLvQP4Q@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: kernel@martin.sperl.org
+Subject: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Sat,  7 Jan 2017 16:55:45 +0000
+Message-ID: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+Cc: Martin Sperl <kernel@martin.sperl.org>
 List-Id: linux-pm@vger.kernel.org
 
-A few models of Linkstation / KuroBox has micro-controller which
-controls the power (as well as FAN, but not related here), while
-others not. So remove the restart-poweroff driver in linkstation
-common dtsi file, and specify the proper power driver in dts
-of each device.
+From: Martin Sperl <kernel@martin.sperl.org>
 
-Devices need micro-controler to power-off:
-  - Linkstation LS-GL
-  - KuroBox Pro
-Device continues using original restart-poweroff driver:
-  - Linkstation LS-WTGL
+Add basic thermal driver for bcm2835 SOC.
 
-To: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>
-To: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>
-To: Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-To: Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Ryan Tandy <ryan-pRYBVO4bdZ33fQ9qLvQP4Q@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+This driver currently relies on the firmware setting up the
+tsense HW block and does not set it up itself.
 
-Reported-by: Ryan Tandy <ryan-pRYBVO4bdZ33fQ9qLvQP4Q@public.gmane.org>
-Tested-by: Ryan Tandy <ryan-pRYBVO4bdZ33fQ9qLvQP4Q@public.gmane.org>
-Signed-off-by: Roger Shimizu <rogershimizu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+Acked-by: Eric Anholt <eric@anholt.net>
+Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+
 ---
- arch/arm/boot/dts/orion5x-kuroboxpro.dts         |  8 ++++++++
- arch/arm/boot/dts/orion5x-linkstation-lsgl.dts   | 10 ++++++++++
- arch/arm/boot/dts/orion5x-linkstation-lswtgl.dts |  4 ++++
- arch/arm/boot/dts/orion5x-linkstation.dtsi       |  4 ----
- 4 files changed, 22 insertions(+), 4 deletions(-)
+ drivers/thermal/Kconfig           |   8 +
+ drivers/thermal/Makefile          |   1 +
+ drivers/thermal/bcm2835_thermal.c | 354 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 363 insertions(+)
+ create mode 100644 drivers/thermal/bcm2835_thermal.c
 
-diff --git a/arch/arm/boot/dts/orion5x-kuroboxpro.dts b/arch/arm/boot/dts/orion5x-kuroboxpro.dts
-index 1a672b098d0b..aba38d802bda 100644
---- a/arch/arm/boot/dts/orion5x-kuroboxpro.dts
-+++ b/arch/arm/boot/dts/orion5x-kuroboxpro.dts
-@@ -60,6 +60,14 @@
- 				 <MBUS_ID(0x09, 0x00) 0 0xf2200000 0x800>,
- 				 <MBUS_ID(0x01, 0x0f) 0 0xf4000000 0x40000>,
- 				 <MBUS_ID(0x01, 0x1e) 0 0xfc000000 0x1000000>;
-+
-+		internal-regs {
-+			power_off {
-+				compatible = "linkstation,power-off";
-+				reg = <0x12100 0x100>;
-+				clocks = <&core_clk 0>;
-+			};
-+		};
- 	};
- 
- 	memory { /* 128 MB */
-diff --git a/arch/arm/boot/dts/orion5x-linkstation-lsgl.dts b/arch/arm/boot/dts/orion5x-linkstation-lsgl.dts
-index 51dc734cd5b9..370fc17a6dd9 100644
---- a/arch/arm/boot/dts/orion5x-linkstation-lsgl.dts
-+++ b/arch/arm/boot/dts/orion5x-linkstation-lsgl.dts
-@@ -56,6 +56,16 @@
- 	model = "Buffalo Linkstation Pro/Live";
- 	compatible = "buffalo,lsgl", "marvell,orion5x-88f5182", "marvell,orion5x";
- 
-+	soc {
-+		internal-regs {
-+			power_off {
-+				compatible = "linkstation,power-off";
-+				reg = <0x12100 0x100>;
-+				clocks = <&core_clk 0>;
-+			};
-+		};
-+	};
-+
- 	memory { /* 128 MB */
- 		device_type = "memory";
- 		reg = <0x00000000 0x8000000>;
-diff --git a/arch/arm/boot/dts/orion5x-linkstation-lswtgl.dts b/arch/arm/boot/dts/orion5x-linkstation-lswtgl.dts
-index 0eead400f427..571a71f5b7ad 100644
---- a/arch/arm/boot/dts/orion5x-linkstation-lswtgl.dts
-+++ b/arch/arm/boot/dts/orion5x-linkstation-lswtgl.dts
-@@ -59,6 +59,10 @@
- 		reg = <0x00000000 0x4000000>;
- 	};
- 
-+	restart_poweroff {
-+		compatible = "restart-poweroff";
-+	};
-+
- 	gpio_keys {
- 		power-on-switch {
- 			gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
-diff --git a/arch/arm/boot/dts/orion5x-linkstation.dtsi b/arch/arm/boot/dts/orion5x-linkstation.dtsi
-index ed456ab35fd8..40770a8d4b36 100644
---- a/arch/arm/boot/dts/orion5x-linkstation.dtsi
-+++ b/arch/arm/boot/dts/orion5x-linkstation.dtsi
-@@ -57,10 +57,6 @@
- 				 <MBUS_ID(0x01, 0x0f) 0 0xf4000000 0x40000>;
- 	};
- 
--	restart_poweroff {
--		compatible = "restart-poweroff";
--	};
--
- 	regulators {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
--- 
-2.11.0
+ChangeLog:
+ V1 -> V2: added specific settings depending on compatiblity
+	   added trip point based on register
+	   setting up ctrl-register if HW is not enabled by firmware
+	     as per recommendation of Eric (untested)
+	   check that clock frequency is in range
+	     (1.9 - 5MHz - as per comment in clk-bcm2835.c)
+ V2 -> V4: moved back to thermal (not using bcm sub-directory)
+       	   set polling interval to 1second (was 0ms, so interrupt driven)
+ V5 -> V6: added correct depends in KConfig
+	   removed defined default for RESET_DELAY
+	   removed obvious comments
+	   clarify HW setup comments if not set up by FW already
+	   move clk_prepare_enable to an earlier stage and add error handling
+	   clarify warning when TS-clock runs out of recommended range
+	   clk_disable_unprepare added in bcm2835_thermal_remove
+	   added comment on recommended temperature ranges for SOC
+ V6 -> V7: removed depends on ARCH_BCM2836 || ARCH_BCM2837 in Kconfig
+ V7 -> V8: rebased
+ V8 -> V9: moved to use the thermal framework offset and slope in
+	   thermal_zone_parameters as per request
 
+A few additional notes on this latest patch:
+* all the other portions of the patch (dt, bindings, defconf) have already
+  been merged into 4.10.0-rc2 - this only leaves the driver itself which
+  is now just a single patch to get applied.
+* the driver has been moved to use thermal_zone_parameters->offset and slope
+  making use of the thermal_zone_get_offset and thermal_zone_get_slope
+  methods where relevant
+  Note that we cannot use those during initial setup of the HW - this code
+  section is typically not used anyway, as the FW sets up the device already.
+  This so modified patch actually increases code size by 14 lines:
+    drivers/thermal/bcm2835_thermal.c | 42 ++++++++++++++++++++++++++-------------
+    1 file changed, 28 insertions(+), 14 deletions(-)
+* /sys/class/thermal/*/ contains now slope and offset files
+  and those expose the correct values
+* for some reason on module load the kernel emits now the message:
+    (NULL device *): hwmon_device_register() is deprecated. Please convert the driver to use hwmon_device_register_with_info().
+  But this seems framework specific and needs to get addressed there.
+
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index c2c056c..18f2de6 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -436,4 +436,12 @@ depends on (ARCH_QCOM && OF) || COMPILE_TEST
+ source "drivers/thermal/qcom/Kconfig"
+ endmenu
+
++config BCM2835_THERMAL
++	tristate "Thermal sensors on bcm2835 SoC"
++	depends on ARCH_BCM2835 || COMPILE_TEST
++	depends on HAS_IOMEM
++	depends on OF
++	help
++	  Support for thermal sensors on Broadcom bcm2835 SoCs.
++
+ endif
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 6a3d7b5..677c6d9 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -56,3 +56,4 @@ obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+ obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
++obj-$(CONFIG_BCM2835_THERMAL)	+= bcm2835_thermal.o
+diff --git a/drivers/thermal/bcm2835_thermal.c b/drivers/thermal/bcm2835_thermal.c
+new file mode 100644
+index 0000000..5e2fea9
+--- /dev/null
++++ b/drivers/thermal/bcm2835_thermal.c
+@@ -0,0 +1,354 @@
++/*
++ * Driver for Broadcom BCM2835 soc temperature sensor
++ *
++ * Copyright (C) 2016 Martin Sperl
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/clk.h>
++#include <linux/debugfs.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/of_device.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++
++#define BCM2835_TS_TSENSCTL			0x00
++#define BCM2835_TS_TSENSSTAT			0x04
++
++#define BCM2835_TS_TSENSCTL_PRWDW		BIT(0)
++#define BCM2835_TS_TSENSCTL_RSTB		BIT(1)
++#define BCM2835_TS_TSENSCTL_CTRL_BITS		3
++#define BCM2835_TS_TSENSCTL_CTRL_SHIFT		2
++#define BCM2835_TS_TSENSCTL_CTRL_MASK		    \
++	GENMASK(BCM2835_TS_TSENSCTL_CTRL_BITS +     \
++		BCM2835_TS_TSENSCTL_CTRL_SHIFT - 1, \
++		BCM2835_TS_TSENSCTL_CTRL_SHIFT)
++#define BCM2835_TS_TSENSCTL_CTRL_DEFAULT	1
++#define BCM2835_TS_TSENSCTL_EN_INT		BIT(5)
++#define BCM2835_TS_TSENSCTL_DIRECT		BIT(6)
++#define BCM2835_TS_TSENSCTL_CLR_INT		BIT(7)
++#define BCM2835_TS_TSENSCTL_THOLD_SHIFT		8
++#define BCM2835_TS_TSENSCTL_THOLD_BITS		10
++#define BCM2835_TS_TSENSCTL_THOLD_MASK		     \
++	GENMASK(BCM2835_TS_TSENSCTL_THOLD_BITS +     \
++		BCM2835_TS_TSENSCTL_THOLD_SHIFT - 1, \
++		BCM2835_TS_TSENSCTL_THOLD_SHIFT)
++#define BCM2835_TS_TSENSCTL_RSTDELAY_SHIFT	18
++#define BCM2835_TS_TSENSCTL_RSTDELAY_BITS	8
++#define BCM2835_TS_TSENSCTL_REGULEN		BIT(26)
++
++#define BCM2835_TS_TSENSSTAT_DATA_BITS		10
++#define BCM2835_TS_TSENSSTAT_DATA_SHIFT		0
++#define BCM2835_TS_TSENSSTAT_DATA_MASK		     \
++	GENMASK(BCM2835_TS_TSENSSTAT_DATA_BITS +     \
++		BCM2835_TS_TSENSSTAT_DATA_SHIFT - 1, \
++		BCM2835_TS_TSENSSTAT_DATA_SHIFT)
++#define BCM2835_TS_TSENSSTAT_VALID		BIT(10)
++#define BCM2835_TS_TSENSSTAT_INTERRUPT		BIT(11)
++
++struct bcm2835_thermal_info {
++	int offset;
++	int slope;
++	int trip_temp;
++};
++
++struct bcm2835_thermal_data {
++	const struct bcm2835_thermal_info *info;
++	void __iomem *regs;
++	struct clk *clk;
++	struct dentry *debugfsdir;
++};
++
++static int bcm2835_thermal_adc2temp(u32 adc, int offset, int slope)
++{
++	return offset + slope * adc;
++}
++
++static int bcm2835_thermal_temp2adc(int temp, int offset, int slope)
++{
++	temp -= offset;
++	temp /= slope;
++
++	if (temp < 0)
++		temp = 0;
++	if (temp >= BIT(BCM2835_TS_TSENSSTAT_DATA_BITS))
++		temp = BIT(BCM2835_TS_TSENSSTAT_DATA_BITS) - 1;
++
++	return temp;
++}
++
++static int bcm2835_thermal_get_trip_type(
++	struct thermal_zone_device *tz, int trip,
++	enum thermal_trip_type *type)
++{
++	*type = THERMAL_TRIP_CRITICAL;
++	return 0;
++}
++
++static int bcm2835_thermal_get_trip_temp(
++	struct thermal_zone_device *tz, int trip, int *temp)
++{
++	struct bcm2835_thermal_data *data = tz->devdata;
++	u32 val = readl(data->regs + BCM2835_TS_TSENSCTL);
++
++	/* get the THOLD bits */
++	val &= BCM2835_TS_TSENSCTL_THOLD_MASK;
++	val >>= BCM2835_TS_TSENSCTL_THOLD_SHIFT;
++
++	/* if it is zero then use the info value */
++	if (val)
++		*temp = bcm2835_thermal_adc2temp(
++			val,
++			thermal_zone_get_offset(tz),
++			thermal_zone_get_slope(tz));
++	else
++		*temp = data->info->trip_temp;
++
++	return 0;
++}
++
++static int bcm2835_thermal_get_temp(struct thermal_zone_device *tz,
++				    int *temp)
++{
++	struct bcm2835_thermal_data *data = tz->devdata;
++	u32 val = readl(data->regs + BCM2835_TS_TSENSSTAT);
++
++	if (!(val & BCM2835_TS_TSENSSTAT_VALID))
++		return -EIO;
++
++	val &= BCM2835_TS_TSENSSTAT_DATA_MASK;
++
++	*temp = bcm2835_thermal_adc2temp(
++		val,
++		thermal_zone_get_offset(tz),
++		thermal_zone_get_slope(tz));
++
++	return 0;
++}
++
++static const struct debugfs_reg32 bcm2835_thermal_regs[] = {
++	{
++		.name = "ctl",
++		.offset = 0
++	},
++	{
++		.name = "stat",
++		.offset = 4
++	}
++};
++
++static void bcm2835_thermal_debugfs(struct platform_device *pdev)
++{
++	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
++	struct bcm2835_thermal_data *data = tz->devdata;
++	struct debugfs_regset32 *regset;
++
++	data->debugfsdir = debugfs_create_dir("bcm2835_thermal", NULL);
++	if (!data->debugfsdir)
++		return;
++
++	regset = devm_kzalloc(&pdev->dev, sizeof(*regset), GFP_KERNEL);
++	if (!regset)
++		return;
++
++	regset->regs = bcm2835_thermal_regs;
++	regset->nregs = ARRAY_SIZE(bcm2835_thermal_regs);
++	regset->base = data->regs;
++
++	debugfs_create_regset32("regset", S_IRUGO,
++				data->debugfsdir, regset);
++}
++
++static struct thermal_zone_device_ops bcm2835_thermal_ops  = {
++	.get_temp = bcm2835_thermal_get_temp,
++	.get_trip_temp = bcm2835_thermal_get_trip_temp,
++	.get_trip_type = bcm2835_thermal_get_trip_type,
++};
++
++static const struct of_device_id bcm2835_thermal_of_match_table[];
++static int bcm2835_thermal_probe(struct platform_device *pdev)
++{
++	const struct of_device_id *match;
++	struct thermal_zone_device *tz;
++	struct thermal_zone_params *tzp;
++	const struct bcm2835_thermal_info *ti;
++	struct bcm2835_thermal_data *data;
++	struct resource *res;
++	int err;
++	u32 val;
++	unsigned long rate;
++
++	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	tzp = devm_kzalloc(&pdev->dev, sizeof(*tzp), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	match = of_match_device(bcm2835_thermal_of_match_table,
++				&pdev->dev);
++	if (!match)
++		return -EINVAL;
++	ti = match->data;
++	data->info = ti;
++	tzp->slope = ti->slope;
++	tzp->offset = ti->offset;
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	data->regs = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(data->regs)) {
++		err = PTR_ERR(data->regs);
++		dev_err(&pdev->dev, "Could not get registers: %d\n", err);
++		return err;
++	}
++
++	data->clk = devm_clk_get(&pdev->dev, NULL);
++	if (IS_ERR(data->clk)) {
++		err = PTR_ERR(data->clk);
++		if (err != -EPROBE_DEFER)
++			dev_err(&pdev->dev, "Could not get clk: %d\n", err);
++		return err;
++	}
++
++	err = clk_prepare_enable(data->clk);
++	if (err)
++		return err;
++
++	rate = clk_get_rate(data->clk);
++	if ((rate < 1920000) || (rate > 5000000))
++		dev_warn(&pdev->dev,
++			 "Clock %pCn running at %pCr Hz is outside of the recommended range: 1.92 to 5MHz\n",
++			 data->clk, data->clk);
++
++	/*
++	 * right now the FW does set up the HW-block, so we are not
++	 * touching the configuration registers.
++	 * But if the HW is not enabled, then set it up
++	 * using "sane" values used by the firmware right now.
++	 */
++	val = readl(data->regs + BCM2835_TS_TSENSCTL);
++	if (!(val & BCM2835_TS_TSENSCTL_RSTB)) {
++		/* the basic required flags */
++		val = (BCM2835_TS_TSENSCTL_CTRL_DEFAULT <<
++		       BCM2835_TS_TSENSCTL_CTRL_SHIFT) |
++		      BCM2835_TS_TSENSCTL_REGULEN;
++
++		/*
++		 * reset delay using the current firmware value of 14
++		 * - units of time are unknown.
++		 */
++		val |= (14 << BCM2835_TS_TSENSCTL_RSTDELAY_SHIFT);
++
++		/*  trip_adc value from info */
++		val |= bcm2835_thermal_temp2adc(data->info->trip_temp,
++						data->info->offset,
++						data->info->slope)
++			<< BCM2835_TS_TSENSCTL_THOLD_SHIFT;
++
++		/* write the value back to the register as 2 steps */
++		writel(val, data->regs + BCM2835_TS_TSENSCTL);
++		val |= BCM2835_TS_TSENSCTL_RSTB;
++		writel(val, data->regs + BCM2835_TS_TSENSCTL);
++	}
++
++	/* register thermal zone with 1 trip point an 1s polling */
++	tz = thermal_zone_device_register("bcm2835_thermal",
++					  1, 0, data,
++					  &bcm2835_thermal_ops,
++					  tzp,
++					  0, 1000);
++	if (IS_ERR(tz)) {
++		clk_disable_unprepare(data->clk);
++		err = PTR_ERR(tz);
++		dev_err(&pdev->dev,
++			"Failed to register the thermal device: %d\n",
++			err);
++		return err;
++	}
++
++	platform_set_drvdata(pdev, tz);
++
++	bcm2835_thermal_debugfs(pdev);
++
++	return 0;
++}
++
++static int bcm2835_thermal_remove(struct platform_device *pdev)
++{
++	struct thermal_zone_device *tz = platform_get_drvdata(pdev);
++	struct bcm2835_thermal_data *data = tz->devdata;
++
++	debugfs_remove_recursive(data->debugfsdir);
++	thermal_zone_device_unregister(tz);
++	clk_disable_unprepare(data->clk);
++
++	return 0;
++}
++
++/*
++ * Note: as per Raspberry Foundation FAQ
++ * (https://www.raspberrypi.org/help/faqs/#performanceOperatingTemperature)
++ * the recommended temperature range for the SOC -40C to +85C
++ * so the trip limit is set to 80C.
++ * this applies to all the BCM283X SOC
++ */
++
++static const struct of_device_id bcm2835_thermal_of_match_table[] = {
++	{
++		.compatible = "brcm,bcm2835-thermal",
++		.data = &(struct bcm2835_thermal_info) {
++			.offset = 407000,
++			.slope = -538,
++			.trip_temp = 80000
++		}
++	},
++	{
++		.compatible = "brcm,bcm2836-thermal",
++		.data = &(struct bcm2835_thermal_info) {
++			.offset = 407000,
++			.slope = -538,
++			.trip_temp = 80000
++		}
++	},
++	{
++		.compatible = "brcm,bcm2837-thermal",
++		.data = &(struct bcm2835_thermal_info) {
++			/* the bcm2837 needs adjustment of +5C */
++			.offset = 407000 + 5000,
++			.slope = -538,
++			.trip_temp = 80000
++		}
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, bcm2835_thermal_of_match_table);
++
++static struct platform_driver bcm2835_thermal_driver = {
++	.probe = bcm2835_thermal_probe,
++	.remove = bcm2835_thermal_remove,
++	.driver = {
++		.name = "bcm2835_thermal",
++		.of_match_table = bcm2835_thermal_of_match_table,
++	},
++};
++module_platform_driver(bcm2835_thermal_driver);
++
++MODULE_AUTHOR("Martin Sperl");
++MODULE_DESCRIPTION("Thermal driver for bcm2835 chip");
++MODULE_LICENSE("GPL");
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.1.4
