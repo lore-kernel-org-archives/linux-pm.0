@@ -1,71 +1,103 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v4 4/8] Revert "PM / Runtime: Remove the exported function
- pm_children_suspended()"
+Subject: [PATCH v4 5/8] PM: Make requirements of dev_pm_domain_set() more
+ precise
 Date: Sun, 8 Jan 2017 09:41:45 +0100
-Message-ID: <1882c100ba59a7e7034c63a422f5f553377e6c70.1483806825.git.lukas@wunner.de>
+Message-ID: <9ac30e009e7a86ae7b24e088d29a6d386c513d82.1483806825.git.lukas@wunner.de>
 References: <cover.1483806825.git.lukas@wunner.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.hostsharing.net ([83.223.90.233]:39181 "EHLO
-        mailout2.hostsharing.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1032022AbdAHInV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2017 03:43:21 -0500
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1483806825.git.lukas@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-pci-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
-Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+List-Id: linux-pm@vger.kernel.org
 
-This reverts commit 62006c1702b3b1be0c0726949e0ee0ea2326be9c which
-removed pm_children_suspended() because it had only a single caller.
-We're about to add a second caller, so establish the status quo ante.
+Since commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain")
+a PM domain may only be assigned to unbound devices.
+
+The motivation was not made explicit in the changelog other than "in the
+general case that can cause problems and also [...] we can simplify code
+quite a bit if we can always assume that".  Rafael J. Wysocki elaborated
+in a mailing list conversation that "setting a PM domain generally
+changes the set of PM callbacks for the device and it may not be safe to
+call it after the driver has been bound".
+
+The concern seems to be that if a device is put to sleep and its PM
+callbacks are changed, the device may end up in an undefined state or
+not resume at all.  The real underlying requirement is thus to ensure
+that the device is awake and execution of its PM callbacks is prevented
+while the PM domain is assigned.  Unbound devices happen to fulfill this
+requirement, but bound devices can be made to satisfy it as well:
+The caller can prevent execution of PM ops with lock_system_sleep() and
+by holding a runtime PM reference to the device.
+
+Accordingly, adjust dev_pm_domain_set() to WARN only if the device is in
+the midst of a system sleep transition, or runtime PM is enabled and the
+device is either not active or may become inactive imminently (because
+it has no active children or its refcount is zero).
+
+The change is required to support runtime PM for Thunderbolt on the Mac,
+which poses the unique issue that a child device (the NHI) needs to
+assign a PM domain to its grandparent (the upstream bridge).  Because
+the grandparent's driver is built-in and the child's driver is a module,
+the grandparent is usually already bound when the child probes,
+resulting in a WARN splat when calling dev_pm_domain_set().  However the
+PM core guarantees both that the grandparent is active and that system
+sleep is not commenced until the child has finished probing.  So in this
+case it is safe to call dev_pm_domain_set() from the child's ->probe
+hook and the WARN splat is entirely gratuitous.
+
+Note that commit e79aee49bcf9 ("PM: Avoid false-positive warnings in
+dev_pm_domain_set()") modified the WARN to not apply if a PM domain is
+removed.  This is unsafe as it allows removal of the PM domain while
+the device is asleep.  The present commit rectifies this.
 
 Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/base/power/runtime.c | 3 +--
- include/linux/pm_runtime.h   | 7 +++++++
- 2 files changed, 8 insertions(+), 2 deletions(-)
+ drivers/base/power/common.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 872eac4..03293c3 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -243,8 +243,7 @@ static int rpm_check_suspend_allowed(struct device *dev)
- 		retval = -EACCES;
- 	else if (atomic_read(&dev->power.usage_count) > 0)
- 		retval = -EAGAIN;
--	else if (!dev->power.ignore_children &&
--			atomic_read(&dev->power.child_count))
-+	else if (!pm_children_suspended(dev))
- 		retval = -EBUSY;
+diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+index f6a9ad5..d02c1e0 100644
+--- a/drivers/base/power/common.c
++++ b/drivers/base/power/common.c
+@@ -13,6 +13,7 @@
+ #include <linux/pm_clock.h>
+ #include <linux/acpi.h>
+ #include <linux/pm_domain.h>
++#include <linux/pm_runtime.h>
  
- 	/* Pending resume requests take precedence over suspends. */
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index ca4823e..7de2aa5c 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -66,6 +66,12 @@ static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
- 	dev->power.ignore_children = enable;
+ #include "power.h"
+ 
+@@ -136,8 +137,10 @@ void dev_pm_domain_detach(struct device *dev, bool power_off)
+  * @dev: Device whose PM domain is to be set.
+  * @pd: PM domain to be set, or NULL.
+  *
+- * Sets the PM domain the device belongs to. The PM domain of a device needs
+- * to be set before its probe finishes (it's bound to a driver).
++ * Sets the PM domain the device belongs to.  The PM domain of a device needs
++ * to be set while the device is awake.  This is guaranteed during ->probe.
++ * Otherwise the caller is responsible for ensuring wakefulness, e.g. by
++ * holding a runtime PM reference as well as invoking lock_system_sleep().
+  *
+  * This function must be called with the device lock held.
+  */
+@@ -146,8 +149,12 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
+ 	if (dev->pm_domain == pd)
+ 		return;
+ 
+-	WARN(pd && device_is_bound(dev),
+-	     "PM domains can only be changed for unbound devices\n");
++	WARN(dev->power.is_prepared || dev->power.is_suspended ||
++	     (pm_runtime_enabled(dev) &&
++	      (dev->power.runtime_status != RPM_ACTIVE ||
++	       (pm_children_suspended(dev) &&
++		!atomic_read(&dev->power.usage_count)))),
++	     "PM domains can only be changed for awake devices\n");
+ 	dev->pm_domain = pd;
+ 	device_pm_check_callbacks(dev);
  }
- 
-+static inline bool pm_children_suspended(struct device *dev)
-+{
-+	return dev->power.ignore_children
-+		|| !atomic_read(&dev->power.child_count);
-+}
-+
- static inline void pm_runtime_get_noresume(struct device *dev)
- {
- 	atomic_inc(&dev->power.usage_count);
-@@ -161,6 +167,7 @@ static inline void pm_runtime_allow(struct device *dev) {}
- static inline void pm_runtime_forbid(struct device *dev) {}
- 
- static inline void pm_suspend_ignore_children(struct device *dev, bool enable) {}
-+static inline bool pm_children_suspended(struct device *dev) { return false; }
- static inline void pm_runtime_get_noresume(struct device *dev) {}
- static inline void pm_runtime_put_noidle(struct device *dev) {}
- static inline bool device_run_wake(struct device *dev) { return false; }
 -- 
 2.11.0
-
