@@ -1,54 +1,38 @@
-From: Roger Shimizu <rogershimizu@gmail.com>
+From: Ryan Tandy <ryan@nardis.ca>
 Subject: Re: [PATCH v4 1/2] power: reset: add linkstation-reset driver
-Date: Mon, 9 Jan 2017 12:31:44 +0900
-Message-ID: <CAEQ9gEkvj++e7ch40cFqBy3KXg-a=pYnH7cwErMe2RDd2qzQJg@mail.gmail.com>
+Date: Sun, 8 Jan 2017 21:43:15 -0800
+Message-ID: <20170109054315.GB580@kiwi.nardis.ca>
 References: <20161227070611.14852-1-rogershimizu@gmail.com>
- <20170107150451.17912-1-rogershimizu@gmail.com> <20170107150451.17912-2-rogershimizu@gmail.com>
+ <20170107150451.17912-1-rogershimizu@gmail.com>
+ <20170107150451.17912-2-rogershimizu@gmail.com>
  <20170108170209.GD573@kiwi.nardis.ca>
+ <CAEQ9gEkvj++e7ch40cFqBy3KXg-a=pYnH7cwErMe2RDd2qzQJg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f193.google.com ([209.85.217.193]:36831 "EHLO
-        mail-ua0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934737AbdAIDcA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2017 22:32:00 -0500
-In-Reply-To: <20170108170209.GD573@kiwi.nardis.ca>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:36270 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755333AbdAIFnT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2017 00:43:19 -0500
+Received: by mail-pg0-f67.google.com with SMTP id 75so12433587pgf.3
+        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2017 21:43:18 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAEQ9gEkvj++e7ch40cFqBy3KXg-a=pYnH7cwErMe2RDd2qzQJg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ryan Tandy <ryan@nardis.ca>
+To: Roger Shimizu <rogershimizu@gmail.com>
 Cc: Andrew Lunn <andrew@lunn.ch>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Dear Ryan,
+On Mon, Jan 09, 2017 at 12:31:44PM +0900, Roger Shimizu wrote:
+>This driver, linkstation-reset, can also handle PPC Linkstation after
+>it's converted to DT.
+>I already considered this and mentioned in previous reply [0].
 
-Thanks for your comments!
+OK. I was thinking of Sebastian's earlier comment:
 
-On Mon, Jan 9, 2017 at 2:02 AM, Ryan Tandy <ryan@nardis.ca> wrote:
-> On Sun, Jan 08, 2017 at 12:04:50AM +0900, Roger Shimizu wrote:
->>
->> +config POWER_RESET_LINKSTATION
->> +       bool "Buffalo Linkstation and its variants reset driver"
->> +       depends on OF_GPIO && PLAT_ORION
->> +       help
->> +         This driver supports power off Buffalo Linkstation / KuroBox Pro
->> +         NAS and their variants by sending commands to the
->> micro-controller
->> +         which controls the main power.
->
-> Would it make sense to mention something about these being the ARM9/orion5x
-> Linkstations? If I understand correctly, the older PPC Linkstations have a
-> single-byte poweroff command. (Maybe they could even be supported by
-> qnap-poweroff.)
->
-> See arch/powerpc/platforms/embedded6xx/linkstation.c around line 123, and
-> arch/powerpc/platforms/embedded6xx/ls_uart.c.
+On Wed, Dec 21, 2016 at 04:59:29PM +0100, Sebastian Reichel wrote:
+>These models can just be added to qnap-poweroff, which handles
+>exactly this special case as far as I can see.
 
-This driver, linkstation-reset, can also handle PPC Linkstation after
-it's converted to DT.
-I already considered this and mentioned in previous reply [0].
-
-[0] http://marc.info/?l=linux-pm&m=148216908031283
-
-Cheers,
--- 
-Roger Shimizu, GMT +9 Tokyo
-PGP/GPG: 4096R/6C6ACD6417B3ACB1
+and forgot that you planned to handle it in this driver. Sorry for the 
+noise.
