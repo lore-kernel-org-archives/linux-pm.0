@@ -1,69 +1,83 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v2 3/3] power: supply: bq24735-charger: allow chargers to
- share the ac-detect gpio
-Date: Mon, 9 Jan 2017 19:55:48 +0100
-Message-ID: <CACRpkdbyzLwsK6bosbCZAniPNTU9PMp_8Wi7J0sQCjsh8RLPcw@mail.gmail.com>
-References: <1481673405-4547-1-git-send-email-peda@axentia.se>
- <1481673405-4547-4-git-send-email-peda@axentia.se> <20161214165921.jsatcznbljd7anqi@earth>
- <20161214170114.ckozfple475kqajh@earth> <e1667d9d-17bf-2fe5-8a65-af73b6507cbd@axentia.se>
- <CACRpkda+7XLBMo11vB_V030or3b+-LRufrziVVgct4Gr_2E+KQ@mail.gmail.com> <c3d66181-3076-0d0f-d74e-ec0205b3f547@axentia.se>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [RFC PATCH 1/5] regulator: Extend the power-management APIs
+Date: Mon, 9 Jan 2017 19:17:58 +0000
+Message-ID: <20170109191758.7zzxeh45pvwiw3jo@sirena.org.uk>
+References: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1480687036-5037-2-git-send-email-boris.brezillon@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="34r3fwwdxgmnb23e"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f180.google.com ([209.85.220.180]:35471 "EHLO
-        mail-qk0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1163402AbdAISzu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2017 13:55:50 -0500
-Received: by mail-qk0-f180.google.com with SMTP id u25so534753879qki.2
-        for <linux-pm@vger.kernel.org>; Mon, 09 Jan 2017 10:55:49 -0800 (PST)
-In-Reply-To: <c3d66181-3076-0d0f-d74e-ec0205b3f547@axentia.se>
+Received: from mezzanine.sirena.org.uk ([106.187.55.193]:33662 "EHLO
+        mezzanine.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1423308AbdAITSQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2017 14:18:16 -0500
+Content-Disposition: inline
+In-Reply-To: <1480687036-5037-2-git-send-email-boris.brezillon@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: Sebastian Reichel <sre@kernel.org>, Alexandre Courbot <gnurou@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
-On Mon, Jan 2, 2017 at 9:31 AM, Peter Rosin <peda@axentia.se> wrote:
-> On 2016-12-30 08:49, Linus Walleij wrote:
->> On Wed, Dec 14, 2016 at 6:41 PM, Peter Rosin <peda@axentia.se> wrote:
->>> On 2016-12-14 18:01, Sebastian Reichel wrote:
->>>> [of course I forgot to actually add gpio people, let's try again]
->>>>
->>>> On Wed, Dec 14, 2016 at 05:59:21PM +0100, Sebastian Reichel wrote:
->>>>> Hi,
->>>>>
->>>>> On Wed, Dec 14, 2016 at 12:56:45AM +0100, Peter Rosin wrote:
->>>>>> If several parallel bq24735 chargers have their ac-detect gpios wired
->>>>>> together (or if only one of the parallel bq24735 chargers have its
->>>>>> ac-detect pin wired to a gpio, and the others are assumed to react the
->>>>>> same), then all driver instances need to check the same gpio. But the
->>>>>> gpio subsystem does not allow sharing gpios, so handle that locally.
->>>>>
->>>>> Adding GPIO subsystem people to see if they can come up with
->>>>> something in the gpiod API for this usecase.
->>>
->>> Right, I don't like how my new code steps away from gpio descriptors.
->>
->> The issue of shared gpiods have come up over and over again.
->> For example the messy regulator code needs this too.
->>
->> It is better if we implement something like gpiod_get_shared()
->> in the gpiolib of these cases.
->>
->> Just put a refcount in struct gpio_desc in drivers/gpio/gpiolib.h
->> for this case I guess?
->
-> I actually tried that, but ran into atomicy issues with the
-> FLAG_REQUESTED bit and gave up. Didn't really try all that hard
-> though, but I simply didn't feel comfortable with going near such
-> fundamental designs...
 
-Oh I see. Well if it is of any help that would make me nervous too.
+--34r3fwwdxgmnb23e
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-I would just remove the use of FLAG_REQUESTED altogether,
-redefine the flags in gpiolib.h from 0 and add a struct kref into the struct
-to deal with the refcounting.
+On Fri, Dec 02, 2016 at 02:57:12PM +0100, Boris Brezillon wrote:
 
-That should do it. I think.
+> The idea to solve #2 is to allow runtime changes. Since this kind of
+> change is likely to have an impact on the whole system, we require the
+> board to explicitly state that runtime changes are allowed (using a DT
+> property).
 
-Yours,
-Linus Walleij
+> Allowing runtime changes, may also be a problem if devices are not
+> suspended in the correct order: a device using a regulator should be
+> suspended before the regulator itself, otherwise we may change the
+> regulator state while it's still being used.
+> Hopefully, this problem will be solved with the work done on device
+> dependency description.
+
+I'm not sure that adding an extra property is going to help with the
+problems here - the system already has to provide explicit support for
+setting the suspend configuration so that should be enough.  However it
+*is* a bit more than just making sure that the device suspend ordering
+is good (though that's definitely part of it), there will be things
+kicked off by hardware signalling without software knowing about it.
+
+Anything that doesn't affect a hardware supported runtime state probably
+needs to be split off and handled separately as that's the much more
+risky bit, moving changing of suspend mode earlier isn't going to cause
+too much grief, that patch should just be split out and can probably
+just go straight in.
+
+> + * This function should be called from the regulator driver ->suspend() hook
+> + * and after the platform has called regulator_suspend_begin() to properly set
+> + * the rdev->suspend.target field.
+
+Requring these functions to be called from every single driver seems
+like we're doing something wrong - if we're going to do this we should
+find some way to loop over all regulators and apply any unapplied
+changes.  Batching things up at the end of suspend would also mean that
+we'd be able to minimise the chances that we get the ordering wrong.
+
+For the target bit...  we should be able to find some way to figure out
+what kind of suspend we're doing without the platform being involved, a
+callback from the PM core would be helpful here.
+
+--34r3fwwdxgmnb23e
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlhz4eUACgkQJNaLcl1U
+h9CADwf9HGYubSkDYTENKrFI46noC5XLAjUZ69nwGXQqLTPuFPP1bu9JV7Imvou+
+jDaxjwGFhdREstIopvO8/0fq3ms3FEHooSzr86HJ86yoLpSfCPPjlJupU3+gZSdw
+AwF6uTGFYo/u2b/wWAlBaWjiQ6CaGDu+HLX85hPgPlQexr3fAMXDfjOJb4gdiFYo
+tSZUtO3wk30+xhw9lluHxZi48RZKyGoOPvMv1z/VpAHAs+zG1fB3VWq1Z1t++qdj
+lvodDwcGzcqukHdP6Wptu7GolcOejYKX+Kfa/e/yWC0kbpXLgfIGhwbZt8ZUX7Qd
+Oibju3R5FmC8rzv80tDBvfW80QogAw==
+=YWqK
+-----END PGP SIGNATURE-----
+
+--34r3fwwdxgmnb23e--
