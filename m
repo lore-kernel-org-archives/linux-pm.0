@@ -1,15 +1,15 @@
 From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH 3/4] ARM: exynos_defconfig: Enable power sequence for
+Subject: Re: [PATCH v1.1] ARM: multi_v7_defconfig: Enable power sequence for
  Odroid U3
-Date: Mon, 9 Jan 2017 13:19:28 -0300
-Message-ID: <1aae570c-6a63-9893-70fc-2313a57f664a@osg.samsung.com>
-References: <20170107085203.4431-1-krzk@kernel.org>
- <20170107085203.4431-4-krzk@kernel.org>
+Date: Mon, 9 Jan 2017 13:24:43 -0300
+Message-ID: <d8ee24b1-9d6b-e76f-b5ef-71706efbf9e5@osg.samsung.com>
+References: <20170107085203.4431-5-krzk@kernel.org>
+ <20170107091651.10560-1-krzk@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170107085203.4431-4-krzk@kernel.org>
+In-Reply-To: <20170107091651.10560-1-krzk@kernel.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,13 +25,22 @@ List-Id: linux-pm@vger.kernel.org
 
 Hello Krzysztof,
 
-On 01/07/2017 05:52 AM, Krzysztof Kozlowski wrote:
+I think it would had been clearer if the subject prefix was "[PATCH v1.1 4/4]" :)
+
+On 01/07/2017 06:16 AM, Krzysztof Kozlowski wrote:
 > Odroid U3 needs a power sequence for lan9730, if it was enabled by
-> bootloader.  Enable also GPIO_SYSFS which is useful for playing with
-> GPIO during debug process.
+> bootloader.  Also enable the USB3503 HSCI to USB2.0 driver (device
+> is present on Odroid U3).
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> 
 > ---
+> 
+
+Do you think that makes sense to also enable GPIO_SYS for debugging
+purposes as you do in patch 3/4?
+
+In any case the patch looks good to me:
 
 Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
 
