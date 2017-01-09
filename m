@@ -1,66 +1,33 @@
 From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v2 3/4] dmaengine: pl330: Store pointer to slave device
-Date: Mon, 9 Jan 2017 20:08:21 +0200
-Message-ID: <CAJKOXPeFMpt1nKHD=zqEiFb45Hoxv-=+SHav=8C=KVbYJ0DAbA@mail.gmail.com>
-References: <CGME20170109140326eucas1p29d3e54da58845589e2adf70db854d996@eucas1p2.samsung.com>
- <1483970598-6191-1-git-send-email-m.szyprowski@samsung.com> <1483970598-6191-4-git-send-email-m.szyprowski@samsung.com>
+Subject: Re: [PATCH v2 1/4] dmaengine: pl330: remove pdata based
+ initialization
+Date: Mon, 9 Jan 2017 20:15:11 +0200
+Message-ID: <20170109181511.37da3mslzdiq4uhr@kozik-lap>
+References: <1483970598-6191-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170109140325eucas1p2674704b2505517ee532284c58c8a64d1@eucas1p2.samsung.com>
+ <1483970598-6191-2-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1483970598-6191-4-git-send-email-m.szyprowski@samsung.com>
+Content-Disposition: inline
+In-Reply-To: <1483970598-6191-2-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 9, 2017 at 4:03 PM, Marek Szyprowski
-<m.szyprowski@samsung.com> wrote:
-> Store the pointer to slave device, which requested our channel. It will be
-> later used to implement runtime PM of PL330 DMA controller. Although
-> DMA channels might be requested many times, each DMA peripheral channel is
-> physically dedicated only for specific hardware, so there should be only
-> one slave device for each channel.
->
+On Mon, Jan 09, 2017 at 03:03:15PM +0100, Marek Szyprowski wrote:
+> This driver is now used only on platforms which support device tree, so
+> it is safe to remove legacy platform data based initialization code.
+> 
 > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 > ---
->  drivers/dma/pl330.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
->
-> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-> index 3c80e71271a2..9c72f535739c 100644
-> --- a/drivers/dma/pl330.c
-> +++ b/drivers/dma/pl330.c
-> @@ -450,6 +450,7 @@ struct dma_pl330_chan {
->
->         /* for runtime pm tracking */
->         bool active;
-> +       struct device *slave;
->  };
->
->  struct pl330_dmac {
-> @@ -2113,6 +2114,14 @@ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
->         if (chan_id >= pl330->num_peripherals)
->                 return NULL;
->
-> +       if (!pl330->peripherals[chan_id].slave)
-> +               pl330->peripherals[chan_id].slave = slave;
+>  drivers/dma/pl330.c        | 30 ++++++++----------------------
+>  include/linux/amba/pl330.h | 35 -----------------------------------
 
-Following coding style, this should be inside {} because the other
-branch has them. Beside that:
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Nope:
+$ git grep pl330.h
+arch/arm/plat-samsung/devs.c:#include <linux/amba/pl330.h>
 
 Best regards,
 Krzysztof
-
-> +       else if (pl330->peripherals[chan_id].slave != slave) {
-> +               dev_err(pl330->ddma.dev,
-> +                       "Can't use same channel with multiple slave devices!\n");
-> +               return NULL;
-> +       }
-> +
->         return dma_get_slave_channel(&pl330->peripherals[chan_id].chan);
->  }
->
-> --
-> 1.9.1
->
