@@ -1,46 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [vireshk:opp/genpd-performance-state 14/18]
- include/linux/pm_qos.h:199:19: warning: 'dev_pm_qos_add_notifier' declared
- 'static' but never defined
-Date: Mon, 9 Jan 2017 08:54:45 +0530
-Message-ID: <20170109032445.GK21926@vireshk-i7>
-References: <201701061954.4iGTmC2m%fengguang.wu@intel.com>
+From: Roger Shimizu <rogershimizu@gmail.com>
+Subject: Re: [PATCH v4 1/2] power: reset: add linkstation-reset driver
+Date: Mon, 9 Jan 2017 12:31:44 +0900
+Message-ID: <CAEQ9gEkvj++e7ch40cFqBy3KXg-a=pYnH7cwErMe2RDd2qzQJg@mail.gmail.com>
+References: <20161227070611.14852-1-rogershimizu@gmail.com>
+ <20170107150451.17912-1-rogershimizu@gmail.com> <20170107150451.17912-2-rogershimizu@gmail.com>
+ <20170108170209.GD573@kiwi.nardis.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f171.google.com ([209.85.192.171]:34726 "EHLO
-        mail-pf0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933873AbdAIDYt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2017 22:24:49 -0500
-Received: by mail-pf0-f171.google.com with SMTP id 127so27155895pfg.1
-        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2017 19:24:49 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <201701061954.4iGTmC2m%fengguang.wu@intel.com>
+Received: from mail-ua0-f193.google.com ([209.85.217.193]:36831 "EHLO
+        mail-ua0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934737AbdAIDcA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2017 22:32:00 -0500
+In-Reply-To: <20170108170209.GD573@kiwi.nardis.ca>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <fengguang.wu@intel.com>
-Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
+To: Ryan Tandy <ryan@nardis.ca>
+Cc: Andrew Lunn <andrew@lunn.ch>, Martin Michlmayr <tbm@cyrius.com>, Sylver Bruneau <sylver.bruneau@googlemail.com>, Herbert Valerio Riedel <hvr@gnu.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 06-01-17, 19:32, kbuild test robot wrote:
-> tree:   https://git.linaro.org/people/vireshk/linux opp/genpd-performance-state
-> head:   e327d4cbb8b86e33f3e777bbbd8a9a8326e5f6d5
-> commit: efd46e263c100a5051c4b9d15f523ce08f76934a [14/18] PM / QOS: Pass request type to dev_pm_qos_{add|remove}_notifier()
-> config: openrisc-or1ksim_defconfig (attached as .config)
-> compiler: or32-linux-gcc (GCC) 4.5.1-or32-1.0rc1
-> reproduce:
->         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         git checkout efd46e263c100a5051c4b9d15f523ce08f76934a
->         # save the attached .config to linux build tree
->         make.cross ARCH=openrisc 
-> 
-> All warnings (new ones prefixed by >>):
-> 
->    In file included from kernel/power/qos.c:32:0:
->    include/linux/pm_qos.h:202:4: error: expected identifier or '(' before '{' token
-> >> include/linux/pm_qos.h:199:19: warning: 'dev_pm_qos_add_notifier' declared 'static' but never defined
+Dear Ryan,
 
-Fixed thanks.
+Thanks for your comments!
 
+On Mon, Jan 9, 2017 at 2:02 AM, Ryan Tandy <ryan@nardis.ca> wrote:
+> On Sun, Jan 08, 2017 at 12:04:50AM +0900, Roger Shimizu wrote:
+>>
+>> +config POWER_RESET_LINKSTATION
+>> +       bool "Buffalo Linkstation and its variants reset driver"
+>> +       depends on OF_GPIO && PLAT_ORION
+>> +       help
+>> +         This driver supports power off Buffalo Linkstation / KuroBox Pro
+>> +         NAS and their variants by sending commands to the
+>> micro-controller
+>> +         which controls the main power.
+>
+> Would it make sense to mention something about these being the ARM9/orion5x
+> Linkstations? If I understand correctly, the older PPC Linkstations have a
+> single-byte poweroff command. (Maybe they could even be supported by
+> qnap-poweroff.)
+>
+> See arch/powerpc/platforms/embedded6xx/linkstation.c around line 123, and
+> arch/powerpc/platforms/embedded6xx/ls_uart.c.
+
+This driver, linkstation-reset, can also handle PPC Linkstation after
+it's converted to DT.
+I already considered this and mentioned in previous reply [0].
+
+[0] http://marc.info/?l=linux-pm&m=148216908031283
+
+Cheers,
 -- 
-viresh
+Roger Shimizu, GMT +9 Tokyo
+PGP/GPG: 4096R/6C6ACD6417B3ACB1
