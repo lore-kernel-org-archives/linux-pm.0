@@ -1,105 +1,69 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v3 02/11] power: supplies: bq275xx: rename BQ27500 allow for deprecation in future.
-Date: Mon,  9 Jan 2017 11:47:36 +1100
-Message-ID: <1483922865-96321-3-git-send-email-chris@lapa.com.au>
-References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
- <1483922865-96321-1-git-send-email-chris@lapa.com.au>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:32894 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757521AbdAIAr6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Jan 2017 19:47:58 -0500
-Received: by mail-pg0-f65.google.com with SMTP id 194so5519808pgd.0
-        for <linux-pm@vger.kernel.org>; Sun, 08 Jan 2017 16:47:58 -0800 (PST)
-In-Reply-To: <1483922865-96321-1-git-send-email-chris@lapa.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 0/3] PM / docs: linux/pm.h kerneldocs update and
+ conversion of two docs to reST
+Date: Mon, 9 Jan 2017 02:34:39 +0100
+Message-ID: <20170109013439.GA23364@wunner.de>
+References: <17467778.bsRBpnPicc@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <17467778.bsRBpnPicc@aspire.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: pali.rohar@gmail.com, afd@ti.com, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Chris Lapa <chris@lapa.com.au>
 
-From: Chris Lapa <chris@lapa.com.au>
+On Fri, Jan 06, 2017 at 02:38:13AM +0100, Rafael J. Wysocki wrote:
+> I sent patches [1-2/3] previosly a couple of weeks ago and there have not
+> been any comments since then, so either they are fine by everybody or the
+> timing was particularly bad and no one had the time to look at them.
 
-The BQ275XX definition exists only to satisfy backwards compatibility.
+So far I was only able to peruse the "Device Power Management Data Types"
+section (which is generated from include/linux/pm.h) and came across the
+following:
 
-tested: yes
+The description for the ->prepare hook says:
 
-Signed-off-by: Chris Lapa <chris@lapa.com.au>
----
- drivers/power/supply/bq27xxx_battery.c     | 8 ++++----
- drivers/power/supply/bq27xxx_battery_i2c.c | 6 +++---
- include/linux/power/bq27xxx_battery.h      | 2 +-
- 3 files changed, 8 insertions(+), 8 deletions(-)
+	If the transition is a suspend to memory or standby (that
+        is, not related to hibernation), the return value of @prepare() may be
+        used to indicate to the PM core to leave the device in runtime suspend
+        if applicable.
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index fd4cc4e..b94091e 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -145,7 +145,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_DCAP] = 0x76,
- 		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- 	},
--	[BQ27500] = {
-+	[BQ275XX] = {
- 		[BQ27XXX_REG_CTRL] = 0x00,
- 		[BQ27XXX_REG_TEMP] = 0x06,
- 		[BQ27XXX_REG_INT_TEMP] = 0x28,
-@@ -284,7 +284,7 @@ static enum power_supply_property bq27010_battery_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- };
- 
--static enum power_supply_property bq27500_battery_props[] = {
-+static enum power_supply_property bq275xx_battery_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_PRESENT,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-@@ -384,7 +384,7 @@ static struct {
- } bq27xxx_battery_props[] = {
- 	BQ27XXX_PROP(BQ27000, bq27000_battery_props),
- 	BQ27XXX_PROP(BQ27010, bq27010_battery_props),
--	BQ27XXX_PROP(BQ27500, bq27500_battery_props),
-+	BQ27XXX_PROP(BQ275XX, bq275xx_battery_props),
- 	BQ27XXX_PROP(BQ27530, bq27530_battery_props),
- 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
- 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
-@@ -636,7 +636,7 @@ static int bq27xxx_battery_read_pwr_avg(struct bq27xxx_device_info *di)
- static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
- {
- 	switch (di->chip) {
--	case BQ27500:
-+	case BQ275XX:
- 	case BQ27541:
- 	case BQ27545:
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 85d4ea2..762d96e 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -148,9 +148,9 @@ static int bq27xxx_battery_i2c_remove(struct i2c_client *client)
- static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27200", BQ27000 },
- 	{ "bq27210", BQ27010 },
--	{ "bq27500", BQ27500 },
--	{ "bq27510", BQ27500 },
--	{ "bq27520", BQ27500 },
-+	{ "bq27500", BQ275XX },
-+	{ "bq27510", BQ275XX },
-+	{ "bq27520", BQ275XX },
- 	{ "bq27530", BQ27530 },
- 	{ "bq27531", BQ27530 },
- 	{ "bq27541", BQ27541 },
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index e30deb0..c452b94 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -4,7 +4,7 @@
- enum bq27xxx_chip {
- 	BQ27000 = 1, /* bq27000, bq27200 */
- 	BQ27010, /* bq27010, bq27210 */
--	BQ27500, /* bq27500, bq27510, bq27520 */
-+	BQ275XX, /* bq27500, bq27510, bq27520 deprecated alias */
- 	BQ27530, /* bq27530, bq27531 */
- 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
- 	BQ27545, /* bq27545 */
--- 
-2.1.4
+Maybe I'm missing something but in the places where the direct_complete
+flag is calculated (e.g. in pci_dev_keep_suspended()) or where it's checked,
+I don't see that we're differentiating anywhere whether we're going through
+a suspend-to-RAM versus suspend-to-disk transition.  So in the above snippet,
+the portion "If the transition is a suspend to memory or standby (that is,
+not related to hibernation)" seems wrong and should probably be removed.
 
+I know you're not touching this paragraph in the present commits, it's just
+something that caught my eye while going over the rendered output.
+
+
+Furthermore, the description for the ->freeze hook says:
+
+        Analogous to @suspend(), but it should not enable the device to signal
+        wakeup events or change its power state.
+
+However looking at the PCI core it looks like this constraint isn't
+satisfied, pci_dev_keep_suspended() (which gets called from ->prepare)
+disables PME only if:
+
+        if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
+            !device_may_wakeup(dev))
+                __pci_pme_active(pci_dev, false);
+
+Shouldn't this be something like:
+
+        if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
+            (!device_may_wakeup(dev) || (system_entering_hibernation() &&
+					 system_state != SYSTEM_POWER_OFF)))
+                __pci_pme_active(pci_dev, false);
+
+So that PME is disabled before entering the freeze phase for direct_complete
+devices, but not before entering the poweroff phase.
+
+Thanks,
+
+Lukas
