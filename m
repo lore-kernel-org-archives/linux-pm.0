@@ -1,86 +1,66 @@
-From: Anand Moon <linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 0/4] ARM: exynos: Fix Odroid U3 USB/LAN when TFTP booting
- (power sequence)
-Date: Mon, 9 Jan 2017 23:34:48 +0530
-Message-ID: <CANAwSgSEZvxHje65Kk13fvD9NZGB+iHCJtoGJdQrUdS42ei_WA@mail.gmail.com>
-References: <20170107085203.4431-1-krzk@kernel.org>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2 3/4] dmaengine: pl330: Store pointer to slave device
+Date: Mon, 9 Jan 2017 20:08:21 +0200
+Message-ID: <CAJKOXPeFMpt1nKHD=zqEiFb45Hoxv-=+SHav=8C=KVbYJ0DAbA@mail.gmail.com>
+References: <CGME20170109140326eucas1p29d3e54da58845589e2adf70db854d996@eucas1p2.samsung.com>
+ <1483970598-6191-1-git-send-email-m.szyprowski@samsung.com> <1483970598-6191-4-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170107085203.4431-1-krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Linux USB Mailing List <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, Markus
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1483970598-6191-4-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
-
-On 7 January 2017 at 14:21, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> Hi,
+On Mon, Jan 9, 2017 at 4:03 PM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
+> Store the pointer to slave device, which requested our channel. It will be
+> later used to implement runtime PM of PL330 DMA controller. Although
+> DMA channels might be requested many times, each DMA peripheral channel is
+> physically dedicated only for specific hardware, so there should be only
+> one slave device for each channel.
 >
-> Thanks to Markus Reichl, I got an Odroid U3 to work with. Thanks to Peter
-> Chen, we got a power sequence generic library which solves my long
-> standing Odroid U3 problem - no LAN9730 if it was enabled by bootloader.
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/dma/pl330.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 >
-> My previous attempts for this can be found here [0].
+> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
+> index 3c80e71271a2..9c72f535739c 100644
+> --- a/drivers/dma/pl330.c
+> +++ b/drivers/dma/pl330.c
+> @@ -450,6 +450,7 @@ struct dma_pl330_chan {
 >
-> This patchset is based on Peter's v11 of power sequence [1].
-> Patchset is available also on my Github [2].
+>         /* for runtime pm tracking */
+>         bool active;
+> +       struct device *slave;
+>  };
 >
-> More detailed analysis is described in patch 2/4 ("ARM: dts: exynos: Fix
-> LAN9730 on Odroid U3 after tftpboot").
+>  struct pl330_dmac {
+> @@ -2113,6 +2114,14 @@ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
+>         if (chan_id >= pl330->num_peripherals)
+>                 return NULL;
 >
+> +       if (!pl330->peripherals[chan_id].slave)
+> +               pl330->peripherals[chan_id].slave = slave;
+
+Following coding style, this should be inside {} because the other
+branch has them. Beside that:
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Best regards,
+Krzysztof
+
+> +       else if (pl330->peripherals[chan_id].slave != slave) {
+> +               dev_err(pl330->ddma.dev,
+> +                       "Can't use same channel with multiple slave devices!\n");
+> +               return NULL;
+> +       }
+> +
+>         return dma_get_slave_channel(&pl330->peripherals[chan_id].chan);
+>  }
 >
-
-[snip]
-
-On which u-boot should this be tested.
-
-On HK u-boot tftp boot is not supported.
-----------------------------------------------------------
-U-Boot 2010.12-00000-g9777ca6-dirty (Nov 26 2015 - 10:10:11) for Exynox4412
-
-
-CPU: S5PC220 [Samsung SOC on SMP Platform Base on ARM CortexA9]
-APLL = 1000MHz, MPLL = 800MHz
-DRAM:  2 GiB
-
-PMIC VERSION : 0x00, CHIP REV : 2
-TrustZone Enabled BSP
-BL1 version: 20121128
-
-
-Checking Boot Mode ... SDMMC
-MMC Device 0: 14804 MB
-MMC Device 1 not found
-*** Warning - using default environment
-
-USB3503 NINT = OUTPUT LOW!
-ModeKey Check... run normal_boot
-No ethernet found.
-Hit any key to stop autoboot:  0
-Exynos4412 #
-Exynos4412 #
-Exynos4412 #
-Exynos4412 # usb start
-(Re)start USB...
-USB0:   Exynos4412-ehci: init hccr 12580000 and hcor 12580010 hc_length 16
-usb: usb_refclk_enable is active low: NO
-ProTIP: If usb doesn't work - try playing with 'usb_invert_clken' environment
-USB EHCI 1.00
-scanning bus 0 for devices... EHCI timed out on TD - token=0x80008c80
-EHCI fail timeout STS_ASS set
-
-      USB device not accepting new address (error=80000000)
-EHCI fail timeout STS_ASS set
-1 USB Device(s) found
-       scanning usb for storage devices... 0 Storage Device(s) found
-       scanning usb for ethernet devices... 0 Ethernet Device(s) found
-Exynos4412 #
-
-Best Regards
--Anand
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> --
+> 1.9.1
+>
