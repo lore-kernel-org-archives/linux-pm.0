@@ -1,51 +1,42 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Subject: Re: [PATCH v1.1] ARM: multi_v7_defconfig: Enable power sequence for
- Odroid U3
-Date: Mon, 9 Jan 2017 13:24:43 -0300
-Message-ID: <d8ee24b1-9d6b-e76f-b5ef-71706efbf9e5@osg.samsung.com>
-References: <20170107085203.4431-5-krzk@kernel.org>
- <20170107091651.10560-1-krzk@kernel.org>
+From: Niklas =?iso-8859-1?Q?S=F6derlund?=
+        <niklas.soderlund@ragnatech.se>
+Subject: Preventing PM from suspending device
+Date: Mon, 9 Jan 2017 18:22:47 +0100
+Message-ID: <20170109172247.GI29854@bigcity.dyn.berto.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170107091651.10560-1-krzk@kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Anand Moon <linux.amoon@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Peter Chen <peter.chen@nxp.com>, ulf.hansson@linaro.org, Markus Reichl <m.reichl@fivetechno.de>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org, hverkuil@xs4all.nl, broonie@kernel.org, stern@rowland.harvard.edu, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f43.google.com ([209.85.215.43]:32987 "EHLO
+        mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S968442AbdAIRWu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2017 12:22:50 -0500
+Received: by mail-lf0-f43.google.com with SMTP id k86so99116777lfi.0
+        for <linux-pm@vger.kernel.org>; Mon, 09 Jan 2017 09:22:50 -0800 (PST)
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hello Krzysztof,
+Hi Ulf and Linux PM,
 
-I think it would had been clearer if the subject prefix was "[PATCH v1.1 4/4]" :)
+I have a question regarding if a driver can signal to the PM core that 
+it should not be suspended from its struct dev_pm_ops suspend callback.
 
-On 01/07/2017 06:16 AM, Krzysztof Kozlowski wrote:
-> Odroid U3 needs a power sequence for lan9730, if it was enabled by
-> bootloader.  Also enable the USB3503 HSCI to USB2.0 driver (device
-> is present on Odroid U3).
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> 
-> ---
-> 
+My use-case is the sh_eth driver which I have added Wake-on-Lan support 
+to, see [1]. In this driver I need to prevent the PM core to disable the 
+module clock to the device if WoL is enabled. Currently I call 
+clk_enable()/clk_disable() from the suspend/resume callbacks to modify 
+the usage count of the clock to prevent the clock from being switched 
+off by PM. This do not feel like the best solution to my problem.
 
-Do you think that makes sense to also enable GPIO_SYS for debugging
-purposes as you do in patch 3/4?
+Is there a more generic way to let PM know that I'm fine with the system 
+being suspended and I have suspended as much as I can but I'm a wake up source 
+so could please not switch of my clock and power domain?
 
-In any case the patch looks good to me:
+1. https://marc.info/?l=linux-pm&m=148397620011501&w=2
 
-Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
-
-Best regards,
 -- 
-Javier Martinez Canillas
-Open Source Group
-Samsung Research America
+Regards,
+Niklas Söderlund
