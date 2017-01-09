@@ -1,42 +1,51 @@
-From: Niklas =?iso-8859-1?Q?S=F6derlund?=
-        <niklas.soderlund@ragnatech.se>
-Subject: Preventing PM from suspending device
-Date: Mon, 9 Jan 2017 18:22:47 +0100
-Message-ID: <20170109172247.GI29854@bigcity.dyn.berto.se>
+From: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v1.1] ARM: multi_v7_defconfig: Enable power sequence for
+ Odroid U3
+Date: Mon, 9 Jan 2017 19:38:03 +0200
+Message-ID: <CAJKOXPdODg2gCXP-BCRhDZAc2+o1J7Ek9iLaYF7hn_R2mNiK3A@mail.gmail.com>
+References: <20170107085203.4431-5-krzk@kernel.org> <20170107091651.10560-1-krzk@kernel.org>
+ <d8ee24b1-9d6b-e76f-b5ef-71706efbf9e5@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f43.google.com ([209.85.215.43]:32987 "EHLO
-        mail-lf0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S968442AbdAIRWu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2017 12:22:50 -0500
-Received: by mail-lf0-f43.google.com with SMTP id k86so99116777lfi.0
-        for <linux-pm@vger.kernel.org>; Mon, 09 Jan 2017 09:22:50 -0800 (PST)
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <d8ee24b1-9d6b-e76f-b5ef-71706efbf9e5-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>
+Cc: Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Anand Moon <linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sylwester Nawrocki <s.nawrocki-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, Markus Reichl <m.reichl-SRyzfwRm/0rPTwkrwQOX7A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hi Ulf and Linux PM,
+On Mon, Jan 9, 2017 at 6:24 PM, Javier Martinez Canillas
+<javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org> wrote:
+> Hello Krzysztof,
+>
+> I think it would had been clearer if the subject prefix was "[PATCH v1.1 4/4]" :)
 
-I have a question regarding if a driver can signal to the PM core that 
-it should not be suspended from its struct dev_pm_ops suspend callback.
+Ah, yes.
 
-My use-case is the sh_eth driver which I have added Wake-on-Lan support 
-to, see [1]. In this driver I need to prevent the PM core to disable the 
-module clock to the device if WoL is enabled. Currently I call 
-clk_enable()/clk_disable() from the suspend/resume callbacks to modify 
-the usage count of the clock to prevent the clock from being switched 
-off by PM. This do not feel like the best solution to my problem.
+>
+> On 01/07/2017 06:16 AM, Krzysztof Kozlowski wrote:
+>> Odroid U3 needs a power sequence for lan9730, if it was enabled by
+>> bootloader.  Also enable the USB3503 HSCI to USB2.0 driver (device
+>> is present on Odroid U3).
+>>
+>> Signed-off-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>>
+>> ---
+>>
+>
+> Do you think that makes sense to also enable GPIO_SYS for debugging
+> purposes as you do in patch 3/4?
 
-Is there a more generic way to let PM know that I'm fine with the system 
-being suspended and I have suspended as much as I can but I'm a wake up source 
-so could please not switch of my clock and power domain?
+I like the GPIO_SYSFS interface because it is easy to use. However
+now, after your question, I found this:
+http://lists.infradead.org/pipermail/linux-arm-kernel/2016-November/470154.html
+ARM/ARM64: defconfig: drop GPIO_SYSFS on multiplatforms
 
-1. https://marc.info/?l=linux-pm&m=148397620011501&w=2
+... so instead I will drop it from exynos_defconfig.
 
--- 
-Regards,
-Niklas Söderlund
+Best regards,
+Krzysztof
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
