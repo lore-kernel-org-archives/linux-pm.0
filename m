@@ -1,43 +1,40 @@
-From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCHv3 6/6] sh_eth: enable wake-on-lan for sh7763
-Date: Mon,  9 Jan 2017 16:34:09 +0100
-Message-ID: <20170109153409.13956-7-niklas.soderlund+renesas@ragnatech.se>
-References: <20170109153409.13956-1-niklas.soderlund+renesas@ragnatech.se>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: Re: [PATCH 1/4] ARM: dts: exynos: Fix indentation of EHCI and OHCI
+ ports
+Date: Mon, 9 Jan 2017 13:01:45 -0300
+Message-ID: <fc163f47-a810-9f37-96ad-cafbb57169f1@osg.samsung.com>
+References: <20170107085203.4431-1-krzk@kernel.org>
+ <20170107085203.4431-2-krzk@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-4.sys.kth.se ([130.237.48.193]:52292 "EHLO
-        smtp-4.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750760AbdAIPfS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Jan 2017 10:35:18 -0500
-In-Reply-To: <20170109153409.13956-1-niklas.soderlund+renesas@ragnatech.se>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170107085203.4431-2-krzk@kernel.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Krzysztof Kozlowski <krzk@kernel.org>, Kukjin Kim <kgene@kernel.org>, Anand Moon <linux.amoon@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Peter Chen <peter.chen@nxp.com>, ulf.hansson@linaro.org, Markus Reichl <m.reichl@fivetechno.de>, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, sre@kernel.org, robh+dt@kernel.org, hverkuil@xs4all.nl, broonie@kernel.org, stern@rowland.harvard.edu, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, Simon Horman <horms+renesas@verge.net.au>, netdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-pm@vger.kernel.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 
-This is based on public datasheet for sh7763 which shows it has the
-same behavior and registers for WoL as other versions of sh_eth.
+Hello Krzysztof,
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/net/ethernet/renesas/sh_eth.c | 1 +
- 1 file changed, 1 insertion(+)
+On 01/07/2017 05:52 AM, Krzysztof Kozlowski wrote:
+> Replace spaces with tabs in EHCI and OHCI ports indentation.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> ---
 
-diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
-index 5292022fe6b1..ecf0f7997a72 100644
---- a/drivers/net/ethernet/renesas/sh_eth.c
-+++ b/drivers/net/ethernet/renesas/sh_eth.c
-@@ -847,6 +847,7 @@ static struct sh_eth_cpu_data sh7763_data = {
- 	.no_ade		= 1,
- 	.tsu		= 1,
- 	.irq_flags	= IRQF_SHARED,
-+	.magic		= 1,
- };
- 
- static struct sh_eth_cpu_data sh7619_data = {
+Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+
+Best regards,
 -- 
-2.11.0
-
+Javier Martinez Canillas
+Open Source Group
+Samsung Research America
