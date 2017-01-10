@@ -1,138 +1,40 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [RFC][PATCH 1/2] cpufreq: intel_pstate: Expose global sysfs
- attributes upfront
-Date: Tue, 10 Jan 2017 12:48:55 -0800
-Message-ID: <1484081335.28749.11.camel@linux.intel.com>
-References: <21825845.nN3skUNMsO@aspire.rjw.lan>
-         <2389828.jxMzLa8mev@aspire.rjw.lan>
+From: Chris Lapa <chris@lapa.com.au>
+Subject: Re: [PATCH v4 01/10] power: supplies: bq27xxx: rename BQ27500 allow
+ for deprecation in future.
+Date: Wed, 11 Jan 2017 09:25:01 +1100
+Message-ID: <a7f219cf-8d53-867a-89df-93d603422643@lapa.com.au>
+References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
+ <1484025938-114133-1-git-send-email-chris@lapa.com.au>
+ <1484025938-114133-2-git-send-email-chris@lapa.com.au>
+ <20170110085825.GA11770@pali>
+Reply-To: chris@lapa.com.au
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:50526 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750790AbdAJUs5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Jan 2017 15:48:57 -0500
-In-Reply-To: <2389828.jxMzLa8mev@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170110085825.GA11770@pali>
+Sender: linux-kernel-owner@vger.kernel.org
+To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
+Cc: afd@ti.com, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
 
-On Thu, 2017-01-05 at 02:51 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Expose the intel_pstate's global sysfs attributes before registering
-> the driver to prepare for the addition of an attribute that also will
-> have to work if the driver is not registered.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
+On 10/1/17 7:58 pm, Pali Rohár wrote:
+> On Tuesday 10 January 2017 16:25:29 Chris Lapa wrote:
+>> From: Chris Lapa <chris@lapa.com.au>
+>>
+>> The BQ275XX definition exists only to satisfy backwards compatibility.
+>>
+>> tested: yes
+>
+> Instead "tested: yes" we use: "Tested-by: name <email>" line.
+>
+>> Signed-off-by: Chris Lapa <chris@lapa.com.au>
+>> Acked-by: Pali Rohár <pali.rohar@gmail.com>
+>> Reviewed-by: Andrew F. Davis <afd@ti.com>
+>
 
-[...]
-
->  #ifdef CONFIG_ACPI
-> @@ -1055,12 +1058,22 @@ static ssize_t show_turbo_pct(struct kob
->  	int total, no_turbo, turbo_pct;
->  	uint32_t turbo_fp;
->  
-> +	mutex_lock(&intel_pstate_driver_lock);
-> +
-> +	if (!driver_registered) {
-> +		mutex_unlock(&intel_pstate_limits_lock);
-It should be
-                mutex_unlock(&intel_pstate_driver_lock);
-
-> +		return -EAGAIN;
-> +	}
-> +
->  	cpu = all_cpu_data[0];
->  
-> 
-[...]
-
-> @@ -1070,8 +1083,18 @@ static ssize_t show_num_pstates(struct k
->  	struct cpudata *cpu;
->  	int total;
->  
-> +	mutex_lock(&intel_pstate_driver_lock);
-> +
-> +	if (!driver_registered) {
-> +		mutex_unlock(&intel_pstate_limits_lock);
-Change to
-                mutex_unlock(&intel_pstate_driver_lock);
-
-> +		return -EAGAIN;
-> +	}
-> +
->  	cpu = all_cpu_data[0];
->  	total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate +
-> 1;
-> +
-> +	mutex_unlock(&intel_pstate_driver_lock);
-> +
->  	return sprintf(buf, "%u\n", total);
->  }
->  
-> @@ -1080,12 +1103,21 @@ static ssize_t show_no_turbo(struct kobj
->  {
->  	ssize_t ret;
->  
-> +	mutex_lock(&intel_pstate_driver_lock);
-> +
-> +	if (!driver_registered) {
-> +		mutex_unlock(&intel_pstate_limits_lock);
-Same here
-                mutex_unlock(&intel_pstate_driver_lock);
-
-> +		return -EAGAIN;
-> +	}
-> +
->  	update_turbo_state();
->  	if (limits->turbo_disabled)
->  		ret = sprintf(buf, "%u\n", limits->turbo_disabled);
->  	else
->  		ret = sprintf(buf, "%u\n", limits->no_turbo);
->  
-> +	mutex_unlock(&intel_pstate_driver_lock);
-> +
->  	return ret;
->  }
->  
-> @@ -1099,6 +1131,13 @@ static ssize_t store_no_turbo(struct kob
->  	if (ret != 1)
->  		return -EINVAL;
->  
-> +	mutex_lock(&intel_pstate_driver_lock);
-> +
-> +	if (!driver_registered) {
-> +		mutex_unlock(&intel_pstate_driver_lock);
-> +		return -EAGAIN;
-> +	}
-> +
->  	mutex_lock(&intel_pstate_limits_lock);       if (limits-
-> >turbo_disabled) {
->                 pr_warn("Turbo disabled by BIOS or unavailable on
-> processor\n");
->                 mutex_unlock(&intel_pstate_limits_lock);
-Also
-		mutex_unlock(&intel_pstate_driver_lock);> 
-
->                 return -EPERM;
->         }
->  
->  	update_turbo_state();
-> @@ -1114,6 +1153,8 @@ static ssize_t store_no_turbo(struct kob
->  
->  	intel_pstate_update_policies();
->  
-> +	mutex_unlock(&intel_pstate_driver_lock);
-> +
->  	return count;
->  }
-> 
+Doh, I went through the log and thought I saw 'tested: yes' being used 
+previously. Want me to resend?
 
 Thanks,
-Srinivas
-
+Chris Lapa
