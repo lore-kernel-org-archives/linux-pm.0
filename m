@@ -1,61 +1,145 @@
 From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v4 00/10] power: supply: bq27xxx: implement individual chip revision support
-Date: Tue, 10 Jan 2017 16:25:28 +1100
-Message-ID: <1484025938-114133-1-git-send-email-chris@lapa.com.au>
+Subject: [PATCH v4 02/10] power: supplies: bq27xxx: adds specific support for bq27500/1 revision.
+Date: Tue, 10 Jan 2017 16:25:30 +1100
+Message-ID: <1484025938-114133-3-git-send-email-chris@lapa.com.au>
 References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
+ <1484025938-114133-1-git-send-email-chris@lapa.com.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:34952 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S936302AbdAJFZr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jan 2017 00:25:47 -0500
-Received: by mail-pf0-f193.google.com with SMTP id f144so8123509pfa.2
-        for <linux-pm@vger.kernel.org>; Mon, 09 Jan 2017 21:25:46 -0800 (PST)
-In-Reply-To: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1484025938-114133-1-git-send-email-chris@lapa.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
 To: pali.rohar@gmail.com, afd@ti.com, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Chris Lapa <chris@lapa.com.au>
+List-Id: linux-pm@vger.kernel.org
 
 From: Chris Lapa <chris@lapa.com.au>
 
-This patch series renames the patch subject prefix to 'power: supply: bq27xxx'
-and also rebases onto sre/linux-power-supply/for-next.
+This commit adds the BQ27500 chip definition to specifically match the
+bq27500/1 functionality as described in the datasheet.
 
-It also drops the overtemp cleanup patch from v3 as it has already been applied.
+tested: no
 
-Otherwise the patch content is the same functionally as the v3 series.
+Signed-off-by: Chris Lapa <chris@lapa.com.au>
+Acked-by: Pali Rohár <pali.rohar@gmail.com>
+Reviewed-by: Andrew F. Davis <afd@ti.com>
+---
+ drivers/power/supply/bq27xxx_battery.c     | 27 ++++++++++++++++-----------
+ drivers/power/supply/bq27xxx_battery_i2c.c |  2 ++
+ include/linux/power/bq27xxx_battery.h      |  1 +
+ 3 files changed, 19 insertions(+), 11 deletions(-)
 
-Chris Lapa (10):
-  power: supplies: bq27xxx: rename BQ27500 allow for deprecation in
-    future.
-  power: supplies: bq27xxx: adds specific support for bq27500/1
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27510-g1
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27510-g2
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27510-g3
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27520-g1
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27520-g2
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27520-g3
-    revision.
-  power: supplies: bq27xxx: adds specific support for bq27520-g4
-    revision.
-  power: supplies: bq27xxx: adds device tree binding documentation.
-
- .../devicetree/bindings/power/supply/bq27xxx.txt   |  36 +++
- drivers/power/supply/bq27xxx_battery.c             | 304 ++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c         |  22 +-
- include/linux/power/bq27xxx_battery.h              |  11 +-
- 4 files changed, 363 insertions(+), 10 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index a86417c..bf0dbf5 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -164,24 +164,24 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+ 		[BQ27XXX_REG_DCAP] = 0x3c,
+ 		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
+ 	},
+-	[BQ27510] = {
++	[BQ27500] = {
+ 		[BQ27XXX_REG_CTRL] = 0x00,
+ 		[BQ27XXX_REG_TEMP] = 0x06,
+-		[BQ27XXX_REG_INT_TEMP] = 0x28,
++		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
+ 		[BQ27XXX_REG_VOLT] = 0x08,
+ 		[BQ27XXX_REG_AI] = 0x14,
+ 		[BQ27XXX_REG_FLAGS] = 0x0a,
+ 		[BQ27XXX_REG_TTE] = 0x16,
+-		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+-		[BQ27XXX_REG_TTES] = 0x1a,
+-		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTF] = 0x18,
++		[BQ27XXX_REG_TTES] = 0x1c,
++		[BQ27XXX_REG_TTECP] = 0x26,
+ 		[BQ27XXX_REG_NAC] = 0x0c,
+ 		[BQ27XXX_REG_FCC] = 0x12,
+-		[BQ27XXX_REG_CYCT] = 0x1e,
+-		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+-		[BQ27XXX_REG_SOC] = 0x20,
+-		[BQ27XXX_REG_DCAP] = 0x2e,
+-		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_CYCT] = 0x2a,
++		[BQ27XXX_REG_AE] = 0x22,
++		[BQ27XXX_REG_SOC] = 0x2c,
++		[BQ27XXX_REG_DCAP] = 0x3c,
++		[BQ27XXX_REG_AP] = 0x24,
+ 	},
+ 	[BQ27530] = {
+ 		[BQ27XXX_REG_CTRL] = 0x00,
+@@ -321,7 +321,7 @@ static enum power_supply_property bq275xx_battery_props[] = {
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ };
+ 
+-static enum power_supply_property bq27510_battery_props[] = {
++static enum power_supply_property bq27500_battery_props[] = {
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_PRESENT,
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+@@ -330,11 +330,14 @@ static enum power_supply_property bq27510_battery_props[] = {
+ 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+ 	POWER_SUPPLY_PROP_TEMP,
+ 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
++	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+ 	POWER_SUPPLY_PROP_TECHNOLOGY,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL,
+ 	POWER_SUPPLY_PROP_CHARGE_NOW,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_CYCLE_COUNT,
++	POWER_SUPPLY_PROP_ENERGY_NOW,
++	POWER_SUPPLY_PROP_POWER_AVG,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ };
+@@ -422,6 +425,7 @@ static struct {
+ 	BQ27XXX_PROP(BQ27000, bq27000_battery_props),
+ 	BQ27XXX_PROP(BQ27010, bq27010_battery_props),
+ 	BQ27XXX_PROP(BQ275XX, bq275xx_battery_props),
++	BQ27XXX_PROP(BQ27500, bq27500_battery_props),
+ 	BQ27XXX_PROP(BQ27530, bq27530_battery_props),
+ 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
+ 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
+@@ -675,6 +679,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+ {
+ 	switch (di->chip) {
+ 	case BQ275XX:
++	case BQ27500:
+ 	case BQ27541:
+ 	case BQ27545:
+ 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 762d96e..a01b35d 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -151,6 +151,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+ 	{ "bq27500", BQ275XX },
+ 	{ "bq27510", BQ275XX },
+ 	{ "bq27520", BQ275XX },
++	{ "bq27500-1", BQ27500 },
+ 	{ "bq27530", BQ27530 },
+ 	{ "bq27531", BQ27530 },
+ 	{ "bq27541", BQ27541 },
+@@ -173,6 +174,7 @@ static const struct of_device_id bq27xxx_battery_i2c_of_match_table[] = {
+ 	{ .compatible = "ti,bq27500" },
+ 	{ .compatible = "ti,bq27510" },
+ 	{ .compatible = "ti,bq27520" },
++	{ .compatible = "ti,bq27500-1" },
+ 	{ .compatible = "ti,bq27530" },
+ 	{ .compatible = "ti,bq27531" },
+ 	{ .compatible = "ti,bq27541" },
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index c452b94..7d2a415 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -5,6 +5,7 @@ enum bq27xxx_chip {
+ 	BQ27000 = 1, /* bq27000, bq27200 */
+ 	BQ27010, /* bq27010, bq27210 */
+ 	BQ275XX, /* bq27500, bq27510, bq27520 deprecated alias */
++	BQ27500, /* bq27500/1 */
+ 	BQ27530, /* bq27530, bq27531 */
+ 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+ 	BQ27545, /* bq27545 */
 -- 
 2.1.4
-
