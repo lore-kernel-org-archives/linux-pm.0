@@ -1,116 +1,80 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [Resend][PATCH 2/3] PM / core / docs: Convert sleep states API
- document to reST
-Date: Tue, 10 Jan 2017 02:41:02 +0100
-Message-ID: <20170110014102.GA23533@wunner.de>
-References: <17467778.bsRBpnPicc@aspire.rjw.lan>
- <3016250.oKr138Ysat@aspire.rjw.lan>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v3 00/11]  power: supply: bq275xx: implement individual
+ chip revision support
+Date: Tue, 10 Jan 2017 03:49:28 +0100
+Message-ID: <20170110024928.khol3nsqnvogqtht@earth>
+References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
+ <1483922865-96321-1-git-send-email-chris@lapa.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="22ipyufpnze27zy4"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:50830 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932584AbdAJCts (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 9 Jan 2017 21:49:48 -0500
 Content-Disposition: inline
-In-Reply-To: <3016250.oKr138Ysat@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+In-Reply-To: <1483922865-96321-1-git-send-email-chris@lapa.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hi Rafael,
-
-I've perused devices.rst up until section "Entering System Suspend"
-so far, about half of the document.  Here are my comments, I'll read
-the remainder of the document later.
+To: Chris Lapa <chris@lapa.com.au>
+Cc: pali.rohar@gmail.com, afd@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
-On Fri, Jan 06, 2017 at 02:41:38AM +0100, Rafael J. Wysocki wrote:
-> +.. |struct| replace:: :c:type:`struct`
-[...]
-> +|struct| :c:type:`dev_pm_ops` defined in :file:`include/linux/pm.h`.
+--22ipyufpnze27zy4
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I don't know what the proper markup for structs is, but this renders
-differently than what the DRM folks use, e.g.:
+Hi Chris,
 
-:c:type:`struct drm_driver <drm_driver>`
+On Mon, Jan 09, 2017 at 11:47:34AM +1100, Chris Lapa wrote:
+> This patch series separates out support for each revision chip in
+> the bq27500, bq27510 and bq27520 family. Each revision has enough
+> register address changes to justify individual register mappings.
+>=20
+> The series also cleans up the large overtemp if statement to
+> improve readability and adds devicetree documentation for all
+> the support bq27xxx series chips.
+>=20
+> I had a chance to test the deprecated bq27500/10/20 support which still
+> behaves the same. I also tested the new specific bq27510g3 support
+> on a custom board I have here and it worked correctly.
 
+I tried to queue the patches, but they do not apply on top of
+power-supply's for-next branch [0]. I applied the first one, but
+please do the rebasing work for the other patches and resend.
+While being at it you can add the following to all patches:
 
-> +++ linux-pm/Documentation/driver-api/pm/index.rst
-> @@ -0,0 +1,15 @@
-> +=======================
-> +Device Power Management
-> +=======================
-> +
-> +.. toctree::
-> +
-> +   types
-> +   devices
+Acked-by: Pali Roh=E1r <pali.rohar@gmail.com>
+Reviewed-by: Andrew F. Davis <afd@ti.com>
 
-I'd invert the order of these two, seems better didactically to have
-the prose introduction in devices.rst first, then the gory details
-in types.rst.
+Ah and last but not least: Please use the following as
+patch subject prefix: "power: supply: bq27xxx:"
 
+[0] https://git.kernel.org/cgit/linux/kernel/git/sre/linux-power-supply.git=
+/?h=3Dfor-next
 
-> +There also is a deprecated "old" or "legacy" interface for power management
-> +operations available at least for some subsystems.  This approach does not use
-> +|struct| :c:type`dev_pm_ops` objects and it is suitable only for implementing
+-- Sebastian
 
-~~~~~~~~~~~~~~~~~~~^
-                   missing colon, renders incorrectly
+--22ipyufpnze27zy4
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
-> +:c:member`power.wakeup` field is a pointer to an object of type
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh0S7UACgkQ2O7X88g7
++ppD8g//Xda51NpWc04aoJC/cQjP5IQV9CeTeWPgAO7CNBLJO9JSfKzuF041e/kH
+fUpx2VP+qcA3vTEjN/fTkGwMZvnSBun4xsfccerenrnRshvKElHHd/XmKTmo5gZG
+ejZ2WqCln0PUCKHga5bH+e2G0Hrqlg5PWzu0onb0vLbTJSaUnBhFV8eFRrzaqMsS
+r89h6gAqt596QAfK/eYr3DCe7a7tHwZbwEnCKbMvmeaV59yP/ikuYXGLDBp/g8xG
+MH8sTFbE7s0F+/hqzPJLpq3C4r60UEVLFTff0esCiiK0/eyVtb9SV2JjKc/8UgYy
+HmOH/b2Gs9l9do/cr86VHoZ/OPn8GAkiSTpj5NeB1Qtx10oxRNFyRNMDieSOrZN+
+npzri+i3E0LJwHJAy5JXMFCaM7xGT3QC3wNpm1vE5NuxOjRJ3ihIAT2rprOz9DQI
+mbm1AWhOG6IBxk9W97mItE4CbLDespEKk+qHZzz6DZJknQyHSiyGkwt+acC1bc2B
+7Y/118KkK1CbUFB1/WXAPSvGeWprhUo7YCqMkXoe4MQ8UGgmwTtI93oQMAOaxh4V
+Devu6dmkMJdnqQt31+xhEg6GXRaz3iu00FPT7iFIs38/Q4Y8T9iMCtTJlrHp19Y4
+Tc9HbZk2MsbpiGoLm4q+453y6DZam8unygwrCK6LmNKDojpkOl4=
+=5O46
+-----END PGP SIGNATURE-----
 
-~~~~~~~~~~~~^
-            missing colon, renders incorrectly
-
-
-> +Call Sequence Guarantees
-> +------------------------
-> +
-> +To ensure that bridges and similar links needing to talk to a device are
-> +available when the device is suspended or resumed, the device hierarchy is
-> +walked in a bottom-up order to suspend devices.  A top-down order is
-> +used to resume those devices.
-> +
-> +The ordering of the device hierarchy is defined by the order in which devices
-> +get registered:  a child can never be registered, probed or resumed before
-> +its parent; and can't be removed or suspended after that parent.
-> +
-> +The policy is that the device hierarchy should match hardware bus topology.
-> +[Or at least the control bus, for devices which use multiple busses.]
-> +In particular, this means that a device registration may fail if the parent of
-> +the device is suspending (i.e. has been chosen by the PM core as the next
-> +device to suspend) or has already suspended, as well as after all of the other
-> +devices have been suspended.  Device drivers must be prepared to cope with such
-> +situations.
-
-Hm, "device registration may fail if the parent of the device is
-suspending".  Why would a device be registered at all during the
-system sleep process?  My understanding was that new devices are not
-*allowed* to be registered during system sleep.  We sort of enforce that
-in the driver core since 4.5 in so far as newly registered devices are
-not bound until after ->complete.  (So there's no hard rule that
-registering new devices is forbidden, but binding drivers is postponed.)
-
-Confusingly, device_resume() contains a comment suggesting that
-registering new children is already allowed from ->resume.
-
-        /*
-         * This is a fib.  But we'll allow new children to be added below
-         * a resumed device, even if the device hasn't been completed yet.
-         */
-        dev->power.is_prepared = false;
-
-My understanding was also that the purpose of the ->prepare hook is to
-disable recognition and registration of new child devices, e.g. by
-disabling hotplug interrupts.  For this reason, the device hierarchy is
-walked top-down during ->prepare, the opposite of the following ->suspend
-hooks.  Since ->complete mirrors ->prepare and is supposed to undo
-its effects (i.e. re-enable registration of children), it walks the
-device hierarchy bottom-up (which again is the opposite direction of
-the preceding ->resume hooks.  That's what Alan Stern told me in a mailing
-list conversation last year, it might be worth to add the information to
-this paragraph.
-
-Thanks,
-
-Lukas
+--22ipyufpnze27zy4--
