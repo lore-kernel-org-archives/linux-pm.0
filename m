@@ -1,93 +1,65 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 01/10] power: supplies: bq27xxx: rename BQ27500 allow
- for deprecation in future.
-Date: Wed, 11 Jan 2017 00:29:11 +0100
-Message-ID: <20170110232910.62ec45a2obg43zq4@earth>
-References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
- <1484025938-114133-1-git-send-email-chris@lapa.com.au>
- <1484025938-114133-2-git-send-email-chris@lapa.com.au>
- <20170110085825.GA11770@pali>
- <a7f219cf-8d53-867a-89df-93d603422643@lapa.com.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="clhkg3dnm3cq6hti"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:51810 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1757379AbdAJX3T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Jan 2017 18:29:19 -0500
-Content-Disposition: inline
-In-Reply-To: <a7f219cf-8d53-867a-89df-93d603422643@lapa.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+From: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 0/7] mfd/iio: move the AB8500 GPADC driver to IIO
+Date: Wed, 11 Jan 2017 00:47:38 +0100
+Message-ID: <20170110234745.29691-1-linus.walleij@linaro.org>
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: Mboumba Cedric Madianga <cedric.madianga-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chris Lapa <chris@lapa.com.au>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, afd@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
+The AB8500 GPADC driver in MFD was created and merged before IIO
+existed, but it was what I was basing my review comments on when
+reviewing the IIO subsystem inclusion into the main kernel tree
+from staging. I asked for the in-kernel ADC channel mechanism
+and I guess I promised to make use of it.
 
---clhkg3dnm3cq6hti
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As usual that is the kind of empty promise that you never come
+around to actually fixing up. But eventually I did.
 
-Hi,
+This patch set augments all consumers of the AB8500 GPADC to use
+IIO channels, moves the driver to iio/adc, augments the driver to
+register proper IIO ADC channels. Finally we add the required nodes
+to the Ux500 DTS and connect it all up.
 
-On Wed, Jan 11, 2017 at 09:25:01AM +1100, Chris Lapa wrote:
-> On 10/1/17 7:58 pm, Pali Roh=E1r wrote:
-> > On Tuesday 10 January 2017 16:25:29 Chris Lapa wrote:
-> > > From: Chris Lapa <chris@lapa.com.au>
-> > >=20
-> > > The BQ275XX definition exists only to satisfy backwards compatibility.
-> > >=20
-> > > tested: yes
-> >=20
-> > Instead "tested: yes" we use: "Tested-by: name <email>" line.
-> >=20
-> > > Signed-off-by: Chris Lapa <chris@lapa.com.au>
-> > > Acked-by: Pali Roh=E1r <pali.rohar@gmail.com>
-> > > Reviewed-by: Andrew F. Davis <afd@ti.com>
-> >=20
->=20
-> Doh, I went through the log and thought I saw 'tested: yes' being used
-> previously. Want me to resend?
+We delete the custom AB8500 GPADC header with its cross-call
+functions and replace this mechanism with IIO's consumer API.
 
-If a respin is needed, please fix it. Also the patches still use
-"supplies" instead of "supply" in the patch subject. I would have
-fixed this while applying, but this (PATCH 1/10) actually looks
-fishy to me:
+The biggest win, as it turns out, is being able to delete a whole
+slew of debugfs files as these are fulfilled with standard
+IIO ADC sysfs files.
 
-> -       { "bq27500", BQ27500 },
-> -       { "bq27510", BQ27510 },
-> -       { "bq27520", BQ27510 },
-> +       { "bq27500", BQ275XX },
-> +       { "bq27510", BQ275XX },
-> +       { "bq27520", BQ275XX },
+I don't know the best merge path for this but suspect that as
+usual Lee can merge them all and provide an immutable branch to
+the other subsystems, which he has lots of routine in handling.
+The final DTS patch can probably be merged separately through
+ARM SoC.
 
-Previously bq27500 and bq27510/bq27520 had different type ids,
-while after the patch both use the same. The patch description
-does not mention why this is ok and it actually looks incorrect.
-I guess we need to introduce BQ2750X and BQ2751X for backwards
-compatibility instead?
+Linus Walleij (7):
+  power: supply: ab8500_btemp: convert to IIO ADC
+  power: supply: ab8500_charger: convert to IIO ADC
+  power: supply: ab8500_fg: convert to IIO ADC
+  hwmon: ab8500: convert to IIO ADC
+  mfd: ab8500: augment DT bindings
+  mfd/iio: move the AB8500 GPADC to IIO
+  ARM: dts: ux500: declare GPADC IIO ADC channels
 
--- Sebastian
+ Documentation/devicetree/bindings/mfd/ab8500.txt |  119 ++
+ arch/arm/boot/dts/ste-dbx5x0.dtsi                |  102 +-
+ drivers/hwmon/ab8500.c                           |   65 +-
+ drivers/iio/adc/Kconfig                          |    7 +
+ drivers/iio/adc/Makefile                         |    1 +
+ drivers/{mfd => iio/adc}/ab8500-gpadc.c          |  469 ++++---
+ drivers/mfd/Kconfig                              |    7 -
+ drivers/mfd/Makefile                             |    1 -
+ drivers/mfd/ab8500-debugfs.c                     | 1448 +++-------------------
+ drivers/power/supply/ab8500_btemp.c              |   41 +-
+ drivers/power/supply/ab8500_charger.c            |   78 +-
+ drivers/power/supply/ab8500_fg.c                 |   23 +-
+ include/linux/mfd/abx500/ab8500-gpadc.h          |   75 --
+ 13 files changed, 874 insertions(+), 1562 deletions(-)
+ rename drivers/{mfd => iio/adc}/ab8500-gpadc.c (76%)
+ delete mode 100644 include/linux/mfd/abx500/ab8500-gpadc.h
 
---clhkg3dnm3cq6hti
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh1bkQACgkQ2O7X88g7
-+primxAAqdQSlVtHyv3cedjZZzmcn77KTAKsXQ4hY1OyZ3d2jOFEInxVB+AxZKvq
-NsmqvJ2urT+m9wcKQr/nowq8J4w0PRCY9Ek/6sUDbFOkflvrB2849TZ/OaMWw/Dr
-0I5Z8HBGF4DpOKeQJaE++NA18Y0gMK+2uZQf1KL4D6aqG0p8eucbIHTgyMK+cgpB
-aml+vYS//sFQnCyCVL0ten3QRiLjHb6IkYHMcc7LHvZRyLRa4Sc+FQpMNQ7mmCNs
-nTMTDMO+KW49P48YycAeRxkJRzGjGrLTW0L6+k+7xr41X3jgFuVjfpdFkXMiCPoY
-X1W6NjqAC+79AS9u83nfA56D5qbshD6+X3hYaUPy/T0K00DBYsPoPVzONn/6F1tt
-sEPKdZh6QgnPsdUetGN/d5i5EJndI3aAtb4JaSV5hyzd096ChvHu/ydnGE/N+cC4
-uL792g0D9RHy5S786AD8TzTDOQnR98gye88kTBk6OGbgI6DF6PnmMe/OtKjm0d/S
-bAwmdzzFMuuBpZ5CMW6ECp2wv0LhWf2w3Xgaa3k2ESqy4vB53w908EdEaDq5kqRZ
-aJ8VS3E7Z8WvNWUS2snlKlcR4qW5A0P8gOxii/omTE8ibm6zPyA51qlnIK/KCZoj
-jpV+vkYe6zbwsu1sFwGOHbNwoCyr75R1zjSsM3NoTRVmzMirpcc=
-=fbTb
------END PGP SIGNATURE-----
-
---clhkg3dnm3cq6hti--
+-- 
+2.9.3
