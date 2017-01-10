@@ -1,34 +1,47 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v1 1/3] dt: bindings: add thermal device driver for zx2967
-Date: Mon, 9 Jan 2017 23:35:38 -0600
-Message-ID: <20170110053538.ouosxal5qecz3zmq@rob-hp-laptop>
-References: <1483767488-19778-1-git-send-email-baoyou.xie@linaro.org>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v2 1/4] dmaengine: pl330: remove pdata based initialization
+Date: Tue, 10 Jan 2017 07:55:27 +0100
+Message-ID: <c12cb9e0-ce2f-662a-2b3b-12b4a2209b74@samsung.com>
+References: <1483970598-6191-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170109140325eucas1p2674704b2505517ee532284c58c8a64d1@eucas1p2.samsung.com>
+ <1483970598-6191-2-git-send-email-m.szyprowski@samsung.com>
+ <20170109181511.37da3mslzdiq4uhr@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1483767488-19778-1-git-send-email-baoyou.xie@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Baoyou Xie <baoyou.xie@linaro.org>
-Cc: mark.rutland@arm.com, jun.nie@linaro.org, akpm@linux-foundation.org, geert+renesas@glider.be, linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, xie.baoyou@zte.com.cn, linux-kernel@vger.kernel.org, edubezval@gmail.com, devicetree@vger.kernel.org, chen.chaokai@zte.com.cn, linux-arm-kernel@lists.infradead.org, wang.qiang01@zte.com.cn, rui.zhang@intel.com, mchehab@kernel.org, shawnguo@kernel.org, davem@davemloft.net, linux@roeck-us.net
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:44578 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750991AbdAJGzf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jan 2017 01:55:35 -0500
+In-reply-to: <20170109181511.37da3mslzdiq4uhr@kozik-lap>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 
-On Sat, Jan 07, 2017 at 01:38:06PM +0800, Baoyou Xie wrote:
-> This patch adds dt-binding documentation for zx2967 family thermal sensor.
-> 
-> Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
-> ---
->  .../devicetree/bindings/thermal/zx2967-thermal.txt | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
+Hi Krzysztof,
 
-Acked-by: Rob Herring <robh@kernel.org>
+
+On 2017-01-09 19:15, Krzysztof Kozlowski wrote:
+> On Mon, Jan 09, 2017 at 03:03:15PM +0100, Marek Szyprowski wrote:
+>> This driver is now used only on platforms which support device tree, so
+>> it is safe to remove legacy platform data based initialization code.
+>>
+>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>> ---
+>>   drivers/dma/pl330.c        | 30 ++++++++----------------------
+>>   include/linux/amba/pl330.h | 35 -----------------------------------
+> Nope:
+> $ git grep pl330.h
+> arch/arm/plat-samsung/devs.c:#include <linux/amba/pl330.h>
+
+Huh... This seems to be a leftover from a really old code, because pl330
+devices have been removed from devs.c quite a long time ago. I will fix
+this in v3.
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
