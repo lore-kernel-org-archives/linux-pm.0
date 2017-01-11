@@ -1,113 +1,51 @@
-From: Stafford Horne <shorne@gmail.com>
-Subject: Re: [PATCH v2 2/6] cpupower: Restore format of frequency-info limit
-Date: Thu, 12 Jan 2017 00:20:11 +0900
-Message-ID: <20170111152011.GC25986@lianli.shorne-pla.net>
-References: <cover.1484146515.git.shorne@gmail.com>
- <aa5a9bd71838802d6410155295796fec9214928d.1484146515.git.shorne@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/3] cpu: expose pm_qos_resume_latency for each cpu
+Date: Wed, 11 Jan 2017 19:40:54 +0100
+Message-ID: <CAJZ5v0hG6UgKDObTaOWy08EhY9uZh9o4=pRW_zjSAbY4c_u5Vw@mail.gmail.com>
+References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
+ <1483630187-29622-3-git-send-email-alex.shi@linaro.org> <20170111080927.GA6689@kroah.com>
+ <3344ad77-62db-830f-94db-f4bdd7257478@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34948 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934672AbdAKPUO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 10:20:14 -0500
-Content-Disposition: inline
-In-Reply-To: <aa5a9bd71838802d6410155295796fec9214928d.1484146515.git.shorne@gmail.com>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35670 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753018AbdAKSkz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 13:40:55 -0500
+In-Reply-To: <3344ad77-62db-830f-94db-f4bdd7257478@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuah@kernel.org>, Darren Hart <dvhart@linux.intel.com>
-Cc: Bamvor Jian Zhang <bamvor.zhangjian@linaro.org>, linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.com>, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
+To: Alex Shi <alex.shi@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, open list <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi All,
+On Wed, Jan 11, 2017 at 3:33 PM, Alex Shi <alex.shi@linaro.org> wrote:
+>
+>>> >  #include "base.h"
+>>> >
+>>> > @@ -376,6 +377,9 @@ int register_cpu(struct cpu *cpu, int num)
+>>> >
+>>> >    per_cpu(cpu_sys_devices, num) = &cpu->dev;
+>>> >    register_cpu_under_node(num, cpu_to_node(num));
+>>> > +#ifdef CONFIG_CPU_IDLE_GOV_MENU
+>>> > +  dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
+>>> > +#endif
+>> No way to do this without the #ifdef?  That's really not recommended for
+>> .c code :(
+>>
+>
+> Hi Greg,
+>
+> Thanks for comments!
+>
+> The function dev_pm_qos_expose_latency_limit() is null if no CONFIG_PM.
+> So when CONFIG_PM enabled, may we could consider the cpu idle is also
+> wanted. In this assumption the #ifdef could be removed. If user want to
+> use this feature, she/he should understand the feature only work on menu
+> gov only currently. So consider this, I guess we could remove this
+> #ifdef. :)
 
-Please ignore this, its a dup of the patch with the same name.
+But instead of putting the #ifdef into the function body, you can use
+a wrapper function defined to be empty for CONFIG_PM unset.
 
-I had an slight issue with reordering patches and this got send out.
-
-On Thu, Jan 12, 2017 at 12:11:15AM +0900, Stafford Horne wrote:
-> The intel_pstate kselftest expects that the output of
-> `cpupower frequency-info -l | tail -1 | awk ' { print $1 } '`
-> to get frequency limits.  This does not work after the following two
-> changes.
-> 
->  - 562e5f1a3: rework the "cpupower frequency-info" command
->    (Jacob Tanenbaum) removed parsable limit output
->  - ce512b840: Do not analyse offlined cpus
->    (Thomas Renninger) added newline to break limit parsing more
-> 
-> This change preserves human readable output if wanted as well as
-> parsable output for scripts/tests.
-> 
-> Cc: Thomas Renninger <trenn@suse.com>
-> Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Stafford Horne <shorne@gmail.com>
-> ---
->  tools/power/cpupower/utils/cpufreq-info.c | 21 ++++++++++++---------
->  1 file changed, 12 insertions(+), 9 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-> index 590d12a..3e701f0 100644
-> --- a/tools/power/cpupower/utils/cpufreq-info.c
-> +++ b/tools/power/cpupower/utils/cpufreq-info.c
-> @@ -285,20 +285,24 @@ static int get_freq_hardware(unsigned int cpu, unsigned int human)
->  
->  /* --hwlimits / -l */
->  
-> -static int get_hardware_limits(unsigned int cpu)
-> +static int get_hardware_limits(unsigned int cpu, unsigned int human)
->  {
->  	unsigned long min, max;
->  
-> -	printf(_("  hardware limits: "));
->  	if (cpufreq_get_hardware_limits(cpu, &min, &max)) {
->  		printf(_("Not Available\n"));
->  		return -EINVAL;
->  	}
->  
-> -	print_speed(min);
-> -	printf(" - ");
-> -	print_speed(max);
-> -	printf("\n");
-> +	if (human) {
-> +		printf(_("  hardware limits: "));
-> +		print_speed(min);
-> +		printf(" - ");
-> +		print_speed(max);
-> +		printf("\n");
-> +	} else {
-> +		printf("%lu %lu\n", min, max);
-> +	}
->  	return 0;
->  }
->  
-> @@ -456,7 +460,7 @@ static void debug_output_one(unsigned int cpu)
->  	get_related_cpus(cpu);
->  	get_affected_cpus(cpu);
->  	get_latency(cpu, 1);
-> -	get_hardware_limits(cpu);
-> +	get_hardware_limits(cpu, 1);
->  
->  	freqs = cpufreq_get_available_frequencies(cpu);
->  	if (freqs) {
-> @@ -622,7 +626,7 @@ int cmd_freq_info(int argc, char **argv)
->  			ret = get_driver(cpu);
->  			break;
->  		case 'l':
-> -			ret = get_hardware_limits(cpu);
-> +			ret = get_hardware_limits(cpu, human);
->  			break;
->  		case 'w':
->  			ret = get_freq_hardware(cpu, human);
-> @@ -639,7 +643,6 @@ int cmd_freq_info(int argc, char **argv)
->  		}
->  		if (ret)
->  			return ret;
-> -		printf("\n");
->  	}
->  	return ret;
->  }
-> -- 
-> 2.9.3
-> 
+Thanks,
+Rafael
