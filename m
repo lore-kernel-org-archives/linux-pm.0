@@ -1,38 +1,99 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] power: supply: axp20x_usb_power: fix 64-bit build warning
-Date: Wed, 11 Jan 2017 15:51:55 +0100
-Message-ID: <20170111145211.746189-1-arnd@arndb.de>
+From: Stafford Horne <shorne@gmail.com>
+Subject: [PATCH v2 2/6] cpupower: Restore format of frequency-info limit
+Date: Thu, 12 Jan 2017 00:11:15 +0900
+Message-ID: <aa5a9bd71838802d6410155295796fec9214928d.1484146515.git.shorne@gmail.com>
+References: <cover.1484147115.git.shorne@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1484147115.git.shorne@gmail.com>
+In-Reply-To: <cover.1484146515.git.shorne@gmail.com>
+References: <cover.1484146515.git.shorne@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Chen-Yu Tsai <wens@csie.org>, Quentin Schulz <quentin.schulz@free-electrons.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Shuah Khan <shuah@kernel.org>, Darren Hart <dvhart@linux.intel.com>
+Cc: Bamvor Jian Zhang <bamvor.zhangjian@linaro.org>, linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org, Stafford Horne <shorne@gmail.com>, Thomas Renninger <trenn@suse.com>, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Casting a pointer to 'int' is not always valid:
+The intel_pstate kselftest expects that the output of
+`cpupower frequency-info -l | tail -1 | awk ' { print $1 } '`
+to get frequency limits.  This does not work after the following two
+changes.
 
-drivers/power/supply/axp20x_usb_power.c: In function 'axp20x_usb_power_probe':
-drivers/power/supply/axp20x_usb_power.c:297:21: error: cast from pointer to integer of different size [-Werror=pointer-to-int-cast]
+ - 562e5f1a3: rework the "cpupower frequency-info" command
+   (Jacob Tanenbaum) removed parsable limit output
+ - ce512b840: Do not analyse offlined cpus
+   (Thomas Renninger) added newline to break limit parsing more
 
-This makes the code use uintptr_t explicitly.
+This change preserves human readable output if wanted as well as
+parsable output for scripts/tests.
 
-Fixes: 0dcc70ca8644 ("power: supply: axp20x_usb_power: use of_device_id data field instead of device_is_compatible")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Thomas Renninger <trenn@suse.com>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Stafford Horne <shorne@gmail.com>
 ---
- drivers/power/supply/axp20x_usb_power.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/power/cpupower/utils/cpufreq-info.c | 21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index 1bcb02551e02..ecad8b6f9b84 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -294,7 +294,7 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 	if (!power)
- 		return -ENOMEM;
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index 590d12a..3e701f0 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -285,20 +285,24 @@ static int get_freq_hardware(unsigned int cpu, unsigned int human)
  
--	power->axp20x_id = (int)of_device_get_match_data(&pdev->dev);
-+	power->axp20x_id = (uintptr_t)of_device_get_match_data(&pdev->dev);
+ /* --hwlimits / -l */
  
- 	power->np = pdev->dev.of_node;
- 	power->regmap = axp20x->regmap;
+-static int get_hardware_limits(unsigned int cpu)
++static int get_hardware_limits(unsigned int cpu, unsigned int human)
+ {
+ 	unsigned long min, max;
+ 
+-	printf(_("  hardware limits: "));
+ 	if (cpufreq_get_hardware_limits(cpu, &min, &max)) {
+ 		printf(_("Not Available\n"));
+ 		return -EINVAL;
+ 	}
+ 
+-	print_speed(min);
+-	printf(" - ");
+-	print_speed(max);
+-	printf("\n");
++	if (human) {
++		printf(_("  hardware limits: "));
++		print_speed(min);
++		printf(" - ");
++		print_speed(max);
++		printf("\n");
++	} else {
++		printf("%lu %lu\n", min, max);
++	}
+ 	return 0;
+ }
+ 
+@@ -456,7 +460,7 @@ static void debug_output_one(unsigned int cpu)
+ 	get_related_cpus(cpu);
+ 	get_affected_cpus(cpu);
+ 	get_latency(cpu, 1);
+-	get_hardware_limits(cpu);
++	get_hardware_limits(cpu, 1);
+ 
+ 	freqs = cpufreq_get_available_frequencies(cpu);
+ 	if (freqs) {
+@@ -622,7 +626,7 @@ int cmd_freq_info(int argc, char **argv)
+ 			ret = get_driver(cpu);
+ 			break;
+ 		case 'l':
+-			ret = get_hardware_limits(cpu);
++			ret = get_hardware_limits(cpu, human);
+ 			break;
+ 		case 'w':
+ 			ret = get_freq_hardware(cpu, human);
+@@ -639,7 +643,6 @@ int cmd_freq_info(int argc, char **argv)
+ 		}
+ 		if (ret)
+ 			return ret;
+-		printf("\n");
+ 	}
+ 	return ret;
+ }
 -- 
-2.9.0
+2.9.3
