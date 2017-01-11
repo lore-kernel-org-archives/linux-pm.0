@@ -1,94 +1,141 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: [PATCH v5 02/11] power: supply: bq27xxx: rename BQ27510 allow for deprecation in future.
-Date: Wed, 11 Jan 2017 12:44:39 +1100
-Message-ID: <1484099088-452-3-git-send-email-chris@cpdesign.com.au>
-References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
- <1484099088-452-1-git-send-email-chris@cpdesign.com.au>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1484099088-452-1-git-send-email-chris@cpdesign.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: pali.rohar@gmail.com, afd@ti.com, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Chris Lapa <chris@lapa.com.au>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC][PATCH 1/2] cpufreq: intel_pstate: Expose global sysfs
+ attributes upfront
+Date: Wed, 11 Jan 2017 03:32:44 +0100
+Message-ID: <CAJZ5v0jhqc0AQjoQC+tF1+0_D_0xpJRQ2n9o8+vpi84EwTsaOQ@mail.gmail.com>
+References: <21825845.nN3skUNMsO@aspire.rjw.lan> <2389828.jxMzLa8mev@aspire.rjw.lan>
+ <1484081335.28749.11.camel@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:33780 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758083AbdAKCcp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Jan 2017 21:32:45 -0500
+In-Reply-To: <1484081335.28749.11.camel@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-From: Chris Lapa <chris@lapa.com.au>
+On Tue, Jan 10, 2017 at 9:48 PM, Srinivas Pandruvada
+<srinivas.pandruvada@linux.intel.com> wrote:
+> On Thu, 2017-01-05 at 02:51 +0100, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Expose the intel_pstate's global sysfs attributes before registering
+>> the driver to prepare for the addition of an attribute that also will
+>> have to work if the driver is not registered.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>
+>
+> [...]
+>
+>>  #ifdef CONFIG_ACPI
+>> @@ -1055,12 +1058,22 @@ static ssize_t show_turbo_pct(struct kob
+>>       int total, no_turbo, turbo_pct;
+>>       uint32_t turbo_fp;
+>>
+>> +     mutex_lock(&intel_pstate_driver_lock);
+>> +
+>> +     if (!driver_registered) {
+>> +             mutex_unlock(&intel_pstate_limits_lock);
+> It should be
+>                 mutex_unlock(&intel_pstate_driver_lock);
+>
+>> +             return -EAGAIN;
+>> +     }
+>> +
+>>       cpu = all_cpu_data[0];
+>>
+>>
+> [...]
+>
+>> @@ -1070,8 +1083,18 @@ static ssize_t show_num_pstates(struct k
+>>       struct cpudata *cpu;
+>>       int total;
+>>
+>> +     mutex_lock(&intel_pstate_driver_lock);
+>> +
+>> +     if (!driver_registered) {
+>> +             mutex_unlock(&intel_pstate_limits_lock);
+> Change to
+>                 mutex_unlock(&intel_pstate_driver_lock);
+>
+>> +             return -EAGAIN;
+>> +     }
+>> +
+>>       cpu = all_cpu_data[0];
+>>       total = cpu->pstate.turbo_pstate - cpu->pstate.min_pstate +
+>> 1;
+>> +
+>> +     mutex_unlock(&intel_pstate_driver_lock);
+>> +
+>>       return sprintf(buf, "%u\n", total);
+>>  }
+>>
+>> @@ -1080,12 +1103,21 @@ static ssize_t show_no_turbo(struct kobj
+>>  {
+>>       ssize_t ret;
+>>
+>> +     mutex_lock(&intel_pstate_driver_lock);
+>> +
+>> +     if (!driver_registered) {
+>> +             mutex_unlock(&intel_pstate_limits_lock);
+> Same here
+>                 mutex_unlock(&intel_pstate_driver_lock);
+>
+>> +             return -EAGAIN;
+>> +     }
+>> +
+>>       update_turbo_state();
+>>       if (limits->turbo_disabled)
+>>               ret = sprintf(buf, "%u\n", limits->turbo_disabled);
+>>       else
+>>               ret = sprintf(buf, "%u\n", limits->no_turbo);
+>>
+>> +     mutex_unlock(&intel_pstate_driver_lock);
+>> +
+>>       return ret;
+>>  }
+>>
+>> @@ -1099,6 +1131,13 @@ static ssize_t store_no_turbo(struct kob
+>>       if (ret != 1)
+>>               return -EINVAL;
+>>
+>> +     mutex_lock(&intel_pstate_driver_lock);
+>> +
+>> +     if (!driver_registered) {
+>> +             mutex_unlock(&intel_pstate_driver_lock);
+>> +             return -EAGAIN;
+>> +     }
+>> +
+>>       mutex_lock(&intel_pstate_limits_lock);       if (limits-
+>> >turbo_disabled) {
+>>                 pr_warn("Turbo disabled by BIOS or unavailable on
+>> processor\n");
+>>                 mutex_unlock(&intel_pstate_limits_lock);
+> Also
+>                 mutex_unlock(&intel_pstate_driver_lock);>
+>
+>>                 return -EPERM;
+>>         }
+>>
+>>       update_turbo_state();
+>> @@ -1114,6 +1153,8 @@ static ssize_t store_no_turbo(struct kob
+>>
+>>       intel_pstate_update_policies();
+>>
+>> +     mutex_unlock(&intel_pstate_driver_lock);
+>> +
+>>       return count;
+>>  }
+>>
 
-The BQ2751X definition exists only to satisfy backwards compatibility.
+It looks like I sent an old version of the patch.  I'll send a correct
+one shortly.
 
-Signed-off-by: Chris Lapa <chris@lapa.com.au>
----
- drivers/power/supply/bq27xxx_battery.c     | 8 ++++----
- drivers/power/supply/bq27xxx_battery_i2c.c | 4 ++--
- include/linux/power/bq27xxx_battery.h      | 2 +-
- 3 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 103ba3b..90a5373 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -164,7 +164,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_DCAP] = 0x3c,
- 		[BQ27XXX_REG_AP] = INVALID_REG_ADDR,
- 	},
--	[BQ27510] = {
-+	[BQ2751X] = {
- 		[BQ27XXX_REG_CTRL] = 0x00,
- 		[BQ27XXX_REG_TEMP] = 0x06,
- 		[BQ27XXX_REG_INT_TEMP] = 0x28,
-@@ -321,7 +321,7 @@ static enum power_supply_property bq2750x_battery_props[] = {
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- };
- 
--static enum power_supply_property bq27510_battery_props[] = {
-+static enum power_supply_property bq2751x_battery_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_PRESENT,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-@@ -422,7 +422,7 @@ static struct {
- 	BQ27XXX_PROP(BQ27000, bq27000_battery_props),
- 	BQ27XXX_PROP(BQ27010, bq27010_battery_props),
- 	BQ27XXX_PROP(BQ2750X, bq2750x_battery_props),
--	BQ27XXX_PROP(BQ27510, bq27510_battery_props),
-+	BQ27XXX_PROP(BQ2751X, bq2751x_battery_props),
- 	BQ27XXX_PROP(BQ27530, bq27530_battery_props),
- 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
- 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
-@@ -676,7 +676,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
- {
- 	switch (di->chip) {
- 	case BQ2750X:
--	case BQ27510:
-+	case BQ2751X:
- 	case BQ27541:
- 	case BQ27545:
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index fb1219b..5f64e70 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -149,8 +149,8 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27200", BQ27000 },
- 	{ "bq27210", BQ27010 },
- 	{ "bq27500", BQ2750X },
--	{ "bq27510", BQ27510 },
--	{ "bq27520", BQ27510 },
-+	{ "bq27510", BQ2751X },
-+	{ "bq27520", BQ2751X },
- 	{ "bq27530", BQ27530 },
- 	{ "bq27531", BQ27530 },
- 	{ "bq27541", BQ27541 },
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 4c904d0..651f265 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -5,7 +5,7 @@ enum bq27xxx_chip {
- 	BQ27000 = 1, /* bq27000, bq27200 */
- 	BQ27010, /* bq27010, bq27210 */
- 	BQ2750X, /* bq27500 deprecated alias */
--	BQ27510, /* bq27510, bq27520 */
-+	BQ2751X, /* bq27510, bq27520 deprecated alias */
- 	BQ27530, /* bq27530, bq27531 */
- 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
- 	BQ27545, /* bq27545 */
--- 
-2.1.4
+Thanks,
+Rafael
