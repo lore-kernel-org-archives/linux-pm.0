@@ -1,51 +1,45 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/3] cpu: expose pm_qos_resume_latency for each cpu
-Date: Wed, 11 Jan 2017 19:40:54 +0100
-Message-ID: <CAJZ5v0hG6UgKDObTaOWy08EhY9uZh9o4=pRW_zjSAbY4c_u5Vw@mail.gmail.com>
-References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
- <1483630187-29622-3-git-send-email-alex.shi@linaro.org> <20170111080927.GA6689@kroah.com>
- <3344ad77-62db-830f-94db-f4bdd7257478@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Christian Mauderer <oss@c-mauderer.de>
+Subject: [PATCH] mfd: axp20x: Add AXP288 volatile registers.
+Date: Wed, 11 Jan 2017 20:49:41 +0100
+Message-ID: <20170111194941.5425-1-oss@c-mauderer.de>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:35670 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753018AbdAKSkz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 13:40:55 -0500
-In-Reply-To: <3344ad77-62db-830f-94db-f4bdd7257478@linaro.org>
+Received: from dehamd084.servertools24.de ([31.47.243.162]:49853 "EHLO
+        dehamd084.servertools24.de" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754646AbdAKTzp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 14:55:45 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alex Shi <alex.shi@linaro.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, open list <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Lee Jones <lee.jones@linaro.org>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Christian Mauderer <oss@c-mauderer.de>
 
-On Wed, Jan 11, 2017 at 3:33 PM, Alex Shi <alex.shi@linaro.org> wrote:
->
->>> >  #include "base.h"
->>> >
->>> > @@ -376,6 +377,9 @@ int register_cpu(struct cpu *cpu, int num)
->>> >
->>> >    per_cpu(cpu_sys_devices, num) = &cpu->dev;
->>> >    register_cpu_under_node(num, cpu_to_node(num));
->>> > +#ifdef CONFIG_CPU_IDLE_GOV_MENU
->>> > +  dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
->>> > +#endif
->> No way to do this without the #ifdef?  That's really not recommended for
->> .c code :(
->>
->
-> Hi Greg,
->
-> Thanks for comments!
->
-> The function dev_pm_qos_expose_latency_limit() is null if no CONFIG_PM.
-> So when CONFIG_PM enabled, may we could consider the cpu idle is also
-> wanted. In this assumption the #ifdef could be removed. If user want to
-> use this feature, she/he should understand the feature only work on menu
-> gov only currently. So consider this, I guess we could remove this
-> #ifdef. :)
+The axp288_fuelgauge driver and some other axp288_xxx are using a number
+of the registers of the chip that are changed by hardware (for example
+charge level). Because these registers are not marked as "volatile" in
+the regmap, a cached version is used instead of the correct register
+value. In case of the axp288_fuelgauge that leads to a battery level
+that only changes on reboot. This patch adds the volatile registers of
+the chip.
 
-But instead of putting the #ifdef into the function body, you can use
-a wrapper function defined to be empty for CONFIG_PM unset.
+Signed-off-by: Christian Mauderer <oss@c-mauderer.de>
+---
+ drivers/mfd/axp20x.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Thanks,
-Rafael
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index ed918de84238..d74b3daca23f 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -118,7 +118,10 @@ static const struct regmap_range axp288_writeable_ranges[] = {
+ };
+ 
+ static const struct regmap_range axp288_volatile_ranges[] = {
++	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
+ 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IPSOUT_V_HIGH_L),
++	regmap_reg_range(AXP20X_CC_CTRL, AXP288_FG_OCVL_REG),
++	regmap_reg_range(AXP288_FG_DES_CAP1_REG, AXP288_FG_CC_CAP_REG),
+ };
+ 
+ static const struct regmap_access_table axp288_writeable_table = {
+-- 
+2.11.0
+
