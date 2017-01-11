@@ -1,110 +1,76 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: [PATCH v3 4/7] power: bq27xxx_battery: add BQ27425 chip id
-Date: Tue, 10 Jan 2017 22:20:00 -0800
-Message-ID: <20170111062003.10110-5-matt@ranostay.consulting>
-References: <20170111062003.10110-1-matt@ranostay.consulting>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170111062003.10110-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 2/3] cpu: expose pm_qos_resume_latency for each cpu
+Date: Wed, 11 Jan 2017 09:09:27 +0100
+Message-ID: <20170111080927.GA6689@kroah.com>
+References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
+ <1483630187-29622-3-git-send-email-alex.shi@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1483630187-29622-3-git-send-email-alex.shi@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Alex Shi <alex.shi@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
----
- drivers/power/supply/bq27xxx_battery.c     | 23 ++++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c |  2 +-
- include/linux/power/bq27xxx_battery.h      |  3 ++-
- 3 files changed, 25 insertions(+), 3 deletions(-)
+On Thu, Jan 05, 2017 at 11:29:46PM +0800, Alex Shi wrote:
+> The cpu-dma PM QoS constraint impacts all the cpus in the system. There
+> is no way to let the user to choose a PM QoS constraint per cpu.
+> 
+> The following patch exposes to the userspace a per cpu based sysfs file
+> in order to let the userspace to change the value of the PM QoS latency
+> constraint.
+> 
+> This change is inoperative in its form and the cpuidle governors have to
+> take into account the per cpu latency constraint in addition to the
+> global cpu-dma latency constraint in order to operate properly.
+> 
+> BTW
+> The pm_qos_resume_latency usage defined in
+> Documentation/ABI/testing/sysfs-devices-power
+> The /sys/devices/.../power/pm_qos_resume_latency_us attribute
+> contains the PM QoS resume latency limit for the given device,
+> which is the maximum allowed time it can take to resume the
+> device, after it has been suspended at run time, from a resume
+> request to the moment the device will be ready to process I/O,
+> in microseconds.  If it is equal to 0, however, this means that
+> the PM QoS resume latency may be arbitrary.
+> 
+> Signed-off-by: Alex Shi <alex.shi@linaro.org>
+> To: linux-kernel@vger.kernel.org
+> To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/cpu.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index 4c28e1a..29cf3459 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/of.h>
+>  #include <linux/cpufeature.h>
+>  #include <linux/tick.h>
+> +#include <linux/pm_qos.h>
+>  
+>  #include "base.h"
+>  
+> @@ -376,6 +377,9 @@ int register_cpu(struct cpu *cpu, int num)
+>  
+>  	per_cpu(cpu_sys_devices, num) = &cpu->dev;
+>  	register_cpu_under_node(num, cpu_to_node(num));
+> +#ifdef CONFIG_CPU_IDLE_GOV_MENU
+> +	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
+> +#endif
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 7272d1e024f9..7475a5f31c53 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -259,6 +259,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_DCAP] = 0x3c,
- 		[BQ27XXX_REG_AP] = 0x18,
- 	},
-+	[BQ27425] = {
-+		[BQ27XXX_REG_CTRL] = 0x00,
-+		[BQ27XXX_REG_TEMP] = 0x02,
-+		[BQ27XXX_REG_INT_TEMP] = 0x1e,
-+		[BQ27XXX_REG_VOLT] = 0x04,
-+		[BQ27XXX_REG_AI] = 0x10,
-+		[BQ27XXX_REG_FLAGS] = 0x06,
-+		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_NAC] = 0x08,
-+		[BQ27XXX_REG_FCC] = 0x0e,
-+		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_SOC] = 0x1c,
-+		[BQ27XXX_REG_DCAP] = 0x3c,
-+		[BQ27XXX_REG_AP] = 0x18,
-+	},
- };
- 
- static enum power_supply_property bq27000_battery_props[] = {
-@@ -427,6 +446,7 @@ static struct {
- 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
- 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
- 	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
-+	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
- };
- 
- static DEFINE_MUTEX(bq27xxx_list_lock);
-@@ -682,6 +702,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
- 	case BQ27530:
- 	case BQ27421:
-+	case BQ27425:
- 		return flags & BQ27XXX_FLAG_OT;
- 	default:
- 		return false;
-@@ -693,7 +714,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
-  */
- static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
- {
--	if (di->chip == BQ27530 || di->chip == BQ27421)
-+	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
- 		return flags & BQ27XXX_FLAG_UT;
- 
- 	return false;
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 5c5c3a6f9923..27143230839a 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -159,9 +159,9 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27742", BQ27541 },
- 	{ "bq27545", BQ27545 },
- 	{ "bq27421", BQ27421 },
--	{ "bq27425", BQ27421 },
- 	{ "bq27441", BQ27421 },
- 	{ "bq27621", BQ27421 },
-+	{ "bq27425", BQ27425 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index bed9557b69e7..14ecac158150 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -9,7 +9,8 @@ enum bq27xxx_chip {
- 	BQ27530, /* bq27530, bq27531 */
- 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
- 	BQ27545, /* bq27545 */
--	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-+	BQ27421, /* bq27421, bq27441, bq27621 */
-+	BQ27425, /* bq27425 */
- };
- 
- /**
--- 
-2.10.2
+No way to do this without the #ifdef?  That's really not recommended for
+.c code :(
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+thanks,
+
+greg k-h
