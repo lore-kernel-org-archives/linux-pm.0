@@ -1,76 +1,42 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 2/3] cpu: expose pm_qos_resume_latency for each cpu
-Date: Wed, 11 Jan 2017 09:09:27 +0100
-Message-ID: <20170111080927.GA6689@kroah.com>
-References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
- <1483630187-29622-3-git-send-email-alex.shi@linaro.org>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [PATCH v4 2/8] PCI: Allow runtime PM on Thunderbolt ports
+Date: Wed, 11 Jan 2017 11:54:50 +0200
+Message-ID: <20170111095450.GK2330@lahna.fi.intel.com>
+References: <cover.1483806825.git.lukas@wunner.de>
+ <7ddaaa371101208db7b8bc4dcc2f44c056645923.1483806825.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1483630187-29622-3-git-send-email-alex.shi@linaro.org>
+In-Reply-To: <7ddaaa371101208db7b8bc4dcc2f44c056645923.1483806825.git.lukas@wunner.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alex Shi <alex.shi@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, open list <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Tomas Winkler <tomas.winkler@intel.com>, Amir Levy <amir.jer.levy@intel.com>, Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 05, 2017 at 11:29:46PM +0800, Alex Shi wrote:
-> The cpu-dma PM QoS constraint impacts all the cpus in the system. There
-> is no way to let the user to choose a PM QoS constraint per cpu.
+On Sun, Jan 08, 2017 at 09:41:45AM +0100, Lukas Wunner wrote:
+> Currently PCIe ports are only allowed to go to D3 if the BIOS is dated
+> 2015 or newer to avoid potential issues with old chipsets.  However for
+> Thunderbolt we know that even the oldest controller, Light Ridge (2010),
+> is able to suspend its ports to D3 just fine.
 > 
-> The following patch exposes to the userspace a per cpu based sysfs file
-> in order to let the userspace to change the value of the PM QoS latency
-> constraint.
+> We're about to add runtime PM for Thunderbolt on the Mac.  Apple has
+> released two EFI security updates in 2015 which encompass all machines
+> with Thunderbolt, but the achieved power saving should be made available
+> to users even if they haven't updated their BIOS.  To this end,
+> special-case Thunderbolt in pci_bridge_d3_possible().
 > 
-> This change is inoperative in its form and the cpuidle governors have to
-> take into account the per cpu latency constraint in addition to the
-> global cpu-dma latency constraint in order to operate properly.
+> This allows the Thunderbolt controller to power down but the root port
+> to which the Thunderbolt controller is attached remains in D0 unless
+> the EFI update is installed.  Users can pass pcie_port_pm=force on the
+> kernel command line if they cannot install the EFI update but still want
+> to benefit from the additional power saving of putting the root port
+> into D3.  In practice, root ports can be suspended to D3 without issues
+> at least on 2012 Ivy Bridge machines.
 > 
-> BTW
-> The pm_qos_resume_latency usage defined in
-> Documentation/ABI/testing/sysfs-devices-power
-> The /sys/devices/.../power/pm_qos_resume_latency_us attribute
-> contains the PM QoS resume latency limit for the given device,
-> which is the maximum allowed time it can take to resume the
-> device, after it has been suspended at run time, from a resume
-> request to the moment the device will be ready to process I/O,
-> in microseconds.  If it is equal to 0, however, this means that
-> the PM QoS resume latency may be arbitrary.
+> If the BIOS cut-off date is ever lowered to 2010, the Thunderbolt
+> special case can be removed.
 > 
-> Signed-off-by: Alex Shi <alex.shi@linaro.org>
-> To: linux-kernel@vger.kernel.org
-> To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> ---
->  drivers/base/cpu.c | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-> index 4c28e1a..29cf3459 100644
-> --- a/drivers/base/cpu.c
-> +++ b/drivers/base/cpu.c
-> @@ -17,6 +17,7 @@
->  #include <linux/of.h>
->  #include <linux/cpufeature.h>
->  #include <linux/tick.h>
-> +#include <linux/pm_qos.h>
->  
->  #include "base.h"
->  
-> @@ -376,6 +377,9 @@ int register_cpu(struct cpu *cpu, int num)
->  
->  	per_cpu(cpu_sys_devices, num) = &cpu->dev;
->  	register_cpu_under_node(num, cpu_to_node(num));
-> +#ifdef CONFIG_CPU_IDLE_GOV_MENU
-> +	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
-> +#endif
+> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
 
-No way to do this without the #ifdef?  That's really not recommended for
-.c code :(
-
-thanks,
-
-greg k-h
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
