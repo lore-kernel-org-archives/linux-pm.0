@@ -1,79 +1,47 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v4 3/8] PCI: Don't block runtime PM for Thunderbolt host
- hotplug ports
-Date: Wed, 11 Jan 2017 12:02:10 +0200
-Message-ID: <20170111100210.GL2330@lahna.fi.intel.com>
-References: <cover.1483806825.git.lukas@wunner.de>
- <89e0512762e0062ad1f1884ebfaaf71e3b731237.1483806825.git.lukas@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Baoyou Xie <baoyou.xie@linaro.org>
+Subject: [PATCH v2 1/3] dt: bindings: add documentation for zx2967 family thermal sensor
+Date: Wed, 11 Jan 2017 18:14:09 +0800
+Message-ID: <1484129651-17531-1-git-send-email-baoyou.xie@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <89e0512762e0062ad1f1884ebfaaf71e3b731237.1483806825.git.lukas@wunner.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Tomas Winkler <tomas.winkler@intel.com>, Amir Levy <amir.jer.levy@intel.com>, Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, jun.nie@linaro.org
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, shawnguo@kernel.org, baoyou.xie@linaro.org, xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jan 08, 2017 at 09:41:45AM +0100, Lukas Wunner wrote:
-> Hotplug ports generally block their parents from suspending to D3hot as
-> otherwise their interrupts couldn't be delivered.
-> 
-> An exception are Thunderbolt host controllers:  They have a separate
-> GPIO pin to side-band signal plug events even if the controller is
-> powered down or its parent ports are suspended to D3.  They can be told
-> apart from Thunderbolt controllers in attached devices by checking if
-> they're situated below a non-Thunderbolt device (typically a root port,
-> or the downstream port of a PCIe switch in the case of the MacPro6,1).
-> 
-> To enable runtime PM for Thunderbolt on the Mac, the downstream bridges
-> of a host controller must not block runtime PM on the upstream bridge as
-> power to the chip is only cut once the upstream bridge has suspended.
-> Amend the condition in pci_dev_check_d3cold() accordingly.
-> 
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Andreas Noever <andreas.noever@gmail.com>
-> Cc: Tomas Winkler <tomas.winkler@intel.com>
-> Cc: Amir Levy <amir.jer.levy@intel.com>
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
->  drivers/pci/pci.c | 13 ++++++++++++-
->  1 file changed, 12 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 8ed098d..0b03fe7 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2271,6 +2271,7 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
->  
->  static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
->  {
-> +	struct pci_dev *parent, *grandparent;
->  	bool *d3cold_ok = data;
->  
->  	if (/* The device needs to be allowed to go D3cold ... */
-> @@ -2284,7 +2285,17 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
->  	    !pci_power_manageable(dev) ||
->  
->  	    /* Hotplug interrupts cannot be delivered if the link is down. */
-> -	    dev->is_hotplug_bridge)
-> +	    (dev->is_hotplug_bridge &&
-> +
-> +		/*
-> +		 * Exception:  Thunderbolt host controllers have a pin to
-> +		 * side-band signal plug events.  Their hotplug ports are
-> +		 * recognizable by having a non-Thunderbolt device as
-> +		 * grandparent.
-> +		 */
-> +		!(dev->is_thunderbolt && (parent = pci_upstream_bridge(dev)) &&
-> +				 (grandparent = pci_upstream_bridge(parent)) &&
-> +						!grandparent->is_thunderbolt)))
+This patch adds dt-binding documentation for zx2967 family thermal sensor.
 
-Can you move this to its own helper function?
+Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
+---
+ .../devicetree/bindings/thermal/zx2967-thermal.txt  | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
 
->  
->  		*d3cold_ok = false;
->  
-> -- 
-> 2.11.0
+diff --git a/Documentation/devicetree/bindings/thermal/zx2967-thermal.txt b/Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
+new file mode 100644
+index 0000000..86f941c
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
+@@ -0,0 +1,21 @@
++* ZTE zx2967 family Thermal
++
++Required Properties:
++- compatible: should be one of the following.
++    * zte,zx296718-thermal
++- reg: physical base address of the controller and length of memory mapped
++    region.
++- clocks : Pairs of phandle and specifier referencing the controller's clocks.
++- clock-names: "gate" for the topcrm clock.
++	       "pclk" for the apb clock.
++- #thermal-sensor-cells: must be 0.
++
++Example:
++
++	tempsensor: tempsensor@148a000 {
++		compatible = "zte,zx296718-thermal";
++		reg = <0x0148a000 0x20>;
++		clocks = <&topcrm TEMPSENSOR_GATE>, <&audiocrm AUDIO_TS_PCLK>;
++		clock-names = "gate", "pclk";
++		#thermal-sensor-cells = <0>;
++	};
+-- 
+2.7.4
