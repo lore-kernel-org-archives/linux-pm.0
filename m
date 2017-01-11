@@ -1,128 +1,93 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: [PATCH v3 5/7] power: bq27xxx_battery: add i2c bulk read/write functions
-Date: Tue, 10 Jan 2017 22:20:01 -0800
-Message-ID: <20170111062003.10110-6-matt@ranostay.consulting>
+From: Matt Ranostay <matt@ranostay.consulting>
+Subject: [PATCH v3 3/7] power: power_supply: add battery info platform data retrieval
+Date: Tue, 10 Jan 2017 22:19:59 -0800
+Message-ID: <20170111062003.10110-4-matt@ranostay.consulting>
 References: <20170111062003.10110-1-matt@ranostay.consulting>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170111062003.10110-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f48.google.com ([74.125.83.48]:36273 "EHLO
+        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751636AbdAKGUK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 01:20:10 -0500
+Received: by mail-pg0-f48.google.com with SMTP id f188so278519100pgc.3
+        for <linux-pm@vger.kernel.org>; Tue, 10 Jan 2017 22:20:10 -0800 (PST)
+In-Reply-To: <20170111062003.10110-1-matt@ranostay.consulting>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sre@kernel.org, tony@atomide.com, Matt Ranostay <matt@ranostay.consulting>
 
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Add power_supply_get_battery_info() to get battery platform data
+
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 ---
- drivers/power/supply/bq27xxx_battery_i2c.c | 62 ++++++++++++++++++++++++++++++
- include/linux/power/bq27xxx_battery.h      |  4 ++
- 2 files changed, 66 insertions(+)
+ drivers/power/supply/power_supply_core.c | 31 +++++++++++++++++++++++++++++++
+ include/linux/power_supply.h             |  4 ++++
+ 2 files changed, 35 insertions(+)
 
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 27143230839a..89e1dfec69fc 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -68,6 +68,64 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- 	return ret;
- }
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 1e0960b646e8..08ddf3020658 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -17,6 +17,7 @@
+ #include <linux/device.h>
+ #include <linux/notifier.h>
+ #include <linux/err.h>
++#include <linux/of.h>
+ #include <linux/power_supply.h>
+ #include <linux/thermal.h>
+ #include "power_supply.h"
+@@ -487,6 +488,36 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
+ EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
+ #endif /* CONFIG_OF */
  
-+static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
-+				     int value, bool single)
++int power_supply_get_battery_info(struct power_supply *psy,
++				  struct power_supply_battery_info *info,
++				  const char *property)
 +{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	unsigned char data[4];
++	struct device_node *np = psy->of_node;
++	struct device_node *power_supply_battery_info_np;
++	int ret;
 +
-+	if (!client->adapter)
++	if (!np)
++		return -ENXIO;
++
++	power_supply_battery_info_np = of_parse_phandle(np, property, 0);
++	if (!power_supply_battery_info_np)
 +		return -ENODEV;
 +
-+	data[0] = reg;
-+	if (single) {
-+		data[1] = (unsigned char) value;
-+		msg.len = 2;
-+	} else {
-+		put_unaligned_le16(value, &data[1]);
-+		msg.len = 3;
-+	}
++	ret = of_property_read_u32(power_supply_battery_info_np,
++				   "nominal-microvolt", &info->nominal_voltage);
++	if (ret < 0)
++		return ret;
 +
-+	msg.buf = data;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
++	ret = of_property_read_u32(power_supply_battery_info_np,
++				   "design-microwatt-hours", &info->energy);
++	if (ret < 0)
++		return ret;
 +
-+	return i2c_transfer(client->adapter, &msg, 1) == 1 ? 0 : -EINVAL;
++	return of_property_read_u32(power_supply_battery_info_np,
++				   "design-microamp-hours", &info->power);
 +}
++EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
 +
-+static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
-+					 u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
+ int power_supply_get_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+ 			    union power_supply_propval *val)
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 59674a257d5e..859d0e7f9b6a 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -318,6 +318,10 @@ static inline struct power_supply *
+ devm_power_supply_get_by_phandle(struct device *dev, const char *property)
+ { return NULL; }
+ #endif /* CONFIG_OF */
 +
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	return i2c_smbus_read_i2c_block_data(client, reg, len, data);
-+}
-+
-+static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
-+					  u8 reg, u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 buf[33];
-+
-+	if (!client->adapter)
-+		return -ENODEV;
-+
-+	buf[0] = reg;
-+	memcpy(&buf[1], data, len);
-+
-+	msg.buf = buf;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+	msg.len = len + 1;
-+
-+	return i2c_transfer(client->adapter, &msg, 1) == 1 ? 0 : -EINVAL;
-+}
-+
- static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 				     const struct i2c_device_id *id)
- {
-@@ -95,7 +153,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	di->dev = &client->dev;
- 	di->chip = id->driver_data;
- 	di->name = name;
-+
- 	di->bus.read = bq27xxx_battery_i2c_read;
-+	di->bus.write = bq27xxx_battery_i2c_write;
-+	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
-+	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
- 
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 14ecac158150..a4c2dfbbca02 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -33,6 +33,9 @@ struct bq27xxx_platform_data {
- struct bq27xxx_device_info;
- struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-+	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
-+	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
-+	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
- };
- 
- struct bq27xxx_reg_cache {
-@@ -63,6 +66,7 @@ struct bq27xxx_device_info {
- 	struct list_head list;
- 	struct mutex lock;
- 	u8 *regs;
-+	u8 buffer[32];
- };
- 
- void bq27xxx_battery_update(struct bq27xxx_device_info *di);
++extern int power_supply_get_battery_info(struct power_supply *psy,
++					 struct power_supply_battery_info *info,
++					 const char *property);
+ extern void power_supply_changed(struct power_supply *psy);
+ extern int power_supply_am_i_supplied(struct power_supply *psy);
+ extern int power_supply_set_battery_charged(struct power_supply *psy);
 -- 
 2.10.2
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
