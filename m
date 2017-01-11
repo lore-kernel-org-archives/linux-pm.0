@@ -1,59 +1,58 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: Preventing PM from suspending device
-Date: Thu, 12 Jan 2017 00:19:48 +0100
-Message-ID: <CAPDyKFq0pbk3=Ne2wE9b62g+tCzNrT6Mm-5H1C+0obgJmTQSzw@mail.gmail.com>
-References: <20170109172247.GI29854@bigcity.dyn.berto.se>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH] intel_idle: work around errate VLP52 on Baytrail CPUs
+Date: Wed, 11 Jan 2017 15:22:44 -0800
+Message-ID: <20170111152244.360e8a82@jacob-builder>
+References: <838trb233m.fsf@echidna.jochen.org>
+        <CAJZ5v0jkATWSrGuR_DOfiSUFguRJ1w7gMRth1kjwYh1bSWnvGw@mail.gmail.com>
+        <CA+8K-g=fXN9TWWxkV1AEEjXJLhwJEQ2PB434gKQ9Z7bL=yf+zA@mail.gmail.com>
+        <CA+8K-g=VVC-13J+jU+KGyk49xHPhm5uojj0h9FcWZiC91NTiQw@mail.gmail.com>
+        <CAJvTdK=sFHRo3FQ-ebWM7qVY3iLadWUFA+iacB8jwfHtJyNWGA@mail.gmail.com>
+        <83ful9yue7.fsf@echidna.jochen.org>
+        <CAJvTdKkJv+WfvvibR9Ly9AS5ncp1UTsm74XMX=pg8uyV9Mxupw@mail.gmail.com>
+        <CA+8K-gntePuqdij7SijqcT0RXPoKi163UPwoBnBCk04zBp0BvA@mail.gmail.com>
+        <CAJvTdKnuiaa4WcDYORe1O8R48dbawX1V9McbpMh-9AyAc5DLZg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:37786 "EHLO
-        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757284AbdAKXTv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 18:19:51 -0500
-Received: by mail-wm0-f43.google.com with SMTP id c206so893453wme.0
-        for <linux-pm@vger.kernel.org>; Wed, 11 Jan 2017 15:19:50 -0800 (PST)
-In-Reply-To: <20170109172247.GI29854@bigcity.dyn.berto.se>
+Received: from mga09.intel.com ([134.134.136.24]:63265 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750955AbdAKXVc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Jan 2017 18:21:32 -0500
+In-Reply-To: <CAJvTdKnuiaa4WcDYORe1O8R48dbawX1V9McbpMh-9AyAc5DLZg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Len Brown <lenb@kernel.org>
+Cc: Vincent Gerris <vgerris@gmail.com>, Hans de Goede <hdegoede@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Jochen Hein <jochen@jochen.org>, Linux PM <linux-pm@vger.kernel.org>, jacob.jun.pan@linux.intel.com, Vinod Koul <vinod.koul@intel.com>, "Prusty, Subhransu S" <subhransu.s.prusty@intel.com>
 
-On 9 January 2017 at 18:22, Niklas S=C3=B6derlund
-<niklas.soderlund@ragnatech.se> wrote:
-> Hi Ulf and Linux PM,
->
-> I have a question regarding if a driver can signal to the PM core that
-> it should not be suspended from its struct dev_pm_ops suspend callback.
+On Wed, 11 Jan 2017 18:14:12 -0500
+Len Brown <lenb@kernel.org> wrote:
 
-No. The driver/subsystem needs to deal this.
+> Re: powertop
+> 
+> turbostat is more useful.  The pre-release I uploaded to the bug
+> report includes some baytrail specific support:
+> 
+> https://bugzilla.kernel.org/show_bug.cgi?id=109051#c661
+> 
+> > I saw your patch for auto-demotion, I will test it and report
+> > within a few days. I will also do further testing with the 4.9
+> > kernel. I hope we can get things stable one way or the other :).  
+> 
+> Current thinking is that we have multiple issues here, and enabling
+> auto-demotion
+> simply hides the actual root causes.
+> 
+> Sound is one known root cause, as Jacob pointed out.
+> Hopefully we'll have a fix for that one shortly.
+> 
++Vinod & Subhransu
+Could you send out Baytrail VLP70 SST driver workaround patch for
+testing?
 
->
-> My use-case is the sh_eth driver which I have added Wake-on-Lan support
-> to, see [1]. In this driver I need to prevent the PM core to disable the
-> module clock to the device if WoL is enabled. Currently I call
-> clk_enable()/clk_disable() from the suspend/resume callbacks to modify
-> the usage count of the clock to prevent the clock from being switched
-> off by PM. This do not feel like the best solution to my problem.
+> I'm testing w/o sound, and still can provoke a failure in under 30
+> minutes.
+> 
+> Len Brown, Intel Open Source Technology Center
 
-I am not sure I get this. Is someone else than the driver performing
-clk gateing/un-gating of the same clock?
-
->
-> Is there a more generic way to let PM know that I'm fine with the system
-> being suspended and I have suspended as much as I can but I'm a wake up s=
-ource
-> so could please not switch of my clock and power domain?
-
-Seems like a quite common issue, but before we go into more details,
-are you using genpd as the power domain? If not, what?
-
->
-> 1. https://marc.info/?l=3Dlinux-pm&m=3D148397620011501&w=3D2
->
-> --
-> Regards,
-> Niklas S=C3=B6derlund
-
-Kind regards
-Uffe
+[
