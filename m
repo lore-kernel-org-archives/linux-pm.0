@@ -1,45 +1,77 @@
-From: Christian Mauderer <oss@c-mauderer.de>
-Subject: [PATCH] mfd: axp20x: Add AXP288 volatile registers.
-Date: Wed, 11 Jan 2017 20:49:41 +0100
-Message-ID: <20170111194941.5425-1-oss@c-mauderer.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from dehamd084.servertools24.de ([31.47.243.162]:49853 "EHLO
-        dehamd084.servertools24.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1754646AbdAKTzp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 14:55:45 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] ACPI: small formatting fixes
+Date: Wed, 11 Jan 2017 21:03:45 +0100
+Message-ID: <20170111200345.GB29366@amd>
+References: <20161212072541.28435-1-nick.desaulniers@gmail.com>
+ <20161212085620.GA738@amd>
+ <20161212175654.ydc7rx3edqoacnp7@lostoracle.net>
+ <1481567955.1764.28.camel@perches.com>
+ <20161212222216.GA18201@amd>
+ <20161212232043.vc5alwqzvspg2ade@lostoracle.net>
+ <1481584942.29291.9.camel@perches.com>
+ <20161213190001.GA8676@amd>
+ <20161223031942.jrgjt567m6bdeke3@lostoracle.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="JYK4vJDZwFMowpUq"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20161223031942.jrgjt567m6bdeke3@lostoracle.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Nick Desaulniers <nick.desaulniers@gmail.com>
+Cc: Joe Perches <joe@perches.com>, rjw@rjwysocki.net, len.brown@intel.com, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Christian Mauderer <oss@c-mauderer.de>
 
-The axp288_fuelgauge driver and some other axp288_xxx are using a number
-of the registers of the chip that are changed by hardware (for example
-charge level). Because these registers are not marked as "volatile" in
-the regmap, a cached version is used instead of the correct register
-value. In case of the axp288_fuelgauge that leads to a battery level
-that only changes on reboot. This patch adds the volatile registers of
-the chip.
 
-Signed-off-by: Christian Mauderer <oss@c-mauderer.de>
----
- drivers/mfd/axp20x.c | 3 +++
- 1 file changed, 3 insertions(+)
+--JYK4vJDZwFMowpUq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index ed918de84238..d74b3daca23f 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -118,7 +118,10 @@ static const struct regmap_range axp288_writeable_ranges[] = {
- };
- 
- static const struct regmap_range axp288_volatile_ranges[] = {
-+	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
- 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IPSOUT_V_HIGH_L),
-+	regmap_reg_range(AXP20X_CC_CTRL, AXP288_FG_OCVL_REG),
-+	regmap_reg_range(AXP288_FG_DES_CAP1_REG, AXP288_FG_CC_CAP_REG),
- };
- 
- static const struct regmap_access_table axp288_writeable_table = {
--- 
-2.11.0
+On Thu 2016-12-22 19:19:43, Nick Desaulniers wrote:
+> On Tue, Dec 13, 2016 at 08:00:01PM +0100, Pavel Machek wrote:
+> > Actually.. the ACPI cleanup is fine. You did well :-).
+> > 									Pavel
+>=20
+> Cool, so (forgive the naive question) what happens next?  Maybe I'm too
+> used to the immediate gratification from Github of having a Pull Request
+> get merged.  Is this something that you have cherry picked into your
+> tree, then will ask Linus to pull from at the end of the merge window?
 
+> Do you have a tree that public that I am able to view? On
+> git.kernel.org, there seems to be one tree with your name on it but it
+> seems to be related to the (Nokia?) n900 and it's latest updated branch
+> is from 9 weeks ago.
+
+I don't maintain a tree for power management stuff. Rafael does.
+
+There are tricks that can be done for easy but not trivial fixes.
+
+Ouch and if you want code that needs clean ups / fixes... just let me
+know :-).
+
+
+> Or is there more approvals I have to get to get the patch merged?
+
+No, you did well, just wait.
+
+								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--JYK4vJDZwFMowpUq
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlh2j6EACgkQMOfwapXb+vKHjwCgnz/hcx3lj1RXRwsQUAo+frgQ
+d+0An2ZmNdE68vlph0wsFfs3kAWm5i/d
+=IATO
+-----END PGP SIGNATURE-----
+
+--JYK4vJDZwFMowpUq--
