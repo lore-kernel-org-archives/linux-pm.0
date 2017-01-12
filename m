@@ -1,54 +1,152 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 4/6] power: bq24190_charger: Don't read fault register
- outside irq_handle_thread()
-Date: Wed, 11 Jan 2017 17:32:54 -0800
-Message-ID: <CAKvHMgTrw4DqC5UUbnUXG5kpUAxTn2y5v8QvqHBtx40===xcew@mail.gmail.com>
-References: <20170112004154.31568-1-tony@atomide.com> <20170112004154.31568-5-tony@atomide.com>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Subject: Re: [PATCH 4/7] hwmon: ab8500: convert to IIO ADC
+Date: Wed, 11 Jan 2017 17:40:06 -0800
+Message-ID: <4d7c4364-3c09-5bd0-b073-651e31df5741@roeck-us.net>
+References: <20170110234745.29691-1-linus.walleij@linaro.org>
+ <20170110234745.29691-5-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:33941 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755099AbdALBcz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 20:32:55 -0500
-In-Reply-To: <20170112004154.31568-5-tony@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170110234745.29691-5-linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Mboumba Cedric Madianga <cedric.madianga-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-On Wed, Jan 11, 2017 at 4:41 PM, Tony Lindgren <tony@atomide.com> wrote:
-> From: Liam Breck <kernel@networkimprov.net>
+On 01/10/2017 03:47 PM, Linus Walleij wrote:
+> This switches the AB8500 hardware monitor driver to using
+> the standard IIO ADC channel lookup and conversion routines.
 >
-> Caching the fault register after a single read may not keep an accurate
-> value.
->
-> Fix the issue by doing two reads of the fault register as specified in the
-> data sheet. And let's do this only irq_handle_thread() to avoid accidentally
-> clearing the fault status as specified in the data sheet:
->
-> "When a fault occurs, the charger device sends out INT
->  and keeps the fault state in REG09 until the host reads the fault register.
->  Before the host reads REG09 and all the faults are cleared, the charger
->  device would not send any INT upon new faults. In order to read the
->  current fault status, the host has to read REG09 two times consecutively.
->  The 1st reads fault register status from the last read [1] and the 2nd reads
->  the current fault register status."
->
-> [1] presumably a typo; should be "last fault"
->
-> Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery
-> Charger")
-> Cc: Mark A. Greer <mgreer@animalcreek.com>
-> Cc: Matt Ranostay <matt@ranostay.consulting>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> [tony@atomide.com: cleaned up a bit]
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > ---
->  drivers/power/supply/bq24190_charger.c | 99 ++++++++++------------------------
->  1 file changed, 29 insertions(+), 70 deletions(-)
 
-This got a bit mangled in transition, and the fix will prevent the
-following patches from applying.
+(cautious)
+Acked-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 
-I'll post a fix shortly.
+Looks ok to me, but someone with better understanding of iio should probably
+have a closer look.
+
+Guenter
+
+>  drivers/hwmon/ab8500.c | 65 +++++++++++++++++++++++++++++++-------------------
+>  1 file changed, 41 insertions(+), 24 deletions(-)
+>
+> diff --git a/drivers/hwmon/ab8500.c b/drivers/hwmon/ab8500.c
+> index 8b6a4f4c8774..6f4a5534bdcb 100644
+> --- a/drivers/hwmon/ab8500.c
+> +++ b/drivers/hwmon/ab8500.c
+> @@ -17,20 +17,24 @@
+>  #include <linux/hwmon-sysfs.h>
+>  #include <linux/mfd/abx500.h>
+>  #include <linux/mfd/abx500/ab8500-bm.h>
+> -#include <linux/mfd/abx500/ab8500-gpadc.h>
+>  #include <linux/module.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/power/ab8500.h>
+>  #include <linux/reboot.h>
+>  #include <linux/slab.h>
+>  #include <linux/sysfs.h>
+> +#include <linux/iio/consumer.h>
+>  #include "abx500.h"
+>
+>  #define DEFAULT_POWER_OFF_DELAY	(HZ * 10)
+>  #define THERMAL_VCC		1800
+>  #define PULL_UP_RESISTOR	47000
+> -/* Number of monitored sensors should not greater than NUM_SENSORS */
+> -#define NUM_MONITORED_SENSORS	4
+> +
+> +#define AB8500_SENSOR_AUX1		0
+> +#define AB8500_SENSOR_AUX2		1
+> +#define AB8500_SENSOR_BTEMP_BALL	2
+> +#define AB8500_SENSOR_BAT_CTRL		3
+> +#define NUM_MONITORED_SENSORS		4
+>
+>  struct ab8500_gpadc_cfg {
+>  	const struct abx500_res_to_temp *temp_tbl;
+> @@ -40,7 +44,8 @@ struct ab8500_gpadc_cfg {
+>  };
+>
+>  struct ab8500_temp {
+> -	struct ab8500_gpadc *gpadc;
+> +	struct iio_channel *aux1;
+> +	struct iio_channel *aux2;
+>  	struct ab8500_btemp *btemp;
+>  	struct delayed_work power_off_work;
+>  	struct ab8500_gpadc_cfg cfg;
+> @@ -82,15 +87,21 @@ static int ab8500_read_sensor(struct abx500_temp *data, u8 sensor, int *temp)
+>  	int voltage, ret;
+>  	struct ab8500_temp *ab8500_data = data->plat_data;
+>
+> -	if (sensor == BAT_CTRL) {
+> -		*temp = ab8500_btemp_get_batctrl_temp(ab8500_data->btemp);
+> -	} else if (sensor == BTEMP_BALL) {
+> +	if (sensor == AB8500_SENSOR_BTEMP_BALL) {
+>  		*temp = ab8500_btemp_get_temp(ab8500_data->btemp);
+> -	} else {
+> -		voltage = ab8500_gpadc_convert(ab8500_data->gpadc, sensor);
+> -		if (voltage < 0)
+> -			return voltage;
+> -
+> +	} else if (sensor == AB8500_SENSOR_BAT_CTRL) {
+> +		*temp = ab8500_btemp_get_batctrl_temp(ab8500_data->btemp);
+> +	} else if (sensor == AB8500_SENSOR_AUX1) {
+> +		ret = iio_read_channel_processed(ab8500_data->aux1, &voltage);
+> +		if (ret < 0)
+> +			return ret;
+> +		ret = ab8500_voltage_to_temp(&ab8500_data->cfg, voltage, temp);
+> +		if (ret < 0)
+> +			return ret;
+> +	} else if (sensor == AB8500_SENSOR_AUX2) {
+> +		ret = iio_read_channel_processed(ab8500_data->aux2, &voltage);
+> +		if (ret < 0)
+> +			return ret;
+>  		ret = ab8500_voltage_to_temp(&ab8500_data->cfg, voltage, temp);
+>  		if (ret < 0)
+>  			return ret;
+> @@ -164,10 +175,6 @@ int abx500_hwmon_init(struct abx500_temp *data)
+>  	if (!ab8500_data)
+>  		return -ENOMEM;
+>
+> -	ab8500_data->gpadc = ab8500_gpadc_get("ab8500-gpadc.0");
+> -	if (IS_ERR(ab8500_data->gpadc))
+> -		return PTR_ERR(ab8500_data->gpadc);
+> -
+>  	ab8500_data->btemp = ab8500_btemp_get();
+>  	if (IS_ERR(ab8500_data->btemp))
+>  		return PTR_ERR(ab8500_data->btemp);
+> @@ -181,15 +188,25 @@ int abx500_hwmon_init(struct abx500_temp *data)
+>  	ab8500_data->cfg.tbl_sz = ab8500_temp_tbl_a_size;
+>
+>  	data->plat_data = ab8500_data;
+> +	ab8500_data->aux1 = devm_iio_channel_get(&data->pdev->dev, "aux1");
+> +	if (IS_ERR(ab8500_data->aux1)) {
+> +		if (PTR_ERR(ab8500_data->aux1) == -ENODEV)
+> +                        return -EPROBE_DEFER;
+> +		dev_err(&data->pdev->dev, "failed to get AUX1 ADC channel\n");
+> +		return PTR_ERR(ab8500_data->aux1);
+> +	}
+> +	ab8500_data->aux2 = devm_iio_channel_get(&data->pdev->dev, "aux2");
+> +	if (IS_ERR(ab8500_data->aux2)) {
+> +		if (PTR_ERR(ab8500_data->aux2) == -ENODEV)
+> +                        return -EPROBE_DEFER;
+> +		dev_err(&data->pdev->dev, "failed to get AUX2 ADC channel\n");
+> +		return PTR_ERR(ab8500_data->aux2);
+> +	}
+>
+> -	/*
+> -	 * ADC_AUX1 and ADC_AUX2, connected to external NTC
+> -	 * BTEMP_BALL and BAT_CTRL, fixed usage
+> -	 */
+> -	data->gpadc_addr[0] = ADC_AUX1;
+> -	data->gpadc_addr[1] = ADC_AUX2;
+> -	data->gpadc_addr[2] = BTEMP_BALL;
+> -	data->gpadc_addr[3] = BAT_CTRL;
+> +	data->gpadc_addr[0] = AB8500_SENSOR_AUX1;
+> +	data->gpadc_addr[1] = AB8500_SENSOR_AUX2;
+> +	data->gpadc_addr[2] = AB8500_SENSOR_BTEMP_BALL;
+> +	data->gpadc_addr[3] = AB8500_SENSOR_BAT_CTRL;
+>  	data->monitored_sensors = NUM_MONITORED_SENSORS;
+>
+>  	data->ops.read_sensor = ab8500_read_sensor;
+>
