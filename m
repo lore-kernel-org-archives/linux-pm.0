@@ -1,44 +1,93 @@
 From: Alex Shi <alex.shi@linaro.org>
-Subject: Re: [PATCH 2/3] cpu: expose pm_qos_resume_latency for each cpu
-Date: Thu, 12 Jan 2017 21:04:49 +0800
-Message-ID: <07da6cd8-9973-568d-c22c-01cfd51e3761@linaro.org>
-References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
- <1483630187-29622-3-git-send-email-alex.shi@linaro.org>
- <20170111080927.GA6689@kroah.com>
- <3344ad77-62db-830f-94db-f4bdd7257478@linaro.org>
- <CAJZ5v0hG6UgKDObTaOWy08EhY9uZh9o4=pRW_zjSAbY4c_u5Vw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v2 0/3] per cpu resume latency
+Date: Thu, 12 Jan 2017 21:27:01 +0800
+Message-ID: <1484227624-6740-1-git-send-email-alex.shi@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hG6UgKDObTaOWy08EhY9uZh9o4=pRW_zjSAbY4c_u5Vw@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, open list <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+V2 changes: remove #ifdef CONFIG_CPU_IDLE_GOV_MENU for func
+dev_pm_qos_expose_latency_limit(), since we have CONFIG_PM.
 
+---
+cpu_dma_latency is designed to keep all cpu awake from deep c-state.
+That is good keep system with short response latency. But sometime we
+don't need all cpu power especially in a more and more multi-core day.
+So set all cpu restless that lead to a big power waste.
 
-On 01/12/2017 02:40 AM, Rafael J. Wysocki wrote:
->> >
->> > Hi Greg,
->> >
->> > Thanks for comments!
->> >
->> > The function dev_pm_qos_expose_latency_limit() is null if no CONFIG_PM.
->> > So when CONFIG_PM enabled, may we could consider the cpu idle is also
->> > wanted. In this assumption the #ifdef could be removed. If user want to
->> > use this feature, she/he should understand the feature only work on menu
->> > gov only currently. So consider this, I guess we could remove this
->> > #ifdef. :)
-> But instead of putting the #ifdef into the function body, you can use
-> a wrapper function defined to be empty for CONFIG_PM unset.
+A better way is to keep the short cpu response latency on needed cpu, 
+while let other unnecesscary cpus go to deep idle. That is this 
+patchset. We just use the pm_qos_resume_latency on cpu. Giving the 
+short cpu latency on appointed cpu via setting value on
+/sys/devices/system/cpu/cpuX/power/pm_qos_resume_latency_us
+We can set we wanted latency value according to the value of
+/sys/devices/system/cpu/cpuX/cpuidle/stateX/latency. to just a bit
+less related state's latency value. Then cpu can get to this state or
+higher.
 
-Thanks Rafael!
+Here is some testing data on my dragonboard 410c, the latency of state1
+is 280us. It has 4 cores.
 
-The function dev_pm_qos_expose_latency_limit() is empty now when
-CONFIG_PM disabled. :)
-I will resend the patch without the #ifdef.
+Benchmark: cyclictest -t 1  -n -i 10000 -l 1000 -q --latency=10000
 
-Thanks!
+without the patch:
+Latency (us) Min:     87 Act:  209 Avg:  205 Max:     239
+With the patch and cpu0/power/pm_qos_resume_latency_us is lower than
+280us, like any value between 1 to 279
+benchmark result on cpu0:
+Latency (us) Min:     82 Act:   91 Avg:   95 Max:     110
+In repeat testing, the Avg latency always drop to half of vanilla kernel
+value, as well as Max latency value, although sometime the Max latency
+is similar with vanilla kernel. 
+
+Also we could use the cpu_dma_latency to get the similar short latency.
+But 'idlestate' show all cpu are restless. Here is the idle status 
+compression between cpu_dma_latency and this feature:
+
+To record idlestate
+#./idlestat --trace -t 10 -f /tmp/mytracepmlat -p -c -w -- cyclictest -t 1  -n -i 10000 -l 1000 -q --latency=10000
+
+To compare the idle state, the 'total' colum show cpu1~3 nearly stay
+in WFI state with cpu_dma_latency. but w/ my patch, they can get about
+10 second sleep in 'spc' state.
+# ./idlestat --import -f /tmp/mytracepmlat -b /tmp/mytrace -r comparison
+Log is 10.055305 secs long with 7514 events
+Log is 10.055370 secs long with 7545 events
+--------------------------------------------------------------------------------
+| C-state  |   min    |   max    |   avg    |   total  | hits  |  over | under |
+--------------------------------------------------------------------------------
+| clusterA                                                                     |
+--------------------------------------------------------------------------------
+|      WFI |      2us |  12.88ms |   4.18ms |    9.76s |  2334 |     0 |     0 |
+|          |     -2us |  -14.4ms |    -17us |  -72.5ms |    -8 |     0 |     0 |
+--------------------------------------------------------------------------------
+|             cpu0                                                             |
+--------------------------------------------------------------------------------
+|      WFI |      3us | 100.98ms |  26.81ms |   10.03s |   374 |     0 |     0 |
+|          |     -1us |     -1us |   -350us |   +5.0ms |    +5 |     0 |     0 |
+--------------------------------------------------------------------------------
+|             cpu1                                                             |
+--------------------------------------------------------------------------------
+|      WFI |    280us |   3.96ms |   1.96ms |  19.64ms |    10 |     0 |     5 |
+|          |   +221us | -891.7ms |   -9.1ms |    -9.9s |  -889 |     0 |     0 |
+|      spc |    234us |  19.71ms |   9.79ms |    9.91s |  1012 |     4 |     0 |
+|          |   +167us |  +17.9ms |   +8.6ms |    +9.9s | +1009 |    +1 |     0 |
+--------------------------------------------------------------------------------
+|             cpu2                                                             |
+--------------------------------------------------------------------------------
+|      WFI |     86us |   1.01ms |    637us |   1.91ms |     3 |     0 |     0 |
+|          |    -16us |  -26.5ms |   -8.8ms |   -10.0s | -1057 |     0 |     0 |
+|      spc |    930us |  47.67ms |  10.05ms |    9.92s |   987 |     2 |     0 |
+|          |   -1.4ms |  +43.7ms |   +6.9ms |    +9.9s |  +985 |    +2 |     0 |
+--------------------------------------------------------------------------------
+|             cpu3                                                             |
+--------------------------------------------------------------------------------
+|      WFI |      0us |      0us |      0us |      0us |     0 |     0 |     0 |
+|          |          |    -4.0s | -152.1ms |   -10.0s |   -66 |     0 |     0 |
+|      spc |    420us |    3.50s | 913.74ms |   10.05s |    11 |     3 |     0 |
+|          |   -891us |    +3.5s | +911.0ms |   +10.0s |    +8 |    +1 |     0 |
+--------------------------------------------------------------------------------
+
+Thanks
 Alex
