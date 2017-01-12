@@ -1,262 +1,183 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] power: reset: Add MAX77620 support
-Date: Thu, 12 Jan 2017 18:35:13 +0100
-Message-ID: <20170112173513.GA22794@ulmo.ba.sec>
-References: <20170112161507.23774-1-thierry.reding@gmail.com>
- <5877B088.5040007@nvidia.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5877B088.5040007@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Laxman Dewangan <ldewangan@nvidia.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [RESEND PATCH 2/2] PM / Domains: Fix asynchronous execution of *noirq() callbacks
+Date: Thu, 12 Jan 2017 18:17:43 +0100
+Message-ID: <1484241463-28435-3-git-send-email-ulf.hansson@linaro.org>
+References: <1484241463-28435-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f45.google.com ([209.85.215.45]:33894 "EHLO
+        mail-lf0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751037AbdALRS3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2017 12:18:29 -0500
+Received: by mail-lf0-f45.google.com with SMTP id v186so18161697lfa.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Jan 2017 09:18:02 -0800 (PST)
+In-Reply-To: <1484241463-28435-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Brian Norris <briannorris@chromium.org>
 
+As the PM core may invoke the *noirq() callbacks asynchronously, the
+current lock-less approach in genpd doesn't work. The consequence is that
+we may find concurrent operations racing to power on/off the PM domain.
 
---Kj7319i9nmIyA2yE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+As of now, no immediate errors has been reported, but it's probably only a
+matter time. Therefor let's fix the problem now before this becomes a real
+issue, by deploying the locking scheme to the relevant functions.
 
-On Thu, Jan 12, 2017 at 10:06:24PM +0530, Laxman Dewangan wrote:
->=20
-> On Thursday 12 January 2017 09:45 PM, Thierry Reding wrote:
-> > From: Thierry Reding <treding@nvidia.com>
-> >=20
-> > The Maxim MAX77620 PMIC has the ability to power off and restart the
-> > system. Add a driver that supports power off (via pm_power_off()) and
-> > restart (via arm_pm_restart() on 32-bit and 64-bit ARM).
-> >=20
-> > Based on work by Chaitanya Bandi <bandik@nvidia.com>.
-> >=20
-> > Cc: Chaitanya Bandi <bandik@nvidia.com>
-> > Signed-off-by: Thierry Reding <treding@nvidia.com>
-> > ---
-> >   drivers/power/reset/Kconfig             |   6 ++
-> >   drivers/power/reset/Makefile            |   1 +
-> >   drivers/power/reset/max77620-poweroff.c | 146 +++++++++++++++++++++++=
-+++++++++
-> >   3 files changed, 153 insertions(+)
-> >   create mode 100644 drivers/power/reset/max77620-poweroff.c
-> >=20
-> > diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> > index abeb77217a21..f0d0c20632f8 100644
-> > --- a/drivers/power/reset/Kconfig
-> > +++ b/drivers/power/reset/Kconfig
-> > @@ -98,6 +98,12 @@ config POWER_RESET_IMX
-> >   	  say N here or disable in dts to make sure pm_power_off never be
-> >   	  overwrote wrongly by this driver.
-> > +config POWER_RESET_MAX77620
-> > +	bool "Maxim MAX77620 PMIC power-off driver"
-> > +	depends on MFD_MAX77620
-> > +	help
-> > +	  Power off and restart support for Maxim MAX77620 PMICs.
-> > +
-> >   config POWER_RESET_MSM
-> >   	bool "Qualcomm MSM power-off driver"
-> >   	depends on ARCH_QCOM
-> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> > index 11dae3b56ff9..74511d2f037a 100644
-> > --- a/drivers/power/reset/Makefile
-> > +++ b/drivers/power/reset/Makefile
-> > @@ -9,6 +9,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
-> >   obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
-> >   obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
-> >   obj-$(CONFIG_POWER_RESET_IMX) +=3D imx-snvs-poweroff.o
-> > +obj-$(CONFIG_POWER_RESET_MAX77620) +=3D max77620-poweroff.o
-> >   obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
-> >   obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
-> >   obj-$(CONFIG_POWER_RESET_LTC2952) +=3D ltc2952-poweroff.o
-> > diff --git a/drivers/power/reset/max77620-poweroff.c b/drivers/power/re=
-set/max77620-poweroff.c
-> > new file mode 100644
-> > index 000000000000..4f2682d10925
-> > --- /dev/null
-> > +++ b/drivers/power/reset/max77620-poweroff.c
-> > @@ -0,0 +1,146 @@
-> > +/*
-> > + * Power off driver for Maxim MAX77620 device.
-> > + *
-> > + * Copyright (c) 2014-2016, NVIDIA CORPORATION.  All rights reserved.
->=20
-> Should we change year here?
+Reported-by: Brian Norris <briannorris@chromium.org>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 62 ++++++++++++++++++++++++---------------------
+ 1 file changed, 33 insertions(+), 29 deletions(-)
 
-Heh, indeed. It's probably okay to even leave out the range and make
-this 2017 because the current driver is fairly far removed from the one
-downstream.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index fd2e3e1..6b23d82 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -729,16 +729,17 @@ static bool genpd_dev_active_wakeup(struct generic_pm_domain *genpd,
+ /**
+  * genpd_sync_power_off - Synchronously power off a PM domain and its masters.
+  * @genpd: PM domain to power off, if possible.
++ * @depth: nesting count for lockdep.
+  *
+  * Check if the given PM domain can be powered off (during system suspend or
+  * hibernation) and do that if so.  Also, in that case propagate to its masters.
+  *
+  * This function is only called in "noirq" and "syscore" stages of system power
+- * transitions, so it need not acquire locks (all of the "noirq" callbacks are
+- * executed sequentially, so it is guaranteed that it will never run twice in
+- * parallel).
++ * transitions, but since the "noirq" callbacks may be executed asynchronously,
++ * the lock must be held.
+  */
+-static void genpd_sync_power_off(struct generic_pm_domain *genpd)
++static void genpd_sync_power_off(struct generic_pm_domain *genpd,
++				 unsigned int depth)
+ {
+ 	struct gpd_link *link;
+ 
+@@ -757,20 +758,24 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd)
+ 
+ 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
+ 		genpd_sd_counter_dec(link->master);
+-		genpd_sync_power_off(link->master);
++
++		genpd_lock_nested(link->master, depth + 1);
++		genpd_sync_power_off(link->master, depth + 1);
++		genpd_unlock(link->master);
+ 	}
+ }
+ 
+ /**
+  * genpd_sync_power_on - Synchronously power on a PM domain and its masters.
+  * @genpd: PM domain to power on.
++ * @depth: nesting count for lockdep.
+  *
+  * This function is only called in "noirq" and "syscore" stages of system power
+- * transitions, so it need not acquire locks (all of the "noirq" callbacks are
+- * executed sequentially, so it is guaranteed that it will never run twice in
+- * parallel).
++ * transitions, but since the "noirq" callbacks may be executed asynchronously,
++ * the lock must be held.
+  */
+-static void genpd_sync_power_on(struct generic_pm_domain *genpd)
++static void genpd_sync_power_on(struct generic_pm_domain *genpd,
++				unsigned int depth)
+ {
+ 	struct gpd_link *link;
+ 
+@@ -778,8 +783,11 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd)
+ 		return;
+ 
+ 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
+-		genpd_sync_power_on(link->master);
+ 		genpd_sd_counter_inc(link->master);
++
++		genpd_lock_nested(link->master, depth + 1);
++		genpd_sync_power_on(link->master, depth + 1);
++		genpd_unlock(link->master);
+ 	}
+ 
+ 	_genpd_power_on(genpd, false);
+@@ -888,13 +896,10 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+ 			return ret;
+ 	}
+ 
+-	/*
+-	 * Since all of the "noirq" callbacks are executed sequentially, it is
+-	 * guaranteed that this function will never run twice in parallel for
+-	 * the same PM domain, so it is not necessary to use locking here.
+-	 */
++	genpd_lock(genpd);
+ 	genpd->suspended_count++;
+-	genpd_sync_power_off(genpd);
++	genpd_sync_power_off(genpd, 0);
++	genpd_unlock(genpd);
+ 
+ 	return 0;
+ }
+@@ -919,13 +924,10 @@ static int pm_genpd_resume_noirq(struct device *dev)
+ 	if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
+ 		return 0;
+ 
+-	/*
+-	 * Since all of the "noirq" callbacks are executed sequentially, it is
+-	 * guaranteed that this function will never run twice in parallel for
+-	 * the same PM domain, so it is not necessary to use locking here.
+-	 */
+-	genpd_sync_power_on(genpd);
++	genpd_lock(genpd);
++	genpd_sync_power_on(genpd, 0);
+ 	genpd->suspended_count--;
++	genpd_unlock(genpd);
+ 
+ 	if (genpd->dev_ops.stop && genpd->dev_ops.start)
+ 		ret = pm_runtime_force_resume(dev);
+@@ -1002,13 +1004,10 @@ static int pm_genpd_restore_noirq(struct device *dev)
+ 		return -EINVAL;
+ 
+ 	/*
+-	 * Since all of the "noirq" callbacks are executed sequentially, it is
+-	 * guaranteed that this function will never run twice in parallel for
+-	 * the same PM domain, so it is not necessary to use locking here.
+-	 *
+ 	 * At this point suspended_count == 0 means we are being run for the
+ 	 * first time for the given domain in the present cycle.
+ 	 */
++	genpd_lock(genpd);
+ 	if (genpd->suspended_count++ == 0)
+ 		/*
+ 		 * The boot kernel might put the domain into arbitrary state,
+@@ -1017,7 +1016,8 @@ static int pm_genpd_restore_noirq(struct device *dev)
+ 		 */
+ 		genpd->status = GPD_STATE_POWER_OFF;
+ 
+-	genpd_sync_power_on(genpd);
++	genpd_sync_power_on(genpd, 0);
++	genpd_unlock(genpd);
+ 
+ 	if (genpd->dev_ops.stop && genpd->dev_ops.start)
+ 		ret = pm_runtime_force_resume(dev);
+@@ -1070,13 +1070,17 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
+ 	if (!pm_genpd_present(genpd))
+ 		return;
+ 
++	genpd_lock(genpd);
++
+ 	if (suspend) {
+ 		genpd->suspended_count++;
+-		genpd_sync_power_off(genpd);
++		genpd_sync_power_off(genpd, 0);
+ 	} else {
+-		genpd_sync_power_on(genpd);
++		genpd_sync_power_on(genpd, 0);
+ 		genpd->suspended_count--;
+ 	}
++
++	genpd_unlock(genpd);
+ }
+ 
+ void pm_genpd_syscore_poweroff(struct device *dev)
+-- 
+1.9.1
 
-> > + *
-> > + * Based on work by Chaitanya Bandi <bandik@nvidia.com>.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License as
-> > + * published by the Free Software Foundation version 2.
-> > + *
-> > + * This program is distributed "as is" WITHOUT ANY WARRANTY of any kin=
-d,
-> > + * whether express or implied; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-> > + * General Public License for more details.
-> > + */
-> > +
-> > +#include <linux/errno.h>
-> > +#include <linux/mfd/max77620.h>
-> > +#include <linux/module.h>
-> > +#include <linux/notifier.h>
-> > +#include <linux/of.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/reboot.h>
-> > +#include <linux/regmap.h>
-> > +#include <linux/slab.h>
-> > +
-> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> > +#include <asm/system_misc.h>
-> > +#endif
-> > +
-> > +struct max77620_power {
-> > +	struct regmap *regmap;
-> > +	struct device *dev;
-> > +};
-> > +
-> > +static struct max77620_power *system_power_controller =3D NULL;
->=20
-> As this is static and so already initialized as NULL. Hence we may not ne=
-ed
-> to explicitly NULL initialization.
-
-Yes, I'll drop the explicit assignment.
-
-> > +static void max77620_pm_power_off(void)
-> > +{
-> > +	struct max77620_power *power =3D system_power_controller;
-> > +	unsigned int value;
-> > +	int err;
-> > +
-> > +	if (!power)
-> > +		return;
-> > +
-> > +	/* clear power key interrupts */
-> > +	err =3D regmap_read(power->regmap, MAX77620_REG_ONOFFIRQ, &value);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to clear power key interrupts: %d\n", er=
-r);
-> > +
-> > +	/* clear RTC interrupts */
-> > +	/*
-> > +	err =3D regmap_read(power->regmap, MAX77620_REG_RTCINT, &value);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to clear RTC interrupts: %d\n", err);
-> > +	*/
-> > +
-> > +	/* clear TOP interrupts */
-> > +	err =3D regmap_read(power->regmap, MAX77620_REG_IRQTOP, &value);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to clear interrupts: %d\n", err);
-> > +
-> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
-> > +				 MAX77620_ONOFFCNFG2_SFT_RST_WK, 0);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to clear SFT_RST_WK: %d\n", err);
-> > +
-> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
-> > +				 MAX77620_ONOFFCNFG1_SFT_RST,
-> > +				 MAX77620_ONOFFCNFG1_SFT_RST);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
-> > +}
-> > +
-> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> > +static void max77620_pm_restart(enum reboot_mode mode, const char *cmd)
-> > +{
-> > +	struct max77620_power *power =3D system_power_controller;
-> > +	int err;
-> > +
-> > +	if (!power)
-> > +		return;
-> > +
-> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
-> > +				 MAX77620_ONOFFCNFG2_SFT_RST_WK,
-> > +				 MAX77620_ONOFFCNFG2_SFT_RST_WK);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to set SFT_RST_WK: %d\n", err);
-> > +
-> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
-> > +				 MAX77620_ONOFFCNFG1_SFT_RST,
-> > +				 MAX77620_ONOFFCNFG1_SFT_RST);
-> > +	if (err < 0)
-> > +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
-> > +}
-> > +#endif
-> > +
-> > +static int max77620_poweroff_probe(struct platform_device *pdev)
-> > +{
-> > +	struct max77620_chip *max77620 =3D dev_get_drvdata(pdev->dev.parent);
-> > +	struct device_node *np =3D pdev->dev.parent->of_node;
-> > +	struct max77620_power *power;
-> > +	unsigned int value;
-> > +	int err;
-> > +
-> > +	if (!of_property_read_bool(np, "system-power-controller"))
-> > +		return 0;
-> > +
-> > +	power =3D devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
-> > +	if (!power)
-> > +		return -ENOMEM;
-> > +
-> > +	power->regmap =3D max77620->rmap;
->=20
-> We can use the function info->regmap =3D dev_get_regmap(parent, NULL); to=
- get
-> the regmap. This will make this driver independent of max77620 chip and
-> extend same for other Maxim Chips.
-
-Good point. I'll make that change.
-
-> > +	power->dev =3D &pdev->dev;
-> > +
-> > +	err =3D regmap_read(power->regmap, MAX77620_REG_NVERC, &value);
-> > +	if (err < 0) {
-> > +		dev_err(power->dev, "failed to read event recorder: %d\n", err);
-> > +		return err;
-> > +	}
-> > +
-> > +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
-> > +
-> > +	system_power_controller =3D power;
-> > +	pm_power_off =3D max77620_pm_power_off;
-> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> > +	arm_pm_restart =3D max77620_pm_restart;
->=20
-> What if we want to reset via the Tegra and not through PMIC?
-
-In that case I assume we either don't have a PMIC, or we should not add
-the system-power-controller device tree property to the PMIC node. In
-the latter case this driver won't install any power off or restart
-callbacks.
-
-Thierry
-
---Kj7319i9nmIyA2yE
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlh3vk4ACgkQ3SOs138+
-s6FqIA/+POsJ4swVo73oierrM6w5Q1WuKxymT/nxFlDq7UUNTJu22VdMfBlmgYiA
-GGCCnuCaFqdeqGFIrcT5CyFoGPzLXcQw+V8MiQQiQALQ1w3UbgjTjwv25nbpOu55
-pu7tzzzw6Q0WvMaLCpI7jycBka5AxFrFoBv6A8X6HD/dIZS92hNbTkL9KbcMuXSP
-EAeTOmUZrcpZQrewLeOYM4xc3T9yIwnaGNpf9R0kqsLZnCDIGdTXSIIv9xb98Lo/
-tbX7cZ3K/WyBZSDa7n0gZtLbPvJro/bRlDyF35sv2oya0KVecUbRWgHz7k38IODr
-ZpQDc2/wVi7QgUcfnlkVebBEGg9YjDNUibiKrTXRJwnEnV6fMX4WoNsNVOfB1mML
-bc1YZ8tgh83jewxNQV8WHpATUS5KVCt7shepmh6dUs5+PtnXelOUruxLid+Ctf5X
-euC1IVpMsp1b2/yec6nee0/UUMwQ3aDlTdEtROuoO1ZUkxddJtYFdXQ/voLG5NFg
-/j408Rx4Gfk9WDkRRyKQKXFLyiGjTOl4Oz9uS+JK2hu4+U9VuCtwzHAPRMYSUwvf
-C+Nnt1zEgOlQfFf/kIsIom53aHVwZgcVY71Av+T13B0j1bxwPZIAZx7PXlAQvo7C
-m+yiH6A4fBkomFmHbHkXggmk6VJVQxZGqFjjAUd/xNamCRp/nME=
-=lzNf
------END PGP SIGNATURE-----
-
---Kj7319i9nmIyA2yE--
