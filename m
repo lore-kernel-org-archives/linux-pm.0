@@ -1,80 +1,42 @@
-From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v2 00/11] add support for VBUS max current and min
- voltage limits AXP20X and AXP22X PMICs
-Date: Thu, 12 Jan 2017 10:28:21 +0100
-Message-ID: <20170112092821.5xkgpsbbsxaz3s7h@lukather>
-References: <20161209110419.28981-1-quentin.schulz@free-electrons.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [PATCH v5 1/5] powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
+Date: Thu, 12 Jan 2017 15:12:37 +0530
+Message-ID: <20170112094237.GB3006@localhost.localdomain>
+References: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1484039224-5630-2-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2hkznrjrpqtzmxz7"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20161209110419.28981-1-quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
-List-Id: linux-pm@vger.kernel.org
-
-
---2hkznrjrpqtzmxz7
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:33074 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750768AbdALJms (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2017 04:42:48 -0500
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1484039224-5630-2-git-send-email-ego@linux.vnet.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, mark.rutland@arm.com
 
-On Fri, Dec 09, 2016 at 12:04:08PM +0100, Quentin Schulz wrote:
-> The X-Powers AXP209 and AXP20X PMICs are able to set a limit for the
-> VBUS power supply for both max current and min voltage supplied. This
-> series of patch adds the possibility to set these limits from sysfs.
->=20
-> Also, the AXP223 PMIC shares most of its behaviour with the AXP221 but
-> the former can set the VBUS power supply max current to 100mA, unlike
-> the latter. The AXP223 VBUS power supply driver used to probe on the
-> AXP221 compatible. This series of patch introduces a new compatible for
-> the AXP223 to be able to set the current max limit to 100mA.
->=20
-> With that new compatible, boards having the AXP223 see their DT updated
-> to use the VBUS power supply driver with the correct compatible.
->=20
-> This series of patch also migrates from of_device_is_compatible function
-> to the data field of of_device_id to identify the compatible used to
-> probe. This improves the code readability.
->=20
-> Mostly cosmetic changes in v2 and adding volatile and writeable regs to
-> AXP20X and AXP22X MFD cells for the VBUS power supply driver.
+On Tue, Jan 10, 2017 at 02:37:00PM +0530, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> 
+> Currently all the low-power idle states are expected to wake up
+> at reset vector 0x100. Which is why the macro IDLE_STATE_ENTER_SEQ
+> that puts the CPU to an idle state and never returns.
+> 
+> On ISA v3.0, when the ESL and EC bits in the PSSCR are zero, the CPU
+> is expected to wake up at the next instruction of the idle
+> instruction.
+> 
+> This patch adds a new macro named IDLE_STATE_ENTER_SEQ_NORET for the
+> no-return variant and reuses the name IDLE_STATE_ENTER_SEQ
+> for a variant that allows resuming operation at the instruction next
+> to the idle-instruction.
+> 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+> No changes from v4
+>
 
-Applied all the DT patches. I also fixed all the prefixes. Please make
-sure to look at what prefixes are used by a given subsystem next time.
-
-Thanks!
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---2hkznrjrpqtzmxz7
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJYd0wxAAoJEBx+YmzsjxAgbF0P/1vHq7i3wdH65f4cQuhTC4Wr
-Ab2X8ioNNguS+pD413sZ6g00q1+pt1ifvYb321PkgMe1NtOfaof6+qLoQIFb8IxA
-N5+7hyGiTSuXoJnxwv7kWxCxOjIkmblSVKbyfdoY+/g3kx7zDUCdMzOo2fOnM/O6
-M56n06h3UMNpirqSW+v6Mk2MCQP6KJiZtXuD3CJXT8X4L3+EO29FGhNgGAkVoZIu
-sSKX7RpoAvfMkJ1rQ+Kt1wQpssbWcACtgbzfLnYu9fOI9ybr0LxU2Z3uOc8bWleL
-MfVnhhYUJkaSovNkSO13++ZIHOhhPJqzucbyYCv79w5BKRvYBgpcYrarjtMZqbOr
-y1xnfSlJRQ+rpEPCQeDqCWBbmgFlvqSzJ4vro3aKhcwSlKflYPZ5cBAAv9AX6Q/0
-QSgGt6CWQoDuU72VPzk5BV2vOjDcfWaL7X9ZtVASWBqwz59pDRpxCKLRy9/Lhg66
-GuceOmrXNmJnbr+6+rUdmt+037ObFALC0i7B6NDLl76j0p3Cfpp2r/ZzrIyZhp4m
-ANmZ9HuaaEa0Iq4lu+Cb8Uxj8OTdsQrJmM570zqsOD48MmBCGDi8/rjV8wpzYv/I
-fHveEFBuJauIC/qUx/hKqxnlaXmN7R3tEiUDe5S2v3HCwIv5ZWMKa5bp6TKjqd/I
-IzeP8ufvJgkD22ZfrMu0
-=T7Yu
------END PGP SIGNATURE-----
-
---2hkznrjrpqtzmxz7--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Balbir Singh <bsingharora@gmail.com> 
