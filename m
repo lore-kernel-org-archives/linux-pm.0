@@ -1,15 +1,15 @@
 From: "Gustavo A. R. Silva" <silvagustavosilva@gmail.com>
 Subject: [PATCH] drivers: power: supply: Compress return logic into one line.
-Date: Wed, 11 Jan 2017 20:29:35 -0600
-Message-ID: <20170112022935.GA22272@embeddedgus>
+Date: Wed, 11 Jan 2017 20:45:57 -0600
+Message-ID: <20170112024557.GA23047@embeddedgus>
 Reply-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:36447 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751151AbdALC3h (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 21:29:37 -0500
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:36422 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750739AbdALCqA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 21:46:00 -0500
 Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -31,45 +31,56 @@ expression e;
 
 Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 ---
- drivers/power/supply/ab8500_btemp.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ drivers/power/supply/pcf50633-charger.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
-index 6ffdc18..9b01b52 100644
---- a/drivers/power/supply/ab8500_btemp.c
-+++ b/drivers/power/supply/ab8500_btemp.c
-@@ -123,10 +123,7 @@ static LIST_HEAD(ab8500_btemp_list);
-  */
- struct ab8500_btemp *ab8500_btemp_get(void)
+diff --git a/drivers/power/supply/pcf50633-charger.c b/drivers/power/supply/pcf50633-charger.c
+index d05597b..b3c1873 100644
+--- a/drivers/power/supply/pcf50633-charger.c
++++ b/drivers/power/supply/pcf50633-charger.c
+@@ -393,7 +393,6 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
  {
--	struct ab8500_btemp *btemp;
--	btemp = list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
--
--	return btemp;
-+	return list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
- }
- EXPORT_SYMBOL(ab8500_btemp_get);
+ 	struct power_supply_config psy_cfg = {};
+ 	struct pcf50633_mbc *mbc;
+-	int ret;
+ 	int i;
+ 	u8 mbcs1;
  
-@@ -470,7 +467,7 @@ static int ab8500_btemp_get_batctrl_res(struct ab8500_btemp *di)
- static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
- 	const struct abx500_res_to_temp *tbl, int tbl_size, int res)
- {
--	int i, temp;
-+	int i;
- 	/*
- 	 * Calculate the formula for the straight line
- 	 * Simple interpolation if we are within
-@@ -488,9 +485,8 @@ static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
- 			i++;
+@@ -419,8 +418,7 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
+ 					     &psy_cfg);
+ 	if (IS_ERR(mbc->adapter)) {
+ 		dev_err(mbc->pcf->dev, "failed to register adapter\n");
+-		ret = PTR_ERR(mbc->adapter);
+-		return ret;
++		return PTR_ERR(mbc->adapter);
  	}
  
--	temp = tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
-+	return tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
- 		(res - tbl[i].resist)) / (tbl[i + 1].resist - tbl[i].resist);
--	return temp;
- }
+ 	mbc->usb = power_supply_register(&pdev->dev, &pcf50633_mbc_usb_desc,
+@@ -428,8 +426,7 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
+ 	if (IS_ERR(mbc->usb)) {
+ 		dev_err(mbc->pcf->dev, "failed to register usb\n");
+ 		power_supply_unregister(mbc->adapter);
+-		ret = PTR_ERR(mbc->usb);
+-		return ret;
++		return PTR_ERR(mbc->usb);
+ 	}
  
- /**
+ 	mbc->ac = power_supply_register(&pdev->dev, &pcf50633_mbc_ac_desc,
+@@ -438,12 +435,10 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
+ 		dev_err(mbc->pcf->dev, "failed to register ac\n");
+ 		power_supply_unregister(mbc->adapter);
+ 		power_supply_unregister(mbc->usb);
+-		ret = PTR_ERR(mbc->ac);
+-		return ret;
++		return PTR_ERR(mbc->ac);
+ 	}
+ 
+-	ret = sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group);
+-	if (ret)
++	if (sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group))
+ 		dev_err(mbc->pcf->dev, "failed to create sysfs entries\n");
+ 
+ 	mbcs1 = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCS1);
 -- 
 2.5.0
 
