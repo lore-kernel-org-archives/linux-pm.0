@@ -1,228 +1,77 @@
-From: Laxman Dewangan <ldewangan@nvidia.com>
-Subject: Re: [PATCH] power: reset: Add MAX77620 support
-Date: Thu, 12 Jan 2017 22:06:24 +0530
-Message-ID: <5877B088.5040007@nvidia.com>
-References: <20170112161507.23774-1-thierry.reding@gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: Preventing PM from suspending device
+Date: Thu, 12 Jan 2017 18:02:40 +0100
+Message-ID: <CAPDyKFqWEzMSTkz+pzXckXebzr8WH4dDHOE38OFX+w771J5ZEA@mail.gmail.com>
+References: <20170109172247.GI29854@bigcity.dyn.berto.se> <CAPDyKFq0pbk3=Ne2wE9b62g+tCzNrT6Mm-5H1C+0obgJmTQSzw@mail.gmail.com>
+ <CAMuHMdXhtJQ-1nt3gTvkAJZpZ1o=A4iz_67VKZox5jSBOxN3oQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170112161507.23774-1-thierry.reding@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:37228 "EHLO
+        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750733AbdALRCn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2017 12:02:43 -0500
+Received: by mail-wm0-f54.google.com with SMTP id c206so30009295wme.0
+        for <linux-pm@vger.kernel.org>; Thu, 12 Jan 2017 09:02:42 -0800 (PST)
+In-Reply-To: <CAMuHMdXhtJQ-1nt3gTvkAJZpZ1o=A4iz_67VKZox5jSBOxN3oQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-
-On Thursday 12 January 2017 09:45 PM, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
+On 12 January 2017 at 08:10, Geert Uytterhoeven <geert@linux-m68k.org> wrot=
+e:
+> Hi Ulf,
 >
-> The Maxim MAX77620 PMIC has the ability to power off and restart the
-> system. Add a driver that supports power off (via pm_power_off()) and
-> restart (via arm_pm_restart() on 32-bit and 64-bit ARM).
+> On Thu, Jan 12, 2017 at 12:19 AM, Ulf Hansson <ulf.hansson@linaro.org> wr=
+ote:
+>> On 9 January 2017 at 18:22, Niklas S=C3=B6derlund
+>> <niklas.soderlund@ragnatech.se> wrote:
+>>> Hi Ulf and Linux PM,
+>>>
+>>> I have a question regarding if a driver can signal to the PM core that
+>>> it should not be suspended from its struct dev_pm_ops suspend callback.
+>>
+>> No. The driver/subsystem needs to deal this.
+>>
+>>> My use-case is the sh_eth driver which I have added Wake-on-Lan support
+>>> to, see [1]. In this driver I need to prevent the PM core to disable th=
+e
+>>> module clock to the device if WoL is enabled. Currently I call
+>>> clk_enable()/clk_disable() from the suspend/resume callbacks to modify
+>>> the usage count of the clock to prevent the clock from being switched
+>>> off by PM. This do not feel like the best solution to my problem.
+>>
+>> I am not sure I get this. Is someone else than the driver performing
+>> clk gateing/un-gating of the same clock?
+>>>
+>>> Is there a more generic way to let PM know that I'm fine with the syste=
+m
+>>> being suspended and I have suspended as much as I can but I'm a wake up=
+ source
+>>> so could please not switch of my clock and power domain?
+>>
+>> Seems like a quite common issue, but before we go into more details,
+>> are you using genpd as the power domain? If not, what?
 >
-> Based on work by Chaitanya Bandi <bandik@nvidia.com>.
->
-> Cc: Chaitanya Bandi <bandik@nvidia.com>
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
->   drivers/power/reset/Kconfig             |   6 ++
->   drivers/power/reset/Makefile            |   1 +
->   drivers/power/reset/max77620-poweroff.c | 146 ++++++++++++++++++++++++++++++++
->   3 files changed, 153 insertions(+)
->   create mode 100644 drivers/power/reset/max77620-poweroff.c
->
-> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-> index abeb77217a21..f0d0c20632f8 100644
-> --- a/drivers/power/reset/Kconfig
-> +++ b/drivers/power/reset/Kconfig
-> @@ -98,6 +98,12 @@ config POWER_RESET_IMX
->   	  say N here or disable in dts to make sure pm_power_off never be
->   	  overwrote wrongly by this driver.
->   
-> +config POWER_RESET_MAX77620
-> +	bool "Maxim MAX77620 PMIC power-off driver"
-> +	depends on MFD_MAX77620
-> +	help
-> +	  Power off and restart support for Maxim MAX77620 PMICs.
-> +
->   config POWER_RESET_MSM
->   	bool "Qualcomm MSM power-off driver"
->   	depends on ARCH_QCOM
-> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-> index 11dae3b56ff9..74511d2f037a 100644
-> --- a/drivers/power/reset/Makefile
-> +++ b/drivers/power/reset/Makefile
-> @@ -9,6 +9,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
->   obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
->   obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
->   obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
-> +obj-$(CONFIG_POWER_RESET_MAX77620) += max77620-poweroff.o
->   obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
->   obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
->   obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
-> diff --git a/drivers/power/reset/max77620-poweroff.c b/drivers/power/reset/max77620-poweroff.c
-> new file mode 100644
-> index 000000000000..4f2682d10925
-> --- /dev/null
-> +++ b/drivers/power/reset/max77620-poweroff.c
-> @@ -0,0 +1,146 @@
-> +/*
-> + * Power off driver for Maxim MAX77620 device.
-> + *
-> + * Copyright (c) 2014-2016, NVIDIA CORPORATION.  All rights reserved.
+> The Ethernet device is part of a PM Domain, hence it's power-managed by
+> genpd.
+> On most SoCs, that PM Domain is a clock domain, so Runtime PM and system
+> suspend disable the device's module clock, the latter breaking WoL.
+> Calling clk_enable() from the suspend callback works around that.
+> On some SoCs, that PM Domain is both a clock domain and a power domain.
+> Calling clk_enable() from the suspend callback is not sufficient here, bu=
+t
+> fortunately the power domain stays powered for another reason (it contain=
+s
+> the memory controller).
 
-Should we change year here?
+Thanks for the additional information, very useful.
 
-> + *
-> + * Based on work by Chaitanya Bandi <bandik@nvidia.com>.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation version 2.
-> + *
-> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any kind,
-> + * whether express or implied; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-> + * General Public License for more details.
-> + */
-> +
-> +#include <linux/errno.h>
-> +#include <linux/mfd/max77620.h>
-> +#include <linux/module.h>
-> +#include <linux/notifier.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/reboot.h>
-> +#include <linux/regmap.h>
-> +#include <linux/slab.h>
-> +
-> +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> +#include <asm/system_misc.h>
-> +#endif
-> +
-> +struct max77620_power {
-> +	struct regmap *regmap;
-> +	struct device *dev;
-> +};
-> +
-> +static struct max77620_power *system_power_controller = NULL;
+Allow me to think of this a little bit, before I give any further
+suggestions. Indeed a very interesting use-case, well worth to think
+more about! :-)
 
-As this is static and so already initialized as NULL. Hence we may not 
-need to explicitly NULL initialization.
-> +
-> +static void max77620_pm_power_off(void)
-> +{
-> +	struct max77620_power *power = system_power_controller;
-> +	unsigned int value;
-> +	int err;
-> +
-> +	if (!power)
-> +		return;
-> +
-> +	/* clear power key interrupts */
-> +	err = regmap_read(power->regmap, MAX77620_REG_ONOFFIRQ, &value);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to clear power key interrupts: %d\n", err);
-> +
-> +	/* clear RTC interrupts */
-> +	/*
-> +	err = regmap_read(power->regmap, MAX77620_REG_RTCINT, &value);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to clear RTC interrupts: %d\n", err);
-> +	*/
-> +
-> +	/* clear TOP interrupts */
-> +	err = regmap_read(power->regmap, MAX77620_REG_IRQTOP, &value);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to clear interrupts: %d\n", err);
-> +
-> +	err = regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
-> +				 MAX77620_ONOFFCNFG2_SFT_RST_WK, 0);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to clear SFT_RST_WK: %d\n", err);
-> +
-> +	err = regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
-> +				 MAX77620_ONOFFCNFG1_SFT_RST,
-> +				 MAX77620_ONOFFCNFG1_SFT_RST);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
-> +}
-> +
-> +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> +static void max77620_pm_restart(enum reboot_mode mode, const char *cmd)
-> +{
-> +	struct max77620_power *power = system_power_controller;
-> +	int err;
-> +
-> +	if (!power)
-> +		return;
-> +
-> +	err = regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
-> +				 MAX77620_ONOFFCNFG2_SFT_RST_WK,
-> +				 MAX77620_ONOFFCNFG2_SFT_RST_WK);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to set SFT_RST_WK: %d\n", err);
-> +
-> +	err = regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
-> +				 MAX77620_ONOFFCNFG1_SFT_RST,
-> +				 MAX77620_ONOFFCNFG1_SFT_RST);
-> +	if (err < 0)
-> +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
-> +}
-> +#endif
-> +
-> +static int max77620_poweroff_probe(struct platform_device *pdev)
-> +{
-> +	struct max77620_chip *max77620 = dev_get_drvdata(pdev->dev.parent);
-> +	struct device_node *np = pdev->dev.parent->of_node;
-> +	struct max77620_power *power;
-> +	unsigned int value;
-> +	int err;
-> +
-> +	if (!of_property_read_bool(np, "system-power-controller"))
-> +		return 0;
-> +
-> +	power = devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
-> +	if (!power)
-> +		return -ENOMEM;
-> +
-> +	power->regmap = max77620->rmap;
-
-We can use the function info->regmap = dev_get_regmap(parent, NULL); to 
-get the regmap. This will make this driver independent of max77620 chip 
-and extend same for other Maxim Chips.
-
-> +	power->dev = &pdev->dev;
-> +
-> +	err = regmap_read(power->regmap, MAX77620_REG_NVERC, &value);
-> +	if (err < 0) {
-> +		dev_err(power->dev, "failed to read event recorder: %d\n", err);
-> +		return err;
-> +	}
-> +
-> +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
-> +
-> +	system_power_controller = power;
-> +	pm_power_off = max77620_pm_power_off;
-> +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> +	arm_pm_restart = max77620_pm_restart;
-
-What if we want to reset via the Tegra and not through PMIC?
-> +#endif
-> +
-> +	return 0;
-> +}
-> +
-> +static struct platform_driver max77620_poweroff_driver = {
-> +	.driver = {
-> +		.name = "max77620-power",
-> +	},
-> +	.probe = max77620_poweroff_probe,
-> +};
-> +module_platform_driver(max77620_poweroff_driver);
-> +
-> +MODULE_DESCRIPTION("Maxim MAX77620 PMIC power off and restart driver");
-> +MODULE_AUTHOR("Thierry Reding <treding@nvidia.com>");
-> +MODULE_ALIAS("platform:max77620-power");
-> +MODULE_LICENSE("GPL v2");
+Kind regards
+Uffe
