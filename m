@@ -1,55 +1,75 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 0/7] mfd/iio: move the AB8500 GPADC driver to IIO
-Date: Thu, 12 Jan 2017 04:04:19 +0100
-Message-ID: <20170112030419.j7ux7igi54556koc@earth>
-References: <20170110234745.29691-1-linus.walleij@linaro.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5e5cejsrhjwdz5tt"
-Return-path: <linux-hwmon-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170110234745.29691-1-linus.walleij@linaro.org>
-Sender: linux-hwmon-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Jonathan Cameron <jic23@kernel.org>, linux-iio@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Mboumba Cedric Madianga <cedric.madianga@gmail.com>, linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
+From: xinwu.liu@intel.com
+Subject: [PATCH] [PATCH]thermal/intel_powerclamp:fix sched_setscheduler fail
+Date: Thu, 12 Jan 2017 13:21:56 +0800
+Message-ID: <1484198516-8272-1-git-send-email-xinwu.liu@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Liu, Xinwu" <xinwu.liu@intel.com>, "Zhang, Di" <di.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: "Liu, Xinwu" <xinwu.liu@intel.com>
 
---5e5cejsrhjwdz5tt
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+The schedule policy of thread "kidle_inject" is SCHED_NORMAL:
+[  772.796284] intel_powerclamp: Start idle injection to reduce power
+[  772.825757] ------------[ cut here ]------------
+[  772.825877] WARNING: CPU: 0 PID: 2140 at ../../../../../../kernel/glv/kernel/sched/idle.c:298 play_idle+0x16f/0x230
+[  772.826096] Modules linked in: ip6table_raw iptable_raw hci_uart bluetooth rfkill_gpio cfg80211 imc_ipc(O)
+[  772.826194] CPU: 0 PID: 2140 Comm: kidle_inject/0 Tainted: G          IO    4.9.0-ge701680f3a17 #1
+[  772.826373]  ffffc90001103d58 ffffffff813ba085 0000000000000000 0000000000000000
+[  772.826552]  ffffc90001103d98 ffffffff810953e1 0000012a691441c0 0000000000000006
+[  772.826731]  0000000000000002 ffff88006a39d708 ffff8800691441c0 ffffe8ffffc0dab8
+[  772.826794] Call Trace:
+[  772.826903]  [<ffffffff813ba085>] dump_stack+0x67/0x92
+[  772.827007]  [<ffffffff810953e1>] __warn+0xd1/0xf0
+[  772.827124]  [<ffffffff810954cd>] warn_slowpath_null+0x1d/0x20
+[  772.827234]  [<ffffffff810d6c6f>] play_idle+0x16f/0x230
+[  772.827365]  [<ffffffff81a9b4b7>] ? __schedule+0x217/0x6f0
+[  772.827485]  [<ffffffff81856c9a>] clamp_idle_injection_func+0x6a/0x1f0
+[  772.827612]  [<ffffffff810b568d>] kthread_worker_fn+0xdd/0x200
+[  772.827741]  [<ffffffff810b55b0>] ? __kthread_init_worker+0x50/0x50
+[  772.827860]  [<ffffffff810b5542>] kthread+0x102/0x120
+[  772.828004]  [<ffffffff810b5440>] ? kthread_park+0x60/0x60
+[  772.828118]  [<ffffffff81aa2517>] ret_from_fork+0x27/0x40
+[  772.828228] ---[ end trace bb738d5d79381554 ]---
 
-Hi,
+Normaly, the user thread have not the capability "CAP_SYS_NICE"
+(and they shouldn't), it will fail to change the schedule policy.
+So, fix it by changing by themselves.
 
-On Wed, Jan 11, 2017 at 12:47:38AM +0100, Linus Walleij wrote:
-> I don't know the best merge path for this but suspect that as
-> usual Lee can merge them all and provide an immutable branch to
-> the other subsystems, which he has lots of routine in handling.
-> The final DTS patch can probably be merged separately through
-> ARM SoC.
+Signed-off-by: Liu, Xinwu <xinwu.liu@intel.com>
+Signed-off-by: Zhang, Di <di.zhang@intel.com>
+---
+ drivers/thermal/intel_powerclamp.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I'm fine with that solution.
-
--- Sebastian
-
---5e5cejsrhjwdz5tt
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh28jIACgkQ2O7X88g7
-+ppDHQ/7B9bE5PEEFxVo94KH572oJrlA5SF8JANteNANCdcQlJP7kJzj+Ox1FNAm
-Dx8iO0R4AUb+LsSXu01oBG87oQlETaOg0UG3Cf8AvLy48EVDm0TEZpt6dI/3TzZ6
-hfQlCF6B3PPtwVHQcqALPzTrmTb/uh5Y/2Lp09DqNe+Iz6zIpLoQ95+cnNnyPWF2
-K0hwzQne9eGAb2ZA0O9AqY10v07MrAL/tpBzTTKPMJhTY6TPXrfEcn7mIEOJTS/H
-NGFCm3rzc9nn6nTZv8yyxHJmugTgEfEsIyCbZMgdJtwjd5rx90GwI1rSjQ5ESRi0
-IXab1S+bYCeKtphkGFnQBIxV3OyHjEnCq9EPRfAkJ3gqANupgED2b4InhqZyqF0O
-Jk+iQ4CMJ77E8UPVLGftxUSUE9e051tt+GFpIaFr9E27JvPrS0DpFdk2RXpDh5gY
-PvEHELRrnorx9EIq4/DcRxORpkalOslGU1Qi44JKAZ+gDEo6ODN6gv38IDjN7m9q
-/zvNKUARcxZ0Ef6l344IIeaiCyPmM1sT59y/ZkiwXiJpO6PKx625AIn+RwyIc4L3
-gBjJHbM/5LvkD6ZcbDyJyRYCHdq3ULt2mMt8WvU5Q45dABhhtl9BspOpi+jaBxLk
-wr1/XlHtsumnshh/u0kO5l86Byqd8dwEeH1aUzFAeYF/kWVObbc=
-=oHcP
------END PGP SIGNATURE-----
-
---5e5cejsrhjwdz5tt--
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 83e6971..3a2e5fe 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -50,6 +50,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+ #include <linux/sched/rt.h>
++#include <linux/once.h>
+ 
+ #include <asm/nmi.h>
+ #include <asm/msr.h>
+@@ -385,6 +386,7 @@ static void clamp_balancing_func(struct kthread_work *work)
+ 	unsigned int compensated_ratio;
+ 	int interval; /* jiffies to sleep for each attempt */
+ 
++	DO_ONCE(sched_setscheduler, current, SCHED_FIFO, &sparam);
+ 	w_data = container_of(work, struct powerclamp_worker_data,
+ 			      balancing_work);
+ 
+@@ -507,7 +509,6 @@ static void start_power_clamp_worker(unsigned long cpu)
+ 	w_data->cpu = cpu;
+ 	w_data->clamping = true;
+ 	set_bit(cpu, cpu_clamping_mask);
+-	sched_setscheduler(worker->task, SCHED_FIFO, &sparam);
+ 	kthread_init_work(&w_data->balancing_work, clamp_balancing_func);
+ 	kthread_init_delayed_work(&w_data->idle_injection_work,
+ 				  clamp_idle_injection_func);
+-- 
+1.9.1
