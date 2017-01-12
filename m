@@ -1,69 +1,262 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [PATCH v5 4/5] powernv: Pass PSSCR value and mask to
- power9_idle_stop
-Date: Thu, 12 Jan 2017 22:48:02 +0530
-Message-ID: <20170112171802.GB7027@localhost.localdomain>
-References: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
- <1484039224-5630-5-git-send-email-ego@linux.vnet.ibm.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH] power: reset: Add MAX77620 support
+Date: Thu, 12 Jan 2017 18:35:13 +0100
+Message-ID: <20170112173513.GA22794@ulmo.ba.sec>
+References: <20170112161507.23774-1-thierry.reding@gmail.com>
+ <5877B088.5040007@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1484039224-5630-5-git-send-email-ego@linux.vnet.ibm.com>
-List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
-List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
-List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
- <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
-Sender: "Linuxppc-dev"
- <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, devicetree@vger.kernel.org, Michael Neuling <mikey@neuling.org>, linux-pm@vger.kernel.org, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Paul Mackerras <paulus@samba.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <5877B088.5040007@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Laxman Dewangan <ldewangan@nvidia.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 10, 2017 at 02:37:03PM +0530, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> 
-> The arch300_idle_stop method currently takes only the requested stop
-      power9_idle_stop (see subject :) and second paragraph)
-> level as a parameter and picks up the rest of the PSSCR bits from a
-> hand-coded macro. This is not a very flexible design, especially when
-> the firmware has the capability to communicate the psscr value and the
-> mask associated with a particular stop state via device tree.
-> 
-> This patch modifies the power9_idle_stop API to take as parameters the
-> PSSCR value and the PSSCR mask corresponding to the stop state that
-> needs to be set. These PSSCR value and mask are respectively obtained
-> by parsing the "ibm,cpu-idle-state-psscr" and
-> "ibm,cpu-idle-state-psscr-mask" fields from the device tree.
-> 
-> In addition to this, the patch adds support for handling stop states
-> for which ESL and EC bits in the PSSCR are zero. As per the
-> architecture, a wakeup from these stop states resumes execution from
-> the subsequent instruction as opposed to waking up at the System
-> Vector.
-> 
-> The older firmware sets only the Requested Level (RL) field in the
-> psscr and psscr-mask exposed in the device tree. For older firmware
-> where psscr-mask=0xf, this patch will set the default sane values that
-> the set for for remaining PSSCR fields (i.e PSLL, MTL, ESL, EC, and
-> TR). For the new firmware, the patch will validate that the invariants
-> required by the ISA for the psscr values are maintained by the
-> firmware.
-> 
-> This skiboot patch that exports fully populated PSSCR values and the
-> mask for all the stop states can be found here:
-> https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-> 
-> [Optimize the number of instructions before entering STOP with
-> ESL=EC=0, validate the PSSCR values provided by the firimware
-> maintains the invariants required as per the ISA suggested by Balbir
-> Singh]
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
 
-Acked-by: Balbir Singh <bsingharora@gmail.com>
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Jan 12, 2017 at 10:06:24PM +0530, Laxman Dewangan wrote:
+>=20
+> On Thursday 12 January 2017 09:45 PM, Thierry Reding wrote:
+> > From: Thierry Reding <treding@nvidia.com>
+> >=20
+> > The Maxim MAX77620 PMIC has the ability to power off and restart the
+> > system. Add a driver that supports power off (via pm_power_off()) and
+> > restart (via arm_pm_restart() on 32-bit and 64-bit ARM).
+> >=20
+> > Based on work by Chaitanya Bandi <bandik@nvidia.com>.
+> >=20
+> > Cc: Chaitanya Bandi <bandik@nvidia.com>
+> > Signed-off-by: Thierry Reding <treding@nvidia.com>
+> > ---
+> >   drivers/power/reset/Kconfig             |   6 ++
+> >   drivers/power/reset/Makefile            |   1 +
+> >   drivers/power/reset/max77620-poweroff.c | 146 +++++++++++++++++++++++=
++++++++++
+> >   3 files changed, 153 insertions(+)
+> >   create mode 100644 drivers/power/reset/max77620-poweroff.c
+> >=20
+> > diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> > index abeb77217a21..f0d0c20632f8 100644
+> > --- a/drivers/power/reset/Kconfig
+> > +++ b/drivers/power/reset/Kconfig
+> > @@ -98,6 +98,12 @@ config POWER_RESET_IMX
+> >   	  say N here or disable in dts to make sure pm_power_off never be
+> >   	  overwrote wrongly by this driver.
+> > +config POWER_RESET_MAX77620
+> > +	bool "Maxim MAX77620 PMIC power-off driver"
+> > +	depends on MFD_MAX77620
+> > +	help
+> > +	  Power off and restart support for Maxim MAX77620 PMICs.
+> > +
+> >   config POWER_RESET_MSM
+> >   	bool "Qualcomm MSM power-off driver"
+> >   	depends on ARCH_QCOM
+> > diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> > index 11dae3b56ff9..74511d2f037a 100644
+> > --- a/drivers/power/reset/Makefile
+> > +++ b/drivers/power/reset/Makefile
+> > @@ -9,6 +9,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
+> >   obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
+> >   obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
+> >   obj-$(CONFIG_POWER_RESET_IMX) +=3D imx-snvs-poweroff.o
+> > +obj-$(CONFIG_POWER_RESET_MAX77620) +=3D max77620-poweroff.o
+> >   obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
+> >   obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
+> >   obj-$(CONFIG_POWER_RESET_LTC2952) +=3D ltc2952-poweroff.o
+> > diff --git a/drivers/power/reset/max77620-poweroff.c b/drivers/power/re=
+set/max77620-poweroff.c
+> > new file mode 100644
+> > index 000000000000..4f2682d10925
+> > --- /dev/null
+> > +++ b/drivers/power/reset/max77620-poweroff.c
+> > @@ -0,0 +1,146 @@
+> > +/*
+> > + * Power off driver for Maxim MAX77620 device.
+> > + *
+> > + * Copyright (c) 2014-2016, NVIDIA CORPORATION.  All rights reserved.
+>=20
+> Should we change year here?
+
+Heh, indeed. It's probably okay to even leave out the range and make
+this 2017 because the current driver is fairly far removed from the one
+downstream.
+
+> > + *
+> > + * Based on work by Chaitanya Bandi <bandik@nvidia.com>.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License as
+> > + * published by the Free Software Foundation version 2.
+> > + *
+> > + * This program is distributed "as is" WITHOUT ANY WARRANTY of any kin=
+d,
+> > + * whether express or implied; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> > + * General Public License for more details.
+> > + */
+> > +
+> > +#include <linux/errno.h>
+> > +#include <linux/mfd/max77620.h>
+> > +#include <linux/module.h>
+> > +#include <linux/notifier.h>
+> > +#include <linux/of.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/reboot.h>
+> > +#include <linux/regmap.h>
+> > +#include <linux/slab.h>
+> > +
+> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> > +#include <asm/system_misc.h>
+> > +#endif
+> > +
+> > +struct max77620_power {
+> > +	struct regmap *regmap;
+> > +	struct device *dev;
+> > +};
+> > +
+> > +static struct max77620_power *system_power_controller =3D NULL;
+>=20
+> As this is static and so already initialized as NULL. Hence we may not ne=
+ed
+> to explicitly NULL initialization.
+
+Yes, I'll drop the explicit assignment.
+
+> > +static void max77620_pm_power_off(void)
+> > +{
+> > +	struct max77620_power *power =3D system_power_controller;
+> > +	unsigned int value;
+> > +	int err;
+> > +
+> > +	if (!power)
+> > +		return;
+> > +
+> > +	/* clear power key interrupts */
+> > +	err =3D regmap_read(power->regmap, MAX77620_REG_ONOFFIRQ, &value);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to clear power key interrupts: %d\n", er=
+r);
+> > +
+> > +	/* clear RTC interrupts */
+> > +	/*
+> > +	err =3D regmap_read(power->regmap, MAX77620_REG_RTCINT, &value);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to clear RTC interrupts: %d\n", err);
+> > +	*/
+> > +
+> > +	/* clear TOP interrupts */
+> > +	err =3D regmap_read(power->regmap, MAX77620_REG_IRQTOP, &value);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to clear interrupts: %d\n", err);
+> > +
+> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
+> > +				 MAX77620_ONOFFCNFG2_SFT_RST_WK, 0);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to clear SFT_RST_WK: %d\n", err);
+> > +
+> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
+> > +				 MAX77620_ONOFFCNFG1_SFT_RST,
+> > +				 MAX77620_ONOFFCNFG1_SFT_RST);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
+> > +}
+> > +
+> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> > +static void max77620_pm_restart(enum reboot_mode mode, const char *cmd)
+> > +{
+> > +	struct max77620_power *power =3D system_power_controller;
+> > +	int err;
+> > +
+> > +	if (!power)
+> > +		return;
+> > +
+> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
+> > +				 MAX77620_ONOFFCNFG2_SFT_RST_WK,
+> > +				 MAX77620_ONOFFCNFG2_SFT_RST_WK);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to set SFT_RST_WK: %d\n", err);
+> > +
+> > +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
+> > +				 MAX77620_ONOFFCNFG1_SFT_RST,
+> > +				 MAX77620_ONOFFCNFG1_SFT_RST);
+> > +	if (err < 0)
+> > +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
+> > +}
+> > +#endif
+> > +
+> > +static int max77620_poweroff_probe(struct platform_device *pdev)
+> > +{
+> > +	struct max77620_chip *max77620 =3D dev_get_drvdata(pdev->dev.parent);
+> > +	struct device_node *np =3D pdev->dev.parent->of_node;
+> > +	struct max77620_power *power;
+> > +	unsigned int value;
+> > +	int err;
+> > +
+> > +	if (!of_property_read_bool(np, "system-power-controller"))
+> > +		return 0;
+> > +
+> > +	power =3D devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
+> > +	if (!power)
+> > +		return -ENOMEM;
+> > +
+> > +	power->regmap =3D max77620->rmap;
+>=20
+> We can use the function info->regmap =3D dev_get_regmap(parent, NULL); to=
+ get
+> the regmap. This will make this driver independent of max77620 chip and
+> extend same for other Maxim Chips.
+
+Good point. I'll make that change.
+
+> > +	power->dev =3D &pdev->dev;
+> > +
+> > +	err =3D regmap_read(power->regmap, MAX77620_REG_NVERC, &value);
+> > +	if (err < 0) {
+> > +		dev_err(power->dev, "failed to read event recorder: %d\n", err);
+> > +		return err;
+> > +	}
+> > +
+> > +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
+> > +
+> > +	system_power_controller =3D power;
+> > +	pm_power_off =3D max77620_pm_power_off;
+> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> > +	arm_pm_restart =3D max77620_pm_restart;
+>=20
+> What if we want to reset via the Tegra and not through PMIC?
+
+In that case I assume we either don't have a PMIC, or we should not add
+the system-power-controller device tree property to the PMIC node. In
+the latter case this driver won't install any power off or restart
+callbacks.
+
+Thierry
+
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlh3vk4ACgkQ3SOs138+
+s6FqIA/+POsJ4swVo73oierrM6w5Q1WuKxymT/nxFlDq7UUNTJu22VdMfBlmgYiA
+GGCCnuCaFqdeqGFIrcT5CyFoGPzLXcQw+V8MiQQiQALQ1w3UbgjTjwv25nbpOu55
+pu7tzzzw6Q0WvMaLCpI7jycBka5AxFrFoBv6A8X6HD/dIZS92hNbTkL9KbcMuXSP
+EAeTOmUZrcpZQrewLeOYM4xc3T9yIwnaGNpf9R0kqsLZnCDIGdTXSIIv9xb98Lo/
+tbX7cZ3K/WyBZSDa7n0gZtLbPvJro/bRlDyF35sv2oya0KVecUbRWgHz7k38IODr
+ZpQDc2/wVi7QgUcfnlkVebBEGg9YjDNUibiKrTXRJwnEnV6fMX4WoNsNVOfB1mML
+bc1YZ8tgh83jewxNQV8WHpATUS5KVCt7shepmh6dUs5+PtnXelOUruxLid+Ctf5X
+euC1IVpMsp1b2/yec6nee0/UUMwQ3aDlTdEtROuoO1ZUkxddJtYFdXQ/voLG5NFg
+/j408Rx4Gfk9WDkRRyKQKXFLyiGjTOl4Oz9uS+JK2hu4+U9VuCtwzHAPRMYSUwvf
+C+Nnt1zEgOlQfFf/kIsIom53aHVwZgcVY71Av+T13B0j1bxwPZIAZx7PXlAQvo7C
+m+yiH6A4fBkomFmHbHkXggmk6VJVQxZGqFjjAUd/xNamCRp/nME=
+=lzNf
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--
