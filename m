@@ -1,67 +1,66 @@
-From: Alex Shi <alex.shi@linaro.org>
-Subject: [PATCH v2 2/3] cpu: expose pm_qos_resume_latency for each cpu
-Date: Thu, 12 Jan 2017 21:27:03 +0800
-Message-ID: <1484227624-6740-3-git-send-email-alex.shi@linaro.org>
-References: <1484227624-6740-1-git-send-email-alex.shi@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1484227624-6740-1-git-send-email-alex.shi@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+From: chris.diamand@arm.com
+Subject: [PATCH v2] PM / devfreq: Don't delete sysfs group twice
+Date: Thu, 12 Jan 2017 14:57:41 +0000
+Message-ID: <1484233061-22516-1-git-send-email-chris.diamand@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:47366 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750720AbdALO6K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Jan 2017 09:58:10 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org
+Cc: Sudeep Holla <Sudeep.Holla@arm.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>, Chris Diamand <chris.diamand@arm.com>
 
-The cpu-dma PM QoS constraint impacts all the cpus in the system. There
-is no way to let the user to choose a PM QoS constraint per cpu.
+From: Chris Diamand <chris.diamand@arm.com>
 
-The following patch exposes to the userspace a per cpu based sysfs file
-in order to let the userspace to change the value of the PM QoS latency
-constraint.
+The 'userspace' governor adds a sysfs entry, which is removed when
+the governor is changed, or the devfreq device is released. However,
+when the latter occurs via device_unregister(), device_del() is
+called first, which removes the sysfs entries recursively and deletes
+the kobject.
 
-This change is inoperative in its form and the cpuidle governors have to
-take into account the per cpu latency constraint in addition to the
-global cpu-dma latency constraint in order to operate properly.
+This means we get an Oops when the governor calls
+sysfs_remove_group() on the deleted kobject. Fix this by only doing
+the call when kobj *hasn't* been kobject_del()'d.
 
-BTW
-The pm_qos_resume_latency usage defined in
-Documentation/ABI/testing/sysfs-devices-power
-The /sys/devices/.../power/pm_qos_resume_latency_us attribute
-contains the PM QoS resume latency limit for the given device,
-which is the maximum allowed time it can take to resume the
-device, after it has been suspended at run time, from a resume
-request to the moment the device will be ready to process I/O,
-in microseconds.  If it is equal to 0, however, this means that
-the PM QoS resume latency may be arbitrary.
+Note that we can't just remove the call to sysfs_remove_group()
+entirely - it's needed for when the governor is changed to one which
+doesn't need a sysfs entry.
 
-Signed-off-by: Alex Shi <alex.shi@linaro.org>
-To: linux-kernel@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Signed-off-by: Chris Diamand <chris.diamand@arm.com>
 ---
- drivers/base/cpu.c | 2 ++
- 1 file changed, 2 insertions(+)
+Hi all - this is a resend of my updated devfreq removal fix.
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 4c28e1a..2c3b359 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -17,6 +17,7 @@
- #include <linux/of.h>
- #include <linux/cpufeature.h>
- #include <linux/tick.h>
-+#include <linux/pm_qos.h>
+This takes a different approach to v1, and fixes the issue in the governor
+instead. This means reference counting should still work as usual, so anything
+which doesn't call devfreq_remove_device() should still work.
+
+Cheers!
+Chris
+
+ drivers/devfreq/governor_userspace.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 35de6e8..9db4d6f 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -112,7 +112,13 @@ static int userspace_init(struct devfreq *devfreq)
  
- #include "base.h"
- 
-@@ -376,6 +377,7 @@ int register_cpu(struct cpu *cpu, int num)
- 
- 	per_cpu(cpu_sys_devices, num) = &cpu->dev;
- 	register_cpu_under_node(num, cpu_to_node(num));
-+	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
- 
- 	return 0;
+ static void userspace_exit(struct devfreq *devfreq)
+ {
+-	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
++	/*
++	 * Remove the sysfs entry, unless this is being called after
++	 * device_del(), which should have done this already via kobject_del().
++	 */
++	if (devfreq->dev.kobj.sd)
++		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
++
+ 	kfree(devfreq->data);
+ 	devfreq->data = NULL;
  }
 -- 
-2.8.1.101.g72d917a
+1.9.1
+
