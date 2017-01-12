@@ -1,86 +1,74 @@
-From: "Gustavo A. R. Silva" <silvagustavosilva@gmail.com>
-Subject: [PATCH] drivers: power: supply: Compress return logic into one line.
-Date: Wed, 11 Jan 2017 20:45:57 -0600
-Message-ID: <20170112024557.GA23047@embeddedgus>
-Reply-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v5 00/11] power: supply: bq27xxx: implement individual
+ chip revision support
+Date: Thu, 12 Jan 2017 03:54:42 +0100
+Message-ID: <20170112025442.kdxt77bm344fme7k@earth>
+References: <1482369743-79764-1-git-send-email-chris@lapa.com.au>
+ <1484099088-452-1-git-send-email-chris@cpdesign.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:36422 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750739AbdALCqA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 21:46:00 -0500
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="7mu2ryhzdjjajbvy"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1484099088-452-1-git-send-email-chris@cpdesign.com.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chris Lapa <chris@lapa.com.au>
+Cc: pali.rohar@gmail.com, afd@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Simplify return logic to avoid unnecessary variable assignments.
-These issues were detected using Coccinelle and the following semantic patch:
 
-@@
-local idexpression ret;
-expression e;
-@@
+--7mu2ryhzdjjajbvy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--ret =
-+return
-     e;
--return ret;
+Hi,
 
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
----
- drivers/power/supply/pcf50633-charger.c | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+On Wed, Jan 11, 2017 at 12:44:37PM +1100, Chris Lapa wrote:
+> This patch series correctly renames the patch subject prefix to
+> 'power: supply: bq27xxx'.
+>=20
+> It also fixes up the deprecation of the BQ27500 and BQ27510 definitions.
+>=20
+> Otherwise the patch content is the same functionally as the v4 series.
+>=20
+> Chris Lapa (11):
+>   power: supply: bq27xxx: rename BQ27500 allow for deprecation in
+>     future.
+>   power: supply: bq27xxx: rename BQ27510 allow for deprecation in
+>     future.
+>   power: supply: bq27xxx: adds specific support for bq27500/1 revision.
+>   power: supply: bq27xxx: adds specific support for bq27510-g1 revision.
+>   power: supply: bq27xxx: adds specific support for bq27510-g2 revision.
+>   power: supply: bq27xxx: adds specific support for bq27510-g3 revision.
+>   power: supply: bq27xxx: adds specific support for bq27520-g1 revision.
+>   power: supply: bq27xxx: adds specific support for bq27520-g2 revision.
+>   power: supply: bq27xxx: adds specific support for bq27520-g3 revision.
+>   power: supply: bq27xxx: adds specific support for bq27520-g4 revision.
+>   power: supply: bq27xxx: adds device tree binding documentation.
 
-diff --git a/drivers/power/supply/pcf50633-charger.c b/drivers/power/supply/pcf50633-charger.c
-index d05597b..b3c1873 100644
---- a/drivers/power/supply/pcf50633-charger.c
-+++ b/drivers/power/supply/pcf50633-charger.c
-@@ -393,7 +393,6 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
- {
- 	struct power_supply_config psy_cfg = {};
- 	struct pcf50633_mbc *mbc;
--	int ret;
- 	int i;
- 	u8 mbcs1;
- 
-@@ -419,8 +418,7 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
- 					     &psy_cfg);
- 	if (IS_ERR(mbc->adapter)) {
- 		dev_err(mbc->pcf->dev, "failed to register adapter\n");
--		ret = PTR_ERR(mbc->adapter);
--		return ret;
-+		return PTR_ERR(mbc->adapter);
- 	}
- 
- 	mbc->usb = power_supply_register(&pdev->dev, &pcf50633_mbc_usb_desc,
-@@ -428,8 +426,7 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
- 	if (IS_ERR(mbc->usb)) {
- 		dev_err(mbc->pcf->dev, "failed to register usb\n");
- 		power_supply_unregister(mbc->adapter);
--		ret = PTR_ERR(mbc->usb);
--		return ret;
-+		return PTR_ERR(mbc->usb);
- 	}
- 
- 	mbc->ac = power_supply_register(&pdev->dev, &pcf50633_mbc_ac_desc,
-@@ -438,12 +435,10 @@ static int pcf50633_mbc_probe(struct platform_device *pdev)
- 		dev_err(mbc->pcf->dev, "failed to register ac\n");
- 		power_supply_unregister(mbc->adapter);
- 		power_supply_unregister(mbc->usb);
--		ret = PTR_ERR(mbc->ac);
--		return ret;
-+		return PTR_ERR(mbc->ac);
- 	}
- 
--	ret = sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group);
--	if (ret)
-+	if (sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group))
- 		dev_err(mbc->pcf->dev, "failed to create sysfs entries\n");
- 
- 	mbcs1 = pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCS1);
--- 
-2.5.0
+Thanks, queued into power-supply's for-next branch.
 
+-- Sebastian
+
+--7mu2ryhzdjjajbvy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh27/AACgkQ2O7X88g7
++pr96Q//f7X0WYV4N26Vtac+tqCpT7ujZxAze1wsvyeXfCgzH+ANBhAUCyusBxHr
+ox0zeDwIgm1GEBUodNEBaPz1Vq1cWVl9OgO/oZUnxhrbf5YHOvpmJxK3qKT1hL0c
+Prg88dZY8SApCkiP7HXMEtLJzrNf3kOgUHbz+dnaXL2y2j6AQdJZgzFcvcAgNMcZ
+FAdhoNU70asRmqERICQg37ySH/jlGyZJovXfUMuRvZR4PpwWl32toLnJJ236VAad
+OlLyshGlON+N7JGJuuuBjLjvcPVMvfrs4ZrNAZhJhDsgmjfINK3NKmvB038n7+Je
+eQK/i8qscQ6iwhaqkRujK95cBFi6UkyHW9U4C5evVRHvajJhJFdit+bzlHnM1Miv
+HZtQJIwQqeJPhWcgm3xoSg5NG+tnmlB8DtZByVVAnCuPf08LrA6z1Gt9/F77dCam
+HeHBd8BD4ayr3w7A8ZfQuBfxNvVq+fx6fjE+SAKTGWi902xtRm90UPUgM+MXSoBj
+2IwPk2JYewmg7qQC9+ee8evX4NWsvlJ1foysH/ZXXlKcOSMD1TtUB7mfAltWL2JE
+MygPecRB443wI/wj0+t2zg9PzdfYT03z3OE8Rydt7XpSn0XdvwoNk50+uSpjKn+n
+0BOrg41nkRaih/s+ZGr43WnQZnNLARHbACU6iUNt4hNDUXqjVzs=
+=DFFB
+-----END PGP SIGNATURE-----
+
+--7mu2ryhzdjjajbvy--
