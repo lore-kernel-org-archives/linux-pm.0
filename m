@@ -1,100 +1,75 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 4/6] power: bq24190_charger: Don't read fault register
- outside irq_handle_thread()
-Date: Wed, 11 Jan 2017 18:11:53 -0800
-Message-ID: <CAKvHMgQ3=7xwG=QW7-04RE8Y2bW4vZabW9aYazHsO3D3Zfd0cw@mail.gmail.com>
-References: <20170112004154.31568-1-tony@atomide.com> <20170112004154.31568-5-tony@atomide.com>
+From: "Gustavo A. R. Silva" <silvagustavosilva@gmail.com>
+Subject: [PATCH] drivers: power: supply: Compress return logic into one line.
+Date: Wed, 11 Jan 2017 20:29:35 -0600
+Message-ID: <20170112022935.GA22272@embeddedgus>
+Reply-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:34094 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1758227AbdALCRg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 21:17:36 -0500
-In-Reply-To: <20170112004154.31568-5-tony@atomide.com>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:36447 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751151AbdALC3h (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Jan 2017 21:29:37 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Jan 11, 2017 at 4:41 PM, Tony Lindgren <tony@atomide.com> wrote:
-> From: Liam Breck <kernel@networkimprov.net>
->
-> Caching the fault register after a single read may not keep an accurate
-> value.
->
-> Fix the issue by doing two reads of the fault register as specified in the
-> data sheet. And let's do this only irq_handle_thread() to avoid accidentally
-> clearing the fault status as specified in the data sheet:
->
-> "When a fault occurs, the charger device sends out INT
->  and keeps the fault state in REG09 until the host reads the fault register.
->  Before the host reads REG09 and all the faults are cleared, the charger
->  device would not send any INT upon new faults. In order to read the
->  current fault status, the host has to read REG09 two times consecutively.
->  The 1st reads fault register status from the last read [1] and the 2nd reads
->  the current fault register status."
->
-> [1] presumably a typo; should be "last fault"
->
-> Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery
-> Charger")
-> Cc: Mark A. Greer <mgreer@animalcreek.com>
-> Cc: Matt Ranostay <matt@ranostay.consulting>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> [tony@atomide.com: cleaned up a bit]
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 99 ++++++++++------------------------
->  1 file changed, 29 insertions(+), 70 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -144,10 +144,7 @@
->   * so the first read after a fault returns the latched value and subsequent
->   * reads return the current value.  In order to return the fault status
->   * to the user, have the interrupt handler save the reg's value and retrieve
-> - * it in the appropriate health/status routine.  Each routine has its own
-> - * flag indicating whether it should use the value stored by the last run
-> - * of the interrupt handler or do an actual reg read.  That way each routine
-> - * can report back whatever fault may have occured.
-> + * it in the appropriate health/status routine.
->   */
->  struct bq24190_dev_info {
->         struct i2c_client               *client;
-> @@ -159,9 +156,6 @@ struct bq24190_dev_info {
->         unsigned int                    gpio_int;
->         unsigned int                    irq;
->         struct mutex                    f_reg_lock;
-> -       bool                            charger_health_valid;
-> -       bool                            battery_health_valid;
-> -       bool                            battery_status_valid;
->         u8                              f_reg;
->         u8                              ss_reg;
->         u8                              watchdog;
-> @@ -635,21 +629,11 @@ static int bq24190_charger_get_health(struct bq24190_dev_info *bdi,
->                 union power_supply_propval *val)
->  {
->         u8 v;
-> -       int health, ret;
-> +       int health;
->
->         mutex_lock(&bdi->f_reg_lock);
-> -
-> -       if (bdi->charger_health_valid) {
-> -               v = bdi->f_reg;
-> -               bdi->charger_health_valid = false;
-> -               mutex_unlock(&bdi->f_reg_lock);
-> -       } else {
-> -               mutex_unlock(&bdi->f_reg_lock);
-> -
-> -               ret = bq24190_read(bdi, BQ24190_REG_F, &v);
-> -               if (ret < 0)
-> -                       return ret;
-> -       }
-> +       v = bdi->f_reg;
-> +       mutex_unlock(&bdi->f_reg_lock);
+Simplify return logic to avoid unnecessary variable assignments.
+These issues were detected using Coccinelle and the following semantic patch:
 
-bdi->f_reg is the only thing protected by the mutex, and is only ever
-set or read. Is it OK to use an atomic type here?
+@@
+local idexpression ret;
+expression e;
+@@
+
+-ret =
++return
+     e;
+-return ret;
+
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+---
+ drivers/power/supply/ab8500_btemp.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
+index 6ffdc18..9b01b52 100644
+--- a/drivers/power/supply/ab8500_btemp.c
++++ b/drivers/power/supply/ab8500_btemp.c
+@@ -123,10 +123,7 @@ static LIST_HEAD(ab8500_btemp_list);
+  */
+ struct ab8500_btemp *ab8500_btemp_get(void)
+ {
+-	struct ab8500_btemp *btemp;
+-	btemp = list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
+-
+-	return btemp;
++	return list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
+ }
+ EXPORT_SYMBOL(ab8500_btemp_get);
+ 
+@@ -470,7 +467,7 @@ static int ab8500_btemp_get_batctrl_res(struct ab8500_btemp *di)
+ static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
+ 	const struct abx500_res_to_temp *tbl, int tbl_size, int res)
+ {
+-	int i, temp;
++	int i;
+ 	/*
+ 	 * Calculate the formula for the straight line
+ 	 * Simple interpolation if we are within
+@@ -488,9 +485,8 @@ static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
+ 			i++;
+ 	}
+ 
+-	temp = tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
++	return tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
+ 		(res - tbl[i].resist)) / (tbl[i + 1].resist - tbl[i].resist);
+-	return temp;
+ }
+ 
+ /**
+-- 
+2.5.0
+
