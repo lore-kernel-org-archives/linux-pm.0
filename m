@@ -1,54 +1,44 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v4 3/4] dmaengine: pl330: Store pointer to slave device
-Date: Fri, 13 Jan 2017 08:26:39 +0100
-Message-ID: <1484292400-29730-4-git-send-email-m.szyprowski@samsung.com>
-References: <1484292400-29730-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170113072652eucas1p21a2e7300622470d018bfa0f327d16132@eucas1p2.samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1484292400-29730-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH 12/12] PM / OPP: Update Documentation to remove RCU
+ specific bits
+Date: Fri, 13 Jan 2017 00:44:51 -0800
+Message-ID: <20170113084451.GR17126@codeaurora.org>
+References: <cover.1481106919.git.viresh.kumar@linaro.org>
+ <164ad6c0c6a5200eae99a7ac23554f33542f465b.1481106919.git.viresh.kumar@linaro.org>
+ <20170109223937.GR17126@codeaurora.org>
+ <20170110043941.GE6332@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:41314 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751222AbdAMIoy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2017 03:44:54 -0500
+Content-Disposition: inline
+In-Reply-To: <20170110043941.GE6332@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-Store the pointer to slave device, which requested our channel. It will be
-later used to implement runtime PM of PL330 DMA controller. Although
-DMA channels might be requested many times, each DMA peripheral channel is
-physically dedicated only for specific hardware, so there should be only
-one slave device for each channel.
+On 01/10, Viresh Kumar wrote:
+> @@ -252,6 +252,7 @@ dev_pm_opp_get_freq - Retrieve the freq represented by the opp pointer.
+>                  if (!IS_ERR(max_opp) && !IS_ERR(requested_opp))
+>                         r = soc_test_validity(max_opp, requested_opp);
+>                  dev_pm_opp_put(max_opp);
+> +                dev_pm_opp_put(requested_opp);
+>                 /* do other things */
+>          }
+>          soc_test_validity(..)
+> 
+> 
+> Please add your RBY if it looks fine to you now.
+> 
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- drivers/dma/pl330.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Sure.
 
-diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-index b6b2cc912380..c77a3494659c 100644
---- a/drivers/dma/pl330.c
-+++ b/drivers/dma/pl330.c
-@@ -450,6 +450,7 @@ struct dma_pl330_chan {
- 
- 	/* for runtime pm tracking */
- 	bool active;
-+	struct device *slave;
- };
- 
- struct pl330_dmac {
-@@ -2093,6 +2094,14 @@ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
- 	if (chan_id >= pl330->num_peripherals)
- 		return NULL;
- 
-+	if (!pl330->peripherals[chan_id].slave) {
-+		pl330->peripherals[chan_id].slave = slave;
-+	} else if (pl330->peripherals[chan_id].slave != slave) {
-+		dev_err(pl330->ddma.dev,
-+			"Can't use same channel with multiple slave devices!\n");
-+		return NULL;
-+	}
-+
- 	return dma_get_slave_channel(&pl330->peripherals[chan_id].chan);
- }
- 
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+
 -- 
-1.9.1
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
