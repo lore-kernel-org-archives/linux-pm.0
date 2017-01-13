@@ -1,117 +1,181 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 1/7] devicetree: power: add battery state machine
- documentation
-Date: Fri, 13 Jan 2017 19:33:53 +0100
-Message-ID: <20170113183353.u3ug46gi66kaivjd@earth>
-References: <20170111062003.10110-1-matt@ranostay.consulting>
- <20170111062003.10110-2-matt@ranostay.consulting>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Fri, 13 Jan 2017 13:25:47 -0600
+Message-ID: <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com> <20170104205536.15963-3-d-gerlach@ti.com>
+ <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop> <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com> <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="hthd7sbsaxsxgu6i"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:60404 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750713AbdAMSd7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 13 Jan 2017 13:33:59 -0500
-Content-Disposition: inline
-In-Reply-To: <20170111062003.10110-2-matt@ranostay.consulting>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Matt Ranostay <matt@ranostay.consulting>, Rob Herring <robh@kernel.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, tony@atomide.com
 
+On Thu, Jan 12, 2017 at 9:27 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+> Rob,
+>
+> On 01/11/2017 03:34 PM, Rob Herring wrote:
+>>
+>> On Mon, Jan 9, 2017 at 11:57 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>>
+>>> Rob,
+>>>
+>>> On 01/09/2017 11:50 AM, Rob Herring wrote:
+>>>>
+>>>>
+>>>> On Wed, Jan 04, 2017 at 02:55:34PM -0600, Dave Gerlach wrote:
+>>>>>
+>>>>>
+>>>>> Add a generic power domain implementation, TI SCI PM Domains, that
+>>>>> will hook into the genpd framework and allow the TI SCI protocol to
+>>>>> control device power states.
+>>>>>
+>>>>> Also, provide macros representing each device index as understood
+>>>>> by TI SCI to be used in the device node power-domain references.
+>>>>> These are identifiers for the K2G devices managed by the PMMC.
+>>>>>
+>>>>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>>>>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>>>>> ---
+>>>>> v2->v3:
+>>>>>         Update k2g_pds node docs to show it should be a child of pmmc
+>>>>> node.
+>>>>>         In early versions a phandle was used to point to pmmc and docs
+>>>>> still
+>>>>>         incorrectly showed this.
+>>>>>
+>>>>>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 59 ++++++++++++++
+>>>>>  MAINTAINERS                                        |  2 +
+>>>>>  include/dt-bindings/genpd/k2g.h                    | 90
+>>>>> ++++++++++++++++++++++
+>>>>>  3 files changed, 151 insertions(+)
+>>>>>  create mode 100644
+>>>>> Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>  create mode 100644 include/dt-bindings/genpd/k2g.h
+>>>>>
+>>>>> diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>> b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>> new file mode 100644
+>>>>> index 000000000000..4c9064e512cb
+>>>>> --- /dev/null
+>>>>> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>> @@ -0,0 +1,59 @@
+>>>>> +Texas Instruments TI-SCI Generic Power Domain
+>>>>> +---------------------------------------------
+>>>>> +
+>>>>> +Some TI SoCs contain a system controller (like the PMMC, etc...) that
+>>>>> is
+>>>>> +responsible for controlling the state of the IPs that are present.
+>>>>> +Communication between the host processor running an OS and the system
+>>>>> +controller happens through a protocol known as TI-SCI [1]. This pm
+>>>>> domain
+>>>>> +implementation plugs into the generic pm domain framework and makes
+>>>>> use
+>>>>> of
+>>>>> +the TI SCI protocol power on and off each device when needed.
+>>>>> +
+>>>>> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+>>>>> +
+>>>>> +PM Domain Node
+>>>>> +==============
+>>>>> +The PM domain node represents the global PM domain managed by the
+>>>>> PMMC,
+>>>>> +which in this case is the single implementation as documented by the
+>>>>> generic
+>>>>> +PM domain bindings in
+>>>>> Documentation/devicetree/bindings/power/power_domain.txt.
+>>>>> +Because this relies on the TI SCI protocol to communicate with the
+>>>>> PMMC
+>>>>> it
+>>>>> +must be a child of the pmmc node.
+>>>>> +
+>>>>> +Required Properties:
+>>>>> +--------------------
+>>>>> +- compatible: should be "ti,sci-pm-domain"
+>>>>> +- #power-domain-cells: Must be 0.
+>>>>> +
+>>>>> +Example (K2G):
+>>>>> +-------------
+>>>>> +       pmmc: pmmc {
+>>>>> +               compatible = "ti,k2g-sci";
+>>>>> +               ...
+>>>>> +
+>>>>> +               k2g_pds: k2g_pds {
+>>>>> +                       compatible = "ti,sci-pm-domain";
+>>>>> +                       #power-domain-cells = <0>;
+>>>>> +               };
+>>>>> +       };
+>>>>> +
+>>>>> +PM Domain Consumers
+>>>>> +===================
+>>>>> +Hardware blocks that require SCI control over their state must provide
+>>>>> +a reference to the sci-pm-domain they are part of and a unique device
+>>>>> +specific ID that identifies the device.
+>>>>> +
+>>>>> +Required Properties:
+>>>>> +--------------------
+>>>>> +- power-domains: phandle pointing to the corresponding PM domain node.
+>>>>> +- ti,sci-id: index representing the device id to be passed oevr SCI to
+>>>>> +            be used for device control.
+>>>>
+>>>>
+>>>>
+>>>> As I've already stated before, this goes in power-domain cells. When you
+>>>> have a single thing (i.e. node) that controls multiple things, then you
+>>>> you need to specify the ID for each of them in phandle args. This is how
+>>>> irqs, gpio, clocks, *everything* in DT works.
+>>>
+>>>
+>>>
+>>> You think the reasoning for doing it this way provided by both Ulf and
+>>> myself on v2 [1] is not valid then?
+>>>
+>>> From Ulf:
+>>>
+>>> To me, the TI SCI ID, is similar to a "conid" for any another "device
+>>> resource" (like clock, pinctrl, regulator etc) which we can describe
+>>> in DT and assign to a device node. The only difference here, is that
+>>> we don't have common API to fetch the resource (like clk_get(),
+>>> regulator_get()), but instead we fetches the device's resource from
+>>> SoC specific code, via genpd's device ->attach() callback.
+>>
+>>
+>> Sorry, but that sounds like a kernel problem to me and has nothing to
+>> do with DT bindings.
+>>
+>>> From me:
+>>>
+>>> Yes, you've pretty much hit it on the head. It is not an index into a
+>>> list
+>>> of genpds but rather identifies the device *within* a single genpd. It is
+>>> a
+>>> property specific to each device that resides in a ti-sci-genpd, not a
+>>> mapping describing which genpd the device belongs to. The generic power
+>>> domain binding is concerned with mapping the device to a specific genpd,
+>>> which is does fine for us, but we have a sub mapping for devices that
+>>> exist
+>>> inside a genpd which, we must describe as well, hence the ti,sci-id.
+>>>
+>>>
+>>> So to summarize, the genpd framework does interpret the phandle arg as an
+>>> index into multiple genpds, just as you've said other frameworks do, but
+>>> this is not what I am trying to do, we have multiple devices within this
+>>> *single* genpd, hence the need for the ti,sci-id property.
+>>
+>>
+>> Fix the genpd framework rather than work around it in DT.
+>
+>
+> I still disagree that this has nothing to do with DT bindings, as the
+> current DT binding represents something different already. I am trying to
+> extend it to give me additional information needed for our platforms. Are
+> you saying that we should break what the current DT binding already
+> represents to mean something else?
 
---hthd7sbsaxsxgu6i
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No idea because what's the current binding? From the patch, looks like
+a new binding to me.
 
-Hi,
-
-On Tue, Jan 10, 2017 at 10:19:57PM -0800, Matt Ranostay wrote:
-> Documentation on battery properties that can be defined for
-> fine tuning fuel gauge state machines.
->=20
-> Cc: Rob Herring <robh@kernel.org>
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-> ---
->  .../devicetree/bindings/power/supply/battery.txt     | 20 ++++++++++++++=
-++++++
->  1 file changed, 20 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/batter=
-y.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b=
-/Documentation/devicetree/bindings/power/supply/battery.txt
-> new file mode 100644
-> index 000000000000..a6ca761e0a29
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-> @@ -0,0 +1,20 @@
-> +Battery State Machine Support
-
-Let's also add a mandatory compatible string. This binding
-is only relevant for dumb batteries, since other ones can
-self-identify. I suggest
-
-compatible =3D "fixed-battery"
-
-> +Optional Properties
-> + - nominal-microvolt: dead battery voltage in microvolts
-> + - design-microwatt-hours: battery design mWh in microwatts
-> + - design-microamp-hours: battery design mAh in microamps
-
-I think we should mandate the property name of the phandle in the
-generic binding instead of each potential fuel-gauge/charger.
-Maybe something like the following paragraph:
-
-Batteries are supposed to be referenced by chargers and/or
-fuel-gauges using a phandle. The phandle's property should
-be named "monitored-battery".
-
-> +Example:
-> +
-> +	bat: battery@0 {
-> +		nominal-microvolt =3D <3700000>;
-> +		design-microwatt-hours =3D <5290000>;
-> +		design-microamp-hours =3D <1430000>;
-> +	};
-> +
-> +	charger: charger@0 {
-> +		...
-> +		monitored-battery =3D <&bat>;
-> +		...
-> +	};
-
-Let's also add a fuel-gauge to the example to avoid any confusion
-between fuel-gauge and battery.
-
-fuel_gauge: fuel-gauge {
-    ...
-    monitored-battery =3D <&bat>;
-    ...
-};
-
--- Sebastian
-
---hthd7sbsaxsxgu6i
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh5HY4ACgkQ2O7X88g7
-+prnyRAAnMsO/j9bMr1CN0fkniT+G6/Qd+zu4b68K+D6rkO3jrZB55Dh8EHLSgqH
-MNs7yN2SWvZPgqtaou2e0FNK2aZ12tzJT1VJf2LIhzigCuKTVUHsosQmD6ijLAY0
-Es5wQzKG2dE/BgZBbKdxRW5g/Av7EBd0mjFpn5v4Bd311eWU1N5tbRstIAZXR9nq
-++bURfHuQzAlLDqU/XUg1MVdk8b8wZE97Zj9R2nglzuvUpVUbm+mwyEufDhJFQNj
-RMxzZkkEPvDJ9hYBtNGxKpiyVwPrOm6DMh9e4miR5d23brqoSxtcuIkVIYHGxYzC
-UXinDzZ3rJTvAIp163+TWFSCHNL0Su0nyO0tYAKK58hxVNc2Z3fCQeqAXqq4uA8b
-MNqEbAzxsK3qwPmnAREvgzq2UKugAKpQz6SOwOPXhfaYw5S6s3Bg1EPUreLYq8PQ
-YX1Tyxqj/OXhRsFgisfykSib4oW8UjSkZY3PCq4glwbhZhRCpnpG+SlFI31mJQc5
-4jhXxYQWH0Oj5GdSZm6VgGZCHbqX1YqGGo80LcAFYRfhxTnslNo22fBPO7+mw77Z
-xKrre40JUq6MGEuhemMgy3lZxi7wuVWnH7q5DaNAXj6KY68zuw9ifuI9YRvnpI9k
-BJwxwYQpzcRNW8ZMMeq67hMi7X5rZ2krecmrZ+6TLqVkDJATIEg=
-=+9Go
------END PGP SIGNATURE-----
-
---hthd7sbsaxsxgu6i--
+Rob
