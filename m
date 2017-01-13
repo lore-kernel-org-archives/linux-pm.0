@@ -1,238 +1,187 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 4/4] selftest: cpufreq: Add special tests
-Date: Fri, 13 Jan 2017 12:06:48 +0530
-Message-ID: <618cbb8e2bc2d17bacc3c1989823e6815888eafb.1484289212.git.viresh.kumar@linaro.org>
-References: <cover.1484289212.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1484289212.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1484289212.git.viresh.kumar@linaro.org>
-References: <cover.1484289212.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Shuah Khan <shuah@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH v4 1/4] dmaengine: pl330: remove pdata based initialization
+Date: Fri, 13 Jan 2017 08:26:37 +0100
+Message-ID: <1484292400-29730-2-git-send-email-m.szyprowski@samsung.com>
+References: <1484292400-29730-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170113072651eucas1p214662327fe5a3dfbaa79d11c2a0b195a@eucas1p2.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:8930 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751145AbdAMH04 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2017 02:26:56 -0500
+In-reply-to: <1484292400-29730-1-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 
-This patch adds support for special tests which were reported on the PM
-list over the years, which helped catching core bugs by several
-developers.
+This driver is now used only on platforms which support device tree, so
+it is safe to remove legacy platform data based initialization code.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- tools/testing/selftests/cpufreq/Makefile         |   2 +-
- tools/testing/selftests/cpufreq/governor.sh      |   7 ++
- tools/testing/selftests/cpufreq/main.sh          |  25 ++++-
- tools/testing/selftests/cpufreq/special-tests.sh | 115 +++++++++++++++++++++++
- 4 files changed, 146 insertions(+), 3 deletions(-)
- create mode 100755 tools/testing/selftests/cpufreq/special-tests.sh
+ arch/arm/plat-samsung/devs.c |  1 -
+ drivers/dma/pl330.c          | 42 ++++++++----------------------------------
+ include/linux/amba/pl330.h   | 35 -----------------------------------
+ 3 files changed, 8 insertions(+), 70 deletions(-)
+ delete mode 100644 include/linux/amba/pl330.h
 
-diff --git a/tools/testing/selftests/cpufreq/Makefile b/tools/testing/selftests/cpufreq/Makefile
-index 80c8727dcec1..3955cd96f3a2 100644
---- a/tools/testing/selftests/cpufreq/Makefile
-+++ b/tools/testing/selftests/cpufreq/Makefile
-@@ -1,7 +1,7 @@
- all:
+diff --git a/arch/arm/plat-samsung/devs.c b/arch/arm/plat-samsung/devs.c
+index 03fac123676d..dc269d9143bc 100644
+--- a/arch/arm/plat-samsung/devs.c
++++ b/arch/arm/plat-samsung/devs.c
+@@ -10,7 +10,6 @@
+  * published by the Free Software Foundation.
+ */
  
- TEST_PROGS := main.sh
--TEST_FILES := cpu.sh cpufreq.sh governor.sh module.sh
-+TEST_FILES := cpu.sh cpufreq.sh governor.sh module.sh special-tests.sh
- 
- include ../lib.mk
- 
-diff --git a/tools/testing/selftests/cpufreq/governor.sh b/tools/testing/selftests/cpufreq/governor.sh
-index 2e42432892ab..def645103555 100755
---- a/tools/testing/selftests/cpufreq/governor.sh
-+++ b/tools/testing/selftests/cpufreq/governor.sh
-@@ -71,6 +71,13 @@ __switch_governor()
- 	echo $2 > $CPUFREQROOT/$1/scaling_governor
+-#include <linux/amba/pl330.h>
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/interrupt.h>
+diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
+index 7539f73df9e0..78be12b45a45 100644
+--- a/drivers/dma/pl330.c
++++ b/drivers/dma/pl330.c
+@@ -22,7 +22,6 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/dmaengine.h>
+ #include <linux/amba/bus.h>
+-#include <linux/amba/pl330.h>
+ #include <linux/scatterlist.h>
+ #include <linux/of.h>
+ #include <linux/of_dma.h>
+@@ -2076,18 +2075,6 @@ static void pl330_tasklet(unsigned long data)
+ 	}
  }
  
-+# param:
-+# $1: cpu, $2: governor
-+__switch_governor_for_cpu()
-+{
-+	echo $2 > $CPUROOT/$1/cpufreq/scaling_governor
-+}
-+
- # SWITCH GOVERNORS
+-bool pl330_filter(struct dma_chan *chan, void *param)
+-{
+-	u8 *peri_id;
+-
+-	if (chan->device->dev->driver != &pl330_driver.drv)
+-		return false;
+-
+-	peri_id = chan->private;
+-	return *peri_id == (unsigned long)param;
+-}
+-EXPORT_SYMBOL(pl330_filter);
+-
+ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
+ 						struct of_dma *ofdma)
+ {
+@@ -2832,7 +2819,6 @@ static int __maybe_unused pl330_resume(struct device *dev)
+ static int
+ pl330_probe(struct amba_device *adev, const struct amba_id *id)
+ {
+-	struct dma_pl330_platdata *pdat;
+ 	struct pl330_config *pcfg;
+ 	struct pl330_dmac *pl330;
+ 	struct dma_pl330_chan *pch, *_p;
+@@ -2842,8 +2828,6 @@ static int __maybe_unused pl330_resume(struct device *dev)
+ 	int num_chan;
+ 	struct device_node *np = adev->dev.of_node;
  
- # $1: cpu, $2: governor
-diff --git a/tools/testing/selftests/cpufreq/main.sh b/tools/testing/selftests/cpufreq/main.sh
-index 2515867ac9de..01bac76ac0ec 100755
---- a/tools/testing/selftests/cpufreq/main.sh
-+++ b/tools/testing/selftests/cpufreq/main.sh
-@@ -4,6 +4,7 @@ source cpu.sh
- source cpufreq.sh
- source governor.sh
- source module.sh
-+source special-tests.sh
+-	pdat = dev_get_platdata(&adev->dev);
+-
+ 	ret = dma_set_mask_and_coherent(&adev->dev, DMA_BIT_MASK(32));
+ 	if (ret)
+ 		return ret;
+@@ -2856,7 +2840,7 @@ static int __maybe_unused pl330_resume(struct device *dev)
+ 	pd = &pl330->ddma;
+ 	pd->dev = &adev->dev;
  
- FUNC=basic	# do basic tests by default
- OUTFILE=cpufreq_selftest
-@@ -19,7 +20,11 @@ helpme()
- 	[-t <basic: Basic cpufreq testing
- 	     suspend: suspend/resume,
- 	     hibernate: hibernate/resume,
--	     modtest: test driver or governor modules. Only to be used with -d or -g options>]
-+	     modtest: test driver or governor modules. Only to be used with -d or -g options,
-+	     sptest1: Simple governor switch to produce lockdep.
-+	     sptest2: Concurrent governor switch to produce lockdep.
-+	     sptest3: Governor races, shuffle between governors quickly.
-+	     sptest4: CPU hotplugs with updates to cpufreq files.>]
- 	[-d <driver's module name: only with \"-t modtest>\"]
- 	[-g <governor's module name: only with \"-t modtest>\"]
- 	\n"
-@@ -67,7 +72,7 @@ parse_arguments()
- 				helpme
- 				;;
+-	pl330->mcbufsz = pdat ? pdat->mcbuf_sz : 0;
++	pl330->mcbufsz = 0;
  
--			t) # --func_type (Function to perform: basic, suspend, hibernate, modtest (default: basic))
-+			t) # --func_type (Function to perform: basic, suspend, hibernate, modtest, sptest1/2/3/4 (default: basic))
- 				FUNC=$OPTARG
- 				;;
+ 	/* get quirk */
+ 	for (i = 0; i < ARRAY_SIZE(of_quirks); i++)
+@@ -2900,10 +2884,7 @@ static int __maybe_unused pl330_resume(struct device *dev)
+ 	INIT_LIST_HEAD(&pd->channels);
  
-@@ -136,6 +141,22 @@ do_test()
- 		fi
- 		;;
+ 	/* Initialize channel parameters */
+-	if (pdat)
+-		num_chan = max_t(int, pdat->nr_valid_peri, pcfg->num_chan);
+-	else
+-		num_chan = max_t(int, pcfg->num_peri, pcfg->num_chan);
++	num_chan = max_t(int, pcfg->num_peri, pcfg->num_chan);
  
-+		"sptest1")
-+		simple_lockdep
-+		;;
-+
-+		"sptest2")
-+		concurrent_lockdep
-+		;;
-+
-+		"sptest3")
-+		governor_race
-+		;;
-+
-+		"sptest4")
-+		hotplug_with_updates
-+		;;
-+
- 		*)
- 		echo "Invalid [-f] function type"
- 		helpme
-diff --git a/tools/testing/selftests/cpufreq/special-tests.sh b/tools/testing/selftests/cpufreq/special-tests.sh
-new file mode 100755
-index 000000000000..58b730f23ef7
---- /dev/null
-+++ b/tools/testing/selftests/cpufreq/special-tests.sh
-@@ -0,0 +1,115 @@
-+#!/bin/bash
-+#
-+# Special test cases reported by people
-+
-+# Testcase 1: Reported here: http://marc.info/?l=linux-pm&m=140618592709858&w=2
-+
-+# protect against multiple inclusion
-+if [ $FILE_SPECIAL ]; then
-+	return 0
-+else
-+	FILE_SPECIAL=DONE
-+fi
-+
-+source cpu.sh
-+source cpufreq.sh
-+source governor.sh
-+
-+# Test 1
-+# $1: policy
-+__simple_lockdep()
-+{
-+	# switch to ondemand
-+	__switch_governor $1 "ondemand"
-+
-+	# cat ondemand files
-+	local ondir=$(find_gov_directory $1 "ondemand")
-+	if [ -z $ondir ]; then
-+		printf "${FUNCNAME[0]}Ondemand directory not created, quit"
-+		return
-+	fi
-+
-+	cat $ondir/*
-+
-+	# switch to conservative
-+	__switch_governor $1 "conservative"
-+}
-+
-+simple_lockdep()
-+{
-+	printf "** Test: Running ${FUNCNAME[0]} **\n"
-+
-+	for_each_policy __simple_lockdep
-+}
-+
-+# Test 2
-+# $1: policy
-+__concurrent_lockdep()
-+{
-+	for i in `seq 0 100`; do
-+		__simple_lockdep $1
-+	done
-+}
-+
-+concurrent_lockdep()
-+{
-+	printf "** Test: Running ${FUNCNAME[0]} **\n"
-+
-+	for_each_policy_concurrent __concurrent_lockdep
-+}
-+
-+# Test 3
-+quick_shuffle()
-+{
-+	# this is called concurrently from governor_race
-+	for I in `seq 1000`
-+	do
-+		echo ondemand | sudo tee $CPUFREQROOT/policy*/scaling_governor &
-+		echo userspace | sudo tee $CPUFREQROOT/policy*/scaling_governor &
-+	done
-+}
-+
-+governor_race()
-+{
-+	printf "** Test: Running ${FUNCNAME[0]} **\n"
-+
-+	# run 8 concurrent instances
-+	for I in `seq 8`
-+	do
-+		quick_shuffle &
-+	done
-+}
-+
-+# Test 4
-+# $1: cpu
-+hotplug_with_updates_cpu()
-+{
-+	local filepath="$CPUROOT/$1/cpufreq"
-+
-+	# switch to ondemand
-+	__switch_governor_for_cpu $1 "ondemand"
-+
-+	for i in `seq 1 5000`
-+	do
-+		reboot_cpu $1
-+	done &
-+
-+	local freqs=$(cat $filepath/scaling_available_frequencies)
-+	local oldfreq=$(cat $filepath/scaling_min_freq)
-+
-+	for j in `seq 1 5000`
-+	do
-+		# Set all frequencies one-by-one
-+		for freq in $freqs; do
-+			echo $freq > $filepath/scaling_min_freq
-+		done
-+	done
-+
-+	# restore old freq
-+	echo $oldfreq > $filepath/scaling_min_freq
-+}
-+
-+hotplug_with_updates()
-+{
-+	for_each_non_boot_cpu hotplug_with_updates_cpu
-+}
+ 	pl330->num_peripherals = num_chan;
+ 
+@@ -2915,11 +2896,8 @@ static int __maybe_unused pl330_resume(struct device *dev)
+ 
+ 	for (i = 0; i < num_chan; i++) {
+ 		pch = &pl330->peripherals[i];
+-		if (!adev->dev.of_node)
+-			pch->chan.private = pdat ? &pdat->peri_id[i] : NULL;
+-		else
+-			pch->chan.private = adev->dev.of_node;
+ 
++		pch->chan.private = adev->dev.of_node;
+ 		INIT_LIST_HEAD(&pch->submitted_list);
+ 		INIT_LIST_HEAD(&pch->work_list);
+ 		INIT_LIST_HEAD(&pch->completed_list);
+@@ -2932,15 +2910,11 @@ static int __maybe_unused pl330_resume(struct device *dev)
+ 		list_add_tail(&pch->chan.device_node, &pd->channels);
+ 	}
+ 
+-	if (pdat) {
+-		pd->cap_mask = pdat->cap_mask;
+-	} else {
+-		dma_cap_set(DMA_MEMCPY, pd->cap_mask);
+-		if (pcfg->num_peri) {
+-			dma_cap_set(DMA_SLAVE, pd->cap_mask);
+-			dma_cap_set(DMA_CYCLIC, pd->cap_mask);
+-			dma_cap_set(DMA_PRIVATE, pd->cap_mask);
+-		}
++	dma_cap_set(DMA_MEMCPY, pd->cap_mask);
++	if (pcfg->num_peri) {
++		dma_cap_set(DMA_SLAVE, pd->cap_mask);
++		dma_cap_set(DMA_CYCLIC, pd->cap_mask);
++		dma_cap_set(DMA_PRIVATE, pd->cap_mask);
+ 	}
+ 
+ 	pd->device_alloc_chan_resources = pl330_alloc_chan_resources;
+diff --git a/include/linux/amba/pl330.h b/include/linux/amba/pl330.h
+deleted file mode 100644
+index fe93758e8403..000000000000
+--- a/include/linux/amba/pl330.h
++++ /dev/null
+@@ -1,35 +0,0 @@
+-/* linux/include/linux/amba/pl330.h
+- *
+- * Copyright (C) 2010 Samsung Electronics Co. Ltd.
+- *	Jaswinder Singh <jassi.brar@samsung.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- */
+-
+-#ifndef	__AMBA_PL330_H_
+-#define	__AMBA_PL330_H_
+-
+-#include <linux/dmaengine.h>
+-
+-struct dma_pl330_platdata {
+-	/*
+-	 * Number of valid peripherals connected to DMAC.
+-	 * This may be different from the value read from
+-	 * CR0, as the PL330 implementation might have 'holes'
+-	 * in the peri list or the peri could also be reached
+-	 * from another DMAC which the platform prefers.
+-	 */
+-	u8 nr_valid_peri;
+-	/* Array of valid peripherals */
+-	u8 *peri_id;
+-	/* Operational capabilities */
+-	dma_cap_mask_t cap_mask;
+-	/* Bytes to allocate for MC buffer */
+-	unsigned mcbuf_sz;
+-};
+-
+-extern bool pl330_filter(struct dma_chan *chan, void *param);
+-#endif	/* __AMBA_PL330_H_ */
 -- 
-2.7.1.410.g6faf27b
+1.9.1
+
