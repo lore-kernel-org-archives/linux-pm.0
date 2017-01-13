@@ -1,57 +1,191 @@
-From: Christian Mauderer <oss@c-mauderer.de>
-Subject: Re: [PATCH] mfd: axp20x: Add AXP288 volatile registers.
-Date: Fri, 13 Jan 2017 16:54:28 +0100
-Message-ID: <941689ad-746c-99fa-a8c5-e98ef769d1c9@c-mauderer.de>
-References: <20170111194941.5425-1-oss@c-mauderer.de>
-        <20170113140156.GE6864@dell>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v5 5/5] Documentation:powerpc: Add device-tree bindings
+ for power-mgt
+Date: Fri, 13 Jan 2017 10:57:43 -0600
+Message-ID: <20170113165743.nma5wbsw64tsjqdm@rob-hp-laptop>
+References: <1484039224-5630-1-git-send-email-ego@linux.vnet.ibm.com>
+ <1484039224-5630-6-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from dehamd084.servertools24.de ([31.47.243.162]:60155 "EHLO
-        dehamd084.servertools24.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751880AbdAMPyd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2017 10:54:33 -0500
-In-Reply-To: <20170113140156.GE6864@dell>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+Content-Disposition: inline
+In-Reply-To: <1484039224-5630-6-git-send-email-ego@linux.vnet.ibm.com>
+List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
+List-Archive: <http://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
+List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
+ <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Errors-To: linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org
+Sender: "Linuxppc-dev"
+ <linuxppc-dev-bounces+glppe-linuxppc-embedded-2=m.gmane.org@lists.ozlabs.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, devicetree@vger.kernel.org, Michael Neuling <mikey@neuling.org>, linux-pm@vger.kernel.org, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, mark.rutland@arm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: linux-pm@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Am 13.01.2017 um 15:01 schrieb Lee Jones:
-> On Wed, 11 Jan 2017, Christian Mauderer wrote:
+On Tue, Jan 10, 2017 at 02:37:04PM +0530, Gautham R. Shenoy wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 > 
->> The axp288_fuelgauge driver and some other axp288_xxx are using a number
->> of the registers of the chip that are changed by hardware (for example
->> charge level). Because these registers are not marked as "volatile" in
->> the regmap, a cached version is used instead of the correct register
->> value. In case of the axp288_fuelgauge that leads to a battery level
->> that only changes on reboot. This patch adds the volatile registers of
->> the chip.
->>
->> Signed-off-by: Christian Mauderer <oss@c-mauderer.de>
->> ---
->>  drivers/mfd/axp20x.c | 3 +++
->>  1 file changed, 3 insertions(+)
+> Document the device-tree bindings defining the the properties under
+> the @power-mgt node in the device tree that describe the idle states
+> for Linux running on baremetal POWER servers.
 > 
-> Applied, thanks.
 
-Thank you for applying it.
+We have "common" idle state bindings. Perhaps some explanation why those 
+can't be used.
 
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
+> [v4]-> [v5]: Fixed a couple of typos.
 > 
->> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->> index ed918de84238..d74b3daca23f 100644
->> --- a/drivers/mfd/axp20x.c
->> +++ b/drivers/mfd/axp20x.c
->> @@ -118,7 +118,10 @@ static const struct regmap_range axp288_writeable_ranges[] = {
->>  };
->>  
->>  static const struct regmap_range axp288_volatile_ranges[] = {
->> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
->>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IPSOUT_V_HIGH_L),
->> +	regmap_reg_range(AXP20X_CC_CTRL, AXP288_FG_OCVL_REG),
->> +	regmap_reg_range(AXP288_FG_DES_CAP1_REG, AXP288_FG_CC_CAP_REG),
->>  };
->>  
->>  static const struct regmap_access_table axp288_writeable_table = {
+>  .../devicetree/bindings/powerpc/opal/power-mgt.txt | 125 +++++++++++++++++++++
+>  1 file changed, 125 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt b/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+> new file mode 100644
+> index 0000000..4967831
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+> @@ -0,0 +1,125 @@
+> +IBM Power-Management Bindings
+> +=============================
+> +
+> +Linux running on baremetal POWER machines has access to the processor
+> +idle states. The description of these idle states is exposed via the
+> +node @power-mgt in the device-tree by the firmware.
+> +
+> +Definitions:
+> +----------------
+> +Typically each idle state has the following associated properties:
+> +
+> +- name: The name of the idle state as defined by the firmware.
+> +
+> +- flags: indicating some aspects of this idle states such as the
+> +         extent of state-loss, whether timebase is stopped on this
+> +         idle states and so on. The flag bits are as follows:
+> +
+> +- exit-latency: The latency involved in transitioning the state of the
+> +		CPU from idle to running.
+> +
+> +- target-residency: The minimum time that the CPU needs to reside in
+> +		    this idle state in order to accrue power-savings
+> +		    benefit.
+> +
+> +Properties
+> +----------------
+> +The following properties provide details about the idle states. These
+> +properties are optional unless mentioned otherwise below.
+
+-names is optional but everything else seems to require it. It is not 
+clear what the binding looks like if -names is not present.
+
+> +
+> +- ibm,cpu-idle-state-names:
+> +	Array of strings containing the names of the idle states.
+> +
+> +- ibm,cpu-idle-state-flags:
+> +	Array of unsigned 32-bit values containing the values of the
+> +	flags associated with the the aforementioned idle-states. This
+> +	property is required on POWER9 whenever
+> +	ibm,cpu-idle-state-names is defined and the length of this
+> +	property array should be the same as
+> +	ibm,-cpu-idle-state-names.The flag bits are as follows:
+
+s/ibm,-cpu/ibm,cpu/
+
+Needs a space after the period.
+
+> +		0x00000001 /* Decrementer would stop */
+> +		0x00000002 /* Needs timebase restore */
+> +		0x00001000 /* Restore GPRs like nap */
+> +		0x00002000 /* Restore hypervisor resource from PACA pointer */
+> +		0x00004000 /* Program PORE to restore PACA pointer */
+> +		0x00010000 /* This is a nap state */
+> +		0x00020000 /* This is a fast-sleep state */
+> +		0x00040000 /* This is a winkle state */
+> +		0x00080000 /* This is a fast-sleep state which requires a */
+> +			   /* software workaround for restoring the timebase*/
+> +		0x00800000 /* This state uses SPR PMICR instruction */
+> +		0x00100000 /* This is a fast stop state */
+> +		0x00200000 /* This is a deep-stop state */
+> +
+> +- ibm,cpu-idle-state-latencies-ns:
+> +	Array of unsigned 32-bit values containing the values of the
+> +	exit-latencies (in ns) for the idle states in
+> +	ibm,cpu-idle-state-names. This property is required whenever
+> +	ibm,cpu-idle-state-names is defined and the length of this
+> +	property array should be the same as
+> +	ibm,-cpu-idle-state-names.
+
+Same typo.
+
+> +
+> +- ibm,cpu-idle-state-residency-ns:
+> +	Array of unsigned 32-bit values containing the values of the
+> +	target-residency (in ns) for the idle states in
+> +	ibm,cpu-idle-state-names. On POWER8 this is an optional
+> +	property. If the property is absent, the target residency for
+> +	the "Nap", "FastSleep" are defined to 10000 and 300000000
+> +	respectively. On POWER9 this property must be defined if
+> +	ibm,cpu-idle-state-names is defined and the length should be
+> +	same as that of ibm,cpu-idle-state-names.
+> +
+> +- ibm,cpu-idle-state-psscr:
+> +	Array of unsigned 64-bit values containing the values for the
+> +	PSSCR for each of the idle states in ibm,cpu-idle-state-names.
+> +	This property is required on POWER9 whenever
+> +	ibm,cpu-idle-state-names is defined and the length of this
+> +	property array should be the same as
+> +	ibm,cpu-idle-state-names.
+> +
+> +- ibm,cpu-idle-state-psscr-mask:
+> +	Array of unsigned 64-bit values containing the masks
+> +	indicating which psscr fields are set in the corresponding
+> +	entries of ibm,cpu-idle-state-psscr.  This property is
+> +	required on POWER9 whenever ibm,cpu-idle-state-names is
+> +	defined and the length of this property array should be the
+> +	same as ibm,cpu-idle-state-names.
+> +
+> +	Whenever the firmware sets an entry in
+> +	ibm,cpu-idle-state-psscr-mask value to 0xf, it implies that
+> +	only the Requested Level (RL) field of the corresponding entry
+> +	in ibm,cpu-idle-state-psscr should be considered by the
+> +	kernel. For such idle states, the kernel would set the
+> +	remaining fields of the psscr to the following sane-default
+> +	values.
+> +
+> +		- ESL and EC bits are to 1. So wakeup from any stop
+> +		  state will be at vector 0x100.
+> +
+> +		- MTL and PSLL are set to the maximum allowed value as
+> +		  per the ISA, i.e. 15.
+> +
+> +		- The Transition Rate, TR is set to the Maximum value
+> +                  3.
+> +
+> +	For all the other values of the entry in
+> +	ibm,cpu-idle-state-psscr-mask, the Kernel expects all the
+> +	psscr fields of the corresponding entry in
+> +	ibm,cpu-idle-state-psscr to be correctly set by the firmware.
+> +
+> +- ibm,cpu-idle-state-pmicr:
+> +	Array of unsigned 64-bit values containing the pmicr values
+> +	for the idle states in ibm,cpu-idle-state-names. This 64-bit
+> +	register value is to be set in pmicr for the corresponding
+> +	state if the flag indicates that pmicr SPR should be set. This
+> +	is an optional property on POWER8 and is absent on
+> +	POWER9. When present on POWER8, the length of this property
+> +	array should be the same as ibm,cpu-idle-state-names.
+> +
+> +- ibm,cpu-idle-state-pmicr:-mask
+> +	Array of unsigned 64-bit values containing the mask indicating
+> +	which of the fields of the PMICR are set in the corresponding
+> +	entries in ibm,cpu-idle-state-pmicr. This is an optional
+> +	property on POWER8 and is absent on POWER9. When present on
+> +	POWER8, the length of this property array should be the same
+> +	as ibm,cpu-idle-state-names.
+> -- 
+> 1.9.4
 > 
