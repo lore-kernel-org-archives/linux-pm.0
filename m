@@ -1,36 +1,60 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v4 1/4] dmaengine: pl330: remove pdata based
- initialization
-Date: Fri, 13 Jan 2017 15:20:41 +0200
-Message-ID: <20170113132041.3k7sr7ciy46dd42q@kozik-lap>
-References: <1484292400-29730-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170113072651eucas1p214662327fe5a3dfbaa79d11c2a0b195a@eucas1p2.samsung.com>
- <1484292400-29730-2-git-send-email-m.szyprowski@samsung.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH] mfd: axp20x: Add AXP288 volatile registers.
+Date: Fri, 13 Jan 2017 14:01:56 +0000
+Message-ID: <20170113140156.GE6864@dell>
+References: <20170111194941.5425-1-oss@c-mauderer.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f67.google.com ([209.85.215.67]:33517 "EHLO
-        mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751490AbdAMNVV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2017 08:21:21 -0500
+Received: from mail-wm0-f42.google.com ([74.125.82.42]:37127 "EHLO
+        mail-wm0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751788AbdAMN6H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Jan 2017 08:58:07 -0500
+Received: by mail-wm0-f42.google.com with SMTP id c206so72179925wme.0
+        for <linux-pm@vger.kernel.org>; Fri, 13 Jan 2017 05:58:07 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1484292400-29730-2-git-send-email-m.szyprowski@samsung.com>
+In-Reply-To: <20170111194941.5425-1-oss@c-mauderer.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
+To: Christian Mauderer <oss@c-mauderer.de>
+Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Jan 13, 2017 at 08:26:37AM +0100, Marek Szyprowski wrote:
-> This driver is now used only on platforms which support device tree, so
-> it is safe to remove legacy platform data based initialization code.
+On Wed, 11 Jan 2017, Christian Mauderer wrote:
+
+> The axp288_fuelgauge driver and some other axp288_xxx are using a number
+> of the registers of the chip that are changed by hardware (for example
+> charge level). Because these registers are not marked as "volatile" in
+> the regmap, a cached version is used instead of the correct register
+> value. In case of the axp288_fuelgauge that leads to a battery level
+> that only changes on reboot. This patch adds the volatile registers of
+> the chip.
 > 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Signed-off-by: Christian Mauderer <oss@c-mauderer.de>
 > ---
->  arch/arm/plat-samsung/devs.c |  1 -
+>  drivers/mfd/axp20x.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
-For plat-samsung:
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+Applied, thanks.
 
-Best regards,
-Krzysztof
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index ed918de84238..d74b3daca23f 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -118,7 +118,10 @@ static const struct regmap_range axp288_writeable_ranges[] = {
+>  };
+>  
+>  static const struct regmap_range axp288_volatile_ranges[] = {
+> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
+>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IPSOUT_V_HIGH_L),
+> +	regmap_reg_range(AXP20X_CC_CTRL, AXP288_FG_OCVL_REG),
+> +	regmap_reg_range(AXP288_FG_DES_CAP1_REG, AXP288_FG_CC_CAP_REG),
+>  };
+>  
+>  static const struct regmap_access_table axp288_writeable_table = {
 
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
