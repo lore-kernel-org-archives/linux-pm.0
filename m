@@ -1,53 +1,285 @@
-From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
-Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2Ml0gUE0gLyBkZXZmcmVxOiBEb24ndCBk?=
- =?UTF-8?B?ZWxldGUgc3lzZnMgZ3JvdXAgdHdpY2U=?=
-Date: Fri, 13 Jan 2017 01:15:06 +0000
-Message-ID: <20170113011506epcms1p4da141fcfd0c7af9d0ebe1d9a6958be91@epcms1p4>
-References: <CGME20170112145811epcas2p1e8c07796d9c4630e25484b72ca1e94c0@epcas2p1.samsung.com>
-Reply-To: myungjoo.ham@samsung.com
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: reset: Add MAX77620 support
+Date: Fri, 13 Jan 2017 04:44:25 +0100
+Message-ID: <20170113034425.7ttvc73aewtbitrk@earth>
+References: <20170112161507.23774-1-thierry.reding@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_2694843_594319876.1484270106051"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="zhsptlnqeurdibyj"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:54898 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750897AbdAMBZI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2017 20:25:08 -0500
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
- by mailout2.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OJP01CHC256P4A0@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 13 Jan 2017 10:15:06 +0900 (KST)
+Received: from mail.kernel.org ([198.145.29.136]:45386 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750979AbdAMDob (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Jan 2017 22:44:31 -0500
+Content-Disposition: inline
+In-Reply-To: <20170112161507.23774-1-thierry.reding@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?B?Y2hyaXMuZGlhbWFuZEBhcm0uY29t?= <chris.diamand@arm.com>, =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
-Cc: =?UTF-8?B?U3VkZWVwIEhvbGxh?= <Sudeep.Holla@arm.com>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>, =?UTF-8?B?TmlzaGFudGggTWVub24=?= <nm@ti.com>, =?UTF-8?B?Q2FpIFpoaXlvbmc=?= <caizhiyong@huawei.com>, =?UTF-8?B?Y3BncyAu?= <cpgs@samsung.com>
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
 
-------=_Part_2694843_594319876.1484270106051
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
 
-PiBGcm9tOiBDaHJpcyBEaWFtYW5kIDxjaHJpcy5kaWFtYW5kQGFybS5jb20+DQo+IA0KPiBUaGUg
-J3VzZXJzcGFjZScgZ292ZXJub3IgYWRkcyBhIHN5c2ZzIGVudHJ5LCB3aGljaCBpcyByZW1vdmVk
-IHdoZW4NCj4gdGhlIGdvdmVybm9yIGlzIGNoYW5nZWQsIG9yIHRoZSBkZXZmcmVxIGRldmljZSBp
-cyByZWxlYXNlZC4gSG93ZXZlciwNCj4gd2hlbiB0aGUgbGF0dGVyIG9jY3VycyB2aWEgZGV2aWNl
-X3VucmVnaXN0ZXIoKSwgZGV2aWNlX2RlbCgpIGlzDQo+IGNhbGxlZCBmaXJzdCwgd2hpY2ggcmVt
-b3ZlcyB0aGUgc3lzZnMgZW50cmllcyByZWN1cnNpdmVseSBhbmQgZGVsZXRlcw0KPiB0aGUga29i
-amVjdC4NCj4gDQo+IFRoaXMgbWVhbnMgd2UgZ2V0IGFuIE9vcHMgd2hlbiB0aGUgZ292ZXJub3Ig
-Y2FsbHMNCj4gc3lzZnNfcmVtb3ZlX2dyb3VwKCkgb24gdGhlIGRlbGV0ZWQga29iamVjdC4gRml4
-IHRoaXMgYnkgb25seSBkb2luZw0KPiB0aGUgY2FsbCB3aGVuIGtvYmogKmhhc24ndCogYmVlbiBr
-b2JqZWN0X2RlbCgpJ2QuDQo+IA0KPiBOb3RlIHRoYXQgd2UgY2FuJ3QganVzdCByZW1vdmUgdGhl
-IGNhbGwgdG8gc3lzZnNfcmVtb3ZlX2dyb3VwKCkNCj4gZW50aXJlbHkgLSBpdCdzIG5lZWRlZCBm
-b3Igd2hlbiB0aGUgZ292ZXJub3IgaXMgY2hhbmdlZCB0byBvbmUgd2hpY2gNCj4gZG9lc24ndCBu
-ZWVkIGEgc3lzZnMgZW50cnkuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaHJpcyBEaWFtYW5kIDxj
-aHJpcy5kaWFtYW5kQGFybS5jb20+DQo+IC0tLQ0KPiBIaSBhbGwgLSB0aGlzIGlzIGEgcmVzZW5k
-IG9mIG15IHVwZGF0ZWQgZGV2ZnJlcSByZW1vdmFsIGZpeC4NCj4gDQo+IFRoaXMgdGFrZXMgYSBk
-aWZmZXJlbnQgYXBwcm9hY2ggdG8gdjEsIGFuZCBmaXhlcyB0aGUgaXNzdWUgaW4gdGhlIGdvdmVy
-bm9yDQo+IGluc3RlYWQuIFRoaXMgbWVhbnMgcmVmZXJlbmNlIGNvdW50aW5nIHNob3VsZCBzdGls
-bCB3b3JrIGFzIHVzdWFsLCBzbyBhbnl0aGluZw0KPiB3aGljaCBkb2Vzbid0IGNhbGwgZGV2ZnJl
-cV9yZW1vdmVfZGV2aWNlKCkgc2hvdWxkIHN0aWxsIHdvcmsuDQo+IA0KPiBDaGVlcnMhDQo+IENo
-cmlzDQoNCk9rLCBJJ2xsIHVwZGF0ZSANCmh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51
-eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdC9jb21taXQvP2g9Zm9yLTQuMTAtcmMmaWQ9MWVi
-MzIyODBhODE0NjNiNmUxZTM4ZTJkMjYxNzEwZTBkN2ZkNWRjZg0Kd2l0aCB0aGlzIG9uZS4NCg0K
-Q2hlZXJzLA0KTXl1bmdKb28NCg0K
-------=_Part_2694843_594319876.1484270106051--
+--zhsptlnqeurdibyj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Thierry,
+
+I have a few comments inline.
+
+On Thu, Jan 12, 2017 at 05:15:07PM +0100, Thierry Reding wrote:
+> The Maxim MAX77620 PMIC has the ability to power off and restart the
+> system. Add a driver that supports power off (via pm_power_off()) and
+> restart (via arm_pm_restart() on 32-bit and 64-bit ARM).
+>=20
+> Based on work by Chaitanya Bandi <bandik@nvidia.com>.
+>=20
+> Cc: Chaitanya Bandi <bandik@nvidia.com>
+> Signed-off-by: Thierry Reding <treding@nvidia.com>
+> ---
+>  drivers/power/reset/Kconfig             |   6 ++
+>  drivers/power/reset/Makefile            |   1 +
+>  drivers/power/reset/max77620-poweroff.c | 146 ++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 153 insertions(+)
+>  create mode 100644 drivers/power/reset/max77620-poweroff.c
+>=20
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index abeb77217a21..f0d0c20632f8 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -98,6 +98,12 @@ config POWER_RESET_IMX
+>  	  say N here or disable in dts to make sure pm_power_off never be
+>  	  overwrote wrongly by this driver.
+> =20
+> +config POWER_RESET_MAX77620
+> +	bool "Maxim MAX77620 PMIC power-off driver"
+> +	depends on MFD_MAX77620
+> +	help
+> +	  Power off and restart support for Maxim MAX77620 PMICs.
+> +
+>  config POWER_RESET_MSM
+>  	bool "Qualcomm MSM power-off driver"
+>  	depends on ARCH_QCOM
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index 11dae3b56ff9..74511d2f037a 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -9,6 +9,7 @@ obj-$(CONFIG_POWER_RESET_GPIO) +=3D gpio-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restart.o
+>  obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
+>  obj-$(CONFIG_POWER_RESET_IMX) +=3D imx-snvs-poweroff.o
+> +obj-$(CONFIG_POWER_RESET_MAX77620) +=3D max77620-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_LTC2952) +=3D ltc2952-poweroff.o
+> diff --git a/drivers/power/reset/max77620-poweroff.c b/drivers/power/rese=
+t/max77620-poweroff.c
+> new file mode 100644
+> index 000000000000..4f2682d10925
+> --- /dev/null
+> +++ b/drivers/power/reset/max77620-poweroff.c
+> @@ -0,0 +1,146 @@
+> +/*
+> + * Power off driver for Maxim MAX77620 device.
+> + *
+> + * Copyright (c) 2014-2016, NVIDIA CORPORATION.  All rights reserved.
+> + *
+> + * Based on work by Chaitanya Bandi <bandik@nvidia.com>.
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License as
+> + * published by the Free Software Foundation version 2.
+> + *
+> + * This program is distributed "as is" WITHOUT ANY WARRANTY of any kind,
+> + * whether express or implied; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+> + * General Public License for more details.
+> + */
+> +
+> +#include <linux/errno.h>
+> +#include <linux/mfd/max77620.h>
+> +#include <linux/module.h>
+> +#include <linux/notifier.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+> +#include <linux/regmap.h>
+> +#include <linux/slab.h>
+> +
+> +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> +#include <asm/system_misc.h>
+> +#endif
+> +
+> +struct max77620_power {
+> +	struct regmap *regmap;
+> +	struct device *dev;
+> +};
+> +
+> +static struct max77620_power *system_power_controller =3D NULL;
+> +
+> +static void max77620_pm_power_off(void)
+> +{
+> +	struct max77620_power *power =3D system_power_controller;
+> +	unsigned int value;
+> +	int err;
+> +
+> +	if (!power)
+> +		return;
+> +
+> +	/* clear power key interrupts */
+> +	err =3D regmap_read(power->regmap, MAX77620_REG_ONOFFIRQ, &value);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to clear power key interrupts: %d\n", err);
+> +
+> +	/* clear RTC interrupts */
+> +	/*
+> +	err =3D regmap_read(power->regmap, MAX77620_REG_RTCINT, &value);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to clear RTC interrupts: %d\n", err);
+> +	*/
+> +
+> +	/* clear TOP interrupts */
+> +	err =3D regmap_read(power->regmap, MAX77620_REG_IRQTOP, &value);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to clear interrupts: %d\n", err);
+> +
+> +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
+> +				 MAX77620_ONOFFCNFG2_SFT_RST_WK, 0);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to clear SFT_RST_WK: %d\n", err);
+> +
+> +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
+> +				 MAX77620_ONOFFCNFG1_SFT_RST,
+> +				 MAX77620_ONOFFCNFG1_SFT_RST);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
+> +}
+> +
+> +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> +static void max77620_pm_restart(enum reboot_mode mode, const char *cmd)
+> +{
+> +	struct max77620_power *power =3D system_power_controller;
+> +	int err;
+> +
+> +	if (!power)
+> +		return;
+> +
+> +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG2,
+> +				 MAX77620_ONOFFCNFG2_SFT_RST_WK,
+> +				 MAX77620_ONOFFCNFG2_SFT_RST_WK);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to set SFT_RST_WK: %d\n", err);
+> +
+> +	err =3D regmap_update_bits(power->regmap, MAX77620_REG_ONOFFCNFG1,
+> +				 MAX77620_ONOFFCNFG1_SFT_RST,
+> +				 MAX77620_ONOFFCNFG1_SFT_RST);
+> +	if (err < 0)
+> +		dev_err(power->dev, "failed to set SFT_RST: %d\n", err);
+> +}
+> +#endif
+> +
+> +static int max77620_poweroff_probe(struct platform_device *pdev)
+> +{
+> +	struct max77620_chip *max77620 =3D dev_get_drvdata(pdev->dev.parent);
+> +	struct device_node *np =3D pdev->dev.parent->of_node;
+> +	struct max77620_power *power;
+> +	unsigned int value;
+> +	int err;
+
+if (system_power_controller)
+    return -EINVAL;
+
+> +	if (!of_property_read_bool(np, "system-power-controller"))
+> +		return 0;
+> +
+> +	power =3D devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
+> +	if (!power)
+> +		return -ENOMEM;
+> +
+> +	power->regmap =3D max77620->rmap;
+> +	power->dev =3D &pdev->dev;
+> +
+> +	err =3D regmap_read(power->regmap, MAX77620_REG_NVERC, &value);
+> +	if (err < 0) {
+> +		dev_err(power->dev, "failed to read event recorder: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
+> +
+> +	system_power_controller =3D power;
+> +	pm_power_off =3D max77620_pm_power_off;
+
+> +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> +	arm_pm_restart =3D max77620_pm_restart;
+> +#endif
+
+Please use register_restart_handler() instead. It has support for
+priorities, is not arm specific and properly supports unregistering
+(some handler with lower priority will take over). You can check
+gpio-restart as an example for the API.
+
+If you have some other arm_pm_restart handler (those are tried first)
+I suggest to convert that to the restart handler framework. Actually
+it may be a good idea to convert all of them and drop arm_pm_restart,
+since there are only 4 left:
+
+$ git grep "arm_pm_restart =3D"
+drivers/firmware/psci.c:        arm_pm_restart =3D psci_sys_reset;
+arch/arm/mach-prima2/rstc.c:    arm_pm_restart =3D sirfsoc_restart;
+arch/arm/xen/enlighten.c:       arm_pm_restart =3D xen_restart;
+arch/arm/kernel/setup.c:                arm_pm_restart =3D mdesc->restart;
+
+The first 3 should be easy to update and the last one could
+be solved by registering a wrapper function as restart handler,
+which calls mdesc->restart().
+
+> +	return 0;
+> +}
+
+This is missing a removal function, which should unregister the
+restart handler and do something like this:
+
+if (pm_power_off =3D=3D max77620_pm_power_off)
+    pm_power_off =3D NULL;
+
+> +static struct platform_driver max77620_poweroff_driver =3D {
+> +	.driver =3D {
+> +		.name =3D "max77620-power",
+> +	},
+> +	.probe =3D max77620_poweroff_probe,
+> +};
+> +module_platform_driver(max77620_poweroff_driver);
+> +
+> +MODULE_DESCRIPTION("Maxim MAX77620 PMIC power off and restart driver");
+> +MODULE_AUTHOR("Thierry Reding <treding@nvidia.com>");
+> +MODULE_ALIAS("platform:max77620-power");
+> +MODULE_LICENSE("GPL v2");
+> --=20
+> 2.11.0
+
+-- Sebastian
+
+--zhsptlnqeurdibyj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh4TRcACgkQ2O7X88g7
++poctA/8C6CBF0e03LKRMKCqUDwhLJJ0av5PkG5IVlvIoOubQKIiAzXHItSRBpqd
+hLHMJOGO3nO0aX2d1mTC1rJzsP2bMHbhEQZDI0856kQSntaHegIygJUPr1T8+EFA
+Ib+Q9eKXve7+6WDdPAHsX/+Nhwp0ggzWgiX1naMmjFQoiV/4Pj6lhRFeikvGE5Zv
+bDuDgBTXbb50vHw5QieDKVP5PZzvPw6Bl6tNqW1zndP3wesm1rQ5YImPF7NoFkDi
+FcKRYKeno3znXCH7E9gdimxoeMkyrG41WWSuphX1UyP1kkuCq+Y3UPkBQ/ABb+j2
+QlC446cZs8C6/KO6zqR+nO7aU9iRsMIAFp7IzRj9A/nPGmt6bqeyF5goos/OnofH
+wwxtpSPaFlGG0buCtu1uCRi+NZxfQVYjIERN0e6BrqYn4cfwNiDazRF+e7qiH2Od
+WqpecBjPUCLIu832TwgMkQlpMiN1PP2FDNUhOGIYuHL+dvPMD9V0JvXcqgLXlwqj
+89FKixfrCYV8Hkb6dZOhmOyEzx8Mc0Bwj0tU0vz/Zkdf/F0oKPKi9OHP7ny/HZjJ
+9p4+sVWxweVRYakd7OQ5a1gfYQYklGGbvYCCN7z1yIEZrrUIXLZjybbxzLGbuIm2
+6Vrz6h16IZxMPY/JdTrY4MBHquugZdXue2aZEUZDupinNWrrDYs=
+=T0b0
+-----END PGP SIGNATURE-----
+
+--zhsptlnqeurdibyj--
