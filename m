@@ -1,88 +1,53 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2] PM / devfreq: Don't delete sysfs group twice
-Date: Fri, 13 Jan 2017 09:18:39 +0900
-Message-ID: <58781CDF.5090308@samsung.com>
-References: <CGME20170112145810epcas2p359a78f92ce8bd256a8f09c6e9c211cf1@epcas2p3.samsung.com>
- <1484233061-22516-1-git-send-email-chris.diamand@arm.com>
+From: =?UTF-8?B?TXl1bmdKb28gSGFt?= <myungjoo.ham@samsung.com>
+Subject: =?UTF-8?B?UkU6IFtQQVRDSCB2Ml0gUE0gLyBkZXZmcmVxOiBEb24ndCBk?=
+ =?UTF-8?B?ZWxldGUgc3lzZnMgZ3JvdXAgdHdpY2U=?=
+Date: Fri, 13 Jan 2017 01:15:06 +0000
+Message-ID: <20170113011506epcms1p4da141fcfd0c7af9d0ebe1d9a6958be91@epcms1p4>
+References: <CGME20170112145811epcas2p1e8c07796d9c4630e25484b72ca1e94c0@epcas2p1.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/related;
+ boundary="----=_Part_2694843_594319876.1484270106051"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:58908 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:54898 "EHLO
         mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751094AbdAMAsm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2017 19:48:42 -0500
+        with ESMTP id S1750897AbdAMBZI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Jan 2017 20:25:08 -0500
 Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
  by mailout2.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OJO01CTQZJ4P450@mailout2.samsung.com> for
- linux-pm@vger.kernel.org; Fri, 13 Jan 2017 09:18:40 +0900 (KST)
-In-reply-to: <1484233061-22516-1-git-send-email-chris.diamand@arm.com>
+ with ESMTP id <0OJP01CHC256P4A0@mailout2.samsung.com> for
+ linux-pm@vger.kernel.org; Fri, 13 Jan 2017 10:15:06 +0900 (KST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: chris.diamand@arm.com, linux-pm@vger.kernel.org
-Cc: Sudeep Holla <Sudeep.Holla@arm.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Nishanth Menon <nm@ti.com>, Cai Zhiyong <caizhiyong@huawei.com>, "cpgs (cpgs@samsung.com)" <cpgs@samsung.com>
+To: =?UTF-8?B?Y2hyaXMuZGlhbWFuZEBhcm0uY29t?= <chris.diamand@arm.com>, =?UTF-8?B?Q2hhbndvbyBDaG9p?= <cw00.choi@samsung.com>, =?UTF-8?B?bGludXgtcG1Admdlci5rZXJuZWwub3Jn?= <linux-pm@vger.kernel.org>
+Cc: =?UTF-8?B?U3VkZWVwIEhvbGxh?= <Sudeep.Holla@arm.com>, =?UTF-8?B?S3l1bmdtaW4gUGFyaw==?= <kyungmin.park@samsung.com>, =?UTF-8?B?TmlzaGFudGggTWVub24=?= <nm@ti.com>, =?UTF-8?B?Q2FpIFpoaXlvbmc=?= <caizhiyong@huawei.com>, =?UTF-8?B?Y3BncyAu?= <cpgs@samsung.com>
 
-Hi Chris,
+------=_Part_2694843_594319876.1484270106051
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Looks good to me.
-
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-
-On 2017년 01월 12일 23:57, chris.diamand@arm.com wrote:
-> From: Chris Diamand <chris.diamand@arm.com>
-> 
-> The 'userspace' governor adds a sysfs entry, which is removed when
-> the governor is changed, or the devfreq device is released. However,
-> when the latter occurs via device_unregister(), device_del() is
-> called first, which removes the sysfs entries recursively and deletes
-> the kobject.
-> 
-> This means we get an Oops when the governor calls
-> sysfs_remove_group() on the deleted kobject. Fix this by only doing
-> the call when kobj *hasn't* been kobject_del()'d.
-> 
-> Note that we can't just remove the call to sysfs_remove_group()
-> entirely - it's needed for when the governor is changed to one which
-> doesn't need a sysfs entry.
-> 
-> Signed-off-by: Chris Diamand <chris.diamand@arm.com>
-> ---
-> Hi all - this is a resend of my updated devfreq removal fix.
-> 
-> This takes a different approach to v1, and fixes the issue in the governor
-> instead. This means reference counting should still work as usual, so anything
-> which doesn't call devfreq_remove_device() should still work.
-> 
-> Cheers!
-> Chris
-> 
->  drivers/devfreq/governor_userspace.c | 8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
-> index 35de6e8..9db4d6f 100644
-> --- a/drivers/devfreq/governor_userspace.c
-> +++ b/drivers/devfreq/governor_userspace.c
-> @@ -112,7 +112,13 @@ static int userspace_init(struct devfreq *devfreq)
->  
->  static void userspace_exit(struct devfreq *devfreq)
->  {
-> -	sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-> +	/*
-> +	 * Remove the sysfs entry, unless this is being called after
-> +	 * device_del(), which should have done this already via kobject_del().
-> +	 */
-> +	if (devfreq->dev.kobj.sd)
-> +		sysfs_remove_group(&devfreq->dev.kobj, &dev_attr_group);
-> +
->  	kfree(devfreq->data);
->  	devfreq->data = NULL;
->  }
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-S/W Center, Samsung Electronics
+PiBGcm9tOiBDaHJpcyBEaWFtYW5kIDxjaHJpcy5kaWFtYW5kQGFybS5jb20+DQo+IA0KPiBUaGUg
+J3VzZXJzcGFjZScgZ292ZXJub3IgYWRkcyBhIHN5c2ZzIGVudHJ5LCB3aGljaCBpcyByZW1vdmVk
+IHdoZW4NCj4gdGhlIGdvdmVybm9yIGlzIGNoYW5nZWQsIG9yIHRoZSBkZXZmcmVxIGRldmljZSBp
+cyByZWxlYXNlZC4gSG93ZXZlciwNCj4gd2hlbiB0aGUgbGF0dGVyIG9jY3VycyB2aWEgZGV2aWNl
+X3VucmVnaXN0ZXIoKSwgZGV2aWNlX2RlbCgpIGlzDQo+IGNhbGxlZCBmaXJzdCwgd2hpY2ggcmVt
+b3ZlcyB0aGUgc3lzZnMgZW50cmllcyByZWN1cnNpdmVseSBhbmQgZGVsZXRlcw0KPiB0aGUga29i
+amVjdC4NCj4gDQo+IFRoaXMgbWVhbnMgd2UgZ2V0IGFuIE9vcHMgd2hlbiB0aGUgZ292ZXJub3Ig
+Y2FsbHMNCj4gc3lzZnNfcmVtb3ZlX2dyb3VwKCkgb24gdGhlIGRlbGV0ZWQga29iamVjdC4gRml4
+IHRoaXMgYnkgb25seSBkb2luZw0KPiB0aGUgY2FsbCB3aGVuIGtvYmogKmhhc24ndCogYmVlbiBr
+b2JqZWN0X2RlbCgpJ2QuDQo+IA0KPiBOb3RlIHRoYXQgd2UgY2FuJ3QganVzdCByZW1vdmUgdGhl
+IGNhbGwgdG8gc3lzZnNfcmVtb3ZlX2dyb3VwKCkNCj4gZW50aXJlbHkgLSBpdCdzIG5lZWRlZCBm
+b3Igd2hlbiB0aGUgZ292ZXJub3IgaXMgY2hhbmdlZCB0byBvbmUgd2hpY2gNCj4gZG9lc24ndCBu
+ZWVkIGEgc3lzZnMgZW50cnkuDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBDaHJpcyBEaWFtYW5kIDxj
+aHJpcy5kaWFtYW5kQGFybS5jb20+DQo+IC0tLQ0KPiBIaSBhbGwgLSB0aGlzIGlzIGEgcmVzZW5k
+IG9mIG15IHVwZGF0ZWQgZGV2ZnJlcSByZW1vdmFsIGZpeC4NCj4gDQo+IFRoaXMgdGFrZXMgYSBk
+aWZmZXJlbnQgYXBwcm9hY2ggdG8gdjEsIGFuZCBmaXhlcyB0aGUgaXNzdWUgaW4gdGhlIGdvdmVy
+bm9yDQo+IGluc3RlYWQuIFRoaXMgbWVhbnMgcmVmZXJlbmNlIGNvdW50aW5nIHNob3VsZCBzdGls
+bCB3b3JrIGFzIHVzdWFsLCBzbyBhbnl0aGluZw0KPiB3aGljaCBkb2Vzbid0IGNhbGwgZGV2ZnJl
+cV9yZW1vdmVfZGV2aWNlKCkgc2hvdWxkIHN0aWxsIHdvcmsuDQo+IA0KPiBDaGVlcnMhDQo+IENo
+cmlzDQoNCk9rLCBJJ2xsIHVwZGF0ZSANCmh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvY2dpdC9saW51
+eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdpdC9jb21taXQvP2g9Zm9yLTQuMTAtcmMmaWQ9MWVi
+MzIyODBhODE0NjNiNmUxZTM4ZTJkMjYxNzEwZTBkN2ZkNWRjZg0Kd2l0aCB0aGlzIG9uZS4NCg0K
+Q2hlZXJzLA0KTXl1bmdKb28NCg0K
+------=_Part_2694843_594319876.1484270106051--
