@@ -1,51 +1,37 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: Re: [PATCH v3 6/7] devicetree: power: bq27xxx: add monitored battery documentation
-Date: Fri, 13 Jan 2017 22:07:32 -0800
-Message-ID: <CAJ_EiSRnU1q8QPKO43hk3ajS=RaAtQ2tVJ-060GcmPoPA6Ranw@mail.gmail.com>
-References: <20170111062003.10110-1-matt@ranostay.consulting>
- <20170111062003.10110-7-matt@ranostay.consulting> <20170113172821.noogiax7bqwhkoev@rob-hp-laptop>
+From: Jonathan Cameron <jic23@kernel.org>
+Subject: Re: [PATCH 0/7] mfd/iio: move the AB8500 GPADC driver to IIO
+Date: Sat, 14 Jan 2017 14:48:46 +0000
+Message-ID: <3edbf321-ce38-6e40-048c-9cada7ad5a14@kernel.org>
+References: <20170110234745.29691-1-linus.walleij@linaro.org>
+ <20170112030419.j7ux7igi54556koc@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170113172821.noogiax7bqwhkoev@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from saturn.retrosnub.co.uk ([178.18.118.26]:51847 "EHLO
+        saturn.retrosnub.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750950AbdANOss (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Jan 2017 09:48:48 -0500
+In-Reply-To: <20170112030419.j7ux7igi54556koc@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Lee Jones <lee.jones@linaro.org>, linux-iio@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Mboumba Cedric Madianga <cedric.madianga@gmail.com>, linux-pm@vger.kernel.org, linux-hwmon@vger.kernel.org
 
-On Fri, Jan 13, 2017 at 9:28 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Tue, Jan 10, 2017 at 10:20:02PM -0800, Matt Ranostay wrote:
->> Depends-On: http://marc.info/?l=linux-pm&m=148392292830015&w=2
->> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
->> ---
->>  Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 8 ++++++++
->>  1 file changed, 8 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
->> index b0c95ef63e68..0472a2db0f13 100644
->> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
->> +++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
->> @@ -28,9 +28,17 @@ Required properties:
->>   * "ti,bq27621" - BQ27621
->>  - reg: integer, i2c address of the device.
->>
->> +Optional properties:
->> +- monitored-battery: phandle of battery information devicetree node
->
-> We need a common way to describe charger/monitor to battery connections,
-> not yet another way. The battery and power supply related bindings are a
-> bit of a mess from what I've looked at.
+On 12/01/17 03:04, Sebastian Reichel wrote:
+> Hi,
+> 
+> On Wed, Jan 11, 2017 at 12:47:38AM +0100, Linus Walleij wrote:
+>> I don't know the best merge path for this but suspect that as
+>> usual Lee can merge them all and provide an immutable branch to
+>> the other subsystems, which he has lots of routine in handling.
+>> The final DTS patch can probably be merged separately through
+>> ARM SoC.
+> 
+> I'm fine with that solution.
+> 
+> -- Sebastian
+> 
+Agreed, that's the best way to do these.
 
-Sebastian, your thoughts here?
-
-Thanks,
-
-Matt
-
->
-> Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Jonathan
