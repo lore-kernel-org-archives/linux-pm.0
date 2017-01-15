@@ -1,71 +1,84 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH v5 2/8] PCI: Allow runtime PM on Thunderbolt ports
+Subject: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host
+ hotplug ports
 Date: Sun, 15 Jan 2017 21:03:45 +0100
-Message-ID: <14d64f19bc1b1ea67371b8336dca618edddc0b52.1484486499.git.lukas@wunner.de>
+Message-ID: <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
 References: <cover.1484486499.git.lukas@wunner.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <cover.1484486499.git.lukas@wunner.de>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pci-owner@vger.kernel.org
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org
 Cc: Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently PCIe ports are only allowed to go to D3 if the BIOS is dated
-2015 or newer to avoid potential issues with old chipsets.  However for
-Thunderbolt we know that even the oldest controller, Light Ridge (2010),
-is able to suspend its ports to D3 just fine.
+Hotplug ports generally block their parents from suspending to D3hot as
+otherwise their interrupts couldn't be delivered.
 
-We're about to add runtime PM for Thunderbolt on the Mac.  Apple has
-released two EFI security updates in 2015 which encompass all machines
-with Thunderbolt, but the achieved power saving should be made available
-to users even if they haven't updated their BIOS.  To this end,
-special-case Thunderbolt in pci_bridge_d3_possible().
+An exception are Thunderbolt host controllers:  They have a separate
+GPIO pin to side-band signal plug events even if the controller is
+powered down or its parent ports are suspended to D3.  They can be told
+apart from Thunderbolt controllers in attached devices by checking if
+they're situated below a non-Thunderbolt device (typically a root port,
+or the downstream port of a PCIe switch in the case of the MacPro6,1).
 
-This allows the Thunderbolt controller to power down but the root port
-to which the Thunderbolt controller is attached remains in D0 unless
-the EFI update is installed.  Users can pass pcie_port_pm=force on the
-kernel command line if they cannot install the EFI update but still want
-to benefit from the additional power saving of putting the root port
-into D3.  In practice, root ports can be suspended to D3 without issues
-at least on 2012 Ivy Bridge machines.
+To enable runtime PM for Thunderbolt on the Mac, the downstream bridges
+of a host controller must not block runtime PM on the upstream bridge as
+power to the chip is only cut once the upstream bridge has suspended.
+Amend the condition in pci_dev_check_d3cold() accordingly.
 
-If the BIOS cut-off date is ever lowered to 2010, the Thunderbolt
-special case can be removed.
+This change does not impact non-Macs as their Thunderbolt hotplug ports
+are handled by the firmware rather than natively by the OS:  The hotplug
+ports are not allowed to suspend in pci_bridge_d3_possible() and keep
+their parent ports awake all the time.  Consequently it is meaningless
+whether they block runtime PM on their parent ports or not.
 
+Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
 Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Cc: Andreas Noever <andreas.noever@gmail.com>
 Cc: Tomas Winkler <tomas.winkler@intel.com>
 Cc: Amir Levy <amir.jer.levy@intel.com>
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
 Signed-off-by: Lukas Wunner <lukas@wunner.de>
 ---
- drivers/pci/pci.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/pci/pci.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index a881c0d3d2e8..8ed098db82e1 100644
+index 8ed098db82e1..e7a354cd13ce 100644
 --- a/drivers/pci/pci.c
 +++ b/drivers/pci/pci.c
-@@ -2224,7 +2224,7 @@ void pci_config_pm_runtime_put(struct pci_dev *pdev)
-  * @bridge: Bridge to check
-  *
-  * This function checks if it is possible to move the bridge to D3.
-- * Currently we only allow D3 for recent enough PCIe ports.
-+ * Currently we only allow D3 for recent enough PCIe ports and Thunderbolt.
-  */
- bool pci_bridge_d3_possible(struct pci_dev *bridge)
+@@ -2269,6 +2269,24 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
+ 	return false;
+ }
+ 
++static bool pci_hotplug_bridge_may_wakeup(struct pci_dev *dev)
++{
++	struct pci_dev *parent, *grandparent;
++
++	/*
++	 * Thunderbolt host controllers have a pin to side-band signal
++	 * plug events.  Their hotplug ports are recognizable by having
++	 * a non-Thunderbolt device as grandparent.
++	 */
++	if (dev->is_thunderbolt &&
++	    (parent = pci_upstream_bridge(dev)) &&
++	    (grandparent = pci_upstream_bridge(parent)) &&
++	    !grandparent->is_thunderbolt)
++		return true;
++
++	return false;
++}
++
+ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
  {
-@@ -2258,6 +2258,11 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
- 		    year >= 2015) {
- 			return true;
- 		}
-+
-+		/* Even the oldest 2010 Thunderbolt controller supports D3. */
-+		if (bridge->is_thunderbolt)
-+			return true;
-+
- 		break;
- 	}
+ 	bool *d3cold_ok = data;
+@@ -2284,7 +2302,7 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
+ 	    !pci_power_manageable(dev) ||
+ 
+ 	    /* Hotplug interrupts cannot be delivered if the link is down. */
+-	    dev->is_hotplug_bridge)
++	    (dev->is_hotplug_bridge && !pci_hotplug_bridge_may_wakeup(dev)))
+ 
+ 		*d3cold_ok = false;
  
 -- 
 2.11.0
