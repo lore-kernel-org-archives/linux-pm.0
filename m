@@ -1,23 +1,46 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v4 3/3] thermal: zx2967: add thermal driver for ZTE's
- zx2967 family
-Date: Mon, 16 Jan 2017 14:59:58 +0800
-Message-ID: <20170116065956.GA10897@x250>
-References: <1484304418-17489-1-git-send-email-baoyou.xie@linaro.org>
- <1484304418-17489-3-git-send-email-baoyou.xie@linaro.org>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH] thermal: ti-soc-thermal: Remove CPU_THERMAL Dependency from TI_THERMAL
+Date: Mon, 16 Jan 2017 15:43:02 +0530
+Message-ID: <1484561582-5101-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1484304418-17489-3-git-send-email-baoyou.xie@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Baoyou Xie <baoyou.xie@linaro.org>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, jun.nie@linaro.org, gregkh@linuxfoundation.org, davem@davemloft.net, geert+renesas@glider.be, akpm@linux-foundation.org, mchehab@kernel.org, linux@roeck-us.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:49085 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750849AbdAPKNP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 05:13:15 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com
+Cc: linux-omap@vger.kernel.org, t-kristo@ti.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, rui.zhang@intel.com, j-keerthy@ti.com
 
-On Fri, Jan 13, 2017 at 06:46:58PM +0800, Baoyou Xie wrote:
-> This patch adds thermal driver for ZTE's zx2967 family.
-> 
-> Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
+Currently when CPU_THERMAL is not defined the thermal sensors
+are not even exposed consequently no cooling is possible. CPU_THERMAL
+eventually depends on CPUFREQ. CPPUFREQ is not the only cooling
+for CPU.
 
-Reviewed-by: Shawn Guo <shawnguo@kernel.org>
+The thermal shutdown for critical temperatures is another
+cooling solution which will currently not get enabled if CPU_THERMAL
+is not defined. Remove this dependency so as to have the last level
+of thermal protection working even without CPUFREQ defined.
+
+Signed-off-by: Keerthy <j-keerthy@ti.com>
+---
+ drivers/thermal/ti-soc-thermal/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/thermal/ti-soc-thermal/Kconfig b/drivers/thermal/ti-soc-thermal/Kconfig
+index ea8283f..fe0e877 100644
+--- a/drivers/thermal/ti-soc-thermal/Kconfig
++++ b/drivers/thermal/ti-soc-thermal/Kconfig
+@@ -11,7 +11,6 @@ config TI_SOC_THERMAL
+ config TI_THERMAL
+ 	bool "Texas Instruments SoCs thermal framework support"
+ 	depends on TI_SOC_THERMAL
+-	depends on CPU_THERMAL
+ 	help
+ 	  If you say yes here you want to get support for generic thermal
+ 	  framework for the Texas Instruments on die bandgap temperature sensor.
+-- 
+1.9.1
+
