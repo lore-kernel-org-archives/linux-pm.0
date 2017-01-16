@@ -1,275 +1,123 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
-Date: Mon, 16 Jan 2017 16:12:09 -0600
-Message-ID: <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
-References: <20170104205536.15963-1-d-gerlach@ti.com>
- <20170104205536.15963-3-d-gerlach@ti.com>
- <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
- <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
- <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
- <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
- <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
- <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
- <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v3 0/2] ARM: at91: properly handle LPDDR poweroff
+Date: Tue, 17 Jan 2017 00:26:46 +0100
+Message-ID: <20170116232646.ivoh5dhr56j4ihgp@earth>
+References: <20161025093759.20913-1-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:44754 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751026AbdAPWMx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 17:12:53 -0500
-In-Reply-To: <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============8050814533920366162=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20161025093759.20913-1-alexandre.belloni@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Jean-Jacques Hiblot <jjhiblot@traphandler.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
 
-On 01/13/2017 08:40 PM, Rob Herring wrote:
-> On Fri, Jan 13, 2017 at 2:28 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
->> On 01/13/2017 01:25 PM, Rob Herring wrote:
->>>
->>> On Thu, Jan 12, 2017 at 9:27 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
->>>>
->>>> Rob,
->>>>
->>>> On 01/11/2017 03:34 PM, Rob Herring wrote:
->>>>>
->>>>>
->>>>> On Mon, Jan 9, 2017 at 11:57 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
->>>>>>
->>>>>>
->>>>>> Rob,
->>>>>>
->>>>>> On 01/09/2017 11:50 AM, Rob Herring wrote:
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> On Wed, Jan 04, 2017 at 02:55:34PM -0600, Dave Gerlach wrote:
->>>>>>>>
->>>>>>>>
->>>>>>>>
->>>>>>>> Add a generic power domain implementation, TI SCI PM Domains, that
->>>>>>>> will hook into the genpd framework and allow the TI SCI protocol to
->>>>>>>> control device power states.
->>>>>>>>
->>>>>>>> Also, provide macros representing each device index as understood
->>>>>>>> by TI SCI to be used in the device node power-domain references.
->>>>>>>> These are identifiers for the K2G devices managed by the PMMC.
->>>>>>>>
->>>>>>>> Signed-off-by: Nishanth Menon <nm@ti.com>
->>>>>>>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->>>>>>>> ---
->>>>>>>> v2->v3:
->>>>>>>>         Update k2g_pds node docs to show it should be a child of pmmc
->>>>>>>> node.
->>>>>>>>         In early versions a phandle was used to point to pmmc and
->>>>>>>> docs
->>>>>>>> still
->>>>>>>>         incorrectly showed this.
->>>>>>>>
->>>>>>>>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 59
->>>>>>>> ++++++++++++++
->>>>>>>>  MAINTAINERS                                        |  2 +
->>>>>>>>  include/dt-bindings/genpd/k2g.h                    | 90
->>>>>>>> ++++++++++++++++++++++
->>>>>>>>  3 files changed, 151 insertions(+)
->>>>>>>>  create mode 100644
->>>>>>>> Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>>>>>>>  create mode 100644 include/dt-bindings/genpd/k2g.h
->>>>>>>>
->>>>>>>> diff --git
->>>>>>>> a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>>>>>>> b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>>>>>>> new file mode 100644
->>>>>>>> index 000000000000..4c9064e512cb
->>>>>>>> --- /dev/null
->>>>>>>> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->>>>>>>> @@ -0,0 +1,59 @@
->>>>>>>> +Texas Instruments TI-SCI Generic Power Domain
->>>>>>>> +---------------------------------------------
->>>>>>>> +
->>>>>>>> +Some TI SoCs contain a system controller (like the PMMC, etc...)
->>>>>>>> that
->>>>>>>> is
->>>>>>>> +responsible for controlling the state of the IPs that are present.
->>>>>>>> +Communication between the host processor running an OS and the
->>>>>>>> system
->>>>>>>> +controller happens through a protocol known as TI-SCI [1]. This pm
->>>>>>>> domain
->>>>>>>> +implementation plugs into the generic pm domain framework and makes
->>>>>>>> use
->>>>>>>> of
->>>>>>>> +the TI SCI protocol power on and off each device when needed.
->>>>>>>> +
->>>>>>>> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
->>>>>>>> +
->>>>>>>> +PM Domain Node
->>>>>>>> +==============
->>>>>>>> +The PM domain node represents the global PM domain managed by the
->>>>>>>> PMMC,
->>>>>>>> +which in this case is the single implementation as documented by the
->>>>>>>> generic
->>>>>>>> +PM domain bindings in
->>>>>>>> Documentation/devicetree/bindings/power/power_domain.txt.
->>>>>>>> +Because this relies on the TI SCI protocol to communicate with the
->>>>>>>> PMMC
->>>>>>>> it
->>>>>>>> +must be a child of the pmmc node.
->>>>>>>> +
->>>>>>>> +Required Properties:
->>>>>>>> +--------------------
->>>>>>>> +- compatible: should be "ti,sci-pm-domain"
->>>>>>>> +- #power-domain-cells: Must be 0.
->>>>>>>> +
->>>>>>>> +Example (K2G):
->>>>>>>> +-------------
->>>>>>>> +       pmmc: pmmc {
->>>>>>>> +               compatible = "ti,k2g-sci";
->>>>>>>> +               ...
->>>>>>>> +
->>>>>>>> +               k2g_pds: k2g_pds {
->>>>>>>> +                       compatible = "ti,sci-pm-domain";
->>>>>>>> +                       #power-domain-cells = <0>;
->>>>>>>> +               };
->>>>>>>> +       };
->>>>>>>> +
->>>>>>>> +PM Domain Consumers
->>>>>>>> +===================
->>>>>>>> +Hardware blocks that require SCI control over their state must
->>>>>>>> provide
->>>>>>>> +a reference to the sci-pm-domain they are part of and a unique
->>>>>>>> device
->>>>>>>> +specific ID that identifies the device.
->>>>>>>> +
->>>>>>>> +Required Properties:
->>>>>>>> +--------------------
->>>>>>>> +- power-domains: phandle pointing to the corresponding PM domain
->>>>>>>> node.
->>>>>>>> +- ti,sci-id: index representing the device id to be passed oevr SCI
->>>>>>>> to
->>>>>>>> +            be used for device control.
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>>
->>>>>>> As I've already stated before, this goes in power-domain cells. When
->>>>>>> you
->>>>>>> have a single thing (i.e. node) that controls multiple things, then
->>>>>>> you
->>>>>>> you need to specify the ID for each of them in phandle args. This is
->>>>>>> how
->>>>>>> irqs, gpio, clocks, *everything* in DT works.
->>>>>>
->>>>>>
->>>>>>
->>>>>>
->>>>>> You think the reasoning for doing it this way provided by both Ulf and
->>>>>> myself on v2 [1] is not valid then?
->>>>>>
->>>>>> From Ulf:
->>>>>>
->>>>>> To me, the TI SCI ID, is similar to a "conid" for any another "device
->>>>>> resource" (like clock, pinctrl, regulator etc) which we can describe
->>>>>> in DT and assign to a device node. The only difference here, is that
->>>>>> we don't have common API to fetch the resource (like clk_get(),
->>>>>> regulator_get()), but instead we fetches the device's resource from
->>>>>> SoC specific code, via genpd's device ->attach() callback.
->>>>>
->>>>>
->>>>>
->>>>> Sorry, but that sounds like a kernel problem to me and has nothing to
->>>>> do with DT bindings.
->>>>>
->>>>>> From me:
->>>>>>
->>>>>> Yes, you've pretty much hit it on the head. It is not an index into a
->>>>>> list
->>>>>> of genpds but rather identifies the device *within* a single genpd. It
->>>>>> is
->>>>>> a
->>>>>> property specific to each device that resides in a ti-sci-genpd, not a
->>>>>> mapping describing which genpd the device belongs to. The generic power
->>>>>> domain binding is concerned with mapping the device to a specific
->>>>>> genpd,
->>>>>> which is does fine for us, but we have a sub mapping for devices that
->>>>>> exist
->>>>>> inside a genpd which, we must describe as well, hence the ti,sci-id.
->>>>>>
->>>>>>
->>>>>> So to summarize, the genpd framework does interpret the phandle arg as
->>>>>> an
->>>>>> index into multiple genpds, just as you've said other frameworks do,
->>>>>> but
->>>>>> this is not what I am trying to do, we have multiple devices within
->>>>>> this
->>>>>> *single* genpd, hence the need for the ti,sci-id property.
->>>>>
->>>>>
->>>>>
->>>>> Fix the genpd framework rather than work around it in DT.
->>>>
->>>>
->>>>
->>>> I still disagree that this has nothing to do with DT bindings, as the
->>>> current DT binding represents something different already. I am trying to
->>>> extend it to give me additional information needed for our platforms. Are
->>>> you saying that we should break what the current DT binding already
->>>> represents to mean something else?
->>>
->>>
->>> No idea because what's the current binding? From the patch, looks like
->>> a new binding to me.
->>
->>
->> Yes, ti,sci-id is a new binding. I am referring to the current meaning of
->> the "power-domains" binding, which is where you are asking this property to
->> be added, in "power-domains" cells. This is documented here [1] in the
->> kernel, although looking at it I must admit it is not very clear.
->>
->> The power-domains cell represents an offset into an array of power domains,
->> if you choose to use it. That's what the genpd framework is hard coded to
->> interpret it as. This is correct, as it is an index into a static list of
->> power domains, used to identify which power domain a device belongs to,
->> which is exactly what the genpd framework itself is concerned with. This is
->> already how it is used in the kernel today.
->
-> Strictly speaking, the cells are purely for the interpretation of the
-> phandle they are associated with. If some controller wants to have 20
-> cells, then it could assuming a good reason. The reality is we tend to
-> align the meaning of the cells. If genpd is interpreting the cells and
-> not letting the driver for the power domain controller interpret them,
-> then still, genpd needs to be fixed.
 
-Ok, perhaps the genpd folks on the thread can jump in here with any 
-thoughts that they have.
+--===============8050814533920366162==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="ucwjv4af2zaf5xif"
+Content-Disposition: inline
 
->
-> IIRC, initially it was said genpd required 0 cells, hence my confusion.
->
->> My ti,sci-id is not an index into a list of power domains, so it should not
->> go in the power-domains cells and go against what the power-domains binding
->> says that the cell expects. We have one single power domain, and the new
->> ti,sci-id binding is not something the genpd framework itself is concerned
->> with as it's our property to identify a device inside a power domain, not to
->> identify which power domain it is associated with.
->
-> What is the id used for? I can understand why you need to know what
-> power domain a device is in (as power-domains identifies), but not
-> what devices are in a power domain.
 
-We have a system control processor that provides power management 
-services to the OS and it responsible for handling the power state of 
-each device. This control happens over a communication interface we have 
-called TI SCI (implemented at drivers/firmware/ti-sci.c). The 
-communication protocol uses these ids to identify each device within the 
-power domain so that the control processor can do what is necessary to 
-enable that device.
+--ucwjv4af2zaf5xif
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Dave
+Hi Alexandre,
 
->
-> Rob
->
+On Tue, Oct 25, 2016 at 11:37:57AM +0200, Alexandre Belloni wrote:
+> This patch set improves LPDDR support on SoCs using the Atmel MPDDR contr=
+oller.
+>=20
+> LPDDR memories can only handle up to 400 uncontrolled power offs in their
+> life. The proper power off sequence has to be applied before shutting dow=
+n the
+> SoC.
+>=20
+> I'm not too happy with the code duplication but this is a design choice
+> that has been made before because both shutdown controllers are really
+> different apart from the shutdown itself.
+>=20
+> I guess it is still better than slowly killing the LPDDR.
 
+Sorry, I totally forgot about this one. I queued it into my for-next
+branch using an immutable topic branch, in case you need the patch
+against the arm include to also go through arm-soc. Feel free to use
+or ignore it:
+
+The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
+
+  Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git =
+tags/ib-psy-arm-at91-4.11
+
+for you to fetch changes up to 0b0408745e7ff24757cbfd571d69026c0ddb803c:
+
+  power: reset: at91-poweroff: timely shutdown LPDDR memories (2017-01-16 2=
+3:21:33 +0100)
+
+----------------------------------------------------------------
+immutable branch between ARM at91 and power-supply for v4.11
+----------------------------------------------------------------
+
+Alexandre Belloni (2):
+      ARM: at91: define LPDDR types
+      power: reset: at91-poweroff: timely shutdown LPDDR memories
+
+ drivers/power/reset/Kconfig              |  2 +-
+ drivers/power/reset/at91-poweroff.c      | 54 ++++++++++++++++++++++++++++=
++++++++++++++++++++++++++-
+ drivers/power/reset/at91-sama5d2_shdwc.c | 49 ++++++++++++++++++++++++++++=
+++++++++++++++++++++-
+ include/soc/at91/at91sam9_ddrsdr.h       |  3 +++
+ 4 files changed, 105 insertions(+), 3 deletions(-)
+
+-- Sebastian
+
+--ucwjv4af2zaf5xif
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9VrYACgkQ2O7X88g7
++poFvg/8CwqWyFttar2DsS9Es7Pb456Ihat1ES7xy7qBGom3DOzpikm0yzL1TqZr
+YGr3xDXj6yILfhU6FOKxp5KSXfMMljaLfZ3SfW2FT+bUh7XmgGPPErwGT1FJw9si
+hqQvp0JO79VWnSsbDjXamNrfnXgAidSvg9j+g2Hc62YsjpIIl3pjacL4DGrt8xWj
+QZc9mA7NnfCTqerfxvpOmIP7Bb9f4+aLf3C++FkqXAy9QIKvtWOGrLizUJjXOlmn
+6wzvl2tt9LWEhTQK17CQC48gdSSNqf4jR6FQC517LvUtpW7OfIcdYg8zJkUeagzw
+8N8P2+AmkriBco5MD7yuXlBid3RO+nqsswJSpWgowT/VzR52uqKvlqrZNa5/dmuE
+AbVACHWwJFKyFp9l7Mq/RK308AoRrzuQIZBY7r3hOAhNAaHgqfvT0kGoB7uJutOZ
+r22zPwNnJVQXyPiOX3jz1IZycA5Yy71jdVsgNomts5Nmy3H5vudGTsYr3sYkyuux
+MBJ1enl/J/JcM2QQzerKrXYVyTaICcCZgNkxlu5jLj5X4eaixd+l05uFYFabrIgM
+Z0EWEg91E3n2eHkgey9NSX0sBpB1/ec5MP4yHk20OeEcMVTfA7K0jbAOypSm4gFp
+89KGOaaz59oHfp52AoqsWMIvWJodqpHQu+E8PzZ6AMfLJgc1LWs=
+=i5vG
+-----END PGP SIGNATURE-----
+
+--ucwjv4af2zaf5xif--
+
+
+--===============8050814533920366162==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============8050814533920366162==--
