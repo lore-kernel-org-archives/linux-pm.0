@@ -1,49 +1,42 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v3 4/4] PM / devfreq: Modify the device name as devfreq[X] for
- sysfs
-Date: Mon, 16 Jan 2017 21:26:07 +0900
-Message-ID: <1484569567-29810-5-git-send-email-cw00.choi@samsung.com>
-References: <1484569567-29810-1-git-send-email-cw00.choi@samsung.com>
- <CGME20170116122609epcas5p3e9f106e6d097613cd866107bc0e065c7@epcas5p3.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1484569567-29810-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH v2 0/6] BQ24190 charger fixes
+Date: Mon, 16 Jan 2017 09:21:11 -0800
+Message-ID: <20170116172111.GA7399@atomide.com>
+References: <CAKvHMgTZsiALaWqgwO0NjACi_smHtPUomd6PnbW-TQfG8jnFkQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:57730 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750770AbdAPRVU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Jan 2017 12:21:20 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgTZsiALaWqgwO0NjACi_smHtPUomd6PnbW-TQfG8jnFkQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-This patch modifies the device name as devfreq[X] for sysfs by using the 'devfreq'
-prefix word instead of separate device name. On user-space aspect, user would
-find the some devfreq drvier with 'devfreq[X]' pattern. So, this patch modify the
-device name as following:
-- /sys/class/devfreq/[non-standard device name] -> /sys/class/devfreq/devfreq[X]
+* Liam Breck <liam@networkimprov.net> [170115 22:06]:
+> Changes in v2:
+> 
+> #1 reorders:            Fix irq triggering to IRQF_TRIGGER_FALLING
+> #2 factors out part of: Call power_supply_changed() only for relevant component
+> #3 replaces:            Call enable_irq() only at the end of probe()
+> #4 reorders:            Call power_supply_changed() only for relevant component
+> #5 unscrambles:         Don't read fault register outside irq_handle_thread()
+> #6 factors out part of: Don't read fault register outside irq_handle_thread()
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+All look good to me thanks:
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 8e5938c9c7d6..4bd7a8f71b07 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -527,6 +527,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- {
- 	struct devfreq *devfreq;
- 	struct devfreq_governor *governor;
-+	static atomic_t devfreq_no = ATOMIC_INIT(-1);
- 	int err = 0;
- 
- 	if (!dev || !profile || !governor_name) {
-@@ -568,7 +569,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		mutex_lock(&devfreq->lock);
- 	}
- 
--	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
-+	dev_set_name(&devfreq->dev, "devfreq%lu",
-+			(unsigned long)atomic_inc_return(&devfreq_no));
- 	err = device_register(&devfreq->dev);
- 	if (err) {
- 		mutex_unlock(&devfreq->lock);
--- 
-1.9.1
+Acked-by: Tony Lindgren <tony@atomide.com>
+
+> These are dropped; Tony will resubmit them in new patchset:
+>   Check the interrupt status on resume
+>   Use PM runtime autosuspend
+
+Yes I'll repost those after no more comments on these.
+
+Regards,
+
+Tony
