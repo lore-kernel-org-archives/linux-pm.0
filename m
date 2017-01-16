@@ -1,76 +1,41 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 01/12] soc: samsung: pmu: Use common device name to let others
- to find it easily
-Date: Mon, 16 Jan 2017 07:44:56 +0100
-Message-ID: <1484549107-5957-2-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH 04/12] pinctrl: samsung: Document Exynos3250 SoC support
+Date: Mon, 16 Jan 2017 07:44:59 +0100
+Message-ID: <1484549107-5957-5-git-send-email-m.szyprowski@samsung.com>
 References: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170116064523eucas1p18a55f951566df5ddd978364486154931@eucas1p1.samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+ <CGME20170116064525eucas1p123df65dedceef6e3efe255e9a2ec6d07@eucas1p1.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:59749 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750913AbdAPGp3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 01:45:29 -0500
 In-reply-to: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch always set device name to "exynos-pmu" to let other drivers to
-find PMU device easily. This is done mainly to get regmap to access PMU
-registers from other drivers. This way it can be avoided to add phandle to
-the PMU node to almost all drivers in the SoC just to get a regmap access
-in the drivers. PMU is something like a SoC wide service, so there is no
-point modeling it as hardware dependency for all devices in device tree.
+Add missing compatible id for Exynos3250 SoC to device tree docs.
+Exynos pin control driver supports it since commit d97f5b9804bfcdc1
+("pinctrl: exynos: Add driver data for Exynos3250").
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/soc/samsung/exynos-pmu.c       |  1 +
- include/linux/soc/samsung/exynos-pmu.h | 19 +++++++++++++++++++
- 2 files changed, 20 insertions(+)
+ Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
-index 0acdfd82e751..63bb471845cb 100644
---- a/drivers/soc/samsung/exynos-pmu.c
-+++ b/drivers/soc/samsung/exynos-pmu.c
-@@ -120,6 +120,7 @@ static int exynos_pmu_probe(struct platform_device *pdev)
- 		pmu_context->pmu_data->pmu_init();
- 
- 	platform_set_drvdata(pdev, pmu_context);
-+	dev_set_name(dev, EXYNOS_PMU_DEV_NAME);
- 
- 	dev_dbg(dev, "Exynos PMU Driver probe done\n");
- 	return 0;
-diff --git a/include/linux/soc/samsung/exynos-pmu.h b/include/linux/soc/samsung/exynos-pmu.h
-index e2e9de1acc5b..90d9205805ea 100644
---- a/include/linux/soc/samsung/exynos-pmu.h
-+++ b/include/linux/soc/samsung/exynos-pmu.h
-@@ -12,6 +12,10 @@
- #ifndef __LINUX_SOC_EXYNOS_PMU_H
- #define __LINUX_SOC_EXYNOS_PMU_H
- 
-+#include <linux/mfd/syscon.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+
- enum sys_powerdown {
- 	SYS_AFTR,
- 	SYS_LPA,
-@@ -21,4 +25,19 @@ enum sys_powerdown {
- 
- extern void exynos_sys_powerdown_conf(enum sys_powerdown mode);
- 
-+#define EXYNOS_PMU_DEV_NAME "exynos-pmu"
-+
-+static inline struct regmap *exynos_get_pmu_regs(void)
-+{
-+	struct device *dev = bus_find_device_by_name(&platform_bus_type, NULL,
-+						     EXYNOS_PMU_DEV_NAME);
-+	if (dev) {
-+		struct regmap *regs = syscon_node_to_regmap(dev->of_node);
-+		put_device(dev);
-+		if (!IS_ERR(regs))
-+			return regs;
-+	}
-+	return NULL;
-+}
-+
- #endif /* __LINUX_SOC_EXYNOS_PMU_H */
+diff --git a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+index 1baf19eecabf..5e00a21de2bf 100644
+--- a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
++++ b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+@@ -13,6 +13,7 @@ Required Properties:
+   - "samsung,s3c2450-pinctrl": for S3C2450-compatible pin-controller,
+   - "samsung,s3c64xx-pinctrl": for S3C64xx-compatible pin-controller,
+   - "samsung,s5pv210-pinctrl": for S5PV210-compatible pin-controller,
++  - "samsung,exynos3250-pinctrl": for Exynos3250 compatible pin-controller.
+   - "samsung,exynos4210-pinctrl": for Exynos4210 compatible pin-controller.
+   - "samsung,exynos4x12-pinctrl": for Exynos4x12 compatible pin-controller.
+   - "samsung,exynos5250-pinctrl": for Exynos5250 compatible pin-controller.
 -- 
 1.9.1
+
