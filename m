@@ -1,46 +1,48 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host
- hotplug ports
-Date: Mon, 16 Jan 2017 12:29:27 +0200
-Message-ID: <20170116102927.GA2023@lahna.fi.intel.com>
-References: <cover.1484486499.git.lukas@wunner.de>
- <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v3 1/4] PM / devfreq: Fix the wrong description for userspace
+ governor
+Date: Mon, 16 Jan 2017 21:26:04 +0900
+Message-ID: <1484569567-29810-2-git-send-email-cw00.choi@samsung.com>
+References: <1484569567-29810-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20170116122609epcas5p3268841ebbf85523a32297bba7b6c321f@epcas5p3.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:1507 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751226AbdAPKbn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Jan 2017 05:31:43 -0500
-Content-Disposition: inline
-In-Reply-To: <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
+Received: from mailout2.samsung.com ([203.254.224.25]:45024 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750922AbdAPM0M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 07:26:12 -0500
+In-reply-to: <1484569567-29810-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: linux-pm@vger.kernel.org
+Cc: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org
 
-On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
-> Hotplug ports generally block their parents from suspending to D3hot as
-> otherwise their interrupts couldn't be delivered.
-> 
-> An exception are Thunderbolt host controllers:  They have a separate
-> GPIO pin to side-band signal plug events even if the controller is
-> powered down or its parent ports are suspended to D3.  They can be told
-> apart from Thunderbolt controllers in attached devices by checking if
-> they're situated below a non-Thunderbolt device (typically a root port,
-> or the downstream port of a PCIe switch in the case of the MacPro6,1).
-> 
-> To enable runtime PM for Thunderbolt on the Mac, the downstream bridges
-> of a host controller must not block runtime PM on the upstream bridge as
-> power to the chip is only cut once the upstream bridge has suspended.
-> Amend the condition in pci_dev_check_d3cold() accordingly.
-> 
-> This change does not impact non-Macs as their Thunderbolt hotplug ports
-> are handled by the firmware rather than natively by the OS:  The hotplug
-> ports are not allowed to suspend in pci_bridge_d3_possible() and keep
-> their parent ports awake all the time.  Consequently it is meaningless
-> whether they block runtime PM on their parent ports or not.
-> 
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+This patch fixes the wrong description of governor_userspace.c
+and removes the unneeded blank line.
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/governor_userspace.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
+index 9db4d6f2006a..176976068bcd 100644
+--- a/drivers/devfreq/governor_userspace.c
++++ b/drivers/devfreq/governor_userspace.c
+@@ -1,5 +1,5 @@
+ /*
+- *  linux/drivers/devfreq/governor_simpleondemand.c
++ *  linux/drivers/devfreq/governor_userspace.c
+  *
+  *  Copyright (C) 2011 Samsung Electronics
+  *	MyungJoo Ham <myungjoo.ham@samsung.com>
+@@ -50,7 +50,6 @@ static ssize_t store_freq(struct device *dev, struct device_attribute *attr,
+ 	unsigned long wanted;
+ 	int err = 0;
+ 
+-
+ 	mutex_lock(&devfreq->lock);
+ 	data = devfreq->data;
+ 
+-- 
+1.9.1
+
