@@ -1,93 +1,75 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v5 0/2] qcom OTG regulator support
-Date: Mon, 16 Jan 2017 22:49:47 +0100
-Message-ID: <20170116214947.wpk7mmjrvfzgbgrq@earth>
-References: <20161018004251.28733-1-stephen.boyd@linaro.org>
- <CAJOFmgySF7T1N6PDiw2rsQ+n68_k7n_M0TzXZe4S7PxTHmRapA@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: Calling device_init_wakeup() on driver removal
+Date: Mon, 16 Jan 2017 22:50:57 +0100
+Message-ID: <CAJZ5v0hUPuG=L=vaFuoqSPDG-jt+iHVJp3zCx9Z8svYo=A-txQ@mail.gmail.com>
+References: <b4f92201-77f6-4a15-81cf-8f2f384d0c1f@roeck-us.net>
+ <3852101.qr97BxrLhj@aspire.rjw.lan> <d50f9cf4-99e8-b95e-dc6c-317b06d75cdc@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4898735552741985931=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJOFmgySF7T1N6PDiw2rsQ+n68_k7n_M0TzXZe4S7PxTHmRapA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Stephen Boyd <stephen.boyd@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm <linux-arm-msm@vger.kernel.org>, "Bird, Tim" <tim.bird@sonymobile.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, Mark Brown <broonie@kernel.org>, Andy Gross <andy.gross@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <d50f9cf4-99e8-b95e-dc6c-317b06d75cdc@roeck-us.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Sun, Jan 15, 2017 at 4:23 PM, Guenter Roeck <linux@roeck-us.net> wrote:
+> On 01/15/2017 06:49 AM, Rafael J. Wysocki wrote:
+>>
+>> On Saturday, January 14, 2017 08:46:05 PM Guenter Roeck wrote:
+>>>
+>>> Hi folks,
+>>
+>>
+>> Hi,
+>>
+>>> while looking through driver initialization and removal functions, I
+>>> noticed that many drivers
+>>> call device_init_wakeup(dev, false) in the removal function. Given that
+>>> the driver is about
+>>> to be removed, that doesn't make much sense to me, especially since
+>>> device_wakeup_disable()
+>>> is called from device_pm_remove() anyway.
+>>>
+>>> Is it safe to assume that all those calls can be removed, or is there a
+>>> possible reason for
+>>> keeping them around ?
+>>
+>>
+>> Removing them automatically might break things, because
+>> device_init_wakeup(dev, false)
+>> also clears the power.can_wakeup flag and removes the "wakeup" attribute
+>> from sysfs.
+>>
+>
+> I had the same concern, but I concluded that the wakeup attribute should be
+> removed
+> automatically, since it is added with sysfs_merge_group(), and the matching
+> unmerge call
+> is also made in dpm_sysfs_remove(). power.can_wakeup is part of the device
+> structure,
+> which is in the process of being removed, so I am not sure I understand how
+> that can be
+> problematic.
 
---===============4898735552741985931==
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="guhg7n7l4st7jx74"
-Content-Disposition: inline
+That's when the device goes away, but ->remove() is invoked when the
+driver goes away too and that's the more common case (by far IMO).
 
+>> I guess they could be removed safely in the majority of cases, though.
+>
+>
+> How would one decide if it is needed ? I see some drivers call it on remove,
+> but others
+> don't. I don't see a clear pattern; unless I am missing something, it seems
+> to be
+> more or less random.
 
---guhg7n7l4st7jx74
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+My guess would be that drivers calling it don't want the wakeup
+capability to be exposed after they have gone away.  Most likely these
+are the ones that expose the wakeup attribute on probe.
 
-Hi Stephen,
+IMO the rule should be that whoever exposes the wakeup attribute one
+init, should also hide it on cleanup.
 
-On Wed, Dec 28, 2016 at 02:06:18PM -0800, Stephen Boyd wrote:
-> On Mon, Oct 17, 2016 at 5:42 PM, Stephen Boyd <stephen.boyd@linaro.org> w=
-rote:
-> > This is a resend/resurrection of Tim's patches to add support
-> > for the OTG regulator on some of qcom's PMICs[1]. I've made
-> > some minor modifications to the driver to make it work, but
-> > otherwise it works fine with my USB otg testing. Changes
-> > are noted in a maintainer tag.
-> >
-> > Tim, did you want to me to fix the name? I pulled these from patchwork
-> > and it seems you sent it as "Bird, Tim" which may have not been
-> > intentional.
-> >
->=20
-> Can this be picked up for v4.11? Tim hasn't responded so I assume it's
-> fine with the name.
-
-Yes, sorry for the delay. I just queued it.
-
--- Sebastian
-
---guhg7n7l4st7jx74
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9P/gACgkQ2O7X88g7
-+prr+Q//VsFkNhS0Q76tOR/Rktjul4S9oK+nh+Q/sDRwu+Bn6YuCW850LDKqncnG
-kJBx3JRCBEGCXVVFG5Dom5VZ6SueKMIktIRBdaToyV0vFBgfSrdXTuMfL0v01U4l
-DripA14vMlUX4QSjMsnZEVxYXULjVGy0DF+LqjQMExkIbX8+q7ElFwaYEPacNJzF
-0M+GmXa1jEGmY7Obx5imxh09RAD4AUUZaf0tZZRsTaQFpASmKLHfKN/Ye5PeqXnP
-wGtllkonMv0CP3cGvTHnVUK2R3NQgjwZHhGX8tnfIvq4cTaNJ1Lm0uFWg2DxgcwD
-meWIKQjVj5hRr0ix3jMHvNEHofmsNY+mlvt+N0veThuAUengHqY9gTDfh/u/e6h0
-F8g8nFx8t/54goDQljdOU88tU1U/kO/38Ea25P/72r/3F0VoBF8eY1XPHlSn0Umu
-y7sP3Xf+hAKaRcsLCPiA14QJdtF3nHTOcxIuO80wzuUv4UHWDOjHRSJOFQAFGftj
-FJVBvuPxcvXpXLg4iDiR9p0LwEtGNu5ntJzL5wh5dKhfl+NMHi7xVfLIjM2ZkNrx
-kUa9MLRnTlzGFzbrLlTnEXt9t6b5yuvlLS3LQesJ2qgRb9GBpyev5qWGYpvIM4cb
-tiGK/KlE117nF8OLiKV36FuRlVUWW3zXfOocKXw4pjxw1MHrdds=
-=DAaN
------END PGP SIGNATURE-----
-
---guhg7n7l4st7jx74--
-
-
---===============4898735552741985931==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============4898735552741985931==--
+Thanks,
+Rafael
