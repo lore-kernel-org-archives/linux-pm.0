@@ -1,33 +1,29 @@
 From: Sebastian Reichel <sre@kernel.org>
 Subject: Re: [PATCH] drivers: power: supply: Compress return logic into one
  line.
-Date: Tue, 17 Jan 2017 00:42:19 +0100
-Message-ID: <20170116234219.nkwgpyb4wyuq4ozq@earth>
-References: <20170112022935.GA22272@embeddedgus>
+Date: Tue, 17 Jan 2017 00:42:38 +0100
+Message-ID: <20170116234238.wqj4qmtm5uln2nsw@earth>
+References: <20170112024557.GA23047@embeddedgus>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5essvq2vg3oilkjb"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:49622 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750990AbdAPXmY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Jan 2017 18:42:24 -0500
+        protocol="application/pgp-signature"; boundary="s663nf3j47vqffxi"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170112022935.GA22272@embeddedgus>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20170112024557.GA23047@embeddedgus>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---5essvq2vg3oilkjb
+--s663nf3j47vqffxi
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jan 11, 2017 at 08:29:35PM -0600, Gustavo A. R. Silva wrote:
+On Wed, Jan 11, 2017 at 08:45:57PM -0600, Gustavo A. R. Silva wrote:
 > Simplify return logic to avoid unnecessary variable assignments.
 > These issues were detected using Coccinelle and the following semantic pa=
 tch:
@@ -44,72 +40,84 @@ tch:
 >=20
 > Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 > ---
->  drivers/power/supply/ab8500_btemp.c | 10 +++-------
->  1 file changed, 3 insertions(+), 7 deletions(-)
+>  drivers/power/supply/pcf50633-charger.c | 13 ++++---------
+>  1 file changed, 4 insertions(+), 9 deletions(-)
 >=20
-> diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/a=
-b8500_btemp.c
-> index 6ffdc18..9b01b52 100644
-> --- a/drivers/power/supply/ab8500_btemp.c
-> +++ b/drivers/power/supply/ab8500_btemp.c
-> @@ -123,10 +123,7 @@ static LIST_HEAD(ab8500_btemp_list);
->   */
->  struct ab8500_btemp *ab8500_btemp_get(void)
+> diff --git a/drivers/power/supply/pcf50633-charger.c b/drivers/power/supp=
+ly/pcf50633-charger.c
+> index d05597b..b3c1873 100644
+> --- a/drivers/power/supply/pcf50633-charger.c
+> +++ b/drivers/power/supply/pcf50633-charger.c
+> @@ -393,7 +393,6 @@ static int pcf50633_mbc_probe(struct platform_device =
+*pdev)
 >  {
-> -	struct ab8500_btemp *btemp;
-> -	btemp =3D list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, nod=
-e);
-> -
-> -	return btemp;
-> +	return list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
->  }
->  EXPORT_SYMBOL(ab8500_btemp_get);
+>  	struct power_supply_config psy_cfg =3D {};
+>  	struct pcf50633_mbc *mbc;
+> -	int ret;
+>  	int i;
+>  	u8 mbcs1;
 > =20
-> @@ -470,7 +467,7 @@ static int ab8500_btemp_get_batctrl_res(struct ab8500=
-_btemp *di)
->  static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
->  	const struct abx500_res_to_temp *tbl, int tbl_size, int res)
->  {
-> -	int i, temp;
-> +	int i;
->  	/*
->  	 * Calculate the formula for the straight line
->  	 * Simple interpolation if we are within
-> @@ -488,9 +485,8 @@ static int ab8500_btemp_res_to_temp(struct ab8500_bte=
-mp *di,
->  			i++;
+> @@ -419,8 +418,7 @@ static int pcf50633_mbc_probe(struct platform_device =
+*pdev)
+>  					     &psy_cfg);
+>  	if (IS_ERR(mbc->adapter)) {
+>  		dev_err(mbc->pcf->dev, "failed to register adapter\n");
+> -		ret =3D PTR_ERR(mbc->adapter);
+> -		return ret;
+> +		return PTR_ERR(mbc->adapter);
 >  	}
 > =20
-> -	temp =3D tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
-> +	return tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
->  		(res - tbl[i].resist)) / (tbl[i + 1].resist - tbl[i].resist);
-> -	return temp;
->  }
+>  	mbc->usb =3D power_supply_register(&pdev->dev, &pcf50633_mbc_usb_desc,
+> @@ -428,8 +426,7 @@ static int pcf50633_mbc_probe(struct platform_device =
+*pdev)
+>  	if (IS_ERR(mbc->usb)) {
+>  		dev_err(mbc->pcf->dev, "failed to register usb\n");
+>  		power_supply_unregister(mbc->adapter);
+> -		ret =3D PTR_ERR(mbc->usb);
+> -		return ret;
+> +		return PTR_ERR(mbc->usb);
+>  	}
 > =20
->  /**
+>  	mbc->ac =3D power_supply_register(&pdev->dev, &pcf50633_mbc_ac_desc,
+> @@ -438,12 +435,10 @@ static int pcf50633_mbc_probe(struct platform_devic=
+e *pdev)
+>  		dev_err(mbc->pcf->dev, "failed to register ac\n");
+>  		power_supply_unregister(mbc->adapter);
+>  		power_supply_unregister(mbc->usb);
+> -		ret =3D PTR_ERR(mbc->ac);
+> -		return ret;
+> +		return PTR_ERR(mbc->ac);
+>  	}
+> =20
+> -	ret =3D sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group);
+> -	if (ret)
+> +	if (sysfs_create_group(&pdev->dev.kobj, &mbc_attr_group))
+>  		dev_err(mbc->pcf->dev, "failed to create sysfs entries\n");
+> =20
+>  	mbcs1 =3D pcf50633_reg_read(mbc->pcf, PCF50633_REG_MBCS1);
 
 Thanks, queued.
 
 -- Sebastian
 
---5essvq2vg3oilkjb
+--s663nf3j47vqffxi
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9WlgACgkQ2O7X88g7
-+pqGIw/6A4djm9aTM0eM4wkiaxI+P2pif9O5pr/Rxapb/BSLA0Yt6pcikquuzUch
-orw/seT/6/4cWfuoeym3cXSJiudm/qOuHLBZZ8ydY9Nt2q4RW+slls6a2NdM8bMN
-Bbssqff1JtBqgvCUF0ab3Cov2MpF0sdpHu/vvxpae0jJ1Hi4mA1AOiwi+RVKe0CQ
-S7SLhevlTyKLVBPXSGTn42aE/7LYCagdIkNimoZ5G2BeOisOdHL1H6R4cOQstLeE
-/C31rAxfPHU0Bf+5xnNUlMH55Qh7ySHxBUkFtON3AOqv/K8V3X+Fl0fnFudPBFHt
-wfDo+PEGaMxMqcGKxv5F2+bjB6nfVghG91WDYxB2h68yyTde/KIzL1pfKT3b1JfN
-RVhlDzRJQbDZ4rdWQrFRl5E5RxI6jE/OFiWu4dXwNIr/ARDwQ8Ir9Mvy3bLi1XpG
-CPgQi5yh5Lb22ilMGhcUMbe2qpHzIdOjXPGjUhCG+Rq+MwAFgLykp9t6AVLDyX1A
-zxR4lh92En15YJGbncnOTgyFt7svDx3VS0E7oGin4Mu3kZxjJqN+lC0MipzwWkuh
-cE8RdGUcuN3mGVCMIHPz+KQlVbjrHqFeB9fyQKIPe2za7Un3UzLl7FJdX1XW1ddq
-gYqAbA1qhqn3yhZUld/84LUTzY+G2PUjDbYhtzzRdkJBxcMmJ1M=
-=Ykq7
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9Wm4ACgkQ2O7X88g7
++pq03g//ZQVf0TR5cbDjy/6JI27pwvBy16R+wxN6y3+bhxAPhzpXJUhsvY43Zc1U
+RJblzYXG9777C7AJzKW4+BAIZBklcLVxrl8JaiSGr1M57vS/vkFwX7Z6gruvNSO0
+bFYus7Pek1zF/qXd8/VSjGrrvZYUqFPeQpYbqWTqwkCM6LMFA91AqXqzuS26Cec6
++WYoC8hx2H4InzjSZz3oqSpYzY8a8vA5xbcyM13FD3dm7nyIw7lN18RxVdQEOlS9
+SIDz0HYepit5g+jZO+/qftgFXpY4PadieCrfPpgJX2AXwxwvr8Jp+q06vppCZoVo
+6Zdo69JqMOJXioHlq9qIQrBZV5hqsPf87DmN+iMYp8N5pEHyvalRMOg0Yqtb3Cun
+rf4k6osE3or6ez6tquUmEoW4WanhqN9WCcVxuHAA+PmjL3PYxoWwqhC+K960fkdZ
+J7TvfIP9oDsR3bpaISpd0yJgeQHHtTd4IJQ78gH7M3RS1KSMOi08OyrO0Q4qq6Cy
+Gbao20s0puFbd0qSiaN8yN7RvQqSkb8D6Cm/6h/9a0068xnGNb+cIFy35NiSNUwt
+74F+rB4f/6I00CYDV09C8d7c2IdbANzbDOrruJVfva3hN0i8z6tHm5Amq2QTqTN2
+FOAAa2ta0o6pkYqioGTFJABAGMS3/SAjMPojcGTbI6zUXzBBa1w=
+=2RTJ
 -----END PGP SIGNATURE-----
 
---5essvq2vg3oilkjb--
+--s663nf3j47vqffxi--
