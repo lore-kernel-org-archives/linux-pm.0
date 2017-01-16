@@ -1,74 +1,275 @@
-From: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] power_supply: Add support for MAX14656 USB charger
- detector
-Date: Mon, 16 Jan 2017 23:09:42 +0100
-Message-ID: <20170116220942.6ndez745bhmczyzu@earth>
-References: <1476893089-7233-1-git-send-email-akurz@blala.de>
- <1476893089-7233-2-git-send-email-akurz@blala.de>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Mon, 16 Jan 2017 16:12:09 -0600
+Message-ID: <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com>
+ <20170104205536.15963-3-d-gerlach@ti.com>
+ <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
+ <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+ <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
+ <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+ <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
+ <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="3zqtffriqv5yyy23"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1476893089-7233-2-git-send-email-akurz-3EoFODjbY6Q@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx194.ext.ti.com ([198.47.27.80]:44754 "EHLO
+        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751026AbdAPWMx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 17:12:53 -0500
+In-Reply-To: <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
 
+On 01/13/2017 08:40 PM, Rob Herring wrote:
+> On Fri, Jan 13, 2017 at 2:28 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>> On 01/13/2017 01:25 PM, Rob Herring wrote:
+>>>
+>>> On Thu, Jan 12, 2017 at 9:27 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>>>
+>>>> Rob,
+>>>>
+>>>> On 01/11/2017 03:34 PM, Rob Herring wrote:
+>>>>>
+>>>>>
+>>>>> On Mon, Jan 9, 2017 at 11:57 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>>>>>
+>>>>>>
+>>>>>> Rob,
+>>>>>>
+>>>>>> On 01/09/2017 11:50 AM, Rob Herring wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> On Wed, Jan 04, 2017 at 02:55:34PM -0600, Dave Gerlach wrote:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> Add a generic power domain implementation, TI SCI PM Domains, that
+>>>>>>>> will hook into the genpd framework and allow the TI SCI protocol to
+>>>>>>>> control device power states.
+>>>>>>>>
+>>>>>>>> Also, provide macros representing each device index as understood
+>>>>>>>> by TI SCI to be used in the device node power-domain references.
+>>>>>>>> These are identifiers for the K2G devices managed by the PMMC.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>>>>>>>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>>>>>>>> ---
+>>>>>>>> v2->v3:
+>>>>>>>>         Update k2g_pds node docs to show it should be a child of pmmc
+>>>>>>>> node.
+>>>>>>>>         In early versions a phandle was used to point to pmmc and
+>>>>>>>> docs
+>>>>>>>> still
+>>>>>>>>         incorrectly showed this.
+>>>>>>>>
+>>>>>>>>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 59
+>>>>>>>> ++++++++++++++
+>>>>>>>>  MAINTAINERS                                        |  2 +
+>>>>>>>>  include/dt-bindings/genpd/k2g.h                    | 90
+>>>>>>>> ++++++++++++++++++++++
+>>>>>>>>  3 files changed, 151 insertions(+)
+>>>>>>>>  create mode 100644
+>>>>>>>> Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>>  create mode 100644 include/dt-bindings/genpd/k2g.h
+>>>>>>>>
+>>>>>>>> diff --git
+>>>>>>>> a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>> b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>> new file mode 100644
+>>>>>>>> index 000000000000..4c9064e512cb
+>>>>>>>> --- /dev/null
+>>>>>>>> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>> @@ -0,0 +1,59 @@
+>>>>>>>> +Texas Instruments TI-SCI Generic Power Domain
+>>>>>>>> +---------------------------------------------
+>>>>>>>> +
+>>>>>>>> +Some TI SoCs contain a system controller (like the PMMC, etc...)
+>>>>>>>> that
+>>>>>>>> is
+>>>>>>>> +responsible for controlling the state of the IPs that are present.
+>>>>>>>> +Communication between the host processor running an OS and the
+>>>>>>>> system
+>>>>>>>> +controller happens through a protocol known as TI-SCI [1]. This pm
+>>>>>>>> domain
+>>>>>>>> +implementation plugs into the generic pm domain framework and makes
+>>>>>>>> use
+>>>>>>>> of
+>>>>>>>> +the TI SCI protocol power on and off each device when needed.
+>>>>>>>> +
+>>>>>>>> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+>>>>>>>> +
+>>>>>>>> +PM Domain Node
+>>>>>>>> +==============
+>>>>>>>> +The PM domain node represents the global PM domain managed by the
+>>>>>>>> PMMC,
+>>>>>>>> +which in this case is the single implementation as documented by the
+>>>>>>>> generic
+>>>>>>>> +PM domain bindings in
+>>>>>>>> Documentation/devicetree/bindings/power/power_domain.txt.
+>>>>>>>> +Because this relies on the TI SCI protocol to communicate with the
+>>>>>>>> PMMC
+>>>>>>>> it
+>>>>>>>> +must be a child of the pmmc node.
+>>>>>>>> +
+>>>>>>>> +Required Properties:
+>>>>>>>> +--------------------
+>>>>>>>> +- compatible: should be "ti,sci-pm-domain"
+>>>>>>>> +- #power-domain-cells: Must be 0.
+>>>>>>>> +
+>>>>>>>> +Example (K2G):
+>>>>>>>> +-------------
+>>>>>>>> +       pmmc: pmmc {
+>>>>>>>> +               compatible = "ti,k2g-sci";
+>>>>>>>> +               ...
+>>>>>>>> +
+>>>>>>>> +               k2g_pds: k2g_pds {
+>>>>>>>> +                       compatible = "ti,sci-pm-domain";
+>>>>>>>> +                       #power-domain-cells = <0>;
+>>>>>>>> +               };
+>>>>>>>> +       };
+>>>>>>>> +
+>>>>>>>> +PM Domain Consumers
+>>>>>>>> +===================
+>>>>>>>> +Hardware blocks that require SCI control over their state must
+>>>>>>>> provide
+>>>>>>>> +a reference to the sci-pm-domain they are part of and a unique
+>>>>>>>> device
+>>>>>>>> +specific ID that identifies the device.
+>>>>>>>> +
+>>>>>>>> +Required Properties:
+>>>>>>>> +--------------------
+>>>>>>>> +- power-domains: phandle pointing to the corresponding PM domain
+>>>>>>>> node.
+>>>>>>>> +- ti,sci-id: index representing the device id to be passed oevr SCI
+>>>>>>>> to
+>>>>>>>> +            be used for device control.
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> As I've already stated before, this goes in power-domain cells. When
+>>>>>>> you
+>>>>>>> have a single thing (i.e. node) that controls multiple things, then
+>>>>>>> you
+>>>>>>> you need to specify the ID for each of them in phandle args. This is
+>>>>>>> how
+>>>>>>> irqs, gpio, clocks, *everything* in DT works.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> You think the reasoning for doing it this way provided by both Ulf and
+>>>>>> myself on v2 [1] is not valid then?
+>>>>>>
+>>>>>> From Ulf:
+>>>>>>
+>>>>>> To me, the TI SCI ID, is similar to a "conid" for any another "device
+>>>>>> resource" (like clock, pinctrl, regulator etc) which we can describe
+>>>>>> in DT and assign to a device node. The only difference here, is that
+>>>>>> we don't have common API to fetch the resource (like clk_get(),
+>>>>>> regulator_get()), but instead we fetches the device's resource from
+>>>>>> SoC specific code, via genpd's device ->attach() callback.
+>>>>>
+>>>>>
+>>>>>
+>>>>> Sorry, but that sounds like a kernel problem to me and has nothing to
+>>>>> do with DT bindings.
+>>>>>
+>>>>>> From me:
+>>>>>>
+>>>>>> Yes, you've pretty much hit it on the head. It is not an index into a
+>>>>>> list
+>>>>>> of genpds but rather identifies the device *within* a single genpd. It
+>>>>>> is
+>>>>>> a
+>>>>>> property specific to each device that resides in a ti-sci-genpd, not a
+>>>>>> mapping describing which genpd the device belongs to. The generic power
+>>>>>> domain binding is concerned with mapping the device to a specific
+>>>>>> genpd,
+>>>>>> which is does fine for us, but we have a sub mapping for devices that
+>>>>>> exist
+>>>>>> inside a genpd which, we must describe as well, hence the ti,sci-id.
+>>>>>>
+>>>>>>
+>>>>>> So to summarize, the genpd framework does interpret the phandle arg as
+>>>>>> an
+>>>>>> index into multiple genpds, just as you've said other frameworks do,
+>>>>>> but
+>>>>>> this is not what I am trying to do, we have multiple devices within
+>>>>>> this
+>>>>>> *single* genpd, hence the need for the ti,sci-id property.
+>>>>>
+>>>>>
+>>>>>
+>>>>> Fix the genpd framework rather than work around it in DT.
+>>>>
+>>>>
+>>>>
+>>>> I still disagree that this has nothing to do with DT bindings, as the
+>>>> current DT binding represents something different already. I am trying to
+>>>> extend it to give me additional information needed for our platforms. Are
+>>>> you saying that we should break what the current DT binding already
+>>>> represents to mean something else?
+>>>
+>>>
+>>> No idea because what's the current binding? From the patch, looks like
+>>> a new binding to me.
+>>
+>>
+>> Yes, ti,sci-id is a new binding. I am referring to the current meaning of
+>> the "power-domains" binding, which is where you are asking this property to
+>> be added, in "power-domains" cells. This is documented here [1] in the
+>> kernel, although looking at it I must admit it is not very clear.
+>>
+>> The power-domains cell represents an offset into an array of power domains,
+>> if you choose to use it. That's what the genpd framework is hard coded to
+>> interpret it as. This is correct, as it is an index into a static list of
+>> power domains, used to identify which power domain a device belongs to,
+>> which is exactly what the genpd framework itself is concerned with. This is
+>> already how it is used in the kernel today.
+>
+> Strictly speaking, the cells are purely for the interpretation of the
+> phandle they are associated with. If some controller wants to have 20
+> cells, then it could assuming a good reason. The reality is we tend to
+> align the meaning of the cells. If genpd is interpreting the cells and
+> not letting the driver for the power domain controller interpret them,
+> then still, genpd needs to be fixed.
 
---3zqtffriqv5yyy23
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ok, perhaps the genpd folks on the thread can jump in here with any 
+thoughts that they have.
 
-Hi Alexander,
+>
+> IIRC, initially it was said genpd required 0 cells, hence my confusion.
+>
+>> My ti,sci-id is not an index into a list of power domains, so it should not
+>> go in the power-domains cells and go against what the power-domains binding
+>> says that the cell expects. We have one single power domain, and the new
+>> ti,sci-id binding is not something the genpd framework itself is concerned
+>> with as it's our property to identify a device inside a power domain, not to
+>> identify which power domain it is associated with.
+>
+> What is the id used for? I can understand why you need to know what
+> power domain a device is in (as power-domains identifies), but not
+> what devices are in a power domain.
 
-On Wed, Oct 19, 2016 at 06:04:49PM +0200, Alexander Kurz wrote:
-> The MAX14656 USB charger detector, also known as "AL32" is used to detect
-> the presence and capabilities of attached USB chargers. The device is
-> attached via I2C plus one interrupt line to signalize events.
->=20
-> The device can be found in LG smartphones like LS665 and LS770, compatible
-> devices are present in 4th/5th generation Amazon Kindle readers referenced
-> in source code packages as "Maxim AL32".
->=20
-> The initial version of this driver has been extracted from LG source code
-> package LGLS665_Android_Lollipop_LS665ZV3, enriched with information from
-> the Kindle_src_4.1.3 source code package and adapted to the current power
-> class sysfs interface. Non-Standard Apple chargers which the device may
-> detect are mapped to the USB Battery Charging Specification Revision 1.2
-> class USB_DCP.
->=20
-> Signed-off-by: Alexander Kurz <akurz-3EoFODjbY6Q@public.gmane.org>
+We have a system control processor that provides power management 
+services to the OS and it responsible for handling the power state of 
+each device. This control happens over a communication interface we have 
+called TI SCI (implemented at drivers/firmware/ti-sci.c). The 
+communication protocol uses these ids to identify each device within the 
+power domain so that the control processor can do what is necessary to 
+enable that device.
 
-Sorry for the delay, this fell between the cracks. The driver looks
-fine and I have queued it for 4.11.
+Regards,
+Dave
 
--- Sebastian
+>
+> Rob
+>
 
---3zqtffriqv5yyy23
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9RKYACgkQ2O7X88g7
-+pqMtA//dIzM3mFvvwYUMGfCBBPpnu6y6U0wzUsYBbxR6vwSl6+kyYUefw/mgDCq
-SCHv7nFCLw96bSajr7ktGoqpCHW4Ncm4vhgpvTc/y6whX9WVvdqaWzk94DgwHVlj
-c8TUY7FJ/qLVyIpVjLXYfQBZH1Zgy3Db8LXuA2R5T79rz5A8nE5MKQ1tjS3a91x9
-xCPkLYU1GcxRBo9xGDWHemzosThPaFy71rH5p70/RKUlZESs/643e+HLlyTqTqpU
-MDm6eFgwQz6SCOq5Ek/T0Pt9rj9HER2yrxdPbTEnqFWAIc/W00ACOvYZhvvdKMnv
-+7yaNB89BwE/ePwH6rgrA3e98Lt+UK3rLv4ezUd34P4IqUUguW2yCFBm1iSm08U3
-iBiUMn+3NtJgH5tMb1HL0Fn9yxvmGUSBJ9dsrE/TQhVZ3d9n/ykXVMpxIEx27FgS
-n1p4t+XR279jrZvIRPow0+k8GWNsHz2CoQUTGKWi0KUAcZyjkfaVpSWOw37ABKoy
-/Oz9CWCSFjlaV4ubzs2lal8WNE38X7kEEuYv52P/yzJCuv5waEC0G2ej3plQcFV8
-9cUG8iWanDQ9BCkOfGJpYguCKD4n+QP3isbuoLHvOReMsWEvMqfC8YStWFigYyLc
-nig3RQdLuBqY9CV5LCs8CTJ2spoCx3Ska1WxknENirS2rZbwMvA=
-=h/eZ
------END PGP SIGNATURE-----
-
---3zqtffriqv5yyy23--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
