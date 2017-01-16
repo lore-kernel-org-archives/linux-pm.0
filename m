@@ -1,60 +1,37 @@
-From: Mark Greer <mgreer@animalcreek.com>
-Subject: Re: [PATCH v2 4/6] power: bq24190_charger: Call
- power_supply_changed() for relevant component
-Date: Mon, 16 Jan 2017 11:58:32 -0700
-Message-ID: <20170116185832.GH27262@animalcreek.com>
-References: <CAKvHMgQHAfRUVp8ka_Y_h0TC97U6euMrq1+Fy5+zq510jpoaOQ@mail.gmail.com>
- <20170116183125.GE27262@animalcreek.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 04/12] pinctrl: samsung: Document Exynos3250 SoC support
+Date: Mon, 16 Jan 2017 21:01:28 +0200
+Message-ID: <20170116190128.nylf37ra6iio7ly4@kozik-lap>
+References: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170116064525eucas1p123df65dedceef6e3efe255e9a2ec6d07@eucas1p1.samsung.com>
+ <1484549107-5957-5-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out1-smtp.messagingengine.com ([66.111.4.25]:57949 "EHLO
-        out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750938AbdAPS6d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 13:58:33 -0500
+Received: from mail-lf0-f67.google.com ([209.85.215.67]:33365 "EHLO
+        mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750777AbdAPTBh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 14:01:37 -0500
 Content-Disposition: inline
-In-Reply-To: <20170116183125.GE27262@animalcreek.com>
+In-Reply-To: <1484549107-5957-5-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Mon, Jan 16, 2017 at 11:31:25AM -0700, Mark Greer wrote:
-> On Sun, Jan 15, 2017 at 10:08:04PM -0800, Liam Breck wrote:
-> > 
+On Mon, Jan 16, 2017 at 07:44:59AM +0100, Marek Szyprowski wrote:
+> Add missing compatible id for Exynos3250 SoC to device tree docs.
+> Exynos pin control driver supports it since commit d97f5b9804bfcdc1
+> ("pinctrl: exynos: Add driver data for Exynos3250").
 > 
-> > We wrongly get uevents for bq24190-charger and bq24190-battery on every
-> > register change.
-> > 
-> > Fix by checking the association with charger and battery before
-> > emitting uevent(s).
-> > 
-> > Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
-> > Cc: Mark A. Greer <mgreer@animalcreek.com>
-> > Cc: Matt Ranostay <matt@ranostay.consulting>
-> > Cc: Tony Lindgren <tony@atomide.com>
-> > Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> > ---
-> >  drivers/power/supply/bq24190_charger.c | 50 +++++++++++++++++++---------------
-> >  1 file changed, 27 insertions(+), 23 deletions(-)
-> > 
-> > diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> > index 62194d8..ba5a5b2 100644
-> > --- a/drivers/power/supply/bq24190_charger.c
-> > +++ b/drivers/power/supply/bq24190_charger.c
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt | 1 +
+>  1 file changed, 1 insertion(+)
 > 
-> > @@ -1225,8 +1227,12 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
-> >  					ret);
-> >  		}
-> >  
-> > +		if ((bdi->ss_reg & battery_mask_ss) != (ss_reg & battery_mask_ss))
-> > +			alert_battery = true;
-> > +		if ((bdi->ss_reg & ~battery_mask_ss) != (ss_reg & ~battery_mask_ss))
-> 
-> Lines are > 80 characters. Please break up.
-> 
-> The rest looks good.
 
-Assuming you fix the >80 chars issues:
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Acked-by: Mark Greer <mgreer@animalcreek.com>
+Best regards,
+Krzysztof
+
