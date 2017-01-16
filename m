@@ -1,58 +1,30 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/6] PM / Domains: Implement domain performance states
-Date: Mon, 16 Jan 2017 11:00:07 +0530
-Message-ID: <20170116053007.GA15930@vireshk-i7>
-References: <cover.1483439894.git.viresh.kumar@linaro.org>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v2 0/6] BQ24190 charger fixes
+Date: Sun, 15 Jan 2017 22:05:26 -0800
+Message-ID: <CAKvHMgTZsiALaWqgwO0NjACi_smHtPUomd6PnbW-TQfG8jnFkQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f51.google.com ([74.125.83.51]:34911 "EHLO
-        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750764AbdAPFaL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 00:30:11 -0500
-Received: by mail-pg0-f51.google.com with SMTP id 194so12428660pgd.2
-        for <linux-pm@vger.kernel.org>; Sun, 15 Jan 2017 21:30:11 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <cover.1483439894.git.viresh.kumar@linaro.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:34867 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750764AbdAPGF1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 01:05:27 -0500
+Received: by mail-io0-f196.google.com with SMTP id m98so11628863iod.2
+        for <linux-pm@vger.kernel.org>; Sun, 15 Jan 2017 22:05:27 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, mark.rutland@arm.com, lina.iyer@linaro.org, rnayak@codeaurora.org
+To: linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-On 03-01-17, 16:36, Viresh Kumar wrote:
-> Hi,
-> 
-> An earlier series[1] tried to implement bindings for PM domain
-> performance states. Rob Herring suggested that we can actually write the
-> supporting code first instead of bindings, as that will make things
-> easier to understand for all.
-> 
-> The bindings [1] aren't discarded yet and this series is based on a
-> version of those only. The bindings are only used by the last patch,
-> which should not be applied and is only sent for completeness.
-> 
-> All other patches can be reviewed/applied whenever the maintainers feel
-> they look good.
-> 
-> 
-> A brief summary of the problem this series is trying to solve:
-> 
-> Some platforms have the capability to configure the performance state of
-> their Power Domains. The performance levels are represented by positive
-> integer values, a lower value represents lower performance state.
-> 
-> We decided earlier that we should extend Power Domain framework to
-> support active state power management as well.  The power-domains until
-> now were only concentrating on the idle state management of the device
-> and this needs to change in order to reuse the infrastructure of power
-> domains for active state management.
-> 
-> The first 5 patches update the PM domain and QoS frameworks to support
-> that and the last one presents the front end interface to it.
-> 
-> All the patches are tested by hacking the OPP core a bit for now.
+Changes in v2:
 
-Ping !
+#1 reorders:            Fix irq triggering to IRQF_TRIGGER_FALLING
+#2 factors out part of: Call power_supply_changed() only for relevant component
+#3 replaces:            Call enable_irq() only at the end of probe()
+#4 reorders:            Call power_supply_changed() only for relevant component
+#5 unscrambles:         Don't read fault register outside irq_handle_thread()
+#6 factors out part of: Don't read fault register outside irq_handle_thread()
 
--- 
-viresh
+These are dropped; Tony will resubmit them in new patchset:
+  Check the interrupt status on resume
+  Use PM runtime autosuspend
