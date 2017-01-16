@@ -1,75 +1,63 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: BQ27xxx registers
-Date: Mon, 16 Jan 2017 11:43:38 -0600
-Message-ID: <16939e2e-8c94-0bcd-9356-98be24d0a634@ti.com>
-References: <6da60215-4b73-8924-d5ca-48f99c70e7fb@lapa.com.au>
- <201612201234.19759@pali> <a354018a-a2e5-f70e-85b1-477a8d349a04@lapa.com.au>
- <201612211346.17265@pali> <a03bfb52-4eb2-406a-211d-7ae7347908cf@lapa.com.au>
+From: Mark Greer <mgreer@animalcreek.com>
+Subject: Re: [PATCH v2 1/6] power: bq24190_charger: Fix irq trigger to
+ IRQF_TRIGGER_FALLING
+Date: Mon, 16 Jan 2017 10:44:10 -0700
+Message-ID: <20170116174410.GB27262@animalcreek.com>
+References: <CAKvHMgRHAJ8LAbpTByaYS1ECHK_gtT1ZH=Vs7umr_003ENEG7Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a03bfb52-4eb2-406a-211d-7ae7347908cf@lapa.com.au>
-Sender: linux-kernel-owner@vger.kernel.org
-To: chris@lapa.com.au, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from out1-smtp.messagingengine.com ([66.111.4.25]:51122 "EHLO
+        out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750841AbdAPRoM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 12:44:12 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgRHAJ8LAbpTByaYS1ECHK_gtT1ZH=Vs7umr_003ENEG7Q@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-On 12/21/2016 05:37 PM, Chris Lapa wrote:
-> On 21/12/16 11:46 pm, Pali Rohár wrote:
->> On Wednesday 21 December 2016 03:49:10 Chris Lapa wrote:
->>> On 20/12/16 10:34 pm, Pali Rohár wrote:
->>>> On Tuesday 20 December 2016 07:00:41 Chris Lapa wrote:
->>>>> I can generate a patch to fix this issue, however the bigger
->>>>> problem exists as to which revision fuel gauge the
->>>>> bq27xxx_battery.c driver is intended to support for each family.
->>>>
->>>> Hi! I think driver should support all revisions. There can be (and
->>>> probably really is) hardware which uses old revision and such
->>>> hardware should be still supported...
->>>
->>> I agree. However due to the register address changes across the
->>> spectrum of revisions, each revision will have to be specified
->>> individually. For example, we will need to implement a BQ27510G1,
->>> BQ27510G2, BQ27510G3, BQ27520G1, BQ27520G2, BQ27520G3, BQ27520G4
->>> definitions and prospective device tree additions ti,bq27510g1,
->>> ti,bq27510g2 etc.
->>>
->>> The other option is to aim for bottom of the barrel support for all
->>> the devices under the BQ27500 definition but my feeling is it would
->>> get messier fast and be less maintainable.
->>>
->>> My preference is to go with the first option if you agree?
->>
->> Yes. If those chips have different register addresses, then those chips
->> are different. Name, generation or suffix does not matter here.
->>
->> Similarly there could be chips with different name, but same addresses,
->> so can use one driver/configuration without any change.
->>
->> So I'm for different name in device tree (or platform data or what is
->> being used) to distinguish between different revisions.
->>
-> 
-> I've been working my way through the revision migration datasheets and
-> noticed this could be simplified with the FW_VERSION parameter. It is
-> always located at the same address and is distinctly different between
-> each chip revision. Unfortunately the migration datasheets vs individual
-> revision datasheets firmware version information directly contradict
-> each other. Which makes me wary of committing to using it.
+On Sun, Jan 15, 2017 at 10:06:16PM -0800, Liam Breck wrote:
 > 
 
-BTW, could you give some specific examples of this? I can work with the
-HW teams to get any documentation problems fixed, so we can in the
-future use this FW_VERSION parameter if needed.
-
-Thanks,
-Andrew
-
-> Given that I don't have every single variant of this device to test
-> with, its probably still safest to have the user manually specify each
-> device. I should have some patches ready soon.
+> The interrupt signal is TRIGGER_FALLING. This is is specified in the
+> data sheet PIN FUNCTIONS: "The INT pin sends active low, 256us
+> pulse to host to report charger device status and fault."
 > 
-> Thanks,
-> Chris
+> Also the direction can be seen in the data sheet Figure 1 "BQ24190
+                                                          ^
+> with D+/D- Detection and USB On-The-Go (OTG)" which shows a 10k
+> pull-up resistor installed for the sample configurations.
+
+Nit: I just downloaded what I believe is the latest datasheet (SLUSAW5B,
+Revised Dec 2014, http://www.ti.com/lit/ds/symlink/bq24190.pdf) and it
+looks like the figure you're referring to is Figure 37 not Figure 1.
+
+> Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
+> Cc: Mark A. Greer <mgreer@animalcreek.com>
+> Cc: Matt Ranostay <matt@ranostay.consulting>
+> Cc: Tony Lindgren <tony@atomide.com>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> ---
+>  drivers/power/supply/bq24190_charger.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index f5746b9..694c088 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -1394,7 +1394,7 @@ static int bq24190_probe(struct i2c_client *client,
+>  
+>  	ret = devm_request_threaded_irq(dev, bdi->irq, NULL,
+>  			bq24190_irq_handler_thread,
+> -			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
+> +			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+>  			"bq24190-charger", bdi);
+>  	if (ret < 0) {
+>  		dev_err(dev, "Can't set up irq handler\n");
+
+Assuming the Figure number is fixed or a clarification of the document
+referred to, if not the datasheet:
+
+Acked-by: Mark Greer <mgreer@animalcreek.com>
