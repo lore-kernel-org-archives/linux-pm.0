@@ -1,45 +1,36 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 00/12] Move pad retention control to Exynos pin
- controller driver
-Date: Mon, 16 Jan 2017 21:23:45 +0200
-Message-ID: <20170116192345.4cywkpzsswitgclp@kozik-lap>
-References: <CGME20170116064523eucas1p161a8e060b2883c076fc470ce7b522332@eucas1p1.samsung.com>
- <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
+From: Mark Greer <mgreer@animalcreek.com>
+Subject: Re: [PATCH 6/6] power: bq24190_charger: Use PM runtime autosuspend
+Date: Mon, 16 Jan 2017 12:22:01 -0700
+Message-ID: <20170116192201.GJ27262@animalcreek.com>
+References: <20170112004154.31568-1-tony@atomide.com>
+ <20170112004154.31568-7-tony@atomide.com>
+ <CAKvHMgTv8uXxRKXp6dnu9QGquB0o7hHXCzVHiKBdCf3ag=mmnQ@mail.gmail.com>
+ <20170112154626.GC2630@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from out1-smtp.messagingengine.com ([66.111.4.25]:57224 "EHLO
+        out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750863AbdAPTbD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 14:31:03 -0500
 Content-Disposition: inline
-In-Reply-To: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+In-Reply-To: <20170112154626.GC2630@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Mon, Jan 16, 2017 at 07:44:55AM +0100, Marek Szyprowski wrote:
-> Hello,
+On Thu, Jan 12, 2017 at 07:46:26AM -0800, Tony Lindgren wrote:
+> * Liam Breck <liam@networkimprov.net> [170111 18:03]:
+> > On Wed, Jan 11, 2017 at 4:41 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > > @@ -1119,7 +1148,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
+> > >                 ret = -EINVAL;
+> > >         }
+> > 
+> > pm_runtime_get_sync() in this function needs its return value checked.
 > 
-> This patchset is a follow-up of my work on adding runtime PM support
-> to Exynos pin controller driver:
-> http://www.spinics.net/lists/arm-kernel/msg550161.html
-> 
-> Runtime PM support itself needs a bit more discussion, so lets first focus on
-> the prerequisites.
-> 
-> In case of Exynos pin controller driver it is a pad retention control. In
-> current code it was handled by machine and PMU code and had no relation to
-> what pin controller driver does. This patch series moves pad retention
-> control to pin controller driver. While implmenting it, I also did a little
-> cleanup of both Exynos PMU and pin controller drivers.
-> 
-> Patches are based on linux-next from 2017.01.16 with Exynos4415 support
-> removal patch applied: https://lkml.org/lkml/2017/1/14/137
+> OK will check.
 
-I didn't find explicit statement for dependency between the patches in
-the patchset itself and also I could not find the usage of
-EXYNOS_PMU_DEV_NAME by pinctrl driver.
+Tony, if you add the check, feel free to add my Acked-by:
 
-Do the pinctrl changes depend on soc/samsung patches? If not, then
-probably your future work will depend on this?
-
-Best regards,
-Krzysztof
+Acked-by: Mark Greer <mgreer@animalcreek.com>
