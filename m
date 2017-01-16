@@ -1,148 +1,152 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 11/12] pinctrl: samsung: Move retention control from
- mach-s5pv210 to the pinctrl driver
-Date: Mon, 16 Jan 2017 07:45:06 +0100
-Message-ID: <1484549107-5957-12-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH 09/12] pinctrl: samsung: Add infrastructure for pin-bank
+ retention control
+Date: Mon, 16 Jan 2017 07:45:04 +0100
+Message-ID: <1484549107-5957-10-git-send-email-m.szyprowski@samsung.com>
 References: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170116064528eucas1p13b12a28ae9737404d38b3f794e8c23fd@eucas1p1.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:65352 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751321AbdAPGpd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 01:45:33 -0500
+ <CGME20170116064527eucas1p1f0f78e9420e7d9d60d94b6e7381caeb1@eucas1p1.samsung.com>
+Return-path: <linux-gpio-owner@vger.kernel.org>
 In-reply-to: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-gpio-owner@vger.kernel.org
 To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+List-Id: linux-pm@vger.kernel.org
 
-This patch moves pad retention control from S5PV210 machine code to
-Exynos pin controller driver. This helps to avoid possible ordering
-and logical dependencies between machine and pin control code. Till
-now it worked fine only because sys_ops for machine code and pin
-controller were called in registration order.
+Pad retention control after suspend/resume cycle should be done from pin
+controller driver instead of PMU (power management unit) driver to avoid
+possible ordering and logical dependencies. Till now it worked fine only
+because PMU driver registered its sys_ops after pin controller.
+
+This patch adds infrastructure to handle pad retention during pin control
+driver resume.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- arch/arm/mach-s5pv210/pm.c               |  7 ----
- arch/arm/mach-s5pv210/regs-clock.h       |  4 ---
- drivers/pinctrl/samsung/pinctrl-exynos.c | 56 ++++++++++++++++++++++++++++++++
- 3 files changed, 56 insertions(+), 11 deletions(-)
+ drivers/pinctrl/samsung/pinctrl-samsung.c | 12 ++++++---
+ drivers/pinctrl/samsung/pinctrl-samsung.h | 42 +++++++++++++++++++++++++++++++
+ 2 files changed, 51 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/mach-s5pv210/pm.c b/arch/arm/mach-s5pv210/pm.c
-index 21b4b13c5ab7..7d69666de5ba 100644
---- a/arch/arm/mach-s5pv210/pm.c
-+++ b/arch/arm/mach-s5pv210/pm.c
-@@ -155,13 +155,6 @@ static void s5pv210_suspend_finish(void)
+diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
+index 86f23842f681..95a84086a2e9 100644
+--- a/drivers/pinctrl/samsung/pinctrl-samsung.c
++++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
+@@ -1075,6 +1075,9 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
+ 		ctrl->eint_gpio_init(drvdata);
+ 	if (ctrl->eint_wkup_init)
+ 		ctrl->eint_wkup_init(drvdata);
++	if (ctrl->retention_data && ctrl->retention_data->init)
++		drvdata->retention_ctrl = ctrl->retention_data->init(drvdata,
++							  ctrl->retention_data);
+ 
+ 	platform_set_drvdata(pdev, drvdata);
+ 
+@@ -1127,15 +1130,15 @@ static void samsung_pinctrl_suspend_dev(
+ 
+ 	if (drvdata->suspend)
+ 		drvdata->suspend(drvdata);
++	if (drvdata->retention_ctrl && drvdata->retention_ctrl->on)
++		drvdata->retention_ctrl->on(drvdata);
++
+ }
+ 
+ /**
+  * samsung_pinctrl_resume_dev - restore pinctrl state from suspend for a device
+  *
+  * Restore one of the banks that was saved during suspend.
+- *
+- * We don't bother doing anything complicated to avoid glitching lines since
+- * we're called before pad retention is turned off.
   */
- static void s5pv210_pm_resume(void)
+ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
  {
--	u32 tmp;
--
--	tmp = __raw_readl(S5P_OTHERS);
--	tmp |= (S5P_OTHERS_RET_IO | S5P_OTHERS_RET_CF |\
--		S5P_OTHERS_RET_MMC | S5P_OTHERS_RET_UART);
--	__raw_writel(tmp , S5P_OTHERS);
--
- 	s3c_pm_do_restore_core(s5pv210_core_save, ARRAY_SIZE(s5pv210_core_save));
+@@ -1174,6 +1177,9 @@ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
+ 			if (widths[type])
+ 				writel(bank->pm_save[type], reg + offs[type]);
+ 	}
++
++	if (drvdata->retention_ctrl && drvdata->retention_ctrl->off)
++		drvdata->retention_ctrl->off(drvdata);
  }
  
-diff --git a/arch/arm/mach-s5pv210/regs-clock.h b/arch/arm/mach-s5pv210/regs-clock.h
-index 4640f0f03c12..fb3eb77412db 100644
---- a/arch/arm/mach-s5pv210/regs-clock.h
-+++ b/arch/arm/mach-s5pv210/regs-clock.h
-@@ -188,10 +188,6 @@
- #define S5P_SLEEP_CFG_USBOSC_EN		(1 << 1)
- 
- /* OTHERS Resgister */
--#define S5P_OTHERS_RET_IO		(1 << 31)
--#define S5P_OTHERS_RET_CF		(1 << 30)
--#define S5P_OTHERS_RET_MMC		(1 << 29)
--#define S5P_OTHERS_RET_UART		(1 << 28)
- #define S5P_OTHERS_USB_SIG_MASK		(1 << 16)
- 
- /* S5P_DAC_CONTROL */
-diff --git a/drivers/pinctrl/samsung/pinctrl-exynos.c b/drivers/pinctrl/samsung/pinctrl-exynos.c
-index 652d3eabe1e5..fdadc9cbcfce 100644
---- a/drivers/pinctrl/samsung/pinctrl-exynos.c
-+++ b/drivers/pinctrl/samsung/pinctrl-exynos.c
-@@ -24,6 +24,7 @@
- #include <linux/irqdomain.h>
- #include <linux/irq.h>
- #include <linux/irqchip/chained_irq.h>
-+#include <linux/of_address.h>
- #include <linux/of_irq.h>
- #include <linux/io.h>
- #include <linux/slab.h>
-@@ -643,6 +644,60 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 			exynos_pinctrl_resume_bank(drvdata, bank);
- }
- 
-+/* Retention control for S5PV210 are located at the end of clock controller */
-+#define S5P_OTHERS 0xE000
-+
-+#define S5P_OTHERS_RET_IO		(1 << 31)
-+#define S5P_OTHERS_RET_CF		(1 << 30)
-+#define S5P_OTHERS_RET_MMC		(1 << 29)
-+#define S5P_OTHERS_RET_UART		(1 << 28)
-+
-+static void s5pv210_retention_off(struct samsung_pinctrl_drv_data *drvdata)
-+{
-+	void *clk_base = drvdata->retention_ctrl->priv;
-+	u32 tmp;
-+
-+	tmp = __raw_readl(clk_base + S5P_OTHERS);
-+	tmp |= (S5P_OTHERS_RET_IO | S5P_OTHERS_RET_CF | S5P_OTHERS_RET_MMC |
-+		S5P_OTHERS_RET_UART);
-+	__raw_writel(tmp, clk_base + S5P_OTHERS);
-+}
-+
-+static struct samsung_retention_ctrl *
-+s5pv210_retention_init(struct samsung_pinctrl_drv_data *drvdata,
-+		       const struct samsung_retention_data *data)
-+{
-+	struct samsung_retention_ctrl *ctrl;
-+	struct device_node *np;
-+	void *clk_base;
-+
-+	ctrl = devm_kzalloc(drvdata->dev, sizeof(*ctrl), GFP_KERNEL);
-+	if (!ctrl)
-+		return NULL;
-+
-+	np = of_find_compatible_node(NULL, NULL, "samsung,s5pv210-clock");
-+	if (!np) {
-+		pr_err("%s: failed to find clock controller DT node\n",
-+			__func__);
-+		return NULL;
-+	}
-+
-+	clk_base = of_iomap(np, 0);
-+	if (!clk_base) {
-+		pr_err("%s: failed to map clock registers\n", __func__);
-+		return NULL;
-+	}
-+
-+	ctrl->priv = clk_base;
-+	ctrl->off = s5pv210_retention_off;
-+
-+	return ctrl;
-+}
-+
-+static const struct samsung_retention_data s5pv210_retention_data __initconst = {
-+	.init	 = s5pv210_retention_init,
-+};
-+
- /* pin banks of s5pv210 pin-controller */
- static const struct samsung_pin_bank_data s5pv210_pin_bank[] __initconst = {
- 	EXYNOS_PIN_BANK_EINTG(8, 0x000, "gpa0", 0x00),
-@@ -690,6 +745,7 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
- 		.eint_wkup_init = exynos_eint_wkup_init,
- 		.suspend	= exynos_pinctrl_suspend,
- 		.resume		= exynos_pinctrl_resume,
-+		.retention_data	= &s5pv210_retention_data,
- 	},
+ /**
+diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.h b/drivers/pinctrl/samsung/pinctrl-samsung.h
+index 6f7ce7539a00..6079142422f8 100644
+--- a/drivers/pinctrl/samsung/pinctrl-samsung.h
++++ b/drivers/pinctrl/samsung/pinctrl-samsung.h
+@@ -185,10 +185,48 @@ struct samsung_pin_bank {
  };
  
+ /**
++ * struct samsung_retention_data: runtime pin-bank retention control data.
++ * @regs: array of PMU registers to control pad retention.
++ * @nr_regs: number of registers in @regs array.
++ * @value: value to store to registers to turn off retention.
++ * @refcnt: atomic counter if retention control affects more than one bank.
++ * @priv: retention control code private data
++ * @on: platform specific callback to enter retention mode.
++ * @off: platform specific callback to exit retention mode.
++ **/
++struct samsung_retention_ctrl {
++	const u32	*regs;
++	int		nr_regs;
++	u32		value;
++	atomic_t	*refcnt;
++	void		*priv;
++	void		(*on)(struct samsung_pinctrl_drv_data *);
++	void		(*off)(struct samsung_pinctrl_drv_data *);
++};
++
++/**
++ * struct samsung_retention_data: represent a pin-bank retention control data.
++ * @regs: array of PMU registers to control pad retention.
++ * @nr_regs: number of registers in @regs array.
++ * @value: value to store to registers to turn off retention.
++ * @refcnt: atomic counter if retention control affects more than one bank.
++ * @init: platform specific callback to initialize retention control.
++ **/
++struct samsung_retention_data {
++	const u32	*regs;
++	int		nr_regs;
++	u32		value;
++	atomic_t	*refcnt;
++	struct samsung_retention_ctrl *(*init)(struct samsung_pinctrl_drv_data *,
++					const struct samsung_retention_data *);
++};
++
++/**
+  * struct samsung_pin_ctrl: represent a pin controller.
+  * @pin_banks: list of pin banks included in this controller.
+  * @nr_banks: number of pin banks.
+  * @nr_ext_resources: number of the extra base address for pin banks.
++ * @retention_data: configuration data for retention control.
+  * @eint_gpio_init: platform specific callback to setup the external gpio
+  *	interrupts for the controller.
+  * @eint_wkup_init: platform specific callback to setup the external wakeup
+@@ -198,6 +236,7 @@ struct samsung_pin_ctrl {
+ 	const struct samsung_pin_bank_data *pin_banks;
+ 	u32		nr_banks;
+ 	int		nr_ext_resources;
++	const struct samsung_retention_data *retention_data;
+ 
+ 	int		(*eint_gpio_init)(struct samsung_pinctrl_drv_data *);
+ 	int		(*eint_wkup_init)(struct samsung_pinctrl_drv_data *);
+@@ -219,6 +258,7 @@ struct samsung_pin_ctrl {
+  * @nr_function: number of such pin functions.
+  * @pin_base: starting system wide pin number.
+  * @nr_pins: number of pins supported by the controller.
++ * @retention_ctrl: retention control runtime data.
+  */
+ struct samsung_pinctrl_drv_data {
+ 	struct list_head		node;
+@@ -238,6 +278,8 @@ struct samsung_pinctrl_drv_data {
+ 	unsigned int			pin_base;
+ 	unsigned int			nr_pins;
+ 
++	const struct samsung_retention_ctrl *retention_ctrl;
++
+ 	void (*suspend)(struct samsung_pinctrl_drv_data *);
+ 	void (*resume)(struct samsung_pinctrl_drv_data *);
+ };
 -- 
 1.9.1
 
