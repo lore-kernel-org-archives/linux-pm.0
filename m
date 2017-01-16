@@ -1,78 +1,54 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v2 6/6] power: bq24190_charger: Handle fault before status on interrupt
-Date: Sun, 15 Jan 2017 22:08:43 -0800
-Message-ID: <CAKvHMgTmO6M9sWM_hSxQYoNLzmbZmhJ2uG--vSecrG=ko6ugwg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=94eb2c089252100c0105463004d3
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:33508 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750980AbdAPGIo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 01:08:44 -0500
-Received: by mail-it0-f66.google.com with SMTP id v14so11321576itb.0
-        for <linux-pm@vger.kernel.org>; Sun, 15 Jan 2017 22:08:44 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 02/12] soc: samsung: pmu: Use of_device_get_match_data helper
+Date: Mon, 16 Jan 2017 07:44:57 +0100
+Message-ID: <1484549107-5957-3-git-send-email-m.szyprowski@samsung.com>
+References: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170116064524eucas1p1fb1b3d080298b895d95bed106879255e@eucas1p1.samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
---94eb2c089252100c0105463004d3
-Content-Type: text/plain; charset=UTF-8
+Replace custom code with generic helper to retrieve driver data.
 
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ drivers/soc/samsung/exynos-pmu.c | 7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
-
---94eb2c089252100c0105463004d3
-Content-Type: text/plain; charset=US-ASCII; name="patch-v2-6of6.txt"
-Content-Disposition: attachment; filename="patch-v2-6of6.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ixzo0g7z0
-
-UmVhZGluZyBib3RoIGZhdWx0IGFuZCBzdGF0dXMgcmVnaXN0ZXJzIGFuZCBsb2dnaW5nIGFueSBm
-YXVsdCBzaG91bGQNCnRha2UgcHJpb3JpdHkgb3ZlciBoYW5kbGluZyBzdGF0dXMgcmVnaXN0ZXIg
-dXBkYXRlLg0KDQpGaXggYnkgbW92aW5nIHRoZSBzdGF0dXMgaGFuZGxpbmcgdG8gbGF0ZXIgaW4g
-aW50ZXJydXB0IHJvdXRpbmUuDQoNCkZpeGVzOiBkN2JmMzUzZmQwYWEzICgiYnEyNDE5MF9jaGFy
-Z2VyOiBBZGQgc3VwcG9ydCBmb3IgVEkgQlEyNDE5MCBCYXR0ZXJ5IENoYXJnZXIiKQ0KQ2M6IE1h
-cmsgQS4gR3JlZXIgPG1ncmVlckBhbmltYWxjcmVlay5jb20+DQpDYzogVG9ueSBMaW5kZ3JlbiA8
-dG9ueUBhdG9taWRlLmNvbT4NCkNjOiBNYXR0IFJhbm9zdGF5IDxtYXR0QHJhbm9zdGF5LmNvbnN1
-bHRpbmc+DQpTaWduZWQtb2ZmLWJ5OiBMaWFtIEJyZWNrIDxrZXJuZWxAbmV0d29ya2ltcHJvdi5u
-ZXQ+DQotLS0NCiBkcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI0MTkwX2NoYXJnZXIuYyB8IDQ2ICsr
-KysrKysrKysrKysrKysrLS0tLS0tLS0tLS0tLS0tLS0NCiAxIGZpbGUgY2hhbmdlZCwgMjMgaW5z
-ZXJ0aW9ucygrKSwgMjMgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2Vy
-L3N1cHBseS9icTI0MTkwX2NoYXJnZXIuYyBiL2RyaXZlcnMvcG93ZXIvc3VwcGx5L2JxMjQxOTBf
-Y2hhcmdlci5jDQppbmRleCBhMzY3ODhjLi4xY2I3ZDE0IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9w
-b3dlci9zdXBwbHkvYnEyNDE5MF9jaGFyZ2VyLmMNCisrKyBiL2RyaXZlcnMvcG93ZXIvc3VwcGx5
-L2JxMjQxOTBfY2hhcmdlci5jDQpAQCAtMTE3NSwyOSArMTE3NSw2IEBAIHN0YXRpYyBpcnFyZXR1
-cm5fdCBicTI0MTkwX2lycV9oYW5kbGVyX3RocmVhZChpbnQgaXJxLCB2b2lkICpkYXRhKQ0KIAkJ
-Z290byBvdXQ7DQogCX0NCiANCi0JaWYgKHNzX3JlZyAhPSBiZGktPnNzX3JlZykgew0KLQkJLyoN
-Ci0JCSAqIFRoZSBkZXZpY2UgaXMgaW4gaG9zdCBtb2RlIHNvIHdoZW4gUEdfU1RBVCBnb2VzIGZy
-b20gMS0+MA0KLQkJICogKGkuZS4sIHBvd2VyIHJlbW92ZWQpIEhJWiBuZWVkcyB0byBiZSBkaXNh
-YmxlZC4NCi0JCSAqLw0KLQkJaWYgKChiZGktPnNzX3JlZyAmIEJRMjQxOTBfUkVHX1NTX1BHX1NU
-QVRfTUFTSykgJiYNCi0JCQkJIShzc19yZWcgJiBCUTI0MTkwX1JFR19TU19QR19TVEFUX01BU0sp
-KSB7DQotCQkJcmV0ID0gYnEyNDE5MF93cml0ZV9tYXNrKGJkaSwgQlEyNDE5MF9SRUdfSVNDLA0K
-LQkJCQkJQlEyNDE5MF9SRUdfSVNDX0VOX0hJWl9NQVNLLA0KLQkJCQkJQlEyNDE5MF9SRUdfSVND
-X0VOX0hJWl9TSElGVCwNCi0JCQkJCTApOw0KLQkJCWlmIChyZXQgPCAwKQ0KLQkJCQlkZXZfZXJy
-KGJkaS0+ZGV2LCAiQ2FuJ3QgYWNjZXNzIElTQyByZWc6ICVkXG4iLA0KLQkJCQkJcmV0KTsNCi0J
-CX0NCi0NCi0JCWlmICgoYmRpLT5zc19yZWcgJiBiYXR0ZXJ5X21hc2tfc3MpICE9IChzc19yZWcg
-JiBiYXR0ZXJ5X21hc2tfc3MpKQ0KLQkJCWFsZXJ0X2JhdHRlcnkgPSB0cnVlOw0KLQkJaWYgKChi
-ZGktPnNzX3JlZyAmIH5iYXR0ZXJ5X21hc2tfc3MpICE9IChzc19yZWcgJiB+YmF0dGVyeV9tYXNr
-X3NzKSkNCi0JCQlhbGVydF9jaGFyZ2VyID0gdHJ1ZTsNCi0JCWJkaS0+c3NfcmVnID0gc3NfcmVn
-Ow0KLQl9DQotDQogCWkgPSAwOw0KIAlkbyB7DQogCQlyZXQgPSBicTI0MTkwX3JlYWQoYmRpLCBC
-UTI0MTkwX1JFR19GLCAmZl9yZWcpOw0KQEAgLTEyMjMsNiArMTIwMCwyOSBAQCBzdGF0aWMgaXJx
-cmV0dXJuX3QgYnEyNDE5MF9pcnFfaGFuZGxlcl90aHJlYWQoaW50IGlycSwgdm9pZCAqZGF0YSkN
-CiAJCW11dGV4X3VubG9jaygmYmRpLT5mX3JlZ19sb2NrKTsNCiAJfQ0KIA0KKwlpZiAoc3NfcmVn
-ICE9IGJkaS0+c3NfcmVnKSB7DQorCQkvKg0KKwkJICogVGhlIGRldmljZSBpcyBpbiBob3N0IG1v
-ZGUgc28gd2hlbiBQR19TVEFUIGdvZXMgZnJvbSAxLT4wDQorCQkgKiAoaS5lLiwgcG93ZXIgcmVt
-b3ZlZCkgSElaIG5lZWRzIHRvIGJlIGRpc2FibGVkLg0KKwkJICovDQorCQlpZiAoKGJkaS0+c3Nf
-cmVnICYgQlEyNDE5MF9SRUdfU1NfUEdfU1RBVF9NQVNLKSAmJg0KKwkJCQkhKHNzX3JlZyAmIEJR
-MjQxOTBfUkVHX1NTX1BHX1NUQVRfTUFTSykpIHsNCisJCQlyZXQgPSBicTI0MTkwX3dyaXRlX21h
-c2soYmRpLCBCUTI0MTkwX1JFR19JU0MsDQorCQkJCQlCUTI0MTkwX1JFR19JU0NfRU5fSElaX01B
-U0ssDQorCQkJCQlCUTI0MTkwX1JFR19JU0NfRU5fSElaX1NISUZULA0KKwkJCQkJMCk7DQorCQkJ
-aWYgKHJldCA8IDApDQorCQkJCWRldl9lcnIoYmRpLT5kZXYsICJDYW4ndCBhY2Nlc3MgSVNDIHJl
-ZzogJWRcbiIsDQorCQkJCQlyZXQpOw0KKwkJfQ0KKw0KKwkJaWYgKChiZGktPnNzX3JlZyAmIGJh
-dHRlcnlfbWFza19zcykgIT0gKHNzX3JlZyAmIGJhdHRlcnlfbWFza19zcykpDQorCQkJYWxlcnRf
-YmF0dGVyeSA9IHRydWU7DQorCQlpZiAoKGJkaS0+c3NfcmVnICYgfmJhdHRlcnlfbWFza19zcykg
-IT0gKHNzX3JlZyAmIH5iYXR0ZXJ5X21hc2tfc3MpKQ0KKwkJCWFsZXJ0X2NoYXJnZXIgPSB0cnVl
-Ow0KKwkJYmRpLT5zc19yZWcgPSBzc19yZWc7DQorCX0NCisNCiAJaWYgKGFsZXJ0X2NoYXJnZXIp
-DQogCQlwb3dlcl9zdXBwbHlfY2hhbmdlZChiZGktPmNoYXJnZXIpOw0KIAlpZiAoYWxlcnRfYmF0
-dGVyeSkNCg==
---94eb2c089252100c0105463004d3--
+diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
+index 63bb471845cb..0f4b4fce9d90 100644
+--- a/drivers/soc/samsung/exynos-pmu.c
++++ b/drivers/soc/samsung/exynos-pmu.c
+@@ -11,6 +11,7 @@
+ 
+ #include <linux/of.h>
+ #include <linux/of_address.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
+ 
+@@ -94,7 +95,6 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
+ 
+ static int exynos_pmu_probe(struct platform_device *pdev)
+ {
+-	const struct of_device_id *match;
+ 	struct device *dev = &pdev->dev;
+ 	struct resource *res;
+ 
+@@ -111,10 +111,7 @@ static int exynos_pmu_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
+ 	pmu_context->dev = dev;
+-
+-	match = of_match_node(exynos_pmu_of_device_ids, dev->of_node);
+-
+-	pmu_context->pmu_data = match->data;
++	pmu_context->pmu_data = of_device_get_match_data(dev);
+ 
+ 	if (pmu_context->pmu_data->pmu_init)
+ 		pmu_context->pmu_data->pmu_init();
+-- 
+1.9.1
