@@ -1,123 +1,115 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 0/2] ARM: at91: properly handle LPDDR poweroff
-Date: Tue, 17 Jan 2017 00:26:46 +0100
-Message-ID: <20170116232646.ivoh5dhr56j4ihgp@earth>
-References: <20161025093759.20913-1-alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH] drivers: power: supply: Compress return logic into one
+ line.
+Date: Tue, 17 Jan 2017 00:42:19 +0100
+Message-ID: <20170116234219.nkwgpyb4wyuq4ozq@earth>
+References: <20170112022935.GA22272@embeddedgus>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============8050814533920366162=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20161025093759.20913-1-alexandre.belloni@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Jean-Jacques Hiblot <jjhiblot@traphandler.com>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-List-Id: linux-pm@vger.kernel.org
-
-
---===============8050814533920366162==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="ucwjv4af2zaf5xif"
+        protocol="application/pgp-signature"; boundary="5essvq2vg3oilkjb"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:49622 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750990AbdAPXmY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Jan 2017 18:42:24 -0500
 Content-Disposition: inline
+In-Reply-To: <20170112022935.GA22272@embeddedgus>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---ucwjv4af2zaf5xif
+--5essvq2vg3oilkjb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi Alexandre,
+Hi,
 
-On Tue, Oct 25, 2016 at 11:37:57AM +0200, Alexandre Belloni wrote:
-> This patch set improves LPDDR support on SoCs using the Atmel MPDDR contr=
-oller.
+On Wed, Jan 11, 2017 at 08:29:35PM -0600, Gustavo A. R. Silva wrote:
+> Simplify return logic to avoid unnecessary variable assignments.
+> These issues were detected using Coccinelle and the following semantic pa=
+tch:
 >=20
-> LPDDR memories can only handle up to 400 uncontrolled power offs in their
-> life. The proper power off sequence has to be applied before shutting dow=
-n the
-> SoC.
+> @@
+> local idexpression ret;
+> expression e;
+> @@
 >=20
-> I'm not too happy with the code duplication but this is a design choice
-> that has been made before because both shutdown controllers are really
-> different apart from the shutdown itself.
+> -ret =3D
+> +return
+>      e;
+> -return ret;
 >=20
-> I guess it is still better than slowly killing the LPDDR.
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+> ---
+>  drivers/power/supply/ab8500_btemp.c | 10 +++-------
+>  1 file changed, 3 insertions(+), 7 deletions(-)
+>=20
+> diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/a=
+b8500_btemp.c
+> index 6ffdc18..9b01b52 100644
+> --- a/drivers/power/supply/ab8500_btemp.c
+> +++ b/drivers/power/supply/ab8500_btemp.c
+> @@ -123,10 +123,7 @@ static LIST_HEAD(ab8500_btemp_list);
+>   */
+>  struct ab8500_btemp *ab8500_btemp_get(void)
+>  {
+> -	struct ab8500_btemp *btemp;
+> -	btemp =3D list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, nod=
+e);
+> -
+> -	return btemp;
+> +	return list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
+>  }
+>  EXPORT_SYMBOL(ab8500_btemp_get);
+> =20
+> @@ -470,7 +467,7 @@ static int ab8500_btemp_get_batctrl_res(struct ab8500=
+_btemp *di)
+>  static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
+>  	const struct abx500_res_to_temp *tbl, int tbl_size, int res)
+>  {
+> -	int i, temp;
+> +	int i;
+>  	/*
+>  	 * Calculate the formula for the straight line
+>  	 * Simple interpolation if we are within
+> @@ -488,9 +485,8 @@ static int ab8500_btemp_res_to_temp(struct ab8500_bte=
+mp *di,
+>  			i++;
+>  	}
+> =20
+> -	temp =3D tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
+> +	return tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
+>  		(res - tbl[i].resist)) / (tbl[i + 1].resist - tbl[i].resist);
+> -	return temp;
+>  }
+> =20
+>  /**
 
-Sorry, I totally forgot about this one. I queued it into my for-next
-branch using an immutable topic branch, in case you need the patch
-against the arm include to also go through arm-soc. Feel free to use
-or ignore it:
-
-The following changes since commit 7ce7d89f48834cefece7804d38fc5d85382edf77:
-
-  Linux 4.10-rc1 (2016-12-25 16:13:08 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git =
-tags/ib-psy-arm-at91-4.11
-
-for you to fetch changes up to 0b0408745e7ff24757cbfd571d69026c0ddb803c:
-
-  power: reset: at91-poweroff: timely shutdown LPDDR memories (2017-01-16 2=
-3:21:33 +0100)
-
-----------------------------------------------------------------
-immutable branch between ARM at91 and power-supply for v4.11
-----------------------------------------------------------------
-
-Alexandre Belloni (2):
-      ARM: at91: define LPDDR types
-      power: reset: at91-poweroff: timely shutdown LPDDR memories
-
- drivers/power/reset/Kconfig              |  2 +-
- drivers/power/reset/at91-poweroff.c      | 54 ++++++++++++++++++++++++++++=
-+++++++++++++++++++++++++-
- drivers/power/reset/at91-sama5d2_shdwc.c | 49 ++++++++++++++++++++++++++++=
-++++++++++++++++++++-
- include/soc/at91/at91sam9_ddrsdr.h       |  3 +++
- 4 files changed, 105 insertions(+), 3 deletions(-)
+Thanks, queued.
 
 -- Sebastian
 
---ucwjv4af2zaf5xif
+--5essvq2vg3oilkjb
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9VrYACgkQ2O7X88g7
-+poFvg/8CwqWyFttar2DsS9Es7Pb456Ihat1ES7xy7qBGom3DOzpikm0yzL1TqZr
-YGr3xDXj6yILfhU6FOKxp5KSXfMMljaLfZ3SfW2FT+bUh7XmgGPPErwGT1FJw9si
-hqQvp0JO79VWnSsbDjXamNrfnXgAidSvg9j+g2Hc62YsjpIIl3pjacL4DGrt8xWj
-QZc9mA7NnfCTqerfxvpOmIP7Bb9f4+aLf3C++FkqXAy9QIKvtWOGrLizUJjXOlmn
-6wzvl2tt9LWEhTQK17CQC48gdSSNqf4jR6FQC517LvUtpW7OfIcdYg8zJkUeagzw
-8N8P2+AmkriBco5MD7yuXlBid3RO+nqsswJSpWgowT/VzR52uqKvlqrZNa5/dmuE
-AbVACHWwJFKyFp9l7Mq/RK308AoRrzuQIZBY7r3hOAhNAaHgqfvT0kGoB7uJutOZ
-r22zPwNnJVQXyPiOX3jz1IZycA5Yy71jdVsgNomts5Nmy3H5vudGTsYr3sYkyuux
-MBJ1enl/J/JcM2QQzerKrXYVyTaICcCZgNkxlu5jLj5X4eaixd+l05uFYFabrIgM
-Z0EWEg91E3n2eHkgey9NSX0sBpB1/ec5MP4yHk20OeEcMVTfA7K0jbAOypSm4gFp
-89KGOaaz59oHfp52AoqsWMIvWJodqpHQu+E8PzZ6AMfLJgc1LWs=
-=i5vG
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9WlgACgkQ2O7X88g7
++pqGIw/6A4djm9aTM0eM4wkiaxI+P2pif9O5pr/Rxapb/BSLA0Yt6pcikquuzUch
+orw/seT/6/4cWfuoeym3cXSJiudm/qOuHLBZZ8ydY9Nt2q4RW+slls6a2NdM8bMN
+Bbssqff1JtBqgvCUF0ab3Cov2MpF0sdpHu/vvxpae0jJ1Hi4mA1AOiwi+RVKe0CQ
+S7SLhevlTyKLVBPXSGTn42aE/7LYCagdIkNimoZ5G2BeOisOdHL1H6R4cOQstLeE
+/C31rAxfPHU0Bf+5xnNUlMH55Qh7ySHxBUkFtON3AOqv/K8V3X+Fl0fnFudPBFHt
+wfDo+PEGaMxMqcGKxv5F2+bjB6nfVghG91WDYxB2h68yyTde/KIzL1pfKT3b1JfN
+RVhlDzRJQbDZ4rdWQrFRl5E5RxI6jE/OFiWu4dXwNIr/ARDwQ8Ir9Mvy3bLi1XpG
+CPgQi5yh5Lb22ilMGhcUMbe2qpHzIdOjXPGjUhCG+Rq+MwAFgLykp9t6AVLDyX1A
+zxR4lh92En15YJGbncnOTgyFt7svDx3VS0E7oGin4Mu3kZxjJqN+lC0MipzwWkuh
+cE8RdGUcuN3mGVCMIHPz+KQlVbjrHqFeB9fyQKIPe2za7Un3UzLl7FJdX1XW1ddq
+gYqAbA1qhqn3yhZUld/84LUTzY+G2PUjDbYhtzzRdkJBxcMmJ1M=
+=Ykq7
 -----END PGP SIGNATURE-----
 
---ucwjv4af2zaf5xif--
-
-
---===============8050814533920366162==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
---===============8050814533920366162==--
+--5essvq2vg3oilkjb--
