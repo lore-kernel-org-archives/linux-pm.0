@@ -1,116 +1,134 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+From: <Mario.Limonciello@dell.com>
+Subject: RE: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
  bus: enable OS version only for SPT and newer)
-Date: Tue, 17 Jan 2017 19:23:37 +0100
-Message-ID: <20170117182337.GB12600@kroah.com>
+Date: Tue, 17 Jan 2017 18:38:43 +0000
+Message-ID: <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
 References: <b1ecfd53-e856-ce10-d56e-4fea27095a8f@molgen.mpg.de>
  <20170113130018.GA896@kroah.com>
  <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
  <20170114193959.GA30750@kroah.com>
  <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
- <20170115105830.GD26374@kroah.com>
- <20170116110539.GA1307@kroah.com>
+ <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
  <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
  <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
  <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+ <20170117182337.GB12600@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+In-Reply-To: <20170117182337.GB12600@kroah.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com
-Cc: pmenzel@molgen.mpg.de, rafael.j.wysocki@intel.com, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
+To: gregkh@linuxfoundation.org, rafael.j.wysocki@intel.com
+Cc: pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com wrote:
-> So in the <6s scenario, the intel-hid driver is responsible to receive the ACPI
-> event and process accordingly.  The maintainer has a patch ready for the intel-hid
-> portion of this work, but it's currently being reviewed by Intel to ensure it
-> can be legally submitted into the kernel.
-
-Who at Intel do I need to go kick to make this mythical legal review
-happen faster so we can see the code?
-
-Len and Rafael, what is going on here?
-
-> > 406e79385f3223d82272cf2be86bc95cd000a258 is the first bad commit commit
-> > 406e79385f3223d82272cf2be86bc95cd000a258
-> > Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > Date:   Mon Nov 21 22:45:40 2016 +0100
-> > 
-> >      PM / sleep: System sleep state selection interface rework
-> > 
-> >      There are systems in which the platform doesn't support any special
-> >      sleep states, so suspend-to-idle (PM_SUSPEND_FREEZE) is the only
-> >      available system sleep state.  However, some user space frameworks
-> >      only use the "mem" and (sometimes) "standby" sleep state labels, so
-> >      the users of those systems need to modify user space in order to be
-> >      able to use system suspend at all and that may be a pain in practice.
-> > 
-> >      Commit 0399d4db3edf (PM / sleep: Introduce command line argument for
-> >      sleep state enumeration) attempted to address this problem by adding
-> >      a command line argument to change the meaning of the "mem" string in
-> >      /sys/power/state to make it trigger suspend-to-idle (instead of
-> >      suspend-to-RAM).
-> > 
-> >      However, there also are systems in which the platform does support
-> >      special sleep states, but suspend-to-idle is the preferred one anyway
-> >      (it even may save more energy than the platform-provided sleep states
-> >      in some cases) and the above commit doesn't help in those cases.
-> > 
-> >      For this reason, rework the system sleep state selection interface
-> >      again (but preserve backwards compatibiliby).  Namely, add a new
-> >      sysfs file, /sys/power/mem_sleep, that will control the system
-> >      suspend mode triggered by writing "mem" to /sys/power/state (in
-> >      analogy with what /sys/power/disk does for hibernation).  Make it
-> >      select suspend-to-RAM ("deep" sleep) by default (if supported) and
-> >      fall back to suspend-to-idle ("s2idle") otherwise and add a new
-> >      command line argument, mem_sleep_default, allowing that default to
-> >      be overridden if need be.
-> > 
-> >      At the same time, drop the relative_sleep_states command line
-> >      argument that doesn't make sense any more.
-> > 
-> >      Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >      Tested-by: Mario Limonciello <mario.limonciello@dell.com>
-> > 
-> > :040000 040000 a5770fe0413cbe7794eab28f72dfe8ede1f090c2
-> > a2882c77659517aa7137c930e0e7f178bc76bfbd M      Documentation
-> > :040000 040000 2594b1a87815173e97199ef9d9c5918fec22fcfd
-> > fe0b69953be653644c5366ac631131fdbbdb9bcc M      kernel
-> > $ git tag --contains 406e79385f3223d82272cf2be86bc95cd000a258
-> > v4.10-rc1
-> > v4.10-rc2
-> > v4.10-rc3
-> > ```
-> > 
-> > Please find the config and the bisection log attached. Sometimes I had to
-> > cherry-pick build fix commits for PIE enabled GCC on top.
-> > 
-> > Rafael, do you want me to open a bug report for that? Mario, what systems
-> > did you actually test this on? (Why isn’t that listed in the commit message?)
-> > Mario, do you have access to Dell XPS13 (9360) devices to help getting this
-> > fixed?
-> > 
-> 
-> I tested this on several systems and ensured that the kernel was doing the
-> right thing in terms of choosing the correct state to go into.
-> 
-> As I mentioned above, those behaviors are currently expected until these
-> types issues are identified and fixed in the proper subsystems.  If they
-> end up being troublesome to resolve, it's possible to quirk individual systems,
-> to disable this behavior and return to traditional S3 but I would prefer to actually 
-> identify and fix the various problems so that we can push the Linux stack forward.
-
-If the machine stops working on a newer kernel when it used to work
-before, then you need to either revert the change, or provide a fix for
-it.
-
-I think I might have access to a newer Dell XPS13 now, I'll try to set
-it up tomorrow to test 4.10-rc4 out...
-
-thanks,
-
-greg k-h
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBHcmVnIEtIIFttYWlsdG86Z3Jl
+Z2toQGxpbnV4Zm91bmRhdGlvbi5vcmddDQo+IFNlbnQ6IFR1ZXNkYXksIEphbnVhcnkgMTcsIDIw
+MTcgMTI6MjQgUE0NCj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9A
+RGVsbC5jb20+DQo+IENjOiBwbWVuemVsQG1vbGdlbi5tcGcuZGU7IHJhZmFlbC5qLnd5c29ja2lA
+aW50ZWwuY29tOw0KPiBsaW51eEBsZWVtaHVpcy5pbmZvOyB0b21hcy53aW5rbGVyQGludGVsLmNv
+bTsgamFuQGdvbmRvci5jb207DQo+IGFsZXhhbmRlci51c3lza2luQGludGVsLmNvbTsgbGludXgt
+a2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4geXUuYy5jaGVuQGludGVsLmNvbTsgdG9taS5wLnNh
+cnZlbGFAaW50ZWwuY29tOyBkYW5pZWxAcXVvcmEub3JnOw0KPiBsZW4uYnJvd25AaW50ZWwuY29t
+OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFJlZ3Jlc3Npb24gb24g
+RGVsbCBYUFMxMyAod2FzOiBbY2hhci1taXNjIGZvciA0LjEwLXJjNCBWMl0gbWVpOg0KPiBidXM6
+IGVuYWJsZSBPUyB2ZXJzaW9uIG9ubHkgZm9yIFNQVCBhbmQgbmV3ZXIpDQo+IA0KPiBPbiBUdWUs
+IEphbiAxNywgMjAxNyBhdCAwNDo1Nzo0OVBNICswMDAwLCBNYXJpby5MaW1vbmNpZWxsb0BkZWxs
+LmNvbQ0KPiB3cm90ZToNCj4gPiBTbyBpbiB0aGUgPDZzIHNjZW5hcmlvLCB0aGUgaW50ZWwtaGlk
+IGRyaXZlciBpcyByZXNwb25zaWJsZSB0byByZWNlaXZlDQo+ID4gdGhlIEFDUEkgZXZlbnQgYW5k
+IHByb2Nlc3MgYWNjb3JkaW5nbHkuICBUaGUgbWFpbnRhaW5lciBoYXMgYSBwYXRjaA0KPiA+IHJl
+YWR5IGZvciB0aGUgaW50ZWwtaGlkIHBvcnRpb24gb2YgdGhpcyB3b3JrLCBidXQgaXQncyBjdXJy
+ZW50bHkgYmVpbmcNCj4gPiByZXZpZXdlZCBieSBJbnRlbCB0byBlbnN1cmUgaXQgY2FuIGJlIGxl
+Z2FsbHkgc3VibWl0dGVkIGludG8gdGhlIGtlcm5lbC4NCj4gDQo+IFdobyBhdCBJbnRlbCBkbyBJ
+IG5lZWQgdG8gZ28ga2ljayB0byBtYWtlIHRoaXMgbXl0aGljYWwgbGVnYWwgcmV2aWV3IGhhcHBl
+bg0KPiBmYXN0ZXIgc28gd2UgY2FuIHNlZSB0aGUgY29kZT8NCj4gDQo+IExlbiBhbmQgUmFmYWVs
+LCB3aGF0IGlzIGdvaW5nIG9uIGhlcmU/DQo+DQoNCkxlbiBhbmQgRGFycmVuIGFyZSBib3RoIGlu
+IHRoZSBsb29wIG9uIHRoZSBkaXNjdXNzaW9uIGFyb3VuZCB0aGlzIHBhdGNoLg0KSSBkb24ndCBr
+bm93IGlmIHRoZXknbGwgaGF2ZSBhbnkgKHB1YmxpYykgY29tbWVudHMgdGhleSBjYW4gYWRkIG9u
+IHRoZSBtYXR0ZXINCnlldCBob3dldmVyLg0KDQpXZSBoYXZlbid0IGJyb2FjaGVkIHRoZSB0b3Bp
+YyBvZiB0aGUgQUNQSSBzdWJzeXN0ZW0gYmVpbmcgZnJvemVuIHdpdGggUmFmYWVsDQphcyBpdCBk
+b2Vzbid0IGFmZmVjdCBoZWxwaW5nIHRoaXMgcHJvYmxlbSB1bnRpbCB0aGUgaW50ZWwtaGlkIHBh
+dGNoIGlzIGFkZGVkLg0KDQpSYWZhZWwsIHNpbmNlIHRoaXMgaXMgaW4gcHJvY2VzcyBub3csIHdo
+YXQgYXJlIHlvdXIgdGhvdWdodHM/DQoNCj4gPiA+IDQwNmU3OTM4NWYzMjIzZDgyMjcyY2YyYmU4
+NmJjOTVjZDAwMGEyNTggaXMgdGhlIGZpcnN0IGJhZCBjb21taXQNCj4gPiA+IGNvbW1pdA0KPiA+
+ID4gNDA2ZTc5Mzg1ZjMyMjNkODIyNzJjZjJiZTg2YmM5NWNkMDAwYTI1OA0KPiA+ID4gQXV0aG9y
+OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+ID4gPiBE
+YXRlOiAgIE1vbiBOb3YgMjEgMjI6NDU6NDAgMjAxNiArMDEwMA0KPiA+ID4NCj4gPiA+ICAgICAg
+UE0gLyBzbGVlcDogU3lzdGVtIHNsZWVwIHN0YXRlIHNlbGVjdGlvbiBpbnRlcmZhY2UgcmV3b3Jr
+DQo+ID4gPg0KPiA+ID4gICAgICBUaGVyZSBhcmUgc3lzdGVtcyBpbiB3aGljaCB0aGUgcGxhdGZv
+cm0gZG9lc24ndCBzdXBwb3J0IGFueSBzcGVjaWFsDQo+ID4gPiAgICAgIHNsZWVwIHN0YXRlcywg
+c28gc3VzcGVuZC10by1pZGxlIChQTV9TVVNQRU5EX0ZSRUVaRSkgaXMgdGhlIG9ubHkNCj4gPiA+
+ICAgICAgYXZhaWxhYmxlIHN5c3RlbSBzbGVlcCBzdGF0ZS4gIEhvd2V2ZXIsIHNvbWUgdXNlciBz
+cGFjZSBmcmFtZXdvcmtzDQo+ID4gPiAgICAgIG9ubHkgdXNlIHRoZSAibWVtIiBhbmQgKHNvbWV0
+aW1lcykgInN0YW5kYnkiIHNsZWVwIHN0YXRlIGxhYmVscywgc28NCj4gPiA+ICAgICAgdGhlIHVz
+ZXJzIG9mIHRob3NlIHN5c3RlbXMgbmVlZCB0byBtb2RpZnkgdXNlciBzcGFjZSBpbiBvcmRlciB0
+byBiZQ0KPiA+ID4gICAgICBhYmxlIHRvIHVzZSBzeXN0ZW0gc3VzcGVuZCBhdCBhbGwgYW5kIHRo
+YXQgbWF5IGJlIGEgcGFpbiBpbiBwcmFjdGljZS4NCj4gPiA+DQo+ID4gPiAgICAgIENvbW1pdCAw
+Mzk5ZDRkYjNlZGYgKFBNIC8gc2xlZXA6IEludHJvZHVjZSBjb21tYW5kIGxpbmUgYXJndW1lbnQN
+Cj4gZm9yDQo+ID4gPiAgICAgIHNsZWVwIHN0YXRlIGVudW1lcmF0aW9uKSBhdHRlbXB0ZWQgdG8g
+YWRkcmVzcyB0aGlzIHByb2JsZW0gYnkgYWRkaW5nDQo+ID4gPiAgICAgIGEgY29tbWFuZCBsaW5l
+IGFyZ3VtZW50IHRvIGNoYW5nZSB0aGUgbWVhbmluZyBvZiB0aGUgIm1lbSIgc3RyaW5nDQo+IGlu
+DQo+ID4gPiAgICAgIC9zeXMvcG93ZXIvc3RhdGUgdG8gbWFrZSBpdCB0cmlnZ2VyIHN1c3BlbmQt
+dG8taWRsZSAoaW5zdGVhZCBvZg0KPiA+ID4gICAgICBzdXNwZW5kLXRvLVJBTSkuDQo+ID4gPg0K
+PiA+ID4gICAgICBIb3dldmVyLCB0aGVyZSBhbHNvIGFyZSBzeXN0ZW1zIGluIHdoaWNoIHRoZSBw
+bGF0Zm9ybSBkb2VzIHN1cHBvcnQNCj4gPiA+ICAgICAgc3BlY2lhbCBzbGVlcCBzdGF0ZXMsIGJ1
+dCBzdXNwZW5kLXRvLWlkbGUgaXMgdGhlIHByZWZlcnJlZCBvbmUgYW55d2F5DQo+ID4gPiAgICAg
+IChpdCBldmVuIG1heSBzYXZlIG1vcmUgZW5lcmd5IHRoYW4gdGhlIHBsYXRmb3JtLXByb3ZpZGVk
+IHNsZWVwDQo+IHN0YXRlcw0KPiA+ID4gICAgICBpbiBzb21lIGNhc2VzKSBhbmQgdGhlIGFib3Zl
+IGNvbW1pdCBkb2Vzbid0IGhlbHAgaW4gdGhvc2UgY2FzZXMuDQo+ID4gPg0KPiA+ID4gICAgICBG
+b3IgdGhpcyByZWFzb24sIHJld29yayB0aGUgc3lzdGVtIHNsZWVwIHN0YXRlIHNlbGVjdGlvbiBp
+bnRlcmZhY2UNCj4gPiA+ICAgICAgYWdhaW4gKGJ1dCBwcmVzZXJ2ZSBiYWNrd2FyZHMgY29tcGF0
+aWJpbGlieSkuICBOYW1lbHksIGFkZCBhIG5ldw0KPiA+ID4gICAgICBzeXNmcyBmaWxlLCAvc3lz
+L3Bvd2VyL21lbV9zbGVlcCwgdGhhdCB3aWxsIGNvbnRyb2wgdGhlIHN5c3RlbQ0KPiA+ID4gICAg
+ICBzdXNwZW5kIG1vZGUgdHJpZ2dlcmVkIGJ5IHdyaXRpbmcgIm1lbSIgdG8gL3N5cy9wb3dlci9z
+dGF0ZSAoaW4NCj4gPiA+ICAgICAgYW5hbG9neSB3aXRoIHdoYXQgL3N5cy9wb3dlci9kaXNrIGRv
+ZXMgZm9yIGhpYmVybmF0aW9uKS4gIE1ha2UgaXQNCj4gPiA+ICAgICAgc2VsZWN0IHN1c3BlbmQt
+dG8tUkFNICgiZGVlcCIgc2xlZXApIGJ5IGRlZmF1bHQgKGlmIHN1cHBvcnRlZCkgYW5kDQo+ID4g
+PiAgICAgIGZhbGwgYmFjayB0byBzdXNwZW5kLXRvLWlkbGUgKCJzMmlkbGUiKSBvdGhlcndpc2Ug
+YW5kIGFkZCBhIG5ldw0KPiA+ID4gICAgICBjb21tYW5kIGxpbmUgYXJndW1lbnQsIG1lbV9zbGVl
+cF9kZWZhdWx0LCBhbGxvd2luZyB0aGF0IGRlZmF1bHQgdG8NCj4gPiA+ICAgICAgYmUgb3ZlcnJp
+ZGRlbiBpZiBuZWVkIGJlLg0KPiA+ID4NCj4gPiA+ICAgICAgQXQgdGhlIHNhbWUgdGltZSwgZHJv
+cCB0aGUgcmVsYXRpdmVfc2xlZXBfc3RhdGVzIGNvbW1hbmQgbGluZQ0KPiA+ID4gICAgICBhcmd1
+bWVudCB0aGF0IGRvZXNuJ3QgbWFrZSBzZW5zZSBhbnkgbW9yZS4NCj4gPiA+DQo+ID4gPiAgICAg
+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVs
+LmNvbT4NCj4gPiA+ICAgICAgVGVzdGVkLWJ5OiBNYXJpbyBMaW1vbmNpZWxsbyA8bWFyaW8ubGlt
+b25jaWVsbG9AZGVsbC5jb20+DQo+ID4gPg0KPiA+ID4gOjA0MDAwMCAwNDAwMDAgYTU3NzBmZTA0
+MTNjYmU3Nzk0ZWFiMjhmNzJkZmU4ZWRlMWYwOTBjMg0KPiA+ID4gYTI4ODJjNzc2NTk1MTdhYTcx
+MzdjOTMwZTBlN2YxNzhiYzc2YmZiZCBNICAgICAgRG9jdW1lbnRhdGlvbg0KPiA+ID4gOjA0MDAw
+MCAwNDAwMDAgMjU5NGIxYTg3ODE1MTczZTk3MTk5ZWY5ZDljNTkxOGZlYzIyZmNmZA0KPiA+ID4g
+ZmUwYjY5OTUzYmU2NTM2NDRjNTM2NmFjNjMxMTMxZmRiYmRiOWJjYyBNICAgICAga2VybmVsDQo+
+ID4gPiAkIGdpdCB0YWcgLS1jb250YWlucyA0MDZlNzkzODVmMzIyM2Q4MjI3MmNmMmJlODZiYzk1
+Y2QwMDBhMjU4DQo+ID4gPiB2NC4xMC1yYzENCj4gPiA+IHY0LjEwLXJjMg0KPiA+ID4gdjQuMTAt
+cmMzDQo+ID4gPiBgYGANCj4gPiA+DQo+ID4gPiBQbGVhc2UgZmluZCB0aGUgY29uZmlnIGFuZCB0
+aGUgYmlzZWN0aW9uIGxvZyBhdHRhY2hlZC4gU29tZXRpbWVzIEkNCj4gPiA+IGhhZCB0byBjaGVy
+cnktcGljayBidWlsZCBmaXggY29tbWl0cyBmb3IgUElFIGVuYWJsZWQgR0NDIG9uIHRvcC4NCj4g
+PiA+DQo+ID4gPiBSYWZhZWwsIGRvIHlvdSB3YW50IG1lIHRvIG9wZW4gYSBidWcgcmVwb3J0IGZv
+ciB0aGF0PyBNYXJpbywgd2hhdA0KPiA+ID4gc3lzdGVtcyBkaWQgeW91IGFjdHVhbGx5IHRlc3Qg
+dGhpcyBvbj8gKFdoeSBpc27igJl0IHRoYXQgbGlzdGVkIGluIHRoZQ0KPiA+ID4gY29tbWl0IG1l
+c3NhZ2U/KSBNYXJpbywgZG8geW91IGhhdmUgYWNjZXNzIHRvIERlbGwgWFBTMTMgKDkzNjApDQo+
+ID4gPiBkZXZpY2VzIHRvIGhlbHAgZ2V0dGluZyB0aGlzIGZpeGVkPw0KPiA+ID4NCj4gPg0KPiA+
+IEkgdGVzdGVkIHRoaXMgb24gc2V2ZXJhbCBzeXN0ZW1zIGFuZCBlbnN1cmVkIHRoYXQgdGhlIGtl
+cm5lbCB3YXMgZG9pbmcNCj4gPiB0aGUgcmlnaHQgdGhpbmcgaW4gdGVybXMgb2YgY2hvb3Npbmcg
+dGhlIGNvcnJlY3Qgc3RhdGUgdG8gZ28gaW50by4NCj4gPg0KPiA+IEFzIEkgbWVudGlvbmVkIGFi
+b3ZlLCB0aG9zZSBiZWhhdmlvcnMgYXJlIGN1cnJlbnRseSBleHBlY3RlZCB1bnRpbA0KPiA+IHRo
+ZXNlIHR5cGVzIGlzc3VlcyBhcmUgaWRlbnRpZmllZCBhbmQgZml4ZWQgaW4gdGhlIHByb3BlciBz
+dWJzeXN0ZW1zLg0KPiA+IElmIHRoZXkgZW5kIHVwIGJlaW5nIHRyb3VibGVzb21lIHRvIHJlc29s
+dmUsIGl0J3MgcG9zc2libGUgdG8gcXVpcmsNCj4gPiBpbmRpdmlkdWFsIHN5c3RlbXMsIHRvIGRp
+c2FibGUgdGhpcyBiZWhhdmlvciBhbmQgcmV0dXJuIHRvIHRyYWRpdGlvbmFsDQo+ID4gUzMgYnV0
+IEkgd291bGQgcHJlZmVyIHRvIGFjdHVhbGx5IGlkZW50aWZ5IGFuZCBmaXggdGhlIHZhcmlvdXMg
+cHJvYmxlbXMgc28NCj4gdGhhdCB3ZSBjYW4gcHVzaCB0aGUgTGludXggc3RhY2sgZm9yd2FyZC4N
+Cj4gDQo+IElmIHRoZSBtYWNoaW5lIHN0b3BzIHdvcmtpbmcgb24gYSBuZXdlciBrZXJuZWwgd2hl
+biBpdCB1c2VkIHRvIHdvcmsNCj4gYmVmb3JlLCB0aGVuIHlvdSBuZWVkIHRvIGVpdGhlciByZXZl
+cnQgdGhlIGNoYW5nZSwgb3IgcHJvdmlkZSBhIGZpeCBmb3IgaXQuDQo+IA0KDQpTbyBpbiBteSBt
+aW5kIHRoZXJlIGlzbid0IGV4YWN0bHkgYSBjbGVhciBjdXQgZGVmaW5pdGlvbiBvZiAic3RvcHMg
+d29ya2luZyIsIA0KcGFydGljdWxhcmx5IHdoZW4gaXQncyBhbiBpbnRlbnRpb25hbCBjaGFuZ2Ug
+aW4gYmVoYXZpb3IuDQoNCklmIHRoZSBkZXNpcmUgaXMgdG8gZ28gYmFjayB0byBTMyBvbiB0aGlz
+IHN5c3RlbSwgSSdtIGhhcHB5IHRvIHN1Ym1pdCBhIHBhdGNoDQp0aGF0IHdpbGwgcXVpcmsgdGhp
+cyBiYWNrIHRvIFMzIG9uIHRoaXMgc3lzdGVtIHVudGlsIHdlIGNhbiBnZXQgQUNQSSB0byBub3QN
+CmZyZWV6ZSBhbmQgSW50ZWwtSElEIHRvIHBpY2sgdXAgdGhlIGV2ZW50IGl0IG5lZWRzLg0KDQo+
+IEkgdGhpbmsgSSBtaWdodCBoYXZlIGFjY2VzcyB0byBhIG5ld2VyIERlbGwgWFBTMTMgbm93LCBJ
+J2xsIHRyeSB0byBzZXQgaXQgdXANCj4gdG9tb3Jyb3cgdG8gdGVzdCA0LjEwLXJjNCBvdXQuLi4N
+Cj4gDQoNCklmIHlvdSBkb24ndCwgcGxlYXNlIGNvbnRhY3QgbWUgcHJpdmF0ZWx5IGFuZCBJJ20g
+aGFwcHkgdG8gdHJ5IHRvIGhlbHAgZ2V0DQp5b3UgYWNjZXNzIHRvIG9uZS4NCg0K
