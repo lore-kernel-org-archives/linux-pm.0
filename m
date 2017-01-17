@@ -1,83 +1,30 @@
-From: xinwu.liu@intel.com
-Subject: [PATCH v2] thermal/intel_powerclamp: Fix sched_setscheduler fail
-Date: Tue, 17 Jan 2017 14:16:41 +0800
-Message-ID: <1484633801-25866-1-git-send-email-xinwu.liu@intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH v4 1/3] dt: bindings: add documentation for zx2967 family
+ thermal sensor
+Date: Mon, 16 Jan 2017 22:28:21 -0800
+Message-ID: <20170117062819.GB3246@localhost.localdomain>
+References: <1484304418-17489-1-git-send-email-baoyou.xie@linaro.org>
+ <20170117052658.GA3246@localhost.localdomain>
+ <CA+DQWkzJ5zGn53MF=nVpUQQ8=dgtqrL-eV72w4=+HMvjF1qgMw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:46783 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750968AbdAQGSs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 17 Jan 2017 01:18:48 -0500
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:34649 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750770AbdAQG20 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 01:28:26 -0500
+Content-Disposition: inline
+In-Reply-To: <CA+DQWkzJ5zGn53MF=nVpUQQ8=dgtqrL-eV72w4=+HMvjF1qgMw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, "Liu, Xinwu" <xinwu.liu@intel.com>, "Zhang, Di" <di.zhang@intel.com>
+To: Baoyou Xie <baoyou.xie@linaro.org>
+Cc: rui.zhang@intel.com, Jun Nie <jun.nie@linaro.org>, Greg KH <gregkh@linuxfoundation.org>, davem@davemloft.net, geert+renesas@glider.be, akpm@linux-foundation.org, mchehab@kernel.org, Guenter Roeck <linux@roeck-us.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Shawn Guo <shawnguo@kernel.org>, "xie.baoyou" <xie.baoyou@zte.com.cn>, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
 
-From: "Liu, Xinwu" <xinwu.liu@intel.com>
+On Tue, Jan 17, 2017 at 01:38:48PM +0800, Baoyou Xie wrote:
+> On 17 January 2017 at 13:27, Eduardo Valentin <edubezval@gmail.com> wrote:
+<cut>
+> > It's a good idea:) In fact, we defined some thermal zones and used IPA
+> on products.
+> 
 
-The schedule policy of thread "kidle_inject" is SCHED_NORMAL:
-[  772.796284] intel_powerclamp: Start idle injection to reduce power
-[  772.825757] ------------[ cut here ]------------
-[  772.825877] WARNING: CPU: 0 PID: 2140 at ../../../../../../kernel/glv/kernel/sched/idle.c:298 play_idle+0x16f/0x230
-[  772.826096] Modules linked in: ip6table_raw iptable_raw hci_uart bluetooth rfkill_gpio cfg80211 imc_ipc(O)
-[  772.826194] CPU: 0 PID: 2140 Comm: kidle_inject/0 Tainted: G          IO    4.9.0-ge701680f3a17 #1
-[  772.826373]  ffffc90001103d58 ffffffff813ba085 0000000000000000 0000000000000000
-[  772.826552]  ffffc90001103d98 ffffffff810953e1 0000012a691441c0 0000000000000006
-[  772.826731]  0000000000000002 ffff88006a39d708 ffff8800691441c0 ffffe8ffffc0dab8
-[  772.826794] Call Trace:
-[  772.826903]  [<ffffffff813ba085>] dump_stack+0x67/0x92
-[  772.827007]  [<ffffffff810953e1>] __warn+0xd1/0xf0
-[  772.827124]  [<ffffffff810954cd>] warn_slowpath_null+0x1d/0x20
-[  772.827234]  [<ffffffff810d6c6f>] play_idle+0x16f/0x230
-[  772.827365]  [<ffffffff81a9b4b7>] ? __schedule+0x217/0x6f0
-[  772.827485]  [<ffffffff81856c9a>] clamp_idle_injection_func+0x6a/0x1f0
-[  772.827612]  [<ffffffff810b568d>] kthread_worker_fn+0xdd/0x200
-[  772.827741]  [<ffffffff810b55b0>] ? __kthread_init_worker+0x50/0x50
-[  772.827860]  [<ffffffff810b5542>] kthread+0x102/0x120
-[  772.828004]  [<ffffffff810b5440>] ? kthread_park+0x60/0x60
-[  772.828118]  [<ffffffff81aa2517>] ret_from_fork+0x27/0x40
-[  772.828228] ---[ end trace bb738d5d79381554 ]---
-
-Normaly, the user thread have not the capability "CAP_SYS_NICE"
-(and they shouldn't), it will fail to change the schedule policy.
-So, fix it by changing by themselves.
-
-Signed-off-by: Liu, Xinwu <xinwu.liu@intel.com>
-Signed-off-by: Zhang, Di <di.zhang@intel.com>
----
- drivers/thermal/intel_powerclamp.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index 83e6971..ea2d9cf 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -377,6 +377,7 @@ static bool powerclamp_adjust_controls(unsigned int target_ratio,
- 	return set_target_ratio + guard <= current_ratio;
- }
- 
-+static DEFINE_PER_CPU(int, setscheduler_done);
- static void clamp_balancing_func(struct kthread_work *work)
- {
- 	struct powerclamp_worker_data *w_data;
-@@ -388,6 +389,10 @@ static void clamp_balancing_func(struct kthread_work *work)
- 	w_data = container_of(work, struct powerclamp_worker_data,
- 			      balancing_work);
- 
-+	if (unlikely(this_cpu_read(setscheduler_done) == 0)) {
-+		sched_setscheduler(current, SCHED_FIFO, &sparam);
-+		this_cpu_inc(setscheduler_done);
-+	}
- 	/*
- 	 * make sure user selected ratio does not take effect until
- 	 * the next round. adjust target_ratio if user has changed
-@@ -507,7 +512,6 @@ static void start_power_clamp_worker(unsigned long cpu)
- 	w_data->cpu = cpu;
- 	w_data->clamping = true;
- 	set_bit(cpu, cpu_clamping_mask);
--	sched_setscheduler(worker->task, SCHED_FIFO, &sparam);
- 	kthread_init_work(&w_data->balancing_work, clamp_balancing_func);
- 	kthread_init_delayed_work(&w_data->idle_injection_work,
- 				  clamp_idle_injection_func);
--- 
-1.9.1
-
+Cool! Any feedback on using IPA?
