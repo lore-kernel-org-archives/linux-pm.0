@@ -1,136 +1,341 @@
-From: Tomasz Figa <tomasz.figa@gmail.com>
-Subject: Re: [PATCH 06/12] pinctrl: samsung: Add missing initconst annotation
-Date: Tue, 17 Jan 2017 16:13:49 +0900
-Message-ID: <CA+Ln22Eg5x6y1E_28-S2Ogw8id6_JyNMydAzY2jtv0tXdfQJ5g@mail.gmail.com>
-References: <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170116064526eucas1p1e3064fad71a3ab8de34d306dec531b14@eucas1p1.samsung.com>
- <1484549107-5957-7-git-send-email-m.szyprowski@samsung.com>
- <20170116191400.ehm3ivkmz4csynvq@kozik-lap> <CA+Ln22EsV1mKzM5WZ4gwD+C2Yy22aMwy7YNgi7P=2Jy03XXaSg@mail.gmail.com>
- <CAJKOXPc0u061nany6SYWRN5W=iKWWSJpZ_W5g68AM9_+oR=B7Q@mail.gmail.com>
+From: Tero Kristo <t-kristo@ti.com>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Tue, 17 Jan 2017 09:48:12 +0200
+Message-ID: <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com>
+ <20170104205536.15963-3-d-gerlach@ti.com>
+ <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
+ <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+ <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
+ <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+ <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
+ <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+ <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPc0u061nany6SYWRN5W=iKWWSJpZ_W5g68AM9_+oR=B7Q@mail.gmail.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>, Rob Herring <robh@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>, Keerthy <j-keerthy@ti.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-2017-01-17 15:34 GMT+09:00 Krzysztof Kozlowski <krzk@kernel.org>:
-> On Tue, Jan 17, 2017 at 6:44 AM, Tomasz Figa <tomasz.figa@gmail.com> wrote:
->> 2017-01-17 4:14 GMT+09:00 Krzysztof Kozlowski <krzk@kernel.org>:
->>> On Mon, Jan 16, 2017 at 07:45:01AM +0100, Marek Szyprowski wrote:
->>>> Exynos5433 support has been added in parallel to adding initconst
->>>> annotation to most of the init data structures, so add those
->>>> annotations also to Exynos5433 structures.
+On 17/01/17 00:12, Dave Gerlach wrote:
+> On 01/13/2017 08:40 PM, Rob Herring wrote:
+>> On Fri, Jan 13, 2017 at 2:28 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>> On 01/13/2017 01:25 PM, Rob Herring wrote:
 >>>>
->>>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>>> ---
->>>>  drivers/pinctrl/samsung/pinctrl-exynos.c | 22 +++++++++++-----------
->>>>  1 file changed, 11 insertions(+), 11 deletions(-)
+>>>> On Thu, Jan 12, 2017 at 9:27 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>>>>
+>>>>> Rob,
+>>>>>
+>>>>> On 01/11/2017 03:34 PM, Rob Herring wrote:
+>>>>>>
+>>>>>>
+>>>>>> On Mon, Jan 9, 2017 at 11:57 AM, Dave Gerlach <d-gerlach@ti.com>
+>>>>>> wrote:
+>>>>>>>
+>>>>>>>
+>>>>>>> Rob,
+>>>>>>>
+>>>>>>> On 01/09/2017 11:50 AM, Rob Herring wrote:
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> On Wed, Jan 04, 2017 at 02:55:34PM -0600, Dave Gerlach wrote:
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Add a generic power domain implementation, TI SCI PM Domains, that
+>>>>>>>>> will hook into the genpd framework and allow the TI SCI
+>>>>>>>>> protocol to
+>>>>>>>>> control device power states.
+>>>>>>>>>
+>>>>>>>>> Also, provide macros representing each device index as understood
+>>>>>>>>> by TI SCI to be used in the device node power-domain references.
+>>>>>>>>> These are identifiers for the K2G devices managed by the PMMC.
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Nishanth Menon <nm@ti.com>
+>>>>>>>>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+>>>>>>>>> ---
+>>>>>>>>> v2->v3:
+>>>>>>>>>         Update k2g_pds node docs to show it should be a child
+>>>>>>>>> of pmmc
+>>>>>>>>> node.
+>>>>>>>>>         In early versions a phandle was used to point to pmmc and
+>>>>>>>>> docs
+>>>>>>>>> still
+>>>>>>>>>         incorrectly showed this.
+>>>>>>>>>
+>>>>>>>>>  .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 59
+>>>>>>>>> ++++++++++++++
+>>>>>>>>>  MAINTAINERS                                        |  2 +
+>>>>>>>>>  include/dt-bindings/genpd/k2g.h                    | 90
+>>>>>>>>> ++++++++++++++++++++++
+>>>>>>>>>  3 files changed, 151 insertions(+)
+>>>>>>>>>  create mode 100644
+>>>>>>>>> Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>>>  create mode 100644 include/dt-bindings/genpd/k2g.h
+>>>>>>>>>
+>>>>>>>>> diff --git
+>>>>>>>>> a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>>> b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>>> new file mode 100644
+>>>>>>>>> index 000000000000..4c9064e512cb
+>>>>>>>>> --- /dev/null
+>>>>>>>>> +++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+>>>>>>>>> @@ -0,0 +1,59 @@
+>>>>>>>>> +Texas Instruments TI-SCI Generic Power Domain
+>>>>>>>>> +---------------------------------------------
+>>>>>>>>> +
+>>>>>>>>> +Some TI SoCs contain a system controller (like the PMMC, etc...)
+>>>>>>>>> that
+>>>>>>>>> is
+>>>>>>>>> +responsible for controlling the state of the IPs that are
+>>>>>>>>> present.
+>>>>>>>>> +Communication between the host processor running an OS and the
+>>>>>>>>> system
+>>>>>>>>> +controller happens through a protocol known as TI-SCI [1].
+>>>>>>>>> This pm
+>>>>>>>>> domain
+>>>>>>>>> +implementation plugs into the generic pm domain framework and
+>>>>>>>>> makes
+>>>>>>>>> use
+>>>>>>>>> of
+>>>>>>>>> +the TI SCI protocol power on and off each device when needed.
+>>>>>>>>> +
+>>>>>>>>> +[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+>>>>>>>>> +
+>>>>>>>>> +PM Domain Node
+>>>>>>>>> +==============
+>>>>>>>>> +The PM domain node represents the global PM domain managed by the
+>>>>>>>>> PMMC,
+>>>>>>>>> +which in this case is the single implementation as documented
+>>>>>>>>> by the
+>>>>>>>>> generic
+>>>>>>>>> +PM domain bindings in
+>>>>>>>>> Documentation/devicetree/bindings/power/power_domain.txt.
+>>>>>>>>> +Because this relies on the TI SCI protocol to communicate with
+>>>>>>>>> the
+>>>>>>>>> PMMC
+>>>>>>>>> it
+>>>>>>>>> +must be a child of the pmmc node.
+>>>>>>>>> +
+>>>>>>>>> +Required Properties:
+>>>>>>>>> +--------------------
+>>>>>>>>> +- compatible: should be "ti,sci-pm-domain"
+>>>>>>>>> +- #power-domain-cells: Must be 0.
+>>>>>>>>> +
+>>>>>>>>> +Example (K2G):
+>>>>>>>>> +-------------
+>>>>>>>>> +       pmmc: pmmc {
+>>>>>>>>> +               compatible = "ti,k2g-sci";
+>>>>>>>>> +               ...
+>>>>>>>>> +
+>>>>>>>>> +               k2g_pds: k2g_pds {
+>>>>>>>>> +                       compatible = "ti,sci-pm-domain";
+>>>>>>>>> +                       #power-domain-cells = <0>;
+>>>>>>>>> +               };
+>>>>>>>>> +       };
+>>>>>>>>> +
+>>>>>>>>> +PM Domain Consumers
+>>>>>>>>> +===================
+>>>>>>>>> +Hardware blocks that require SCI control over their state must
+>>>>>>>>> provide
+>>>>>>>>> +a reference to the sci-pm-domain they are part of and a unique
+>>>>>>>>> device
+>>>>>>>>> +specific ID that identifies the device.
+>>>>>>>>> +
+>>>>>>>>> +Required Properties:
+>>>>>>>>> +--------------------
+>>>>>>>>> +- power-domains: phandle pointing to the corresponding PM domain
+>>>>>>>>> node.
+>>>>>>>>> +- ti,sci-id: index representing the device id to be passed
+>>>>>>>>> oevr SCI
+>>>>>>>>> to
+>>>>>>>>> +            be used for device control.
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>>
+>>>>>>>> As I've already stated before, this goes in power-domain cells.
+>>>>>>>> When
+>>>>>>>> you
+>>>>>>>> have a single thing (i.e. node) that controls multiple things, then
+>>>>>>>> you
+>>>>>>>> you need to specify the ID for each of them in phandle args.
+>>>>>>>> This is
+>>>>>>>> how
+>>>>>>>> irqs, gpio, clocks, *everything* in DT works.
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> You think the reasoning for doing it this way provided by both
+>>>>>>> Ulf and
+>>>>>>> myself on v2 [1] is not valid then?
+>>>>>>>
+>>>>>>> From Ulf:
+>>>>>>>
+>>>>>>> To me, the TI SCI ID, is similar to a "conid" for any another
+>>>>>>> "device
+>>>>>>> resource" (like clock, pinctrl, regulator etc) which we can describe
+>>>>>>> in DT and assign to a device node. The only difference here, is that
+>>>>>>> we don't have common API to fetch the resource (like clk_get(),
+>>>>>>> regulator_get()), but instead we fetches the device's resource from
+>>>>>>> SoC specific code, via genpd's device ->attach() callback.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Sorry, but that sounds like a kernel problem to me and has nothing to
+>>>>>> do with DT bindings.
+>>>>>>
+>>>>>>> From me:
+>>>>>>>
+>>>>>>> Yes, you've pretty much hit it on the head. It is not an index
+>>>>>>> into a
+>>>>>>> list
+>>>>>>> of genpds but rather identifies the device *within* a single
+>>>>>>> genpd. It
+>>>>>>> is
+>>>>>>> a
+>>>>>>> property specific to each device that resides in a ti-sci-genpd,
+>>>>>>> not a
+>>>>>>> mapping describing which genpd the device belongs to. The generic
+>>>>>>> power
+>>>>>>> domain binding is concerned with mapping the device to a specific
+>>>>>>> genpd,
+>>>>>>> which is does fine for us, but we have a sub mapping for devices
+>>>>>>> that
+>>>>>>> exist
+>>>>>>> inside a genpd which, we must describe as well, hence the ti,sci-id.
+>>>>>>>
+>>>>>>>
+>>>>>>> So to summarize, the genpd framework does interpret the phandle
+>>>>>>> arg as
+>>>>>>> an
+>>>>>>> index into multiple genpds, just as you've said other frameworks do,
+>>>>>>> but
+>>>>>>> this is not what I am trying to do, we have multiple devices within
+>>>>>>> this
+>>>>>>> *single* genpd, hence the need for the ti,sci-id property.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> Fix the genpd framework rather than work around it in DT.
+>>>>>
+>>>>>
+>>>>>
+>>>>> I still disagree that this has nothing to do with DT bindings, as the
+>>>>> current DT binding represents something different already. I am
+>>>>> trying to
+>>>>> extend it to give me additional information needed for our
+>>>>> platforms. Are
+>>>>> you saying that we should break what the current DT binding already
+>>>>> represents to mean something else?
 >>>>
->>>> diff --git a/drivers/pinctrl/samsung/pinctrl-exynos.c b/drivers/pinctrl/samsung/pinctrl-exynos.c
->>>> index bf753a596209..70b94ad10cc1 100644
->>>> --- a/drivers/pinctrl/samsung/pinctrl-exynos.c
->>>> +++ b/drivers/pinctrl/samsung/pinctrl-exynos.c
->>>> @@ -1266,7 +1266,7 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
->>>>  };
 >>>>
->>>>  /* pin banks of exynos5433 pin-controller - ALIVE */
->>>> -static const struct samsung_pin_bank_data exynos5433_pin_banks0[] = {
->>>> +static const struct samsung_pin_bank_data exynos5433_pin_banks0[] __initconst = {
->>>>       EXYNOS5433_PIN_BANK_EINTW(8, 0x000, "gpa0", 0x00),
->>>>       EXYNOS5433_PIN_BANK_EINTW(8, 0x020, "gpa1", 0x04),
->>>>       EXYNOS5433_PIN_BANK_EINTW(8, 0x040, "gpa2", 0x08),
->>>> @@ -1279,28 +1279,28 @@ static void exynos_pinctrl_resume(struct samsung_pinctrl_drv_data *drvdata)
->>>>  };
+>>>> No idea because what's the current binding? From the patch, looks like
+>>>> a new binding to me.
 >>>
->>> Your change is aligned with existing code... but after I started to look
->>> into it I think this should not be initconst.
 >>>
->>> The pin_banks (initconst) are referenced in pin_ctrl (initconst) which
->>> is referenced in samsung_pinctrl_dt_match (NOT initconst). The dt_match
->>> then is used in samsung_pinctrl_driver (for obvious reasons not
->>> initconst).
+>>> Yes, ti,sci-id is a new binding. I am referring to the current
+>>> meaning of
+>>> the "power-domains" binding, which is where you are asking this
+>>> property to
+>>> be added, in "power-domains" cells. This is documented here [1] in the
+>>> kernel, although looking at it I must admit it is not very clear.
 >>>
->>> We suppress the bind so this looks safe - this data should not be ever used
->>> after init - but it is not correct strictly speaking.
->>>
->>> Let's imagine some weird future platform which will use DT overlays with
->>> pinctrl. I think the overlays could affect the tree after the init
->>> stage.
+>>> The power-domains cell represents an offset into an array of power
+>>> domains,
+>>> if you choose to use it. That's what the genpd framework is hard
+>>> coded to
+>>> interpret it as. This is correct, as it is an index into a static
+>>> list of
+>>> power domains, used to identify which power domain a device belongs to,
+>>> which is exactly what the genpd framework itself is concerned with.
+>>> This is
+>>> already how it is used in the kernel today.
 >>
->> I think it's not very realistic to have a Samsung on-SoC pin
->> controller in an overlay. AFAIR we already assume in several places
->> that this driver fully initializes in init stage, so we can save some
->> memory by discarding this data
+>> Strictly speaking, the cells are purely for the interpretation of the
+>> phandle they are associated with. If some controller wants to have 20
+>> cells, then it could assuming a good reason. The reality is we tend to
+>> align the meaning of the cells. If genpd is interpreting the cells and
+>> not letting the driver for the power domain controller interpret them,
+>> then still, genpd needs to be fixed.
 >
-> Two things here. Either we write proper code or we write code for
-> "believe it will work". There is a problem with second approach -
-> after some time, the driver will be developed further it your
-> assumptions might change... then stuff might get broken because no one
-> expected that driver data is discarded. Code working only with some
-> assumptions is a more difficult to maintain than code which is
-> correct.
+> Ok, perhaps the genpd folks on the thread can jump in here with any
+> thoughts that they have.
+>
+>>
+>> IIRC, initially it was said genpd required 0 cells, hence my confusion.
+>>
+>>> My ti,sci-id is not an index into a list of power domains, so it
+>>> should not
+>>> go in the power-domains cells and go against what the power-domains
+>>> binding
+>>> says that the cell expects. We have one single power domain, and the new
+>>> ti,sci-id binding is not something the genpd framework itself is
+>>> concerned
+>>> with as it's our property to identify a device inside a power domain,
+>>> not to
+>>> identify which power domain it is associated with.
+>>
+>> What is the id used for? I can understand why you need to know what
+>> power domain a device is in (as power-domains identifies), but not
+>> what devices are in a power domain.
+>
+> We have a system control processor that provides power management
+> services to the OS and it responsible for handling the power state of
+> each device. This control happens over a communication interface we have
+> called TI SCI (implemented at drivers/firmware/ti-sci.c). The
+> communication protocol uses these ids to identify each device within the
+> power domain so that the control processor can do what is necessary to
+> enable that device.
 
-We write code that is proper for the assumptions we made during the
-design, i.e. design decisions. Otherwise you would end up with the
-driver bloated everywhere with handing things that don't make any
-sense, which would be definitely _not_ easier to maintain. Of course
-we can have some trivial code to enforce the assumptions, as I
-mentioned before.
+I think a minor detail here that Rob might be missing right now is, that 
+the ti,sci-id is only controlling the PM runtime handling, and providing 
+the ID per-device for this purpose only. AFAIK, it is not really 
+connected to the power domain anymore as such, as we don't have 
+power-domains / per device anymore as was the case in some earlier 
+revision of this work.
 
-This is a driver for an on-chip low level device that is very, very
-unlikely to be hotpluggable and almost any other driver for remaining
-on-chip devices depend on it. It doesn't mean that we can't change the
-design decision later, if in future it becomes feasible to load
-low-level SoC drivers from modules then we can make the driver support
-so.
+One could argue though that the whole usage of power-domains is now 
+moot, as we basically only have implemented one genpd in the whole SoC, 
+which doesn't really reflect the reality. I wonder if better approach 
+would be to have this replaced with proper power domains at some point 
+(if needed), and just have a runtime-pm implementation in place for the 
+devices that require it.
+
+So, as an example in DT, we would only have:
+
+uart0: serial@02530c00 {
+   compatible = "xyz";
+   ...
+   ti,sci-id = <K2G_DEV_UART0>;
+};
+
+This is somewhat analogous to what OMAP family of SoCs have in place 
+now, under "ti,hwmods" property. I also wonder if the "ti,sci-id" should 
+be replaced with something like "ti,sci-dev-id" to make its purpose clearer.
+
+-Tero
 
 >
-> In the same time if you believe your code is "correct" then just mark
-> samsung_pinctrl_dt_match initconst... Marking only few parts in the
-> chain is broken.
-
-I haven't said that samsung_pinctrl_dt_match should be kept
-non-initconst. It's indeed a good idea to make it initconst as well.
-
+> Regards,
+> Dave
 >
-> Second thing. How much memory you are saving? 5 kB in total? 10 kB? Is
-> it worth the risk?
-
-10 kB in one driver. Multiply by the number of similar low level
-drivers for all SoCs supported by ARM v7 multiplatform build and you
-can get quite a significant number of memory saved...
-
+>>
+>> Rob
+>>
 >
->> Still, I guess we could add some measure to make sure nothing attempts
->> to probe this driver after the data is discarded.
->
-> That could work... but last time I asked for checking the return value
-> of match_data then you (I think) and Bartlomiej responded "no sense".
-> So please be consistent.
-
-That's because this is already enforced by the design of the driver model...
-
-> Anyway it is not possible to NULL-ify the
-> match_data after first probe because samsung_pinctrl_dt_match is
-> const. This means you would have to add some crazy logic to check for
-> late (from overlays) or second probe and discard it... just because we
-> wanted to save some memory and marked initconst something referenced
-> from non-initconst section.
-
-...and similarly the assumptions we are talking about in case of this
-problem could be enforced the same way. There is already
-platform_driver_probe() that is supposed to be used for such on-SoC
-non-hotpluggable devices and which triggers a one-time probe.
-Unfortunately it is a bit broken currently, because it can't handle
-deferred probes.
-
-Anyway, I'm not even insisting that we should keep this initconst
-annotation. Just wanted to point out that there are valid reasons for
-it to be useful and correct (in terms of the design decisions taken
-when writing the driver).
-
-Best regards,
-Tomasz
