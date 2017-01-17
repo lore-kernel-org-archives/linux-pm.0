@@ -1,75 +1,47 @@
-From: Christian Mauderer <oss@c-mauderer.de>
-Subject: Re: [PATCH] mfd: axp20x: Add AXP288 volatile registers.
-Date: Tue, 17 Jan 2017 20:46:55 +0100
-Message-ID: <7306e66b-4f13-55b8-c325-636ea80b5542@c-mauderer.de>
-References: <20170111194941.5425-1-oss@c-mauderer.de>
-        <20170113140156.GE6864@dell> <20170117145853.GB3718@dell>
+From: Shuah Khan <shuah@kernel.org>
+Subject: Re: [PATCH 0/4] selftest: cpufreq: Add support for cpufreq framework
+Date: Tue, 17 Jan 2017 14:00:00 -0700
+Message-ID: <ca6812e9-88be-17b0-be3c-47681ab0653b@kernel.org>
+References: <cover.1484289212.git.viresh.kumar@linaro.org>
+ <bde954c8-d581-aa9d-a64d-2ca94e794f2f@kernel.org>
+ <20170116034815.GJ9953@vireshk-i7>
+Reply-To: shuah@kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170117145853.GB3718@dell>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from resqmta-po-08v.sys.comcast.net ([96.114.154.167]:58401 "EHLO
+        resqmta-po-08v.sys.comcast.net" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751015AbdAQVCD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 16:02:03 -0500
+In-Reply-To: <20170116034815.GJ9953@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>
 
-Am 17.01.2017 um 15:58 schrieb Lee Jones:
-> On Fri, 13 Jan 2017, Lee Jones wrote:
+On 01/15/2017 08:48 PM, Viresh Kumar wrote:
+> On 13-01-17, 15:35, Shuah Khan wrote:
+>> Could you please add .gitignore for generated files. You can
+>> send that as a separate patch and don't have to resend the
+>> series.
 > 
->> On Wed, 11 Jan 2017, Christian Mauderer wrote:
->>
->>> The axp288_fuelgauge driver and some other axp288_xxx are using a number
->>> of the registers of the chip that are changed by hardware (for example
->>> charge level). Because these registers are not marked as "volatile" in
->>> the regmap, a cached version is used instead of the correct register
->>> value. In case of the axp288_fuelgauge that leads to a battery level
->>> that only changes on reboot. This patch adds the volatile registers of
->>> the chip.
->>>
->>> Signed-off-by: Christian Mauderer <oss@c-mauderer.de>
->>> ---
->>>  drivers/mfd/axp20x.c | 3 +++
->>>  1 file changed, 3 insertions(+)
->>
->> Applied, thanks.
+> Hi Shuah,
 > 
-> Change of plan.  This patch does not apply.
+>>>  tools/testing/selftests/Makefile                 |   1 +
+>>>  tools/testing/selftests/cpufreq/Makefile         |   8 +
+>>>  tools/testing/selftests/cpufreq/cpu.sh           |  84 ++++++++
+>>>  tools/testing/selftests/cpufreq/cpufreq.sh       | 241 ++++++++++++++++++++++
+>>>  tools/testing/selftests/cpufreq/governor.sh      | 153 ++++++++++++++
+>>>  tools/testing/selftests/cpufreq/main.sh          | 194 ++++++++++++++++++
+>>>  tools/testing/selftests/cpufreq/module.sh        | 243 +++++++++++++++++++++++
+>>>  tools/testing/selftests/cpufreq/special-tests.sh | 115 +++++++++++
 > 
-> Please rebase it on top of the MFD tree.
-
-It seems that there is already a similar patch on mfd/for-mfd-next. I
-tried to apply my patch to the linux/master and 4.9, to some of the
-linux-power-supply and to mfd/for-mfd-next-next branch. I totally missed
-the for-mfd-next one. Sorry for that.
-
-As far as I can tell, the other patch already does everything that I
-would need and it even seems to be slightly more accurate. So you can
-just ignore my patch.
-
-I'll test the already existing patches in the next few days on my device
-and only send a new patch if something goes wrong. But I'm quite
-confident that it is not necessary.
-
-Thanks again.
-
-Christian Mauderer
-
+> All I have are .sh files and no intermediate files are generated.
+> Perhaps I don't need any .gitignore entries ?
 > 
->>> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->>> index ed918de84238..d74b3daca23f 100644
->>> --- a/drivers/mfd/axp20x.c
->>> +++ b/drivers/mfd/axp20x.c
->>> @@ -118,7 +118,10 @@ static const struct regmap_range axp288_writeable_ranges[] = {
->>>  };
->>>  
->>>  static const struct regmap_range axp288_volatile_ranges[] = {
->>> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
->>>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IPSOUT_V_HIGH_L),
->>> +	regmap_reg_range(AXP20X_CC_CTRL, AXP288_FG_OCVL_REG),
->>> +	regmap_reg_range(AXP288_FG_DES_CAP1_REG, AXP288_FG_CC_CAP_REG),
->>>  };
->>>  
->>>  static const struct regmap_access_table axp288_writeable_table = {
->>
-> 
+
+Never mind. There is no need to do .gitignore.
+
+thanks,
+-- Shuah
