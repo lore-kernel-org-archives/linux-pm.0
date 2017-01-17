@@ -1,54 +1,66 @@
-From: Thorsten Leemhuis <linux@leemhuis.info>
-Subject: Re: Regression on Dell XPS13
-Date: Tue, 17 Jan 2017 18:29:34 +0100
-Message-ID: <b9610f92-d0d8-604b-2882-69c6d22dfcdc@leemhuis.info>
-References: <20170110224956.GA2897@x61s.reliablesolutions.de>
- <5B8DA87D05A7694D9FA63FD143655C1B5437A09D@hasmsx108.ger.corp.intel.com>
- <aac5b255-e817-f92d-2f37-2ca7b52cd957@molgen.mpg.de>
- <5B8DA87D05A7694D9FA63FD143655C1B5437A315@hasmsx108.ger.corp.intel.com>
- <b1ecfd53-e856-ce10-d56e-4fea27095a8f@molgen.mpg.de>
- <20170113130018.GA896@kroah.com>
- <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
- <20170114193959.GA30750@kroah.com>
- <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
- <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
- <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
- <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v5 3/4] dmaengine: pl330: Store pointer to slave device
+Date: Tue, 17 Jan 2017 19:29:42 +0200
+Message-ID: <20170117172445.3itztktiay22as26@kozik-lap>
+References: <1484657338-26338-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170117124922eucas1p1d4037d80229e55007169cf85c19e5eec@eucas1p1.samsung.com>
+ <1484657338-26338-4-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Paul Menzel <pmenzel@molgen.mpg.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mario Limonciello <mario.limonciello@dell.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomas Winkler <tomas.winkler@intel.com>, Jan Niehusmann <jan@gondor.com>, "Usyskin, Alexander" <alexander.usyskin@intel.com>, linux-kernel@vger.kernel.org, "Chen, Yu C" <yu.c.chen@intel.com>, "Sarvela, Tomi P" <tomi.p.sarvela@intel.com>, Daniel Blueman <daniel@quora.org>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1484657338-26338-4-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Lo! On 17.01.2017 15:34, Paul Menzel wrote:
-> […]
->>> Paul, are you still having this issue?
->> Don't know about Paul, but I did a quick test with rc4 on my machine and
->> the issue is still there :-/
-> I didn’t test Linux 4.10-rc4 yet, but I completed the bisection.
+On Tue, Jan 17, 2017 at 01:48:57PM +0100, Marek Szyprowski wrote:
+> Store the pointer to slave device, which requested our channel. It will be
+> later used to implement runtime PM of PL330 DMA controller. Although
+> DMA channels might be requested many times, each DMA peripheral channel is
+> physically dedicated only for specific hardware, so there should be only
+> one slave device for each channel.
 > 
-> ```
-> 406e79385f3223d82272cf2be86bc95cd000a258 is the first bad commit
-> commit 406e79385f3223d82272cf2be86bc95cd000a258
-> Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Date:   Mon Nov 21 22:45:40 2016 +0100
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+
+Any particular reason for removing my Reviewed-by? Any changes here?
+
+Best regards,
+Krzysztof
+
+> ---
+>  drivers/dma/pl330.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 > 
->      PM / sleep: System sleep state selection interface rework
+> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
+> index b6b2cc912380..c77a3494659c 100644
+> --- a/drivers/dma/pl330.c
+> +++ b/drivers/dma/pl330.c
+> @@ -450,6 +450,7 @@ struct dma_pl330_chan {
+>  
+>  	/* for runtime pm tracking */
+>  	bool active;
+> +	struct device *slave;
+>  };
+>  
+>  struct pl330_dmac {
+> @@ -2093,6 +2094,14 @@ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
+>  	if (chan_id >= pl330->num_peripherals)
+>  		return NULL;
+>  
+> +	if (!pl330->peripherals[chan_id].slave) {
+> +		pl330->peripherals[chan_id].slave = slave;
+> +	} else if (pl330->peripherals[chan_id].slave != slave) {
+> +		dev_err(pl330->ddma.dev,
+> +			"Can't use same channel with multiple slave devices!\n");
+> +		return NULL;
+> +	}
+> +
+>  	return dma_get_slave_channel(&pl330->peripherals[chan_id].chan);
+>  }
+>  
+> -- 
+> 1.9.1
 > 
-
-@Paul: Many thx for tracking this down. I didn't try to revert the
-patch, but my XPS 13 (9360) enters and resumes properly from
-suspend-to-ram after running "echo deep | sudo tee /sys/power/mem_sleep"
-(#sigh, I should have thought of this myself earlier, as I had seen that
-commit :-/ )
-
-@Mario: many thx for the detailed mail you just send to explain things.
-Looking forward to give supend-to-idle (which Windows uses on this
-laptop) a try. If you need help with testing anything let me know, if I
-can spare a minute I'll try to help.
-
-Ciao, Thorsten
