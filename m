@@ -1,44 +1,83 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v3 0/6] BQ24190 charger fixes
-Date: Mon, 16 Jan 2017 22:01:34 -0800
-Message-ID: <CAKvHMgSEimsV7+VbqQi8Ex-ztqLCJbKQ7DD_NucyRB0bP5L4+g@mail.gmail.com>
-References: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
- <20170117032646.lf7hfrjsektfsxpk@earth>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: xinwu.liu@intel.com
+Subject: [PATCH v2] thermal/intel_powerclamp: Fix sched_setscheduler fail
+Date: Tue, 17 Jan 2017 14:16:41 +0800
+Message-ID: <1484633801-25866-1-git-send-email-xinwu.liu@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:33501 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750820AbdAQGBf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 01:01:35 -0500
-Received: by mail-it0-f66.google.com with SMTP id v14so14585916itb.0
-        for <linux-pm@vger.kernel.org>; Mon, 16 Jan 2017 22:01:35 -0800 (PST)
-In-Reply-To: <20170117032646.lf7hfrjsektfsxpk@earth>
+Received: from mga02.intel.com ([134.134.136.20]:46783 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750968AbdAQGSs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 17 Jan 2017 01:18:48 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, "Liu, Xinwu" <xinwu.liu@intel.com>, "Zhang, Di" <di.zhang@intel.com>
 
-On Mon, Jan 16, 2017 at 7:26 PM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
->
-> On Mon, Jan 16, 2017 at 06:28:28PM -0800, Liam Breck wrote:
->> These are misc fixes, tested on a custom OMAP3 board.
->>
->> Changes in v3
->>
->> #1 fixes figure ID to 37
->> #5 fixes line over 80 chars
->> #* adds Acked-by Tony & Mark
->
-> You forgot to fix the whitespace issues Mark mentioned, also
-> please use "git send-mail" or make sure, that your patchset
-> is threaded (patch 1-6 are replies to "patch" 0) and the
-> actual patch is inline and can be applied using "git am"
-> (which currently complains).
+From: "Liu, Xinwu" <xinwu.liu@intel.com>
 
-Hi, would you accept the v3 patches as-is were I the module
-maintainer? Because I am the de facto maintainer :-)
+The schedule policy of thread "kidle_inject" is SCHED_NORMAL:
+[  772.796284] intel_powerclamp: Start idle injection to reduce power
+[  772.825757] ------------[ cut here ]------------
+[  772.825877] WARNING: CPU: 0 PID: 2140 at ../../../../../../kernel/glv/kernel/sched/idle.c:298 play_idle+0x16f/0x230
+[  772.826096] Modules linked in: ip6table_raw iptable_raw hci_uart bluetooth rfkill_gpio cfg80211 imc_ipc(O)
+[  772.826194] CPU: 0 PID: 2140 Comm: kidle_inject/0 Tainted: G          IO    4.9.0-ge701680f3a17 #1
+[  772.826373]  ffffc90001103d58 ffffffff813ba085 0000000000000000 0000000000000000
+[  772.826552]  ffffc90001103d98 ffffffff810953e1 0000012a691441c0 0000000000000006
+[  772.826731]  0000000000000002 ffff88006a39d708 ffff8800691441c0 ffffe8ffffc0dab8
+[  772.826794] Call Trace:
+[  772.826903]  [<ffffffff813ba085>] dump_stack+0x67/0x92
+[  772.827007]  [<ffffffff810953e1>] __warn+0xd1/0xf0
+[  772.827124]  [<ffffffff810954cd>] warn_slowpath_null+0x1d/0x20
+[  772.827234]  [<ffffffff810d6c6f>] play_idle+0x16f/0x230
+[  772.827365]  [<ffffffff81a9b4b7>] ? __schedule+0x217/0x6f0
+[  772.827485]  [<ffffffff81856c9a>] clamp_idle_injection_func+0x6a/0x1f0
+[  772.827612]  [<ffffffff810b568d>] kthread_worker_fn+0xdd/0x200
+[  772.827741]  [<ffffffff810b55b0>] ? __kthread_init_worker+0x50/0x50
+[  772.827860]  [<ffffffff810b5542>] kthread+0x102/0x120
+[  772.828004]  [<ffffffff810b5440>] ? kthread_park+0x60/0x60
+[  772.828118]  [<ffffffff81aa2517>] ret_from_fork+0x27/0x40
+[  772.828228] ---[ end trace bb738d5d79381554 ]---
 
-I contracted Mark to write this driver, and he hasn't had hardware on
-which to test it for a few years...
+Normaly, the user thread have not the capability "CAP_SYS_NICE"
+(and they shouldn't), it will fail to change the schedule policy.
+So, fix it by changing by themselves.
+
+Signed-off-by: Liu, Xinwu <xinwu.liu@intel.com>
+Signed-off-by: Zhang, Di <di.zhang@intel.com>
+---
+ drivers/thermal/intel_powerclamp.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index 83e6971..ea2d9cf 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -377,6 +377,7 @@ static bool powerclamp_adjust_controls(unsigned int target_ratio,
+ 	return set_target_ratio + guard <= current_ratio;
+ }
+ 
++static DEFINE_PER_CPU(int, setscheduler_done);
+ static void clamp_balancing_func(struct kthread_work *work)
+ {
+ 	struct powerclamp_worker_data *w_data;
+@@ -388,6 +389,10 @@ static void clamp_balancing_func(struct kthread_work *work)
+ 	w_data = container_of(work, struct powerclamp_worker_data,
+ 			      balancing_work);
+ 
++	if (unlikely(this_cpu_read(setscheduler_done) == 0)) {
++		sched_setscheduler(current, SCHED_FIFO, &sparam);
++		this_cpu_inc(setscheduler_done);
++	}
+ 	/*
+ 	 * make sure user selected ratio does not take effect until
+ 	 * the next round. adjust target_ratio if user has changed
+@@ -507,7 +512,6 @@ static void start_power_clamp_worker(unsigned long cpu)
+ 	w_data->cpu = cpu;
+ 	w_data->clamping = true;
+ 	set_bit(cpu, cpu_clamping_mask);
+-	sched_setscheduler(worker->task, SCHED_FIFO, &sparam);
+ 	kthread_init_work(&w_data->balancing_work, clamp_balancing_func);
+ 	kthread_init_delayed_work(&w_data->idle_injection_work,
+ 				  clamp_idle_injection_func);
+-- 
+1.9.1
+
