@@ -1,59 +1,71 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v5 3/4] dmaengine: pl330: Store pointer to slave device
-Date: Tue, 17 Jan 2017 13:48:57 +0100
-Message-ID: <1484657338-26338-4-git-send-email-m.szyprowski@samsung.com>
-References: <1484657338-26338-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170117124922eucas1p1d4037d80229e55007169cf85c19e5eec@eucas1p1.samsung.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [PATCH 1/2] power/reset: at91-reset: add samx7 support
+Date: Tue, 17 Jan 2017 13:59:10 +0100
+Message-ID: <20170117125910.icdsl2x7lpnukymy@piout.net>
+References: <20160922225322.31677-1-alexandre.belloni@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:10332 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750741AbdAQMtx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 07:49:53 -0500
-In-reply-to: <1484657338-26338-1-git-send-email-m.szyprowski@samsung.com>
+Received: from mail.free-electrons.com ([62.4.15.54]:52826 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750741AbdAQM7N (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 07:59:13 -0500
+Content-Disposition: inline
+In-Reply-To: <20160922225322.31677-1-alexandre.belloni@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, =?utf-8?B?U3plbXrFkSBBbmRyw6Fz?= <sza@esh.hu>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Store the pointer to slave device, which requested our channel. It will be
-later used to implement runtime PM of PL330 DMA controller. Although
-DMA channels might be requested many times, each DMA peripheral channel is
-physically dedicated only for specific hardware, so there should be only
-one slave device for each channel.
+Hi Sebastian,
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Acked-by: Arnd Bergmann <arnd@arndb.de>
----
- drivers/dma/pl330.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Did you have any comment on those two patches ?
 
-diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
-index b6b2cc912380..c77a3494659c 100644
---- a/drivers/dma/pl330.c
-+++ b/drivers/dma/pl330.c
-@@ -450,6 +450,7 @@ struct dma_pl330_chan {
- 
- 	/* for runtime pm tracking */
- 	bool active;
-+	struct device *slave;
- };
- 
- struct pl330_dmac {
-@@ -2093,6 +2094,14 @@ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
- 	if (chan_id >= pl330->num_peripherals)
- 		return NULL;
- 
-+	if (!pl330->peripherals[chan_id].slave) {
-+		pl330->peripherals[chan_id].slave = slave;
-+	} else if (pl330->peripherals[chan_id].slave != slave) {
-+		dev_err(pl330->ddma.dev,
-+			"Can't use same channel with multiple slave devices!\n");
-+		return NULL;
-+	}
-+
- 	return dma_get_slave_channel(&pl330->peripherals[chan_id].chan);
- }
- 
+On 23/09/2016 at 00:53:21 +0200, Alexandre Belloni wrote :
+> From: Szemző András <sza@esh.hu>
+> 
+> Add samx7 support. It is lacking a few bits and needs a new reset function.
+> 
+> Signed-off-by: Szemző András <sza@esh.hu>
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> ---
+>  drivers/power/reset/at91-reset.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
+> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+> index 1b5d450586d1..563722e64d7b 100644
+> --- a/drivers/power/reset/at91-reset.c
+> +++ b/drivers/power/reset/at91-reset.c
+> @@ -134,6 +134,15 @@ static int sama5d3_restart(struct notifier_block *this, unsigned long mode,
+>  	return NOTIFY_DONE;
+>  }
+>  
+> +static int samx7_restart(struct notifier_block *this, unsigned long mode,
+> +			 void *cmd)
+> +{
+> +	writel(cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PROCRST),
+> +	       at91_rstc_base);
+> +
+> +	return NOTIFY_DONE;
+> +}
+> +
+>  static void __init at91_reset_status(struct platform_device *pdev)
+>  {
+>  	u32 reg = readl(at91_rstc_base + AT91_RSTC_SR);
+> @@ -173,6 +182,7 @@ static const struct of_device_id at91_reset_of_match[] = {
+>  	{ .compatible = "atmel,at91sam9260-rstc", .data = at91sam9260_restart },
+>  	{ .compatible = "atmel,at91sam9g45-rstc", .data = at91sam9g45_restart },
+>  	{ .compatible = "atmel,sama5d3-rstc", .data = sama5d3_restart },
+> +	{ .compatible = "atmel,samx7-rstc", .data = samx7_restart },
+>  	{ /* sentinel */ }
+>  };
+>  
+> -- 
+> 2.9.3
+> 
+
 -- 
-1.9.1
-
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
