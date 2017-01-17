@@ -1,113 +1,137 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v3 4/6] power: bq24190_charger: Call power_supply_changed()
- for relevant component
-Date: Mon, 16 Jan 2017 18:30:09 -0800
-Message-ID: <CAKvHMgQUyCeDoqzhMSH-XdWXizVcF--S44SB4ncwmst5PtS4kA@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH 08/22] power: supply: add AC power supply driver for
+ AXP20X and AXP22X PMICs
+Date: Tue, 17 Jan 2017 04:00:13 +0100
+Message-ID: <20170117030013.g5xhlmrxpthyfewa@earth>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-9-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=94eb2c0bd0f836f9620546411405
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:34842 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750774AbdAQCiT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 21:38:19 -0500
-Received: by mail-io0-f195.google.com with SMTP id m98so14454841iod.2
-        for <linux-pm@vger.kernel.org>; Mon, 16 Jan 2017 18:38:19 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============4980840615660038625=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170102163723.7939-9-quentin.schulz@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, jic23@kernel.org, icenowy@aosc.xyz
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
-
---94eb2c0bd0f836f9620546411405
-Content-Type: text/plain; charset=UTF-8
 
 
+--===============4980840615660038625==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="zxc2sjqngmsewc3s"
+Content-Disposition: inline
 
---94eb2c0bd0f836f9620546411405
-Content-Type: text/plain; charset=US-ASCII; name="patch-v3-4of6.txt"
-Content-Disposition: attachment; filename="patch-v3-4of6.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_iy0uqkxm0
 
-V2Ugd3JvbmdseSBnZXQgdWV2ZW50cyBmb3IgYnEyNDE5MC1jaGFyZ2VyIGFuZCBicTI0MTkwLWJh
-dHRlcnkgb24gZXZlcnkNCnJlZ2lzdGVyIGNoYW5nZS4NCg0KRml4IGJ5IGNoZWNraW5nIHRoZSBh
-c3NvY2lhdGlvbiB3aXRoIGNoYXJnZXIgYW5kIGJhdHRlcnkgYmVmb3JlDQplbWl0dGluZyB1ZXZl
-bnQocykuDQoNCkZpeGVzOiBkN2JmMzUzZmQwYWEzICgiYnEyNDE5MF9jaGFyZ2VyOiBBZGQgc3Vw
-cG9ydCBmb3IgVEkgQlEyNDE5MCBCYXR0ZXJ5IENoYXJnZXIiKQ0KQ2M6IE1hdHQgUmFub3N0YXkg
-PG1hdHRAcmFub3N0YXkuY29uc3VsdGluZz4NClNpZ25lZC1vZmYtYnk6IExpYW0gQnJlY2sgPGtl
-cm5lbEBuZXR3b3JraW1wcm92Lm5ldD4NCkFja2VkLWJ5OiBNYXJrIEdyZWVyIDxtZ3JlZXJAYW5p
-bWFsY3JlZWsuY29tPg0KQWNrZWQtYnk6IFRvbnkgTGluZGdyZW4gPHRvbnlAYXRvbWlkZS5jb20+
-DQotLS0NCiBkcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI0MTkwX2NoYXJnZXIuYyB8IDUwICsrKysr
-KysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0NCiAxIGZpbGUgY2hhbmdlZCwgMjcgaW5zZXJ0
-aW9ucygrKSwgMjMgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Bvd2VyL3N1
-cHBseS9icTI0MTkwX2NoYXJnZXIuYyBiL2RyaXZlcnMvcG93ZXIvc3VwcGx5L2JxMjQxOTBfY2hh
-cmdlci5jDQppbmRleCA2MjE5NGQ4Li5iYTVhNWIyIDEwMDY0NA0KLS0tIGEvZHJpdmVycy9wb3dl
-ci9zdXBwbHkvYnEyNDE5MF9jaGFyZ2VyLmMNCisrKyBiL2RyaXZlcnMvcG93ZXIvc3VwcGx5L2Jx
-MjQxOTBfY2hhcmdlci5jDQpAQCAtMTU5LDcgKzE1OSw2IEBAIHN0cnVjdCBicTI0MTkwX2Rldl9p
-bmZvIHsNCiAJdW5zaWduZWQgaW50CQkJZ3Bpb19pbnQ7DQogCXVuc2lnbmVkIGludAkJCWlycTsN
-CiAJc3RydWN0IG11dGV4CQkJZl9yZWdfbG9jazsNCi0JYm9vbAkJCQlmaXJzdF90aW1lOw0KIAli
-b29sCQkJCWNoYXJnZXJfaGVhbHRoX3ZhbGlkOw0KIAlib29sCQkJCWJhdHRlcnlfaGVhbHRoX3Zh
-bGlkOw0KIAlib29sCQkJCWJhdHRlcnlfc3RhdHVzX3ZhbGlkOw0KQEAgLTExOTcsNyArMTE5Niwx
-MCBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IHBvd2VyX3N1cHBseV9kZXNjIGJxMjQxOTBfYmF0dGVy
-eV9kZXNjID0gew0KIHN0YXRpYyBpcnFyZXR1cm5fdCBicTI0MTkwX2lycV9oYW5kbGVyX3RocmVh
-ZChpbnQgaXJxLCB2b2lkICpkYXRhKQ0KIHsNCiAJc3RydWN0IGJxMjQxOTBfZGV2X2luZm8gKmJk
-aSA9IGRhdGE7DQotCWJvb2wgYWxlcnRfdXNlcnNwYWNlID0gZmFsc2U7DQorCWNvbnN0IHU4IGJh
-dHRlcnlfbWFza19zcyA9IEJRMjQxOTBfUkVHX1NTX0NIUkdfU1RBVF9NQVNLOw0KKwljb25zdCB1
-OCBiYXR0ZXJ5X21hc2tfZiA9IEJRMjQxOTBfUkVHX0ZfQkFUX0ZBVUxUX01BU0sNCisJCQkJfCBC
-UTI0MTkwX1JFR19GX05UQ19GQVVMVF9NQVNLOw0KKwlib29sIGFsZXJ0X2NoYXJnZXIgPSBmYWxz
-ZSwgYWxlcnRfYmF0dGVyeSA9IGZhbHNlOw0KIAl1OCBzc19yZWcgPSAwLCBmX3JlZyA9IDA7DQog
-CWludCByZXQ7DQogDQpAQCAtMTIyNSw4ICsxMjI3LDEyIEBAIHN0YXRpYyBpcnFyZXR1cm5fdCBi
-cTI0MTkwX2lycV9oYW5kbGVyX3RocmVhZChpbnQgaXJxLCB2b2lkICpkYXRhKQ0KIAkJCQkJcmV0
-KTsNCiAJCX0NCiANCisJCWlmICgoYmRpLT5zc19yZWcgJiBiYXR0ZXJ5X21hc2tfc3MpICE9IChz
-c19yZWcgJiBiYXR0ZXJ5X21hc2tfc3MpKQ0KKwkJCWFsZXJ0X2JhdHRlcnkgPSB0cnVlOw0KKwkJ
-aWYgKChiZGktPnNzX3JlZyAmIH5iYXR0ZXJ5X21hc2tfc3MpICE9IChzc19yZWcgJiB+YmF0dGVy
-eV9tYXNrX3NzKSkNCisJCQlhbGVydF9jaGFyZ2VyID0gdHJ1ZTsNCisNCiAJCWJkaS0+c3NfcmVn
-ID0gc3NfcmVnOw0KLQkJYWxlcnRfdXNlcnNwYWNlID0gdHJ1ZTsNCiAJfQ0KIA0KIAltdXRleF9s
-b2NrKCZiZGktPmZfcmVnX2xvY2spOw0KQEAgLTEyMzksMzMgKzEyNDUsMjMgQEAgc3RhdGljIGly
-cXJldHVybl90IGJxMjQxOTBfaXJxX2hhbmRsZXJfdGhyZWFkKGludCBpcnEsIHZvaWQgKmRhdGEp
-DQogCX0NCiANCiAJaWYgKGZfcmVnICE9IGJkaS0+Zl9yZWcpIHsNCisJCWlmICgoYmRpLT5mX3Jl
-ZyAmIGJhdHRlcnlfbWFza19mKSAhPSAoZl9yZWcgJiBiYXR0ZXJ5X21hc2tfZikpDQorCQkJYWxl
-cnRfYmF0dGVyeSA9IHRydWU7DQorCQlpZiAoKGJkaS0+Zl9yZWcgJiB+YmF0dGVyeV9tYXNrX2Yp
-ICE9IChmX3JlZyAmIH5iYXR0ZXJ5X21hc2tfZikpDQorCQkJYWxlcnRfY2hhcmdlciA9IHRydWU7
-DQorDQogCQliZGktPmZfcmVnID0gZl9yZWc7DQogCQliZGktPmNoYXJnZXJfaGVhbHRoX3ZhbGlk
-ID0gdHJ1ZTsNCiAJCWJkaS0+YmF0dGVyeV9oZWFsdGhfdmFsaWQgPSB0cnVlOw0KIAkJYmRpLT5i
-YXR0ZXJ5X3N0YXR1c192YWxpZCA9IHRydWU7DQotDQotCQlhbGVydF91c2Vyc3BhY2UgPSB0cnVl
-Ow0KIAl9DQogDQogCW11dGV4X3VubG9jaygmYmRpLT5mX3JlZ19sb2NrKTsNCiANCi0JLyoNCi0J
-ICogU29tZXRpbWVzIGJxMjQxOTAgZ2l2ZXMgYSBzdGVhZHkgdHJpY2tsZSBvZiBpbnRlcnJ1cHRz
-IGV2ZW4NCi0JICogdGhvdWdoIHRoZSB3YXRjaGRvZyB0aW1lciBpcyB0dXJuZWQgb2ZmIGFuZCBu
-ZWl0aGVyIHRoZSBTVEFUVVMNCi0JICogbm9yIEZBVUxUIHJlZ2lzdGVycyBoYXZlIGNoYW5nZWQu
-ICBXZWVkIG91dCB0aGVzZSBzcHJ1cmlvdXMNCi0JICogaW50ZXJydXB0cyBzbyB1c2Vyc3BhY2Ug
-aXNuJ3QgYWxlcnRlZCBmb3Igbm8gcmVhc29uLg0KLQkgKiBJbiBhZGRpdGlvbiwgdGhlIGNoaXAg
-YWx3YXlzIGdlbmVyYXRlcyBhbiBpbnRlcnJ1cHQgYWZ0ZXINCi0JICogcmVnaXN0ZXIgcmVzZXQg
-c28gd2Ugc2hvdWxkIGlnbm9yZSB0aGF0IG9uZSAodGhlIHZlcnkgZmlyc3QNCi0JICogaW50ZXJy
-dXB0IHJlY2VpdmVkKS4NCi0JICovDQotCWlmIChhbGVydF91c2Vyc3BhY2UpIHsNCi0JCWlmICgh
-YmRpLT5maXJzdF90aW1lKSB7DQotCQkJcG93ZXJfc3VwcGx5X2NoYW5nZWQoYmRpLT5jaGFyZ2Vy
-KTsNCi0JCQlwb3dlcl9zdXBwbHlfY2hhbmdlZChiZGktPmJhdHRlcnkpOw0KLQkJfSBlbHNlIHsN
-Ci0JCQliZGktPmZpcnN0X3RpbWUgPSBmYWxzZTsNCi0JCX0NCi0JfQ0KKwlpZiAoYWxlcnRfY2hh
-cmdlcikNCisJCXBvd2VyX3N1cHBseV9jaGFuZ2VkKGJkaS0+Y2hhcmdlcik7DQorCWlmIChhbGVy
-dF9iYXR0ZXJ5KQ0KKwkJcG93ZXJfc3VwcGx5X2NoYW5nZWQoYmRpLT5iYXR0ZXJ5KTsNCiANCiBv
-dXQ6DQogCXBtX3J1bnRpbWVfcHV0X3N5bmMoYmRpLT5kZXYpOw0KQEAgLTEzMDAsNiArMTI5Niwx
-MCBAQCBzdGF0aWMgaW50IGJxMjQxOTBfaHdfaW5pdChzdHJ1Y3QgYnEyNDE5MF9kZXZfaW5mbyAq
-YmRpKQ0KIAkJZ290byBvdXQ7DQogDQogCXJldCA9IGJxMjQxOTBfc2V0X21vZGVfaG9zdChiZGkp
-Ow0KKwlpZiAocmV0IDwgMCkNCisJCWdvdG8gb3V0Ow0KKw0KKwlyZXQgPSBicTI0MTkwX3JlYWQo
-YmRpLCBCUTI0MTkwX1JFR19TUywgJmJkaS0+c3NfcmVnKTsNCiBvdXQ6DQogCXBtX3J1bnRpbWVf
-cHV0X3N5bmMoYmRpLT5kZXYpOw0KIAlyZXR1cm4gcmV0Ow0KQEAgLTEzNzUsNyArMTM3NSw4IEBA
-IHN0YXRpYyBpbnQgYnEyNDE5MF9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50LA0KIAli
-ZGktPm1vZGVsID0gaWQtPmRyaXZlcl9kYXRhOw0KIAlzdHJuY3B5KGJkaS0+bW9kZWxfbmFtZSwg
-aWQtPm5hbWUsIEkyQ19OQU1FX1NJWkUpOw0KIAltdXRleF9pbml0KCZiZGktPmZfcmVnX2xvY2sp
-Ow0KLQliZGktPmZpcnN0X3RpbWUgPSB0cnVlOw0KKwliZGktPmZfcmVnID0gMDsNCisJYmRpLT5z
-c19yZWcgPSBCUTI0MTkwX1JFR19TU19WQlVTX1NUQVRfTUFTSzsgLyogaW1wb3NzaWJsZSBzdGF0
-ZSAqLw0KIAliZGktPmNoYXJnZXJfaGVhbHRoX3ZhbGlkID0gZmFsc2U7DQogCWJkaS0+YmF0dGVy
-eV9oZWFsdGhfdmFsaWQgPSBmYWxzZTsNCiAJYmRpLT5iYXR0ZXJ5X3N0YXR1c192YWxpZCA9IGZh
-bHNlOw0KQEAgLTE0OTEsMTMgKzE0OTIsMTYgQEAgc3RhdGljIGludCBicTI0MTkwX3BtX3Jlc3Vt
-ZShzdHJ1Y3QgZGV2aWNlICpkZXYpDQogCXN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQgPSB0b19p
-MmNfY2xpZW50KGRldik7DQogCXN0cnVjdCBicTI0MTkwX2Rldl9pbmZvICpiZGkgPSBpMmNfZ2V0
-X2NsaWVudGRhdGEoY2xpZW50KTsNCiANCisJYmRpLT5mX3JlZyA9IDA7DQorCWJkaS0+c3NfcmVn
-ID0gQlEyNDE5MF9SRUdfU1NfVkJVU19TVEFUX01BU0s7IC8qIGltcG9zc2libGUgc3RhdGUgKi8N
-CiAJYmRpLT5jaGFyZ2VyX2hlYWx0aF92YWxpZCA9IGZhbHNlOw0KIAliZGktPmJhdHRlcnlfaGVh
-bHRoX3ZhbGlkID0gZmFsc2U7DQogCWJkaS0+YmF0dGVyeV9zdGF0dXNfdmFsaWQgPSBmYWxzZTsN
-CiANCiAJcG1fcnVudGltZV9nZXRfc3luYyhiZGktPmRldik7DQogCWJxMjQxOTBfcmVnaXN0ZXJf
-cmVzZXQoYmRpKTsNCiAJYnEyNDE5MF9zZXRfbW9kZV9ob3N0KGJkaSk7DQorCWJxMjQxOTBfcmVh
-ZChiZGksIEJRMjQxOTBfUkVHX1NTLCAmYmRpLT5zc19yZWcpOw0KIAlwbV9ydW50aW1lX3B1dF9z
-eW5jKGJkaS0+ZGV2KTsNCiANCiAJLyogVGhpbmdzIG1heSBoYXZlIGNoYW5nZWQgd2hpbGUgc3Vz
-cGVuZGVkIHNvIGFsZXJ0IHVwcGVyIGxheWVyICovDQo=
---94eb2c0bd0f836f9620546411405--
+--zxc2sjqngmsewc3s
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi Quentin,
+
+The driver looks mostly fine. I do have a two comments, though.
+
+On Mon, Jan 02, 2017 at 05:37:08PM +0100, Quentin Schulz wrote:
+> [...]
+>
+> +static int axp20x_ac_power_probe(struct platform_device *pdev)
+> +{
+> +	static const char * const axp20x_irq_names[] = { "ACIN_PLUGIN",
+> +		"ACIN_REMOVAL", NULL };
+>
+> +	static const char * const *irq_names;
+> +	const struct power_supply_desc *ac_power_desc;
+> +	int i, irq, ret;
+> +
+> +	if (!of_device_is_available(pdev->dev.of_node))
+> +		return -ENODEV;
+> +
+> +	if (!axp20x) {
+> +		dev_err(&pdev->dev, "Parent drvdata not set\n");
+> +		return -EINVAL;
+> +	}
+
+axp20x will no longer be needed after implementing below
+comments.
+
+> [...]
+> +	irq_names = axp20x_irq_names;
+
+Just rename axp20x_irq_names into irq_names, since its only used
+here.
+
+> [...]
+>
+> +	power->np = pdev->dev.of_node;
+
+This can be dropped, it's not used at all.
+
+> +	power->regmap = axp20x->regmap;
+
+power->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+
+> [...]
+> +	/* Request irqs after registering, as irqs may trigger immediately */
+> +	for (i = 0; irq_names[i]; i++) {
+> +		irq = platform_get_irq_byname(pdev, irq_names[i]);
+> +		if (irq < 0) {
+> +			dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
+> +				 irq_names[i], irq);
+> +			continue;
+> +		}
+> +		irq = regmap_irq_get_virq(axp20x->regmap_irqc, irq);
+
+The mapping should actually happen in the mfd driver, so that
+the platform resource contains a valid irq.
+
+> +		ret = devm_request_any_context_irq(&pdev->dev, irq,
+> +						   axp20x_ac_power_irq, 0,
+> +						   DRVNAME, power);
+> +		if (ret < 0)
+> +			dev_warn(&pdev->dev, "Error requesting %s IRQ: %d\n",
+> +				 irq_names[i], ret);
+> +	}
+
+-- Sebastian
+
+--zxc2sjqngmsewc3s
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9iLsACgkQ2O7X88g7
++ppoow//bhzAGESgVlNyI6XSseMTxEWOMvDT3FvLN0sHG9kRWdzbzXxsdHW6o/xC
+B/Zn16dm5f2XQI1bRJ0bZdf61dDDlSrm/+nrCyD3gIn6md9XhWE3vZdJDFVaUcbh
+Vw0RJpmfFsodmJwqrr+JLgqPuwFlT7n8GR0BK1FGqq1+T37MaXr1+oAjlCusa90E
+7eSB70wW4bYB4OXMliamVw35Z+ysFfloR+JcPYC8pdOhnoJ4YEBfM4+EKOlUONVt
+/+WN9VRakfkS/Hbt2zTjtlTgJ2gCz65bY452efFy74jymJBKYWBwci5BduASeSos
++ovrTgMttB0QTjDbRbJljI10VmzmUk2bMD+Y1dUalgGfHeM6amHNZKGBw5A+0Ess
+BFJNdjHQp5pHkL0W76+rcbWwzVSpkPRD/aA3vS746yVL8qs7t17LBd75yf1BBTzB
+JDTB+YngSOUpmYthNZtpoVVBAgOrfTzuVU8uQ+AB9NAFRaQwt79DvhiMGdNQ4FGi
+wwc7nDOm9iVHUAQUv08MZzkhczA6L0/B9WepWWWFZ2uqxQvV2zpypuKCZ4ylo9tD
+xXn9yhZzLEUuJg38bupinPIw/JZ9sbxyYkuSsUapl/iNiA98D0HzRb901+NFbe/w
+haY3/TNK2w3WrHYnQsI6SebjhhoCVn1SmSU+JCi0PezAKVe33MA=
+=qgcj
+-----END PGP SIGNATURE-----
+
+--zxc2sjqngmsewc3s--
+
+
+--===============4980840615660038625==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============4980840615660038625==--
