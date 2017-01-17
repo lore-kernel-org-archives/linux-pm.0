@@ -1,109 +1,127 @@
-From: Chris Lapa <chris@lapa.com.au>
-Subject: Re: BQ27xxx registers
-Date: Tue, 17 Jan 2017 15:47:38 +1100
-Message-ID: <a6f6484d-9075-ff06-7f8d-09903b2731b3@lapa.com.au>
-References: <6da60215-4b73-8924-d5ca-48f99c70e7fb@lapa.com.au>
- <201612201234.19759@pali> <a354018a-a2e5-f70e-85b1-477a8d349a04@lapa.com.au>
- <201612211346.17265@pali> <a03bfb52-4eb2-406a-211d-7ae7347908cf@lapa.com.au>
- <16939e2e-8c94-0bcd-9356-98be24d0a634@ti.com>
-Reply-To: chris@lapa.com.au
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH 09/12] pinctrl: samsung: Add infrastructure for pin-bank
+ retention control
+Date: Tue, 17 Jan 2017 13:51:15 +0900
+Message-ID: <CA+Ln22GY+RSX3WKvsmAvARxqvYitKq=7TWpy9zn7PbRiKyxeWQ@mail.gmail.com>
+References: <CGME20170116064527eucas1p1f0f78e9420e7d9d60d94b6e7381caeb1@eucas1p1.samsung.com>
+ <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com> <1484549107-5957-10-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <16939e2e-8c94-0bcd-9356-98be24d0a634@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:35481 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751118AbdAQEvQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 23:51:16 -0500
+In-Reply-To: <1484549107-5957-10-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 17/1/17 4:43 am, Andrew F. Davis wrote:
-> On 12/21/2016 05:37 PM, Chris Lapa wrote:
->> On 21/12/16 11:46 pm, Pali Rohár wrote:
->>> On Wednesday 21 December 2016 03:49:10 Chris Lapa wrote:
->>>> On 20/12/16 10:34 pm, Pali Rohár wrote:
->>>>> On Tuesday 20 December 2016 07:00:41 Chris Lapa wrote:
->>>>>> I can generate a patch to fix this issue, however the bigger
->>>>>> problem exists as to which revision fuel gauge the
->>>>>> bq27xxx_battery.c driver is intended to support for each family.
->>>>>
->>>>> Hi! I think driver should support all revisions. There can be (and
->>>>> probably really is) hardware which uses old revision and such
->>>>> hardware should be still supported...
->>>>
->>>> I agree. However due to the register address changes across the
->>>> spectrum of revisions, each revision will have to be specified
->>>> individually. For example, we will need to implement a BQ27510G1,
->>>> BQ27510G2, BQ27510G3, BQ27520G1, BQ27520G2, BQ27520G3, BQ27520G4
->>>> definitions and prospective device tree additions ti,bq27510g1,
->>>> ti,bq27510g2 etc.
->>>>
->>>> The other option is to aim for bottom of the barrel support for all
->>>> the devices under the BQ27500 definition but my feeling is it would
->>>> get messier fast and be less maintainable.
->>>>
->>>> My preference is to go with the first option if you agree?
->>>
->>> Yes. If those chips have different register addresses, then those chips
->>> are different. Name, generation or suffix does not matter here.
->>>
->>> Similarly there could be chips with different name, but same addresses,
->>> so can use one driver/configuration without any change.
->>>
->>> So I'm for different name in device tree (or platform data or what is
->>> being used) to distinguish between different revisions.
->>>
->>
->> I've been working my way through the revision migration datasheets and
->> noticed this could be simplified with the FW_VERSION parameter. It is
->> always located at the same address and is distinctly different between
->> each chip revision. Unfortunately the migration datasheets vs individual
->> revision datasheets firmware version information directly contradict
->> each other. Which makes me wary of committing to using it.
->>
+Hi Marek,
+
+2017-01-16 15:45 GMT+09:00 Marek Szyprowski <m.szyprowski@samsung.com>:
+> Pad retention control after suspend/resume cycle should be done from pin
+> controller driver instead of PMU (power management unit) driver to avoid
+> possible ordering and logical dependencies. Till now it worked fine only
+> because PMU driver registered its sys_ops after pin controller.
 >
-> BTW, could you give some specific examples of this? I can work with the
-> HW teams to get any documentation problems fixed, so we can in the
-> future use this FW_VERSION parameter if needed.
+> This patch adds infrastructure to handle pad retention during pin control
+> driver resume.
 >
-> Thanks,
-> Andrew
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/pinctrl/samsung/pinctrl-samsung.c | 12 ++++++---
+>  drivers/pinctrl/samsung/pinctrl-samsung.h | 42 +++++++++++++++++++++++++++++++
+>  2 files changed, 51 insertions(+), 3 deletions(-)
+
+Please see my comments inline.
+
+> diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
+> index 86f23842f681..95a84086a2e9 100644
+> --- a/drivers/pinctrl/samsung/pinctrl-samsung.c
+> +++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
+> @@ -1075,6 +1075,9 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
+>                 ctrl->eint_gpio_init(drvdata);
+>         if (ctrl->eint_wkup_init)
+>                 ctrl->eint_wkup_init(drvdata);
+> +       if (ctrl->retention_data && ctrl->retention_data->init)
+> +               drvdata->retention_ctrl = ctrl->retention_data->init(drvdata,
+> +                                                         ctrl->retention_data);
+
+Is there really a use case for init being optional? Also maybe it
+could make sense to add a pr_debug() in case retention_data is not
+present (maybe even a warning would make sense, since the old code
+should be deprecated...).
+
 >
->> Given that I don't have every single variant of this device to test
->> with, its probably still safest to have the user manually specify each
->> device. I should have some patches ready soon.
->>
->> Thanks,
->> Chris
->>
+>         platform_set_drvdata(pdev, drvdata);
+>
+> @@ -1127,15 +1130,15 @@ static void samsung_pinctrl_suspend_dev(
+>
+>         if (drvdata->suspend)
+>                 drvdata->suspend(drvdata);
+> +       if (drvdata->retention_ctrl && drvdata->retention_ctrl->on)
+> +               drvdata->retention_ctrl->on(drvdata);
+> +
 
-Hi Andrew,
+nit: Stray blank line.
 
-I've gone through and made a table based on the migration datasheets and
-user manuals TI has provided.
+>  }
+>
+>  /**
+>   * samsung_pinctrl_resume_dev - restore pinctrl state from suspend for a device
+>   *
+>   * Restore one of the banks that was saved during suspend.
+> - *
+> - * We don't bother doing anything complicated to avoid glitching lines since
+> - * we're called before pad retention is turned off.
 
-CHIP		Migration D/S	User Manual
-BQ27500/1 	N/A		1.06, 1.08
-BQ27500-V100	1.08		1.06, 1.08
-BQ27500-V120	1.20		1.20
-BQ27500-V130	1.30		1.30
-BQ27510-G1	1.12		Not listed
-BQ27510-G2	1.23		Not listed
-BQ27510-G3	4.00		4.00
-BQ27520-G1	3.02 		3.01
-BQ27520-G2	3.11		3.11
-BQ27520-G3	3.24		3.23
-BQ27520-G4	3.29		3.29
+I think the comment is still valid. Just could be adjusted to take
+into account that now we are in charge of turning off the retention
+after restoring the registers.
 
-I suspect the BQ27500/1 and BQ27500-V100 are the same product but they
-have separate product pages so I treated them separately. I also suspect
-the different firmware revisions are probably legitimate due bugs being
-fixed between when the user manual was released vs when the migration
-datasheet was released.
+>   */
+>  static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
+>  {
+> @@ -1174,6 +1177,9 @@ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
+>                         if (widths[type])
+>                                 writel(bank->pm_save[type], reg + offs[type]);
+>         }
+> +
+> +       if (drvdata->retention_ctrl && drvdata->retention_ctrl->off)
+> +               drvdata->retention_ctrl->off(drvdata);
+>  }
+>
+>  /**
+> diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.h b/drivers/pinctrl/samsung/pinctrl-samsung.h
+> index 6f7ce7539a00..6079142422f8 100644
+> --- a/drivers/pinctrl/samsung/pinctrl-samsung.h
+> +++ b/drivers/pinctrl/samsung/pinctrl-samsung.h
+> @@ -185,10 +185,48 @@ struct samsung_pin_bank {
+>  };
+>
+>  /**
+> + * struct samsung_retention_data: runtime pin-bank retention control data.
+> + * @regs: array of PMU registers to control pad retention.
+> + * @nr_regs: number of registers in @regs array.
+> + * @value: value to store to registers to turn off retention.
+> + * @refcnt: atomic counter if retention control affects more than one bank.
+> + * @priv: retention control code private data
+> + * @on: platform specific callback to enter retention mode.
+> + * @off: platform specific callback to exit retention mode.
+> + **/
+> +struct samsung_retention_ctrl {
+> +       const u32       *regs;
+> +       int             nr_regs;
+> +       u32             value;
+> +       atomic_t        *refcnt;
+> +       void            *priv;
+> +       void            (*on)(struct samsung_pinctrl_drv_data *);
+> +       void            (*off)(struct samsung_pinctrl_drv_data *);
 
-Using the FW_VERSION parameter would be ideal, but some quick googling 
-on golden images indicates that they include firmware. Which might 
-introduce some more firmware variants?
+bikeshed: I think enable/disable is more commonly used for this kind
+of operations.
 
-Thanks,
-Chris
+Best regards,
+Tomasz
