@@ -1,10 +1,10 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v2 13/13] pinctrl: samsung: Replace syscore ops with standard
- platform device pm_ops
-Date: Tue, 17 Jan 2017 13:44:44 +0100
-Message-ID: <1484657084-26227-14-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH v2 05/13] pinctrl: samsung: Remove messages for failed memory
+ allocation
+Date: Tue, 17 Jan 2017 13:44:36 +0100
+Message-ID: <1484657084-26227-6-git-send-email-m.szyprowski@samsung.com>
 References: <1484657084-26227-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170117124503eucas1p1f63d709d794c82dcea8082dbb9c0fb3f@eucas1p1.samsung.com>
+ <CGME20170117124459eucas1p160494d6c7509e0d24bfcc73087492430@eucas1p1.samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 In-reply-to: <1484657084-26227-1-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
@@ -12,168 +12,160 @@ To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@v
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Once the dependency on PMU driver (for pad retention control) has been
-removed, there is no reason to use syscore_ops based suspend/resume.
-This patch replaces it with standard platform device pm_ops based solution.
+Memory subsystem already prints message about failed memory
+allocation, there is no need to do it in the drivers.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/pinctrl/samsung/pinctrl-samsung.c | 72 ++++++-------------------------
- 1 file changed, 14 insertions(+), 58 deletions(-)
+ drivers/pinctrl/samsung/pinctrl-exynos.c  |  8 ++------
+ drivers/pinctrl/samsung/pinctrl-s3c64xx.c | 12 +++---------
+ drivers/pinctrl/samsung/pinctrl-samsung.c | 24 ++++++------------------
+ 3 files changed, 11 insertions(+), 33 deletions(-)
 
+diff --git a/drivers/pinctrl/samsung/pinctrl-exynos.c b/drivers/pinctrl/samsung/pinctrl-exynos.c
+index 24814db251a7..bf753a596209 100644
+--- a/drivers/pinctrl/samsung/pinctrl-exynos.c
++++ b/drivers/pinctrl/samsung/pinctrl-exynos.c
+@@ -528,10 +528,8 @@ static int exynos_eint_wkup_init(struct samsung_pinctrl_drv_data *d)
+ 
+ 		weint_data = devm_kzalloc(dev, bank->nr_pins
+ 					* sizeof(*weint_data), GFP_KERNEL);
+-		if (!weint_data) {
+-			dev_err(dev, "could not allocate memory for weint_data\n");
++		if (!weint_data)
+ 			return -ENOMEM;
+-		}
+ 
+ 		for (idx = 0; idx < bank->nr_pins; ++idx) {
+ 			irq = irq_of_parse_and_map(bank->of_node, idx);
+@@ -559,10 +557,8 @@ static int exynos_eint_wkup_init(struct samsung_pinctrl_drv_data *d)
+ 
+ 	muxed_data = devm_kzalloc(dev, sizeof(*muxed_data)
+ 		+ muxed_banks*sizeof(struct samsung_pin_bank *), GFP_KERNEL);
+-	if (!muxed_data) {
+-		dev_err(dev, "could not allocate memory for muxed_data\n");
++	if (!muxed_data)
+ 		return -ENOMEM;
+-	}
+ 
+ 	irq_set_chained_handler_and_data(irq, exynos_irq_demux_eint16_31,
+ 					 muxed_data);
+diff --git a/drivers/pinctrl/samsung/pinctrl-s3c64xx.c b/drivers/pinctrl/samsung/pinctrl-s3c64xx.c
+index 4c632812ccff..f17890aa6e25 100644
+--- a/drivers/pinctrl/samsung/pinctrl-s3c64xx.c
++++ b/drivers/pinctrl/samsung/pinctrl-s3c64xx.c
+@@ -489,10 +489,8 @@ static int s3c64xx_eint_gpio_init(struct samsung_pinctrl_drv_data *d)
+ 
+ 	data = devm_kzalloc(dev, sizeof(*data)
+ 			+ nr_domains * sizeof(*data->domains), GFP_KERNEL);
+-	if (!data) {
+-		dev_err(dev, "failed to allocate handler data\n");
++	if (!data)
+ 		return -ENOMEM;
+-	}
+ 	data->drvdata = d;
+ 
+ 	bank = d->pin_banks;
+@@ -715,10 +713,8 @@ static int s3c64xx_eint_eint0_init(struct samsung_pinctrl_drv_data *d)
+ 		return -ENODEV;
+ 
+ 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
+-	if (!data) {
+-		dev_err(dev, "could not allocate memory for wkup eint data\n");
++	if (!data)
+ 		return -ENOMEM;
+-	}
+ 	data->drvdata = d;
+ 
+ 	for (i = 0; i < NUM_EINT0_IRQ; ++i) {
+@@ -751,10 +747,8 @@ static int s3c64xx_eint_eint0_init(struct samsung_pinctrl_drv_data *d)
+ 
+ 		ddata = devm_kzalloc(dev,
+ 				sizeof(*ddata) + nr_eints, GFP_KERNEL);
+-		if (!ddata) {
+-			dev_err(dev, "failed to allocate domain data\n");
++		if (!ddata)
+ 			return -ENOMEM;
+-		}
+ 		ddata->bank = bank;
+ 
+ 		bank->irq_domain = irq_domain_add_linear(bank->of_node,
 diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
-index 021abd7221f8..d79eadad6c5f 100644
+index 3bc925f61b71..b11e67e85460 100644
 --- a/drivers/pinctrl/samsung/pinctrl-samsung.c
 +++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
-@@ -29,7 +29,6 @@
- #include <linux/irqdomain.h>
- #include <linux/of_device.h>
- #include <linux/spinlock.h>
--#include <linux/syscore_ops.h>
+@@ -93,10 +93,8 @@ static int reserve_map(struct device *dev, struct pinctrl_map **map,
+ 		return 0;
  
- #include "../core.h"
- #include "pinctrl-samsung.h"
-@@ -49,9 +48,6 @@
- 	{ "samsung,pin-val", PINCFG_TYPE_DAT },
- };
- 
--/* Global list of devices (struct samsung_pinctrl_drv_data) */
--static LIST_HEAD(drvdata_list);
--
- static unsigned int pin_base;
- 
- static int samsung_get_group_count(struct pinctrl_dev *pctldev)
-@@ -1084,22 +1080,18 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, drvdata);
- 
--	/* Add to the global list */
--	list_add_tail(&drvdata->node, &drvdata_list);
--
- 	return 0;
- }
- 
- #ifdef CONFIG_PM
--
- /**
-- * samsung_pinctrl_suspend_dev - save pinctrl state for suspend for a device
-+ * samsung_pinctrl_suspend - save pinctrl state for suspend
-  *
-  * Save data for all banks handled by this device.
-  */
--static void samsung_pinctrl_suspend_dev(
--	struct samsung_pinctrl_drv_data *drvdata)
-+static int samsung_pinctrl_suspend(struct device *dev)
- {
-+	struct samsung_pinctrl_drv_data *drvdata = dev_get_drvdata(dev);
- 	int i;
- 
- 	for (i = 0; i < drvdata->nr_banks; i++) {
-@@ -1135,18 +1127,21 @@ static void samsung_pinctrl_suspend_dev(
- 		drvdata->suspend(drvdata);
- 	if (drvdata->retention_ctrl && drvdata->retention_ctrl->enable)
- 		drvdata->retention_ctrl->enable(drvdata);
-+
-+	return 0;
- }
- 
- /**
-- * samsung_pinctrl_resume_dev - restore pinctrl state from suspend for a device
-+ * samsung_pinctrl_resume - restore pinctrl state from suspend
-  *
-  * Restore one of the banks that was saved during suspend.
-  *
-  * We don't bother doing anything complicated to avoid glitching lines since
-  * we're called before pad retention is turned off.
-  */
--static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
-+static int samsung_pinctrl_resume(struct device *dev)
- {
-+	struct samsung_pinctrl_drv_data *drvdata = dev_get_drvdata(dev);
- 	int i;
- 
- 	if (drvdata->resume)
-@@ -1185,48 +1180,11 @@ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
- 
- 	if (drvdata->retention_ctrl && drvdata->retention_ctrl->disable)
- 		drvdata->retention_ctrl->disable(drvdata);
--}
--
--/**
-- * samsung_pinctrl_suspend - save pinctrl state for suspend
-- *
-- * Save data for all banks across all devices.
-- */
--static int samsung_pinctrl_suspend(void)
--{
--	struct samsung_pinctrl_drv_data *drvdata;
--
--	list_for_each_entry(drvdata, &drvdata_list, node) {
--		samsung_pinctrl_suspend_dev(drvdata);
+ 	new_map = krealloc(*map, sizeof(*new_map) * new_num, GFP_KERNEL);
+-	if (!new_map) {
+-		dev_err(dev, "krealloc(map) failed\n");
++	if (!new_map)
+ 		return -ENOMEM;
 -	}
  
- 	return 0;
- }
--
--/**
-- * samsung_pinctrl_resume - restore pinctrl state for suspend
-- *
-- * Restore data for all banks across all devices.
-- */
--static void samsung_pinctrl_resume(void)
--{
--	struct samsung_pinctrl_drv_data *drvdata;
--
--	list_for_each_entry_reverse(drvdata, &drvdata_list, node) {
--		samsung_pinctrl_resume_dev(drvdata);
+ 	memset(new_map + old_num, 0, (new_num - old_num) * sizeof(*new_map));
+ 
+@@ -133,10 +131,8 @@ static int add_map_configs(struct device *dev, struct pinctrl_map **map,
+ 
+ 	dup_configs = kmemdup(configs, num_configs * sizeof(*dup_configs),
+ 			      GFP_KERNEL);
+-	if (!dup_configs) {
+-		dev_err(dev, "kmemdup(configs) failed\n");
++	if (!dup_configs)
+ 		return -ENOMEM;
 -	}
--}
--
--#else
--#define samsung_pinctrl_suspend		NULL
--#define samsung_pinctrl_resume		NULL
- #endif
  
--static struct syscore_ops samsung_pinctrl_syscore_ops = {
--	.suspend	= samsung_pinctrl_suspend,
--	.resume		= samsung_pinctrl_resume,
--};
--
- static const struct of_device_id samsung_pinctrl_dt_match[] = {
- #ifdef CONFIG_PINCTRL_EXYNOS
- 	{ .compatible = "samsung,exynos3250-pinctrl",
-@@ -1268,25 +1226,23 @@ static void samsung_pinctrl_resume(void)
- };
- MODULE_DEVICE_TABLE(of, samsung_pinctrl_dt_match);
+ 	(*map)[*num_maps].type = PIN_MAP_TYPE_CONFIGS_GROUP;
+ 	(*map)[*num_maps].data.configs.group_or_pin = group;
+@@ -156,10 +152,8 @@ static int add_config(struct device *dev, unsigned long **configs,
  
-+static const struct dev_pm_ops samsung_pinctrl_pm_ops = {
-+	SET_LATE_SYSTEM_SLEEP_PM_OPS(samsung_pinctrl_suspend,
-+				     samsung_pinctrl_resume)
-+};
-+
- static struct platform_driver samsung_pinctrl_driver = {
- 	.probe		= samsung_pinctrl_probe,
- 	.driver = {
- 		.name	= "samsung-pinctrl",
- 		.of_match_table = samsung_pinctrl_dt_match,
- 		.suppress_bind_attrs = true,
-+		.pm = &samsung_pinctrl_pm_ops,
- 	},
- };
+ 	new_configs = krealloc(*configs, sizeof(*new_configs) * new_num,
+ 			       GFP_KERNEL);
+-	if (!new_configs) {
+-		dev_err(dev, "krealloc(configs) failed\n");
++	if (!new_configs)
+ 		return -ENOMEM;
+-	}
  
- static int __init samsung_pinctrl_drv_register(void)
- {
--	/*
--	 * Register syscore ops for save/restore of registers across suspend.
--	 * It's important to ensure that this driver is running at an earlier
--	 * initcall level than any arch-specific init calls that install syscore
--	 * ops that turn off pad retention (like exynos_pm_resume).
--	 */
--	register_syscore_ops(&samsung_pinctrl_syscore_ops);
--
- 	return platform_driver_register(&samsung_pinctrl_driver);
- }
- postcore_initcall(samsung_pinctrl_drv_register);
+ 	new_configs[old_num] = config;
+ 
+@@ -756,10 +750,8 @@ static struct samsung_pmx_func *samsung_pinctrl_create_functions(
+ 
+ 	functions = devm_kzalloc(dev, func_cnt * sizeof(*functions),
+ 					GFP_KERNEL);
+-	if (!functions) {
+-		dev_err(dev, "failed to allocate memory for function list\n");
++	if (!functions)
+ 		return ERR_PTR(-EINVAL);
+-	}
+ 	func = functions;
+ 
+ 	/*
+@@ -850,10 +842,8 @@ static int samsung_pinctrl_register(struct platform_device *pdev,
+ 
+ 	pindesc = devm_kzalloc(&pdev->dev, sizeof(*pindesc) *
+ 			drvdata->nr_pins, GFP_KERNEL);
+-	if (!pindesc) {
+-		dev_err(&pdev->dev, "mem alloc for pin descriptors failed\n");
++	if (!pindesc)
+ 		return -ENOMEM;
+-	}
+ 	ctrldesc->pins = pindesc;
+ 	ctrldesc->npins = drvdata->nr_pins;
+ 
+@@ -867,10 +857,8 @@ static int samsung_pinctrl_register(struct platform_device *pdev,
+ 	 */
+ 	pin_names = devm_kzalloc(&pdev->dev, sizeof(char) * PIN_NAME_LENGTH *
+ 					drvdata->nr_pins, GFP_KERNEL);
+-	if (!pin_names) {
+-		dev_err(&pdev->dev, "mem alloc for pin names failed\n");
++	if (!pin_names)
+ 		return -ENOMEM;
+-	}
+ 
+ 	/* for each pin, the name of the pin is pin-bank name + pin number */
+ 	for (bank = 0; bank < drvdata->nr_banks; bank++) {
 -- 
 1.9.1
