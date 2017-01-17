@@ -1,32 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/6] PM / Domains: Implement domain performance states
-Date: Tue, 17 Jan 2017 08:51:24 +0530
-Message-ID: <20170117032124.GH18062@vireshk-i7>
-References: <cover.1483439894.git.viresh.kumar@linaro.org>
- <20170116053007.GA15930@vireshk-i7>
- <CAJZ5v0itMc8tQa6pO5DkMH=6Ai-5CFXaMTPov+2D4B3SXmy9bw@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v3 0/6] BQ24190 charger fixes
+Date: Tue, 17 Jan 2017 04:26:46 +0100
+Message-ID: <20170117032646.lf7hfrjsektfsxpk@earth>
+References: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rpdvajlutwckbblv"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.136]:39846 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750787AbdAQD0w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Jan 2017 22:26:52 -0500
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0itMc8tQa6pO5DkMH=6Ai-5CFXaMTPov+2D4B3SXmy9bw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Lina Iyer <lina.iyer@linaro.org>, "Nayak, Rajendra" <rnayak@codeaurora.org>
+In-Reply-To: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-On 16-01-17, 22:47, Rafael J. Wysocki wrote:
-> http://marc.info/?l=linux-pm&m=148410629024194&w=2
-> 
-> Pretty please!
-> 
-> I will start processing things when I'm back (which probably means the
-> end of the next week realistically).
 
-And I was wondering why aren't you applying any of my cpufreq patches now a days
-:)
+--rpdvajlutwckbblv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The ping was more for other stakeholders: Ulf, Kevin, Stephen and Rob though.
+Hi,
 
--- 
-viresh
+On Mon, Jan 16, 2017 at 06:28:28PM -0800, Liam Breck wrote:
+> These are misc fixes, tested on a custom OMAP3 board.
+>=20
+> Changes in v3
+>=20
+> #1 fixes figure ID to 37
+> #5 fixes line over 80 chars
+> #* adds Acked-by Tony & Mark
+
+You forgot to fix the whitespace issues Mark mentioned, also
+please use "git send-mail" or make sure, that your patchset
+is threaded (patch 1-6 are replies to "patch" 0) and the
+actual patch is inline and can be applied using "git am"
+(which currently complains).
+
+-- Sebastian
+
+--rpdvajlutwckbblv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9jvMACgkQ2O7X88g7
++po4Aw//fr6aKQ6beHLGf9aoLjaawDNrMeGrZOJcT9PcZTV9aVJTw1sWNsETW487
+vC8PSYA05lw6gyWRW6AuMJCFO1GsUhQYg69gwMQKzPIGBYhhoMKDeiBeKXKgBcLq
+s/qfrleK7GsRxL1awTBJt1/v4wAfYzyvloT6Pbbxhju0uRQ6cn7S46aoLpxTAC/D
+c1x4PfV8X2uickakGXPXTpQGifJp3HKsAdbW+/N71RWR8wK1gpMg5LWfK+QIk4fH
+b/g9NmgNpBWJrku39ZXNQ4Akgd/Ke3uBQgyFfLOWFUG64eNdsCtWANtiVi7Ea6+0
+Um6N7nQ3BeC0/vEP6IkOBmLU0D1oONKXStPb5ihk1Q8kdrDPr2WddOuScMtefhX/
+vKVMt6GYCJX70Jm7dsY1JAHeg23CO/Wja1Eqs+ryGzbF921IYW+6Ujv8XsbH0FSD
+TiZRaqEPE2SBuzbR1UXFz/DuTbGCm5WI6KLvb2EZI7I72soE3Z3xnq+JmQ4hvqCE
+w1U6zfYG9X5bpXXrhSgeI8b7yadhD7tqp7BjZvrsAbdtP1/E/MarEkZcB9L95MEx
+bdutHfDeQ/2TOnGgLFjHNSv4k82eIuohxJV+9PIb+lN892KCCHmk2KEZg6chAvjb
+FgZFMTq0p1tM7/oFuDKNsI2aNR/cf+cHNZ2mbZeqqRDWFZbkqZE=
+=HZ97
+-----END PGP SIGNATURE-----
+
+--rpdvajlutwckbblv--
