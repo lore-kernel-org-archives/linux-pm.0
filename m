@@ -1,95 +1,91 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: Calling device_init_wakeup() on driver removal
-Date: Mon, 16 Jan 2017 20:37:36 -0800
-Message-ID: <9bf96934-0d22-e10b-f5cb-e3caf9db9c06@roeck-us.net>
-References: <b4f92201-77f6-4a15-81cf-8f2f384d0c1f@roeck-us.net>
- <3852101.qr97BxrLhj@aspire.rjw.lan>
- <d50f9cf4-99e8-b95e-dc6c-317b06d75cdc@roeck-us.net>
- <CAJZ5v0hUPuG=L=vaFuoqSPDG-jt+iHVJp3zCx9Z8svYo=A-txQ@mail.gmail.com>
+From: Tomasz Figa <tomasz.figa@gmail.com>
+Subject: Re: [PATCH 01/12] soc: samsung: pmu: Use common device name to let
+ others to find it easily
+Date: Tue, 17 Jan 2017 13:39:46 +0900
+Message-ID: <CA+Ln22F6Lnm6LkOO-X9ceqYknxXmuwCBowJzDGACmZzQCBj13w@mail.gmail.com>
+References: <CGME20170116064523eucas1p18a55f951566df5ddd978364486154931@eucas1p1.samsung.com>
+ <1484549107-5957-1-git-send-email-m.szyprowski@samsung.com> <1484549107-5957-2-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hUPuG=L=vaFuoqSPDG-jt+iHVJp3zCx9Z8svYo=A-txQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35065 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751152AbdAQEjr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 23:39:47 -0500
+In-Reply-To: <1484549107-5957-2-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 01/16/2017 01:50 PM, Rafael J. Wysocki wrote:
-> On Sun, Jan 15, 2017 at 4:23 PM, Guenter Roeck <linux@roeck-us.net> wrote:
->> On 01/15/2017 06:49 AM, Rafael J. Wysocki wrote:
->>>
->>> On Saturday, January 14, 2017 08:46:05 PM Guenter Roeck wrote:
->>>>
->>>> Hi folks,
->>>
->>>
->>> Hi,
->>>
->>>> while looking through driver initialization and removal functions, I
->>>> noticed that many drivers
->>>> call device_init_wakeup(dev, false) in the removal function. Given that
->>>> the driver is about
->>>> to be removed, that doesn't make much sense to me, especially since
->>>> device_wakeup_disable()
->>>> is called from device_pm_remove() anyway.
->>>>
->>>> Is it safe to assume that all those calls can be removed, or is there a
->>>> possible reason for
->>>> keeping them around ?
->>>
->>>
->>> Removing them automatically might break things, because
->>> device_init_wakeup(dev, false)
->>> also clears the power.can_wakeup flag and removes the "wakeup" attribute
->>> from sysfs.
->>>
->>
->> I had the same concern, but I concluded that the wakeup attribute should be
->> removed
->> automatically, since it is added with sysfs_merge_group(), and the matching
->> unmerge call
->> is also made in dpm_sysfs_remove(). power.can_wakeup is part of the device
->> structure,
->> which is in the process of being removed, so I am not sure I understand how
->> that can be
->> problematic.
->
-> That's when the device goes away, but ->remove() is invoked when the
-> driver goes away too and that's the more common case (by far IMO).
->
-Confused ... ah, no, I am using sloppy terminology again. Sorry for
-that. When I talked about "driver remove function, I meant the remove
-function defined in 'struct platform_driver' or 'struct i2c_driver',
-which is the device remove function, not the driver remove function.
-I am not talking about functions like platform_driver_unregister()
-or i2c_del_driver().
+Hi Marek,
 
->>> I guess they could be removed safely in the majority of cases, though.
->>
->>
->> How would one decide if it is needed ? I see some drivers call it on remove,
->> but others
->> don't. I don't see a clear pattern; unless I am missing something, it seems
->> to be
->> more or less random.
+2017-01-16 15:44 GMT+09:00 Marek Szyprowski <m.szyprowski@samsung.com>:
+> This patch always set device name to "exynos-pmu" to let other drivers to
+> find PMU device easily. This is done mainly to get regmap to access PMU
+> registers from other drivers. This way it can be avoided to add phandle to
+> the PMU node to almost all drivers in the SoC just to get a regmap access
+> in the drivers. PMU is something like a SoC wide service, so there is no
+> point modeling it as hardware dependency for all devices in device tree.
 >
-> My guess would be that drivers calling it don't want the wakeup
-> capability to be exposed after they have gone away.  Most likely these
-> are the ones that expose the wakeup attribute on probe.
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/soc/samsung/exynos-pmu.c       |  1 +
+>  include/linux/soc/samsung/exynos-pmu.h | 19 +++++++++++++++++++
+>  2 files changed, 20 insertions(+)
 >
-> IMO the rule should be that whoever exposes the wakeup attribute one
-> init, should also hide it on cleanup.
+> diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
+> index 0acdfd82e751..63bb471845cb 100644
+> --- a/drivers/soc/samsung/exynos-pmu.c
+> +++ b/drivers/soc/samsung/exynos-pmu.c
+> @@ -120,6 +120,7 @@ static int exynos_pmu_probe(struct platform_device *pdev)
+>                 pmu_context->pmu_data->pmu_init();
 >
-The probe function is a device probe function. Are you saying that calling
-device_init_wakeup(dev, false) in the device remove function is necessary
-if the probe function called device_init_wakeup(dev, true) ?
+>         platform_set_drvdata(pdev, pmu_context);
+> +       dev_set_name(dev, EXYNOS_PMU_DEV_NAME);
+>
+>         dev_dbg(dev, "Exynos PMU Driver probe done\n");
+>         return 0;
+> diff --git a/include/linux/soc/samsung/exynos-pmu.h b/include/linux/soc/samsung/exynos-pmu.h
+> index e2e9de1acc5b..90d9205805ea 100644
+> --- a/include/linux/soc/samsung/exynos-pmu.h
+> +++ b/include/linux/soc/samsung/exynos-pmu.h
+> @@ -12,6 +12,10 @@
+>  #ifndef __LINUX_SOC_EXYNOS_PMU_H
+>  #define __LINUX_SOC_EXYNOS_PMU_H
+>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +
+>  enum sys_powerdown {
+>         SYS_AFTR,
+>         SYS_LPA,
+> @@ -21,4 +25,19 @@ enum sys_powerdown {
+>
+>  extern void exynos_sys_powerdown_conf(enum sys_powerdown mode);
+>
+> +#define EXYNOS_PMU_DEV_NAME "exynos-pmu"
+> +
+> +static inline struct regmap *exynos_get_pmu_regs(void)
+> +{
+> +       struct device *dev = bus_find_device_by_name(&platform_bus_type, NULL,
+> +                                                    EXYNOS_PMU_DEV_NAME);
+> +       if (dev) {
+> +               struct regmap *regs = syscon_node_to_regmap(dev->of_node);
+> +               put_device(dev);
+> +               if (!IS_ERR(regs))
+> +                       return regs;
+> +       }
+> +       return NULL;
 
-That is exactly what I am wondering. Because, if so, several drivers violate
-that. Also, I don't really see the point because the device structure is in
-the process of being removed (and I don't see anything in the code that isn't
-already cleaned up).
+As discussed offline, since this function relies on the PMU driver
+probing, we need to defer here if someone calls this function before
+that. Since PMU is something that should be assumed to be available in
+any Exynos system (it controls to many critical aspects of the SoC), I
+think we can simply return ERR_PTR(-EDEFER_PROBE) here instead of
+NULL. Maybe also a pr_debug() before deferring could be useful to
+debug PMU probe failures.
 
-Thanks,
-Guenter
+Best regards,
+Tomasz
