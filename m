@@ -1,78 +1,73 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v3 3/6] power: bq24190_charger: Install irq_handler_thread()
- at end of probe()
-Date: Mon, 16 Jan 2017 18:30:00 -0800
-Message-ID: <CAKvHMgR-HPQUV=S2tiz6HidmA8WbqBoUJDFuWQ4dpvcU7H9oRg@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH v2 4/6] power: bq24190_charger: Call
+ power_supply_changed() for relevant component
+Date: Mon, 16 Jan 2017 18:30:59 -0800
+Message-ID: <20170117023058.GD7399@atomide.com>
+References: <CAKvHMgQHAfRUVp8ka_Y_h0TC97U6euMrq1+Fy5+zq510jpoaOQ@mail.gmail.com>
+ <20170116183125.GE27262@animalcreek.com>
+ <CAKvHMgQUf+u=paD6y2iMm=tuEw0LH87CZprL=fJUQpL6pt4WWQ@mail.gmail.com>
+ <20170117015424.GB2926@animalcreek.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary=001a114a6d76bb661b054641136c
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:36269 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750917AbdAQCaC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 21:30:02 -0500
-Received: by mail-io0-f196.google.com with SMTP id q20so14387980ioi.3
-        for <linux-pm@vger.kernel.org>; Mon, 16 Jan 2017 18:30:01 -0800 (PST)
+Received: from muru.com ([72.249.23.125]:57852 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750827AbdAQCbo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Jan 2017 21:31:44 -0500
+Content-Disposition: inline
+In-Reply-To: <20170117015424.GB2926@animalcreek.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: Mark Greer <mgreer@animalcreek.com>
+Cc: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
---001a114a6d76bb661b054641136c
-Content-Type: text/plain; charset=UTF-8
+* Mark Greer <mgreer@animalcreek.com> [170116 17:55]:
+> On Mon, Jan 16, 2017 at 11:55:22AM -0800, Liam Breck wrote:
+> > On Mon, Jan 16, 2017 at 10:31 AM, Mark Greer <mgreer@animalcreek.com> wrote:
+> > > On Sun, Jan 15, 2017 at 10:08:04PM -0800, Liam Breck wrote:
+> > >>
+> > >
+> > >> We wrongly get uevents for bq24190-charger and bq24190-battery on every
+> > >> register change.
+> > >>
+> > >> Fix by checking the association with charger and battery before
+> > >> emitting uevent(s).
+> > >>
+> > >> Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
+> > >> Cc: Mark A. Greer <mgreer@animalcreek.com>
+> > >> Cc: Matt Ranostay <matt@ranostay.consulting>
+> > >> Cc: Tony Lindgren <tony@atomide.com>
+> > >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> > >> ---
+> > >>  drivers/power/supply/bq24190_charger.c | 50 +++++++++++++++++++---------------
+> > >>  1 file changed, 27 insertions(+), 23 deletions(-)
+> > >>
+> > >> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> > >> index 62194d8..ba5a5b2 100644
+> > >> --- a/drivers/power/supply/bq24190_charger.c
+> > >> +++ b/drivers/power/supply/bq24190_charger.c
+> > >
+> > >> @@ -1225,8 +1227,12 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+> > >>                                       ret);
+> > >>               }
+> > >>
+> > >> +             if ((bdi->ss_reg & battery_mask_ss) != (ss_reg & battery_mask_ss))
+> > >> +                     alert_battery = true;
+> > >> +             if ((bdi->ss_reg & ~battery_mask_ss) != (ss_reg & ~battery_mask_ss))
+> > >
+> > > Lines are > 80 characters. Please break up.
+> > 
+> > I did this deliberately, because the same logic appears for f_reg in
+> > that function, and this way you can see that at a glance.
+> 
+> That's because those lines are <= 80 chars.  :)
+> 
+> > My research on 80-char limit found that it's not a hard rule.
+> 
+> Section 2 of Documentation/process/coding-style.rst makes it pretty clear
+> along with exceptions.
 
+Yeah and it's a good idea to avoid anything that can cause extra discussion
+for nothing ;)
 
-
---001a114a6d76bb661b054641136c
-Content-Type: text/plain; charset=US-ASCII; name="patch-v3-3of6.txt"
-Content-Disposition: attachment; filename="patch-v3-3of6.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_iy0uok5d0
-
-VGhlIGRldmljZSBzcGVjaWZpYyBkYXRhIGlzIG5vdCBmdWxseSBpbml0aWFsaXplZCBvbg0KcmVx
-dWVzdF90aHJlYWRlZF9pcnEoKS4gVGhpcyBtYXkgY2F1c2UgYSBjcmFzaCB3aGVuIHRoZSBJUlEg
-aGFuZGxlcg0KdHJpZXMgdG8gcmVmZXJlbmNlIHRoZW0uDQoNCkZpeCB0aGUgaXNzdWUgYnkgaW5z
-dGFsbGluZyBJUlEgaGFuZGxlciBhdCB0aGUgZW5kIG9mIHRoZSBwcm9iZS4NCg0KRml4ZXM6IGQ3
-YmYzNTNmZDBhYTMgKCJicTI0MTkwX2NoYXJnZXI6IEFkZCBzdXBwb3J0IGZvciBUSSBCUTI0MTkw
-IEJhdHRlcnkgQ2hhcmdlciIpDQpDYzogTWF0dCBSYW5vc3RheSA8bWF0dEByYW5vc3RheS5jb25z
-dWx0aW5nPg0KU2lnbmVkLW9mZi1ieTogTGlhbSBCcmVjayA8a2VybmVsQG5ldHdvcmtpbXByb3Yu
-bmV0Pg0KQWNrZWQtYnk6IE1hcmsgR3JlZXIgPG1ncmVlckBhbmltYWxjcmVlay5jb20+DQpBY2tl
-ZC1ieTogVG9ueSBMaW5kZ3JlbiA8dG9ueUBhdG9taWRlLmNvbT4NCi0tLQ0KIGRyaXZlcnMvcG93
-ZXIvc3VwcGx5L2JxMjQxOTBfY2hhcmdlci5jIHwgMzUgKysrKysrKysrKysrKysrKy0tLS0tLS0t
-LS0tLS0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCAxOSBpbnNlcnRpb25zKCspLCAxNiBkZWxldGlvbnMo
-LSkNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93ZXIvc3VwcGx5L2JxMjQxOTBfY2hhcmdlci5j
-IGIvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyNDE5MF9jaGFyZ2VyLmMNCmluZGV4IGI1MWVhYzEu
-LjU0Yzg5NTIgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3Bvd2VyL3N1cHBseS9icTI0MTkwX2NoYXJn
-ZXIuYw0KKysrIGIvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyNDE5MF9jaGFyZ2VyLmMNCkBAIC0x
-MzkyLDIyICsxMzkyLDEzIEBAIHN0YXRpYyBpbnQgYnEyNDE5MF9wcm9iZShzdHJ1Y3QgaTJjX2Ns
-aWVudCAqY2xpZW50LA0KIAkJcmV0dXJuIC1FSU5WQUw7DQogCX0NCiANCi0JcmV0ID0gZGV2bV9y
-ZXF1ZXN0X3RocmVhZGVkX2lycShkZXYsIGJkaS0+aXJxLCBOVUxMLA0KLQkJCWJxMjQxOTBfaXJx
-X2hhbmRsZXJfdGhyZWFkLA0KLQkJCUlSUUZfVFJJR0dFUl9GQUxMSU5HIHwgSVJRRl9PTkVTSE9U
-LA0KLQkJCSJicTI0MTkwLWNoYXJnZXIiLCBiZGkpOw0KLQlpZiAocmV0IDwgMCkgew0KLQkJZGV2
-X2VycihkZXYsICJDYW4ndCBzZXQgdXAgaXJxIGhhbmRsZXJcbiIpOw0KLQkJZ290byBvdXQxOw0K
-LQl9DQotDQogCXBtX3J1bnRpbWVfZW5hYmxlKGRldik7DQogCXBtX3J1bnRpbWVfcmVzdW1lKGRl
-dik7DQogDQogCXJldCA9IGJxMjQxOTBfaHdfaW5pdChiZGkpOw0KIAlpZiAocmV0IDwgMCkgew0K
-IAkJZGV2X2VycihkZXYsICJIYXJkd2FyZSBpbml0IGZhaWxlZFxuIik7DQotCQlnb3RvIG91dDI7
-DQorCQlnb3RvIG91dDE7DQogCX0NCiANCiAJY2hhcmdlcl9jZmcuZHJ2X2RhdGEgPSBiZGk7DQpA
-QCAtMTQxOCw3ICsxNDA5LDcgQEAgc3RhdGljIGludCBicTI0MTkwX3Byb2JlKHN0cnVjdCBpMmNf
-Y2xpZW50ICpjbGllbnQsDQogCWlmIChJU19FUlIoYmRpLT5jaGFyZ2VyKSkgew0KIAkJZGV2X2Vy
-cihkZXYsICJDYW4ndCByZWdpc3RlciBjaGFyZ2VyXG4iKTsNCiAJCXJldCA9IFBUUl9FUlIoYmRp
-LT5jaGFyZ2VyKTsNCi0JCWdvdG8gb3V0MjsNCisJCWdvdG8gb3V0MTsNCiAJfQ0KIA0KIAliYXR0
-ZXJ5X2NmZy5kcnZfZGF0YSA9IGJkaTsNCkBAIC0xNDI3LDI3ICsxNDE4LDM5IEBAIHN0YXRpYyBp
-bnQgYnEyNDE5MF9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50LA0KIAlpZiAoSVNfRVJS
-KGJkaS0+YmF0dGVyeSkpIHsNCiAJCWRldl9lcnIoZGV2LCAiQ2FuJ3QgcmVnaXN0ZXIgYmF0dGVy
-eVxuIik7DQogCQlyZXQgPSBQVFJfRVJSKGJkaS0+YmF0dGVyeSk7DQotCQlnb3RvIG91dDM7DQor
-CQlnb3RvIG91dDI7DQogCX0NCiANCiAJcmV0ID0gYnEyNDE5MF9zeXNmc19jcmVhdGVfZ3JvdXAo
-YmRpKTsNCiAJaWYgKHJldCkgew0KIAkJZGV2X2VycihkZXYsICJDYW4ndCBjcmVhdGUgc3lzZnMg
-ZW50cmllc1xuIik7DQorCQlnb3RvIG91dDM7DQorCX0NCisNCisJcmV0ID0gZGV2bV9yZXF1ZXN0
-X3RocmVhZGVkX2lycShkZXYsIGJkaS0+aXJxLCBOVUxMLA0KKwkJCWJxMjQxOTBfaXJxX2hhbmRs
-ZXJfdGhyZWFkLA0KKwkJCUlSUUZfVFJJR0dFUl9GQUxMSU5HIHwgSVJRRl9PTkVTSE9ULA0KKwkJ
-CSJicTI0MTkwLWNoYXJnZXIiLCBiZGkpOw0KKwlpZiAocmV0IDwgMCkgew0KKwkJZGV2X2Vycihk
-ZXYsICJDYW4ndCBzZXQgdXAgaXJxIGhhbmRsZXJcbiIpOw0KIAkJZ290byBvdXQ0Ow0KIAl9DQog
-DQogCXJldHVybiAwOw0KIA0KIG91dDQ6DQotCXBvd2VyX3N1cHBseV91bnJlZ2lzdGVyKGJkaS0+
-YmF0dGVyeSk7DQorCWJxMjQxOTBfc3lzZnNfcmVtb3ZlX2dyb3VwKGJkaSk7DQorDQogb3V0MzoN
-Ci0JcG93ZXJfc3VwcGx5X3VucmVnaXN0ZXIoYmRpLT5jaGFyZ2VyKTsNCisJcG93ZXJfc3VwcGx5
-X3VucmVnaXN0ZXIoYmRpLT5iYXR0ZXJ5KTsNCisNCiBvdXQyOg0KLQlwbV9ydW50aW1lX2Rpc2Fi
-bGUoZGV2KTsNCisJcG93ZXJfc3VwcGx5X3VucmVnaXN0ZXIoYmRpLT5jaGFyZ2VyKTsNCisNCiBv
-dXQxOg0KKwlwbV9ydW50aW1lX2Rpc2FibGUoZGV2KTsNCiAJaWYgKGJkaS0+Z3Bpb19pbnQpDQog
-CQlncGlvX2ZyZWUoYmRpLT5ncGlvX2ludCk7DQotDQogCXJldHVybiByZXQ7DQogfQ0KIA0K
---001a114a6d76bb661b054641136c--
+Tony
