@@ -1,66 +1,153 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v3 0/6] BQ24190 charger fixes
-Date: Tue, 17 Jan 2017 04:26:46 +0100
-Message-ID: <20170117032646.lf7hfrjsektfsxpk@earth>
-References: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
+Subject: Re: [PATCH 17/22] power: supply: add battery driver for AXP20X and
+ AXP22X PMICs
+Date: Tue, 17 Jan 2017 04:46:01 +0100
+Message-ID: <20170117034601.wevqblqiwrerpmal@earth>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-18-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rpdvajlutwckbblv"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:39846 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750787AbdAQD0w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Jan 2017 22:26:52 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============2933949046944896703=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170102163723.7939-18-quentin.schulz@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, jic23@kernel.org, icenowy@aosc.xyz
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
 
---rpdvajlutwckbblv
-Content-Type: text/plain; charset=us-ascii
+--===============2933949046944896703==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="7mjxj5dt3uccvr4c"
+Content-Disposition: inline
+
+
+--7mjxj5dt3uccvr4c
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Quentin,
 
-On Mon, Jan 16, 2017 at 06:28:28PM -0800, Liam Breck wrote:
-> These are misc fixes, tested on a custom OMAP3 board.
->=20
-> Changes in v3
->=20
-> #1 fixes figure ID to 37
-> #5 fixes line over 80 chars
-> #* adds Acked-by Tony & Mark
+Just a couple of small things in this patch.
 
-You forgot to fix the whitespace issues Mark mentioned, also
-please use "git send-mail" or make sure, that your patchset
-is threaded (patch 1-6 are replies to "patch" 0) and the
-actual patch is inline and can be applied using "git am"
-(which currently complains).
+On Mon, Jan 02, 2017 at 05:37:17PM +0100, Quentin Schulz wrote:
+> [...]
+> +	case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +		ret =3D regmap_read(axp20x_batt->regmap, AXP20X_PWR_INPUT_STATUS,
+> +				  &reg);
+> +		if (ret)
+> +			return ret;
+> +
+> +		if (reg & AXP20X_PWR_STATUS_BAT_CHARGING)
+> +			chan =3D axp20x_batt->batt_chrg_i;
+> +		else
+> +			chan =3D axp20x_batt->batt_dischrg_i;
+> +
+> +		ret =3D iio_read_channel_processed(chan, &val->intval);
+> +		if (ret)
+> +			return ret;
+> +
+> +		/*
+> +		 * IIO framework gives mV but Power Supply framework gives =B5V.
+> +		 */
+
+Nit: Volt -> Ampere
+
+> +		val->intval *=3D 1000;
+> +		break;
+>
+> [...]
+>
+> +static int axp20x_power_probe(struct platform_device *pdev)
+> +{
+> +	struct axp20x_dev *axp20x =3D dev_get_drvdata(pdev->dev.parent);
+> +	struct axp20x_batt_ps *axp20x_batt;
+> +	struct power_supply_config psy_cfg =3D {};
+> +
+> +	axp20x_batt =3D devm_kzalloc(&pdev->dev, sizeof(*axp20x_batt),
+> +				   GFP_KERNEL);
+> +	if (!axp20x_batt)
+> +		return -ENOMEM;
+> +
+> +	axp20x_batt->batt_v =3D devm_iio_channel_get(&pdev->dev, "batt_v");
+> +	if (IS_ERR(axp20x_batt->batt_v)) {
+> +		if (PTR_ERR(axp20x_batt->batt_v) =3D=3D -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(axp20x_batt->batt_v);
+> +	}
+> +
+> +	axp20x_batt->batt_chrg_i =3D devm_iio_channel_get(&pdev->dev,
+> +							"batt_chrg_i");
+> +	if (IS_ERR(axp20x_batt->batt_chrg_i)) {
+> +		if (PTR_ERR(axp20x_batt->batt_chrg_i) =3D=3D -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(axp20x_batt->batt_chrg_i);
+> +	}
+> +
+> +	axp20x_batt->batt_dischrg_i =3D devm_iio_channel_get(&pdev->dev,
+> +							   "batt_dischrg_i");
+> +	if (IS_ERR(axp20x_batt->batt_dischrg_i)) {
+> +		if (PTR_ERR(axp20x_batt->batt_dischrg_i) =3D=3D -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(axp20x_batt->batt_dischrg_i);
+> +	}
+> +
+> +	axp20x_batt->regmap =3D axp20x->regmap;
+> +	platform_set_drvdata(pdev, axp20x_batt);
+
+Please use drv_get_regmap(pdev->dev.parent, NULL) instead (and drop
+axp20x).
+
+> +	psy_cfg.drv_data =3D axp20x_batt;
+> +	psy_cfg.of_node =3D pdev->dev.of_node;
+> +
+> +	axp20x_batt->axp_id =3D (int)of_device_get_match_data(&pdev->dev);
+
+use (uintptr_t) to avoid compiler warnings on systems with sizeof
+int !=3D sizeof ptr.
 
 -- Sebastian
 
---rpdvajlutwckbblv
+--7mjxj5dt3uccvr4c
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9jvMACgkQ2O7X88g7
-+po4Aw//fr6aKQ6beHLGf9aoLjaawDNrMeGrZOJcT9PcZTV9aVJTw1sWNsETW487
-vC8PSYA05lw6gyWRW6AuMJCFO1GsUhQYg69gwMQKzPIGBYhhoMKDeiBeKXKgBcLq
-s/qfrleK7GsRxL1awTBJt1/v4wAfYzyvloT6Pbbxhju0uRQ6cn7S46aoLpxTAC/D
-c1x4PfV8X2uickakGXPXTpQGifJp3HKsAdbW+/N71RWR8wK1gpMg5LWfK+QIk4fH
-b/g9NmgNpBWJrku39ZXNQ4Akgd/Ke3uBQgyFfLOWFUG64eNdsCtWANtiVi7Ea6+0
-Um6N7nQ3BeC0/vEP6IkOBmLU0D1oONKXStPb5ihk1Q8kdrDPr2WddOuScMtefhX/
-vKVMt6GYCJX70Jm7dsY1JAHeg23CO/Wja1Eqs+ryGzbF921IYW+6Ujv8XsbH0FSD
-TiZRaqEPE2SBuzbR1UXFz/DuTbGCm5WI6KLvb2EZI7I72soE3Z3xnq+JmQ4hvqCE
-w1U6zfYG9X5bpXXrhSgeI8b7yadhD7tqp7BjZvrsAbdtP1/E/MarEkZcB9L95MEx
-bdutHfDeQ/2TOnGgLFjHNSv4k82eIuohxJV+9PIb+lN892KCCHmk2KEZg6chAvjb
-FgZFMTq0p1tM7/oFuDKNsI2aNR/cf+cHNZ2mbZeqqRDWFZbkqZE=
-=HZ97
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9k3YACgkQ2O7X88g7
++ppitg//TS1PXC2tmqPc/8SQ5gvQCTIrQHnkxw3xyXjKK+kFntQr5qSnczVQAJLS
+YFEcj74yd4T1sI/mYKKGPwJ4/kf5hZlUzEolvE7afAiCjcO+HYCXXE7Im5g055R5
+6QpJBCnEsBZSXxeXPkNgfFGb8enrXtvrr3S1eqnxUXTHBpXxy5zrKx3zZfI2lnLd
+TxsrFlGRMsC9kOn/rzDq3uQiKAySQEMJskO1fai7VNEztDC0n4Fy1MaeCbAmSLbY
+ovBHDWtyODkwAwWPg465qsfEwmB6CXS1ookCTnqRUQLakIQt6juMQ5pgGXkQJbbj
+b3ZpGBKRZ7hBnT5lH2iKXc4P6qag8E5Pq/1YyBpRNBtX1TgFPq4ab5ZEpN3JxuTO
+M08wOqVO7Z/TKUnWB4Qp5qVSU+xMt7WBDsO3mErxTSvsce0RnlZylYi8FYpoqH4V
+0mtRgXn1QLy/rPeVi47OmWCimFuwxxg5dF2POjV9Ogxo2fxpxtLVRPbuM08aYUjk
+GUvPvBfHRhT0koqQ3LuGSZREMENoAdJ47Nieq9Z8AJB3S5HZf0UilSdWc3w7agbP
+y15G4t977idLB0c1EIemc9Exj5dznbPV5znlxYHM5sQ/hzmveBihUQS2Vw/Nd7y7
+DAdAirVXlOy/WpLMCGhqmRiBotfVuJSU9SLUSJgE2oW0x/ukReo=
+=2MEG
 -----END PGP SIGNATURE-----
 
---rpdvajlutwckbblv--
+--7mjxj5dt3uccvr4c--
+
+
+--===============2933949046944896703==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============2933949046944896703==--
