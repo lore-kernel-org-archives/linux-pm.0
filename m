@@ -1,47 +1,60 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH 0/4] selftest: cpufreq: Add support for cpufreq framework
-Date: Tue, 17 Jan 2017 14:00:00 -0700
-Message-ID: <ca6812e9-88be-17b0-be3c-47681ab0653b@kernel.org>
-References: <cover.1484289212.git.viresh.kumar@linaro.org>
- <bde954c8-d581-aa9d-a64d-2ca94e794f2f@kernel.org>
- <20170116034815.GJ9953@vireshk-i7>
-Reply-To: shuah@kernel.org
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: [PATCH v2 2/2] power/reset: at91-reset: remove leftover
+ platform_device_id
+Date: Wed, 18 Jan 2017 00:07:38 +0100
+Message-ID: <20170117230738.28257-2-alexandre.belloni@free-electrons.com>
+References: <20170117230738.28257-1-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from resqmta-po-08v.sys.comcast.net ([96.114.154.167]:58401 "EHLO
-        resqmta-po-08v.sys.comcast.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751015AbdAQVCD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 16:02:03 -0500
-In-Reply-To: <20170116034815.GJ9953@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170117230738.28257-1-alexandre.belloni@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>
 
-On 01/15/2017 08:48 PM, Viresh Kumar wrote:
-> On 13-01-17, 15:35, Shuah Khan wrote:
->> Could you please add .gitignore for generated files. You can
->> send that as a separate patch and don't have to resend the
->> series.
-> 
-> Hi Shuah,
-> 
->>>  tools/testing/selftests/Makefile                 |   1 +
->>>  tools/testing/selftests/cpufreq/Makefile         |   8 +
->>>  tools/testing/selftests/cpufreq/cpu.sh           |  84 ++++++++
->>>  tools/testing/selftests/cpufreq/cpufreq.sh       | 241 ++++++++++++++++++++++
->>>  tools/testing/selftests/cpufreq/governor.sh      | 153 ++++++++++++++
->>>  tools/testing/selftests/cpufreq/main.sh          | 194 ++++++++++++++++++
->>>  tools/testing/selftests/cpufreq/module.sh        | 243 +++++++++++++++++++++++
->>>  tools/testing/selftests/cpufreq/special-tests.sh | 115 +++++++++++
-> 
-> All I have are .sh files and no intermediate files are generated.
-> Perhaps I don't need any .gitignore entries ?
-> 
+commit eacd8d09db7f ("power/reset: at91-reset: remove useless
+at91_reset_platform_probe()") removed non DT probe support but forgot to
+remove the now useless id_table. Do that now.
 
-Never mind. There is no need to do .gitignore.
+Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+---
+ drivers/power/reset/at91-reset.c | 8 --------
+ 1 file changed, 8 deletions(-)
 
-thanks,
--- Shuah
+diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-reset.c
+index bb2588f0a4c7..b99769f8ab15 100644
+--- a/drivers/power/reset/at91-reset.c
++++ b/drivers/power/reset/at91-reset.c
+@@ -248,20 +248,12 @@ static int __exit at91_reset_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static const struct platform_device_id at91_reset_plat_match[] = {
+-	{ "at91-sam9260-reset", (unsigned long)at91sam9260_restart },
+-	{ "at91-sam9g45-reset", (unsigned long)at91sam9g45_restart },
+-	{ /* sentinel */ }
+-};
+-MODULE_DEVICE_TABLE(platform, at91_reset_plat_match);
+-
+ static struct platform_driver at91_reset_driver = {
+ 	.remove = __exit_p(at91_reset_remove),
+ 	.driver = {
+ 		.name = "at91-reset",
+ 		.of_match_table = at91_reset_of_match,
+ 	},
+-	.id_table = at91_reset_plat_match,
+ };
+ module_platform_driver_probe(at91_reset_driver, at91_reset_probe);
+ 
+-- 
+2.11.0
