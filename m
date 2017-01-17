@@ -1,10 +1,10 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v2 01/13] soc: samsung: pmu: Provide global function to get PMU
- regmap
-Date: Tue, 17 Jan 2017 13:44:32 +0100
-Message-ID: <1484657084-26227-2-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH v2 03/13] soc: samsung: pmu: Remove messages for failed memory
+ allocation
+Date: Tue, 17 Jan 2017 13:44:34 +0100
+Message-ID: <1484657084-26227-4-git-send-email-m.szyprowski@samsung.com>
 References: <1484657084-26227-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170117124456eucas1p1d42d11aa2117caed8d89faa8c09e6218@eucas1p1.samsung.com>
+ <CGME20170117124458eucas1p10463c19d77a501284c7302c3b848fecc@eucas1p1.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -23,69 +23,29 @@ To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@v
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-PMU is something like a SoC wide service, so add a helper function to get
-PMU regmap. This will be used by other Exynos device drivers. This way it
-can be avoided to model this dependency in device tree (as phandles to PMU
-node) for almost every device in the SoC.
+Memory subsystem already prints message about failed memory
+allocation, there is no need to do it in the driver.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- drivers/soc/samsung/exynos-pmu.c       | 11 +++++++++++
- include/linux/soc/samsung/exynos-pmu.h |  7 +++++++
- 2 files changed, 18 insertions(+)
+ drivers/soc/samsung/exynos-pmu.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
 diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
-index 0acdfd82e751..5c269bf23210 100644
+index 1f914e63dcc6..813df6e7292d 100644
 --- a/drivers/soc/samsung/exynos-pmu.c
 +++ b/drivers/soc/samsung/exynos-pmu.c
-@@ -11,6 +11,7 @@
+@@ -117,10 +117,8 @@ static int exynos_pmu_probe(struct platform_device *pdev)
+ 	pmu_context = devm_kzalloc(&pdev->dev,
+ 			sizeof(struct exynos_pmu_context),
+ 			GFP_KERNEL);
+-	if (!pmu_context) {
+-		dev_err(dev, "Cannot allocate memory.\n");
++	if (!pmu_context)
+ 		return -ENOMEM;
+-	}
+ 	pmu_context->dev = dev;
+ 	pmu_context->pmu_data = of_device_get_match_data(dev);
  
- #include <linux/of.h>
- #include <linux/of_address.h>
-+#include <linux/mfd/syscon.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
- 
-@@ -92,6 +93,16 @@ void exynos_sys_powerdown_conf(enum sys_powerdown mode)
- 	{ /*sentinel*/ },
- };
- 
-+struct regmap *exynos_get_pmu_regmap(void)
-+{
-+	struct device_node *np = of_find_matching_node(NULL,
-+						      exynos_pmu_of_device_ids);
-+	if (np)
-+		return syscon_node_to_regmap(np);
-+	return ERR_PTR(-ENODEV);
-+}
-+EXPORT_SYMBOL_GPL(exynos_get_pmu_regmap);
-+
- static int exynos_pmu_probe(struct platform_device *pdev)
- {
- 	const struct of_device_id *match;
-diff --git a/include/linux/soc/samsung/exynos-pmu.h b/include/linux/soc/samsung/exynos-pmu.h
-index e2e9de1acc5b..2a841a474684 100644
---- a/include/linux/soc/samsung/exynos-pmu.h
-+++ b/include/linux/soc/samsung/exynos-pmu.h
-@@ -12,6 +12,8 @@
- #ifndef __LINUX_SOC_EXYNOS_PMU_H
- #define __LINUX_SOC_EXYNOS_PMU_H
- 
-+#include <linux/regmap.h>
-+
- enum sys_powerdown {
- 	SYS_AFTR,
- 	SYS_LPA,
-@@ -20,5 +22,10 @@ enum sys_powerdown {
- };
- 
- extern void exynos_sys_powerdown_conf(enum sys_powerdown mode);
-+#ifdef CONFIG_EXYNOS_PMU
-+extern struct regmap *exynos_get_pmu_regmap(void);
-+#else
-+static inline struct regmap *exynos_get_pmu_regmap(void) { return NULL; }
-+#endif
- 
- #endif /* __LINUX_SOC_EXYNOS_PMU_H */
 -- 
 1.9.1
