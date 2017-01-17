@@ -1,73 +1,150 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v2 4/6] power: bq24190_charger: Call
- power_supply_changed() for relevant component
-Date: Mon, 16 Jan 2017 18:30:59 -0800
-Message-ID: <20170117023058.GD7399@atomide.com>
-References: <CAKvHMgQHAfRUVp8ka_Y_h0TC97U6euMrq1+Fy5+zq510jpoaOQ@mail.gmail.com>
- <20170116183125.GE27262@animalcreek.com>
- <CAKvHMgQUf+u=paD6y2iMm=tuEw0LH87CZprL=fJUQpL6pt4WWQ@mail.gmail.com>
- <20170117015424.GB2926@animalcreek.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v3 5/6] power: bq24190_charger: Don't read fault register
+ outside irq_handle_thread()
+Date: Mon, 16 Jan 2017 18:30:24 -0800
+Message-ID: <CAKvHMgSJU9a7HqPxHRmzmPuEindGbdQvr3jD59KfMtp9-GSHOw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary=001a113a62961e34da054641158e
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:57852 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750827AbdAQCbo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Jan 2017 21:31:44 -0500
-Content-Disposition: inline
-In-Reply-To: <20170117015424.GB2926@animalcreek.com>
+Received: from mail-it0-f67.google.com ([209.85.214.67]:35013 "EHLO
+        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750772AbdAQCbo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 21:31:44 -0500
+Received: by mail-it0-f67.google.com with SMTP id 203so14191915ith.2
+        for <linux-pm@vger.kernel.org>; Mon, 16 Jan 2017 18:30:25 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mark Greer <mgreer@animalcreek.com>
-Cc: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-* Mark Greer <mgreer@animalcreek.com> [170116 17:55]:
-> On Mon, Jan 16, 2017 at 11:55:22AM -0800, Liam Breck wrote:
-> > On Mon, Jan 16, 2017 at 10:31 AM, Mark Greer <mgreer@animalcreek.com> wrote:
-> > > On Sun, Jan 15, 2017 at 10:08:04PM -0800, Liam Breck wrote:
-> > >>
-> > >
-> > >> We wrongly get uevents for bq24190-charger and bq24190-battery on every
-> > >> register change.
-> > >>
-> > >> Fix by checking the association with charger and battery before
-> > >> emitting uevent(s).
-> > >>
-> > >> Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
-> > >> Cc: Mark A. Greer <mgreer@animalcreek.com>
-> > >> Cc: Matt Ranostay <matt@ranostay.consulting>
-> > >> Cc: Tony Lindgren <tony@atomide.com>
-> > >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> > >> ---
-> > >>  drivers/power/supply/bq24190_charger.c | 50 +++++++++++++++++++---------------
-> > >>  1 file changed, 27 insertions(+), 23 deletions(-)
-> > >>
-> > >> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> > >> index 62194d8..ba5a5b2 100644
-> > >> --- a/drivers/power/supply/bq24190_charger.c
-> > >> +++ b/drivers/power/supply/bq24190_charger.c
-> > >
-> > >> @@ -1225,8 +1227,12 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
-> > >>                                       ret);
-> > >>               }
-> > >>
-> > >> +             if ((bdi->ss_reg & battery_mask_ss) != (ss_reg & battery_mask_ss))
-> > >> +                     alert_battery = true;
-> > >> +             if ((bdi->ss_reg & ~battery_mask_ss) != (ss_reg & ~battery_mask_ss))
-> > >
-> > > Lines are > 80 characters. Please break up.
-> > 
-> > I did this deliberately, because the same logic appears for f_reg in
-> > that function, and this way you can see that at a glance.
-> 
-> That's because those lines are <= 80 chars.  :)
-> 
-> > My research on 80-char limit found that it's not a hard rule.
-> 
-> Section 2 of Documentation/process/coding-style.rst makes it pretty clear
-> along with exceptions.
+--001a113a62961e34da054641158e
+Content-Type: text/plain; charset=UTF-8
 
-Yeah and it's a good idea to avoid anything that can cause extra discussion
-for nothing ;)
 
-Tony
+
+--001a113a62961e34da054641158e
+Content-Type: text/plain; charset=US-ASCII; name="patch-v3-5of6.txt"
+Content-Disposition: attachment; filename="patch-v3-5of6.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_iy0vxfh40
+
+Q2FjaGluZyB0aGUgZmF1bHQgcmVnaXN0ZXIgYWZ0ZXIgYSBzaW5nbGUgSTJDIHJlYWQgbWF5IG5v
+dCBrZWVwIGFuIGFjY3VyYXRlDQp2YWx1ZS4NCg0KRml4IGJ5IGRvaW5nIHR3byByZWFkcyBpbiBp
+cnFfaGFuZGxlX3RocmVhZCgpIGFuZCB1c2luZyB0aGUgY2FjaGVkIHZhbHVlDQplbHNld2hlcmUu
+IElmIGEgc2FmZXR5IHRpbWVyIGZhdWx0IGxhdGVyIGNsZWFycyBpdHNlbGYsIHdlIGFwcGFyZW50
+bHkgZG9uJ3QgZ2V0DQphbiBpbnRlcnJ1cHQgKElOVCksIGhvd2V2ZXIgb3RoZXIgaW50ZXJydXB0
+cyB3b3VsZCByZWZyZXNoIHRoZSByZWdpc3RlciBjYWNoZS4NCg0KRnJvbSB0aGUgZGF0YSBzaGVl
+dDogIldoZW4gYSBmYXVsdCBvY2N1cnMsIHRoZSBjaGFyZ2VyIGRldmljZSBzZW5kcyBvdXQgSU5U
+DQogYW5kIGtlZXBzIHRoZSBmYXVsdCBzdGF0ZSBpbiBSRUcwOSB1bnRpbCB0aGUgaG9zdCByZWFk
+cyB0aGUgZmF1bHQgcmVnaXN0ZXIuDQogQmVmb3JlIHRoZSBob3N0IHJlYWRzIFJFRzA5IGFuZCBh
+bGwgdGhlIGZhdWx0cyBhcmUgY2xlYXJlZCwgdGhlIGNoYXJnZXINCiBkZXZpY2Ugd291bGQgbm90
+IHNlbmQgYW55IElOVCB1cG9uIG5ldyBmYXVsdHMuIEluIG9yZGVyIHRvIHJlYWQgdGhlDQogY3Vy
+cmVudCBmYXVsdCBzdGF0dXMsIHRoZSBob3N0IGhhcyB0byByZWFkIFJFRzA5IHR3byB0aW1lcyBj
+b25zZWN1dGl2ZWx5Lg0KIFRoZSAxc3QgcmVhZHMgZmF1bHQgcmVnaXN0ZXIgc3RhdHVzIGZyb20g
+dGhlIGxhc3QgcmVhZCBbMV0gYW5kIHRoZSAybmQgcmVhZHMNCiB0aGUgY3VycmVudCBmYXVsdCBy
+ZWdpc3RlciBzdGF0dXMuIg0KDQpbMV0gcHJlc3VtYWJseSBhIHR5cG87IHNob3VsZCBiZSAibGFz
+dCBmYXVsdCINCg0KRml4ZXM6IGQ3YmYzNTNmZDBhYTMgKCJicTI0MTkwX2NoYXJnZXI6IEFkZCBz
+dXBwb3J0IGZvciBUSSBCUTI0MTkwIEJhdHRlcnkgQ2hhcmdlciIpDQpDYzogTWF0dCBSYW5vc3Rh
+eSA8bWF0dEByYW5vc3RheS5jb25zdWx0aW5nPg0KU2lnbmVkLW9mZi1ieTogTGlhbSBCcmVjayA8
+a2VybmVsQG5ldHdvcmtpbXByb3YubmV0Pg0KQWNrZWQtYnk6IE1hcmsgR3JlZXIgPG1ncmVlckBh
+bmltYWxjcmVlay5jb20+DQpBY2tlZC1ieTogVG9ueSBMaW5kZ3JlbiA8dG9ueUBhdG9taWRlLmNv
+bT4NCi0tLQ0KIGRyaXZlcnMvcG93ZXIvc3VwcGx5L2JxMjQxOTBfY2hhcmdlci5jIHwgOTMgKysr
+KysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCAyNiBpbnNl
+cnRpb25zKCspLCA2NyBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93ZXIv
+c3VwcGx5L2JxMjQxOTBfY2hhcmdlci5jIGIvZHJpdmVycy9wb3dlci9zdXBwbHkvYnEyNDE5MF9j
+aGFyZ2VyLmMNCmluZGV4IGJhNWE1YjIuLmEzNjc4OGMgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3Bv
+d2VyL3N1cHBseS9icTI0MTkwX2NoYXJnZXIuYw0KKysrIGIvZHJpdmVycy9wb3dlci9zdXBwbHkv
+YnEyNDE5MF9jaGFyZ2VyLmMNCkBAIC0xNDQsMTAgKzE0NCw3IEBADQogICogc28gdGhlIGZpcnN0
+IHJlYWQgYWZ0ZXIgYSBmYXVsdCByZXR1cm5zIHRoZSBsYXRjaGVkIHZhbHVlIGFuZCBzdWJzZXF1
+ZW50DQogICogcmVhZHMgcmV0dXJuIHRoZSBjdXJyZW50IHZhbHVlLiAgSW4gb3JkZXIgdG8gcmV0
+dXJuIHRoZSBmYXVsdCBzdGF0dXMNCiAgKiB0byB0aGUgdXNlciwgaGF2ZSB0aGUgaW50ZXJydXB0
+IGhhbmRsZXIgc2F2ZSB0aGUgcmVnJ3MgdmFsdWUgYW5kIHJldHJpZXZlDQotICogaXQgaW4gdGhl
+IGFwcHJvcHJpYXRlIGhlYWx0aC9zdGF0dXMgcm91dGluZS4gIEVhY2ggcm91dGluZSBoYXMgaXRz
+IG93bg0KLSAqIGZsYWcgaW5kaWNhdGluZyB3aGV0aGVyIGl0IHNob3VsZCB1c2UgdGhlIHZhbHVl
+IHN0b3JlZCBieSB0aGUgbGFzdCBydW4NCi0gKiBvZiB0aGUgaW50ZXJydXB0IGhhbmRsZXIgb3Ig
+ZG8gYW4gYWN0dWFsIHJlZyByZWFkLiAgVGhhdCB3YXkgZWFjaCByb3V0aW5lDQotICogY2FuIHJl
+cG9ydCBiYWNrIHdoYXRldmVyIGZhdWx0IG1heSBoYXZlIG9jY3VyZWQuDQorICogaXQgaW4gdGhl
+IGFwcHJvcHJpYXRlIGhlYWx0aC9zdGF0dXMgcm91dGluZS4NCiAgKi8NCiBzdHJ1Y3QgYnEyNDE5
+MF9kZXZfaW5mbyB7DQogCXN0cnVjdCBpMmNfY2xpZW50CQkqY2xpZW50Ow0KQEAgLTE1OSw5ICsx
+NTYsNiBAQCBzdHJ1Y3QgYnEyNDE5MF9kZXZfaW5mbyB7DQogCXVuc2lnbmVkIGludAkJCWdwaW9f
+aW50Ow0KIAl1bnNpZ25lZCBpbnQJCQlpcnE7DQogCXN0cnVjdCBtdXRleAkJCWZfcmVnX2xvY2s7
+DQotCWJvb2wJCQkJY2hhcmdlcl9oZWFsdGhfdmFsaWQ7DQotCWJvb2wJCQkJYmF0dGVyeV9oZWFs
+dGhfdmFsaWQ7DQotCWJvb2wJCQkJYmF0dGVyeV9zdGF0dXNfdmFsaWQ7DQogCXU4CQkJCWZfcmVn
+Ow0KIAl1OAkJCQlzc19yZWc7DQogCXU4CQkJCXdhdGNoZG9nOw0KQEAgLTYzNSwyMSArNjI5LDEx
+IEBAIHN0YXRpYyBpbnQgYnEyNDE5MF9jaGFyZ2VyX2dldF9oZWFsdGgoc3RydWN0IGJxMjQxOTBf
+ZGV2X2luZm8gKmJkaSwNCiAJCXVuaW9uIHBvd2VyX3N1cHBseV9wcm9wdmFsICp2YWwpDQogew0K
+IAl1OCB2Ow0KLQlpbnQgaGVhbHRoLCByZXQ7DQorCWludCBoZWFsdGg7DQogDQogCW11dGV4X2xv
+Y2soJmJkaS0+Zl9yZWdfbG9jayk7DQotDQotCWlmIChiZGktPmNoYXJnZXJfaGVhbHRoX3ZhbGlk
+KSB7DQotCQl2ID0gYmRpLT5mX3JlZzsNCi0JCWJkaS0+Y2hhcmdlcl9oZWFsdGhfdmFsaWQgPSBm
+YWxzZTsNCi0JCW11dGV4X3VubG9jaygmYmRpLT5mX3JlZ19sb2NrKTsNCi0JfSBlbHNlIHsNCi0J
+CW11dGV4X3VubG9jaygmYmRpLT5mX3JlZ19sb2NrKTsNCi0NCi0JCXJldCA9IGJxMjQxOTBfcmVh
+ZChiZGksIEJRMjQxOTBfUkVHX0YsICZ2KTsNCi0JCWlmIChyZXQgPCAwKQ0KLQkJCXJldHVybiBy
+ZXQ7DQotCX0NCisJdiA9IGJkaS0+Zl9yZWc7DQorCW11dGV4X3VubG9jaygmYmRpLT5mX3JlZ19s
+b2NrKTsNCiANCiAJaWYgKHYgJiBCUTI0MTkwX1JFR19GX0JPT1NUX0ZBVUxUX01BU0spIHsNCiAJ
+CS8qDQpAQCAtOTM2LDE4ICs5MjAsOCBAQCBzdGF0aWMgaW50IGJxMjQxOTBfYmF0dGVyeV9nZXRf
+c3RhdHVzKHN0cnVjdCBicTI0MTkwX2Rldl9pbmZvICpiZGksDQogCWludCBzdGF0dXMsIHJldDsN
+CiANCiAJbXV0ZXhfbG9jaygmYmRpLT5mX3JlZ19sb2NrKTsNCi0NCi0JaWYgKGJkaS0+YmF0dGVy
+eV9zdGF0dXNfdmFsaWQpIHsNCi0JCWNocmdfZmF1bHQgPSBiZGktPmZfcmVnOw0KLQkJYmRpLT5i
+YXR0ZXJ5X3N0YXR1c192YWxpZCA9IGZhbHNlOw0KLQkJbXV0ZXhfdW5sb2NrKCZiZGktPmZfcmVn
+X2xvY2spOw0KLQl9IGVsc2Ugew0KLQkJbXV0ZXhfdW5sb2NrKCZiZGktPmZfcmVnX2xvY2spOw0K
+LQ0KLQkJcmV0ID0gYnEyNDE5MF9yZWFkKGJkaSwgQlEyNDE5MF9SRUdfRiwgJmNocmdfZmF1bHQp
+Ow0KLQkJaWYgKHJldCA8IDApDQotCQkJcmV0dXJuIHJldDsNCi0JfQ0KKwljaHJnX2ZhdWx0ID0g
+YmRpLT5mX3JlZzsNCisJbXV0ZXhfdW5sb2NrKCZiZGktPmZfcmVnX2xvY2spOw0KIA0KIAljaHJn
+X2ZhdWx0ICY9IEJRMjQxOTBfUkVHX0ZfQ0hSR19GQVVMVF9NQVNLOw0KIAljaHJnX2ZhdWx0ID4+
+PSBCUTI0MTkwX1JFR19GX0NIUkdfRkFVTFRfU0hJRlQ7DQpAQCAtOTk1LDIxICs5NjksMTEgQEAg
+c3RhdGljIGludCBicTI0MTkwX2JhdHRlcnlfZ2V0X2hlYWx0aChzdHJ1Y3QgYnEyNDE5MF9kZXZf
+aW5mbyAqYmRpLA0KIAkJdW5pb24gcG93ZXJfc3VwcGx5X3Byb3B2YWwgKnZhbCkNCiB7DQogCXU4
+IHY7DQotCWludCBoZWFsdGgsIHJldDsNCisJaW50IGhlYWx0aDsNCiANCiAJbXV0ZXhfbG9jaygm
+YmRpLT5mX3JlZ19sb2NrKTsNCi0NCi0JaWYgKGJkaS0+YmF0dGVyeV9oZWFsdGhfdmFsaWQpIHsN
+Ci0JCXYgPSBiZGktPmZfcmVnOw0KLQkJYmRpLT5iYXR0ZXJ5X2hlYWx0aF92YWxpZCA9IGZhbHNl
+Ow0KLQkJbXV0ZXhfdW5sb2NrKCZiZGktPmZfcmVnX2xvY2spOw0KLQl9IGVsc2Ugew0KLQkJbXV0
+ZXhfdW5sb2NrKCZiZGktPmZfcmVnX2xvY2spOw0KLQ0KLQkJcmV0ID0gYnEyNDE5MF9yZWFkKGJk
+aSwgQlEyNDE5MF9SRUdfRiwgJnYpOw0KLQkJaWYgKHJldCA8IDApDQotCQkJcmV0dXJuIHJldDsN
+Ci0JfQ0KKwl2ID0gYmRpLT5mX3JlZzsNCisJbXV0ZXhfdW5sb2NrKCZiZGktPmZfcmVnX2xvY2sp
+Ow0KIA0KIAlpZiAodiAmIEJRMjQxOTBfUkVHX0ZfQkFUX0ZBVUxUX01BU0spIHsNCiAJCWhlYWx0
+aCA9IFBPV0VSX1NVUFBMWV9IRUFMVEhfT1ZFUlZPTFRBR0U7DQpAQCAtMTIwMSw3ICsxMTY1LDcg
+QEAgc3RhdGljIGlycXJldHVybl90IGJxMjQxOTBfaXJxX2hhbmRsZXJfdGhyZWFkKGludCBpcnEs
+IHZvaWQgKmRhdGEpDQogCQkJCXwgQlEyNDE5MF9SRUdfRl9OVENfRkFVTFRfTUFTSzsNCiAJYm9v
+bCBhbGVydF9jaGFyZ2VyID0gZmFsc2UsIGFsZXJ0X2JhdHRlcnkgPSBmYWxzZTsNCiAJdTggc3Nf
+cmVnID0gMCwgZl9yZWcgPSAwOw0KLQlpbnQgcmV0Ow0KKwlpbnQgaSwgcmV0Ow0KIA0KIAlwbV9y
+dW50aW1lX2dldF9zeW5jKGJkaS0+ZGV2KTsNCiANCkBAIC0xMjMxLDMzICsxMTk1LDM1IEBAIHN0
+YXRpYyBpcnFyZXR1cm5fdCBicTI0MTkwX2lycV9oYW5kbGVyX3RocmVhZChpbnQgaXJxLCB2b2lk
+ICpkYXRhKQ0KIAkJCWFsZXJ0X2JhdHRlcnkgPSB0cnVlOw0KIAkJaWYgKChiZGktPnNzX3JlZyAm
+IH5iYXR0ZXJ5X21hc2tfc3MpICE9IChzc19yZWcgJiB+YmF0dGVyeV9tYXNrX3NzKSkNCiAJCQlh
+bGVydF9jaGFyZ2VyID0gdHJ1ZTsNCi0NCiAJCWJkaS0+c3NfcmVnID0gc3NfcmVnOw0KIAl9DQog
+DQotCW11dGV4X2xvY2soJmJkaS0+Zl9yZWdfbG9jayk7DQotDQotCXJldCA9IGJxMjQxOTBfcmVh
+ZChiZGksIEJRMjQxOTBfUkVHX0YsICZmX3JlZyk7DQotCWlmIChyZXQgPCAwKSB7DQotCQltdXRl
+eF91bmxvY2soJmJkaS0+Zl9yZWdfbG9jayk7DQotCQlkZXZfZXJyKGJkaS0+ZGV2LCAiQ2FuJ3Qg
+cmVhZCBGIHJlZzogJWRcbiIsIHJldCk7DQotCQlnb3RvIG91dDsNCi0JfQ0KKwlpID0gMDsNCisJ
+ZG8gew0KKwkJcmV0ID0gYnEyNDE5MF9yZWFkKGJkaSwgQlEyNDE5MF9SRUdfRiwgJmZfcmVnKTsN
+CisJCWlmIChyZXQgPCAwKSB7DQorCQkJZGV2X2VycihiZGktPmRldiwgIkNhbid0IHJlYWQgRiBy
+ZWc6ICVkXG4iLCByZXQpOw0KKwkJCWdvdG8gb3V0Ow0KKwkJfQ0KKwl9IHdoaWxlIChmX3JlZyAm
+JiArK2kgPCAyKTsNCiANCiAJaWYgKGZfcmVnICE9IGJkaS0+Zl9yZWcpIHsNCisJCWRldl9pbmZv
+KGJkaS0+ZGV2LA0KKwkJCSJGYXVsdDogYm9vc3QgJWQsIGNoYXJnZSAlZCwgYmF0dGVyeSAlZCwg
+bnRjICVkXG4iLA0KKwkJCSEhKGZfcmVnICYgQlEyNDE5MF9SRUdfRl9CT09TVF9GQVVMVF9NQVNL
+KSwNCisJCQkhIShmX3JlZyAmIEJRMjQxOTBfUkVHX0ZfQ0hSR19GQVVMVF9NQVNLKSwNCisJCQkh
+IShmX3JlZyAmIEJRMjQxOTBfUkVHX0ZfQkFUX0ZBVUxUX01BU0spLA0KKwkJCSEhKGZfcmVnICYg
+QlEyNDE5MF9SRUdfRl9OVENfRkFVTFRfTUFTSykpOw0KKw0KKwkJbXV0ZXhfbG9jaygmYmRpLT5m
+X3JlZ19sb2NrKTsNCiAJCWlmICgoYmRpLT5mX3JlZyAmIGJhdHRlcnlfbWFza19mKSAhPSAoZl9y
+ZWcgJiBiYXR0ZXJ5X21hc2tfZikpDQogCQkJYWxlcnRfYmF0dGVyeSA9IHRydWU7DQogCQlpZiAo
+KGJkaS0+Zl9yZWcgJiB+YmF0dGVyeV9tYXNrX2YpICE9IChmX3JlZyAmIH5iYXR0ZXJ5X21hc2tf
+ZikpDQogCQkJYWxlcnRfY2hhcmdlciA9IHRydWU7DQotDQogCQliZGktPmZfcmVnID0gZl9yZWc7
+DQotCQliZGktPmNoYXJnZXJfaGVhbHRoX3ZhbGlkID0gdHJ1ZTsNCi0JCWJkaS0+YmF0dGVyeV9o
+ZWFsdGhfdmFsaWQgPSB0cnVlOw0KLQkJYmRpLT5iYXR0ZXJ5X3N0YXR1c192YWxpZCA9IHRydWU7
+DQorCQltdXRleF91bmxvY2soJmJkaS0+Zl9yZWdfbG9jayk7DQogCX0NCiANCi0JbXV0ZXhfdW5s
+b2NrKCZiZGktPmZfcmVnX2xvY2spOw0KLQ0KIAlpZiAoYWxlcnRfY2hhcmdlcikNCiAJCXBvd2Vy
+X3N1cHBseV9jaGFuZ2VkKGJkaS0+Y2hhcmdlcik7DQogCWlmIChhbGVydF9iYXR0ZXJ5KQ0KQEAg
+LTEzNzcsOSArMTM0Myw2IEBAIHN0YXRpYyBpbnQgYnEyNDE5MF9wcm9iZShzdHJ1Y3QgaTJjX2Ns
+aWVudCAqY2xpZW50LA0KIAltdXRleF9pbml0KCZiZGktPmZfcmVnX2xvY2spOw0KIAliZGktPmZf
+cmVnID0gMDsNCiAJYmRpLT5zc19yZWcgPSBCUTI0MTkwX1JFR19TU19WQlVTX1NUQVRfTUFTSzsg
+LyogaW1wb3NzaWJsZSBzdGF0ZSAqLw0KLQliZGktPmNoYXJnZXJfaGVhbHRoX3ZhbGlkID0gZmFs
+c2U7DQotCWJkaS0+YmF0dGVyeV9oZWFsdGhfdmFsaWQgPSBmYWxzZTsNCi0JYmRpLT5iYXR0ZXJ5
+X3N0YXR1c192YWxpZCA9IGZhbHNlOw0KIA0KIAlpMmNfc2V0X2NsaWVudGRhdGEoY2xpZW50LCBi
+ZGkpOw0KIA0KQEAgLTE0OTQsOSArMTQ1Nyw2IEBAIHN0YXRpYyBpbnQgYnEyNDE5MF9wbV9yZXN1
+bWUoc3RydWN0IGRldmljZSAqZGV2KQ0KIA0KIAliZGktPmZfcmVnID0gMDsNCiAJYmRpLT5zc19y
+ZWcgPSBCUTI0MTkwX1JFR19TU19WQlVTX1NUQVRfTUFTSzsgLyogaW1wb3NzaWJsZSBzdGF0ZSAq
+Lw0KLQliZGktPmNoYXJnZXJfaGVhbHRoX3ZhbGlkID0gZmFsc2U7DQotCWJkaS0+YmF0dGVyeV9o
+ZWFsdGhfdmFsaWQgPSBmYWxzZTsNCi0JYmRpLT5iYXR0ZXJ5X3N0YXR1c192YWxpZCA9IGZhbHNl
+Ow0KIA0KIAlwbV9ydW50aW1lX2dldF9zeW5jKGJkaS0+ZGV2KTsNCiAJYnEyNDE5MF9yZWdpc3Rl
+cl9yZXNldChiZGkpOw0K
+--001a113a62961e34da054641158e--
