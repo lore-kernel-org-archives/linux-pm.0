@@ -1,39 +1,53 @@
-From: Mark Greer <mgreer@animalcreek.com>
-Subject: Re: [PATCH v2 5/6] power: bq24190_charger: Don't read fault register
- outside irq_handle_thread()
-Date: Mon, 16 Jan 2017 18:59:12 -0700
-Message-ID: <20170117015912.GC2926@animalcreek.com>
-References: <CAKvHMgQgEEhmbVgTHk6VuQB=tbN+nZV5F=if1_2CzVKb5TpYnA@mail.gmail.com>
- <20170116185404.GF27262@animalcreek.com>
- <CAKvHMgQC2im2HoN0RLnqa1-_7voAPhNy_1E-XeqkbA-idXv6uA@mail.gmail.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v3 0/6] BQ24190 charger fixes
+Date: Mon, 16 Jan 2017 18:28:28 -0800
+Message-ID: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out1-smtp.messagingengine.com ([66.111.4.25]:60391 "EHLO
-        out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750787AbdAQB7O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 20:59:14 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgQC2im2HoN0RLnqa1-_7voAPhNy_1E-XeqkbA-idXv6uA@mail.gmail.com>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:35065 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751100AbdAQC23 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Jan 2017 21:28:29 -0500
+Received: by mail-io0-f194.google.com with SMTP id m98so14436401iod.2
+        for <linux-pm@vger.kernel.org>; Mon, 16 Jan 2017 18:28:29 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: linux-pm@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
 
-On Mon, Jan 16, 2017 at 12:25:41PM -0800, Liam Breck wrote:
-> On Mon, Jan 16, 2017 at 10:54 AM, Mark Greer <mgreer@animalcreek.com> wrote:
-> > On Sun, Jan 15, 2017 at 10:08:25PM -0800, Liam Breck wrote:
+These are misc fixes, tested on a custom OMAP3 board.
 
-> >>       if (f_reg != bdi->f_reg) {
-> >> +             dev_info(bdi->dev, "Fault: boost %d, charge %d, battery %d, ntc %d\n",
-> >
-> > Please break the line above into two after the first comma.
-> 
-> Will do. I wish the kernel crowd counted a tab as one char :-p
+Changes in v3
 
-Thanks.  FYI, there are lots of ways to do it but an easy way to check is:
+#1 fixes figure ID to 37
+#5 fixes line over 80 chars
+#* adds Acked-by Tony & Mark
 
-	expand <filename> | grep -n '.\{81\}'
+Changes in v2
 
-Mark
---
+#1 reorders:            Fix irq triggering to IRQF_TRIGGER_FALLING
+#2 factors out part of: Call power_supply_changed() only for relevant component
+#3 replaces:            Call enable_irq() only at the end of probe()
+#4 reorders:            Call power_supply_changed() only for relevant component
+#5 unscrambles:         Don't read fault register outside irq_handle_thread()
+#6 factors out part of: Don't read fault register outside irq_handle_thread()
+
+These are dropped; Tony will resubmit them in new patchset:
+  Check the interrupt status on resume
+  Use PM runtime autosuspend
+
+Initial patchset v1
+
+Mark, I missed Tony's 0/6 preamble last time. It was...
+
+Liam Breck (4):
+  power: bq24190_charger: Call enable_irq() only at the end of probe()
+  power: bq24190_charger: Fix irq triggering to IRQF_TRIGGER_FALLING
+  power: bq24190_charger: Call power_supply_changed() only for
+relevant component
+  power: bq24190_charger: Don't read fault register outside irq_handle_thread()
+
+Tony Lindgren (2):
+  power: bq24190_charger: Check the interrupt status on resume
+  power: bq24190_charger: Use PM runtime autosuspend
