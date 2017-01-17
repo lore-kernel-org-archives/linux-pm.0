@@ -1,134 +1,75 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
- bus: enable OS version only for SPT and newer)
-Date: Tue, 17 Jan 2017 18:38:43 +0000
-Message-ID: <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
-References: <b1ecfd53-e856-ce10-d56e-4fea27095a8f@molgen.mpg.de>
- <20170113130018.GA896@kroah.com>
- <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
- <20170114193959.GA30750@kroah.com>
- <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
- <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
- <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
- <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
- <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
- <20170117182337.GB12600@kroah.com>
+From: Christian Mauderer <oss@c-mauderer.de>
+Subject: Re: [PATCH] mfd: axp20x: Add AXP288 volatile registers.
+Date: Tue, 17 Jan 2017 20:46:55 +0100
+Message-ID: <7306e66b-4f13-55b8-c325-636ea80b5542@c-mauderer.de>
+References: <20170111194941.5425-1-oss@c-mauderer.de>
+        <20170113140156.GE6864@dell> <20170117145853.GB3718@dell>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170117182337.GB12600@kroah.com>
-Content-Language: en-US
+In-Reply-To: <20170117145853.GB3718@dell>
 Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org, rafael.j.wysocki@intel.com
-Cc: pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBHcmVnIEtIIFttYWlsdG86Z3Jl
-Z2toQGxpbnV4Zm91bmRhdGlvbi5vcmddDQo+IFNlbnQ6IFR1ZXNkYXksIEphbnVhcnkgMTcsIDIw
-MTcgMTI6MjQgUE0NCj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVsbG9A
-RGVsbC5jb20+DQo+IENjOiBwbWVuemVsQG1vbGdlbi5tcGcuZGU7IHJhZmFlbC5qLnd5c29ja2lA
-aW50ZWwuY29tOw0KPiBsaW51eEBsZWVtaHVpcy5pbmZvOyB0b21hcy53aW5rbGVyQGludGVsLmNv
-bTsgamFuQGdvbmRvci5jb207DQo+IGFsZXhhbmRlci51c3lza2luQGludGVsLmNvbTsgbGludXgt
-a2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4geXUuYy5jaGVuQGludGVsLmNvbTsgdG9taS5wLnNh
-cnZlbGFAaW50ZWwuY29tOyBkYW5pZWxAcXVvcmEub3JnOw0KPiBsZW4uYnJvd25AaW50ZWwuY29t
-OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFJlZ3Jlc3Npb24gb24g
-RGVsbCBYUFMxMyAod2FzOiBbY2hhci1taXNjIGZvciA0LjEwLXJjNCBWMl0gbWVpOg0KPiBidXM6
-IGVuYWJsZSBPUyB2ZXJzaW9uIG9ubHkgZm9yIFNQVCBhbmQgbmV3ZXIpDQo+IA0KPiBPbiBUdWUs
-IEphbiAxNywgMjAxNyBhdCAwNDo1Nzo0OVBNICswMDAwLCBNYXJpby5MaW1vbmNpZWxsb0BkZWxs
-LmNvbQ0KPiB3cm90ZToNCj4gPiBTbyBpbiB0aGUgPDZzIHNjZW5hcmlvLCB0aGUgaW50ZWwtaGlk
-IGRyaXZlciBpcyByZXNwb25zaWJsZSB0byByZWNlaXZlDQo+ID4gdGhlIEFDUEkgZXZlbnQgYW5k
-IHByb2Nlc3MgYWNjb3JkaW5nbHkuICBUaGUgbWFpbnRhaW5lciBoYXMgYSBwYXRjaA0KPiA+IHJl
-YWR5IGZvciB0aGUgaW50ZWwtaGlkIHBvcnRpb24gb2YgdGhpcyB3b3JrLCBidXQgaXQncyBjdXJy
-ZW50bHkgYmVpbmcNCj4gPiByZXZpZXdlZCBieSBJbnRlbCB0byBlbnN1cmUgaXQgY2FuIGJlIGxl
-Z2FsbHkgc3VibWl0dGVkIGludG8gdGhlIGtlcm5lbC4NCj4gDQo+IFdobyBhdCBJbnRlbCBkbyBJ
-IG5lZWQgdG8gZ28ga2ljayB0byBtYWtlIHRoaXMgbXl0aGljYWwgbGVnYWwgcmV2aWV3IGhhcHBl
-bg0KPiBmYXN0ZXIgc28gd2UgY2FuIHNlZSB0aGUgY29kZT8NCj4gDQo+IExlbiBhbmQgUmFmYWVs
-LCB3aGF0IGlzIGdvaW5nIG9uIGhlcmU/DQo+DQoNCkxlbiBhbmQgRGFycmVuIGFyZSBib3RoIGlu
-IHRoZSBsb29wIG9uIHRoZSBkaXNjdXNzaW9uIGFyb3VuZCB0aGlzIHBhdGNoLg0KSSBkb24ndCBr
-bm93IGlmIHRoZXknbGwgaGF2ZSBhbnkgKHB1YmxpYykgY29tbWVudHMgdGhleSBjYW4gYWRkIG9u
-IHRoZSBtYXR0ZXINCnlldCBob3dldmVyLg0KDQpXZSBoYXZlbid0IGJyb2FjaGVkIHRoZSB0b3Bp
-YyBvZiB0aGUgQUNQSSBzdWJzeXN0ZW0gYmVpbmcgZnJvemVuIHdpdGggUmFmYWVsDQphcyBpdCBk
-b2Vzbid0IGFmZmVjdCBoZWxwaW5nIHRoaXMgcHJvYmxlbSB1bnRpbCB0aGUgaW50ZWwtaGlkIHBh
-dGNoIGlzIGFkZGVkLg0KDQpSYWZhZWwsIHNpbmNlIHRoaXMgaXMgaW4gcHJvY2VzcyBub3csIHdo
-YXQgYXJlIHlvdXIgdGhvdWdodHM/DQoNCj4gPiA+IDQwNmU3OTM4NWYzMjIzZDgyMjcyY2YyYmU4
-NmJjOTVjZDAwMGEyNTggaXMgdGhlIGZpcnN0IGJhZCBjb21taXQNCj4gPiA+IGNvbW1pdA0KPiA+
-ID4gNDA2ZTc5Mzg1ZjMyMjNkODIyNzJjZjJiZTg2YmM5NWNkMDAwYTI1OA0KPiA+ID4gQXV0aG9y
-OiBSYWZhZWwgSi4gV3lzb2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+DQo+ID4gPiBE
-YXRlOiAgIE1vbiBOb3YgMjEgMjI6NDU6NDAgMjAxNiArMDEwMA0KPiA+ID4NCj4gPiA+ICAgICAg
-UE0gLyBzbGVlcDogU3lzdGVtIHNsZWVwIHN0YXRlIHNlbGVjdGlvbiBpbnRlcmZhY2UgcmV3b3Jr
-DQo+ID4gPg0KPiA+ID4gICAgICBUaGVyZSBhcmUgc3lzdGVtcyBpbiB3aGljaCB0aGUgcGxhdGZv
-cm0gZG9lc24ndCBzdXBwb3J0IGFueSBzcGVjaWFsDQo+ID4gPiAgICAgIHNsZWVwIHN0YXRlcywg
-c28gc3VzcGVuZC10by1pZGxlIChQTV9TVVNQRU5EX0ZSRUVaRSkgaXMgdGhlIG9ubHkNCj4gPiA+
-ICAgICAgYXZhaWxhYmxlIHN5c3RlbSBzbGVlcCBzdGF0ZS4gIEhvd2V2ZXIsIHNvbWUgdXNlciBz
-cGFjZSBmcmFtZXdvcmtzDQo+ID4gPiAgICAgIG9ubHkgdXNlIHRoZSAibWVtIiBhbmQgKHNvbWV0
-aW1lcykgInN0YW5kYnkiIHNsZWVwIHN0YXRlIGxhYmVscywgc28NCj4gPiA+ICAgICAgdGhlIHVz
-ZXJzIG9mIHRob3NlIHN5c3RlbXMgbmVlZCB0byBtb2RpZnkgdXNlciBzcGFjZSBpbiBvcmRlciB0
-byBiZQ0KPiA+ID4gICAgICBhYmxlIHRvIHVzZSBzeXN0ZW0gc3VzcGVuZCBhdCBhbGwgYW5kIHRo
-YXQgbWF5IGJlIGEgcGFpbiBpbiBwcmFjdGljZS4NCj4gPiA+DQo+ID4gPiAgICAgIENvbW1pdCAw
-Mzk5ZDRkYjNlZGYgKFBNIC8gc2xlZXA6IEludHJvZHVjZSBjb21tYW5kIGxpbmUgYXJndW1lbnQN
-Cj4gZm9yDQo+ID4gPiAgICAgIHNsZWVwIHN0YXRlIGVudW1lcmF0aW9uKSBhdHRlbXB0ZWQgdG8g
-YWRkcmVzcyB0aGlzIHByb2JsZW0gYnkgYWRkaW5nDQo+ID4gPiAgICAgIGEgY29tbWFuZCBsaW5l
-IGFyZ3VtZW50IHRvIGNoYW5nZSB0aGUgbWVhbmluZyBvZiB0aGUgIm1lbSIgc3RyaW5nDQo+IGlu
-DQo+ID4gPiAgICAgIC9zeXMvcG93ZXIvc3RhdGUgdG8gbWFrZSBpdCB0cmlnZ2VyIHN1c3BlbmQt
-dG8taWRsZSAoaW5zdGVhZCBvZg0KPiA+ID4gICAgICBzdXNwZW5kLXRvLVJBTSkuDQo+ID4gPg0K
-PiA+ID4gICAgICBIb3dldmVyLCB0aGVyZSBhbHNvIGFyZSBzeXN0ZW1zIGluIHdoaWNoIHRoZSBw
-bGF0Zm9ybSBkb2VzIHN1cHBvcnQNCj4gPiA+ICAgICAgc3BlY2lhbCBzbGVlcCBzdGF0ZXMsIGJ1
-dCBzdXNwZW5kLXRvLWlkbGUgaXMgdGhlIHByZWZlcnJlZCBvbmUgYW55d2F5DQo+ID4gPiAgICAg
-IChpdCBldmVuIG1heSBzYXZlIG1vcmUgZW5lcmd5IHRoYW4gdGhlIHBsYXRmb3JtLXByb3ZpZGVk
-IHNsZWVwDQo+IHN0YXRlcw0KPiA+ID4gICAgICBpbiBzb21lIGNhc2VzKSBhbmQgdGhlIGFib3Zl
-IGNvbW1pdCBkb2Vzbid0IGhlbHAgaW4gdGhvc2UgY2FzZXMuDQo+ID4gPg0KPiA+ID4gICAgICBG
-b3IgdGhpcyByZWFzb24sIHJld29yayB0aGUgc3lzdGVtIHNsZWVwIHN0YXRlIHNlbGVjdGlvbiBp
-bnRlcmZhY2UNCj4gPiA+ICAgICAgYWdhaW4gKGJ1dCBwcmVzZXJ2ZSBiYWNrd2FyZHMgY29tcGF0
-aWJpbGlieSkuICBOYW1lbHksIGFkZCBhIG5ldw0KPiA+ID4gICAgICBzeXNmcyBmaWxlLCAvc3lz
-L3Bvd2VyL21lbV9zbGVlcCwgdGhhdCB3aWxsIGNvbnRyb2wgdGhlIHN5c3RlbQ0KPiA+ID4gICAg
-ICBzdXNwZW5kIG1vZGUgdHJpZ2dlcmVkIGJ5IHdyaXRpbmcgIm1lbSIgdG8gL3N5cy9wb3dlci9z
-dGF0ZSAoaW4NCj4gPiA+ICAgICAgYW5hbG9neSB3aXRoIHdoYXQgL3N5cy9wb3dlci9kaXNrIGRv
-ZXMgZm9yIGhpYmVybmF0aW9uKS4gIE1ha2UgaXQNCj4gPiA+ICAgICAgc2VsZWN0IHN1c3BlbmQt
-dG8tUkFNICgiZGVlcCIgc2xlZXApIGJ5IGRlZmF1bHQgKGlmIHN1cHBvcnRlZCkgYW5kDQo+ID4g
-PiAgICAgIGZhbGwgYmFjayB0byBzdXNwZW5kLXRvLWlkbGUgKCJzMmlkbGUiKSBvdGhlcndpc2Ug
-YW5kIGFkZCBhIG5ldw0KPiA+ID4gICAgICBjb21tYW5kIGxpbmUgYXJndW1lbnQsIG1lbV9zbGVl
-cF9kZWZhdWx0LCBhbGxvd2luZyB0aGF0IGRlZmF1bHQgdG8NCj4gPiA+ICAgICAgYmUgb3ZlcnJp
-ZGRlbiBpZiBuZWVkIGJlLg0KPiA+ID4NCj4gPiA+ICAgICAgQXQgdGhlIHNhbWUgdGltZSwgZHJv
-cCB0aGUgcmVsYXRpdmVfc2xlZXBfc3RhdGVzIGNvbW1hbmQgbGluZQ0KPiA+ID4gICAgICBhcmd1
-bWVudCB0aGF0IGRvZXNuJ3QgbWFrZSBzZW5zZSBhbnkgbW9yZS4NCj4gPiA+DQo+ID4gPiAgICAg
-IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVs
-LmNvbT4NCj4gPiA+ICAgICAgVGVzdGVkLWJ5OiBNYXJpbyBMaW1vbmNpZWxsbyA8bWFyaW8ubGlt
-b25jaWVsbG9AZGVsbC5jb20+DQo+ID4gPg0KPiA+ID4gOjA0MDAwMCAwNDAwMDAgYTU3NzBmZTA0
-MTNjYmU3Nzk0ZWFiMjhmNzJkZmU4ZWRlMWYwOTBjMg0KPiA+ID4gYTI4ODJjNzc2NTk1MTdhYTcx
-MzdjOTMwZTBlN2YxNzhiYzc2YmZiZCBNICAgICAgRG9jdW1lbnRhdGlvbg0KPiA+ID4gOjA0MDAw
-MCAwNDAwMDAgMjU5NGIxYTg3ODE1MTczZTk3MTk5ZWY5ZDljNTkxOGZlYzIyZmNmZA0KPiA+ID4g
-ZmUwYjY5OTUzYmU2NTM2NDRjNTM2NmFjNjMxMTMxZmRiYmRiOWJjYyBNICAgICAga2VybmVsDQo+
-ID4gPiAkIGdpdCB0YWcgLS1jb250YWlucyA0MDZlNzkzODVmMzIyM2Q4MjI3MmNmMmJlODZiYzk1
-Y2QwMDBhMjU4DQo+ID4gPiB2NC4xMC1yYzENCj4gPiA+IHY0LjEwLXJjMg0KPiA+ID4gdjQuMTAt
-cmMzDQo+ID4gPiBgYGANCj4gPiA+DQo+ID4gPiBQbGVhc2UgZmluZCB0aGUgY29uZmlnIGFuZCB0
-aGUgYmlzZWN0aW9uIGxvZyBhdHRhY2hlZC4gU29tZXRpbWVzIEkNCj4gPiA+IGhhZCB0byBjaGVy
-cnktcGljayBidWlsZCBmaXggY29tbWl0cyBmb3IgUElFIGVuYWJsZWQgR0NDIG9uIHRvcC4NCj4g
-PiA+DQo+ID4gPiBSYWZhZWwsIGRvIHlvdSB3YW50IG1lIHRvIG9wZW4gYSBidWcgcmVwb3J0IGZv
-ciB0aGF0PyBNYXJpbywgd2hhdA0KPiA+ID4gc3lzdGVtcyBkaWQgeW91IGFjdHVhbGx5IHRlc3Qg
-dGhpcyBvbj8gKFdoeSBpc27igJl0IHRoYXQgbGlzdGVkIGluIHRoZQ0KPiA+ID4gY29tbWl0IG1l
-c3NhZ2U/KSBNYXJpbywgZG8geW91IGhhdmUgYWNjZXNzIHRvIERlbGwgWFBTMTMgKDkzNjApDQo+
-ID4gPiBkZXZpY2VzIHRvIGhlbHAgZ2V0dGluZyB0aGlzIGZpeGVkPw0KPiA+ID4NCj4gPg0KPiA+
-IEkgdGVzdGVkIHRoaXMgb24gc2V2ZXJhbCBzeXN0ZW1zIGFuZCBlbnN1cmVkIHRoYXQgdGhlIGtl
-cm5lbCB3YXMgZG9pbmcNCj4gPiB0aGUgcmlnaHQgdGhpbmcgaW4gdGVybXMgb2YgY2hvb3Npbmcg
-dGhlIGNvcnJlY3Qgc3RhdGUgdG8gZ28gaW50by4NCj4gPg0KPiA+IEFzIEkgbWVudGlvbmVkIGFi
-b3ZlLCB0aG9zZSBiZWhhdmlvcnMgYXJlIGN1cnJlbnRseSBleHBlY3RlZCB1bnRpbA0KPiA+IHRo
-ZXNlIHR5cGVzIGlzc3VlcyBhcmUgaWRlbnRpZmllZCBhbmQgZml4ZWQgaW4gdGhlIHByb3BlciBz
-dWJzeXN0ZW1zLg0KPiA+IElmIHRoZXkgZW5kIHVwIGJlaW5nIHRyb3VibGVzb21lIHRvIHJlc29s
-dmUsIGl0J3MgcG9zc2libGUgdG8gcXVpcmsNCj4gPiBpbmRpdmlkdWFsIHN5c3RlbXMsIHRvIGRp
-c2FibGUgdGhpcyBiZWhhdmlvciBhbmQgcmV0dXJuIHRvIHRyYWRpdGlvbmFsDQo+ID4gUzMgYnV0
-IEkgd291bGQgcHJlZmVyIHRvIGFjdHVhbGx5IGlkZW50aWZ5IGFuZCBmaXggdGhlIHZhcmlvdXMg
-cHJvYmxlbXMgc28NCj4gdGhhdCB3ZSBjYW4gcHVzaCB0aGUgTGludXggc3RhY2sgZm9yd2FyZC4N
-Cj4gDQo+IElmIHRoZSBtYWNoaW5lIHN0b3BzIHdvcmtpbmcgb24gYSBuZXdlciBrZXJuZWwgd2hl
-biBpdCB1c2VkIHRvIHdvcmsNCj4gYmVmb3JlLCB0aGVuIHlvdSBuZWVkIHRvIGVpdGhlciByZXZl
-cnQgdGhlIGNoYW5nZSwgb3IgcHJvdmlkZSBhIGZpeCBmb3IgaXQuDQo+IA0KDQpTbyBpbiBteSBt
-aW5kIHRoZXJlIGlzbid0IGV4YWN0bHkgYSBjbGVhciBjdXQgZGVmaW5pdGlvbiBvZiAic3RvcHMg
-d29ya2luZyIsIA0KcGFydGljdWxhcmx5IHdoZW4gaXQncyBhbiBpbnRlbnRpb25hbCBjaGFuZ2Ug
-aW4gYmVoYXZpb3IuDQoNCklmIHRoZSBkZXNpcmUgaXMgdG8gZ28gYmFjayB0byBTMyBvbiB0aGlz
-IHN5c3RlbSwgSSdtIGhhcHB5IHRvIHN1Ym1pdCBhIHBhdGNoDQp0aGF0IHdpbGwgcXVpcmsgdGhp
-cyBiYWNrIHRvIFMzIG9uIHRoaXMgc3lzdGVtIHVudGlsIHdlIGNhbiBnZXQgQUNQSSB0byBub3QN
-CmZyZWV6ZSBhbmQgSW50ZWwtSElEIHRvIHBpY2sgdXAgdGhlIGV2ZW50IGl0IG5lZWRzLg0KDQo+
-IEkgdGhpbmsgSSBtaWdodCBoYXZlIGFjY2VzcyB0byBhIG5ld2VyIERlbGwgWFBTMTMgbm93LCBJ
-J2xsIHRyeSB0byBzZXQgaXQgdXANCj4gdG9tb3Jyb3cgdG8gdGVzdCA0LjEwLXJjNCBvdXQuLi4N
-Cj4gDQoNCklmIHlvdSBkb24ndCwgcGxlYXNlIGNvbnRhY3QgbWUgcHJpdmF0ZWx5IGFuZCBJJ20g
-aGFwcHkgdG8gdHJ5IHRvIGhlbHAgZ2V0DQp5b3UgYWNjZXNzIHRvIG9uZS4NCg0K
+Am 17.01.2017 um 15:58 schrieb Lee Jones:
+> On Fri, 13 Jan 2017, Lee Jones wrote:
+> 
+>> On Wed, 11 Jan 2017, Christian Mauderer wrote:
+>>
+>>> The axp288_fuelgauge driver and some other axp288_xxx are using a number
+>>> of the registers of the chip that are changed by hardware (for example
+>>> charge level). Because these registers are not marked as "volatile" in
+>>> the regmap, a cached version is used instead of the correct register
+>>> value. In case of the axp288_fuelgauge that leads to a battery level
+>>> that only changes on reboot. This patch adds the volatile registers of
+>>> the chip.
+>>>
+>>> Signed-off-by: Christian Mauderer <oss@c-mauderer.de>
+>>> ---
+>>>  drivers/mfd/axp20x.c | 3 +++
+>>>  1 file changed, 3 insertions(+)
+>>
+>> Applied, thanks.
+> 
+> Change of plan.  This patch does not apply.
+> 
+> Please rebase it on top of the MFD tree.
+
+It seems that there is already a similar patch on mfd/for-mfd-next. I
+tried to apply my patch to the linux/master and 4.9, to some of the
+linux-power-supply and to mfd/for-mfd-next-next branch. I totally missed
+the for-mfd-next one. Sorry for that.
+
+As far as I can tell, the other patch already does everything that I
+would need and it even seems to be slightly more accurate. So you can
+just ignore my patch.
+
+I'll test the already existing patches in the next few days on my device
+and only send a new patch if something goes wrong. But I'm quite
+confident that it is not necessary.
+
+Thanks again.
+
+Christian Mauderer
+
+> 
+>>> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+>>> index ed918de84238..d74b3daca23f 100644
+>>> --- a/drivers/mfd/axp20x.c
+>>> +++ b/drivers/mfd/axp20x.c
+>>> @@ -118,7 +118,10 @@ static const struct regmap_range axp288_writeable_ranges[] = {
+>>>  };
+>>>  
+>>>  static const struct regmap_range axp288_volatile_ranges[] = {
+>>> +	regmap_reg_range(AXP20X_PWR_INPUT_STATUS, AXP20X_PWR_OP_MODE),
+>>>  	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IPSOUT_V_HIGH_L),
+>>> +	regmap_reg_range(AXP20X_CC_CTRL, AXP288_FG_OCVL_REG),
+>>> +	regmap_reg_range(AXP288_FG_DES_CAP1_REG, AXP288_FG_CC_CAP_REG),
+>>>  };
+>>>  
+>>>  static const struct regmap_access_table axp288_writeable_table = {
+>>
+> 
