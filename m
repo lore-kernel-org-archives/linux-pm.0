@@ -1,37 +1,49 @@
 From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: Re: [PATCH 1/2] power/reset: at91-reset: add samx7 support
-Date: Wed, 18 Jan 2017 00:08:15 +0100
-Message-ID: <20170117230815.e2qjzlsnlndtulu5@piout.net>
-References: <20160922225322.31677-1-alexandre.belloni@free-electrons.com>
- <20170117125910.icdsl2x7lpnukymy@piout.net>
- <20170117163619.x3c5ibhg7h6r7gk5@earth>
+Subject: [PATCH v2 1/2] power/reset: at91-reset: add samx7 support
+Date: Wed, 18 Jan 2017 00:07:37 +0100
+Message-ID: <20170117230738.28257-1-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:53528 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751367AbdAQXIR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 18:08:17 -0500
-Content-Disposition: inline
-In-Reply-To: <20170117163619.x3c5ibhg7h6r7gk5@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Cc: =?UTF-8?q?Szemz=C5=91=20Andr=C3=A1s?= <sza@esh.hu>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, =?utf-8?B?U3plbXrFkSBBbmRyw6Fz?= <sza@esh.hu>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 17/01/2017 at 17:36:20 +0100, Sebastian Reichel wrote :
-> Hi Alexandre,
-> 
-> On Tue, Jan 17, 2017 at 01:59:10PM +0100, Alexandre Belloni wrote:
-> > Did you have any comment on those two patches ?
-> 
-> They look fine, but I can't apply them. Can you resend a rebased
-> version?
-> 
-
-Done just now.
-
--- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+RnJvbTogU3plbXrFkSBBbmRyw6FzIDxzemFAZXNoLmh1PgoKQWRkIHNhbXg3IHN1cHBvcnQuIEl0
+IGlzIGxhY2tpbmcgYSBmZXcgYml0cyBhbmQgbmVlZHMgYSBuZXcgcmVzZXQgZnVuY3Rpb24uCgpT
+aWduZWQtb2ZmLWJ5OiBTemVtesWRIEFuZHLDoXMgPHN6YUBlc2guaHU+ClNpZ25lZC1vZmYtYnk6
+IEFsZXhhbmRyZSBCZWxsb25pIDxhbGV4YW5kcmUuYmVsbG9uaUBmcmVlLWVsZWN0cm9ucy5jb20+
+Ci0tLQogZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMgfCAxMCArKysrKysrKysrCiAx
+IGZpbGUgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93
+ZXIvcmVzZXQvYXQ5MS1yZXNldC5jIGIvZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMK
+aW5kZXggNTY4NTgwY2YwNjU1Li5iYjI1ODhmMGE0YzcgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcG93
+ZXIvcmVzZXQvYXQ5MS1yZXNldC5jCisrKyBiL2RyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1yZXNl
+dC5jCkBAIC0xMzQsNiArMTM0LDE1IEBAIHN0YXRpYyBpbnQgc2FtYTVkM19yZXN0YXJ0KHN0cnVj
+dCBub3RpZmllcl9ibG9jayAqdGhpcywgdW5zaWduZWQgbG9uZyBtb2RlLAogCXJldHVybiBOT1RJ
+RllfRE9ORTsKIH0KIAorc3RhdGljIGludCBzYW14N19yZXN0YXJ0KHN0cnVjdCBub3RpZmllcl9i
+bG9jayAqdGhpcywgdW5zaWduZWQgbG9uZyBtb2RlLAorCQkJIHZvaWQgKmNtZCkKK3sKKwl3cml0
+ZWwoY3B1X3RvX2xlMzIoQVQ5MV9SU1RDX0tFWSB8IEFUOTFfUlNUQ19QUk9DUlNUKSwKKwkgICAg
+ICAgYXQ5MV9yc3RjX2Jhc2UpOworCisJcmV0dXJuIE5PVElGWV9ET05FOworfQorCiBzdGF0aWMg
+dm9pZCBfX2luaXQgYXQ5MV9yZXNldF9zdGF0dXMoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRl
+dikKIHsKIAl1MzIgcmVnID0gcmVhZGwoYXQ5MV9yc3RjX2Jhc2UgKyBBVDkxX1JTVENfU1IpOwpA
+QCAtMTczLDYgKzE4Miw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGF0OTFf
+cmVzZXRfb2ZfbWF0Y2hbXSA9IHsKIAl7IC5jb21wYXRpYmxlID0gImF0bWVsLGF0OTFzYW05MjYw
+LXJzdGMiLCAuZGF0YSA9IGF0OTFzYW05MjYwX3Jlc3RhcnQgfSwKIAl7IC5jb21wYXRpYmxlID0g
+ImF0bWVsLGF0OTFzYW05ZzQ1LXJzdGMiLCAuZGF0YSA9IGF0OTFzYW05ZzQ1X3Jlc3RhcnQgfSwK
+IAl7IC5jb21wYXRpYmxlID0gImF0bWVsLHNhbWE1ZDMtcnN0YyIsIC5kYXRhID0gc2FtYTVkM19y
+ZXN0YXJ0IH0sCisJeyAuY29tcGF0aWJsZSA9ICJhdG1lbCxzYW14Ny1yc3RjIiwgLmRhdGEgPSBz
+YW14N19yZXN0YXJ0IH0sCiAJeyAvKiBzZW50aW5lbCAqLyB9CiB9OwogTU9EVUxFX0RFVklDRV9U
+QUJMRShvZiwgYXQ5MV9yZXNldF9vZl9tYXRjaCk7Ci0tIAoyLjExLjAKCgpfX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
+bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
+LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
