@@ -1,49 +1,64 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v2 1/2] power/reset: at91-reset: add samx7 support
-Date: Wed, 18 Jan 2017 00:07:37 +0100
-Message-ID: <20170117230738.28257-1-alexandre.belloni@free-electrons.com>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+ bus: enable OS version only for SPT and newer)
+Date: Tue, 17 Jan 2017 15:33:46 -0800
+Message-ID: <20170117233346.GA2599@wisp>
+References: <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
+ <20170114193959.GA30750@kroah.com>
+ <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
+ <20170115105830.GD26374@kroah.com>
+ <20170116110539.GA1307@kroah.com>
+ <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
+ <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
+ <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+ <20170117182337.GB12600@kroah.com>
+ <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: =?UTF-8?q?Szemz=C5=91=20Andr=C3=A1s?= <sza@esh.hu>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Mario.Limonciello@dell.com
+Cc: gregkh@linuxfoundation.org, rafael.j.wysocki@intel.com, pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogU3plbXrFkSBBbmRyw6FzIDxzemFAZXNoLmh1PgoKQWRkIHNhbXg3IHN1cHBvcnQuIEl0
-IGlzIGxhY2tpbmcgYSBmZXcgYml0cyBhbmQgbmVlZHMgYSBuZXcgcmVzZXQgZnVuY3Rpb24uCgpT
-aWduZWQtb2ZmLWJ5OiBTemVtesWRIEFuZHLDoXMgPHN6YUBlc2guaHU+ClNpZ25lZC1vZmYtYnk6
-IEFsZXhhbmRyZSBCZWxsb25pIDxhbGV4YW5kcmUuYmVsbG9uaUBmcmVlLWVsZWN0cm9ucy5jb20+
-Ci0tLQogZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMgfCAxMCArKysrKysrKysrCiAx
-IGZpbGUgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93
-ZXIvcmVzZXQvYXQ5MS1yZXNldC5jIGIvZHJpdmVycy9wb3dlci9yZXNldC9hdDkxLXJlc2V0LmMK
-aW5kZXggNTY4NTgwY2YwNjU1Li5iYjI1ODhmMGE0YzcgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcG93
-ZXIvcmVzZXQvYXQ5MS1yZXNldC5jCisrKyBiL2RyaXZlcnMvcG93ZXIvcmVzZXQvYXQ5MS1yZXNl
-dC5jCkBAIC0xMzQsNiArMTM0LDE1IEBAIHN0YXRpYyBpbnQgc2FtYTVkM19yZXN0YXJ0KHN0cnVj
-dCBub3RpZmllcl9ibG9jayAqdGhpcywgdW5zaWduZWQgbG9uZyBtb2RlLAogCXJldHVybiBOT1RJ
-RllfRE9ORTsKIH0KIAorc3RhdGljIGludCBzYW14N19yZXN0YXJ0KHN0cnVjdCBub3RpZmllcl9i
-bG9jayAqdGhpcywgdW5zaWduZWQgbG9uZyBtb2RlLAorCQkJIHZvaWQgKmNtZCkKK3sKKwl3cml0
-ZWwoY3B1X3RvX2xlMzIoQVQ5MV9SU1RDX0tFWSB8IEFUOTFfUlNUQ19QUk9DUlNUKSwKKwkgICAg
-ICAgYXQ5MV9yc3RjX2Jhc2UpOworCisJcmV0dXJuIE5PVElGWV9ET05FOworfQorCiBzdGF0aWMg
-dm9pZCBfX2luaXQgYXQ5MV9yZXNldF9zdGF0dXMoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRl
-dikKIHsKIAl1MzIgcmVnID0gcmVhZGwoYXQ5MV9yc3RjX2Jhc2UgKyBBVDkxX1JTVENfU1IpOwpA
-QCAtMTczLDYgKzE4Miw3IEBAIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIGF0OTFf
-cmVzZXRfb2ZfbWF0Y2hbXSA9IHsKIAl7IC5jb21wYXRpYmxlID0gImF0bWVsLGF0OTFzYW05MjYw
-LXJzdGMiLCAuZGF0YSA9IGF0OTFzYW05MjYwX3Jlc3RhcnQgfSwKIAl7IC5jb21wYXRpYmxlID0g
-ImF0bWVsLGF0OTFzYW05ZzQ1LXJzdGMiLCAuZGF0YSA9IGF0OTFzYW05ZzQ1X3Jlc3RhcnQgfSwK
-IAl7IC5jb21wYXRpYmxlID0gImF0bWVsLHNhbWE1ZDMtcnN0YyIsIC5kYXRhID0gc2FtYTVkM19y
-ZXN0YXJ0IH0sCisJeyAuY29tcGF0aWJsZSA9ICJhdG1lbCxzYW14Ny1yc3RjIiwgLmRhdGEgPSBz
-YW14N19yZXN0YXJ0IH0sCiAJeyAvKiBzZW50aW5lbCAqLyB9CiB9OwogTU9EVUxFX0RFVklDRV9U
-QUJMRShvZiwgYXQ5MV9yZXNldF9vZl9tYXRjaCk7Ci0tIAoyLjExLjAKCgpfX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxp
-bmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3Rz
-LmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com wrote:
+> > -----Original Message-----
+> > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> > Sent: Tuesday, January 17, 2017 12:24 PM
+> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
+> > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
+> > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
+> > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> > len.brown@intel.com; linux-pm@vger.kernel.org
+> > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+> > bus: enable OS version only for SPT and newer)
+> > 
+> > On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com
+> > wrote:
+> > > So in the <6s scenario, the intel-hid driver is responsible to receive
+> > > the ACPI event and process accordingly.  The maintainer has a patch
+> > > ready for the intel-hid portion of this work, but it's currently being
+> > > reviewed by Intel to ensure it can be legally submitted into the kernel.
+> > 
+> > Who at Intel do I need to go kick to make this mythical legal review happen
+> > faster so we can see the code?
+> > 
+> > Len and Rafael, what is going on here?
+> >
+> 
+> Len and Darren are both in the loop on the discussion around this patch.
+> I don't know if they'll have any (public) comments they can add on the matter
+> yet however.
+
+Thanks Mario. Yes, there isn't much to say here in public other than to confirm
+we are keenly aware of the problem and have been actively working on fixing it,
+both for this instance, and the deeper systematic failure that resulted in this
+situation. No amount of kicking will expedite the process at this point, but
+should we feel the need, we'll reach out.
+
+-- 
+Darren Hart
+Intel Open Source Technology Center
