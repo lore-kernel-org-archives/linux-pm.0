@@ -1,58 +1,44 @@
-From: Rob Herring <robh@kernel.org>
+From: Kevin Hilman <khilman@baylibre.com>
 Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
-Date: Tue, 17 Jan 2017 17:37:44 -0600
-Message-ID: <CAL_JsqKN8+jR96Sz12PZGGyQHJr8C79zbnXNgx1pSObNTFx9HA@mail.gmail.com>
+Date: Tue, 17 Jan 2017 16:07:04 -0800
+Message-ID: <m2ziip2puf.fsf@baylibre.com>
 References: <20170104205536.15963-1-d-gerlach@ti.com>
- <20170104205536.15963-3-d-gerlach@ti.com>
- <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
- <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
- <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
- <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
- <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
- <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
- <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
- <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
- <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
+        <20170104205536.15963-3-d-gerlach@ti.com>
+        <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
+        <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+        <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+        <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
+        <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+        <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
+        <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+        <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
+        <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com> (Tero Kristo's
+        message of "Tue, 17 Jan 2017 09:48:12 +0200")
+Sender: linux-kernel-owner@vger.kernel.org
 To: Tero Kristo <t-kristo@ti.com>
-Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Santosh Shilimkar <ssantosh@kernel.org>, Kevin Hilman <khilman@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>, Keerthy <j-keerthy@ti.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: Dave Gerlach <d-gerlach@ti.com>, Rob Herring <robh@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
+Tero Kristo <t-kristo@ti.com> writes:
+
 > On 17/01/17 00:12, Dave Gerlach wrote:
->>
 >> On 01/13/2017 08:40 PM, Rob Herring wrote:
->>>
 >>> On Fri, Jan 13, 2017 at 2:28 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
->>>>
 >>>> On 01/13/2017 01:25 PM, Rob Herring wrote:
 >>>>>
->>>>>
 >>>>> On Thu, Jan 12, 2017 at 9:27 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
->>>>>>
 >>>>>>
 >>>>>> Rob,
 >>>>>>
 >>>>>> On 01/11/2017 03:34 PM, Rob Herring wrote:
 >>>>>>>
 >>>>>>>
->>>>>>>
 >>>>>>> On Mon, Jan 9, 2017 at 11:57 AM, Dave Gerlach <d-gerlach@ti.com>
 >>>>>>> wrote:
->>>>>>>>
 >>>>>>>>
 >>>>>>>>
 >>>>>>>> Rob,
@@ -61,9 +47,7 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>>>>>>>
 >>>>>>>>>
 >>>>>>>>>
->>>>>>>>>
 >>>>>>>>> On Wed, Jan 04, 2017 at 02:55:34PM -0600, Dave Gerlach wrote:
->>>>>>>>>>
 >>>>>>>>>>
 >>>>>>>>>>
 >>>>>>>>>>
@@ -179,7 +163,6 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>>>>>>>
 >>>>>>>>>
 >>>>>>>>>
->>>>>>>>>
 >>>>>>>>> As I've already stated before, this goes in power-domain cells.
 >>>>>>>>> When
 >>>>>>>>> you
@@ -189,7 +172,6 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>>>>>>> This is
 >>>>>>>>> how
 >>>>>>>>> irqs, gpio, clocks, *everything* in DT works.
->>>>>>>>
 >>>>>>>>
 >>>>>>>>
 >>>>>>>>
@@ -207,7 +189,6 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>>>>>> we don't have common API to fetch the resource (like clk_get(),
 >>>>>>>> regulator_get()), but instead we fetches the device's resource from
 >>>>>>>> SoC specific code, via genpd's device ->attach() callback.
->>>>>>>
 >>>>>>>
 >>>>>>>
 >>>>>>>
@@ -246,9 +227,7 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>>>>>
 >>>>>>>
 >>>>>>>
->>>>>>>
 >>>>>>> Fix the genpd framework rather than work around it in DT.
->>>>>>
 >>>>>>
 >>>>>>
 >>>>>>
@@ -261,10 +240,8 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>>>> represents to mean something else?
 >>>>>
 >>>>>
->>>>>
 >>>>> No idea because what's the current binding? From the patch, looks like
 >>>>> a new binding to me.
->>>>
 >>>>
 >>>>
 >>>> Yes, ti,sci-id is a new binding. I am referring to the current
@@ -285,14 +262,12 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>> This is
 >>>> already how it is used in the kernel today.
 >>>
->>>
 >>> Strictly speaking, the cells are purely for the interpretation of the
 >>> phandle they are associated with. If some controller wants to have 20
 >>> cells, then it could assuming a good reason. The reality is we tend to
 >>> align the meaning of the cells. If genpd is interpreting the cells and
 >>> not letting the driver for the power domain controller interpret them,
 >>> then still, genpd needs to be fixed.
->>
 >>
 >> Ok, perhaps the genpd folks on the thread can jump in here with any
 >> thoughts that they have.
@@ -311,11 +286,9 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >>>> not to
 >>>> identify which power domain it is associated with.
 >>>
->>>
 >>> What is the id used for? I can understand why you need to know what
 >>> power domain a device is in (as power-domains identifies), but not
 >>> what devices are in a power domain.
->>
 >>
 >> We have a system control processor that provides power management
 >> services to the OS and it responsible for handling the power state of
@@ -325,35 +298,30 @@ On Tue, Jan 17, 2017 at 1:48 AM, Tero Kristo <t-kristo@ti.com> wrote:
 >> power domain so that the control processor can do what is necessary to
 >> enable that device.
 >
->
-> I think a minor detail here that Rob might be missing right now is, that the
-> ti,sci-id is only controlling the PM runtime handling, and providing the ID
-> per-device for this purpose only. AFAIK, it is not really connected to the
-> power domain anymore as such, as we don't have power-domains / per device
-> anymore as was the case in some earlier revision of this work.
+> I think a minor detail here that Rob might be missing right now is,
+> that the ti,sci-id is only controlling the PM runtime handling, and
+> providing the ID per-device for this purpose only. AFAIK, it is not
+> really connected to the power domain anymore as such, as we don't have
+> power-domains / per device anymore as was the case in some earlier
+> revision of this work.
 
-So you used to have multiple power domains and now you don't? Did the
-h/w change?
+I think this gets to the heart of things.  IMO The confusion arises
+because we're throwing around the term "power domain" when there isn't
+an actual hardware power domain here.
 
-> One could argue though that the whole usage of power-domains is now moot, as
-> we basically only have implemented one genpd in the whole SoC, which doesn't
-> really reflect the reality. I wonder if better approach would be to have
-> this replaced with proper power domains at some point (if needed), and just
-> have a runtime-pm implementation in place for the devices that require it.
+Unfortunately, the genpd bindings have used the terminology power-domain
+when in fact genpd is more generic than that and can be used not just
+for hardware power domains, but for arbitrary grouping of devices that
+have common PM properties.  That's why genpd actually stands for generic
+PM domain, not power domain.  Unfortunately, the bindings have grown
+primarily out of the usage for hardware power domains.
 
-We're talking about bindings here. Any explanation in terms of
-runtime-pm and genpd a) goes over my head and b) isn't relevant to
-describing the hardware.
-
-I'm still confused with how many power domains (as defined by the h/w
-design) there are controlled by the SCI? Is it 1 or multiple? If 1,
-then why do you need the sci-id? For other things that are not the
-power domain?
-
-Or perhaps the SCI abstracts things such that you don't really know
-what the relationship between devices and power domains is? IOW, you
-can't tell from the SCI interface how many power domains there are.
-
+> One could argue though that the whole usage of power-domains is now
+> moot, as we basically only have implemented one genpd in the whole
+> SoC, which doesn't really reflect the reality. I wonder if better
+> approach would be to have this replaced with proper power domains at
+> some point (if needed), and just have a runtime-pm implementation in
+> place for the devices that require it.
 >
 > So, as an example in DT, we would only have:
 >
@@ -363,11 +331,12 @@ can't tell from the SCI interface how many power domains there are.
 >   ti,sci-id = <K2G_DEV_UART0>;
 > };
 >
-> This is somewhat analogous to what OMAP family of SoCs have in place now,
-> under "ti,hwmods" property. I also wonder if the "ti,sci-id" should be
-> replaced with something like "ti,sci-dev-id" to make its purpose clearer.
+> This is somewhat analogous to what OMAP family of SoCs have in place
+> now, under "ti,hwmods" property. I also wonder if the "ti,sci-id"
+> should be replaced with something like "ti,sci-dev-id" to make its
+> purpose clearer.
 
-Describing in terms of hwmods doesn't help me either. Never understood
-that either. Sorry.
+Unless I'm missing something, that still begs the question of who reads
+that property and takes care of the call into TI-SCI though.
 
-Rob
+Kevin
