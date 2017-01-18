@@ -1,77 +1,83 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 2/3] PM / devfreq: Fix wrong trans_stat of passive devfreq
- device
-Date: Wed, 18 Jan 2017 15:56:50 +0900
-Message-ID: <1484722611-10555-3-git-send-email-cw00.choi@samsung.com>
-References: <1484722611-10555-1-git-send-email-cw00.choi@samsung.com>
- <CGME20170118065653epcas5p2da6963fbad338a3c402c7d99f5e8473f@epcas5p2.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1484722611-10555-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net
-Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v5 3/4] dmaengine: pl330: Store pointer to slave device
+Date: Wed, 18 Jan 2017 08:07:22 +0100
+Message-ID: <539bd321-66f5-9d06-923e-88dcb12787b8@samsung.com>
+References: <1484657338-26338-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170117124922eucas1p1d4037d80229e55007169cf85c19e5eec@eucas1p1.samsung.com>
+ <1484657338-26338-4-git-send-email-m.szyprowski@samsung.com>
+ <20170117172445.3itztktiay22as26@kozik-lap>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:33236 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750830AbdARHHp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2017 02:07:45 -0500
+In-reply-to: <20170117172445.3itztktiay22as26@kozik-lap>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Inki Dae <inki.dae@samsung.com>
 
-Until now, the trans_stat information of passive devfreq is not updated.
-This patch updates the trans_stat information after setting the target
-frequency of passive devfreq device.
+Hi Krzysztof,
 
-Fixes: 996133119f57 ("PM / devfreq: Add new passive governor")
-Cc: stable@vger.kernel.org
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c          | 3 ++-
- drivers/devfreq/governor.h         | 2 ++
- drivers/devfreq/governor_passive.c | 5 +++++
- 3 files changed, 9 insertions(+), 1 deletion(-)
+On 2017-01-17 18:29, Krzysztof Kozlowski wrote:
+> On Tue, Jan 17, 2017 at 01:48:57PM +0100, Marek Szyprowski wrote:
+>> Store the pointer to slave device, which requested our channel. It will be
+>> later used to implement runtime PM of PL330 DMA controller. Although
+>> DMA channels might be requested many times, each DMA peripheral channel is
+>> physically dedicated only for specific hardware, so there should be only
+>> one slave device for each channel.
+>>
+>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+>> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Any particular reason for removing my Reviewed-by? Any changes here?
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index a2c575a5a9ab..6c560af2a801 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -135,7 +135,7 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
-  * @devfreq:	the devfreq instance
-  * @freq:	the update target frequency
-  */
--static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
-+int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- {
- 	int lev, prev_lev, ret = 0;
- 	unsigned long cur_time;
-@@ -171,6 +171,7 @@ static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- 	devfreq->last_stat_updated = cur_time;
- 	return ret;
- }
-+EXPORT_SYMBOL(devfreq_update_status);
- 
- /**
-  * find_devfreq_governor() - find devfreq governor from name
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index fad7d6321978..71576b8bdfef 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -38,4 +38,6 @@ extern void devfreq_interval_update(struct devfreq *devfreq,
- extern int devfreq_add_governor(struct devfreq_governor *governor);
- extern int devfreq_remove_governor(struct devfreq_governor *governor);
- 
-+extern int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
-+
- #endif /* _GOVERNOR_H */
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index 9ef46e2592c4..443be65f4561 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -112,6 +112,11 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
- 	if (ret < 0)
- 		goto out;
- 
-+	if (devfreq->profile->freq_table
-+		&& (devfreq_update_status(devfreq, freq)))
-+		dev_err(&devfreq->dev,
-+			"Couldn't update frequency transition information.\n");
-+
- 	devfreq->previous_freq = freq;
- 
- out:
+No changes here. I'm sorry, the tag got lost during rebase.
+
+> Best regards,
+> Krzysztof
+>
+>> ---
+>>   drivers/dma/pl330.c | 9 +++++++++
+>>   1 file changed, 9 insertions(+)
+>>
+>> diff --git a/drivers/dma/pl330.c b/drivers/dma/pl330.c
+>> index b6b2cc912380..c77a3494659c 100644
+>> --- a/drivers/dma/pl330.c
+>> +++ b/drivers/dma/pl330.c
+>> @@ -450,6 +450,7 @@ struct dma_pl330_chan {
+>>   
+>>   	/* for runtime pm tracking */
+>>   	bool active;
+>> +	struct device *slave;
+>>   };
+>>   
+>>   struct pl330_dmac {
+>> @@ -2093,6 +2094,14 @@ static struct dma_chan *of_dma_pl330_xlate(struct of_phandle_args *dma_spec,
+>>   	if (chan_id >= pl330->num_peripherals)
+>>   		return NULL;
+>>   
+>> +	if (!pl330->peripherals[chan_id].slave) {
+>> +		pl330->peripherals[chan_id].slave = slave;
+>> +	} else if (pl330->peripherals[chan_id].slave != slave) {
+>> +		dev_err(pl330->ddma.dev,
+>> +			"Can't use same channel with multiple slave devices!\n");
+>> +		return NULL;
+>> +	}
+>> +
+>>   	return dma_get_slave_channel(&pl330->peripherals[chan_id].chan);
+>>   }
+>>   
+>> -- 
+>> 1.9.1
+>>
+>
+>
+
+Best regards
 -- 
-1.9.1
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
