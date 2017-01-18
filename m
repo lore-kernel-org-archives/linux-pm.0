@@ -1,73 +1,48 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 0/6] BQ24190 charger fixes
-Date: Tue, 17 Jan 2017 01:25:35 +0100
-Message-ID: <20170117002534.nbvtq2s347biuaci@earth>
-References: <CAKvHMgTZsiALaWqgwO0NjACi_smHtPUomd6PnbW-TQfG8jnFkQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ufzhjprql7gigxsv"
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v4 1/7] power: bq24190_charger: Fix irq trigger to IRQF_TRIGGER_FALLING
+Date: Wed, 18 Jan 2017 09:26:48 -0800
+Message-ID: <20170118172654.19416-2-liam@networkimprov.net>
+References: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
+ <20170118172654.19416-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:52120 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750728AbdAQAZj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Jan 2017 19:25:39 -0500
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgTZsiALaWqgwO0NjACi_smHtPUomd6PnbW-TQfG8jnFkQ@mail.gmail.com>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:35693 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751977AbdARR2Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2017 12:28:16 -0500
+Received: by mail-pf0-f196.google.com with SMTP id f144so1514126pfa.2
+        for <linux-pm@vger.kernel.org>; Wed, 18 Jan 2017 09:28:16 -0800 (PST)
+In-Reply-To: <20170118172654.19416-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Mark A . Greer" <mgreer@animalcreek.com>, Liam Breck <kernel@networkimprov.net>, Matt Ranostay <matt@ranostay.consulting>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Mark Greer <mgreer@animalcreek.com>, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
+The interrupt signal is TRIGGER_FALLING. This is is specified in the
+data sheet PIN FUNCTIONS: "The INT pin sends active low, 256us
+pulse to host to report charger device status and fault."
 
---ufzhjprql7gigxsv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Also the direction can be seen in the data sheet Figure 37 "BQ24190
+with D+/D- Detection and USB On-The-Go (OTG)" which shows a 10k
+pull-up resistor installed for the sample configurations.
 
-Hi Liam,
+Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Acked-by: Mark Greer <mgreer@animalcreek.com>
+Acked-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/power/supply/bq24190_charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On Sun, Jan 15, 2017 at 10:05:26PM -0800, Liam Breck wrote:
-> Changes in v2:
->=20
-> #1 reorders:            Fix irq triggering to IRQF_TRIGGER_FALLING
-> #2 factors out part of: Call power_supply_changed() only for relevant com=
-ponent
-> #3 replaces:            Call enable_irq() only at the end of probe()
-> #4 reorders:            Call power_supply_changed() only for relevant com=
-ponent
-> #5 unscrambles:         Don't read fault register outside irq_handle_thre=
-ad()
-> #6 factors out part of: Don't read fault register outside irq_handle_thre=
-ad()
->=20
-> These are dropped; Tony will resubmit them in new patchset:
->   Check the interrupt status on resume
->   Use PM runtime autosuspend
-
-I have no additional review comments to the ones you already
-received. When you resend the patch series with Mark's comments
-fixed, please don't forget to add the Acks to your patches.
-
--- Sebastian
-
---ufzhjprql7gigxsv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh9ZHwACgkQ2O7X88g7
-+pr76g//cox9PsaSrTU4fhBMQHChJVCs11ZxKJYZ6sNqEQUR5qu3tUXIoTiHk3il
-CPPs2HIXL+eOy448I1jZQmjjbRLXNGWL10V31uaue2/Ea35H5jyXlNyMKL8QuI5J
-dCeqNOx88YhRhWuf7C57I4QzopwMkPfPgjVUyNZ/7z6Dmqd0wUi3nmRPdaNJxlNw
-Yn3yp7ADib91LauAopahfcUI4ThZMqqcmJHrS+Puw7RVLDkD6thcaNl642Z4rPrx
-1zvwY8ln27rPv8vKJmN5HpMIn05BaL3Pm8F6leIA+CFYme+GJcJj/5Zx9SJJZwOU
-ZPvqZy0Hf5pmY8wmIbndscrWYQW5w1U0gRcmJe+gbNrwQEV+LaLvtXoJs8/MQSH0
-3vXfUKKYz8RpMh3elWQrZGwsgxzqHRIcjzcsCgaeVD9wtZEMpQbJdxrd7lMQYONK
-W+mFLA4rXknrak+LwuVMxKZVYUjaUgZvgxUbk4m2by6lAxwmROXxeFbeVOxgtJZ0
-fHJpPqfOr2DfNxAo11CG7CgnkQjHYHwl73Fj1PD0PdOX8iu3tQVZ//Gvg2CGEFGB
-Ey3nEFdJvj01OvGvWKg4H8EAPr/RDC1eawUo8QRhTihCV/ED5dZ6jKR55YuNFT+6
-fcXg/5QQ3to+0JRnxiYUXk9wG+IpkN83esfy5dVQ4MKC/Ft/cCo=
-=B/A+
------END PGP SIGNATURE-----
-
---ufzhjprql7gigxsv--
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 694c088..f5746b9 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -1394,7 +1394,7 @@ static int bq24190_probe(struct i2c_client *client,
+ 
+ 	ret = devm_request_threaded_irq(dev, bdi->irq, NULL,
+ 			bq24190_irq_handler_thread,
+-			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
++			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+ 			"bq24190-charger", bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Can't set up irq handler\n");
