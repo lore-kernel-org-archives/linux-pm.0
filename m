@@ -1,317 +1,121 @@
-From: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v5 3/3] thermal: zx2967: add thermal driver for ZTE's zx2967 family
-Date: Wed, 18 Jan 2017 12:42:02 +0800
-Message-ID: <1484714522-26651-3-git-send-email-baoyou.xie@linaro.org>
-References: <1484714522-26651-1-git-send-email-baoyou.xie@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1484714522-26651-1-git-send-email-baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: jun.nie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, xie.baoyou-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org, chen.chaokai-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org, wang.qiang01-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH v2 1/2] power/reset: at91-reset: add samx7 support
+Date: Wed, 18 Jan 2017 05:48:24 +0100
+Message-ID: <20170118044824.4inln4m2gj2xioob@earth>
+References: <20170117230738.28257-1-alexandre.belloni@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============1870272987104954072=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170117230738.28257-1-alexandre.belloni@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: =?utf-8?B?U3plbXrFkSBBbmRyw6Fz?= <sza@esh.hu>, linux-pm@vger.kernel.org, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds thermal driver for ZTE's zx2967 family.
 
-Signed-off-by: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/thermal/Kconfig          |   8 ++
- drivers/thermal/Makefile         |   1 +
- drivers/thermal/zx2967_thermal.c | 256 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 265 insertions(+)
- create mode 100644 drivers/thermal/zx2967_thermal.c
+--===============1870272987104954072==
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="kviadeebh7bad6ha"
+Content-Disposition: inline
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 18f2de6..f64bd50 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -444,4 +444,12 @@ config BCM2835_THERMAL
- 	help
- 	  Support for thermal sensors on Broadcom bcm2835 SoCs.
- 
-+config ZX2967_THERMAL
-+	tristate "Thermal sensors on zx2967 SoC"
-+	depends on ARCH_ZX || COMPILE_TEST
-+	help
-+	  Enable the zx2967 thermal sensors driver, which supports
-+	  the primitive temperature sensor embedded in zx2967 SoCs.
-+	  This sensor generates the real time die temperature.
-+
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 677c6d9..c00c05e 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -57,3 +57,4 @@ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
- obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
- obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
- obj-$(CONFIG_BCM2835_THERMAL)	+= bcm2835_thermal.o
-+obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
-diff --git a/drivers/thermal/zx2967_thermal.c b/drivers/thermal/zx2967_thermal.c
-new file mode 100644
-index 0000000..1f08c33
---- /dev/null
-+++ b/drivers/thermal/zx2967_thermal.c
-@@ -0,0 +1,256 @@
-+/*
-+ * ZTE's zx2967 family thermal sensor driver
-+ *
-+ * Copyright (C) 2017 ZTE Ltd.
-+ *
-+ * Author: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/thermal.h>
-+
-+/* Power Mode: 0->low 1->high */
-+#define ZX2967_THERMAL_POWER_MODE	0
-+
-+/* DCF Control Register */
-+#define ZX2967_THERMAL_DCF		0x4
-+
-+/* Selection Register */
-+#define ZX2967_THERMAL_SEL		0x8
-+
-+/* Control Register */
-+#define ZX2967_THERMAL_CTRL		0x10
-+
-+#define ZX2967_THERMAL_READY		0x1000
-+#define ZX2967_THERMAL_TEMP_MASK	0xfff
-+#define ZX2967_THERMAL_ID_MASK		0x18
-+#define ZX2967_THERMAL_ID0		0x8
-+#define ZX2967_THERMAL_ID1		0x10
-+
-+struct zx2967_thermal_sensor {
-+	struct zx2967_thermal_priv *priv;
-+	struct thermal_zone_device *tzd;
-+	int id;
-+};
-+
-+#define NUM_SENSORS	1
-+
-+struct zx2967_thermal_priv {
-+	struct zx2967_thermal_sensor	sensors[NUM_SENSORS];
-+	/* Prevents reads sensor in parallel */
-+	struct mutex			lock;
-+	struct clk			*clk_gate;
-+	struct clk			*pclk;
-+	void __iomem			*regs;
-+	struct device			*dev;
-+};
-+
-+static int zx2967_thermal_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
-+
-+	if (priv && priv->pclk)
-+		clk_disable_unprepare(priv->pclk);
-+
-+	if (priv && priv->clk_gate)
-+		clk_disable_unprepare(priv->clk_gate);
-+
-+	return 0;
-+}
-+
-+static int zx2967_thermal_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
-+	int error;
-+
-+	error = clk_prepare_enable(priv->clk_gate);
-+	if (error)
-+		return error;
-+
-+	error = clk_prepare_enable(priv->pclk);
-+	if (error) {
-+		clk_disable_unprepare(priv->clk_gate);
-+		return error;
-+	}
-+
-+	return 0;
-+}
-+
-+static int zx2967_thermal_get_temp(void *data, int *temp)
-+{
-+	void __iomem *regs;
-+	struct zx2967_thermal_sensor *sensor = data;
-+	struct zx2967_thermal_priv *priv = sensor->priv;
-+	unsigned long timeout = jiffies + msecs_to_jiffies(100);
-+	u32 val, sel_id;
-+
-+	regs = priv->regs;
-+	mutex_lock(&priv->lock);
-+
-+	writel_relaxed(0, regs + ZX2967_THERMAL_POWER_MODE);
-+	writel_relaxed(2, regs + ZX2967_THERMAL_DCF);
-+
-+	val = readl_relaxed(regs + ZX2967_THERMAL_SEL);
-+	val &= ~ZX2967_THERMAL_ID_MASK;
-+	sel_id = sensor->id ? ZX2967_THERMAL_ID0 : ZX2967_THERMAL_ID1;
-+	val |= sel_id;
-+	writel_relaxed(val, regs + ZX2967_THERMAL_SEL);
-+
-+	usleep_range(100, 300);
-+	val = readl_relaxed(regs + ZX2967_THERMAL_CTRL);
-+	while (!(val & ZX2967_THERMAL_READY)) {
-+		if (time_after(jiffies, timeout)) {
-+			dev_err(priv->dev, "Thermal sensor %d data timeout\n",
-+				sensor->id);
-+			mutex_unlock(&priv->lock);
-+			return -ETIMEDOUT;
-+		}
-+		usleep_range(100, 300);
-+		val = readl_relaxed(regs + ZX2967_THERMAL_CTRL);
-+	}
-+
-+	writel_relaxed(3, regs + ZX2967_THERMAL_DCF);
-+	val = readl_relaxed(regs + ZX2967_THERMAL_CTRL)
-+			 & ZX2967_THERMAL_TEMP_MASK;
-+	writel_relaxed(1, regs + ZX2967_THERMAL_POWER_MODE);
-+
-+	/*
-+	 * Calculate temperature
-+	 *   922	initial value of calibration cure
-+	 *   1.951	slope of calibration cure
-+	 */
-+	*temp = DIV_ROUND_CLOSEST((val - 922) * 1000, 1951);
-+
-+	mutex_unlock(&priv->lock);
-+
-+	return 0;
-+}
-+
-+static struct thermal_zone_of_device_ops zx2967_of_thermal_ops = {
-+	.get_temp = zx2967_thermal_get_temp,
-+};
-+
-+static int zx2967_thermal_probe(struct platform_device *pdev)
-+{
-+	struct zx2967_thermal_priv *priv;
-+	struct resource *res;
-+	int ret, i;
-+
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	priv->regs = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(priv->regs))
-+		return PTR_ERR(priv->regs);
-+
-+	priv->clk_gate = devm_clk_get(&pdev->dev, "gate");
-+	if (IS_ERR(priv->clk_gate)) {
-+		ret = PTR_ERR(priv->clk_gate);
-+		dev_err(&pdev->dev, "failed to get clock gate: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = clk_prepare_enable(priv->clk_gate);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
-+			ret);
-+		return ret;
-+	}
-+
-+	priv->pclk = devm_clk_get(&pdev->dev, "pclk");
-+	if (IS_ERR(priv->pclk)) {
-+		ret = PTR_ERR(priv->pclk);
-+		clk_disable_unprepare(priv->clk_gate);
-+		dev_err(&pdev->dev, "failed to get apb clock: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = clk_prepare_enable(priv->pclk);
-+	if (ret) {
-+		clk_disable_unprepare(priv->clk_gate);
-+		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
-+			ret);
-+		return ret;
-+	}
-+
-+	mutex_init(&priv->lock);
-+	for (i = 0; i < NUM_SENSORS; i++) {
-+		struct zx2967_thermal_sensor *sensor = &priv->sensors[i];
-+
-+		sensor->priv = priv;
-+		sensor->id = i;
-+		sensor->tzd = thermal_zone_of_sensor_register(&pdev->dev,
-+					i, sensor, &zx2967_of_thermal_ops);
-+		if (IS_ERR(sensor->tzd)) {
-+			ret = PTR_ERR(sensor->tzd);
-+			dev_err(&pdev->dev, "failed to register sensor %d: %d\n",
-+				i, ret);
-+			goto remove_ts;
-+		}
-+	}
-+	priv->dev = &pdev->dev;
-+	platform_set_drvdata(pdev, priv);
-+
-+	return 0;
-+
-+remove_ts:
-+	clk_disable_unprepare(priv->clk_gate);
-+	clk_disable_unprepare(priv->pclk);
-+	for (i--; i >= 0; i--)
-+		thermal_zone_of_sensor_unregister(&pdev->dev,
-+						  priv->sensors[i].tzd);
-+
-+	return ret;
-+}
-+
-+static int zx2967_thermal_exit(struct platform_device *pdev)
-+{
-+	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < NUM_SENSORS; i++) {
-+		struct zx2967_thermal_sensor *sensor = &priv->sensors[i];
-+
-+		thermal_zone_of_sensor_unregister(&pdev->dev, sensor->tzd);
-+	}
-+	clk_disable_unprepare(priv->pclk);
-+	clk_disable_unprepare(priv->clk_gate);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id zx2967_thermal_id_table[] = {
-+	{ .compatible = "zte,zx296718-thermal" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, zx2967_thermal_id_table);
-+
-+static SIMPLE_DEV_PM_OPS(zx2967_thermal_pm_ops,
-+			 zx2967_thermal_suspend, zx2967_thermal_resume);
-+
-+static struct platform_driver zx2967_thermal_driver = {
-+	.probe = zx2967_thermal_probe,
-+	.remove = zx2967_thermal_exit,
-+	.driver = {
-+		.name = "zx2967_thermal",
-+		.of_match_table = zx2967_thermal_id_table,
-+		.pm = &zx2967_thermal_pm_ops,
-+	},
-+};
-+module_platform_driver(zx2967_thermal_driver);
-+
-+MODULE_AUTHOR("Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>");
-+MODULE_DESCRIPTION("ZTE zx2967 thermal driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--kviadeebh7bad6ha
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Alexandre,
+
+On Wed, Jan 18, 2017 at 12:07:37AM +0100, Alexandre Belloni wrote:
+> From: Szemz=C5=91 Andr=C3=A1s <sza@esh.hu>
+>=20
+> Add samx7 support. It is lacking a few bits and needs a new reset functio=
+n.
+>=20
+> Signed-off-by: Szemz=C5=91 Andr=C3=A1s <sza@esh.hu>
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> ---
+>  drivers/power/reset/at91-reset.c | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+>=20
+> diff --git a/drivers/power/reset/at91-reset.c b/drivers/power/reset/at91-=
+reset.c
+> index 568580cf0655..bb2588f0a4c7 100644
+> --- a/drivers/power/reset/at91-reset.c
+> +++ b/drivers/power/reset/at91-reset.c
+> @@ -134,6 +134,15 @@ static int sama5d3_restart(struct notifier_block *th=
+is, unsigned long mode,
+>  	return NOTIFY_DONE;
+>  }
+> =20
+> +static int samx7_restart(struct notifier_block *this, unsigned long mode,
+> +			 void *cmd)
+> +{
+> +	writel(cpu_to_le32(AT91_RSTC_KEY | AT91_RSTC_PROCRST),
+> +	       at91_rstc_base);
+> +
+> +	return NOTIFY_DONE;
+> +}
+> +
+>  static void __init at91_reset_status(struct platform_device *pdev)
+>  {
+>  	u32 reg =3D readl(at91_rstc_base + AT91_RSTC_SR);
+> @@ -173,6 +182,7 @@ static const struct of_device_id at91_reset_of_match[=
+] =3D {
+>  	{ .compatible =3D "atmel,at91sam9260-rstc", .data =3D at91sam9260_resta=
+rt },
+>  	{ .compatible =3D "atmel,at91sam9g45-rstc", .data =3D at91sam9g45_resta=
+rt },
+>  	{ .compatible =3D "atmel,sama5d3-rstc", .data =3D sama5d3_restart },
+> +	{ .compatible =3D "atmel,samx7-rstc", .data =3D samx7_restart },
+>  	{ /* sentinel */ }
+>  };
+>  MODULE_DEVICE_TABLE(of, at91_reset_of_match);
+
+Thanks, queued into power-supply's for-next branch.
+
+-- Sebastian
+
+--kviadeebh7bad6ha
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlh+85UACgkQ2O7X88g7
++po0Zw/9EXz1gJuoyQnsKSsJ3MjqbG8gIGUXZSGAJxjOmuFcZy1FdOA/Bm+WKS+L
+Gd8hbevJvKhUlDZNzEWr8k20CHsrvm1qnrQEVoR4u42yBqnZmpLo2JDm5mkgA5+d
+r1Pk4bYp4tNz6PzYMvvJ40kV7y0AWR6AZ39V/+sgX5A+4FCM8Ou5xGNxDUwk8Ftk
+8EYBn9O6q2CRO2Wpo3qQA9nNYbgwk5IowrGlJg5lZbEWfFZ5B6rc+goxXaPPeETy
+ydUChr9GunxkhwPHfTxwmxt/CDDHknnYWcRFVnjJGFfQoHtacGWhTWlQvKsj/Prl
+TAzHxglvtGG/WXLg0dcONs0TG6BBuCr967vJ2IaIrkwWzufU+W6frLRnT8TTZDga
+wHBJ1BHieOxuqDfzOEJDsPoUL1EItnsE95/YxxBBWPmZHotXAwWFpyP+oCxXzqZX
+1vJtASJoKA0+1gCPn83s+D637tufRa37MRzDcUFcTkexlq0hJRWjA2fmJBm+Rwen
++xivLPAESpalrtYFL2BLi7eYIeEn47KMuvtZZA/+1fWb8HKeIMTvns4rsxLx3XHF
+6sfI8pqBJlmzDQP1G/rsHoEWZ/rY26Sc4JNNIg+jYBcLYTA57N4+QVc8aCZBDbKd
+64FNukuj3z+sLU6I4Y8OOad1upBtYFpE39BL1Azo7LeEpg4RZZU=
+=V6xe
+-----END PGP SIGNATURE-----
+
+--kviadeebh7bad6ha--
+
+
+--===============1870272987104954072==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============1870272987104954072==--
