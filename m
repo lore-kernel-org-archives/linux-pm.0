@@ -1,100 +1,44 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
- bus: enable OS version only for SPT and newer)
-Date: Wed, 18 Jan 2017 03:18:41 +0100
-Message-ID: <CAJZ5v0h2+nZk=-2gjLWu=Mag9qXmpv8_+x3ckA=cLiOO0bmOPw@mail.gmail.com>
-References: <20170110224956.GA2897@x61s.reliablesolutions.de>
- <5B8DA87D05A7694D9FA63FD143655C1B5437A09D@hasmsx108.ger.corp.intel.com>
- <aac5b255-e817-f92d-2f37-2ca7b52cd957@molgen.mpg.de> <5B8DA87D05A7694D9FA63FD143655C1B5437A315@hasmsx108.ger.corp.intel.com>
- <b1ecfd53-e856-ce10-d56e-4fea27095a8f@molgen.mpg.de> <20170113130018.GA896@kroah.com>
- <5549d8c0527412390d71236d80dff419@molgen.mpg.de> <20170114193959.GA30750@kroah.com>
- <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
- <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
- <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info> <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
- <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v4 1/4] PM / OPP: Expose _of_get_opp_desc_node as
+ dev_pm_opp API
+Date: Wed, 18 Jan 2017 08:44:55 +0530
+Message-ID: <20170118031455.GA11478@vireshk-i7>
+References: <20170117131808.29798-1-d-gerlach@ti.com>
+ <20170117131808.29798-2-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f194.google.com ([74.125.82.194]:33939 "EHLO
-        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751243AbdARCSm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Jan 2017 21:18:42 -0500
-In-Reply-To: <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20170117131808.29798-2-d-gerlach@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Mario Limonciello <Mario.Limonciello@dell.com>, pmenzel@molgen.mpg.de
-Cc: linux@leemhuis.info, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Tomas Winkler <tomas.winkler@intel.com>, jan@gondor.com, alexander.usyskin@intel.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chen, Yu C" <yu.c.chen@intel.com>, Tomi Sarvela <tomi.p.sarvela@intel.com>, daniel@quora.org, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-Mario, thanks for CCing this to linux-pm.
+On 17-01-17, 07:18, Dave Gerlach wrote:
+> Rename _of_get_opp_desc_node to dev_pm_opp_of_get_opp_desc_node and add it
+> to include/linux/pm_opp.h to allow other drivers, such as platform OPP
+> and cpufreq drivers, to make use of it.
+> 
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> ---
+> v3->v4:
+> 	Export dev_pm_opp_of_get_opp_desc_node for use in modules.
+> 	
+>  drivers/base/power/opp/of.c | 9 +++++----
+>  include/linux/pm_opp.h      | 6 ++++++
+>  2 files changed, 11 insertions(+), 4 deletions(-)
 
-On Tue, Jan 17, 2017 at 5:57 PM,  <Mario.Limonciello@dell.com> wrote:
-> Hi Paul,
->
-> Thanks for raising this topic and including me.
-> Suspend to Idle support in Linux as an alternative S3 on x86 is a new
-> topic.  In all, I expected that some problems would arise as a result
-> of this patch, and I hope they will spur interesting discussions and
-> solutions.
->
-> Something that might not be immediately obvious is that by supporting
-> suspend to idle, new driver bugs are going to be identified for drivers
-> that don't properly put hardware into low enough power modes for the CPU
-> to go into the proper state.  Traditionally with S3 the BIOS would be responsible
-> for powering devices down before S3 and back up when exiting S3.
-> This onus is now on the OS.
->
->> -----Original Message-----
->> From: Paul Menzel [mailto:pmenzel@molgen.mpg.de]
->> Sent: Tuesday, January 17, 2017 8:34 AM
->> To: Rafael J. Wysocki <rafael.j.wysocki@intel.com>; Limonciello, Mario
->> <Mario_Limonciello@Dell.com>
->> Cc: Thorsten Leemhuis <linux@leemhuis.info>; Greg Kroah-Hartman
->> <gregkh@linuxfoundation.org>; Tomas Winkler <tomas.winkler@intel.com>;
->> Jan Niehusmann <jan@gondor.com>; Usyskin, Alexander
->> <alexander.usyskin@intel.com>; linux-kernel@vger.kernel.org; Chen, Yu C
->> <yu.c.chen@intel.com>; Sarvela, Tomi P <tomi.p.sarvela@intel.com>; Daniel
->> Blueman <daniel@quora.org>; Len Brown <len.brown@intel.com>; linux-
->> pm@vger.kernel.org
->> Subject: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei: bus:
->> enable OS version only for SPT and newer)
->>
->> Dear Rafael, dear Mario,
->>
->>
->> On 01/17/17 09:14, Thorsten Leemhuis wrote:
->> > Greg Kroah-Hartman wrote on 16.01.2017 12:05:
->> >> On Sun, Jan 15, 2017 at 11:58:30AM +0100, Greg Kroah-Hartman wrote:
->> >>> On Sun, Jan 15, 2017 at 07:19:03AM +0000, Winkler, Tomas wrote:
->> >>>>> Subject: Re: [char-misc for 4.10-rc4 V2] mei: bus: enable OS
->> >>>>> version only for SPT and newer On Sat, Jan 14, 2017 at 08:27:31PM
->> >>>>> +0100, Paul Menzel wrote:
->> >>>>>> On 2017-01-13 14:00, Greg Kroah-Hartman wrote:
->> >>>>>>> On Wed, Jan 11, 2017 at 03:26:06PM +0100, Paul Menzel wrote:
->> >>>>>>>> On 01/11/17 15:12, Winkler, Tomas wrote:
->> >>>>>>>>>>> On 01/11/17 10:24, Winkler, Tomas wrote:
->> >>>>>>>>>>>>> On Wed, Jan 11, 2017 at 01:27:21AM +0200, Tomas Winkler
->> wrote:
->> >>>>>>>>>>>>>> On older platforms the command should be just ignored
->> by
->> >>>>>>>>>>>>>> the firmware but some older platforms misbehave so it's
->> >>>>>>>>>>>>>> safer to send the command only if required.
->> >>>>>>>>>>>>> Thanks! This fixes suspend-to-ram for me (on a Thinkpad
->> x201s).
->> >>>>>>>>>>>> What about Dell XPS13?
->>
->> There is a regression with Linux 4.10-rc{1,2,3} on the Intel Kaby Lake device
->> Dell XPS13 (9360). Hitting the power button, the light of the power button
->> never goes off. Pressing it again, nothing happen. Only pressing it like ten
->> seconds the screen comes back for five seconds, and then it seems to try to
->> suspend again.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Paul,
-
-Can you please check if reverting commit 08b98d329165 (PM / sleep /
-ACPI: Use the ACPI_FADT_LOW_POWER_S0 flag) helps?
-
-If not, please send me the output of "cat /sys/power/mem_sleep" from
-the affected system.
-
-Thanks,
-Rafael
+-- 
+viresh
