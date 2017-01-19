@@ -1,48 +1,65 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v4 1/7] power: bq24190_charger: Fix irq trigger to IRQF_TRIGGER_FALLING
-Date: Wed, 18 Jan 2017 09:26:48 -0800
-Message-ID: <20170118172654.19416-2-liam@networkimprov.net>
-References: <CAKvHMgQvmjBpaoT-2icVe9xfKWhW9tVOiHDei2jKxDOvSs15Tg@mail.gmail.com>
- <20170118172654.19416-1-liam@networkimprov.net>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCHv6 0/4] thermal: add driver for R-Car Gen3
+Date: Thu, 19 Jan 2017 13:19:58 +0100
+Message-ID: <20170119121958.GA1530@katana>
+References: <20161222103823.8300-1-niklas.soderlund+renesas@ragnatech.se>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="mYCpIKhGyMATD0i+"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35693 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751977AbdARR2Q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Jan 2017 12:28:16 -0500
-Received: by mail-pf0-f196.google.com with SMTP id f144so1514126pfa.2
-        for <linux-pm@vger.kernel.org>; Wed, 18 Jan 2017 09:28:16 -0800 (PST)
-In-Reply-To: <20170118172654.19416-1-liam@networkimprov.net>
+Received: from www.zeus03.de ([194.117.254.33]:47326 "EHLO mail.zeus03.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752636AbdASMUC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Jan 2017 07:20:02 -0500
+Content-Disposition: inline
+In-Reply-To: <20161222103823.8300-1-niklas.soderlund+renesas@ragnatech.se>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Mark Greer <mgreer@animalcreek.com>, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
+To: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kuninori Morimoto <kuninori.morimoto.gx@gmail.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-The interrupt signal is TRIGGER_FALLING. This is is specified in the
-data sheet PIN FUNCTIONS: "The INT pin sends active low, 256us
-pulse to host to report charger device status and fault."
 
-Also the direction can be seen in the data sheet Figure 37 "BQ24190
-with D+/D- Detection and USB On-The-Go (OTG)" which shows a 10k
-pull-up resistor installed for the sample configurations.
+--mYCpIKhGyMATD0i+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Fixes: d7bf353fd0aa3 ("bq24190_charger: Add support for TI BQ24190 Battery Charger")
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
-Acked-by: Mark Greer <mgreer@animalcreek.com>
-Acked-by: Tony Lindgren <tony@atomide.com>
----
- drivers/power/supply/bq24190_charger.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 694c088..f5746b9 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1394,7 +1394,7 @@ static int bq24190_probe(struct i2c_client *client,
- 
- 	ret = devm_request_threaded_irq(dev, bdi->irq, NULL,
- 			bq24190_irq_handler_thread,
--			IRQF_TRIGGER_RISING | IRQF_ONESHOT,
-+			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
- 			"bq24190-charger", bdi);
- 	if (ret < 0) {
- 		dev_err(dev, "Can't set up irq handler\n");
+> larger. Therefore I would like to ask Morimoto-san and/or Khiem to
+> provide or proxy testing of this less accurate formula and feedback if
+> it's OK, let me know if there is anything I can do to help out.
+
+We now got the results of Renesas internal testing via internal
+channels. So, for this series:
+
+Tested-by: Hien Dang <hien.dang.eb@renesas.com>
+
+So, from our point of view, this series is ready to go upstream. 4.11
+would be most welcome.
+
+Thanks,
+
+   Wolfram
+
+
+--mYCpIKhGyMATD0i+
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJYgK7tAAoJEBQN5MwUoCm2k0IP/jJRTluPsvPmgHmaYXfTgl5k
+wH4sznqz7JL05m8dqEBP+fKZ88R6FSrqIbvkCd4TbuOyGGOtk7VwFolOnX6Gy+Ku
+IlYdIZKEm2gdDdPKzuDrtsPBfZK+EctSuFvwHrFvUoeItTOz10W59oc4osXJRWS5
+Trb2xjGP+VATukp8pGpsakth+6LxutsuI2Q4nIYJrWK152W0yeIWU1oZhPrOnDTr
+9J6+aTnYuHnIWZfYG7Ux9UUtRI9l7q0Wz6CKaIWm0t75bTIF+FBva45TCPN9M06Y
+W9CuLUKOTn/WTRJzhyouJKJgLdvMJ+2Hk+EgNlltu5p31ExBpjhghPlKRTkRfat4
+fxIZ6ObTSdRIckock5kNm6d31qLrEee6UuaN9OrVV4LHXJ6upT1zm9fOMn6/qmgK
+faiIJt4DQeux4un1poxVBzB1HWyRfExu8T6TFi8CENffR9dgZGSWeDaNnHPOGGU/
+6niqpMa0mfDiHE5ugJrwJJsq/NIoAXQMx7oZWiKxnXYDbASVPVzQi6CtUojfsFsC
+HjfO8c9fnyiyC1Im/lD80SDpDEVZ5W3GhYOIOJbGIZxE76OZoedyKqcl/zeO39PQ
+bKpcrbpplKnP10+qmf4MVgBTYKbeYwO8gk8I7c7TfUGRCaW3icA6NLvYRbsYTjAH
+BzpsdL8mL13NysvM3s1A
+=9Qml
+-----END PGP SIGNATURE-----
+
+--mYCpIKhGyMATD0i+--
