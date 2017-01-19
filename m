@@ -1,49 +1,67 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH 0/4] selftest: cpufreq: Add support for cpufreq framework
-Date: Thu, 19 Jan 2017 10:36:36 -0700
-Message-ID: <c3cd3310-7a12-134e-3c5a-c5fcacc6821d@kernel.org>
-References: <cover.1484289212.git.viresh.kumar@linaro.org>
- <bde954c8-d581-aa9d-a64d-2ca94e794f2f@kernel.org>
- <20170116034815.GJ9953@vireshk-i7>
- <ca6812e9-88be-17b0-be3c-47681ab0653b@kernel.org>
-Reply-To: shuah@kernel.org
+From: "santosh.shilimkar@oracle.com" <santosh.shilimkar@oracle.com>
+Subject: Re: [PATCH v3 0/4] ARM: K2G: Add support for TI-SCI Generic PM Domains
+Date: Thu, 19 Jan 2017 09:51:35 -0800
+Message-ID: <25026532-fe4d-8215-9249-c5c7efcd8242@oracle.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com>
+ <6fc7a6cb-1856-1377-b00c-8166dbb23ea2@oracle.com>
+ <bf9286b1-379d-1cc8-4eae-d268540dd2a6@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <ca6812e9-88be-17b0-be3c-47681ab0653b@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <bf9286b1-379d-1cc8-4eae-d268540dd2a6@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Lokesh Vutla <lokeshvutla@ti.com>, Keerthy <j-keerthy@ti.com>, Santosh Shilimkar <ssantosh@kernel.org>, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/17/2017 02:00 PM, Shuah Khan wrote:
-> On 01/15/2017 08:48 PM, Viresh Kumar wrote:
->> On 13-01-17, 15:35, Shuah Khan wrote:
->>> Could you please add .gitignore for generated files. You can
->>> send that as a separate patch and don't have to resend the
->>> series.
+On 1/4/17 2:06 PM, Dave Gerlach wrote:
+> Santosh,
+> On 01/04/2017 03:54 PM, Santosh Shilimkar wrote:
+>> On 1/4/2017 12:55 PM, Dave Gerlach wrote:
+>>> Hi,
+>>> This is v3 of the series to add support for TI-SCI Generic PM Domains.
+>>> Previous versions can be found here:
+>>>
+>>> v2: https://www.spinics.net/lists/kernel/msg2364612.html
+>>> v1: http://www.spinics.net/lists/arm-kernel/msg525204.html
+>>>
+>>> This version is rebased on v4.10-rc2 but is the same as v2 with the
+>>> exception of patch 2 in which the devicetree binding documentation
+>>> needed to be updated to show the k2g_pds node should be a child of
+>>> the pmmc node. Apart from that, the acks provided by Ulf were added
+>>> to patches 1 and 3.
+>>>
+>>> Now that the TI-SCI series has been merged [1] this series will be ready
+>>> to go in with an ack on the DT binding. Rob had raised some questions on
+>>> the necessity ti,sci-id property but I believe these were properly
+>>> addressed during the discussion of v2 so hopefully an ack is in order
+>>> now.
+>>>
+>> How do you plan to merge this series with below patch ?
 >>
->> Hi Shuah,
+>>>   PM / Domains: Add generic data pointer to genpd data struct
+>> I think this one goes via Rafael's tree. If you want me to merge this
+>> along with other patches then will need his ack.
 >>
->>>>  tools/testing/selftests/Makefile                 |   1 +
->>>>  tools/testing/selftests/cpufreq/Makefile         |   8 +
->>>>  tools/testing/selftests/cpufreq/cpu.sh           |  84 ++++++++
->>>>  tools/testing/selftests/cpufreq/cpufreq.sh       | 241 ++++++++++++++++++++++
->>>>  tools/testing/selftests/cpufreq/governor.sh      | 153 ++++++++++++++
->>>>  tools/testing/selftests/cpufreq/main.sh          | 194 ++++++++++++++++++
->>>>  tools/testing/selftests/cpufreq/module.sh        | 243 +++++++++++++++++++++++
->>>>  tools/testing/selftests/cpufreq/special-tests.sh | 115 +++++++++++
->>
->> All I have are .sh files and no intermediate files are generated.
->> Perhaps I don't need any .gitignore entries ?
->>
-> 
-> Never mind. There is no need to do .gitignore.
-> 
+>> Other way is to get that merged first via Rafael's tree and then
+>> the remainder series.
+>
+> I'd be happy with it going in through your tree with an ack to avoid any
+> delay but I'd say it's Rafael's call as it is a patch to the genpd core,
+> even though at this point I am the only user.
+>
+Am going to send pull request over weekend, so if you would like
+me take the series via arm-soc tree, please get Rafaels, ack and
+let me know.
 
-Thanks for these tests. Applied the series to linux-kselftest next
-for 4.11
-
-thanks,
--- Shuah
+Regards,
+Santosh
