@@ -1,193 +1,102 @@
-From: Robin Murphy <robin.murphy@arm.com>
-Subject: Re: [PATCH 2/2] security: Change name of CONFIG_DEBUG_SET_MODULE_RONX
-Date: Thu, 19 Jan 2017 11:43:25 +0000
-Message-ID: <5005f110-2279-9ac7-c9c5-1894b8f6387d@arm.com>
-References: <1484789346-21012-1-git-send-email-labbott@redhat.com>
- <1484789346-21012-3-git-send-email-labbott@redhat.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: Re: [PATCH] power: reset: Add MAX77620 support
+Date: Thu, 19 Jan 2017 13:23:57 +0100
+Message-ID: <20170119122357.GF30182@ulmo.ba.sec>
+References: <20170112161507.23774-1-thierry.reding@gmail.com>
+ <20170113034425.7ttvc73aewtbitrk@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="f61P+fpdnY2FZS1u"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1484789346-21012-3-git-send-email-labbott@redhat.com>
+Content-Disposition: inline
+In-Reply-To: <20170113034425.7ttvc73aewtbitrk@earth>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Laura Abbott <labbott@redhat.com>
-Cc: Kees Cook <keescook@chromium.org>, Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, kernel-hardening@lists.openwall.com, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, linux-s390@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, Ra
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Laura,
 
-On 19/01/17 01:29, Laura Abbott wrote:
-> 
-> Despite the word 'debug' in CONFIG_DEBUG_SET_MODULE_RONX, this kernel
-> option provides key security features that are to be expected on a
-> modern system. Change the name to CONFIG_HARDENED_MODULE_MAPPINGS which
-> more accurately describes what this option is intended to do.
-> 
-> Signed-off-by: Laura Abbott <labbott@redhat.com>
-> ---
+--f61P+fpdnY2FZS1u
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Fri, Jan 13, 2017 at 04:44:25AM +0100, Sebastian Reichel wrote:
+> On Thu, Jan 12, 2017 at 05:15:07PM +0100, Thierry Reding wrote:
 [...]
+> > +	if (!of_property_read_bool(np, "system-power-controller"))
+> > +		return 0;
+> > +
+> > +	power =3D devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
+> > +	if (!power)
+> > +		return -ENOMEM;
+> > +
+> > +	power->regmap =3D max77620->rmap;
+> > +	power->dev =3D &pdev->dev;
+> > +
+> > +	err =3D regmap_read(power->regmap, MAX77620_REG_NVERC, &value);
+> > +	if (err < 0) {
+> > +		dev_err(power->dev, "failed to read event recorder: %d\n", err);
+> > +		return err;
+> > +	}
+> > +
+> > +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
+> > +
+> > +	system_power_controller =3D power;
+> > +	pm_power_off =3D max77620_pm_power_off;
+>=20
+> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> > +	arm_pm_restart =3D max77620_pm_restart;
+> > +#endif
+>=20
+> Please use register_restart_handler() instead. It has support for
+> priorities, is not arm specific and properly supports unregistering
+> (some handler with lower priority will take over). You can check
+> gpio-restart as an example for the API.
+>=20
+> If you have some other arm_pm_restart handler (those are tried first)
+> I suggest to convert that to the restart handler framework. Actually
+> it may be a good idea to convert all of them and drop arm_pm_restart,
+> since there are only 4 left:
+>=20
+> $ git grep "arm_pm_restart =3D"
+> drivers/firmware/psci.c:        arm_pm_restart =3D psci_sys_reset;
+> arch/arm/mach-prima2/rstc.c:    arm_pm_restart =3D sirfsoc_restart;
+> arch/arm/xen/enlighten.c:       arm_pm_restart =3D xen_restart;
+> arch/arm/kernel/setup.c:                arm_pm_restart =3D mdesc->restart;
+>=20
+> The first 3 should be easy to update and the last one could
+> be solved by registering a wrapper function as restart handler,
+> which calls mdesc->restart().
 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 09aff28..ef852e4 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -8,6 +8,7 @@ config ARM
->  	select ARCH_HAVE_CUSTOM_GPIO_H
->  	select ARCH_HAS_GCOV_PROFILE_ALL
->  	select ARCH_HAS_HARDENED_MAPPINGS if MMU && !XIP_KERNEL
-> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS if MMU
->  	select ARCH_MIGHT_HAVE_PC_PARPORT
->  	select ARCH_SUPPORTS_ATOMIC_RMW
->  	select ARCH_USE_BUILTIN_BSWAP
-> diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
-> index d83f7c3..426d271 100644
-> --- a/arch/arm/Kconfig.debug
-> +++ b/arch/arm/Kconfig.debug
-> @@ -1738,17 +1738,6 @@ config PID_IN_CONTEXTIDR
->  	  additional instructions during context switch. Say Y here only if you
->  	  are planning to use hardware trace tools with this kernel.
->  
-> -config DEBUG_SET_MODULE_RONX
-> -	bool "Set loadable kernel module data as NX and text as RO"
-> -	depends on MODULES && MMU
-> -	---help---
-> -	  This option helps catch unintended modifications to loadable
-> -	  kernel module's text and read-only data. It also prevents execution
-> -	  of module data. Such protection may interfere with run-time code
-> -	  patching and dynamic kernel tracing - and they might also protect
-> -	  against certain classes of kernel exploits.
-> -	  If in doubt, say "N".
-> -
->  source "drivers/hwtracing/coresight/Kconfig"
->  
->  endmenu
+I remember this not being the first time that this confuses me. And from
+looking around a little it seems like I'm not the only one.
 
-[...]
+Do you know if there's ever been any attempts to formalize all of this
+by adding some sort of framework for this? That way some of the
+confusion may be removed and architecture-specific bits could be
+eliminated more easily.
 
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -12,6 +12,7 @@ config ARM64
->  	select ARCH_HAS_GCOV_PROFILE_ALL
->  	select ARCH_HAS_GIGANTIC_PAGE
->  	select ARCH_HAS_HARDENED_MAPPINGS
-> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS
->  	select ARCH_HAS_KCOV
->  	select ARCH_HAS_SG_CHAIN
->  	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
-> diff --git a/arch/arm64/Kconfig.debug b/arch/arm64/Kconfig.debug
-> index a26d27f..1eebe1f 100644
-> --- a/arch/arm64/Kconfig.debug
-> +++ b/arch/arm64/Kconfig.debug
-> @@ -71,17 +71,6 @@ config DEBUG_WX
->  
->  	  If in doubt, say "Y".
->  
-> -config DEBUG_SET_MODULE_RONX
-> -	bool "Set loadable kernel module data as NX and text as RO"
-> -	depends on MODULES
-> -	default y
-> -	help
-> -	  Is this is set, kernel module text and rodata will be made read-only.
-> -	  This is to help catch accidental or malicious attempts to change the
-> -	  kernel's executable code.
-> -
-> -	  If in doubt, say Y.
-> -
->  config DEBUG_ALIGN_RODATA
->  	depends on ARCH_HAS_HARDENED_MAPPINGS
->  	bool "Align linker sections up to SECTION_SIZE"
+Thierry
 
-[...]
+--f61P+fpdnY2FZS1u
+Content-Type: application/pgp-signature; name="signature.asc"
 
-> --- a/arch/s390/Kconfig
-> +++ b/arch/s390/Kconfig
-> @@ -69,6 +69,7 @@ config S390
->  	select ARCH_HAS_GCOV_PROFILE_ALL
->  	select ARCH_HAS_GIGANTIC_PAGE
->  	select ARCH_HAS_HARDENED_MAPPINGS
-> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS
->  	select ARCH_HAS_KCOV
->  	select ARCH_HAS_SG_CHAIN
->  	select ARCH_HAS_UBSAN_SANITIZE_ALL
-> diff --git a/arch/s390/Kconfig.debug b/arch/s390/Kconfig.debug
-> index 26c5d5be..57f8ea9 100644
-> --- a/arch/s390/Kconfig.debug
-> +++ b/arch/s390/Kconfig.debug
-> @@ -17,7 +17,4 @@ config S390_PTDUMP
->  	  kernel.
->  	  If in doubt, say "N"
->  
-> -config DEBUG_SET_MODULE_RONX
-> -	def_bool y
-> -	depends on MODULES
->  endmenu
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 9d80cd8..38ce850 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -51,6 +51,7 @@ config X86
->  	select ARCH_HAS_FAST_MULTIPLIER
->  	select ARCH_HAS_GCOV_PROFILE_ALL
->  	select ARCH_HAS_HARDENED_MAPPINGS
-> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS
->  	select ARCH_HAS_KCOV			if X86_64
->  	select ARCH_HAS_MMIO_FLUSH
->  	select ARCH_HAS_PMEM_API		if X86_64
-> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-> index 67eec55..69cdd0b 100644
-> --- a/arch/x86/Kconfig.debug
-> +++ b/arch/x86/Kconfig.debug
-> @@ -109,17 +109,6 @@ config DEBUG_WX
->  
->  	  If in doubt, say "Y".
->  
-> -config DEBUG_SET_MODULE_RONX
-> -	bool "Set loadable kernel module data as NX and text as RO"
-> -	depends on MODULES
-> -	---help---
-> -	  This option helps catch unintended modifications to loadable
-> -	  kernel module's text and read-only data. It also prevents execution
-> -	  of module data. Such protection may interfere with run-time code
-> -	  patching and dynamic kernel tracing - and they might also protect
-> -	  against certain classes of kernel exploits.
-> -	  If in doubt, say "N".
-> -
->  config DEBUG_NX_TEST
->  	tristate "Testcase for the NX non-executable stack feature"
->  	depends on DEBUG_KERNEL && m
+-----BEGIN PGP SIGNATURE-----
 
-[...]
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAliAr9sACgkQ3SOs138+
+s6FU4BAAhK6/BpadZHrwSHeAWvARhNjvuKBrqA0OrJzIbFHyiXajo8CMfvUam2qD
+wjXHvvTIH8N3jZ1ufhljFPIQnf9tZ7LYKk3noQkWN5/rJ4+wmlQt/6CIMZischti
+i7C3qGKBYOW4RzwyZz7YhydO/vnOEANcQYkWjIqWq9mJJCYGwhtDH+5Aw5LEkdS5
+xxPDwZ9rXCtJkrE6rxF+9W3EQ0x+O/ulsMVkPXV2EX4x++wKwVPutnNYAnyfStJI
+niOfQU8NhnpvagvGZIoH9E1VU85VKdXRVi8q7/e2b8AQtDwkDzqBdHT7Sl+VcLkJ
+OHX+YmeYd2igwgEKulDLG0jc2S9DqMIOsM++XZR3NP00Ewv6EMq4MukX/fSDGgQK
+n/T+YkJKZeBhGkFwajjn8hlaHqV8O+u2hLByck+hqqpIHi+IaovGvOQI5ItAxkG7
+LM7KW9u9zbq2k4D4Hh87xX+iZcY2BNXaGeU5FWFsensjAdmnz7f32kbZjiwDgOxe
+oOchPiS/gLmGkbcOlXcBVUzNKNKDuR9xsuX/Z/s+bPK3bmg/XfTkSTpbdm2iuJsh
+zITxOEHKYiQYKwpVsRljqODCNNfIZFK7Ci64mV2hy8bRfbCXYiQ6+PLAA16HQUtj
+94f8Mom0MhpqZGdfYZ5nPr22CZXEL0yFcVzR7pnB13CDnARnonM=
+=eCFl
+-----END PGP SIGNATURE-----
 
-> --- a/security/Kconfig
-> +++ b/security/Kconfig
-> @@ -174,6 +174,22 @@ config HARDENED_PAGE_MAPPINGS
->  	  Unless your system has known restrictions or performance issues, it
->  	  is recommended to say Y here.
->  
-> +config ARCH_HAS_HARDENED_MODULE_MAPPINGS
-> +	def_bool n
-> +
-> +config HARDENED_MODULE_MAPPINGS
-> +	bool "Mark module mappings with stricter permissions (RO/W^X)"
-> +	default y
-> +	depends on ARCH_HAS_HARDENED_MODULE_MAPPINGS
-
-It would seem that this ends up losing the previous dependency on
-MODULES - is that intentional?
-
-Robin.
-
-> +	help
-> +	  If this is set, module text and rodata memory will be made read-only,
-> +	  and non-text memory will be made non-executable. This provides
-> +	  protection against certain security vulnerabilities (e.g. modifying
-> +	  code)
-> +
-> +	  Unless your system has known restrictions or performance issues, it
-> +	  is recommended to say Y here.
-> +
->  source security/selinux/Kconfig
->  source security/smack/Kconfig
->  source security/tomoyo/Kconfig
-> 
+--f61P+fpdnY2FZS1u--
