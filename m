@@ -1,58 +1,75 @@
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH 1/2] security: Change name of CONFIG_DEBUG_RODATA
-Date: Thu, 19 Jan 2017 12:33:05 +0100
-Message-ID: <20170119113305.GB5110@osiris>
-References: <1484789346-21012-1-git-send-email-labbott@redhat.com>
- <1484789346-21012-2-git-send-email-labbott@redhat.com>
- <20170119105646.GA11176@leverpostej>
-Reply-To: kernel-hardening@lists.openwall.com
+From: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH 6/7] arm, arm64: factorize common cpu capacity default
+ code
+Date: Thu, 19 Jan 2017 15:51:40 +0000
+Message-ID: <20170119155140.GK30747@e106622-lin>
+References: <20170119143757.14537-1-juri.lelli@arm.com>
+ <20170119143757.14537-7-juri.lelli@arm.com>
+ <20170119145333.GB27312@n2100.armlinux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-6093-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170119105646.GA11176@leverpostej>
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jessica Yu <jeyu@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.k
+In-Reply-To: <20170119145333.GB27312-l+eeeJia6m9URfEZ8mYm6t73F7V6hmMc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, morten.rasmussen-5wv7dgnIgG8@public.gmane.org, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 19, 2017 at 10:56:46AM +0000, Mark Rutland wrote:
-> > +config HARDENED_PAGE_MAPPINGS
-> > +	bool "Mark kernel mappings with stricter permissions (RO/W^X)"
-> > +	default y
-> > +	depends on ARCH_HAS_HARDENED_MAPPINGS
-> > +	help
-> > +          If this is set, kernel text and rodata memory will be made read-only,
-> > +	  and non-text memory will be made non-executable. This provides
-> > +	  protection against certain security attacks (e.g. executing the heap
-> > +	  or modifying text).
-> > +
-> > +	  Unless your system has known restrictions or performance issues, it
-> > +	  is recommended to say Y here.
+Hi,
+
+On 19/01/17 14:53, Russell King - ARM Linux wrote:
+> On Thu, Jan 19, 2017 at 02:37:56PM +0000, Juri Lelli wrote:
+> > +extern unsigned long
+> > +arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
+> > +extern void set_capacity_scale(unsigned int cpu, unsigned long capacity);
 > 
-> It's somewhat unfortunate that this means the feature is no longer
-> mandatory on arm64 (and s390+x86). We have a boot-time switch to turn
-> the protections off, so I was hoping we could make this mandatory on all
-> architectures with support.
+> These should be in a header file (please run your code through sparse).
 > 
-> It would be good to see if we could make this mandatory for arm and
-> parisc, or if it really needs to be optional for either of those.
+> > +extern bool cap_parsing_failed;
+> > +extern void normalize_cpu_capacity(void);
+> > +extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
+> 
+> Same for these.
+> 
 
-Looks like the config option is a no-op on parisc just like it is on
-s390. Irrelavant of the config option at least on s390 the page tables for
-kernel text and rodata will be read-only anyway.
+Right, I was wondering where to put these in the cover letter. New
+header file (e.g., include/linux/arch_topology.h) or some existing one? 
 
-This works since ages and I don't see a reason why this should be
-changed. Also trying to disable this with the "rodata=" command line option
-does not work at least on s390, and I guess this is true for parisc as
-well.
+> > diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> > new file mode 100644
+> > index 000000000000..3faf89518892
+> > --- /dev/null
+> > +++ b/drivers/base/arch_topology.c
+> > @@ -0,0 +1,240 @@
+> > +/*
+> > + * driver/base/arch_topology.c - Arch specific cpu topology information
+> > + *
+> > + * Written by: Juri Lelli, ARM Ltd.
+> > + *
+> > + * Copyright (C) 2016, ARM Ltd.
+> > + *
+> > + * All rights reserved.
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; either version 2 of the License, or
+> > + * (at your option) any later version.
+> 
+> The files that you've taken this code from are GPLv2, but you've thrown
+> a GPLv2+ header on a file that's merely a copy of the original code.
+> As some of the code you've moved to this new file is from Nicolas and
+> Vincent, you need to seek their approval to make this change of license
+> terms, or keep the original license terms.
+> 
 
-The only thing implemented with CONFIG_DEBUG_RODATA on both architectures
-is to emit a message that states memory has been protected
-(mark_rodata_ro).
-This just avoids a wrong "Kernel memory protection disabled." message.
+Apologies. I'd say we keep the original one. I'll modify it in the next
+version.
 
-So yes, I'd really like to keep this option mandatory.
+Thanks,
+
+- Juri
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
