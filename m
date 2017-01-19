@@ -1,75 +1,49 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH 6/7] arm, arm64: factorize common cpu capacity default code
-Date: Thu, 19 Jan 2017 16:00:45 +0000
-Message-ID: <e5b902a0-8c2b-a682-0f67-0b0d9ee4ef5c@arm.com>
-References: <20170119143757.14537-1-juri.lelli@arm.com>
- <20170119143757.14537-7-juri.lelli@arm.com>
+From: Shuah Khan <shuah@kernel.org>
+Subject: Re: [PATCH 0/4] selftest: cpufreq: Add support for cpufreq framework
+Date: Thu, 19 Jan 2017 10:36:36 -0700
+Message-ID: <c3cd3310-7a12-134e-3c5a-c5fcacc6821d@kernel.org>
+References: <cover.1484289212.git.viresh.kumar@linaro.org>
+ <bde954c8-d581-aa9d-a64d-2ca94e794f2f@kernel.org>
+ <20170116034815.GJ9953@vireshk-i7>
+ <ca6812e9-88be-17b0-be3c-47681ab0653b@kernel.org>
+Reply-To: shuah@kernel.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170119143757.14537-7-juri.lelli@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Juri Lelli <juri.lelli@arm.com>, linux-kernel@vger.kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, will.deacon@arm.com, gregkh@linuxfoundation.org, Russell King <linux@armlinux.org.uk>, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <ca6812e9-88be-17b0-be3c-47681ab0653b@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19/01/17 14:37, Juri Lelli wrote:
-> arm and arm64 share lot of code relative to parsing CPU capacity
-> information from DT, using that information for appropriate scaling and
-> exposing a sysfs interface for chaging such values at runtime.
+On 01/17/2017 02:00 PM, Shuah Khan wrote:
+> On 01/15/2017 08:48 PM, Viresh Kumar wrote:
+>> On 13-01-17, 15:35, Shuah Khan wrote:
+>>> Could you please add .gitignore for generated files. You can
+>>> send that as a separate patch and don't have to resend the
+>>> series.
+>>
+>> Hi Shuah,
+>>
+>>>>  tools/testing/selftests/Makefile                 |   1 +
+>>>>  tools/testing/selftests/cpufreq/Makefile         |   8 +
+>>>>  tools/testing/selftests/cpufreq/cpu.sh           |  84 ++++++++
+>>>>  tools/testing/selftests/cpufreq/cpufreq.sh       | 241 ++++++++++++++++++++++
+>>>>  tools/testing/selftests/cpufreq/governor.sh      | 153 ++++++++++++++
+>>>>  tools/testing/selftests/cpufreq/main.sh          | 194 ++++++++++++++++++
+>>>>  tools/testing/selftests/cpufreq/module.sh        | 243 +++++++++++++++++++++++
+>>>>  tools/testing/selftests/cpufreq/special-tests.sh | 115 +++++++++++
+>>
+>> All I have are .sh files and no intermediate files are generated.
+>> Perhaps I don't need any .gitignore entries ?
+>>
 > 
-> Factorize such code in a common place (driver/base/arch_topology.c) in
-> preparation for further additions.
+> Never mind. There is no need to do .gitignore.
 > 
-> Suggested-by: Will Deacon <will.deacon@arm.com>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> ---
->  arch/arm/Kconfig             |   1 +
->  arch/arm/kernel/topology.c   | 213 ++------------------------------------
->  arch/arm64/Kconfig           |   1 +
->  arch/arm64/kernel/topology.c | 213 +-------------------------------------
->  drivers/base/Kconfig         |   8 ++
->  drivers/base/Makefile        |   1 +
->  drivers/base/arch_topology.c | 240 +++++++++++++++++++++++++++++++++++++++++++
->  7 files changed, 260 insertions(+), 417 deletions(-)
->  create mode 100644 drivers/base/arch_topology.c
 
-[...]
+Thanks for these tests. Applied the series to linux-kselftest next
+for 4.11
 
-> +extern unsigned long
-> +arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
-
-How about adding a driver specific prefix 'foo_' to all driver interfaces?
-
-I'm asking because I would rather like to do a
-
-#define arch_scale_cpu_capacity foo_scale_cpu_capacity
-
-then a
-
-#define arch_scale_cpu_capacity arch_scale_cpu_capacity
-
-in arch/arm64/include/asm/topology.h
-
-later to wire cpu-invariant load-tracking support up to the task
-scheduler for ARM64.
-
-That's probably true too for all the 'driver' interfaces which get used
-in arch/arm{,64}/kernel/topology.c.
-
-[...]
+thanks,
+-- Shuah
