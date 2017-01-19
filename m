@@ -1,67 +1,58 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v3 02/13] soc: samsung: pmu: Use of_device_get_match_data
- helper
-Date: Thu, 19 Jan 2017 14:48:42 +0100
-Message-ID: <1484833733-16082-3-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH v3 08/13] pinctrl: samsung: Remove dead code
+Date: Thu, 19 Jan 2017 14:48:48 +0100
+Message-ID: <1484833733-16082-9-git-send-email-m.szyprowski@samsung.com>
 References: <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170119134904eucas1p1cc044892728a1716acc2f77f32180c42@eucas1p1.samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+ <CGME20170119134908eucas1p1adfde3c9f750f3757367f9dc3abf7dbc@eucas1p1.samsung.com>
+Return-path: <linux-gpio-owner@vger.kernel.org>
 In-reply-to: <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-gpio-owner@vger.kernel.org
 To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Replace custom code with generic helper to retrieve driver data.
+'enable' parameter has been removed a while ago, so all code for handling
+it can be simply removed.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
 ---
- drivers/soc/samsung/exynos-pmu.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/pinctrl/samsung/pinctrl-samsung.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/soc/samsung/exynos-pmu.c b/drivers/soc/samsung/exynos-pmu.c
-index 5c269bf23210..1f914e63dcc6 100644
---- a/drivers/soc/samsung/exynos-pmu.c
-+++ b/drivers/soc/samsung/exynos-pmu.c
-@@ -11,6 +11,7 @@
+diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
+index 10b3fd826231..2803ae57f373 100644
+--- a/drivers/pinctrl/samsung/pinctrl-samsung.c
++++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
+@@ -350,7 +350,7 @@ static void pin_to_reg_bank(struct samsung_pinctrl_drv_data *drvdata,
  
- #include <linux/of.h>
- #include <linux/of_address.h>
-+#include <linux/of_device.h>
- #include <linux/mfd/syscon.h>
- #include <linux/platform_device.h>
- #include <linux/delay.h>
-@@ -105,7 +106,6 @@ struct regmap *exynos_get_pmu_regmap(void)
- 
- static int exynos_pmu_probe(struct platform_device *pdev)
+ /* enable or disable a pinmux function */
+ static void samsung_pinmux_setup(struct pinctrl_dev *pctldev, unsigned selector,
+-					unsigned group, bool enable)
++					unsigned group)
  {
--	const struct of_device_id *match;
- 	struct device *dev = &pdev->dev;
- 	struct resource *res;
+ 	struct samsung_pinctrl_drv_data *drvdata;
+ 	const struct samsung_pin_bank_type *type;
+@@ -380,8 +380,7 @@ static void samsung_pinmux_setup(struct pinctrl_dev *pctldev, unsigned selector,
  
-@@ -122,10 +122,7 @@ static int exynos_pmu_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
- 	pmu_context->dev = dev;
--
--	match = of_match_node(exynos_pmu_of_device_ids, dev->of_node);
--
--	pmu_context->pmu_data = match->data;
-+	pmu_context->pmu_data = of_device_get_match_data(dev);
+ 	data = readl(reg + type->reg_offset[PINCFG_TYPE_FUNC]);
+ 	data &= ~(mask << shift);
+-	if (enable)
+-		data |= func->val << shift;
++	data |= func->val << shift;
+ 	writel(data, reg + type->reg_offset[PINCFG_TYPE_FUNC]);
  
- 	if (pmu_context->pmu_data->pmu_init)
- 		pmu_context->pmu_data->pmu_init();
+ 	spin_unlock_irqrestore(&bank->slock, flags);
+@@ -392,7 +391,7 @@ static int samsung_pinmux_set_mux(struct pinctrl_dev *pctldev,
+ 				  unsigned selector,
+ 				  unsigned group)
+ {
+-	samsung_pinmux_setup(pctldev, selector, group, true);
++	samsung_pinmux_setup(pctldev, selector, group);
+ 	return 0;
+ }
+ 
 -- 
 1.9.1
+
