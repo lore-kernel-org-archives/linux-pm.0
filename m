@@ -1,89 +1,93 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Subject: Re: [PATCH] drivers: power: supply: Compress return logic into one
- line.
-Date: Thu, 19 Jan 2017 16:24:42 -0600
-Message-ID: <20170119162442.Horde.0gCiElFw7JW8tutB4C5x_4H@gator4166.hostgator.com>
-References: <20170112022935.GA22272@embeddedgus>
- <20170116234219.nkwgpyb4wyuq4ozq@earth>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] power: reset: Add MAX77620 support
+Date: Thu, 19 Jan 2017 15:29:34 -0800
+Message-ID: <20170119232934.GA18102@roeck-us.net>
+References: <20170112161507.23774-1-thierry.reding@gmail.com>
+ <20170113034425.7ttvc73aewtbitrk@earth>
+ <20170119122357.GF30182@ulmo.ba.sec>
+ <20170119230036.sjfqvqxgxutis6xs@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed; DelSp=Yes
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170116234219.nkwgpyb4wyuq4ozq@earth>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:48782 "EHLO
+        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752628AbdASX3k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jan 2017 18:29:40 -0500
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20170119230036.sjfqvqxgxutis6xs@earth>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
 
-Hey hello,
+On Fri, Jan 20, 2017 at 12:00:36AM +0100, Sebastian Reichel wrote:
+> Hi Thierry,
+> 
+> > > > [...]
+> > >
+> > > Please use register_restart_handler() instead. It has support for
+> > > priorities, is not arm specific and properly supports unregistering
+> > > (some handler with lower priority will take over). You can check
+> > > gpio-restart as an example for the API.
+> > > 
+> > > If you have some other arm_pm_restart handler (those are tried first)
+> > > I suggest to convert that to the restart handler framework. Actually
+> > > it may be a good idea to convert all of them and drop arm_pm_restart,
+> > > since there are only 4 left:
+> > > 
+> > > $ git grep "arm_pm_restart ="
+> > > drivers/firmware/psci.c:        arm_pm_restart = psci_sys_reset;
+> > > arch/arm/mach-prima2/rstc.c:    arm_pm_restart = sirfsoc_restart;
+> > > arch/arm/xen/enlighten.c:       arm_pm_restart = xen_restart;
+> > > arch/arm/kernel/setup.c:                arm_pm_restart = mdesc->restart;
+> > > 
+> > > The first 3 should be easy to update and the last one could
+> > > be solved by registering a wrapper function as restart handler,
+> > > which calls mdesc->restart().
+> > 
+> > I remember this not being the first time that this confuses me. And from
+> > looking around a little it seems like I'm not the only one.
+> > 
+> > Do you know if there's ever been any attempts to formalize all of this
+> > by adding some sort of framework for this? That way some of the
+> > confusion may be removed and architecture-specific bits could be
+> > eliminated more easily.
+> 
+> We have a framework for restart handlers, which has been written
+> by Guenter Roeck [0] in 2014. You just have to call register_restart_handler()
+> during probe and unregister_restart_handler() during removal of
+> your reboot driver. All reboot drivers in drivers/power/reset use
+> that framework.
+> 
+> The restart handlers are invoked by calling do_kernel_restart()
+> based on their configured priority. That function is called by
+> the architecture's machine_restart() function. It's currently
+> used by mips, ppc, arm & arm64 as far as I can see. ARM's
+> implementation looks like this:
+> 
+> if (arm_pm_restart)
+> 	arm_pm_restart()
+> else
+> 	do_kernel_restart() /* reboot handler framework */
+> 
+I actually have a set of patches somewhere which transforms the remaining
+direct users of arm_pm_restart to use the framework (unless I removed it
+from my trees - I don't really recall). I just never got around to submit
+it, and then [2] happened and I lost interest.
 
-Quoting Sebastian Reichel <sre@kernel.org>:
+> No such thing exists for poweroff. Guenter also wrote something for
+> that [1], but Linus intervened [2]. Anyways, pm_power_off is at
+> least architecture independent.
+> 
+That was by far the most frustrating kernel development experience
+I ever head :-(.
 
-> Hi,
->
-> On Wed, Jan 11, 2017 at 08:29:35PM -0600, Gustavo A. R. Silva wrote:
->> Simplify return logic to avoid unnecessary variable assignments.
->> These issues were detected using Coccinelle and the following  
->> semantic patch:
->>
->> @@
->> local idexpression ret;
->> expression e;
->> @@
->>
->> -ret =
->> +return
->>      e;
->> -return ret;
->>
->> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->> ---
->>  drivers/power/supply/ab8500_btemp.c | 10 +++-------
->>  1 file changed, 3 insertions(+), 7 deletions(-)
->>
->> diff --git a/drivers/power/supply/ab8500_btemp.c  
->> b/drivers/power/supply/ab8500_btemp.c
->> index 6ffdc18..9b01b52 100644
->> --- a/drivers/power/supply/ab8500_btemp.c
->> +++ b/drivers/power/supply/ab8500_btemp.c
->> @@ -123,10 +123,7 @@ static LIST_HEAD(ab8500_btemp_list);
->>   */
->>  struct ab8500_btemp *ab8500_btemp_get(void)
->>  {
->> -	struct ab8500_btemp *btemp;
->> -	btemp = list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
->> -
->> -	return btemp;
->> +	return list_first_entry(&ab8500_btemp_list, struct ab8500_btemp, node);
->>  }
->>  EXPORT_SYMBOL(ab8500_btemp_get);
->>
->> @@ -470,7 +467,7 @@ static int ab8500_btemp_get_batctrl_res(struct  
->> ab8500_btemp *di)
->>  static int ab8500_btemp_res_to_temp(struct ab8500_btemp *di,
->>  	const struct abx500_res_to_temp *tbl, int tbl_size, int res)
->>  {
->> -	int i, temp;
->> +	int i;
->>  	/*
->>  	 * Calculate the formula for the straight line
->>  	 * Simple interpolation if we are within
->> @@ -488,9 +485,8 @@ static int ab8500_btemp_res_to_temp(struct  
->> ab8500_btemp *di,
->>  			i++;
->>  	}
->>
->> -	temp = tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
->> +	return tbl[i].temp + ((tbl[i + 1].temp - tbl[i].temp) *
->>  		(res - tbl[i].resist)) / (tbl[i + 1].resist - tbl[i].resist);
->> -	return temp;
->>  }
->>
->>  /**
->
-> Thanks, queued.
->
+Guenter
 
-Awesome, thanks!
---
-Gustavo A. R. Silva
+> [0] https://lwn.net/Articles/605298/
+> [1] https://lwn.net/Articles/617345/
+> [2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-June/351369.html
+> 
+> -- Sebastian
+
+
