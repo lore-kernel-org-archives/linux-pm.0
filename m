@@ -1,7 +1,7 @@
 From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH 3/7] arm: fix return value of parse_cpu_capacity
-Date: Thu, 19 Jan 2017 14:37:53 +0000
-Message-ID: <20170119143757.14537-4-juri.lelli@arm.com>
+Subject: [PATCH 4/7] arm: remove wrong CONFIG_PROC_SYSCTL ifdef
+Date: Thu, 19 Jan 2017 14:37:54 +0000
+Message-ID: <20170119143757.14537-5-juri.lelli@arm.com>
 References: <20170119143757.14537-1-juri.lelli@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,31 +21,38 @@ To: linux-kernel@vger.kernel.org
 Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, juri.lelli@arm.com, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, will.deacon@arm.com, gregkh@linuxfoundation.org, dietmar.eggemann@arm.com, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-parse_cpu_capacity() has to return 0 on failure, but it currently returns
-1 instead if raw_capacity kcalloc failed.
+The sysfs cpu_capacity entry for each CPU has nothing to do with
+PROC_FS, nor it's in /proc/sys path.
 
-Fix it by removing the negation of the return value.
+Remove such ifdef.
 
 Cc: Russell King <linux@arm.linux.org.uk>
-Reported-by: Morten Rasmussen <morten.rasmussen@arm.com>
-Fixes: 06073ee26775 ('ARM: 8621/3: parse cpu capacity-dmips-mhz from DT')
+Reported-and-suggested-by: Sudeep Holla <sudeep.holla@arm.com>
+Fixes: 7e5930aaef5d ('ARM: 8622/3: add sysfs cpu_capacity attribute')
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/kernel/topology.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm/kernel/topology.c | 2 --
+ 1 file changed, 2 deletions(-)
 
 diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index ebf47d91b804..b439f7fff86b 100644
+index b439f7fff86b..c760a321935b 100644
 --- a/arch/arm/kernel/topology.c
 +++ b/arch/arm/kernel/topology.c
-@@ -165,7 +165,7 @@ static int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
- 			if (!raw_capacity) {
- 				pr_err("cpu_capacity: failed to allocate memory for raw capacities\n");
- 				cap_parsing_failed = true;
--				return !ret;
-+				return ret;
- 			}
- 		}
- 		capacity_scale = max(cpu_capacity, capacity_scale);
+@@ -56,7 +56,6 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+ 	per_cpu(cpu_scale, cpu) = capacity;
+ }
+ 
+-#ifdef CONFIG_PROC_SYSCTL
+ static ssize_t cpu_capacity_show(struct device *dev,
+ 				 struct device_attribute *attr,
+ 				 char *buf)
+@@ -113,7 +112,6 @@ static int register_cpu_capacity_sysctl(void)
+ 	return 0;
+ }
+ subsys_initcall(register_cpu_capacity_sysctl);
+-#endif
+ 
+ #ifdef CONFIG_OF
+ struct cpu_efficiency {
 -- 
 2.10.0
