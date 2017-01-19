@@ -1,32 +1,108 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/3] per cpu resume latency
-Date: Thu, 19 Jan 2017 22:46:20 +0100
-Message-ID: <CAJZ5v0jsZOq=YeW=yrPCRJeS2RSABJYUg=6J8ik6RavOwd5Dyg@mail.gmail.com>
-References: <1483630187-29622-1-git-send-email-alex.shi@linaro.org>
- <8b471c83-8e62-bf93-b502-0bb7e9c271d6@linaro.org> <972e504c-0a84-7b8e-a111-7da93f91714a@linaro.org>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH 1/2] security: Change name of CONFIG_DEBUG_RODATA
+Date: Thu, 19 Jan 2017 13:57:52 -0800
+Message-ID: <CAGXu5jJxDAZJZtVCHX+RmLUHz8s4ZxBPvYadpswmZwjvCmjFEw@mail.gmail.com>
+References: <1484789346-21012-1-git-send-email-labbott@redhat.com> <1484789346-21012-2-git-send-email-labbott@redhat.com>
+Reply-To: kernel-hardening@lists.openwall.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:34189 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752383AbdASVqV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jan 2017 16:46:21 -0500
-In-Reply-To: <972e504c-0a84-7b8e-a111-7da93f91714a@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <kernel-hardening-return-6100-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: keescook@google.com
+In-Reply-To: <1484789346-21012-2-git-send-email-labbott@redhat.com>
+To: Laura Abbott <labbott@redhat.com>
+Cc: Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Jessica Yu <jeyu@redhat.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>lin
 List-Id: linux-pm@vger.kernel.org
-To: Alex Shi <alex.shi@linaro.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Alex,
-
-On Tue, Jan 10, 2017 at 9:02 AM, Alex Shi <alex.shi@linaro.org> wrote:
-> Hi All,
+On Wed, Jan 18, 2017 at 5:29 PM, Laura Abbott <labbott@redhat.com> wrote:
 >
-> Is there any comments for the testing or the patch?
+> Despite the word 'debug' in CONFIG_DEBUG_RODATA, this kernel option
+> provides key security features that are to be expected on a modern
+> system. Change the name to CONFIG_HARDENED_PAGE_MAPPINGS which more
+> accurately describes what this option is intended to do.
 
-Please see: http://marc.info/?l=linux-pm&m=148410629024194&w=2
+Oh thank you. Yes, this is badly needed. I might prefer to see this as
+two patches, though:
 
-I will get to the patches when I'm back.
+Move DEBUG_RODATA to top-level arch/Kconfig, (and add ARCH_HAS_[bikeshed]).
+Rename DEBUG_RODATA to [bikeshed]
 
-Thanks,
-Rafael
+(We should do a similar renaming for DEBUG_SET_MODULE_RONX too.)
+
+Another thing that might be even cleaner would be to entirely invert
+the logic. Something like CONFIG_ARCH_MISSING_[bikeshed]?
+
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 186c4c2..09aff28 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -7,6 +7,7 @@ config ARM
+>         select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+>         select ARCH_HAVE_CUSTOM_GPIO_H
+>         select ARCH_HAS_GCOV_PROFILE_ALL
+> +       select ARCH_HAS_HARDENED_MAPPINGS if MMU && !XIP_KERNEL
+>         select ARCH_MIGHT_HAVE_PC_PARPORT
+>         select ARCH_SUPPORTS_ATOMIC_RMW
+>         select ARCH_USE_BUILTIN_BSWAP
+> diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+> index f68e8ec..e770dc9 100644
+> --- a/arch/arm/mm/Kconfig
+> +++ b/arch/arm/mm/Kconfig
+> @@ -1051,21 +1051,9 @@ config ARCH_SUPPORTS_BIG_ENDIAN
+>           This option specifies the architecture can support big endian
+>           operation.
+>
+> -config DEBUG_RODATA
+> -       bool "Make kernel text and rodata read-only"
+> -       depends on MMU && !XIP_KERNEL
+> -       default y if CPU_V7
+
+These changes aren't correctly representing the ARM state. I think the
+ARCH_HAS is correct, but I'm not sure the best way to include the
+"default y if CPU_V7".
+
+> --- a/security/Kconfig
+> +++ b/security/Kconfig
+> @@ -158,6 +158,22 @@ config HARDENED_USERCOPY_PAGESPAN
+>           been removed. This config is intended to be used only while
+>           trying to find such users.
+>
+> +config ARCH_HAS_HARDENED_MAPPINGS
+> +       def_bool n
+> +
+> +config HARDENED_PAGE_MAPPINGS
+> +       bool "Mark kernel mappings with stricter permissions (RO/W^X)"
+> +       default y
+> +       depends on ARCH_HAS_HARDENED_MAPPINGS
+> +       help
+> +          If this is set, kernel text and rodata memory will be made read-only,
+> +         and non-text memory will be made non-executable. This provides
+> +         protection against certain security attacks (e.g. executing the heap
+> +         or modifying text).
+> +
+> +         Unless your system has known restrictions or performance issues, it
+> +         is recommended to say Y here.
+> +
+>  source security/selinux/Kconfig
+>  source security/smack/Kconfig
+>  source security/tomoyo/Kconfig
+
+Should this go in arch/Kconfig or security/Kconfig? I'm starting to
+think we need a top-level kernel security Kconfig (the gcc plugins are
+starting to pile up in arch/Kconfig, for example). I think since this
+is arch specific, maybe arch/Kconfig? (Arguably, HARDENED_USERCOPY
+shouldn't be in security/Kconfig either, since security/Kconfig is
+mostly LSM or userspace-facing stuff? I dunno.)
+
+As for the bikeshed on the naming, I like "KERNEL_RWX", and it likely
+doesn't need "STRICT", IMO. CONFIG_KERNEL_RWX ? I don't have a strong
+opinion beyond removing "DEBUG" from the name. :)
+
+-Kees
+
+-- 
+Kees Cook
+Nexus Security
