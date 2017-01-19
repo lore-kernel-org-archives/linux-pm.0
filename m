@@ -1,58 +1,68 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH 06/12] PM / OPP: Add 'struct kref' to struct dev_pm_opp
-Date: Thu, 19 Jan 2017 12:01:00 -0800
-Message-ID: <20170119200100.GB7829@codeaurora.org>
-References: <cover.1481106919.git.viresh.kumar@linaro.org>
- <1d5f61440dbfb640c330f77c9090e2ac23482ebc.1481106919.git.viresh.kumar@linaro.org>
- <20170109234427.GY17126@codeaurora.org>
- <20170110042632.GC6332@vireshk-i7>
- <20170113085259.GS17126@codeaurora.org>
- <20170113085639.GE9953@vireshk-i7>
+From: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCH 1/2] security: Change name of CONFIG_DEBUG_RODATA
+Date: Thu, 19 Jan 2017 22:17:12 +0100
+Message-ID: <a3c9b67f-9b10-15d5-c00f-7b8a98d11001@gmx.de>
+References: <1484789346-21012-1-git-send-email-labbott@redhat.com>
+ <1484789346-21012-2-git-send-email-labbott@redhat.com>
+ <20170119105646.GA11176@leverpostej> <20170119113305.GB5110@osiris>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:52334 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754472AbdASUKd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jan 2017 15:10:33 -0500
-Content-Disposition: inline
-In-Reply-To: <20170113085639.GE9953@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20170119113305.GB5110@osiris>
+Sender: linux-doc-owner@vger.kernel.org
+To: Heiko Carstens <heiko.carstens@de.ibm.com>, Mark Rutland <mark.rutland@arm.com>
+Cc: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jessica Yu <jeyu@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 01/13, Viresh Kumar wrote:
-> On 13-01-17, 00:52, Stephen Boyd wrote:
-> > What still doesn't make sense is how an individual OPP could go
-> > away without the table that the OPP lives in also going away.
+On 19.01.2017 12:33, Heiko Carstens wrote:
+> On Thu, Jan 19, 2017 at 10:56:46AM +0000, Mark Rutland wrote:
+>>> +config HARDENED_PAGE_MAPPINGS
+>>> +	bool "Mark kernel mappings with stricter permissions (RO/W^X)"
+>>> +	default y
+>>> +	depends on ARCH_HAS_HARDENED_MAPPINGS
+>>> +	help
+>>> +          If this is set, kernel text and rodata memory will be made read-only,
+>>> +	  and non-text memory will be made non-executable. This provides
+>>> +	  protection against certain security attacks (e.g. executing the heap
+>>> +	  or modifying text).
+>>> +
+>>> +	  Unless your system has known restrictions or performance issues, it
+>>> +	  is recommended to say Y here.
+>>
+>> It's somewhat unfortunate that this means the feature is no longer
+>> mandatory on arm64 (and s390+x86). We have a boot-time switch to turn
+>> the protections off, so I was hoping we could make this mandatory on all
+>> architectures with support.
+>>
+>> It would be good to see if we could make this mandatory for arm and
+>> parisc, or if it really needs to be optional for either of those.
 > 
-> dev_pm_opp_remove() is one such option, which can remove OPPs
-> individually. Over that, while remove tables we remove all the OPPs
-> one by one. So that really does happen.
-> 
-> > If
-> > an OPP is going away while a driver has a reference to it, then
-> > the driver using that OPP should probably not be using it.
-> 
-> That is being protected with this patch now and the drivers can use
-> them freely.
-> 
-> > TL;DR
-> > letting drivers use OPP pointers outside of the OPP core feels
-> > racy.
-> 
-> Hmm, we don't update the OPP a lot after creating it today. But that's
-> a different problem to solve, if we really see a race there.
-> 
+> Looks like the config option is a no-op on parisc just like it is on
+> s390. Irrelavant of the config option at least on s390 the page tables for
+> kernel text and rodata will be read-only anyway.
 
-Ok. We still have work to do to fix the race between drivers
-using dev_pm_opp pointers and other drivers updating the data
-those pointers point to like voltage, enable/disable, etc. This
-isn't making anything worse than it already is though, so:
+Right, that's true at the moment for parisc as well.
+I do have unfinished patches which will add runtime kernel patching
+for ftrace to parisc, and those patches will need to add code to 
+enable/disable ro text/data like x86.
+ 
+> This works since ages and I don't see a reason why this should be
+> changed. Also trying to disable this with the "rodata=" command line option
+> does not work at least on s390, and I guess this is true for parisc as
+> well.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+I never tried the option itself, but it should work on parisc to disable
+the ro protection by this option.
+ 
+> The only thing implemented with CONFIG_DEBUG_RODATA on both architectures
+> is to emit a message that states memory has been protected
+> (mark_rodata_ro).
+> This just avoids a wrong "Kernel memory protection disabled." message.
+> 
+> So yes, I'd really like to keep this option mandatory.
+ 
+I'd be fine with a rename of the config option to ARCH_HAS_HARDENED_MAPPINGS
+and keeping the "rodata=" command line.
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Helge
