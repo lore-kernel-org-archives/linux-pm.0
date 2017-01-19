@@ -1,68 +1,90 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCH 1/2] security: Change name of CONFIG_DEBUG_RODATA
-Date: Thu, 19 Jan 2017 22:17:12 +0100
-Message-ID: <a3c9b67f-9b10-15d5-c00f-7b8a98d11001@gmx.de>
-References: <1484789346-21012-1-git-send-email-labbott@redhat.com>
- <1484789346-21012-2-git-send-email-labbott@redhat.com>
- <20170119105646.GA11176@leverpostej> <20170119113305.GB5110@osiris>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/3] cpuidle/menu: add per cpu pm_qos_resume_latency consideration
+Date: Thu, 19 Jan 2017 22:43:23 +0100
+Message-ID: <CAJZ5v0ifEfqN04XdDjjMQhuo6eznqgnj+VQEGFCUxzjzAxb2=g@mail.gmail.com>
+References: <1484227624-6740-1-git-send-email-alex.shi@linaro.org>
+ <1484227624-6740-4-git-send-email-alex.shi@linaro.org> <20170117093837.GA2085@mai>
+ <01f9b016-0b7c-44ac-70e5-8cd9b8bd1500@linaro.org> <20170119102158.GA1827@mai>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <20170119113305.GB5110@osiris>
-Sender: linux-doc-owner@vger.kernel.org
-To: Heiko Carstens <heiko.carstens@de.ibm.com>, Mark Rutland <mark.rutland@arm.com>
-Cc: Laura Abbott <labbott@redhat.com>, Kees Cook <keescook@chromium.org>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jessica Yu <jeyu@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f194.google.com ([74.125.82.194]:33059 "EHLO
+        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751751AbdASVnh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jan 2017 16:43:37 -0500
+In-Reply-To: <20170119102158.GA1827@mai>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Alex Shi <alex.shi@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>
 
-On 19.01.2017 12:33, Heiko Carstens wrote:
-> On Thu, Jan 19, 2017 at 10:56:46AM +0000, Mark Rutland wrote:
->>> +config HARDENED_PAGE_MAPPINGS
->>> +	bool "Mark kernel mappings with stricter permissions (RO/W^X)"
->>> +	default y
->>> +	depends on ARCH_HAS_HARDENED_MAPPINGS
->>> +	help
->>> +          If this is set, kernel text and rodata memory will be made read-only,
->>> +	  and non-text memory will be made non-executable. This provides
->>> +	  protection against certain security attacks (e.g. executing the heap
->>> +	  or modifying text).
->>> +
->>> +	  Unless your system has known restrictions or performance issues, it
->>> +	  is recommended to say Y here.
+On Thu, Jan 19, 2017 at 11:21 AM, Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+> On Thu, Jan 19, 2017 at 05:25:37PM +0800, Alex Shi wrote:
 >>
->> It's somewhat unfortunate that this means the feature is no longer
->> mandatory on arm64 (and s390+x86). We have a boot-time switch to turn
->> the protections off, so I was hoping we could make this mandatory on all
->> architectures with support.
+>> > That said, I have the feeling that is taking the wrong direction. Each time we
+>> > are entering idle, we check the latencies. Entering idle can be done thousand
+>> > of times per second. Wouldn't make sense to disable the states not fulfilling
+>> > the constraints at the moment the latencies are changed ? As the idle states
+>> > have increasing exit latencies, setting an idle state limit to disable all
+>> > states after that limit may be more efficient than checking again and again in
+>> > the idle path, no ?
 >>
->> It would be good to see if we could make this mandatory for arm and
->> parisc, or if it really needs to be optional for either of those.
-> 
-> Looks like the config option is a no-op on parisc just like it is on
-> s390. Irrelavant of the config option at least on s390 the page tables for
-> kernel text and rodata will be read-only anyway.
+>> You'r right. save some checking is good thing to do.
+>
+> Hi Alex,
+>
+> I think you missed the point.
+>
+> What I am proposing is to change the current approach by disabling all the
+> states after a specific latency.
+>
+> We add a specific internal function:
+>
+> static int cpuidle_set_latency(struct cpuidle_driver *drv,
+>                                 struct cpuidle_device *dev,
+>                                 int latency)
+> {
+>         int i, idx;
+>
+>         for (i = 0, idx = 0; i < drv->state_count; i++) {
+>
+>                 struct cpuidle_state *s = &drv->states[i];
+>
+>                 if (s->latency > latency)
+>                         break;
+>
+>                 idx = i;
+>         }
+>
+>         dev->state_count = idx;
+>
+>         return 0;
+> }
+>
+> This function is called from the notifier callback:
+>
+> static int cpuidle_latency_notify(struct notifier_block *b,
+>                 unsigned long l, void *v)
+>  {
+> -       wake_up_all_idle_cpus();
+> +       struct cpuidle_device *dev;
+> +       struct cpuidle_driver *drv;
+> +
+> +       cpuidle_pause_and_lock();
+> +       for_each_possible_cpu(cpu) {
+> +               dev = &per_cpu(cpuidle_dev, cpu);
+> +               drv = = cpuidle_get_cpu_driver(dev);
+> +               cpuidle_set_latency(drv, dev, l)
+> +       }
+> +       cpuidle_resume_and_unlock();
+> +
+>         return NOTIFY_OK;
+>  }
 
-Right, that's true at the moment for parisc as well.
-I do have unfinished patches which will add runtime kernel patching
-for ftrace to parisc, and those patches will need to add code to 
-enable/disable ro text/data like x86.
- 
-> This works since ages and I don't see a reason why this should be
-> changed. Also trying to disable this with the "rodata=" command line option
-> does not work at least on s390, and I guess this is true for parisc as
-> well.
+The above may be problematic if the constraints change relatively
+often.  It is global and it will affect all of the CPUs in the system
+every time and now think about systems with hundreds of them.
 
-I never tried the option itself, but it should work on parisc to disable
-the ro protection by this option.
- 
-> The only thing implemented with CONFIG_DEBUG_RODATA on both architectures
-> is to emit a message that states memory has been protected
-> (mark_rodata_ro).
-> This just avoids a wrong "Kernel memory protection disabled." message.
-> 
-> So yes, I'd really like to keep this option mandatory.
- 
-I'd be fine with a rename of the config option to ARCH_HAS_HARDENED_MAPPINGS
-and keeping the "rodata=" command line.
-
-Helge
+Thanks,
+Rafael
