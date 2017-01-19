@@ -1,102 +1,77 @@
 From: Thierry Reding <thierry.reding@gmail.com>
 Subject: Re: [PATCH] power: reset: Add MAX77620 support
-Date: Thu, 19 Jan 2017 13:23:57 +0100
-Message-ID: <20170119122357.GF30182@ulmo.ba.sec>
+Date: Thu, 19 Jan 2017 13:27:44 +0100
+Message-ID: <20170119122744.GG30182@ulmo.ba.sec>
 References: <20170112161507.23774-1-thierry.reding@gmail.com>
- <20170113034425.7ttvc73aewtbitrk@earth>
+ <5877B088.5040007@nvidia.com>
+ <20170112173513.GA22794@ulmo.ba.sec>
+ <5877BE49.2010008@nvidia.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="f61P+fpdnY2FZS1u"
+        protocol="application/pgp-signature"; boundary="/i8j2F0k9BYX4qLc"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170113034425.7ttvc73aewtbitrk@earth>
+In-Reply-To: <5877BE49.2010008@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
+To: Laxman Dewangan <ldewangan@nvidia.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
 
---f61P+fpdnY2FZS1u
+--/i8j2F0k9BYX4qLc
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jan 13, 2017 at 04:44:25AM +0100, Sebastian Reichel wrote:
-> On Thu, Jan 12, 2017 at 05:15:07PM +0100, Thierry Reding wrote:
-[...]
-> > +	if (!of_property_read_bool(np, "system-power-controller"))
-> > +		return 0;
-> > +
-> > +	power =3D devm_kzalloc(&pdev->dev, sizeof(*power), GFP_KERNEL);
-> > +	if (!power)
-> > +		return -ENOMEM;
-> > +
-> > +	power->regmap =3D max77620->rmap;
-> > +	power->dev =3D &pdev->dev;
-> > +
-> > +	err =3D regmap_read(power->regmap, MAX77620_REG_NVERC, &value);
-> > +	if (err < 0) {
-> > +		dev_err(power->dev, "failed to read event recorder: %d\n", err);
-> > +		return err;
-> > +	}
-> > +
-> > +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
-> > +
-> > +	system_power_controller =3D power;
-> > +	pm_power_off =3D max77620_pm_power_off;
+On Thu, Jan 12, 2017 at 11:05:05PM +0530, Laxman Dewangan wrote:
 >=20
-> > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
-> > +	arm_pm_restart =3D max77620_pm_restart;
-> > +#endif
+> On Thursday 12 January 2017 11:05 PM, Thierry Reding wrote:
+> > * PGP Signed by an unknown key
+> >=20
+> > On Thu, Jan 12, 2017 at 10:06:24PM +0530, Laxman Dewangan wrote:
+> > > On Thursday 12 January 2017 09:45 PM, Thierry Reding wrote:
+> > > >=20
+> > > > +	dev_dbg(&pdev->dev, "event recorder: %#x\n", value);
+> > > > +
+> > > > +	system_power_controller =3D power;
+> > > > +	pm_power_off =3D max77620_pm_power_off;
+> > > > +#if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
+> > > > +	arm_pm_restart =3D max77620_pm_restart;
+> > > What if we want to reset via the Tegra and not through PMIC?
+> > In that case I assume we either don't have a PMIC, or we should not add
+> > the system-power-controller device tree property to the PMIC node. In
+> > the latter case this driver won't install any power off or restart
+> > callbacks.
 >=20
-> Please use register_restart_handler() instead. It has support for
-> priorities, is not arm specific and properly supports unregistering
-> (some handler with lower priority will take over). You can check
-> gpio-restart as an example for the API.
 >=20
-> If you have some other arm_pm_restart handler (those are tried first)
-> I suggest to convert that to the restart handler framework. Actually
-> it may be a good idea to convert all of them and drop arm_pm_restart,
-> since there are only 4 left:
->=20
-> $ git grep "arm_pm_restart =3D"
-> drivers/firmware/psci.c:        arm_pm_restart =3D psci_sys_reset;
-> arch/arm/mach-prima2/rstc.c:    arm_pm_restart =3D sirfsoc_restart;
-> arch/arm/xen/enlighten.c:       arm_pm_restart =3D xen_restart;
-> arch/arm/kernel/setup.c:                arm_pm_restart =3D mdesc->restart;
->=20
-> The first 3 should be easy to update and the last one could
-> be solved by registering a wrapper function as restart handler,
-> which calls mdesc->restart().
+> We need reset from Tegra and power of from PMIC. Tegra does not support
+> power OFF.
 
-I remember this not being the first time that this confuses me. And from
-looking around a little it seems like I'm not the only one.
-
-Do you know if there's ever been any attempts to formalize all of this
-by adding some sort of framework for this? That way some of the
-confusion may be removed and architecture-specific bits could be
-eliminated more easily.
+Can you explain in more details what exactly the combination is that we
+need to support? Why can't the PMIC both be the reset and power off
+controller? Are there any advantages to resetting with the SoC rather
+than the PMIC?
 
 Thierry
 
---f61P+fpdnY2FZS1u
+--/i8j2F0k9BYX4qLc
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAliAr9sACgkQ3SOs138+
-s6FU4BAAhK6/BpadZHrwSHeAWvARhNjvuKBrqA0OrJzIbFHyiXajo8CMfvUam2qD
-wjXHvvTIH8N3jZ1ufhljFPIQnf9tZ7LYKk3noQkWN5/rJ4+wmlQt/6CIMZischti
-i7C3qGKBYOW4RzwyZz7YhydO/vnOEANcQYkWjIqWq9mJJCYGwhtDH+5Aw5LEkdS5
-xxPDwZ9rXCtJkrE6rxF+9W3EQ0x+O/ulsMVkPXV2EX4x++wKwVPutnNYAnyfStJI
-niOfQU8NhnpvagvGZIoH9E1VU85VKdXRVi8q7/e2b8AQtDwkDzqBdHT7Sl+VcLkJ
-OHX+YmeYd2igwgEKulDLG0jc2S9DqMIOsM++XZR3NP00Ewv6EMq4MukX/fSDGgQK
-n/T+YkJKZeBhGkFwajjn8hlaHqV8O+u2hLByck+hqqpIHi+IaovGvOQI5ItAxkG7
-LM7KW9u9zbq2k4D4Hh87xX+iZcY2BNXaGeU5FWFsensjAdmnz7f32kbZjiwDgOxe
-oOchPiS/gLmGkbcOlXcBVUzNKNKDuR9xsuX/Z/s+bPK3bmg/XfTkSTpbdm2iuJsh
-zITxOEHKYiQYKwpVsRljqODCNNfIZFK7Ci64mV2hy8bRfbCXYiQ6+PLAA16HQUtj
-94f8Mom0MhpqZGdfYZ5nPr22CZXEL0yFcVzR7pnB13CDnARnonM=
-=eCFl
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAliAsMAACgkQ3SOs138+
+s6H8lA/8CRshXCiGcY799U5D4c+JHzmUy0dYPbUERYBpiHWG0j3+UXvN44rKuJhA
+ZzREXyQejB4aRIU9ksf6wCNn9yBwIfZCABgSEu9FRpatEr6wG55pULS+3m+tFO0z
+dEpBquuhFRX/kJS4FC0Eo+iKJYgxrCSmWjs9SvH/ct+aSR7W8xC9C3oyxM9iZNog
+MSswaIjwk3xI9/KW5k/2CSbgINmNOiE0Es5H+0Lt7tm3ASfU7cSxTXtY9z3OE0uu
+rYXy23CLKkbHxMs0nfBY9sd1aRCnMkrDzEfZjDoasndPUaWpyrWy7NsegXLbQpC1
+X2PeSwNHARL0MFnejDF1DWKe7c9/34SiksHPOG032lFmctdoz+u9XDJ/oo3RCrrP
+umY98AecRcsr7yf4Qx6spNYN1o1NNlKgbp/dveDDMsUjMHbRh2vv8/4zSILowI8c
+5pK+FOIcuA1vyi3gkKHbTyKI9hzEXqAV4QDQffJst34ECX0FDFQhIj40TWKtQfDM
+3HCzvtELY9tb3MO76IpdMv2zl5/3ZlMTzEWsWHJdphG9VtoINwxUz8K4wwVGu+kx
+I/P6UASkEvfSZXyWZaK3u7NJ/Y/CvORrJhhhlWsGJO5cdJc9FeRDjdmPpr7/Cig4
+eq9wc8FXXGRWoip8pDT3odCOEQMWP0hmGz+0n0LG2VQPlJQrDLE=
+=u+5f
 -----END PGP SIGNATURE-----
 
---f61P+fpdnY2FZS1u--
+--/i8j2F0k9BYX4qLc--
