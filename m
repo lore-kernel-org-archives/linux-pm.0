@@ -1,96 +1,102 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
-Date: Fri, 20 Jan 2017 17:52:03 +0100
-Message-ID: <CAPDyKFpTyn2isNahywmOOSWiZKov9xsudyWi_i-FejXjC+1AZw@mail.gmail.com>
-References: <20170104205536.15963-1-d-gerlach@ti.com>
- <20170104205536.15963-3-d-gerlach@ti.com>
- <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
- <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
- <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
- <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
- <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
- <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
- <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
- <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
- <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
- <m2ziip2puf.fsf@baylibre.com>
- <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
- <CAPDyKFqzs59N5bc89X-96Fgy9b=_+s8zYmHHshQeDrJCnaqprA@mail.gmail.com>
- <58821CA2.4050701@ti.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH] power: reset: Add MAX77620 support
+Date: Fri, 20 Jan 2017 09:53:07 -0800
+Message-ID: <20170120175307.GA6005@roeck-us.net>
+References: <20170112161507.23774-1-thierry.reding@gmail.com>
+ <20170113034425.7ttvc73aewtbitrk@earth>
+ <20170119122357.GF30182@ulmo.ba.sec>
+ <20170119230036.sjfqvqxgxutis6xs@earth>
+ <20170119232934.GA18102@roeck-us.net>
+ <20170120083804.GF4894@ulmo.ba.sec>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <58821CA2.4050701@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: Nishanth Menon <nm@ti.com>, Rob Herring <robh@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>, Kevin Hilman <khilman@baylibre.com>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tero Kristo <t-kristo@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170120083804.GF4894@ulmo.ba.sec>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+On Fri, Jan 20, 2017 at 09:38:04AM +0100, Thierry Reding wrote:
+> > 
+> > > No such thing exists for poweroff. Guenter also wrote something for
+> > > that [1], but Linus intervened [2]. Anyways, pm_power_off is at
+> > > least architecture independent.
+> > > 
+> > That was by far the most frustrating kernel development experience
+> > I ever head :-(.
+> 
+> It was a little difficult to track down all the discussion around this,
+> but reading through what I could find, I can understand why this would
+> have been frustrating. You obviously spent an enormous amount of work
+> only to get it shot down.
+> 
+> I have to say that I have similar concerns to those voiced by Linus and
+> Rafael. Notifier chains and priority seem too little restrictive for
+> this kind of functionality, in my opinion. I think those concerns could
+> be removed if things got formalized using a framework.
+> 
 
->>> Another option is create something new either common or TI SCI
->>> specific. It could be just a table of ids and phandles in the SCI
->>> node. I'm much more comfortable with an isolated property in one node
->>> than something scattered throughout the DT.
->>
->> To me, this seems like the best possible solution.
->>
->> However, perhaps we should also consider the SCPI Generic power domain
->> (drivers/firmware/scpi_pm_domain.c), because I believe it's closely
->> related.
->> To change the power state of a device, this PM domain calls
->> scpi_device_set|get_power_state() (drivers/firmware/arm_scpi.c), which
->> also needs a device id as a parameter. Very similar to our case with
->> the TI SCI domain.
->>
->> Currently these SCPI device ids lacks corresponding DT bindings, so
->> the scpi_pm_domain tries to work around it by assigning ids
->> dynamically at genpd creation time.
->>
->> That makes me wonder, whether we should think of something common/generic?
->
-> When you say something common/generic, do you mean a better binding for genpd,
-> or something bigger than that like a new driver? Because I do think a phandle
-> cell left open for the genpd provider to interpret solves both the scpi and
-> ti-sci problem we are facing here in the best way. Using generic PM domains lets
-> us do exactly what we want apart from interpreting the phandle cell with our
-> driver, and I feel like anything else we try at this point is just going to be
-> to work around that. Is bringing back genpd xlate something we can discuss?
+Exactly the same argument applies to the restart handler. I am just glad
+I got it in before the objections came up.
 
-Bringing back xlate, how would that help? Wouldn't that just mean that
-you will get one genpd per device? That's not an option, I think we
-are all in agreement to that.
+I do understand the concerns, which is why I tried to accommodate them
+and come up with another solution. However, it boils down to the following:
 
-Or am I missing something here?
+- Priorities are needed, no matter how they are called.
+- Data structures have to be allocated statically, since the code
+  still needs to work if the system is out of memory.
+- Data structurs need to be maintained in a prioritized list or similar,
+  to be able to handle insertions and removals at will, and to be able
+  to determine which function should be called first.
 
-Regarding something "common/generic", I was merely thinking of some
-common bindings describing the list of phandle to device ids mapping.
-However, let's not make this more complicated than it is already. So
-please just ignore my suggestion so we can make this work for your
-case first.
+So ultimately, no matter what you do, you'll end up re-implementing
+parts of the notifier code.
 
-However, maybe I didn't fully understood Rob's suggestion. Perhaps Rob
-can clarify once more.
+To me the argument, ultimately, boils down to arguing with Amazon that they
+should always use the smallest possible packaging (and not ship flash drives
+in such a large box that it is hard to find). Just like Amazon has good reasons
+to standardize on a limited number of box sizes, an argument can be made to
+have only a limited amount of infrastructure code. If some infrastructure code
+is "too little restrictive", but does the job, so be it. That should not be
+a reason to have separate and highly specialized infrastructure for everything,
+just to make it a 100% fit.
 
-Anyway, this is how interpreted Rob's suggestion:
+That is, however, my personal opinion. If people want to have and implement
+a large amount of highly specialized infrastructure instead of more generic
+(and less restrictive) infrastructure, so be it. Just don't expect _me_
+to implement it.
 
-TISCI_PM_DOMAIN_DEVLIST: tisci-pm-domain-devlist {
-     devs = <&serial0>, <&mmc0>;
-     devids = <5 10>;
-}
+> Without having spent the amount of time on the topic that you have, the
+> following straw-man proposal is perhaps a little naive:
+> 
+> 	struct system_power_controller;
+> 
+> 	struct system_power_ops {
+> 		int (*power_off)(struct system_power_controller *spc);
+> 		int (*restart)(struct system_power_controller *spc,
+> 			       enum reboot_mode mode,
+> 			       const char *cmd);
+> 	};
+> 
+> 	struct system_power_controller {
+> 		struct device *dev;
+> 		const struct system_power_ops *ops;
+> 		struct list_head list;
+> 		...
+> 	};
+> 
+> 	int system_power_controller_add(struct system_power_controller *spc);
+> 	void system_power_controller_remove(struct system_power_controller *spc);
+> 
+> 	int system_power_off(void);
+> 	int system_restart(enum reboot_mode mode, const char *cmd);
+> 
+It seems to me that restart and power off are inherently independent of each
+other. I would personally not try to unify them. Having said that, that is my
+personal opinion only. I would for sure not object to anything in this area
+(nor get involved - once was enough ;-).
 
-With this, you should be to extract the devid which corresponds to the
-device that has been attached to the TI SCI PM domain. Don't you
-think?
-
-Kind regards
-Uffe
+Thanks,
+Guenter
