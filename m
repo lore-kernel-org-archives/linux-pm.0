@@ -1,84 +1,112 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: Re: [PATCH] power: reset: Add MAX77620 support
-Date: Fri, 20 Jan 2017 14:11:16 +0100
-Message-ID: <20170120131116.GA26505@ulmo.ba.sec>
-References: <20170112161507.23774-1-thierry.reding@gmail.com>
- <20170113034425.7ttvc73aewtbitrk@earth>
- <20170119122357.GF30182@ulmo.ba.sec>
- <20170119230036.sjfqvqxgxutis6xs@earth>
- <20170119232934.GA18102@roeck-us.net>
- <20170120124404.wmlpiuqyizi7uhyi@earth>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM phases
+Date: Fri, 20 Jan 2017 14:16:55 +0100
+Message-ID: <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com>
+References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f194.google.com ([209.85.210.194]:33594 "EHLO
-        mail-wj0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750893AbdATNOL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2017 08:14:11 -0500
-Content-Disposition: inline
-In-Reply-To: <20170120124404.wmlpiuqyizi7uhyi@earth>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:38007 "EHLO
+        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752069AbdATNRH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2017 08:17:07 -0500
+Received: by mail-wm0-f44.google.com with SMTP id r144so42925576wme.1
+        for <linux-pm@vger.kernel.org>; Fri, 20 Jan 2017 05:16:57 -0800 (PST)
+In-Reply-To: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
+To: Elaine Zhang <zhangqing@rock-chips.com>
+Cc: Feng Xiao <xf@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, xxx@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+
+On 20 January 2017 at 03:21, Elaine Zhang <zhangqing@rock-chips.com> wrote:
+> If a PM domain is powered off before system suspend,
+> we hope do nothing in system runtime suspend noirq phase
+> and system runtime resume noirq phase.
+
+One can hope, but that isn't good enough. :-)
 
 
---YiEDa0DAkWCtVeE4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>
+> This modify is to slove system resume issue for RK3399.
+> RK3399 SOC pd_gpu have voltage domain vdd_gpu,
+> so we must follow open vdd_gpu and power on pd_gpu,
+> power off pd_gpu and disable vdd_gpu.
+> Fix up in runtime resume noirq phase power on all PDs.
 
-On Fri, Jan 20, 2017 at 01:44:04PM +0100, Sebastian Reichel wrote:
-> Hi,
->=20
-> On Thu, Jan 19, 2017 at 03:29:34PM -0800, Guenter Roeck wrote:
-> > On Fri, Jan 20, 2017 at 12:00:36AM +0100, Sebastian Reichel wrote:
-> > I actually have a set of patches somewhere which transforms the remaini=
-ng
-> > direct users of arm_pm_restart to use the framework (unless I removed it
-> > from my trees - I don't really recall). I just never got around to subm=
-it
-> > it, and then [2] happened and I lost interest.
->=20
-> I found a patchset from you from 2016. I see a few Acks and no
-> negative feedback. Looks like they only need to be uploaded at
-> Russel's patch system?
->=20
-> arch/arm/mach-prima2/rstc.c			https://patchwork.kernel.org/patch/8844441/
-> arch/arm/xen/enlighten.c			https://patchwork.kernel.org/patch/8844481/
-> drivers/firmware/psci.c				https://patchwork.kernel.org/patch/8844411/
-> arch/arm/kernel/setup.c				https://patchwork.kernel.org/patch/8844451/
-> removal of ARM64 arm_pm_restart		https://patchwork.kernel.org/patch/88444=
-71/
-> removal of ARM32 arm_pm_restart		https://patchwork.kernel.org/patch/88443=
-91/
+This doesn't make any sense to me. Can please try to explain this is
+in great more detail, then I can try to help.
 
-Nice, those would be excellent preparatory work for my earlier framework
-proposal.
+>
+> Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
+> ---
+>  drivers/base/power/domain.c | 10 +++++++---
+>  include/linux/pm_domain.h   |  1 +
+>  2 files changed, 8 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 5711708532db..81351eec570f 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -842,8 +842,10 @@ static int pm_genpd_prepare(struct device *dev)
+>
+>         genpd_lock(genpd);
+>
+> -       if (genpd->prepared_count++ == 0)
+> +       if (genpd->prepared_count++ == 0) {
+>                 genpd->suspended_count = 0;
+> +               genpd->suspend_power_off = genpd->status == GPD_STATE_POWER_OFF;
+> +       }
+>
+>         genpd_unlock(genpd);
+>
+> @@ -877,7 +879,8 @@ static int pm_genpd_suspend_noirq(struct device *dev)
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+>
+> -       if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
+> +       if (genpd->suspend_power_off ||
+> +           (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev)))
+>                 return 0;
 
-Do you want me to pick those up and run with them a bit?
+This isn't going to work, because the PM domain might have been powered on.
 
-Thierry
+There is simply no guarantee to that the PM domain remains powered off
+during the system PM suspend phases. For example, any device in the PM
+domain that get runtime resumed after the ->prepare() callback is
+invoked this, will of course also trigger the PM domain to be powered
+on.
 
---YiEDa0DAkWCtVeE4
-Content-Type: application/pgp-signature; name="signature.asc"
+>
+>         if (genpd->dev_ops.stop && genpd->dev_ops.start) {
+> @@ -914,7 +917,8 @@ static int pm_genpd_resume_noirq(struct device *dev)
+>         if (IS_ERR(genpd))
+>                 return -EINVAL;
+>
+> -       if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
+> +       if (genpd->suspend_power_off ||
+> +           (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev)))
+>                 return 0;
 
------BEGIN PGP SIGNATURE-----
+Ditto, for the same reasons as above.
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAliCDHEACgkQ3SOs138+
-s6Fh6g/9FbL0/fnRgrih9AV+jp+ZV72gBwXFqTqt8pDjlWhAuSBEWMVhmOEN3ZlL
-JiGpunNQHw+3kCtgqaRRb/wCzlSgrj4Ao2RdIPJen9L+l7h0cBI134A2WLsoyFHC
-ydg3T+LjMoT/8XkLLl+kmDcA0qIWM+U1As8k0oGFzuXfeZ9CmUkXpntzOjcMGto9
-OiEHr3nlPJJLNHp2aX9Sx66YDUQ/q2Fc3nHfIbfcdtrh4DVHfGJL4OShx3+iZHQe
-oiI8Hv9Oq1KRh7kKD2jOhPwFZolot49aMuGJaStzgDaUygF7B7dxovtLpZdIuKcF
-aFzO8xRnGWQappr/JMfiG5d6FcG+JcvSBe2OqrpEnkd+Xz8TvVktbjj85Rr1YcJh
-uOnhsv5H1ZZuq6OYuYH+mjB6uep692dxjISm5Lk/TnKreWEA3d7/azmZG6Sbod6T
-/DdacPKyCubCobcS1tCZADyPgEn50X1HZoqrl1vJqGsBhEtJ2FBF2rkeJWD8ACfE
-8PieNokw/9Kp3F9Rk/Sa1smH7nXgoaw/RjXvQ03z/h63Ah4+JgVV5gQUwv9Hk0cU
-Yi/Q1Du6hEyP1Gnt/BLW8YEzUsT62WDWJ0pa2r3zeZmsfrByv3RFNA9Ey1LTAPwd
-LfXcOYcMjOo3pK2ZMCoZcK8GSs8Qb+sSUOiOMuMK/gEZVWM9028=
-=RTJw
------END PGP SIGNATURE-----
+>
+>         /*
+> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> index 81ece61075df..9c0dc364f089 100644
+> --- a/include/linux/pm_domain.h
+> +++ b/include/linux/pm_domain.h
+> @@ -62,6 +62,7 @@ struct generic_pm_domain {
+>         unsigned int device_count;      /* Number of devices */
+>         unsigned int suspended_count;   /* System suspend device counter */
+>         unsigned int prepared_count;    /* Suspend counter of prepared devices */
+> +       bool suspend_power_off; /* Power status before system suspend */
+>         int (*power_off)(struct generic_pm_domain *domain);
+>         int (*power_on)(struct generic_pm_domain *domain);
+>         struct gpd_dev_ops dev_ops;
+> --
+> 1.9.1
+>
+>
 
---YiEDa0DAkWCtVeE4--
+Kind regards
+Uffe
