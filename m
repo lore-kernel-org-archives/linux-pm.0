@@ -1,69 +1,82 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v11 2/8] power: add power sequence library
-Date: Fri, 20 Jan 2017 11:21:27 +0100
-Message-ID: <CAJZ5v0h09A2XWLEk7v9XPe+4fP7HDr6AqZzBmvBi_V5nhLoiRw@mail.gmail.com>
-References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
- <1483596119-27508-3-git-send-email-peter.chen@nxp.com> <20170107085456.w5dhm7qadqa6tc7v@kozik-lap>
- <20170110070240.GA29454@b29397-desktop> <20170120075239.GC21013@b29397-desktop>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH 6/7] arm, arm64: factorize common cpu capacity default
+ code
+Date: Fri, 20 Jan 2017 10:42:40 +0000
+Message-ID: <20170120104240.GO30747@e106622-lin>
+References: <20170119143757.14537-1-juri.lelli@arm.com>
+ <20170119143757.14537-7-juri.lelli@arm.com>
+ <e5b902a0-8c2b-a682-0f67-0b0d9ee4ef5c@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170120075239.GC21013@b29397-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Chen <peter.chen@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, mail@maciej.szmigiero.name, Pawel Moll <pawel.moll@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Sascha
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:47512 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751800AbdATKly (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Jan 2017 05:41:54 -0500
+Content-Disposition: inline
+In-Reply-To: <e5b902a0-8c2b-a682-0f67-0b0d9ee4ef5c@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org, Russell King <linux@armlinux.org.uk>
 
-On Fri, Jan 20, 2017 at 8:52 AM, Peter Chen <hzpeterchen@gmail.com> wrote:
-> On Tue, Jan 10, 2017 at 03:02:41PM +0800, Peter Chen wrote:
->> On Sat, Jan 07, 2017 at 10:54:56AM +0200, Krzysztof Kozlowski wrote:
->> > On Thu, Jan 05, 2017 at 02:01:53PM +0800, Peter Chen wrote:
->> > > We have an well-known problem that the device needs to do some power
->> > > sequence before it can be recognized by related host, the typical
->> > > example like hard-wired mmc devices and usb devices.
->> > >
->> > > This power sequence is hard to be described at device tree and handled by
->> > > related host driver, so we have created a common power sequence
->> > > library to cover this requirement. The core code has supplied
->> > > some common helpers for host driver, and individual power sequence
->> > > libraries handle kinds of power sequence for devices. The pwrseq
->> > > librares always need to allocate extra instance for compatible
->> > > string match.
->> > >
->> > > pwrseq_generic is intended for general purpose of power sequence, which
->> > > handles gpios and clocks currently, and can cover other controls in
->> > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
->> > > if only one power sequence is needed, else call of_pwrseq_on_list
->> > > /of_pwrseq_off_list instead (eg, USB hub driver).
->> > >
->> > > For new power sequence library, it can add its compatible string
->> > > to pwrseq_of_match_table, then the pwrseq core will match it with
->> > > DT's, and choose this library at runtime.
->> > >
->> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
->> > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
->> > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
->> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
->> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
->> >
->> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
->> > Tested on Odroid U3 (reset sequence for LAN9730):
->> > Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
->> >
->>
->> A nice ping...
->>
->
-> Rafael, would you please review it? This series was discussed about
-> half a year, and many people need it, I hope it can be in v4.11-rc1,
-> thanks.
+Hi Dietmar,
 
-I'm travelling now
-(http://marc.info/?l=linux-pm&m=148410629024194&w=2) and (as stated in
-this message) I'll get to the patches when I'm back home.
+On 19/01/17 16:00, Dietmar Eggemann wrote:
+> On 19/01/17 14:37, Juri Lelli wrote:
+> > arm and arm64 share lot of code relative to parsing CPU capacity
+> > information from DT, using that information for appropriate scaling and
+> > exposing a sysfs interface for chaging such values at runtime.
+> > 
+> > Factorize such code in a common place (driver/base/arch_topology.c) in
+> > preparation for further additions.
+> > 
+> > Suggested-by: Will Deacon <will.deacon@arm.com>
+> > Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> > Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Russell King <linux@armlinux.org.uk>
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> > ---
+> >  arch/arm/Kconfig             |   1 +
+> >  arch/arm/kernel/topology.c   | 213 ++------------------------------------
+> >  arch/arm64/Kconfig           |   1 +
+> >  arch/arm64/kernel/topology.c | 213 +-------------------------------------
+> >  drivers/base/Kconfig         |   8 ++
+> >  drivers/base/Makefile        |   1 +
+> >  drivers/base/arch_topology.c | 240 +++++++++++++++++++++++++++++++++++++++++++
+> >  7 files changed, 260 insertions(+), 417 deletions(-)
+> >  create mode 100644 drivers/base/arch_topology.c
+> 
+> [...]
+> 
+> > +extern unsigned long
+> > +arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
+> 
+> How about adding a driver specific prefix 'foo_' to all driver interfaces?
+> 
+> I'm asking because I would rather like to do a
+> 
+> #define arch_scale_cpu_capacity foo_scale_cpu_capacity
+> 
+> then a
+> 
+> #define arch_scale_cpu_capacity arch_scale_cpu_capacity
+> 
+> in arch/arm64/include/asm/topology.h
+> 
+> later to wire cpu-invariant load-tracking support up to the task
+> scheduler for ARM64.
+> 
+> That's probably true too for all the 'driver' interfaces which get used
+> in arch/arm{,64}/kernel/topology.c.
+> 
 
-There is a good chance for your code to go into 4.11-rc1 if the review
-comments so far have been addressed.
+Looks like a good way to improve clarity to me. I'll add a patch for the
+next version doing this and we see what people think.
 
-Thanks,
-Rafael
+Best,
+
+- Juri
