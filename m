@@ -1,102 +1,52 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH] power: reset: Add MAX77620 support
-Date: Fri, 20 Jan 2017 09:53:07 -0800
-Message-ID: <20170120175307.GA6005@roeck-us.net>
-References: <20170112161507.23774-1-thierry.reding@gmail.com>
- <20170113034425.7ttvc73aewtbitrk@earth>
- <20170119122357.GF30182@ulmo.ba.sec>
- <20170119230036.sjfqvqxgxutis6xs@earth>
- <20170119232934.GA18102@roeck-us.net>
- <20170120083804.GF4894@ulmo.ba.sec>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v4 2/4] Documentation: dt: add bindings for ti-cpufreq
+Date: Fri, 20 Jan 2017 10:43:24 -0800
+Message-ID: <20170120184324.GJ7403@atomide.com>
+References: <20170117131808.29798-1-d-gerlach@ti.com>
+ <20170117131808.29798-3-d-gerlach@ti.com>
+ <20170119180702.62xg2ta5pq4mf7sd@rob-hp-laptop>
+ <b7d11925-879a-9be0-fdd8-45b70e642ce1@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170120083804.GF4894@ulmo.ba.sec>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <b7d11925-879a-9be0-fdd8-45b70e642ce1-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 20, 2017 at 09:38:04AM +0100, Thierry Reding wrote:
+* Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> [170119 10:32]:
+> On 01/19/2017 12:07 PM, Rob Herring wrote:
+> > > +	/*
+> > > +	 * The three following nodes are marked with opp-suspend
+> > > +	 * because they can not be enabled simultaneously on a
+> > > +	 * single SoC.
+> > > +	 */
+> > > +	opp50@300000000 {
 > > 
-> > > No such thing exists for poweroff. Guenter also wrote something for
-> > > that [1], but Linus intervened [2]. Anyways, pm_power_off is at
-> > > least architecture independent.
-> > > 
-> > That was by far the most frustrating kernel development experience
-> > I ever head :-(.
+> > What's the 50, 100, 120 in the names?
 > 
-> It was a little difficult to track down all the discussion around this,
-> but reading through what I could find, I can understand why this would
-> have been frustrating. You obviously spent an enormous amount of work
-> only to get it shot down.
-> 
-> I have to say that I have similar concerns to those voiced by Linus and
-> Rafael. Notifier chains and priority seem too little restrictive for
-> this kind of functionality, in my opinion. I think those concerns could
-> be removed if things got formalized using a framework.
-> 
+> Those are the names of the OPPs given in Table 5-7 of the AM335x data
+> manual, seen here http://www.ti.com/lit/ds/symlink/am3359.pdf . I typically
+> reference the table and document in the commit message of the actual DT
+> patches but didn't here for the binding.
 
-Exactly the same argument applies to the restart handler. I am just glad
-I got it in before the objections came up.
+If you don't need the names, you could maybe use:
 
-I do understand the concerns, which is why I tried to accommodate them
-and come up with another solution. However, it boils down to the following:
+opp100: opp@275000000 {
+	...
+};
 
-- Priorities are needed, no matter how they are called.
-- Data structures have to be allocated statically, since the code
-  still needs to work if the system is out of memory.
-- Data structurs need to be maintained in a prioritized list or similar,
-  to be able to handle insertions and removals at will, and to be able
-  to determine which function should be called first.
+opp200: opp@300000000 {
+	...
+};
+...
 
-So ultimately, no matter what you do, you'll end up re-implementing
-parts of the notifier code.
+Regards,
 
-To me the argument, ultimately, boils down to arguing with Amazon that they
-should always use the smallest possible packaging (and not ship flash drives
-in such a large box that it is hard to find). Just like Amazon has good reasons
-to standardize on a limited number of box sizes, an argument can be made to
-have only a limited amount of infrastructure code. If some infrastructure code
-is "too little restrictive", but does the job, so be it. That should not be
-a reason to have separate and highly specialized infrastructure for everything,
-just to make it a 100% fit.
-
-That is, however, my personal opinion. If people want to have and implement
-a large amount of highly specialized infrastructure instead of more generic
-(and less restrictive) infrastructure, so be it. Just don't expect _me_
-to implement it.
-
-> Without having spent the amount of time on the topic that you have, the
-> following straw-man proposal is perhaps a little naive:
-> 
-> 	struct system_power_controller;
-> 
-> 	struct system_power_ops {
-> 		int (*power_off)(struct system_power_controller *spc);
-> 		int (*restart)(struct system_power_controller *spc,
-> 			       enum reboot_mode mode,
-> 			       const char *cmd);
-> 	};
-> 
-> 	struct system_power_controller {
-> 		struct device *dev;
-> 		const struct system_power_ops *ops;
-> 		struct list_head list;
-> 		...
-> 	};
-> 
-> 	int system_power_controller_add(struct system_power_controller *spc);
-> 	void system_power_controller_remove(struct system_power_controller *spc);
-> 
-> 	int system_power_off(void);
-> 	int system_restart(enum reboot_mode mode, const char *cmd);
-> 
-It seems to me that restart and power off are inherently independent of each
-other. I would personally not try to unify them. Having said that, that is my
-personal opinion only. I would for sure not object to anything in this area
-(nor get involved - once was enough ;-).
-
-Thanks,
-Guenter
+Tony
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
