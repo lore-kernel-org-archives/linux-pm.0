@@ -1,74 +1,88 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v11 2/8] power: add power sequence library
-Date: Fri, 20 Jan 2017 15:52:39 +0800
-Message-ID: <20170120075239.GC21013@b29397-desktop>
-References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
- <1483596119-27508-3-git-send-email-peter.chen@nxp.com>
- <20170107085456.w5dhm7qadqa6tc7v@kozik-lap>
- <20170110070240.GA29454@b29397-desktop>
-Mime-Version: 1.0
+From: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
+Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Fri, 20 Jan 2017 08:54:07 +0100
+Message-ID: <060918B6-A773-46A5-8D10-C9F6BBA6D3F1@martin.sperl.org>
+References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
+ <20170120041400.GA24617@localhost.localdomain>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20170110070240.GA29454@b29397-desktop>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rjw@rjwysocki.net
-Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, sre@kernel.org, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, Krzysztof Kozlowski <krzk@kernel.org>, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, broonie@kernel.org, p.zabel@pengutronix.de, shawnguo@kernel.org
+Return-path: <linux-rpi-kernel-bounces+glkr-linux-rpi-kernel=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20170120041400.GA24617-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rpi-kernel>,
+ <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rpi-kernel/>
+List-Post: <mailto:linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rpi-kernel>,
+ <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "linux-rpi-kernel" <linux-rpi-kernel-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rpi-kernel-bounces+glkr-linux-rpi-kernel=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-rpi-kernel <linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 10, 2017 at 03:02:41PM +0800, Peter Chen wrote:
-> On Sat, Jan 07, 2017 at 10:54:56AM +0200, Krzysztof Kozlowski wrote:
-> > On Thu, Jan 05, 2017 at 02:01:53PM +0800, Peter Chen wrote:
-> > > We have an well-known problem that the device needs to do some power
-> > > sequence before it can be recognized by related host, the typical
-> > > example like hard-wired mmc devices and usb devices.
-> > > 
-> > > This power sequence is hard to be described at device tree and handled by
-> > > related host driver, so we have created a common power sequence
-> > > library to cover this requirement. The core code has supplied
-> > > some common helpers for host driver, and individual power sequence
-> > > libraries handle kinds of power sequence for devices. The pwrseq
-> > > librares always need to allocate extra instance for compatible
-> > > string match.
-> > > 
-> > > pwrseq_generic is intended for general purpose of power sequence, which
-> > > handles gpios and clocks currently, and can cover other controls in
-> > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > > if only one power sequence is needed, else call of_pwrseq_on_list
-> > > /of_pwrseq_off_list instead (eg, USB hub driver).
-> > > 
-> > > For new power sequence library, it can add its compatible string
-> > > to pwrseq_of_match_table, then the pwrseq core will match it with
-> > > DT's, and choose this library at runtime.
-> > > 
-> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-> > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > 
-> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > Tested on Odroid U3 (reset sequence for LAN9730):
-> > Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > 
+
+> On 20.01.2017, at 05:14, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
 > 
-> A nice ping...
+> Hello Martin,
+> 
+> On Sat, Jan 07, 2017 at 04:55:45PM +0000, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org wrote:
+>> From: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+>> 
+>> Add basic thermal driver for bcm2835 SOC.
+>> 
+>> This driver currently relies on the firmware setting up the
+>> tsense HW block and does not set it up itself.
+>> 
+>> Signed-off-by: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>
+>> Acked-by: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+>> Acked-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+>> 
+> 
+> <cut>
+> 
+>> +
+>> +static const struct of_device_id bcm2835_thermal_of_match_table[] = {
+>> +	{
+>> +		.compatible = "brcm,bcm2835-thermal",
+>> +		.data = &(struct bcm2835_thermal_info) {
+>> +			.offset = 407000,
+>> +			.slope = -538,
+>> +			.trip_temp = 80000
+>> +		}
+>> +	},
+>> +	{
+>> +		.compatible = "brcm,bcm2836-thermal",
+>> +		.data = &(struct bcm2835_thermal_info) {
+>> +			.offset = 407000,
+>> +			.slope = -538,
+>> +			.trip_temp = 80000
+>> +		}
+>> +	},
+>> +	{
+>> +		.compatible = "brcm,bcm2837-thermal",
+>> +		.data = &(struct bcm2835_thermal_info) {
+>> +			/* the bcm2837 needs adjustment of +5C */
+>> +			.offset = 407000 + 5000,
+>> +			.slope = -538,
+>> +			.trip_temp = 80000
+>> +		}
+>> +	},
+>> +	{},
+> 
+> Just for the same of clarification, is there anything preventing this
+> driver of using of-thermal API? the above data (slope, offset, and
+> trip_temps) would be in DT the place where they are supposed to be,
+> instead of code.
 > 
 
-Rafael, would you please review it? This series was discussed about
-half a year, and many people need it, I hope it can be in v4.11-rc1,
-thanks.
+As the DT changes, that only define compatible strings, have already gone
+in without any such properties set, we need to define defaults for the 
+slope/offset and trip_temp values.
 
--- 
+I guess (for newer SOC) you still can use the values in the DT,
+as (I guess) these are parsed and set in thermal_zone_device_register
+after the defaults are set in thermal_zone_params.
 
-Best Regards,
-Peter Chen
+Martin
