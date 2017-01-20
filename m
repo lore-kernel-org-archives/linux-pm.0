@@ -1,110 +1,88 @@
-From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: imx6ul: power-up using the RTC
-Date: Fri, 20 Jan 2017 16:34:59 +0100
-Message-ID: <20170120153459.tewyg54dcgqnpz2j@piout.net>
-References: <b516070d-6539-98d1-c832-d79ac89e8d43@mobi-wize.com>
- <20170120121210.gm3wcg4yyvrigpn3@earth>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Philipp Miedl <philipp.miedl@tik.ee.ethz.ch>
+Subject: Re: Delayed acpi frequency governor call
+Date: Fri, 20 Jan 2017 16:27:30 +0100
+Message-ID: <9b332b49-11a1-a5fc-d48e-2c113cdca202@tik.ee.ethz.ch>
+References: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
+ <20170120100725.GO11478@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <rtc-linux+bncBCKYNX7Y3IMBBJO4RDCAKGQEO7S5JMQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-Content-Disposition: inline
-In-Reply-To: <20170120121210.gm3wcg4yyvrigpn3@earth>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>, b20788-KZfg59tc24xl57MIdRCFDg@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Frank.Li-KZfg59tc24xl57MIdRCFDg@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, fabio.estevam-3arQi8VN3Tc@public.gmane.org, a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from virgo01.ee.ethz.ch ([129.132.2.226]:53061 "EHLO
+        virgo01.ee.ethz.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752389AbdATPot (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2017 10:44:49 -0500
+In-Reply-To: <20170120100725.GO11478@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: alex@digriz.org.uk, jun.nakajima@intel.com, venkatesh.pallipadi@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 20/01/2017 at 13:12:10 +0100, Sebastian Reichel wrote :
-> Hi,
-> 
-> On Wed, Jan 18, 2017 at 04:49:11PM +0200, Guy Shapiro wrote:
-> > I'm trying to use the low power RTC of the i.MX6UL to start from
-> > power-off state.
-> > 
-> > I started by hopefully running: # echo +30 >
-> > /sys/class/rtc/rtc0/wakealarm && shutdown -h now The system was
-> > powered down, but it didn't come up after 30 seconds as expected.
-> > 
-> > So I dug into the datasheet and the source...
-> > To activate the power on alarm, the flags SRTC_ENV, LPTA_EN and LPWUI_EN on
-> > the SNVS_LP Control register (LPCR) should be asserted. The wakeup time
-> > should be written to the SNVS_LP Time alarm register (LPTA). The code that
-> > does this is on drivers/rtc/rtc-snvs.c:snvs_rtc_set_alarm().
-> > 
-> > The first problem I found was with the use of the syscon-poweroff driver.
-> > The "Turn off System Power" flag is part of the same register (LPCR). The
-> > current code of syscon-poweroff set the register to the "mask" property from
-> > the device tree on power off, overriding all the existing flags.
-> > After setting the "mask" property on the device tree to 0x6b instead of
-> > 0x60 (asserting the mentioned bits), the system do power up on timer, as
-> > expected.
-> > 
-> > However, I didn't like the idea of keeping those flags on even when no one
-> > set the alarm.
-> > As a quick test, I modified the syscon-poweroff driver to ignore the bits
-> > that are not on the mask:
-> > 
-> > diff --git a/drivers/power/reset/syscon-poweroff.c
-> > b/drivers/power/reset/syscon-poweroff.c
-> > index b683383..a5da02b 100644
-> > --- a/drivers/power/reset/syscon-poweroff.c
-> > +++ b/drivers/power/reset/syscon-poweroff.c
-> > @@ -33,7 +33,7 @@ static u32 mask;
-> > static void syscon_poweroff(void)
-> > {
-> >         /* Issue the poweroff */
-> > -       regmap_write(map, offset, mask);
-> > +       regmap_update_bits(map, offset, mask, mask);
-> >         mdelay(1000);
-> > 
-> > 
-> > After applying this fix, the wake up alarm didn't work. Strangely, when I
-> > added some debug prints to investigate the case, it worked again
-> > (sometimes... depends on the exact places I add the prints).
-> > I suspect that some other driver clears the flags during the power down, but
-> > I couldn't find such driver.
-> > 
-> > Do you have any clue what code may change this register during the shutdown
-> > process? Any other insights are welcomed as well :)
-> 
-> To summarize it looks like this?
-> 
-> | regmap_write       | 0x60 | broken                     |
-> | regmap_write       | 0x6b | works stable               |
-> | regmap_update_bits | 0x60 | works only with dbg prints |
-> 
-> For me it looks like the debug prints may delay the poweroff driver
-> long enough, that some other driver (rtc?) writes the 0x0b bits.
-> 
+On 20.01.2017 11:07, Viresh Kumar wrote:
+> + PM list.
+>
+> On 20-01-17, 10:48, Philipp Miedl wrote:
+>> Hi!
+>>
+>> I'm using the kernel version 4.4.0-59-generic and 4.4.0 with acpi cpufreq
+>> drivers (cpufrequtils 008) on a Lenovo T440p laptop. Now I've bumped into
+>> some weird behaviour:
+>> it can happen that the call to the governor is delayed for so long, that in
+>> the governor the if-statement in cpufreq_governor.c line 138
+>> is true, which means the governor thinks the cpu was idle. This can lead to
+>> the case that the frequency is still scaled up when it should in
+>> fact be scaled down.
+>>
+>> Now I've written a small programm which ensures that the cpu is never idle
+>> for longer than 850us, but does not generate a cpu utilization higher
+>> than 5% - still the behaviour is the same. I've looked a bit closer at this
+>> and I figured out that if I increase the utilization of the observed CPU,
+>> at utilzations higher than 80% the maximum delay between two governor calls
+>> increases and can rise almost to 10x sampling rate
+>> (/sys/drivers/system/cpu/cpufreq/sampling_rate).
+>> Weirdly enough, after a long time (>1s) the average call time of the
+>> governor is always around the specified sampling rate.
+>>
+>> I could not fully understand how the governor is call and this work queue
+>> works and therefore I also have a hard time making sense of this behaviour.
+>> Can anyone please help me out?
+> Have a look at below commit:
+>
+> commit 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster
+> for deferred updates")
+>
+> It may be related to what you are observing.
+>
 
-Is snvs_rtc_alarm_irq_enable() waiting long enough? I'd say yes but you
-never know... You can also use the kernel tracin infrastructure to trace
-every accesses made to that regmap. That could give you a hint.
+This is not my issue. The code I'm referring to can be found in 
+cpufreq_governor.c:
+<-->
+if (unlikely(wall_time > (2 * sampling_rate) &&
+        j_cdbs->prev_load)) {
+   load = j_cdbs->prev_load;
 
-At least you can try a regmap_read before returning from
-snvs_rtc_alarm_irq_enable() and see whether SNVS_LPCR_LPTA_EN and
-SNVS_LPCR_LPWUI_EN are still there.
+   /*
+    * Perform a destructive copy, to ensure that we copy
+    * the previous load only once, upon the first wake-up
+    * from idle.
+    */
+   j_cdbs->prev_load = 0;
+} else {
+   load = 100 * (wall_time - idle_time) / wall_time;
+   j_cdbs->prev_load = load;
+}
+<-->
 
+How can it happen that "unlikely(wall_time > (2 * sampling_rate)" is 
+true although the CPU utilization was 5%?
 
+Thanks
 
 -- 
-Alexandre Belloni, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+--------------------------------------------------------------------
+|  Philipp Miedl                                                   |
+|  PhD Student @ Computer Engineering and Networks Laboratory      |
+|  ETH Zurich, ETZG76, Gloriastrasse 35, 8092 Zurich, Switzerland  |
+|  mail: philipp.miedl@ee.tik.ethz.ch      phone: +41 44 632 70 61 |
+--------------------------------------------------------------------
 
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
