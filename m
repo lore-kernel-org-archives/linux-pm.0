@@ -1,90 +1,118 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: reset: Add MAX77620 support
-Date: Fri, 20 Jan 2017 14:47:23 +0100
-Message-ID: <20170120134722.sic6q5i5asp352tq@earth>
-References: <20170112161507.23774-1-thierry.reding@gmail.com>
- <20170113034425.7ttvc73aewtbitrk@earth>
- <20170119122357.GF30182@ulmo.ba.sec>
- <20170119230036.sjfqvqxgxutis6xs@earth>
- <20170119232934.GA18102@roeck-us.net>
- <20170120124404.wmlpiuqyizi7uhyi@earth>
- <20170120131116.GA26505@ulmo.ba.sec>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Fri, 20 Jan 2017 15:00:02 +0100
+Message-ID: <CAPDyKFqzs59N5bc89X-96Fgy9b=_+s8zYmHHshQeDrJCnaqprA@mail.gmail.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com> <20170104205536.15963-3-d-gerlach@ti.com>
+ <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop> <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+ <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com> <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+ <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com> <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+ <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com> <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
+ <m2ziip2puf.fsf@baylibre.com> <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2ng5cegwkaujnqrm"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170120131116.GA26505@ulmo.ba.sec>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Chaitanya Bandi <bandik@nvidia.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>
+Cc: Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
++ Sudeep
 
---2ng5cegwkaujnqrm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 19 January 2017 at 00:03, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Tue, Jan 17, 2017 at 6:07 PM, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org> wrote:
+>> Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org> writes:
+>>> On 17/01/17 00:12, Dave Gerlach wrote:
+>>>> On 01/13/2017 08:40 PM, Rob Herring wrote:
+>>>>> On Fri, Jan 13, 2017 at 2:28 PM, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+>
+> [...]
+>
+>>>>>> My ti,sci-id is not an index into a list of power domains, so it
+>>>>>> should not
+>>>>>> go in the power-domains cells and go against what the power-domains
+>>>>>> binding
+>>>>>> says that the cell expects. We have one single power domain, and the new
+>>>>>> ti,sci-id binding is not something the genpd framework itself is
+>>>>>> concerned
+>>>>>> with as it's our property to identify a device inside a power domain,
+>>>>>> not to
+>>>>>> identify which power domain it is associated with.
+>>>>>
+>>>>> What is the id used for? I can understand why you need to know what
+>>>>> power domain a device is in (as power-domains identifies), but not
+>>>>> what devices are in a power domain.
+>>>>
+>>>> We have a system control processor that provides power management
+>>>> services to the OS and it responsible for handling the power state of
+>>>> each device. This control happens over a communication interface we have
+>>>> called TI SCI (implemented at drivers/firmware/ti-sci.c). The
+>>>> communication protocol uses these ids to identify each device within the
+>>>> power domain so that the control processor can do what is necessary to
+>>>> enable that device.
+>>>
+>>> I think a minor detail here that Rob might be missing right now is,
+>>> that the ti,sci-id is only controlling the PM runtime handling, and
+>>> providing the ID per-device for this purpose only. AFAIK, it is not
+>>> really connected to the power domain anymore as such, as we don't have
+>>> power-domains / per device anymore as was the case in some earlier
+>>> revision of this work.
+>>
+>> I think this gets to the heart of things.  IMO The confusion arises
+>> because we're throwing around the term "power domain" when there isn't
+>> an actual hardware power domain here.
+>
+> I thought there was 1.
+>
+>> Unfortunately, the genpd bindings have used the terminology power-domain
+>> when in fact genpd is more generic than that and can be used not just
+>> for hardware power domains, but for arbitrary grouping of devices that
+>> have common PM properties.  That's why genpd actually stands for generic
+>> PM domain, not power domain.  Unfortunately, the bindings have grown
+>> primarily out of the usage for hardware power domains.
+>
+> Now it makes some sense.
+>
+> So the question is does this PM domain grouping need to be described
+> in DT or not, and if so what does that look like?
 
-Hi,
+Yes, it's needed and already being done. For example, we have clock
+domains for several Renesas platforms.
 
-On Fri, Jan 20, 2017 at 02:11:16PM +0100, Thierry Reding wrote:
-> On Fri, Jan 20, 2017 at 01:44:04PM +0100, Sebastian Reichel wrote:
-> > Hi,
-> >=20
-> > On Thu, Jan 19, 2017 at 03:29:34PM -0800, Guenter Roeck wrote:
-> > > On Fri, Jan 20, 2017 at 12:00:36AM +0100, Sebastian Reichel wrote:
-> > > I actually have a set of patches somewhere which transforms the remai=
-ning
-> > > direct users of arm_pm_restart to use the framework (unless I removed=
- it
-> > > from my trees - I don't really recall). I just never got around to su=
-bmit
-> > > it, and then [2] happened and I lost interest.
-> >=20
-> > I found a patchset from you from 2016. I see a few Acks and no
-> > negative feedback. Looks like they only need to be uploaded at
-> > Russel's patch system?
-> >=20
-> > arch/arm/mach-prima2/rstc.c			https://patchwork.kernel.org/patch/884444=
-1/
-> > arch/arm/xen/enlighten.c			https://patchwork.kernel.org/patch/8844481/
-> > drivers/firmware/psci.c				https://patchwork.kernel.org/patch/8844411/
-> > arch/arm/kernel/setup.c				https://patchwork.kernel.org/patch/8844451/
-> > removal of ARM64 arm_pm_restart		https://patchwork.kernel.org/patch/884=
-4471/
-> > removal of ARM32 arm_pm_restart		https://patchwork.kernel.org/patch/884=
-4391/
->=20
-> Nice, those would be excellent preparatory work for my earlier
-> framework proposal. Do you want me to pick those up and run with
-> them a bit?
+>
+> We could continue to use the power domain binding (maybe we already
+> are and that ship has sailed). I'm not totally against the idea even
+> if there is no power domain, but I'm not sold on it either. If we do
+> go this route, then I still say the id should be a cell in the
+> power-domain phandle.
+>
+> Another option is create something new either common or TI SCI
+> specific. It could be just a table of ids and phandles in the SCI
+> node. I'm much more comfortable with an isolated property in one node
+> than something scattered throughout the DT.
 
-They implement what I suggested earlier in this thread, so I think
-they should get upstream. If you pick them up, you can add my
-Reviewed-By to all patches. After having them upstream, ARM, ARM64,
-MIPS and PPC use do_kernel_restart() for reboot.
+To me, this seems like the best possible solution.
 
--- Sebastian
+However, perhaps we should also consider the SCPI Generic power domain
+(drivers/firmware/scpi_pm_domain.c), because I believe it's closely
+related.
+To change the power state of a device, this PM domain calls
+scpi_device_set|get_power_state() (drivers/firmware/arm_scpi.c), which
+also needs a device id as a parameter. Very similar to our case with
+the TI SCI domain.
 
---2ng5cegwkaujnqrm
-Content-Type: application/pgp-signature; name="signature.asc"
+Currently these SCPI device ids lacks corresponding DT bindings, so
+the scpi_pm_domain tries to work around it by assigning ids
+dynamically at genpd creation time.
 
------BEGIN PGP SIGNATURE-----
+That makes me wonder, whether we should think of something common/generic?
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliCFOgACgkQ2O7X88g7
-+pqH+w/7BrHM7lagv/zC6AlEtiaOqbPGt3Kx77NwrBqX+RZL9QPHAyzAp2JY2U+Y
-l6xC9DMEuZMDbAlE6kMnXVgaRFhvk8cvj+c1cdlzIV+nY79SkZgXXdpEIWrTYEAV
-LzUDrSgkCxwMKkxxp1MbhylYwf9H5hyh60+kIZh23v6jM8tuDuYgUzlUTt1ZzNSm
-fyGZBuvnvkhvD5vM8v7VWR6sSb8ZG3EGgy5F0gX96n3z6Dds5Cak60ZLOls/XHVt
-HR3a4byo7eELk6etLG9CJyJvPn7PGXDezQ4O6Cu95EovyfriikxyalOmwkDkMKqP
-U/egB6v6cJyGt7BRokt7jLFtyCb8zWi3JjioZo6yezuV86exppMz3jybtUDHIc2l
-O+HSavXIUgGbD9kybCOK0USX1/REcSwcvyKHcGaRTpEu9mXPyj3N4Lr6SKXrxQmc
-+bqwi1e9i/CpGucAmc3ZkvqrUttkxWsjaQRxKjA7DXPT9rBrWN4s1dh15qACWwCy
-3+V3+clIebK/gepgW1sU2H9rKUIvFooROibgVTOxLrtYMOT/lDZPqqlF18E1KeDF
-nGYyEfF1d6WTLsjBniuqWokJfcAgbQ5Q/0kSvgC+KHRrjS7qIJpOdPiKmQRuhcwy
-ED+Yp/fJ3GHJh35MyTj6y8pdxewoEEx96w6NdMO6gF3mEjmE9XA=
-=NWwS
------END PGP SIGNATURE-----
+[...]
 
---2ng5cegwkaujnqrm--
+Kind regards
+Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
