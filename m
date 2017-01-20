@@ -1,52 +1,170 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v4 2/4] Documentation: dt: add bindings for ti-cpufreq
-Date: Fri, 20 Jan 2017 10:43:24 -0800
-Message-ID: <20170120184324.GJ7403@atomide.com>
-References: <20170117131808.29798-1-d-gerlach@ti.com>
- <20170117131808.29798-3-d-gerlach@ti.com>
- <20170119180702.62xg2ta5pq4mf7sd@rob-hp-laptop>
- <b7d11925-879a-9be0-fdd8-45b70e642ce1@ti.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <b7d11925-879a-9be0-fdd8-45b70e642ce1-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 1/2] power: bq24190_charger: Check the interrupt status on resume
+Date: Fri, 20 Jan 2017 14:04:39 -0800
+Message-ID: <20170120220440.1971-2-tony@atomide.com>
+References: <20170120220440.1971-1-tony@atomide.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:59600 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752410AbdATWEv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 20 Jan 2017 17:04:51 -0500
+In-Reply-To: <20170120220440.1971-1-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-* Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> [170119 10:32]:
-> On 01/19/2017 12:07 PM, Rob Herring wrote:
-> > > +	/*
-> > > +	 * The three following nodes are marked with opp-suspend
-> > > +	 * because they can not be enabled simultaneously on a
-> > > +	 * single SoC.
-> > > +	 */
-> > > +	opp50@300000000 {
-> > 
-> > What's the 50, 100, 120 in the names?
-> 
-> Those are the names of the OPPs given in Table 5-7 of the AM335x data
-> manual, seen here http://www.ti.com/lit/ds/symlink/am3359.pdf . I typically
-> reference the table and document in the commit message of the actual DT
-> patches but didn't here for the binding.
+Some SoCs like omap3 can configure GPIO irqs to use Linux generic
+dedicated wakeirq support. If the dedicated wakeirq is configured,
+the SoC will use a always-on interrupt controller to produce wake-up
+events.
 
-If you don't need the names, you could maybe use:
+If bq24190 is configured for dedicated wakeirq, we need to check the
+interrupt status on PM runtime resume. This is because the Linux
+generic wakeirq will call pm_runtime_resume() on the device on a
+wakeirq. And as the bq24190 interrupt is falling edge sensitive
+and only active for 250 us, there will be no device interrupt seen
+by the runtime SoC IRQ controller.
 
-opp100: opp@275000000 {
-	...
-};
+Note that this can cause spurious interrupts on omap3 devices with
+bq24190 connected to gpio banks 2 - 5 as there's a glitch on those
+pins waking from off mode as listed in "Advisory 1.45". Devices
+with this issue should not configure the optional wakeirq interrupt
+in the dts file.
 
-opp200: opp@300000000 {
-	...
-};
-...
+Cc: Matt Ranostay <matt@ranostay.consulting>
+Cc: Liam Breck <kernel@networkimprov.net>
+Acked-by: Mark Greer <mgreer@animalcreek.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/power/supply/bq24190_charger.c | 62 ++++++++++++++++++++++++++++------
+ 1 file changed, 52 insertions(+), 10 deletions(-)
 
-Regards,
-
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -155,6 +155,8 @@ struct bq24190_dev_info {
+ 	kernel_ulong_t			model;
+ 	unsigned int			gpio_int;
+ 	unsigned int			irq;
++	bool				initialized;
++	bool				irq_event;
+ 	struct mutex			f_reg_lock;
+ 	u8				f_reg;
+ 	u8				ss_reg;
+@@ -1157,9 +1159,8 @@ static const struct power_supply_desc bq24190_battery_desc = {
+ 	.property_is_writeable	= bq24190_battery_property_is_writeable,
+ };
+ 
+-static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
++static void bq24190_check_status(struct bq24190_dev_info *bdi)
+ {
+-	struct bq24190_dev_info *bdi = data;
+ 	const u8 battery_mask_ss = BQ24190_REG_SS_CHRG_STAT_MASK;
+ 	const u8 battery_mask_f = BQ24190_REG_F_BAT_FAULT_MASK
+ 				| BQ24190_REG_F_NTC_FAULT_MASK;
+@@ -1167,12 +1168,10 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+ 	u8 ss_reg = 0, f_reg = 0;
+ 	int i, ret;
+ 
+-	pm_runtime_get_sync(bdi->dev);
+-
+ 	ret = bq24190_read(bdi, BQ24190_REG_SS, &ss_reg);
+ 	if (ret < 0) {
+ 		dev_err(bdi->dev, "Can't read SS reg: %d\n", ret);
+-		goto out;
++		return;
+ 	}
+ 
+ 	i = 0;
+@@ -1180,7 +1179,7 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+ 		ret = bq24190_read(bdi, BQ24190_REG_F, &f_reg);
+ 		if (ret < 0) {
+ 			dev_err(bdi->dev, "Can't read F reg: %d\n", ret);
+-			goto out;
++			return;
+ 		}
+ 	} while (f_reg && ++i < 2);
+ 
+@@ -1229,10 +1228,18 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+ 	if (alert_battery)
+ 		power_supply_changed(bdi->battery);
+ 
+-out:
+-	pm_runtime_put_sync(bdi->dev);
+-
+ 	dev_dbg(bdi->dev, "ss_reg: 0x%02x, f_reg: 0x%02x\n", ss_reg, f_reg);
++}
++
++static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
++{
++	struct bq24190_dev_info *bdi = data;
++
++	bdi->irq_event = true;
++	pm_runtime_get_sync(bdi->dev);
++	bq24190_check_status(bdi);
++	pm_runtime_put_sync(bdi->dev);
++	bdi->irq_event = false;
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -1391,6 +1398,8 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out3;
+ 	}
+ 
++	bdi->initialized = true;
++
+ 	ret = devm_request_threaded_irq(dev, bdi->irq, NULL,
+ 			bq24190_irq_handler_thread,
+ 			IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+@@ -1437,6 +1446,35 @@ static int bq24190_remove(struct i2c_client *client)
+ 	return 0;
+ }
+ 
++static int bq24190_runtime_suspend(struct device *dev)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
++
++	if (!bdi->initialized)
++		return 0;
++
++	dev_dbg(bdi->dev, "%s\n", __func__);
++
++	return 0;
++}
++
++static int bq24190_runtime_resume(struct device *dev)
++{
++	struct i2c_client *client = to_i2c_client(dev);
++	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
++
++	if (!bdi->initialized)
++		return 0;
++
++	if (!bdi->irq_event) {
++		dev_dbg(bdi->dev, "checking events on possible wakeirq\n");
++		bq24190_check_status(bdi);
++	}
++
++	return 0;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static int bq24190_pm_suspend(struct device *dev)
+ {
+@@ -1472,7 +1510,11 @@ static int bq24190_pm_resume(struct device *dev)
+ }
+ #endif
+ 
+-static SIMPLE_DEV_PM_OPS(bq24190_pm_ops, bq24190_pm_suspend, bq24190_pm_resume);
++static const struct dev_pm_ops bq24190_pm_ops = {
++	SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
++			   NULL)
++	SET_SYSTEM_SLEEP_PM_OPS(bq24190_pm_suspend, bq24190_pm_resume)
++};
+ 
+ /*
+  * Only support the bq24190 right now.  The bq24192, bq24192i, and bq24193
+-- 
+2.11.0
