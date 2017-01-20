@@ -1,58 +1,69 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Delayed acpi frequency governor call
-Date: Fri, 20 Jan 2017 15:37:25 +0530
-Message-ID: <20170120100725.GO11478@vireshk-i7>
-References: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v11 2/8] power: add power sequence library
+Date: Fri, 20 Jan 2017 11:21:27 +0100
+Message-ID: <CAJZ5v0h09A2XWLEk7v9XPe+4fP7HDr6AqZzBmvBi_V5nhLoiRw@mail.gmail.com>
+References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
+ <1483596119-27508-3-git-send-email-peter.chen@nxp.com> <20170107085456.w5dhm7qadqa6tc7v@kozik-lap>
+ <20170110070240.GA29454@b29397-desktop> <20170120075239.GC21013@b29397-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f51.google.com ([74.125.83.51]:35702 "EHLO
-        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751575AbdATKPw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2017 05:15:52 -0500
-Received: by mail-pg0-f51.google.com with SMTP id 194so22677006pgd.2
-        for <linux-pm@vger.kernel.org>; Fri, 20 Jan 2017 02:15:52 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170120075239.GC21013@b29397-desktop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Chen <hzpeterchen@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Chen <peter.chen@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, mail@maciej.szmigiero.name, Pawel Moll <pawel.moll@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Sascha
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Miedl <philipp.miedl@tik.ee.ethz.ch>
-Cc: alex@digriz.org.uk, jun.nakajima@intel.com, venkatesh.pallipadi@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-+ PM list.
+On Fri, Jan 20, 2017 at 8:52 AM, Peter Chen <hzpeterchen@gmail.com> wrote:
+> On Tue, Jan 10, 2017 at 03:02:41PM +0800, Peter Chen wrote:
+>> On Sat, Jan 07, 2017 at 10:54:56AM +0200, Krzysztof Kozlowski wrote:
+>> > On Thu, Jan 05, 2017 at 02:01:53PM +0800, Peter Chen wrote:
+>> > > We have an well-known problem that the device needs to do some power
+>> > > sequence before it can be recognized by related host, the typical
+>> > > example like hard-wired mmc devices and usb devices.
+>> > >
+>> > > This power sequence is hard to be described at device tree and handled by
+>> > > related host driver, so we have created a common power sequence
+>> > > library to cover this requirement. The core code has supplied
+>> > > some common helpers for host driver, and individual power sequence
+>> > > libraries handle kinds of power sequence for devices. The pwrseq
+>> > > librares always need to allocate extra instance for compatible
+>> > > string match.
+>> > >
+>> > > pwrseq_generic is intended for general purpose of power sequence, which
+>> > > handles gpios and clocks currently, and can cover other controls in
+>> > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+>> > > if only one power sequence is needed, else call of_pwrseq_on_list
+>> > > /of_pwrseq_off_list instead (eg, USB hub driver).
+>> > >
+>> > > For new power sequence library, it can add its compatible string
+>> > > to pwrseq_of_match_table, then the pwrseq core will match it with
+>> > > DT's, and choose this library at runtime.
+>> > >
+>> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
+>> > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+>> > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
+>> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+>> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+>> >
+>> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+>> > Tested on Odroid U3 (reset sequence for LAN9730):
+>> > Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
+>> >
+>>
+>> A nice ping...
+>>
+>
+> Rafael, would you please review it? This series was discussed about
+> half a year, and many people need it, I hope it can be in v4.11-rc1,
+> thanks.
 
-On 20-01-17, 10:48, Philipp Miedl wrote:
-> Hi!
-> 
-> I'm using the kernel version 4.4.0-59-generic and 4.4.0 with acpi cpufreq
-> drivers (cpufrequtils 008) on a Lenovo T440p laptop. Now I've bumped into
-> some weird behaviour:
-> it can happen that the call to the governor is delayed for so long, that in
-> the governor the if-statement in cpufreq_governor.c line 138
-> is true, which means the governor thinks the cpu was idle. This can lead to
-> the case that the frequency is still scaled up when it should in
-> fact be scaled down.
-> 
-> Now I've written a small programm which ensures that the cpu is never idle
-> for longer than 850us, but does not generate a cpu utilization higher
-> than 5% - still the behaviour is the same. I've looked a bit closer at this
-> and I figured out that if I increase the utilization of the observed CPU,
-> at utilzations higher than 80% the maximum delay between two governor calls
-> increases and can rise almost to 10x sampling rate
-> (/sys/drivers/system/cpu/cpufreq/sampling_rate).
-> Weirdly enough, after a long time (>1s) the average call time of the
-> governor is always around the specified sampling rate.
-> 
-> I could not fully understand how the governor is call and this work queue
-> works and therefore I also have a hard time making sense of this behaviour.
-> Can anyone please help me out?
+I'm travelling now
+(http://marc.info/?l=linux-pm&m=148410629024194&w=2) and (as stated in
+this message) I'll get to the patches when I'm back home.
 
-Have a look at below commit:
+There is a good chance for your code to go into 4.11-rc1 if the review
+comments so far have been addressed.
 
-commit 00bfe05889e9 ("cpufreq: conservative: Decrease frequency faster
-for deferred updates")
-
-It may be related to what you are observing.
-
--- 
-viresh
+Thanks,
+Rafael
