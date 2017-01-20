@@ -1,82 +1,90 @@
-From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: [PATCH v2] PM / Domains: Keep the pd status during system PM phases
-Date: Fri, 20 Jan 2017 10:21:33 +0800
-Message-ID: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Thu, 19 Jan 2017 20:14:02 -0800
+Message-ID: <20170120041400.GA24617@localhost.localdomain>
+References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.138]:34859 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754026AbdATCVO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jan 2017 21:21:14 -0500
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:33999 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751059AbdATEON (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Jan 2017 23:14:13 -0500
+Received: by mail-pg0-f66.google.com with SMTP id t6so5800757pgt.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 Jan 2017 20:14:12 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: xf@rock-chips.com, heiko@sntech.de, rjw@rjwysocki.net, khilman@kernel.org, ulf.hansson@linaro.org, pavel@ucw.cz, len.brown@intel.com
-Cc: gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, huangtao@rock-chips.com, xxx@rock-chips.com, wxt@rock-chips.com, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, Elaine Zhang <zhangqing@rock-chips.com>
+To: kernel@martin.sperl.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-If a PM domain is powered off before system suspend,
-we hope do nothing in system runtime suspend noirq phase
-and system runtime resume noirq phase.
+Hello Martin,
 
-This modify is to slove system resume issue for RK3399.
-RK3399 SOC pd_gpu have voltage domain vdd_gpu,
-so we must follow open vdd_gpu and power on pd_gpu,
-power off pd_gpu and disable vdd_gpu.
-Fix up in runtime resume noirq phase power on all PDs.
+On Sat, Jan 07, 2017 at 04:55:45PM +0000, kernel@martin.sperl.org wrote:
+> From: Martin Sperl <kernel@martin.sperl.org>
+> 
+> Add basic thermal driver for bcm2835 SOC.
+> 
+> This driver currently relies on the firmware setting up the
+> tsense HW block and does not set it up itself.
+> 
+> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> Acked-by: Eric Anholt <eric@anholt.net>
+> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+> 
 
-Signed-off-by: Elaine Zhang <zhangqing@rock-chips.com>
----
- drivers/base/power/domain.c | 10 +++++++---
- include/linux/pm_domain.h   |  1 +
- 2 files changed, 8 insertions(+), 3 deletions(-)
+<cut>
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 5711708532db..81351eec570f 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -842,8 +842,10 @@ static int pm_genpd_prepare(struct device *dev)
- 
- 	genpd_lock(genpd);
- 
--	if (genpd->prepared_count++ == 0)
-+	if (genpd->prepared_count++ == 0) {
- 		genpd->suspended_count = 0;
-+		genpd->suspend_power_off = genpd->status == GPD_STATE_POWER_OFF;
-+	}
- 
- 	genpd_unlock(genpd);
- 
-@@ -877,7 +879,8 @@ static int pm_genpd_suspend_noirq(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
-+	if (genpd->suspend_power_off ||
-+	    (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev)))
- 		return 0;
- 
- 	if (genpd->dev_ops.stop && genpd->dev_ops.start) {
-@@ -914,7 +917,8 @@ static int pm_genpd_resume_noirq(struct device *dev)
- 	if (IS_ERR(genpd))
- 		return -EINVAL;
- 
--	if (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev))
-+	if (genpd->suspend_power_off ||
-+	    (dev->power.wakeup_path && genpd_dev_active_wakeup(genpd, dev)))
- 		return 0;
- 
- 	/*
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 81ece61075df..9c0dc364f089 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -62,6 +62,7 @@ struct generic_pm_domain {
- 	unsigned int device_count;	/* Number of devices */
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
-+	bool suspend_power_off;	/* Power status before system suspend */
- 	int (*power_off)(struct generic_pm_domain *domain);
- 	int (*power_on)(struct generic_pm_domain *domain);
- 	struct gpd_dev_ops dev_ops;
--- 
-1.9.1
+> +
+> +static const struct of_device_id bcm2835_thermal_of_match_table[] = {
+> +	{
+> +		.compatible = "brcm,bcm2835-thermal",
+> +		.data = &(struct bcm2835_thermal_info) {
+> +			.offset = 407000,
+> +			.slope = -538,
+> +			.trip_temp = 80000
+> +		}
+> +	},
+> +	{
+> +		.compatible = "brcm,bcm2836-thermal",
+> +		.data = &(struct bcm2835_thermal_info) {
+> +			.offset = 407000,
+> +			.slope = -538,
+> +			.trip_temp = 80000
+> +		}
+> +	},
+> +	{
+> +		.compatible = "brcm,bcm2837-thermal",
+> +		.data = &(struct bcm2835_thermal_info) {
+> +			/* the bcm2837 needs adjustment of +5C */
+> +			.offset = 407000 + 5000,
+> +			.slope = -538,
+> +			.trip_temp = 80000
+> +		}
+> +	},
+> +	{},
 
+Just for the same of clarification, is there anything preventing this
+driver of using of-thermal API? the above data (slope, offset, and
+trip_temps) would be in DT the place where they are supposed to be,
+instead of code.
 
+> +};
+> +MODULE_DEVICE_TABLE(of, bcm2835_thermal_of_match_table);
+> +
+> +static struct platform_driver bcm2835_thermal_driver = {
+> +	.probe = bcm2835_thermal_probe,
+> +	.remove = bcm2835_thermal_remove,
+> +	.driver = {
+> +		.name = "bcm2835_thermal",
+> +		.of_match_table = bcm2835_thermal_of_match_table,
+> +	},
+> +};
+> +module_platform_driver(bcm2835_thermal_driver);
+> +
+> +MODULE_AUTHOR("Martin Sperl");
+> +MODULE_DESCRIPTION("Thermal driver for bcm2835 chip");
+> +MODULE_LICENSE("GPL");
+> --
+> 2.1.4
