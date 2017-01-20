@@ -1,49 +1,27 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 0/2] Two bq24190 PM improvments
-Date: Fri, 20 Jan 2017 14:04:38 -0800
-Message-ID: <20170120220440.1971-1-tony@atomide.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:59590 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752380AbdATWEu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 20 Jan 2017 17:04:50 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH v1 1/3] x86/mm: Adapt MODULES_END based on Fixmap section size
+Date: Fri, 20 Jan 2017 14:24:42 -0800
+Message-ID: <CALCETrVt38oa6C+-JD1B+4wXnkB8ySUksZ55k0+Bz4dbusYWDA@mail.gmail.com>
+References: <20170120164126.27624-1-thgarnie@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170120164126.27624-1-thgarnie@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, Brian Gerst <brgerst@gmail.com>, He Chen <he.chen@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>, Chen Yucong <slaoub@gmail.com>, Baoquan He <bhe@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Joerg Roedel <joro@8bytes.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>, X86 ML <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-k>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-Hi,
+On Fri, Jan 20, 2017 at 8:41 AM, Thomas Garnier <thgarnie@google.com> wrote:
+> This patch aligns MODULES_END to the beginning of the Fixmap section.
+> It optimizes the space available for both sections. The address is
+> pre-computed based on the number of pages required by the Fixmap
+> section.
+>
+> It will allow GDT remapping in the Fixmap section. The current
+> MODULES_END static address does not provide enough space for the kernel
+> to support a large number of processors.
+>
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
 
-Here are the two bq24190 patches rebased against current power-supply
-tree now that Liam's changes are applied.
-
-I've kept Mark's acks as the changes were minor and mostly limited to
-bq24190_probe() basedon Liam's changes.
-
-Regards,
-
-Tony
-
-
-Changes from earlier set:
-
-- Separated from Liam's changes that are now in the power-supply tree
-
-- Moved bdi->initialized before devm_request_threaded_irq() as suggested
-  by Liam
-
-- Added missing return value check for pm_runtime_get() as suggested by
-  Liam
-
-- Updated against current power-supply tree, mostly for the probe error
-  handling
-
-Tony Lindgren (2):
-  power: bq24190_charger: Check the interrupt status on resume
-  power: bq24190_charger: Use PM runtime autosuspend
-
- drivers/power/supply/bq24190_charger.c | 180 ++++++++++++++++++++++++++-------
- 1 file changed, 143 insertions(+), 37 deletions(-)
-
--- 
-2.11.0
+Looks good to me.
