@@ -1,117 +1,102 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 1/2] power: bq24190_charger: Check the interrupt status on resume
-Date: Sat, 21 Jan 2017 00:08:02 -0800
-Message-ID: <CAKvHMgRipKyVAF6Y6Wr3t=McPouqfC2B9KuAnM+RFUtE-LRtuw@mail.gmail.com>
-References: <20170120220440.1971-1-tony@atomide.com> <20170120220440.1971-2-tony@atomide.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+ bus: enable OS version only for SPT and newer)
+Date: Sat, 21 Jan 2017 10:11:12 +0100
+Message-ID: <20170121091112.GD27048@kroah.com>
+References: <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
+ <20170115105830.GD26374@kroah.com>
+ <20170116110539.GA1307@kroah.com>
+ <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
+ <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
+ <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+ <20170117182337.GB12600@kroah.com>
+ <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
+ <20170117233346.GA2599@wisp>
+ <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:33440 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750817AbdAUIIE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2017 03:08:04 -0500
-In-Reply-To: <20170120220440.1971-2-tony@atomide.com>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:57684 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750874AbdAUJLC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2017 04:11:02 -0500
+Content-Disposition: inline
+In-Reply-To: <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
+To: Mario.Limonciello@dell.com
+Cc: dvhart@infradead.org, rafael.j.wysocki@intel.com, pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
 
-On Fri, Jan 20, 2017 at 2:04 PM, Tony Lindgren <tony@atomide.com> wrote:
-> Some SoCs like omap3 can configure GPIO irqs to use Linux generic
-> dedicated wakeirq support. If the dedicated wakeirq is configured,
-> the SoC will use a always-on interrupt controller to produce wake-up
-> events.
->
-> If bq24190 is configured for dedicated wakeirq, we need to check the
-> interrupt status on PM runtime resume. This is because the Linux
-> generic wakeirq will call pm_runtime_resume() on the device on a
-> wakeirq. And as the bq24190 interrupt is falling edge sensitive
-> and only active for 250 us, there will be no device interrupt seen
-> by the runtime SoC IRQ controller.
->
-> Note that this can cause spurious interrupts on omap3 devices with
-> bq24190 connected to gpio banks 2 - 5 as there's a glitch on those
-> pins waking from off mode as listed in "Advisory 1.45". Devices
-> with this issue should not configure the optional wakeirq interrupt
-> in the dts file.
->
-> Cc: Matt Ranostay <matt@ranostay.consulting>
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 62 ++++++++++++++++++++++++++++------
->  1 file changed, 52 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -155,6 +155,8 @@ struct bq24190_dev_info {
->         kernel_ulong_t                  model;
->         unsigned int                    gpio_int;
->         unsigned int                    irq;
-> +       bool                            initialized;
-> +       bool                            irq_event;
->         struct mutex                    f_reg_lock;
->         u8                              f_reg;
->         u8                              ss_reg;
-> @@ -1157,9 +1159,8 @@ static const struct power_supply_desc bq24190_battery_desc = {
->         .property_is_writeable  = bq24190_battery_property_is_writeable,
->  };
->
-> -static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
-> +static void bq24190_check_status(struct bq24190_dev_info *bdi)
->  {
-> -       struct bq24190_dev_info *bdi = data;
->         const u8 battery_mask_ss = BQ24190_REG_SS_CHRG_STAT_MASK;
->         const u8 battery_mask_f = BQ24190_REG_F_BAT_FAULT_MASK
->                                 | BQ24190_REG_F_NTC_FAULT_MASK;
-> @@ -1167,12 +1168,10 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->         u8 ss_reg = 0, f_reg = 0;
->         int i, ret;
->
-> -       pm_runtime_get_sync(bdi->dev);
-> -
->         ret = bq24190_read(bdi, BQ24190_REG_SS, &ss_reg);
->         if (ret < 0) {
->                 dev_err(bdi->dev, "Can't read SS reg: %d\n", ret);
-> -               goto out;
-> +               return;
->         }
->
->         i = 0;
-> @@ -1180,7 +1179,7 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->                 ret = bq24190_read(bdi, BQ24190_REG_F, &f_reg);
->                 if (ret < 0) {
->                         dev_err(bdi->dev, "Can't read F reg: %d\n", ret);
-> -                       goto out;
-> +                       return;
->                 }
->         } while (f_reg && ++i < 2);
->
-> @@ -1229,10 +1228,18 @@ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->         if (alert_battery)
->                 power_supply_changed(bdi->battery);
->
-> -out:
-> -       pm_runtime_put_sync(bdi->dev);
-> -
->         dev_dbg(bdi->dev, "ss_reg: 0x%02x, f_reg: 0x%02x\n", ss_reg, f_reg);
-> +}
-> +
-> +static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
-> +{
-> +       struct bq24190_dev_info *bdi = data;
-> +
-> +       bdi->irq_event = true;
-> +       pm_runtime_get_sync(bdi->dev);
+On Fri, Jan 20, 2017 at 11:11:45PM +0000, Mario.Limonciello@dell.com wrote:
+> Greg,
+> 
+> > -----Original Message-----
+> > From: Darren Hart [mailto:dvhart@infradead.org]
+> > Sent: Tuesday, January 17, 2017 5:34 PM
+> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> > Cc: gregkh@linuxfoundation.org; rafael.j.wysocki@intel.com;
+> > pmenzel@molgen.mpg.de; linux@leemhuis.info; tomas.winkler@intel.com;
+> > jan@gondor.com; alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
+> > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> > len.brown@intel.com; linux-pm@vger.kernel.org
+> > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+> > bus: enable OS version only for SPT and newer)
+> > 
+> > On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com
+> > wrote:
+> > > > -----Original Message-----
+> > > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> > > > Sent: Tuesday, January 17, 2017 12:24 PM
+> > > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> > > > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
+> > > > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
+> > > > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
+> > > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> > > > len.brown@intel.com; linux-pm@vger.kernel.org
+> > > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+> > > > bus: enable OS version only for SPT and newer)
+> > > >
+> > > > On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com
+> > > > wrote:
+> > > > > So in the <6s scenario, the intel-hid driver is responsible to
+> > > > > receive the ACPI event and process accordingly.  The maintainer
+> > > > > has a patch ready for the intel-hid portion of this work, but it's
+> > > > > currently being reviewed by Intel to ensure it can be legally submitted
+> > into the kernel.
+> > > >
+> > > > Who at Intel do I need to go kick to make this mythical legal review
+> > > > happen faster so we can see the code?
+> > > >
+> > > > Len and Rafael, what is going on here?
+> > > >
+> > >
+> > > Len and Darren are both in the loop on the discussion around this patch.
+> > > I don't know if they'll have any (public) comments they can add on the
+> > > matter yet however.
+> > 
+> > Thanks Mario. Yes, there isn't much to say here in public other than to confirm
+> > we are keenly aware of the problem and have been actively working on fixing
+> > it, both for this instance, and the deeper systematic failure that resulted in this
+> > situation. No amount of kicking will expedite the process at this point, but
+> > should we feel the need, we'll reach out.
+> > 
+> 
+> The approval has come through and the patch has been submitted.
+> http://www.spinics.net/lists/platform-driver-x86/msg10286.html
 
-Do we need to call pm_runtime_irq_safe() prior to the above?
+Looks like it needs some work :)
 
-> +       bq24190_check_status(bdi);
-> +       pm_runtime_put_sync(bdi->dev);
-> +       bdi->irq_event = false;
->
->         return IRQ_HANDLED;
->  }
-> ...
+And why isn't it tagged to go to the 4.10-stable kernel if it really
+does fix some systems?
+
+> Note: this is only half of the fix, the second half needs the ACPI subsystem to
+> not be frozen to be able to receive this event.
+
+Where is that change?
+
+I'm still worried about 4.10-final, is that going to be broken for these
+types of systems?
+
+thanks,
+
+greg k-h
