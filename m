@@ -1,371 +1,69 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Fri, 20 Jan 2017 16:47:23 -0800
-Message-ID: <CAKvHMgQKPZcdBPMUH-3_e-M4sHPijEH59019bygmi+o2y4B+Rw@mail.gmail.com>
-References: <20170120220440.1971-1-tony@atomide.com> <20170120220440.1971-3-tony@atomide.com>
+From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v5 1/2] dt-bindings: brcm: clocks: add binding for
+ brcmstb-cpu-clk-div
+Date: Fri, 20 Jan 2017 16:52:02 -0800
+Message-ID: <20170121005202.GB8801@codeaurora.org>
+References: <20170119002933.7529-1-code@mmayer.net>
+ <20170119002933.7529-2-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:35440 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751028AbdAUArZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Jan 2017 19:47:25 -0500
-In-Reply-To: <20170120220440.1971-3-tony@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170119002933.7529-2-code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Cc: Michael Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Linux Clock List <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-On Fri, Jan 20, 2017 at 2:04 PM, Tony Lindgren <tony@atomide.com> wrote:
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> state.
-
-Which device state would constantly toggle?
-
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
->
-> Cc: Matt Ranostay <matt@ranostay.consulting>
-
-We can probably drop Matt from this thread; he's been busy with the
-fuel gauge, etc.
-
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 122 +++++++++++++++++++++++++--------
->  1 file changed, 93 insertions(+), 29 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -420,6 +420,7 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
->         struct power_supply *psy = dev_get_drvdata(dev);
->         struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
->         struct bq24190_sysfs_field_info *info;
-> +       ssize_t count;
->         int ret;
->         u8 v;
->
-> @@ -427,11 +428,20 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
->         if (!info)
->                 return -EINVAL;
->
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
+On 01/18, Markus Mayer wrote:
+> diff --git a/Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt b/Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
+> new file mode 100644
+> index 0000000..c4acb53
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
+> @@ -0,0 +1,27 @@
+> +The CPU divider node serves as the sole clock for the CPU complex. It supports
+> +power-of-2 clock division, with a divider of "1" as the default highest-speed
+> +setting.
 > +
->         ret = bq24190_read_mask(bdi, info->reg, info->mask, info->shift, &v);
->         if (ret)
-> -               return ret;
-> +               count = ret;
-> +       else
-> +               count = scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
+> +Required properties:
+> +- compatible: shall be "brcm,brcmstb-cpu-clk-div"
+> +- reg: address and width of the divider configuration register
+> +- #clock-cells: shall be set to 0
+> +- clocks: phandle of clock provider which provides the source clock
+> +          (this would typically be a "fixed-clock" type PLL)
+> +- div-table: list of (raw_value,divider) ordered pairs that correspond to the
+> +             allowed clock divider settings
+> +- div-shift-width: least-significant bit position and width of divider value
 
-Unless it violates a style guide, I prefer
-  count = ret ? ret : scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
+Are these properties used? Please don't put these types of
+details in DT.
 
 > +
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
->
-> -       return scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
-> +       return count;
->  }
->
->  static ssize_t bq24190_sysfs_store(struct device *dev,
-> @@ -451,9 +461,16 @@ static ssize_t bq24190_sysfs_store(struct device *dev,
->         if (ret < 0)
->                 return ret;
->
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
+> +Optional properties:
+> +- clock-names: the clock may be named
 > +
->         ret = bq24190_write_mask(bdi, info->reg, info->mask, info->shift, v);
->         if (ret)
-> -               return ret;
-> +               count = ret;
-> +
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
->
->         return count;
->  }
-> @@ -795,7 +812,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
->
->         dev_dbg(bdi->dev, "prop: %d\n", psp);
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
->
->         switch (psp) {
->         case POWER_SUPPLY_PROP_CHARGE_TYPE:
-> @@ -835,7 +854,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
->                 ret = -ENODATA;
->         }
->
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-> +
->         return ret;
->  }
->
-> @@ -848,7 +869,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
->
->         dev_dbg(bdi->dev, "prop: %d\n", psp);
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
->
->         switch (psp) {
->         case POWER_SUPPLY_PROP_CHARGE_TYPE:
-> @@ -864,7 +887,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
->                 ret = -EINVAL;
->         }
->
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-> +
->         return ret;
->  }
->
-> @@ -1065,7 +1090,9 @@ static int bq24190_battery_get_property(struct power_supply *psy,
->
->         dev_dbg(bdi->dev, "prop: %d\n", psp);
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
->
->         switch (psp) {
->         case POWER_SUPPLY_PROP_STATUS:
-> @@ -1093,7 +1120,9 @@ static int bq24190_battery_get_property(struct power_supply *psy,
->                 ret = -ENODATA;
->         }
->
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-> +
->         return ret;
->  }
->
-> @@ -1106,7 +1135,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
->
->         dev_dbg(bdi->dev, "prop: %d\n", psp);
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
->
->         switch (psp) {
->         case POWER_SUPPLY_PROP_ONLINE:
-> @@ -1119,7 +1150,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
->                 ret = -EINVAL;
->         }
->
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-> +
->         return ret;
->  }
->
-> @@ -1234,11 +1267,15 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
->  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->  {
->         struct bq24190_dev_info *bdi = data;
-> +       int ret;
->
->         bdi->irq_event = true;
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
->         bq24190_check_status(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
->         bdi->irq_event = false;
->
->         return IRQ_HANDLED;
-> @@ -1249,7 +1286,9 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->         u8 v;
->         int ret;
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
+> +Example:
+> +	cpuclkdiv: cpu-clk-div@f03e257c {
+> +		compatible = "brcm,brcmstb-cpu-clk-div";
+> +		reg = <0xf03e257c 0x4>;
 
-Why is pm_runtime_*() necessary in this function?
-probe() already calls pm_runtime_*() around hw_init(); nothing else calls it.
+This register really looks like some offset in something larger.
+Is there some clock controller? What's the hw block at
+0xf03e2000? Maybe I already asked this.
 
->         /* First check that the device really is what its supposed to be */
->         ret = bq24190_read_mask(bdi, BQ24190_REG_VPRS,
-> @@ -1274,7 +1313,9 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->
->         ret = bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
->  out:
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-> +
->         return ret;
->  }
->
-> @@ -1364,12 +1405,16 @@ static int bq24190_probe(struct i2c_client *client,
->         }
+> +		div-table = <0x00 1>;
+> +		div-shift-width = <0 5>;
+> +		#clock-cells = <0>;
+> +		clocks = <&cpupll>;
+> +		clock-names = "cpupll";
+> +	};
+> 
 
-v1 patchset called enable_irq_wake() here.
-v2 change list does not mention its removal.
-
->         pm_runtime_enable(dev);
-> -       pm_runtime_resume(dev);
-> +       pm_runtime_set_autosuspend_delay(dev, 600);
-> +       pm_runtime_use_autosuspend(dev);
-> +       ret = pm_runtime_get_sync(dev);
-> +       if (ret < 0)
-> +               goto out1;
->
->         ret = bq24190_hw_init(bdi);
->         if (ret < 0) {
->                 dev_err(dev, "Hardware init failed\n");
-> -               goto out1;
-> +               goto out2;
->         }
->
->         charger_cfg.drv_data = bdi;
-> @@ -1380,7 +1425,7 @@ static int bq24190_probe(struct i2c_client *client,
->         if (IS_ERR(bdi->charger)) {
->                 dev_err(dev, "Can't register charger\n");
->                 ret = PTR_ERR(bdi->charger);
-> -               goto out1;
-> +               goto out2;
->         }
->
->         battery_cfg.drv_data = bdi;
-> @@ -1389,13 +1434,13 @@ static int bq24190_probe(struct i2c_client *client,
->         if (IS_ERR(bdi->battery)) {
->                 dev_err(dev, "Can't register battery\n");
->                 ret = PTR_ERR(bdi->battery);
-> -               goto out2;
-> +               goto out3;
->         }
->
->         ret = bq24190_sysfs_create_group(bdi);
->         if (ret) {
->                 dev_err(dev, "Can't create sysfs entries\n");
-> -               goto out3;
-> +               goto out4;
->         }
->
->         bdi->initialized = true;
-> @@ -1406,21 +1451,28 @@ static int bq24190_probe(struct i2c_client *client,
->                         "bq24190-charger", bdi);
->         if (ret < 0) {
->                 dev_err(dev, "Can't set up irq handler\n");
-> -               goto out4;
-> +               goto out5;
->         }
->
-> +       pm_runtime_mark_last_busy(dev);
-> +       pm_runtime_put_autosuspend(dev);
-> +
->         return 0;
->
-> -out4:
-> +out5:
->         bq24190_sysfs_remove_group(bdi);
->
-> -out3:
-> +out4:
->         power_supply_unregister(bdi->battery);
->
-> -out2:
-> +out3:
->         power_supply_unregister(bdi->charger);
->
-> +out2:
-> +       pm_runtime_put_sync(dev);
-> +
-
-v2 change list does not mention this addition
-
->  out1:
-> +       pm_runtime_dont_use_autosuspend(dev);
->         pm_runtime_disable(dev);
->         if (bdi->gpio_int)
->                 gpio_free(bdi->gpio_int);
-> @@ -1430,9 +1482,13 @@ static int bq24190_probe(struct i2c_client *client,
->  static int bq24190_remove(struct i2c_client *client)
->  {
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int ret;
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
->         bq24190_register_reset(bdi);
-> +       pm_runtime_dont_use_autosuspend(bdi->dev);
->         pm_runtime_put_sync(bdi->dev);
-
-Should skip these if get_sync() failed?
-Is pm_runtime_disable() needed here?
-
->         bq24190_sysfs_remove_group(bdi);
-> @@ -1480,10 +1536,14 @@ static int bq24190_pm_suspend(struct device *dev)
->  {
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0)
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
->         bq24190_register_reset(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-
-Should skip these if get_sync() failed?
-
->         return 0;
->  }
-> @@ -1492,15 +1552,19 @@ static int bq24190_pm_resume(struct device *dev)
->  {
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
->
->         bdi->f_reg = 0;
->         bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0)
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
->         bq24190_register_reset(bdi);
->         bq24190_set_mode_host(bdi);
->         bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
-
-Should skip these if get_sync() failed?
-
-Thanks,
-Liam
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
