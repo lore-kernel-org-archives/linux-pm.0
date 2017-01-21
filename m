@@ -1,94 +1,51 @@
-From: <Mario.Limonciello@dell.com>
-Subject: RE: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
- bus: enable OS version only for SPT and newer)
-Date: Fri, 20 Jan 2017 23:11:45 +0000
-Message-ID: <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
-References: <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
- <20170114193959.GA30750@kroah.com>
- <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
- <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
- <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
- <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
- <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
- <20170117182337.GB12600@kroah.com>
- <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
- <20170117233346.GA2599@wisp>
+From: Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>
+Subject: Re: [PATCH] power: supply: bq2415x: check for NULL acpi_id to avoid
+ null pointer dereference
+Date: Sat, 21 Jan 2017 01:02:20 +0100
+Message-ID: <20170121000220.GI32502@pali>
+References: <20170120132506.20514-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170117233346.GA2599@wisp>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <20170120132506.20514-1-colin.king@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org
-Cc: dvhart@infradead.org, rafael.j.wysocki@intel.com, pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Greg,
+On Friday 20 January 2017 13:25:06 Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> acpi_match_device can potentially return NULL, so it is prudent to
+> check if acpi_id is null before it is dereferenced.  Add a check
+> and an error message to indicate the failure.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>  drivers/power/supply/bq2415x_charger.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/power/supply/bq2415x_charger.c b/drivers/power/supply/bq2415x_charger.c
+> index 73e2f0b..c4770a9 100644
+> --- a/drivers/power/supply/bq2415x_charger.c
+> +++ b/drivers/power/supply/bq2415x_charger.c
+> @@ -1569,6 +1569,11 @@ static int bq2415x_probe(struct i2c_client *client,
+>  		acpi_id =
+>  			acpi_match_device(client->dev.driver->acpi_match_table,
+>  					  &client->dev);
+> +		if (!acpi_id) {
+> +			dev_err(&client->dev, "failed to match device name\n");
+> +			ret = -ENODEV;
+> +			goto error_1;
+> +		}
+>  		name = kasprintf(GFP_KERNEL, "%s-%d", acpi_id->id, num);
+>  	}
+>  	if (!name) {
 
-> -----Original Message-----
-> From: Darren Hart [mailto:dvhart@infradead.org]
-> Sent: Tuesday, January 17, 2017 5:34 PM
-> To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> Cc: gregkh@linuxfoundation.org; rafael.j.wysocki@intel.com;
-> pmenzel@molgen.mpg.de; linux@leemhuis.info; tomas.winkler@intel.com;
-> jan@gondor.com; alexander.usyskin@intel.com; linux-kernel@vger.kernel.org=
-;
-> yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
-> len.brown@intel.com; linux-pm@vger.kernel.org
-> Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] m=
-ei:
-> bus: enable OS version only for SPT and newer)
->=20
-> On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com
-> wrote:
-> > > -----Original Message-----
-> > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
-> > > Sent: Tuesday, January 17, 2017 12:24 PM
-> > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> > > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
-> > > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
-> > > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
-> > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
-> > > len.brown@intel.com; linux-pm@vger.kernel.org
-> > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V=
-2] mei:
-> > > bus: enable OS version only for SPT and newer)
-> > >
-> > > On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com
-> > > wrote:
-> > > > So in the <6s scenario, the intel-hid driver is responsible to
-> > > > receive the ACPI event and process accordingly.  The maintainer
-> > > > has a patch ready for the intel-hid portion of this work, but it's
-> > > > currently being reviewed by Intel to ensure it can be legally submi=
-tted
-> into the kernel.
-> > >
-> > > Who at Intel do I need to go kick to make this mythical legal review
-> > > happen faster so we can see the code?
-> > >
-> > > Len and Rafael, what is going on here?
-> > >
-> >
-> > Len and Darren are both in the loop on the discussion around this patch=
-.
-> > I don't know if they'll have any (public) comments they can add on the
-> > matter yet however.
->=20
-> Thanks Mario. Yes, there isn't much to say here in public other than to c=
-onfirm
-> we are keenly aware of the problem and have been actively working on fixi=
-ng
-> it, both for this instance, and the deeper systematic failure that result=
-ed in this
-> situation. No amount of kicking will expedite the process at this point, =
-but
-> should we feel the need, we'll reach out.
->=20
+Looks good! Add my Reviewed-by.
 
-The approval has come through and the patch has been submitted.
-http://www.spinics.net/lists/platform-driver-x86/msg10286.html
-
-Note: this is only half of the fix, the second half needs the ACPI subsyste=
-m to
-not be frozen to be able to receive this event.
+-- 
+Pali Rohár
+pali.rohar@gmail.com
