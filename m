@@ -1,113 +1,93 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
- bus: enable OS version only for SPT and newer)
-Date: Sat, 21 Jan 2017 12:49:50 +0100
-Message-ID: <CAJZ5v0hWYooC9-cXUnsLAuDSa7xLO2AxewYEaeYbkj6c9gNwVw@mail.gmail.com>
-References: <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
- <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
- <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info> <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
- <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
- <20170117182337.GB12600@kroah.com> <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
- <20170117233346.GA2599@wisp> <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
- <20170121091112.GD27048@kroah.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v5 1/2] dt-bindings: brcm: clocks: add binding for
+ brcmstb-cpu-clk-div
+Date: Sat, 21 Jan 2017 14:39:20 -0600
+Message-ID: <20170121203920.ijtrpdsff24rcjgs@rob-hp-laptop>
+References: <20170119002933.7529-1-code@mmayer.net>
+ <20170119002933.7529-2-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f194.google.com ([74.125.82.194]:33024 "EHLO
-        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750886AbdAULtw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2017 06:49:52 -0500
-In-Reply-To: <20170121091112.GD27048@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20170119002933.7529-2-code@mmayer.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Markus Mayer <code@mmayer.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Power Management List <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, Linux Clock List <linux-clk@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Mario Limonciello <Mario.Limonciello@dell.com>, Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Paul Menzel <pmenzel@molgen.mpg.de>, Thorsten Leemhuis <linux@leemhuis.info>, Tomas Winkler <tomas.winkler@intel.com>, jan@gondor.com, Alexander Usyskin <alexander.usyskin@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chen, Yu C" <yu.c.chen@intel.com>, Tomi Sarvela <tomi.p.sarvela@intel.com>, Daniel Blueman <daniel@quora.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-On Sat, Jan 21, 2017 at 10:11 AM, Greg KH <gregkh@linuxfoundation.org> wrote:
-> On Fri, Jan 20, 2017 at 11:11:45PM +0000, Mario.Limonciello@dell.com wrote:
->> Greg,
->>
->> > -----Original Message-----
->> > From: Darren Hart [mailto:dvhart@infradead.org]
->> > Sent: Tuesday, January 17, 2017 5:34 PM
->> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
->> > Cc: gregkh@linuxfoundation.org; rafael.j.wysocki@intel.com;
->> > pmenzel@molgen.mpg.de; linux@leemhuis.info; tomas.winkler@intel.com;
->> > jan@gondor.com; alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
->> > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
->> > len.brown@intel.com; linux-pm@vger.kernel.org
->> > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
->> > bus: enable OS version only for SPT and newer)
->> >
->> > On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com
->> > wrote:
->> > > > -----Original Message-----
->> > > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
->> > > > Sent: Tuesday, January 17, 2017 12:24 PM
->> > > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
->> > > > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
->> > > > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
->> > > > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
->> > > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
->> > > > len.brown@intel.com; linux-pm@vger.kernel.org
->> > > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
->> > > > bus: enable OS version only for SPT and newer)
->> > > >
->> > > > On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com
->> > > > wrote:
->> > > > > So in the <6s scenario, the intel-hid driver is responsible to
->> > > > > receive the ACPI event and process accordingly.  The maintainer
->> > > > > has a patch ready for the intel-hid portion of this work, but it's
->> > > > > currently being reviewed by Intel to ensure it can be legally submitted
->> > into the kernel.
->> > > >
->> > > > Who at Intel do I need to go kick to make this mythical legal review
->> > > > happen faster so we can see the code?
->> > > >
->> > > > Len and Rafael, what is going on here?
->> > > >
->> > >
->> > > Len and Darren are both in the loop on the discussion around this patch.
->> > > I don't know if they'll have any (public) comments they can add on the
->> > > matter yet however.
->> >
->> > Thanks Mario. Yes, there isn't much to say here in public other than to confirm
->> > we are keenly aware of the problem and have been actively working on fixing
->> > it, both for this instance, and the deeper systematic failure that resulted in this
->> > situation. No amount of kicking will expedite the process at this point, but
->> > should we feel the need, we'll reach out.
->> >
->>
->> The approval has come through and the patch has been submitted.
->> http://www.spinics.net/lists/platform-driver-x86/msg10286.html
->
-> Looks like it needs some work :)
->
-> And why isn't it tagged to go to the 4.10-stable kernel if it really
-> does fix some systems?
->
->> Note: this is only half of the fix, the second half needs the ACPI subsystem to
->> not be frozen to be able to receive this event.
->
-> Where is that change?
->
-> I'm still worried about 4.10-final, is that going to be broken for these
-> types of systems?
+On Wed, Jan 18, 2017 at 04:29:32PM -0800, Markus Mayer wrote:
+> From: Markus Mayer <mmayer@broadcom.com>
+> 
+> Add binding document for brcm,brcmstb-cpu-clk-div.
+> 
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> ---
+>  .../bindings/clock/brcm,brcmstb-cpu-clk-div.txt    | 27 ++++++++++++++++++++++
+>  MAINTAINERS                                        |  1 +
+>  2 files changed, 28 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt b/Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
+> new file mode 100644
+> index 0000000..c4acb53
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
+> @@ -0,0 +1,27 @@
+> +The CPU divider node serves as the sole clock for the CPU complex. It supports
+> +power-of-2 clock division, with a divider of "1" as the default highest-speed
+> +setting.
+> +
+> +Required properties:
+> +- compatible: shall be "brcm,brcmstb-cpu-clk-div"
+> +- reg: address and width of the divider configuration register
+> +- #clock-cells: shall be set to 0
+> +- clocks: phandle of clock provider which provides the source clock
+> +          (this would typically be a "fixed-clock" type PLL)
+> +- div-table: list of (raw_value,divider) ordered pairs that correspond to the
+> +             allowed clock divider settings
 
-Nope.
+Why do you need 2 values? Can't you use the index or calculate the 
+register value from the divider value?
 
-I'm going to revert commit 08b98d329165 (PM / sleep / ACPI: Use the
-ACPI_FADT_LOW_POWER_S0 flag) which introduced the problem in the first
-place (yes, the bisection result it misleading).  In fact, the revert
-is in my linux-next branch already, but I'm sort of out in the woods
-now and the actual pull request will be sent next week.
+> +- div-shift-width: least-significant bit position and width of divider value
+> +
+> +Optional properties:
+> +- clock-names: the clock may be named
+> +
+> +Example:
+> +	cpuclkdiv: cpu-clk-div@f03e257c {
 
-BTW, this is a usual process.  We had tried to change the default
-behaviour for certain class of systems and it didn't work, so we need
-to take a step back, fix the problems that were exposed and try again
-later.
+clock-controller@...
 
-It has been confused quite a bit, though, which is kind of worrisome.
-
-Thanks,
-Rafael
+> +		compatible = "brcm,brcmstb-cpu-clk-div";
+> +		reg = <0xf03e257c 0x4>;
+> +		div-table = <0x00 1>;
+> +		div-shift-width = <0 5>;
+> +		#clock-cells = <0>;
+> +		clocks = <&cpupll>;
+> +		clock-names = "cpupll";
+> +	};
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index cfff2c9..690761d 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2786,6 +2786,7 @@ M:	bcm-kernel-feedback-list@broadcom.com
+>  L:	linux-pm@vger.kernel.org
+>  S:	Maintained
+>  F:	Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-cpu-freq.txt
+> +F:	Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
+>  F:	drivers/cpufreq/brcmstb*
+>  
+>  BROADCOM SPECIFIC AMBA DRIVER (BCMA)
+> -- 
+> 2.7.4
+> 
