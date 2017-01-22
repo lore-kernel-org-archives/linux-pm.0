@@ -1,45 +1,46 @@
 From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: [PATCH v4 7/8] devicetree: power: bq27xxx: add monitored battery documentation
-Date: Sat, 21 Jan 2017 23:14:03 -0800
-Message-ID: <20170122071404.9654-8-matt@ranostay.consulting>
+Subject: [PATCH v4 3/8] power: power_supply: add battery information struct
+Date: Sat, 21 Jan 2017 23:13:59 -0800
+Message-ID: <20170122071404.9654-4-matt@ranostay.consulting>
 References: <20170122071404.9654-1-matt@ranostay.consulting>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20170122071404.9654-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Depends-On: http://marc.info/?l=linux-pm&m=148392292830015&w=2
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Add power_supply_battery_info structure that is used to
+enumerate battery state machine settings.
+
 Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 ---
- Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ include/linux/power_supply.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index b0c95ef63e68..0472a2db0f13 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -28,9 +28,17 @@ Required properties:
-  * "ti,bq27621" - BQ27621
- - reg: integer, i2c address of the device.
- 
-+Optional properties:
-+- monitored-battery: phandle of battery information devicetree node
-+
-+  See Documentation/devicetree/bindings/power/supply/battery.txt
-+  If any of the referenced battery properties are set, then all must be.
-+
- Example:
- 
- bq27510g3 {
-     compatible = "ti,bq27510g3";
-     reg = <0x55>;
-+
-+    monitored-battery = <&bat>;
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 3965503315ef..59674a257d5e 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -288,6 +288,18 @@ struct power_supply_info {
+ 	int use_for_apm;
  };
+ 
++/*
++ * This is the recommended struct to specify static battery parameters.
++ * Power supply class itself doesn't use this, but it implements access
++ * that most platform drivers should use for consistency.
++ */
++
++struct power_supply_battery_info {
++	int energy;		/* uWh */
++	int power;		/* uAh */
++	int nominal_voltage;	/* uV */
++};
++
+ extern struct atomic_notifier_head power_supply_notifier;
+ extern int power_supply_reg_notifier(struct notifier_block *nb);
+ extern void power_supply_unreg_notifier(struct notifier_block *nb);
 -- 
 2.10.2
 
