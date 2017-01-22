@@ -1,55 +1,101 @@
-From: Matt Ranostay <matt@ranostay.consulting>
-Subject: [PATCH v4 0/8] power: bq27xxx: add support for NVRAM R/W access
-Date: Sat, 21 Jan 2017 23:13:56 -0800
-Message-ID: <20170122071404.9654-1-matt@ranostay.consulting>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:34427 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750813AbdAVHOF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2017 02:14:05 -0500
-Received: by mail-pf0-f173.google.com with SMTP id e4so32862070pfg.1
-        for <linux-pm@vger.kernel.org>; Sat, 21 Jan 2017 23:14:05 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Subject: [PATCH v4 4/8] power: power_supply: add battery info platform data retrieval
+Date: Sat, 21 Jan 2017 23:14:00 -0800
+Message-ID: <20170122071404.9654-5-matt@ranostay.consulting>
+References: <20170122071404.9654-1-matt@ranostay.consulting>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170122071404.9654-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: sre@kernel.org, tony@atomide.com, Matt Ranostay <matt@ranostay.consulting>
 
-Changes from v1:
-* add documentation for mWh and mAh property units
-* change devicetree entries to match new property units
+Add power_supply_get_battery_info() to get battery platform data
 
-Changes from v2:
-* split i2c changes into respective patches
-* add documentation for battery information for fuel gauge
-* rebased documentation patches on change on the list
-* abstracted the battery configuration for the state machine
-  to an generic struct and platform data access function
+Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+---
+ drivers/power/supply/power_supply_core.c | 41 ++++++++++++++++++++++++++++++++
+ include/linux/power_supply.h             |  4 ++++
+ 2 files changed, 45 insertions(+)
 
-Changes from v3:
-* add "fixed-battery" compatible field to be be more consistant
-  with devicetree
-
-Matt Ranostay (8):
-  devicetree: property-units: add mWh and mAh units
-  devicetree: power: add battery state machine documentation
-  power: power_supply: add battery information struct
-  power: power_supply: add battery info platform data retrieval
-  power: bq27xxx_battery: add BQ27425 chip id
-  power: bq27xxx_battery: add i2c bulk read/write functions
-  devicetree: power: bq27xxx: add monitored battery documentation
-  power: bq27xxx_battery: add initial state machine support
-
- .../devicetree/bindings/power/supply/battery.txt   |  24 ++
- .../devicetree/bindings/power/supply/bq27xxx.txt   |   8 +
- .../devicetree/bindings/property-units.txt         |   2 +
- drivers/power/supply/bq27xxx_battery.c             | 253 ++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c         |  64 +++++-
- drivers/power/supply/power_supply_core.c           |  41 ++++
- include/linux/power/bq27xxx_battery.h              |   7 +-
- include/linux/power_supply.h                       |  16 ++
- 8 files changed, 411 insertions(+), 4 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
-
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 1e0960b646e8..21490b5e233f 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -17,6 +17,7 @@
+ #include <linux/device.h>
+ #include <linux/notifier.h>
+ #include <linux/err.h>
++#include <linux/of.h>
+ #include <linux/power_supply.h>
+ #include <linux/thermal.h>
+ #include "power_supply.h"
+@@ -487,6 +488,46 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
+ EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
+ #endif /* CONFIG_OF */
+ 
++int power_supply_get_battery_info(struct power_supply *psy,
++				  struct power_supply_battery_info *info,
++				  const char *property)
++{
++	struct device_node *np = psy->of_node;
++	struct device_node *power_supply_battery_info_np;
++	struct property *p;
++	char *prefix = "fixed-battery";
++	int ret;
++
++	if (!np)
++		return -ENXIO;
++
++	power_supply_battery_info_np = of_parse_phandle(np, property, 0);
++	if (!power_supply_battery_info_np)
++		return -ENODEV;
++
++	p = of_find_property(power_supply_battery_info_np, "compatible", NULL);
++
++	if (!p || !p->value)
++		return -ENODEV;
++
++	if (strncmp(prefix, p->value, strlen(prefix)))
++		return -ENODEV;
++
++	ret = of_property_read_u32(power_supply_battery_info_np,
++				   "nominal-microvolt", &info->nominal_voltage);
++	if (ret < 0)
++		return ret;
++
++	ret = of_property_read_u32(power_supply_battery_info_np,
++				   "design-microwatt-hours", &info->energy);
++	if (ret < 0)
++		return ret;
++
++	return of_property_read_u32(power_supply_battery_info_np,
++				   "design-microamp-hours", &info->power);
++}
++EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
++
+ int power_supply_get_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+ 			    union power_supply_propval *val)
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 59674a257d5e..859d0e7f9b6a 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -318,6 +318,10 @@ static inline struct power_supply *
+ devm_power_supply_get_by_phandle(struct device *dev, const char *property)
+ { return NULL; }
+ #endif /* CONFIG_OF */
++
++extern int power_supply_get_battery_info(struct power_supply *psy,
++					 struct power_supply_battery_info *info,
++					 const char *property);
+ extern void power_supply_changed(struct power_supply *psy);
+ extern int power_supply_am_i_supplied(struct power_supply *psy);
+ extern int power_supply_set_battery_charged(struct power_supply *psy);
 -- 
 2.10.2
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
