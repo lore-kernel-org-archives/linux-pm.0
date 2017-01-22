@@ -1,108 +1,126 @@
-From: Guy Shapiro <guy.shapiro@mobi-wize.com>
-Subject: Re: imx6ul: power-up using the RTC
-Date: Sun, 22 Jan 2017 13:17:44 +0200
-Message-ID: <089d1044-275a-1fdc-f0d6-f21c1253b0ab@mobi-wize.com>
-References: <b516070d-6539-98d1-c832-d79ac89e8d43@mobi-wize.com>
- <20170120121210.gm3wcg4yyvrigpn3@earth>
- <20170120153459.tewyg54dcgqnpz2j@piout.net>
+From: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+ bus: enable OS version only for SPT and newer)
+Date: Sun, 22 Jan 2017 12:25:51 +0100
+Message-ID: <20170122112551.GE18923@kroah.com>
+References: <20170116110539.GA1307@kroah.com>
+ <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
+ <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
+ <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+ <20170117182337.GB12600@kroah.com>
+ <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
+ <20170117233346.GA2599@wisp>
+ <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
+ <20170121091112.GD27048@kroah.com>
+ <CAJZ5v0hWYooC9-cXUnsLAuDSa7xLO2AxewYEaeYbkj6c9gNwVw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170120153459.tewyg54dcgqnpz2j@piout.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>
-Cc: a.zummo@towertech.it, Frank.Li@freescale.com, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, b20788@freescale.com, shawnguo@kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:50758 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750884AbdAVLZl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2017 06:25:41 -0500
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0hWYooC9-cXUnsLAuDSa7xLO2AxewYEaeYbkj6c9gNwVw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Mario Limonciello <Mario.Limonciello@dell.com>, Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Paul Menzel <pmenzel@molgen.mpg.de>, Thorsten Leemhuis <linux@leemhuis.info>, Tomas Winkler <tomas.winkler@intel.com>, jan@gondor.com, Alexander Usyskin <alexander.usyskin@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chen, Yu C" <yu.c.chen@intel.com>, Tomi Sarvela <tomi.p.sarvela@intel.com>, Daniel Blueman <daniel@quora.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-On 20/01/2017 17:34, Alexandre Belloni wrote:
-> On 20/01/2017 at 13:12:10 +0100, Sebastian Reichel wrote :
->> Hi,
->>
->> On Wed, Jan 18, 2017 at 04:49:11PM +0200, Guy Shapiro wrote:
->>> I'm trying to use the low power RTC of the i.MX6UL to start from
->>> power-off state.
->>>
->>> I started by hopefully running: # echo +30 >
->>> /sys/class/rtc/rtc0/wakealarm && shutdown -h now The system was
->>> powered down, but it didn't come up after 30 seconds as expected.
->>>
->>> So I dug into the datasheet and the source...
->>> To activate the power on alarm, the flags SRTC_ENV, LPTA_EN and LPWUI_EN on
->>> the SNVS_LP Control register (LPCR) should be asserted. The wakeup time
->>> should be written to the SNVS_LP Time alarm register (LPTA). The code that
->>> does this is on drivers/rtc/rtc-snvs.c:snvs_rtc_set_alarm().
->>>
->>> The first problem I found was with the use of the syscon-poweroff driver.
->>> The "Turn off System Power" flag is part of the same register (LPCR). The
->>> current code of syscon-poweroff set the register to the "mask" property from
->>> the device tree on power off, overriding all the existing flags.
->>> After setting the "mask" property on the device tree to 0x6b instead of
->>> 0x60 (asserting the mentioned bits), the system do power up on timer, as
->>> expected.
->>>
->>> However, I didn't like the idea of keeping those flags on even when no one
->>> set the alarm.
->>> As a quick test, I modified the syscon-poweroff driver to ignore the bits
->>> that are not on the mask:
->>>
->>> diff --git a/drivers/power/reset/syscon-poweroff.c
->>> b/drivers/power/reset/syscon-poweroff.c
->>> index b683383..a5da02b 100644
->>> --- a/drivers/power/reset/syscon-poweroff.c
->>> +++ b/drivers/power/reset/syscon-poweroff.c
->>> @@ -33,7 +33,7 @@ static u32 mask;
->>> static void syscon_poweroff(void)
->>> {
->>>         /* Issue the poweroff */
->>> -       regmap_write(map, offset, mask);
->>> +       regmap_update_bits(map, offset, mask, mask);
->>>         mdelay(1000);
->>>
->>>
->>> After applying this fix, the wake up alarm didn't work. Strangely, when I
->>> added some debug prints to investigate the case, it worked again
->>> (sometimes... depends on the exact places I add the prints).
->>> I suspect that some other driver clears the flags during the power down, but
->>> I couldn't find such driver.
->>>
->>> Do you have any clue what code may change this register during the shutdown
->>> process? Any other insights are welcomed as well :)
->> To summarize it looks like this?
->>
->> | regmap_write       | 0x60 | broken                     |
->> | regmap_write       | 0x6b | works stable               |
->> | regmap_update_bits | 0x60 | works only with dbg prints |
->>
->> For me it looks like the debug prints may delay the poweroff driver
->> long enough, that some other driver (rtc?) writes the 0x0b bits.
->>
-> Is snvs_rtc_alarm_irq_enable() waiting long enough? I'd say yes but you
-> never know... You can also use the kernel tracin infrastructure to trace
-> every accesses made to that regmap. That could give you a hint.
->
-> At least you can try a regmap_read before returning from
-> snvs_rtc_alarm_irq_enable() and see whether SNVS_LPCR_LPTA_EN and
-> SNVS_LPCR_LPWUI_EN are still there.
->
-I added a debug print on snvs_rtc_alarm_irq_enable. It reads and prints the
-value of the control register after the write & sync operation.
+On Sat, Jan 21, 2017 at 12:49:50PM +0100, Rafael J. Wysocki wrote:
+> On Sat, Jan 21, 2017 at 10:11 AM, Greg KH <gregkh@linuxfoundation.org> wrote:
+> > On Fri, Jan 20, 2017 at 11:11:45PM +0000, Mario.Limonciello@dell.com wrote:
+> >> Greg,
+> >>
+> >> > -----Original Message-----
+> >> > From: Darren Hart [mailto:dvhart@infradead.org]
+> >> > Sent: Tuesday, January 17, 2017 5:34 PM
+> >> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> >> > Cc: gregkh@linuxfoundation.org; rafael.j.wysocki@intel.com;
+> >> > pmenzel@molgen.mpg.de; linux@leemhuis.info; tomas.winkler@intel.com;
+> >> > jan@gondor.com; alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
+> >> > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> >> > len.brown@intel.com; linux-pm@vger.kernel.org
+> >> > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+> >> > bus: enable OS version only for SPT and newer)
+> >> >
+> >> > On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com
+> >> > wrote:
+> >> > > > -----Original Message-----
+> >> > > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> >> > > > Sent: Tuesday, January 17, 2017 12:24 PM
+> >> > > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> >> > > > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
+> >> > > > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
+> >> > > > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
+> >> > > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> >> > > > len.brown@intel.com; linux-pm@vger.kernel.org
+> >> > > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+> >> > > > bus: enable OS version only for SPT and newer)
+> >> > > >
+> >> > > > On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com
+> >> > > > wrote:
+> >> > > > > So in the <6s scenario, the intel-hid driver is responsible to
+> >> > > > > receive the ACPI event and process accordingly.  The maintainer
+> >> > > > > has a patch ready for the intel-hid portion of this work, but it's
+> >> > > > > currently being reviewed by Intel to ensure it can be legally submitted
+> >> > into the kernel.
+> >> > > >
+> >> > > > Who at Intel do I need to go kick to make this mythical legal review
+> >> > > > happen faster so we can see the code?
+> >> > > >
+> >> > > > Len and Rafael, what is going on here?
+> >> > > >
+> >> > >
+> >> > > Len and Darren are both in the loop on the discussion around this patch.
+> >> > > I don't know if they'll have any (public) comments they can add on the
+> >> > > matter yet however.
+> >> >
+> >> > Thanks Mario. Yes, there isn't much to say here in public other than to confirm
+> >> > we are keenly aware of the problem and have been actively working on fixing
+> >> > it, both for this instance, and the deeper systematic failure that resulted in this
+> >> > situation. No amount of kicking will expedite the process at this point, but
+> >> > should we feel the need, we'll reach out.
+> >> >
+> >>
+> >> The approval has come through and the patch has been submitted.
+> >> http://www.spinics.net/lists/platform-driver-x86/msg10286.html
+> >
+> > Looks like it needs some work :)
+> >
+> > And why isn't it tagged to go to the 4.10-stable kernel if it really
+> > does fix some systems?
+> >
+> >> Note: this is only half of the fix, the second half needs the ACPI subsystem to
+> >> not be frozen to be able to receive this event.
+> >
+> > Where is that change?
+> >
+> > I'm still worried about 4.10-final, is that going to be broken for these
+> > types of systems?
+> 
+> Nope.
 
-Immediately after the write to /sys/class/rtc/rtc0/wakealarm the
-register value is correct (0x2b).
-However, during the shutdown process the function is called again via the
-rtc_timer_do_work(). I still do not fully understand this flow. This call is
-done with the enable parameter == 1, but my debug print shows 0x29,
-meaning the LPTA_EN bit stays low.
+Great!
 
-My current guess is that the clear of LPTA_EN in snvs_rtc_set_alarm have
-internal race with the afterward bit set.
-I'll try to check this and update.
+> I'm going to revert commit 08b98d329165 (PM / sleep / ACPI: Use the
+> ACPI_FADT_LOW_POWER_S0 flag) which introduced the problem in the first
+> place (yes, the bisection result it misleading).  In fact, the revert
+> is in my linux-next branch already, but I'm sort of out in the woods
+> now and the actual pull request will be sent next week.
+> 
+> BTW, this is a usual process.  We had tried to change the default
+> behaviour for certain class of systems and it didn't work, so we need
+> to take a step back, fix the problems that were exposed and try again
+> later.
+> 
+> It has been confused quite a bit, though, which is kind of worrisome.
+
+Not a problem at all, and it's fine that it happened this way, I just
+wanted to make sure the regression didn't hit a -final release.
+
+Have a great vacation/trip.
+
+thanks,
+
+greg k-h
