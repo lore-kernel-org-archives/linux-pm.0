@@ -1,83 +1,75 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v11 2/8] power: add power sequence library
-Date: Sun, 22 Jan 2017 10:14:58 +0800
-Message-ID: <20170122021458.GB6522@b29397-desktop>
-References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
- <1483596119-27508-3-git-send-email-peter.chen@nxp.com>
- <20170107085456.w5dhm7qadqa6tc7v@kozik-lap>
- <20170110070240.GA29454@b29397-desktop>
- <20170120075239.GC21013@b29397-desktop>
- <CAJZ5v0h09A2XWLEk7v9XPe+4fP7HDr6AqZzBmvBi_V5nhLoiRw@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: [GIT PULL] Thermal management updates for v4.10-rc5
+Date: Sun, 22 Jan 2017 11:06:07 +0800
+Message-ID: <1485054367.2487.1.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:35447 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751383AbdAVCP2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2017 21:15:28 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0h09A2XWLEk7v9XPe+4fP7HDr6AqZzBmvBi_V5nhLoiRw@mail.gmail.com>
+Received: from mga05.intel.com ([192.55.52.43]:37128 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750741AbdAVDGL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 21 Jan 2017 22:06:11 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Chen <peter.chen@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, mail@maciej.szmigiero.name, Pawel Moll <pawel.moll@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Sascha
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Fri, Jan 20, 2017 at 11:21:27AM +0100, Rafael J. Wysocki wrote:
-> On Fri, Jan 20, 2017 at 8:52 AM, Peter Chen <hzpeterchen@gmail.com> wrote:
-> > On Tue, Jan 10, 2017 at 03:02:41PM +0800, Peter Chen wrote:
-> >> On Sat, Jan 07, 2017 at 10:54:56AM +0200, Krzysztof Kozlowski wrote:
-> >> > On Thu, Jan 05, 2017 at 02:01:53PM +0800, Peter Chen wrote:
-> >> > > We have an well-known problem that the device needs to do some power
-> >> > > sequence before it can be recognized by related host, the typical
-> >> > > example like hard-wired mmc devices and usb devices.
-> >> > >
-> >> > > This power sequence is hard to be described at device tree and handled by
-> >> > > related host driver, so we have created a common power sequence
-> >> > > library to cover this requirement. The core code has supplied
-> >> > > some common helpers for host driver, and individual power sequence
-> >> > > libraries handle kinds of power sequence for devices. The pwrseq
-> >> > > librares always need to allocate extra instance for compatible
-> >> > > string match.
-> >> > >
-> >> > > pwrseq_generic is intended for general purpose of power sequence, which
-> >> > > handles gpios and clocks currently, and can cover other controls in
-> >> > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> >> > > if only one power sequence is needed, else call of_pwrseq_on_list
-> >> > > /of_pwrseq_off_list instead (eg, USB hub driver).
-> >> > >
-> >> > > For new power sequence library, it can add its compatible string
-> >> > > to pwrseq_of_match_table, then the pwrseq core will match it with
-> >> > > DT's, and choose this library at runtime.
-> >> > >
-> >> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> >> > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-> >> > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> >> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> >> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> >> >
-> >> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-> >> > Tested on Odroid U3 (reset sequence for LAN9730):
-> >> > Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
-> >> >
-> >>
-> >> A nice ping...
-> >>
-> >
-> > Rafael, would you please review it? This series was discussed about
-> > half a year, and many people need it, I hope it can be in v4.11-rc1,
-> > thanks.
-> 
-> I'm travelling now
-> (http://marc.info/?l=linux-pm&m=148410629024194&w=2) and (as stated in
-> this message) I'll get to the patches when I'm back home.
-> 
-> There is a good chance for your code to go into 4.11-rc1 if the review
-> comments so far have been addressed.
-> 
+Hi, Linus,
 
-Thanks, Rafael. I think I have addressed all your comments.
+Please pull from
+  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git for-rc
 
--- 
+to receive the latest Thermal Management updates for v4.10-rc5 with
+top-most commit bad94f8068122b6342a73a218dad7d41e6ea907b:
 
-Best Regards,
-Peter Chen
+  Merge branches 'thermal-core' and 'thermal-soc' into for-rc (2017-01-
+20 16:24:54 +0800)
+
+on top of commit 0c744ea4f77d72b3dcebb7a8f2684633ec79be88:
+
+  Linux 4.10-rc2 (2017-01-01 14:31:53 -0800)
+
+Specifics:
+
+- Fix a regression that thermal zone dynamically allocated sysfs
+attributes are freed before they're removed, which is introduced in
+4.10-rc1. (Jacob von Chorus)
+
+- Fix a boot warning because deprecated hwmon API is used. (Fabio
+Estevam)
+
+- A couple of fixes for rockchip thermal driver. (Brian Norris, Caesar
+Wang)
+
+thanks,
+rui
+
+----------------------------------------------------------------
+Brian Norris (2):
+      thermal: rockchip: improve conversion error messages
+      thermal: rockchip: don't pass table structs by value
+
+Caesar Wang (4):
+      thermal: rockchip: fixes invalid temperature case
+      thermal: rockchip: optimize the conversion table
+      thermal: rockchip: handle set_trips without the trip points
+      thermal: rockchip: fixes the conversion table
+
+Fabio Estevam (1):
+      thermal: thermal_hwmon: Convert to
+hwmon_device_register_with_info()
+
+Jacob von Chorus (1):
+      thermal: core: move tz->device.groups cleanup to thermal_release
+
+Zhang Rui (2):
+      Merge branch 'fixes' of git://git.kernel.org/.../evalenti/linux-
+soc-thermal into thermal-soc
+      Merge branches 'thermal-core' and 'thermal-soc' into for-rc
+
+ drivers/thermal/rockchip_thermal.c | 153 ++++++++++++++++++++++++-----
+--------
+ drivers/thermal/thermal_core.c     |  10 +--
+ drivers/thermal/thermal_hwmon.c    |  20 +----
+ 3 files changed, 108 insertions(+), 75 deletions(-)
