@@ -1,50 +1,44 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: [PATCH v4 3/8] power: power_supply: add battery information struct
-Date: Sat, 21 Jan 2017 23:13:59 -0800
-Message-ID: <20170122071404.9654-4-matt@ranostay.consulting>
+From: Matt Ranostay <matt@ranostay.consulting>
+Subject: [PATCH v4 1/8] devicetree: property-units: add mWh and mAh units
+Date: Sat, 21 Jan 2017 23:13:57 -0800
+Message-ID: <20170122071404.9654-2-matt@ranostay.consulting>
 References: <20170122071404.9654-1-matt@ranostay.consulting>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170122071404.9654-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f178.google.com ([209.85.192.178]:32973 "EHLO
+        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750964AbdAVHOG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2017 02:14:06 -0500
+Received: by mail-pf0-f178.google.com with SMTP id y143so32937155pfb.0
+        for <linux-pm@vger.kernel.org>; Sat, 21 Jan 2017 23:14:06 -0800 (PST)
+In-Reply-To: <20170122071404.9654-1-matt@ranostay.consulting>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sre@kernel.org, tony@atomide.com, Matt Ranostay <matt@ranostay.consulting>
 
-Add power_supply_battery_info structure that is used to
-enumerate battery state machine settings.
+Add entries for microwatt-hours and microamp-hours to property
+units.
 
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 ---
- include/linux/power_supply.h | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ Documentation/devicetree/bindings/property-units.txt | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 3965503315ef..59674a257d5e 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -288,6 +288,18 @@ struct power_supply_info {
- 	int use_for_apm;
- };
+diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+index 12278d79f6c0..5e8d220cc2b6 100644
+--- a/Documentation/devicetree/bindings/property-units.txt
++++ b/Documentation/devicetree/bindings/property-units.txt
+@@ -25,8 +25,10 @@ Distance
+ Electricity
+ ----------------------------------------
+ -microamp	: micro amps
++-microamp-hours : micro amp hours
+ -ohms		: Ohms
+ -micro-ohms	: micro Ohms
++-microwatt-hours: micro Watt hours
+ -microvolt	: micro volts
  
-+/*
-+ * This is the recommended struct to specify static battery parameters.
-+ * Power supply class itself doesn't use this, but it implements access
-+ * that most platform drivers should use for consistency.
-+ */
-+
-+struct power_supply_battery_info {
-+	int energy;		/* uWh */
-+	int power;		/* uAh */
-+	int nominal_voltage;	/* uV */
-+};
-+
- extern struct atomic_notifier_head power_supply_notifier;
- extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
+ Temperature
 -- 
 2.10.2
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
