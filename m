@@ -1,97 +1,83 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 1/2] power: bq24190_charger: Check the interrupt status
- on resume
-Date: Sun, 22 Jan 2017 02:54:41 +0100
-Message-ID: <20170122015441.wzsbigozefzr5wzw@earth>
-References: <20170120220440.1971-1-tony@atomide.com>
- <20170120220440.1971-2-tony@atomide.com>
+From: Peter Chen <hzpeterchen@gmail.com>
+Subject: Re: [PATCH v11 2/8] power: add power sequence library
+Date: Sun, 22 Jan 2017 10:14:58 +0800
+Message-ID: <20170122021458.GB6522@b29397-desktop>
+References: <1483596119-27508-1-git-send-email-peter.chen@nxp.com>
+ <1483596119-27508-3-git-send-email-peter.chen@nxp.com>
+ <20170107085456.w5dhm7qadqa6tc7v@kozik-lap>
+ <20170110070240.GA29454@b29397-desktop>
+ <20170120075239.GC21013@b29397-desktop>
+ <CAJZ5v0h09A2XWLEk7v9XPe+4fP7HDr6AqZzBmvBi_V5nhLoiRw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="5oj5rz4rt5eaaxr2"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:43404 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750925AbdAVByq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 21 Jan 2017 20:54:46 -0500
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:35447 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751383AbdAVCP2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Jan 2017 21:15:28 -0500
 Content-Disposition: inline
-In-Reply-To: <20170120220440.1971-2-tony@atomide.com>
+In-Reply-To: <CAJZ5v0h09A2XWLEk7v9XPe+4fP7HDr6AqZzBmvBi_V5nhLoiRw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Peter Chen <peter.chen@nxp.com>, Mark Rutland <mark.rutland@arm.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, Stephen Boyd <stephen.boyd@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Gary Bisson <gary.bisson@boundarydevices.com>, Fabio Estevam <festevam@gmail.com>, Joshua Clayton <stillcompiling@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Vaibhav Hiremath <vaibhav.hiremath@linaro.org>, mka@chromium.org, Alan Stern <stern@rowland.harvard.edu>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, mail@maciej.szmigiero.name, Pawel Moll <pawel.moll@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Sascha
 
+On Fri, Jan 20, 2017 at 11:21:27AM +0100, Rafael J. Wysocki wrote:
+> On Fri, Jan 20, 2017 at 8:52 AM, Peter Chen <hzpeterchen@gmail.com> wrote:
+> > On Tue, Jan 10, 2017 at 03:02:41PM +0800, Peter Chen wrote:
+> >> On Sat, Jan 07, 2017 at 10:54:56AM +0200, Krzysztof Kozlowski wrote:
+> >> > On Thu, Jan 05, 2017 at 02:01:53PM +0800, Peter Chen wrote:
+> >> > > We have an well-known problem that the device needs to do some power
+> >> > > sequence before it can be recognized by related host, the typical
+> >> > > example like hard-wired mmc devices and usb devices.
+> >> > >
+> >> > > This power sequence is hard to be described at device tree and handled by
+> >> > > related host driver, so we have created a common power sequence
+> >> > > library to cover this requirement. The core code has supplied
+> >> > > some common helpers for host driver, and individual power sequence
+> >> > > libraries handle kinds of power sequence for devices. The pwrseq
+> >> > > librares always need to allocate extra instance for compatible
+> >> > > string match.
+> >> > >
+> >> > > pwrseq_generic is intended for general purpose of power sequence, which
+> >> > > handles gpios and clocks currently, and can cover other controls in
+> >> > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> >> > > if only one power sequence is needed, else call of_pwrseq_on_list
+> >> > > /of_pwrseq_off_list instead (eg, USB hub driver).
+> >> > >
+> >> > > For new power sequence library, it can add its compatible string
+> >> > > to pwrseq_of_match_table, then the pwrseq core will match it with
+> >> > > DT's, and choose this library at runtime.
+> >> > >
+> >> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
+> >> > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
+> >> > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
+> >> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+> >> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
+> >> >
+> >> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+> >> > Tested on Odroid U3 (reset sequence for LAN9730):
+> >> > Tested-by: Krzysztof Kozlowski <krzk@kernel.org>
+> >> >
+> >>
+> >> A nice ping...
+> >>
+> >
+> > Rafael, would you please review it? This series was discussed about
+> > half a year, and many people need it, I hope it can be in v4.11-rc1,
+> > thanks.
+> 
+> I'm travelling now
+> (http://marc.info/?l=linux-pm&m=148410629024194&w=2) and (as stated in
+> this message) I'll get to the patches when I'm back home.
+> 
+> There is a good chance for your code to go into 4.11-rc1 if the review
+> comments so far have been addressed.
+> 
 
---5oj5rz4rt5eaaxr2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks, Rafael. I think I have addressed all your comments.
 
-Hi Tony,
+-- 
 
-I think your runtime_resume is missing runtime_pm_get/put_sync, see
-below:
-
-On Fri, Jan 20, 2017 at 02:04:39PM -0800, Tony Lindgren wrote:
-> [...]
-> +static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
-> +{
-> +	struct bq24190_dev_info *bdi =3D data;
-> +
-> +	bdi->irq_event =3D true;
-> +	pm_runtime_get_sync(bdi->dev);
-> +	bq24190_check_status(bdi);
-> +	pm_runtime_put_sync(bdi->dev);
-
-bq24190_check_status is called with runtime_pm enabled.
-
-> +	bdi->irq_event =3D false;
-> =20
->  	return IRQ_HANDLED;
->  }
->
-> [...]
->
-> +static int bq24190_runtime_resume(struct device *dev)
-> +{
-> +	struct i2c_client *client =3D to_i2c_client(dev);
-> +	struct bq24190_dev_info *bdi =3D i2c_get_clientdata(client);
-> +
-> +	if (!bdi->initialized)
-> +		return 0;
-> +
-> +	if (!bdi->irq_event) {
-> +		dev_dbg(bdi->dev, "checking events on possible wakeirq\n");
-> +		bq24190_check_status(bdi);
-
-bq24190_check_status is called without runtime_pm enabled.
-
-> +	}
-> +
-> +	return 0;
-> +}
->
-> [...]
-
--- Sebastian
-
---5oj5rz4rt5eaaxr2
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliEEOEACgkQ2O7X88g7
-+pqE6w//ZrHPASCMIwpmLoY4n9YwEH2DhIo6diGE8CBqhYCYbuyXF+smFZr+PK+N
-igeChWck5Xr4+5TatHJPmv1cKBIf3vxCIW+bPY+bWDnN1TFczwTZYc7mvw1kTbAA
-izZ/6ermXgBh05gGW6DjWirM/Jx448ZKor8aTLyAeNuTwvkgDA7xz0kAWYMCnLMO
-w5WbyIqaX2OE59ZMyA4++/o1tCo3Y56s9s8BLnCo3Ju+yWB6iM5MAnQ4A6ujOd+k
-tGH4J/J81grg/0rn+/NLBbugVwFDKJ/S+cU3XGTgQR0/qPKdUTANKxZkk2CSt1sb
-OGrwABrp+vavOWzK4beKYZtWudADSAZQ6GgYfGyd5+tMOfsXi8KKarvvdBW08auB
-G9hzJKEuxjNYDCsj5Jw1K8zbrwYfLHEEQK4XFwzH/jOG4S6EVRxtw9PAsEyVzwyq
-rLT3RlEdfZjE5slU0h5ggM59j+k9WLnyrLrQmNDMAE01KzDatyDEOWRcuGP01DiA
-eACS81j98cl5LubwWAfO1DQmUcKHHSvXaghiWEzlW9sFjPIL97/hHkOTqc7vDy55
-V/cnjD//MHAnYP3HooyVKHPuFQho+tV0qHYKDnyigq4QmFJiiXweSMQgMeOSe5WD
-MuQSOE9IYwHgELX8NV8+fiP2C7NPkbG5l5SzhIIVPEeK2MLnrUk=
-=OEVS
------END PGP SIGNATURE-----
-
---5oj5rz4rt5eaaxr2--
+Best Regards,
+Peter Chen
