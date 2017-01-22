@@ -1,126 +1,74 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
- bus: enable OS version only for SPT and newer)
-Date: Sun, 22 Jan 2017 12:25:51 +0100
-Message-ID: <20170122112551.GE18923@kroah.com>
-References: <20170116110539.GA1307@kroah.com>
- <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
- <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
- <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
- <20170117182337.GB12600@kroah.com>
- <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
- <20170117233346.GA2599@wisp>
- <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
- <20170121091112.GD27048@kroah.com>
- <CAJZ5v0hWYooC9-cXUnsLAuDSa7xLO2AxewYEaeYbkj6c9gNwVw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v4 2/8] devicetree: power: add battery state machine documentation
+Date: Sun, 22 Jan 2017 14:22:12 -0800
+Message-ID: <20170122222212.27086-1-liam@networkimprov.net>
+References: <20170122071404.9654-3-matt@ranostay.consulting>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:50758 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750884AbdAVLZl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2017 06:25:41 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hWYooC9-cXUnsLAuDSa7xLO2AxewYEaeYbkj6c9gNwVw@mail.gmail.com>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:33242 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750705AbdAVWWY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2017 17:22:24 -0500
+In-reply-to: <20170122071404.9654-3-matt@ranostay.consulting>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Mario Limonciello <Mario.Limonciello@dell.com>, Darren Hart <dvhart@infradead.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Paul Menzel <pmenzel@molgen.mpg.de>, Thorsten Leemhuis <linux@leemhuis.info>, Tomas Winkler <tomas.winkler@intel.com>, jan@gondor.com, Alexander Usyskin <alexander.usyskin@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Chen, Yu C" <yu.c.chen@intel.com>, Tomi Sarvela <tomi.p.sarvela@intel.com>, Daniel Blueman <daniel@quora.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sre@kernel.org, tony@atomide.com, Matt Ranostay <matt@ranostay.consulting>, Rob Herring <robh@kernel.org>
 
-On Sat, Jan 21, 2017 at 12:49:50PM +0100, Rafael J. Wysocki wrote:
-> On Sat, Jan 21, 2017 at 10:11 AM, Greg KH <gregkh@linuxfoundation.org> wrote:
-> > On Fri, Jan 20, 2017 at 11:11:45PM +0000, Mario.Limonciello@dell.com wrote:
-> >> Greg,
-> >>
-> >> > -----Original Message-----
-> >> > From: Darren Hart [mailto:dvhart@infradead.org]
-> >> > Sent: Tuesday, January 17, 2017 5:34 PM
-> >> > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> >> > Cc: gregkh@linuxfoundation.org; rafael.j.wysocki@intel.com;
-> >> > pmenzel@molgen.mpg.de; linux@leemhuis.info; tomas.winkler@intel.com;
-> >> > jan@gondor.com; alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
-> >> > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
-> >> > len.brown@intel.com; linux-pm@vger.kernel.org
-> >> > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
-> >> > bus: enable OS version only for SPT and newer)
-> >> >
-> >> > On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com
-> >> > wrote:
-> >> > > > -----Original Message-----
-> >> > > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
-> >> > > > Sent: Tuesday, January 17, 2017 12:24 PM
-> >> > > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
-> >> > > > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
-> >> > > > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
-> >> > > > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
-> >> > > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
-> >> > > > len.brown@intel.com; linux-pm@vger.kernel.org
-> >> > > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
-> >> > > > bus: enable OS version only for SPT and newer)
-> >> > > >
-> >> > > > On Tue, Jan 17, 2017 at 04:57:49PM +0000, Mario.Limonciello@dell.com
-> >> > > > wrote:
-> >> > > > > So in the <6s scenario, the intel-hid driver is responsible to
-> >> > > > > receive the ACPI event and process accordingly.  The maintainer
-> >> > > > > has a patch ready for the intel-hid portion of this work, but it's
-> >> > > > > currently being reviewed by Intel to ensure it can be legally submitted
-> >> > into the kernel.
-> >> > > >
-> >> > > > Who at Intel do I need to go kick to make this mythical legal review
-> >> > > > happen faster so we can see the code?
-> >> > > >
-> >> > > > Len and Rafael, what is going on here?
-> >> > > >
-> >> > >
-> >> > > Len and Darren are both in the loop on the discussion around this patch.
-> >> > > I don't know if they'll have any (public) comments they can add on the
-> >> > > matter yet however.
-> >> >
-> >> > Thanks Mario. Yes, there isn't much to say here in public other than to confirm
-> >> > we are keenly aware of the problem and have been actively working on fixing
-> >> > it, both for this instance, and the deeper systematic failure that resulted in this
-> >> > situation. No amount of kicking will expedite the process at this point, but
-> >> > should we feel the need, we'll reach out.
-> >> >
-> >>
-> >> The approval has come through and the patch has been submitted.
-> >> http://www.spinics.net/lists/platform-driver-x86/msg10286.html
-> >
-> > Looks like it needs some work :)
-> >
-> > And why isn't it tagged to go to the 4.10-stable kernel if it really
-> > does fix some systems?
-> >
-> >> Note: this is only half of the fix, the second half needs the ACPI subsystem to
-> >> not be frozen to be able to receive this event.
-> >
-> > Where is that change?
-> >
-> > I'm still worried about 4.10-final, is that going to be broken for these
-> > types of systems?
-> 
-> Nope.
+I think Matt meant the following :-)
 
-Great!
+Note: nominal-microvolt is not the correct term for termination voltage.
+Changed to termination-microvolt
+---
 
-> I'm going to revert commit 08b98d329165 (PM / sleep / ACPI: Use the
-> ACPI_FADT_LOW_POWER_S0 flag) which introduced the problem in the first
-> place (yes, the bisection result it misleading).  In fact, the revert
-> is in my linux-next branch already, but I'm sort of out in the woods
-> now and the actual pull request will be sent next week.
-> 
-> BTW, this is a usual process.  We had tried to change the default
-> behaviour for certain class of systems and it didn't work, so we need
-> to take a step back, fix the problems that were exposed and try again
-> later.
-> 
-> It has been confused quite a bit, though, which is kind of worrisome.
+Documentation on battery properties that can be defined for
+fine tuning fuel gauge state machines.
 
-Not a problem at all, and it's fine that it happened this way, I just
-wanted to make sure the regression didn't hit a -final release.
+From: Matt Ranostay <matt@ranostay.consulting>
+Cc: Rob Herring <robh@kernel.org>
+Cc: devicetree@vger.kernel.org
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+---
+ .../devicetree/bindings/power/supply/battery.txt   | 34 ++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 
-Have a great vacation/trip.
-
-thanks,
-
-greg k-h
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+new file mode 100644
+index 000000000000..398b4d622883
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -0,0 +1,34 @@
++Battery Characteristics
++
++Required Properties:
++ - compatible: Must be "fixed-battery"
++
++Optional Properties:
++ - termination-microvolt: dead battery voltage
++ - design-microwatt-hours: battery design energy
++ - design-microamp-hours: battery design capacity
++
++Batteries must be referenced by chargers and/or fuel-gauges
++using a phandle. The phandle's property should be named
++"monitored-battery".
++
++Example:
++
++	bat: battery {
++		compatible = "fixed-battery";
++		terminate-microvolt = <3700000>;
++		design-microwatt-hours = <5290000>;
++		design-microamp-hours = <1430000>;
++	};
++
++	charger: charger@0 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
++
++	fuel_gauge: fuel_gauge@0 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
