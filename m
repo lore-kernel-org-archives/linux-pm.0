@@ -1,110 +1,55 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: [PATCH v4 5/8] power: bq27xxx_battery: add BQ27425 chip id
-Date: Sat, 21 Jan 2017 23:14:01 -0800
-Message-ID: <20170122071404.9654-6-matt@ranostay.consulting>
-References: <20170122071404.9654-1-matt@ranostay.consulting>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170122071404.9654-1-matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+From: Matt Ranostay <matt@ranostay.consulting>
+Subject: [PATCH v4 0/8] power: bq27xxx: add support for NVRAM R/W access
+Date: Sat, 21 Jan 2017 23:13:56 -0800
+Message-ID: <20170122071404.9654-1-matt@ranostay.consulting>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:34427 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750813AbdAVHOF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Jan 2017 02:14:05 -0500
+Received: by mail-pf0-f173.google.com with SMTP id e4so32862070pfg.1
+        for <linux-pm@vger.kernel.org>; Sat, 21 Jan 2017 23:14:05 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Cc: sre@kernel.org, tony@atomide.com, Matt Ranostay <matt@ranostay.consulting>
 
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
----
- drivers/power/supply/bq27xxx_battery.c     | 23 ++++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c |  2 +-
- include/linux/power/bq27xxx_battery.h      |  3 ++-
- 3 files changed, 25 insertions(+), 3 deletions(-)
+Changes from v1:
+* add documentation for mWh and mAh property units
+* change devicetree entries to match new property units
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 398801a21b86..12ecea308186 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -417,6 +417,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
- 		[BQ27XXX_REG_DCAP] = 0x3c,
- 		[BQ27XXX_REG_AP] = 0x18,
- 	},
-+	[BQ27425] = {
-+		[BQ27XXX_REG_CTRL] = 0x00,
-+		[BQ27XXX_REG_TEMP] = 0x02,
-+		[BQ27XXX_REG_INT_TEMP] = 0x1e,
-+		[BQ27XXX_REG_VOLT] = 0x04,
-+		[BQ27XXX_REG_AI] = 0x10,
-+		[BQ27XXX_REG_FLAGS] = 0x06,
-+		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_NAC] = 0x08,
-+		[BQ27XXX_REG_FCC] = 0x0e,
-+		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_SOC] = 0x1c,
-+		[BQ27XXX_REG_DCAP] = 0x3c,
-+		[BQ27XXX_REG_AP] = 0x18,
-+	},
- };
- 
- static enum power_supply_property bq27000_battery_props[] = {
-@@ -752,6 +771,7 @@ static struct {
- 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
- 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
- 	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
-+	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
- };
- 
- static DEFINE_MUTEX(bq27xxx_list_lock);
-@@ -1015,6 +1035,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
- 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
- 	case BQ27530:
- 	case BQ27421:
-+	case BQ27425:
- 		return flags & BQ27XXX_FLAG_OT;
- 	default:
- 		return false;
-@@ -1026,7 +1047,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
-  */
- static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
- {
--	if (di->chip == BQ27530 || di->chip == BQ27421)
-+	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
- 		return flags & BQ27XXX_FLAG_UT;
- 
- 	return false;
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index c68fbc3fe50a..2ea2d0b06948 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -167,9 +167,9 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27742", BQ27541 },
- 	{ "bq27545", BQ27545 },
- 	{ "bq27421", BQ27421 },
--	{ "bq27425", BQ27421 },
- 	{ "bq27441", BQ27421 },
- 	{ "bq27621", BQ27421 },
-+	{ "bq27425", BQ27425 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index b312bcef53da..3f265dbf11af 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -17,7 +17,8 @@ enum bq27xxx_chip {
- 	BQ27530, /* bq27530, bq27531 */
- 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
- 	BQ27545, /* bq27545 */
--	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-+	BQ27421, /* bq27421, bq27441, bq27621 */
-+	BQ27425, /* bq27425 */
- };
- 
- /**
+Changes from v2:
+* split i2c changes into respective patches
+* add documentation for battery information for fuel gauge
+* rebased documentation patches on change on the list
+* abstracted the battery configuration for the state machine
+  to an generic struct and platform data access function
+
+Changes from v3:
+* add "fixed-battery" compatible field to be be more consistant
+  with devicetree
+
+Matt Ranostay (8):
+  devicetree: property-units: add mWh and mAh units
+  devicetree: power: add battery state machine documentation
+  power: power_supply: add battery information struct
+  power: power_supply: add battery info platform data retrieval
+  power: bq27xxx_battery: add BQ27425 chip id
+  power: bq27xxx_battery: add i2c bulk read/write functions
+  devicetree: power: bq27xxx: add monitored battery documentation
+  power: bq27xxx_battery: add initial state machine support
+
+ .../devicetree/bindings/power/supply/battery.txt   |  24 ++
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |   8 +
+ .../devicetree/bindings/property-units.txt         |   2 +
+ drivers/power/supply/bq27xxx_battery.c             | 253 ++++++++++++++++++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c         |  64 +++++-
+ drivers/power/supply/power_supply_core.c           |  41 ++++
+ include/linux/power/bq27xxx_battery.h              |   7 +-
+ include/linux/power_supply.h                       |  16 ++
+ 8 files changed, 411 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+
 -- 
 2.10.2
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
