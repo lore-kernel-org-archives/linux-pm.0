@@ -1,55 +1,58 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Delayed acpi frequency governor call
-Date: Mon, 23 Jan 2017 15:41:45 +0530
-Message-ID: <20170123101145.GB26681@vireshk-i7>
-References: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
- <20170120100725.GO11478@vireshk-i7>
- <9b332b49-11a1-a5fc-d48e-2c113cdca202@tik.ee.ethz.ch>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 3/3] cpuidle/menu: add per cpu pm_qos_resume_latency
+ consideration
+Date: Mon, 23 Jan 2017 13:50:25 +0100
+Message-ID: <20170123125025.GB2166@mai>
+References: <1484227624-6740-1-git-send-email-alex.shi@linaro.org>
+ <1484227624-6740-4-git-send-email-alex.shi@linaro.org>
+ <20170117093837.GA2085@mai>
+ <01f9b016-0b7c-44ac-70e5-8cd9b8bd1500@linaro.org>
+ <20170119102158.GA1827@mai>
+ <CAJZ5v0ifEfqN04XdDjjMQhuo6eznqgnj+VQEGFCUxzjzAxb2=g@mail.gmail.com>
+ <20170120105428.GA1804@mai>
+ <58840B80.7000808@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f51.google.com ([74.125.83.51]:33685 "EHLO
-        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750703AbdAWKME (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2017 05:12:04 -0500
-Received: by mail-pg0-f51.google.com with SMTP id 204so44077094pge.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2017 02:12:04 -0800 (PST)
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:36811 "EHLO
+        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750828AbdAWMum (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2017 07:50:42 -0500
+Received: by mail-wm0-f41.google.com with SMTP id c85so130879797wmi.1
+        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2017 04:50:29 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <9b332b49-11a1-a5fc-d48e-2c113cdca202@tik.ee.ethz.ch>
+In-Reply-To: <58840B80.7000808@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Philipp Miedl <philipp.miedl@tik.ee.ethz.ch>
-Cc: alex@digriz.org.uk, jun.nakajima@intel.com, venkatesh.pallipadi@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Alex Shi <alex.shi@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>
 
-On 20-01-17, 16:27, Philipp Miedl wrote:
-> This is not my issue. The code I'm referring to can be found in
-> cpufreq_governor.c:
-> <-->
-> if (unlikely(wall_time > (2 * sampling_rate) &&
->        j_cdbs->prev_load)) {
-
-This only confirms that the CPU was idle for sometime.
-
->   load = j_cdbs->prev_load;
+On Sun, Jan 22, 2017 at 09:31:44AM +0800, Alex Shi wrote:
 > 
->   /*
->    * Perform a destructive copy, to ensure that we copy
->    * the previous load only once, upon the first wake-up
->    * from idle.
->    */
->   j_cdbs->prev_load = 0;
-> } else {
->   load = 100 * (wall_time - idle_time) / wall_time;
->   j_cdbs->prev_load = load;
-> }
-> <-->
+> >Yeah, that could be problematic. The code snippet gives the general idea but it
+> >could be changed by for example by a flag telling the cpus when they enter idle
+> >to update their state_count. Or something like that.
 > 
-> How can it happen that "unlikely(wall_time > (2 * sampling_rate)" is true
-> although the CPU utilization was 5%?
+> Yes, this idea could be helpful.
+> 
+> But since the idle path isn't a hot path. and a few memory access won't cost
+> a lot. So I doubt if the benefit could be measurable.
 
-I am not sure how your test works, etc. Maybe try to generate traces for your
-CPUs to see if they are going into idle or not. Maybe you are having a hard time
-because of SMP platform ?
+It won't be measurable, as well as reading the cpu device latency before
+checking the latency req is zero, but it makes sense.
+
+The idle routine is not a hot path but a very special place where the interrupt
+are disabled, the rcu is not usable, tick is disabled etc ...
+
+Perhaps it is not a problem for the moment, but it is probably worth to mention that
+using API from other subsystems in the idle select path could be problematic
+and perhaps it is time to think about another approach for the future.
 
 -- 
-viresh
+
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
