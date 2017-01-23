@@ -1,78 +1,51 @@
-From: Philipp Miedl <philipp.miedl@tik.ee.ethz.ch>
-Subject: Re: Delayed acpi frequency governor call
-Date: Mon, 23 Jan 2017 15:24:08 +0100
-Message-ID: <086bc55f-d1cc-b893-49c6-1667f6067f1b@tik.ee.ethz.ch>
-References: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
- <20170120100725.GO11478@vireshk-i7>
- <9b332b49-11a1-a5fc-d48e-2c113cdca202@tik.ee.ethz.ch>
- <20170123101145.GB26681@vireshk-i7>
+From: Alex Shi <alex.shi@linaro.org>
+Subject: Re: [PATCH 3/3] cpuidle/menu: add per cpu pm_qos_resume_latency
+ consideration
+Date: Mon, 23 Jan 2017 22:58:28 +0800
+Message-ID: <2df41252-5302-c1ed-aad6-58517719f359@linaro.org>
+References: <1484227624-6740-1-git-send-email-alex.shi@linaro.org>
+ <1484227624-6740-4-git-send-email-alex.shi@linaro.org>
+ <20170117093837.GA2085@mai> <01f9b016-0b7c-44ac-70e5-8cd9b8bd1500@linaro.org>
+ <20170119102158.GA1827@mai>
+ <CAJZ5v0ifEfqN04XdDjjMQhuo6eznqgnj+VQEGFCUxzjzAxb2=g@mail.gmail.com>
+ <20170120105428.GA1804@mai> <58840B80.7000808@linaro.org>
+ <20170123125025.GB2166@mai>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from virgo01.ee.ethz.ch ([129.132.2.226]:35778 "EHLO
-        virgo01.ee.ethz.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750723AbdAWOYN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2017 09:24:13 -0500
-In-Reply-To: <20170123101145.GB26681@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170123125025.GB2166@mai>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, Arjan van de Ven <arjan@linux.intel.com>, Rik van Riel <riel@redhat.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: alex@digriz.org.uk, jun.nakajima@intel.com, venkatesh.pallipadi@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 23.01.2017 11:11, Viresh Kumar wrote:
-> On 20-01-17, 16:27, Philipp Miedl wrote:
->> This is not my issue. The code I'm referring to can be found in
->> cpufreq_governor.c:
->> <-->
->> if (unlikely(wall_time > (2 * sampling_rate) &&
->>         j_cdbs->prev_load)) {
-> This only confirms that the CPU was idle for sometime.
-I would say it only checks whether the elapsed time since the last 
-governor call. My question is whether the call to the governor can be 
-delayed for such a long time without the CPU going into idle? If it can 
-be guaranteed that the governor call cannot be delayed without the CPU 
-going to idle than it is true - otherwise not.
->>    load = j_cdbs->prev_load;
+
+
+On 01/23/2017 08:50 PM, Daniel Lezcano wrote:
+> On Sun, Jan 22, 2017 at 09:31:44AM +0800, Alex Shi wrote:
 >>
->>    /*
->>     * Perform a destructive copy, to ensure that we copy
->>     * the previous load only once, upon the first wake-up
->>     * from idle.
->>     */
->>    j_cdbs->prev_load = 0;
->> } else {
->>    load = 100 * (wall_time - idle_time) / wall_time;
->>    j_cdbs->prev_load = load;
->> }
->> <-->
+>>> Yeah, that could be problematic. The code snippet gives the general idea but it
+>>> could be changed by for example by a flag telling the cpus when they enter idle
+>>> to update their state_count. Or something like that.
 >>
->> How can it happen that "unlikely(wall_time > (2 * sampling_rate)" is true
->> although the CPU utilization was 5%?
-> I am not sure how your test works, etc. Maybe try to generate traces for your
-> CPUs to see if they are going into idle or not. Maybe you are having a hard time
-> because of SMP platform ?
-Possible that I'm having problems with the platforms. Its a quadcore 
-with 2 hyperthreads. I have two applications running, one should keep 
-the CPU its pinned to busy at around 5% utilization by doing 
-calculations. The second one is pinned to another core (its also another 
-physical core) and records all the timing values etc. The rest of the 
-CPUs are not utilzed by me and besides my stuff there is just a bare 
-Linux running without GUI.
-I checked the values I get from get_cpu_idle_time(), which gets its 
-values from get_cpu_idle_time_us() (tick-sched.c) or if that is not 
-possible assembles it from the cpustat, and the according to these the 
-CPU is never idle longer than sampling_rate - so the if statement from 
-above should never be true.
+>> Yes, this idea could be helpful.
+>>
+>> But since the idle path isn't a hot path. and a few memory access won't cost
+>> a lot. So I doubt if the benefit could be measurable.
+> 
+> It won't be measurable, as well as reading the cpu device latency before
+> checking the latency req is zero, but it makes sense.
 
-Do I interpret the values wrong or can it be that the call to the 
-governor gets delayed by something else?
+Just simple change the cpu state may make it looks unnatural. :)
+> 
+> The idle routine is not a hot path but a very special place where the interrupt
+> are disabled, the rcu is not usable, tick is disabled etc ...
+> 
+> Perhaps it is not a problem for the moment, but it is probably worth to mention that
+> using API from other subsystems in the idle select path could be problematic
+> and perhaps it is time to think about another approach for the future.
+> 
 
--- 
---------------------------------------------------------------------
-|  Philipp Miedl                                                   |
-|  PhD Student @ Computer Engineering and Networks Laboratory      |
-|  ETH Zurich, ETZG76, Gloriastrasse 35, 8092 Zurich, Switzerland  |
-|  mail: philipp.miedl@ee.tik.ethz.ch      phone: +41 44 632 70 61 |
---------------------------------------------------------------------
-
+Yes, before idle, it did consider lots of parts, included pm qos for
+long time... :)
