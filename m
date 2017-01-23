@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 02/12] PM / OPP: Add 'struct kref' to OPP table
-Date: Mon, 23 Jan 2017 10:11:42 +0530
-Message-ID: <2739c3b223b586377f6fb6b0570f74afa81848e4.1485146406.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 05/12] PM / OPP: Use dev_pm_opp_get_opp_table() instead of _add_opp_table()
+Date: Mon, 23 Jan 2017 10:11:45 +0530
+Message-ID: <bba86c1f62b5f617efd4d99ca200fcd02b703f86.1485146406.git.viresh.kumar@linaro.org>
 References: <cover.1485146406.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1485146406.git.viresh.kumar@linaro.org>
@@ -12,167 +12,281 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nisha
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Add kref to struct opp_table for easier accounting of the OPP table.
+Migrate all users of _add_opp_table() to use dev_pm_opp_get_opp_table()
+to guarantee that the OPP table doesn't get freed while being used.
 
-Note that the new routine dev_pm_opp_get_opp_table() takes the reference
-from under the opp_table_lock, which guarantees that the OPP table
-doesn't get freed unless dev_pm_opp_put_opp_table() is called for the
-OPP table.
+Also update _managed_opp() to get the reference to the OPP table.
 
-Two separate release mechanisms are added: locked and unlocked. In
-unlocked version the routines aren't required to take/drop
-opp_table_lock as the callers have already done that. This is required
-to avoid breaking git bisect, otherwise we may get lockdeps between
-commits. Once all the users of OPP table are updated the unlocked
-version shall be removed.
+Now that the OPP table wouldn't get freed while these routines are
+executing after dev_pm_opp_get_opp_table() is called, there is no need
+to take opp_table_lock. Drop them as well.
+
+Now that _add_opp_table(), _remove_opp_table() and the unlocked release
+routines aren't used anymore, remove them.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/base/power/opp/core.c | 51 +++++++++++++++++++++++++++++++++++++++++--
- drivers/base/power/opp/opp.h  |  3 +++
- include/linux/pm_opp.h        | 10 +++++++++
- 3 files changed, 62 insertions(+), 2 deletions(-)
+ drivers/base/power/opp/core.c | 63 ++++---------------------------------------
+ drivers/base/power/opp/of.c   | 54 +++++++++++++++++--------------------
+ drivers/base/power/opp/opp.h  |  1 -
+ 3 files changed, 29 insertions(+), 89 deletions(-)
 
 diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index dcebd5efb6a1..ccc0d8913fd0 100644
+index 1a38b5d8dc54..ab9499e3ba02 100644
 --- a/drivers/base/power/opp/core.c
 +++ b/drivers/base/power/opp/core.c
-@@ -855,6 +855,7 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 	srcu_init_notifier_head(&opp_table->srcu_head);
- 	INIT_LIST_HEAD(&opp_table->opp_list);
- 	mutex_init(&opp_table->lock);
-+	kref_init(&opp_table->kref);
- 
- 	/* Secure the device table modification */
- 	list_add_rcu(&opp_table->node, &opp_tables);
-@@ -894,8 +895,36 @@ static void _kfree_device_rcu(struct rcu_head *head)
- 	kfree_rcu(opp_table, rcu_head);
+@@ -863,27 +863,6 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
  }
  
--static void _free_opp_table(struct opp_table *opp_table)
-+void _get_opp_table_kref(struct opp_table *opp_table)
- {
-+	kref_get(&opp_table->kref);
-+}
-+
-+struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
-+{
-+	struct opp_table *opp_table;
-+
-+	/* Hold our table modification lock here */
-+	mutex_lock(&opp_table_lock);
-+
-+	opp_table = _find_opp_table(dev);
-+	if (!IS_ERR(opp_table)) {
-+		_get_opp_table_kref(opp_table);
-+		goto unlock;
-+	}
-+
-+	opp_table = _allocate_opp_table(dev);
-+
-+unlock:
-+	mutex_unlock(&opp_table_lock);
-+
-+	return opp_table;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_get_opp_table);
-+
-+static void _opp_table_kref_release_unlocked(struct kref *kref)
-+{
-+	struct opp_table *opp_table = container_of(kref, struct opp_table, kref);
- 	struct opp_device *opp_dev;
- 
- 	/* Release clk */
-@@ -916,6 +945,24 @@ static void _free_opp_table(struct opp_table *opp_table)
- 		  _kfree_device_rcu);
- }
- 
-+static void dev_pm_opp_put_opp_table_unlocked(struct opp_table *opp_table)
-+{
-+	kref_put(&opp_table->kref, _opp_table_kref_release_unlocked);
-+}
-+
-+static void _opp_table_kref_release(struct kref *kref)
-+{
-+	_opp_table_kref_release_unlocked(kref);
-+	mutex_unlock(&opp_table_lock);
-+}
-+
-+void dev_pm_opp_put_opp_table(struct opp_table *opp_table)
-+{
-+	kref_put_mutex(&opp_table->kref, _opp_table_kref_release,
-+		       &opp_table_lock);
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_put_opp_table);
-+
  /**
-  * _remove_opp_table() - Removes a OPP table
-  * @opp_table: OPP table to be removed.
-@@ -939,7 +986,7 @@ static void _remove_opp_table(struct opp_table *opp_table)
- 	if (opp_table->set_opp)
- 		return;
+- * _add_opp_table() - Find OPP table or allocate a new one
+- * @dev:	device for which we do this operation
+- *
+- * It tries to find an existing table first, if it couldn't find one, it
+- * allocates a new OPP table and returns that.
+- *
+- * Return: valid opp_table pointer if success, else NULL.
+- */
+-struct opp_table *_add_opp_table(struct device *dev)
+-{
+-	struct opp_table *opp_table;
+-
+-	/* Check for existing table for 'dev' first */
+-	opp_table = _find_opp_table(dev);
+-	if (!IS_ERR(opp_table))
+-		return opp_table;
+-
+-	return _allocate_opp_table(dev);
+-}
+-
+-/**
+  * _kfree_device_rcu() - Free opp_table RCU handler
+  * @head:	RCU head
+  */
+@@ -922,7 +901,7 @@ struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_opp_table);
  
--	_free_opp_table(opp_table);
-+	dev_pm_opp_put_opp_table_unlocked(opp_table);
+-static void _opp_table_kref_release_unlocked(struct kref *kref)
++static void _opp_table_kref_release(struct kref *kref)
+ {
+ 	struct opp_table *opp_table = container_of(kref, struct opp_table, kref);
+ 	struct opp_device *opp_dev;
+@@ -943,16 +922,7 @@ static void _opp_table_kref_release_unlocked(struct kref *kref)
+ 	list_del_rcu(&opp_table->node);
+ 	call_srcu(&opp_table->srcu_head.srcu, &opp_table->rcu_head,
+ 		  _kfree_device_rcu);
+-}
+ 
+-static void dev_pm_opp_put_opp_table_unlocked(struct opp_table *opp_table)
+-{
+-	kref_put(&opp_table->kref, _opp_table_kref_release_unlocked);
+-}
+-
+-static void _opp_table_kref_release(struct kref *kref)
+-{
+-	_opp_table_kref_release_unlocked(kref);
+ 	mutex_unlock(&opp_table_lock);
  }
  
+@@ -963,17 +933,6 @@ void dev_pm_opp_put_opp_table(struct opp_table *opp_table)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_put_opp_table);
+ 
+-/**
+- * _remove_opp_table() - Removes a OPP table
+- * @opp_table: OPP table to be removed.
+- *
+- * Removes/frees OPP table if it doesn't contain any OPPs.
+- */
+-static void _remove_opp_table(struct opp_table *opp_table)
+-{
+-	dev_pm_opp_put_opp_table_unlocked(opp_table);
+-}
+-
  void _opp_free(struct dev_pm_opp *opp)
+ {
+ 	kfree(opp);
+@@ -1218,8 +1177,6 @@ int _opp_add_v1(struct opp_table *opp_table, struct device *dev,
+ 	unsigned long tol;
+ 	int ret;
+ 
+-	opp_rcu_lockdep_assert();
+-
+ 	new_opp = _opp_allocate(opp_table);
+ 	if (!new_opp)
+ 		return -ENOMEM;
+@@ -1640,21 +1597,13 @@ int dev_pm_opp_add(struct device *dev, unsigned long freq, unsigned long u_volt)
+ 	struct opp_table *opp_table;
+ 	int ret;
+ 
+-	/* Hold our table modification lock here */
+-	mutex_lock(&opp_table_lock);
+-
+-	opp_table = _add_opp_table(dev);
+-	if (!opp_table) {
+-		ret = -ENOMEM;
+-		goto unlock;
+-	}
++	opp_table = dev_pm_opp_get_opp_table(dev);
++	if (!opp_table)
++		return -ENOMEM;
+ 
+ 	ret = _opp_add_v1(opp_table, dev, freq, u_volt, true);
+-	if (ret)
+-		_remove_opp_table(opp_table);
+ 
+-unlock:
+-	mutex_unlock(&opp_table_lock);
++	dev_pm_opp_put_opp_table(opp_table);
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_add);
+@@ -1865,8 +1814,6 @@ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev,
+ {
+ 	struct dev_pm_opp *opp, *tmp;
+ 
+-	opp_rcu_lockdep_assert();
+-
+ 	/* Find if opp_table manages a single device */
+ 	if (list_is_singular(&opp_table->dev_list)) {
+ 		/* Free static OPPs */
+diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+index cdbf733ac9b1..6a6e6e7846b3 100644
+--- a/drivers/base/power/opp/of.c
++++ b/drivers/base/power/opp/of.c
+@@ -24,7 +24,9 @@
+ 
+ static struct opp_table *_managed_opp(const struct device_node *np)
+ {
+-	struct opp_table *opp_table;
++	struct opp_table *opp_table, *managed_table = NULL;
++
++	mutex_lock(&opp_table_lock);
+ 
+ 	list_for_each_entry_rcu(opp_table, &opp_tables, node) {
+ 		if (opp_table->np == np) {
+@@ -35,14 +37,18 @@ static struct opp_table *_managed_opp(const struct device_node *np)
+ 			 * But the OPPs will be considered as shared only if the
+ 			 * OPP table contains a "opp-shared" property.
+ 			 */
+-			if (opp_table->shared_opp == OPP_TABLE_ACCESS_SHARED)
+-				return opp_table;
++			if (opp_table->shared_opp == OPP_TABLE_ACCESS_SHARED) {
++				_get_opp_table_kref(opp_table);
++				managed_table = opp_table;
++			}
+ 
+-			return NULL;
++			break;
+ 		}
+ 	}
+ 
+-	return NULL;
++	mutex_unlock(&opp_table_lock);
++
++	return managed_table;
+ }
+ 
+ void _of_init_opp_table(struct opp_table *opp_table, struct device *dev)
+@@ -368,21 +374,17 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 	struct opp_table *opp_table;
+ 	int ret = 0, count = 0;
+ 
+-	mutex_lock(&opp_table_lock);
+-
+ 	opp_table = _managed_opp(opp_np);
+ 	if (opp_table) {
+ 		/* OPPs are already managed */
+ 		if (!_add_opp_dev(dev, opp_table))
+ 			ret = -ENOMEM;
+-		goto unlock;
++		goto put_opp_table;
+ 	}
+ 
+-	opp_table = _add_opp_table(dev);
+-	if (!opp_table) {
+-		ret = -ENOMEM;
+-		goto unlock;
+-	}
++	opp_table = dev_pm_opp_get_opp_table(dev);
++	if (!opp_table)
++		return -ENOMEM;
+ 
+ 	/* We have opp-table node now, iterate over it and add OPPs */
+ 	for_each_available_child_of_node(opp_np, np) {
+@@ -392,14 +394,15 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 		if (ret) {
+ 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+ 				ret);
+-			goto free_table;
++			_dev_pm_opp_remove_table(opp_table, dev, false);
++			goto put_opp_table;
+ 		}
+ 	}
+ 
+ 	/* There should be one of more OPP defined */
+ 	if (WARN_ON(!count)) {
+ 		ret = -ENOENT;
+-		goto free_table;
++		goto put_opp_table;
+ 	}
+ 
+ 	opp_table->np = opp_np;
+@@ -408,12 +411,8 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 	else
+ 		opp_table->shared_opp = OPP_TABLE_ACCESS_EXCLUSIVE;
+ 
+-	goto unlock;
+-
+-free_table:
+-	_dev_pm_opp_remove_table(opp_table, dev, false);
+-unlock:
+-	mutex_unlock(&opp_table_lock);
++put_opp_table:
++	dev_pm_opp_put_opp_table(opp_table);
+ 
+ 	return ret;
+ }
+@@ -442,13 +441,9 @@ static int _of_add_opp_table_v1(struct device *dev)
+ 		return -EINVAL;
+ 	}
+ 
+-	mutex_lock(&opp_table_lock);
+-
+-	opp_table = _add_opp_table(dev);
+-	if (!opp_table) {
+-		ret = -ENOMEM;
+-		goto unlock;
+-	}
++	opp_table = dev_pm_opp_get_opp_table(dev);
++	if (!opp_table)
++		return -ENOMEM;
+ 
+ 	val = prop->value;
+ 	while (nr) {
+@@ -465,8 +460,7 @@ static int _of_add_opp_table_v1(struct device *dev)
+ 		nr -= 2;
+ 	}
+ 
+-unlock:
+-	mutex_unlock(&opp_table_lock);
++	dev_pm_opp_put_opp_table(opp_table);
+ 	return ret;
+ }
+ 
 diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 105243b06373..aae4d8f480ef 100644
+index aae4d8f480ef..a01724363347 100644
 --- a/drivers/base/power/opp/opp.h
 +++ b/drivers/base/power/opp/opp.h
-@@ -131,6 +131,7 @@ enum opp_table_access {
-  * @rcu_head:	RCU callback head used for deferred freeing
-  * @dev_list:	list of devices that share these OPPs
-  * @opp_list:	table of opps
-+ * @kref:	for reference count of the table.
-  * @lock:	mutex protecting the opp_list.
-  * @np:		struct device_node pointer for opp's DT node.
-  * @clock_latency_ns_max: Max clock latency in nanoseconds.
-@@ -164,6 +165,7 @@ struct opp_table {
- 	struct rcu_head rcu_head;
- 	struct list_head dev_list;
- 	struct list_head opp_list;
-+	struct kref kref;
- 	struct mutex lock;
- 
- 	struct device_node *np;
-@@ -192,6 +194,7 @@ struct opp_table {
- };
- 
+@@ -196,7 +196,6 @@ struct opp_table {
  /* Routines internal to opp core */
-+void _get_opp_table_kref(struct opp_table *opp_table);
+ void _get_opp_table_kref(struct opp_table *opp_table);
  struct opp_table *_find_opp_table(struct device *dev);
- struct opp_table *_add_opp_table(struct device *dev);
+-struct opp_table *_add_opp_table(struct device *dev);
  struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_table);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 66a02deeb03f..d867c6b25f9a 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -78,6 +78,9 @@ struct dev_pm_set_opp_data {
- 
- #if defined(CONFIG_PM_OPP)
- 
-+struct opp_table *dev_pm_opp_get_opp_table(struct device *dev);
-+void dev_pm_opp_put_opp_table(struct opp_table *opp_table);
-+
- unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
- 
- unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
-@@ -126,6 +129,13 @@ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
- void dev_pm_opp_remove_table(struct device *dev);
- void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask);
- #else
-+static inline struct opp_table *dev_pm_opp_get_opp_table(struct device *dev)
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
-+
-+static inline void dev_pm_opp_put_opp_table(struct opp_table *opp_table) {}
-+
- static inline unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp)
- {
- 	return 0;
+ void _dev_pm_opp_remove_table(struct opp_table *opp_table, struct device *dev, bool remove_all);
+ void _dev_pm_opp_find_and_remove_table(struct device *dev, bool remove_all);
 -- 
 2.7.1.410.g6faf27b
