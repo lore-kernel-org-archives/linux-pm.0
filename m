@@ -1,159 +1,117 @@
-From: Kevin Hilman <khilman@kernel.org>
-Subject: Re: [PATCH 6/9] power_supply: wm97xx_battery: use power_supply_get_drvdata
-Date: Mon, 23 Jan 2017 10:38:15 -0800
-Message-ID: <CAOi56cVk17w6C6msnT88c0Zh1OgLM=FbZAw32MzLRatjFraYhg@mail.gmail.com>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr> <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
+From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Mon, 23 Jan 2017 14:11:02 -0600
+Message-ID: <ec2f1697-4c60-fd88-6593-2a69ca7f5c83@ti.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com>
+ <20170104205536.15963-3-d-gerlach@ti.com>
+ <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop>
+ <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+ <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
+ <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+ <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
+ <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+ <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
+ <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com> <m2ziip2puf.fsf@baylibre.com>
+ <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
+ <CAPDyKFqzs59N5bc89X-96Fgy9b=_+s8zYmHHshQeDrJCnaqprA@mail.gmail.com>
+ <58821CA2.4050701@ti.com>
+ <CAPDyKFpTyn2isNahywmOOSWiZKov9xsudyWi_i-FejXjC+1AZw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:46524 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751713AbdAWSib (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 23 Jan 2017 13:38:31 -0500
-Received: from mail.kernel.org (localhost [127.0.0.1])
-        by mail.kernel.org (Postfix) with ESMTP id D1A95203F3
-        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2017 18:38:19 +0000 (UTC)
-Received: from mail-ot0-f175.google.com (mail-ot0-f175.google.com [74.125.82.175])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 439D620382
-        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2017 18:38:16 +0000 (UTC)
-Received: by mail-ot0-f175.google.com with SMTP id 73so109371834otj.0
-        for <linux-pm@vger.kernel.org>; Mon, 23 Jan 2017 10:38:16 -0800 (PST)
-In-Reply-To: <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFpTyn2isNahywmOOSWiZKov9xsudyWi_i-FejXjC+1AZw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm <linux-pm@vger.kernel.org>, alsa-devel@alsa-project.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Stefan Agner <stefan@agner.ch>
 
-Hello,
+On 01/20/2017 10:52 AM, Ulf Hansson wrote:
+> [...]
+>
+>>>> Another option is create something new either common or TI SCI
+>>>> specific. It could be just a table of ids and phandles in the SCI
+>>>> node. I'm much more comfortable with an isolated property in one node
+>>>> than something scattered throughout the DT.
+>>>
+>>> To me, this seems like the best possible solution.
+>>>
+>>> However, perhaps we should also consider the SCPI Generic power domain
+>>> (drivers/firmware/scpi_pm_domain.c), because I believe it's closely
+>>> related.
+>>> To change the power state of a device, this PM domain calls
+>>> scpi_device_set|get_power_state() (drivers/firmware/arm_scpi.c), which
+>>> also needs a device id as a parameter. Very similar to our case with
+>>> the TI SCI domain.
+>>>
+>>> Currently these SCPI device ids lacks corresponding DT bindings, so
+>>> the scpi_pm_domain tries to work around it by assigning ids
+>>> dynamically at genpd creation time.
+>>>
+>>> That makes me wonder, whether we should think of something common/generic?
+>>
+>> When you say something common/generic, do you mean a better binding for genpd,
+>> or something bigger than that like a new driver? Because I do think a phandle
+>> cell left open for the genpd provider to interpret solves both the scpi and
+>> ti-sci problem we are facing here in the best way. Using generic PM domains lets
+>> us do exactly what we want apart from interpreting the phandle cell with our
+>> driver, and I feel like anything else we try at this point is just going to be
+>> to work around that. Is bringing back genpd xlate something we can discuss?
+>
+> Bringing back xlate, how would that help? Wouldn't that just mean that
+> you will get one genpd per device? That's not an option, I think we
+> are all in agreement to that.
 
-On Wed, Oct 26, 2016 at 12:41 PM, Robert Jarzmik <robert.jarzmik@free.fr> wrote:
-> As the power supply framework provides a way to store and retrieve
-> private supply data, use it.
->
-> In the process, change the platform data for wm97xx_battery from a
-> container of a single struct wm97xx_batt_pdata to the direct point to wm97xx_batt_pdata.
->
-> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Sure, perhaps the custom xlate wouldn't be the right way to do it, as we 
+wouldn't be able to associate a device directly to a phandle, at least 
+with how it was implemented before, but I think we can skip that 
+entirely. Does opening up the interpretation of the cells of the 
+'power-domains' phandle not solve all of these issues? Is that out of 
+the question?
 
-kernelci.org has been reporting that the tegra20-iris board has been
-failing in -next since next-20161123[1], and also in mainline
-v4.10-rc.  I finally took the time to bisect, and it pointed to this
-patch.  I verified that reverting $SUBJECT patch[2] on top of
-v4.10-rc5 fixes the problem.
+genpd_xlate_simple currently just makes sure the args_count of the 
+'power-domains' phandle was zero and bails if it was not. Why couldn't 
+we remove this check and let the driver interpret it while still using 
+of_genpd_add_provider_simple to register the provider? It's still a 
+'simple' provider from the perspective of the genpd framework and the 
+actual pm domain mapping will not change, but now the driver can parse 
+the cells and do whatever it needs to, such as reading a device id.
 
-Kevin
+I think that's a bit more flexible and will avoid breaking anything that 
+is there today.
 
-[1] https://kernelci.org/boot/id/5879a3fe59b5141534f6c3ac/
-[2] in mainline as commit: 6480af4915d6 power_supply: wm97xx_battery:
-use power_supply_get_drvdata
+Regards,
+Dave
 
-> ---
->  drivers/input/touchscreen/wm97xx-core.c |  2 +-
->  drivers/power/supply/wm97xx_battery.c   | 25 ++++++++++---------------
->  2 files changed, 11 insertions(+), 16 deletions(-)
 >
-> diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-> index 90d6be3c26cc..83cf11312fd9 100644
-> --- a/drivers/input/touchscreen/wm97xx-core.c
-> +++ b/drivers/input/touchscreen/wm97xx-core.c
-> @@ -682,7 +682,7 @@ static int wm97xx_probe(struct device *dev)
->         }
->         platform_set_drvdata(wm->battery_dev, wm);
->         wm->battery_dev->dev.parent = dev;
-> -       wm->battery_dev->dev.platform_data = pdata;
-> +       wm->battery_dev->dev.platform_data = pdata->batt_pdata;
->         ret = platform_device_add(wm->battery_dev);
->         if (ret < 0)
->                 goto batt_reg_err;
-> diff --git a/drivers/power/supply/wm97xx_battery.c b/drivers/power/supply/wm97xx_battery.c
-> index 6285626d142a..e3edb31ac880 100644
-> --- a/drivers/power/supply/wm97xx_battery.c
-> +++ b/drivers/power/supply/wm97xx_battery.c
-> @@ -30,8 +30,7 @@ static enum power_supply_property *prop;
+> Or am I missing something here?
 >
->  static unsigned long wm97xx_read_bat(struct power_supply *bat_ps)
->  {
-> -       struct wm97xx_pdata *wmdata = bat_ps->dev.parent->platform_data;
-> -       struct wm97xx_batt_pdata *pdata = wmdata->batt_pdata;
-> +       struct wm97xx_batt_pdata *pdata = power_supply_get_drvdata(bat_ps);
+> Regarding something "common/generic", I was merely thinking of some
+> common bindings describing the list of phandle to device ids mapping.
+> However, let's not make this more complicated than it is already. So
+> please just ignore my suggestion so we can make this work for your
+> case first.
 >
->         return wm97xx_read_aux_adc(dev_get_drvdata(bat_ps->dev.parent),
->                                         pdata->batt_aux) * pdata->batt_mult /
-> @@ -40,8 +39,7 @@ static unsigned long wm97xx_read_bat(struct power_supply *bat_ps)
+> However, maybe I didn't fully understood Rob's suggestion. Perhaps Rob
+> can clarify once more.
 >
->  static unsigned long wm97xx_read_temp(struct power_supply *bat_ps)
->  {
-> -       struct wm97xx_pdata *wmdata = bat_ps->dev.parent->platform_data;
-> -       struct wm97xx_batt_pdata *pdata = wmdata->batt_pdata;
-> +       struct wm97xx_batt_pdata *pdata = power_supply_get_drvdata(bat_ps);
+> Anyway, this is how interpreted Rob's suggestion:
 >
->         return wm97xx_read_aux_adc(dev_get_drvdata(bat_ps->dev.parent),
->                                         pdata->temp_aux) * pdata->temp_mult /
-> @@ -52,8 +50,7 @@ static int wm97xx_bat_get_property(struct power_supply *bat_ps,
->                             enum power_supply_property psp,
->                             union power_supply_propval *val)
->  {
-> -       struct wm97xx_pdata *wmdata = bat_ps->dev.parent->platform_data;
-> -       struct wm97xx_batt_pdata *pdata = wmdata->batt_pdata;
-> +       struct wm97xx_batt_pdata *pdata = power_supply_get_drvdata(bat_ps);
+> TISCI_PM_DOMAIN_DEVLIST: tisci-pm-domain-devlist {
+>      devs = <&serial0>, <&mmc0>;
+>      devids = <5 10>;
+> }
 >
->         switch (psp) {
->         case POWER_SUPPLY_PROP_STATUS:
-> @@ -103,8 +100,7 @@ static void wm97xx_bat_external_power_changed(struct power_supply *bat_ps)
->  static void wm97xx_bat_update(struct power_supply *bat_ps)
->  {
->         int old_status = bat_status;
-> -       struct wm97xx_pdata *wmdata = bat_ps->dev.parent->platform_data;
-> -       struct wm97xx_batt_pdata *pdata = wmdata->batt_pdata;
-> +       struct wm97xx_batt_pdata *pdata = power_supply_get_drvdata(bat_ps);
+> With this, you should be to extract the devid which corresponds to the
+> device that has been attached to the TI SCI PM domain. Don't you
+> think?
 >
->         mutex_lock(&work_lock);
+> Kind regards
+> Uffe
 >
-> @@ -166,15 +162,15 @@ static int wm97xx_bat_probe(struct platform_device *dev)
->         int ret = 0;
->         int props = 1;  /* POWER_SUPPLY_PROP_PRESENT */
->         int i = 0;
-> -       struct wm97xx_pdata *wmdata = dev->dev.platform_data;
-> -       struct wm97xx_batt_pdata *pdata;
-> +       struct wm97xx_batt_pdata *pdata = dev->dev.platform_data;
-> +       struct power_supply_config cfg = {};
->
-> -       if (!wmdata) {
-> +       if (!pdata) {
->                 dev_err(&dev->dev, "No platform data supplied\n");
->                 return -EINVAL;
->         }
->
-> -       pdata = wmdata->batt_pdata;
-> +       cfg.drv_data = pdata;
->
->         if (dev->id != -1)
->                 return -EINVAL;
-> @@ -243,7 +239,7 @@ static int wm97xx_bat_probe(struct platform_device *dev)
->         bat_psy_desc.properties = prop;
->         bat_psy_desc.num_properties = props;
->
-> -       bat_psy = power_supply_register(&dev->dev, &bat_psy_desc, NULL);
-> +       bat_psy = power_supply_register(&dev->dev, &bat_psy_desc, &cfg);
->         if (!IS_ERR(bat_psy)) {
->                 schedule_work(&bat_work);
->         } else {
-> @@ -266,8 +262,7 @@ static int wm97xx_bat_probe(struct platform_device *dev)
->
->  static int wm97xx_bat_remove(struct platform_device *dev)
->  {
-> -       struct wm97xx_pdata *wmdata = dev->dev.platform_data;
-> -       struct wm97xx_batt_pdata *pdata = wmdata->batt_pdata;
-> +       struct wm97xx_batt_pdata *pdata = dev->dev.platform_data;
->
->         if (pdata && gpio_is_valid(pdata->charge_gpio)) {
->                 free_irq(gpio_to_irq(pdata->charge_gpio), dev);
-> --
-> 2.1.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
