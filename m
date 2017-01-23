@@ -1,88 +1,64 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 10/12] PM / OPP: Simplify _opp_set_availability()
-Date: Mon, 23 Jan 2017 10:11:50 +0530
-Message-ID: <59507c403d7319f7ec1ac463e77f4dbfb36371d7.1485146406.git.viresh.kumar@linaro.org>
-References: <cover.1485146406.git.viresh.kumar@linaro.org>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: arm64: dts: mt8173: add node for thermal calibration
+Date: Mon, 23 Jan 2017 10:20:02 +0100
+Message-ID: <f33ae1e4-ff12-7468-67e4-5e5b28dd67bb@gmail.com>
+References: <1484286771-35913-1-git-send-email-dawei.chien@mediatek.com>
+ <CAGS+omA=aip76=8CcGY7gPUrHj9eLLem=8MBziz99fVDq86zPQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1485146406.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1485146406.git.viresh.kumar@linaro.org>
-References: <cover.1485146406.git.viresh.kumar@linaro.org>
+In-Reply-To: <CAGS+omA=aip76=8CcGY7gPUrHj9eLLem=8MBziz99fVDq86zPQ@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Daniel Kurtz <djkurtz@chromium.org>, Dawei Chien <dawei.chien@mediatek.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, "open list:OPEN FIRMWARE AND..." <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, "moderated list:ARM/Mediatek SoC support" <linux-mediatek@lists.infradead.org>, srv_heupstream <srv_heupstream@mediatek.com>, Sascha Hauer <kernel@pengutronix.de>, Punit Agrawal <punit.agrawal@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-As we don't use RCU locking anymore, there is no need to replace an
-earlier OPP node with a new one. Just update the existing one.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
----
- drivers/base/power/opp/core.c | 27 +++++----------------------
- 1 file changed, 5 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index c40d9868bd97..f54ac2484723 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -1510,20 +1510,15 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 				 bool availability_req)
- {
- 	struct opp_table *opp_table;
--	struct dev_pm_opp *new_opp, *tmp_opp, *opp = ERR_PTR(-ENODEV);
-+	struct dev_pm_opp *tmp_opp, *opp = ERR_PTR(-ENODEV);
- 	int r = 0;
- 
--	/* keep the node allocated */
--	new_opp = kmalloc(sizeof(*new_opp), GFP_KERNEL);
--	if (!new_opp)
--		return -ENOMEM;
--
- 	/* Find the opp_table */
- 	opp_table = _find_opp_table(dev);
- 	if (IS_ERR(opp_table)) {
- 		r = PTR_ERR(opp_table);
- 		dev_warn(dev, "%s: Device OPP not found (%d)\n", __func__, r);
--		goto free_opp;
-+		return r;
- 	}
- 
- 	mutex_lock(&opp_table->lock);
-@@ -1544,32 +1539,20 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 	/* Is update really needed? */
- 	if (opp->available == availability_req)
- 		goto unlock;
--	/* copy the old data over */
--	*new_opp = *opp;
--
--	/* plug in new node */
--	new_opp->available = availability_req;
- 
--	list_replace(&opp->node, &new_opp->node);
--	kfree(opp);
-+	opp->available = availability_req;
- 
- 	/* Notify the change of the OPP availability */
- 	if (availability_req)
- 		blocking_notifier_call_chain(&opp_table->head, OPP_EVENT_ENABLE,
--					     new_opp);
-+					     opp);
- 	else
- 		blocking_notifier_call_chain(&opp_table->head,
--					     OPP_EVENT_DISABLE, new_opp);
--
--	mutex_unlock(&opp_table->lock);
--	dev_pm_opp_put_opp_table(opp_table);
--	return 0;
-+					     OPP_EVENT_DISABLE, opp);
- 
- unlock:
- 	mutex_unlock(&opp_table->lock);
- 	dev_pm_opp_put_opp_table(opp_table);
--free_opp:
--	kfree(new_opp);
- 	return r;
- }
- 
--- 
-2.7.1.410.g6faf27b
+On 01/13/2017 09:51 AM, Daniel Kurtz wrote:
+> On Fri, Jan 13, 2017 at 1:52 PM, Dawei Chien <dawei.chien@mediatek.com> wrote:
+>>
+>> From: "dawei.chien@mediatek.com" <dawei.chien@mediatek.com>
+>>
+>> Add this for supporting thermal calibration by e-fuse data.
+>>
+>> Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+>
+> Reviewed-by: Daniel Kurtz <djkurtz@chromium.org>
+>
+
+applied, thanks
+
+>> ---
+>>  arch/arm64/boot/dts/mediatek/mt8173.dtsi | 7 +++++++
+>>  1 file changed, 7 insertions(+)
+>>
+>> diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+>> index 12e7027..adfac1e 100644
+>> --- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+>> +++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
+>> @@ -401,6 +401,11 @@
+>>                 efuse: efuse@10206000 {
+>>                         compatible = "mediatek,mt8173-efuse";
+>>                         reg = <0 0x10206000 0 0x1000>;
+>> +                       #address-cells = <1>;
+>> +                       #size-cells = <1>;
+>> +                       thermal_calibration: calib@528 {
+>> +                               reg = <0x528 0xc>;
+>> +                       };
+>>                 };
+>>
+>>                 apmixedsys: clock-controller@10209000 {
+>> @@ -574,6 +579,8 @@
+>>                         resets = <&pericfg MT8173_PERI_THERM_SW_RST>;
+>>                         mediatek,auxadc = <&auxadc>;
+>>                         mediatek,apmixedsys = <&apmixedsys>;
+>> +                       nvmem-cells = <&thermal_calibration>;
+>> +                       nvmem-cell-names = "calibration-data";
+>>                 };
+>>
+>>                 nor_flash: spi@1100d000 {
+>> --
+>> 1.9.1
+>>
