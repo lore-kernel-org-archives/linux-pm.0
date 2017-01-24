@@ -1,72 +1,56 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 1/2] power: bq24190_charger: Check the interrupt status
- on resume
-Date: Mon, 23 Jan 2017 16:47:43 -0800
-Message-ID: <20170124004742.GZ7403@atomide.com>
-References: <20170120220440.1971-1-tony@atomide.com>
- <20170120220440.1971-2-tony@atomide.com>
- <20170122015441.wzsbigozefzr5wzw@earth>
+From: Philipp Miedl <philipp.miedl@tik.ee.ethz.ch>
+Subject: Re: Delayed acpi frequency governor call
+Date: Tue, 24 Jan 2017 15:49:51 +0100
+Message-ID: <2f9b2f69-8b93-c77a-a09f-540240fecf1e@tik.ee.ethz.ch>
+References: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
+ <20170120100725.GO11478@vireshk-i7>
+ <9b332b49-11a1-a5fc-d48e-2c113cdca202@tik.ee.ethz.ch>
+ <20170123101145.GB26681@vireshk-i7>
+ <086bc55f-d1cc-b893-49c6-1667f6067f1b@tik.ee.ethz.ch>
+ <20170124042235.GA16906@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:60132 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751838AbdAXArw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 23 Jan 2017 19:47:52 -0500
-Content-Disposition: inline
-In-Reply-To: <20170122015441.wzsbigozefzr5wzw@earth>
+Received: from virgo01.ee.ethz.ch ([129.132.2.226]:55792 "EHLO
+        virgo01.ee.ethz.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750847AbdAXOt4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2017 09:49:56 -0500
+In-Reply-To: <20170124042235.GA16906@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: alex@digriz.org.uk, jun.nakajima@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-* Sebastian Reichel <sre@kernel.org> [170121 17:55]:
-> Hi Tony,
-> 
-> I think your runtime_resume is missing runtime_pm_get/put_sync, see
-> below:
-> 
-> On Fri, Jan 20, 2017 at 02:04:39PM -0800, Tony Lindgren wrote:
-> > [...]
-> > +static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
-> > +{
-> > +	struct bq24190_dev_info *bdi = data;
-> > +
-> > +	bdi->irq_event = true;
-> > +	pm_runtime_get_sync(bdi->dev);
-> > +	bq24190_check_status(bdi);
-> > +	pm_runtime_put_sync(bdi->dev);
-> 
-> bq24190_check_status is called with runtime_pm enabled.
-> 
-> > +	bdi->irq_event = false;
-> >  
-> >  	return IRQ_HANDLED;
-> >  }
-> >
-> > [...]
-> >
-> > +static int bq24190_runtime_resume(struct device *dev)
-> > +{
-> > +	struct i2c_client *client = to_i2c_client(dev);
-> > +	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> > +
-> > +	if (!bdi->initialized)
-> > +		return 0;
-> > +
-> > +	if (!bdi->irq_event) {
-> > +		dev_dbg(bdi->dev, "checking events on possible wakeirq\n");
-> > +		bq24190_check_status(bdi);
-> 
-> bq24190_check_status is called without runtime_pm enabled.
 
-But it's the runtime_resume call we're calling it from :)
+> You are using a 4.4 kernel, which used the older delayed work stuff at sampling
+> rate. This has all changed a lot and we hooks paired with the scheduler now to
+> do this instead. Things have mostly changed since 4.7. Would it be possible for
+> you to use a later kernel and see if you still see something wrong?
+I switched to the latest stable kernel available, 4.9.5. Judging from 
+the first test I ran, using this kernel I cannot
+reproduce this behavior anymore. Looks like it has been fixed by the 
+changes introduced.
+> Now coming back to 4.4, the timers (in the delayed works) can't get delayed but
+> the work can as it is just another process.
+Can you please describe how things changed from version 4.4 to 4.9 - I'm 
+not sure if I understand correctly.
+Before 4.7 the governor was just running as a kernel process and 
+triggered by the (free running) timers and
+now its hooked with the scheduler. So the scheduler ensures that the 
+governor work is not delayed?!
+> But your setup has no almost load
+> and that seems unlikely as well. So, it looks to be a problem at some other
+> place. Tracers are your friend, only those can confirm something here.
+Thanks for the tip with the tracers. If time allows I will have a look 
+into that - I would like to know whats going
+on, just out of curiosity.
 
-I don't think there is anything to configure in bq24190 at least
-at this point, we just want to see if we got the wakeirq call
-resume while in some deeper idle state.
+-- 
+--------------------------------------------------------------------
+|  Philipp Miedl                                                   |
+|  PhD Student @ Computer Engineering and Networks Laboratory      |
+|  ETH Zurich, ETZG76, Gloriastrasse 35, 8092 Zurich, Switzerland  |
+|  mail: philipp.miedl@ee.tik.ethz.ch      phone: +41 44 632 70 61 |
+--------------------------------------------------------------------
 
-Regards,
-
-Tony
