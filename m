@@ -1,11 +1,9 @@
 From: <Mario.Limonciello@dell.com>
 Subject: RE: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
  bus: enable OS version only for SPT and newer)
-Date: Tue, 24 Jan 2017 20:14:44 +0000
-Message-ID: <99b980ec90104c8a938899d4c49f30eb@ausx13mpc120.AMER.DELL.COM>
-References: <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
- <20170114193959.GA30750@kroah.com>
- <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
+Date: Tue, 24 Jan 2017 20:24:05 +0000
+Message-ID: <f0d7adf0ff314704bf035badd8a6a897@ausx13mpc120.AMER.DELL.COM>
+References: <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
  <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
  <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
  <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
@@ -14,97 +12,122 @@ References: <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
  <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
  <20170117233346.GA2599@wisp>
  <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
- <CAJZ5v0gKLiezvGE71v-A=Jz5E_E0PL4twHmA7y_CDdS4aFxJ9A@mail.gmail.com>
+ <20170121091112.GD27048@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gKLiezvGE71v-A=Jz5E_E0PL4twHmA7y_CDdS4aFxJ9A@mail.gmail.com>
+In-Reply-To: <20170121091112.GD27048@kroah.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: rafael@kernel.org, alex.hung@canonical.com
-Cc: gregkh@linuxfoundation.org, dvhart@infradead.org, rafael.j.wysocki@intel.com, pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
+To: gregkh@linuxfoundation.org, alex.hung@canonical.com
+Cc: dvhart@infradead.org, rafael.j.wysocki@intel.com, pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWls
-LmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZg0KPiBSYWZhZWwg
-Si4gV3lzb2NraQ0KPiBTZW50OiBTdW5kYXksIEphbnVhcnkgMjIsIDIwMTcgMzo0NSBBTQ0KPiBU
-bzogTGltb25jaWVsbG8sIE1hcmlvIDxNYXJpb19MaW1vbmNpZWxsb0BEZWxsLmNvbT4NCj4gQ2M6
-IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBEYXJyZW4g
-SGFydA0KPiA8ZHZoYXJ0QGluZnJhZGVhZC5vcmc+OyBSYWZhZWwgV3lzb2NraSA8cmFmYWVsLmou
-d3lzb2NraUBpbnRlbC5jb20+OyBQYXVsDQo+IE1lbnplbCA8cG1lbnplbEBtb2xnZW4ubXBnLmRl
-PjsgVGhvcnN0ZW4gTGVlbWh1aXMNCj4gPGxpbnV4QGxlZW1odWlzLmluZm8+OyBUb21hcyBXaW5r
-bGVyIDx0b21hcy53aW5rbGVyQGludGVsLmNvbT47DQo+IGphbkBnb25kb3IuY29tOyBBbGV4YW5k
-ZXIgVXN5c2tpbiA8YWxleGFuZGVyLnVzeXNraW5AaW50ZWwuY29tPjsgTGludXgNCj4gS2VybmVs
-IE1haWxpbmcgTGlzdCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IENoZW4sIFl1IEMN
-Cj4gPHl1LmMuY2hlbkBpbnRlbC5jb20+OyBUb21pIFNhcnZlbGEgPHRvbWkucC5zYXJ2ZWxhQGlu
-dGVsLmNvbT47IERhbmllbA0KPiBCbHVlbWFuIDxkYW5pZWxAcXVvcmEub3JnPjsgTGVuIEJyb3du
-IDxsZW4uYnJvd25AaW50ZWwuY29tPjsgTGludXggUE0NCj4gPGxpbnV4LXBtQHZnZXIua2VybmVs
-Lm9yZz4NCj4gU3ViamVjdDogUmU6IFJlZ3Jlc3Npb24gb24gRGVsbCBYUFMxMyAod2FzOiBbY2hh
-ci1taXNjIGZvciA0LjEwLXJjNCBWMl0gbWVpOg0KPiBidXM6IGVuYWJsZSBPUyB2ZXJzaW9uIG9u
-bHkgZm9yIFNQVCBhbmQgbmV3ZXIpDQo+IA0KPiBPbiBTYXQsIEphbiAyMSwgMjAxNyBhdCAxMjox
-MSBBTSwgIDxNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbT4gd3JvdGU6DQo+ID4gR3JlZywNCj4g
-Pg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBEYXJyZW4gSGFy
-dCBbbWFpbHRvOmR2aGFydEBpbmZyYWRlYWQub3JnXQ0KPiA+PiBTZW50OiBUdWVzZGF5LCBKYW51
-YXJ5IDE3LCAyMDE3IDU6MzQgUE0NCj4gPj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9f
-TGltb25jaWVsbG9ARGVsbC5jb20+DQo+ID4+IENjOiBncmVna2hAbGludXhmb3VuZGF0aW9uLm9y
-ZzsgcmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb207DQo+ID4+IHBtZW56ZWxAbW9sZ2VuLm1wZy5k
-ZTsgbGludXhAbGVlbWh1aXMuaW5mbzsgdG9tYXMud2lua2xlckBpbnRlbC5jb207DQo+ID4+IGph
-bkBnb25kb3IuY29tOyBhbGV4YW5kZXIudXN5c2tpbkBpbnRlbC5jb207IGxpbnV4LQ0KPiBrZXJu
-ZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+PiB5dS5jLmNoZW5AaW50ZWwuY29tOyB0b21pLnAuc2Fy
-dmVsYUBpbnRlbC5jb207IGRhbmllbEBxdW9yYS5vcmc7DQo+ID4+IGxlbi5icm93bkBpbnRlbC5j
-b207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiA+PiBTdWJqZWN0OiBSZTogUmVncmVzc2lv
-biBvbiBEZWxsIFhQUzEzICh3YXM6IFtjaGFyLW1pc2MgZm9yIDQuMTAtcmM0IFYyXSBtZWk6DQo+
-ID4+IGJ1czogZW5hYmxlIE9TIHZlcnNpb24gb25seSBmb3IgU1BUIGFuZCBuZXdlcikNCj4gPj4N
-Cj4gPj4gT24gVHVlLCBKYW4gMTcsIDIwMTcgYXQgMDY6Mzg6NDNQTSArMDAwMCwgTWFyaW8uTGlt
-b25jaWVsbG9AZGVsbC5jb20NCj4gPj4gd3JvdGU6DQo+ID4+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
-c3NhZ2UtLS0tLQ0KPiA+PiA+ID4gRnJvbTogR3JlZyBLSCBbbWFpbHRvOmdyZWdraEBsaW51eGZv
-dW5kYXRpb24ub3JnXQ0KPiA+PiA+ID4gU2VudDogVHVlc2RheSwgSmFudWFyeSAxNywgMjAxNyAx
-MjoyNCBQTQ0KPiA+PiA+ID4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVs
-bG9ARGVsbC5jb20+DQo+ID4+ID4gPiBDYzogcG1lbnplbEBtb2xnZW4ubXBnLmRlOyByYWZhZWwu
-ai53eXNvY2tpQGludGVsLmNvbTsNCj4gPj4gPiA+IGxpbnV4QGxlZW1odWlzLmluZm87IHRvbWFz
-LndpbmtsZXJAaW50ZWwuY29tOyBqYW5AZ29uZG9yLmNvbTsNCj4gPj4gPiA+IGFsZXhhbmRlci51
-c3lza2luQGludGVsLmNvbTsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPj4gPiA+
-IHl1LmMuY2hlbkBpbnRlbC5jb207IHRvbWkucC5zYXJ2ZWxhQGludGVsLmNvbTsgZGFuaWVsQHF1
-b3JhLm9yZzsNCj4gPj4gPiA+IGxlbi5icm93bkBpbnRlbC5jb207IGxpbnV4LXBtQHZnZXIua2Vy
-bmVsLm9yZw0KPiA+PiA+ID4gU3ViamVjdDogUmU6IFJlZ3Jlc3Npb24gb24gRGVsbCBYUFMxMyAo
-d2FzOiBbY2hhci1taXNjIGZvciA0LjEwLXJjNCBWMl0NCj4gbWVpOg0KPiA+PiA+ID4gYnVzOiBl
-bmFibGUgT1MgdmVyc2lvbiBvbmx5IGZvciBTUFQgYW5kIG5ld2VyKQ0KPiA+PiA+ID4NCj4gPj4g
-PiA+IE9uIFR1ZSwgSmFuIDE3LCAyMDE3IGF0IDA0OjU3OjQ5UE0gKzAwMDAsDQo+IE1hcmlvLkxp
-bW9uY2llbGxvQGRlbGwuY29tDQo+ID4+ID4gPiB3cm90ZToNCj4gPj4gPiA+ID4gU28gaW4gdGhl
-IDw2cyBzY2VuYXJpbywgdGhlIGludGVsLWhpZCBkcml2ZXIgaXMgcmVzcG9uc2libGUgdG8NCj4g
-Pj4gPiA+ID4gcmVjZWl2ZSB0aGUgQUNQSSBldmVudCBhbmQgcHJvY2VzcyBhY2NvcmRpbmdseS4g
-IFRoZSBtYWludGFpbmVyDQo+ID4+ID4gPiA+IGhhcyBhIHBhdGNoIHJlYWR5IGZvciB0aGUgaW50
-ZWwtaGlkIHBvcnRpb24gb2YgdGhpcyB3b3JrLCBidXQgaXQncw0KPiA+PiA+ID4gPiBjdXJyZW50
-bHkgYmVpbmcgcmV2aWV3ZWQgYnkgSW50ZWwgdG8gZW5zdXJlIGl0IGNhbiBiZSBsZWdhbGx5IHN1
-Ym1pdHRlZA0KPiA+PiBpbnRvIHRoZSBrZXJuZWwuDQo+ID4+ID4gPg0KPiA+PiA+ID4gV2hvIGF0
-IEludGVsIGRvIEkgbmVlZCB0byBnbyBraWNrIHRvIG1ha2UgdGhpcyBteXRoaWNhbCBsZWdhbCBy
-ZXZpZXcNCj4gPj4gPiA+IGhhcHBlbiBmYXN0ZXIgc28gd2UgY2FuIHNlZSB0aGUgY29kZT8NCj4g
-Pj4gPiA+DQo+ID4+ID4gPiBMZW4gYW5kIFJhZmFlbCwgd2hhdCBpcyBnb2luZyBvbiBoZXJlPw0K
-PiA+PiA+ID4NCj4gPj4gPg0KPiA+PiA+IExlbiBhbmQgRGFycmVuIGFyZSBib3RoIGluIHRoZSBs
-b29wIG9uIHRoZSBkaXNjdXNzaW9uIGFyb3VuZCB0aGlzIHBhdGNoLg0KPiA+PiA+IEkgZG9uJ3Qg
-a25vdyBpZiB0aGV5J2xsIGhhdmUgYW55IChwdWJsaWMpIGNvbW1lbnRzIHRoZXkgY2FuIGFkZCBv
-biB0aGUNCj4gPj4gPiBtYXR0ZXIgeWV0IGhvd2V2ZXIuDQo+ID4+DQo+ID4+IFRoYW5rcyBNYXJp
-by4gWWVzLCB0aGVyZSBpc24ndCBtdWNoIHRvIHNheSBoZXJlIGluIHB1YmxpYyBvdGhlciB0aGFu
-IHRvDQo+IGNvbmZpcm0NCj4gPj4gd2UgYXJlIGtlZW5seSBhd2FyZSBvZiB0aGUgcHJvYmxlbSBh
-bmQgaGF2ZSBiZWVuIGFjdGl2ZWx5IHdvcmtpbmcgb24NCj4gZml4aW5nDQo+ID4+IGl0LCBib3Ro
-IGZvciB0aGlzIGluc3RhbmNlLCBhbmQgdGhlIGRlZXBlciBzeXN0ZW1hdGljIGZhaWx1cmUgdGhh
-dCByZXN1bHRlZCBpbg0KPiB0aGlzDQo+ID4+IHNpdHVhdGlvbi4gTm8gYW1vdW50IG9mIGtpY2tp
-bmcgd2lsbCBleHBlZGl0ZSB0aGUgcHJvY2VzcyBhdCB0aGlzIHBvaW50LCBidXQNCj4gPj4gc2hv
-dWxkIHdlIGZlZWwgdGhlIG5lZWQsIHdlJ2xsIHJlYWNoIG91dC4NCj4gPj4NCj4gPg0KPiA+IFRo
-ZSBhcHByb3ZhbCBoYXMgY29tZSB0aHJvdWdoIGFuZCB0aGUgcGF0Y2ggaGFzIGJlZW4gc3VibWl0
-dGVkLg0KPiA+IGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvcGxhdGZvcm0tZHJpdmVyLXg4
-Ni9tc2cxMDI4Ni5odG1sDQo+ID4NCj4gPiBOb3RlOiB0aGlzIGlzIG9ubHkgaGFsZiBvZiB0aGUg
-Zml4LCB0aGUgc2Vjb25kIGhhbGYgbmVlZHMgdGhlIEFDUEkgc3Vic3lzdGVtIHRvDQo+ID4gbm90
-IGJlIGZyb3plbiB0byBiZSBhYmxlIHRvIHJlY2VpdmUgdGhpcyBldmVudC4NCj4gDQo+IENhbiB5
-b3UgcGxlYXNlIGVsYWJvcmF0ZSBvbiB3aGF0IGV4YWN0bHkgeW91IG1lYW4gaGVyZT8NCj4gDQo+
-IEFDUEkgZXZlbnRzIHdha2UgdXAgdGhlIHN5c3RlbSBmcm9tIHN1c3BlbmQtdG8taWRsZSwgYmVj
-YXVzZSB0aGUgU0NJDQo+IGlzIG1hcmtlZCBhcyBhIHdha2V1cCBpbnRlcnJ1cHQuICBJcyB0aGlz
-IG5vdCBzdWZmaWNpZW50PyAgSWYgaXQNCj4gaXNuJ3QsIHRoZW4gd2h5Pw0KPiANCg0KKyBBbGV4
-IEAgQ2Fub25pY2FsDQoNCkhtbS4gIEFsZXggYW5kIEkgd2VyZSB0ZXN0aW5nIHRoaXMgYW5kIGZp
-bmRpbmcgdGhhdCB0aGUgZXZlbnQgZG9lc24ndA0Kd2FrZSBmcm9tIGZyZWV6ZSBldmVuIHdpdGgg
-dGhlIHBhdGNoIHRoYXQgbGV0cyBpbnRlbC1oaWQgcGljayBpdCB1cC4NCg0KV2UndmUgY29uZmly
-bWVkIHRoZSBldmVudCBkb2VzIG1ha2UgaXQgdGhyb3VnaCB3aGVuIG5vdCBpbiBmcmVlemUuDQpD
-YW4geW91IHJlY29tbWVuZCBtb3JlIGRlYnVnZ2luZyB0byBpbnRyb2R1Y2UNCmhlcmUgdG8gYmV0
-dGVyIGlkZW50aWZ5IHdoYXQncyBnb2luZyBvbj8NCg0KQWxleCwgY2FuIHlvdSBjb21tZW50IHdo
-YXQgeW91J3ZlIGNoZWNrZWQgYWxyZWFkeT8NCg==
+
+
+> -----Original Message-----
+> From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> Sent: Saturday, January 21, 2017 3:11 AM
+> To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> Cc: dvhart@infradead.org; rafael.j.wysocki@intel.com;
+> pmenzel@molgen.mpg.de; linux@leemhuis.info; tomas.winkler@intel.com;
+> jan@gondor.com; alexander.usyskin@intel.com; linux-kernel@vger.kernel.org=
+;
+> yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> len.brown@intel.com; linux-pm@vger.kernel.org
+> Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] m=
+ei:
+> bus: enable OS version only for SPT and newer)
+>=20
+> On Fri, Jan 20, 2017 at 11:11:45PM +0000, Mario.Limonciello@dell.com wrot=
+e:
+> > Greg,
+> >
+> > > -----Original Message-----
+> > > From: Darren Hart [mailto:dvhart@infradead.org]
+> > > Sent: Tuesday, January 17, 2017 5:34 PM
+> > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> > > Cc: gregkh@linuxfoundation.org; rafael.j.wysocki@intel.com;
+> > > pmenzel@molgen.mpg.de; linux@leemhuis.info;
+> tomas.winkler@intel.com;
+> > > jan@gondor.com; alexander.usyskin@intel.com; linux-
+> kernel@vger.kernel.org;
+> > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> > > len.brown@intel.com; linux-pm@vger.kernel.org
+> > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V=
+2] mei:
+> > > bus: enable OS version only for SPT and newer)
+> > >
+> > > On Tue, Jan 17, 2017 at 06:38:43PM +0000, Mario.Limonciello@dell.com
+> > > wrote:
+> > > > > -----Original Message-----
+> > > > > From: Greg KH [mailto:gregkh@linuxfoundation.org]
+> > > > > Sent: Tuesday, January 17, 2017 12:24 PM
+> > > > > To: Limonciello, Mario <Mario_Limonciello@Dell.com>
+> > > > > Cc: pmenzel@molgen.mpg.de; rafael.j.wysocki@intel.com;
+> > > > > linux@leemhuis.info; tomas.winkler@intel.com; jan@gondor.com;
+> > > > > alexander.usyskin@intel.com; linux-kernel@vger.kernel.org;
+> > > > > yu.c.chen@intel.com; tomi.p.sarvela@intel.com; daniel@quora.org;
+> > > > > len.brown@intel.com; linux-pm@vger.kernel.org
+> > > > > Subject: Re: Regression on Dell XPS13 (was: [char-misc for 4.10-r=
+c4 V2]
+> mei:
+> > > > > bus: enable OS version only for SPT and newer)
+> > > > >
+> > > > > On Tue, Jan 17, 2017 at 04:57:49PM +0000,
+> Mario.Limonciello@dell.com
+> > > > > wrote:
+> > > > > > So in the <6s scenario, the intel-hid driver is responsible to
+> > > > > > receive the ACPI event and process accordingly.  The maintainer
+> > > > > > has a patch ready for the intel-hid portion of this work, but i=
+t's
+> > > > > > currently being reviewed by Intel to ensure it can be legally s=
+ubmitted
+> > > into the kernel.
+> > > > >
+> > > > > Who at Intel do I need to go kick to make this mythical legal rev=
+iew
+> > > > > happen faster so we can see the code?
+> > > > >
+> > > > > Len and Rafael, what is going on here?
+> > > > >
+> > > >
+> > > > Len and Darren are both in the loop on the discussion around this p=
+atch.
+> > > > I don't know if they'll have any (public) comments they can add on =
+the
+> > > > matter yet however.
+> > >
+> > > Thanks Mario. Yes, there isn't much to say here in public other than =
+to
+> confirm
+> > > we are keenly aware of the problem and have been actively working on
+> fixing
+> > > it, both for this instance, and the deeper systematic failure that re=
+sulted in
+> this
+> > > situation. No amount of kicking will expedite the process at this poi=
+nt, but
+> > > should we feel the need, we'll reach out.
+> > >
+> >
+> > The approval has come through and the patch has been submitted.
+> > http://www.spinics.net/lists/platform-driver-x86/msg10286.html
+>=20
+> Looks like it needs some work :)
+>=20
+
++Alex @ Canonical
+
+Yeah, hopefully Alex knocks out those and turns it around quickly.
+
+> And why isn't it tagged to go to the 4.10-stable kernel if it really
+> does fix some systems?
+
+A matter of timing, none of us had anticipated the legal hold
+that had occurred around this particular patch.  When he resubmits
+it with the fixes needed from the other review, he should submit it
+to 4.10-stable too.
+
+Thanks,
