@@ -1,54 +1,93 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH 6/9] power_supply: wm97xx_battery: use power_supply_get_drvdata
-Date: Tue, 24 Jan 2017 08:31:59 +0100
-Message-ID: <87h94odic0.fsf@belgarion.home>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
-        <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
-        <CAOi56cVk17w6C6msnT88c0Zh1OgLM=FbZAw32MzLRatjFraYhg@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Tue, 24 Jan 2017 01:26:48 -0800
+Message-ID: <20170124092645.GA3651@localhost.localdomain>
+References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
+ <20170120041400.GA24617@localhost.localdomain>
+ <20170120042323.GA6651@localhost.localdomain>
+ <D349C10C-C929-40A4-86BF-7F6E834DB613@martin.sperl.org>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <CAOi56cVk17w6C6msnT88c0Zh1OgLM=FbZAw32MzLRatjFraYhg@mail.gmail.com>
-        (Kevin Hilman's message of "Mon, 23 Jan 2017 10:38:15 -0800")
-Sender: linux-input-owner@vger.kernel.org
-To: Kevin Hilman <khilman@kernel.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm <linux-pm@vger.kernel.org>, alsa-devel@alsa-project.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Stefan Agner <stefan@agner.ch>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:33949 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750830AbdAXJ0w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2017 04:26:52 -0500
+Received: by mail-pg0-f68.google.com with SMTP id t6so16218663pgt.1
+        for <linux-pm@vger.kernel.org>; Tue, 24 Jan 2017 01:26:52 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <D349C10C-C929-40A4-86BF-7F6E834DB613@martin.sperl.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kernel@martin.sperl.org
+Cc: Zhang Rui <rui.zhang@intel.com>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org
 
-Kevin Hilman <khilman@kernel.org> writes:
+Hello Martin,
 
-> Hello,
->
-> On Wed, Oct 26, 2016 at 12:41 PM, Robert Jarzmik <robert.jarzmik@free.fr> wrote:
->> As the power supply framework provides a way to store and retrieve
->> private supply data, use it.
->>
->> In the process, change the platform data for wm97xx_battery from a
->> container of a single struct wm97xx_batt_pdata to the direct point to wm97xx_batt_pdata.
->>
->> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
->
-> kernelci.org has been reporting that the tegra20-iris board has been
-> failing in -next since next-20161123[1], and also in mainline
-> v4.10-rc.  I finally took the time to bisect, and it pointed to this
-> patch.  I verified that reverting $SUBJECT patch[2] on top of
-> v4.10-rc5 fixes the problem.
->
-> Kevin
->
-> [1] https://kernelci.org/boot/id/5879a3fe59b5141534f6c3ac/
-> [2] in mainline as commit: 6480af4915d6 power_supply: wm97xx_battery:
-> use power_supply_get_drvdata
+On Fri, Jan 20, 2017 at 09:43:02AM +0100, kernel@martin.sperl.org wrote:
+> 
+> > On 20.01.2017, at 05:23, Eduardo Valentin <edubezval@gmail.com> wrote:
+> > 
+> > On Thu, Jan 19, 2017 at 08:14:02PM -0800, Eduardo Valentin wrote:
+> >> Hello Martin,
+> >> 
+> >> On Sat, Jan 07, 2017 at 04:55:45PM +0000, kernel@martin.sperl.org wrote:
+> >>> From: Martin Sperl <kernel@martin.sperl.org>
+> >>> 
+> >>> Add basic thermal driver for bcm2835 SOC.
+> >>> 
+> >>> This driver currently relies on the firmware setting up the
+> >>> tsense HW block and does not set it up itself.
+> >>> 
+> >>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+> >>> Acked-by: Eric Anholt <eric@anholt.net>
+> >>> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+> >>> 
+> >> 
+> >> <cut>
+> > 
+> > 
+> > Also, I am getting this warn from sparse:
+> > drivers/thermal/bcm2835_thermal.c:110:16: warning: cast truncates bits
+> > from constant value (3ffffffffff00 becomes ffffff00)
+> > drivers/thermal/bcm2835_thermal.c:134:16: warning: cast truncates bits
+> > from constant value (3ffffffffff becomes ffffffff)
+> > 
+> > Have you seen this?
+> 
+> No, I have not checked sparse.
+> 
+> These values are defined via GENMASK on line 47 and 57 respectively
+> and should actually compute to the following values:
+>   for line 110 (line 47 has the define):
+>     GENMASK(BCM2835_TS_TSENSCTL_THOLD_BITS +     \
+>             BCM2835_TS_TSENSCTL_THOLD_SHIFT - 1, \
+>             BCM2835_TS_TSENSCTL_THOLD_SHIFT)
+>     = GENMASK(10 + 8 - 1, 8) 
+>     = GENMASK(17, 8)
+>     = (((~0UL) << (8)) & (~0UL >> (32 - 1 - (10 + 8 - 1))))
+>     = 0x3ff00
+>   for line 134 (line 57 has the define):
+>     GENMASK(BCM2835_TS_TSENSCTL_THOLD_BITS +     \
+>             BCM2835_TS_TSENSCTL_THOLD_SHIFT - 1, \
+>             BCM2835_TS_TSENSCTL_THOLD_SHIFT)
+>     = GENMASK(10 + 0 - 1, 0)
+>     = GENMASK(9, 0)
+>     = (((~0UL) << (0)) & (~0UL >> (32 - 1 - (10 + 0 - 1))))
+>     = 0x003ff
+> 
+> Note that the preprocessor expansions have been verified by
+> looking at the preprocessed driver source
+> (drivers/thermal/bcm2835_thermal.i)
 
-Hi Kevin,
+OK then.
 
-There is a fix posted in here :
-https://patchwork.kernel.org/patch/9499231/
+> 
+> I wonder why sparse is computing these GENMASK values as:
+> 0x3ffffffffff00 and 0x3ffffffffff
 
-I don't know if it's related, as I have no Oops signature nor any data to be
-able to help further.
+In the case you can confirm that the values are correct, I believe this
+could be a false positive report on sparse, in this case.
 
-Cheers.
-
---
-Robert
+> 
+> Martin
