@@ -1,41 +1,41 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 0/2] thermal: omap: dra752: Remove TSHUT configuration
-Date: Tue, 24 Jan 2017 02:13:02 -0800
-Message-ID: <20170124101300.GA21523@localhost.localdomain>
-References: <1483682503-27803-1-git-send-email-j-keerthy@ti.com>
- <560cf909-0303-1827-1f58-c700d785a2b9@ti.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v4 2/4] PM / devfreq: exynos-ppmu: Show the registred
+ device for ppmu device
+Date: Tue, 24 Jan 2017 17:15:16 +0900
+Message-ID: <58870D14.3010403@samsung.com>
+References: <1485142299-9986-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20170123033151epcas5p341aa786474af221e390eed87ea48381e@epcas5p3.samsung.com>
+ <20170124034245epcms1p81308f665bd3446628302667d14bb3d36@epcms1p8>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <560cf909-0303-1827-1f58-c700d785a2b9@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: rui.zhang@intel.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, rk@ti.com, t-kristo@ti.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.samsung.com ([203.254.224.25]:36905 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750776AbdAXKZZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2017 05:25:25 -0500
+In-reply-to: <20170124034245epcms1p81308f665bd3446628302667d14bb3d36@epcms1p8>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Jan 23, 2017 at 08:49:29PM +0530, Keerthy wrote:
-> Eduardo,
+On 2017년 01월 24일 12:42, MyungJoo Ham wrote:
+>> This patch just adds the simple log to show the PPMU device's registration
+>> during the kernel booting.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/event/exynos-ppmu.c | 3 +++
+>>  1 file changed, 3 insertions(+)
+>>
 > 
-> On Friday 06 January 2017 11:31 AM, Keerthy wrote:
-> >Technical Reference Manual [1] mandates that software should
-> >not be configuring the thermal shutdown thresholds. Hence
-> >removing TSHUT_CONFIG.
-> 
-> Any comments on this?
+> Applied in for-next
 
-I do not see issues on these patches. Queueing for next rc.
+I'd like you to review the patch3 and patch4.
+On v4, The patch4 is modified according to your comment.
 
-> 
-> - Keerthy
-> >
-> >[1] http://www.ti.com/lit/ug/sprui30b/sprui30b.pdf
-> >
-> >Keerthy (2):
-> >  thermal: omap: dra752: Remove TSHUT configuration
-> >  thermal: omap: dra752: Remove all TSHUT related definitions
-> >
-> > drivers/thermal/ti-soc-thermal/dra752-bandgap.h    | 19 ---------------
-> > .../thermal/ti-soc-thermal/dra752-thermal-data.c   | 28 +---------------------
-> > 2 files changed, 1 insertion(+), 46 deletions(-)
-> >
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
