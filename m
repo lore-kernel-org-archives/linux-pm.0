@@ -1,112 +1,33 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Mon, 23 Jan 2017 19:34:20 -0800
-Message-ID: <CAKvHMgTvdEz=YRxB-sd-FHws+DH9DJTnVst3Tc=9HoaKMq--Ow@mail.gmail.com>
-References: <20170120220440.1971-1-tony@atomide.com> <20170120220440.1971-3-tony@atomide.com>
- <CAKvHMgQKPZcdBPMUH-3_e-M4sHPijEH59019bygmi+o2y4B+Rw@mail.gmail.com> <20170124012702.GA7403@atomide.com>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH 2/3] PM / devfreq: Fix wrong trans_stat of passive devfreq
+ device
+Date: Tue, 24 Jan 2017 03:40:18 +0000
+Message-ID: <20170124034018epcms1p7834fe200b838abd5ba3ce3d3dee23e5d@epcms1p7>
+References: <1484722611-10555-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20170118065653epcas5p2da6963fbad338a3c402c7d99f5e8473f@epcas5p2.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:33424 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750703AbdAXDeV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Jan 2017 22:34:21 -0500
-In-Reply-To: <20170124012702.GA7403@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/related;
+ boundary="----=_Part_252880_978922688.1485229218479"
+Return-path: <stable-owner@vger.kernel.org>
+Sender: stable-owner@vger.kernel.org
+To: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-> From: Tony Lindgren <tony@atomide.com>
-> Date: Fri, 20 Jan 2017 09:58:51 -0800
-> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
->
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> driver PM runtime state.
->
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
->
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Cc: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 147 ++++++++++++++++++++++-----------
->  1 file changed, 101 insertions(+), 46 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-...
-> @@ -1431,13 +1474,17 @@ static int bq24190_remove(struct i2c_client *client)
->  {
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
->
-> -       pm_runtime_get_sync(bdi->dev);
-> -       bq24190_register_reset(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       if (!pm_runtime_get_sync(bdi->dev)) {
-> +               bq24190_register_reset(bdi);
-> +               pm_runtime_put_sync(bdi->dev);
-> +       } else {
-> +               dev_warn(bdi->dev, "pm_runtime_get failed\n");
-> +       }
+------=_Part_252880_978922688.1485229218479
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-If we skip the register_reset, things may break.
-Only the other pm_runtime_* calls should be skipped if get_sync() fails.
-
-
->         bq24190_sysfs_remove_group(bdi);
->         power_supply_unregister(bdi->battery);
->         power_supply_unregister(bdi->charger);
-> +       pm_runtime_dont_use_autosuspend(bdi->dev);
->         pm_runtime_disable(bdi->dev);
->
->         if (bdi->gpio_int)
-> @@ -1481,9 +1528,13 @@ static int bq24190_pm_suspend(struct device *dev)
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
->
-> -       pm_runtime_get_sync(bdi->dev);
-> -       bq24190_register_reset(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       if (!pm_runtime_get_sync(bdi->dev)) {
-> +               bq24190_register_reset(bdi);
-> +               pm_runtime_mark_last_busy(bdi->dev);
-> +               pm_runtime_put_autosuspend(bdi->dev);
-> +       } else {
-> +               dev_warn(bdi->dev, "pm_runtime_get failed\n");
-> +       }
-
-Only the other pm_runtime_* calls should be skipped.
-
-
->         return 0;
->  }
-> @@ -1496,11 +1547,15 @@ static int bq24190_pm_resume(struct device *dev)
->         bdi->f_reg = 0;
->         bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
->
-> -       pm_runtime_get_sync(bdi->dev);
-> -       bq24190_register_reset(bdi);
-> -       bq24190_set_mode_host(bdi);
-> -       bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       if (!pm_runtime_get_sync(bdi->dev)) {
-> +               bq24190_register_reset(bdi);
-> +               bq24190_set_mode_host(bdi);
-> +               bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
-> +               pm_runtime_mark_last_busy(bdi->dev);
-> +               pm_runtime_put_autosuspend(bdi->dev);
-> +       } else {
-> +               dev_warn(bdi->dev, "pm_runtime_get failed\n");
-> +       }
-
-Only the other pm_runtime_* calls should be skipped.
-
-
->         /* Things may have changed while suspended so alert upper layer */
->         power_supply_changed(bdi->charger);
-> --
-> 2.11.0
+PiBVbnRpbCBub3csIHRoZSB0cmFuc19zdGF0IGluZm9ybWF0aW9uIG9mIHBhc3NpdmUgZGV2ZnJl
+cSBpcyBub3QgdXBkYXRlZC4NCj4gVGhpcyBwYXRjaCB1cGRhdGVzIHRoZSB0cmFuc19zdGF0IGlu
+Zm9ybWF0aW9uIGFmdGVyIHNldHRpbmcgdGhlIHRhcmdldA0KPiBmcmVxdWVuY3kgb2YgcGFzc2l2
+ZSBkZXZmcmVxIGRldmljZS4NCg0KQWNrZWQtYnk6IE15dW5nSm9vIEhhbSA8bXl1bmdqb28uaGFt
+QHNhbXN1bmcuY29tPg0KDQo+IA0KPiBGaXhlczogOTk2MTMzMTE5ZjU3ICgiUE0gLyBkZXZmcmVx
+OiBBZGQgbmV3IHBhc3NpdmUgZ292ZXJub3IiKQ0KPiBDYzogc3RhYmxlQHZnZXIua2VybmVsLm9y
+Zw0KPiBTaWduZWQtb2ZmLWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4N
+Cj4gLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvZGV2ZnJlcS5jICAgICAgICAgIHwgMyArKy0NCj4g
+IGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5vci5oICAgICAgICAgfCAyICsrDQo+ICBkcml2ZXJzL2Rl
+dmZyZXEvZ292ZXJub3JfcGFzc2l2ZS5jIHwgNSArKysrKw0KPiAgMyBmaWxlcyBjaGFuZ2VkLCA5
+IGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkNCg==
+------=_Part_252880_978922688.1485229218479--
