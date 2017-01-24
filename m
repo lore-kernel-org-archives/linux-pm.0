@@ -1,45 +1,67 @@
-From: Mark Greer <mgreer@animalcreek.com>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Tue, 24 Jan 2017 16:05:20 -0700
-Message-ID: <20170124230520.GA1204@animalcreek.com>
-References: <20170120220440.1971-1-tony@atomide.com>
- <20170120220440.1971-3-tony@atomide.com>
- <CAKvHMgQKPZcdBPMUH-3_e-M4sHPijEH59019bygmi+o2y4B+Rw@mail.gmail.com>
- <20170124012702.GA7403@atomide.com>
- <CAKvHMgTvdEz=YRxB-sd-FHws+DH9DJTnVst3Tc=9HoaKMq--Ow@mail.gmail.com>
- <20170124182925.GF7403@atomide.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH 6/9] power_supply: wm97xx_battery: use power_supply_get_drvdata
+Date: Tue, 24 Jan 2017 15:39:27 -0800
+Message-ID: <m27f5k1100.fsf@baylibre.com>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+        <1477510907-23495-7-git-send-email-robert.jarzmik@free.fr>
+        <CAOi56cVk17w6C6msnT88c0Zh1OgLM=FbZAw32MzLRatjFraYhg@mail.gmail.com>
+        <87h94odic0.fsf@belgarion.home> <20170124204011.GH27969@dtor-ws>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from out1-smtp.messagingengine.com ([66.111.4.25]:60897 "EHLO
-        out1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750792AbdAXXQE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2017 18:16:04 -0500
-Content-Disposition: inline
-In-Reply-To: <20170124182925.GF7403@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20170124204011.GH27969@dtor-ws> (Dmitry Torokhov's message of
+        "Tue, 24 Jan 2017 12:40:11 -0800")
+Sender: linux-input-owner@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Robert Jarzmik <robert.jarzmik@free.fr>, Lee Jones <lee.jones@linaro.org>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, lkml <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm <linux-pm@vger.kernel.org>, alsa-devel@alsa-project.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Stefan Agner <stefan@agner.ch>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Tue, Jan 24, 2017 at 10:29:26AM -0800, Tony Lindgren wrote:
+Dmitry Torokhov <dmitry.torokhov@gmail.com> writes:
 
-> 8< -----------------------------------------
-> >From tony Mon Sep 17 00:00:00 2001
-> From: Tony Lindgren <tony@atomide.com>
-> Date: Fri, 20 Jan 2017 09:58:51 -0800
-> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
-> 
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> driver PM runtime state.
-> 
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
-> 
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Cc: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
+> On Tue, Jan 24, 2017 at 08:31:59AM +0100, Robert Jarzmik wrote:
+>> Kevin Hilman <khilman@kernel.org> writes:
+>> 
+>> > Hello,
+>> >
+>> > On Wed, Oct 26, 2016 at 12:41 PM, Robert Jarzmik <robert.jarzmik@free.fr> wrote:
+>> >> As the power supply framework provides a way to store and retrieve
+>> >> private supply data, use it.
+>> >>
+>> >> In the process, change the platform data for wm97xx_battery from a
+>> >> container of a single struct wm97xx_batt_pdata to the direct point to wm97xx_batt_pdata.
+>> >>
+>> >> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+>> >
+>> > kernelci.org has been reporting that the tegra20-iris board has been
+>> > failing in -next since next-20161123[1], and also in mainline
+>> > v4.10-rc.  I finally took the time to bisect, and it pointed to this
+>> > patch.  I verified that reverting $SUBJECT patch[2] on top of
+>> > v4.10-rc5 fixes the problem.
+>> >
+>> > Kevin
+>> >
+>> > [1] https://kernelci.org/boot/id/5879a3fe59b5141534f6c3ac/
+>> > [2] in mainline as commit: 6480af4915d6 power_supply: wm97xx_battery:
+>> > use power_supply_get_drvdata
+>> 
+>> Hi Kevin,
+>> 
+>> There is a fix posted in here :
+>> https://patchwork.kernel.org/patch/9499231/
+>> 
+>> I don't know if it's related, as I have no Oops signature nor any data to be
+>> able to help further.
 
-Acked-by: Mark Greer <mgreer@animalcreek.com>
+FWIW, that kernelci.org link above has full boot log available:
+https://storage.kernelci.org/next/next-20170113/arm-tegra_defconfig/lab-baylibre-seattle/boot-tegra20-iris-512.html
+
+> I picked up the patch from patchwork and will send it on to Linus in the
+> next day or so.
+
+I tested this on top of linus/master and the boot failure goes away.
+
+Feel free to add,
+
+Tested-by: Kevin Hilman <khilman@baylibre.com>
+
+Kevin
