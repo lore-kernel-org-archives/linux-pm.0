@@ -1,72 +1,110 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v4 2/8] devicetree: power: add battery state machine documentation
-Date: Tue, 24 Jan 2017 11:56:33 -0800
-Message-ID: <CAKvHMgS9ZxE2qxDqeAVRJFzerjkJV=io58aQjtU51j=kFzbYtw@mail.gmail.com>
-References: <20170122071404.9654-3-matt@ranostay.consulting> <20170122222212.27086-1-liam@networkimprov.net>
+From: <Mario.Limonciello@dell.com>
+Subject: RE: Regression on Dell XPS13 (was: [char-misc for 4.10-rc4 V2] mei:
+ bus: enable OS version only for SPT and newer)
+Date: Tue, 24 Jan 2017 20:14:44 +0000
+Message-ID: <99b980ec90104c8a938899d4c49f30eb@ausx13mpc120.AMER.DELL.COM>
+References: <5549d8c0527412390d71236d80dff419@molgen.mpg.de>
+ <20170114193959.GA30750@kroah.com>
+ <5B8DA87D05A7694D9FA63FD143655C1B5437C2D3@hasmsx108.ger.corp.intel.com>
+ <20170115105830.GD26374@kroah.com> <20170116110539.GA1307@kroah.com>
+ <1b1feb50-2b22-b7e7-0fb8-2011340f5c47@leemhuis.info>
+ <55b349b2-2999-94d5-9f68-b1944df1d374@molgen.mpg.de>
+ <954f9b4e8bd844c98f8d3c12f0fe366f@ausx13mpc120.AMER.DELL.COM>
+ <20170117182337.GB12600@kroah.com>
+ <4fc46eab4a174e44b6d28b7ecf979ec9@ausx13mpc120.AMER.DELL.COM>
+ <20170117233346.GA2599@wisp>
+ <52d8844460324d62b6e10dd540f64351@ausx13mpc120.AMER.DELL.COM>
+ <CAJZ5v0gKLiezvGE71v-A=Jz5E_E0PL4twHmA7y_CDdS4aFxJ9A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:32959 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750715AbdAXT4e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Jan 2017 14:56:34 -0500
-In-Reply-To: <20170122222212.27086-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gKLiezvGE71v-A=Jz5E_E0PL4twHmA7y_CDdS4aFxJ9A@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: rafael@kernel.org, alex.hung@canonical.com
+Cc: gregkh@linuxfoundation.org, dvhart@infradead.org, rafael.j.wysocki@intel.com, pmenzel@molgen.mpg.de, linux@leemhuis.info, tomas.winkler@intel.com, jan@gondor.com, alexander.usyskin@intel.com, linux-kernel@vger.kernel.org, yu.c.chen@intel.com, tomi.p.sarvela@intel.com, daniel@quora.org, len.brown@intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, Matt Ranostay <matt@ranostay.consulting>, Rob Herring <robh@kernel.org>
 
-On Sun, Jan 22, 2017 at 2:22 PM, Liam Breck <liam@networkimprov.net> wrote:
-> I think Matt meant the following :-)
->
-> Note: nominal-microvolt is not the correct term for termination voltage.
-> Changed to termination-microvolt
-> ---
->
-> Documentation on battery properties that can be defined for
-> fine tuning fuel gauge state machines.
->
-> From: Matt Ranostay <matt@ranostay.consulting>
-> Cc: Rob Herring <robh@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-> ---
->  .../devicetree/bindings/power/supply/battery.txt   | 34 ++++++++++++++++++++++
->  1 file changed, 34 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-> new file mode 100644
-> index 000000000000..398b4d622883
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-> @@ -0,0 +1,34 @@
-> +Battery Characteristics
-> +
-> +Required Properties:
-> + - compatible: Must be "fixed-battery"
-> +
-> +Optional Properties:
-> + - termination-microvolt: dead battery voltage
-> + - design-microwatt-hours: battery design energy
-> + - design-microamp-hours: battery design capacity
-
-
-Two more battery characteristics should be included. Battery chargers
-need them (for instance, BQ24190).
-
-- precharge-microamps: maximum charge current during precharge
-  phase (typically 20% of battery capacity)
-
-- termination-microamps: a charge cycle terminates when the
-  battery voltage is above recharge threshold, and the current is below
-  this setting (typically 10% of battery capacity)
-
-Perhaps termination-microvolt should be called terminal-microvolt or
-similar to avoid confusion.
-
-Sebastian, did you want to include the other fields from your example?
-
-        /* Nokia BL-5J */
-        nominal-microvolt = <3700000>;
-        chemistry-type = <POWER_SUPPLY_LI_ION>;
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWls
+LmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZg0KPiBSYWZhZWwg
+Si4gV3lzb2NraQ0KPiBTZW50OiBTdW5kYXksIEphbnVhcnkgMjIsIDIwMTcgMzo0NSBBTQ0KPiBU
+bzogTGltb25jaWVsbG8sIE1hcmlvIDxNYXJpb19MaW1vbmNpZWxsb0BEZWxsLmNvbT4NCj4gQ2M6
+IEdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBEYXJyZW4g
+SGFydA0KPiA8ZHZoYXJ0QGluZnJhZGVhZC5vcmc+OyBSYWZhZWwgV3lzb2NraSA8cmFmYWVsLmou
+d3lzb2NraUBpbnRlbC5jb20+OyBQYXVsDQo+IE1lbnplbCA8cG1lbnplbEBtb2xnZW4ubXBnLmRl
+PjsgVGhvcnN0ZW4gTGVlbWh1aXMNCj4gPGxpbnV4QGxlZW1odWlzLmluZm8+OyBUb21hcyBXaW5r
+bGVyIDx0b21hcy53aW5rbGVyQGludGVsLmNvbT47DQo+IGphbkBnb25kb3IuY29tOyBBbGV4YW5k
+ZXIgVXN5c2tpbiA8YWxleGFuZGVyLnVzeXNraW5AaW50ZWwuY29tPjsgTGludXgNCj4gS2VybmVs
+IE1haWxpbmcgTGlzdCA8bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZz47IENoZW4sIFl1IEMN
+Cj4gPHl1LmMuY2hlbkBpbnRlbC5jb20+OyBUb21pIFNhcnZlbGEgPHRvbWkucC5zYXJ2ZWxhQGlu
+dGVsLmNvbT47IERhbmllbA0KPiBCbHVlbWFuIDxkYW5pZWxAcXVvcmEub3JnPjsgTGVuIEJyb3du
+IDxsZW4uYnJvd25AaW50ZWwuY29tPjsgTGludXggUE0NCj4gPGxpbnV4LXBtQHZnZXIua2VybmVs
+Lm9yZz4NCj4gU3ViamVjdDogUmU6IFJlZ3Jlc3Npb24gb24gRGVsbCBYUFMxMyAod2FzOiBbY2hh
+ci1taXNjIGZvciA0LjEwLXJjNCBWMl0gbWVpOg0KPiBidXM6IGVuYWJsZSBPUyB2ZXJzaW9uIG9u
+bHkgZm9yIFNQVCBhbmQgbmV3ZXIpDQo+IA0KPiBPbiBTYXQsIEphbiAyMSwgMjAxNyBhdCAxMjox
+MSBBTSwgIDxNYXJpby5MaW1vbmNpZWxsb0BkZWxsLmNvbT4gd3JvdGU6DQo+ID4gR3JlZywNCj4g
+Pg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBEYXJyZW4gSGFy
+dCBbbWFpbHRvOmR2aGFydEBpbmZyYWRlYWQub3JnXQ0KPiA+PiBTZW50OiBUdWVzZGF5LCBKYW51
+YXJ5IDE3LCAyMDE3IDU6MzQgUE0NCj4gPj4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9f
+TGltb25jaWVsbG9ARGVsbC5jb20+DQo+ID4+IENjOiBncmVna2hAbGludXhmb3VuZGF0aW9uLm9y
+ZzsgcmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb207DQo+ID4+IHBtZW56ZWxAbW9sZ2VuLm1wZy5k
+ZTsgbGludXhAbGVlbWh1aXMuaW5mbzsgdG9tYXMud2lua2xlckBpbnRlbC5jb207DQo+ID4+IGph
+bkBnb25kb3IuY29tOyBhbGV4YW5kZXIudXN5c2tpbkBpbnRlbC5jb207IGxpbnV4LQ0KPiBrZXJu
+ZWxAdmdlci5rZXJuZWwub3JnOw0KPiA+PiB5dS5jLmNoZW5AaW50ZWwuY29tOyB0b21pLnAuc2Fy
+dmVsYUBpbnRlbC5jb207IGRhbmllbEBxdW9yYS5vcmc7DQo+ID4+IGxlbi5icm93bkBpbnRlbC5j
+b207IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZw0KPiA+PiBTdWJqZWN0OiBSZTogUmVncmVzc2lv
+biBvbiBEZWxsIFhQUzEzICh3YXM6IFtjaGFyLW1pc2MgZm9yIDQuMTAtcmM0IFYyXSBtZWk6DQo+
+ID4+IGJ1czogZW5hYmxlIE9TIHZlcnNpb24gb25seSBmb3IgU1BUIGFuZCBuZXdlcikNCj4gPj4N
+Cj4gPj4gT24gVHVlLCBKYW4gMTcsIDIwMTcgYXQgMDY6Mzg6NDNQTSArMDAwMCwgTWFyaW8uTGlt
+b25jaWVsbG9AZGVsbC5jb20NCj4gPj4gd3JvdGU6DQo+ID4+ID4gPiAtLS0tLU9yaWdpbmFsIE1l
+c3NhZ2UtLS0tLQ0KPiA+PiA+ID4gRnJvbTogR3JlZyBLSCBbbWFpbHRvOmdyZWdraEBsaW51eGZv
+dW5kYXRpb24ub3JnXQ0KPiA+PiA+ID4gU2VudDogVHVlc2RheSwgSmFudWFyeSAxNywgMjAxNyAx
+MjoyNCBQTQ0KPiA+PiA+ID4gVG86IExpbW9uY2llbGxvLCBNYXJpbyA8TWFyaW9fTGltb25jaWVs
+bG9ARGVsbC5jb20+DQo+ID4+ID4gPiBDYzogcG1lbnplbEBtb2xnZW4ubXBnLmRlOyByYWZhZWwu
+ai53eXNvY2tpQGludGVsLmNvbTsNCj4gPj4gPiA+IGxpbnV4QGxlZW1odWlzLmluZm87IHRvbWFz
+LndpbmtsZXJAaW50ZWwuY29tOyBqYW5AZ29uZG9yLmNvbTsNCj4gPj4gPiA+IGFsZXhhbmRlci51
+c3lza2luQGludGVsLmNvbTsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsNCj4gPj4gPiA+
+IHl1LmMuY2hlbkBpbnRlbC5jb207IHRvbWkucC5zYXJ2ZWxhQGludGVsLmNvbTsgZGFuaWVsQHF1
+b3JhLm9yZzsNCj4gPj4gPiA+IGxlbi5icm93bkBpbnRlbC5jb207IGxpbnV4LXBtQHZnZXIua2Vy
+bmVsLm9yZw0KPiA+PiA+ID4gU3ViamVjdDogUmU6IFJlZ3Jlc3Npb24gb24gRGVsbCBYUFMxMyAo
+d2FzOiBbY2hhci1taXNjIGZvciA0LjEwLXJjNCBWMl0NCj4gbWVpOg0KPiA+PiA+ID4gYnVzOiBl
+bmFibGUgT1MgdmVyc2lvbiBvbmx5IGZvciBTUFQgYW5kIG5ld2VyKQ0KPiA+PiA+ID4NCj4gPj4g
+PiA+IE9uIFR1ZSwgSmFuIDE3LCAyMDE3IGF0IDA0OjU3OjQ5UE0gKzAwMDAsDQo+IE1hcmlvLkxp
+bW9uY2llbGxvQGRlbGwuY29tDQo+ID4+ID4gPiB3cm90ZToNCj4gPj4gPiA+ID4gU28gaW4gdGhl
+IDw2cyBzY2VuYXJpbywgdGhlIGludGVsLWhpZCBkcml2ZXIgaXMgcmVzcG9uc2libGUgdG8NCj4g
+Pj4gPiA+ID4gcmVjZWl2ZSB0aGUgQUNQSSBldmVudCBhbmQgcHJvY2VzcyBhY2NvcmRpbmdseS4g
+IFRoZSBtYWludGFpbmVyDQo+ID4+ID4gPiA+IGhhcyBhIHBhdGNoIHJlYWR5IGZvciB0aGUgaW50
+ZWwtaGlkIHBvcnRpb24gb2YgdGhpcyB3b3JrLCBidXQgaXQncw0KPiA+PiA+ID4gPiBjdXJyZW50
+bHkgYmVpbmcgcmV2aWV3ZWQgYnkgSW50ZWwgdG8gZW5zdXJlIGl0IGNhbiBiZSBsZWdhbGx5IHN1
+Ym1pdHRlZA0KPiA+PiBpbnRvIHRoZSBrZXJuZWwuDQo+ID4+ID4gPg0KPiA+PiA+ID4gV2hvIGF0
+IEludGVsIGRvIEkgbmVlZCB0byBnbyBraWNrIHRvIG1ha2UgdGhpcyBteXRoaWNhbCBsZWdhbCBy
+ZXZpZXcNCj4gPj4gPiA+IGhhcHBlbiBmYXN0ZXIgc28gd2UgY2FuIHNlZSB0aGUgY29kZT8NCj4g
+Pj4gPiA+DQo+ID4+ID4gPiBMZW4gYW5kIFJhZmFlbCwgd2hhdCBpcyBnb2luZyBvbiBoZXJlPw0K
+PiA+PiA+ID4NCj4gPj4gPg0KPiA+PiA+IExlbiBhbmQgRGFycmVuIGFyZSBib3RoIGluIHRoZSBs
+b29wIG9uIHRoZSBkaXNjdXNzaW9uIGFyb3VuZCB0aGlzIHBhdGNoLg0KPiA+PiA+IEkgZG9uJ3Qg
+a25vdyBpZiB0aGV5J2xsIGhhdmUgYW55IChwdWJsaWMpIGNvbW1lbnRzIHRoZXkgY2FuIGFkZCBv
+biB0aGUNCj4gPj4gPiBtYXR0ZXIgeWV0IGhvd2V2ZXIuDQo+ID4+DQo+ID4+IFRoYW5rcyBNYXJp
+by4gWWVzLCB0aGVyZSBpc24ndCBtdWNoIHRvIHNheSBoZXJlIGluIHB1YmxpYyBvdGhlciB0aGFu
+IHRvDQo+IGNvbmZpcm0NCj4gPj4gd2UgYXJlIGtlZW5seSBhd2FyZSBvZiB0aGUgcHJvYmxlbSBh
+bmQgaGF2ZSBiZWVuIGFjdGl2ZWx5IHdvcmtpbmcgb24NCj4gZml4aW5nDQo+ID4+IGl0LCBib3Ro
+IGZvciB0aGlzIGluc3RhbmNlLCBhbmQgdGhlIGRlZXBlciBzeXN0ZW1hdGljIGZhaWx1cmUgdGhh
+dCByZXN1bHRlZCBpbg0KPiB0aGlzDQo+ID4+IHNpdHVhdGlvbi4gTm8gYW1vdW50IG9mIGtpY2tp
+bmcgd2lsbCBleHBlZGl0ZSB0aGUgcHJvY2VzcyBhdCB0aGlzIHBvaW50LCBidXQNCj4gPj4gc2hv
+dWxkIHdlIGZlZWwgdGhlIG5lZWQsIHdlJ2xsIHJlYWNoIG91dC4NCj4gPj4NCj4gPg0KPiA+IFRo
+ZSBhcHByb3ZhbCBoYXMgY29tZSB0aHJvdWdoIGFuZCB0aGUgcGF0Y2ggaGFzIGJlZW4gc3VibWl0
+dGVkLg0KPiA+IGh0dHA6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvcGxhdGZvcm0tZHJpdmVyLXg4
+Ni9tc2cxMDI4Ni5odG1sDQo+ID4NCj4gPiBOb3RlOiB0aGlzIGlzIG9ubHkgaGFsZiBvZiB0aGUg
+Zml4LCB0aGUgc2Vjb25kIGhhbGYgbmVlZHMgdGhlIEFDUEkgc3Vic3lzdGVtIHRvDQo+ID4gbm90
+IGJlIGZyb3plbiB0byBiZSBhYmxlIHRvIHJlY2VpdmUgdGhpcyBldmVudC4NCj4gDQo+IENhbiB5
+b3UgcGxlYXNlIGVsYWJvcmF0ZSBvbiB3aGF0IGV4YWN0bHkgeW91IG1lYW4gaGVyZT8NCj4gDQo+
+IEFDUEkgZXZlbnRzIHdha2UgdXAgdGhlIHN5c3RlbSBmcm9tIHN1c3BlbmQtdG8taWRsZSwgYmVj
+YXVzZSB0aGUgU0NJDQo+IGlzIG1hcmtlZCBhcyBhIHdha2V1cCBpbnRlcnJ1cHQuICBJcyB0aGlz
+IG5vdCBzdWZmaWNpZW50PyAgSWYgaXQNCj4gaXNuJ3QsIHRoZW4gd2h5Pw0KPiANCg0KKyBBbGV4
+IEAgQ2Fub25pY2FsDQoNCkhtbS4gIEFsZXggYW5kIEkgd2VyZSB0ZXN0aW5nIHRoaXMgYW5kIGZp
+bmRpbmcgdGhhdCB0aGUgZXZlbnQgZG9lc24ndA0Kd2FrZSBmcm9tIGZyZWV6ZSBldmVuIHdpdGgg
+dGhlIHBhdGNoIHRoYXQgbGV0cyBpbnRlbC1oaWQgcGljayBpdCB1cC4NCg0KV2UndmUgY29uZmly
+bWVkIHRoZSBldmVudCBkb2VzIG1ha2UgaXQgdGhyb3VnaCB3aGVuIG5vdCBpbiBmcmVlemUuDQpD
+YW4geW91IHJlY29tbWVuZCBtb3JlIGRlYnVnZ2luZyB0byBpbnRyb2R1Y2UNCmhlcmUgdG8gYmV0
+dGVyIGlkZW50aWZ5IHdoYXQncyBnb2luZyBvbj8NCg0KQWxleCwgY2FuIHlvdSBjb21tZW50IHdo
+YXQgeW91J3ZlIGNoZWNrZWQgYWxyZWFkeT8NCg==
