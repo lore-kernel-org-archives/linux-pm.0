@@ -1,173 +1,91 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
-Date: Wed, 25 Jan 2017 22:13:43 +0100
-Message-ID: <CAPDyKFp6heJ0c=iKT1VYm4uGf04RehJ=vVyNHQu5aC-vNLHvVg@mail.gmail.com>
-References: <20170104205536.15963-1-d-gerlach@ti.com> <20170104205536.15963-3-d-gerlach@ti.com>
- <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop> <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
- <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
- <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com> <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
- <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com> <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
- <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com> <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
- <m2ziip2puf.fsf@baylibre.com> <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
- <CAPDyKFqzs59N5bc89X-96Fgy9b=_+s8zYmHHshQeDrJCnaqprA@mail.gmail.com>
- <58821CA2.4050701@ti.com> <CAPDyKFpTyn2isNahywmOOSWiZKov9xsudyWi_i-FejXjC+1AZw@mail.gmail.com>
- <ec2f1697-4c60-fd88-6593-2a69ca7f5c83@ti.com> <CAPDyKFq3zjyubxf3wc1V+F2W3rbnjj4ObFnHFvda+wCs4rBtnw@mail.gmail.com>
- <23936395-d653-56c8-13f9-6dfeb6e9257b@ti.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM phases
+Date: Wed, 25 Jan 2017 22:30:22 +0100
+Message-ID: <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
+References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
+ <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com> <58842848.5090806@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <23936395-d653-56c8-13f9-6dfeb6e9257b-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <58842848.5090806@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Elaine Zhang <zhangqing@rock-chips.com>
+Cc: Feng Xiao <xf@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, xxx@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 25 January 2017 at 17:59, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
-> On 01/24/2017 04:03 AM, Ulf Hansson wrote:
+On 22 January 2017 at 04:34, Elaine Zhang <zhangqing@rock-chips.com> wrote:
+>
+>
+> On 01/20/2017 09:16 PM, Ulf Hansson wrote:
 >>
->> On 23 January 2017 at 21:11, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+>> On 20 January 2017 at 03:21, Elaine Zhang <zhangqing@rock-chips.com>
+>> wrote:
 >>>
->>> On 01/20/2017 10:52 AM, Ulf Hansson wrote:
->>>>
->>>>
->>>> [...]
->>>>
->>>>>>> Another option is create something new either common or TI SCI
->>>>>>> specific. It could be just a table of ids and phandles in the SCI
->>>>>>> node. I'm much more comfortable with an isolated property in one node
->>>>>>> than something scattered throughout the DT.
->>>>>>
->>>>>>
->>>>>>
->>>>>> To me, this seems like the best possible solution.
->>>>>>
->>>>>> However, perhaps we should also consider the SCPI Generic power domain
->>>>>> (drivers/firmware/scpi_pm_domain.c), because I believe it's closely
->>>>>> related.
->>>>>> To change the power state of a device, this PM domain calls
->>>>>> scpi_device_set|get_power_state() (drivers/firmware/arm_scpi.c), which
->>>>>> also needs a device id as a parameter. Very similar to our case with
->>>>>> the TI SCI domain.
->>>>>>
->>>>>> Currently these SCPI device ids lacks corresponding DT bindings, so
->>>>>> the scpi_pm_domain tries to work around it by assigning ids
->>>>>> dynamically at genpd creation time.
->>>>>>
->>>>>> That makes me wonder, whether we should think of something
->>>>>> common/generic?
->>>>>
->>>>>
->>>>>
->>>>> When you say something common/generic, do you mean a better binding for
->>>>> genpd,
->>>>> or something bigger than that like a new driver? Because I do think a
->>>>> phandle
->>>>> cell left open for the genpd provider to interpret solves both the scpi
->>>>> and
->>>>> ti-sci problem we are facing here in the best way. Using generic PM
->>>>> domains lets
->>>>> us do exactly what we want apart from interpreting the phandle cell
->>>>> with
->>>>> our
->>>>> driver, and I feel like anything else we try at this point is just
->>>>> going
->>>>> to be
->>>>> to work around that. Is bringing back genpd xlate something we can
->>>>> discuss?
->>>>
->>>>
->>>>
->>>> Bringing back xlate, how would that help? Wouldn't that just mean that
->>>> you will get one genpd per device? That's not an option, I think we
->>>> are all in agreement to that.
->>>
->>>
->>>
->>> Sure, perhaps the custom xlate wouldn't be the right way to do it, as we
->>> wouldn't be able to associate a device directly to a phandle, at least
->>> with
->>> how it was implemented before, but I think we can skip that entirely.
->>> Does
->>> opening up the interpretation of the cells of the 'power-domains' phandle
->>> not solve all of these issues? Is that out of the question?
->>>
->>> genpd_xlate_simple currently just makes sure the args_count of the
->>> 'power-domains' phandle was zero and bails if it was not. Why couldn't we
->>> remove this check and let the driver interpret it while still using
->>> of_genpd_add_provider_simple to register the provider? It's still a
->>> 'simple'
->>> provider from the perspective of the genpd framework and the actual pm
->>> domain mapping will not change, but now the driver can parse the cells
->>> and
->>> do whatever it needs to, such as reading a device id.
->>>
->>> I think that's a bit more flexible and will avoid breaking anything that
->>> is
->>> there today.
+>>> If a PM domain is powered off before system suspend,
+>>> we hope do nothing in system runtime suspend noirq phase
+>>> and system runtime resume noirq phase.
 >>
 >>
->> Would you mind providing an example? Perhaps also some code snippets
->> dealing with the parsing?
->
->
-> So again the goal of this is to move the ti,sci-id value back to
-> power-domains phandle instead of having a separate property, so that would
-> be step one in the DT. Then in the power-domains node change
-> #power-domain-cells to one. And then from there, the only change to the
-> genpd framework is this:
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index a5e1262b964b..b82e61f0bcfa 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -1603,8 +1603,6 @@ static struct generic_pm_domain genpd_xlate_simple
->                                       struct of_phandle_args *genpdspec,
->                                       void *data)
->  {
-> -       if (genpdspec->args_count != 0)
-> -               return ERR_PTR(-EINVAL);
->         return data;
->  }
->
->
-> because genpd_xlate_simple only checks that the phandle is zero so that it
-> can fail if it is not, but there's no functional reason it needs to do this.
-> The genpd framework works as it did before no matter what the cells are set
-> to if using of_genpd_add_provider_simple. Then in the attach_dev callback
-> inside the ti_sci_pm_domains driver instead of doing
->
->         ret = of_property_read_u32(np, "ti,sci-id", &idx);
->
-> to read the ti,sc-id for a device into idx we can now do:
->
->        ret = of_parse_phandle_with_args(np, "power-domains",
->                                    "#power-domain-cells", 0, &pd_args);
->        idx = pd_args.args[0];
->
-> or even simpler from within our driver
->
->         ret = of_property_read_u32_index(np, "power-domains", 1, &idx);
->
-> To read the value into idx.
->
-> This requires minimal changes to the genpd framework and gives the option
-> for the driver to interpret the cell manually when using a simple provider.
-> The genpd framework still uses the phandle just to get the power-domain
-> device and the cells are left entirely up to the driver to interpret, but if
-> desired you could still use the genpd onecell driver for a specific use of
-> the phandle cell, or use it with zero cells.
->
-> I can send out an updated series if there are no major objections, or just
-> to start discussion there.
+>> One can hope, but that isn't good enough. :-)
+>>
+>>
+>>>
+>>> This modify is to slove system resume issue for RK3399.
+>>> RK3399 SOC pd_gpu have voltage domain vdd_gpu,
+>>> so we must follow open vdd_gpu and power on pd_gpu,
+>>> power off pd_gpu and disable vdd_gpu.
+>>> Fix up in runtime resume noirq phase power on all PDs.
+>>
+>>
+>> This doesn't make any sense to me. Can please try to explain this is
+>> in great more detail, then I can try to help.
+>>
+> For example:
+> -->device suspend
+>    (mali gpu driver set pd_gpu off by pm_runtime_put_sync(),
 
-Ok, this seems to work! I am ready to review! :-)
+This is the wrong approach, as runtime suspend is prevented by the PM
+core in this phase. More precisely, it does a
+pm_runtime_get_noresume() in the device prepare phase.
 
-Of course, don't forget to update the existing DT doc for the power
-domain bindings.
+I think it seems like you would benefit from using the so called the
+runtime PM centric approach, which gives you system PM support for
+"free". Please have a look at the pm_runtime_force_suspend|resume()
+helpers.
+
+>     and then disabled the vdd_gpu by regulator_disable().)
+>         --> system suspend
+>                 -->prepare
+>                         -->suspend_noirq():
+>                         (power off all pds)
+>         -->system resume
+>                 -->resume_noirq():
+>                 (power up all pds)
+>                 (in this case the vdd_gpu is still disabled,
+>                  if power on the pd_gpu maybe make the system crash)
+>         -->complete : power off the not used pd
+> -->device resuem
+>    (mali gpu driver enable vdd_gpu by regulator_enable(),
+>     and then power up the pd_gpu by pm_runtime_get_sync())
+
+Seems like there is also a missing configuration of the relationship
+between the PM domains. In the genpd terminology, you probably want to
+set pd_gpu as a subdomain of the vdd_gpu.
+
+In that way, the vdd_gpu is always powered on before pd_gpu is powered
+on. And vice verse when powering off.
+
+>
+> So for RK3399 soc, if to set pd_gpu the vdd_gpu must be enabled, or else
+> will can't get the ack back.
+> I hope the pd_gpu power up/off by the driver itself.
+>
+> May be I solution is not the optimal solution,Do you have better suggestion?
+>
+
+Please see my comment above.
+
+[...]
 
 Kind regards
 Uffe
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
