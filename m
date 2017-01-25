@@ -1,193 +1,218 @@
-From: Laura Abbott <labbott@redhat.com>
-Subject: Re: [PATCH 2/2] security: Change name of CONFIG_DEBUG_SET_MODULE_RONX
-Date: Wed, 25 Jan 2017 12:44:14 +0100
-Message-ID: <c7182933-b255-78a1-178b-798262035272@redhat.com>
-References: <1484789346-21012-1-git-send-email-labbott@redhat.com>
- <1484789346-21012-3-git-send-email-labbott@redhat.com>
- <5005f110-2279-9ac7-c9c5-1894b8f6387d@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5005f110-2279-9ac7-c9c5-1894b8f6387d@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Kees Cook <keescook@chromium.org>, Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Pavel Machek <pavel@ucw.cz>, "H. Peter Anvin" <hpa@zytor.com>, kernel-hardening@lists.openwall.com, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, linux-s390@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, Ra
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH v5 4/4] clk: samsung: exynos-audss: Use runtime PM
+Date: Wed, 25 Jan 2017 12:53:14 +0100
+Message-ID: <1485345194-3196-5-git-send-email-m.szyprowski@samsung.com>
+References: <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125115330eucas1p16f9de097e0966bc9d9901bc27caa085c@eucas1p1.samsung.com>
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-reply-to: <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 01/19/2017 12:43 PM, Robin Murphy wrote:
-> Hi Laura,
->
-> On 19/01/17 01:29, Laura Abbott wrote:
->>
->> Despite the word 'debug' in CONFIG_DEBUG_SET_MODULE_RONX, this kernel
->> option provides key security features that are to be expected on a
->> modern system. Change the name to CONFIG_HARDENED_MODULE_MAPPINGS which
->> more accurately describes what this option is intended to do.
->>
->> Signed-off-by: Laura Abbott <labbott@redhat.com>
->> ---
->
-> [...]
->
->> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
->> index 09aff28..ef852e4 100644
->> --- a/arch/arm/Kconfig
->> +++ b/arch/arm/Kconfig
->> @@ -8,6 +8,7 @@ config ARM
->>  	select ARCH_HAVE_CUSTOM_GPIO_H
->>  	select ARCH_HAS_GCOV_PROFILE_ALL
->>  	select ARCH_HAS_HARDENED_MAPPINGS if MMU && !XIP_KERNEL
->> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS if MMU
->>  	select ARCH_MIGHT_HAVE_PC_PARPORT
->>  	select ARCH_SUPPORTS_ATOMIC_RMW
->>  	select ARCH_USE_BUILTIN_BSWAP
->> diff --git a/arch/arm/Kconfig.debug b/arch/arm/Kconfig.debug
->> index d83f7c3..426d271 100644
->> --- a/arch/arm/Kconfig.debug
->> +++ b/arch/arm/Kconfig.debug
->> @@ -1738,17 +1738,6 @@ config PID_IN_CONTEXTIDR
->>  	  additional instructions during context switch. Say Y here only if you
->>  	  are planning to use hardware trace tools with this kernel.
->>
->> -config DEBUG_SET_MODULE_RONX
->> -	bool "Set loadable kernel module data as NX and text as RO"
->> -	depends on MODULES && MMU
->> -	---help---
->> -	  This option helps catch unintended modifications to loadable
->> -	  kernel module's text and read-only data. It also prevents execution
->> -	  of module data. Such protection may interfere with run-time code
->> -	  patching and dynamic kernel tracing - and they might also protect
->> -	  against certain classes of kernel exploits.
->> -	  If in doubt, say "N".
->> -
->>  source "drivers/hwtracing/coresight/Kconfig"
->>
->>  endmenu
->
-> [...]
->
->> --- a/arch/arm64/Kconfig
->> +++ b/arch/arm64/Kconfig
->> @@ -12,6 +12,7 @@ config ARM64
->>  	select ARCH_HAS_GCOV_PROFILE_ALL
->>  	select ARCH_HAS_GIGANTIC_PAGE
->>  	select ARCH_HAS_HARDENED_MAPPINGS
->> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS
->>  	select ARCH_HAS_KCOV
->>  	select ARCH_HAS_SG_CHAIN
->>  	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
->> diff --git a/arch/arm64/Kconfig.debug b/arch/arm64/Kconfig.debug
->> index a26d27f..1eebe1f 100644
->> --- a/arch/arm64/Kconfig.debug
->> +++ b/arch/arm64/Kconfig.debug
->> @@ -71,17 +71,6 @@ config DEBUG_WX
->>
->>  	  If in doubt, say "Y".
->>
->> -config DEBUG_SET_MODULE_RONX
->> -	bool "Set loadable kernel module data as NX and text as RO"
->> -	depends on MODULES
->> -	default y
->> -	help
->> -	  Is this is set, kernel module text and rodata will be made read-only.
->> -	  This is to help catch accidental or malicious attempts to change the
->> -	  kernel's executable code.
->> -
->> -	  If in doubt, say Y.
->> -
->>  config DEBUG_ALIGN_RODATA
->>  	depends on ARCH_HAS_HARDENED_MAPPINGS
->>  	bool "Align linker sections up to SECTION_SIZE"
->
-> [...]
->
->> --- a/arch/s390/Kconfig
->> +++ b/arch/s390/Kconfig
->> @@ -69,6 +69,7 @@ config S390
->>  	select ARCH_HAS_GCOV_PROFILE_ALL
->>  	select ARCH_HAS_GIGANTIC_PAGE
->>  	select ARCH_HAS_HARDENED_MAPPINGS
->> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS
->>  	select ARCH_HAS_KCOV
->>  	select ARCH_HAS_SG_CHAIN
->>  	select ARCH_HAS_UBSAN_SANITIZE_ALL
->> diff --git a/arch/s390/Kconfig.debug b/arch/s390/Kconfig.debug
->> index 26c5d5be..57f8ea9 100644
->> --- a/arch/s390/Kconfig.debug
->> +++ b/arch/s390/Kconfig.debug
->> @@ -17,7 +17,4 @@ config S390_PTDUMP
->>  	  kernel.
->>  	  If in doubt, say "N"
->>
->> -config DEBUG_SET_MODULE_RONX
->> -	def_bool y
->> -	depends on MODULES
->>  endmenu
->> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->> index 9d80cd8..38ce850 100644
->> --- a/arch/x86/Kconfig
->> +++ b/arch/x86/Kconfig
->> @@ -51,6 +51,7 @@ config X86
->>  	select ARCH_HAS_FAST_MULTIPLIER
->>  	select ARCH_HAS_GCOV_PROFILE_ALL
->>  	select ARCH_HAS_HARDENED_MAPPINGS
->> +	select ARCH_HAS_HARDENED_MODULE_MAPPINGS
->>  	select ARCH_HAS_KCOV			if X86_64
->>  	select ARCH_HAS_MMIO_FLUSH
->>  	select ARCH_HAS_PMEM_API		if X86_64
->> diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
->> index 67eec55..69cdd0b 100644
->> --- a/arch/x86/Kconfig.debug
->> +++ b/arch/x86/Kconfig.debug
->> @@ -109,17 +109,6 @@ config DEBUG_WX
->>
->>  	  If in doubt, say "Y".
->>
->> -config DEBUG_SET_MODULE_RONX
->> -	bool "Set loadable kernel module data as NX and text as RO"
->> -	depends on MODULES
->> -	---help---
->> -	  This option helps catch unintended modifications to loadable
->> -	  kernel module's text and read-only data. It also prevents execution
->> -	  of module data. Such protection may interfere with run-time code
->> -	  patching and dynamic kernel tracing - and they might also protect
->> -	  against certain classes of kernel exploits.
->> -	  If in doubt, say "N".
->> -
->>  config DEBUG_NX_TEST
->>  	tristate "Testcase for the NX non-executable stack feature"
->>  	depends on DEBUG_KERNEL && m
->
-> [...]
->
->> --- a/security/Kconfig
->> +++ b/security/Kconfig
->> @@ -174,6 +174,22 @@ config HARDENED_PAGE_MAPPINGS
->>  	  Unless your system has known restrictions or performance issues, it
->>  	  is recommended to say Y here.
->>
->> +config ARCH_HAS_HARDENED_MODULE_MAPPINGS
->> +	def_bool n
->> +
->> +config HARDENED_MODULE_MAPPINGS
->> +	bool "Mark module mappings with stricter permissions (RO/W^X)"
->> +	default y
->> +	depends on ARCH_HAS_HARDENED_MODULE_MAPPINGS
->
-> It would seem that this ends up losing the previous dependency on
-> MODULES - is that intentional?
->
-> Robin.
->
+This patch adds support for runtime PM to Exynos Audio SubSystem driver to
+enable full support for audio power domain on Exynos5 SoCs. The main change
+is moving register saving and restoring code from system sleep PM ops to
+runtime PM ops and implementing system sleep PM ops with generic
+pm_runtime_force_suspend/resume helpers. Runtime PM of the Exynos AudSS
+device is managed from clock core depending on the preparation status
+of the provided clocks.
 
-(Apologies, my SMTP was set up incorrectly so this didn't actually
-get sent out when I thought it did)
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ .../devicetree/bindings/clock/clk-exynos-audss.txt |  6 +++
+ drivers/clk/samsung/clk-exynos-audss.c             | 62 +++++++++++++---------
+ 2 files changed, 43 insertions(+), 25 deletions(-)
 
-No, good catch. I missed re-adding that when doing the refactoring.
+diff --git a/Documentation/devicetree/bindings/clock/clk-exynos-audss.txt b/Documentation/devicetree/bindings/clock/clk-exynos-audss.txt
+index 0c3d6015868d..f3635d5aeba4 100644
+--- a/Documentation/devicetree/bindings/clock/clk-exynos-audss.txt
++++ b/Documentation/devicetree/bindings/clock/clk-exynos-audss.txt
+@@ -33,6 +33,12 @@ Required Properties:
+ - clock-names: Aliases for the above clocks. They should be "pll_ref",
+   "pll_in", "cdclk", "sclk_audio", and "sclk_pcm_in" respectively.
+ 
++Optional Properties:
++
++  - power-domains: a phandle to respective power domain node as described by
++    generic PM domain bindings (see power/power_domain.txt for more
++    information).
++
+ The following is the list of clocks generated by the controller. Each clock is
+ assigned an identifier and client nodes use this identifier to specify the
+ clock which they consume. Some of the clocks are available only on a particular
+diff --git a/drivers/clk/samsung/clk-exynos-audss.c b/drivers/clk/samsung/clk-exynos-audss.c
+index cb7df358a27d..070a82ee15f7 100644
+--- a/drivers/clk/samsung/clk-exynos-audss.c
++++ b/drivers/clk/samsung/clk-exynos-audss.c
+@@ -18,6 +18,7 @@
+ #include <linux/syscore_ops.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ 
+ #include <dt-bindings/clock/exynos-audss-clk.h>
+ 
+@@ -134,6 +135,7 @@ static int exynos_audss_clk_probe(struct platform_device *pdev)
+ 	struct clk *pll_ref, *pll_in, *cdclk, *sclk_audio, *sclk_pcm_in;
+ 	const struct exynos_audss_clk_drvdata *variant;
+ 	struct resource *res;
++	struct device *dev = &pdev->dev;
+ 	int i, ret = 0;
+ 
+ 	variant = of_device_get_match_data(&pdev->dev);
+@@ -141,15 +143,15 @@ static int exynos_audss_clk_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	reg_base = devm_ioremap_resource(&pdev->dev, res);
++	reg_base = devm_ioremap_resource(dev, res);
+ 	if (IS_ERR(reg_base)) {
+-		dev_err(&pdev->dev, "failed to map audss registers\n");
++		dev_err(dev, "failed to map audss registers\n");
+ 		return PTR_ERR(reg_base);
+ 	}
+ 
+ 	epll = ERR_PTR(-ENODEV);
+ 
+-	clk_table = devm_kzalloc(&pdev->dev,
++	clk_table = devm_kzalloc(dev,
+ 				sizeof(struct clk *) * EXYNOS_AUDSS_MAX_CLKS,
+ 				GFP_KERNEL);
+ 	if (!clk_table)
+@@ -158,8 +160,8 @@ static int exynos_audss_clk_probe(struct platform_device *pdev)
+ 	clk_data.clks = clk_table;
+ 	clk_data.clk_num = variant->num_clks;
+ 
+-	pll_ref = devm_clk_get(&pdev->dev, "pll_ref");
+-	pll_in = devm_clk_get(&pdev->dev, "pll_in");
++	pll_ref = devm_clk_get(dev, "pll_ref");
++	pll_in = devm_clk_get(dev, "pll_in");
+ 	if (!IS_ERR(pll_ref))
+ 		mout_audss_p[0] = __clk_get_name(pll_ref);
+ 	if (!IS_ERR(pll_in)) {
+@@ -170,81 +172,89 @@ static int exynos_audss_clk_probe(struct platform_device *pdev)
+ 
+ 			ret = clk_prepare_enable(epll);
+ 			if (ret) {
+-				dev_err(&pdev->dev,
++				dev_err(dev,
+ 					"failed to prepare the epll clock\n");
+ 				return ret;
+ 			}
+ 		}
+ 	}
+-	clk_table[EXYNOS_MOUT_AUDSS] = clk_register_mux(NULL, "mout_audss",
++
++	/*
++	 * Enable runtime PM here, so clock core with use runtime PM for all
++	 * registered clocks.
++	 */
++	pm_runtime_set_active(dev);
++	pm_runtime_enable(dev);
++
++	clk_table[EXYNOS_MOUT_AUDSS] = clk_register_mux(dev, "mout_audss",
+ 				mout_audss_p, ARRAY_SIZE(mout_audss_p),
+ 				CLK_SET_RATE_NO_REPARENT,
+ 				reg_base + ASS_CLK_SRC, 0, 1, 0, &lock);
+ 
+-	cdclk = devm_clk_get(&pdev->dev, "cdclk");
+-	sclk_audio = devm_clk_get(&pdev->dev, "sclk_audio");
++	cdclk = devm_clk_get(dev, "cdclk");
++	sclk_audio = devm_clk_get(dev, "sclk_audio");
+ 	if (!IS_ERR(cdclk))
+ 		mout_i2s_p[1] = __clk_get_name(cdclk);
+ 	if (!IS_ERR(sclk_audio))
+ 		mout_i2s_p[2] = __clk_get_name(sclk_audio);
+-	clk_table[EXYNOS_MOUT_I2S] = clk_register_mux(NULL, "mout_i2s",
++	clk_table[EXYNOS_MOUT_I2S] = clk_register_mux(dev, "mout_i2s",
+ 				mout_i2s_p, ARRAY_SIZE(mout_i2s_p),
+ 				CLK_SET_RATE_NO_REPARENT,
+ 				reg_base + ASS_CLK_SRC, 2, 2, 0, &lock);
+ 
+-	clk_table[EXYNOS_DOUT_SRP] = clk_register_divider(NULL, "dout_srp",
++	clk_table[EXYNOS_DOUT_SRP] = clk_register_divider(dev, "dout_srp",
+ 				"mout_audss", 0, reg_base + ASS_CLK_DIV, 0, 4,
+ 				0, &lock);
+ 
+-	clk_table[EXYNOS_DOUT_AUD_BUS] = clk_register_divider(NULL,
++	clk_table[EXYNOS_DOUT_AUD_BUS] = clk_register_divider(dev,
+ 				"dout_aud_bus", "dout_srp", 0,
+ 				reg_base + ASS_CLK_DIV, 4, 4, 0, &lock);
+ 
+-	clk_table[EXYNOS_DOUT_I2S] = clk_register_divider(NULL, "dout_i2s",
++	clk_table[EXYNOS_DOUT_I2S] = clk_register_divider(dev, "dout_i2s",
+ 				"mout_i2s", 0, reg_base + ASS_CLK_DIV, 8, 4, 0,
+ 				&lock);
+ 
+-	clk_table[EXYNOS_SRP_CLK] = clk_register_gate(NULL, "srp_clk",
++	clk_table[EXYNOS_SRP_CLK] = clk_register_gate(dev, "srp_clk",
+ 				"dout_srp", CLK_SET_RATE_PARENT,
+ 				reg_base + ASS_CLK_GATE, 0, 0, &lock);
+ 
+-	clk_table[EXYNOS_I2S_BUS] = clk_register_gate(NULL, "i2s_bus",
++	clk_table[EXYNOS_I2S_BUS] = clk_register_gate(dev, "i2s_bus",
+ 				"dout_aud_bus", CLK_SET_RATE_PARENT,
+ 				reg_base + ASS_CLK_GATE, 2, 0, &lock);
+ 
+-	clk_table[EXYNOS_SCLK_I2S] = clk_register_gate(NULL, "sclk_i2s",
++	clk_table[EXYNOS_SCLK_I2S] = clk_register_gate(dev, "sclk_i2s",
+ 				"dout_i2s", CLK_SET_RATE_PARENT,
+ 				reg_base + ASS_CLK_GATE, 3, 0, &lock);
+ 
+-	clk_table[EXYNOS_PCM_BUS] = clk_register_gate(NULL, "pcm_bus",
++	clk_table[EXYNOS_PCM_BUS] = clk_register_gate(dev, "pcm_bus",
+ 				 "sclk_pcm", CLK_SET_RATE_PARENT,
+ 				reg_base + ASS_CLK_GATE, 4, 0, &lock);
+ 
+-	sclk_pcm_in = devm_clk_get(&pdev->dev, "sclk_pcm_in");
++	sclk_pcm_in = devm_clk_get(dev, "sclk_pcm_in");
+ 	if (!IS_ERR(sclk_pcm_in))
+ 		sclk_pcm_p = __clk_get_name(sclk_pcm_in);
+-	clk_table[EXYNOS_SCLK_PCM] = clk_register_gate(NULL, "sclk_pcm",
++	clk_table[EXYNOS_SCLK_PCM] = clk_register_gate(dev, "sclk_pcm",
+ 				sclk_pcm_p, CLK_SET_RATE_PARENT,
+ 				reg_base + ASS_CLK_GATE, 5, 0, &lock);
+ 
+ 	if (variant->has_adma_clk) {
+-		clk_table[EXYNOS_ADMA] = clk_register_gate(NULL, "adma",
++		clk_table[EXYNOS_ADMA] = clk_register_gate(dev, "adma",
+ 				"dout_srp", CLK_SET_RATE_PARENT,
+ 				reg_base + ASS_CLK_GATE, 9, 0, &lock);
+ 	}
+ 
+ 	for (i = 0; i < clk_data.clk_num; i++) {
+ 		if (IS_ERR(clk_table[i])) {
+-			dev_err(&pdev->dev, "failed to register clock %d\n", i);
++			dev_err(dev, "failed to register clock %d\n", i);
+ 			ret = PTR_ERR(clk_table[i]);
+ 			goto unregister;
+ 		}
+ 	}
+ 
+-	ret = of_clk_add_provider(pdev->dev.of_node, of_clk_src_onecell_get,
++	ret = of_clk_add_provider(dev->of_node, of_clk_src_onecell_get,
+ 					&clk_data);
+ 	if (ret) {
+-		dev_err(&pdev->dev, "failed to add clock provider\n");
++		dev_err(dev, "failed to add clock provider\n");
+ 		goto unregister;
+ 	}
+ 
+@@ -272,8 +282,10 @@ static int exynos_audss_clk_remove(struct platform_device *pdev)
+ }
+ 
+ static const struct dev_pm_ops exynos_audss_clk_pm_ops = {
+-	SET_LATE_SYSTEM_SLEEP_PM_OPS(exynos_audss_clk_suspend,
+-				     exynos_audss_clk_resume)
++	SET_RUNTIME_PM_OPS(exynos_audss_clk_suspend, exynos_audss_clk_resume,
++			   NULL)
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
++				     pm_runtime_force_resume)
+ };
+ 
+ static struct platform_driver exynos_audss_clk_driver = {
+-- 
+1.9.1
 
-Thanks,
-Laura
-
->>
->
