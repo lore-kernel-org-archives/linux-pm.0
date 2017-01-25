@@ -1,87 +1,161 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/2] security: Change name of CONFIG_DEBUG_RODATA
-Date: Wed, 25 Jan 2017 14:51:24 +0100
-Message-ID: <20170125135124.GA20896@amd>
-References: <1484789346-21012-1-git-send-email-labbott@redhat.com>
- <1484789346-21012-2-git-send-email-labbott@redhat.com>
- <20170119075341.GA14530@amd>
- <fca01775-9640-8783-a657-a9e6cf0c3e0a@redhat.com>
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: Re: [RFC PATCH 1/5] regulator: Extend the power-management APIs
+Date: Wed, 25 Jan 2017 16:02:56 +0100
+Message-ID: <20170125150256.umqkq44blmv24y5l@piout.net>
+References: <1480687036-5037-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1480687036-5037-2-git-send-email-boris.brezillon@free-electrons.com>
+ <20170109191758.7zzxeh45pvwiw3jo@sirena.org.uk>
+ <20170110093355.700f8225@bbrezillon>
+ <20170110121026.zstf7a6cflzk366l@sirena.org.uk>
+ <20170110140556.172b3ec0@bbrezillon>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="CE+1k2dSO48ffgeK"
-Return-path: <kernel-hardening-return-6153-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <fca01775-9640-8783-a657-a9e6cf0c3e0a@redhat.com>
-To: Laura Abbott <labbott@redhat.com>
-Cc: Kees Cook <keescook@chromium.org>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Mark Rutland <mark.rutland@arm.com>, Jessica Yu <jeyu@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org, linux-pm@vger.kernel.org, kernel-hard
+In-Reply-To: <20170110140556.172b3ec0@bbrezillon>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Mark,
 
---CE+1k2dSO48ffgeK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Any comment on that one so we can move forward?
 
-On Wed 2017-01-25 12:21:05, Laura Abbott wrote:
-> On 01/19/2017 08:53 AM, Pavel Machek wrote:
-> >On Wed 2017-01-18 17:29:05, Laura Abbott wrote:
-> >>
-> >>Despite the word 'debug' in CONFIG_DEBUG_RODATA, this kernel option
-> >>provides key security features that are to be expected on a modern
-> >>system. Change the name to CONFIG_HARDENED_PAGE_MAPPINGS which more
-> >>accurately describes what this option is intended to do.
-> >
-> >I think this is bad change. CONFIG_DEBUG_RODATA is describing what it
-> >does, CONFIG_HARDENED_PAGE_MAPPINGS is advertising.
-> >
-> >We don't do advertising, and we don't force people to re-answer the
-> >config questions without good reason.
-> >
-> >CONFIG_HARDENED_RODATA might fix the first problem, but not the second
-> >one.
-> >
-> >								Pavel
-> >							=09
->=20
-> (Apologies, my SMTP was set up incorrectly so my response didn't
-> actually get sent out)
->=20
-> CONFIG_DEBUG_RODATA isn't describing what it does though. It misses
-> that this config may handle much more than just rodata. I think
-> Mark Rutland's suggestion of STRICT_KERNEL_RWX might be more
-> descriptive.
+On 10/01/2017 at 14:05:56 +0100, Boris Brezillon wrote :
+> On Tue, 10 Jan 2017 12:10:26 +0000
+> Mark Brown <broonie@kernel.org> wrote:
+> 
+> > On Tue, Jan 10, 2017 at 09:33:55AM +0100, Boris Brezillon wrote:
+> > > Mark Brown <broonie@kernel.org> wrote:  
+> > 
+> > > > However it
+> > > > *is* a bit more than just making sure that the device suspend ordering
+> > > > is good (though that's definitely part of it), there will be things
+> > > > kicked off by hardware signalling without software knowing about it.  
+> > 
+> > > Do you have an example, so that I can understand the use case?  
+> > 
+> > Think about how a CPU suspends and signals the PMIC to go into suspend
+> > mode - things signalled by hardware state changes that the hardware does
+> > autonomously.
+> 
+> Got it.
+> 
+> > 
+> > > > Anything that doesn't affect a hardware supported runtime state probably
+> > > > needs to be split off and handled separately as that's the much more
+> > > > risky bit  
+> > 
+> > > Just to be sure, you mean regulator devices that do not support the  
+> > > ->set_suspend_xx() hooks, right?  
+> > 
+> > Yes.
+> > 
+> > > >, moving changing of suspend mode earlier isn't going to cause
+> > > > too much grief, that patch should just be split out and can probably
+> > > > just go straight in.  
+> > 
+> > > Yes, I just thought it would be clearer to have everything implemented
+> > > in the same function. Since calling ->set_suspend_xx() does not have
+> > > any impact on the runtime state, it can be called whenever we want
+> > > (assuming we can still communicate with the regulator device to
+> > > configure this suspend state).
+> > > But if you prefer to have it split out in 2 different function, with the
+> > > 'set suspend mode' bits called from the regulator_suspend_begin(), I'm
+> > > fine with that.  
+> > 
+> > No, I'm mainly saying that these things should be done in two separate
+> > patches rather than talking about how the end code looks.  To a large
+> > extent it does't matter when we apply the hardware supported suspend
+> > modes, they won't take effect while software is running anyway.
+> 
+> Okay, that shouldn't be a problem then.
+> 
+> > 
+> > > > Requring these functions to be called from every single driver seems
+> > > > like we're doing something wrong - if we're going to do this we should
+> > > > find some way to loop over all regulators and apply any unapplied
+> > > > changes.  
+> > 
+> > > I agree. Actually, I forgot that we had PM ops at the device class
+> > > level. Maybe we could just move these generic ->suspend()/->resume()
+> > > implementation here.  
+> > 
+> > Yeah, I need to check if those class level operations always get run.
+> > 
+> > > > Batching things up at the end of suspend would also mean that
+> > > > we'd be able to minimise the chances that we get the ordering wrong.  
+> > 
+> > > Unfortunately that's not possible, for the exact same reason calling
+> > > regulator_suspend_prepare() from the platform ->prepare() hook did not
+> > > work for me: at that point, all devices have been suspended, and this
+> > > includes the i2c controller which we're using to communicate with the
+> > > PMIC exposing those regulators.  
+> > 
+> > Do those devices actually get meaningfully suspended on your system,
+> 
+> I think so.
+> 
+> > and
+> > even on systems where we do if we are going to use the dependency graphs
+> > we should be able to arrange to do something with that to reorder both
+> > them and the regulators to as near the end of the queue as we can get
+> > tehm - that way we minimise the chances of being bitten by any
+> > unexpressed depdencies (which I expect we have a lot of given how
+> > resistant people are to writing proper DTs).
+> 
+> Yes, maybe we'll need a mechanism to mark some devices for
+> late-suspend. I currently don't need it because the runtime changes I'm
+> applying are not preventing the system from running correctly:
+> increasing the voltage output and moving into low-power mode (the
+> reason behind voltage change is probably related to the poor precision
+> of the low-power mode, which forces us to take an higher margin to
+> prevent voltage from crossing the min constraint of the DDR memory).
+> 
+> Of course, we should not only take my specific case into account, but
+> I'd except people to properly define the dependencies if they really
+> need to.
+> 
+> > 
+> > > 2/ Rely on the device model dependency graph, and enter the suspend
+> > >    state when the regulator device is being suspended (this is the
+> > >    solution I'm proposing in this patch).  
+> > 
+> > That's future work though (which is happening but still), right now we
+> > know the graph doesn't work properly.  It also leaves us more open to
+> > unexpressed dependencies which are
+> 
+> I miss the end of the story :-).
+> 
+> One last comment: between solution #1 and solution #2, #2 will always
+> suspend the regulator later than #1. Now, if we add
+> 
+> 3/ Make sure the i2c controller driving the bus the PMIC is connected
+> to is kept enabled, and enter regulators suspend state after all
+> devices have been suspended.
+> 
+> of course #3 will suspend things later than #2, but at the expense of
+> driver/DT specialization, and we're not guaranteed to not face another
+> weird dependency constraint like "suspend dev X" -> "suspend reg Y" ->
+> "suspend dev Z" in the future.
+> 
+> Also note that the 'suspend dev connected on a bus before the bus
+> controller' dependencies are already well supported thanks to the
+> device model dev->parent relationship. Actually, this is what I'm
+> relying on for my "suspend PMIC's regulators before the i2c controller"
+> constraint.
 
-CONFIG_BUG=3Dy
-CONFIG_LBDAF=3Dy
-CONFIG_PM_OPP=3Dy
-
-=2E.it is config option. It is not description of the feature. People
-are living with that config option for a while. I'd keep it.
-
-Maybe you can go from CONFIG_DEBUG_RODATA to CONFIG_RODATA... (but
-you'll still have people re-answer config option.)
-
-
-								Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---CE+1k2dSO48ffgeK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAliIrVwACgkQMOfwapXb+vKDIQCeObwXTavXbjg0vV7fo6GrI6mz
-+TEAn3KekWFvtsx4J9UCa0MsjGe1ktv4
-=Av9j
------END PGP SIGNATURE-----
-
---CE+1k2dSO48ffgeK--
+-- 
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
