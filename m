@@ -1,72 +1,114 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 0/8] Power domains support for Exynos5433 SoCs
-Date: Wed, 25 Jan 2017 12:55:34 +0100
-Message-ID: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
-References: <CGME20170125115558eucas1p18dcb5c4cbab28dcb10bd412b825256b7@eucas1p1.samsung.com>
+Subject: [PATCH 3/8] arm64: dts: exynos: Add DISP power domain to Exynos 5433
+ SoC
+Date: Wed, 25 Jan 2017 12:55:37 +0100
+Message-ID: <1485345342-3273-4-git-send-email-m.szyprowski@samsung.com>
+References: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125115600eucas1p1e9b1adbb62380568f94793d1de17cdc2@eucas1p1.samsung.com>
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hello,
+This patch adds support for DISP power domain to Exynos 5433 SoCs, which
+contains following devices: a clock controller, two display controllers
+(DECON and DECON TV), their SYSMMUs, MIC, DSI and HDMI video devices.
 
-This patchset is a final step to add support for all power domains
-on Exynos5433 SoCs. This patchset contains patches for adding Exynos5433
-support to Exynos power domain driver and definitions of all power
-domains found in Exynos5433 SoCs.
+OCSigned-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ arch/arm64/boot/dts/exynos/exynos5433.dtsi | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-Patches have been generated on top of linux-next from 25th January 2017.
-
-This is a part of a larger task, which goal is to add support for power
-domains on Exynos5433 SoCs / TM2 boards. All patches needed to get it
-working have been pushed to the following git repo:
-https://git.linaro.org/people/marek.szyprowski/linux-srpol.git v4.10-next-tm2-pd
-
-To get everything working following patches/patchsets are needed on top
-of the linux-next tree:
-1. "Add support for the S6E3HA2 panel on TM2 board" v8 patchset:
-   http://www.spinics.net/lists/devicetree/msg157859.html
-2. "drm/exynos/decon5433: configure sysreg in case of hardware trigger" v2:
-   https://patchwork.kernel.org/patch/9493177/
-3. "Move pad retention control to Exynos pin controller driver" v3 patchset:
-   https://www.spinics.net/lists/arm-kernel/msg556074.html
-4. "Pad retentions support for Exynos5433" patchset
-   (posted a few minutes ago, no link yet available)
-5. "Exynos5433/TM2: add clocks configuration for display subsystem" patchset
-   (posted a few minutes ago, no link yet available)
-6. "clk: samsung: pll: Add enable/disable support for PLL35XX" patch
-   (posted a few minutes ago, no link yet available)
-7. "IOMMU probe deferral support" v7 patchset:
-   https://www.spinics.net/lists/arm-kernel/msg557110.html
-8. "Add runtime PM support for clocks (on Exynos SoC example)" v5 patchset
-   (posted a few minutes ago, no link yet available)
-9. "Power domains support for Exynos5433 SoCs" patchset
-   (this patchset)
-
-Best regards
-Marek Szyprowski
-Samsung R&D Institute Poland
-
-
-Patch summary:
-
-Chanwoo Choi (1):
-  soc: samsung: pm_domains: Add new exynos5433 compatible
-
-Marek Szyprowski (7):
-  arm64: dts: exynos: Add GSCL power domain to Exynos 5433 SoC
-  arm64: dts: exynos: Add DISP power domain to Exynos 5433 SoC
-  arm64: dts: exynos: Add MSCL power domain to Exynos 5433 SoC
-  arm64: dts: exynos: Add MFC power domain to Exynos 5433 SoC
-  arm64: dts: exynos: Add AUD power domain to Exynos5433 SoC
-  arm64: dts: exynos: Add FSYS power domain to Exynos5433 SoC
-  arm64: dts: exynos: Add remaining power domains to Exynos5433 SoC
-
- .../devicetree/bindings/power/pd-samsung.txt       |   1 +
- arch/arm64/boot/dts/exynos/exynos5433.dtsi         | 118 +++++++++++++++++++++
- drivers/soc/samsung/pm_domains.c                   |   7 ++
- 3 files changed, 126 insertions(+)
-
+diff --git a/arch/arm64/boot/dts/exynos/exynos5433.dtsi b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+index 74c767d756ac..a84b44cea2a8 100644
+--- a/arch/arm64/boot/dts/exynos/exynos5433.dtsi
++++ b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+@@ -368,6 +368,7 @@
+ 				<&cmu_mif CLK_SCLK_DECON_ECLK_DISP>,
+ 				<&cmu_mif CLK_SCLK_DECON_TV_VCLK_DISP>,
+ 				<&cmu_mif CLK_ACLK_DISP_333>;
++			power-domains = <&pd_disp>;
+ 		};
+ 
+ 		cmu_aud: clock-controller@114c0000 {
+@@ -532,6 +533,12 @@
+ 			#power-domain-cells = <0>;
+ 		};
+ 
++		pd_disp: disp-power-domain@105c4080 {
++			compatible = "samsung,exynos5433-pd";
++			reg = <0x105c4080 0x20>;
++			#power-domain-cells = <0>;
++		};
++
+ 		tmu_atlas0: tmu@10060000 {
+ 			compatible = "samsung,exynos5433-tmu";
+ 			reg = <0x10060000 0x200>;
+@@ -735,6 +742,7 @@
+ 			clock-names = "pclk", "aclk_decon", "aclk_smmu_decon0x",
+ 				"aclk_xiu_decon0x", "pclk_smmu_decon0x",
+ 				"sclk_decon_vclk", "sclk_decon_eclk";
++			power-domains = <&pd_disp>;
+ 			interrupt-names = "fifo", "vsync", "lcd_sys";
+ 			interrupts = <GIC_SPI 201 IRQ_TYPE_LEVEL_HIGH>,
+ 				     <GIC_SPI 202 IRQ_TYPE_LEVEL_HIGH>,
+@@ -772,6 +780,7 @@
+ 				      "aclk_xiu_decon0x", "pclk_smmu_decon0x",
+ 				      "sclk_decon_vclk", "sclk_decon_eclk";
+ 			samsung,disp-sysreg = <&syscon_disp>;
++			power-domains = <&pd_disp>;
+ 			interrupt-names = "fifo", "vsync", "lcd_sys";
+ 			interrupts = <GIC_SPI 210 IRQ_TYPE_LEVEL_HIGH>,
+ 				     <GIC_SPI 211 IRQ_TYPE_LEVEL_HIGH>,
+@@ -797,6 +806,7 @@
+ 					"phyclk_mipidphy0_rxclkesc0",
+ 					"sclk_rgb_vclk_to_dsim0",
+ 					"sclk_mipi";
++			power-domains = <&pd_disp>;
+ 			status = "disabled";
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+@@ -820,6 +830,7 @@
+ 			clocks = <&cmu_disp CLK_PCLK_MIC0>,
+ 				<&cmu_disp CLK_SCLK_RGB_VCLK_TO_MIC0>;
+ 			clock-names = "pclk_mic0", "sclk_rgb_vclk_to_mic0";
++			power-domains = <&pd_disp>;
+ 			samsung,disp-syscon = <&syscon_disp>;
+ 			status = "disabled";
+ 
+@@ -961,6 +972,7 @@
+ 			clock-names = "pclk", "aclk";
+ 			clocks = <&cmu_disp CLK_PCLK_SMMU_DECON0X>,
+ 				<&cmu_disp CLK_ACLK_SMMU_DECON0X>;
++			power-domains = <&pd_disp>;
+ 			#iommu-cells = <0>;
+ 		};
+ 
+@@ -972,6 +984,7 @@
+ 			clocks = <&cmu_disp CLK_PCLK_SMMU_DECON1X>,
+ 				<&cmu_disp CLK_ACLK_SMMU_DECON1X>;
+ 			#iommu-cells = <0>;
++			power-domains = <&pd_disp>;
+ 		};
+ 
+ 		sysmmu_tv0x: sysmmu@13a20000 {
+@@ -982,6 +995,7 @@
+ 			clocks = <&cmu_disp CLK_PCLK_SMMU_TV0X>,
+ 				<&cmu_disp CLK_ACLK_SMMU_TV0X>;
+ 			#iommu-cells = <0>;
++			power-domains = <&pd_disp>;
+ 		};
+ 
+ 		sysmmu_tv1x: sysmmu@13a30000 {
+@@ -992,6 +1006,7 @@
+ 			clocks = <&cmu_disp CLK_PCLK_SMMU_TV1X>,
+ 				<&cmu_disp CLK_ACLK_SMMU_TV1X>;
+ 			#iommu-cells = <0>;
++			power-domains = <&pd_disp>;
+ 		};
+ 
+ 		sysmmu_gscl0: sysmmu@13c80000 {
 -- 
 1.9.1
