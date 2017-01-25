@@ -1,150 +1,173 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v1 2/3] x86: Remap GDT tables in the Fixmap section
-Date: Wed, 25 Jan 2017 12:10:16 -0800
-Message-ID: <CAJcbSZEaLmCs5AOc1raWnMJb4EDn5Ba-wYDZjRWhRPNeuMF0bw@mail.gmail.com>
-References: <20170120164126.27624-1-thgarnie@google.com> <20170120164126.27624-2-thgarnie@google.com>
- <CALCETrWpzVD_zQS1doZbzBktAc4qF5Y0CEZQpgCgYPgPYMT8dQ@mail.gmail.com> <CAJcbSZHQdWF36cgbgjcq=2rEDTc54PizFtjBvMxE9hUJsBaf3g@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Wed, 25 Jan 2017 22:13:43 +0100
+Message-ID: <CAPDyKFp6heJ0c=iKT1VYm4uGf04RehJ=vVyNHQu5aC-vNLHvVg@mail.gmail.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com> <20170104205536.15963-3-d-gerlach@ti.com>
+ <20170109175012.sg7eze7llqq7qevd@rob-hp-laptop> <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+ <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com> <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+ <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com> <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+ <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com> <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com>
+ <m2ziip2puf.fsf@baylibre.com> <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
+ <CAPDyKFqzs59N5bc89X-96Fgy9b=_+s8zYmHHshQeDrJCnaqprA@mail.gmail.com>
+ <58821CA2.4050701@ti.com> <CAPDyKFpTyn2isNahywmOOSWiZKov9xsudyWi_i-FejXjC+1AZw@mail.gmail.com>
+ <ec2f1697-4c60-fd88-6593-2a69ca7f5c83@ti.com> <CAPDyKFq3zjyubxf3wc1V+F2W3rbnjj4ObFnHFvda+wCs4rBtnw@mail.gmail.com>
+ <23936395-d653-56c8-13f9-6dfeb6e9257b@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJcbSZHQdWF36cgbgjcq=2rEDTc54PizFtjBvMxE9hUJsBaf3g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, Brian Gerst <brgerst@gmail.com>, He Chen <he.chen@linux.intel.com>, Dave Hansen <dave.hansen@intel.com>, Chen Yucong <slaoub@gmail.com>, Baoquan He <bhe@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Joerg Roedel <joro@8bytes.org>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>, X86 ML <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-k>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <23936395-d653-56c8-13f9-6dfeb6e9257b-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lokesh Vutla <lokeshvutla-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The kbuild bot found interesting build errors with the new
-BUILD_BUG_ON on 32bit (64G mem support). I think I went a bit too far
-with them given the ioremap part is just temporary on early boot.
-
-I removed them and tested different configurations trying to use as
-much fixmap as possible (DEBUG_HIGHMEM, 64G/PAE support and more).
-Everything looks good and we can still support 512 processors.
-
-Next iteration, I will remove the BUILD_BUG_ON that I added and remove
-restriction to 256 back to 512. On top of all changes suggested by
-Andy on the patch set.
-
-On Fri, Jan 20, 2017 at 5:06 PM, Thomas Garnier <thgarnie@google.com> wrote:
-> On Fri, Jan 20, 2017 at 4:57 PM, Andy Lutomirski <luto@amacapital.net> wrote:
->> On Fri, Jan 20, 2017 at 8:41 AM, Thomas Garnier <thgarnie@google.com> wrote:
->>> Each processor holds a GDT in its per-cpu structure. The sgdt
->>> instruction gives the base address of the current GDT. This address can
->>> be used to bypass KASLR memory randomization. With another bug, an
->>> attacker could target other per-cpu structures or deduce the base of
->>> the main memory section (PAGE_OFFSET).
->>>
->>> This patch relocates the GDT table for each processor inside the
->>> Fixmap section. The space is reserved based on number of supported
->>> cpus.
->>>
->>> For consistency, the remapping is done by default on 32 and 64 bit.
->>>
->>> Each processor switches to its remapped GDT at the end of
->>> initialization. For hibernation, the main processor returns with the
->>> original GDT and switches back to the remapping at completion.
->>>
->>> On 32 bit, the maximum number of processors is now 256. The Fixmap
->>> section cannot handle the original 512. Additional asserts ensure that
->>> the Fixmap section cannot grow beyond the space available.
->>>
->>> This patch was tested on both architectures. Hibernation and KVM were
->>> both tested specially for their usage of the GDT.
->>>
->>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->>> ---
->>> Based on next-20170119
->>> ---
->>>  arch/x86/Kconfig                 |  1 +
->>>  arch/x86/include/asm/fixmap.h    |  4 ++++
->>>  arch/x86/include/asm/processor.h |  1 +
->>>  arch/x86/kernel/cpu/common.c     | 18 +++++++++++++++++-
->>>  arch/x86/mm/init_32.c            |  2 ++
->>>  arch/x86/power/cpu.c             |  3 +++
->>>  6 files changed, 28 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->>> index f1d4e8f2131f..b4ed35db10a8 100644
->>> --- a/arch/x86/Kconfig
->>> +++ b/arch/x86/Kconfig
->>> @@ -912,6 +912,7 @@ config MAXSMP
->>>  config NR_CPUS
->>>         int "Maximum number of CPUs" if SMP && !MAXSMP
->>>         range 2 8 if SMP && X86_32 && !X86_BIGSMP
->>> +       range 2 256 if SMP && X86_32 && X86_BIGSMP
->>>         range 2 512 if SMP && !MAXSMP && !CPUMASK_OFFSTACK
->>>         range 2 8192 if SMP && !MAXSMP && CPUMASK_OFFSTACK && X86_64
->>>         default "1" if !SMP
->>> diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
->>> index c46289799b02..8b913b5e9383 100644
->>> --- a/arch/x86/include/asm/fixmap.h
->>> +++ b/arch/x86/include/asm/fixmap.h
->>> @@ -100,6 +100,10 @@ enum fixed_addresses {
->>>  #ifdef CONFIG_X86_INTEL_MID
->>>         FIX_LNW_VRTC,
->>>  #endif
->>> +       /* Fixmap entries to remap the GDTs, one per processor. */
->>> +       FIX_GDT_REMAP_BEGIN,
->>> +       FIX_GDT_REMAP_END = FIX_GDT_REMAP_BEGIN + NR_CPUS - 1,
->>> +
->>>         __end_of_permanent_fixed_addresses,
->>>
->>>         /*
->>> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
->>> index 1be64da0384e..280211ad8be9 100644
->>> --- a/arch/x86/include/asm/processor.h
->>> +++ b/arch/x86/include/asm/processor.h
->>> @@ -705,6 +705,7 @@ extern struct desc_ptr              early_gdt_descr;
->>>
->>>  extern void cpu_set_gdt(int);
->>>  extern void switch_to_new_gdt(int);
->>> +extern void load_remapped_gdt(int);
->>>  extern void load_percpu_segment(int);
->>>  extern void cpu_init(void);
->>>
->>> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
->>> index e97ffc8d29f4..7d940b0e805a 100644
->>> --- a/arch/x86/kernel/cpu/common.c
->>> +++ b/arch/x86/kernel/cpu/common.c
->>> @@ -443,6 +443,19 @@ void load_percpu_segment(int cpu)
->>>         load_stack_canary_segment();
->>>  }
->>>
->>> +/* Load a fixmap remapping of the per-cpu GDT */
->>> +void load_remapped_gdt(int cpu)
->>> +{
->>> +       struct desc_ptr gdt_descr;
->>> +       unsigned long idx = FIX_GDT_REMAP_BEGIN + cpu;
->>> +
->>> +       __set_fixmap(idx, __pa(get_cpu_gdt_table(cpu)), PAGE_KERNEL);
->>> +
->>> +       gdt_descr.address = (long)__fix_to_virt(idx);
->>> +       gdt_descr.size = GDT_SIZE - 1;
->>> +       load_gdt(&gdt_descr);
->>> +}
+On 25 January 2017 at 17:59, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+> On 01/24/2017 04:03 AM, Ulf Hansson wrote:
 >>
->> IMO this should be split into two functions, one to set up the fixmap
->> entry and one to load the GDT.
+>> On 23 January 2017 at 21:11, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+>>>
+>>> On 01/20/2017 10:52 AM, Ulf Hansson wrote:
+>>>>
+>>>>
+>>>> [...]
+>>>>
+>>>>>>> Another option is create something new either common or TI SCI
+>>>>>>> specific. It could be just a table of ids and phandles in the SCI
+>>>>>>> node. I'm much more comfortable with an isolated property in one node
+>>>>>>> than something scattered throughout the DT.
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> To me, this seems like the best possible solution.
+>>>>>>
+>>>>>> However, perhaps we should also consider the SCPI Generic power domain
+>>>>>> (drivers/firmware/scpi_pm_domain.c), because I believe it's closely
+>>>>>> related.
+>>>>>> To change the power state of a device, this PM domain calls
+>>>>>> scpi_device_set|get_power_state() (drivers/firmware/arm_scpi.c), which
+>>>>>> also needs a device id as a parameter. Very similar to our case with
+>>>>>> the TI SCI domain.
+>>>>>>
+>>>>>> Currently these SCPI device ids lacks corresponding DT bindings, so
+>>>>>> the scpi_pm_domain tries to work around it by assigning ids
+>>>>>> dynamically at genpd creation time.
+>>>>>>
+>>>>>> That makes me wonder, whether we should think of something
+>>>>>> common/generic?
+>>>>>
+>>>>>
+>>>>>
+>>>>> When you say something common/generic, do you mean a better binding for
+>>>>> genpd,
+>>>>> or something bigger than that like a new driver? Because I do think a
+>>>>> phandle
+>>>>> cell left open for the genpd provider to interpret solves both the scpi
+>>>>> and
+>>>>> ti-sci problem we are facing here in the best way. Using generic PM
+>>>>> domains lets
+>>>>> us do exactly what we want apart from interpreting the phandle cell
+>>>>> with
+>>>>> our
+>>>>> driver, and I feel like anything else we try at this point is just
+>>>>> going
+>>>>> to be
+>>>>> to work around that. Is bringing back genpd xlate something we can
+>>>>> discuss?
+>>>>
+>>>>
+>>>>
+>>>> Bringing back xlate, how would that help? Wouldn't that just mean that
+>>>> you will get one genpd per device? That's not an option, I think we
+>>>> are all in agreement to that.
+>>>
+>>>
+>>>
+>>> Sure, perhaps the custom xlate wouldn't be the right way to do it, as we
+>>> wouldn't be able to associate a device directly to a phandle, at least
+>>> with
+>>> how it was implemented before, but I think we can skip that entirely.
+>>> Does
+>>> opening up the interpretation of the cells of the 'power-domains' phandle
+>>> not solve all of these issues? Is that out of the question?
+>>>
+>>> genpd_xlate_simple currently just makes sure the args_count of the
+>>> 'power-domains' phandle was zero and bails if it was not. Why couldn't we
+>>> remove this check and let the driver interpret it while still using
+>>> of_genpd_add_provider_simple to register the provider? It's still a
+>>> 'simple'
+>>> provider from the perspective of the genpd framework and the actual pm
+>>> domain mapping will not change, but now the driver can parse the cells
+>>> and
+>>> do whatever it needs to, such as reading a device id.
+>>>
+>>> I think that's a bit more flexible and will avoid breaking anything that
+>>> is
+>>> there today.
 >>
->
-> That make sense.
->
->> Also, would it be possible to rename the various gdt helpers so that
->> their functionality is more obvious?  For example, get_cpu_gdt_table()
->> could be get_cpu_direct_gdt_table() and the function to load the gdt
->> could be load_fixmap_gdt().
 >>
->
-> Sure no problem.
->
->> --Andy
+>> Would you mind providing an example? Perhaps also some code snippets
+>> dealing with the parsing?
 >
 >
+> So again the goal of this is to move the ti,sci-id value back to
+> power-domains phandle instead of having a separate property, so that would
+> be step one in the DT. Then in the power-domains node change
+> #power-domain-cells to one. And then from there, the only change to the
+> genpd framework is this:
 >
-> --
-> Thomas
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index a5e1262b964b..b82e61f0bcfa 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -1603,8 +1603,6 @@ static struct generic_pm_domain genpd_xlate_simple
+>                                       struct of_phandle_args *genpdspec,
+>                                       void *data)
+>  {
+> -       if (genpdspec->args_count != 0)
+> -               return ERR_PTR(-EINVAL);
+>         return data;
+>  }
+>
+>
+> because genpd_xlate_simple only checks that the phandle is zero so that it
+> can fail if it is not, but there's no functional reason it needs to do this.
+> The genpd framework works as it did before no matter what the cells are set
+> to if using of_genpd_add_provider_simple. Then in the attach_dev callback
+> inside the ti_sci_pm_domains driver instead of doing
+>
+>         ret = of_property_read_u32(np, "ti,sci-id", &idx);
+>
+> to read the ti,sc-id for a device into idx we can now do:
+>
+>        ret = of_parse_phandle_with_args(np, "power-domains",
+>                                    "#power-domain-cells", 0, &pd_args);
+>        idx = pd_args.args[0];
+>
+> or even simpler from within our driver
+>
+>         ret = of_property_read_u32_index(np, "power-domains", 1, &idx);
+>
+> To read the value into idx.
+>
+> This requires minimal changes to the genpd framework and gives the option
+> for the driver to interpret the cell manually when using a simple provider.
+> The genpd framework still uses the phandle just to get the power-domain
+> device and the cells are left entirely up to the driver to interpret, but if
+> desired you could still use the genpd onecell driver for a specific use of
+> the phandle cell, or use it with zero cells.
+>
+> I can send out an updated series if there are no major objections, or just
+> to start discussion there.
 
+Ok, this seems to work! I am ready to review! :-)
 
+Of course, don't forget to update the existing DT doc for the power
+domain bindings.
 
--- 
-Thomas
+Kind regards
+Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
