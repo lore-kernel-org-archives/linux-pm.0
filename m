@@ -1,66 +1,94 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 4/8] arm64: dts: exynos: Add MSCL power domain to Exynos 5433
- SoC
-Date: Wed, 25 Jan 2017 12:55:38 +0100
-Message-ID: <1485345342-3273-5-git-send-email-m.szyprowski@samsung.com>
+Subject: [PATCH 6/8] arm64: dts: exynos: Add AUD power domain to Exynos5433 SoC
+Date: Wed, 25 Jan 2017 12:55:40 +0100
+Message-ID: <1485345342-3273-7-git-send-email-m.szyprowski@samsung.com>
 References: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125115600eucas1p1df640bb3f1033a103f7dea3d384c3b4e@eucas1p1.samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+ <CGME20170125115601eucas1p29decb9c2daf4c3fcb9d796392f5d69ba@eucas1p2.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:50456 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751484AbdAYL4H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jan 2017 06:56:07 -0500
 In-reply-to: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-This patch adds support for MSCL power domain to Exynos 5433 SoCs, which
-contains following devices: a clock controller, JPEG codec device and its
-SYSMMU.
+This patch adds support for AUD power domain to Exynos5433 SoCs, which
+contains following devices: a clock controller, a pin controller, LPASS
+module, I2S controller, ADMA PL330 engine and UART #3 device.
 
 Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 ---
- arch/arm64/boot/dts/exynos/exynos5433.dtsi | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ arch/arm64/boot/dts/exynos/exynos5433.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/exynos/exynos5433.dtsi b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
-index a84b44cea2a8..5778fdbd5763 100644
+index 3487981726d9..24fc3b46cc40 100644
 --- a/arch/arm64/boot/dts/exynos/exynos5433.dtsi
 +++ b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
-@@ -458,6 +458,7 @@
- 			clocks = <&xxti>,
- 				<&cmu_top CLK_SCLK_JPEG_MSCL>,
- 				<&cmu_top CLK_ACLK_MSCL_400>;
-+			power-domains = <&pd_mscl>;
+@@ -377,6 +377,7 @@
+ 			#clock-cells = <1>;
+ 			clock-names = "oscclk", "fout_aud_pll";
+ 			clocks = <&xxti>, <&cmu_top CLK_FOUT_AUD_PLL>;
++			power-domains = <&pd_aud>;
  		};
  
- 		cmu_mfc: clock-controller@15280000 {
-@@ -533,6 +534,12 @@
+ 		cmu_bus0: clock-controller@13600000 {
+@@ -553,6 +554,12 @@
  			#power-domain-cells = <0>;
  		};
  
-+		pd_mscl: mscl-power-domain@105c4040 {
++		pd_aud: aud-power-domain@105c40c0 {
 +			compatible = "samsung,exynos5433-pd";
-+			reg = <0x105c4040 0x20>;
++			reg = <0x105c40c0 0x20>;
 +			#power-domain-cells = <0>;
 +		};
 +
- 		pd_disp: disp-power-domain@105c4080 {
- 			compatible = "samsung,exynos5433-pd";
- 			reg = <0x105c4080 0x20>;
-@@ -951,6 +958,7 @@
- 				 <&cmu_mscl CLK_ACLK_XIU_MSCLX>,
- 				 <&cmu_mscl CLK_SCLK_JPEG>;
- 			iommus = <&sysmmu_jpeg>;
-+			power-domains = <&pd_mscl>;
+ 		tmu_atlas0: tmu@10060000 {
+ 			compatible = "samsung,exynos5433-tmu";
+ 			reg = <0x10060000 0x200>;
+@@ -665,6 +672,7 @@
+ 			compatible = "samsung,exynos5433-pinctrl";
+ 			reg = <0x114b0000 0x1000>;
+ 			interrupts = <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>;
++			power-domains = <&pd_aud>;
  		};
  
- 		mfc: codec@152E0000 {
-@@ -1050,6 +1058,7 @@
- 			clocks = <&cmu_mscl CLK_PCLK_SMMU_JPEG>,
- 				 <&cmu_mscl CLK_ACLK_SMMU_JPEG>;
- 			#iommu-cells = <0>;
-+			power-domains = <&pd_mscl>;
- 		};
+ 		pinctrl_cpif: pinctrl@10fe0000 {
+@@ -1544,6 +1552,7 @@
+ 			clocks = <&cmu_aud CLK_PCLK_SFR0_CTRL>;
+ 			clock-names = "sfr0_ctrl";
+ 			samsung,pmu-syscon = <&pmu_system_controller>;
++			power-domains = <&pd_aud>;
+ 			#address-cells = <1>;
+ 			#size-cells = <1>;
+ 			ranges;
+@@ -1557,6 +1566,7 @@
+ 				#dma-cells = <1>;
+ 				#dma-channels = <8>;
+ 				#dma-requests = <32>;
++				power-domains = <&pd_aud>;
+ 			};
  
- 		sysmmu_mfc_0: sysmmu@15200000 {
+ 			i2s0: i2s0@11440000 {
+@@ -1573,6 +1583,7 @@
+ 				clock-names = "iis", "i2s_opclk0", "i2s_opclk1";
+ 				pinctrl-names = "default";
+ 				pinctrl-0 = <&i2s0_bus>;
++				power-domains = <&pd_aud>;
+ 				status = "disabled";
+ 			};
+ 
+@@ -1585,6 +1596,7 @@
+ 				clock-names = "uart", "clk_uart_baud0";
+ 				pinctrl-names = "default";
+ 				pinctrl-0 = <&uart_aud_bus>;
++				power-domains = <&pd_aud>;
+ 				status = "disabled";
+ 			};
+ 		};
 -- 
 1.9.1
+
