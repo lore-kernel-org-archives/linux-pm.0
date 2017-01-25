@@ -1,128 +1,51 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH v6 0/5] powernv:stop: Use psscr_val,mask provided by firmware
-Date: Wed, 25 Jan 2017 14:06:24 +0530
-Message-ID: <1485333389-5752-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Philipp Miedl <philipp.miedl@tik.ee.ethz.ch>
+Subject: Re: Delayed acpi frequency governor call
+Date: Wed, 25 Jan 2017 10:48:40 +0100
+Message-ID: <47c8a3d0-c871-c211-f951-2b6607310cff@tik.ee.ethz.ch>
+References: <c8ee7078-ad5a-0a23-66ae-620c507300e5@tik.ee.ethz.ch>
+ <20170120100725.GO11478@vireshk-i7>
+ <9b332b49-11a1-a5fc-d48e-2c113cdca202@tik.ee.ethz.ch>
+ <20170123101145.GB26681@vireshk-i7>
+ <086bc55f-d1cc-b893-49c6-1667f6067f1b@tik.ee.ethz.ch>
+ <20170124042235.GA16906@vireshk-i7>
+ <2f9b2f69-8b93-c77a-a09f-540240fecf1e@tik.ee.ethz.ch>
+ <20170125032341.GC20040@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:60388 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751358AbdAYIgu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jan 2017 03:36:50 -0500
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.20/8.16.0.20) with SMTP id v0P8YKVH125646
-        for <linux-pm@vger.kernel.org>; Wed, 25 Jan 2017 03:36:43 -0500
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 286pe9w5fa-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 25 Jan 2017 03:36:42 -0500
-Received: from localhost
-        by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Wed, 25 Jan 2017 01:36:42 -0700
+Received: from virgo01.ee.ethz.ch ([129.132.2.226]:41021 "EHLO
+        virgo01.ee.ethz.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751679AbdAYJso (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Jan 2017 04:48:44 -0500
+In-Reply-To: <20170125032341.GC20040@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>, Rob Herring <robh+dt@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, mark.rutland@arm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: alex@digriz.org.uk, jun.nakajima@intel.com, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-This is the sixth iteration of the patchset to use the psscr_val and
-psscr_mask provided by the firmware for each of the stop states.
+On 25.01.2017 04:23, Viresh Kumar wrote:
+> On 24-01-17, 15:49, Philipp Miedl wrote:
+>> Can you please describe how things changed from version 4.4 to 4.9 - I'm not
+>> sure if I understand correctly.
+>> Before 4.7 the governor was just running as a kernel process and triggered
+>> by the (free running) timers and
+>> now its hooked with the scheduler. So the scheduler ensures that the
+>> governor work is not delayed?!
+> Now the cpufreq callbacks gets called from within the scheduler every few
+> milliseconds. And once we have crossed the sampling-rate time, we reevaluate the
+> frequency. Though ondemand/conservative governors still used workqueue until
+> very recently for most of the platforms. Recently it is replaced by a RT thread.
+>
 
-The previous versions can be found here:
-[v5]: https://lkml.org/lkml/2017/1/10/147
-[v4]: https://lkml.org/lkml/2016/12/9/288
-[v3]: https://lkml.org/lkml/2016/11/10/37
-[v2]: https://lkml.org/lkml/2016/10/27/143
-[v1]: https://lkml.org/lkml/2016/9/29/45
-
-This version addresses the feedback provided by Balbir and Rob Herring to
-v5. The key changes are:
-
-- [PATCH 2] Rename pnv_arch300_idle_init to pnv_power9_idle_init to be consistent
-  with the nomenclature of variables and functions in idle_book3s.S.
-
-- [PATCH 5] Updated the introduction to Idle-state properties in the
-  devicetree bindings documentation in order to clarify when the
-  "name" and "flags" properties are required. Also fixed the typos in
-  the Documentation for the device-tree bindings
-
-Synopsis
-==========
-In the current implementation, the code for ISA
-v3.0 stop implementation has a couple of shortcomings.
-
-a) The code hand-codes the values for ESL, EC, TR, MTL bits of PSSCR
-   and uses only the RL field from the firmware. While this is not
-   incorrect, since the hand-coded values are legitimate, it is not a
-   very flexible design since the firmware has the capability to
-   communicate these values via the "ibm,cpu-idle-state-psscr" and
-   "ibm,cpu-idle-state-psscr-mask" properties. In case where the
-   firmware provides values for these fields that is different from
-   the hand-coded values, the current code will not work as intended.
-
-b) Due to issue a), the current code assumes that ESL=EC=1 for all the
-   stop states and hence the wakeup from the stop instruction will
-   happen at 0x100, the system-reset vector. However, the ISA v3.0
-   allows the ESL=EC=0 behaviour where the corresponding stop-state
-   loses no state and wakes up from the subsequent instruction. The
-   current code doesn't handle this case.
-   
-This patch series addresses these issues.
-
-The first patch in the series renames the existing
-IDLE_STATE_ENTER_SEQ macro to IDLE_STATE_ENTER_SEQ_NORET. It reuses
-the name IDLE_STATE_ENTER_SEQ for entering into stop-states which wake
-up at the subsequent instruction.
-
-The second patch in the series renames pnv_arch300_idle_init()
-to pnv_power9_idle_init.
-
-The third patch adds a helper function in cpuidle-powernv.c for
-initializing entries of the powernv_states[] table that is passed to
-the cpu-idle core. This eliminates some of the code duplication in the
-function that discovers and initializes the stop states.
-
-The fourth patch in the series fixes issues a) and b) by ensuring that
-the psscr-value and the psscr-mask provided by the firmware are what
-will be used to set a particular stop state. It also adds support for
-handling wake-up from stop states which were entered with ESL=EC=0.
-It validates hat the psscr values exposed by the firmware maintains
-the invariants mentioned in the ISA.
-
-The fourth patch also handles the older firmware which sets only the
-Requested Level (RL) field in the psscr and psscr-mask exposed in the
-device tree. In the presence of such older firmware, this patch will
-set the default sane values for for remaining PSSCR fields (i.e PSLL,
-MTL, ESL, EC, and TR).
-
-The fifth patch provides the documentation for the device-tree
-bindings describing the idle state properties under the @power-mgt
-node in the device-tree.
-
-The skiboot patch populates all the relevant fields in the PSSCR
-values and the mask for all the stop states can be found here:
-https://lists.ozlabs.org/pipermail/skiboot/2016-September/004869.html
-
-Gautham R. Shenoy (5):
-  powernv:idle: Add IDLE_STATE_ENTER_SEQ_NORET macro
-  powernv:stop: Rename pnv_arch300_idle_init to pnv_power9_idle_init
-  cpuidle:powernv: Add helper function to populate powernv idle states.
-  powernv: Pass PSSCR value and mask to power9_idle_stop
-  Documentation:powerpc: Add device-tree bindings for power-mgt
-
- .../devicetree/bindings/powerpc/opal/power-mgt.txt | 118 +++++++++++++++++
- arch/powerpc/include/asm/cpuidle.h                 |  49 ++++++-
- arch/powerpc/include/asm/processor.h               |   3 +-
- arch/powerpc/kernel/exceptions-64s.S               |   6 +-
- arch/powerpc/kernel/idle_book3s.S                  |  40 +++---
- arch/powerpc/platforms/powernv/idle.c              | 142 ++++++++++++++++++---
- arch/powerpc/platforms/powernv/powernv.h           |   3 +-
- arch/powerpc/platforms/powernv/smp.c               |  14 +-
- drivers/cpuidle/cpuidle-powernv.c                  | 129 +++++++++++++------
- include/linux/cpuidle.h                            |   1 +
- 10 files changed, 421 insertions(+), 84 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/opal/power-mgt.txt
+Ok got it now. Thanks a lot for your help!
 
 -- 
-1.9.4
+--------------------------------------------------------------------
+|  Philipp Miedl                                                   |
+|  PhD Student @ Computer Engineering and Networks Laboratory      |
+|  ETH Zurich, ETZG76, Gloriastrasse 35, 8092 Zurich, Switzerland  |
+|  mail: philipp.miedl@ee.tik.ethz.ch      phone: +41 44 632 70 61 |
+--------------------------------------------------------------------
 
