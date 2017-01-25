@@ -1,37 +1,52 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device pointer to
- of_xlate callback
-Date: Wed, 25 Jan 2017 14:12:38 +0100
-Message-ID: <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
-References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
- <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8bit
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Subject: [PATCH] power: supply: max14656: Export I2C and OF device ID as module aliases
+Date: Wed, 25 Jan 2017 10:38:55 -0300
+Message-ID: <1485351535-21066-1-git-send-email-javier@osg.samsung.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Mark Brown <broonie@kernel.org>, Inki Dae <inki.dae@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
-> Add pointer to slave device to of_dma_xlate to let DMA engine driver
-> to know which slave device is using given DMA channel. This will be
-> later used to implement non-irq-safe runtime PM for DMA engine driver.
+If the driver is built as a module, I2C module alias information is not
+filled so the module won't be autoloaded. Export the I2C and OF devices
+ID to the module by using the MODULE_DEVICE_TABLE() macro.
 
-of_dma_xlate() is used to translate from a OF phandle and a specifier to a
-DMA channel. On one hand this does not necessarily mean that the channel is
-actually going to be used by the slave that called the xlate function.
-Modifying the driver state when a lookup of the channel is done is a
-layering violation. And this approach is also missing a way to disassociate
-a slave from a DMA channel, e.g. when it is no longer used.
+Before this patch:
 
-On the other hand there are other mechanisms to translate between some kind
-of firmware handle to a DMA channel which are completely ignored here.
+$ modinfo drivers/power/supply/max14656_charger_detector.ko | grep alias
+$
 
-So this approach does not work. This is something that needs to be done at
-the dmaengine level, not a the firmware resource translation level. And it
-needs a matching method that is called when the channel is disassociated
-from a device, when the device no longer uses the DMA channel.
+After this patch:
+
+$ modinfo drivers/power/supply/max14656_charger_detector.ko | grep alias
+alias:          i2c:max14656
+alias:          of:N*T*Cmaxim,max14656C*
+alias:          of:N*T*Cmaxim,max14656
+
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+---
+
+ drivers/power/supply/max14656_charger_detector.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/power/supply/max14656_charger_detector.c b/drivers/power/supply/max14656_charger_detector.c
+index 80f8e5c1b4ec..b91b1d2999dc 100644
+--- a/drivers/power/supply/max14656_charger_detector.c
++++ b/drivers/power/supply/max14656_charger_detector.c
+@@ -305,11 +305,13 @@ static const struct i2c_device_id max14656_id[] = {
+ 	{ "max14656", 0 },
+ 	{}
+ };
++MODULE_DEVICE_TABLE(i2c, max14656_id);
+ 
+ static const struct of_device_id max14656_match_table[] = {
+ 	{ .compatible = "maxim,max14656", },
+ 	{}
+ };
++MODULE_DEVICE_TABLE(of, max14656_match_table);
+ 
+ static struct i2c_driver max14656_i2c_driver = {
+ 	.driver = {
+-- 
+2.7.4
