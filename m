@@ -1,149 +1,61 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v3 REBASED 10/13] pinctrl: samsung: Add infrastructure for
- pin-bank retention control
-Date: Thu, 26 Jan 2017 10:29:24 +0100
-Message-ID: <1485422967-30643-7-git-send-email-m.szyprowski@samsung.com>
-References: <CACRpkdY_SpqfyTTqSP5+a1k1LDf_5w77UXo=EognmOzWBz2c-Q@mail.gmail.com>
- <1485422967-30643-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170126093001eucas1p2531400b718191fd5fadd71d9f0c83597@eucas1p2.samsung.com>
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-reply-to: <1485422967-30643-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v3 01/13] soc: samsung: pmu: Provide global function to
+ get PMU regmap
+Date: Thu, 26 Jan 2017 10:43:20 +0100
+Message-ID: <CACRpkdYyOgpAhAY=7QrXiEB2oDgs0azt_Tb80iO4vjzk1obemQ@mail.gmail.com>
+References: <CGME20170119134904eucas1p153a1d5b2ff9826c88293b6a8fe5140bc@eucas1p1.samsung.com>
+ <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com> <1484833733-16082-2-git-send-email-m.szyprowski@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f41.google.com ([209.85.214.41]:36350 "EHLO
+        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753202AbdAZJnW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2017 04:43:22 -0500
+Received: by mail-it0-f41.google.com with SMTP id c7so126388708itd.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Jan 2017 01:43:21 -0800 (PST)
+In-Reply-To: <1484833733-16082-2-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Pad retention control after suspend/resume cycle should be done from pin
-controller driver instead of PMU (power management unit) driver to avoid
-possible ordering and logical dependencies. Till now it worked fine only
-because PMU driver registered its sys_ops after pin controller.
+On Thu, Jan 19, 2017 at 2:48 PM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
 
-This patch adds infrastructure to handle pad retention during pin control
-driver resume.
+> PMU is something like a SoC wide service, so add a helper function to get
+> PMU regmap. This will be used by other Exynos device drivers. This way it
+> can be avoided to model this dependency in device tree (as phandles to PMU
+> node) for almost every device in the SoC.
+>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
----
- drivers/pinctrl/samsung/pinctrl-samsung.c | 12 +++++++++
- drivers/pinctrl/samsung/pinctrl-samsung.h | 42 +++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+)
+But why? I could understand it as a local header in
+drivers/soc/samsung/*.h for those files.
 
-diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.c b/drivers/pinctrl/samsung/pinctrl-samsung.c
-index 59f99ea7e65b..021abd7221f8 100644
---- a/drivers/pinctrl/samsung/pinctrl-samsung.c
-+++ b/drivers/pinctrl/samsung/pinctrl-samsung.c
-@@ -1060,6 +1060,13 @@ static int samsung_pinctrl_probe(struct platform_device *pdev)
- 	if (res)
- 		drvdata->irq = res->start;
- 
-+	if (ctrl->retention_data) {
-+		drvdata->retention_ctrl = ctrl->retention_data->init(drvdata,
-+							  ctrl->retention_data);
-+		if (IS_ERR(drvdata->retention_ctrl))
-+			return PTR_ERR(drvdata->retention_ctrl);
-+	}
-+
- 	ret = samsung_gpiolib_register(pdev, drvdata);
- 	if (ret)
- 		return ret;
-@@ -1126,6 +1133,8 @@ static void samsung_pinctrl_suspend_dev(
- 
- 	if (drvdata->suspend)
- 		drvdata->suspend(drvdata);
-+	if (drvdata->retention_ctrl && drvdata->retention_ctrl->enable)
-+		drvdata->retention_ctrl->enable(drvdata);
- }
- 
- /**
-@@ -1173,6 +1182,9 @@ static void samsung_pinctrl_resume_dev(struct samsung_pinctrl_drv_data *drvdata)
- 			if (widths[type])
- 				writel(bank->pm_save[type], reg + offs[type]);
- 	}
-+
-+	if (drvdata->retention_ctrl && drvdata->retention_ctrl->disable)
-+		drvdata->retention_ctrl->disable(drvdata);
- }
- 
- /**
-diff --git a/drivers/pinctrl/samsung/pinctrl-samsung.h b/drivers/pinctrl/samsung/pinctrl-samsung.h
-index 6f7ce7539a00..515a61035e54 100644
---- a/drivers/pinctrl/samsung/pinctrl-samsung.h
-+++ b/drivers/pinctrl/samsung/pinctrl-samsung.h
-@@ -185,10 +185,48 @@ struct samsung_pin_bank {
- };
- 
- /**
-+ * struct samsung_retention_data: runtime pin-bank retention control data.
-+ * @regs: array of PMU registers to control pad retention.
-+ * @nr_regs: number of registers in @regs array.
-+ * @value: value to store to registers to turn off retention.
-+ * @refcnt: atomic counter if retention control affects more than one bank.
-+ * @priv: retention control code private data
-+ * @enable: platform specific callback to enter retention mode.
-+ * @disable: platform specific callback to exit retention mode.
-+ **/
-+struct samsung_retention_ctrl {
-+	const u32	*regs;
-+	int		nr_regs;
-+	u32		value;
-+	atomic_t	*refcnt;
-+	void		*priv;
-+	void		(*enable)(struct samsung_pinctrl_drv_data *);
-+	void		(*disable)(struct samsung_pinctrl_drv_data *);
-+};
-+
-+/**
-+ * struct samsung_retention_data: represent a pin-bank retention control data.
-+ * @regs: array of PMU registers to control pad retention.
-+ * @nr_regs: number of registers in @regs array.
-+ * @value: value to store to registers to turn off retention.
-+ * @refcnt: atomic counter if retention control affects more than one bank.
-+ * @init: platform specific callback to initialize retention control.
-+ **/
-+struct samsung_retention_data {
-+	const u32	*regs;
-+	int		nr_regs;
-+	u32		value;
-+	atomic_t	*refcnt;
-+	struct samsung_retention_ctrl *(*init)(struct samsung_pinctrl_drv_data *,
-+					const struct samsung_retention_data *);
-+};
-+
-+/**
-  * struct samsung_pin_ctrl: represent a pin controller.
-  * @pin_banks: list of pin banks included in this controller.
-  * @nr_banks: number of pin banks.
-  * @nr_ext_resources: number of the extra base address for pin banks.
-+ * @retention_data: configuration data for retention control.
-  * @eint_gpio_init: platform specific callback to setup the external gpio
-  *	interrupts for the controller.
-  * @eint_wkup_init: platform specific callback to setup the external wakeup
-@@ -198,6 +236,7 @@ struct samsung_pin_ctrl {
- 	const struct samsung_pin_bank_data *pin_banks;
- 	u32		nr_banks;
- 	int		nr_ext_resources;
-+	const struct samsung_retention_data *retention_data;
- 
- 	int		(*eint_gpio_init)(struct samsung_pinctrl_drv_data *);
- 	int		(*eint_wkup_init)(struct samsung_pinctrl_drv_data *);
-@@ -219,6 +258,7 @@ struct samsung_pin_ctrl {
-  * @nr_function: number of such pin functions.
-  * @pin_base: starting system wide pin number.
-  * @nr_pins: number of pins supported by the controller.
-+ * @retention_ctrl: retention control runtime data.
-  */
- struct samsung_pinctrl_drv_data {
- 	struct list_head		node;
-@@ -238,6 +278,8 @@ struct samsung_pinctrl_drv_data {
- 	unsigned int			pin_base;
- 	unsigned int			nr_pins;
- 
-+	struct samsung_retention_ctrl	*retention_ctrl;
-+
- 	void (*suspend)(struct samsung_pinctrl_drv_data *);
- 	void (*resume)(struct samsung_pinctrl_drv_data *);
- };
--- 
-1.9.1
+For the global kernel scope we usually look up the syscon
+regmap we need using a phandle, DT node or even
+compatible string directly from the device tree.
 
+Just
+#include <linux/mfd/syscon.h>
+
+syscon_node_to_regmap()
+syscon_regmap_lookup_by_compatible()
+syscon_regmap_lookup_by_pdevname()
+syscon_regmap_lookup_by_phandle()
+
+what is wrong with just using one of these?
+
+Introducing a special header just creates compile time problems
+with global interfaces when merging code and just litter the kernel
+for no good reason.
+
+Can you explain why this necessarily different approach is
+needed?
+
+I guess I should have said this earlier, mea culpa.
+
+Yours,
+Linus Walleij
