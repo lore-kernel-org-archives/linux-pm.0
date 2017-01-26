@@ -1,47 +1,81 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v3 01/13] soc: samsung: pmu: Provide global function to
- get PMU regmap
-Date: Thu, 26 Jan 2017 16:41:55 +0200
-Message-ID: <CAJKOXPefwmNwqV1=PkWrbU6Tj4AgK78Z2qo2DqJ8v4jMJH=8=Q@mail.gmail.com>
-References: <CGME20170119134904eucas1p153a1d5b2ff9826c88293b6a8fe5140bc@eucas1p1.samsung.com>
- <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com>
- <1484833733-16082-2-git-send-email-m.szyprowski@samsung.com> <CACRpkdYyOgpAhAY=7QrXiEB2oDgs0azt_Tb80iO4vjzk1obemQ@mail.gmail.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device pointer to of_xlate
+ callback
+Date: Thu, 26 Jan 2017 15:43:05 +0100
+Message-ID: <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
+References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
+ <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
+ <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <CACRpkdYyOgpAhAY=7QrXiEB2oDgs0azt_Tb80iO4vjzk1obemQ@mail.gmail.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Lars-Peter Clausen <lars@metafoo.de>, linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Mark Brown <broonie@kernel.org>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 26, 2017 at 11:43 AM, Linus Walleij
-<linus.walleij@linaro.org> wrote:
-> On Thu, Jan 19, 2017 at 2:48 PM, Marek Szyprowski
-> <m.szyprowski@samsung.com> wrote:
+Hi Lars,
+
+On 2017-01-25 14:12, Lars-Peter Clausen wrote:
+> On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
+>> Add pointer to slave device to of_dma_xlate to let DMA engine driver
+>> to know which slave device is using given DMA channel. This will be
+>> later used to implement non-irq-safe runtime PM for DMA engine driver.
+> of_dma_xlate() is used to translate from a OF phandle and a specifier to a
+> DMA channel. On one hand this does not necessarily mean that the channel is
+> actually going to be used by the slave that called the xlate function.
+> Modifying the driver state when a lookup of the channel is done is a
+> layering violation. And this approach is also missing a way to disassociate
+> a slave from a DMA channel, e.g. when it is no longer used.
 >
->> PMU is something like a SoC wide service, so add a helper function to get
->> PMU regmap. This will be used by other Exynos device drivers. This way it
->> can be avoided to model this dependency in device tree (as phandles to PMU
->> node) for almost every device in the SoC.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
+> On the other hand there are other mechanisms to translate between some kind
+> of firmware handle to a DMA channel which are completely ignored here.
 >
-> But why? I could understand it as a local header in
-> drivers/soc/samsung/*.h for those files.
+> So this approach does not work. This is something that needs to be done at
+> the dmaengine level, not a the firmware resource translation level. And it
+> needs a matching method that is called when the channel is disassociated
+> from a device, when the device no longer uses the DMA channel.
 
-Marek gave quite detailed answer... so let me just add minor note.
-Apparently we cannot satisfy everyone. When break the DT ABI, DT
-people are not happy. When we try to avoid ABI break, we create such
-dependency.
+Frankly I agree that of_dma_xlate() should only return the requested channel
+to the dmaengine core and do not do any modification in the the driver 
+state.
 
-In fact, such compile and runtime dependency is not unusual. Our
-drivers are coupled because our hardware modules are coupled. When
-they were put in arch/arm/mach-exynos, no one cared because everything
-was contained in mach-exynos. We try to move the code out of there
-thus we need to model such dependencies in a new way... or break the
-DT ABI.
+However the current dma engine design and implementation breaks this rule.
+Please check the drivers - how do they implement of_xlate callback. They
+usually call dma_get_any_slave_channel, dma_get_slave_channel or
+__dma_request_channel there, which in turn calls dma_chan_get, which then
+calls back to device_alloc_chan_resources callback. Some of the drivers also
+do a hardware configuration or other resource allocation in of_xlate.
+This is a bit messy design and leave no place in the core to set slave 
+device
+before device_alloc_chan_resources callback, where one would expect to have
+it already set.
 
-Best regards,
-Krzysztof
+The best place to add new calls to the dmaengine drivers to set slave device
+would be just before device_alloc_chan_resources(), what in turn means that
+the current dmaengine core should do in dma_chan_get(). This would 
+require to
+forward the slave device pointer via even more layers including the of_xlate
+callback too. IMHO this is not worth the effort.
+
+DMA engine core and API definitely needs some cleanup. During such cleanup
+the slave device pointer might be moved out of xlate into separate callback
+when the core gets ready for such operation.
+
+I ignored other paths for other firmware handle to a DMA channel translation
+mechanism because for the current pl330 driver they are simply not used. I
+assume that if one needs to implement similar things for drivers relying on
+them, he will update the respective DMA engine core parts.
+
+Slave device assignments can be cleared in device_chan_release_resources if
+this is needed and that what existing DMA engine drivers do with the 
+resources
+allocated in the of_xlate callback...
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
