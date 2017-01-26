@@ -1,54 +1,104 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Thu, 26 Jan 2017 08:20:13 -0800
-Message-ID: <20170126162013.GS7403@atomide.com>
-References: <20170120220440.1971-1-tony@atomide.com>
- <20170120220440.1971-3-tony@atomide.com>
- <CAKvHMgQKPZcdBPMUH-3_e-M4sHPijEH59019bygmi+o2y4B+Rw@mail.gmail.com>
- <20170124012702.GA7403@atomide.com>
- <CAKvHMgTvdEz=YRxB-sd-FHws+DH9DJTnVst3Tc=9HoaKMq--Ow@mail.gmail.com>
- <20170124182925.GF7403@atomide.com>
- <20170124230520.GA1204@animalcreek.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:60742 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752669AbdAZQ1i (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 26 Jan 2017 11:27:38 -0500
-Content-Disposition: inline
-In-Reply-To: <20170124230520.GA1204@animalcreek.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Thomas Garnier <thgarnie@google.com>
+Subject: [PATCH v2 1/3] x86/mm: Adapt MODULES_END based on Fixmap section size
+Date: Thu, 26 Jan 2017 08:59:38 -0800
+Message-ID: <20170126165940.30799-1-thgarnie@google.com>
+Return-path: <kernel-hardening-return-6172-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Thomas Garnier <thgarnie@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Christian Borntraeger <borntraeger@de.ibm.co>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-pm@vger.kernel.org, linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, lguest@lists.ozlabs.org, kvm@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
-To: Mark Greer <mgreer@animalcreek.com>
-Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-* Mark Greer <mgreer@animalcreek.com> [170124 15:06]:
-> On Tue, Jan 24, 2017 at 10:29:26AM -0800, Tony Lindgren wrote:
-> 
-> > 8< -----------------------------------------
-> > >From tony Mon Sep 17 00:00:00 2001
-> > From: Tony Lindgren <tony@atomide.com>
-> > Date: Fri, 20 Jan 2017 09:58:51 -0800
-> > Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
-> > 
-> > We can get quite a few interrupts when the battery is trickle charging.
-> > Let's enable PM runtime autosuspend to avoid constantly toggling device
-> > driver PM runtime state.
-> > 
-> > Let's use a 600 ms timeout as that's how long the USB chager detection
-> > might take.
-> > 
-> > Cc: Liam Breck <kernel@networkimprov.net>
-> > Cc: Mark Greer <mgreer@animalcreek.com>
-> > Signed-off-by: Tony Lindgren <tony@atomide.com>
-> > ---
-> 
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
+This patch aligns MODULES_END to the beginning of the Fixmap section.
+It optimizes the space available for both sections. The address is
+pre-computed based on the number of pages required by the Fixmap
+section.
 
-OK thanks will repost the two patches. Liam, got any more comments
-or care to ack?
+It will allow GDT remapping in the Fixmap section. The current
+MODULES_END static address does not provide enough space for the kernel
+to support a large number of processors.
 
-Regards,
+Signed-off-by: Thomas Garnier <thgarnie@google.com>
+---
+Based on next-20170125
+---
+ arch/x86/include/asm/fixmap.h           | 8 ++++++++
+ arch/x86/include/asm/pgtable_64_types.h | 3 ---
+ arch/x86/kernel/module.c                | 1 +
+ arch/x86/mm/dump_pagetables.c           | 1 +
+ arch/x86/mm/kasan_init_64.c             | 1 +
+ 5 files changed, 11 insertions(+), 3 deletions(-)
 
-Tony
+diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+index 8554f960e21b..c46289799b02 100644
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -132,6 +132,14 @@ enum fixed_addresses {
+ 
+ extern void reserve_top_address(unsigned long reserve);
+ 
++/* On 64bit, the module sections ends with the start of the fixmap */
++#ifdef CONFIG_X86_64
++#define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
++#define MODULES_END   __fix_to_virt(__end_of_fixed_addresses + 1)
++#define MODULES_LEN   (MODULES_END - MODULES_VADDR)
++#endif /* CONFIG_X86_64 */
++
++
+ #define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
+ 
+diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+index 3a264200c62f..de8bace10200 100644
+--- a/arch/x86/include/asm/pgtable_64_types.h
++++ b/arch/x86/include/asm/pgtable_64_types.h
+@@ -66,9 +66,6 @@ typedef struct { pteval_t pte; } pte_t;
+ #define VMEMMAP_START	__VMEMMAP_BASE
+ #endif /* CONFIG_RANDOMIZE_MEMORY */
+ #define VMALLOC_END	(VMALLOC_START + _AC((VMALLOC_SIZE_TB << 40) - 1, UL))
+-#define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
+-#define MODULES_END      _AC(0xffffffffff000000, UL)
+-#define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+ #define ESPFIX_PGD_ENTRY _AC(-2, UL)
+ #define ESPFIX_BASE_ADDR (ESPFIX_PGD_ENTRY << PGDIR_SHIFT)
+ #define EFI_VA_START	 ( -4 * (_AC(1, UL) << 30))
+diff --git a/arch/x86/kernel/module.c b/arch/x86/kernel/module.c
+index 477ae806c2fa..fad61caac75e 100644
+--- a/arch/x86/kernel/module.c
++++ b/arch/x86/kernel/module.c
+@@ -35,6 +35,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/setup.h>
++#include <asm/fixmap.h>
+ 
+ #if 0
+ #define DEBUGP(fmt, ...)				\
+diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
+index ea9c49adaa1f..eefd6d015d02 100644
+--- a/arch/x86/mm/dump_pagetables.c
++++ b/arch/x86/mm/dump_pagetables.c
+@@ -18,6 +18,7 @@
+ #include <linux/seq_file.h>
+ 
+ #include <asm/pgtable.h>
++#include <asm/fixmap.h>
+ 
+ /*
+  * The dumper groups pagetable entries of the same type into one, and for
+diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
+index 0493c17b8a51..34f167cf3316 100644
+--- a/arch/x86/mm/kasan_init_64.c
++++ b/arch/x86/mm/kasan_init_64.c
+@@ -8,6 +8,7 @@
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
++#include <asm/fixmap.h>
+ 
+ extern pgd_t early_level4_pgt[PTRS_PER_PGD];
+ extern struct range pfn_mapped[E820_X_MAX];
+-- 
+2.11.0.483.g087da7b7c-goog
