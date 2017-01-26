@@ -1,55 +1,57 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH v3 REBASED 11/13] pinctrl: samsung: Move retention control
- from mach-exynos to the pinctrl driver
-Date: Thu, 26 Jan 2017 16:42:43 +0100
-Message-ID: <CACRpkdb+nfV17zLaer8ULnV_z5-w3qQQysuBNrv2cKbMGcTdsA@mail.gmail.com>
-References: <CACRpkdY_SpqfyTTqSP5+a1k1LDf_5w77UXo=EognmOzWBz2c-Q@mail.gmail.com>
- <CGME20170126093002eucas1p1d2c86542c56bd54d78852693f9ddb0b2@eucas1p1.samsung.com>
- <1485422967-30643-1-git-send-email-m.szyprowski@samsung.com>
- <1485422967-30643-8-git-send-email-m.szyprowski@samsung.com> <CACRpkdaCwfm6aU4kNBgmhmRzEiASkBWY-pX=3FqERtyG+55sqQ@mail.gmail.com>
+Subject: Re: [PATCH v3 01/13] soc: samsung: pmu: Provide global function to
+ get PMU regmap
+Date: Thu, 26 Jan 2017 16:54:06 +0100
+Message-ID: <CACRpkdY597rtiW9hk66njtcQRB=YSHThcbuhM0PkQ_yU=a6kXw@mail.gmail.com>
+References: <CGME20170119134904eucas1p153a1d5b2ff9826c88293b6a8fe5140bc@eucas1p1.samsung.com>
+ <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com>
+ <1484833733-16082-2-git-send-email-m.szyprowski@samsung.com>
+ <CACRpkdYyOgpAhAY=7QrXiEB2oDgs0azt_Tb80iO4vjzk1obemQ@mail.gmail.com>
+ <3ba1504d-5874-b09b-1ad8-6cda4851f113@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f171.google.com ([209.85.223.171]:36492 "EHLO
-        mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752764AbdAZPmp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2017 10:42:45 -0500
-Received: by mail-io0-f171.google.com with SMTP id j13so39301250iod.3
-        for <linux-pm@vger.kernel.org>; Thu, 26 Jan 2017 07:42:44 -0800 (PST)
-In-Reply-To: <CACRpkdaCwfm6aU4kNBgmhmRzEiASkBWY-pX=3FqERtyG+55sqQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <3ba1504d-5874-b09b-1ad8-6cda4851f113@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 26, 2017 at 4:38 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Thu, Jan 26, 2017 at 10:29 AM, Marek Szyprowski
-> <m.szyprowski@samsung.com> wrote:
->
->> This patch moves pad retention control from PMU driver to Exynos pin
->> controller driver. This helps to avoid possible ordering and logical
->> dependencies between machine, PMU and pin control code. Till now it
->> worked fine only because sys_ops for PMU and pin controller were called
->> in registration order.
->> This is also a preparation for adding new features to Exynos pin
->> controller driver, like runtime power management and suspending
->> individual pin controllers, which might be a part of some power domain.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
->> Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
->
-> Patch applied with Arnd's ACK and THANKS for cleaning up the
-> ARM tree.
+On Thu, Jan 26, 2017 at 11:22 AM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
 
-Or no, hehe, better keep myself in check.
+> syscon_regmap_lookup_by_compatible() requires to have a compatible string
+> hardcoded in the client driver. This might be used, but will require to have
+> (and maintain) a duplicated list of PMU compatibles in pin control driver.
+> There is a little problem with exynos4212 and exynos4412, which have same
+> pinctrl compatible (samsung,exynos4x12-pinctrl), but separate PMU
+> compatibles
 
-Backed this and the next patch because of my complaints
-about the necessarily custom soc header.
+I actually used this approach with the ARM reference designs:
+drivers/mtd/maps/physmap_of_versatile.c
+drivers/video/fbdev/amba-clcd-versatile.c
 
-I guess I could anyways continue from this point in the
-series if I just pull in that branch if we conclude it is the best
-thing to do.
+It made sense to me, because for each compatible I anyways
+needed the .data field to distinguish between the different
+system controllers, because they are of course all slightly
+idiomatic.
+
+I guess in your case you can distinguish how to use the syscon
+by the pinctrl compatible instead.
+
+Oh well.
+
+I guess I'm OK with this then. I'll try to pull it in and see what
+happens.
 
 Yours,
 Linus Walleij
