@@ -1,81 +1,184 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device pointer to of_xlate
- callback
-Date: Thu, 26 Jan 2017 15:43:05 +0100
-Message-ID: <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
-References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
- <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
- <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: Re: [PATCH v3 2/4] dt-bindings: Add TI SCI PM Domains
+Date: Thu, 26 Jan 2017 09:09:35 -0600
+Message-ID: <fec2e1b2-df90-e9ba-4925-ecdc12d696b9@ti.com>
+References: <20170104205536.15963-1-d-gerlach@ti.com>
+ <7bd282d9-df6f-f4c6-1f7f-c8ed81c78af3@ti.com>
+ <CAL_JsqKxU4c=KSn0=xX9kmbk498fhqpiXMeGjcoe8Ah48FAzUg@mail.gmail.com>
+ <3bb89649-fd2a-acc6-6968-e54a00842ce2@ti.com>
+ <CAL_JsqL+L1oHAOv7tLevzbtRFSKRs9J01SgF=HR_vNNqNV+4+Q@mail.gmail.com>
+ <84d7d49b-933b-8b26-f18a-3a5054738cb1@ti.com>
+ <CAL_JsqJ9RitNC7ihC8ckJgV+49kaHk=W9tgdNBSjEfydhQS46A@mail.gmail.com>
+ <0eaa9914-83f1-7716-cf04-1e3dd44df647@ti.com>
+ <4cb25cf9-216f-2e18-f45d-ef7e48fa6c5e@ti.com> <m2ziip2puf.fsf@baylibre.com>
+ <CAL_Jsq+Vp8iYrAUmuSRzeeY_G6CUqFqG6XB6erDxo1RYo3g4=g@mail.gmail.com>
+ <CAPDyKFqzs59N5bc89X-96Fgy9b=_+s8zYmHHshQeDrJCnaqprA@mail.gmail.com>
+ <58821CA2.4050701@ti.com>
+ <CAPDyKFpTyn2isNahywmOOSWiZKov9xsudyWi_i-FejXjC+1AZw@mail.gmail.com>
+ <ec2f1697-4c60-fd88-6593-2a69ca7f5c83@ti.com>
+ <CAPDyKFq3zjyubxf3wc1V+F2W3rbnjj4ObFnHFvda+wCs4rBtnw@mail.gmail.com>
+ <23936395-d653-56c8-13f9-6dfeb6e9257b@ti.com>
+ <CAL_Jsq+9oEJJtHC4Gp_mWy_wJMLXsv2jgqKCMK8jm1MSWT-LRg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Lars-Peter Clausen <lars@metafoo.de>, linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Mark Brown <broonie@kernel.org>, Inki Dae <inki.dae@samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAL_Jsq+9oEJJtHC4Gp_mWy_wJMLXsv2jgqKCMK8jm1MSWT-LRg@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@baylibre.com>, Tero Kristo <t-kristo@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, Santosh Shilimkar <ssantosh@kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Lars,
-
-On 2017-01-25 14:12, Lars-Peter Clausen wrote:
-> On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
->> Add pointer to slave device to of_dma_xlate to let DMA engine driver
->> to know which slave device is using given DMA channel. This will be
->> later used to implement non-irq-safe runtime PM for DMA engine driver.
-> of_dma_xlate() is used to translate from a OF phandle and a specifier to a
-> DMA channel. On one hand this does not necessarily mean that the channel is
-> actually going to be used by the slave that called the xlate function.
-> Modifying the driver state when a lookup of the channel is done is a
-> layering violation. And this approach is also missing a way to disassociate
-> a slave from a DMA channel, e.g. when it is no longer used.
+On 01/25/2017 04:32 PM, Rob Herring wrote:
+> On Wed, Jan 25, 2017 at 10:59 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+>> On 01/24/2017 04:03 AM, Ulf Hansson wrote:
+>>>
+>>> On 23 January 2017 at 21:11, Dave Gerlach <d-gerlach@ti.com> wrote:
+>>>>
+>>>> On 01/20/2017 10:52 AM, Ulf Hansson wrote:
+>>>>>
+>>>>>
+>>>>> [...]
+>>>>>
+>>>>>>>> Another option is create something new either common or TI SCI
+>>>>>>>> specific. It could be just a table of ids and phandles in the SCI
+>>>>>>>> node. I'm much more comfortable with an isolated property in one node
+>>>>>>>> than something scattered throughout the DT.
+>>>>>>>
+>>>>>>>
+>>>>>>>
+>>>>>>> To me, this seems like the best possible solution.
+>>>>>>>
+>>>>>>> However, perhaps we should also consider the SCPI Generic power domain
+>>>>>>> (drivers/firmware/scpi_pm_domain.c), because I believe it's closely
+>>>>>>> related.
+>>>>>>> To change the power state of a device, this PM domain calls
+>>>>>>> scpi_device_set|get_power_state() (drivers/firmware/arm_scpi.c), which
+>>>>>>> also needs a device id as a parameter. Very similar to our case with
+>>>>>>> the TI SCI domain.
+>>>>>>>
+>>>>>>> Currently these SCPI device ids lacks corresponding DT bindings, so
+>>>>>>> the scpi_pm_domain tries to work around it by assigning ids
+>>>>>>> dynamically at genpd creation time.
+>>>>>>>
+>>>>>>> That makes me wonder, whether we should think of something
+>>>>>>> common/generic?
+>>>>>>
+>>>>>>
+>>>>>>
+>>>>>> When you say something common/generic, do you mean a better binding for
+>>>>>> genpd,
+>>>>>> or something bigger than that like a new driver? Because I do think a
+>>>>>> phandle
+>>>>>> cell left open for the genpd provider to interpret solves both the scpi
+>>>>>> and
+>>>>>> ti-sci problem we are facing here in the best way. Using generic PM
+>>>>>> domains lets
+>>>>>> us do exactly what we want apart from interpreting the phandle cell
+>>>>>> with
+>>>>>> our
+>>>>>> driver, and I feel like anything else we try at this point is just
+>>>>>> going
+>>>>>> to be
+>>>>>> to work around that. Is bringing back genpd xlate something we can
+>>>>>> discuss?
+>>>>>
+>>>>>
+>>>>>
+>>>>> Bringing back xlate, how would that help? Wouldn't that just mean that
+>>>>> you will get one genpd per device? That's not an option, I think we
+>>>>> are all in agreement to that.
+>>>>
+>>>>
+>>>>
+>>>> Sure, perhaps the custom xlate wouldn't be the right way to do it, as we
+>>>> wouldn't be able to associate a device directly to a phandle, at least
+>>>> with
+>>>> how it was implemented before, but I think we can skip that entirely.
+>>>> Does
+>>>> opening up the interpretation of the cells of the 'power-domains' phandle
+>>>> not solve all of these issues? Is that out of the question?
+>>>>
+>>>> genpd_xlate_simple currently just makes sure the args_count of the
+>>>> 'power-domains' phandle was zero and bails if it was not. Why couldn't we
+>>>> remove this check and let the driver interpret it while still using
+>>>> of_genpd_add_provider_simple to register the provider? It's still a
+>>>> 'simple'
+>>>> provider from the perspective of the genpd framework and the actual pm
+>>>> domain mapping will not change, but now the driver can parse the cells
+>>>> and
+>>>> do whatever it needs to, such as reading a device id.
+>>>>
+>>>> I think that's a bit more flexible and will avoid breaking anything that
+>>>> is
+>>>> there today.
+>>>
+>>>
+>>> Would you mind providing an example? Perhaps also some code snippets
+>>> dealing with the parsing?
+>>
+>>
+>> So again the goal of this is to move the ti,sci-id value back to
+>> power-domains phandle instead of having a separate property, so that would
+>> be step one in the DT. Then in the power-domains node change
+>> #power-domain-cells to one. And then from there, the only change to the
+>> genpd framework is this:
 >
-> On the other hand there are other mechanisms to translate between some kind
-> of firmware handle to a DMA channel which are completely ignored here.
+> I'd still like to understand how the ID is used in order to understand
+> if as a power-domain cell is appropriate. I think the test is this: is
+> the ID meaningful to (or defined by) the device or the power domain
+> controller? The former should be a property in the device node. The
+> latter should be phandle args.
+
+The device itself doesn't care about the ID or ever need to know what it is. The 
+power domain controller is the only user of the ID. The power domain controller 
+needs the ID for a specific device to be able to turn it on, so during probe of 
+each device the power-domain controller makes this association which is why I 
+included it in each device node, so I think it fits as a phandle arg based on 
+your test.
+
 >
-> So this approach does not work. This is something that needs to be done at
-> the dmaengine level, not a the firmware resource translation level. And it
-> needs a matching method that is called when the channel is disassociated
-> from a device, when the device no longer uses the DMA channel.
+>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>> index a5e1262b964b..b82e61f0bcfa 100644
+>> --- a/drivers/base/power/domain.c
+>> +++ b/drivers/base/power/domain.c
+>> @@ -1603,8 +1603,6 @@ static struct generic_pm_domain genpd_xlate_simple
+>>                                       struct of_phandle_args *genpdspec,
+>>                                       void *data)
+>>  {
+>> -       if (genpdspec->args_count != 0)
+>> -               return ERR_PTR(-EINVAL);
+>>         return data;
+>>  }
+>>
+>>
+>> because genpd_xlate_simple only checks that the phandle is zero so that it
+>> can fail if it is not, but there's no functional reason it needs to do this.
+>> The genpd framework works as it did before no matter what the cells are set
+>> to if using of_genpd_add_provider_simple. Then in the attach_dev callback
+>> inside the ti_sci_pm_domains driver instead of doing
+>>
+>>         ret = of_property_read_u32(np, "ti,sci-id", &idx);
+>>
+>> to read the ti,sc-id for a device into idx we can now do:
+>>
+>>        ret = of_parse_phandle_with_args(np, "power-domains",
+>>                                    "#power-domain-cells", 0, &pd_args);
+>>        idx = pd_args.args[0];
+>>
+>> or even simpler from within our driver
+>>
+>>         ret = of_property_read_u32_index(np, "power-domains", 1, &idx);
+>
+> This you should not be doing. The client driver shouldn't care how
+> many cells or what their values are.
 
-Frankly I agree that of_dma_xlate() should only return the requested channel
-to the dmaengine core and do not do any modification in the the driver 
-state.
+Client drivers in other places use xlate functions, like in the drivers/reset 
+framework, to interpret the cells. Is doing it this way really that different?
 
-However the current dma engine design and implementation breaks this rule.
-Please check the drivers - how do they implement of_xlate callback. They
-usually call dma_get_any_slave_channel, dma_get_slave_channel or
-__dma_request_channel there, which in turn calls dma_chan_get, which then
-calls back to device_alloc_chan_resources callback. Some of the drivers also
-do a hardware configuration or other resource allocation in of_xlate.
-This is a bit messy design and leave no place in the core to set slave 
-device
-before device_alloc_chan_resources callback, where one would expect to have
-it already set.
+Regards,
+Dave
 
-The best place to add new calls to the dmaengine drivers to set slave device
-would be just before device_alloc_chan_resources(), what in turn means that
-the current dmaengine core should do in dma_chan_get(). This would 
-require to
-forward the slave device pointer via even more layers including the of_xlate
-callback too. IMHO this is not worth the effort.
-
-DMA engine core and API definitely needs some cleanup. During such cleanup
-the slave device pointer might be moved out of xlate into separate callback
-when the core gets ready for such operation.
-
-I ignored other paths for other firmware handle to a DMA channel translation
-mechanism because for the current pl330 driver they are simply not used. I
-assume that if one needs to implement similar things for drivers relying on
-them, he will update the respective DMA engine core parts.
-
-Slave device assignments can be cleared in device_chan_release_resources if
-this is needed and that what existing DMA engine drivers do with the 
-resources
-allocated in the of_xlate callback...
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+>
+> Rob
+>
