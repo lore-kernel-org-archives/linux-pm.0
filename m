@@ -1,52 +1,30 @@
-From: Matt Ranostay <matt@ranostay.consulting>
-Subject: Re: [PATCH v4 2/8] devicetree: power: add battery state machine documentation
-Date: Wed, 25 Jan 2017 23:02:03 -0800
-Message-ID: <CAJ_EiSSPeWj+q+R5=HVVrsb39208-Gmj5_7T=ic6mYLxFuekNQ@mail.gmail.com>
-References: <20170122071404.9654-3-matt@ranostay.consulting>
- <20170122222212.27086-1-liam@networkimprov.net> <CAKvHMgRYqh_fksDXq2Jv1t6p9ckCOgR+O6gxRTdpd=9r8y__Bg@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v3 04/13] pinctrl: samsung: Document Exynos3250 SoC support
+Date: Thu, 26 Jan 2017 10:04:25 +0100
+Message-ID: <CACRpkdY1F-DyKmi0T0wdUG7xdqt134mWvUj+UMYtY6jJF1knbQ@mail.gmail.com>
+References: <CGME20170119134906eucas1p28eaf30c782d33b5a36afe31a89613123@eucas1p2.samsung.com>
+ <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com> <1484833733-16082-5-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f170.google.com ([209.85.216.170]:36027 "EHLO
-        mail-qt0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752276AbdAZHCF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2017 02:02:05 -0500
-Received: by mail-qt0-f170.google.com with SMTP id k15so59798325qtg.3
-        for <linux-pm@vger.kernel.org>; Wed, 25 Jan 2017 23:02:04 -0800 (PST)
-In-Reply-To: <CAKvHMgRYqh_fksDXq2Jv1t6p9ckCOgR+O6gxRTdpd=9r8y__Bg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-Reply-To: <1484833733-16082-5-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Tony Lindgren <tony@atomide.com>, Rob Herring <robh@kernel.org>
 
-On Wed, Jan 25, 2017 at 10:19 PM, Liam Breck <liam@networkimprov.net> wrote:
-> On Sun, Jan 22, 2017 at 2:22 PM, Liam Breck <liam@networkimprov.net> wrote:
->
->> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->> new file mode 100644
->> index 000000000000..398b4d622883
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->> @@ -0,0 +1,34 @@
->> +Battery Characteristics
->> +
->> +Required Properties:
->> + - compatible: Must be "fixed-battery"
->> +
->> +Optional Properties:
->> + - termination-microvolt: dead battery voltage
->> + - design-microwatt-hours: battery design energy
->> + - design-microamp-hours: battery design capacity
->
-> Also I suspect the members of struct power_supply_battery_info should
-> use the same names as appear in dts:
+On Thu, Jan 19, 2017 at 2:48 PM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
 
-These are internal and we can't be thinking just device tree.. ACPI
-and platform data is also an option.
-
+> Add missing compatible id for Exynos3250 SoC to device tree docs.
+> Exynos pin control driver supports it since commit d97f5b9804bfcdc1
+> ("pinctrl: exynos: Add driver data for Exynos3250").
 >
-> +struct power_supply_battery_info {
-> +  int design_microwatt_hours;
-> +  int design_microamp_hours;
-> +  int termination_microvolt;
-> etc
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
+
+Patch applied.
+
+Yours,
+Linus Walleij
