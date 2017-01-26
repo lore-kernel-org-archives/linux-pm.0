@@ -1,38 +1,30 @@
-From: Roger Shimizu <rogershimizu@gmail.com>
-Subject: Re: [PATCH v4 1/2] power: reset: add linkstation-reset driver
-Date: Fri, 27 Jan 2017 00:33:07 +0900
-Message-ID: <CAEQ9gE=+_OMV=J81mCddKsfbSWT3OtAojeg4oBebKg4YjXda=g@mail.gmail.com>
-References: <20161227070611.14852-1-rogershimizu@gmail.com>
- <20170107150451.17912-1-rogershimizu@gmail.com> <20170107150451.17912-2-rogershimizu@gmail.com>
- <CAEQ9gEkoKc0Yv+kLYGWgHZZW92u0tW8E9U0eT7ZhAx79yKxzLQ@mail.gmail.com>
- <20170119044327.j3d2rlpn5va3iw37@earth> <8760l1zvqs.fsf@free-electrons.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v3 REBASED 09/13] pinctrl: samsung: Use generic
+ of_device_get_match_data helper
+Date: Thu, 26 Jan 2017 16:34:32 +0100
+Message-ID: <CACRpkdahMLvmiYym+M++awpJq_j2p2Ce2zYYTMzEw2soz72gDg@mail.gmail.com>
+References: <CACRpkdY_SpqfyTTqSP5+a1k1LDf_5w77UXo=EognmOzWBz2c-Q@mail.gmail.com>
+ <CGME20170126093001eucas1p23c2d5d589a0490fc19dde1be37250a00@eucas1p2.samsung.com>
+ <1485422967-30643-1-git-send-email-m.szyprowski@samsung.com> <1485422967-30643-6-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f65.google.com ([209.85.213.65]:33687 "EHLO
-        mail-vk0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753585AbdAZPdY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2017 10:33:24 -0500
-In-Reply-To: <8760l1zvqs.fsf@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <1485422967-30643-6-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <f.fainelli@gmail.com>, Ryan Tandy <ryan@nardis.ca>, linux-pm@vger.kernel.org, Herbert Valerio Riedel <hvr@gnu.org>, devicetree@vger.kernel.org, Martin Michlmayr <tbm@cyrius.com>, linux-arm-kernel@lists.infradead.org, Sylver Bruneau <sylver.bruneau@googlemail.com>
 
-Dear Gregory,
+On Thu, Jan 26, 2017 at 10:29 AM, Marek Szyprowski
+<m.szyprowski@samsung.com> wrote:
 
-Thanks for contacting!
-
-On Fri, Jan 27, 2017 at 12:28 AM, Gregory CLEMENT
-<gregory.clement@free-electrons.com> wrote:
+> Replace custom code with generic helper.
 >
-> What is te status for your series?
->
-> Do you plan sending a new version soon?
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
 
-I'm still trying/working on it, but seems won't finish it very soon.
+Patch applied.
 
-Cheers,
--- 
-Roger Shimizu, GMT +9 Tokyo
-PGP/GPG: 4096R/6C6ACD6417B3ACB1
+Yours,
+Linus Walleij
