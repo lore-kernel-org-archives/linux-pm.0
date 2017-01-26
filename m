@@ -1,51 +1,40 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v3 11/13] pinctrl: samsung: Move retention control from
- mach-exynos to the pinctrl driver
-Date: Thu, 26 Jan 2017 10:13:26 +0100
-Message-ID: <2d9ad2d4-c2f8-ef6b-2504-1337db0da178@samsung.com>
-References: <CGME20170119134909eucas1p11a7638a4b9bf69b00458189ba9c1bb90@eucas1p1.samsung.com>
- <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com>
- <1484833733-16082-12-git-send-email-m.szyprowski@samsung.com>
- <CACRpkdYc7u6Q4CW7a2ECsDkfUkiDJq_zk--RvKwz2i-XW0xHLQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: [PATCH v3 REBASED 04/13] pinctrl: samsung: Document Exynos3250 SoC
+ support
+Date: Thu, 26 Jan 2017 10:29:18 +0100
+Message-ID: <1485422967-30643-1-git-send-email-m.szyprowski@samsung.com>
+References: <CACRpkdY_SpqfyTTqSP5+a1k1LDf_5w77UXo=EognmOzWBz2c-Q@mail.gmail.com>
+ <CGME20170126092958eucas1p283f0ac46709ec4e72ecc6fc09735aade@eucas1p2.samsung.com>
 Return-path: <linux-gpio-owner@vger.kernel.org>
-In-reply-to: <CACRpkdYc7u6Q4CW7a2ECsDkfUkiDJq_zk--RvKwz2i-XW0xHLQ@mail.gmail.com>
+In-reply-to: <CACRpkdY_SpqfyTTqSP5+a1k1LDf_5w77UXo=EognmOzWBz2c-Q@mail.gmail.com>
 Sender: linux-gpio-owner@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>, "arm@kernel.org" <arm@kernel.org>
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Linus Walleij <linus.walleij@linaro.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+Add missing compatible id for Exynos3250 SoC to device tree docs.
+Exynos pin control driver supports it since commit d97f5b9804bfcdc1
+("pinctrl: exynos: Add driver data for Exynos3250").
 
-On 2017-01-26 10:10, Linus Walleij wrote:
-> On Thu, Jan 19, 2017 at 2:48 PM, Marek Szyprowski
-> <m.szyprowski@samsung.com> wrote:
->> This patch moves pad retention control from PMU driver to Exynos pin
->> controller driver. This helps to avoid possible ordering and logical
->> dependencies between machine, PMU and pin control code. Till now it
->> worked fine only because sys_ops for PMU and pin controller were called
->> in registration order.
->> This is also a preparation for adding new features to Exynos pin
->> controller driver, like runtime power management and suspending
->> individual pin controllers, which might be a part of some power domain.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
->> Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
->> ---
->>   arch/arm/mach-exynos/suspend.c           |  64 --------------
->>   drivers/pinctrl/samsung/pinctrl-exynos.c | 145 +++++++++++++++++++++++++++++++
-> This makes all kind of sense, but I would ideally like an ACK
-> from the ARM SoC maintainer(s): Arnd, Olof, are you OK with
-> this?
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
+---
+ Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-Isn't enough to have Krzysztof's (Exynos SoC maintainer) 'reviewed-by' tag?
-I assume that 'reviewed-by' also includes 'acked-by'.
-
-Best regards
+diff --git a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+index 1baf19eecabf..5e00a21de2bf 100644
+--- a/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
++++ b/Documentation/devicetree/bindings/pinctrl/samsung-pinctrl.txt
+@@ -13,6 +13,7 @@ Required Properties:
+   - "samsung,s3c2450-pinctrl": for S3C2450-compatible pin-controller,
+   - "samsung,s3c64xx-pinctrl": for S3C64xx-compatible pin-controller,
+   - "samsung,s5pv210-pinctrl": for S5PV210-compatible pin-controller,
++  - "samsung,exynos3250-pinctrl": for Exynos3250 compatible pin-controller.
+   - "samsung,exynos4210-pinctrl": for Exynos4210 compatible pin-controller.
+   - "samsung,exynos4x12-pinctrl": for Exynos4x12 compatible pin-controller.
+   - "samsung,exynos5250-pinctrl": for Exynos5250 compatible pin-controller.
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+1.9.1
 
