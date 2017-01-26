@@ -1,96 +1,145 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v3 01/13] soc: samsung: pmu: Provide global function to get
- PMU regmap
-Date: Thu, 26 Jan 2017 11:22:08 +0100
-Message-ID: <3ba1504d-5874-b09b-1ad8-6cda4851f113@samsung.com>
-References: <CGME20170119134904eucas1p153a1d5b2ff9826c88293b6a8fe5140bc@eucas1p1.samsung.com>
- <1484833733-16082-1-git-send-email-m.szyprowski@samsung.com>
- <1484833733-16082-2-git-send-email-m.szyprowski@samsung.com>
- <CACRpkdYyOgpAhAY=7QrXiEB2oDgs0azt_Tb80iO4vjzk1obemQ@mail.gmail.com>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH 08/22] power: supply: add AC power supply driver for
+ AXP20X and AXP22X PMICs
+Date: Thu, 26 Jan 2017 14:32:21 +0100
+Message-ID: <6a3edb64-8ea9-cb14-b826-d6e8e2c4c4b7@free-electrons.com>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-9-quentin.schulz@free-electrons.com>
+ <20170117030013.g5xhlmrxpthyfewa@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.w1.samsung.com ([210.118.77.13]:27231 "EHLO
-        mailout3.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753453AbdAZKWW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Jan 2017 05:22:22 -0500
-In-reply-to: <CACRpkdYyOgpAhAY=7QrXiEB2oDgs0azt_Tb80iO4vjzk1obemQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170117030013.g5xhlmrxpthyfewa@earth>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, jic23@kernel.org, icenowy@aosc.xyz
 List-Id: linux-pm@vger.kernel.org
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Tomasz Figa <tomasz.figa@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hi Linus,
+Hi Sebastian,
 
-On 2017-01-26 10:43, Linus Walleij wrote:
-> On Thu, Jan 19, 2017 at 2:48 PM, Marek Szyprowski
-> <m.szyprowski@samsung.com> wrote:
->
->> PMU is something like a SoC wide service, so add a helper function to get
->> PMU regmap. This will be used by other Exynos device drivers. This way it
->> can be avoided to model this dependency in device tree (as phandles to PMU
->> node) for almost every device in the SoC.
+On 17/01/2017 04:00, Sebastian Reichel wrote:
+> Hi Quentin,
+> 
+> The driver looks mostly fine. I do have a two comments, though.
+> 
+> On Mon, Jan 02, 2017 at 05:37:08PM +0100, Quentin Schulz wrote:
+>> [...]
 >>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> Reviewed-by: Tomasz Figa <tomasz.figa@gmail.com>
-> But why? I could understand it as a local header in
-> drivers/soc/samsung/*.h for those files.
->
-> For the global kernel scope we usually look up the syscon
-> regmap we need using a phandle, DT node or even
-> compatible string directly from the device tree.
->
-> Just
-> #include <linux/mfd/syscon.h>
->
-> syscon_node_to_regmap()
-> syscon_regmap_lookup_by_compatible()
-> syscon_regmap_lookup_by_pdevname()
-> syscon_regmap_lookup_by_phandle()
->
-> what is wrong with just using one of these?
->
-> Introducing a special header just creates compile time problems
-> with global interfaces when merging code and just litter the kernel
-> for no good reason.
->
-> Can you explain why this necessarily different approach is
-> needed?
+>> +static int axp20x_ac_power_probe(struct platform_device *pdev)
+>> +{
+>> +	static const char * const axp20x_irq_names[] = { "ACIN_PLUGIN",
+>> +		"ACIN_REMOVAL", NULL };
+>>
+>> +	static const char * const *irq_names;
+>> +	const struct power_supply_desc *ac_power_desc;
+>> +	int i, irq, ret;
+>> +
+>> +	if (!of_device_is_available(pdev->dev.of_node))
+>> +		return -ENODEV;
+>> +
+>> +	if (!axp20x) {
+>> +		dev_err(&pdev->dev, "Parent drvdata not set\n");
+>> +		return -EINVAL;
+>> +	}
+> 
+> axp20x will no longer be needed after implementing below
+> comments.
+> 
+>> [...]
+>> +	irq_names = axp20x_irq_names;
+> 
+> Just rename axp20x_irq_names into irq_names, since its only used
+> here.
+> 
+>> [...]
+>>
+>> +	power->np = pdev->dev.of_node;
+> 
+> This can be dropped, it's not used at all.
+> 
+>> +	power->regmap = axp20x->regmap;
+> 
+> power->regmap = dev_get_regmap(pdev->dev.parent, NULL);
+> 
 
-syscon_regmap_lookup_by_phandle() requires to have a phandle in the client
-node. This has been used in v0 of this patchset and rejected as breaking
-the old DT "compatibility".
+ACK on everything above.
 
-syscon_regmap_lookup_by_compatible() requires to have a compatible string
-hardcoded in the client driver. This might be used, but will require to have
-(and maintain) a duplicated list of PMU compatibles in pin control driver.
-There is a little problem with exynos4212 and exynos4412, which have same
-pinctrl compatible (samsung,exynos4x12-pinctrl), but separate PMU 
-compatibles
-(samsung,exynos4212-pmu and samsung,exynos4412-pmu). Luckily support for
-Exynos4212 has been scheduled for removal, so we can ignore this issue for
-now. The problem with maintaining a duplicated list of compatibles remains.
+>> [...]
+>> +	/* Request irqs after registering, as irqs may trigger immediately */
+>> +	for (i = 0; irq_names[i]; i++) {
+>> +		irq = platform_get_irq_byname(pdev, irq_names[i]);
+>> +		if (irq < 0) {
+>> +			dev_warn(&pdev->dev, "No IRQ for %s: %d\n",
+>> +				 irq_names[i], irq);
+>> +			continue;
+>> +		}
+>> +		irq = regmap_irq_get_virq(axp20x->regmap_irqc, irq);
+> 
+> The mapping should actually happen in the mfd driver, so that
+> the platform resource contains a valid irq.
+> 
 
-syscon_regmap_lookup_by_pdevname() requires the provider to register regmap
-first, then to hardcode the provider name in all client drivers. A bit 
-similar
-approach was used in v1, but the drawback was runtime probe order dependency
-between PMU driver and pin control driver. I was requested to move the code
-for acquiring PMU regmap to PMU driver, what in turn ended in the solution
-presented in v2/v3 of this patchset, which requires least code for handling,
-has no maintenance overhead, and doesn't cause any probe dependency issues.
-It can be also later used for almost every driver found on the newer Exynos
-SoCs, because for most of them there is a need to poke some registers in
-the PMU not handled separately by any of the existing frameworks.
+I've come with this solution:
 
-Various other drivers in the drivers/soc/ provide EXPORT_SYMBOL() based API,
-so I don't think that this is a totally wrong approach.
+------------------------------------------------------------------------
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 012c064..117eacb 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -882,7 +882,7 @@ EXPORT_SYMBOL(axp20x_match_device);
 
-> I guess I should have said this earlier, mea culpa.
+ int axp20x_device_probe(struct axp20x_dev *axp20x)
+ {
+-	int ret;
++	int ret, irq_base;
 
-Best regards
+ 	ret = regmap_add_irq_chip(axp20x->regmap, axp20x->irq,
+ 				  IRQF_ONESHOT | IRQF_SHARED, -1,
+@@ -893,8 +893,9 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
+ 		return ret;
+ 	}
+
++	irq_base = regmap_irq_chip_get_base(axp20x->regmap_irqc);
+ 	ret = mfd_add_devices(axp20x->dev, -1, axp20x->cells,
+-			      axp20x->nr_cells, NULL, 0, NULL);
++			      axp20x->nr_cells, NULL, irq_base, NULL);
+
+ 	if (ret) {
+ 		dev_err(axp20x->dev, "failed to add MFD devices: %d\n", ret);
+------------------------------------------------------------------------
+
+However, this implies that all cells added by the mfd driver which are
+requesting irqs will need to be changed in the same commit to remove the
+regmap_irq_get_virq calls. If we don't modify the drivers, they will
+purely fail to request the irqs.
+
+The impacted drivers are the following:
+
+ - drivers/extcon/extcon-axp288.c
+ - drivers/input/misc/axp20x-pek.c
+ - drivers/power/supply/axp20x_usb_power.c
+ - drivers/power/supply/axp288_charger.c
+ - drivers/power/supply/axp288_fuel_gauge.c
+
+Is it really worth to do such a cleanup? I'm assuming that impacting
+four different subsystems at the same time might require a bit of time
+to make the patch into the kernel. I don't see also another way than
+doing one single patch for all changes since the changes in the mfd
+driver will break all aforementioned drivers.
+
+Thanks,
+Quentin
+
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
