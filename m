@@ -1,8 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 16/25] dt-bindings: power: supply: add AXP20X/AXP22X
- battery DT binding
-Date: Fri, 27 Jan 2017 09:54:49 +0100
-Message-ID: <20170127085458.18270-17-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 23/25] ARM: dtsi: axp22x: add battery power supply subnode
+Date: Fri, 27 Jan 2017 09:54:56 +0100
+Message-ID: <20170127085458.18270-24-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,58 +21,40 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+The X-Powers AXP22X PMIC exposes battery supply various data such as
+the battery status (charging, discharging, full, dead), current max
+limit, current current, battery capacity (in percentage), voltage max
+limit, current voltage, and battery capacity (in Ah).
 
-This patch adds the DT binding documentation for the battery power
-supply which gets various data from the PMIC, such as the battery status
-(charging, discharging, full, dead), current max limit, current current,
-battery capacity (in percentage), voltage max and min limits, current
-voltage and battery capacity (in Ah).
+This adds the battery power supply subnode for AXP22X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
 
 v2:
- - changed DT node name from ac_power_supply to ac-power-supply,
+ - changed DT node name from battery_power_supply to
+ battery-power-supply,
  - removed io-channels and io-channel-names from DT (the IIO mapping is
  done in the IIO ADC driver now),
- - added x-powers,constant-charge-current property to set the maximal
- default constant current charge of the battery,
 
- .../bindings/power/supply/axp20x_battery.txt       | 25 ++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+ arch/arm/boot/dts/axp22x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-new file mode 100644
-index 0000000..6f7eff2
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-@@ -0,0 +1,25 @@
-+AXP20x and AXP22x battery power supply
-+
-+Required Properties:
-+ - compatible, one of:
-+			"x-powers,axp209-battery-power-supply"
-+			"x-powers,axp221-battery-power-supply"
-+
-+Optional properties:
-+ - x-powers,constant-charge-current: its value in uA gives the PMIC the default
-+ maximal allowed value for the constant charge current of the battery.
-+
-+This node is a subnode of the axp20x/axp22x PMIC.
-+
-+The AXP20X and AXP22X can read the battery voltage, charge and discharge
-+currents of the battery by reading ADC channels from the AXP20X/AXP22X
-+ADC.
-+
-+Example:
-+
-+&axp209 {
+diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
+index f2835b4..bcfab6e 100644
+--- a/arch/arm/boot/dts/axp22x.dtsi
++++ b/arch/arm/boot/dts/axp22x.dtsi
+@@ -61,6 +61,11 @@
+ 		compatible = "x-powers,axp221-adc";
+ 	};
+ 
 +	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp209-battery-power-supply";
-+		x-powers,constant-charge-current = <600000>;
-+	}
-+};
++		compatible = "x-powers,axp221-battery-power-supply";
++		status = "disabled";
++	};
++
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
 -- 
 2.9.3
