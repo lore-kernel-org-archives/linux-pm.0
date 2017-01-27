@@ -1,14 +1,12 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 03/25] power: supply: axp20x_usb_power: use IIO channels
- when available
-Date: Fri, 27 Jan 2017 09:54:36 +0100
-Message-ID: <20170127085458.18270-4-quentin.schulz@free-electrons.com>
-References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 00/25] add support for AXP20X and AXP22X power supply
+ drivers
+Date: Fri, 27 Jan 2017 09:54:33 +0100
+Message-ID: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,139 +20,127 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X PMIC exposes the current current and voltage
-measures via an internal ADC.
-
-This adds the possibility to read IIO channels directly for processed
-values rather than reading the registers and computing the value.
-
-For backward compatibility purpose, if the IIO driver is not compiled,
-this driver will fall back on previous behaviour which is direct
-register readings.
-
-Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
----
-
-added in v2
-
- drivers/power/supply/axp20x_usb_power.c | 70 +++++++++++++++++++++++++++++++--
- 1 file changed, 66 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-index 1bcb025..d8b1dc6 100644
---- a/drivers/power/supply/axp20x_usb_power.c
-+++ b/drivers/power/supply/axp20x_usb_power.c
-@@ -22,6 +22,7 @@
- #include <linux/power_supply.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
-+#include <linux/iio/consumer.h>
- 
- #define DRVNAME "axp20x-usb-power-supply"
- 
-@@ -49,6 +50,8 @@ struct axp20x_usb_power {
- 	struct regmap *regmap;
- 	struct power_supply *supply;
- 	int axp20x_id;
-+	struct iio_channel *vbus_v;
-+	struct iio_channel *vbus_i;
- };
- 
- static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
-@@ -76,6 +79,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 		val->intval = AXP20X_VBUS_VHOLD_uV(v);
- 		return 0;
- 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
-+			ret = iio_read_channel_processed(power->vbus_v,
-+							 &val->intval);
-+			if (ret)
-+				return ret;
-+
-+			/*
-+			 * IIO framework gives mV but Power Supply framework
-+			 * gives uV.
-+			 */
-+			val->intval *= 1000;
-+			return 0;
-+		}
-+
- 		ret = axp20x_read_variable_width(power->regmap,
- 						 AXP20X_VBUS_V_ADC_H, 12);
- 		if (ret < 0)
-@@ -107,6 +124,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
- 		}
- 		return 0;
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
-+			ret = iio_read_channel_processed(power->vbus_i,
-+							 &val->intval);
-+			if (ret)
-+				return ret;
-+
-+			/*
-+			 * IIO framework gives mA but Power Supply framework
-+			 * gives uA.
-+			 */
-+			val->intval *= 1000;
-+			return 0;
-+		}
-+
- 		ret = axp20x_read_variable_width(power->regmap,
- 						 AXP20X_VBUS_I_ADC_H, 12);
- 		if (ret < 0)
-@@ -269,6 +300,36 @@ static const struct power_supply_desc axp22x_usb_power_desc = {
- 	.set_property = axp20x_usb_power_set_property,
- };
- 
-+static int configure_iio_channels(struct platform_device *pdev,
-+				  struct axp20x_usb_power *power)
-+{
-+	power->vbus_v = devm_iio_channel_get(&pdev->dev, "vbus_v");
-+	if (IS_ERR(power->vbus_v)) {
-+		if (PTR_ERR(power->vbus_v) == -ENODEV)
-+			return -EPROBE_DEFER;
-+		return PTR_ERR(power->vbus_v);
-+	}
-+
-+	power->vbus_i = devm_iio_channel_get(&pdev->dev, "vbus_i");
-+	if (IS_ERR(power->vbus_i)) {
-+		if (PTR_ERR(power->vbus_i) == -ENODEV)
-+			return -EPROBE_DEFER;
-+		return PTR_ERR(power->vbus_i);
-+	}
-+
-+	return 0;
-+}
-+
-+static int configure_adc_registers(struct axp20x_usb_power *power)
-+{
-+	/* Enable vbus voltage and current measurement */
-+	return regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
-+				  AXP20X_ADC_EN1_VBUS_CURR |
-+				  AXP20X_ADC_EN1_VBUS_VOLT,
-+				  AXP20X_ADC_EN1_VBUS_CURR |
-+				  AXP20X_ADC_EN1_VBUS_VOLT);
-+}
-+
- static int axp20x_usb_power_probe(struct platform_device *pdev)
- {
- 	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
-@@ -307,10 +368,11 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
- 		if (ret)
- 			return ret;
- 
--		/* Enable vbus voltage and current measurement */
--		ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
--			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT,
--			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT);
-+		if (IS_ENABLED(CONFIG_AXP20X_ADC))
-+			ret = configure_iio_channels(pdev, power);
-+		else
-+			ret = configure_adc_registers(power);
-+
- 		if (ret)
- 			return ret;
- 
--- 
-2.9.3
+VGhlIFgtUG93ZXJzIEFYUDIwWCBhbmQgQVhQMjJYIFBNSUNzIGhhdmUgbXVsdGlwbGUgQURDcy4g
+VGhleSBleHBvc2UKaW5mb3JtYXRpb24gYW5kIGRhdGEgb2YgdGhlIHZhcmlvdXMgcG93ZXIgc3Vw
+cGxpZXMgdGhleSBzdXBwb3J0IHN1Y2ggYXMKQUNJTiwgYmF0dGVyeSBhbmQgVkJVUy4gRm9yIGV4
+YW1wbGUsIHRoZXkgZXhwb3NlIHRoZSBjdXJyZW50IGJhdHRlcnkKdm9sdGFnZSwgY2hhcmdlIG9y
+IGRpc2NoYXJnZSwgYXMgd2VsbCBhcyBBQ0lOIGFuZCBWQlVTIGN1cnJlbnQgdm9sdGFnZXMKYW5k
+IGN1cnJlbnRzLCBpbnRlcm5hbCBQTUlDIHRlbXBlcmF0dXJlIGFuZCBBREMgb24gMiBkaWZmZXJl
+bnQgR1BJT3MKd2hlbiBpbiB0aGUgcmlnaHQgbW9kZSAoZm9yIHRoZSBBWFAyMDkgb25seSkuCgpU
+aGUgQUNJTiBwb3dlciBzdXBwbHkgZHJpdmVyIGlzIGFkZGVkIGJ5IHRoaXMgcGF0Y2guIFRoZSBB
+WFAyMFggYW5kCkFYUDIyWCBjYW4gYm90aCByZWFkIHRoZSBzdGF0dXMgYW5kIHRoZSAidXNhYmls
+aXR5IiBvZiB0aGUgcG93ZXIgc3VwcGx5CmJ1dCBvbmx5IHRoZSBBWFAyMDkgd2lsbCBiZSBhYmxl
+IHRvIHRlbGwgdGhlIGN1cnJlbnQgY3VycmVudCBhbmQgdm9sdGFnZQpvZiB0aGUgcG93ZXIgc3Vw
+cGx5IGJ5IHJlYWRpbmcgQURDIGNoYW5uZWxzLiBJdCBpcyBzaW1wbHkgbm90IHN1cHBvcnRlZApi
+eSB0aGUgQVhQMjJYIFBNSUNzLgoKVGhlIGJhdHRlcnkgcG93ZXIgc3VwcGx5IGRyaXZlciBpcyBh
+bHNvIGFkZGVkIGJ5IHRoaXMgcGF0Y2guIFRoZSBBWFAyMFgKYW5kIEFYUDIyWCBzaGFyZSBtb3N0
+IG9mIHRoZWlyIGJlaGF2aW91ciBidXQgaGF2ZSBzbGlnaHQgdmFyaWF0aW9ucy4gVGhlCmFsbG93
+ZWQgdGFyZ2V0IHZvbHRhZ2VzIGZvciBiYXR0ZXJ5IGNoYXJnaW5nIGFyZSBub3QgdGhlIHNhbWUs
+IHRoZQpBWFAyMlggUE1JQyBhcmUgYWJsZSB0byB0ZWxsIGlmIHRoZSBiYXR0ZXJ5IHBlcmNlbnRh
+Z2UgY29tcHV0ZWQgYnkgdGhlClBNSUMgaXMgdHJ1c3R3b3J0aHkgYW5kIHRoZXkgaGF2ZSBkaWZm
+ZXJlbnQgZm9ybXVsYXMgZm9yIGNvbXB1dGluZyBtYXgKY3VycmVudCBmb3IgYmF0dGVyeSBwb3dl
+ciBzdXBwbHkuIFRoZSBkcml2ZXIgaXMgYWJsZSB0byBnaXZlIHRoZSBjdXJyZW50CnZvbHRhZ2Ug
+YW5kIGN1cnJlbnQgb2YgdGhlIGJhdHRlcnkgKGJlIGl0IGNoYXJnaW5nIG9yIGRpc2NoYXJnaW5n
+KSwgdGhlCm1heGltYWwgYW5kIG1pbmltYWwgdm9sdGFnZSBhbmQgbWF4aW1hbCBjdXJyZW50IGFs
+bG93ZWQgZm9yIHRoZSBiYXR0ZXJ5LAp3aGV0aGVyIHRoZSBiYXR0ZXJ5IGlzIHByZXNlbnQgYW5k
+IHVzYWJsZSBhbmQgaXRzIGNhcGFjaXR5LiBJdCB3aWxsIGdldAp0aGUgYmF0dGVyeSBjdXJyZW50
+IGN1cnJlbnQgYW5kIHZvbHRhZ2UgYnkgcmVhZGluZyB0aGUgQURDIGNoYW5uZWxzLiBUaGUKUE1J
+QyBhbGxvd3MgbWF4aW1hbCB2b2x0YWdlcyAoNC4zNlYgZm9yIEFYUDIwWCBhbmQgNC4yMlYgYW5k
+IDQuMjRWIGZvcgpBWFAyMlgpIHRoYXQgc2hvdWxkIG5vdCBiZSB1c2VkIHdpdGggTGl0aGl1bS1i
+YXNlZCBiYXR0ZXJpZXMgYW5kIHNpbmNlCnRoaXMgUE1JQyBpcyBzdXBwb3NlZCB0byBiZSB1c2Vk
+IHdpdGggTGl0aGl1bS1iYXNlZCBiYXR0ZXJpZXMsIHRoZXkgaGF2ZQpiZWVuIGRpc2FibGVkLiBU
+aGUgdmFsdWVzIHJldHVybmVkIGJ5IHRoZSBBREMgZHJpdmVyIGFyZSBtdWx0aXBsZWQgYnkKMTAw
+MCB0byBzY2FsZSBmcm9tIHRoZSBtViByZXR1cm5lZCBieSB0aGUgQURDIHRvIHRoZSB1ViBleHBl
+Y3RlZCBieSB0aGUKcG93ZXIgc3VwcGx5IGZyYW1ld29yay4KClRoaXMgc2VyaWVzIG9mIHBhdGNo
+IGFkZHMgRFQgYmluZGluZ3MgZm9yIEFDSU4gcG93ZXIgc3VwcGx5LCBBREMgYW5kCmJhdHRlcnkg
+cG93ZXIgc3VwcGx5IGRyaXZlcnMgZm9yIEFYUDIwWCBhbmQgQVhQMjJYIFBNSUNzIGFuZCB0aGVp
+cgpkb2N1bWVudGF0aW9uLiBJdCBhbHNvIGVuYWJsZXMgdGhlIHN1cHBvcnRlZCBwb3dlciBzdXBw
+bGllcyBmb3IgdGhlCk5leHR0aGluZyBDby4gQ0hJUCBhbmQgU2lubGlueCBTaW5BMzMgYm9hcmRz
+LgoKVGhlIGRpZmZlcmVudCBkcml2ZXJzIGFyZSBhbHNvIGFkZGVkIHRvIHRoZSBNRkQgY2VsbHMg
+b2YgdGhlIEFYUDIwWCBhbmQKQVhQMjJYIGNlbGxzIGFuZCB0aGUgd3JpdGVhYmxlIGFuZCB2b2xh
+dGlsZSByZWdzIHVwZGF0ZWQgdG8gd29yayB3aXRoCnRoZSBuZXdseSBhZGRlZCBkcml2ZXJzLgoK
+VkJVUyBkcml2ZXIgaGFzIGludGVudGlvbmFsbHkgbm90IGJlZW4gbW9kaWZpZWQgdG8gdXNlIHRo
+ZSBBREMgY2hhbm5lbHMKYmVjYXVzZSBhIERUIGJpbmRpbmcgYWxyZWFkeSBleGlzdHMgZm9yIHRo
+aXMgZHJpdmVyLiBNaWdyYXRpbmcgdGhlCmRyaXZlciB3b3VsZCBtZWFuIHRvIGFkZCBhbiBpaW9f
+bWFwIHRvIG1hcCB0aGUgQURDIGNoYW5uZWxzIHRvIHRoZSBWQlVTCmRyaXZlciAoc28gd2UgY2Fu
+IHVzZSBpaW9fY2hhbm5lbF9nZXQgYW5kIGlpb19yZWFkX2NoYW5uZWxfcHJvY2Vzc2VkCmZ1bmN0
+aW9ucykuIFRoaXMgc2xpZ2h0bHkgY29tcGxleGlmaWVzIHRoZSBWQlVTIGRyaXZlciBvbmx5IGZv
+cgoiY29zbWV0aWMiIGNoYW5nZXMuIEZlZWwgZnJlZSB0byBnaXZlIHlvdXIgdHdvIGNlbnRzIG9u
+IHRoZSBtYXR0ZXIuCgpUaGlzIHNlcmllcyBvZiBwYXRjaCBpcyBiYXNlZCBvbiBhIHByZXZpb3Vz
+IHVwc3RyZWFtaW5nIGF0dGVtcHQgZG9uZSBieQpCcnVubyBQcsOpbW9udCBmZXcgbW9udGhzIGFn
+by4gSXQgZGlmZmVycyBpbiB0aHJlZSBwb2ludHM6IHRoZSBBREMKZHJpdmVyIGRvZXMgbm90IHRl
+bGwgdGhlIGJhdHRlcnkgdGVtcGVyYXR1cmUgKFRTX0lOKSBhcyBJIGRvIG5vdCBoYXZlIGEKYm9h
+cmQgdG8gdGVzdCBpdCB3aXRoLCBpdCBkb2VzIG5vdCB0ZWxsIHRoZSBpbnN0YW50YW5lb3VzIGJh
+dHRlcnkgcG93ZXIKYXMgaXQgcmV0dXJucyBjcmF6eSB2YWx1ZXMgZm9yIG1lIGFuZCBmaW5hbGx5
+IG5vIHN1cHBvcnQgZm9yIE9DViBjdXJ2ZXMKZm9yIHRoZSBiYXR0ZXJ5LgoKWW91IGNhbiB0ZXN0
+IHRoZXNlIHBhdGNoZXMgZnJvbSB0aGlzIHJlcG8gYW5kIGJyYW5jaDoKaHR0cHM6Ly9naXRodWIu
+Y29tL1FTY2h1bHovbGludXgvdHJlZS9heHAyeHhfYWRjX2JhdHRfYWNfdjIKCnYyOgogLSBTb21l
+IHJlZ2lzdGVycycgbmFtZSBoYXZlIGJlZW4gY2hhbmdlZCB0byBiZXR0ZXIgcmVmbGVjdCB0aGVp
+cgogcHVycG9zZSwKIC0gTWFrZSBWQlVTIHBvd2VyIHN1cHBseSBkcml2ZXIgdXNlIElJTyBjaGFu
+bmVscyB3aGVuIEFYUCBBREMgZHJpdmVyIGlzCiBlbmFibGVkLCBidXQgZmFsbCBiYWNrIG9uIHBy
+ZXZpb3VzIGJlaGF2aW9yIHdoZW4gZGlzYWJsZWQuIFRoaXMgaXMgbWFkZQogdG8gYXZvaWQgdGhl
+IEFEQyBkcml2ZXIgb3ZlcndyaXR0aW5nIHJlZ2lzdGVycyBmb3IgVkJVUyBwb3dlciBzdXBwbHkK
+IEFEQyB3aGVuIHJlbW92ZWQsCiAtIFJlbW92ZWQgdXNlbGVzcyBhZGRpbmcgb2YgZGF0YSByZWdp
+c3RlcnMgdG8gdm9sYXRpbGUgcmVnaXN0ZXJzLAogLSBSZW9yZGVyZWQgSUlPIGNoYW5uZWxzLCBu
+b3cgZ3JvdXBlZCBieSBzYW1lIHBhcnQgb2YgdGhlIFBNSUMgKGUuZy4KIHZvbHRhZ2UgYW5kIGN1
+cnJlbnQgb2YgdGhlIGJhdHRlcnkgaGF2ZSB0aGUgc2FtZSBpbmRleCBpbiBkaWZmZXJlbnQKIElJ
+TyB0eXBlcyksCiAtIEFkZGVkIHN0cnVjdHVyZXMgZm9yIHNwZWNpZmljIGRhdGEgaW5zdGVhZCBv
+ZiBtYXRjaGluZyBvbiBJRHMsCiAtIFN3aXRjaGVkIGZyb20gRFQgSUlPIGNoYW5uZWxzIG1hcHBp
+bmcgdG8gaWlvX21hcCBzdHJ1Y3R1cmVzIElJTwogY2hhbm5lbHMgbWFwcGluZywKClF1ZW50aW4K
+ClF1ZW50aW4gU2NodWx6ICgyNSk6CiAgZHQtYmluZGluZ3M6IGlpbzogYWRjOiBhZGQgQVhQMjBY
+L0FYUDIyWCBBREMgRFQgYmluZGluZwogIG1mZDogYXhwMjB4OiBjb3JyZWN0IG5hbWUgb2YgdGVt
+cGVyYXR1cmUgZGF0YSBBREMgcmVnaXN0ZXJzCiAgcG93ZXI6IHN1cHBseTogYXhwMjB4X3VzYl9w
+b3dlcjogdXNlIElJTyBjaGFubmVscyB3aGVuIGF2YWlsYWJsZQogIGlpbzogYWRjOiBhZGQgc3Vw
+cG9ydCBmb3IgWC1Qb3dlcnMgQVhQMjBYIGFuZCBBWFAyMlggUE1JQ3MgQURDcwogIG1mZDogYXhw
+MjB4OiBhZGQgQURDIGNlbGxzIGZvciBBWFAyMFggYW5kIEFYUDIyWCBQTUlDcwogIEFSTTogZHRz
+aTogYXhwMjA5OiBhZGQgQVhQMjA5IEFEQyBzdWJub2RlCiAgQVJNOiBkdHNpOiBheHAyMng6IGFk
+ZCBBWFAyMlggQURDIHN1Ym5vZGUKICBkdC1iaW5kaW5nczogcG93ZXI6IHN1cHBseTogYWRkIEFY
+UDIwWC9BWFAyMlggQUMgcG93ZXIgc3VwcGx5CiAgaWlvOiBhZGM6IGF4cDIweF9hZGM6IG1hcCBh
+Y2luX2kgYW5kIGFjaW5fdgogIHBvd2VyOiBzdXBwbHk6IGFkZCBBQyBwb3dlciBzdXBwbHkgZHJp
+dmVyIGZvciBBWFAyMFggYW5kIEFYUDIyWCBQTUlDcwogIG1mZDogYXhwMjB4OiBhZGQgQUMgcG93
+ZXIgc3VwcGx5IGNlbGxzIGZvciBBWFAyMlggUE1JQ3MKICBBUk06IGR0c2k6IGF4cDIwOTogYWRk
+IEFDIHBvd2VyIHN1cHBseSBzdWJub2RlCiAgQVJNOiBkdHNpOiBheHAyMng6IGFkZCBBQyBwb3dl
+ciBzdXBwbHkgc3Vibm9kZQogIEFSTTogZHRzOiBzdW44aTogc2luYTMzOiBlbmFibGUgQUNJTiBw
+b3dlciBzdXBwbHkgc3Vibm9kZQogIEFSTTogc3VuNWk6IGNoaXA6IGVuYWJsZSBBQ0lOIHBvd2Vy
+IHN1cHBseSBzdWJub2RlCiAgZHQtYmluZGluZ3M6IHBvd2VyOiBzdXBwbHk6IGFkZCBBWFAyMFgv
+QVhQMjJYIGJhdHRlcnkgRFQgYmluZGluZwogIG1mZDogYXhwMjB4OiBhZGQgQ0hSR19DVFJMMS8y
+LzMgdG8gd3JpdGVhYmxlIHJlZ3MgZm9yIEFYUDIwWC9BWFAyMlgKICBtZmQ6IGF4cDIweDogYWRk
+IFZfT0ZGIHRvIHdyaXRlYWJsZSByZWdzIGZvciBBWFAyMFggYW5kIEFYUDIyWAogIGlpbzogYWRj
+OiBheHAyMHhfYWRjOiBtYXAgYmF0dGVyeSBJSU8gY2hhbm5lbHMKICBwb3dlcjogc3VwcGx5OiBh
+ZGQgYmF0dGVyeSBkcml2ZXIgZm9yIEFYUDIwWCBhbmQgQVhQMjJYIFBNSUNzCiAgbWZkOiBheHAy
+MHg6IGFkZCBNRkQgY2VsbHMgZm9yIEFYUDIwWCBhbmQgQVhQMjJYIGJhdHRlcnkgZHJpdmVyCiAg
+QVJNOiBkdHNpOiBheHAyMDk6IGFkZCBiYXR0ZXJ5IHBvd2VyIHN1cHBseSBzdWJub2RlCiAgQVJN
+OiBkdHNpOiBheHAyMng6IGFkZCBiYXR0ZXJ5IHBvd2VyIHN1cHBseSBzdWJub2RlCiAgQVJNOiBk
+dHM6IHN1bjhpOiBzaW5hMzM6IGVuYWJsZSBiYXR0ZXJ5IHBvd2VyIHN1cHBseSBzdWJub2RlCiAg
+QVJNOiBzdW41aTogY2hpcDogZW5hYmxlIGJhdHRlcnkgcG93ZXIgc3VwcGx5IHN1Ym5vZGUKCiAu
+Li4vZGV2aWNldHJlZS9iaW5kaW5ncy9paW8vYWRjL2F4cDIweF9hZGMudHh0ICAgICB8ICAyMiAr
+CiAuLi4vYmluZGluZ3MvcG93ZXIvc3VwcGx5L2F4cDIweF9hY19wb3dlci50eHQgICAgICB8ICAy
+MiArCiAuLi4vYmluZGluZ3MvcG93ZXIvc3VwcGx5L2F4cDIweF9iYXR0ZXJ5LnR4dCAgICAgICB8
+ICAyNSArCiBhcmNoL2FybS9ib290L2R0cy9heHAyMDkuZHRzaSAgICAgICAgICAgICAgICAgICAg
+ICB8ICAxNCArCiBhcmNoL2FybS9ib290L2R0cy9heHAyMnguZHRzaSAgICAgICAgICAgICAgICAg
+ICAgICB8ICAxNCArCiBhcmNoL2FybS9ib290L2R0cy9zdW41aS1yOC1jaGlwLmR0cyAgICAgICAg
+ICAgICAgICB8ICAgOCArCiBhcmNoL2FybS9ib290L2R0cy9zdW44aS1hMzMtc2lubGlueC1zaW5h
+MzMuZHRzICAgICB8ICAgOCArCiBkcml2ZXJzL2lpby9hZGMvS2NvbmZpZyAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICB8ICAxMCArCiBkcml2ZXJzL2lpby9hZGMvTWFrZWZpbGUgICAgICAgICAg
+ICAgICAgICAgICAgICAgICB8ICAgMSArCiBkcml2ZXJzL2lpby9hZGMvYXhwMjB4X2FkYy5jICAg
+ICAgICAgICAgICAgICAgICAgICB8IDYwOSArKysrKysrKysrKysrKysrKysrKysKIGRyaXZlcnMv
+bWZkL2F4cDIweC5jICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDM2ICstCiBkcml2
+ZXJzL3Bvd2VyL3N1cHBseS9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgICB8ICAyNCArCiBk
+cml2ZXJzL3Bvd2VyL3N1cHBseS9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICB8ICAgMiAr
+CiBkcml2ZXJzL3Bvd2VyL3N1cHBseS9heHAyMHhfYWNfcG93ZXIuYyAgICAgICAgICAgICB8IDI1
+MCArKysrKysrKysKIGRyaXZlcnMvcG93ZXIvc3VwcGx5L2F4cDIweF9iYXR0ZXJ5LmMgICAgICAg
+ICAgICAgIHwgNDc3ICsrKysrKysrKysrKysrKysKIGRyaXZlcnMvcG93ZXIvc3VwcGx5L2F4cDIw
+eF91c2JfcG93ZXIuYyAgICAgICAgICAgIHwgIDcwICsrLQogaW5jbHVkZS9saW51eC9tZmQvYXhw
+MjB4LmggICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDQgKy0KIDE3IGZpbGVzIGNoYW5nZWQs
+IDE1ODcgaW5zZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkKIGNyZWF0ZSBtb2RlIDEwMDY0NCBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvaWlvL2FkYy9heHAyMHhfYWRjLnR4dAog
+Y3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dl
+ci9zdXBwbHkvYXhwMjB4X2FjX3Bvd2VyLnR4dAogY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50
+YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9zdXBwbHkvYXhwMjB4X2JhdHRlcnkudHh0
+CiBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9paW8vYWRjL2F4cDIweF9hZGMuYwogY3JlYXRl
+IG1vZGUgMTAwNjQ0IGRyaXZlcnMvcG93ZXIvc3VwcGx5L2F4cDIweF9hY19wb3dlci5jCiBjcmVh
+dGUgbW9kZSAxMDA2NDQgZHJpdmVycy9wb3dlci9zdXBwbHkvYXhwMjB4X2JhdHRlcnkuYwoKLS0g
+CjIuOS4zCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18K
+bGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
+YWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGlu
+dXgtYXJtLWtlcm5lbAo=
