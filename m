@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 02/25] mfd: axp20x: correct name of temperature data ADC
- registers
-Date: Fri, 27 Jan 2017 09:54:35 +0100
-Message-ID: <20170127085458.18270-3-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 01/25] dt-bindings: iio: adc: add AXP20X/AXP22X ADC DT
+ binding
+Date: Fri, 27 Jan 2017 09:54:34 +0100
+Message-ID: <20170127085458.18270-2-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,48 +22,54 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The registers 0x56 and 0x57 of AXP22X PMIC store the value of the
-internal temperature of the PMIC.
+The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
+battery voltage, battery charge and discharge currents, AC-in and VBUS
+voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
 
-This patch modifies the name of these registers from AXP22X_PMIC_ADC_H/L
-to AXP22X_PMIC_TEMP_H/L so their purpose is clearer.
+This adds the device tree binding documentation for the X-Powers AXP20X
+and AXP22X PMICs ADCs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+Acked-by: Rob Herring <robh@kernel.org>
+Acked-by: Chen-Yu Tsai <wens@csie.org>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
 
-added in v2
+v2:
+ - removing io-channels from required properties,
+ - update AXP ADC DT node name from axp209_adc to simply adc,
 
- drivers/mfd/axp20x.c       | 2 +-
- include/linux/mfd/axp20x.h | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ .../devicetree/bindings/iio/adc/axp20x_adc.txt     | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 619a83e..9c2fd37 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -102,7 +102,7 @@ static const struct regmap_range axp22x_volatile_ranges[] = {
- 	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
- 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
- 	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
--	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
-+	regmap_reg_range(AXP22X_PMIC_TEMP_H, AXP20X_IPSOUT_V_HIGH_L),
- 	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
- };
- 
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index a4860bc..5ecadbb 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -228,8 +228,8 @@ enum {
- #define AXP20X_OCV_MAX			0xf
- 
- /* AXP22X specific registers */
--#define AXP22X_PMIC_ADC_H		0x56
--#define AXP22X_PMIC_ADC_L		0x57
-+#define AXP22X_PMIC_TEMP_H		0x56
-+#define AXP22X_PMIC_TEMP_L		0x57
- #define AXP22X_TS_ADC_H			0x58
- #define AXP22X_TS_ADC_L			0x59
- #define AXP22X_BATLOW_THRES1		0xe6
+diff --git a/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
+new file mode 100644
+index 0000000..a071247
+--- /dev/null
++++ b/Documentation/devicetree/bindings/iio/adc/axp20x_adc.txt
+@@ -0,0 +1,22 @@
++X-Powers AXP20X and AXP22X PMIC Analog to Digital Converter (ADC)
++
++The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
++battery voltage, battery charge and discharge currents, AC-in and VBUS
++voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
++
++The AXP22X PMICs do not have all ADCs of the AXP20X though.
++
++Required properties:
++ - compatible, one of:
++			"x-powers,axp209-adc"
++			"x-powers,axp221-adc"
++
++This is a subnode of the AXP20X PMIC.
++
++Example:
++
++&axp209 {
++	axp209_adc: adc {
++		compatible = "x-powers,axp209-adc";
++	};
++};
 -- 
 2.9.3
