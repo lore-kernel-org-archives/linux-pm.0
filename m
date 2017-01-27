@@ -1,66 +1,81 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH 2/4] soc: samsung: pm_domains: Remove unused name field
-Date: Fri, 27 Jan 2017 11:47:50 +0100
-Message-ID: <1485514072-29502-3-git-send-email-m.szyprowski@samsung.com>
-References: <1485514072-29502-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170127104801eucas1p2287962bae474ca786644de4ad6a11f57@eucas1p2.samsung.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH 2/8] arm64: dts: exynos: Add GSCL power domain to Exynos
+ 5433 SoC
+Date: Fri, 27 Jan 2017 13:28:08 +0200
+Message-ID: <20170127112808.he7lpzoobmnc2k7r@kozik-lap>
+References: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125115559eucas1p1a219b6ae0fef16bbdb68645328b61a5e@eucas1p1.samsung.com>
+ <1485345342-3273-3-git-send-email-m.szyprowski@samsung.com>
+ <20170127074617.ez6wxeu5vyz6lm4x@kozik-lap>
+ <62a55088-ff3d-dc4b-b0f0-9810d88801c4@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:14722 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932673AbdA0KsG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jan 2017 05:48:06 -0500
-In-reply-to: <1485514072-29502-1-git-send-email-m.szyprowski@samsung.com>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:32891 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934346AbdA0L2n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jan 2017 06:28:43 -0500
+Content-Disposition: inline
+In-Reply-To: <62a55088-ff3d-dc4b-b0f0-9810d88801c4@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 
-Name is now in generic pm domain structure, so there is no need to
-duplicate it in private data.
+On Fri, Jan 27, 2017 at 11:33:36AM +0100, Marek Szyprowski wrote:
+> Hi Krzysztof,
+> 
+> On 2017-01-27 08:46, Krzysztof Kozlowski wrote:
+> > On Wed, Jan 25, 2017 at 12:55:36PM +0100, Marek Szyprowski wrote:
+> > > This patch adds support for GSCL power domain to Exynos 5433 SoCs, which
+> > > contains following devices: a clock controller, three GSCL video scalers and
+> > > their SYSMMUs.
+> > > 
+> > > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> > > ---
+> > >   arch/arm64/boot/dts/exynos/exynos5433.dtsi | 13 +++++++++++++
+> > >   1 file changed, 13 insertions(+)
+> > > 
+> > > diff --git a/arch/arm64/boot/dts/exynos/exynos5433.dtsi b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+> > > index 16072c1c3ed3..74c767d756ac 100644
+> > > --- a/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+> > > +++ b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
+> > > @@ -425,6 +425,7 @@
+> > >   			clocks = <&xxti>,
+> > >   				<&cmu_top CLK_ACLK_GSCL_111>,
+> > >   				<&cmu_top CLK_ACLK_GSCL_333>;
+> > > +			power-domains = <&pd_gscl>;
+> > >   		};
+> > >   		cmu_apollo: clock-controller@11900000 {
+> > > @@ -525,6 +526,12 @@
+> > >   				<&cmu_top CLK_ACLK_CAM1_552>;
+> > >   		};
+> > > +		pd_gscl: gscl-power-domain@105c4000 {
+> > The name of node: just "power-domain". This should be generic class of
+> > device (following ePAPR).
+> > 
+> > The same applies to other patches.
+> 
+> Well, this makes the debugging much harder, but I will change it to generic
+> names.
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- drivers/soc/samsung/pm_domains.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Good point. I remember some patch from Javier trying to address this but
+I cannot find it anymore.
 
-diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
-index c33196087e9f..00e32772655a 100644
---- a/drivers/soc/samsung/pm_domains.c
-+++ b/drivers/soc/samsung/pm_domains.c
-@@ -35,7 +35,6 @@ struct exynos_pm_domain_config {
-  */
- struct exynos_pm_domain {
- 	void __iomem *base;
--	char const *name;
- 	bool is_off;
- 	struct generic_pm_domain pd;
- 	struct clk *oscclk;
-@@ -70,7 +69,7 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
- 			pd->pclk[i] = clk_get_parent(pd->clk[i]);
- 			if (clk_set_parent(pd->clk[i], pd->oscclk))
- 				pr_err("%s: error setting oscclk as parent to clock %d\n",
--						pd->name, i);
-+						domain->name, i);
- 		}
- 	}
- 
-@@ -101,7 +100,7 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
- 				continue; /* Skip on first power up */
- 			if (clk_set_parent(pd->clk[i], pd->pclk[i]))
- 				pr_err("%s: error setting parent to clock%d\n",
--						pd->name, i);
-+						domain->name, i);
- 		}
- 	}
- 
-@@ -170,7 +169,6 @@ static __init int exynos4_pm_init_power_domain(void)
- 			return -ENOMEM;
- 		}
- 
--		pd->name = pd->pd.name;
- 		pd->base = of_iomap(np, 0);
- 		if (!pd->base) {
- 			pr_warn("%s: failed to map memory\n", __func__);
--- 
-1.9.1
+Anyway, I don't think power-domains should be treated here differently
+then rest of devices (which have generic names: clock-controller,
+pinctrl, i2s, i2c etc).
 
+> Also existing Exynos dtsi should be fixed in this area (Exynos4 still
+> use such more descriptive names).
+
+I am trying to bring some shape to new code but of course you are right
+- old code should be adjusted as well (maybe as part of some bigger
+  cleanup). Exynos5420 uses short/generic names.
+
+> I will check how hard is to add real
+> domain names directly to the Exynos power domain driver then.
+
+Thanks!
+
+Krzysztof
