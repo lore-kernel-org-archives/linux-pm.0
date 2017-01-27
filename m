@@ -1,7 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 22/25] ARM: dtsi: axp209: add battery power supply subnode
-Date: Fri, 27 Jan 2017 09:54:55 +0100
-Message-ID: <20170127085458.18270-23-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 19/25] iio: adc: axp20x_adc: map battery IIO channels
+Date: Fri, 27 Jan 2017 09:54:52 +0100
+Message-ID: <20170127085458.18270-20-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,40 +21,65 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP209 PMIC exposes battery supply various data such as
-the battery status (charging, discharging, full, dead), current max
-limit, current current, battery capacity (in percentage), voltage max
-and min limits, current voltage, and battery capacity (in Ah).
-
-This adds the battery power supply subnode for AXP20X PMIC.
+This maps the IIO channels batt_v, batt_chrg_i and batt_dischrg_i
+(respectively exposing the current charging and discharging currents and
+current voltage measures of the battery power supply) to the battery
+power supply driver.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
 
-v2:
- - changed DT node name from battery_power_supply to
- battery-power-supply,
- - removed io-channels and io-channel-names from DT (the IIO mapping is
- done in the IIO ADC driver now),
+added in v2
 
- arch/arm/boot/dts/axp209.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/iio/adc/axp20x_adc.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 8675c696..51810aa 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -68,6 +68,11 @@
- 		#gpio-cells = <2>;
- 	};
- 
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp209-battery-power-supply";
-+		status = "disabled";
-+	};
+diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+index 14f4ec0..64c7c75 100644
+--- a/drivers/iio/adc/axp20x_adc.c
++++ b/drivers/iio/adc/axp20x_adc.c
+@@ -112,6 +112,34 @@ static struct iio_map axp20x_maps[] = {
+ 		.consumer_dev_name = "axp20x-ac-power-supply",
+ 		.consumer_channel = "acin_i",
+ 		.adc_channel_label = "acin_i",
++	}, {
++		.consumer_dev_name = "axp20x-battery-power-supply",
++		.consumer_channel = "batt_v",
++		.adc_channel_label = "batt_v",
++	}, {
++		.consumer_dev_name = "axp20x-battery-power-supply",
++		.consumer_channel = "batt_chrg_i",
++		.adc_channel_label = "batt_chrg_i",
++	}, {
++		.consumer_dev_name = "axp20x-battery-power-supply",
++		.consumer_channel = "batt_dischrg_i",
++		.adc_channel_label = "batt_dischrg_i",
++	}, { /* sentinel */ }
++};
 +
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <1500>;
++static struct iio_map axp22x_maps[] = {
++	{
++		.consumer_dev_name = "axp20x-battery-power-supply",
++		.consumer_channel = "batt_v",
++		.adc_channel_label = "batt_v",
++	}, {
++		.consumer_dev_name = "axp20x-battery-power-supply",
++		.consumer_channel = "batt_chrg_i",
++		.adc_channel_label = "batt_chrg_i",
++	}, {
++		.consumer_dev_name = "axp20x-battery-power-supply",
++		.consumer_channel = "batt_dischrg_i",
++		.adc_channel_label = "batt_dischrg_i",
+ 	}, { /* sentinel */ }
+ };
+ 
+@@ -479,6 +507,7 @@ static const struct axp_data axp22x_data = {
+ 	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
+ 	.adc_rate = axp22x_adc_rate,
+ 	.adc_en2 = false,
++	.maps = axp22x_maps,
+ };
+ 
+ static const struct of_device_id axp20x_adc_of_match[] = {
 -- 
 2.9.3
