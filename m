@@ -1,8 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 08/25] dt-bindings: power: supply: add AXP20X/AXP22X AC
- power supply
-Date: Fri, 27 Jan 2017 09:54:41 +0100
-Message-ID: <20170127085458.18270-9-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 15/25] ARM: sun5i: chip: enable ACIN power supply subnode
+Date: Fri, 27 Jan 2017 09:54:48 +0100
+Message-ID: <20170127085458.18270-16-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,50 +21,30 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X and AXP22X PMICs have an AC entry to supply power to
-the board. They have a few registers dedicated to the status of the AC
-power supply.
+The NextThing Co. CHIP has an AXP209 PMIC and can be power-supplied by
+ACIN via the CHG-IN pin.
 
-This adds the DT binding documentation for the AC power supply for
-AXP20X and AXP22X PMICs.
+This enables the ACIN power supply subnode in the DT.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
+ arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-v2:
- - removed #io-channels property,
-
- .../bindings/power/supply/axp20x_ac_power.txt      | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-new file mode 100644
-index 0000000..826e8a8
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
-@@ -0,0 +1,22 @@
-+AXP20X and AXP22X PMICs' AC power supply
-+
-+Required Properties:
-+ - compatible: One of:
-+			"x-powers,axp202-ac-power-supply"
-+			"x-powers,axp221-ac-power-supply"
-+
-+This node is a subnode of the axp20x PMIC.
-+
-+The AXP20X can read the current current and voltage supplied by AC by
-+reading ADC channels from the AXP20X ADC.
-+
-+The AXP22X is only able to tell if an AC power supply is present and
-+usable.
-+
-+Example:
-+
-+&axp209 {
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp202-ac-power-supply";
-+	};
+diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
+index c6da5ad..6011757 100644
+--- a/arch/arm/boot/dts/sun5i-r8-chip.dts
++++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
+@@ -128,6 +128,10 @@
+ 
+ #include "axp209.dtsi"
+ 
++&ac_power_supply {
++	status = "okay";
 +};
++
+ &i2c1 {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&i2c1_pins_a>;
 -- 
 2.9.3
