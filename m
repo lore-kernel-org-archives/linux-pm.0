@@ -1,187 +1,49 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v2 4/4] soc: samsung: pm_domains: Provide real name for all
- supported domains
-Date: Fri, 27 Jan 2017 15:48:58 +0100
-Message-ID: <1485528538-30256-1-git-send-email-m.szyprowski@samsung.com>
-References: <1485514072-29502-5-git-send-email-m.szyprowski@samsung.com>
- <CGME20170127144908eucas1p14c50396f670a01c31a69ec95b636a0e1@eucas1p1.samsung.com>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1485514072-29502-5-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v3 12/13] pinctrl: samsung: Move retention control from
+ mach-s5pv210 to the pinctrl driver
+Date: Fri, 27 Jan 2017 17:20:41 +0100
+Message-ID: <7931853.ZcRrqCbIhv@wuerfel>
+References: <CGME20170119134910eucas1p2d401df77ccc1ef8e7b05f4cdb2ffc8d3@eucas1p2.samsung.com>
+ <1484833733-16082-13-git-send-email-m.szyprowski@samsung.com>
+ <CACRpkdYSVvGPoJ-gLiyGuHrqz=GYHCmmFv_bD9HpAywPD5Yzzg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CACRpkdYSVvGPoJ-gLiyGuHrqz=GYHCmmFv_bD9HpAywPD5Yzzg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomasz Figa <tomasz.figa@gmail.com>, Krzysztof Kozlowski <krzk@kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "arm@kernel.org" <arm@kernel.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Device tree nodes for each power domain should use generic "power-domain"
-name, so using it as a domain name doesn't give much benefits. This patch
-adds human readable names for all supported domains, what makes debugging
-much easier.
+On Thursday, January 26, 2017 10:11:33 AM CET Linus Walleij wrote:
+> On Thu, Jan 19, 2017 at 2:48 PM, Marek Szyprowski
+> <m.szyprowski@samsung.com> wrote:
+> 
+> > This patch moves pad retention control from S5PV210 machine code to
+> > Exynos pin controller driver. This helps to avoid possible ordering
+> > and logical dependencies between machine and pin control code. Till
+> > now it worked fine only because sys_ops for machine code and pin
+> > controller were called in registration order.
+> >
+> > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> > Acked-by: Tomasz Figa <tomasz.figa@gmail.com>
+> > For mach-s5pv210:
+> > Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > ---
+> >  arch/arm/mach-s5pv210/pm.c               |  7 ----
+> >  arch/arm/mach-s5pv210/regs-clock.h       |  4 ---
+> >  drivers/pinctrl/samsung/pinctrl-exynos.c | 56 ++++++++++++++++++++++++++++++++
+> 
+> Same here, can I have an ARM SoC ACK?
+> 
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
-Changelog:
-v2:
-- sorted all domains data by domain base address in the arrays
----
- drivers/soc/samsung/pm_domains.c | 125 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 123 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
-index 5a0a46bcbe18..43003318b948 100644
---- a/drivers/soc/samsung/pm_domains.c
-+++ b/drivers/soc/samsung/pm_domains.c
-@@ -30,6 +30,17 @@ struct exynos_pm_domain_config {
- 	u32 local_pwr_cfg;
- };
- 
-+struct exynos_pm_domain_data {
-+	const char *name;
-+	u32 base;
-+};
-+
-+struct exynos_pm_domain_soc_data {
-+	const char *compatible;
-+	unsigned int nr_domains;
-+	const struct exynos_pm_domain_data *domains;
-+};
-+
- /*
-  * Exynos specific wrapper around the generic power domain
-  */
-@@ -123,6 +134,91 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
- 	return exynos_pd_power(domain, false);
- }
- 
-+static const struct exynos_pm_domain_data exynos4210_domains[] __initconst = {
-+	{ "LCD1",	0x10023CA0 },
-+};
-+
-+static const struct exynos_pm_domain_data exynos4412_domains[] __initconst = {
-+	{ "CAM",	0x10023C00 },
-+	{ "TV",		0x10023C20 },
-+	{ "MFC",	0x10023C40 },
-+	{ "G3D",	0x10023C60 },
-+	{ "LCD0",	0x10023C80 },
-+	{ "ISP",	0x10023CA0 },
-+	{ "GPS",	0x10023CE0 },
-+	{ "GPS alive",	0x10023D00 },
-+};
-+
-+static const struct exynos_pm_domain_data exynos5250_domains[] __initconst = {
-+	{ "GSCL",	0x10044000 },
-+	{ "ISP",	0x10044020 },
-+	{ "MFC",	0x10044040 },
-+	{ "G3D",	0x10044060 },
-+	{ "DISP1",	0x100440A0 },
-+	{ "MAU",	0x100440C0 },
-+};
-+
-+static const struct exynos_pm_domain_data exynos542x_domains[] __initconst = {
-+	{ "SCALER",	0x10044000 },
-+	{ "ISP",	0x10044020 },
-+	{ "MFC",	0x10044060 },
-+	{ "G3D",	0x10044080 },
-+	{ "DISP1",	0x100440C0 },
-+	{ "MAU",	0x100440E0 },
-+	{ "G2D",	0x10044100 },
-+	{ "MSCL",	0x10044120 },
-+	{ "FSYS",	0x10044140 },
-+	{ "PERIC",	0x100441A0 },
-+	{ "CAM",	0x10045100 },
-+};
-+
-+static const struct exynos_pm_domain_data exynos5433_domains[] __initconst = {
-+	{ "GSCL",	0x105c4000 },
-+	{ "CAM0",	0x105c4020 },
-+	{ "MSCL",	0x105c4040 },
-+	{ "G3D",	0x105c4060 },
-+	{ "DISP",	0x105c4080 },
-+	{ "CAM1",	0x105c40a0 },
-+	{ "AUD",	0x105c40c0 },
-+	{ "FSYS",	0x105c40e0 },
-+	{ "G2D",	0x105c4120 },
-+	{ "ISP",	0x105c4140 },
-+	{ "MFC",	0x105c4180 },
-+	{ "HEVC",	0x105c41c0 },
-+};
-+
-+static const struct exynos_pm_domain_soc_data soc_domains_data[] __initconst = {
-+	{ /* Exynos3250 uses a subset of 4412 domains */
-+		.compatible = "samsung,exynos3250",
-+		.nr_domains = ARRAY_SIZE(exynos4412_domains),
-+		.domains = exynos4412_domains,
-+	}, { /* first check samsung,exynos4210 to detect LCD1 domain */
-+		.compatible = "samsung,exynos4210",
-+		.nr_domains = ARRAY_SIZE(exynos4210_domains),
-+		.domains = exynos4210_domains,
-+	}, { /* remaining domains for Exynos4210 and 4412 */
-+		.compatible = "samsung,exynos4",
-+		.nr_domains = ARRAY_SIZE(exynos4412_domains),
-+		.domains = exynos4412_domains
-+	}, {
-+		.compatible = "samsung,exynos5250",
-+		.nr_domains = ARRAY_SIZE(exynos5250_domains),
-+		.domains = exynos5250_domains,
-+	}, {
-+		.compatible = "samsung,exynos5420",
-+		.nr_domains = ARRAY_SIZE(exynos542x_domains),
-+		.domains = exynos542x_domains,
-+	}, {
-+		.compatible = "samsung,exynos5800",
-+		.nr_domains = ARRAY_SIZE(exynos542x_domains),
-+		.domains = exynos542x_domains,
-+	}, {
-+		.compatible = "samsung,exynos5433",
-+		.nr_domains = ARRAY_SIZE(exynos5433_domains),
-+		.domains = exynos5433_domains,
-+	},
-+};
-+
- static const struct exynos_pm_domain_config exynos4210_cfg __initconst = {
- 	.local_pwr_cfg		= 0x7,
- };
-@@ -142,6 +238,32 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
- 	{ },
- };
- 
-+static __init const char *exynos_get_domain_name(struct device_node *np)
-+{
-+	const struct exynos_pm_domain_soc_data *soc = soc_domains_data;
-+	const __be32 *reg;
-+	u64 addr;
-+	int i, j;
-+
-+
-+	reg = of_get_property(np, "reg", NULL);
-+	if (!reg || (addr = of_translate_address(np, reg)) == OF_BAD_ADDR)
-+		goto not_found;
-+
-+	for (i = 0; i < ARRAY_SIZE(soc_domains_data); i++, soc++) {
-+		if (!of_machine_is_compatible(soc->compatible))
-+			continue;
-+
-+		for (j = 0; j < soc->nr_domains; j++) {
-+			if (soc->domains[j].base == addr)
-+				return kstrdup_const(soc->domains[j].name,
-+						     GFP_KERNEL);
-+		}
-+	}
-+not_found:
-+	return kstrdup_const(strrchr(np->full_name, '/') + 1, GFP_KERNEL);
-+}
-+
- static __init int exynos4_pm_init_power_domain(void)
- {
- 	struct device_node *np;
-@@ -159,8 +281,7 @@ static __init int exynos4_pm_init_power_domain(void)
- 			of_node_put(np);
- 			return -ENOMEM;
- 		}
--		pd->pd.name = kstrdup_const(strrchr(np->full_name, '/') + 1,
--					    GFP_KERNEL);
-+		pd->pd.name = exynos_get_domain_name(np);
- 		if (!pd->pd.name) {
- 			kfree(pd);
- 			of_node_put(np);
--- 
-1.9.1
+Acked-by: Arnd Bergmann <arnd@arndb.de>
