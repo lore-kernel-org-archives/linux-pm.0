@@ -1,76 +1,113 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 0/8] Power domains support for Exynos5433 SoCs
-Date: Fri, 27 Jan 2017 08:59:57 +0100
-Message-ID: <8986e76b-a8a1-2ff6-021b-d0e3489d43c3@samsung.com>
-References: <CGME20170125115558eucas1p18dcb5c4cbab28dcb10bd412b825256b7@eucas1p1.samsung.com>
- <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
- <20170127074346.iwzaavl2lnu64uxq@kozik-lap>
- <6cbea032-86a3-20b9-6cdf-93099f553531@samsung.com>
- <20170127075232.it4c4e7a3hno7i7e@kozik-lap>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Subject: Re: [PATCH 08/22] power: supply: add AC power supply driver for
+ AXP20X and AXP22X PMICs
+Date: Fri, 27 Jan 2017 09:20:17 +0100
+Message-ID: <20170127082017.ffvybk237ku2n5hu@lukather>
+References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
+ <20170102163723.7939-9-quentin.schulz@free-electrons.com>
+ <20170117030013.g5xhlmrxpthyfewa@earth>
+ <6a3edb64-8ea9-cb14-b826-d6e8e2c4c4b7@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:25877 "EHLO
-        mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754201AbdA0ILG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jan 2017 03:11:06 -0500
-In-reply-to: <20170127075232.it4c4e7a3hno7i7e@kozik-lap>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="p6edpgvoug4j3ser"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6a3edb64-8ea9-cb14-b826-d6e8e2c4c4b7@free-electrons.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Sebastian Reichel <sre@kernel.org>, jic23@kernel.org, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk, lee.jones@linaro.org, linux-iio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com, icenowy@aosc.xyz, bonbons@linux-vserver.org
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 
-Hi Krzysztof,
 
-On 2017-01-27 08:52, Krzysztof Kozlowski wrote:
-> On Fri, Jan 27, 2017 at 08:47:44AM +0100, Marek Szyprowski wrote:
->> On 2017-01-27 08:43, Krzysztof Kozlowski wrote:
->>> On Wed, Jan 25, 2017 at 12:55:34PM +0100, Marek Szyprowski wrote:
->>>> This patchset is a final step to add support for all power domains
->>>> on Exynos5433 SoCs. This patchset contains patches for adding Exynos5433
->>>> support to Exynos power domain driver and definitions of all power
->>>> domains found in Exynos5433 SoCs.
->>>>
->>>> Patches have been generated on top of linux-next from 25th January 2017.
->>>>
->>>> This is a part of a larger task, which goal is to add support for power
->>>> domains on Exynos5433 SoCs / TM2 boards. All patches needed to get it
->>>> working have been pushed to the following git repo:
->>>> https://git.linaro.org/people/marek.szyprowski/linux-srpol.git v4.10-next-tm2-pd
->>>>
->>>> To get everything working following patches/patchsets are needed on top
->>>> of the linux-next tree:
->>> By "get everything working" you also mean that there is a runtime
->>> dependency? In other words, can I apply DTS patches here?
->> IMHO we should wait with applying pm domains DTS patches. Without ALL other
->> patches
->> kernel will sooner or later panic with "(a)synchronous external abort" or
->> deadlock
->> in a different way.
-> Okay, makes sense. A partial solution would be to apply them with
-> status=disabled. After all it is still a valid description of a
-> hardware. However this would not bring much benefits anyway...
+--p6edpgvoug4j3ser
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-First we would need to learn the Exynos power domain driver to honor
-"status=disabled" property, because right now it instantiate all domains
-regardless the provided status ;) Feel free to prepare a patch for that.
+On Thu, Jan 26, 2017 at 02:32:21PM +0100, Quentin Schulz wrote:
+> I've come with this solution:
+>=20
+> ------------------------------------------------------------------------
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 012c064..117eacb 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -882,7 +882,7 @@ EXPORT_SYMBOL(axp20x_match_device);
+>=20
+>  int axp20x_device_probe(struct axp20x_dev *axp20x)
+>  {
+> -	int ret;
+> +	int ret, irq_base;
+>=20
+>  	ret =3D regmap_add_irq_chip(axp20x->regmap, axp20x->irq,
+>  				  IRQF_ONESHOT | IRQF_SHARED, -1,
+> @@ -893,8 +893,9 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
+>  		return ret;
+>  	}
+>=20
+> +	irq_base =3D regmap_irq_chip_get_base(axp20x->regmap_irqc);
+>  	ret =3D mfd_add_devices(axp20x->dev, -1, axp20x->cells,
+> -			      axp20x->nr_cells, NULL, 0, NULL);
+> +			      axp20x->nr_cells, NULL, irq_base, NULL);
+>=20
+>  	if (ret) {
+>  		dev_err(axp20x->dev, "failed to add MFD devices: %d\n", ret);
+> ------------------------------------------------------------------------
+>=20
+> However, this implies that all cells added by the mfd driver which are
+> requesting irqs will need to be changed in the same commit to remove the
+> regmap_irq_get_virq calls. If we don't modify the drivers, they will
+> purely fail to request the irqs.
+>=20
+> The impacted drivers are the following:
+>=20
+>  - drivers/extcon/extcon-axp288.c
+>  - drivers/input/misc/axp20x-pek.c
+>  - drivers/power/supply/axp20x_usb_power.c
+>  - drivers/power/supply/axp288_charger.c
+>  - drivers/power/supply/axp288_fuel_gauge.c
+>=20
+> Is it really worth to do such a cleanup?
 
-I'm also not sure if driver core will handle such case properly. I remember
-that it deferred probing of all devices when no power domain driver was
-available, but this might be a bit different case than skipping domain
-registration.
+Yes. The current behaviour goes against what everyone is expecting
+=66rom the API.
 
-> Beside the name of node I mentioned, please put all the power domains
-> sorted to each other by address. I see the big picture here:
-> https://git.linaro.org/people/marek.szyprowski/linux-srpol.git/tree/arch/arm64/boot/dts/exynos/exynos5433.dtsi?h=v4.10-next-tm2-pd
-> and it does not looks ordered.
+> I'm assuming that impacting four different subsystems at the same
+> time might require a bit of time to make the patch into the
+> kernel. I don't see also another way than doing one single patch for
+> all changes since the changes in the mfd driver will break all
+> aforementioned drivers.
 
-I think I've already tried to keep them sorted by address, but maybe while
-rebasing/updating/fixing something went wrong.
+However, I think that can be fixed in a later, independant serie. This
+serie is quite big already and this has been long overdue, so I'd
+really like not to delay it once again because of a dependency on a
+cross-tree cleanup.
 
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+Maxime
 
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+
+--p6edpgvoug4j3ser
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJYiwLBAAoJEBx+YmzsjxAg7ZsQAKDMjib2vZGpD8DtTS6kXpN5
+5vN2m6Hc5QEUJVsgXPmoYAW9ZZxsi9wwx9zqJiyVqGHYr4Md1b7q5w/4M11RqBt7
+6VCLodDFhOwIKSUumuTVu5jDA+CkNf0MY9aJ4pl07Nr2K3LAXIN8j6wlIc5LqlMg
+IneG0PwveFqOAh9ua8qMA8hwLg+2P7j+Xz4zluzk8+ayPn2EnmEi9RA9buuihOFo
+QvxwWcROcKdlIeBV0JReNgZDN/VF/Nd4t7lBojEfvBHPLVayMouqLkwKQz8vj0sz
+HPtBVEsIrvyw6MJAhETj3nD/lxJAgTkaR0WX0tPWj+vlz58rRrqR7dZ1qb8oexFQ
+H9nSJHmQY3jduahPFnoX56hA7YkJKnc4lY310Oro3Sd7by6T9agQRnpSlImKNI8m
+xesscn/eungfXxJvCs/eKQBQi2O3k9Z88yMdiKtSqwYUKv+jK9wi87J7avG/LQXK
+E/ZCdkbltX4BJyfDxKa0LL5XsQyc4Ue2Jz3HguRh6VgygmeKAtdMafxZh6t4Erjd
+joBFLHwKPp27yp8iyYVKOaHlhVKyrgjVEHZp4aCXCU74PDOCLiLuj7elPTKt/U6C
+9mMVJ4mB7Arl8M2TTzmKEmIDpym8e6JMGDOgUjh56YkySPoEg/PcmUcX+fEaqjzG
+nGr5xoarIJ+19XpIZM9W
+=we+B
+-----END PGP SIGNATURE-----
+
+--p6edpgvoug4j3ser--
