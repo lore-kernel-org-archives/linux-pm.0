@@ -1,68 +1,187 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 2/8] arm64: dts: exynos: Add GSCL power domain to Exynos
- 5433 SoC
-Date: Fri, 27 Jan 2017 11:33:36 +0100
-Message-ID: <62a55088-ff3d-dc4b-b0f0-9810d88801c4@samsung.com>
-References: <1485345342-3273-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125115559eucas1p1a219b6ae0fef16bbdb68645328b61a5e@eucas1p1.samsung.com>
- <1485345342-3273-3-git-send-email-m.szyprowski@samsung.com>
- <20170127074617.ez6wxeu5vyz6lm4x@kozik-lap>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.w1.samsung.com ([210.118.77.14]:35093 "EHLO
-        mailout4.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933582AbdA0LFu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Jan 2017 06:05:50 -0500
-In-reply-to: <20170127074617.ez6wxeu5vyz6lm4x@kozik-lap>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH v2 4/4] soc: samsung: pm_domains: Provide real name for all
+ supported domains
+Date: Fri, 27 Jan 2017 15:48:58 +0100
+Message-ID: <1485528538-30256-1-git-send-email-m.szyprowski@samsung.com>
+References: <1485514072-29502-5-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170127144908eucas1p14c50396f670a01c31a69ec95b636a0e1@eucas1p1.samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1485514072-29502-5-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 
-Hi Krzysztof,
+Device tree nodes for each power domain should use generic "power-domain"
+name, so using it as a domain name doesn't give much benefits. This patch
+adds human readable names for all supported domains, what makes debugging
+much easier.
 
-On 2017-01-27 08:46, Krzysztof Kozlowski wrote:
-> On Wed, Jan 25, 2017 at 12:55:36PM +0100, Marek Szyprowski wrote:
->> This patch adds support for GSCL power domain to Exynos 5433 SoCs, which
->> contains following devices: a clock controller, three GSCL video scalers and
->> their SYSMMUs.
->>
->> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->> ---
->>   arch/arm64/boot/dts/exynos/exynos5433.dtsi | 13 +++++++++++++
->>   1 file changed, 13 insertions(+)
->>
->> diff --git a/arch/arm64/boot/dts/exynos/exynos5433.dtsi b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
->> index 16072c1c3ed3..74c767d756ac 100644
->> --- a/arch/arm64/boot/dts/exynos/exynos5433.dtsi
->> +++ b/arch/arm64/boot/dts/exynos/exynos5433.dtsi
->> @@ -425,6 +425,7 @@
->>   			clocks = <&xxti>,
->>   				<&cmu_top CLK_ACLK_GSCL_111>,
->>   				<&cmu_top CLK_ACLK_GSCL_333>;
->> +			power-domains = <&pd_gscl>;
->>   		};
->>   
->>   		cmu_apollo: clock-controller@11900000 {
->> @@ -525,6 +526,12 @@
->>   				<&cmu_top CLK_ACLK_CAM1_552>;
->>   		};
->>   
->> +		pd_gscl: gscl-power-domain@105c4000 {
-> The name of node: just "power-domain". This should be generic class of
-> device (following ePAPR).
->
-> The same applies to other patches.
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+Changelog:
+v2:
+- sorted all domains data by domain base address in the arrays
+---
+ drivers/soc/samsung/pm_domains.c | 125 ++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 123 insertions(+), 2 deletions(-)
 
-Well, this makes the debugging much harder, but I will change it to generic
-names. Also existing Exynos dtsi should be fixed in this area (Exynos4 still
-use such more descriptive names). I will check how hard is to add real
-domain names directly to the Exynos power domain driver then.
-
-Best regards
+diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+index 5a0a46bcbe18..43003318b948 100644
+--- a/drivers/soc/samsung/pm_domains.c
++++ b/drivers/soc/samsung/pm_domains.c
+@@ -30,6 +30,17 @@ struct exynos_pm_domain_config {
+ 	u32 local_pwr_cfg;
+ };
+ 
++struct exynos_pm_domain_data {
++	const char *name;
++	u32 base;
++};
++
++struct exynos_pm_domain_soc_data {
++	const char *compatible;
++	unsigned int nr_domains;
++	const struct exynos_pm_domain_data *domains;
++};
++
+ /*
+  * Exynos specific wrapper around the generic power domain
+  */
+@@ -123,6 +134,91 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+ 	return exynos_pd_power(domain, false);
+ }
+ 
++static const struct exynos_pm_domain_data exynos4210_domains[] __initconst = {
++	{ "LCD1",	0x10023CA0 },
++};
++
++static const struct exynos_pm_domain_data exynos4412_domains[] __initconst = {
++	{ "CAM",	0x10023C00 },
++	{ "TV",		0x10023C20 },
++	{ "MFC",	0x10023C40 },
++	{ "G3D",	0x10023C60 },
++	{ "LCD0",	0x10023C80 },
++	{ "ISP",	0x10023CA0 },
++	{ "GPS",	0x10023CE0 },
++	{ "GPS alive",	0x10023D00 },
++};
++
++static const struct exynos_pm_domain_data exynos5250_domains[] __initconst = {
++	{ "GSCL",	0x10044000 },
++	{ "ISP",	0x10044020 },
++	{ "MFC",	0x10044040 },
++	{ "G3D",	0x10044060 },
++	{ "DISP1",	0x100440A0 },
++	{ "MAU",	0x100440C0 },
++};
++
++static const struct exynos_pm_domain_data exynos542x_domains[] __initconst = {
++	{ "SCALER",	0x10044000 },
++	{ "ISP",	0x10044020 },
++	{ "MFC",	0x10044060 },
++	{ "G3D",	0x10044080 },
++	{ "DISP1",	0x100440C0 },
++	{ "MAU",	0x100440E0 },
++	{ "G2D",	0x10044100 },
++	{ "MSCL",	0x10044120 },
++	{ "FSYS",	0x10044140 },
++	{ "PERIC",	0x100441A0 },
++	{ "CAM",	0x10045100 },
++};
++
++static const struct exynos_pm_domain_data exynos5433_domains[] __initconst = {
++	{ "GSCL",	0x105c4000 },
++	{ "CAM0",	0x105c4020 },
++	{ "MSCL",	0x105c4040 },
++	{ "G3D",	0x105c4060 },
++	{ "DISP",	0x105c4080 },
++	{ "CAM1",	0x105c40a0 },
++	{ "AUD",	0x105c40c0 },
++	{ "FSYS",	0x105c40e0 },
++	{ "G2D",	0x105c4120 },
++	{ "ISP",	0x105c4140 },
++	{ "MFC",	0x105c4180 },
++	{ "HEVC",	0x105c41c0 },
++};
++
++static const struct exynos_pm_domain_soc_data soc_domains_data[] __initconst = {
++	{ /* Exynos3250 uses a subset of 4412 domains */
++		.compatible = "samsung,exynos3250",
++		.nr_domains = ARRAY_SIZE(exynos4412_domains),
++		.domains = exynos4412_domains,
++	}, { /* first check samsung,exynos4210 to detect LCD1 domain */
++		.compatible = "samsung,exynos4210",
++		.nr_domains = ARRAY_SIZE(exynos4210_domains),
++		.domains = exynos4210_domains,
++	}, { /* remaining domains for Exynos4210 and 4412 */
++		.compatible = "samsung,exynos4",
++		.nr_domains = ARRAY_SIZE(exynos4412_domains),
++		.domains = exynos4412_domains
++	}, {
++		.compatible = "samsung,exynos5250",
++		.nr_domains = ARRAY_SIZE(exynos5250_domains),
++		.domains = exynos5250_domains,
++	}, {
++		.compatible = "samsung,exynos5420",
++		.nr_domains = ARRAY_SIZE(exynos542x_domains),
++		.domains = exynos542x_domains,
++	}, {
++		.compatible = "samsung,exynos5800",
++		.nr_domains = ARRAY_SIZE(exynos542x_domains),
++		.domains = exynos542x_domains,
++	}, {
++		.compatible = "samsung,exynos5433",
++		.nr_domains = ARRAY_SIZE(exynos5433_domains),
++		.domains = exynos5433_domains,
++	},
++};
++
+ static const struct exynos_pm_domain_config exynos4210_cfg __initconst = {
+ 	.local_pwr_cfg		= 0x7,
+ };
+@@ -142,6 +238,32 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+ 	{ },
+ };
+ 
++static __init const char *exynos_get_domain_name(struct device_node *np)
++{
++	const struct exynos_pm_domain_soc_data *soc = soc_domains_data;
++	const __be32 *reg;
++	u64 addr;
++	int i, j;
++
++
++	reg = of_get_property(np, "reg", NULL);
++	if (!reg || (addr = of_translate_address(np, reg)) == OF_BAD_ADDR)
++		goto not_found;
++
++	for (i = 0; i < ARRAY_SIZE(soc_domains_data); i++, soc++) {
++		if (!of_machine_is_compatible(soc->compatible))
++			continue;
++
++		for (j = 0; j < soc->nr_domains; j++) {
++			if (soc->domains[j].base == addr)
++				return kstrdup_const(soc->domains[j].name,
++						     GFP_KERNEL);
++		}
++	}
++not_found:
++	return kstrdup_const(strrchr(np->full_name, '/') + 1, GFP_KERNEL);
++}
++
+ static __init int exynos4_pm_init_power_domain(void)
+ {
+ 	struct device_node *np;
+@@ -159,8 +281,7 @@ static __init int exynos4_pm_init_power_domain(void)
+ 			of_node_put(np);
+ 			return -ENOMEM;
+ 		}
+-		pd->pd.name = kstrdup_const(strrchr(np->full_name, '/') + 1,
+-					    GFP_KERNEL);
++		pd->pd.name = exynos_get_domain_name(np);
+ 		if (!pd->pd.name) {
+ 			kfree(pd);
+ 			of_node_put(np);
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+1.9.1
