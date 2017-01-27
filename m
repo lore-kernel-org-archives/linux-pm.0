@@ -1,7 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 15/25] ARM: sun5i: chip: enable ACIN power supply subnode
-Date: Fri, 27 Jan 2017 09:54:48 +0100
-Message-ID: <20170127085458.18270-16-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 07/25] ARM: dtsi: axp22x: add AXP22X ADC subnode
+Date: Fri, 27 Jan 2017 09:54:40 +0100
+Message-ID: <20170127085458.18270-8-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,30 +21,35 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The NextThing Co. CHIP has an AXP209 PMIC and can be power-supplied by
-ACIN via the CHG-IN pin.
+X-Powers AXP22X PMIC has multiple ADCs, each one exposing data from the
+different power supplies connected to the PMIC.
 
-This enables the ACIN power supply subnode in the DT.
+This adds the ADC subnode for AXP22X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 ---
- arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
+
+v2:
+ - removed #io-channels property (the IIO channels mapping is done by
+ using iio_map structure in the ADC driver),
+
+ arch/arm/boot/dts/axp22x.dtsi | 4 ++++
  1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
-index c6da5ad..6011757 100644
---- a/arch/arm/boot/dts/sun5i-r8-chip.dts
-+++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
-@@ -128,6 +128,10 @@
+diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
+index 458b668..abeec81 100644
+--- a/arch/arm/boot/dts/axp22x.dtsi
++++ b/arch/arm/boot/dts/axp22x.dtsi
+@@ -52,6 +52,10 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
  
- #include "axp209.dtsi"
- 
-+&ac_power_supply {
-+	status = "okay";
-+};
++	axp221_adc: adc {
++		compatible = "x-powers,axp221-adc";
++	};
 +
- &i2c1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c1_pins_a>;
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
 -- 
 2.9.3
