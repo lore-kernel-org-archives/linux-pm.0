@@ -1,7 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 07/25] ARM: dtsi: axp22x: add AXP22X ADC subnode
-Date: Fri, 27 Jan 2017 09:54:40 +0100
-Message-ID: <20170127085458.18270-8-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 18/25] mfd: axp20x: add V_OFF to writeable regs for AXP20X
+ and AXP22X
+Date: Fri, 27 Jan 2017 09:54:51 +0100
+Message-ID: <20170127085458.18270-19-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,35 +22,41 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-X-Powers AXP22X PMIC has multiple ADCs, each one exposing data from the
-different power supplies connected to the PMIC.
+The V_OFF register has its first 3 read-write bits for the minimal
+voltage (Voff) of the battery before the system is automatically shut
+down due to the power being too low.
 
-This adds the ADC subnode for AXP22X PMIC.
+This adds V_OFF register to the writeable registers of AXP20X and AXP22X
+PMICs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+Acked-by: Chen-Yu Tsai <wens@csie.org>
 ---
+ drivers/mfd/axp20x.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-v2:
- - removed #io-channels property (the IIO channels mapping is done by
- using iio_map structure in the ADC driver),
-
- arch/arm/boot/dts/axp22x.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
-index 458b668..abeec81 100644
---- a/arch/arm/boot/dts/axp22x.dtsi
-+++ b/arch/arm/boot/dts/axp22x.dtsi
-@@ -52,6 +52,10 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 8210623..223dffe 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -65,7 +65,7 @@ static const struct regmap_access_table axp152_volatile_table = {
  
-+	axp221_adc: adc {
-+		compatible = "x-powers,axp221-adc";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
+ static const struct regmap_range axp20x_writeable_ranges[] = {
+ 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
+-	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
++	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_V_OFF),
+ 	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL2),
+ 	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
+ 	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
+@@ -94,7 +94,7 @@ static const struct regmap_access_table axp20x_volatile_table = {
+ /* AXP22x ranges are shared with the AXP809, as they cover the same range */
+ static const struct regmap_range axp22x_writeable_ranges[] = {
+ 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
+-	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
++	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_V_OFF),
+ 	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP22X_CHRG_CTRL3),
+ 	regmap_reg_range(AXP20X_DCDC_MODE, AXP22X_BATLOW_THRES1),
+ };
 -- 
 2.9.3
