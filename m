@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v2 05/25] mfd: axp20x: add ADC cells for AXP20X and AXP22X
- PMICs
-Date: Fri, 27 Jan 2017 09:54:38 +0100
-Message-ID: <20170127085458.18270-6-quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 08/25] dt-bindings: power: supply: add AXP20X/AXP22X AC
+ power supply
+Date: Fri, 27 Jan 2017 09:54:41 +0100
+Message-ID: <20170127085458.18270-9-quentin.schulz@free-electrons.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,49 +22,50 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the AXP20X/AXP22x ADCs driver to the mfd cells of the AXP209,
-AXP221 and AXP223 MFD.
+The X-Powers AXP20X and AXP22X PMICs have an AC entry to supply power to
+the board. They have a few registers dedicated to the status of the AC
+power supply.
+
+This adds the DT binding documentation for the AC power supply for
+AXP20X and AXP22X PMICs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
 ---
- drivers/mfd/axp20x.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 9c2fd37..cdc729d 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -581,6 +581,9 @@ static struct mfd_cell axp20x_cells[] = {
- 	}, {
- 		.name		= "axp20x-regulator",
- 	}, {
-+		.name		= "axp20x-adc",
-+		.of_compatible	= "x-powers,axp209-adc",
-+	}, {
- 		.name		= "axp20x-ac-power-supply",
- 		.of_compatible	= "x-powers,axp202-ac-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
-@@ -601,6 +604,9 @@ static struct mfd_cell axp221_cells[] = {
- 	}, {
- 		.name		= "axp20x-regulator",
- 	}, {
-+		.name		= "axp20x-adc",
-+		.of_compatible	= "x-powers,axp221-adc"
-+	}, {
- 		.name		= "axp20x-usb-power-supply",
- 		.of_compatible	= "x-powers,axp221-usb-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
-@@ -614,6 +620,9 @@ static struct mfd_cell axp223_cells[] = {
- 		.num_resources		= ARRAY_SIZE(axp22x_pek_resources),
- 		.resources		= axp22x_pek_resources,
- 	}, {
-+		.name		= "axp20x-adc",
-+		.of_compatible	= "x-powers,axp221-adc"
-+	}, {
- 		.name			= "axp20x-regulator",
- 	}, {
- 		.name		= "axp20x-usb-power-supply",
+v2:
+ - removed #io-channels property,
+
+ .../bindings/power/supply/axp20x_ac_power.txt      | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+new file mode 100644
+index 0000000..826e8a8
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/axp20x_ac_power.txt
+@@ -0,0 +1,22 @@
++AXP20X and AXP22X PMICs' AC power supply
++
++Required Properties:
++ - compatible: One of:
++			"x-powers,axp202-ac-power-supply"
++			"x-powers,axp221-ac-power-supply"
++
++This node is a subnode of the axp20x PMIC.
++
++The AXP20X can read the current current and voltage supplied by AC by
++reading ADC channels from the AXP20X ADC.
++
++The AXP22X is only able to tell if an AC power supply is present and
++usable.
++
++Example:
++
++&axp209 {
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp202-ac-power-supply";
++	};
++};
 -- 
 2.9.3
