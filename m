@@ -1,208 +1,150 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v2 04/25] iio: adc: add support for X-Powers AXP20X and
- AXP22X PMICs ADCs
-Date: Sat, 28 Jan 2017 15:34:33 +0000
-Message-ID: <46e5a6b0-fa83-9b55-3b38-c4ec8157ea47@kernel.org>
-References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-5-quentin.schulz@free-electrons.com>
- <f4b3e9dd-926c-c98a-30a2-89907ab2e09e@kernel.org>
- <0e3ac499-abfc-51e0-20e3-d1231af3adc6@free-electrons.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v5 1/8] PCI: Recognize Thunderbolt devices
+Date: Sat, 28 Jan 2017 15:52:08 -0600
+Message-ID: <20170128215208.GM20550@bhelgaas-glaptop.roam.corp.google.com>
+References: <cover.1484486499.git.lukas@wunner.de>
+ <bfabf33fc63abbeb84e11e544456098dff0e4604.1484486499.git.lukas@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <0e3ac499-abfc-51e0-20e3-d1231af3adc6@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
-Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <bfabf33fc63abbeb84e11e544456098dff0e4604.1484486499.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 28/01/17 15:12, Quentin Schulz wrote:
-> Hi Jonathan
-> 
-> On 28/01/2017 15:49, Jonathan Cameron wrote:
->> On 27/01/17 08:54, Quentin Schulz wrote:
->>> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
->>> battery voltage, battery charge and discharge currents, AC-in and VBUS
->>> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
->>>
->>> This adds support for most of AXP20X and AXP22X ADCs.
->>>
->>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->> Pretty good, but not everything seems to be cleaned up on error paths
->> in probe.
->>
->> A few other suggestions / questions inline.
->>
->> Jonathan
->>> ---
-> [...]
->>> +static int axp20x_adc_raw(struct iio_dev *indio_dev,
->>> +			  struct iio_chan_spec const *chan, int *val)
->>> +{
->>> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
->>> +	int size = 12;
->>> +
->>> +	switch (chan->type) {
->>> +	case IIO_CURRENT:
->>> +		/*
->>> +		 * Unlike the Chinese datasheets tell, the charging current is
->>> +		 * stored on 12 bits, not 13 bits.
->>> +		 */
->>> +		if (chan->channel == AXP20X_BATT_DISCHRG_I)
->>> +			size = 13;
->> Given I don't think you can get here without it being current, voltage or temp;
->> couldn't this be done more cleanly with
->> if ((chan->type == IIO_CURRENT) && (chan->channel == AXP20X_BAT_DISCHRG_I))
->>    size = 13;
->>
->> and have the rest in the normal code flow?
->>
-> 
-> Indeed.
-> 
->>> +	case IIO_VOLTAGE:
->>> +	case IIO_TEMP:
->>> +		*val = axp20x_read_variable_width(info->regmap, chan->address,
->>> +						  size);
->>> +		if (*val < 0)
->>> +			return *val;
->>> +
->>> +		return IIO_VAL_INT;
->>> +
->>> +	default:
->>> +		return -EINVAL;
->>> +	}
->>> +}
-> [...]
->>> +static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
->>> +			    int *val2)
->>> +{
->>> +	switch (chan->type) {
->>> +	case IIO_VOLTAGE:
->>> +		if (chan->channel != AXP22X_BATT_V)
->>> +			return -EINVAL;
->>> +
->>> +		*val = 1;
->>> +		*val2 = 100000;
->>> +		return IIO_VAL_INT_PLUS_MICRO;
->> A fixed scale of 1.1x? (just checking)
-> 
-> Yes, there is only one voltage exposed for AXP22X PMICs: the battery
-> voltage which has a scale of 1.1 (for mV).
-Fair enough - just seemed an oddly specific number!
-> 
-> [...]
->>> +static int axp20x_probe(struct platform_device *pdev)
->>> +{
->>> +	struct axp20x_adc_iio *info;
->>> +	struct iio_dev *indio_dev;
->>> +	struct axp20x_dev *axp20x_dev;
->>> +	int ret;
->>> +
->>> +	axp20x_dev = dev_get_drvdata(pdev->dev.parent);
->>> +
->>> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*info));
->>> +	if (!indio_dev)
->>> +		return -ENOMEM;
->>> +
->>> +	info = iio_priv(indio_dev);
->>> +	platform_set_drvdata(pdev, indio_dev);
->>> +
->>> +	info->regmap = axp20x_dev->regmap;
->>> +	indio_dev->name = dev_name(&pdev->dev);
->> Not sure on this name - what does end up as?  Expected to be
->> a description of the part so in this case something like axp209-adc.
->> I've been lax at picking up on this in the past and it's led to some
->> crazy naming that is no use at all to userspace.  Basically this
->> name just provides a convenient user readable name for userspace apps to
->> use.
->>
-> 
-> ACK. Should we have a different name for AXP20X and AXP22X PMICs?
-ideally yes.
-> 
->>> +	indio_dev->dev.parent = &pdev->dev;
->>> +	indio_dev->dev.of_node = pdev->dev.of_node;
->>> +	indio_dev->modes = INDIO_DIRECT_MODE;
->>> +
->>> +	info->data = (struct axp_data *)of_device_get_match_data(&pdev->dev);
->>> +
->>> +	indio_dev->info = info->data->iio_info;
->>> +	indio_dev->num_channels = info->data->num_channels;
->>> +	indio_dev->channels = info->data->channels;
->>> +
->>> +	/* Enable the ADCs on IP */
->>> +	regmap_write(info->regmap, AXP20X_ADC_EN1, info->data->adc_en1_mask);
->>> +
->>> +	if (info->data->adc_en2)
->>> +		/* Enable GPIO0/1 and internal temperature ADCs */
->>> +		regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
->>> +				   AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
->>> +
->>> +	/* Configure ADCs rate */
->>> +	regmap_update_bits(info->regmap, AXP20X_ADC_RATE, AXP20X_ADC_RATE_MASK,
->>> +			   info->data->adc_rate(100));
->>> +
->>> +	ret = iio_map_array_register(indio_dev, info->data->maps);
->>> +	if (ret < 0) {
->>> +		dev_err(&pdev->dev, "failed to register IIO maps: %d\n", ret);
->> This should be disabling channels.
-> 
-> You mean disabling ADCs as it is done in the remove? If so, indeed.
-yes.
-> 
->>> +		return ret;
->>> +	}
->>> +
->>> +	ret = iio_device_register(indio_dev);
->>> +	if (ret < 0) {
->>> +		dev_err(&pdev->dev, "could not register the device\n");
->>> +		regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
->>> +
->>> +		if (info->data->adc_en2)
->>> +			regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
->> I'd expect to see a complete unwind of what has been done earlier in probe
->> including iio_map_array_unregister.
->>
->> The traditional goto error* approach is probably worth having here to
->> make sure the unwind makes sense.
-> 
-> Indeed.
-> 
->>> +
->>> +		return ret;
->>> +	}
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +static int axp20x_remove(struct platform_device *pdev)
->>> +{
->>> +	struct axp20x_adc_iio *info;
->>> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
->>> +
->>> +	info = iio_priv(indio_dev);
->>> +
->>> +	iio_device_unregister(indio_dev);
->> iio_map_array_unregister?
-> 
-> Yes. I see iio_device_unregister already disable all buffers, why not
-> unregistering the map array as well in this function?
-Mostly about symmetry - it's easier to be sure things are right
-if there are explicit calls to set stuff up and then to unwind it.
+On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
+> We're about to allow runtime PM on Thunderbolt ports in
+> pci_bridge_d3_possible() and unblock runtime PM for Thunderbolt host
+> hotplug ports in pci_dev_check_d3cold().  In both cases we need to
+> uniquely identify if a PCI device belongs to a Thunderbolt controller.
 
-Jonathan
+Sounds like "a device belongs to a Thunderbolt controller" means the
+device is part of a Thunderbolt controller or part of the hierarchy
+below it?
+
+> We also have the need to detect presence of a Thunderbolt controller in
+> drivers/platform/x86/apple-gmux.c because dual GPU MacBook Pros cannot
+> switch external DP/HDMI ports between GPUs if they have Thunderbolt.
+
+This series doesn't touch apple-gmux.c, and I don't know anything
+about this MacBook Pro topology, so I can't tell why Thunderbolt is
+relevant here.
+
+> Furthermore, in multiple places in the DRM subsystem we need to detect
+> whether a GPU is on-board or attached with Thunderbolt.  As an example,
+> Thunderbolt-attached GPUs shall not be registered with vga_switcheroo.
+
+Why?  The connection between vga_switcheroo and Thunderbolt is not
+obvious, at least to this non-GPU person.
+
+> Intel uses a Vendor-Specific Extended Capability (VSEC) with ID 0x1234
+> on devices belonging to a Thunderbolt controller which allows us to
+> recognize them.
 > 
-> [...]
-> Thanks,
-> Quentin
+> Detect presence of this VSEC on device probe and cache it in a newly
+> added is_thunderbolt bit in struct pci_dev which can then be queried by
+> pci_bridge_d3_possible(), pci_dev_check_d3cold(), apple-gmux and others.
+> 
+> Cc: Andreas Noever <andreas.noever@gmail.com>
+> Cc: Tomas Winkler <tomas.winkler@intel.com>
+> Cc: Amir Levy <amir.jer.levy@intel.com>
+> Signed-off-by: Lukas Wunner <lukas@wunner.de>
+> ---
+>  drivers/pci/pci.h   |  2 ++
+>  drivers/pci/probe.c | 34 ++++++++++++++++++++++++++++++++++
+>  include/linux/pci.h |  1 +
+>  3 files changed, 37 insertions(+)
+> 
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index cb17db242f30..45c2b8144911 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -3,6 +3,8 @@
+>  
+>  #define PCI_FIND_CAP_TTL	48
+>  
+> +#define PCI_VSEC_ID_INTEL_TBT	0x1234	/* Thunderbolt */
+> +
+>  extern const unsigned char pcie_link_speed[];
+>  
+>  bool pcie_cap_has_lnkctl(const struct pci_dev *dev);
+> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> index e164b5c9f0f0..891a8fa1f9f6 100644
+> --- a/drivers/pci/probe.c
+> +++ b/drivers/pci/probe.c
+> @@ -1206,6 +1206,37 @@ void set_pcie_hotplug_bridge(struct pci_dev *pdev)
+>  		pdev->is_hotplug_bridge = 1;
+>  }
+>  
+> +static void set_pcie_vendor_specific(struct pci_dev *dev)
+
+This is very specific to Thunderbolt, so let's name it something that
+conveys that information.  The fact that we use a vendor-specific
+capability to figure it out isn't really relevant in the caller.
+
+> +{
+> +	int vsec = 0;
+> +	u32 header;
+> +
+> +	while ((vsec = pci_find_next_ext_capability(dev, vsec,
+> +						    PCI_EXT_CAP_ID_VNDR))) {
+> +		pci_read_config_dword(dev, vsec + PCI_VNDR_HEADER, &header);
+> +
+> +		/* Is the device part of a Thunderbolt controller? */
+> +		if (dev->vendor == PCI_VENDOR_ID_INTEL &&
+> +		    PCI_VNDR_HEADER_ID(header) == PCI_VSEC_ID_INTEL_TBT)
+> +			dev->is_thunderbolt = 1;
+
+			return;
+
+> +	}
+> +
+> +	/*
+> +	 * Is the device attached with Thunderbolt?  Walk upwards and check for
+> +	 * each encountered bridge if it's part of a Thunderbolt controller.
+> +	 * Reaching the host bridge means dev is soldered to the mainboard.
+> +	 */
+> +	if (!dev->is_thunderbolt) {
+
+The "if" is unnecessary if you return above.
+
+> +		struct pci_dev *parent = dev;
+> +
+> +		while ((parent = pci_upstream_bridge(parent)))
+> +			if (parent->is_thunderbolt) {
+> +				dev->is_thunderbolt = 1;
+> +				break;
+> +			}
+> +	}
+> +}
+> +
+>  /**
+>   * pci_ext_cfg_is_aliased - is ext config space just an alias of std config?
+>   * @dev: PCI device
+> @@ -1358,6 +1389,9 @@ int pci_setup_device(struct pci_dev *dev)
+>  	/* need to have dev->class ready */
+>  	dev->cfg_size = pci_cfg_space_size(dev);
+>  
+> +	/* need to have dev->cfg_size ready */
+> +	set_pcie_vendor_specific(dev);
+> +
+>  	/* "Unknown power state" */
+>  	dev->current_state = PCI_UNKNOWN;
+>  
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index e2d1a124216a..3c775e8498f1 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -358,6 +358,7 @@ struct pci_dev {
+>  	unsigned int	is_virtfn:1;
+>  	unsigned int	reset_fn:1;
+>  	unsigned int    is_hotplug_bridge:1;
+> +	unsigned int	is_thunderbolt:1; /* part of Thunderbolt daisy chain */
+>  	unsigned int    __aer_firmware_first_valid:1;
+>  	unsigned int	__aer_firmware_first:1;
+>  	unsigned int	broken_intx_masking:1;
+> -- 
+> 2.11.0
 > 
