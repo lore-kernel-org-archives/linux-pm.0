@@ -1,18 +1,15 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH 08/22] power: supply: add AC power supply driver for
- AXP20X and AXP22X PMICs
-Date: Sat, 28 Jan 2017 14:30:22 +0000
-Message-ID: <fcc8f597-e2db-998a-78be-29865f9764fa@kernel.org>
-References: <20170102163723.7939-1-quentin.schulz@free-electrons.com>
- <20170102163723.7939-9-quentin.schulz@free-electrons.com>
- <20170117030013.g5xhlmrxpthyfewa@earth>
- <6a3edb64-8ea9-cb14-b826-d6e8e2c4c4b7@free-electrons.com>
- <20170127082017.ffvybk237ku2n5hu@lukather>
+Subject: Re: [PATCH v2 03/25] power: supply: axp20x_usb_power: use IIO
+ channels when available
+Date: Sat, 28 Jan 2017 14:36:49 +0000
+Message-ID: <625df2b3-3296-e7ac-b842-c104c7ea5907@kernel.org>
+References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-4-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127082017.ffvybk237ku2n5hu@lukather>
+In-Reply-To: <20170127085458.18270-4-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -22,74 +19,153 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Maxime Ripard <maxime.ripard@free-electrons.com>, Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux@armlinux.org.uk, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
+Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 27/01/17 08:20, Maxime Ripard wrote:
-> On Thu, Jan 26, 2017 at 02:32:21PM +0100, Quentin Schulz wrote:
->> I've come with this solution:
->>
->> ------------------------------------------------------------------------
->> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
->> index 012c064..117eacb 100644
->> --- a/drivers/mfd/axp20x.c
->> +++ b/drivers/mfd/axp20x.c
->> @@ -882,7 +882,7 @@ EXPORT_SYMBOL(axp20x_match_device);
->>
->>  int axp20x_device_probe(struct axp20x_dev *axp20x)
->>  {
->> -	int ret;
->> +	int ret, irq_base;
->>
->>  	ret = regmap_add_irq_chip(axp20x->regmap, axp20x->irq,
->>  				  IRQF_ONESHOT | IRQF_SHARED, -1,
->> @@ -893,8 +893,9 @@ int axp20x_device_probe(struct axp20x_dev *axp20x)
->>  		return ret;
->>  	}
->>
->> +	irq_base = regmap_irq_chip_get_base(axp20x->regmap_irqc);
->>  	ret = mfd_add_devices(axp20x->dev, -1, axp20x->cells,
->> -			      axp20x->nr_cells, NULL, 0, NULL);
->> +			      axp20x->nr_cells, NULL, irq_base, NULL);
->>
->>  	if (ret) {
->>  		dev_err(axp20x->dev, "failed to add MFD devices: %d\n", ret);
->> ------------------------------------------------------------------------
->>
->> However, this implies that all cells added by the mfd driver which are
->> requesting irqs will need to be changed in the same commit to remove the
->> regmap_irq_get_virq calls. If we don't modify the drivers, they will
->> purely fail to request the irqs.
->>
->> The impacted drivers are the following:
->>
->>  - drivers/extcon/extcon-axp288.c
->>  - drivers/input/misc/axp20x-pek.c
->>  - drivers/power/supply/axp20x_usb_power.c
->>  - drivers/power/supply/axp288_charger.c
->>  - drivers/power/supply/axp288_fuel_gauge.c
->>
->> Is it really worth to do such a cleanup?
+On 27/01/17 08:54, Quentin Schulz wrote:
+> The X-Powers AXP20X PMIC exposes the current current and voltage
+> measures via an internal ADC.
 > 
-> Yes. The current behaviour goes against what everyone is expecting
-> from the API.
+> This adds the possibility to read IIO channels directly for processed
+> values rather than reading the registers and computing the value.
 > 
->> I'm assuming that impacting four different subsystems at the same
->> time might require a bit of time to make the patch into the
->> kernel. I don't see also another way than doing one single patch for
->> all changes since the changes in the mfd driver will break all
->> aforementioned drivers.
+> For backward compatibility purpose, if the IIO driver is not compiled,
+> this driver will fall back on previous behaviour which is direct
+> register readings.
 > 
-> However, I think that can be fixed in a later, independant serie. This
-> serie is quite big already and this has been long overdue, so I'd
-> really like not to delay it once again because of a dependency on a
-> cross-tree cleanup.
-It's not that cross tree really. Lining up this level of change to
-go through an immutable branch pulled into each of the relevant trees
-isn't too hard to arrange.
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+Acked-by: Jonathan Cameron <jic23@kernel.org>
+
+I (or someone else) really needs to find time to deal with deferred probing
+properly in the IIO core. It's a mess as we need to revisit how the
+channel map stuff works to make sure it's always there...
+
+Anyhow, it's still on the todo list and we can tidy this up if it ever
+happens!
 
 Jonathan
+> ---
 > 
-> Maxime
+> added in v2
+> 
+>  drivers/power/supply/axp20x_usb_power.c | 70 +++++++++++++++++++++++++++++++--
+>  1 file changed, 66 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
+> index 1bcb025..d8b1dc6 100644
+> --- a/drivers/power/supply/axp20x_usb_power.c
+> +++ b/drivers/power/supply/axp20x_usb_power.c
+> @@ -22,6 +22,7 @@
+>  #include <linux/power_supply.h>
+>  #include <linux/regmap.h>
+>  #include <linux/slab.h>
+> +#include <linux/iio/consumer.h>
+>  
+>  #define DRVNAME "axp20x-usb-power-supply"
+>  
+> @@ -49,6 +50,8 @@ struct axp20x_usb_power {
+>  	struct regmap *regmap;
+>  	struct power_supply *supply;
+>  	int axp20x_id;
+> +	struct iio_channel *vbus_v;
+> +	struct iio_channel *vbus_i;
+>  };
+>  
+>  static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
+> @@ -76,6 +79,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+>  		val->intval = AXP20X_VBUS_VHOLD_uV(v);
+>  		return 0;
+>  	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+> +		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
+> +			ret = iio_read_channel_processed(power->vbus_v,
+> +							 &val->intval);
+> +			if (ret)
+> +				return ret;
+> +
+> +			/*
+> +			 * IIO framework gives mV but Power Supply framework
+> +			 * gives uV.
+> +			 */
+> +			val->intval *= 1000;
+> +			return 0;
+> +		}
+> +
+>  		ret = axp20x_read_variable_width(power->regmap,
+>  						 AXP20X_VBUS_V_ADC_H, 12);
+>  		if (ret < 0)
+> @@ -107,6 +124,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
+>  		}
+>  		return 0;
+>  	case POWER_SUPPLY_PROP_CURRENT_NOW:
+> +		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
+> +			ret = iio_read_channel_processed(power->vbus_i,
+> +							 &val->intval);
+> +			if (ret)
+> +				return ret;
+> +
+> +			/*
+> +			 * IIO framework gives mA but Power Supply framework
+> +			 * gives uA.
+> +			 */
+> +			val->intval *= 1000;
+> +			return 0;
+> +		}
+> +
+>  		ret = axp20x_read_variable_width(power->regmap,
+>  						 AXP20X_VBUS_I_ADC_H, 12);
+>  		if (ret < 0)
+> @@ -269,6 +300,36 @@ static const struct power_supply_desc axp22x_usb_power_desc = {
+>  	.set_property = axp20x_usb_power_set_property,
+>  };
+>  
+> +static int configure_iio_channels(struct platform_device *pdev,
+> +				  struct axp20x_usb_power *power)
+> +{
+> +	power->vbus_v = devm_iio_channel_get(&pdev->dev, "vbus_v");
+> +	if (IS_ERR(power->vbus_v)) {
+> +		if (PTR_ERR(power->vbus_v) == -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(power->vbus_v);
+> +	}
+> +
+> +	power->vbus_i = devm_iio_channel_get(&pdev->dev, "vbus_i");
+> +	if (IS_ERR(power->vbus_i)) {
+> +		if (PTR_ERR(power->vbus_i) == -ENODEV)
+> +			return -EPROBE_DEFER;
+> +		return PTR_ERR(power->vbus_i);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int configure_adc_registers(struct axp20x_usb_power *power)
+> +{
+> +	/* Enable vbus voltage and current measurement */
+> +	return regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
+> +				  AXP20X_ADC_EN1_VBUS_CURR |
+> +				  AXP20X_ADC_EN1_VBUS_VOLT,
+> +				  AXP20X_ADC_EN1_VBUS_CURR |
+> +				  AXP20X_ADC_EN1_VBUS_VOLT);
+> +}
+> +
+>  static int axp20x_usb_power_probe(struct platform_device *pdev)
+>  {
+>  	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
+> @@ -307,10 +368,11 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
+>  		if (ret)
+>  			return ret;
+>  
+> -		/* Enable vbus voltage and current measurement */
+> -		ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
+> -			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT,
+> -			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT);
+> +		if (IS_ENABLED(CONFIG_AXP20X_ADC))
+> +			ret = configure_iio_channels(pdev, power);
+> +		else
+> +			ret = configure_adc_registers(power);
+> +
+>  		if (ret)
+>  			return ret;
+>  
 > 
