@@ -1,15 +1,15 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v2 03/25] power: supply: axp20x_usb_power: use IIO
- channels when available
-Date: Sat, 28 Jan 2017 14:36:49 +0000
-Message-ID: <625df2b3-3296-e7ac-b842-c104c7ea5907@kernel.org>
+Subject: Re: [PATCH v2 04/25] iio: adc: add support for X-Powers AXP20X and
+ AXP22X PMICs ADCs
+Date: Sat, 28 Jan 2017 14:49:39 +0000
+Message-ID: <f4b3e9dd-926c-c98a-30a2-89907ab2e09e@kernel.org>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-4-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-5-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-4-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-5-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,148 +24,684 @@ Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vg
 List-Id: linux-pm@vger.kernel.org
 
 On 27/01/17 08:54, Quentin Schulz wrote:
-> The X-Powers AXP20X PMIC exposes the current current and voltage
-> measures via an internal ADC.
+> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
+> battery voltage, battery charge and discharge currents, AC-in and VBUS
+> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
 > 
-> This adds the possibility to read IIO channels directly for processed
-> values rather than reading the registers and computing the value.
-> 
-> For backward compatibility purpose, if the IIO driver is not compiled,
-> this driver will fall back on previous behaviour which is direct
-> register readings.
+> This adds support for most of AXP20X and AXP22X ADCs.
 > 
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-Acked-by: Jonathan Cameron <jic23@kernel.org>
+Pretty good, but not everything seems to be cleaned up on error paths
+in probe.
 
-I (or someone else) really needs to find time to deal with deferred probing
-properly in the IIO core. It's a mess as we need to revisit how the
-channel map stuff works to make sure it's always there...
-
-Anyhow, it's still on the todo list and we can tidy this up if it ever
-happens!
+A few other suggestions / questions inline.
 
 Jonathan
 > ---
 > 
-> added in v2
+> v2:
+>  - removed unused defines,
+>  - changed BIT(x) to 1 << x when describing bits purpose for which 2 <<
+>  x or 3 << x exists, to be consistent,
+>  - changed ADC rate defines to macro formulas,
+>  - reordered IIO channels, now different measures (current/voltage) of
+>  the same part of the PMIC (e.g. battery), have the same IIO channel in
+>  their respective IIO type. When a part of the PMIC have only one
+>  measure, a number is jumped,
+>  - left IIO channel mapping in DT to use iio_map structure,
+>  - removed indexing of ADC internal temperature,
+>  - removed unused iio_dev structure in axp20x_adc_iio,
+>  - added a structure for data specific to AXP20X or AXP22X PMICs instead
+>  of using an ID and an if condition when needing to separate the
+>  behaviour of both,
+>  - added a comment on batt_chrg_i really being on 12bits rather than
+>  what the Chinese datasheets say (13 bits),
+>  - corrected the offset for AXP22X PMIC temperature,
+>  - set the ADC rate to a value (100Hz) shared by the AXP20X and AXP22X,
+>  - created macro formulas to compute the ADC rate for each,
+>  - added a condition on presence of ADC_EN2 reg before setting/resetting
+>  it,
+>  - switched from devm_iio_device_unregister to the non-devm function
+>  because of the need for a remove function,
+>  - removed some dead code,
 > 
->  drivers/power/supply/axp20x_usb_power.c | 70 +++++++++++++++++++++++++++++++--
->  1 file changed, 66 insertions(+), 4 deletions(-)
+>  drivers/iio/adc/Kconfig      |  10 +
+>  drivers/iio/adc/Makefile     |   1 +
+>  drivers/iio/adc/axp20x_adc.c | 572 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 583 insertions(+)
+>  create mode 100644 drivers/iio/adc/axp20x_adc.c
 > 
-> diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supply/axp20x_usb_power.c
-> index 1bcb025..d8b1dc6 100644
-> --- a/drivers/power/supply/axp20x_usb_power.c
-> +++ b/drivers/power/supply/axp20x_usb_power.c
-> @@ -22,6 +22,7 @@
->  #include <linux/power_supply.h>
->  #include <linux/regmap.h>
->  #include <linux/slab.h>
-> +#include <linux/iio/consumer.h>
+> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> index 9c8b558..ed17fe1 100644
+> --- a/drivers/iio/adc/Kconfig
+> +++ b/drivers/iio/adc/Kconfig
+> @@ -154,6 +154,16 @@ config AT91_SAMA5D2_ADC
+>  	  To compile this driver as a module, choose M here: the module will be
+>  	  called at91-sama5d2_adc.
 >  
->  #define DRVNAME "axp20x-usb-power-supply"
->  
-> @@ -49,6 +50,8 @@ struct axp20x_usb_power {
->  	struct regmap *regmap;
->  	struct power_supply *supply;
->  	int axp20x_id;
-> +	struct iio_channel *vbus_v;
-> +	struct iio_channel *vbus_i;
->  };
->  
->  static irqreturn_t axp20x_usb_power_irq(int irq, void *devid)
-> @@ -76,6 +79,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
->  		val->intval = AXP20X_VBUS_VHOLD_uV(v);
->  		return 0;
->  	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-> +		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
-> +			ret = iio_read_channel_processed(power->vbus_v,
-> +							 &val->intval);
-> +			if (ret)
-> +				return ret;
+> +config AXP20X_ADC
+> +	tristate "X-Powers AXP20X and AXP22X ADC driver"
+> +	depends on MFD_AXP20X
+> +	help
+> +	  Say yes here to have support for X-Powers power management IC (PMIC)
+> +	  AXP20X and AXP22X ADC devices.
 > +
-> +			/*
-> +			 * IIO framework gives mV but Power Supply framework
-> +			 * gives uV.
-> +			 */
-> +			val->intval *= 1000;
-> +			return 0;
-> +		}
+> +	  To compile this driver as a module, choose M here: the module will be
+> +	  called axp20x_adc.
 > +
->  		ret = axp20x_read_variable_width(power->regmap,
->  						 AXP20X_VBUS_V_ADC_H, 12);
->  		if (ret < 0)
-> @@ -107,6 +124,20 @@ static int axp20x_usb_power_get_property(struct power_supply *psy,
->  		}
->  		return 0;
->  	case POWER_SUPPLY_PROP_CURRENT_NOW:
-> +		if (IS_ENABLED(CONFIG_AXP20X_ADC)) {
-> +			ret = iio_read_channel_processed(power->vbus_i,
-> +							 &val->intval);
-> +			if (ret)
-> +				return ret;
+>  config AXP288_ADC
+>  	tristate "X-Powers AXP288 ADC driver"
+>  	depends on MFD_AXP20X
+> diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
+> index d36c4be..f5c28a5 100644
+> --- a/drivers/iio/adc/Makefile
+> +++ b/drivers/iio/adc/Makefile
+> @@ -16,6 +16,7 @@ obj-$(CONFIG_AD7887) += ad7887.o
+>  obj-$(CONFIG_AD799X) += ad799x.o
+>  obj-$(CONFIG_AT91_ADC) += at91_adc.o
+>  obj-$(CONFIG_AT91_SAMA5D2_ADC) += at91-sama5d2_adc.o
+> +obj-$(CONFIG_AXP20X_ADC) += axp20x_adc.o
+>  obj-$(CONFIG_AXP288_ADC) += axp288_adc.o
+>  obj-$(CONFIG_BCM_IPROC_ADC) += bcm_iproc_adc.o
+>  obj-$(CONFIG_BERLIN2_ADC) += berlin2-adc.o
+> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> new file mode 100644
+> index 0000000..bacde92
+> --- /dev/null
+> +++ b/drivers/iio/adc/axp20x_adc.c
+> @@ -0,0 +1,572 @@
+> +/* ADC driver for AXP20X and AXP22X PMICs
+> + *
+> + * Copyright (c) 2016 Free Electrons NextThing Co.
+> + *	Quentin Schulz <quentin.schulz@free-electrons.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify it under
+> + * the terms of the GNU General Public License version 2 as published by the
+> + * Free Software Foundation.
+> + */
 > +
-> +			/*
-> +			 * IIO framework gives mA but Power Supply framework
-> +			 * gives uA.
-> +			 */
-> +			val->intval *= 1000;
-> +			return 0;
-> +		}
+> +#include <linux/completion.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/regmap.h>
+> +#include <linux/thermal.h>
 > +
->  		ret = axp20x_read_variable_width(power->regmap,
->  						 AXP20X_VBUS_I_ADC_H, 12);
->  		if (ret < 0)
-> @@ -269,6 +300,36 @@ static const struct power_supply_desc axp22x_usb_power_desc = {
->  	.set_property = axp20x_usb_power_set_property,
->  };
->  
-> +static int configure_iio_channels(struct platform_device *pdev,
-> +				  struct axp20x_usb_power *power)
-> +{
-> +	power->vbus_v = devm_iio_channel_get(&pdev->dev, "vbus_v");
-> +	if (IS_ERR(power->vbus_v)) {
-> +		if (PTR_ERR(power->vbus_v) == -ENODEV)
-> +			return -EPROBE_DEFER;
-> +		return PTR_ERR(power->vbus_v);
+> +#include <linux/iio/iio.h>
+> +#include <linux/iio/driver.h>
+> +#include <linux/iio/machine.h>
+> +#include <linux/mfd/axp20x.h>
+> +
+> +#define AXP20X_ADC_EN1_MASK			GENMASK(7, 0)
+> +
+> +#define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
+> +#define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
+> +
+> +#define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
+> +#define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
+> +#define AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(x)	((x) & BIT(0))
+> +#define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
+> +
+> +#define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
+> +#define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
+> +#define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
+> +
+> +#define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
+> +	{							\
+> +		.type = _type,					\
+> +		.indexed = 1,					\
+> +		.channel = _channel,				\
+> +		.address = _reg,				\
+> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
+> +				      BIT(IIO_CHAN_INFO_SCALE),	\
+> +		.datasheet_name = _name,			\
 > +	}
 > +
-> +	power->vbus_i = devm_iio_channel_get(&pdev->dev, "vbus_i");
-> +	if (IS_ERR(power->vbus_i)) {
-> +		if (PTR_ERR(power->vbus_i) == -ENODEV)
-> +			return -EPROBE_DEFER;
-> +		return PTR_ERR(power->vbus_i);
+> +#define AXP20X_ADC_CHANNEL_OFFSET(_channel, _name, _type, _reg) \
+> +	{							\
+> +		.type = _type,					\
+> +		.indexed = 1,					\
+> +		.channel = _channel,				\
+> +		.address = _reg,				\
+> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |	\
+> +				      BIT(IIO_CHAN_INFO_SCALE) |\
+> +				      BIT(IIO_CHAN_INFO_OFFSET),\
+> +		.datasheet_name = _name,			\
+> +	}
+> +
+> +struct axp_data;
+> +
+> +struct axp20x_adc_iio {
+> +	struct regmap		*regmap;
+> +	struct axp_data		*data;
+> +};
+> +
+> +enum axp20x_adc_channel_v {
+> +	AXP20X_ACIN_V = 0,
+> +	AXP20X_VBUS_V,
+> +	AXP20X_TS_IN,
+> +	AXP20X_GPIO0_V,
+> +	AXP20X_GPIO1_V,
+> +	AXP20X_IPSOUT_V,
+> +	AXP20X_BATT_V,
+> +};
+> +
+> +enum axp20x_adc_channel_i {
+> +	AXP20X_ACIN_I = 0,
+> +	AXP20X_VBUS_I,
+> +	AXP20X_BATT_CHRG_I,
+> +	AXP20X_BATT_DISCHRG_I,
+> +};
+> +
+> +enum axp22x_adc_channel_v {
+> +	AXP22X_TS_IN = 0,
+> +	AXP22X_BATT_V,
+> +};
+> +
+> +enum axp22x_adc_channel_i {
+> +	AXP22X_BATT_CHRG_I = 1,
+> +	AXP22X_BATT_DISCHRG_I,
+> +};
+> +
+> +static struct iio_map axp20x_maps[] = {
+> +	{
+> +		.consumer_dev_name = "axp20x-usb-power-supply",
+> +		.consumer_channel = "vbus_v",
+> +		.adc_channel_label = "vbus_v",
+> +	}, {
+> +		.consumer_dev_name = "axp20x-usb-power-supply",
+> +		.consumer_channel = "vbus_i",
+> +		.adc_channel_label = "vbus_i",
+> +	}, { /* sentinel */ }
+> +};
+> +
+> +/*
+> + * Channels are mapped by physical system. Their channels share the same index.
+> + * i.e. acin_i is in_current0_raw and acin_v is in_voltage0_raw.
+> + * The only exception is for the battery. batt_v will be in_voltage6_raw and
+> + * charge current in_current6_raw and discharge current will be in_current7_raw.
+> + */
+> +static const struct iio_chan_spec axp20x_adc_channels[] = {
+> +	AXP20X_ADC_CHANNEL(AXP20X_ACIN_V, "acin_v", IIO_VOLTAGE,
+> +			   AXP20X_ACIN_V_ADC_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_ACIN_I, "acin_i", IIO_CURRENT,
+> +			   AXP20X_ACIN_I_ADC_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_VBUS_V, "vbus_v", IIO_VOLTAGE,
+> +			   AXP20X_VBUS_V_ADC_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_VBUS_I, "vbus_i", IIO_CURRENT,
+> +			   AXP20X_VBUS_I_ADC_H),
+> +	{
+> +		.type = IIO_TEMP,
+> +		.address = AXP20X_TEMP_ADC_H,
+> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
+> +				      BIT(IIO_CHAN_INFO_SCALE) |
+> +				      BIT(IIO_CHAN_INFO_OFFSET),
+> +		.datasheet_name = "pmic_temp",
+> +	},
+> +	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
+> +				  AXP20X_GPIO0_V_ADC_H),
+> +	AXP20X_ADC_CHANNEL_OFFSET(AXP20X_GPIO1_V, "gpio1_v", IIO_VOLTAGE,
+> +				  AXP20X_GPIO1_V_ADC_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_IPSOUT_V, "ipsout_v", IIO_VOLTAGE,
+> +			   AXP20X_IPSOUT_V_HIGH_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_V, "batt_v", IIO_VOLTAGE,
+> +			   AXP20X_BATT_V_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
+> +			   AXP20X_BATT_CHRG_I_H),
+> +	AXP20X_ADC_CHANNEL(AXP20X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
+> +			   AXP20X_BATT_DISCHRG_I_H),
+> +};
+> +
+> +static const struct iio_chan_spec axp22x_adc_channels[] = {
+> +	{
+> +		.type = IIO_TEMP,
+> +		.address = AXP22X_PMIC_TEMP_H,
+> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
+> +				      BIT(IIO_CHAN_INFO_SCALE) |
+> +				      BIT(IIO_CHAN_INFO_OFFSET),
+> +		.datasheet_name = "pmic_temp",
+> +	},
+> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_V, "batt_v", IIO_VOLTAGE,
+> +			   AXP20X_BATT_V_H),
+> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
+> +			   AXP20X_BATT_CHRG_I_H),
+> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
+> +			   AXP20X_BATT_DISCHRG_I_H),
+> +};
+> +
+> +static int axp20x_adc_raw(struct iio_dev *indio_dev,
+> +			  struct iio_chan_spec const *chan, int *val)
+> +{
+> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
+> +	int size = 12;
+> +
+> +	switch (chan->type) {
+> +	case IIO_CURRENT:
+> +		/*
+> +		 * Unlike the Chinese datasheets tell, the charging current is
+> +		 * stored on 12 bits, not 13 bits.
+> +		 */
+> +		if (chan->channel == AXP20X_BATT_DISCHRG_I)
+> +			size = 13;
+Given I don't think you can get here without it being current, voltage or temp;
+couldn't this be done more cleanly with
+if ((chan->type == IIO_CURRENT) && (chan->channel == AXP20X_BAT_DISCHRG_I))
+   size = 13;
+
+and have the rest in the normal code flow?
+
+> +	case IIO_VOLTAGE:
+> +	case IIO_TEMP:
+> +		*val = axp20x_read_variable_width(info->regmap, chan->address,
+> +						  size);
+> +		if (*val < 0)
+> +			return *val;
+> +
+> +		return IIO_VAL_INT;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp22x_adc_raw(struct iio_dev *indio_dev,
+> +			  struct iio_chan_spec const *chan, int *val)
+> +{
+> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
+> +	int size = 12;
+> +
+> +	switch (chan->type) {
+> +	case IIO_CURRENT:
+> +		/*
+> +		 * Unlike the Chinese datasheets tell, the charging current is
+> +		 * stored on 12 bits, not 13 bits.
+> +		 */
+> +		if (chan->channel == AXP22X_BATT_DISCHRG_I)
+> +			size = 13;
+> +	case IIO_VOLTAGE:
+> +	case IIO_TEMP:
+> +		*val = axp20x_read_variable_width(info->regmap, chan->address,
+> +						  size);
+> +		if (*val < 0)
+> +			return *val;
+> +
+> +		return IIO_VAL_INT;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
+> +{
+> +	switch (channel) {
+> +	case AXP20X_ACIN_V:
+> +	case AXP20X_VBUS_V:
+> +		*val = 1;
+> +		*val2 = 700000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case AXP20X_GPIO0_V:
+> +	case AXP20X_GPIO1_V:
+> +		*val = 0;
+> +		*val2 = 500000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case AXP20X_BATT_V:
+> +		*val = 1;
+> +		*val2 = 100000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case AXP20X_IPSOUT_V:
+> +		*val = 1;
+> +		*val2 = 400000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp20x_adc_scale_current(int channel, int *val, int *val2)
+> +{
+> +	switch (channel) {
+> +	case AXP20X_ACIN_I:
+> +		*val = 0;
+> +		*val2 = 625000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case AXP20X_VBUS_I:
+> +		*val = 0;
+> +		*val2 = 375000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case AXP20X_BATT_DISCHRG_I:
+> +	case AXP20X_BATT_CHRG_I:
+> +		*val = 0;
+> +		*val2 = 500000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp20x_adc_scale(struct iio_chan_spec const *chan, int *val,
+> +			    int *val2)
+> +{
+> +	switch (chan->type) {
+> +	case IIO_VOLTAGE:
+> +		return axp20x_adc_scale_voltage(chan->channel, val, val2);
+> +
+> +	case IIO_CURRENT:
+> +		return axp20x_adc_scale_current(chan->channel, val, val2);
+> +
+> +	case IIO_TEMP:
+> +		*val = 100;
+> +		return IIO_VAL_INT;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
+> +			    int *val2)
+> +{
+> +	switch (chan->type) {
+> +	case IIO_VOLTAGE:
+> +		if (chan->channel != AXP22X_BATT_V)
+> +			return -EINVAL;
+> +
+> +		*val = 1;
+> +		*val2 = 100000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+A fixed scale of 1.1x? (just checking)
+> +
+> +	case IIO_CURRENT:
+> +		*val = 0;
+> +		*val2 = 500000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case IIO_TEMP:
+> +		*val = 100;
+> +		return IIO_VAL_INT;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
+> +				     int *val)
+> +{
+> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
+> +	int ret, reg;
+> +
+> +	if (channel != AXP20X_GPIO0_V && channel != AXP20X_GPIO1_V)
+> +		return -EINVAL;
+> +
+> +	ret = regmap_read(info->regmap, AXP20X_GPIO10_IN_RANGE, &reg);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (channel == AXP20X_GPIO0_V)
+> +		*val = reg & AXP20X_GPIO10_IN_RANGE_GPIO0;
+> +	else
+> +		*val = reg & AXP20X_GPIO10_IN_RANGE_GPIO1;
+> +
+> +	*val = !!(*val) * 700000;
+> +
+> +	return IIO_VAL_INT;
+> +}
+> +
+> +static int axp20x_adc_offset(struct iio_dev *indio_dev,
+> +			     struct iio_chan_spec const *chan, int *val)
+> +{
+> +	switch (chan->type) {
+> +	case IIO_VOLTAGE:
+> +		return axp20x_adc_offset_voltage(indio_dev, chan->channel, val);
+> +
+> +	case IIO_TEMP:
+> +		*val = -1447;
+> +		return IIO_VAL_INT;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp20x_read_raw(struct iio_dev *indio_dev,
+> +			   struct iio_chan_spec const *chan, int *val,
+> +			   int *val2, long mask)
+> +{
+> +	switch (mask) {
+> +	case IIO_CHAN_INFO_OFFSET:
+> +		return axp20x_adc_offset(indio_dev, chan, val);
+> +
+> +	case IIO_CHAN_INFO_SCALE:
+> +		return axp20x_adc_scale(chan, val, val2);
+> +
+> +	case IIO_CHAN_INFO_RAW:
+> +		return axp20x_adc_raw(indio_dev, chan, val);
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp22x_read_raw(struct iio_dev *indio_dev,
+> +			   struct iio_chan_spec const *chan, int *val,
+> +			   int *val2, long mask)
+> +{
+> +	switch (mask) {
+> +	case IIO_CHAN_INFO_OFFSET:
+> +		*val = -2677;
+> +		return IIO_VAL_INT;
+> +
+> +	case IIO_CHAN_INFO_SCALE:
+> +		return axp22x_adc_scale(chan, val, val2);
+> +
+> +	case IIO_CHAN_INFO_RAW:
+> +		return axp22x_adc_raw(indio_dev, chan, val);
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+> +static int axp20x_write_raw(struct iio_dev *indio_dev,
+> +			    struct iio_chan_spec const *chan, int val, int val2,
+> +			    long mask)
+> +{
+> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
+> +
+> +	/*
+> +	 * The AXP20X PMIC allows the user to choose between 0V and 0.7V offsets
+> +	 * for (independently) GPIO0 and GPIO1 when in ADC mode.
+> +	 */
+> +	if (mask != IIO_CHAN_INFO_OFFSET)
+> +		return -EINVAL;
+> +
+> +	if (chan->channel != AXP20X_GPIO0_V && chan->channel != AXP20X_GPIO1_V)
+> +		return -EINVAL;
+> +
+> +	if (val != 0 && val != 700000)
+> +		return -EINVAL;
+> +
+> +	if (chan->channel == AXP20X_GPIO0_V)
+> +		return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE,
+> +					  AXP20X_GPIO10_IN_RANGE_GPIO0,
+> +					  AXP20X_GPIO10_IN_RANGE_GPIO0_VAL(!!val));
+> +
+> +	return regmap_update_bits(info->regmap, AXP20X_GPIO10_IN_RANGE,
+> +				  AXP20X_GPIO10_IN_RANGE_GPIO1,
+> +				  AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(!!val));
+> +}
+> +
+> +static const struct iio_info axp20x_adc_iio_info = {
+> +	.read_raw = axp20x_read_raw,
+> +	.write_raw = axp20x_write_raw,
+> +	.driver_module = THIS_MODULE,
+> +};
+> +
+> +static const struct iio_info axp22x_adc_iio_info = {
+> +	.read_raw = axp22x_read_raw,
+> +	.driver_module = THIS_MODULE,
+> +};
+> +
+> +static int axp20x_adc_rate(int rate)
+> +{
+> +	return AXP20X_ADC_RATE_HZ(rate);
+> +}
+> +
+> +static int axp22x_adc_rate(int rate)
+> +{
+> +	return AXP22X_ADC_RATE_HZ(rate);
+> +}
+> +
+> +struct axp_data {
+> +	const struct iio_info		*iio_info;
+> +	int				num_channels;
+> +	struct iio_chan_spec const	*channels;
+> +	unsigned long			adc_en1_mask;
+> +	int				(*adc_rate)(int rate);
+> +	bool				adc_en2;
+> +	struct iio_map			*maps;
+> +};
+> +
+> +static const struct axp_data axp20x_data = {
+> +	.iio_info = &axp20x_adc_iio_info,
+> +	.num_channels = ARRAY_SIZE(axp20x_adc_channels),
+> +	.channels = axp20x_adc_channels,
+> +	.adc_en1_mask = AXP20X_ADC_EN1_MASK,
+> +	.adc_rate = axp20x_adc_rate,
+> +	.adc_en2 = true,
+> +	.maps = axp20x_maps,
+> +};
+> +
+> +static const struct axp_data axp22x_data = {
+> +	.iio_info = &axp22x_adc_iio_info,
+> +	.num_channels = ARRAY_SIZE(axp22x_adc_channels),
+> +	.channels = axp22x_adc_channels,
+> +	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
+> +	.adc_rate = axp22x_adc_rate,
+> +	.adc_en2 = false,
+> +};
+> +
+> +static const struct of_device_id axp20x_adc_of_match[] = {
+> +	{ .compatible = "x-powers,axp209-adc", .data = (void *)&axp20x_data, },
+> +	{ .compatible = "x-powers,axp221-adc", .data = (void *)&axp22x_data, },
+> +	{ /* sentinel */ },
+> +};
+> +
+> +static int axp20x_probe(struct platform_device *pdev)
+> +{
+> +	struct axp20x_adc_iio *info;
+> +	struct iio_dev *indio_dev;
+> +	struct axp20x_dev *axp20x_dev;
+> +	int ret;
+> +
+> +	axp20x_dev = dev_get_drvdata(pdev->dev.parent);
+> +
+> +	indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*info));
+> +	if (!indio_dev)
+> +		return -ENOMEM;
+> +
+> +	info = iio_priv(indio_dev);
+> +	platform_set_drvdata(pdev, indio_dev);
+> +
+> +	info->regmap = axp20x_dev->regmap;
+> +	indio_dev->name = dev_name(&pdev->dev);
+Not sure on this name - what does end up as?  Expected to be
+a description of the part so in this case something like axp209-adc.
+I've been lax at picking up on this in the past and it's led to some
+crazy naming that is no use at all to userspace.  Basically this
+name just provides a convenient user readable name for userspace apps to
+use.
+
+> +	indio_dev->dev.parent = &pdev->dev;
+> +	indio_dev->dev.of_node = pdev->dev.of_node;
+> +	indio_dev->modes = INDIO_DIRECT_MODE;
+> +
+> +	info->data = (struct axp_data *)of_device_get_match_data(&pdev->dev);
+> +
+> +	indio_dev->info = info->data->iio_info;
+> +	indio_dev->num_channels = info->data->num_channels;
+> +	indio_dev->channels = info->data->channels;
+> +
+> +	/* Enable the ADCs on IP */
+> +	regmap_write(info->regmap, AXP20X_ADC_EN1, info->data->adc_en1_mask);
+> +
+> +	if (info->data->adc_en2)
+> +		/* Enable GPIO0/1 and internal temperature ADCs */
+> +		regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
+> +				   AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
+> +
+> +	/* Configure ADCs rate */
+> +	regmap_update_bits(info->regmap, AXP20X_ADC_RATE, AXP20X_ADC_RATE_MASK,
+> +			   info->data->adc_rate(100));
+> +
+> +	ret = iio_map_array_register(indio_dev, info->data->maps);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "failed to register IIO maps: %d\n", ret);
+This should be disabling channels.
+> +		return ret;
+> +	}
+> +
+> +	ret = iio_device_register(indio_dev);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "could not register the device\n");
+> +		regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
+> +
+> +		if (info->data->adc_en2)
+> +			regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
+I'd expect to see a complete unwind of what has been done earlier in probe
+including iio_map_array_unregister.
+
+The traditional goto error* approach is probably worth having here to
+make sure the unwind makes sense.
+> +
+> +		return ret;
 > +	}
 > +
 > +	return 0;
 > +}
 > +
-> +static int configure_adc_registers(struct axp20x_usb_power *power)
+> +static int axp20x_remove(struct platform_device *pdev)
 > +{
-> +	/* Enable vbus voltage and current measurement */
-> +	return regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
-> +				  AXP20X_ADC_EN1_VBUS_CURR |
-> +				  AXP20X_ADC_EN1_VBUS_VOLT,
-> +				  AXP20X_ADC_EN1_VBUS_CURR |
-> +				  AXP20X_ADC_EN1_VBUS_VOLT);
+> +	struct axp20x_adc_iio *info;
+> +	struct iio_dev *indio_dev = platform_get_drvdata(pdev);
+> +
+> +	info = iio_priv(indio_dev);
+> +
+> +	iio_device_unregister(indio_dev);
+iio_map_array_unregister?
+> +
+> +	regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
+> +
+> +	if (info->data->adc_en2)
+> +		regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
+> +
+> +	return 0;
 > +}
 > +
->  static int axp20x_usb_power_probe(struct platform_device *pdev)
->  {
->  	struct axp20x_dev *axp20x = dev_get_drvdata(pdev->dev.parent);
-> @@ -307,10 +368,11 @@ static int axp20x_usb_power_probe(struct platform_device *pdev)
->  		if (ret)
->  			return ret;
->  
-> -		/* Enable vbus voltage and current measurement */
-> -		ret = regmap_update_bits(power->regmap, AXP20X_ADC_EN1,
-> -			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT,
-> -			AXP20X_ADC_EN1_VBUS_CURR | AXP20X_ADC_EN1_VBUS_VOLT);
-> +		if (IS_ENABLED(CONFIG_AXP20X_ADC))
-> +			ret = configure_iio_channels(pdev, power);
-> +		else
-> +			ret = configure_adc_registers(power);
+> +static struct platform_driver axp20x_adc_driver = {
+> +	.driver = {
+> +		.name = "axp20x-adc",
+> +		.of_match_table = axp20x_adc_of_match,
+> +	},
+> +	.probe = axp20x_probe,
+> +	.remove = axp20x_remove,
+> +};
 > +
->  		if (ret)
->  			return ret;
->  
+> +module_platform_driver(axp20x_adc_driver);
+> +
+> +MODULE_DESCRIPTION("ADC driver for AXP20X and AXP22X PMICs");
+> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz@free-electrons.com>");
+> +MODULE_LICENSE("GPL");
 > 
