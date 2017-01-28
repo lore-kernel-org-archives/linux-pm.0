@@ -1,116 +1,116 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host
- hotplug ports
-Date: Sat, 28 Jan 2017 17:00:21 -0600
-Message-ID: <20170128230020.GO20550@bhelgaas-glaptop.roam.corp.google.com>
+Subject: Re: [PATCH v5 5/8] PM: Make requirements of dev_pm_domain_set() more
+ precise
+Date: Sat, 28 Jan 2017 17:14:42 -0600
+Message-ID: <20170128231442.GP20550@bhelgaas-glaptop.roam.corp.google.com>
 References: <cover.1484486499.git.lukas@wunner.de>
- <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
+ <7b958f265f7acc4ebe07286cb3a19fdb7ac94962.1484486499.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:48262 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751545AbdA1XJc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 28 Jan 2017 18:09:32 -0500
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <7b958f265f7acc4ebe07286cb3a19fdb7ac94962.1484486499.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
 To: Lukas Wunner <lukas@wunner.de>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Tomeu Vizoso <tomeu.vizoso@collabora.com>
+List-Id: linux-pm@vger.kernel.org
 
 On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
-> Hotplug ports generally block their parents from suspending to D3hot as
-> otherwise their interrupts couldn't be delivered.
-
-Well, the hotplug ports don't actually block anything.  We may decide
-not to suspend the parent because normal PCIe hotplug ports deliver
-interrupts through their parent, and if we suspend the parent to
-D3hot, we won't get those interrupts.  I guess that's being pedantic.
-
-> An exception are Thunderbolt host controllers:  They have a separate
-> GPIO pin to side-band signal plug events even if the controller is
-> powered down or its parent ports are suspended to D3.  They can be told
-> apart from Thunderbolt controllers in attached devices by checking if
-> they're situated below a non-Thunderbolt device (typically a root port,
-> or the downstream port of a PCIe switch in the case of the MacPro6,1).
+> Since commit 989561de9b51 ("PM / Domains: add setter for dev.pm_domain")
+> a PM domain may only be assigned to unbound devices.
 > 
-> To enable runtime PM for Thunderbolt on the Mac, the downstream bridges
-> of a host controller must not block runtime PM on the upstream bridge as
-> power to the chip is only cut once the upstream bridge has suspended.
-> Amend the condition in pci_dev_check_d3cold() accordingly.
+> The motivation was not made explicit in the changelog other than "in the
+> general case that can cause problems and also [...] we can simplify code
+> quite a bit if we can always assume that".  Rafael J. Wysocki elaborated
+> in a mailing list conversation that "setting a PM domain generally
+> changes the set of PM callbacks for the device and it may not be safe to
+> call it after the driver has been bound".
 > 
-> This change does not impact non-Macs as their Thunderbolt hotplug ports
-> are handled by the firmware rather than natively by the OS:  The hotplug
-> ports are not allowed to suspend in pci_bridge_d3_possible() and keep
-> their parent ports awake all the time.  Consequently it is meaningless
-> whether they block runtime PM on their parent ports or not.
+> The concern seems to be that if a device is put to sleep and its PM
+> callbacks are changed, the device may end up in an undefined state or
+> not resume at all.  The real underlying requirement is thus to ensure
+> that the device is awake and execution of its PM callbacks is prevented
+> while the PM domain is assigned.  Unbound devices happen to fulfill this
+> requirement, but bound devices can be made to satisfy it as well:
+> The caller can prevent execution of PM ops with lock_system_sleep() and
+> by holding a runtime PM reference to the device.
+> 
+> Accordingly, adjust dev_pm_domain_set() to WARN only if the device is in
+> the midst of a system sleep transition, or runtime PM is enabled and the
+> device is either not active or may become inactive imminently (because
+> it has no active children or its refcount is zero).
+> 
+> The change is required to support runtime PM for Thunderbolt on the Mac,
+> which poses the unique issue that a child device (the NHI) needs to
+> assign a PM domain to its grandparent (the upstream bridge).  Because
+> the grandparent's driver is built-in and the child's driver is a module,
+> the grandparent is usually already bound when the child probes,
+> resulting in a WARN splat when calling dev_pm_domain_set().  However the
+> PM core guarantees both that the grandparent is active and that system
+> sleep is not commenced until the child has finished probing.  So in this
+> case it is safe to call dev_pm_domain_set() from the child's ->probe
+> hook and the WARN splat is entirely gratuitous.
 
-I think the references to Macs in the discussion above is confusing.
-To cut power to a switch, I assume we have to suspend both upstream
-and downstream ports whether it's plain PCIe or Thunderbolt, Mac or
-not.
+Wow.  That's a pretty complicated set of conditions on the caller.
+But I can't think of anything constructive to suggest.
 
-The "non-Mac Thunderbolt ports being handled by firmware" statement is
-true today, but there's nothing intrinsic that makes it true; it could
-change tomorrow.
-
-> Cc: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Note that commit e79aee49bcf9 ("PM: Avoid false-positive warnings in
+> dev_pm_domain_set()") modified the WARN to not apply if a PM domain is
+> removed.  This is unsafe as it allows removal of the PM domain while
+> the device is asleep.  The present commit rectifies this.
+> 
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Tomeu Vizoso <tomeu.vizoso@collabora.com>
 > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Andreas Noever <andreas.noever@gmail.com>
-> Cc: Tomas Winkler <tomas.winkler@intel.com>
-> Cc: Amir Levy <amir.jer.levy@intel.com>
 > Signed-off-by: Lukas Wunner <lukas@wunner.de>
 > ---
->  drivers/pci/pci.c | 20 +++++++++++++++++++-
->  1 file changed, 19 insertions(+), 1 deletion(-)
+>  drivers/base/power/common.c | 15 +++++++++++----
+>  1 file changed, 11 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 8ed098db82e1..e7a354cd13ce 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -2269,6 +2269,24 @@ bool pci_bridge_d3_possible(struct pci_dev *bridge)
->  	return false;
+> diff --git a/drivers/base/power/common.c b/drivers/base/power/common.c
+> index f6a9ad52cbbf..d02c1e08a7ed 100644
+> --- a/drivers/base/power/common.c
+> +++ b/drivers/base/power/common.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/pm_clock.h>
+>  #include <linux/acpi.h>
+>  #include <linux/pm_domain.h>
+> +#include <linux/pm_runtime.h>
+>  
+>  #include "power.h"
+>  
+> @@ -136,8 +137,10 @@ EXPORT_SYMBOL_GPL(dev_pm_domain_detach);
+>   * @dev: Device whose PM domain is to be set.
+>   * @pd: PM domain to be set, or NULL.
+>   *
+> - * Sets the PM domain the device belongs to. The PM domain of a device needs
+> - * to be set before its probe finishes (it's bound to a driver).
+> + * Sets the PM domain the device belongs to.  The PM domain of a device needs
+> + * to be set while the device is awake.  This is guaranteed during ->probe.
+> + * Otherwise the caller is responsible for ensuring wakefulness, e.g. by
+> + * holding a runtime PM reference as well as invoking lock_system_sleep().
+>   *
+>   * This function must be called with the device lock held.
+>   */
+> @@ -146,8 +149,12 @@ void dev_pm_domain_set(struct device *dev, struct dev_pm_domain *pd)
+>  	if (dev->pm_domain == pd)
+>  		return;
+>  
+> -	WARN(pd && device_is_bound(dev),
+> -	     "PM domains can only be changed for unbound devices\n");
+> +	WARN(dev->power.is_prepared || dev->power.is_suspended ||
+> +	     (pm_runtime_enabled(dev) &&
+> +	      (dev->power.runtime_status != RPM_ACTIVE ||
+> +	       (pm_children_suspended(dev) &&
+> +		!atomic_read(&dev->power.usage_count)))),
+> +	     "PM domains can only be changed for awake devices\n");
+>  	dev->pm_domain = pd;
+>  	device_pm_check_callbacks(dev);
 >  }
->  
-> +static bool pci_hotplug_bridge_may_wakeup(struct pci_dev *dev)
-> +{
-> +	struct pci_dev *parent, *grandparent;
-> +
-> +	/*
-> +	 * Thunderbolt host controllers have a pin to side-band signal
-> +	 * plug events.  Their hotplug ports are recognizable by having
-> +	 * a non-Thunderbolt device as grandparent.
-
-This comment should say something about the host controller vs.
-attached device distinction you made in the changelog.
-
-> +	 */
-> +	if (dev->is_thunderbolt &&
-> +	    (parent = pci_upstream_bridge(dev)) &&
-> +	    (grandparent = pci_upstream_bridge(parent)) &&
-> +	    !grandparent->is_thunderbolt)
-> +		return true;
-> +
-> +	return false;
-> +}
-> +
->  static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
->  {
->  	bool *d3cold_ok = data;
-> @@ -2284,7 +2302,7 @@ static int pci_dev_check_d3cold(struct pci_dev *dev, void *data)
->  	    !pci_power_manageable(dev) ||
->  
->  	    /* Hotplug interrupts cannot be delivered if the link is down. */
-
-I think the point of this patch is that there are exceptions to the
-statement in the comment, so please update the comment.
-
-> -	    dev->is_hotplug_bridge)
-> +	    (dev->is_hotplug_bridge && !pci_hotplug_bridge_may_wakeup(dev)))
->  
->  		*d3cold_ok = false;
->  
 > -- 
 > 2.11.0
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
