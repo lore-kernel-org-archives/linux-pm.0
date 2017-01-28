@@ -1,14 +1,14 @@
 From: Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH v2 09/25] iio: adc: axp20x_adc: map acin_i and acin_v
-Date: Sat, 28 Jan 2017 14:51:13 +0000
-Message-ID: <cff80632-3988-975f-3cbb-df5cacec78dc@kernel.org>
+Subject: Re: [PATCH v2 19/25] iio: adc: axp20x_adc: map battery IIO channels
+Date: Sat, 28 Jan 2017 14:52:56 +0000
+Message-ID: <7ecf7c00-3f8e-04e5-4c96-db1843294f2e@kernel.org>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-10-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-20-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-10-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-20-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,12 +23,10 @@ Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vg
 List-Id: linux-pm@vger.kernel.org
 
 On 27/01/17 08:54, Quentin Schulz wrote:
-> This maps the IIO channels acin_i and acin_v (respectively exposing the
-> current current and voltage measures of the AC power supply) to the AC
+> This maps the IIO channels batt_v, batt_chrg_i and batt_dischrg_i
+> (respectively exposing the current charging and discharging currents and
+> current voltage measures of the battery power supply) to the battery
 > power supply driver.
-> 
-> Only the AXP20X PMICs have these ADC channels and thus they are only
-> mapped for this version of the PMIC.
 > 
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 Acked-by: Jonathan Cameron <jic23@kernel.org>
@@ -36,26 +34,54 @@ Acked-by: Jonathan Cameron <jic23@kernel.org>
 > 
 > added in v2
 > 
->  drivers/iio/adc/axp20x_adc.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
+>  drivers/iio/adc/axp20x_adc.c | 29 +++++++++++++++++++++++++++++
+>  1 file changed, 29 insertions(+)
 > 
 > diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-> index bacde92..14f4ec0 100644
+> index 14f4ec0..64c7c75 100644
 > --- a/drivers/iio/adc/axp20x_adc.c
 > +++ b/drivers/iio/adc/axp20x_adc.c
-> @@ -104,6 +104,14 @@ static struct iio_map axp20x_maps[] = {
->  		.consumer_dev_name = "axp20x-usb-power-supply",
->  		.consumer_channel = "vbus_i",
->  		.adc_channel_label = "vbus_i",
+> @@ -112,6 +112,34 @@ static struct iio_map axp20x_maps[] = {
+>  		.consumer_dev_name = "axp20x-ac-power-supply",
+>  		.consumer_channel = "acin_i",
+>  		.adc_channel_label = "acin_i",
 > +	}, {
-> +		.consumer_dev_name = "axp20x-ac-power-supply",
-> +		.consumer_channel = "acin_v",
-> +		.adc_channel_label = "acin_v",
+> +		.consumer_dev_name = "axp20x-battery-power-supply",
+> +		.consumer_channel = "batt_v",
+> +		.adc_channel_label = "batt_v",
 > +	}, {
-> +		.consumer_dev_name = "axp20x-ac-power-supply",
-> +		.consumer_channel = "acin_i",
-> +		.adc_channel_label = "acin_i",
+> +		.consumer_dev_name = "axp20x-battery-power-supply",
+> +		.consumer_channel = "batt_chrg_i",
+> +		.adc_channel_label = "batt_chrg_i",
+> +	}, {
+> +		.consumer_dev_name = "axp20x-battery-power-supply",
+> +		.consumer_channel = "batt_dischrg_i",
+> +		.adc_channel_label = "batt_dischrg_i",
+> +	}, { /* sentinel */ }
+> +};
+> +
+> +static struct iio_map axp22x_maps[] = {
+> +	{
+> +		.consumer_dev_name = "axp20x-battery-power-supply",
+> +		.consumer_channel = "batt_v",
+> +		.adc_channel_label = "batt_v",
+> +	}, {
+> +		.consumer_dev_name = "axp20x-battery-power-supply",
+> +		.consumer_channel = "batt_chrg_i",
+> +		.adc_channel_label = "batt_chrg_i",
+> +	}, {
+> +		.consumer_dev_name = "axp20x-battery-power-supply",
+> +		.consumer_channel = "batt_dischrg_i",
+> +		.adc_channel_label = "batt_dischrg_i",
 >  	}, { /* sentinel */ }
 >  };
 >  
+> @@ -479,6 +507,7 @@ static const struct axp_data axp22x_data = {
+>  	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
+>  	.adc_rate = axp22x_adc_rate,
+>  	.adc_en2 = false,
+> +	.maps = axp22x_maps,
+>  };
+>  
+>  static const struct of_device_id axp20x_adc_of_match[] = {
 > 
