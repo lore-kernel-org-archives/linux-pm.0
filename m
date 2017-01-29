@@ -1,101 +1,115 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v4 6/8] power: bq27xxx_battery: add i2c bulk read/write
- functions
-Date: Sun, 29 Jan 2017 23:22:45 +0100
-Message-ID: <20170129222245.kimtf5f5t5zjjcnq@earth>
-References: <20170129200825.32648-1-liam@networkimprov.net>
+Subject: Re: [PATCH] power: reset: Add MAX77620 support
+Date: Sun, 29 Jan 2017 23:43:52 +0100
+Message-ID: <20170129224352.awzvwt2pzitovapu@earth>
+References: <20170112161507.23774-1-thierry.reding@gmail.com>
+ <20170113034425.7ttvc73aewtbitrk@earth>
+ <20170119122357.GF30182@ulmo.ba.sec>
+ <20170119230036.sjfqvqxgxutis6xs@earth>
+ <20170119232934.GA18102@roeck-us.net>
+ <20170120083804.GF4894@ulmo.ba.sec>
+ <20170129200239.x2rwx23xjj57flus@earth>
+ <0447204d-34c6-aa62-d82b-ee064f1e79bb@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bwg5xbe7npn7bpoe"
+        protocol="application/pgp-signature"; boundary="eovxp67napvj5kof"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:59278 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.136]:59974 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750785AbdA2WWv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 29 Jan 2017 17:22:51 -0500
+        id S1750745AbdA2Wq0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 29 Jan 2017 17:46:26 -0500
 Content-Disposition: inline
-In-Reply-To: <20170129200825.32648-1-liam@networkimprov.net>
+In-Reply-To: <0447204d-34c6-aa62-d82b-ee064f1e79bb@roeck-us.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Matt Ranostay <matt@ranostay.consulting>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Laxman Dewangan <ldewangan@nvidia.com>, Martin Michlmayr <tbm@cyrius.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---bwg5xbe7npn7bpoe
+--eovxp67napvj5kof
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sun, Jan 29, 2017 at 12:08:25PM -0800, Liam Breck wrote:
-> On Sun, 2017-01-29 at 18:38:26, Sebastian Reichel wrote:
-> >> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/pow=
-er/bq27xxx_battery.h
-> >> index 3f265dbf11af..581402380d6e 100644
-> >> --- a/include/linux/power/bq27xxx_battery.h
-> >> +++ b/include/linux/power/bq27xxx_battery.h
-> >> @@ -41,6 +41,9 @@ struct bq27xxx_platform_data {
-> >>  struct bq27xxx_device_info;
-> >>  struct bq27xxx_access_methods {
-> >>  	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-> >> +	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool=
- single);
-> >> +	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, i=
-nt len);
-> >> +	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, =
-int len);
-> >
-> >So I had a look at patch 8 and I think we should start with finally
-> >converting bq27xxx to regmap API and probably a second regmap for
-> >the block data stuff. That way you get all the debugging info in
-> >debugfs and the driver looks much cleaner.
-> 									=09
-> Could we complete this patchset using the I2C api? We haven't added to it
-> extensively, and regmap is unrelated to the purpose of this patchset.
+On Sun, Jan 29, 2017 at 12:47:57PM -0800, Guenter Roeck wrote:
+> On 01/29/2017 12:02 PM, Sebastian Reichel wrote:
+>=20
+> > >=20
+> > > To keep things simple, I think it would be okay to allow only one of
+> > > each type of controller in any running system. It's very unlikely that
+> > > board designers would devise two different ways of powering off or
+> > > restarting a system, while in a similar way an SoC or CPU would only
+> > > ever provide one way to do so. Even if theoretically multiple
+> > > possibilities exist, I think the board code should pick which ones are
+> > > appropriate.
+> >=20
+> > Using that logic we may also advice, that board-code should only
+> > register the board-level reset/poweroff and it's enough to have
+> > a callback again... I wonder if that is really feasible.
+> >=20
+>=20
+> FWIW, it is also not true.
 
-Previously we had only a read operation, which could be easily
-converted to regmap, since it accesses a single register. Afterwards
-we have read,write,bulk_read and bulk_write. That's 400% and 2/4
-functions, which do not follow the regmap style.
+It seems this was misunderstood. I do not expect this to work.
 
-So what is your definition of extensively? :)
+> There is a reason why many of the restart handlers used to have
+> code saying "install restart handler, but only if none is
+> installed yet". Which of course is racy, and gets more interesting
+> if the restart handler installed first is unloaded at a later
+> time, leaving the system with no restart handler. Or both are
+> unloaded, leaving the system with a pointer to a no longer
+> existing handler.
+>
+> One could then argue that anything implementing a restart handler must
+> not unload. Which results in more restrictions. And drivers loaded
+> on hardware which don't need it. And more corner cases to deal with.
+> And more inconsistencies.
+>=20
+> In reality, many systems or system variants will have more than one means
+> to restart it. Yes, board designers do devise multiple ways of powering o=
+ff
+> or restarting a system. There may be and likely are valid reasons for doi=
+ng
+> so; I would not want to claim or suggest that board designers would design
+> such hardware without reason. Even "standard" PCs tend to have have more
+> than one means to reset it. There _was_ a reason for introducing that
+> framework; I didn't just do it for fun.
+>=20
+> However, as I had mentioned before, I am not really interested in this
+> topic anymore. Just treat this as my final word of caution, or feel free
+> to ignore it. I hope you'll find a much better solution than mine
+> to implement "the board code should pick which ones are appropriate".
 
-> Also maybe the primary maintainers of BQ27xxx should be on the hook for
-> that api change :-)
+In case I was unclear: I'm fine with the current state of reboot
+code using notifier chain and really thankful for the work. IMHO
+it improved the status-quo a lot.
 
-https://lkml.org/lkml/2015/9/23/542
-
-The w1 stuff is not that hard to implement actually by just using
-the existing functions and devm_regmap_init().
-
-> Plus we're blocked here on devicetree support for BQ24190 waiting for
-> power_supply_battery_info.
-
-Well this patch depends on the power_supply_battery_info patch, not
-the other way around. I will apply the power_supply_battery_info
-patch once its ok. No need to wait for this patch. So not really a
-problem for your BQ24190 work?
+However I'm not fine with the current poweroff stuff and if somebody
+offers to implement a solution compatible with Linus (and other people,
+which disliked the notifier chain approach): Thanks, please do!
 
 -- Sebastian
 
---bwg5xbe7npn7bpoe
+--eovxp67napvj5kof
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOazIACgkQ2O7X88g7
-+pqn1w//biPciBb9Pfa7MEk0r9xZIx0nqCpWWgCLkVJDcjxWDuxyzCx5QaPtepM9
-F4vK7U9DhvMn9pFEPTqGlHZJD6kAxCQ0GmY3Y9oDy1SzFdafdXedt4MiuO+d1HlU
-PA9rhbn0gXlf/QpbBxPm1Qt7/6O4+oobOx7T8vNmEwpsCtZZNLgkmFpNUKRaWD+w
-NV363pqEzMHc7k8akp+NNrV58nAnPiGj+03evoj5VFQRexWz18EI5Q0dNqmxJ3IQ
-adh3mAv/5Ag0XPiT/zAPRRSrH/FWDPxmsJFMS8ubVmLdIafBbIk1xTBQrt+V1Cmt
-xSdujBhrO2hOtEd1rIgRPBSamlwUPSXG0xMeVA657PDVONzf229cu/C0hIG5ccql
-S5X9XadRrlDa9c4ekPwAV38+lkaTkN+x+O5SDFAOkVf8pF4ZW1AnDKEC3OZpwnyJ
-BG2WoMID4tBpab2dk6S8Sz3VjnMASdDNgBZdsaW9EAiMBIKjNSRj7G3lY+zVg0qA
-9w2eEhhWYK0dpBedRez0/q8cztvVBH47hnbCDEepL/nIor4yknNQcSvlNOooxAP1
-4jeS37XsEDj336nThoOVpjbdqKOApaPXWCNyqacE53ty5iAi9FUwp/8SfDfM9Lv+
-CLKDx+9H9UwyH2ki75/N0OjuP7pFJEu20g2oN0/USPw60uR8t7s=
-=wmvs
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOcCUACgkQ2O7X88g7
++pqHExAAny6ndr+1GCiUB6KKqMp4fh/W/USdP1BovICQW92hu7f4sjE/64EUX1N3
+noTRaKEKF7gyUiulf5uBdjDsnPk/iZvWeIfYYp+6hkmrisPC5DedUFh+V21NYt1R
+KG8YVn90wrR9hIrNI1v+dcg1kOf+ZOtnS6NPNGFvE6pGrh+7Tnh0YOD2Q7SkwkP7
+L2NpHfxbQQ+7mdOoYLCYRri560w/FAcda74Jc2/8uw+ELfRkgxmMiYB74HzveI7l
+2SkwMMwnU04x3NyHAjc59G4d4AD0x2YncZ2uPQMycGTFCztai3NUpDrrCeSCc+Pi
+VhWSWfyhYWgjD+Fayq0maN+DpJeGgl/SIaJg+DoHgAuC2otLDYuSe2GIWpQcgLpI
+c1frArwLW3q1Py8haMr0OdDITcWVBedUumMS3fg6FkwQygEra5InBn2I5twyxf3o
+mhRRqwhbFuRofkIv0neUzg8vLT/oP3nIn10/MXxs4jjUyMjBNtCscqWxmzjqXMQh
+aOg/a7Q7ziaa52VxhdCe9ZonZyMhrkp78sok+sZ5G2juunXM7F7OP27MG97qrq2t
+9ND5A1x681dogLgLRw7RUUF7Rs/wVnfwpdrdmjAXqO4XzwRIZTVTx2I4c60ah6Be
+VIEk0HSiRfiGoxAKgervNDXnrOwgDcN4USh8f/vgX0WiM1bO9Rk=
+=4loB
 -----END PGP SIGNATURE-----
 
---bwg5xbe7npn7bpoe--
+--eovxp67napvj5kof--
