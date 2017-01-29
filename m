@@ -1,76 +1,64 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v4 6/8] power: bq27xxx_battery: add i2c bulk read/write functions
-Date: Sun, 29 Jan 2017 15:02:59 -0800
-Message-ID: <CAKvHMgTT_YuHjFGVcE4VJ0TCywftBjnH_E91TkhwXGG0xCkMCw@mail.gmail.com>
-References: <20170129200825.32648-1-liam@networkimprov.net> <20170129222245.kimtf5f5t5zjjcnq@earth>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v4 2/8] devicetree: power: add battery state machine documentation
+Date: Sun, 29 Jan 2017 15:22:31 -0800
+Message-ID: <CAKvHMgSYXYyW7AEHaa_wkh3UQyE6wJPYV66HAugBf3wHOeoSmg@mail.gmail.com>
+References: <20170122071404.9654-3-matt@ranostay.consulting>
+ <20170122222212.27086-1-liam@networkimprov.net> <CAKvHMgRYqh_fksDXq2Jv1t6p9ckCOgR+O6gxRTdpd=9r8y__Bg@mail.gmail.com>
+ <CAJ_EiSSPeWj+q+R5=HVVrsb39208-Gmj5_7T=ic6mYLxFuekNQ@mail.gmail.com> <20170129172006.jsjfxrehynfegpfr@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:33677 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750785AbdA2XD1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Jan 2017 18:03:27 -0500
-Received: by mail-it0-f66.google.com with SMTP id e137so13785416itc.0
-        for <linux-pm@vger.kernel.org>; Sun, 29 Jan 2017 15:03:05 -0800 (PST)
-In-Reply-To: <20170129222245.kimtf5f5t5zjjcnq@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170129172006.jsjfxrehynfegpfr@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Matt Ranostay <matt@ranostay.consulting>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-On Sun, Jan 29, 2017 at 2:22 PM, Sebastian Reichel <sre@kernel.org> wrote:
+On Sun, Jan 29, 2017 at 9:20 AM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
 > Hi,
 >
-> On Sun, Jan 29, 2017 at 12:08:25PM -0800, Liam Breck wrote:
->> On Sun, 2017-01-29 at 18:38:26, Sebastian Reichel wrote:
->> >> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
->> >> index 3f265dbf11af..581402380d6e 100644
->> >> --- a/include/linux/power/bq27xxx_battery.h
->> >> +++ b/include/linux/power/bq27xxx_battery.h
->> >> @@ -41,6 +41,9 @@ struct bq27xxx_platform_data {
->> >>  struct bq27xxx_device_info;
->> >>  struct bq27xxx_access_methods {
->> >>    int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
->> >> +  int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
->> >> +  int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
->> >> +  int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
+> On Wed, Jan 25, 2017 at 11:02:03PM -0800, Matt Ranostay wrote:
+>> On Wed, Jan 25, 2017 at 10:19 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
+>> > On Sun, Jan 22, 2017 at 2:22 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
 >> >
->> >So I had a look at patch 8 and I think we should start with finally
->> >converting bq27xxx to regmap API and probably a second regmap for
->> >the block data stuff. That way you get all the debugging info in
->> >debugfs and the driver looks much cleaner.
+>> >> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> >> new file mode 100644
+>> >> index 000000000000..398b4d622883
+>> >> --- /dev/null
+>> >> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> >> @@ -0,0 +1,34 @@
+>> >> +Battery Characteristics
+>> >> +
+>> >> +Required Properties:
+>> >> + - compatible: Must be "fixed-battery"
+>> >> +
+>> >> +Optional Properties:
+>> >> + - termination-microvolt: dead battery voltage
+>> >> + - design-microwatt-hours: battery design energy
+>> >> + - design-microamp-hours: battery design capacity
+>> >
+>> > Also I suspect the members of struct power_supply_battery_info should
+>> > use the same names as appear in dts:
 >>
->> Could we complete this patchset using the I2C api? We haven't added to it
->> extensively, and regmap is unrelated to the purpose of this patchset.
+>> These are internal and we can't be thinking just device tree.. ACPI
+>> and platform data is also an option.
 >
-> Previously we had only a read operation, which could be easily
-> converted to regmap, since it accesses a single register. Afterwards
-> we have read,write,bulk_read and bulk_write. That's 400% and 2/4
-> functions, which do not follow the regmap style.
+> well platform data just uses the struct. ACPI is probably not
+> relevant, since in ACPI world one usually has smart batteries.
+> But yes, the names can be different.
 >
-> So what is your definition of extensively? :)
+> The important part is, that the API is used correctly, so it
+> should be clear what each property is used for. For example
+> termination_microvolt is not clear: Is this charge termination
+> voltage or system shutdown voltage? Also we do not need to add
+> "micro", since the power-supply subsystem always uses micro
+> based units.
 
-We added all of 51 LOC, plus whitespace. Extensive is at least greater
-than UCHAR_MAX :-)
+It's the min battery voltage. So...
+drained_voltage, depleted_voltage, sapped_voltage, spent_voltage...
 
->> Also maybe the primary maintainers of BQ27xxx should be on the hook for
->> that api change :-)
->
-> https://lkml.org/lkml/2015/9/23/542
->
-> The w1 stuff is not that hard to implement actually by just using
-> the existing functions and devm_regmap_init().
-
-We don't really have the bandwidth or budget for general driver
-maintenance. There was no indication in the I2C code that it was
-deprecated. Please ask TI to fund this, not us.
-
->> Plus we're blocked here on devicetree support for BQ24190 waiting for
->> power_supply_battery_info.
->
-> Well this patch depends on the power_supply_battery_info patch, not
-> the other way around. I will apply the power_supply_battery_info
-> patch once its ok. No need to wait for this patch. So not really a
-> problem for your BQ24190 work?
-
-Usually features like that aren't added without a client?
+Help me out here :-)
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
