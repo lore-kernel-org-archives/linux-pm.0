@@ -1,14 +1,14 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 11/25] mfd: axp20x: add AC power supply cells for
- AXP22X PMICs
-Date: Sun, 29 Jan 2017 17:35:13 +0100
-Message-ID: <20170129163513.m7y4vbjgthh2esg4@earth>
+Subject: Re: [PATCH v2 16/25] dt-bindings: power: supply: add AXP20X/AXP22X
+ battery DT binding
+Date: Sun, 29 Jan 2017 17:47:19 +0100
+Message-ID: <20170129164719.eulijkfarzrm2o6j@earth>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-12-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-17-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7219781019584084307=="
+Content-Type: multipart/mixed; boundary="===============4517363215245720219=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-12-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-17-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,57 +23,55 @@ Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@
 List-Id: linux-pm@vger.kernel.org
 
 
---===============7219781019584084307==
+--===============4517363215245720219==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="h6fucybx25xk66zu"
+	protocol="application/pgp-signature"; boundary="mukm6o4sdvqxauxt"
 Content-Disposition: inline
 
 
---h6fucybx25xk66zu
+--mukm6o4sdvqxauxt
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jan 27, 2017 at 09:54:44AM +0100, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
-> supply.
->=20
-> This adds the AC power supply driver to the MFD cells of the AXP22X
-> PMICs.
->=20
-> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+On Fri, Jan 27, 2017 at 09:54:49AM +0100, Quentin Schulz wrote:
+>  - added x-powers,constant-charge-current property to set the
+>  maximal default constant current charge of the battery,
 
-Acked-By: Sebastian Reichel <sre@kernel.org>
+Since this is information about the battery and not the fuel-gauge,
+it should use the WIP "framework" for information about batteries.
+
+Have a look at the following patchset:
+
+http://marc.info/?l=linux-pm&m=148411561025684&w=2
 
 -- Sebastian
 
---h6fucybx25xk66zu
+--mukm6o4sdvqxauxt
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOGcEACgkQ2O7X88g7
-+pq+KBAAkiHvlTehr7ZGKWmsEU9V3uChOGDwUz2LFmtXJxv2Vl+E0mDH3ADmYNtp
-tdn9UW/ywBkLr+CIUVe9jRTccJQ0+9xgLRaxzl2XPnEG1ALfWTFk0eUG4Aa2SSdf
-Dgwh9HspOOGFERVVp75uGsftxmPGWL3SCuwm7m4AyPy07i5iO8cjTr9ixsXO9Bk7
-764+VFTMaKttsE0EnzeV/iWwS5/RmK5cHZwUiEi9FJbhwxg6NTbwVw8J60+p5ARn
-gSMkzjS0sydnCv/UBrkE5hUh745vG2cfeGGEDXDqkeaxmX+CSsgU5CmSGKX/d9ek
-beqnT+9hYTuSWYzWmfIHgCuRED/L/F6q7IS2gyWCzccFQAoZjW0kX67bkHYEFMEd
-BzM+5j4rF/qrt04taDknkeuBOxgRvQR/2dwJGFyScfF5PQESEQ4st9/lK6THjtWp
-tgGJldkW8OH70Gyh1DnQ7njLYCFaX4KHqV1PrC8+J6IzphSf+y9PcDzxWK+nF/yU
-mv4Kk3mULcWGye+PF2il0G3qxR7mjbHBHcYbJI+5m2ty78YcnU2hsfe+SEuykkLp
-5ISkELjxmNCU9qlgNcjyV8BfdzNveZhnqdQOPFEwnAm5MVdY6KxqCgXa2QG2WEtQ
-Xas9UsSeLOhCCxEpWqJ0MN/eQhnLWUS/7n+DlgYcxRZi3I3u85A=
-=o1z+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOHJUACgkQ2O7X88g7
++pqaFg/5AVesLB79ONhBfPfg6kUhv6wp4BXb1AVMLVFvL2Y6paxbG8XKHUvf6f1v
+c5eE1o/bIi8ypjPEOZA7oA2DbcZDi5JlSU1E3ZHo0aC20SQ+olYqmHEvDPtP/s6n
+mdCNiGGc3yUlzpISSglgdi1ApHYXMeGccBvbt7O8UcXK9ql6QcBLL8VQk0JOeUSr
+3sfuy8pxOmheV+SaYImy1ZYxuMJlw5FQ1YxKqzk39pid2hwgpoZJVUStICBaVU4h
+NdKCyM7b3qMye9L7Gj5nwnB9muZL2ptuyMa154dTZ+qfh3AmyYqbNacFUQqr4VsW
+D5N+Jn7kIoaYYxBQYi/5St9Sv8/tdAf/gYdX60Dpbw0UzKXorF8W6mE3a0ugPPbb
+VTN92DsIPZrkot6EI2wa8RdefGkl6nwCRG+928vot/Ubj9mr+jqJRQtHXdGb9gtc
+LKSPrnj7jDd2MU4X6czgGP4ohdM/dY14GgK5D1ovAYF+r8S+GIu8gbkZiVYBFqUI
++AevtilowEctQ6igtHHdTOpkVM8VfX6QNXDz87mu1fs7gyj7Hx6hKvRqkVAXPM5A
+1eS91GlXby6y4y+wg4NR1XO+6zTJzaw/T/+BtXrYQod1zXxaho6kCKONOaE8WDPN
+gUpI0UVUQAaIrAftI854qcv8tSu6h+D5UW3ZMycMyA5oUme7Nl4=
+=YaD6
 -----END PGP SIGNATURE-----
 
---h6fucybx25xk66zu--
+--mukm6o4sdvqxauxt--
 
 
---===============7219781019584084307==
+--===============4517363215245720219==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -84,4 +82,4 @@ linux-arm-kernel mailing list
 linux-arm-kernel@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
---===============7219781019584084307==--
+--===============4517363215245720219==--
