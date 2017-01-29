@@ -1,182 +1,117 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v5 1/8] PCI: Recognize Thunderbolt devices
-Date: Sun, 29 Jan 2017 01:26:16 +0100
-Message-ID: <20170129002616.GA28225@wunner.de>
-References: <cover.1484486499.git.lukas@wunner.de>
- <bfabf33fc63abbeb84e11e544456098dff0e4604.1484486499.git.lukas@wunner.de>
- <20170128215208.GM20550@bhelgaas-glaptop.roam.corp.google.com>
+From: Guy Shapiro <guy.shapiro@mobi-wize.com>
+Subject: Re: imx6ul: power-up using the RTC
+Date: Sun, 29 Jan 2017 09:36:40 +0200
+Message-ID: <516ed11f-4a03-8e3d-ae61-3a422e4c5cf6@mobi-wize.com>
+References: <b516070d-6539-98d1-c832-d79ac89e8d43@mobi-wize.com>
+ <20170120121210.gm3wcg4yyvrigpn3@earth>
+ <20170120153459.tewyg54dcgqnpz2j@piout.net>
+ <089d1044-275a-1fdc-f0d6-f21c1253b0ab@mobi-wize.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170128215208.GM20550@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gateway21.websitewelcome.com ([192.185.45.250]:47715 "EHLO
+        gateway21.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750728AbdA2Hgx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Jan 2017 02:36:53 -0500
+Received: from cm2.websitewelcome.com (cm2.websitewelcome.com [192.185.178.13])
+        by gateway21.websitewelcome.com (Postfix) with ESMTP id EEFA6400C4D07
+        for <linux-pm@vger.kernel.org>; Sun, 29 Jan 2017 01:36:49 -0600 (CST)
+In-Reply-To: <089d1044-275a-1fdc-f0d6-f21c1253b0ab@mobi-wize.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>
+Cc: b20788@freescale.com, shawnguo@kernel.org, Frank.Li@freescale.com, kernel@pengutronix.de, fabio.estevam@nxp.com, a.zummo@towertech.it, linux-arm-kernel@lists.infradead.org, rtc-linux@googlegroups.com, linux-pm@vger.kernel.org
 
-On Sat, Jan 28, 2017 at 03:52:08PM -0600, Bjorn Helgaas wrote:
-> On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
-> > We're about to allow runtime PM on Thunderbolt ports in
-> > pci_bridge_d3_possible() and unblock runtime PM for Thunderbolt host
-> > hotplug ports in pci_dev_check_d3cold().  In both cases we need to
-> > uniquely identify if a PCI device belongs to a Thunderbolt controller.
-> 
-> Sounds like "a device belongs to a Thunderbolt controller" means the
-> device is part of a Thunderbolt controller or part of the hierarchy
-> below it?
+On 22/01/2017 13:17, Guy Shapiro wrote:
 
-The above paragraph and the following two in the commit message are
-intended to explain the need for this additional bit in struct pci_dev.
+> On 20/01/2017 17:34, Alexandre Belloni wrote:
+>> On 20/01/2017 at 13:12:10 +0100, Sebastian Reichel wrote :
+>>> Hi,
+>>>
+>>> On Wed, Jan 18, 2017 at 04:49:11PM +0200, Guy Shapiro wrote:
+>>>> I'm trying to use the low power RTC of the i.MX6UL to start from
+>>>> power-off state.
+>>>>
+>>>> I started by hopefully running: # echo +30 >
+>>>> /sys/class/rtc/rtc0/wakealarm && shutdown -h now The system was
+>>>> powered down, but it didn't come up after 30 seconds as expected.
+>>>>
+>>>> So I dug into the datasheet and the source...
+>>>> To activate the power on alarm, the flags SRTC_ENV, LPTA_EN and LPWUI_EN on
+>>>> the SNVS_LP Control register (LPCR) should be asserted. The wakeup time
+>>>> should be written to the SNVS_LP Time alarm register (LPTA). The code that
+>>>> does this is on drivers/rtc/rtc-snvs.c:snvs_rtc_set_alarm().
+>>>>
+>>>> The first problem I found was with the use of the syscon-poweroff driver.
+>>>> The "Turn off System Power" flag is part of the same register (LPCR). The
+>>>> current code of syscon-poweroff set the register to the "mask" property from
+>>>> the device tree on power off, overriding all the existing flags.
+>>>> After setting the "mask" property on the device tree to 0x6b instead of
+>>>> 0x60 (asserting the mentioned bits), the system do power up on timer, as
+>>>> expected.
+>>>>
+>>>> However, I didn't like the idea of keeping those flags on even when no one
+>>>> set the alarm.
+>>>> As a quick test, I modified the syscon-poweroff driver to ignore the bits
+>>>> that are not on the mask:
+>>>>
+>>>> diff --git a/drivers/power/reset/syscon-poweroff.c
+>>>> b/drivers/power/reset/syscon-poweroff.c
+>>>> index b683383..a5da02b 100644
+>>>> --- a/drivers/power/reset/syscon-poweroff.c
+>>>> +++ b/drivers/power/reset/syscon-poweroff.c
+>>>> @@ -33,7 +33,7 @@ static u32 mask;
+>>>> static void syscon_poweroff(void)
+>>>> {
+>>>>         /* Issue the poweroff */
+>>>> -       regmap_write(map, offset, mask);
+>>>> +       regmap_update_bits(map, offset, mask, mask);
+>>>>         mdelay(1000);
+>>>>
+>>>>
+>>>> After applying this fix, the wake up alarm didn't work. Strangely, when I
+>>>> added some debug prints to investigate the case, it worked again
+>>>> (sometimes... depends on the exact places I add the prints).
+>>>> I suspect that some other driver clears the flags during the power down, but
+>>>> I couldn't find such driver.
+>>>>
+>>>> Do you have any clue what code may change this register during the shutdown
+>>>> process? Any other insights are welcomed as well :)
+>>> To summarize it looks like this?
+>>>
+>>> | regmap_write       | 0x60 | broken                     |
+>>> | regmap_write       | 0x6b | works stable               |
+>>> | regmap_update_bits | 0x60 | works only with dbg prints |
+>>>
+>>> For me it looks like the debug prints may delay the poweroff driver
+>>> long enough, that some other driver (rtc?) writes the 0x0b bits.
+>>>
+>> Is snvs_rtc_alarm_irq_enable() waiting long enough? I'd say yes but you
+>> never know... You can also use the kernel tracin infrastructure to trace
+>> every accesses made to that regmap. That could give you a hint.
+>>
+>> At least you can try a regmap_read before returning from
+>> snvs_rtc_alarm_irq_enable() and see whether SNVS_LPCR_LPTA_EN and
+>> SNVS_LPCR_LPWUI_EN are still there.
+>>
+> I added a debug print on snvs_rtc_alarm_irq_enable. It reads and prints the
+> value of the control register after the write & sync operation.
+>
+> Immediately after the write to /sys/class/rtc/rtc0/wakealarm the
+> register value is correct (0x2b).
+> However, during the shutdown process the function is called again via the
+> rtc_timer_do_work(). I still do not fully understand this flow. This call is
+> done with the enable parameter == 1, but my debug print shows 0x29,
+> meaning the LPTA_EN bit stays low.
+>
+> My current guess is that the clear of LPTA_EN in snvs_rtc_set_alarm have
+> internal race with the afterward bit set.
+> I'll try to check this and update.
+Adding rtc_write_sync_lp after the LPTA_EN clear solved the issue.
+The data sheet mentions that clearing this flag can take few cycles and
+that the alarm can only be programmed with the flag low.
+I'll send a patch soon.
 
-Yes, the bit is set on all PCI devices that are part of the Thunderbolt
-controller (upstream bridge, downstream bridges, NHI and on Thunderbolt 3
-there's also an XHCI) as well as on all PCI devices below it.
-
-That's why it says /* part of Thunderbolt daisy chain */ in the line
-added to pci.h at the bottom of this patch.
-
-
-> > We also have the need to detect presence of a Thunderbolt controller in
-> > drivers/platform/x86/apple-gmux.c because dual GPU MacBook Pros cannot
-> > switch external DP/HDMI ports between GPUs if they have Thunderbolt.
-> 
-> This series doesn't touch apple-gmux.c, and I don't know anything
-> about this MacBook Pro topology, so I can't tell why Thunderbolt is
-> relevant here.
-
-It's just another example why this bit in struct pci_dev is needed:
-
-Dual GPU MacBook Pros introduced before 2011 are able to switch the
-external DisplayPort between GPUs.  All newer models lost this ability
-and the external port can only be driven by the discrete GPU.  That's
-because the port is no longer just used for DisplayPort, it's become a
-combined DP/Thunderbolt port.  I guess the wiring would have been too
-complicated to keep the external port switchable between GPUs and also
-use it for Thunderbolt.  They already had to go to great lengths and
-put various redrivers on the logic board to support the combined
-DP/thunderbolt port.
-
-We need to recognize if the model has Thunderbolt and in that case keep
-the external port switched to the discrete GPU.  I have a patch for this
-in the pipeline but this one needs to go in first.
-
-
-> > Furthermore, in multiple places in the DRM subsystem we need to detect
-> > whether a GPU is on-board or attached with Thunderbolt.  As an example,
-> > Thunderbolt-attached GPUs shall not be registered with vga_switcheroo.
-> 
-> Why?  The connection between vga_switcheroo and Thunderbolt is not
-> obvious, at least to this non-GPU person.
-
-nouveau, radeon and amdgpu register any GPU they find with vga_switcheroo,
-but vga_switcheroo only becomes enabled if the system has Optimus, AMD
-PowerXpress or an apple-gmux controller.
-
-If the user connects an external GPU to a dual GPU laptop, that external
-GPU will be registered with vga_switcheroo as well.  When that external
-GPU runtime suspends, vga_switcheroo will invoke the callback to cut
-power to the internal discrete GPU and obviously things go south at that
-point.
-
-The solution is to not register external GPUs with vga_switcheroo at all.
-For this I need the is_thunderbolt bit.
-
-
-[snip]
-> > --- a/drivers/pci/probe.c
-> > +++ b/drivers/pci/probe.c
-> > @@ -1206,6 +1206,37 @@ void set_pcie_hotplug_bridge(struct pci_dev *pdev)
-> >  		pdev->is_hotplug_bridge = 1;
-> >  }
-> >  
-> > +static void set_pcie_vendor_specific(struct pci_dev *dev)
-> 
-> This is very specific to Thunderbolt, so let's name it something that
-> conveys that information.  The fact that we use a vendor-specific
-> capability to figure it out isn't really relevant in the caller.
-
-I thought that we may have the necessity in the future to parse other
-VSECs on device probe, so I gave the function this generic name.
-
-Think about it, every VSEC that needs to be parsed needs the while loop
-below.  It's more efficient to have only a single while loop that handles
-*all* VSECs at once.
-
-If someone needs to parse another VSEC, they just add it to this function.
-So IMO the way I've solved it is preferable to just adding a Thunderbolt-
-specific function.
-
-Are you sure you want this renamed? (y/n)
-
-
-> > +{
-> > +	int vsec = 0;
-> > +	u32 header;
-> > +
-> > +	while ((vsec = pci_find_next_ext_capability(dev, vsec,
-> > +						    PCI_EXT_CAP_ID_VNDR))) {
-> > +		pci_read_config_dword(dev, vsec + PCI_VNDR_HEADER, &header);
-> > +
-> > +		/* Is the device part of a Thunderbolt controller? */
-> > +		if (dev->vendor == PCI_VENDOR_ID_INTEL &&
-> > +		    PCI_VNDR_HEADER_ID(header) == PCI_VSEC_ID_INTEL_TBT)
-> > +			dev->is_thunderbolt = 1;
-> 
-> 			return;
-
-Well, see above.  I don't want to return here to allow parsing other VSECs.
-
-Thanks,
-
-Lukas
-
-> > +	}
-> > +
-> > +	/*
-> > +	 * Is the device attached with Thunderbolt?  Walk upwards and check for
-> > +	 * each encountered bridge if it's part of a Thunderbolt controller.
-> > +	 * Reaching the host bridge means dev is soldered to the mainboard.
-> > +	 */
-> > +	if (!dev->is_thunderbolt) {
-> 
-> The "if" is unnecessary if you return above.
-> 
-> > +		struct pci_dev *parent = dev;
-> > +
-> > +		while ((parent = pci_upstream_bridge(parent)))
-> > +			if (parent->is_thunderbolt) {
-> > +				dev->is_thunderbolt = 1;
-> > +				break;
-> > +			}
-> > +	}
-> > +}
-> > +
-> >  /**
-> >   * pci_ext_cfg_is_aliased - is ext config space just an alias of std config?
-> >   * @dev: PCI device
-> > @@ -1358,6 +1389,9 @@ int pci_setup_device(struct pci_dev *dev)
-> >  	/* need to have dev->class ready */
-> >  	dev->cfg_size = pci_cfg_space_size(dev);
-> >  
-> > +	/* need to have dev->cfg_size ready */
-> > +	set_pcie_vendor_specific(dev);
-> > +
-> >  	/* "Unknown power state" */
-> >  	dev->current_state = PCI_UNKNOWN;
-> >  
-> > diff --git a/include/linux/pci.h b/include/linux/pci.h
-> > index e2d1a124216a..3c775e8498f1 100644
-> > --- a/include/linux/pci.h
-> > +++ b/include/linux/pci.h
-> > @@ -358,6 +358,7 @@ struct pci_dev {
-> >  	unsigned int	is_virtfn:1;
-> >  	unsigned int	reset_fn:1;
-> >  	unsigned int    is_hotplug_bridge:1;
-> > +	unsigned int	is_thunderbolt:1; /* part of Thunderbolt daisy chain */
-> >  	unsigned int    __aer_firmware_first_valid:1;
-> >  	unsigned int	__aer_firmware_first:1;
-> >  	unsigned int	broken_intx_masking:1;
-> > -- 
-> > 2.11.0
-> > 
+Thanks for the help.
+Guy.
