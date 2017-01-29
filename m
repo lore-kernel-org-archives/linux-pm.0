@@ -1,14 +1,13 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 10/25] power: supply: add AC power supply driver for
- AXP20X and AXP22X PMICs
-Date: Sun, 29 Jan 2017 17:25:37 +0100
-Message-ID: <20170129162537.npe25eklgml3m25s@earth>
+Subject: Re: [PATCH v2 09/25] iio: adc: axp20x_adc: map acin_i and acin_v
+Date: Sun, 29 Jan 2017 17:31:29 +0100
+Message-ID: <20170129163129.znc563s2prgmwuf2@earth>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-11-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-10-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5202479361222486924=="
+Content-Type: multipart/mixed; boundary="===============7713042558611372678=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-11-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-10-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,62 +22,82 @@ Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@
 List-Id: linux-pm@vger.kernel.org
 
 
---===============5202479361222486924==
+--===============7713042558611372678==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="xfk4z6zclvyfzk3a"
+	protocol="application/pgp-signature"; boundary="uuavyfprcv5dqexw"
 Content-Disposition: inline
 
 
---xfk4z6zclvyfzk3a
+--uuavyfprcv5dqexw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jan 27, 2017 at 09:54:43AM +0100, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
-> supply.
+On Fri, Jan 27, 2017 at 09:54:42AM +0100, Quentin Schulz wrote:
+> This maps the IIO channels acin_i and acin_v (respectively exposing the
+> current current and voltage measures of the AC power supply) to the AC
+> power supply driver.
 >=20
-> Moreover, the AXP20X can also expose the current current and voltage
-> values of the AC power supply.
->=20
-> This adds the driver which exposes the status of the AC power supply of
-> the AXP20X and AXP22X PMICs.
+> Only the AXP20X PMICs have these ADC channels and thus they are only
+> mapped for this version of the PMIC.
 >=20
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> Acked-by: Jonathan Cameron <jic23@kernel.org>
+> ---
+>=20
+> added in v2
+>=20
+>  drivers/iio/adc/axp20x_adc.c | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>=20
+> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> index bacde92..14f4ec0 100644
+> --- a/drivers/iio/adc/axp20x_adc.c
+> +++ b/drivers/iio/adc/axp20x_adc.c
+> @@ -104,6 +104,14 @@ static struct iio_map axp20x_maps[] =3D {
+>  		.consumer_dev_name =3D "axp20x-usb-power-supply",
+>  		.consumer_channel =3D "vbus_i",
+>  		.adc_channel_label =3D "vbus_i",
+> +	}, {
+> +		.consumer_dev_name =3D "axp20x-ac-power-supply",
+> +		.consumer_channel =3D "acin_v",
+> +		.adc_channel_label =3D "acin_v",
+> +	}, {
+> +		.consumer_dev_name =3D "axp20x-ac-power-supply",
+> +		.consumer_channel =3D "acin_i",
+> +		.adc_channel_label =3D "acin_i",
+>  	}, { /* sentinel */ }
+>  };
 
-Thanks, I queued this into power-supply's for-next branch. I
-removed "struct device_node *np" and "int axp20x_id" from
-"struct axp20x_ac_power", since they were unused.
+I suggest to merge this into Patch 4 before resending the series.
 
 -- Sebastian
 
---xfk4z6zclvyfzk3a
+--uuavyfprcv5dqexw
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOF4EACgkQ2O7X88g7
-+pqPNw/5AYL3oLowRp8S1pdrrlFqlaqMtgeedjtAEUyySpeYIU/mg4KkQtu1Xn/X
-tFcI0rV5PMSeoaWyzZUa1XLoMWFavOSdqxIGJ0bvVn4lTTgkiEAo9qmNpP19Ts6y
-Ns7V36tVnuen6ro3TNgzwIR6WTwdRAqm8RvhAI/KC425JTEPVj9/Nj3eU2NyYsHf
-liKTFbvsiY95eiXd8iGnU2oMXXX/PSS44EyCqu0L++deH+PWcRmvTa9a/XtiJ8fs
-Tn2Z8HuuGOSMsFGLNmr8tNeHLerVs38ZrPqIvoaXWnJf5BY/bhvXKjcxwfrPWDcd
-87hewSC+r/rMS7rE2hqcp8OMyjLCxVOiWmRaGXdqJ73u/eHc8pUupHrcYqGNrYtQ
-p3TZfue/L4MVOLrjDLbDCrjFW1yXIYF+QIMamUg4nXCXW4g6xyVOXQPsHQqFud7O
-V+PiG6Fjp1396G1emZQ6d8c185WIIzI2m7XSfjxI34tG8vElsMG7TDmyreWSx1Ne
-tJRzSfp+WSEfWA01ohlus0YeuB2lrodjxL+/3DoPpXhhhn+2GiH/VK588XrJJo24
-goWg6dtUUtrZfSEatJcz87N+9/Gt9r2FSo2Yevm/8pfYgds3HjmCe2bWJCTimC06
-WRMkv9QwQeu1QMseUONElpA1C44yLEWRER4ZNR71hsVWG4mRQV8=
-=RK1g
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOGOAACgkQ2O7X88g7
++pr4AQ/9FmZ5xB/2bgIzPOsDf4/K4rkCMIec6Wc9M/wrRjBFFfe8eBR6TFBpKhSi
+l1ciLjEZ1iNJ9Lqvq/juoebLpOp8lACKHiQYyilgnhIOVyh9j7WKiP4Owy76b+qh
+BeCPx4uIfR/9en2t0BXbusF8zmzlD6158W/lN2xTE+ot8lqTmAVmTvbpEqWV40Q/
+dqaoPtV1Iq6VioxIzW4TIQNC1c3TI2aIM8oYf5lM/Sr+g1FxuSQIgwyrxCgwqpbh
+EWDjHdj6OwuYk+5ptixVrNLPZ+mL6YEZ32UzpNhxrQuU4EhCl/XTPizfTP+MX0Qv
+dQRJQ/3jXuoE95iZPRBZ+nLQ6fe9+eQwrN+9J7JVyzeSNk66cNmDVrJ+H4sFl/hR
+6LfPi1xRIkVHUljyjN35l7E9rTUCDpmGhwfEFqEuS70tEInMdzuexETeDsToCGZ9
+X7ey+F6hawsOguu96FXZ+2UXY12HOoGjfNprgJTo05I/KIJZ/ZahyiH7+OSx6daI
+tGSx3pD3N6R6tJGOtrkt03ZlyQIvKa98/oDUDTzuVSY6SITYUFAW8RulwTsI7HZ/
+ARc5MWz/n1spB36wRn2OLQoT6h4+OIjrGCipYHuTgTnZmhILZILPvGbPVgzM+Ixc
+FuBDmFx3TZKdxQGuuMtWj9GORr7kGJh/N8ddlQ2WyRcHQI7bYHE=
+=mLHT
 -----END PGP SIGNATURE-----
 
---xfk4z6zclvyfzk3a--
+--uuavyfprcv5dqexw--
 
 
---===============5202479361222486924==
+--===============7713042558611372678==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -89,4 +108,4 @@ linux-arm-kernel mailing list
 linux-arm-kernel@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
---===============5202479361222486924==--
+--===============7713042558611372678==--
