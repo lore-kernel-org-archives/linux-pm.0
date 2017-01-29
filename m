@@ -1,14 +1,14 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 08/25] dt-bindings: power: supply: add AXP20X/AXP22X
- AC power supply
-Date: Sun, 29 Jan 2017 17:22:55 +0100
-Message-ID: <20170129162255.if2o2ta4wt2vetad@earth>
+Subject: Re: [PATCH v2 10/25] power: supply: add AC power supply driver for
+ AXP20X and AXP22X PMICs
+Date: Sun, 29 Jan 2017 17:25:37 +0100
+Message-ID: <20170129162537.npe25eklgml3m25s@earth>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-9-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-11-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============1930141511616263303=="
+Content-Type: multipart/mixed; boundary="===============5202479361222486924=="
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-9-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-11-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,57 +23,62 @@ Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@
 List-Id: linux-pm@vger.kernel.org
 
 
---===============1930141511616263303==
+--===============5202479361222486924==
 Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="glly4zgcqyavd4xc"
+	protocol="application/pgp-signature"; boundary="xfk4z6zclvyfzk3a"
 Content-Disposition: inline
 
 
---glly4zgcqyavd4xc
+--xfk4z6zclvyfzk3a
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jan 27, 2017 at 09:54:41AM +0100, Quentin Schulz wrote:
-> The X-Powers AXP20X and AXP22X PMICs have an AC entry to supply power to
-> the board. They have a few registers dedicated to the status of the AC
-> power supply.
+On Fri, Jan 27, 2017 at 09:54:43AM +0100, Quentin Schulz wrote:
+> The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
+> supply.
 >=20
-> This adds the DT binding documentation for the AC power supply for
-> AXP20X and AXP22X PMICs.
+> Moreover, the AXP20X can also expose the current current and voltage
+> values of the AC power supply.
+>=20
+> This adds the driver which exposes the status of the AC power supply of
+> the AXP20X and AXP22X PMICs.
 >=20
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> Acked-by: Jonathan Cameron <jic23@kernel.org>
 
-Thanks, I queued this into power-supply's for-next branch.
+Thanks, I queued this into power-supply's for-next branch. I
+removed "struct device_node *np" and "int axp20x_id" from
+"struct axp20x_ac_power", since they were unused.
 
 -- Sebastian
 
---glly4zgcqyavd4xc
+--xfk4z6zclvyfzk3a
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOFt8ACgkQ2O7X88g7
-+poOxA//csQTqNEfRMTnV6ZIYYcCy6RntNXATJ2wJ5wbH+X98r7MsrrUYdBP1B30
-Y6/TI64oE3VLdAcG+8XLEWM0YAXeCH3MGRR3YJzP7QsPxWps0SXUHTgimmXNMki5
-9BKvqi5LRwzBYLBRn4uvpJF1P0lDQT1n7lWLSBB6vRETrD9Ztg1bNVYRR7NSmf/P
-3HLOsSGon9ayxl9DfxObcwWW6a4NsvKLlRwYxUmhqmzRkLAjpXnTGrLnI6RZLL5+
-/SItb4k41RQblHOzO1HhfgfmTusKmosuOIt6bnci0VxA8Hip4ZBMwmDZGSP0nLse
-VcWQ8v83zyJx5Z6m1aksNp1XoVbo9lwbSuSRsn2OL4jeuxmD9Fyt91ZT+PySVlvo
-vJD/Feleuu8IhHnGMjSUq/vlqC4rgzU+X6cxmWEiJnP3OxvyYcsw9WLg73b2qWnk
-LQkFypqjsBqDxwghucyubQGsfzHyUf08RymcfFHXE0cRfxa94aOxoCjc1TJR1BGX
-Vm58ZEY29WcVn/DNj9HHdOhJHnWHna/UOnRpBYYfaYche+B/qe3QqWrBuaNM6teA
-EFxX10pPYlIFaKUjAiVT52Mtwc1UefAb/Tgf6zDNPplzk1cKBTz+ZsMTZVvOP7MW
-za9X7zdzdT/qha4e+8RJtjPtGFUJxGj2OFD7seyExa5ihTIvFy8=
-=xeUO
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAliOF4EACgkQ2O7X88g7
++pqPNw/5AYL3oLowRp8S1pdrrlFqlaqMtgeedjtAEUyySpeYIU/mg4KkQtu1Xn/X
+tFcI0rV5PMSeoaWyzZUa1XLoMWFavOSdqxIGJ0bvVn4lTTgkiEAo9qmNpP19Ts6y
+Ns7V36tVnuen6ro3TNgzwIR6WTwdRAqm8RvhAI/KC425JTEPVj9/Nj3eU2NyYsHf
+liKTFbvsiY95eiXd8iGnU2oMXXX/PSS44EyCqu0L++deH+PWcRmvTa9a/XtiJ8fs
+Tn2Z8HuuGOSMsFGLNmr8tNeHLerVs38ZrPqIvoaXWnJf5BY/bhvXKjcxwfrPWDcd
+87hewSC+r/rMS7rE2hqcp8OMyjLCxVOiWmRaGXdqJ73u/eHc8pUupHrcYqGNrYtQ
+p3TZfue/L4MVOLrjDLbDCrjFW1yXIYF+QIMamUg4nXCXW4g6xyVOXQPsHQqFud7O
+V+PiG6Fjp1396G1emZQ6d8c185WIIzI2m7XSfjxI34tG8vElsMG7TDmyreWSx1Ne
+tJRzSfp+WSEfWA01ohlus0YeuB2lrodjxL+/3DoPpXhhhn+2GiH/VK588XrJJo24
+goWg6dtUUtrZfSEatJcz87N+9/Gt9r2FSo2Yevm/8pfYgds3HjmCe2bWJCTimC06
+WRMkv9QwQeu1QMseUONElpA1C44yLEWRER4ZNR71hsVWG4mRQV8=
+=RK1g
 -----END PGP SIGNATURE-----
 
---glly4zgcqyavd4xc--
+--xfk4z6zclvyfzk3a--
 
 
---===============1930141511616263303==
+--===============5202479361222486924==
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -84,4 +89,4 @@ linux-arm-kernel mailing list
 linux-arm-kernel@lists.infradead.org
 http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
---===============1930141511616263303==--
+--===============5202479361222486924==--
