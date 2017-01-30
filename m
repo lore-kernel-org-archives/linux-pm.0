@@ -1,44 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 2/2] PM / devfreq: Add suspend frequency support
-Date: Mon, 30 Jan 2017 10:20:19 +0530
-Message-ID: <CAOh2x=mwykUBLstKTmUooa4VSpXwaokHraDHHjqW_u9sDsDsnw@mail.gmail.com>
-References: <CGME20161228120710epcas5p25597b14fdf1dce59f2bc185d0f5f5401@epcas5p2.samsung.com>
- <1482926828-19746-1-git-send-email-cw00.choi@samsung.com> <1482926828-19746-3-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Shailendra Verma <shailendra.v@samsung.com>
+Subject: [PATCH] Thermal - Fix possible NULL derefrence.
+Date: Mon, 30 Jan 2017 10:34:58 +0530
+Message-ID: <1485752698-30248-1-git-send-email-shailendra.v@samsung.com>
+References: <CGME20170130050525epcas1p3686ebf52f0215eef64a358338843305d@epcas1p3.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yb0-f193.google.com ([209.85.213.193]:34501 "EHLO
-        mail-yb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751507AbdA3E4q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Jan 2017 23:56:46 -0500
-In-Reply-To: <1482926828-19746-3-git-send-email-cw00.choi@samsung.com>
+Received: from mailout4.samsung.com ([203.254.224.34]:38809 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752221AbdA3FF2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 00:05:28 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, hl@rock-chips.com, tjakobi@math.uni-bielefeld.de, chanwoo@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, p.shailesh@samsung.com, ashish.kalra@samsung.com, Shailendra Verma <shailendra.v@samsung.com>, Shailendra Verma <shailendra.capricorn@gmail.com>
 
-On Wed, Dec 28, 2016 at 5:37 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -620,6 +620,23 @@ struct devfreq *devfreq_add_device(struct device *dev,
->                 goto err_init;
->         }
->
-> +       /*
-> +        * Get the suspend frequency from OPP table. But the devfreq device
-> +        * using passive governor don't need to get the suspend frequency
-> +        * because the passive devfreq device depend on the parent devfreq
-> +        * device.
-> +        */
-> +       devfreq->suspend_freq = 0L;
-> +       if (strncmp(devfreq->governor_name, "passive", 7)) {
-> +               struct dev_pm_opp *opp;
-> +
-> +               rcu_read_lock();
-> +               opp = dev_pm_opp_get_suspend_opp(dev);
-> +               if (opp)
-> +                       devfreq->suspend_freq = dev_pm_opp_get_freq(opp);
+of_device_get_match_data could return NULL, and so can cause
+a NULL pointer dereference later.
 
-The interface has changed a bit recently. Can you please use below
-function instead ?
+Signed-off-by: Shailendra Verma <shailendra.v@samsung.com>
+---
+ drivers/thermal/imx_thermal.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-dev_pm_opp_get_suspend_opp_freq()
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 06912f0..fb648a4 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -489,6 +489,10 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 	data->tempmon = map;
+ 
+ 	data->socdata = of_device_get_match_data(&pdev->dev);
++	if (!data->socdata) {
++		dev_err(&pdev->dev, "no device match found\n");
++		return -ENODEV;
++	}
+ 
+ 	/* make sure the IRQ flag is clear before enabling irq on i.MX6SX */
+ 	if (data->socdata->version == TEMPMON_IMX6SX) {
+-- 
+1.7.9.5
+
