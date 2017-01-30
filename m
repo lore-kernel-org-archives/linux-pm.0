@@ -1,89 +1,66 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [Linux v4.10.0-rc1+] Still call-traces after
- suspend-resume (pm? i915? cpu/hotplug?)
-Date: Mon, 30 Jan 2017 23:44:37 +0100
-Message-ID: <7e7ccb13-1db8-af76-9585-ca7bbdd04c55@intel.com>
-References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
- <CAJZ5v0gp_BwxR+B3wtoLRh2B_ojY7cd9E5shJ8zsBeGL_LtnGg@mail.gmail.com>
- <CA+icZUVwTRCAGiO-5Q2uo8SETjHwwSmJ2Pxh56niWsbEVZfV7w@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
+Date: Mon, 30 Jan 2017 15:55:58 -0800
+Message-ID: <20170130235558.GZ7403@atomide.com>
+References: <20170120220440.1971-1-tony@atomide.com>
+ <20170120220440.1971-3-tony@atomide.com>
+ <CAKvHMgQKPZcdBPMUH-3_e-M4sHPijEH59019bygmi+o2y4B+Rw@mail.gmail.com>
+ <20170124012702.GA7403@atomide.com>
+ <CAKvHMgTvdEz=YRxB-sd-FHws+DH9DJTnVst3Tc=9HoaKMq--Ow@mail.gmail.com>
+ <20170124182925.GF7403@atomide.com>
+ <CAKvHMgSs-2Rg8sL5o9cfv1UuWWxfQ+g_O4y07JuMtU3f3UGfMQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <CA+icZUVwTRCAGiO-5Q2uo8SETjHwwSmJ2Pxh56niWsbEVZfV7w@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: sedat.dilek@gmail.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:32928 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751134AbdA3X4H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 30 Jan 2017 18:56:07 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgSs-2Rg8sL5o9cfv1UuWWxfQ+g_O4y07JuMtU3f3UGfMQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-T24gMS8yNC8yMDE3IDI6MzMgQU0sIFNlZGF0IERpbGVrIHdyb3RlOgo+IE9uIEZyaSwgRGVjIDMw
-LCAyMDE2IGF0IDM6MDIgUE0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWxAa2VybmVsLm9yZz4g
-d3JvdGU6Cj4+IE9uIEZyaSwgRGVjIDMwLCAyMDE2IGF0IDEyOjQwIFBNLCBTZWRhdCBEaWxlayA8
-c2VkYXQuZGlsZWtAZ21haWwuY29tPiB3cm90ZToKPj4+IEhpLAo+Pj4KPj4+IEkgaGF2ZSBhbHJl
-YWR5IHJlcG9ydGVkIHRoaXMgaXNzdWUgaW4gWzFdLgo+Pj4gT25lIG9mIHRoZSBpc3N1ZSB3YXMg
-c29sdmVkLgo+Pj4gVW5mb3J0dW5hdGVseSwgaXQgbG9va3MgbGlrZSB0aGVyZSBpcyBzdGlsbCBh
-IGRpZmZlcmVudCBwcm9ibGVtIGhlcmUKPj4+IChVYnVudHUvcHJlY2lzZSBBTUQ2NCkuCj4+Pgo+
-Pj4gSSB0cmllZCB2NC4xMC1yYzEgYW5kIGxhdGVzdCBMaW51cyB0cmVlIHVwIHRvLi4uCj4+Pgo+
-Pj4gY29tbWl0IDk4NDczZjlmM2Y5YmQ0MDQ4NzNjZDExNzhjOGJlN2Q2ZDYxOWYwZDEKPj4+ICJt
-bS9maWxlbWFwOiBmaXggcGFyYW1ldGVycyB0byB0ZXN0X2JpdCgpIgo+Pj4KPj4+IEhlcmUgd2Ug
-Z28uLi4KPj4+Cj4+PiBbICAgMjkuNjM2MDQ3XSBCVUc6IHNsZWVwaW5nIGZ1bmN0aW9uIGNhbGxl
-ZCBmcm9tIGludmFsaWQgY29udGV4dCBhdAo+Pj4gZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUu
-YzoxMDMyCj4+PiBbICAgMjkuNjM2MDU1XSBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNhYmxlZCgp
-OiAwLCBwaWQ6IDE1MDAsIG5hbWU6IFhvcmcKPj4+IFsgICAyOS42MzYwNThdIDEgbG9jayBoZWxk
-IGJ5IFhvcmcvMTUwMDoKPj4+IFsgICAyOS42MzYwNjBdICAjMDogICgmZGV2LT5zdHJ1Y3RfbXV0
-ZXgpeysuKy4rLn0sIGF0Ogo+Pj4gWzxmZmZmZmZmZmEwNjgwYzEzPl0gaTkxNV9tdXRleF9sb2Nr
-X2ludGVycnVwdGlibGUrMHg0My8weDE0MCBbaTkxNV0KPj4+IFsgICAyOS42MzYxMDddIENQVTog
-MCBQSUQ6IDE1MDAgQ29tbTogWG9yZyBOb3QgdGFpbnRlZAo+Pj4gNC4xMC4wLXJjMS02LWluaXph
-LWFtZDY0ICMxCj4+PiBbICAgMjkuNjM2MTA5XSBIYXJkd2FyZSBuYW1lOiBTQU1TVU5HIEVMRUNU
-Uk9OSUNTIENPLiwgTFRELgo+Pj4gNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgvNTMwVTNCSS81MzBV
-NEJJLzUzMFU0QkgsIEJJT1MgMTNYSyAwMy8yOC8yMDEzCj4+PiBbICAgMjkuNjM2MTExXSBDYWxs
-IFRyYWNlOgo+Pj4gWyAgIDI5LjYzNjEyMF0gIGR1bXBfc3RhY2srMHg4NS8weGMyCj4+PiBbICAg
-MjkuNjM2MTI0XSAgX19fbWlnaHRfc2xlZXArMHgxOTYvMHgyNjAKPj4+IFsgICAyOS42MzYxMjdd
-ICBfX21pZ2h0X3NsZWVwKzB4NTMvMHhiMAo+Pj4gWyAgIDI5LjYzNjEzMV0gIF9fcG1fcnVudGlt
-ZV9yZXN1bWUrMHg3YS8weDkwCj4+PiBbICAgMjkuNjM2MTU5XSAgaW50ZWxfcnVudGltZV9wbV9n
-ZXQrMHgyNS8weDkwIFtpOTE1XQo+Pj4gWyAgIDI5LjYzNjE4OV0gIGFsaWFzaW5nX2d0dF9iaW5k
-X3ZtYSsweGFhLzB4ZjAgW2k5MTVdCj4+PiBbICAgMjkuNjM2MjIwXSAgaTkxNV92bWFfYmluZCsw
-eGFmLzB4MWUwIFtpOTE1XQo+Pj4gWyAgIDI5LjYzNjI0OF0gIGk5MTVfZ2VtX2V4ZWNidWZmZXJf
-cmVsb2NhdGVfZW50cnkrMHg1MTMvMHg2ZjAgW2k5MTVdCj4+PiBbICAgMjkuNjM2MjcyXSAgaTkx
-NV9nZW1fZXhlY2J1ZmZlcl9yZWxvY2F0ZV92bWEuaXNyYS4zNCsweDE4OC8weDI1MCBbaTkxNV0K
-Pj4+IFsgICAyOS42MzYyNzVdICA/IHRyYWNlX2hhcmRpcnFzX29uKzB4ZC8weDEwCj4+PiBbICAg
-MjkuNjM2Mjk0XSAgPyBpOTE1X2dlbV9leGVjYnVmZmVyX3Jlc2VydmVfdm1hLmlzcmEuMzErMHgx
-NTIvMHgxZjAgW2k5MTVdCj4+PiBbICAgMjkuNjM2MzE2XSAgPyBpOTE1X2dlbV9leGVjYnVmZmVy
-X3Jlc2VydmUuaXNyYS4zMisweDM3Mi8weDNhMCBbaTkxNV0KPj4+IFsgICAyOS42MzYzNDJdICBp
-OTE1X2dlbV9kb19leGVjYnVmZmVyLmlzcmEuMzgrMHhhNzAvMHgxYTQwIFtpOTE1XQo+Pj4gWyAg
-IDI5LjYzNjM0N10gID8gX19taWdodF9mYXVsdCsweDRlLzB4YjAKPj4+IFsgICAyOS42MzYzNzNd
-ICBpOTE1X2dlbV9leGVjYnVmZmVyMisweGM1LzB4MjYwIFtpOTE1XQo+Pj4gWyAgIDI5LjYzNjM3
-Nl0gID8gX19taWdodF9mYXVsdCsweDRlLzB4YjAKPj4+IFsgICAyOS42MzYzOTVdICBkcm1faW9j
-dGwrMHgyMDYvMHg0NTAgW2RybV0KPj4+IFsgICAyOS42MzY0MjBdICA/IGk5MTVfZ2VtX2V4ZWNi
-dWZmZXIrMHgzNDAvMHgzNDAgW2k5MTVdCj4+PiBbICAgMjkuNjM2NDI1XSAgPyBfX2ZnZXQrMHg1
-LzB4MjAwCj4+PiBbICAgMjkuNjM2NDI5XSAgZG9fdmZzX2lvY3RsKzB4OTEvMHg2ZjAKPj4+IFsg
-ICAyOS42MzY0MzFdICA/IF9fZmdldCsweDExMS8weDIwMAo+Pj4gWyAgIDI5LjYzNjQzM10gID8g
-X19mZ2V0KzB4NS8weDIwMAo+Pj4gWyAgIDI5LjYzNjQzNl0gIFN5U19pb2N0bCsweDc5LzB4OTAK
-Pj4+IFsgICAyOS42MzY0NDFdICBlbnRyeV9TWVNDQUxMXzY0X2Zhc3RwYXRoKzB4MjMvMHhjNgo+
-Pj4KPj4+IE9uIHN1c3BlbmQvcmVzdW1lIEkgc2VlIHRoZSBzYW1lIGNhbGwgdHJhY2UuCj4+PiBb
-Ml0gcG9pbnRzIHRvIHRoZSAiQlVHIiBsaW5lLgo+PiBXZWxsLCB0aGlzIGFwcGVhcnMgdG8gYmUg
-YW4gaTkxNSBpc3N1ZSwgYnV0IG5vdCBhIHNlcmlvdXMgb25lLgo+Pgo+PiBDbGVhcmx5LCBhIGZ1
-bmN0aW9uIHRoYXQgbWF5IHNsZWVwIChwbV9ydW50aW1lX2dldF9zeW5jKCkgaW4KPj4gaW50ZWxf
-cnVudGltZV9wbV9nZXQoKSkgaXMgY2FsbGVkIHdpdGggZGlzYWJsZWQgaW50ZXJydXB0cy4gIElm
-IEkKPj4gdW5kZXJzdGFuZCB0aGUgY29kZSBjb3JyZWN0bHksIHRob3VnaCwgaXQgYWN0dWFsbHkg
-aXMgbm90IGdvaW5nIHRvCj4+IHNsZWVwIGluIHRoaXMgcGFydGljdWxhciBjYXNlLCBiZWNhdXNl
-IHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSBoYXMKPj4gYWxyZWFkeSBiZWVuIGNhbGxlZCBvbmNlIGZv
-ciB0aGlzIGRldmljZSBpbiB0aGUgc2FtZSBjb2RlIHBhdGggd2hpY2gKPj4gbWVhbnMgdGhhdCB0
-aGlzIHBhcnRpY3VsYXIgaW5zdGFuY2Ugd2lsbCByZXR1cm4gaW1tZWRpYXRlbHksIHNvIHRoaXMK
-Pj4gaXMgYSBmYWxzZS1wb3NpdGl2ZSAobW9zdCBsaWtlbHkpLgo+Pgo+PiBMZXQgbWUgc2VlIGlm
-IEkgdGhlIG1pZ2h0X3NsZWVwX2lmKCkgYXNzZXJ0aW9uIGluCj4+IF9fcG1fcnVudGltZV9yZXN1
-bWUoKCkgY2FuIGJlIG1vdmVkIHRvIGEgYmV0dGVyIHBsYWNlLgo+Pgo+IEhpIFJhZmFlbCwKPgo+
-IGRpZCB5b3UgaGFkIGEgY2hhbmNlIHRvIGxvb2sgYXQgdGhpcz8KPiBUaGUgcHJvYmxlbSBzdGls
-bCByZW1haW5zIGluIExpbnV4IHY0LjEwLXJjNS4KCk5vLCBJIGRpZG4ndC4KCkFzIEkgc2FpZCwg
-dGhpcyBpcyBub3QgYSBzZXJpb3VzIGlzc3VlLgoKVGhhbmtzLApSYWZhZWwKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxp
-c3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
-dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+* Liam Breck <liam@networkimprov.net> [170126 15:57]:
+> On Tue, Jan 24, 2017 at 10:29 AM, Tony Lindgren <tony@atomide.com> wrote:
+> > @@ -1430,10 +1473,20 @@ static int bq24190_probe(struct i2c_client *client,
+> >  static int bq24190_remove(struct i2c_client *client)
+> >  {
+> >         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+> > +       int error;
+> > +
+> > +       error = pm_runtime_get_sync(bdi->dev);
+> > +       if (error < 0) {
+> > +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
+> > +               pm_runtime_put_noidle(bdi->dev);
+> > +       }
+> >
+> > -       pm_runtime_get_sync(bdi->dev);
+> >         bq24190_register_reset(bdi);
+> > -       pm_runtime_put_sync(bdi->dev);
+> > +
+> > +       if (!error) {
+> > +               pm_runtime_dont_use_autosuspend(bdi->dev);
+> > +               pm_runtime_put_sync(bdi->dev);
+> > +       }
+> 
+> Should put_sync() be called before dont_use_autosuspend(), as in probe()?
+
+Yeah good to have them paired. With pm_runtime_put_noidle() we're
+active on error, so we can just call pm_runtime_dont_use_autosuspend()
+and pm_runtime_put_sync() unconditionally.
+
+> Should the pm_runtime_disable() further on in remove() go inside the
+> above block?
+
+No need to because of the pm_runtime_put_noidle(). I'll just move the
+pm_runtime_dont_use_autosuspend() and pm_runtime_put_sync() to the
+end.
+
+I'll repost both patches one more time with acks.
+
+Regards,
+
+Tony
