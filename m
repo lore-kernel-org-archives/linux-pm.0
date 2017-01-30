@@ -1,65 +1,48 @@
-From: Augusto Mecking Caringi <augustocaringi@gmail.com>
-Subject: [PATCH] thermal/intel_powerclamp: Remove set-but-not-used variables
-Date: Mon, 30 Jan 2017 10:47:36 +0000
-Message-ID: <1485773289-19844-1-git-send-email-augustocaringi@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+From: Thierry Reding <thierry.reding@gmail.com>
+Subject: [PATCH 1/3] dt-bindings: mfd: as3722: Drop reference to pm_power_off
+Date: Mon, 30 Jan 2017 11:51:20 +0100
+Message-ID: <20170130105122.6475-1-thierry.reding@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:34287 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751141AbdA3Ks2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 05:48:28 -0500
+Received: from mail-wj0-f195.google.com ([209.85.210.195]:36748 "EHLO
+        mail-wj0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752504AbdA3Kv0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 05:51:26 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Augusto Mecking Caringi <augustocaringi@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>
 
-In poll_pkg_cstate() function, the variables jiffies_last and
-jiffies_now are set but never used.
+From: Guenter Roeck <linux@roeck-us.net>
 
-This has been detected by building the driver with W=1:
+Devicetree bindings are supposed to be operating system independent and
+should thus not describe how a specific functionality is implemented in
+Linux.
 
-drivers/thermal/intel_powerclamp.c: In function ‘poll_pkg_cstate’:
-drivers/thermal/intel_powerclamp.c:464:23: warning: variable
-‘jiffies_last’ set but not used [-Wunused-but-set-variable]
-static unsigned long jiffies_last;
-                       ^
-
-Signed-off-by: Augusto Mecking Caringi <augustocaringi@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Acked-by: Mark Rutland <mark.rutland@arm.com>
+Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- drivers/thermal/intel_powerclamp.c | 4 ----
- 1 file changed, 4 deletions(-)
+ Documentation/devicetree/bindings/mfd/as3722.txt | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-index df64692..a47103a 100644
---- a/drivers/thermal/intel_powerclamp.c
-+++ b/drivers/thermal/intel_powerclamp.c
-@@ -461,16 +461,13 @@ static void poll_pkg_cstate(struct work_struct *dummy)
- {
- 	static u64 msr_last;
- 	static u64 tsc_last;
--	static unsigned long jiffies_last;
+diff --git a/Documentation/devicetree/bindings/mfd/as3722.txt b/Documentation/devicetree/bindings/mfd/as3722.txt
+index 4f64b2a73169..0b2a6099aa20 100644
+--- a/Documentation/devicetree/bindings/mfd/as3722.txt
++++ b/Documentation/devicetree/bindings/mfd/as3722.txt
+@@ -122,8 +122,7 @@ Following are properties of regulator subnode.
  
- 	u64 msr_now;
--	unsigned long jiffies_now;
- 	u64 tsc_now;
- 	u64 val64;
- 
- 	msr_now = pkg_state_counter();
- 	tsc_now = rdtsc();
--	jiffies_now = jiffies;
- 
- 	/* calculate pkg cstate vs tsc ratio */
- 	if (!msr_last || !tsc_last)
-@@ -485,7 +482,6 @@ static void poll_pkg_cstate(struct work_struct *dummy)
- 
- 	/* update record */
- 	msr_last = msr_now;
--	jiffies_last = jiffies_now;
- 	tsc_last = tsc_now;
- 
- 	if (true == clamping)
+ Power-off:
+ =========
+-AS3722 supports the system power off by turning off all its rail. This
+-is provided through pm_power_off.
++AS3722 supports the system power off by turning off all its rails.
+ The device node should have the following properties to enable this
+ functionality
+ ams,system-power-controller: Boolean, to enable the power off functionality
 -- 
-2.7.4
+2.11.0
 
