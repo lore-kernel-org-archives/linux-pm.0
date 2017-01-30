@@ -1,110 +1,95 @@
-From: "Deucher, Alexander" <Alexander.Deucher-5C7GfCeVMHo@public.gmane.org>
-Subject: RE: [PATCH v1 2/2] drm/radeon: make MacBook Pro d3_delay quirk more
- generic
-Date: Mon, 30 Jan 2017 20:57:07 +0000
-Message-ID: <BN6PR12MB16528ED368044775DB3C92D1F74B0@BN6PR12MB1652.namprd12.prod.outlook.com>
-References: <20170130203822.31891.22461.stgit@bhelgaas-glaptop.roam.corp.google.com>
- <20170130204106.31891.59164.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v4 2/8] devicetree: power: add battery state machine documentation
+Date: Mon, 30 Jan 2017 13:40:38 -0800
+Message-ID: <CAKvHMgRp=duoWFzQPR58sHjuOE5R3p2tL3e0RNBUk7_f9mB6fg@mail.gmail.com>
+References: <20170122071404.9654-3-matt@ranostay.consulting>
+ <20170122222212.27086-1-liam@networkimprov.net> <CAKvHMgRYqh_fksDXq2Jv1t6p9ckCOgR+O6gxRTdpd=9r8y__Bg@mail.gmail.com>
+ <CAJ_EiSSPeWj+q+R5=HVVrsb39208-Gmj5_7T=ic6mYLxFuekNQ@mail.gmail.com>
+ <20170129172006.jsjfxrehynfegpfr@earth> <CAKvHMgSYXYyW7AEHaa_wkh3UQyE6wJPYV66HAugBf3wHOeoSmg@mail.gmail.com>
+ <20170130023012.b2vnye6vb4yoawcq@earth> <CAKvHMgQi1tRyUXh0504rP8VUVkFVPt_4NnYTOrBXeO4dde6KMg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-In-Reply-To: <20170130204106.31891.59164.stgit-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
-Content-Language: en-US
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/amd-gfx>,
- <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/amd-gfx>
-List-Post: <mailto:amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-List-Help: <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/amd-gfx>,
- <mailto:amd-gfx-request-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org?subject=subscribe>
-Errors-To: amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org
-Sender: "amd-gfx" <amd-gfx-bounces-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>
-To: 'Bjorn Helgaas' <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, "Koenig, Christian" <Christian.Koenig-5C7GfCeVMHo@public.gmane.org>
-Cc: "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, Maarten Lankhorst <maarten.lankhorst-Z7WLFzj8eWMS+FvcfC7Uqw@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAKvHMgQi1tRyUXh0504rP8VUVkFVPt_4NnYTOrBXeO4dde6KMg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBhbWQtZ2Z4IFttYWlsdG86YW1k
-LWdmeC1ib3VuY2VzQGxpc3RzLmZyZWVkZXNrdG9wLm9yZ10gT24gQmVoYWxmDQo+IE9mIEJqb3Ju
-IEhlbGdhYXMNCj4gU2VudDogTW9uZGF5LCBKYW51YXJ5IDMwLCAyMDE3IDM6NDEgUE0NCj4gVG86
-IERldWNoZXIsIEFsZXhhbmRlcjsgS29lbmlnLCBDaHJpc3RpYW4NCj4gQ2M6IGxpbnV4LXBtQHZn
-ZXIua2VybmVsLm9yZzsgbGludXgtcGNpQHZnZXIua2VybmVsLm9yZzsgbGludXgtDQo+IGtlcm5l
-bEB2Z2VyLmtlcm5lbC5vcmc7IGFtZC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnOyBkcmktDQo+
-IGRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZzsgTWFhcnRlbiBMYW5raG9yc3QNCj4gU3ViamVj
-dDogW1BBVENIIHYxIDIvMl0gZHJtL3JhZGVvbjogbWFrZSBNYWNCb29rIFBybyBkM19kZWxheSBx
-dWlyaw0KPiBtb3JlIGdlbmVyaWMNCj4gDQo+IFRoZSBQQ0kgUG93ZXIgTWFuYWdlbWVudCBTcGVj
-LCByMS4yLCBzZWMgNS42LjEsIHJlcXVpcmVzIGEgMTAgbWlsbGlzZWNvbmQNCj4gZGVsYXkgd2hl
-biBwb3dlcmluZyBvbiBhIGRldmljZSwgaS5lLiwgdHJhbnNpdGlvbmluZyBmcm9tIHN0YXRlIEQz
-aG90IHRvDQo+IEQwLg0KPiANCj4gQXBwYXJlbnRseSBzb21lIGRldmljZXMgcmVxdWlyZSBtb3Jl
-IHRpbWUsIGFuZCBkMWY5ODA5ZWQxMzENCj4gKCJkcm0vcmFkZW9uOg0KPiBhZGQgcXVpcmsgZm9y
-IGQzIGRlbGF5IGR1cmluZyBzd2l0Y2hlcm9vIHBvd2Vyb24gZm9yIGFwcGxlIG1hY2Jvb2tzIikN
-Cj4gYWRkZWQNCj4gYW4gYWRkaXRpb25hbCBkZWxheSBmb3IgdGhlIFJhZGVvbiBkZXZpY2UgaW4g
-YSBNYWNCb29rIFByby4gIDQ4MDdjNWE4YTBjOA0KPiAoImRybS9yYWRlb246IGFkZCBhIFBYIHF1
-aXJrIGxpc3QiKSBtYWRlIHRoZSBhZmZlY3RlZCBkZXZpY2UgbW9yZSBleHBsaWNpdC4NCj4gDQo+
-IEFkZCBhIGdlbmVyaWMgUENJIHF1aXJrIHRvIGluY3JlYXNlIHRoZSBkM19kZWxheS4gIFRoaXMg
-bWVhbnMgd2Ugd2lsbCB1c2UNCj4gdGhlIGFkZGl0aW9uYWwgZGVsYXkgZm9yICphbGwqIHdha2V1
-cHMgZnJvbSBEMywgbm90IGp1c3QgdGhvc2UgaW5pdGlhdGVkIGJ5DQo+IHJhZGVvbl9zd2l0Y2hl
-cm9vX3NldF9zdGF0ZSgpLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogQmpvcm4gSGVsZ2FhcyA8Ymhl
-bGdhYXNAZ29vZ2xlLmNvbT4NCj4gQ0M6IE1hYXJ0ZW4gTGFua2hvcnN0IDxtYWFydGVuLmxhbmto
-b3JzdEBjYW5vbmljYWwuY29tPg0KDQpGb3IgdGhlIHNlcmllczoNCkFja2VkLWJ5OiBBbGV4IERl
-dWNoZXIgPGFsZXhhbmRlci5kZXVjaGVyQGFtZC5jb20+DQoNCj4gLS0tDQo+ICBkcml2ZXJzL2dw
-dS9kcm0vcmFkZW9uL3JhZGVvbl9kZXZpY2UuYyB8ICAgMTIgLS0tLS0tLS0tLS0tDQo+ICBkcml2
-ZXJzL3BjaS9xdWlya3MuYyAgICAgICAgICAgICAgICAgICB8ICAgMTMgKysrKysrKysrKysrKw0K
-PiAgMiBmaWxlcyBjaGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCAxMiBkZWxldGlvbnMoLSkNCj4g
-DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9kZXZpY2UuYw0K
-PiBiL2RyaXZlcnMvZ3B1L2RybS9yYWRlb24vcmFkZW9uX2RldmljZS5jDQo+IGluZGV4IDhhMWRm
-MmExYWZiZC4uOGI4ZmQ5ODFjYWU1IDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL2dwdS9kcm0vcmFk
-ZW9uL3JhZGVvbl9kZXZpY2UuYw0KPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVv
-bl9kZXZpY2UuYw0KPiBAQCAtMTEzLDcgKzExMyw2IEBAIHN0YXRpYyBpbmxpbmUgYm9vbCByYWRl
-b25faXNfYXRweF9oeWJyaWQodm9pZCkgew0KPiByZXR1cm4gZmFsc2U7IH0NCj4gICNlbmRpZg0K
-PiANCj4gICNkZWZpbmUgUkFERU9OX1BYX1FVSVJLX0RJU0FCTEVfUFggICgxIDw8IDApDQo+IC0j
-ZGVmaW5lIFJBREVPTl9QWF9RVUlSS19MT05HX1dBS0VVUCAoMSA8PCAxKQ0KPiANCj4gIHN0cnVj
-dCByYWRlb25fcHhfcXVpcmsgew0KPiAgCXUzMiBjaGlwX3ZlbmRvcjsNCj4gQEAgLTEzNiw5ICsx
-MzUsNiBAQCBzdGF0aWMgc3RydWN0IHJhZGVvbl9weF9xdWlyayByYWRlb25fcHhfcXVpcmtfbGlz
-dFtdDQo+ID0gew0KPiAgCSAqIGh0dHBzOi8vYnVnemlsbGEua2VybmVsLm9yZy9zaG93X2J1Zy5j
-Z2k/aWQ9NTEzODENCj4gIAkgKi8NCj4gIAl7IFBDSV9WRU5ET1JfSURfQVRJLCAweDY4NDAsIDB4
-MTA0MywgMHgyMTIyLA0KPiBSQURFT05fUFhfUVVJUktfRElTQUJMRV9QWCB9LA0KPiAtCS8qIG1h
-Y2Jvb2sgcHJvIDguMiAqLw0KPiAtCXsgUENJX1ZFTkRPUl9JRF9BVEksIDB4Njc0MSwgUENJX1ZF
-TkRPUl9JRF9BUFBMRSwgMHgwMGUyLA0KPiBSQURFT05fUFhfUVVJUktfTE9OR19XQUtFVVAgfSwN
-Cj4gLQl7IDAsIDAsIDAsIDAsIDAgfSwNCj4gIH07DQo+IA0KPiAgYm9vbCByYWRlb25faXNfcHgo
-c3RydWN0IGRybV9kZXZpY2UgKmRldikNCj4gQEAgLTEyNDEsMjUgKzEyMzcsMTcgQEAgc3RhdGlj
-IHZvaWQgcmFkZW9uX2NoZWNrX2FyZ3VtZW50cyhzdHJ1Y3QNCj4gcmFkZW9uX2RldmljZSAqcmRl
-dikNCj4gIHN0YXRpYyB2b2lkIHJhZGVvbl9zd2l0Y2hlcm9vX3NldF9zdGF0ZShzdHJ1Y3QgcGNp
-X2RldiAqcGRldiwgZW51bQ0KPiB2Z2Ffc3dpdGNoZXJvb19zdGF0ZSBzdGF0ZSkNCj4gIHsNCj4g
-IAlzdHJ1Y3QgZHJtX2RldmljZSAqZGV2ID0gcGNpX2dldF9kcnZkYXRhKHBkZXYpOw0KPiAtCXN0
-cnVjdCByYWRlb25fZGV2aWNlICpyZGV2ID0gZGV2LT5kZXZfcHJpdmF0ZTsNCj4gDQo+ICAJaWYg
-KHJhZGVvbl9pc19weChkZXYpICYmIHN0YXRlID09IFZHQV9TV0lUQ0hFUk9PX09GRikNCj4gIAkJ
-cmV0dXJuOw0KPiANCj4gIAlpZiAoc3RhdGUgPT0gVkdBX1NXSVRDSEVST09fT04pIHsNCj4gLQkJ
-dW5zaWduZWQgZDNfZGVsYXkgPSBkZXYtPnBkZXYtPmQzX2RlbGF5Ow0KPiAtDQo+ICAJCXByaW50
-ayhLRVJOX0lORk8gInJhZGVvbjogc3dpdGNoZWQgb25cbiIpOw0KPiAgCQkvKiBkb24ndCBzdXNw
-ZW5kIG9yIHJlc3VtZSBjYXJkIG5vcm1hbGx5ICovDQo+ICAJCWRldi0+c3dpdGNoX3Bvd2VyX3N0
-YXRlID0NCj4gRFJNX1NXSVRDSF9QT1dFUl9DSEFOR0lORzsNCj4gDQo+IC0JCWlmIChkM19kZWxh
-eSA8IDIwICYmIChyZGV2LT5weF9xdWlya19mbGFncyAmDQo+IFJBREVPTl9QWF9RVUlSS19MT05H
-X1dBS0VVUCkpDQo+IC0JCQlkZXYtPnBkZXYtPmQzX2RlbGF5ID0gMjA7DQo+IC0NCj4gIAkJcmFk
-ZW9uX3Jlc3VtZV9rbXMoZGV2LCB0cnVlLCB0cnVlKTsNCj4gDQo+IC0JCWRldi0+cGRldi0+ZDNf
-ZGVsYXkgPSBkM19kZWxheTsNCj4gLQ0KPiAgCQlkZXYtPnN3aXRjaF9wb3dlcl9zdGF0ZSA9IERS
-TV9TV0lUQ0hfUE9XRVJfT047DQo+ICAJCWRybV9rbXNfaGVscGVyX3BvbGxfZW5hYmxlKGRldik7
-DQo+ICAJfSBlbHNlIHsNCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvcGNpL3F1aXJrcy5jIGIvZHJp
-dmVycy9wY2kvcXVpcmtzLmMNCj4gaW5kZXggMTgwMGJlZmE4YjhiLi41MTJkN2E4NzVkNjIgMTAw
-NjQ0DQo+IC0tLSBhL2RyaXZlcnMvcGNpL3F1aXJrcy5jDQo+ICsrKyBiL2RyaXZlcnMvcGNpL3F1
-aXJrcy5jDQo+IEBAIC0xNjgzLDYgKzE2ODMsMTkgQEANCj4gREVDTEFSRV9QQ0lfRklYVVBfRklO
-QUwoUENJX1ZFTkRPUl9JRF9JTlRFTCwJMHgyNjA5LA0KPiBxdWlya19pbnRlbF9wY2llX3BtKTsN
-Cj4gIERFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfSU5URUwsCTB4MjYwYSwN
-Cj4gcXVpcmtfaW50ZWxfcGNpZV9wbSk7DQo+ICBERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lf
-VkVORE9SX0lEX0lOVEVMLAkweDI2MGIsDQo+IHF1aXJrX2ludGVsX3BjaWVfcG0pOw0KPiANCj4g
-K3N0YXRpYyB2b2lkIHF1aXJrX3JhZGVvbl9wbShzdHJ1Y3QgcGNpX2RldiAqZGV2KQ0KPiArew0K
-PiArCWlmIChkZXYtPnN1YnN5c3RlbV92ZW5kb3IgPT0gUENJX1ZFTkRPUl9JRF9BUFBMRSAmJg0K
-PiArCSAgICBkZXYtPnN1YnN5c3RlbV9kZXZpY2UgPT0gMHgwMGUyKSB7DQo+ICsJCWlmIChkZXYt
-PmQzX2RlbGF5IDwgMjApIHsNCj4gKwkJCWRldi0+ZDNfZGVsYXkgPSAyMDsNCj4gKwkJCWRldl9p
-bmZvKCZkZXYtPmRldiwgImV4dGVuZGluZyBkZWxheSBhZnRlciBwb3dlci0NCj4gb24gZnJvbSBE
-MyB0byAlZCBtc2VjXG4iLA0KPiArCQkJCSBkZXYtPmQzX2RlbGF5KTsNCj4gKwkJfQ0KPiArCX0N
-Cj4gK30NCj4gK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCAweDY3
-NDEsDQo+IHF1aXJrX3JhZGVvbl9wbSk7DQo+ICsNCj4gICNpZmRlZiBDT05GSUdfWDg2X0lPX0FQ
-SUMNCj4gIC8qDQo+ICAgKiBCb290IGludGVycnVwdHMgb24gc29tZSBjaGlwc2V0cyBjYW5ub3Qg
-YmUgdHVybmVkIG9mZi4gRm9yIHRoZXNlDQo+IGNoaXBzZXRzLA0KPiANCj4gX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj4gYW1kLWdmeCBtYWlsaW5nIGxp
-c3QNCj4gYW1kLWdmeEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4gaHR0cHM6Ly9saXN0cy5mcmVl
-ZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9hbWQtZ2Z4DQpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwphbWQtZ2Z4IG1haWxpbmcgbGlzdAphbWQtZ2Z4
-QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWls
-bWFuL2xpc3RpbmZvL2FtZC1nZngK
+On Mon, Jan 30, 2017 at 2:54 AM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
+> On Sun, Jan 29, 2017 at 6:30 PM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>> Hi,
+>>
+>> On Sun, Jan 29, 2017 at 03:22:31PM -0800, Liam Breck wrote:
+>>> On Sun, Jan 29, 2017 at 9:20 AM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>> > On Wed, Jan 25, 2017 at 11:02:03PM -0800, Matt Ranostay wrote:
+>>> >> On Wed, Jan 25, 2017 at 10:19 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
+>>> >> > On Sun, Jan 22, 2017 at 2:22 PM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
+>>> >> >
+>>> >> >> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>> >> >> new file mode 100644
+>>> >> >> index 000000000000..398b4d622883
+>>> >> >> --- /dev/null
+>>> >> >> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>> >> >> @@ -0,0 +1,34 @@
+>>> >> >> +Battery Characteristics
+>>> >> >> +
+>>> >> >> +Required Properties:
+>>> >> >> + - compatible: Must be "fixed-battery"
+>>> >> >> +
+>>> >> >> +Optional Properties:
+>>> >> >> + - termination-microvolt: dead battery voltage
+>>> >> >> + - design-microwatt-hours: battery design energy
+>>> >> >> + - design-microamp-hours: battery design capacity
+>>> >> >
+>>> >> > Also I suspect the members of struct power_supply_battery_info should
+>>> >> > use the same names as appear in dts:
+>>> >>
+>>> >> These are internal and we can't be thinking just device tree.. ACPI
+>>> >> and platform data is also an option.
+>>> >
+>>> > well platform data just uses the struct. ACPI is probably not
+>>> > relevant, since in ACPI world one usually has smart batteries.
+>>> > But yes, the names can be different.
+>>> >
+>>> > The important part is, that the API is used correctly, so it
+>>> > should be clear what each property is used for. For example
+>>> > termination_microvolt is not clear: Is this charge termination
+>>> > voltage or system shutdown voltage? Also we do not need to add
+>>> > "micro", since the power-supply subsystem always uses micro
+>>> > based units.
+>>>
+>>> It's the min battery voltage. So...
+>>> drained_voltage, depleted_voltage, sapped_voltage, spent_voltage...
+>>
+>> This is often called EOD (end of discharge) voltage, so let's use
+>> end_of_discharge_voltage.
+>
+> ...
+
+Actually, let's use names from POWER_SUPPLY_PROP_*, as DT inputs may
+be visible in sysfs, e.g. *_CHARGE_FULL_DESIGN. This would require new
+enum elements in future for the BQ24190 properties I mentioned
+up-thread.
+
+That looks like:
+
+Optional Properties:
+   - voltage-min-design-microvolt: dead battery voltage
+   - energy-full-design-microwatt-hours: battery design energy
+   - charge-full-design-microamp-hours: battery design capacity
+
+ struct power_supply_battery_info {
+    int voltage_min_design_uv;   /* microVolts */
+    int energy_full_design_uwh;  /* microWatt-hours */
+    int charge_full_design_uah;  /* microAmp-hours */
+ };
+
+Default value for unset DT properties will be -EINVAL, since 0 is
+valid for *_full_design_* on the chips.
+
+~.~
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
