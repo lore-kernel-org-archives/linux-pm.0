@@ -1,86 +1,61 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: Re: [PATCH 0/7]  Fix issues and factorize arm/arm64 capacity
- information code
-Date: Mon, 30 Jan 2017 12:29:01 +0000
-Message-ID: <20170130122901.GA25681@e106622-lin>
-References: <20170119143757.14537-1-juri.lelli@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20170119143757.14537-1-juri.lelli@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, will.deacon@arm.com, gregkh@linuxfoundation.org, dietmar.eggemann@arm.com, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH v3 2/5] soc: samsung: pm_domains: Remove unused name field
+Date: Mon, 30 Jan 2017 13:18:57 +0100
+Message-ID: <1485778740-30337-3-git-send-email-m.szyprowski@samsung.com>
+References: <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170130121913eucas1p187c10b4ad4b3551c0100b492374f42bb@eucas1p1.samsung.com>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Name is now in generic pm domain structure, so there is no need to
+duplicate it in private data.
 
-ping.
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ drivers/soc/samsung/pm_domains.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-I'd need more advice on this set, especially on how and if patch 6 could fly.
-
-Thanks,
-
-- Juri
-
-On 19/01/17 14:37, Juri Lelli wrote:
-> Hi,
-> 
-> arm and arm64 topology.c share a lot of code related to parsing of capacity
-> information. This set of patches proposes a solution (based on Will's,
-> Catalin's and Mark's off-line suggestions) to move such common code in a single
-> place: drivers/base/arch_topology.c (by creating such file and conditionally
-> compiling it for arm and arm64 only).
-> 
-> First 5 patches are actually fixes for the current code.
-> 
-> Patch 6 is the actual refactoring.
-> 
-> Last patch removes one of the extern symbols by changing a bit the now common
-> code. We still remain with some other externs, which are not nice. Moving them
-> in some header file solves the issue, should I just create a new include/
-> linux/arch_topology.h file and move them there?
-> 
-> The set is based on top of linux/master (4.10-rc4 fb1d8e0e2c50) and it is also
-> available from:
-> 
->  git://linux-arm.org/linux-jl.git upstream/default_caps_factorize
-> 
-> Best,
-> 
-> - Juri
-> 
-> Juri Lelli (7):
->   Documentation: arm: fix wrong reference number in DT definition
->   Documentation/ABI: add information about cpu_capacity
->   arm: fix return value of parse_cpu_capacity
->   arm: remove wrong CONFIG_PROC_SYSCTL ifdef
->   arm64: remove wrong CONFIG_PROC_SYSCTL ifdef
->   arm, arm64: factorize common cpu capacity default code
->   arm,arm64,drivers: reduce scope of cap_parsing_failed
-> 
->  Documentation/ABI/testing/sysfs-devices-system-cpu |   7 +
->  Documentation/devicetree/bindings/arm/cpus.txt     |   4 +-
->  arch/arm/Kconfig                                   |   1 +
->  arch/arm/kernel/topology.c                         | 216 +------------------
->  arch/arm64/Kconfig                                 |   1 +
->  arch/arm64/kernel/topology.c                       | 218 +------------------
->  drivers/base/Kconfig                               |   8 +
->  drivers/base/Makefile                              |   1 +
->  drivers/base/arch_topology.c                       | 240 +++++++++++++++++++++
->  9 files changed, 269 insertions(+), 427 deletions(-)
->  create mode 100644 drivers/base/arch_topology.c
-> 
-> -- 
-> 2.10.0
-> 
+diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+index c33196087e9f..00e32772655a 100644
+--- a/drivers/soc/samsung/pm_domains.c
++++ b/drivers/soc/samsung/pm_domains.c
+@@ -35,7 +35,6 @@ struct exynos_pm_domain_config {
+  */
+ struct exynos_pm_domain {
+ 	void __iomem *base;
+-	char const *name;
+ 	bool is_off;
+ 	struct generic_pm_domain pd;
+ 	struct clk *oscclk;
+@@ -70,7 +69,7 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
+ 			pd->pclk[i] = clk_get_parent(pd->clk[i]);
+ 			if (clk_set_parent(pd->clk[i], pd->oscclk))
+ 				pr_err("%s: error setting oscclk as parent to clock %d\n",
+-						pd->name, i);
++						domain->name, i);
+ 		}
+ 	}
+ 
+@@ -101,7 +100,7 @@ static int exynos_pd_power(struct generic_pm_domain *domain, bool power_on)
+ 				continue; /* Skip on first power up */
+ 			if (clk_set_parent(pd->clk[i], pd->pclk[i]))
+ 				pr_err("%s: error setting parent to clock%d\n",
+-						pd->name, i);
++						domain->name, i);
+ 		}
+ 	}
+ 
+@@ -170,7 +169,6 @@ static __init int exynos4_pm_init_power_domain(void)
+ 			return -ENOMEM;
+ 		}
+ 
+-		pd->name = pd->pd.name;
+ 		pd->base = of_iomap(np, 0);
+ 		if (!pd->base) {
+ 			pr_warn("%s: failed to map memory\n", __func__);
+-- 
+1.9.1
