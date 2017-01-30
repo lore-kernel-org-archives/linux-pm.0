@@ -1,37 +1,65 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 1/4] PM / devfreq: Fix the wrong description for
- userspace governor
-Date: Mon, 30 Jan 2017 11:44:42 +0100
-Message-ID: <CAJZ5v0iVf1stbyaHJWr_QWi7tt8P7L1zpfP23p5N=QKgHamV8Q@mail.gmail.com>
-References: <1485142299-9986-1-git-send-email-cw00.choi@samsung.com>
- <CGME20170123033151epcas5p3a484d70bbdef282b92eb8d97d912e75c@epcas5p3.samsung.com>
- <20170124034211epcms1p6ded0f600506896af5bdf09e9afd6eb94@epcms1p6>
+From: Augusto Mecking Caringi <augustocaringi@gmail.com>
+Subject: [PATCH] thermal/intel_powerclamp: Remove set-but-not-used variables
+Date: Mon, 30 Jan 2017 10:47:36 +0000
+Message-ID: <1485773289-19844-1-git-send-email-augustocaringi@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170124034211epcms1p6ded0f600506896af5bdf09e9afd6eb94@epcms1p6>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:34287 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751141AbdA3Ks2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 05:48:28 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Augusto Mecking Caringi <augustocaringi@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Petr Mladek <pmladek@suse.com>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Jan 24, 2017 at 4:42 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> This patch fixes the wrong description of governor_userspace.c
->> and removes the unneeded blank line.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->
-> Applied in for-next
+In poll_pkg_cstate() function, the variables jiffies_last and
+jiffies_now are set but never used.
 
+This has been detected by building the driver with W=1:
 
-Quite frankly I'm not entirely sure what's going on in the devfreq land.
+drivers/thermal/intel_powerclamp.c: In function ‘poll_pkg_cstate’:
+drivers/thermal/intel_powerclamp.c:464:23: warning: variable
+‘jiffies_last’ set but not used [-Wunused-but-set-variable]
+static unsigned long jiffies_last;
+                       ^
 
-Some patches are ACKed by you, some of them are applied and it is hard
-to say what the rule is.
+Signed-off-by: Augusto Mecking Caringi <augustocaringi@gmail.com>
+---
+ drivers/thermal/intel_powerclamp.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Besides, it is quite late in the cycle, so it would be nice to receive
-a pull request for the devfreq material already collected for 4.11.
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index df64692..a47103a 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -461,16 +461,13 @@ static void poll_pkg_cstate(struct work_struct *dummy)
+ {
+ 	static u64 msr_last;
+ 	static u64 tsc_last;
+-	static unsigned long jiffies_last;
+ 
+ 	u64 msr_now;
+-	unsigned long jiffies_now;
+ 	u64 tsc_now;
+ 	u64 val64;
+ 
+ 	msr_now = pkg_state_counter();
+ 	tsc_now = rdtsc();
+-	jiffies_now = jiffies;
+ 
+ 	/* calculate pkg cstate vs tsc ratio */
+ 	if (!msr_last || !tsc_last)
+@@ -485,7 +482,6 @@ static void poll_pkg_cstate(struct work_struct *dummy)
+ 
+ 	/* update record */
+ 	msr_last = msr_now;
+-	jiffies_last = jiffies_now;
+ 	tsc_last = tsc_now;
+ 
+ 	if (true == clamping)
+-- 
+2.7.4
 
-Thanks,
-Rafael
