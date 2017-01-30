@@ -1,62 +1,67 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v3 0/5] Provide real domain names for Exynos power domain
- driver
-Date: Mon, 30 Jan 2017 20:36:21 +0200
-Message-ID: <20170130183621.3v77pfrncm2qb7nr@kozik-lap>
-References: <CGME20170130121912eucas1p1002708fc40c2d385c41ef2d7574561f9@eucas1p1.samsung.com>
- <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
+From: Fabian Frederick <fabf@skynet.be>
+Subject: [PATCH 00/14] use atomic_dec_not_zero()
+Date: Mon, 30 Jan 2017 19:39:20 +0100
+Message-ID: <20170130183920.12476-1-fabf@skynet.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <openipmi-developer-bounces@lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/openipmi-developer>,
+	<mailto:openipmi-developer-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=openipmi-developer>
+List-Post: <mailto:openipmi-developer@lists.sourceforge.net>
+List-Help: <mailto:openipmi-developer-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/openipmi-developer>,
+	<mailto:openipmi-developer-request@lists.sourceforge.net?subject=subscribe>
+Errors-To: openipmi-developer-bounces@lists.sourceforge.net
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-s390@vger.kernel.org, linux-pm@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Akinobu Mita <akinobu.mita@gmail.com>, linux-xfs@vger.kernel.org, Fabian Frederick <fabf@skynet.be>, openipmi-developer@lists.sourceforge.net, linux-ext4@vger.kernel.org, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 30, 2017 at 01:18:55PM +0100, Marek Szyprowski wrote:
-> Hi!
-> 
-> For everyone working on power management and runtime power management it
-> is important to have a meaningful information about the state of the
-> power domains. Current Exynos power domain driver created names of the
-> domains based on the device tree node name. Those name
-> we incorrectly a bit more descriptive (like "mfc-power-domain@10023C40"
-> in exynos4.dtsi) than they should be (it should be fixed to
-> "power-domain@10023C40"). This patch series adds reading human readable
-> names from the 'label' property. While touching this, I've also fixes
-> a few obvious issues related to power domain driver code.
-> 
-> Patches are based on the Linux next-20170130 branch.
-> 
-> Best regards
-> Marek Szyprowski
-> Samsung R&D Institute Poland
->
+complementary definition to atomic_inc_not_zero() featured in
+lib/fault-inject.c. This small patchset moves it to
+include/linux/atomic.h using it instead of
+atomic_add_unless(value, -1, 0)
 
-I think I am missing something... but it looks it does not work. I
-applied it on top of my for-next tree and:
-cat /sys/kernel/debug/pm_genpd/pm_genpd_summary 
-domain                          status          slaves
-    /device                                             runtime status
-    ----------------------------------------------------------------------
-    isp-power-domain@10023CA0       off-0           
-    gps-alive-power-domain@10023D00  off-0           
-    gps-power-domain@10023CE0       off-0           
-    cam-power-domain@10023C00       off-0           
+s390 patches were not compile-tested.
 
-Also, with enabled debug on pm-domains and unbinding a device:
-[  180.016800] s5p-mfc 13400000.codec: genpd_runtime_resume()
-[  180.017289] s5p-mfc 13400000.codec: genpd_runtime_suspend()
-[  180.017519] s5p-mfc 13400000.codec: Removing 13400000.codec
-[  180.024283] s5p-mfc 13400000.codec: removing from PM domain mfc-power-domain@10023C40
-[  180.024323] s5p-mfc 13400000.codec: genpd_remove_device()
+Fabian Frederick (14):
+  locking/atomic: import atomic_dec_not_zero()
+  drm/exynos: use atomic_dec_not_zero()
+  drm/omap: use atomic_dec_not_zero()
+  m5mols: use atomic_dec_not_zero()
+  omap3isp: use atomic_dec_not_zero()
+  s390/qeth: use atomic_dec_not_zero()
+  PM / RUNTIME: use atomic_dec_not_zero()
+  ipmi: use atomic_dec_not_zero()
+  kdb: use atomic_dec_not_zero()
+  PM / Hibernate: use atomic_dec_not_zero()
+  PM: use atomic_dec_not_zero()
+  s390/topology: use atomic_dec_not_zero()
+  ext4: use atomic_dec_not_zero()
+  xfs: use atomic_dec_not_zero()
 
-I think in both cases the genpd->name is used... which should be the new
-name (label).
+ arch/s390/kernel/topology.c               | 2 +-
+ drivers/base/power/runtime.c              | 4 ++--
+ drivers/char/ipmi/ipmi_msghandler.c       | 2 +-
+ drivers/gpu/drm/exynos/exynos_drm_fimd.c  | 2 +-
+ drivers/gpu/drm/omapdrm/omap_dmm_tiler.c  | 2 +-
+ drivers/media/i2c/m5mols/m5mols_core.c    | 2 +-
+ drivers/media/platform/omap3isp/ispstat.c | 2 +-
+ drivers/s390/net/qeth_core_main.c         | 2 +-
+ fs/ext4/ext4.h                            | 2 +-
+ fs/xfs/xfs_buf.c                          | 2 +-
+ include/linux/atomic.h                    | 2 ++
+ kernel/debug/kdb/kdb_main.c               | 2 +-
+ kernel/power/hibernate.c                  | 4 ++--
+ kernel/power/user.c                       | 2 +-
+ lib/fault-inject.c                        | 2 --
+ 15 files changed, 17 insertions(+), 17 deletions(-)
 
-What is wrong?
+-- 
+2.9.3
 
-Best regards,
-Krzysztof
+
+------------------------------------------------------------------------------
+Check out the vibrant tech community on one of the world's most
+engaging tech sites, SlashDot.org! http://sdm.link/slashdot
