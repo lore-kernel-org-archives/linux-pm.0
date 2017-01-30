@@ -1,53 +1,53 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v6 3/5] cpuidle:powernv: Add helper function to populate powernv idle states.
-Date: Mon, 30 Jan 2017 14:47:31 +1100
-Message-ID: <871svlxl7w.fsf@concordia.ellerman.id.au>
-References: <1485333389-5752-1-git-send-email-ego@linux.vnet.ibm.com> <1485333389-5752-4-git-send-email-ego@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1485333389-5752-4-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Michael Neuling <mikey@neuling.org>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "Shreyas B. Prabhu" <shreyasbp@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Stewart Smith <stewart@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>, Oliver O'Halloran <oohall@gmail.com>, Rob Herring <robh+dt@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, mark.rutland@arm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 1/2] ACPI: processor_perflib: Simplify code and stop using CPUFREQ_START
+Date: Mon, 30 Jan 2017 09:59:57 +0530
+Message-ID: <e608c76ea40e4f0d50bfe821174dfebef924e35b.1485750547.git.viresh.kumar@linaro.org>
+References: <1547465.PvRbYVlVrB@aspire.rjw.lan>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1547465.PvRbYVlVrB@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-"Gautham R. Shenoy" <ego@linux.vnet.ibm.com> writes:
+acpi_processor_ppc_notifier() can live without using CPUFREQ_START
+(which is gonna be removed soon), as it is only used while setting
+ignore_ppc to 0. This can be done with the help of "ignore_ppc < 0"
+check alone. The notifier function anyway ignores all events except
+CPUFREQ_ADJUST and dropping CPUFREQ_START wouldn't harm at all.
 
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> In the current code for powernv_add_idle_states, there is a lot of code
-> duplication while initializing an idle state in powernv_states table.
->
-> Add an inline helper function to populate the powernv_states[] table
-> for a given idle state. Invoke this for populating the "Nap",
-> "Fastsleep" and the stop states in powernv_add_idle_states.
->
-> Acked-by: Balbir Singh <bsingharora@gmail.com>
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 89 +++++++++++++++++++++++----------------
->  include/linux/cpuidle.h           |  1 +
+Once CPUFREQ_START event is removed from the cpufreq core,
+acpi_processor_ppc_notifier() will get called only for CPUFREQ_NOTIFY or
+CPUFREQ_ADJUST event. Drop the return statement from the first if block
+to make sure we don't ignore any such events.
 
-I was going to merge this, but I see you've touched cpuidle.h, so I feel
-like I should get an ACK from the cpuidle folks.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-It's a fairly uncontroversial change, but it's their API.
+---
+V1->V2:
+- Improved changelog
+- Don't move the first if block to a later point, as it becomes useless
+  then.
+---
+ drivers/acpi/processor_perflib.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-cheers
+diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+index f0b4a981b8d3..18b72eec3507 100644
+--- a/drivers/acpi/processor_perflib.c
++++ b/drivers/acpi/processor_perflib.c
+@@ -75,10 +75,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+ 	struct acpi_processor *pr;
+ 	unsigned int ppc = 0;
+ 
+-	if (event == CPUFREQ_START && ignore_ppc <= 0) {
++	if (ignore_ppc < 0)
+ 		ignore_ppc = 0;
+-		return 0;
+-	}
+ 
+ 	if (ignore_ppc)
+ 		return 0;
+-- 
+2.7.1.410.g6faf27b
 
-
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index da346f2..fc1e5d7 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -62,6 +62,7 @@ struct cpuidle_state {
->  };
->  
->  /* Idle State Flags */
-> +#define CPUIDLE_FLAG_NONE       (0x00)
->  #define CPUIDLE_FLAG_COUPLED	(0x02) /* state applies to multiple cpus */
->  #define CPUIDLE_FLAG_TIMER_STOP (0x04)  /* timer is stopped on this state */
->  
-> -- 
-> 1.9.4
