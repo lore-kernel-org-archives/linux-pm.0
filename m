@@ -1,47 +1,61 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v6 3/5] cpuidle:powernv: Add helper function to populate
- powernv idle states.
-Date: Mon, 30 Jan 2017 08:12:09 +0100
-Message-ID: <CAJZ5v0j_vzsaNeYNBmKs3oMnXyVHF_3chRjeTEwQA_k0TDc3Nw@mail.gmail.com>
-References: <1485333389-5752-1-git-send-email-ego@linux.vnet.ibm.com>
- <1485333389-5752-4-git-send-email-ego@linux.vnet.ibm.com> <871svlxl7w.fsf@concordia.ellerman.id.au>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V2 1/2] ACPI: processor_perflib: Simplify code and stop
+ using CPUFREQ_START
+Date: Mon, 30 Jan 2017 08:07:01 +0100
+Message-ID: <CAJZ5v0i2SW9+T-RbegaoFu0xuN473BZ25iQdwU=gPrOvRW60EQ@mail.gmail.com>
+References: <1547465.PvRbYVlVrB@aspire.rjw.lan> <e608c76ea40e4f0d50bfe821174dfebef924e35b.1485750547.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <871svlxl7w.fsf-W0DJWXSxmBNbyGPkN3NxC2scP1bn1w/D@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org>
-Cc: "Gautham R. Shenoy" <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Michael Neuling <mikey-/owAOxkjmzZAfugRpC6u6w@public.gmane.org>, Vaidyanathan Srinivasan <svaidy-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Shreyas B. Prabhu" <shreyasbp-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Shilpasri G Bhat <shilpa.bhat-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Stewart Smith <stewart-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Balbir Singh <bsingharora-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Oliver O'Halloran <oohall-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linuxppc-dev <linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Mar
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <e608c76ea40e4f0d50bfe821174dfebef924e35b.1485750547.git.viresh.kumar@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jan 30, 2017 at 4:47 AM, Michael Ellerman <mpe-Gsx/Oe8HsFggBc27wqDAHg@public.gmane.org> wrote:
-> "Gautham R. Shenoy" <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org> writes:
+On Mon, Jan 30, 2017 at 5:29 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> acpi_processor_ppc_notifier() can live without using CPUFREQ_START
+> (which is gonna be removed soon), as it is only used while setting
+> ignore_ppc to 0. This can be done with the help of "ignore_ppc < 0"
+> check alone. The notifier function anyway ignores all events except
+> CPUFREQ_ADJUST and dropping CPUFREQ_START wouldn't harm at all.
 >
->> From: "Gautham R. Shenoy" <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
->>
->> In the current code for powernv_add_idle_states, there is a lot of code
->> duplication while initializing an idle state in powernv_states table.
->>
->> Add an inline helper function to populate the powernv_states[] table
->> for a given idle state. Invoke this for populating the "Nap",
->> "Fastsleep" and the stop states in powernv_add_idle_states.
->>
->> Acked-by: Balbir Singh <bsingharora-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
->> Signed-off-by: Gautham R. Shenoy <ego-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>
->> ---
->>  drivers/cpuidle/cpuidle-powernv.c | 89 +++++++++++++++++++++++----------------
->>  include/linux/cpuidle.h           |  1 +
+> Once CPUFREQ_START event is removed from the cpufreq core,
+> acpi_processor_ppc_notifier() will get called only for CPUFREQ_NOTIFY or
+> CPUFREQ_ADJUST event. Drop the return statement from the first if block
+> to make sure we don't ignore any such events.
 >
-> I was going to merge this, but I see you've touched cpuidle.h, so I feel
-> like I should get an ACK from the cpuidle folks.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 >
-> It's a fairly uncontroversial change, but it's their API.
+> ---
+> V1->V2:
+> - Improved changelog
+> - Don't move the first if block to a later point, as it becomes useless
+>   then.
+> ---
+>  drivers/acpi/processor_perflib.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>
+> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> index f0b4a981b8d3..18b72eec3507 100644
+> --- a/drivers/acpi/processor_perflib.c
+> +++ b/drivers/acpi/processor_perflib.c
+> @@ -75,10 +75,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
+>         struct acpi_processor *pr;
+>         unsigned int ppc = 0;
+>
+> -       if (event == CPUFREQ_START && ignore_ppc <= 0) {
+> +       if (ignore_ppc < 0)
+>                 ignore_ppc = 0;
+> -               return 0;
+> -       }
 
-OK, please add an ACK from me to it then.
+Don't we want to return from here if ignore_ppc is 0?
+
+>
+>         if (ignore_ppc)
+>                 return 0;
+> --
 
 Thanks,
 Rafael
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
