@@ -1,50 +1,65 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Subject: [PATCH 3/3] dt-bindings: power: reset: qnap-poweroff: Drop reference to pm_power_off
-Date: Mon, 30 Jan 2017 11:51:22 +0100
-Message-ID: <20170130105122.6475-3-thierry.reding@gmail.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH 2/3] dt-bindings: power: reset: gpio-poweroff: Drop reference to pm_power_off
+Date: Mon, 30 Jan 2017 11:51:21 +0100
+Message-ID: <20170130105122.6475-2-thierry.reding@gmail.com>
 References: <20170130105122.6475-1-thierry.reding@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wj0-f195.google.com ([209.85.210.195]:33318 "EHLO
-        mail-wj0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752504AbdA3Kvf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 05:51:35 -0500
-In-Reply-To: <20170130105122.6475-1-thierry.reding@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170130105122.6475-1-thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>
 
-From: Guenter Roeck <linux@roeck-us.net>
+From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
 
-Replace reference to pm_power_off (which is an implementation detail)
-and replace it with a more generic description of the driver's
-functionality.
+pm_power_off is an implementation detail. Replace it with a more generic
+description of the driver's functionality.
 
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Acked-by: Mark Rutland <mark.rutland@arm.com>
-Acked-by: Andrew Lunn <andrew@lunn.ch>
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Thierry Reding <treding@nvidia.com>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Acked-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Acked-by: Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>
+Signed-off-by: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Signed-off-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ .../devicetree/bindings/power/reset/gpio-poweroff.txt          | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt b/Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt
-index af25e77c0e0c..c363d7173129 100644
---- a/Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt
-+++ b/Documentation/devicetree/bindings/power/reset/qnap-poweroff.txt
-@@ -3,8 +3,7 @@
- QNAP NAS devices have a microcontroller controlling the main power
- supply. This microcontroller is connected to UART1 of the Kirkwood and
- Orion5x SoCs. Sending the character 'A', at 19200 baud, tells the
--microcontroller to turn the power off. This driver adds a handler to
--pm_power_off which is called to turn the power off.
-+microcontroller to turn the power off.
+diff --git a/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt b/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt
+index d4eab9227ea4..e62d53d844cc 100644
+--- a/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt
++++ b/Documentation/devicetree/bindings/power/reset/gpio-poweroff.txt
+@@ -2,12 +2,12 @@ Driver a GPIO line that can be used to turn the power off.
  
- Synology NAS devices use a similar scheme, but a different baud rate,
- 9600, and a different character, '1'.
+ The driver supports both level triggered and edge triggered power off.
+ At driver load time, the driver will request the given gpio line and
+-install a pm_power_off handler. If the optional properties 'input' is
+-not found, the GPIO line will be driven in the inactive
++install a handler to power off the system. If the optional properties
++'input' is not found, the GPIO line will be driven in the inactive
+ state. Otherwise its configured as an input.
+ 
+-When the pm_power_off is called, the gpio is configured as an output,
+-and drive active, so triggering a level triggered power off
++When the power-off handler is called, the gpio is configured as an
++output, and drive active, so triggering a level triggered power off
+ condition. This will also cause an inactive->active edge condition, so
+ triggering positive edge triggered power off. After a delay of 100ms,
+ the GPIO is set to inactive, thus causing an active->inactive edge,
+@@ -24,7 +24,7 @@ Required properties:
+ 
+ Optional properties:
+ - input : Initially configure the GPIO line as an input. Only reconfigure
+-  it to an output when the pm_power_off function is called. If this optional
++  it to an output when the power-off handler is called. If this optional
+   property is not specified, the GPIO is initialized as an output in its
+   inactive state.
+ 
 -- 
 2.11.0
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
