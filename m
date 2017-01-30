@@ -1,63 +1,99 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH V2 1/2] ACPI: processor_perflib: Simplify code and stop
- using CPUFREQ_START
-Date: Mon, 30 Jan 2017 08:49:06 +0100
-Message-ID: <CAJZ5v0iqWsbHCF1a=O9TKOLf95BQtnuX042LfYhZuUOa8vuPMg@mail.gmail.com>
-References: <1547465.PvRbYVlVrB@aspire.rjw.lan> <e608c76ea40e4f0d50bfe821174dfebef924e35b.1485750547.git.viresh.kumar@linaro.org>
- <CAJZ5v0i2SW9+T-RbegaoFu0xuN473BZ25iQdwU=gPrOvRW60EQ@mail.gmail.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v2 4/4] soc: samsung: pm_domains: Provide real name for all
+ supported domains
+Date: Mon, 30 Jan 2017 11:41:04 +0100
+Message-ID: <f4bf7cdd-870f-e95b-0069-5f4e9ad3fd73@samsung.com>
+References: <1485514072-29502-5-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170127144908eucas1p14c50396f670a01c31a69ec95b636a0e1@eucas1p1.samsung.com>
+ <1485528538-30256-1-git-send-email-m.szyprowski@samsung.com>
+ <20170128151622.scfqft3hxfdjh7ca@kozik-lap>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i2SW9+T-RbegaoFu0xuN473BZ25iQdwU=gPrOvRW60EQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:16878 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751133AbdA3Kmp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 05:42:45 -0500
+In-reply-to: <20170128151622.scfqft3hxfdjh7ca@kozik-lap>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
 
-On Mon, Jan 30, 2017 at 8:07 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Mon, Jan 30, 2017 at 5:29 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> acpi_processor_ppc_notifier() can live without using CPUFREQ_START
->> (which is gonna be removed soon), as it is only used while setting
->> ignore_ppc to 0. This can be done with the help of "ignore_ppc < 0"
->> check alone. The notifier function anyway ignores all events except
->> CPUFREQ_ADJUST and dropping CPUFREQ_START wouldn't harm at all.
+Hi Krzysztof,
+
+On 2017-01-28 16:16, Krzysztof Kozlowski wrote:
+> On Fri, Jan 27, 2017 at 03:48:58PM +0100, Marek Szyprowski wrote:
+>> Device tree nodes for each power domain should use generic "power-domain"
+>> name, so using it as a domain name doesn't give much benefits. This patch
+>> adds human readable names for all supported domains, what makes debugging
+>> much easier.
 >>
->> Once CPUFREQ_START event is removed from the cpufreq core,
->> acpi_processor_ppc_notifier() will get called only for CPUFREQ_NOTIFY or
->> CPUFREQ_ADJUST event. Drop the return statement from the first if block
->> to make sure we don't ignore any such events.
->>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
+>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 >> ---
->> V1->V2:
->> - Improved changelog
->> - Don't move the first if block to a later point, as it becomes useless
->>   then.
+>> Changelog:
+>> v2:
+>> - sorted all domains data by domain base address in the arrays
 >> ---
->>  drivers/acpi/processor_perflib.c | 4 +---
->>  1 file changed, 1 insertion(+), 3 deletions(-)
+>>   drivers/soc/samsung/pm_domains.c | 125 ++++++++++++++++++++++++++++++++++++++-
+>>   1 file changed, 123 insertions(+), 2 deletions(-)
 >>
->> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
->> index f0b4a981b8d3..18b72eec3507 100644
->> --- a/drivers/acpi/processor_perflib.c
->> +++ b/drivers/acpi/processor_perflib.c
->> @@ -75,10 +75,8 @@ static int acpi_processor_ppc_notifier(struct notifier_block *nb,
->>         struct acpi_processor *pr;
->>         unsigned int ppc = 0;
->>
->> -       if (event == CPUFREQ_START && ignore_ppc <= 0) {
->> +       if (ignore_ppc < 0)
->>                 ignore_ppc = 0;
->> -               return 0;
->> -       }
+>> diff --git a/drivers/soc/samsung/pm_domains.c b/drivers/soc/samsung/pm_domains.c
+>> index 5a0a46bcbe18..43003318b948 100644
+>> --- a/drivers/soc/samsung/pm_domains.c
+>> +++ b/drivers/soc/samsung/pm_domains.c
+>> @@ -30,6 +30,17 @@ struct exynos_pm_domain_config {
+>>   	u32 local_pwr_cfg;
+>>   };
+>>   
+>> +struct exynos_pm_domain_data {
+>> +	const char *name;
+>> +	u32 base;
+>> +};
+>> +
+>> +struct exynos_pm_domain_soc_data {
+>> +	const char *compatible;
+>> +	unsigned int nr_domains;
+>> +	const struct exynos_pm_domain_data *domains;
+>> +};
+>> +
+>>   /*
+>>    * Exynos specific wrapper around the generic power domain
+>>    */
+>> @@ -123,6 +134,91 @@ static int exynos_pd_power_off(struct generic_pm_domain *domain)
+>>   	return exynos_pd_power(domain, false);
+>>   }
+>>   
+>> +static const struct exynos_pm_domain_data exynos4210_domains[] __initconst = {
+>> +	{ "LCD1",	0x10023CA0 },
+>> +};
+>> +
+>> +static const struct exynos_pm_domain_data exynos4412_domains[] __initconst = {
+>> +	{ "CAM",	0x10023C00 },
+>> +	{ "TV",		0x10023C20 },
+>> +	{ "MFC",	0x10023C40 },
+>> +	{ "G3D",	0x10023C60 },
+>> +	{ "LCD0",	0x10023C80 },
+>> +	{ "ISP",	0x10023CA0 },
+>> +	{ "GPS",	0x10023CE0 },
+>> +	{ "GPS alive",	0x10023D00 },
+> That is a kind of duplication of DT and also spreading the description
+> of hardware between DT and driver. I understand the purpose. Messages
+> like:
+> 	"power-domain has as child subdomain: power-domain."
+> are useless. However I do not like putting any of these in the driver.
 >
-> Don't we want to return from here if ignore_ppc is 0?
+> How about adding a property "label" and parse it? Some other
+> drivers/nodes are using labels already to have a meaningful name, either
+> for user-space or for just user.
+>
+> Patches 1-3 look fine.
 
-I actually wanted to say "was negative" here, not sure why I said the
-above in the end.
+Okay, I will prepare a new patchset, which rely on 'label' property.
 
-Anyway, the patch looks correct now.
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
-Thanks,
-Rafael
