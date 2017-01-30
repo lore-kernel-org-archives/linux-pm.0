@@ -1,32 +1,53 @@
-From: Fabian Frederick <fabf@skynet.be>
-Subject: [PATCH 11/14] PM: use atomic_dec_not_zero()
-Date: Mon, 30 Jan 2017 19:48:21 +0100
-Message-ID: <20170130184821.18943-1-fabf@skynet.be>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, Fabian Frederick <fabf@skynet.be>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH 1/4] power: reset: Add Gemini poweroff DT
+	bindings
+Date: Mon, 30 Jan 2017 20:36:32 +0100
+Message-ID: <20170130193635.18644-1-linus.walleij@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <openwrt-devel-bounces@lists.openwrt.org>
+List-Unsubscribe: <https://lists.openwrt.org/cgi-bin/mailman/options/openwrt-devel>,
+ <mailto:openwrt-devel-request@lists.openwrt.org?subject=unsubscribe>
+List-Archive: <http://lists.openwrt.org/pipermail/openwrt-devel/>
+List-Post: <mailto:openwrt-devel@lists.openwrt.org>
+List-Help: <mailto:openwrt-devel-request@lists.openwrt.org?subject=help>
+List-Subscribe: <https://lists.openwrt.org/cgi-bin/mailman/listinfo/openwrt-devel>,
+ <mailto:openwrt-devel-request@lists.openwrt.org?subject=subscribe>
+Errors-To: openwrt-devel-bounces@lists.openwrt.org
+Sender: "openwrt-devel" <openwrt-devel-bounces@lists.openwrt.org>
+To: Hans Ulli Kroll <ulli.kroll@googlemail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-arm-kernel@lists.infradead.org, Sebastian Reichel <sre@kernel.org>
+Cc: openwrt-devel@openwrt.org, devicetree@vger.kernel.org, Paulius Zaleckas <paulius.zaleckas@gmail.com>, linux-pm@vger.kernel.org, Janos Laube <janos.dev@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-instead of atomic_add_unless(value, -1, 0)
-
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
----
- kernel/power/user.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 22df9f7..c478572 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -54,7 +54,7 @@ static int snapshot_open(struct inode *inode, struct file *filp)
- 
- 	lock_system_sleep();
- 
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+	if (!atomic_dec_not_zero(&snapshot_device_available)) {
- 		error = -EBUSY;
- 		goto Unlock;
- 	}
--- 
-2.9.3
+VGhpcyBhZGRzIGRldmljZSB0cmVlIGJpbmRpbmdzIHRvIHRoZSBwb3dlciBtYW5hZ2VtZW50IGNv
+bnRyb2xsZXIKaW4gdGhlIEdlbWluaSBTb0MuCgpDYzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5v
+cmcKQ2M6IEphbm9zIExhdWJlIDxqYW5vcy5kZXZAZ21haWwuY29tPgpDYzogUGF1bGl1cyBaYWxl
+Y2thcyA8cGF1bGl1cy56YWxlY2thc0BnbWFpbC5jb20+CkNjOiBIYW5zIFVsbGkgS3JvbGwgPHVs
+bGkua3JvbGxAZ29vZ2xlbWFpbC5jb20+CkNjOiBGbG9yaWFuIEZhaW5lbGxpIDxmLmZhaW5lbGxp
+QGdtYWlsLmNvbT4KU2lnbmVkLW9mZi1ieTogTGludXMgV2FsbGVpaiA8bGludXMud2FsbGVpakBs
+aW5hcm8ub3JnPgotLS0KU2ViYXN0aWFuOiBwbGVhc2UganVzdCBtZXJnZSB0aGlzIHdoZW4geW91
+ciBhcmUgcGxlYXNlZAp3aXRoIGl0LiBJIHdpbGwgZnVubmVsIHRoZSBBUk0gcGFydHMgdGhyb3Vn
+aCB0aGUgQVJNIFNvQyB0cmVlLgotLS0KIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VyL3Jl
+c2V0L2dlbWluaS1wb3dlcm9mZi50eHQgfCAxNyArKysrKysrKysrKysrKysrKwogMSBmaWxlIGNo
+YW5nZWQsIDE3IGluc2VydGlvbnMoKykKIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvcmVzZXQvZ2VtaW5pLXBvd2Vyb2ZmLnR4dAoKZGlm
+ZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9yZXNldC9n
+ZW1pbmktcG93ZXJvZmYudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bv
+d2VyL3Jlc2V0L2dlbWluaS1wb3dlcm9mZi50eHQKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXgg
+MDAwMDAwMDAwMDAwLi43ZmVjM2UxMDAyMTQKLS0tIC9kZXYvbnVsbAorKysgYi9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvcmVzZXQvZ2VtaW5pLXBvd2Vyb2ZmLnR4dApA
+QCAtMCwwICsxLDE3IEBACisqIERldmljZS1UcmVlIGJpbmRpbmdzIGZvciBDb3J0aW5hIFN5c3Rl
+bXMgR2VtaW5pIFBvd2Vyb2ZmCisKK1RoaXMgaXMgYSBzcGVjaWFsIElQIGJsb2NrIGluIHRoZSBD
+b3J0aW5hIEdlbWluaSBTb0MgdGhhdCBvbmx5CitkZWFscyB3aXRoIGRpZmZlcmVudCB3YXlzIHRv
+IHBvd2VyIHRoZSBzeXN0ZW0gZG93bi4KKworUmVxdWlyZWQgcHJvcGVydGllczoKKy0gY29tcGF0
+aWJsZTogc2hvdWxkIGJlICJjb3J0aW5hLGdlbWluaS1wb3dlci1jb250cm9sbGVyIgorLSByZWc6
+IHNob3VsZCBjb250YWluIHRoZSBwaHlzaWNhbCBtZW1vcnkgYmFzZSBhbmQgc2l6ZQorLSBpbnRl
+cnJ1cHRzOiBzaG91bGQgY29udGFpbiB0aGUgcG93ZXIgbWFuYWdlbWVudCBpbnRlcnJ1cHQKKwor
+RXhhbXBsZToKKworcG93ZXItY29udHJvbGxlckA0YjAwMDAwMCB7CisJY29tcGF0aWJsZSA9ICJj
+b3J0aW5hLGdlbWluaS1wb3dlci1jb250cm9sbGVyIjsKKwlyZWcgPSA8MHg0YjAwMDAwMCAweDEw
+MD47CisJaW50ZXJydXB0cyA9IDwyNiBJUlFfVFlQRV9FREdFX0ZBTExJTkc+OworfTsKLS0gCjIu
+OS4zCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCm9wZW53
+cnQtZGV2ZWwgbWFpbGluZyBsaXN0Cm9wZW53cnQtZGV2ZWxAbGlzdHMub3BlbndydC5vcmcKaHR0
+cHM6Ly9saXN0cy5vcGVud3J0Lm9yZy9jZ2ktYmluL21haWxtYW4vbGlzdGluZm8vb3BlbndydC1k
+ZXZlbAo=
