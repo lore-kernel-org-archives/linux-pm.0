@@ -1,59 +1,107 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 07/12] PM / OPP: Update OPP users to put reference
-Date: Tue, 31 Jan 2017 14:17:24 +0530
-Message-ID: <20170131084724.GB7458@vireshk-i7>
-References: <cover.1485146406.git.viresh.kumar@linaro.org>
- <CGME20170123044228epcas3p35fdbe94a890062e9d66e33a3b5e4d571@epcas3p3.samsung.com>
- <20170131071721epcms1p6a4da8e0add4547573d40bbbb55d37b74@epcms1p6>
+From: Imre Deak <imre.deak@intel.com>
+Subject: Re: [Linux v4.10.0-rc1+] Still call-traces after
+ suspend-resume (pm? i915? cpu/hotplug?)
+Date: Tue, 31 Jan 2017 12:58:00 +0200
+Message-ID: <20170131105800.GA8598@ideak-desk.fi.intel.com>
+References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
+ <CAJZ5v0gp_BwxR+B3wtoLRh2B_ojY7cd9E5shJ8zsBeGL_LtnGg@mail.gmail.com>
+ <CA+icZUVwTRCAGiO-5Q2uo8SETjHwwSmJ2Pxh56niWsbEVZfV7w@mail.gmail.com>
+ <7e7ccb13-1db8-af76-9585-ca7bbdd04c55@intel.com>
+Reply-To: imre.deak@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
 Content-Disposition: inline
-In-Reply-To: <20170131071721epcms1p6a4da8e0add4547573d40bbbb55d37b74@epcms1p6>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edu>
+In-Reply-To: <7e7ccb13-1db8-af76-9585-ca7bbdd04c55@intel.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, sedat.dilek@gmail.com, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
 
-On 31-01-17, 07:17, MyungJoo Ham wrote:
-> > This patch updates dev_pm_opp_find_freq_*() routines to get a reference
-> > to the OPPs returned by them.
-> > 
-> > Also updates the users of dev_pm_opp_find_freq_*() routines to call
-> > dev_pm_opp_put() after they are done using the OPPs.
-> > 
-> > As it is guaranteed the that OPPs wouldn't get freed while being used,
-> > the RCU read side locking present with the users isn't required anymore.
-> > Drop it as well.
-> > 
-> > This patch also updates all users of devfreq_recommended_opp() which was
-> > returning an OPP received from the OPP core.
-> > 
-> > Note that some of the OPP core routines have gained
-> > rcu_read_{lock|unlock}() calls, as those still use RCU specific APIs
-> > within them.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com> [Devfreq]
-> 
-> This patch gets a lot of fails during application.
-> 
-> For devfreq-side, I've got:
-> error: drivers/devfreq/devfreq.c: patch does not apply
-> error: patch failed: drivers/devfreq/exynos-bus.c:103
-> error: drivers/devfreq/exynos-bus.c: patch does not apply
-> error: patch failed: drivers/devfreq/governor_passive.c:59
-> error: drivers/devfreq/governor_passive.c: patch does not apply
-> error: patch failed: drivers/devfreq/rk3399_dmc.c:91
-> error: drivers/devfreq/rk3399_dmc.c: patch does not apply
-> error: patch failed: drivers/devfreq/tegra-devfreq.c:487
-> error: drivers/devfreq/tegra-devfreq.c: patch does not apply
-> 
-> With the condition that you are going to properly rebase the patch,
-> you may add "Reviewed-by" from me.
-> (the code itself looks fine.)
-
-This is already applied by Rafael and was based over his tree only.
-
--- 
-viresh
+SGkgUmFmYWVsLAoKT24gTW9uLCBKYW4gMzAsIDIwMTcgYXQgMTE6NDQ6MzdQTSArMDEwMCwgUmFm
+YWVsIEouIFd5c29ja2kgd3JvdGU6Cj4gT24gMS8yNC8yMDE3IDI6MzMgQU0sIFNlZGF0IERpbGVr
+IHdyb3RlOgo+ID5PbiBGcmksIERlYyAzMCwgMjAxNiBhdCAzOjAyIFBNLCBSYWZhZWwgSi4gV3lz
+b2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+IHdyb3RlOgo+ID4+T24gRnJpLCBEZWMgMzAsIDIwMTYg
+YXQgMTI6NDAgUE0sIFNlZGF0IERpbGVrIDxzZWRhdC5kaWxla0BnbWFpbC5jb20+IHdyb3RlOgo+
+ID4+PkhpLAo+ID4+Pgo+ID4+PkkgaGF2ZSBhbHJlYWR5IHJlcG9ydGVkIHRoaXMgaXNzdWUgaW4g
+WzFdLgo+ID4+Pk9uZSBvZiB0aGUgaXNzdWUgd2FzIHNvbHZlZC4KPiA+Pj5VbmZvcnR1bmF0ZWx5
+LCBpdCBsb29rcyBsaWtlIHRoZXJlIGlzIHN0aWxsIGEgZGlmZmVyZW50IHByb2JsZW0gaGVyZQo+
+ID4+PihVYnVudHUvcHJlY2lzZSBBTUQ2NCkuCj4gPj4+Cj4gPj4+SSB0cmllZCB2NC4xMC1yYzEg
+YW5kIGxhdGVzdCBMaW51cyB0cmVlIHVwIHRvLi4uCj4gPj4+Cj4gPj4+Y29tbWl0IDk4NDczZjlm
+M2Y5YmQ0MDQ4NzNjZDExNzhjOGJlN2Q2ZDYxOWYwZDEKPiA+Pj4ibW0vZmlsZW1hcDogZml4IHBh
+cmFtZXRlcnMgdG8gdGVzdF9iaXQoKSIKPiA+Pj4KPiA+Pj5IZXJlIHdlIGdvLi4uCj4gPj4+Cj4g
+Pj4+WyAgIDI5LjYzNjA0N10gQlVHOiBzbGVlcGluZyBmdW5jdGlvbiBjYWxsZWQgZnJvbSBpbnZh
+bGlkIGNvbnRleHQgYXQKPiA+Pj5kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jOjEwMzIKPiA+
+Pj5bICAgMjkuNjM2MDU1XSBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNhYmxlZCgpOiAwLCBwaWQ6
+IDE1MDAsIG5hbWU6IFhvcmcKPiA+Pj5bICAgMjkuNjM2MDU4XSAxIGxvY2sgaGVsZCBieSBYb3Jn
+LzE1MDA6Cj4gPj4+WyAgIDI5LjYzNjA2MF0gICMwOiAgKCZkZXYtPnN0cnVjdF9tdXRleCl7Ky4r
+LisufSwgYXQ6Cj4gPj4+WzxmZmZmZmZmZmEwNjgwYzEzPl0gaTkxNV9tdXRleF9sb2NrX2ludGVy
+cnVwdGlibGUrMHg0My8weDE0MCBbaTkxNV0KPiA+Pj5bICAgMjkuNjM2MTA3XSBDUFU6IDAgUElE
+OiAxNTAwIENvbW06IFhvcmcgTm90IHRhaW50ZWQKPiA+Pj40LjEwLjAtcmMxLTYtaW5pemEtYW1k
+NjQgIzEKPiA+Pj5bICAgMjkuNjM2MTA5XSBIYXJkd2FyZSBuYW1lOiBTQU1TVU5HIEVMRUNUUk9O
+SUNTIENPLiwgTFRELgo+ID4+PjUzMFUzQkkvNTMwVTRCSS81MzBVNEJILzUzMFUzQkkvNTMwVTRC
+SS81MzBVNEJILCBCSU9TIDEzWEsgMDMvMjgvMjAxMwo+ID4+PlsgICAyOS42MzYxMTFdIENhbGwg
+VHJhY2U6Cj4gPj4+WyAgIDI5LjYzNjEyMF0gIGR1bXBfc3RhY2srMHg4NS8weGMyCj4gPj4+WyAg
+IDI5LjYzNjEyNF0gIF9fX21pZ2h0X3NsZWVwKzB4MTk2LzB4MjYwCj4gPj4+WyAgIDI5LjYzNjEy
+N10gIF9fbWlnaHRfc2xlZXArMHg1My8weGIwCj4gPj4+WyAgIDI5LjYzNjEzMV0gIF9fcG1fcnVu
+dGltZV9yZXN1bWUrMHg3YS8weDkwCj4gPj4+WyAgIDI5LjYzNjE1OV0gIGludGVsX3J1bnRpbWVf
+cG1fZ2V0KzB4MjUvMHg5MCBbaTkxNV0KPiA+Pj5bICAgMjkuNjM2MTg5XSAgYWxpYXNpbmdfZ3R0
+X2JpbmRfdm1hKzB4YWEvMHhmMCBbaTkxNV0KPiA+Pj5bICAgMjkuNjM2MjIwXSAgaTkxNV92bWFf
+YmluZCsweGFmLzB4MWUwIFtpOTE1XQo+ID4+PlsgICAyOS42MzYyNDhdICBpOTE1X2dlbV9leGVj
+YnVmZmVyX3JlbG9jYXRlX2VudHJ5KzB4NTEzLzB4NmYwIFtpOTE1XQo+ID4+PlsgICAyOS42MzYy
+NzJdICBpOTE1X2dlbV9leGVjYnVmZmVyX3JlbG9jYXRlX3ZtYS5pc3JhLjM0KzB4MTg4LzB4MjUw
+IFtpOTE1XQo+ID4+PlsgICAyOS42MzYyNzVdICA/IHRyYWNlX2hhcmRpcnFzX29uKzB4ZC8weDEw
+Cj4gPj4+WyAgIDI5LjYzNjI5NF0gID8gaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZXNlcnZlX3ZtYS5p
+c3JhLjMxKzB4MTUyLzB4MWYwIFtpOTE1XQo+ID4+PlsgICAyOS42MzYzMTZdICA/IGk5MTVfZ2Vt
+X2V4ZWNidWZmZXJfcmVzZXJ2ZS5pc3JhLjMyKzB4MzcyLzB4M2EwIFtpOTE1XQo+ID4+PlsgICAy
+OS42MzYzNDJdICBpOTE1X2dlbV9kb19leGVjYnVmZmVyLmlzcmEuMzgrMHhhNzAvMHgxYTQwIFtp
+OTE1XQo+ID4+PlsgICAyOS42MzYzNDddICA/IF9fbWlnaHRfZmF1bHQrMHg0ZS8weGIwCj4gPj4+
+WyAgIDI5LjYzNjM3M10gIGk5MTVfZ2VtX2V4ZWNidWZmZXIyKzB4YzUvMHgyNjAgW2k5MTVdCj4g
+Pj4+WyAgIDI5LjYzNjM3Nl0gID8gX19taWdodF9mYXVsdCsweDRlLzB4YjAKPiA+Pj5bICAgMjku
+NjM2Mzk1XSAgZHJtX2lvY3RsKzB4MjA2LzB4NDUwIFtkcm1dCj4gPj4+WyAgIDI5LjYzNjQyMF0g
+ID8gaTkxNV9nZW1fZXhlY2J1ZmZlcisweDM0MC8weDM0MCBbaTkxNV0KPiA+Pj5bICAgMjkuNjM2
+NDI1XSAgPyBfX2ZnZXQrMHg1LzB4MjAwCj4gPj4+WyAgIDI5LjYzNjQyOV0gIGRvX3Zmc19pb2N0
+bCsweDkxLzB4NmYwCj4gPj4+WyAgIDI5LjYzNjQzMV0gID8gX19mZ2V0KzB4MTExLzB4MjAwCj4g
+Pj4+WyAgIDI5LjYzNjQzM10gID8gX19mZ2V0KzB4NS8weDIwMAo+ID4+PlsgICAyOS42MzY0MzZd
+ICBTeVNfaW9jdGwrMHg3OS8weDkwCj4gPj4+WyAgIDI5LjYzNjQ0MV0gIGVudHJ5X1NZU0NBTExf
+NjRfZmFzdHBhdGgrMHgyMy8weGM2Cj4gPj4+Cj4gPj4+T24gc3VzcGVuZC9yZXN1bWUgSSBzZWUg
+dGhlIHNhbWUgY2FsbCB0cmFjZS4KPiA+Pj5bMl0gcG9pbnRzIHRvIHRoZSAiQlVHIiBsaW5lLgo+
+ID4+V2VsbCwgdGhpcyBhcHBlYXJzIHRvIGJlIGFuIGk5MTUgaXNzdWUsIGJ1dCBub3QgYSBzZXJp
+b3VzIG9uZS4KPiA+Pgo+ID4+Q2xlYXJseSwgYSBmdW5jdGlvbiB0aGF0IG1heSBzbGVlcCAocG1f
+cnVudGltZV9nZXRfc3luYygpIGluCj4gPj5pbnRlbF9ydW50aW1lX3BtX2dldCgpKSBpcyBjYWxs
+ZWQgd2l0aCBkaXNhYmxlZCBpbnRlcnJ1cHRzLiAgSWYgSQo+ID4+dW5kZXJzdGFuZCB0aGUgY29k
+ZSBjb3JyZWN0bHksIHRob3VnaCwgaXQgYWN0dWFsbHkgaXMgbm90IGdvaW5nIHRvCj4gPj5zbGVl
+cCBpbiB0aGlzIHBhcnRpY3VsYXIgY2FzZSwgYmVjYXVzZSBwbV9ydW50aW1lX2dldF9zeW5jKCkg
+aGFzCj4gPj5hbHJlYWR5IGJlZW4gY2FsbGVkIG9uY2UgZm9yIHRoaXMgZGV2aWNlIGluIHRoZSBz
+YW1lIGNvZGUgcGF0aCB3aGljaAo+ID4+bWVhbnMgdGhhdCB0aGlzIHBhcnRpY3VsYXIgaW5zdGFu
+Y2Ugd2lsbCByZXR1cm4gaW1tZWRpYXRlbHksIHNvIHRoaXMKPiA+PmlzIGEgZmFsc2UtcG9zaXRp
+dmUgKG1vc3QgbGlrZWx5KS4KCk5vdCBzdXJlIHdoYXQncyB0aGUgcm9vdCBjYXVzZSwgYnV0IHRo
+b3VnaHQgdG8gY2xhcmlmeSB0aGUgYWJvdmU6CgpZZXMsIGk5MTVfZ2VtX2RvX2V4ZWNidWZmZXIo
+KSBkb2VzIHRha2UgYW4gUlBNIHJlZmVyZW5jZSB0byBvcHRpbWl6ZQp0aGluZ3MsIHNvIHRoZSBS
+UE0gZ2V0IGluIGFsaWFzaW5nX2d0dF9iaW5kX3ZtYSgpIHdvbid0IG5lZWQgdG8gcmVzdW1lCnRo
+ZSBkZXZpY2Ugb24gdGhpcyBwYXRoLiBUaGlzIGlzbid0IGEgZ3VhcmFudGVlIHRob3VnaCwKYWxp
+YXNpbmdfZ3R0X2JpbmRfdm1hKCkgY291bGQgYmUgY2FsbGVkIGZyb20gb3RoZXIgcGxhY2VzIHdp
+dGhvdXQgYW4gUlBNCnJlZmVyZW5jZS4gU28gcHJlZW1wdGlvbiBiZWluZyBkaXNhYmxlZCBhdCB0
+aGF0IHBvaW50IGlzIG5vdAppbnRlbnRpb25hbC4gSSBhbHNvIGNhbid0IHNlZSB3aGVyZSBvbiB0
+aGUgYWJvdmUgcGF0aCBpdCB3b3VsZCBnZXQKZGlzYWJsZWQgZHVlIHRvIGEgYnVnIG9yIG90aGVy
+d2lzZS4KCi0tSW1yZQoKPiA+Pgo+ID4+TGV0IG1lIHNlZSBpZiBJIHRoZSBtaWdodF9zbGVlcF9p
+ZigpIGFzc2VydGlvbiBpbgo+ID4+X19wbV9ydW50aW1lX3Jlc3VtZSgoKSBjYW4gYmUgbW92ZWQg
+dG8gYSBiZXR0ZXIgcGxhY2UuCj4gPj4KPiA+SGkgUmFmYWVsLAo+ID4KPiA+ZGlkIHlvdSBoYWQg
+YSBjaGFuY2UgdG8gbG9vayBhdCB0aGlzPwo+ID5UaGUgcHJvYmxlbSBzdGlsbCByZW1haW5zIGlu
+IExpbnV4IHY0LjEwLXJjNS4KPiAKPiBObywgSSBkaWRuJ3QuCgo+IAo+IEFzIEkgc2FpZCwgdGhp
+cyBpcyBub3QgYSBzZXJpb3VzIGlzc3VlLgo+IAo+IFRoYW5rcywKPiBSYWZhZWwKPiAKPiBfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwo+IEludGVsLWdmeCBt
+YWlsaW5nIGxpc3QKPiBJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCj4gaHR0cHM6Ly9s
+aXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9pbnRlbC1nZngKX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KSW50ZWwtZ2Z4IG1haWxpbmcg
+bGlzdApJbnRlbC1nZnhAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRl
+c2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vaW50ZWwtZ2Z4Cg==
