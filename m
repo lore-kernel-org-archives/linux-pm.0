@@ -1,42 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / Domains: Correct comment in irq_safe_dev_in_no_sleep_domain()
-Date: Tue, 31 Jan 2017 17:01:03 +0100
-Message-ID: <1485878463-1672-1-git-send-email-ulf.hansson@linaro.org>
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: [PATCH v2 1/3] thermal: devfreq_cooling: refactor code and add get_voltage function
+Date: Tue, 31 Jan 2017 16:11:45 +0000
+Message-ID: <20170131161147.17002-2-lukasz.luba@arm.com>
+References: <20170131161147.17002-1-lukasz.luba@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f47.google.com ([209.85.215.47]:34844 "EHLO
-        mail-lf0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751126AbdAaQHn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 11:07:43 -0500
-Received: by mail-lf0-f47.google.com with SMTP id n124so213428837lfd.2
-        for <linux-pm@vger.kernel.org>; Tue, 31 Jan 2017 08:07:42 -0800 (PST)
+Received: from foss.arm.com ([217.140.101.70]:41652 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751057AbdAaQNT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 31 Jan 2017 11:13:19 -0500
+In-Reply-To: <20170131161147.17002-1-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: edubezval@gmail.com, rui.zhang@intel.com, orjan.eide@arm.com, lukasz.luba@arm.com, chris.diamand@arm.com, javi.merino@kernel.org
 
-The earlier comment stated that the dev_warn_once() was going to be printed
-once per device. Let's fix that, as dev_warn_once() is printed only once,
-no matter of the device.
+Move the code which gets the voltage for a given frequency.
+This code will be resused in another place.
 
-Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/base/power/domain.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/devfreq_cooling.c | 43 ++++++++++++++++++++++++---------------
+ 1 file changed, 27 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 6b23d82..271e208 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -130,7 +130,7 @@ static inline bool irq_safe_dev_in_no_sleep_domain(struct device *dev,
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index 5a737fd..7d55652 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -200,6 +200,31 @@ freq_get_state(struct devfreq_cooling_device *dfc, unsigned long freq)
+ 	return THERMAL_CSTATE_INVALID;
+ }
  
- 	ret = pm_runtime_is_irq_safe(dev) && !genpd_is_irq_safe(genpd);
++static unsigned long get_voltage(struct devfreq *df, unsigned long freq)
++{
++	struct device *dev = df->dev.parent;
++	unsigned long voltage;
++	struct dev_pm_opp *opp;
++
++	rcu_read_lock();
++
++	opp = dev_pm_opp_find_freq_exact(dev, freq, true);
++	if (IS_ERR(opp) && (PTR_ERR(opp) == -ERANGE))
++		opp = dev_pm_opp_find_freq_exact(dev, freq, false);
++
++	voltage = dev_pm_opp_get_voltage(opp) / 1000; /* mV */
++
++	rcu_read_unlock();
++
++	if (voltage == 0) {
++		dev_warn_ratelimited(dev,
++				     "Failed to get voltage for frequency %lu: %ld\n",
++				     freq, IS_ERR(opp) ? PTR_ERR(opp) : 0);
++	}
++
++	return voltage;
++}
++
+ /**
+  * get_static_power() - calculate the static power
+  * @dfc:	Pointer to devfreq cooling device
+@@ -214,29 +239,15 @@ static unsigned long
+ get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
+ {
+ 	struct devfreq *df = dfc->devfreq;
+-	struct device *dev = df->dev.parent;
+ 	unsigned long voltage;
+-	struct dev_pm_opp *opp;
  
--	/* Warn once for each IRQ safe dev in no sleep domain */
-+	/* Warn once if IRQ safe dev in no sleep domain */
- 	if (ret)
- 		dev_warn_once(dev, "PM domain %s will not be powered off\n",
- 				genpd->name);
+ 	if (!dfc->power_ops->get_static_power)
+ 		return 0;
+ 
+-	rcu_read_lock();
+-
+-	opp = dev_pm_opp_find_freq_exact(dev, freq, true);
+-	if (IS_ERR(opp) && (PTR_ERR(opp) == -ERANGE))
+-		opp = dev_pm_opp_find_freq_exact(dev, freq, false);
++	voltage = get_voltage(df, freq);
+ 
+-	voltage = dev_pm_opp_get_voltage(opp) / 1000; /* mV */
+-
+-	rcu_read_unlock();
+-
+-	if (voltage == 0) {
+-		dev_warn_ratelimited(dev,
+-				     "Failed to get voltage for frequency %lu: %ld\n",
+-				     freq, IS_ERR(opp) ? PTR_ERR(opp) : 0);
++	if (voltage == 0)
+ 		return 0;
+-	}
+ 
+ 	return dfc->power_ops->get_static_power(df, voltage);
+ }
 -- 
-1.9.1
+2.9.2
 
