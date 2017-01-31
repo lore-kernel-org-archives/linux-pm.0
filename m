@@ -1,64 +1,35 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 2/2] PM / devfreq: Add suspend frequency support
-Date: Tue, 31 Jan 2017 09:33:39 +0900
-Message-ID: <588FDB63.2080105@samsung.com>
-References: <CGME20161228120710epcas5p25597b14fdf1dce59f2bc185d0f5f5401@epcas5p2.samsung.com>
- <1482926828-19746-1-git-send-email-cw00.choi@samsung.com>
- <1482926828-19746-3-git-send-email-cw00.choi@samsung.com>
- <CAOh2x=mwykUBLstKTmUooa4VSpXwaokHraDHHjqW_u9sDsDsnw@mail.gmail.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v2 06/25] ARM: dtsi: axp209: add AXP209 ADC subnode
+Date: Tue, 31 Jan 2017 12:08:48 +0800
+Message-ID: <CAGb2v66pKZQb1c84hu+2kxjPvAhmAK6z+TqPWT3ag=CyELQkiQ@mail.gmail.com>
+References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-7-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:45198 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753638AbdAaAq0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Jan 2017 19:46:26 -0500
-In-reply-to: <CAOh2x=mwykUBLstKTmUooa4VSpXwaokHraDHHjqW_u9sDsDsnw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170127085458.18270-7-quentin.schulz@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, hl@rock-chips.com, tjakobi@math.uni-bielefeld.de, chanwoo@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Viresh,
+On Fri, Jan 27, 2017 at 4:54 PM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> X-Powers AXP209 PMIC has multiple ADCs, each one exposing data from the
+> different power supplies connected to the PMIC.
+>
+> This adds the ADC subnode for AXP20X PMIC.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 
-On 2017년 01월 30일 13:50, Viresh Kumar wrote:
-> On Wed, Dec 28, 2016 at 5:37 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -620,6 +620,23 @@ struct devfreq *devfreq_add_device(struct device *dev,
->>                 goto err_init;
->>         }
->>
->> +       /*
->> +        * Get the suspend frequency from OPP table. But the devfreq device
->> +        * using passive governor don't need to get the suspend frequency
->> +        * because the passive devfreq device depend on the parent devfreq
->> +        * device.
->> +        */
->> +       devfreq->suspend_freq = 0L;
->> +       if (strncmp(devfreq->governor_name, "passive", 7)) {
->> +               struct dev_pm_opp *opp;
->> +
->> +               rcu_read_lock();
->> +               opp = dev_pm_opp_get_suspend_opp(dev);
->> +               if (opp)
->> +                       devfreq->suspend_freq = dev_pm_opp_get_freq(opp);
-> 
-> The interface has changed a bit recently. Can you please use below
-> function instead ?
-
-I knew. This patch posted before applying your patch.
-
-> 
-> dev_pm_opp_get_suspend_opp_freq()
-
-This patch has not yet reviewed by devfreq maintainer.
-So, I'm just waiting the review.
-
-But, this patch is wrong on latest opp patches.
-I'll fix it and resend it.
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Given the device node no longer exports anything, we might
+as well drop it from the device tree.
