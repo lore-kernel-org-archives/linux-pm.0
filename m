@@ -1,37 +1,54 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: RE: [PATCH v5 0/2] PM / devfreq: Change the device name on sysfs entry
-Date: Tue, 31 Jan 2017 07:57:19 +0000
-Message-ID: <20170131075719epcms1p4d92c50e71729ee634643d7ce3b6a6599@epcms1p4>
-References: <CGME20170131074759epcas1p3415cd6ed09ce4c7b60e1e4018b4ce720@epcas1p3.samsung.com>
-Reply-To: myungjoo.ham@samsung.com
-Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_873634_337919176.1485849439483"
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v5 2/2] PM / devfreq: Modify the device name as devfreq(X) for
+ sysfs
+Date: Tue, 31 Jan 2017 16:47:57 +0900
+Message-ID: <1485848877-19184-3-git-send-email-cw00.choi@samsung.com>
+References: <1485848877-19184-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20170131074759epcas1p33b9d7f798aad025c3a3958147f133722@epcas1p3.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:49014 "EHLO
+Received: from mailout1.samsung.com ([203.254.224.24]:55743 "EHLO
         mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751037AbdAaH5W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 02:57:22 -0500
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OKM00NHYWRKTN60@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 31 Jan 2017 16:57:20 +0900 (KST)
+        with ESMTP id S1750913AbdAaH6B (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 02:58:01 -0500
+In-reply-to: <1485848877-19184-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net
+Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-------=_Part_873634_337919176.1485849439483
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+This patch modifies the device name as devfreq(X) for sysfs by using the 'devfreq'
+prefix word instead of separate device name. On user-space aspect, user would
+find the some devfreq drvier with 'devfreq(X)' pattern. So, this patch modify the
+device name as following:
+- /sys/class/devfreq/[non-standard device name] -> /sys/class/devfreq/devfreq(X)
 
-PlRoZXNlIHBhdGNoZXMgY2hhbmdlIHRoZSBuYW1lIG9mIHN5c2ZzIGVudHJ5IGZvciBkZXZmcmVx
-L2RldmZyZXEtZXZlbnQgZGV2aWNlDQo+YXMgZm9sbG93aW5nOg0KPi0gb2xkDQo+Rm9yIGRldmZy
-ZXEsIC9zeXMvY2xhc3MvZGV2ZnJlcS9bbm9uLXN0YW5kYXJkIGRldmljZSBuYW1lXQ0KPkZvciBk
-ZXZmcmVxLWV2ZW50LCAvc3lzL2NsYXNzL2RldmZyZXEtZXZlbnQvZXZlbnQuKFgpDQo+DQo+LSBu
-ZXcNCj5Gb3IgZGV2ZnJlcSwgL3N5cy9jbGFzcy9kZXZmcmVxL2RldmZyZXEoWCkNCj5Gb3IgZGV2
-ZnJlcS1ldmVudCwgL3N5cy9jbGFzcy9kZXZmcmVxLWV2ZW50L2V2ZW50KFgpDQoNClZlcmlmaWVk
-IGFsbCB1cGRhdGVkIGFzIGRpc2N1c3NlZC4NCg0KDQpBY2tlZC1ieTogTXl1bmdKb28gSGFtIDxt
-eXVuZ2pvby5oYW1Ac2Ftc3VuZy5jb20+DQoNCg0KQ2hlZXJzLA0KTXl1bmdKb28NCg==
-------=_Part_873634_337919176.1485849439483--
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/devfreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 2e685164c549..4aa72b5ed660 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -519,6 +519,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ {
+ 	struct devfreq *devfreq;
+ 	struct devfreq_governor *governor;
++	static atomic_t devfreq_no = ATOMIC_INIT(-1);
+ 	int err = 0;
+ 
+ 	if (!dev || !profile || !governor_name) {
+@@ -560,7 +561,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		mutex_lock(&devfreq->lock);
+ 	}
+ 
+-	dev_set_name(&devfreq->dev, "%s", dev_name(dev));
++	dev_set_name(&devfreq->dev, "devfreq%d",
++				atomic_inc_return(&devfreq_no));
+ 	err = device_register(&devfreq->dev);
+ 	if (err) {
+ 		mutex_unlock(&devfreq->lock);
+-- 
+1.9.1
+
