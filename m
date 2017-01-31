@@ -1,66 +1,78 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 0/3] PM / devfreq: Fix issues about passive governor
-Date: Tue, 31 Jan 2017 15:38:15 +0900
-Message-ID: <1485844699-24582-1-git-send-email-cw00.choi@samsung.com>
-References: <CGME20170131063825epcas1p41a0d68066744675d0ef7b5bf527a469b@epcas1p4.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:40072 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750727AbdAaGjS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 01:39:18 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v2 2/3] PM / devfreq: Fix wrong trans_stat of passive devfreq
+ device
+Date: Tue, 31 Jan 2017 15:38:17 +0900
+Message-ID: <1485844699-24582-3-git-send-email-cw00.choi@samsung.com>
+References: <1485844699-24582-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20170131063825epcas1p4b6ec2558a6741d156ced77408162c882@epcas1p4.samsung.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-reply-to: <1485844699-24582-1-git-send-email-cw00.choi@samsung.com>
+Sender: stable-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net
-Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This patchset fix the two issues about passive governor
-and remove the unneeded separate _remove_devfreq() function.
+Until now, the trans_stat information of passive devfreq is not updated.
+This patch updates the trans_stat information after setting the target
+frequency of passive devfreq device.
 
-First, the parent devfreq device can use the governors except for
-the passive governor on the fly through sysfs entry and the passive
-devfreq device is only possible to use the passive governor.
+Fixes: 996133119f57 ("PM / devfreq: Add new passive governor")
+Cc: stable@vger.kernel.org
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+---
+ drivers/devfreq/devfreq.c          | 3 ++-
+ drivers/devfreq/governor.h         | 2 ++
+ drivers/devfreq/governor_passive.c | 5 +++++
+ 3 files changed, 9 insertions(+), 1 deletion(-)
 
-The 'available_governors' entry doesn't distinguish this difference
-between parent devfreq and passive devfreq device. So, the patch1
-fixes the this issue.
-
-Second, the devfreq updates the statistic of frequency for each
-device. But, 'trans_stat' of the passive devfreq device doesn't
-update the statistic. So, the patch2 fixes this issue by calling
-the update_devfreqw_passive() after setting the frequency
-of passive devfreq device.
-
-Finally, the patch3 removes the separate _remove_devfreq()
-because this function is only called once in devfreq_dev_release().
-I think that it is not necessary to make the separate function.
-
-Changes from v1:
-(https://lkml.org/lkml/2017/1/18/52)
-- Add acked-by tag of devfreq maintainer to patch2/3.
-- Remove the is_passive_gov() function because it is not appropriate
-  to handle the specific governor name in the devfreq core. Instead,
-  add the new 'immutable' flag to struct devfreq_governor.
-
-Depends on:
-- These patches based on the devfreq.git[1].
-[1] https://git.kernel.org/cgit/linux/kernel/git/mzx/devfreq.git/ (branch: for-4.10-rc)
-
-For example,
-- The v1[2] series includes the detailed example about 'available_governors'
-  and 'trans_stat' sysfs entry. We can refer to it.
-[2] https://lkml.org/lkml/2017/1/18/52
-
-Chanwoo Choi (3):
-  PM / devfreq: Fix available_governor sysfs
-  PM / devfreq: Fix wrong trans_stat of passive devfreq device
-  PM / devfreq: Remove unnecessary separate _remove_devfreq()
-
- drivers/devfreq/devfreq.c          | 57 ++++++++++++++++++++++++--------------
- drivers/devfreq/governor.h         |  2 ++
- drivers/devfreq/governor_passive.c |  6 ++++
- include/linux/devfreq.h            |  3 ++
- 4 files changed, 47 insertions(+), 21 deletions(-)
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index ade279d29f1e..4e86cc0106df 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -130,7 +130,7 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
+  * @devfreq:	the devfreq instance
+  * @freq:	the update target frequency
+  */
+-static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
++int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
+ {
+ 	int lev, prev_lev, ret = 0;
+ 	unsigned long cur_time;
+@@ -166,6 +166,7 @@ static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
+ 	devfreq->last_stat_updated = cur_time;
+ 	return ret;
+ }
++EXPORT_SYMBOL(devfreq_update_status);
+ 
+ /**
+  * find_devfreq_governor() - find devfreq governor from name
+diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
+index fad7d6321978..71576b8bdfef 100644
+--- a/drivers/devfreq/governor.h
++++ b/drivers/devfreq/governor.h
+@@ -38,4 +38,6 @@ extern void devfreq_interval_update(struct devfreq *devfreq,
+ extern int devfreq_add_governor(struct devfreq_governor *governor);
+ extern int devfreq_remove_governor(struct devfreq_governor *governor);
+ 
++extern int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
++
+ #endif /* _GOVERNOR_H */
+diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
+index 93795b32dc09..5be96b2249e7 100644
+--- a/drivers/devfreq/governor_passive.c
++++ b/drivers/devfreq/governor_passive.c
+@@ -112,6 +112,11 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
+ 	if (ret < 0)
+ 		goto out;
+ 
++	if (devfreq->profile->freq_table
++		&& (devfreq_update_status(devfreq, freq)))
++		dev_err(&devfreq->dev,
++			"Couldn't update frequency transition information.\n");
++
+ 	devfreq->previous_freq = freq;
+ 
+ out:
 -- 
 1.9.1
-
