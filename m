@@ -1,78 +1,72 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 2/3] PM / devfreq: Fix wrong trans_stat of passive devfreq
- device
-Date: Tue, 31 Jan 2017 15:38:17 +0900
-Message-ID: <1485844699-24582-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 3/3] PM / devfreq: Remove unnecessary separate
+ _remove_devfreq()
+Date: Tue, 31 Jan 2017 15:38:18 +0900
+Message-ID: <1485844699-24582-4-git-send-email-cw00.choi@samsung.com>
 References: <1485844699-24582-1-git-send-email-cw00.choi@samsung.com>
- <CGME20170131063825epcas1p4b6ec2558a6741d156ced77408162c882@epcas1p4.samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
+ <CGME20170131063825epcas1p4c026903863d3a131e2556201f5a8b7b7@epcas1p4.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1485844699-24582-1-git-send-email-cw00.choi@samsung.com>
-Sender: stable-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net
-Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Until now, the trans_stat information of passive devfreq is not updated.
-This patch updates the trans_stat information after setting the target
-frequency of passive devfreq device.
+The _remove_devfreq() releases the all resources of the devfreq
+device. This function is only called in the devfreq_dev_release().
+For that reason, the devfreq core doesn't need to leave the
+_remove_devfreq() separately. This patch releases the all
+resources in the devfreq_dev_release() and then removes the
+_remove_devfreq().
 
-Fixes: 996133119f57 ("PM / devfreq: Add new passive governor")
-Cc: stable@vger.kernel.org
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/devfreq.c          | 3 ++-
- drivers/devfreq/governor.h         | 2 ++
- drivers/devfreq/governor_passive.c | 5 +++++
- 3 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/devfreq/devfreq.c | 23 +++++++----------------
+ 1 file changed, 7 insertions(+), 16 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index ade279d29f1e..4e86cc0106df 100644
+index 4e86cc0106df..2e685164c549 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -130,7 +130,7 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
-  * @devfreq:	the devfreq instance
-  * @freq:	the update target frequency
-  */
--static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
-+int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- {
- 	int lev, prev_lev, ret = 0;
- 	unsigned long cur_time;
-@@ -166,6 +166,7 @@ static int devfreq_update_status(struct devfreq *devfreq, unsigned long freq)
- 	devfreq->last_stat_updated = cur_time;
- 	return ret;
+@@ -475,11 +475,15 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
  }
-+EXPORT_SYMBOL(devfreq_update_status);
  
  /**
-  * find_devfreq_governor() - find devfreq governor from name
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index fad7d6321978..71576b8bdfef 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -38,4 +38,6 @@ extern void devfreq_interval_update(struct devfreq *devfreq,
- extern int devfreq_add_governor(struct devfreq_governor *governor);
- extern int devfreq_remove_governor(struct devfreq_governor *governor);
- 
-+extern int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
+- * _remove_devfreq() - Remove devfreq from the list and release its resources.
+- * @devfreq:	the devfreq struct
++ * devfreq_dev_release() - Callback for struct device to release the device.
++ * @dev:	the devfreq device
++ *
++ * Remove devfreq from the list and release its resources.
+  */
+-static void _remove_devfreq(struct devfreq *devfreq)
++static void devfreq_dev_release(struct device *dev)
+ {
++	struct devfreq *devfreq = to_devfreq(dev);
 +
- #endif /* _GOVERNOR_H */
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index 93795b32dc09..5be96b2249e7 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -112,6 +112,11 @@ static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
- 	if (ret < 0)
- 		goto out;
+ 	mutex_lock(&devfreq_list_lock);
+ 	if (IS_ERR(find_device_devfreq(devfreq->dev.parent))) {
+ 		mutex_unlock(&devfreq_list_lock);
+@@ -501,19 +505,6 @@ static void _remove_devfreq(struct devfreq *devfreq)
+ }
  
-+	if (devfreq->profile->freq_table
-+		&& (devfreq_update_status(devfreq, freq)))
-+		dev_err(&devfreq->dev,
-+			"Couldn't update frequency transition information.\n");
-+
- 	devfreq->previous_freq = freq;
- 
- out:
+ /**
+- * devfreq_dev_release() - Callback for struct device to release the device.
+- * @dev:	the devfreq device
+- *
+- * This calls _remove_devfreq() if _remove_devfreq() is not called.
+- */
+-static void devfreq_dev_release(struct device *dev)
+-{
+-	struct devfreq *devfreq = to_devfreq(dev);
+-
+-	_remove_devfreq(devfreq);
+-}
+-
+-/**
+  * devfreq_add_device() - Add devfreq feature to the device
+  * @dev:	the device to add devfreq feature.
+  * @profile:	device-specific profile to run devfreq.
 -- 
 1.9.1
