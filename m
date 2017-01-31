@@ -1,89 +1,90 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH v3 0/5] Provide real domain names for Exynos power domain
- driver
-Date: Tue, 31 Jan 2017 08:04:53 +0100
-Message-ID: <e632ffe1-87ce-7d05-2ec2-a93e7f91058f@samsung.com>
-References: <CGME20170130121912eucas1p1002708fc40c2d385c41ef2d7574561f9@eucas1p1.samsung.com>
- <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
- <20170130183621.3v77pfrncm2qb7nr@kozik-lap>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: [PATCH V2 07/12] PM / OPP: Update OPP users to put reference
+Date: Tue, 31 Jan 2017 07:17:21 +0000
+Message-ID: <20170131071721epcms1p6a4da8e0add4547573d40bbbb55d37b74@epcms1p6>
+References: <cover.1485146406.git.viresh.kumar@linaro.org>
+ <CGME20170123044228epcas3p35fdbe94a890062e9d66e33a3b5e4d571@epcas3p3.samsung.com>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:54664 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750764AbdAaHFc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 02:05:32 -0500
-In-reply-to: <20170130183621.3v77pfrncm2qb7nr@kozik-lap>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============7767311016350698726=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>
+
+--===============7767311016350698726==
+Content-type: multipart/related;
+ boundary="----=_Part_867698_1046758289.1485847041328"
+
+------=_Part_867698_1046758289.1485847041328
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
+
+PiBUaGlzIHBhdGNoIHVwZGF0ZXMgZGV2X3BtX29wcF9maW5kX2ZyZXFfKigpIHJvdXRpbmVzIHRv
+IGdldCBhIHJlZmVyZW5jZQ0KPiB0byB0aGUgT1BQcyByZXR1cm5lZCBieSB0aGVtLg0KPiANCj4g
+QWxzbyB1cGRhdGVzIHRoZSB1c2VycyBvZiBkZXZfcG1fb3BwX2ZpbmRfZnJlcV8qKCkgcm91dGlu
+ZXMgdG8gY2FsbA0KPiBkZXZfcG1fb3BwX3B1dCgpIGFmdGVyIHRoZXkgYXJlIGRvbmUgdXNpbmcg
+dGhlIE9QUHMuDQo+IA0KPiBBcyBpdCBpcyBndWFyYW50ZWVkIHRoZSB0aGF0IE9QUHMgd291bGRu
+J3QgZ2V0IGZyZWVkIHdoaWxlIGJlaW5nIHVzZWQsDQo+IHRoZSBSQ1UgcmVhZCBzaWRlIGxvY2tp
+bmcgcHJlc2VudCB3aXRoIHRoZSB1c2VycyBpc24ndCByZXF1aXJlZCBhbnltb3JlLg0KPiBEcm9w
+IGl0IGFzIHdlbGwuDQo+IA0KPiBUaGlzIHBhdGNoIGFsc28gdXBkYXRlcyBhbGwgdXNlcnMgb2Yg
+ZGV2ZnJlcV9yZWNvbW1lbmRlZF9vcHAoKSB3aGljaCB3YXMNCj4gcmV0dXJuaW5nIGFuIE9QUCBy
+ZWNlaXZlZCBmcm9tIHRoZSBPUFAgY29yZS4NCj4gDQo+IE5vdGUgdGhhdCBzb21lIG9mIHRoZSBP
+UFAgY29yZSByb3V0aW5lcyBoYXZlIGdhaW5lZA0KPiByY3VfcmVhZF97bG9ja3x1bmxvY2t9KCkg
+Y2FsbHMsIGFzIHRob3NlIHN0aWxsIHVzZSBSQ1Ugc3BlY2lmaWMgQVBJcw0KPiB3aXRoaW4gdGhl
+bS4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFZpcmVzaCBLdW1hciA8dmlyZXNoLmt1bWFyQGxpbmFy
+by5vcmc+DQo+IFJldmlld2VkLWJ5OiBDaGFud29vIENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNv
+bT4gW0RldmZyZXFdDQoNClRoaXMgcGF0Y2ggZ2V0cyBhIGxvdCBvZiBmYWlscyBkdXJpbmcgYXBw
+bGljYXRpb24uDQoNCkZvciBkZXZmcmVxLXNpZGUsIEkndmUgZ290Og0KZXJyb3I6IGRyaXZlcnMv
+ZGV2ZnJlcS9kZXZmcmVxLmM6IHBhdGNoIGRvZXMgbm90IGFwcGx5DQplcnJvcjogcGF0Y2ggZmFp
+bGVkOiBkcml2ZXJzL2RldmZyZXEvZXh5bm9zLWJ1cy5jOjEwMw0KZXJyb3I6IGRyaXZlcnMvZGV2
+ZnJlcS9leHlub3MtYnVzLmM6IHBhdGNoIGRvZXMgbm90IGFwcGx5DQplcnJvcjogcGF0Y2ggZmFp
+bGVkOiBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3JfcGFzc2l2ZS5jOjU5DQplcnJvcjogZHJpdmVy
+cy9kZXZmcmVxL2dvdmVybm9yX3Bhc3NpdmUuYzogcGF0Y2ggZG9lcyBub3QgYXBwbHkNCmVycm9y
+OiBwYXRjaCBmYWlsZWQ6IGRyaXZlcnMvZGV2ZnJlcS9yazMzOTlfZG1jLmM6OTENCmVycm9yOiBk
+cml2ZXJzL2RldmZyZXEvcmszMzk5X2RtYy5jOiBwYXRjaCBkb2VzIG5vdCBhcHBseQ0KZXJyb3I6
+IHBhdGNoIGZhaWxlZDogZHJpdmVycy9kZXZmcmVxL3RlZ3JhLWRldmZyZXEuYzo0ODcNCmVycm9y
+OiBkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5jOiBwYXRjaCBkb2VzIG5vdCBhcHBseQ0K
+DQpXaXRoIHRoZSBjb25kaXRpb24gdGhhdCB5b3UgYXJlIGdvaW5nIHRvIHByb3Blcmx5IHJlYmFz
+ZSB0aGUgcGF0Y2gsDQp5b3UgbWF5IGFkZCAiUmV2aWV3ZWQtYnkiIGZyb20gbWUuDQoodGhlIGNv
+ZGUgaXRzZWxmIGxvb2tzIGZpbmUuKQ0KDQpDaGVlcnMsDQpNeXVuZ0pvbw0KDQo+IC0tLQ0KPiAg
+YXJjaC9hcm0vbWFjaC1vbWFwMi9wbS5jICAgICAgICAgICAgIHwgICA1ICstDQo+ICBkcml2ZXJz
+L2Jhc2UvcG93ZXIvb3BwL2NvcmUuYyAgICAgICAgfCAxMTQgKysrKysrKysrKysrKysrKysrKy0t
+LS0tLS0tLS0tLS0tLS0NCj4gIGRyaXZlcnMvYmFzZS9wb3dlci9vcHAvY3B1LmMgICAgICAgICB8
+ICAyMiArKy0tLS0tDQo+ICBkcml2ZXJzL2Nsay90ZWdyYS9jbGstZGZsbC5jICAgICAgICAgfCAg
+MTcgKystLS0tDQo+ICBkcml2ZXJzL2NwdWZyZXEvZXh5bm9zNTQ0MC1jcHVmcmVxLmMgfCAgIDUg
+Ky0NCj4gIGRyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMgICAgICB8ICAxMCArLS0NCj4g
+IGRyaXZlcnMvY3B1ZnJlcS9tdDgxNzMtY3B1ZnJlcS5jICAgICB8ICAgOCArLS0NCj4gIGRyaXZl
+cnMvY3B1ZnJlcS9vbWFwLWNwdWZyZXEuYyAgICAgICB8ICAgNCArLQ0KPiAgZHJpdmVycy9kZXZm
+cmVxL2RldmZyZXEuYyAgICAgICAgICAgIHwgIDE0ICsrLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEv
+ZXh5bm9zLWJ1cy5jICAgICAgICAgfCAgMTQgKystLS0NCj4gIGRyaXZlcnMvZGV2ZnJlcS9nb3Zl
+cm5vcl9wYXNzaXZlLmMgICB8ICAgNCArLQ0KPiAgZHJpdmVycy9kZXZmcmVxL3JrMzM5OV9kbWMu
+YyAgICAgICAgIHwgIDE2ICsrLS0tDQo+ICBkcml2ZXJzL2RldmZyZXEvdGVncmEtZGV2ZnJlcS5j
+ICAgICAgfCAgIDQgKy0NCj4gIGRyaXZlcnMvdGhlcm1hbC9jcHVfY29vbGluZy5jICAgICAgICB8
+ICAxMSArLS0tDQo+ICBkcml2ZXJzL3RoZXJtYWwvZGV2ZnJlcV9jb29saW5nLmMgICAgfCAgMTUg
+KystLS0NCj4gIDE1IGZpbGVzIGNoYW5nZWQsIDExMCBpbnNlcnRpb25zKCspLCAxNTMgZGVsZXRp
+b25zKC0pDQo+IA0K
+------=_Part_867698_1046758289.1485847041328--
 
 
+--===============7767311016350698726==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On 2017-01-30 19:36, Krzysztof Kozlowski wrote:
-> On Mon, Jan 30, 2017 at 01:18:55PM +0100, Marek Szyprowski wrote:
->> Hi!
->>
->> For everyone working on power management and runtime power management it
->> is important to have a meaningful information about the state of the
->> power domains. Current Exynos power domain driver created names of the
->> domains based on the device tree node name. Those name
->> we incorrectly a bit more descriptive (like "mfc-power-domain@10023C40"
->> in exynos4.dtsi) than they should be (it should be fixed to
->> "power-domain@10023C40"). This patch series adds reading human readable
->> names from the 'label' property. While touching this, I've also fixes
->> a few obvious issues related to power domain driver code.
->>
->> Patches are based on the Linux next-20170130 branch.
->>
->> Best regards
->> Marek Szyprowski
->> Samsung R&D Institute Poland
->>
-> I think I am missing something... but it looks it does not work. I
-> applied it on top of my for-next tree and:
-> cat /sys/kernel/debug/pm_genpd/pm_genpd_summary
-> domain                          status          slaves
->      /device                                             runtime status
->      ----------------------------------------------------------------------
->      isp-power-domain@10023CA0       off-0
->      gps-alive-power-domain@10023D00  off-0
->      gps-power-domain@10023CE0       off-0
->      cam-power-domain@10023C00       off-0
->
-> Also, with enabled debug on pm-domains and unbinding a device:
-> [  180.016800] s5p-mfc 13400000.codec: genpd_runtime_resume()
-> [  180.017289] s5p-mfc 13400000.codec: genpd_runtime_suspend()
-> [  180.017519] s5p-mfc 13400000.codec: Removing 13400000.codec
-> [  180.024283] s5p-mfc 13400000.codec: removing from PM domain mfc-power-domain@10023C40
-> [  180.024323] s5p-mfc 13400000.codec: genpd_remove_device()
->
-> I think in both cases the genpd->name is used... which should be the new
-> name (label).
->
-> What is wrong?
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-I have no idea. Are you sure you have applied the dts patch? Here it works
-fine (Odroid U3 with next-20170130 + this patchset):
-
-domain                          status          slaves
-     /device                                             runtime status
-----------------------------------------------------------------------
-ISP                             off-0
-GPS alive                       off-0
-GPS                             off-0
-CAM                             off-0
-TV                              on
-     /devices/platform/12c10000.mixer                    active
-     /devices/platform/12d00000.hdmi                     active
-LCD0                            on              TV
-G3D                             off-0
-MFC                             off-0
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+--===============7767311016350698726==--
