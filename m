@@ -1,93 +1,142 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 1/2] PM / devfreq: Simplify the sysfs name of devfreq-event
- device
-Date: Tue, 31 Jan 2017 16:47:56 +0900
-Message-ID: <1485848877-19184-2-git-send-email-cw00.choi@samsung.com>
-References: <1485848877-19184-1-git-send-email-cw00.choi@samsung.com>
- <CGME20170131074759epcas1p346fd3ae1d6dd7133f995f77ff715525b@epcas1p3.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:36798 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751149AbdAaH60 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 02:58:26 -0500
-In-reply-to: <1485848877-19184-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH v2 16/25] dt-bindings: power: supply: add AXP20X/AXP22X
+ battery DT binding
+Date: Tue, 31 Jan 2017 08:59:19 +0100
+Message-ID: <2dc8ffb5-af22-8224-f0b8-e2d6d8ab8ca3@free-electrons.com>
+References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-17-quentin.schulz@free-electrons.com>
+ <20170129164719.eulijkfarzrm2o6j@earth>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============7567171177955439062=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170129164719.eulijkfarzrm2o6j@earth>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux@armlinux.org.uk, linux-kernel@vger.kernel.org, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, lee.jones@linaro.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rjw@rjwysocki.net
-Cc: cw00.choi@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This patch just removes '.' character from the sysfs name of devfreq-event
-device as following. Usually, the subsystem uses the similiar naming style
-such as {framework name}{Number}.
-- old : /sys/class/devfreq-event/event.(X)
-- new : /sys/class/devfreq-event/event(X)
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--===============7567171177955439062==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="6xHDwn8BHIhCNE1D21EOLgvK8qNDeCCl3"
 
-And this patch initializes the value of 'event_no' with -1
-in order to remove the unneeded operation (-1) when calling
-the atomic_inc_return(&event_no).
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--6xHDwn8BHIhCNE1D21EOLgvK8qNDeCCl3
+Content-Type: multipart/mixed; boundary="98eEUvKTflTQSpavOKabwwiMuVvoTbRUi";
+ protected-headers="v1"
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org,
+ mark.rutland@arm.com, wens@csie.org, linux@armlinux.org.uk,
+ maxime.ripard@free-electrons.com, lee.jones@linaro.org,
+ linux-iio@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, thomas.petazzoni@free-electrons.com,
+ icenowy@aosc.xyz, bonbons@linux-vserver.org
+Message-ID: <2dc8ffb5-af22-8224-f0b8-e2d6d8ab8ca3@free-electrons.com>
+Subject: Re: [PATCH v2 16/25] dt-bindings: power: supply: add AXP20X/AXP22X
+ battery DT binding
+References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-17-quentin.schulz@free-electrons.com>
+ <20170129164719.eulijkfarzrm2o6j@earth>
+In-Reply-To: <20170129164719.eulijkfarzrm2o6j@earth>
 
-Lastly, this patch adds the ABI document for devfreq-event class.
+--98eEUvKTflTQSpavOKabwwiMuVvoTbRUi
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- .../ABI/testing/sysfs-class-devfreq-event          | 25 ++++++++++++++++++++++
- drivers/devfreq/devfreq-event.c                    |  4 ++--
- 2 files changed, 27 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-devfreq-event
+Hi,
 
-diff --git a/Documentation/ABI/testing/sysfs-class-devfreq-event b/Documentation/ABI/testing/sysfs-class-devfreq-event
-new file mode 100644
-index 000000000000..ceaf0f686d4a
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-devfreq-event
-@@ -0,0 +1,25 @@
-+What:		/sys/class/devfreq-event/event(x)/
-+Date:		January 2017
-+Contact:	Chanwoo Choi <cw00.choi@samsung.com>
-+Description:
-+		Provide a place in sysfs for the devfreq-event objects.
-+		This allows accessing various devfreq-event specific variables.
-+		The name of devfreq-event object denoted as 'event(x)' which
-+		includes the unique number of 'x' for each devfreq-event object.
-+
-+What:		/sys/class/devfreq-event/event(x)/name
-+Date:		January 2017
-+Contact:	Chanwoo Choi <cw00.choi@samsung.com>
-+Description:
-+		The /sys/class/devfreq-event/event(x)/name attribute contains
-+		the name of the devfreq-event object. This attribute is
-+		read-only.
-+
-+What:		/sys/class/devfreq-event/event(x)/enable_count
-+Date:		January 2017
-+Contact:	Chanwoo Choi <cw00.choi@samsung.com>
-+Description:
-+		The /sys/class/devfreq-event/event(x)/enable_count attribute
-+		contains the reference count to enable the devfreq-event
-+		object. If the device is enabled, the value of attribute is
-+		greater than zero.
-diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
-index 9aea2c7ecbe6..8648b32ebc89 100644
---- a/drivers/devfreq/devfreq-event.c
-+++ b/drivers/devfreq/devfreq-event.c
-@@ -306,7 +306,7 @@ struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
- 						struct devfreq_event_desc *desc)
- {
- 	struct devfreq_event_dev *edev;
--	static atomic_t event_no = ATOMIC_INIT(0);
-+	static atomic_t event_no = ATOMIC_INIT(-1);
- 	int ret;
- 
- 	if (!dev || !desc)
-@@ -329,7 +329,7 @@ struct devfreq_event_dev *devfreq_event_add_edev(struct device *dev,
- 	edev->dev.class = devfreq_event_class;
- 	edev->dev.release = devfreq_event_release_edev;
- 
--	dev_set_name(&edev->dev, "event.%d", atomic_inc_return(&event_no) - 1);
-+	dev_set_name(&edev->dev, "event%d", atomic_inc_return(&event_no));
- 	ret = device_register(&edev->dev);
- 	if (ret < 0) {
- 		put_device(&edev->dev);
--- 
-1.9.1
+On 29/01/2017 17:47, Sebastian Reichel wrote:
+> Hi,
+>=20
+> On Fri, Jan 27, 2017 at 09:54:49AM +0100, Quentin Schulz wrote:
+>>  - added x-powers,constant-charge-current property to set the
+>>  maximal default constant current charge of the battery,
+>=20
+> Since this is information about the battery and not the fuel-gauge,
+> it should use the WIP "framework" for information about batteries.
+>=20
+> Have a look at the following patchset:
+>=20
+> http://marc.info/?l=3Dlinux-pm&m=3D148411561025684&w=3D2
+>=20
 
+OK. So what you propose is to have a fourth property in this new
+structure named design-max-constant-charge-current that gives the
+maximal input amperage the battery can receive?
+
+Then, I set the charger to output a maximum of this amperage by default
+and let the user the possibility to choose between the minimum allowed
+by the PMIC and the maximum allowed by the battery from sysfs. That
+makes more sense than what I do here in the way that I didn't protect a
+possible over-amperage of the battery, thing that Chen-Yu was afraid
+some users would do.
+
+I've a comment on the linked patches however. Though the three
+properties are listed as optional in the binding-dt, the implementation
+is saying the opposite:
+
+http://marc.info/?l=3Dlinux-pm&m=3D148411561725693&w=3D2
+
+If I'm not mistaken, if `nominal-microvolt' or `design-microwatt-hours'
+is not a property of the DT node, power_supply_get_battery_info will
+return without parsing the other properties and even return a negative
+error.
+
+Thanks,
+Quentin
+--=20
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+
+
+--98eEUvKTflTQSpavOKabwwiMuVvoTbRUi--
+
+--6xHDwn8BHIhCNE1D21EOLgvK8qNDeCCl3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJYkEPaAAoJEIS4mnU+4PGjFTQP/RcQ0aqiGSO+9mN4NPCdW6Tb
+hLPEo7sCViig7jr5FRyTLFxtgQ4js7j53v2HAL2F9+LM0IETNVwye9WgvCx4IL5Y
+LuSJGp4s+fEG5veWv714YYoJI34CSQccc2VnBBAGSeg+df8Q/8VIDXSeFzz4gOSh
+du0HvDO/lJTLYez/tkZ3ktEc/XTa+qIgD2YEe3yzEdLDGmrdtWoUSLnnIAug9iU+
+OkG5rQWgsLzmtEYTGcZY+ti0Bin3E03L+tNhlaZoLQ5VMC2GXFZjx/Drvf5UX5vh
+6RDvqFKNIkUJpB5Frv9AnsX7xwiHNNsbgditZ68xcqhnhxoHkBDYvaor/swv7Wge
+xOvCGdeXfbaPd35cEnVJDzGp/2Ialhw4egFOKpimgq4Gv0zs8jH/pm2x4BP8NxIg
+vfpGbobV+TIrWd+O0Zfm9i4ii3MBR9Wx2JYHUtrVBtTNJXmjmRKwvr/c6b1t1YZd
+5FULv6MePJt7C5Bx2kwNKWV5Jfy1ntaZ21dvyUS8OKKtfHGt+z61eKqnKEpOffo4
+fD19FPdcLorOLS/qUV/2FViU/O2JcC5mFUbubmweYb7KWitasiRmo2EvqS0mn/Ci
+DgjdsrBQH8BjNBfdq84uFSXs+Z9bDNU6yr1uKmP7355Ofx4vKAC8uLbut7L3tu3E
+3zA3G6t5VCHU3wACjWNs
+=RQ3s
+-----END PGP SIGNATURE-----
+
+--6xHDwn8BHIhCNE1D21EOLgvK8qNDeCCl3--
+
+
+--===============7567171177955439062==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============7567171177955439062==--
