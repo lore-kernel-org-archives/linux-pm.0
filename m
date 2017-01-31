@@ -1,119 +1,41 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [Linux v4.10.0-rc1+] Still call-traces after
- suspend-resume (pm? i915? cpu/hotplug?)
-Date: Tue, 31 Jan 2017 13:12:05 +0100
-Message-ID: <77ac8c31-68b8-95c6-46d3-e8037fb6c820@intel.com>
-References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
- <CAJZ5v0gp_BwxR+B3wtoLRh2B_ojY7cd9E5shJ8zsBeGL_LtnGg@mail.gmail.com>
- <CA+icZUVwTRCAGiO-5Q2uo8SETjHwwSmJ2Pxh56niWsbEVZfV7w@mail.gmail.com>
- <7e7ccb13-1db8-af76-9585-ca7bbdd04c55@intel.com>
- <20170131105800.GA8598@ideak-desk.fi.intel.com>
- <147578c1-7b21-7dee-372b-e0f1eb8541f4@intel.com>
- <20170131120256.GA14349@ideak-desk.fi.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: PULL-REQUEST for Rafael (for-next from devfreq)
+Date: Tue, 31 Jan 2017 13:19:39 +0100
+Message-ID: <CAJZ5v0hjRB3XAThza53c2ZprMUGnWbHz3wD2ycRetqfWwEzKJg@mail.gmail.com>
+References: <CGME20170131082002epcms1p4d8f861af1ac46dc185507a0bace2e438@epcms1p4>
+ <20170131082002epcms1p4d8f861af1ac46dc185507a0bace2e438@epcms1p4>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-Reply-To: <20170131120256.GA14349@ideak-desk.fi.intel.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: imre.deak@intel.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, sedat.dilek@gmail.com, Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:35515 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752127AbdAaMTl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 07:19:41 -0500
+Received: by mail-oi0-f65.google.com with SMTP id x84so28158335oix.2
+        for <linux-pm@vger.kernel.org>; Tue, 31 Jan 2017 04:19:40 -0800 (PST)
+In-Reply-To: <20170131082002epcms1p4d8f861af1ac46dc185507a0bace2e438@epcms1p4>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Myungjoo Ham <myungjoo.ham@samsung.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "chris.diamand@arm.com" <chris.diamand@arm.com>
 
-T24gMS8zMS8yMDE3IDE6MDIgUE0sIEltcmUgRGVhayB3cm90ZToKPiBPbiBUdWUsIEphbiAzMSwg
-MjAxNyBhdCAxMjozOTozNVBNICswMTAwLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToKPj4gT24g
-MS8zMS8yMDE3IDExOjU4IEFNLCBJbXJlIERlYWsgd3JvdGU6Cj4+PiBIaSBSYWZhZWwsCj4+IEhp
-LAo+Pgo+Pj4gT24gTW9uLCBKYW4gMzAsIDIwMTcgYXQgMTE6NDQ6MzdQTSArMDEwMCwgUmFmYWVs
-IEouIFd5c29ja2kgd3JvdGU6Cj4+Pj4gT24gMS8yNC8yMDE3IDI6MzMgQU0sIFNlZGF0IERpbGVr
-IHdyb3RlOgo+Pj4+PiBPbiBGcmksIERlYyAzMCwgMjAxNiBhdCAzOjAyIFBNLCBSYWZhZWwgSi4g
-V3lzb2NraSA8cmFmYWVsQGtlcm5lbC5vcmc+IHdyb3RlOgo+Pj4+Pj4gT24gRnJpLCBEZWMgMzAs
-IDIwMTYgYXQgMTI6NDAgUE0sIFNlZGF0IERpbGVrIDxzZWRhdC5kaWxla0BnbWFpbC5jb20+IHdy
-b3RlOgo+Pj4+Pj4+IEhpLAo+Pj4+Pj4+Cj4+Pj4+Pj4gSSBoYXZlIGFscmVhZHkgcmVwb3J0ZWQg
-dGhpcyBpc3N1ZSBpbiBbMV0uCj4+Pj4+Pj4gT25lIG9mIHRoZSBpc3N1ZSB3YXMgc29sdmVkLgo+
-Pj4+Pj4+IFVuZm9ydHVuYXRlbHksIGl0IGxvb2tzIGxpa2UgdGhlcmUgaXMgc3RpbGwgYSBkaWZm
-ZXJlbnQgcHJvYmxlbSBoZXJlCj4+Pj4+Pj4gKFVidW50dS9wcmVjaXNlIEFNRDY0KS4KPj4+Pj4+
-Pgo+Pj4+Pj4+IEkgdHJpZWQgdjQuMTAtcmMxIGFuZCBsYXRlc3QgTGludXMgdHJlZSB1cCB0by4u
-Lgo+Pj4+Pj4+Cj4+Pj4+Pj4gY29tbWl0IDk4NDczZjlmM2Y5YmQ0MDQ4NzNjZDExNzhjOGJlN2Q2
-ZDYxOWYwZDEKPj4+Pj4+PiAibW0vZmlsZW1hcDogZml4IHBhcmFtZXRlcnMgdG8gdGVzdF9iaXQo
-KSIKPj4+Pj4+Pgo+Pj4+Pj4+IEhlcmUgd2UgZ28uLi4KPj4+Pj4+Pgo+Pj4+Pj4+IFsgICAyOS42
-MzYwNDddIEJVRzogc2xlZXBpbmcgZnVuY3Rpb24gY2FsbGVkIGZyb20gaW52YWxpZCBjb250ZXh0
-IGF0Cj4+Pj4+Pj4gZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYzoxMDMyCj4+Pj4+Pj4gWyAg
-IDI5LjYzNjA1NV0gaW5fYXRvbWljKCk6IDEsIGlycXNfZGlzYWJsZWQoKTogMCwgcGlkOiAxNTAw
-LCBuYW1lOiBYb3JnCj4+Pj4+Pj4gWyAgIDI5LjYzNjA1OF0gMSBsb2NrIGhlbGQgYnkgWG9yZy8x
-NTAwOgo+Pj4+Pj4+IFsgICAyOS42MzYwNjBdICAjMDogICgmZGV2LT5zdHJ1Y3RfbXV0ZXgpeysu
-Ky4rLn0sIGF0Ogo+Pj4+Pj4+IFs8ZmZmZmZmZmZhMDY4MGMxMz5dIGk5MTVfbXV0ZXhfbG9ja19p
-bnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVdCj4+Pj4+Pj4gWyAgIDI5LjYzNjEwN10gQ1BV
-OiAwIFBJRDogMTUwMCBDb21tOiBYb3JnIE5vdCB0YWludGVkCj4+Pj4+Pj4gNC4xMC4wLXJjMS02
-LWluaXphLWFtZDY0ICMxCj4+Pj4+Pj4gWyAgIDI5LjYzNjEwOV0gSGFyZHdhcmUgbmFtZTogU0FN
-U1VORyBFTEVDVFJPTklDUyBDTy4sIExURC4KPj4+Pj4+PiA1MzBVM0JJLzUzMFU0QkkvNTMwVTRC
-SC81MzBVM0JJLzUzMFU0QkkvNTMwVTRCSCwgQklPUyAxM1hLIDAzLzI4LzIwMTMKPj4+Pj4+PiBb
-ICAgMjkuNjM2MTExXSBDYWxsIFRyYWNlOgo+Pj4+Pj4+IFsgICAyOS42MzYxMjBdICBkdW1wX3N0
-YWNrKzB4ODUvMHhjMgo+Pj4+Pj4+IFsgICAyOS42MzYxMjRdICBfX19taWdodF9zbGVlcCsweDE5
-Ni8weDI2MAo+Pj4+Pj4+IFsgICAyOS42MzYxMjddICBfX21pZ2h0X3NsZWVwKzB4NTMvMHhiMAo+
-Pj4+Pj4+IFsgICAyOS42MzYxMzFdICBfX3BtX3J1bnRpbWVfcmVzdW1lKzB4N2EvMHg5MAo+Pj4+
-Pj4+IFsgICAyOS42MzYxNTldICBpbnRlbF9ydW50aW1lX3BtX2dldCsweDI1LzB4OTAgW2k5MTVd
-Cj4+Pj4+Pj4gWyAgIDI5LjYzNjE4OV0gIGFsaWFzaW5nX2d0dF9iaW5kX3ZtYSsweGFhLzB4ZjAg
-W2k5MTVdCj4+Pj4+Pj4gWyAgIDI5LjYzNjIyMF0gIGk5MTVfdm1hX2JpbmQrMHhhZi8weDFlMCBb
-aTkxNV0KPj4+Pj4+PiBbICAgMjkuNjM2MjQ4XSAgaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZWxvY2F0
-ZV9lbnRyeSsweDUxMy8weDZmMCBbaTkxNV0KPj4+Pj4+PiBbICAgMjkuNjM2MjcyXSAgaTkxNV9n
-ZW1fZXhlY2J1ZmZlcl9yZWxvY2F0ZV92bWEuaXNyYS4zNCsweDE4OC8weDI1MCBbaTkxNV0KPj4+
-Pj4+PiBbICAgMjkuNjM2Mjc1XSAgPyB0cmFjZV9oYXJkaXJxc19vbisweGQvMHgxMAo+Pj4+Pj4+
-IFsgICAyOS42MzYyOTRdICA/IGk5MTVfZ2VtX2V4ZWNidWZmZXJfcmVzZXJ2ZV92bWEuaXNyYS4z
-MSsweDE1Mi8weDFmMCBbaTkxNV0KPj4+Pj4+PiBbICAgMjkuNjM2MzE2XSAgPyBpOTE1X2dlbV9l
-eGVjYnVmZmVyX3Jlc2VydmUuaXNyYS4zMisweDM3Mi8weDNhMCBbaTkxNV0KPj4+Pj4+PiBbICAg
-MjkuNjM2MzQyXSAgaTkxNV9nZW1fZG9fZXhlY2J1ZmZlci5pc3JhLjM4KzB4YTcwLzB4MWE0MCBb
-aTkxNV0KPj4+Pj4+PiBbICAgMjkuNjM2MzQ3XSAgPyBfX21pZ2h0X2ZhdWx0KzB4NGUvMHhiMAo+
-Pj4+Pj4+IFsgICAyOS42MzYzNzNdICBpOTE1X2dlbV9leGVjYnVmZmVyMisweGM1LzB4MjYwIFtp
-OTE1XQo+Pj4+Pj4+IFsgICAyOS42MzYzNzZdICA/IF9fbWlnaHRfZmF1bHQrMHg0ZS8weGIwCj4+
-Pj4+Pj4gWyAgIDI5LjYzNjM5NV0gIGRybV9pb2N0bCsweDIwNi8weDQ1MCBbZHJtXQo+Pj4+Pj4+
-IFsgICAyOS42MzY0MjBdICA/IGk5MTVfZ2VtX2V4ZWNidWZmZXIrMHgzNDAvMHgzNDAgW2k5MTVd
-Cj4+Pj4+Pj4gWyAgIDI5LjYzNjQyNV0gID8gX19mZ2V0KzB4NS8weDIwMAo+Pj4+Pj4+IFsgICAy
-OS42MzY0MjldICBkb192ZnNfaW9jdGwrMHg5MS8weDZmMAo+Pj4+Pj4+IFsgICAyOS42MzY0MzFd
-ICA/IF9fZmdldCsweDExMS8weDIwMAo+Pj4+Pj4+IFsgICAyOS42MzY0MzNdICA/IF9fZmdldCsw
-eDUvMHgyMDAKPj4+Pj4+PiBbICAgMjkuNjM2NDM2XSAgU3lTX2lvY3RsKzB4NzkvMHg5MAo+Pj4+
-Pj4+IFsgICAyOS42MzY0NDFdICBlbnRyeV9TWVNDQUxMXzY0X2Zhc3RwYXRoKzB4MjMvMHhjNgo+
-Pj4+Pj4+Cj4+Pj4+Pj4gT24gc3VzcGVuZC9yZXN1bWUgSSBzZWUgdGhlIHNhbWUgY2FsbCB0cmFj
-ZS4KPj4+Pj4+PiBbMl0gcG9pbnRzIHRvIHRoZSAiQlVHIiBsaW5lLgo+Pj4+Pj4gV2VsbCwgdGhp
-cyBhcHBlYXJzIHRvIGJlIGFuIGk5MTUgaXNzdWUsIGJ1dCBub3QgYSBzZXJpb3VzIG9uZS4KPj4+
-Pj4+Cj4+Pj4+PiBDbGVhcmx5LCBhIGZ1bmN0aW9uIHRoYXQgbWF5IHNsZWVwIChwbV9ydW50aW1l
-X2dldF9zeW5jKCkgaW4KPj4+Pj4+IGludGVsX3J1bnRpbWVfcG1fZ2V0KCkpIGlzIGNhbGxlZCB3
-aXRoIGRpc2FibGVkIGludGVycnVwdHMuICBJZiBJCj4+Pj4+PiB1bmRlcnN0YW5kIHRoZSBjb2Rl
-IGNvcnJlY3RseSwgdGhvdWdoLCBpdCBhY3R1YWxseSBpcyBub3QgZ29pbmcgdG8KPj4+Pj4+IHNs
-ZWVwIGluIHRoaXMgcGFydGljdWxhciBjYXNlLCBiZWNhdXNlIHBtX3J1bnRpbWVfZ2V0X3N5bmMo
-KSBoYXMKPj4+Pj4+IGFscmVhZHkgYmVlbiBjYWxsZWQgb25jZSBmb3IgdGhpcyBkZXZpY2UgaW4g
-dGhlIHNhbWUgY29kZSBwYXRoIHdoaWNoCj4+Pj4+PiBtZWFucyB0aGF0IHRoaXMgcGFydGljdWxh
-ciBpbnN0YW5jZSB3aWxsIHJldHVybiBpbW1lZGlhdGVseSwgc28gdGhpcwo+Pj4+Pj4gaXMgYSBm
-YWxzZS1wb3NpdGl2ZSAobW9zdCBsaWtlbHkpLgo+Pj4gTm90IHN1cmUgd2hhdCdzIHRoZSByb290
-IGNhdXNlLCBidXQgdGhvdWdodCB0byBjbGFyaWZ5IHRoZSBhYm92ZToKPj4+Cj4+PiBZZXMsIGk5
-MTVfZ2VtX2RvX2V4ZWNidWZmZXIoKSBkb2VzIHRha2UgYW4gUlBNIHJlZmVyZW5jZSB0byBvcHRp
-bWl6ZQo+Pj4gdGhpbmdzLCBzbyB0aGUgUlBNIGdldCBpbiBhbGlhc2luZ19ndHRfYmluZF92bWEo
-KSB3b24ndCBuZWVkIHRvIHJlc3VtZQo+Pj4gdGhlIGRldmljZSBvbiB0aGlzIHBhdGguIFRoaXMg
-aXNuJ3QgYSBndWFyYW50ZWUgdGhvdWdoLAo+Pj4gYWxpYXNpbmdfZ3R0X2JpbmRfdm1hKCkgY291
-bGQgYmUgY2FsbGVkIGZyb20gb3RoZXIgcGxhY2VzIHdpdGhvdXQgYW4gUlBNCj4+PiByZWZlcmVu
-Y2UuIFNvIHByZWVtcHRpb24gYmVpbmcgZGlzYWJsZWQgYXQgdGhhdCBwb2ludCBpcyBub3QKPj4+
-IGludGVudGlvbmFsLiBJIGFsc28gY2FuJ3Qgc2VlIHdoZXJlIG9uIHRoZSBhYm92ZSBwYXRoIGl0
-IHdvdWxkIGdldAo+Pj4gZGlzYWJsZWQgZHVlIHRvIGEgYnVnIG9yIG90aGVyd2lzZS4KPj4gVGhl
-IGk5MTUgY29kZSBpcyBjb3JyZWN0IEFGQUlDUywgYnV0IHRoZSBjb3JlIGNvbXBsYWlucyBhYm91
-dCBhIG5lc3RlZAo+PiBpbnZvY2F0aW9uIG9mIHBtX3J1bnRpbWVfZ2V0X3N5bmMoKSB3aXRoIGRp
-c2FibGVkIGludGVycnVwdHMgKHdoaWNoIGxvb2tzIE9LCj4+IHRob3VnaCksIHNvIHRoZSBjb21w
-bGFpbnQgaXMgYSBmYWxzZSBwb3NpdGl2ZS4KPiBXZWxsLCBteSBwb2ludCB3YXMgdGhhdCBpbnRl
-cnJ1cHRzIChvciBwcmVlbXB0aW9uKSBkb2Vzbid0IHNlZW0gdG8gZ2V0Cj4gZGlzYWJsZWQgYW55
-d2hlcmUgb24gdGhhdCBwYXRoLgoKQnV0IHRoZSBtaWdodF9zbGVlcF9pZigpIGFzc2VydGlvbiBp
-biBfX3BtX3J1bnRpbWVfcmVzdW1lKCkgdHJpZ2dlcnMgZm9yIApzb21lIHJlYXNvbi4gIEkgd29u
-ZGVyIHdoeSB0aGVuPwoKT2YgY291cnNlLCBJIG1heSBiZSBvdmVybG9va2luZyBzb21ldGhpbmcg
-aW4gdGhlIGk5MTUgY29kZS4KCkluIGFueSBjYXNlLCBpZiB5b3UgZG8KCnBtX3J1bnRpbWVfZ2V0
-X3N5bmMoZGV2KQpsb2NhbF9pcnFfZGlzYWJsZSgpCnBtX3J1bnRpbWVfZ2V0X3N5bmMoZGV2KQo8
-ZG8gc29tZXRoaW5nPgpwbV9ydW50aW1lX3B1dChkZXYpCmxvY2FsX2lycV9lbmFibGUoKQpwbV9y
-dW50aW1lX3B1dChkZXYpCgp0aGF0IGlzIHRlY2huaWNhbGx5IGNvcnJlY3QsIGJ1dCBpdCB3aWxs
-IGNhdXNlIHRoZSBjb3JlIHRvIGNvbXBsYWluLgoKVGhhbmtzLApSYWZhZWwKCl9fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxp
-c3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNr
-dG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+On Tue, Jan 31, 2017 at 9:20 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> The following changes since commit 566cf877a1fcb6d6dc0126b076aad062054c2637:
+>
+>   Linux 4.10-rc6 (2017-01-29 14:25:17 -0800)
+>
+> are available in the git repository at:
+>
+>   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pullreq_20170131
+>
+> for you to fetch changes up to 4585fbcb5331fc910b7e553ad3efd0dd7b320d14:
+>
+>   PM / devfreq: Modify the device name as devfreq(X) for sysfs (2017-01-31 16:57:19 +0900)
+
+Pulled, thanks!
+
+Cheers,
+Rafael
