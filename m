@@ -1,84 +1,59 @@
-From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: PULL-REQUEST for Rafael (for-next from devfreq)
-Date: Tue, 31 Jan 2017 08:20:02 +0000
-Message-ID: <20170131082002epcms1p4d8f861af1ac46dc185507a0bace2e438@epcms1p4>
-References: <CGME20170131082002epcms1p4d8f861af1ac46dc185507a0bace2e438@epcms1p4>
-Reply-To: myungjoo.ham@samsung.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 07/12] PM / OPP: Update OPP users to put reference
+Date: Tue, 31 Jan 2017 14:17:24 +0530
+Message-ID: <20170131084724.GB7458@vireshk-i7>
+References: <cover.1485146406.git.viresh.kumar@linaro.org>
+ <CGME20170123044228epcas3p35fdbe94a890062e9d66e33a3b5e4d571@epcas3p3.samsung.com>
+ <20170131071721epcms1p6a4da8e0add4547573d40bbbb55d37b74@epcms1p6>
 Mime-Version: 1.0
-Content-Type: multipart/related;
- boundary="----=_Part_877015_13617020.1485850802207"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:53569 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750726AbdAaIaK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Jan 2017 03:30:10 -0500
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
- by mailout1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May  5 2014))
- with ESMTP id <0OKM00N9JXTFY580@mailout1.samsung.com> for
- linux-pm@vger.kernel.org; Tue, 31 Jan 2017 17:20:03 +0900 (KST)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170131071721epcms1p6a4da8e0add4547573d40bbbb55d37b74@epcms1p6>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: MyungJoo Ham <myungjoo.ham@samsung.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Peter De Schrijver <pdeschrijver@nvidia.com>, Prashant Gaikwad <pgaikwad@nvidia.com>, Stephen Warren <swarren@wwwdotorg.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Courbot <gnurou@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edu>
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>, "chris.diamand@arm.com" <chris.diamand@arm.com>
 
-------=_Part_877015_13617020.1485850802207
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="utf-8"
+On 31-01-17, 07:17, MyungJoo Ham wrote:
+> > This patch updates dev_pm_opp_find_freq_*() routines to get a reference
+> > to the OPPs returned by them.
+> > 
+> > Also updates the users of dev_pm_opp_find_freq_*() routines to call
+> > dev_pm_opp_put() after they are done using the OPPs.
+> > 
+> > As it is guaranteed the that OPPs wouldn't get freed while being used,
+> > the RCU read side locking present with the users isn't required anymore.
+> > Drop it as well.
+> > 
+> > This patch also updates all users of devfreq_recommended_opp() which was
+> > returning an OPP received from the OPP core.
+> > 
+> > Note that some of the OPP core routines have gained
+> > rcu_read_{lock|unlock}() calls, as those still use RCU specific APIs
+> > within them.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com> [Devfreq]
+> 
+> This patch gets a lot of fails during application.
+> 
+> For devfreq-side, I've got:
+> error: drivers/devfreq/devfreq.c: patch does not apply
+> error: patch failed: drivers/devfreq/exynos-bus.c:103
+> error: drivers/devfreq/exynos-bus.c: patch does not apply
+> error: patch failed: drivers/devfreq/governor_passive.c:59
+> error: drivers/devfreq/governor_passive.c: patch does not apply
+> error: patch failed: drivers/devfreq/rk3399_dmc.c:91
+> error: drivers/devfreq/rk3399_dmc.c: patch does not apply
+> error: patch failed: drivers/devfreq/tegra-devfreq.c:487
+> error: drivers/devfreq/tegra-devfreq.c: patch does not apply
+> 
+> With the condition that you are going to properly rebase the patch,
+> you may add "Reviewed-by" from me.
+> (the code itself looks fine.)
 
-LS0tLS1CRUdJTiBQR1AgU0lHTkVEIE1FU1NBR0UtLS0tLQ0KSGFzaDogU0hBMQ0KDQpUaGUgZm9s
-bG93aW5nIGNoYW5nZXMgc2luY2UgY29tbWl0IDU2NmNmODc3YTFmY2I2ZDZkYzAxMjZiMDc2YWFk
-MDYyMDU0YzI2Mzc6DQoNCiAgTGludXggNC4xMC1yYzYgKDIwMTctMDEtMjkgMTQ6MjU6MTcgLTA4
-MDApDQoNCmFyZSBhdmFpbGFibGUgaW4gdGhlIGdpdCByZXBvc2l0b3J5IGF0Og0KDQogIGh0dHBz
-Oi8vZ2l0Lmtlcm5lbC5vcmcvcHViL3NjbS9saW51eC9rZXJuZWwvZ2l0L216eC9kZXZmcmVxLmdp
-dCB0YWdzL3B1bGxyZXFfMjAxNzAxMzENCg0KZm9yIHlvdSB0byBmZXRjaCBjaGFuZ2VzIHVwIHRv
-IDQ1ODVmYmNiNTMzMWZjOTEwYjdlNTUzYWQzZWZkMGRkN2IzMjBkMTQ6DQoNCiAgUE0gLyBkZXZm
-cmVxOiBNb2RpZnkgdGhlIGRldmljZSBuYW1lIGFzIGRldmZyZXEoWCkgZm9yIHN5c2ZzICgyMDE3
-LTAxLTMxIDE2OjU3OjE5ICswOTAwKQ0KDQotIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NClB1bGwgUmVxdWVzdCBmcm9tIFBN
-IC8gZGV2ZnJlcSB0byBMaW51eC1QTSBmb3IgbmV4dC4NCg0KLSAtLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQpDaGFud29vIENo
-b2kgKDExKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zLWJ1czogQWRkIHRoZSBkZXRhaWxl
-ZCBjb3JyZWxhdGlvbiBmb3IgRXh5bm9zNTQzMw0KICAgICAgUE0gLyBkZXZmcmVxOiBleHlub3Mt
-cHBtdTogVXNlIHRoZSByZWdtYXAgaW50ZXJmYWNlIHRvIGhhbmRsZSB0aGUgcmVnaXN0ZXJzDQog
-ICAgICBQTSAvIGRldmZyZXE6IGV4eW5vcy1idXM6IFByaW50IHRoZSByZWFsIGNsb2NrIHJhdGUg
-b2YgYnVzDQogICAgICBQTSAvIGRldmZyZXE6IEZpeCB0aGUgY2hlY2twYXRjaCB3YXJuaW5ncw0K
-ICAgICAgUE0gLyBkZXZmcmVxOiBGaXggdGhlIHdyb25nIGRlc2NyaXB0aW9uIGZvciB1c2Vyc3Bh
-Y2UgZ292ZXJub3INCiAgICAgIFBNIC8gZGV2ZnJlcTogZXh5bm9zLXBwbXU6IFNob3cgdGhlIHJl
-Z2lzdHJlZCBkZXZpY2UgZm9yIHBwbXUgZGV2aWNlDQogICAgICBQTSAvIGRldmZyZXE6IEZpeCBh
-dmFpbGFibGVfZ292ZXJub3Igc3lzZnMNCiAgICAgIFBNIC8gZGV2ZnJlcTogRml4IHdyb25nIHRy
-YW5zX3N0YXQgb2YgcGFzc2l2ZSBkZXZmcmVxIGRldmljZQ0KICAgICAgUE0gLyBkZXZmcmVxOiBS
-ZW1vdmUgdW5uZWNlc3Nhcnkgc2VwYXJhdGUgX3JlbW92ZV9kZXZmcmVxKCkNCiAgICAgIFBNIC8g
-ZGV2ZnJlcTogU2ltcGxpZnkgdGhlIHN5c2ZzIG5hbWUgb2YgZGV2ZnJlcS1ldmVudCBkZXZpY2UN
-CiAgICAgIFBNIC8gZGV2ZnJlcTogTW9kaWZ5IHRoZSBkZXZpY2UgbmFtZSBhcyBkZXZmcmVxKFgp
-IGZvciBzeXNmcw0KDQpDaHJpcyBEaWFtYW5kICgxKToNCiAgICAgIFBNIC8gZGV2ZnJlcTogRG9u
-J3QgZGVsZXRlIHN5c2ZzIGdyb3VwIHR3aWNlDQoNCiAuLi4vQUJJL3Rlc3Rpbmcvc3lzZnMtY2xh
-c3MtZGV2ZnJlcS1ldmVudCAgICAgICAgICB8ICAyNSArKw0KIC4uLi9kZXZpY2V0cmVlL2JpbmRp
-bmdzL2RldmZyZXEvZXh5bm9zLWJ1cy50eHQgICAgIHwgIDE0ICsNCiBkcml2ZXJzL2RldmZyZXEv
-ZGV2ZnJlcS1ldmVudC5jICAgICAgICAgICAgICAgICAgICB8ICAgNCArLQ0KIGRyaXZlcnMvZGV2
-ZnJlcS9kZXZmcmVxLmMgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDc0ICsrKy0tDQogZHJp
-dmVycy9kZXZmcmVxL2V2ZW50L2V4eW5vcy1wcG11LmMgICAgICAgICAgICAgICAgfCAzMjkgKysr
-KysrKysrKysrKysrLS0tLS0tDQogZHJpdmVycy9kZXZmcmVxL2V4eW5vcy1idXMuYyAgICAgICAg
-ICAgICAgICAgICAgICAgfCAgIDggKy0NCiBkcml2ZXJzL2RldmZyZXEvZ292ZXJub3IuaCAgICAg
-ICAgICAgICAgICAgICAgICAgICB8ICAgMiArDQogZHJpdmVycy9kZXZmcmVxL2dvdmVybm9yX3Bh
-c3NpdmUuYyAgICAgICAgICAgICAgICAgfCAgIDYgKw0KIGRyaXZlcnMvZGV2ZnJlcS9nb3Zlcm5v
-cl91c2Vyc3BhY2UuYyAgICAgICAgICAgICAgIHwgIDExICstDQogaW5jbHVkZS9saW51eC9kZXZm
-cmVxLmggICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDMgKw0KIDEwIGZpbGVzIGNoYW5n
-ZWQsIDM1MCBpbnNlcnRpb25zKCspLCAxMjYgZGVsZXRpb25zKC0pDQogY3JlYXRlIG1vZGUgMTAw
-NjQ0IERvY3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcvc3lzZnMtY2xhc3MtZGV2ZnJlcS1ldmVudA0K
-LS0tLS1CRUdJTiBQR1AgU0lHTkFUVVJFLS0tLS0NClZlcnNpb246IEdudVBHIHYxDQoNCmlRSWNC
-QUVCQWdBR0JRSllrRVhFQUFvSkVCT2h1cnZXQm9DS2ZaY1FBS0kzMzN0TFcyWU5MODBzaVF1RENo
-cngNCkRSdWN0emY1a29qZ1dxWGpZN2tCb21ZclVleVBBa0Y4eTFTTWFoVEsxYXRtMU5tcFRqc0xO
-TjdTYm11S24zUnQNCnlGWW1hK0pCMmVWSW1ITHVCMHJseUEyV3FRSlhqVGtaTXpqSzlDOXI5eDZJ
-UXlWeld0M3V2aE9YVGNmQURQL0MNClBNZ1ZnbGhmdHplYVB4ZkN0S3NhZVMxV3pOQU5VMGVMUDF1
-aHIybmlHR250amdsaGNkRTc0M1lnWXBhaS9RK0oNCmtDZDBVdmpBakM1N1U3bEk2Tlc0elZYTXVV
-a1BEcTgrd3UrN3B2YnM4MjF0ck10YXFqdVp2eEwrN1RDUjhKTmgNCmlNM2dPamVZUVpWUFNmcEpH
-Nnd0M3l6c3R0M21pOUZCUmphU1dGTm9nOGtvYkUwb3Y4YTdZZyt4SDdKU2VDMUgNClRJdG54eGI1
-NHVIZTVFQi9ZTjFtRnhIK0JvblFaL1lOSjFQUTVkYS9vMllNdUp4SEhRSzZNRlNqbElZbi9Md3YN
-Cmxaa0hpSVVXSmp1UlkvK3lKNWtiZnRwSWlYNmdRcG1WbU9XM0ZmdmloYTV3WTV2UjFMQkhDK0RR
-MHMvV1BRWk8NCnBLVmJVMnMxNzBoU1RxenVzK2VMTTFqNzBWV1dSSFVodW5PZjNiOE1wMnRSdTB6
-aktSQTZiNGlFNVdEcDRKREkNCmVuMHgxSnNKTzZrWXpydWdHT3hSTFc5YU9yQlVXdkszK3UzZ2dJ
-NlVuU2ZCaUhaak9jQ0JPQm1hVC9nNVFqeDINCmNCRWlpNDQwYjVpcEZUQnlDeTJySE4zS0s4dU9G
-UTBGbUlzZWRvWUdiditlaFp5c2lYMW5vMGNaVnpranhTVE0NCnJEZm9WSXZ0d3pYMFkxS0pBbnVk
-DQo9QTM2Vw0KLS0tLS1FTkQgUEdQIFNJR05BVFVSRS0tLS0tDQo=
-------=_Part_877015_13617020.1485850802207--
+This is already applied by Rafael and was based over his tree only.
+
+-- 
+viresh
