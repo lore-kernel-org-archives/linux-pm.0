@@ -1,15 +1,15 @@
 From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v2 15/25] ARM: sun5i: chip: enable ACIN power supply
- subnode
-Date: Tue, 31 Jan 2017 13:03:37 +0800
-Message-ID: <CAGb2v66f2W_uqcX_GP1ZMUUhPkfGGNA7mvf2=6uabZ8Hk6zgnA@mail.gmail.com>
+Subject: Re: [PATCH v2 17/25] mfd: axp20x: add CHRG_CTRL1/2/3 to writeable
+ regs for AXP20X/AXP22X
+Date: Tue, 31 Jan 2017 13:05:15 +0800
+Message-ID: <CAGb2v65RqphAkWVqwmZr8tKhXxSrkYQSiwg6tTa8uKomuV0hmA@mail.gmail.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-16-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-18-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-16-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-18-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,11 +25,17 @@ List-Id: linux-pm@vger.kernel.org
 
 On Fri, Jan 27, 2017 at 4:54 PM, Quentin Schulz
 <quentin.schulz@free-electrons.com> wrote:
-> The NextThing Co. CHIP has an AXP209 PMIC and can be power-supplied by
-> ACIN via the CHG-IN pin.
+> The CHRG_CTRL1 and CHRG_CTRL2 registers are made for controlling
+> different battery charging settings such as the constant current charge
+> value.
 >
-> This enables the ACIN power supply subnode in the DT.
+> The AXP22X also have a third register CHRG_CTRL3 which has settings for
+> battery charging too.
+>
+> This adds the CHRG_CTRL1, CHRG_CTRL2 and CHRG_CTRL3 registers to the
+> list of writeable registers for AXP20X and AXP22X PMICs.
 >
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
 Acked-by: Chen-Yu Tsai <wens@csie.org>
