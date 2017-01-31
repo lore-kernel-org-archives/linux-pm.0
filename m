@@ -1,36 +1,43 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v2 19/25] iio: adc: axp20x_adc: map battery IIO channels
-Date: Tue, 31 Jan 2017 13:06:23 +0800
-Message-ID: <CAGb2v6662oikMk8uhD-mMx9d4Gf4Fw64ndOsj89EPcNxA9S6Cg@mail.gmail.com>
-References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-20-quentin.schulz@free-electrons.com>
- <7ecf7c00-3f8e-04e5-4c96-db1843294f2e@kernel.org>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: RE: Re: [PATCH v4 1/4] PM / devfreq: Fix the wrong description for
+ userspace governor
+Date: Tue, 31 Jan 2017 04:51:59 +0000
+Message-ID: <20170131045159epcms1p251b95eb0af135c4620c7b435b4eda039@epcms1p2>
+References: <1485142299-9986-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20170123033151epcas5p3a484d70bbdef282b92eb8d97d912e75c@epcas5p3.samsung.com>
+ <20170124034211epcms1p6ded0f600506896af5bdf09e9afd6eb94@epcms1p6>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <7ecf7c00-3f8e-04e5-4c96-db1843294f2e@kernel.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Jonathan Cameron <jic23@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Quentin Schulz <quentin.schulz@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/related;
+ boundary="----=_Part_845513_1819253663.1485838319730"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Jan 28, 2017 at 10:52 PM, Jonathan Cameron <jic23@kernel.org> wrote:
-> On 27/01/17 08:54, Quentin Schulz wrote:
->> This maps the IIO channels batt_v, batt_chrg_i and batt_dischrg_i
->> (respectively exposing the current charging and discharging currents and
->> current voltage measures of the battery power supply) to the battery
->> power supply driver.
->>
->> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-> Acked-by: Jonathan Cameron <jic23@kernel.org>
+------=_Part_845513_1819253663.1485838319730
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="utf-8"
 
-Acked-by: Chen-Yu Tsai <wens@csie.org>
+PiBPbiBUdWUsIEphbiAyNCwgMjAxNyBhdCA0OjQyIEFNLCBNeXVuZ0pvbyBIYW0gPG15dW5nam9v
+LmhhbUBzYW1zdW5nLmNvbT4gd3JvdGU6DQo+ID4+IFRoaXMgcGF0Y2ggZml4ZXMgdGhlIHdyb25n
+IGRlc2NyaXB0aW9uIG9mIGdvdmVybm9yX3VzZXJzcGFjZS5jDQo+ID4+IGFuZCByZW1vdmVzIHRo
+ZSB1bm5lZWRlZCBibGFuayBsaW5lLg0KPiA+Pg0KPiA+PiBTaWduZWQtb2ZmLWJ5OiBDaGFud29v
+IENob2kgPGN3MDAuY2hvaUBzYW1zdW5nLmNvbT4NCj4gPj4gLS0tDQo+ID4NCj4gPiBBcHBsaWVk
+IGluIGZvci1uZXh0DQo+IA0KPiANCj4gUXVpdGUgZnJhbmtseSBJJ20gbm90IGVudGlyZWx5IHN1
+cmUgd2hhdCdzIGdvaW5nIG9uIGluIHRoZSBkZXZmcmVxIGxhbmQuDQo+IA0KPiBTb21lIHBhdGNo
+ZXMgYXJlIEFDS2VkIGJ5IHlvdSwgc29tZSBvZiB0aGVtIGFyZSBhcHBsaWVkIGFuZCBpdCBpcyBo
+YXJkDQo+IHRvIHNheSB3aGF0IHRoZSBydWxlIGlzLg0KPiANCj4gQmVzaWRlcywgaXQgaXMgcXVp
+dGUgbGF0ZSBpbiB0aGUgY3ljbGUsIHNvIGl0IHdvdWxkIGJlIG5pY2UgdG8gcmVjZWl2ZQ0KPiBh
+IHB1bGwgcmVxdWVzdCBmb3IgdGhlIGRldmZyZXEgbWF0ZXJpYWwgYWxyZWFkeSBjb2xsZWN0ZWQg
+Zm9yIDQuMTEuDQo+IA0KPiBUaGFua3MsDQo+IFJhZmFlbA0KDQotIFRoZSBwYXRjaGVzIHRoYXQg
+Y2hhbmdlIEFCSSBpcyBiZWluZyBkZWxheWVkDQogIGZvciBmdXJ0aGVyIGRpc2N1c3Npb25zIHdp
+dGggQ2hhbndvby4NCg0KLSBUaGUgcGF0Y2hlcyB0aGF0IGNoYW5nZSBtZWNoYW5pc21zIG9mIGhh
+bmRsaW5nIHBhc3NpdmUgZ292ZXJub3INCmRpZmZlcmVudGx5IGluIGRldmZyZXEuYyByZXF1aXJl
+IGZ1cnRoZXIgdXBkYXRlcyBmcm9tIENoYW53b287DQpzbyB0aGV5IGFyZSBiZWluZyBub3QgYXBw
+bGllZCBmb3Igbm93IGFzIHdlbGwuDQoNCklmIGl0IGFwcGVhcnMgdGhhdCB0aG9zZSB0d28gcGF0
+Y2hzZXQgYXJlIG5vdCBnb2luZyB0byBtYWtlIGluIHRpbWUNCihtaWQgdGhpcyB3ZWVrKSwgSSds
+bCBzZW5kIG91dCBwdWxsLXJlcXVlc3QgZm9yIDQuMTEgd2l0aG91dCB0aGVtLg0KDQoNCkNoZWVy
+cywNCk15dW5nSm9vIA0KDQo=
+------=_Part_845513_1819253663.1485838319730--
