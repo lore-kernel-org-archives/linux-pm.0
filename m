@@ -1,14 +1,15 @@
 From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v2 13/25] ARM: dtsi: axp22x: add AC power supply subnode
-Date: Tue, 31 Jan 2017 12:13:04 +0800
-Message-ID: <CAGb2v64_o8e7svVPboUfcskU_Gf-Rqy8ZMRT7HHwZPB8P=SB9A@mail.gmail.com>
+Subject: Re: [PATCH v2 14/25] ARM: dts: sun8i: sina33: enable ACIN power
+ supply subnode
+Date: Tue, 31 Jan 2017 13:03:13 +0800
+Message-ID: <CAGb2v6780BSrvPkp9B62E9doJBxi96165R8coEraRc_dJSLxuQ@mail.gmail.com>
 References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-14-quentin.schulz@free-electrons.com>
+ <20170127085458.18270-15-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170127085458.18270-14-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170127085458.18270-15-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,9 +25,8 @@ List-Id: linux-pm@vger.kernel.org
 
 On Fri, Jan 27, 2017 at 4:54 PM, Quentin Schulz
 <quentin.schulz@free-electrons.com> wrote:
-> The X-Powers AXP22X PMIC exposes the status of AC power supply.
->
-> This adds the AC power supply subnode for the AXP22X PMIC.
+> The Sinlinx SinA33 has an AXP223 PMIC and an ACIN connector, thus, we
+> enable the ACIN power supply in its Device Tree.
 >
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 
