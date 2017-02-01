@@ -1,90 +1,41 @@
-From: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v2 2/2] drm/radeon: make MacBook Pro d3_delay quirk more
- generic
-Date: Wed, 01 Feb 2017 10:22:26 -0600
-Message-ID: <20170201162226.24314.51119.stgit@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170201162020.24314.27094.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v3 4/5] soc: samsung: pm_domains: Read domain name from
+ the new label property
+Date: Wed, 1 Feb 2017 10:25:54 -0600
+Message-ID: <20170201162554.airhzowkqpyaxqpf@rob-hp-laptop>
+References: <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170130121915eucas1p23aa4f4be912bcd64f9521f6e6b51132f@eucas1p2.samsung.com>
+ <1485778740-30337-5-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <20170201162020.24314.27094.stgit@bhelgaas-glaptop.roam.corp.google.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Alex Deucher <alexander.deucher@amd.com>, Christian =?utf-8?b?S8O2bmln?= <christian.koenig@amd.com>
-Cc: linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Maarten Lankhorst <maarten.lankhorst@canonical.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:35859 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751096AbdBAQZ4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2017 11:25:56 -0500
+Content-Disposition: inline
+In-Reply-To: <1485778740-30337-5-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, devicetree@vger.kernel.org
 
-VGhlIFBDSSBQb3dlciBNYW5hZ2VtZW50IFNwZWMsIHIxLjIsIHNlYyA1LjYuMSwgcmVxdWlyZXMg
-YSAxMCBtaWxsaXNlY29uZApkZWxheSB3aGVuIHBvd2VyaW5nIG9uIGEgZGV2aWNlLCBpLmUuLCB0
-cmFuc2l0aW9uaW5nIGZyb20gc3RhdGUgRDNob3QgdG8KRDAuCgpBcHBhcmVudGx5IHNvbWUgZGV2
-aWNlcyByZXF1aXJlIG1vcmUgdGltZSwgYW5kIGQxZjk4MDllZDEzMSAoImRybS9yYWRlb246CmFk
-ZCBxdWlyayBmb3IgZDMgZGVsYXkgZHVyaW5nIHN3aXRjaGVyb28gcG93ZXJvbiBmb3IgYXBwbGUg
-bWFjYm9va3MiKSBhZGRlZAphbiBhZGRpdGlvbmFsIGRlbGF5IGZvciB0aGUgUmFkZW9uIGRldmlj
-ZSBpbiBhIE1hY0Jvb2sgUHJvLiAgNDgwN2M1YThhMGM4CigiZHJtL3JhZGVvbjogYWRkIGEgUFgg
-cXVpcmsgbGlzdCIpIG1hZGUgdGhlIGFmZmVjdGVkIGRldmljZSBtb3JlIGV4cGxpY2l0LgoKQWRk
-IGEgZ2VuZXJpYyBQQ0kgcXVpcmsgdG8gaW5jcmVhc2UgdGhlIGQzX2RlbGF5LiAgVGhpcyBtZWFu
-cyB3ZSB3aWxsIHVzZQp0aGUgYWRkaXRpb25hbCBkZWxheSBmb3IgKmFsbCogd2FrZXVwcyBmcm9t
-IEQzLCBub3QganVzdCB0aG9zZSBpbml0aWF0ZWQgYnkKcmFkZW9uX3N3aXRjaGVyb29fc2V0X3N0
-YXRlKCkuCgpTaWduZWQtb2ZmLWJ5OiBCam9ybiBIZWxnYWFzIDxiaGVsZ2Fhc0Bnb29nbGUuY29t
-PgpBY2tlZC1ieTogQWxleCBEZXVjaGVyIDxhbGV4YW5kZXIuZGV1Y2hlckBhbWQuY29tPgpDQzog
-TWFhcnRlbiBMYW5raG9yc3QgPG1hYXJ0ZW4ubGFua2hvcnN0QGNhbm9uaWNhbC5jb20+Ci0tLQog
-ZHJpdmVycy9ncHUvZHJtL3JhZGVvbi9yYWRlb25fZGV2aWNlLmMgfCAgIDExIC0tLS0tLS0tLS0t
-CiBkcml2ZXJzL3BjaS9xdWlya3MuYyAgICAgICAgICAgICAgICAgICB8ICAgMTMgKysrKysrKysr
-KysrKwogMiBmaWxlcyBjaGFuZ2VkLCAxMyBpbnNlcnRpb25zKCspLCAxMSBkZWxldGlvbnMoLSkK
-CmRpZmYgLS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9kZXZpY2UuYyBiL2Ry
-aXZlcnMvZ3B1L2RybS9yYWRlb24vcmFkZW9uX2RldmljZS5jCmluZGV4IDhhMWRmMmExYWZiZC4u
-ZTk1NGM5Y2RjZmMxIDEwMDY0NAotLS0gYS9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9k
-ZXZpY2UuYworKysgYi9kcml2ZXJzL2dwdS9kcm0vcmFkZW9uL3JhZGVvbl9kZXZpY2UuYwpAQCAt
-MTEzLDcgKzExMyw2IEBAIHN0YXRpYyBpbmxpbmUgYm9vbCByYWRlb25faXNfYXRweF9oeWJyaWQo
-dm9pZCkgeyByZXR1cm4gZmFsc2U7IH0KICNlbmRpZgogCiAjZGVmaW5lIFJBREVPTl9QWF9RVUlS
-S19ESVNBQkxFX1BYICAoMSA8PCAwKQotI2RlZmluZSBSQURFT05fUFhfUVVJUktfTE9OR19XQUtF
-VVAgKDEgPDwgMSkKIAogc3RydWN0IHJhZGVvbl9weF9xdWlyayB7CiAJdTMyIGNoaXBfdmVuZG9y
-OwpAQCAtMTM2LDggKzEzNSw2IEBAIHN0YXRpYyBzdHJ1Y3QgcmFkZW9uX3B4X3F1aXJrIHJhZGVv
-bl9weF9xdWlya19saXN0W10gPSB7CiAJICogaHR0cHM6Ly9idWd6aWxsYS5rZXJuZWwub3JnL3No
-b3dfYnVnLmNnaT9pZD01MTM4MQogCSAqLwogCXsgUENJX1ZFTkRPUl9JRF9BVEksIDB4Njg0MCwg
-MHgxMDQzLCAweDIxMjIsIFJBREVPTl9QWF9RVUlSS19ESVNBQkxFX1BYIH0sCi0JLyogbWFjYm9v
-ayBwcm8gOC4yICovCi0JeyBQQ0lfVkVORE9SX0lEX0FUSSwgMHg2NzQxLCBQQ0lfVkVORE9SX0lE
-X0FQUExFLCAweDAwZTIsIFJBREVPTl9QWF9RVUlSS19MT05HX1dBS0VVUCB9LAogCXsgMCwgMCwg
-MCwgMCwgMCB9LAogfTsKIApAQCAtMTI0MSwyNSArMTIzOCwxNyBAQCBzdGF0aWMgdm9pZCByYWRl
-b25fY2hlY2tfYXJndW1lbnRzKHN0cnVjdCByYWRlb25fZGV2aWNlICpyZGV2KQogc3RhdGljIHZv
-aWQgcmFkZW9uX3N3aXRjaGVyb29fc2V0X3N0YXRlKHN0cnVjdCBwY2lfZGV2ICpwZGV2LCBlbnVt
-IHZnYV9zd2l0Y2hlcm9vX3N0YXRlIHN0YXRlKQogewogCXN0cnVjdCBkcm1fZGV2aWNlICpkZXYg
-PSBwY2lfZ2V0X2RydmRhdGEocGRldik7Ci0Jc3RydWN0IHJhZGVvbl9kZXZpY2UgKnJkZXYgPSBk
-ZXYtPmRldl9wcml2YXRlOwogCiAJaWYgKHJhZGVvbl9pc19weChkZXYpICYmIHN0YXRlID09IFZH
-QV9TV0lUQ0hFUk9PX09GRikKIAkJcmV0dXJuOwogCiAJaWYgKHN0YXRlID09IFZHQV9TV0lUQ0hF
-Uk9PX09OKSB7Ci0JCXVuc2lnbmVkIGQzX2RlbGF5ID0gZGV2LT5wZGV2LT5kM19kZWxheTsKLQog
-CQlwcmludGsoS0VSTl9JTkZPICJyYWRlb246IHN3aXRjaGVkIG9uXG4iKTsKIAkJLyogZG9uJ3Qg
-c3VzcGVuZCBvciByZXN1bWUgY2FyZCBub3JtYWxseSAqLwogCQlkZXYtPnN3aXRjaF9wb3dlcl9z
-dGF0ZSA9IERSTV9TV0lUQ0hfUE9XRVJfQ0hBTkdJTkc7CiAKLQkJaWYgKGQzX2RlbGF5IDwgMjAg
-JiYgKHJkZXYtPnB4X3F1aXJrX2ZsYWdzICYgUkFERU9OX1BYX1FVSVJLX0xPTkdfV0FLRVVQKSkK
-LQkJCWRldi0+cGRldi0+ZDNfZGVsYXkgPSAyMDsKLQogCQlyYWRlb25fcmVzdW1lX2ttcyhkZXYs
-IHRydWUsIHRydWUpOwogCi0JCWRldi0+cGRldi0+ZDNfZGVsYXkgPSBkM19kZWxheTsKLQogCQlk
-ZXYtPnN3aXRjaF9wb3dlcl9zdGF0ZSA9IERSTV9TV0lUQ0hfUE9XRVJfT047CiAJCWRybV9rbXNf
-aGVscGVyX3BvbGxfZW5hYmxlKGRldik7CiAJfSBlbHNlIHsKZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-cGNpL3F1aXJrcy5jIGIvZHJpdmVycy9wY2kvcXVpcmtzLmMKaW5kZXggMTgwMGJlZmE4YjhiLi41
-MTJkN2E4NzVkNjIgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcGNpL3F1aXJrcy5jCisrKyBiL2RyaXZl
-cnMvcGNpL3F1aXJrcy5jCkBAIC0xNjgzLDYgKzE2ODMsMTkgQEAgREVDTEFSRV9QQ0lfRklYVVBf
-RklOQUwoUENJX1ZFTkRPUl9JRF9JTlRFTCwJMHgyNjA5LCBxdWlya19pbnRlbF9wY2llX3BtKTsK
-IERFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfSU5URUwsCTB4MjYwYSwgcXVp
-cmtfaW50ZWxfcGNpZV9wbSk7CiBERUNMQVJFX1BDSV9GSVhVUF9GSU5BTChQQ0lfVkVORE9SX0lE
-X0lOVEVMLAkweDI2MGIsIHF1aXJrX2ludGVsX3BjaWVfcG0pOwogCitzdGF0aWMgdm9pZCBxdWly
-a19yYWRlb25fcG0oc3RydWN0IHBjaV9kZXYgKmRldikKK3sKKwlpZiAoZGV2LT5zdWJzeXN0ZW1f
-dmVuZG9yID09IFBDSV9WRU5ET1JfSURfQVBQTEUgJiYKKwkgICAgZGV2LT5zdWJzeXN0ZW1fZGV2
-aWNlID09IDB4MDBlMikgeworCQlpZiAoZGV2LT5kM19kZWxheSA8IDIwKSB7CisJCQlkZXYtPmQz
-X2RlbGF5ID0gMjA7CisJCQlkZXZfaW5mbygmZGV2LT5kZXYsICJleHRlbmRpbmcgZGVsYXkgYWZ0
-ZXIgcG93ZXItb24gZnJvbSBEMyB0byAlZCBtc2VjXG4iLAorCQkJCSBkZXYtPmQzX2RlbGF5KTsK
-KwkJfQorCX0KK30KK0RFQ0xBUkVfUENJX0ZJWFVQX0ZJTkFMKFBDSV9WRU5ET1JfSURfQVRJLCAw
-eDY3NDEsIHF1aXJrX3JhZGVvbl9wbSk7CisKICNpZmRlZiBDT05GSUdfWDg2X0lPX0FQSUMKIC8q
-CiAgKiBCb290IGludGVycnVwdHMgb24gc29tZSBjaGlwc2V0cyBjYW5ub3QgYmUgdHVybmVkIG9m
-Zi4gRm9yIHRoZXNlIGNoaXBzZXRzLAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJl
-ZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGlu
-Zm8vZHJpLWRldmVsCg==
+On Mon, Jan 30, 2017 at 01:18:59PM +0100, Marek Szyprowski wrote:
+> Device tree nodes for each power domain should use generic "power-domain"
+> name, so using it as a domain name doesn't give much benefits. This patch
+> adds support for human readable names defined in 'label' property. Such
+> names are visible to userspace and makes debugging much easier. When no
+> 'label' property is found, driver keeps using the name constructed from
+> full node name.
+
+I'm not sure this is really a good use of label. label is intended for 
+end user visible things like ports/connectors on a board. It's fine 
+here, but I wouldn't want to see it used everywhere.
+
+> 
+> Suggested-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  Documentation/devicetree/bindings/power/pd-samsung.txt |  4 ++++
+>  drivers/soc/samsung/pm_domains.c                       | 12 ++++++++++--
+>  2 files changed, 14 insertions(+), 2 deletions(-)
