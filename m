@@ -1,117 +1,120 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v2 3/3] x86: Make the GDT remapping read-only on 64 bit
-Date: Wed, 1 Feb 2017 10:15:34 +0100
-Message-ID: <20170201091534.GA25025@gmail.com>
-References: <20170126165940.30799-1-thgarnie@google.com>
- <20170126165940.30799-3-thgarnie@google.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC 1/3] system-power: Add system power and restart framework
+Date: Wed, 1 Feb 2017 12:13:31 +0100
+Message-ID: <20170201111331.GA27721@amd>
+References: <20170130171506.3527-1-thierry.reding@gmail.com>
+ <20170130171506.3527-2-thierry.reding@gmail.com>
+ <20170130215301.GA18997@atrey.karlin.mff.cuni.cz>
+ <20170131174658.GA16896@ulmo.ba.sec>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-6212-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="5mCyUwZo2JvN/JJP"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60078 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751357AbdBALNe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2017 06:13:34 -0500
 Content-Disposition: inline
-In-Reply-To: <20170126165940.30799-3-thgarnie@google.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Borislav Petkov <bp@suse.de>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Christian Borntraeger <borntraeger@de.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>H
+In-Reply-To: <20170131174658.GA16896@ulmo.ba.sec>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sebastian Reichel <sre@kernel.org>, Guenter Roeck <linux@roeck-us.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
-* Thomas Garnier <thgarnie@google.com> wrote:
+--5mCyUwZo2JvN/JJP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> This patch makes the GDT remapped pages read-only to prevent corruption.
-> This change is done only on 64 bit.
+On Tue 2017-01-31 18:46:58, Thierry Reding wrote:
+> On Mon, Jan 30, 2017 at 10:53:01PM +0100, Pavel Machek wrote:
+> > Hi!
+> >=20
+> >=20
+> > > +struct system_power_chip;
+> > > +
+> > > +struct system_power_ops {
+> > > +	int (*restart)(struct system_power_chip *chip, enum reboot_mode mod=
+e,
+> > > +		       char *cmd);
+> > > +	int (*power_off_prepare)(struct system_power_chip *chip);
+> > > +	int (*power_off)(struct system_power_chip *chip);
+> > > +};
+> > > +
+> > > +struct system_power_chip {
+> > > +	const struct system_power_ops *ops;
+> > > +	struct list_head list;
+> > > +	struct device *dev;
+> > > +};
+> >=20
+> > Is it useful to have two structures? AFAICT one would do.
+>=20
+> Yeah, one structure works fine. I was drawing inspiration from other
+> subsystems that have a separate structure for these. I've merged the
+> operations into the struct system_power_chip now because that gives
+> us some more flexiblity, for example in cases where a chip can be a
+> power controller and a reset controller, but sometimes we may want
+> it to be only one of them.
+>=20
+> > Do we always have struct device * to work with? IMO we have nothing
+> > suitable for example in the ACPI case. Would void * be more suitable?
+>=20
+> The struct device * was meant to be purely optional, but working with
+> the code some more today and doing some more conversions, I've resorted
+> to adding a separate field (const char *name) that takes precedence. So
+> if a chip specifies both a .dev and .name field, then .name will be the
+> user visible string, otherwise dev_name(.dev) will be used in
+> messages.
 
-Please spell '64-bit' consistently through the series. I've seen two variants:
+Thanks!
 
-  64 bit
-  64bit
+> > Could you convert someting (acpi?) to the new framework as
+> > demonstration?
+>=20
+> I had originally only converted architecture code to call into system
+> power instead of the notifier chain and added a driver for a chip that
+> I want to get this to work on. I've now converted a couple of other
+> drivers from drivers/power/reset as well as ACPI. I've also added a
+> very rudimentary prioritization mechanism that I've validated on the
+> specific setup that I'm working on.
+>=20
+> On the Jetson TX1 that I'm testing this on, the SoC has a way of
+> resetting itself. This has the advantage that some of the registers are
+> kept intact over the reset, and this in turn is used to control early
+> boot, so that specific recovery modes can be used. However, the board
+> has to be powered off using the PMIC (via I2C). The patches achieve this
+> by splitting up restart and power off into two steps, prepare and
+> restart/power-off, as well as levels to prioritize. On Jetson TX1 the
+> PMIC will be higher priority than the SoC (determined by the level) and
+> therefore be able to override the SoC restart mechanism if we want to.
+> If we don't we simply instruct the MAX77620 driver not to register the
+> restart callback, in which case the SoC implementation will be used.
+>=20
+> I've uploaded all of it to a branch on github:
+>=20
+> 	https://github.com/thierryreding/linux/tree/system-power
+>=20
+> It's rather lengthy, so I'm not sure if it makes sense to send to the
+> lists right away.
 
-> +/*
-> + * The LTR instruction marks the TSS GDT entry as busy. In 64bit, the GDT is
-> + * a read-only remapping. To prevent a page fault, the GDT is switched to the
-> + * original writeable version when needed.
+It is easier to review on lists, but no reasons to do it now.
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-s/In 64bit,
- /On 64-bit kernels,
+--5mCyUwZo2JvN/JJP
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> + */
-> +#ifdef CONFIG_X86_64
-> +static inline void native_load_tr_desc(void)
-> +{
-> +	struct desc_ptr gdt;
-> +	int cpu = raw_smp_processor_id();
-> +	bool restore = false;
-> +	struct desc_struct *fixmap_gdt;
-> +
-> +	native_store_gdt(&gdt);
-> +	fixmap_gdt = get_cpu_fixmap_gdt(cpu);
-> +
-> +	/*
-> +	 * If the current GDT is the read-only fixmap, swap to the original
-> +	 * writeable version. Swap back at the end.
-> +	 */
-> +	if (gdt.address == (unsigned long)fixmap_gdt) {
-> +		load_direct_gdt(cpu);
-> +		restore = true;
-> +	}
-> +	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
-> +	if (restore)
-> +		load_fixmap_gdt(cpu);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-Please use bool plus 0/1, it's more readable (to me) than the true/false notation.
+iEYEARECAAYFAliRwtsACgkQMOfwapXb+vKzWQCfT+QFSRGc8PXCLIq7tNOVI/IG
+Z94AoKH9WDD+dnCkgAeeQWpg9AFcBN6n
+=Qrvh
+-----END PGP SIGNATURE-----
 
->  extern void switch_to_new_gdt(int);
-> +extern void load_direct_gdt(int);
->  extern void load_fixmap_gdt(int);
-
-> +/* Load the original GDT from the per-cpu structure */
-> +void load_direct_gdt(int cpu)
-> +{
-> +	struct desc_ptr gdt_descr;
-> +
-> +	gdt_descr.address = (long)get_cpu_direct_gdt(cpu);
-
-Please name the functions in an easier to understand way, such as:
-
-	get_cpu_gdt_rw()
-	get_cpu_gdt_ro()
-
-that the GDT is in the direct mappings is less important than the fact the the 
-address is writable ...
-
-> +}
-> +EXPORT_SYMBOL(load_direct_gdt);
-
-EXPORT_SYMBOL_GPL(), or no export at all.
-
-> +EXPORT_SYMBOL(load_fixmap_gdt);
-
-ditto.
-
->  	 * VT restores TR but not its size.  Useless.
->  	 */
-> -	struct desc_ptr *gdt = this_cpu_ptr(&host_gdt);
->  	struct desc_struct *descs;
->  
-> -	descs = (void *)gdt->address;
-> +	descs = (void *)get_current_direct_gdt();
-
-Couldn't the type cast be dropped?
-
->  
-> -	table_base = gdt->address;
-> +	table_base = (unsigned long)get_current_direct_gdt();
-
-Instead of spreading these type casts far and wide please introduce another 
-accessor the returns 'unsigned long':
-
-	get_cpu_gdt_rw_vaddr()
-
-or such.
-
-Thanks,
-
-	Ingo
+--5mCyUwZo2JvN/JJP--
