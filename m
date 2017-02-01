@@ -1,47 +1,38 @@
-From: Andreas Boll <andreas.boll.dev@gmail.com>
-Subject: Re: [PATCH v2 0/2] drm amdgpu/radeon: clean up d3_delay usage
-Date: Wed, 1 Feb 2017 17:30:39 +0100
-Message-ID: <CACiKqBcZkX0V2EJPy+sPfDg0LWHSzBbkEVfL4h24iCKBFqqSpA@mail.gmail.com>
-References: <20170201162020.24314.27094.stgit@bhelgaas-glaptop.roam.corp.google.com>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/4] power: reset: Add Gemini poweroff DT bindings
+Date: Wed, 1 Feb 2017 11:11:48 -0600
+Message-ID: <20170201171148.zp2aol4abushh335@rob-hp-laptop>
+References: <20170130193635.18644-1-linus.walleij@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f66.google.com ([209.85.213.66]:34598 "EHLO
-        mail-vk0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750737AbdBAQal (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2017 11:30:41 -0500
-In-Reply-To: <20170201162020.24314.27094.stgit@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170130193635.18644-1-linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Hans Ulli Kroll <ulli.kroll-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Janos Laube <janos.dev-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Paulius Zaleckas <paulius.zaleckas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, openwrt-devel-p3rKhJxN3npAfugRpC6u6w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>, =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Maarten Lankhorst <maarten.lankhorst@canonical.com>
 
-For the series:
-Reviewed-by: Andreas Boll <andreas.boll.dev@gmail.com>
-
-2017-02-01 17:22 GMT+01:00 Bjorn Helgaas <bhelgaas@google.com>:
-> amdgpu doesn't need to touch pdev->d3_delay at all.
->
-> radeon has a d3_delay quirk for MacBook Pro, but it only affects
-> radeon_switcheroo_set_state().  I think it should affect wakeups done by
-> the PCI core as well.
->
-> Changes from v1 to v2:
->   - Fix accidental removal of "{ 0, 0, 0, 0, 0 }" quirk list termination
->     (thanks, Andreas Boll!)
->   - Add ack from Alex Deucher
+On Mon, Jan 30, 2017 at 08:36:32PM +0100, Linus Walleij wrote:
+> This adds device tree bindings to the power management controller
+> in the Gemini SoC.
+> 
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Cc: Janos Laube <janos.dev-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Cc: Paulius Zaleckas <paulius.zaleckas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Cc: Hans Ulli Kroll <ulli.kroll-gM/Ye1E23mwN+BqQ9rBEUg@public.gmane.org>
+> Cc: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> Signed-off-by: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 > ---
->
-> Bjorn Helgaas (2):
->       drm/amdgpu: remove unnecessary save/restore of pdev->d3_delay
->       drm/radeon: make MacBook Pro d3_delay quirk more generic
->
->
->  drivers/gpu/drm/amd/amdgpu/amdgpu_device.c |    4 ----
->  drivers/gpu/drm/radeon/radeon_device.c     |   11 -----------
->  drivers/pci/quirks.c                       |   13 +++++++++++++
->  3 files changed, 13 insertions(+), 15 deletions(-)
-> _______________________________________________
-> amd-gfx mailing list
-> amd-gfx@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/amd-gfx
+> Sebastian: please just merge this when your are pleased
+> with it. I will funnel the ARM parts through the ARM SoC tree.
+> ---
+>  .../devicetree/bindings/power/reset/gemini-poweroff.txt | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/gemini-poweroff.txt
+
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
