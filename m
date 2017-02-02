@@ -1,74 +1,84 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Correct comment in irq_safe_dev_in_no_sleep_domain()
-Date: Thu, 2 Feb 2017 10:55:51 +0100
-Message-ID: <CAPDyKFoF4wCSyUMrL_by-p3Oqkx=D1ySOH5CSO321CVyTX-oNQ@mail.gmail.com>
-References: <1485878463-1672-1-git-send-email-ulf.hansson@linaro.org>
- <CAMuHMdXRvOTKCdvwy5JZM6RhSifse_goHubZq4FaMcOFE7x99g@mail.gmail.com>
- <CAPDyKFrUqDdFrHCLnEEOq5N9QCnoG_9eP_BD4yb9ccweyBLMog@mail.gmail.com> <CAMuHMdVvqUzU37vpcy9W=CFgzkemyq4jTW8bAFhWzojkyDpcPg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/2] cpufreq: brcmstb-avs-cpufreq: properly retrieve
+ P-state upon suspend
+Date: Thu, 2 Feb 2017 12:22:45 +0100
+Message-ID: <CAJZ5v0jfuaFarJcwgPeLcG0jaqPg7KFEKGp+bjXj5fQRQVx8jQ@mail.gmail.com>
+References: <20161219201028.18885-1-code@mmayer.net> <20170106041112.GC21926@vireshk-i7>
+ <CAGt4E5t9w-TE=dqaZJLYxyG__pS9HjPNaD-H-brC7GJudA=30g@mail.gmail.com>
+ <13652921.6keQ978gf5@aspire.rjw.lan> <20170202033315.GC7458@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f50.google.com ([74.125.82.50]:35623 "EHLO
-        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750985AbdBBJzx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 04:55:53 -0500
-Received: by mail-wm0-f50.google.com with SMTP id b65so82160340wmf.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 Feb 2017 01:55:52 -0800 (PST)
-In-Reply-To: <CAMuHMdVvqUzU37vpcy9W=CFgzkemyq4jTW8bAFhWzojkyDpcPg@mail.gmail.com>
+Received: from mail-ot0-f193.google.com ([74.125.82.193]:35517 "EHLO
+        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751131AbdBBLWq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 06:22:46 -0500
+In-Reply-To: <20170202033315.GC7458@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <markus.mayer@broadcom.com>, Markus Mayer <code@mmayer.net>, Power Management List <linux-pm@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 31 January 2017 at 18:17, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
->
-> On Tue, Jan 31, 2017 at 5:41 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 31 January 2017 at 17:17, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>> On Tue, Jan 31, 2017 at 5:01 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> The earlier comment stated that the dev_warn_once() was going to be printed
->>>> once per device. Let's fix that, as dev_warn_once() is printed only once,
->>>> no matter of the device.
->>>
->>> While I agree this makes the comment match the code, I think we would serve
->>> the users better by printing the warning once per PM domain.
->>> Currently the user cannot know if two or more PM domains cannot be powered
->>> off due to IRQ safe devices.
+On Thu, Feb 2, 2017 at 4:33 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 02-02-17, 00:44, Rafael J. Wysocki wrote:
+>> On Tuesday, January 31, 2017 10:53:01 AM Markus Mayer wrote:
+>> > On 5 January 2017 at 20:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > > On 19-12-16, 12:10, Markus Mayer wrote:
+>> > >> From: Markus Mayer <mmayer@broadcom.com>
+>> > >>
+>> > >> The AVS GET_PMAP command does return a P-state along with the P-map
+>> > >> information. However, that P-state is the initial P-state when the
+>> > >> P-map was first downloaded to AVS. It is *not* the current P-state.
+>> > >>
+>> > >> Therefore, we explicitly retrieve the P-state using the GET_PSTATE
+>> > >> command.
+>> > >>
+>> > >> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+>> > >> ---
+>> > >>  drivers/cpufreq/brcmstb-avs-cpufreq.c | 13 ++++++++++++-
+>> > >>  1 file changed, 12 insertions(+), 1 deletion(-)
+>> > >>
+>> > >> diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> > >> index 2c6e325..c943606 100644
+>> > >> --- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> > >> +++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+>> > >> @@ -784,8 +784,19 @@ static int brcm_avs_target_index(struct cpufreq_policy *policy,
+>> > >>  static int brcm_avs_suspend(struct cpufreq_policy *policy)
+>> > >>  {
+>> > >>       struct private_data *priv = policy->driver_data;
+>> > >> +     int ret;
+>> > >> +
+>> > >> +     ret = brcm_avs_get_pmap(priv, &priv->pmap);
+>> > >> +     if (ret)
+>> > >> +             return ret;
+>> > >>
+>> > >> -     return brcm_avs_get_pmap(priv, &priv->pmap);
+>> > >> +     /*
+>> > >> +      * We can't use the P-state returned by brcm_avs_get_pmap(), since
+>> > >> +      * that's the initial P-state from when the P-map was downloaded to the
+>> > >> +      * AVS co-processor, not necessarily the P-state we are running at now.
+>> > >> +      * So, we get the current P-state explicitly.
+>> > >> +      */
+>> > >> +     return brcm_avs_get_pstate(priv, &priv->pmap.state);
+>> > >>  }
+>> > >>
+>> > >>  static int brcm_avs_resume(struct cpufreq_policy *policy)
+>> > >
+>> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> >
+>> > Just wanted to follow up to see if this has been or will be picked up
+>> > for 4.10?
 >>
->> Right.
->>
->>> Perhaps a flag can be added to generic_pm_domain.flags to remember
->>> that the warning has been printed before?
->>
->> That seems like a reasonable adjustment. Allow me to cook a patch on
->> top of this one.
+>> For 4.10?  No way.
 >
-> Thanks!
->
->> Moreover, I was thinking of considering to check for always on domains
->> and perhaps skip printing this message in such cases. Would that make
->> sense as well?
->
-> That would make sense.
->
-> But how would you check that?
-> By comparing its governor with &pm_domain_always_on_gov?
-> Note that that is not sufficient, as I think its power_off() callback will still
-> be called. Only if it fails to power off and returns -EBUSY, it's a real
-> always-on domain.
+> I also thought it might get into 4.10 as these were fixes. Else he would be
+> required to push them via the 4.10 stable kernel.
 
-Hi Geert,
+We'll see.
 
-Correct! At this point, I am looking into how I in general can improve
-the code in genpd dealing with always on PM domains.
+There are other fixes I may want to push for 4.10 and I can bundle
+this thing with them if I decide to send one more pull request for
+4.10 after all.
 
-It seems like the genpd client, shouldn't need to implement the
-->power_off|on() callbacks at all, but instead just configure the
-genpd at init time as an always on PM domain.
-
-Then that information can be used in genpd at various places, to do
-optimizations and likely to avoid printing non-needed errors/warnings.
-I keep you posted.
-
-Kind regards
-Uffe
+Thanks,
+Rafael
