@@ -1,61 +1,116 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [RFC] w1: regression, remove need for ida and use
- PLATFORM_DEVID_AUTO
-Date: Thu, 2 Feb 2017 08:23:03 -0600
-Message-ID: <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
-References: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Petr Cvek <petr.cvek@tul.cz>, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] thermal: use cpumask_var_t for on-stack cpu masks
+Date: Thu,  2 Feb 2017 15:46:26 +0100
+Message-ID: <20170202144821.3721926-1-arnd@arndb.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 02/01/2017 07:05 PM, Petr Cvek wrote:
-> Patch 
-> 	w1: remove need for ida and use PLATFORM_DEVID_AUTO
-> 	098f9fb0c962eb2fdba5f9d34f4cf7a938237184 
-> 
-> causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
-> 
-> 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-> 		return ERR_PTR(-EINVAL);
-> 
-> A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
-> 
-> Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
-> 
-> 	pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
-> 
-> to
-> 
-> 	pdev = platform_device_alloc("ds2760-battery", 0);
-> 
-> Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
-> 
+Putting a bare cpumask structure on the stack produces a warning on
+large SMP configurations:
 
-If 20 is no longer the max thermal name then THERMAL_NAME_LENGTH should
-be changed.
+drivers/thermal/cpu_cooling.c: In function 'cpufreq_state2power':
+drivers/thermal/cpu_cooling.c:644:1: warning: the frame size of 1056 bytes is larger than 1024 bytes [-Wframe-larger-than=]
+drivers/thermal/cpu_cooling.c: In function '__cpufreq_cooling_register':
+drivers/thermal/cpu_cooling.c:898:1: warning: the frame size of 1104 bytes is larger than 1024 bytes [-Wframe-larger-than=]
 
-As for the couple boards hard-coding "ds2760-battery.0", this is a
-problem that should be fix regardless of any fix we chose here as IDA is
-not guaranteed to return 0, so the battery could just as easily be
-called ds2760-battery.7. (I've had this discussion before as the N900
-user-space also make this mistake).
+The recommended workaround is to use cpumask_var_t, which behaves just like
+a normal cpu mask in most cases, but turns into a dynamic allocation
+when CONFIG_CPUMASK_OFFSTACK is set.
 
-Andrew
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/thermal/cpu_cooling.c | 39 ++++++++++++++++++++++++++-------------
+ 1 file changed, 26 insertions(+), 13 deletions(-)
 
-> Best regards,
-> Petr
-> 
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index ca7ddaea450c..1d7f7e85f669 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -609,31 +609,39 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
+ 			       unsigned long state, u32 *power)
+ {
+ 	unsigned int freq, num_cpus;
+-	cpumask_t cpumask;
++	cpumask_var_t cpumask;
+ 	u32 static_power, dynamic_power;
+ 	int ret;
+ 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
+ 
+-	cpumask_and(&cpumask, &cpufreq_device->allowed_cpus, cpu_online_mask);
+-	num_cpus = cpumask_weight(&cpumask);
++	if (!alloc_cpumask_var(&cpumask, GFP_KERNEL))
++		return -ENOMEM;
++
++	cpumask_and(cpumask, &cpufreq_device->allowed_cpus, cpu_online_mask);
++	num_cpus = cpumask_weight(cpumask);
+ 
+ 	/* None of our cpus are online, so no power */
+ 	if (num_cpus == 0) {
+ 		*power = 0;
+-		return 0;
++		ret = 0;
++		goto out;
+ 	}
+ 
+ 	freq = cpufreq_device->freq_table[state];
+-	if (!freq)
+-		return -EINVAL;
++	if (!freq) {
++		ret = -EINVAL;
++		goto out;
++	}
+ 
+ 	dynamic_power = cpu_freq_to_power(cpufreq_device, freq) * num_cpus;
+ 	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
+ 	if (ret)
+-		return ret;
++		goto out;
+ 
+ 	*power = static_power + dynamic_power;
+-	return 0;
++out:
++	free_cpumask_var(cpumask);
++	return ret;;
+ }
+ 
+ /**
+@@ -759,16 +767,20 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	struct cpufreq_cooling_device *cpufreq_dev;
+ 	char dev_name[THERMAL_NAME_LENGTH];
+ 	struct cpufreq_frequency_table *pos, *table;
+-	struct cpumask temp_mask;
++	cpumask_var_t temp_mask;
+ 	unsigned int freq, i, num_cpus;
+ 	int ret;
+ 	struct thermal_cooling_device_ops *cooling_ops;
+ 
+-	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
+-	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
++	if (!alloc_cpumask_var(&temp_mask, GFP_KERNEL))
++		return ERR_PTR(-ENOMEM);
++
++	cpumask_and(temp_mask, clip_cpus, cpu_online_mask);
++	policy = cpufreq_cpu_get(cpumask_first(temp_mask));
+ 	if (!policy) {
+ 		pr_debug("%s: CPUFreq policy not found\n", __func__);
+-		return ERR_PTR(-EPROBE_DEFER);
++		cool_dev = ERR_PTR(-EPROBE_DEFER);
++		goto free_cpumask;
+ 	}
+ 
+ 	table = policy->freq_table;
+@@ -886,7 +898,8 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	kfree(cpufreq_dev);
+ put_policy:
+ 	cpufreq_cpu_put(policy);
+-
++free_cpumask:
++	free_cpumask_var(temp_mask);
+ 	return cool_dev;
+ }
+ 
+-- 
+2.9.0
