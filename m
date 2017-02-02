@@ -1,37 +1,228 @@
-From: Eduardo Valentin <edubezval@gmail.com>
+From: Mathieu Poirier <mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 Subject: Re: [PATCH v6 3/3] thermal: zx2967: add thermal driver for ZTE's
  zx2967 family
-Date: Thu, 2 Feb 2017 08:00:16 -0800
-Message-ID: <20170202160014.GA2419@localhost.localdomain>
+Date: Thu, 2 Feb 2017 09:56:13 -0700
+Message-ID: <20170202165613.GB15052@linaro.org>
 References: <1486048086-3431-1-git-send-email-baoyou.xie@linaro.org>
  <1486048086-3431-3-git-send-email-baoyou.xie@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:34007 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750879AbdBBQAW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 11:00:22 -0500
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1486048086-3431-3-git-send-email-baoyou.xie@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1486048086-3431-3-git-send-email-baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: jun.nie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, xie.baoyou-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org, chen.chaokai-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org, wang.qiang01-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Baoyou Xie <baoyou.xie@linaro.org>
-Cc: jun.nie@linaro.org, rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, shawnguo@kernel.org, xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
-
-Helllo Baoyou,
-
-Sorry I was not clear enough in my previous comment.
-
-Please find the explanation below:
-
 
 On Thu, Feb 02, 2017 at 11:08:06PM +0800, Baoyou Xie wrote:
 > This patch adds thermal driver for ZTE's zx2967 family.
 > 
+> Signed-off-by: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/thermal/Kconfig          |   8 ++
+>  drivers/thermal/Makefile         |   1 +
+>  drivers/thermal/zx2967_thermal.c | 265 +++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 274 insertions(+)
+>  create mode 100644 drivers/thermal/zx2967_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 18f2de6..f64bd50 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -444,4 +444,12 @@ config BCM2835_THERMAL
+>  	help
+>  	  Support for thermal sensors on Broadcom bcm2835 SoCs.
+>  
+> +config ZX2967_THERMAL
+> +	tristate "Thermal sensors on zx2967 SoC"
+> +	depends on ARCH_ZX || COMPILE_TEST
+> +	help
+> +	  Enable the zx2967 thermal sensors driver, which supports
+> +	  the primitive temperature sensor embedded in zx2967 SoCs.
+> +	  This sensor generates the real time die temperature.
+> +
+>  endif
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 677c6d9..c00c05e 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -57,3 +57,4 @@ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+>  obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+>  obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+>  obj-$(CONFIG_BCM2835_THERMAL)	+= bcm2835_thermal.o
+> +obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
+> diff --git a/drivers/thermal/zx2967_thermal.c b/drivers/thermal/zx2967_thermal.c
+> new file mode 100644
+> index 0000000..d8642cf
+> --- /dev/null
+> +++ b/drivers/thermal/zx2967_thermal.c
+> @@ -0,0 +1,265 @@
+> +/*
+> + * ZTE's zx2967 family thermal sensor driver
+> + *
+> + * Copyright (C) 2017 ZTE Ltd.
+> + *
+> + * Author: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> + *
+> + * License terms: GNU General Public License (GPL) version 2
+> + */
+> +
+> +#include <linux/clk.h>
+> +#include <linux/delay.h>
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/thermal.h>
+> +
+> +/* Power Mode: 0->low 1->high */
+> +#define ZX2967_THERMAL_POWER_MODE	0
+> +
+> +/* DCF Control Register */
+> +#define ZX2967_THERMAL_DCF		0x4
+> +
+> +/* Selection Register */
+> +#define ZX2967_THERMAL_SEL		0x8
+> +
+> +/* Control Register */
+> +#define ZX2967_THERMAL_CTRL		0x10
+> +
+> +#define ZX2967_THERMAL_READY		0x1000
+> +#define ZX2967_THERMAL_TEMP_MASK	0xfff
+> +#define ZX2967_THERMAL_ID_MASK		0x18
+> +#define ZX2967_THERMAL_ID0		0x8
+> +#define ZX2967_THERMAL_ID1		0x10
+> +
+> +struct zx2967_thermal_sensor {
+> +	struct zx2967_thermal_priv *priv;
+> +	struct thermal_zone_device *tzd;
+> +	int id;
+> +};
+> +
+> +#define NUM_SENSORS	1
+> +
+> +struct zx2967_thermal_priv {
+> +	struct zx2967_thermal_sensor	sensors[NUM_SENSORS];
 
-<cut>
+Do we really need an array here if there's only 1 sensor?
 
+> +	/* Prevents reads sensor in parallel */
+> +	struct mutex			lock;
+> +	struct clk			*clk_gate;
+> +	struct clk			*pclk;
+> +	s32				slope;
+> +	s32				offset;
+> +	void __iomem			*regs;
+> +	struct device			*dev;
+> +};
+
+Please add proper kernel style documentation for both structure.  And as far as
+I can tell the stuctures could be merged into a single one. 
+
+> +
+> +static int zx2967_thermal_suspend(struct device *dev)
+> +{
+> +	struct platform_device *pdev = to_platform_device(dev);
+> +	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
+> +
+> +	if (priv && priv->pclk)
+> +		clk_disable_unprepare(priv->pclk);
+> +
+> +	if (priv && priv->clk_gate)
+> +		clk_disable_unprepare(priv->clk_gate);
+> +
+> +	return 0;
+> +}
+> +
+> +static int zx2967_thermal_resume(struct device *dev)
+> +{
+> +	struct platform_device *pdev = to_platform_device(dev);
+> +	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
+> +	int error;
+> +
+> +	error = clk_prepare_enable(priv->clk_gate);
+> +	if (error)
+> +		return error;
+> +
+> +	error = clk_prepare_enable(priv->pclk);
+> +	if (error) {
+> +		clk_disable_unprepare(priv->clk_gate);
+> +		return error;
+> +	}
+> +
+> +	return 0;
+> +}
+
+The above two function need to be enclosed with CONFIG_PM_SLEEP.  Have a look at
+other drivers that are using SIMPLE_DEV_PM_OPS.
+
+> +
+> +static int zx2967_thermal_get_temp(void *data, int *temp)
+> +{
+> +	void __iomem *regs;
+> +	struct zx2967_thermal_sensor *sensor = data;
+> +	struct zx2967_thermal_priv *priv = sensor->priv;
+> +	unsigned long timeout = jiffies + msecs_to_jiffies(100);
+> +	u32 val, sel_id;
+> +
+> +	regs = priv->regs;
+> +	mutex_lock(&priv->lock);
+> +
+> +	writel_relaxed(0, regs + ZX2967_THERMAL_POWER_MODE);
+> +	writel_relaxed(2, regs + ZX2967_THERMAL_DCF);
+> +
+> +	val = readl_relaxed(regs + ZX2967_THERMAL_SEL);
+> +	val &= ~ZX2967_THERMAL_ID_MASK;
+> +	sel_id = sensor->id ? ZX2967_THERMAL_ID0 : ZX2967_THERMAL_ID1;
+> +	val |= sel_id;
+> +	writel_relaxed(val, regs + ZX2967_THERMAL_SEL);
+> +
+> +	usleep_range(100, 300);
+
+Polling (like below) can't be use here?  If not provide a good explanation as to
+why that is the case.
+
+> +	val = readl_relaxed(regs + ZX2967_THERMAL_CTRL);
+> +	while (!(val & ZX2967_THERMAL_READY)) {
+> +		if (time_after(jiffies, timeout)) {
+> +			dev_err(priv->dev, "Thermal sensor %d data timeout\n",
+> +				sensor->id);
+> +			mutex_unlock(&priv->lock);
+> +			return -ETIMEDOUT;
+> +		}
+> +		usleep_range(100, 300);
+> +		val = readl_relaxed(regs + ZX2967_THERMAL_CTRL);
+> +	}
+
+See if you can use readx_poll_timeout()
+
+> +
+> +	writel_relaxed(3, regs + ZX2967_THERMAL_DCF);
+> +	val = readl_relaxed(regs + ZX2967_THERMAL_CTRL)
+> +			 & ZX2967_THERMAL_TEMP_MASK;
+> +	writel_relaxed(1, regs + ZX2967_THERMAL_POWER_MODE);
+
+Please add a #define (along with an explanation) for the values used with
+writel_relaxed().  Otherwise reviewers are left guessing. 
+
+> +
+> +	/* Calculate temperature */
+> +	*temp = DIV_ROUND_CLOSEST(((s32)val + priv->offset) * 1000,
+> +				  priv->slope);
+
+Same here, I have to guess why 1000 is used.
+
+> +
+> +	mutex_unlock(&priv->lock);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_of_device_ops zx2967_of_thermal_ops = {
+> +	.get_temp = zx2967_thermal_get_temp,
+> +};
 > +
 > +static int zx2967_thermal_probe(struct platform_device *pdev)
 > +{
@@ -51,21 +242,17 @@ On Thu, Feb 02, 2017 at 11:08:06PM +0800, Baoyou Xie wrote:
 > +
 > +	ret = of_property_read_u32_array(pdev->dev.of_node,
 > +					 "coefficients", buf, 2);
-
-What I meant in my previous comment is that of-thermal already does the
-above parsing for you. Therefore, the above line is not needed. And...
-
 > +	if (ret) {
 > +		dev_err(&pdev->dev, "failed to read coefficients\n");
 > +		return ret;
 > +	}
 > +	priv->slope = (s32)buf[0];
 > +	priv->offset = (s32)buf[1];
+
+Are you sure you don't want to check the values of ->slope and ->offset?  I
+certainly wouldn't trust the DT...
+
 > +
-
-You should also not need to have priv data for storing the slope and
-offset.
-
 > +	priv->clk_gate = devm_clk_get(&pdev->dev, "gate");
 > +	if (IS_ERR(priv->clk_gate)) {
 > +		ret = PTR_ERR(priv->clk_gate);
@@ -84,6 +271,11 @@ offset.
 > +	if (IS_ERR(priv->pclk)) {
 > +		ret = PTR_ERR(priv->pclk);
 > +		clk_disable_unprepare(priv->clk_gate);
+
+An error path is already defined below - add a 'goto' statement that jumps to
+it.  That way it consolidates the exit point for the function and avoid code
+duplication.  
+
 > +		dev_err(&pdev->dev, "failed to get apb clock: %d\n", ret);
 > +		return ret;
 > +	}
@@ -91,6 +283,9 @@ offset.
 > +	ret = clk_prepare_enable(priv->pclk);
 > +	if (ret) {
 > +		clk_disable_unprepare(priv->clk_gate);
+
+Same comment a above.
+
 > +		dev_err(&pdev->dev, "failed to enable converter clock: %d\n",
 > +			ret);
 > +		return ret;
@@ -104,28 +299,12 @@ offset.
 > +		sensor->id = i;
 > +		sensor->tzd = thermal_zone_of_sensor_register(&pdev->dev,
 > +					i, sensor, &zx2967_of_thermal_ops);
-
-After calling the above function, if it succeeds, and you have the
-coefficients property in your DTS, then
-
 > +		if (IS_ERR(sensor->tzd)) {
 > +			ret = PTR_ERR(sensor->tzd);
 > +			dev_err(&pdev->dev, "failed to register sensor %d: %d\n",
 > +				i, ret);
 > +			goto remove_ts;
 > +		}
-
-Right here, you should be able to access sensor->tzd->tzp->slope and
-sensor->tzd->tzp->offset, if you added the entry:
-		coefficients = <SLOPE OFFSET>;
-
-		in you thermal zone in DT.
-
-I hope this clarifies.
-
-Let me know if you are able to use the parsing from of-thermal, instead
-of in your driver.
-
 > +	}
 > +	priv->dev = &pdev->dev;
 > +	platform_set_drvdata(pdev, priv);
@@ -178,9 +357,17 @@ of in your driver.
 > +};
 > +module_platform_driver(zx2967_thermal_driver);
 > +
-> +MODULE_AUTHOR("Baoyou Xie <baoyou.xie@linaro.org>");
+> +MODULE_AUTHOR("Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>");
 > +MODULE_DESCRIPTION("ZTE zx2967 thermal driver");
 > +MODULE_LICENSE("GPL v2");
 > -- 
 > 2.7.4
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
