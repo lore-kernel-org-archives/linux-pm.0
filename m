@@ -1,82 +1,239 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] PM / docs: linux/pm.h kerneldocs update and conversion of two docs to reST
-Date: Thu, 02 Feb 2017 01:06:59 +0100
-Message-ID: <21248446.r6y1HENFuA@aspire.rjw.lan>
-References: <17467778.bsRBpnPicc@aspire.rjw.lan> <20170109013439.GA23364@wunner.de>
+Subject: [PATCH 3/3 v2] PM / sleep / docs: Convert PM notifiers document to reST
+Date: Thu, 02 Feb 2017 01:38:54 +0100
+Message-ID: <1580881.VQFf5JkXrG@aspire.rjw.lan>
+References: <1741856.1gu5vXgsff@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52740 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54853 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750896AbdBBALl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2017 19:11:41 -0500
-In-Reply-To: <20170109013439.GA23364@wunner.de>
+        by vger.kernel.org with ESMTP id S1751217AbdBBAnt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2017 19:43:49 -0500
+In-Reply-To: <1741856.1gu5vXgsff@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Lukas Wunner <lukas@wunner.de>, Alan Stern <stern@rowland.harvard.edu>
 
-On Monday, January 09, 2017 02:34:39 AM Lukas Wunner wrote:
-> On Fri, Jan 06, 2017 at 02:38:13AM +0100, Rafael J. Wysocki wrote:
-> > I sent patches [1-2/3] previosly a couple of weeks ago and there have not
-> > been any comments since then, so either they are fine by everybody or the
-> > timing was particularly bad and no one had the time to look at them.
-> 
-> So far I was only able to peruse the "Device Power Management Data Types"
-> section (which is generated from include/linux/pm.h) and came across the
-> following:
-> 
-> The description for the ->prepare hook says:
-> 
-> 	If the transition is a suspend to memory or standby (that
->         is, not related to hibernation), the return value of @prepare() may be
->         used to indicate to the PM core to leave the device in runtime suspend
->         if applicable.
-> 
-> Maybe I'm missing something
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-You are.  Please see device_prepare().
+Move the document describing PM notifiers (used during system sleep
+state transitions) to Documentation/driver-api/pm/, convert it to reST
+and update it to use current terminology.  Also replace the remaining
+references to the old version of it in .txt documents with references
+to the new one.
 
-> but in the places where the direct_complete
-> flag is calculated (e.g. in pci_dev_keep_suspended()) or where it's checked,
-> I don't see that we're differentiating anywhere whether we're going through
-> a suspend-to-RAM versus suspend-to-disk transition.  So in the above snippet,
-> the portion "If the transition is a suspend to memory or standby (that is,
-> not related to hibernation)" seems wrong and should probably be removed.
-> 
-> I know you're not touching this paragraph in the present commits, it's just
-> something that caught my eye while going over the rendered output.
-> 
-> 
-> Furthermore, the description for the ->freeze hook says:
-> 
->         Analogous to @suspend(), but it should not enable the device to signal
->         wakeup events or change its power state.
-> 
-> However looking at the PCI core it looks like this constraint isn't
-> satisfied, pci_dev_keep_suspended() (which gets called from ->prepare)
-> disables PME only if:
-> 
->         if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
->             !device_may_wakeup(dev))
->                 __pci_pme_active(pci_dev, false);
-> 
-> Shouldn't this be something like:
-> 
->         if (pm_runtime_suspended(dev) && pci_dev->current_state < PCI_D3cold &&
->             (!device_may_wakeup(dev) || (system_entering_hibernation() &&
-> 					 system_state != SYSTEM_POWER_OFF)))
->                 __pci_pme_active(pci_dev, false);
-> 
-> So that PME is disabled before entering the freeze phase for direct_complete
-> devices, but not before entering the poweroff phase.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/driver-api/pm/devices.rst   |    2 
+ Documentation/driver-api/pm/index.rst     |    1 
+ Documentation/driver-api/pm/notifiers.rst |   70 ++++++++++++++++++++++++++++++
+ Documentation/power/00-INDEX              |    2 
+ Documentation/power/freezing-of-tasks.txt |    3 -
+ Documentation/power/notifiers.txt         |   55 -----------------------
+ Documentation/power/pci.txt               |    2 
+ 7 files changed, 75 insertions(+), 60 deletions(-)
 
-It should be safe to leave PME as is for the non-poweroff phases of hibernation,
-which is why the code is the way it is.
-
-Besides, this comment is about ->freeze, not about ->prepare. :-)
-
-Thanks,
-Rafael
+Index: linux-pm/Documentation/driver-api/pm/notifiers.rst
+===================================================================
+--- /dev/null
++++ linux-pm/Documentation/driver-api/pm/notifiers.rst
+@@ -0,0 +1,70 @@
++=============================
++Suspend/Hibernation Notifiers
++=============================
++
++::
++
++ Copyright (c) 2016 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++
++There are some operations that subsystems or drivers may want to carry out
++before hibernation/suspend or after restore/resume, but they require the system
++to be fully functional, so the drivers' and subsystems' ``->suspend()`` and
++``->resume()`` or even ``->prepare()`` and ``->complete()`` callbacks are not
++suitable for this purpose.
++
++For example, device drivers may want to upload firmware to their devices after
++resume/restore, but they cannot do it by calling :c:func:`request_firmware()`
++from their ``->resume()`` or ``->complete()`` callback routines (user land
++processes are frozen at these points).  The solution may be to load the firmware
++into memory before processes are frozen and upload it from there in the
++``->resume()`` routine.  A suspend/hibernation notifier may be used for that.
++
++Subsystems or drivers having such needs can register suspend notifiers that
++will be called upon the following events by the PM core:
++
++``PM_HIBERNATION_PREPARE``
++	The system is going to hibernate, tasks will be frozen immediately. This
++	is different from ``PM_SUSPEND_PREPARE`` below,	because in this case
++	additional work is done between the notifiers and the invocation of PM
++	callbacks for the "freeze" transition.
++
++``PM_POST_HIBERNATION``
++	The system memory state has been restored from a hibernation image or an
++	error occurred during hibernation.  Device restore callbacks have been
++	executed and tasks have been thawed.
++
++``PM_RESTORE_PREPARE``
++	The system is going to restore a hibernation image.  If all goes well,
++	the restored image kernel will issue a ``PM_POST_HIBERNATION``
++	notification.
++
++``PM_POST_RESTORE``
++	An error occurred during restore from hibernation.  Device restore
++	callbacks have been executed and tasks have been thawed.
++
++``PM_SUSPEND_PREPARE``
++	The system is preparing for suspend.
++
++``PM_POST_SUSPEND``
++	The system has just resumed or an error occurred during suspend.  Device
++	resume callbacks have been executed and tasks have been thawed.
++
++It is generally assumed that whatever the notifiers do for
++``PM_HIBERNATION_PREPARE``, should be undone for ``PM_POST_HIBERNATION``.
++Analogously, operations carried out for ``PM_SUSPEND_PREPARE`` should be
++reversed for ``PM_POST_SUSPEND``.
++
++Moreover, if one of the notifiers fails for the ``PM_HIBERNATION_PREPARE`` or
++``PM_SUSPEND_PREPARE`` event, the notifiers that have already succeeded for that
++event will be called for ``PM_POST_HIBERNATION`` or ``PM_POST_SUSPEND``,
++respectively.
++
++The hibernation and suspend notifiers are called with :c:data:`pm_mutex` held.
++They are defined in the usual way, but their last argument is meaningless (it is
++always NULL).
++
++To register and/or unregister a suspend notifier use
++:c:func:`register_pm_notifier()` and :c:func:`unregister_pm_notifier()`,
++respectively (both defined in :file:`include/linux/suspend.h`).  If you don't
++need to unregister the notifier, you can also use the :c:func:`pm_notifier()`
++macro defined in :file:`include/linux/suspend.h`.
+Index: linux-pm/Documentation/driver-api/pm/index.rst
+===================================================================
+--- linux-pm.orig/Documentation/driver-api/pm/index.rst
++++ linux-pm/Documentation/driver-api/pm/index.rst
+@@ -5,6 +5,7 @@ Device Power Management
+ .. toctree::
+ 
+    devices
++   notifiers
+    types
+ 
+ .. only::  subproject and html
+Index: linux-pm/Documentation/driver-api/pm/devices.rst
+===================================================================
+--- linux-pm.orig/Documentation/driver-api/pm/devices.rst
++++ linux-pm/Documentation/driver-api/pm/devices.rst
+@@ -620,7 +620,7 @@ been thawed.  Generally speaking, the PM
+ actions that either require user space to be available, or at least won't
+ interfere with user space.
+ 
+-For details refer to :file:`Documentation/power/notifiers.txt`.
++For details refer to :doc:`notifiers`.
+ 
+ 
+ Device Low-Power (suspend) States
+Index: linux-pm/Documentation/power/00-INDEX
+===================================================================
+--- linux-pm.orig/Documentation/power/00-INDEX
++++ linux-pm/Documentation/power/00-INDEX
+@@ -14,8 +14,6 @@ freezing-of-tasks.txt
+ 	- How processes and controlled during suspend
+ interface.txt
+ 	- Power management user interface in /sys/power
+-notifiers.txt
+-	- Registering suspend notifiers in device drivers
+ opp.txt
+ 	- Operating Performance Point library
+ pci.txt
+Index: linux-pm/Documentation/power/notifiers.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/notifiers.txt
++++ /dev/null
+@@ -1,55 +0,0 @@
+-Suspend notifiers
+-	(C) 2007-2011 Rafael J. Wysocki <rjw@sisk.pl>, GPL
+-
+-There are some operations that subsystems or drivers may want to carry out
+-before hibernation/suspend or after restore/resume, but they require the system
+-to be fully functional, so the drivers' and subsystems' .suspend() and .resume()
+-or even .prepare() and .complete() callbacks are not suitable for this purpose.
+-For example, device drivers may want to upload firmware to their devices after
+-resume/restore, but they cannot do it by calling request_firmware() from their
+-.resume() or .complete() routines (user land processes are frozen at these
+-points).  The solution may be to load the firmware into memory before processes
+-are frozen and upload it from there in the .resume() routine.
+-A suspend/hibernation notifier may be used for this purpose.
+-
+-The subsystems or drivers having such needs can register suspend notifiers that
+-will be called upon the following events by the PM core:
+-
+-PM_HIBERNATION_PREPARE	The system is going to hibernate, tasks will be frozen
+-			immediately. This is different from PM_SUSPEND_PREPARE
+-			below because here we do additional work between notifiers
+-			and drivers freezing.
+-
+-PM_POST_HIBERNATION	The system memory state has been restored from a
+-			hibernation image or an error occurred during
+-			hibernation.  Device drivers' restore callbacks have
+-			been executed and tasks have been thawed.
+-
+-PM_RESTORE_PREPARE	The system is going to restore a hibernation image.
+-			If all goes well, the restored kernel will issue a
+-			PM_POST_HIBERNATION notification.
+-
+-PM_POST_RESTORE		An error occurred during restore from hibernation.
+-			Device drivers' restore callbacks have been executed
+-			and tasks have been thawed.
+-
+-PM_SUSPEND_PREPARE	The system is preparing for suspend.
+-
+-PM_POST_SUSPEND		The system has just resumed or an error occurred during
+-			suspend.  Device drivers' resume callbacks have been
+-			executed and tasks have been thawed.
+-
+-It is generally assumed that whatever the notifiers do for
+-PM_HIBERNATION_PREPARE, should be undone for PM_POST_HIBERNATION.  Analogously,
+-operations performed for PM_SUSPEND_PREPARE should be reversed for
+-PM_POST_SUSPEND.  Additionally, all of the notifiers are called for
+-PM_POST_HIBERNATION if one of them fails for PM_HIBERNATION_PREPARE, and
+-all of the notifiers are called for PM_POST_SUSPEND if one of them fails for
+-PM_SUSPEND_PREPARE.
+-
+-The hibernation and suspend notifiers are called with pm_mutex held.  They are
+-defined in the usual way, but their last argument is meaningless (it is always
+-NULL).  To register and/or unregister a suspend notifier use the functions
+-register_pm_notifier() and unregister_pm_notifier(), respectively, defined in
+-include/linux/suspend.h .  If you don't need to unregister the notifier, you can
+-also use the pm_notifier() macro defined in include/linux/suspend.h .
+Index: linux-pm/Documentation/power/freezing-of-tasks.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/freezing-of-tasks.txt
++++ linux-pm/Documentation/power/freezing-of-tasks.txt
+@@ -197,7 +197,8 @@ tasks, since it generally exists anyway.
+ 
+ A driver must have all firmwares it may need in RAM before suspend() is called.
+ If keeping them is not practical, for example due to their size, they must be
+-requested early enough using the suspend notifier API described in notifiers.txt.
++requested early enough using the suspend notifier API described in
++Documentation/driver-api/pm/notifiers.rst.
+ 
+ VI. Are there any precautions to be taken to prevent freezing failures?
+ 
+Index: linux-pm/Documentation/power/pci.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/pci.txt
++++ linux-pm/Documentation/power/pci.txt
+@@ -713,7 +713,7 @@ In addition to that the prepare() callba
+ preparing the device to be suspended, although it should not allocate memory
+ (if additional memory is required to suspend the device, it has to be
+ preallocated earlier, for example in a suspend/hibernate notifier as described
+-in Documentation/power/notifiers.txt).
++in Documentation/driver-api/pm/notifiers.rst).
+ 
+ 3.1.2. suspend()
+ 
 
