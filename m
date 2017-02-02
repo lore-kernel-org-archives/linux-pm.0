@@ -1,44 +1,37 @@
-From: Petr Cvek <petr.cvek@tul.cz>
-Subject: [RFC] w1: regression, remove need for ida and use PLATFORM_DEVID_AUTO
-Date: Thu, 2 Feb 2017 02:05:50 +0100
-Message-ID: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: afd@ti.com, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+From: Markus Mayer <code@mmayer.net>
+Subject: [PATCH 0/3] cpufreq: bmips-cpufreq: CPUfreq driver for Broadcom's BMIPS SoCs
+Date: Wed,  1 Feb 2017 17:05:58 -0800
+Message-ID: <20170202010601.75995-1-code@mmayer.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-out-so.shaw.ca ([64.59.136.138]:44872 "EHLO
+        smtp-out-so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751289AbdBBBGJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Feb 2017 20:06:09 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ralf Baechle <ralf@linux-mips.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: Markus Mayer <mmayer@broadcom.com>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Patch 
-	w1: remove need for ida and use PLATFORM_DEVID_AUTO
-	098f9fb0c962eb2fdba5f9d34f4cf7a938237184 
+From: Markus Mayer <mmayer@broadcom.com>
 
-causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
+This series adds a CPUfreq driver for the BMIPS SoCs. In the first
+iteration only BMIPS5xxx SoCs are supported.
 
-	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-		return ERR_PTR(-EINVAL);
+This series is based on 4.10-rc1.
 
-A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
+Markus Mayer (3):
+  BMIPS: Enable prerequisites for CPUfreq in MIPS Kconfig.
+  cpufreq: bmips-cpufreq: CPUfreq driver for Broadcom's BMIPS SoCs
+  MIPS: BMIPS: enable CPUfreq
 
-Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
+ arch/mips/Kconfig                     |   2 +
+ arch/mips/configs/bmips_stb_defconfig |  10 ++
+ drivers/cpufreq/Kconfig               |  10 ++
+ drivers/cpufreq/Makefile              |   1 +
+ drivers/cpufreq/bmips-cpufreq.c       | 205 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 228 insertions(+)
+ create mode 100644 drivers/cpufreq/bmips-cpufreq.c
 
-	pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
+-- 
+2.7.4
 
-to
-
-	pdev = platform_device_alloc("ds2760-battery", 0);
-
-Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
-
-Best regards,
-Petr
