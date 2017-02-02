@@ -1,32 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 0/3 v2] PM / docs: linux/pm.h kerneldocs update and conversion of two docs to reST
-Date: Thu, 02 Feb 2017 01:30:08 +0100
-Message-ID: <1741856.1gu5vXgsff@aspire.rjw.lan>
+From: Petr Cvek <petr.cvek@tul.cz>
+Subject: [RFC] w1: regression, remove need for ida and use PLATFORM_DEVID_AUTO
+Date: Thu, 2 Feb 2017 02:05:50 +0100
+Message-ID: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@osg.samsung.com>, Lukas Wunner <lukas@wunner.de>, Alan Stern <stern@rowland.harvard.edu>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: afd@ti.com, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jon,
+Patch 
+	w1: remove need for ida and use PLATFORM_DEVID_AUTO
+	098f9fb0c962eb2fdba5f9d34f4cf7a938237184 
 
-This is a new (and hopefully final) iteration of the series of patches starting
-the conversion of power management driver API documentation.
+causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
 
-Patch [1/3] updates kerneldoc comments in include/linux/pm.h (to make the
-documentation generated out of them look better), patch [2/3] converts
-Documentation/power/devices.txt to reST, and patch [3/3] does the same thing
-to Documentation/power/notifiers.txt (the new files go into the driver-api subdir
-and are hooked up to that manual).
+	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+		return ERR_PTR(-EINVAL);
 
-Patch [1/3] has not been changed since the previous iteration.  Patch [2/3]
-addresses some comments from Lukas and patch [3/3] has been trivially
-rebased.
+A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
 
-Please apply unless there are any objections.
+Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
 
-Thanks,
-Rafael
+	pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
+
+to
+
+	pdev = platform_device_alloc("ds2760-battery", 0);
+
+Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
+
+Best regards,
+Petr
