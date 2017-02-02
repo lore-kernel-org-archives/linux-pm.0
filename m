@@ -1,46 +1,50 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal-SoC management updates for v4.10-rc7
-Date: Wed, 1 Feb 2017 20:34:50 -0800
-Message-ID: <20170202043448.GB6377@localhost.localdomain>
+Subject: Re: [PATCH v5 3/3] thermal: zx2967: add thermal driver for ZTE's
+ zx2967 family
+Date: Wed, 1 Feb 2017 21:04:27 -0800
+Message-ID: <20170202050425.GA7360@localhost.localdomain>
+References: <1484714522-26651-1-git-send-email-baoyou.xie@linaro.org>
+ <1484714522-26651-3-git-send-email-baoyou.xie@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:34890 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750776AbdBBFEc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 00:04:32 -0500
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+In-Reply-To: <1484714522-26651-3-git-send-email-baoyou.xie@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baoyou Xie <baoyou.xie@linaro.org>
+Cc: jun.nie@linaro.org, rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, shawnguo@kernel.org, xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
 
-Hello Rui,
+Hey Bao,
 
-Please consider the following four small fixes on TI and MTK thermal
-drivers.
+On Wed, Jan 18, 2017 at 12:42:02PM +0800, Baoyou Xie wrote:
+> This patch adds thermal driver for ZTE's zx2967 family.
+> 
+> Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
+
+<cut>
+
+> +
+> +	/*
+> +	 * Calculate temperature
+> +	 *   922	initial value of calibration cure
+> +	 *   1.951	slope of calibration cure
+> +	 */
+> +	*temp = DIV_ROUND_CLOSEST((val - 922) * 1000, 1951);
+
+You can describe the offset and slope using DT and avoid this to be hard
+coded in your driver. Besides, if you read offset and slope from DT,
+your driver will be ready for any upcoming sensor addition that you may
+want to support in future, given that would required slope and offset
+change, per sensor, per chip version.
+
+Can you please check if you can move these to DT?
 
 BR,
-Eduardo
-
-The following changes since commit a4685d2f58e2230d4e27fb2ee581d7ea35e5d046:
-
-  Merge branch 'stable' of git://git.kernel.org/pub/scm/linux/kernel/git/cmetcalf/linux-tile (2017-01-23 13:51:59 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal fixes
-
-for you to fetch changes up to fd8e146de4837462b84a0cbf279bd73138f91991:
-
-  thermal: mtk_thermal: Staticise a number of data variables (2017-01-24 02:13:17 -0800)
-
-----------------------------------------------------------------
-Keerthy (3):
-      thermal: ti-soc-thermal: Remove CPU_THERMAL Dependency from TI_THERMAL
-      thermal: arm: dra752: Remove TSHUT configuration
-      thermal: arm: dra752: Remove all TSHUT related definitions
-
-Vivek Gautam (1):
-      thermal: mtk_thermal: Staticise a number of data variables
-
- drivers/thermal/mtk_thermal.c                      | 16 ++++++-------
- drivers/thermal/ti-soc-thermal/Kconfig             |  1 -
- drivers/thermal/ti-soc-thermal/dra752-bandgap.h    | 19 ---------------
- .../thermal/ti-soc-thermal/dra752-thermal-data.c   | 28 +---------------------
- 4 files changed, 9 insertions(+), 55 deletions(-)
+> -- 
+> 2.7.4
+> 
