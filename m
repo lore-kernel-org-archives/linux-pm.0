@@ -1,116 +1,149 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH] thermal: use cpumask_var_t for on-stack cpu masks
-Date: Thu,  2 Feb 2017 15:46:26 +0100
-Message-ID: <20170202144821.3721926-1-arnd@arndb.de>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Baoyou Xie <baoyou.xie@linaro.org>
+Subject: [PATCH v6 1/3] dt: bindings: add documentation for zx2967 family  thermal sensor
+Date: Thu,  2 Feb 2017 23:08:04 +0800
+Message-ID: <1486048086-3431-1-git-send-email-baoyou.xie@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f180.google.com ([209.85.192.180]:36056 "EHLO
+        mail-pf0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751500AbdBBPJM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 10:09:12 -0500
+Received: by mail-pf0-f180.google.com with SMTP id 189so5946975pfu.3
+        for <linux-pm@vger.kernel.org>; Thu, 02 Feb 2017 07:09:12 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: jun.nie@linaro.org, rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, shawnguo@kernel.org, baoyou.xie@linaro.org, xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
 
-Putting a bare cpumask structure on the stack produces a warning on
-large SMP configurations:
+This patch adds dt-binding documentation for zx2967 family thermal sensor.
 
-drivers/thermal/cpu_cooling.c: In function 'cpufreq_state2power':
-drivers/thermal/cpu_cooling.c:644:1: warning: the frame size of 1056 bytes is larger than 1024 bytes [-Wframe-larger-than=]
-drivers/thermal/cpu_cooling.c: In function '__cpufreq_cooling_register':
-drivers/thermal/cpu_cooling.c:898:1: warning: the frame size of 1104 bytes is larger than 1024 bytes [-Wframe-larger-than=]
-
-The recommended workaround is to use cpumask_var_t, which behaves just like
-a normal cpu mask in most cases, but turns into a dynamic allocation
-when CONFIG_CPUMASK_OFFSTACK is set.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Baoyou Xie <baoyou.xie@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Shawn Guo <shawnguo@kernel.org>
 ---
- drivers/thermal/cpu_cooling.c | 39 ++++++++++++++++++++++++++-------------
- 1 file changed, 26 insertions(+), 13 deletions(-)
+ .../devicetree/bindings/thermal/zx2967-thermal.txt | 114 +++++++++++++++++++++
+ 1 file changed, 114 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index ca7ddaea450c..1d7f7e85f669 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -609,31 +609,39 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
- 			       unsigned long state, u32 *power)
- {
- 	unsigned int freq, num_cpus;
--	cpumask_t cpumask;
-+	cpumask_var_t cpumask;
- 	u32 static_power, dynamic_power;
- 	int ret;
- 	struct cpufreq_cooling_device *cpufreq_device = cdev->devdata;
- 
--	cpumask_and(&cpumask, &cpufreq_device->allowed_cpus, cpu_online_mask);
--	num_cpus = cpumask_weight(&cpumask);
-+	if (!alloc_cpumask_var(&cpumask, GFP_KERNEL))
-+		return -ENOMEM;
+diff --git a/Documentation/devicetree/bindings/thermal/zx2967-thermal.txt b/Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
+new file mode 100644
+index 0000000..00c4900
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
+@@ -0,0 +1,114 @@
++* ZTE zx2967 family Thermal
 +
-+	cpumask_and(cpumask, &cpufreq_device->allowed_cpus, cpu_online_mask);
-+	num_cpus = cpumask_weight(cpumask);
- 
- 	/* None of our cpus are online, so no power */
- 	if (num_cpus == 0) {
- 		*power = 0;
--		return 0;
-+		ret = 0;
-+		goto out;
- 	}
- 
- 	freq = cpufreq_device->freq_table[state];
--	if (!freq)
--		return -EINVAL;
-+	if (!freq) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
- 
- 	dynamic_power = cpu_freq_to_power(cpufreq_device, freq) * num_cpus;
- 	ret = get_static_power(cpufreq_device, tz, freq, &static_power);
- 	if (ret)
--		return ret;
-+		goto out;
- 
- 	*power = static_power + dynamic_power;
--	return 0;
-+out:
-+	free_cpumask_var(cpumask);
-+	return ret;;
- }
- 
- /**
-@@ -759,16 +767,20 @@ __cpufreq_cooling_register(struct device_node *np,
- 	struct cpufreq_cooling_device *cpufreq_dev;
- 	char dev_name[THERMAL_NAME_LENGTH];
- 	struct cpufreq_frequency_table *pos, *table;
--	struct cpumask temp_mask;
-+	cpumask_var_t temp_mask;
- 	unsigned int freq, i, num_cpus;
- 	int ret;
- 	struct thermal_cooling_device_ops *cooling_ops;
- 
--	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
--	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
-+	if (!alloc_cpumask_var(&temp_mask, GFP_KERNEL))
-+		return ERR_PTR(-ENOMEM);
++Required Properties:
++- compatible: should be one of the following.
++    * zte,zx296718-thermal
++- reg: physical base address of the controller and length of memory mapped
++    region.
++- clocks : Pairs of phandle and specifier referencing the controller's clocks.
++- clock-names: "gate" for the topcrm clock.
++	       "pclk" for the apb clock.
++- coefficients: Coefficients of thermal sensor, note that those values need to
++		be multiplied by 1000, consists of:
++		slope of calibration cure.
++		offset of calibration cure.
++- #thermal-sensor-cells: must be 0.
 +
-+	cpumask_and(temp_mask, clip_cpus, cpu_online_mask);
-+	policy = cpufreq_cpu_get(cpumask_first(temp_mask));
- 	if (!policy) {
- 		pr_debug("%s: CPUFreq policy not found\n", __func__);
--		return ERR_PTR(-EPROBE_DEFER);
-+		cool_dev = ERR_PTR(-EPROBE_DEFER);
-+		goto free_cpumask;
- 	}
- 
- 	table = policy->freq_table;
-@@ -886,7 +898,8 @@ __cpufreq_cooling_register(struct device_node *np,
- 	kfree(cpufreq_dev);
- put_policy:
- 	cpufreq_cpu_put(policy);
--
-+free_cpumask:
-+	free_cpumask_var(temp_mask);
- 	return cool_dev;
- }
- 
++Example for tempsensor:
++
++	tempsensor: tempsensor@148a000 {
++		compatible = "zte,zx296718-thermal";
++		reg = <0x0148a000 0x20>;
++		clocks = <&topcrm TEMPSENSOR_GATE>, <&audiocrm AUDIO_TS_PCLK>;
++		clock-names = "gate", "pclk";
++		coefficients = <1951 (-922)>;
++		#thermal-sensor-cells = <0>;
++	};
++
++Example for cooling device:
++
++	cooling_dev: cooling_dev {
++		cluster0_cooling_dev: cluster0-cooling-dev {
++			#cooling-cells = <2>;
++			cpumask = <0xf>;
++			capacitance = <1500>;
++		};
++
++	cluster1_cooling_dev: cluster1-cooling-dev {
++			#cooling-cells = <2>;
++			cpumask = <0x30>;
++			capacitance = <2000>;
++		};
++	};
++
++Example for thermal zones:
++
++	thermal-zones {
++		zx296718_thermal: zx296718_thermal {
++			polling-delay-passive = <500>;
++			polling-delay = <1000>;
++			sustainable-power = <6500>;
++
++			thermal-sensors = <&tempsensor 0>;
++
++			trips {
++				trip0: switch_on_temperature {
++					temperature = <90000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				trip1: desired_temperature {
++					temperature = <100000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++
++				crit: critical_temperature {
++					temperature = <110000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
++
++			cooling-maps {
++				map0 {
++					trip = <&trip0>;
++					cooling-device = <&gpu 2 5>;
++				};
++
++				map1 {
++					trip = <&trip0>;
++					cooling-device = <&cluster0_cooling_dev 1 2>;
++				};
++
++				map2 {
++					trip = <&trip1>;
++					cooling-device = <&cluster0_cooling_dev 1 2>;
++				};
++
++				map3 {
++					trip = <&crit>;
++					cooling-device = <&cluster0_cooling_dev 1 2>;
++				};
++
++				map4 {
++					trip = <&trip0>;
++					cooling-device = <&cluster1_cooling_dev 1 2>;
++					contribution = <9000>;
++				};
++
++				map5 {
++					trip = <&trip1>;
++					cooling-device = <&cluster1_cooling_dev 1 2>;
++					contribution = <4096>;
++				};
++
++				map6 {
++					trip = <&crit>;
++					cooling-device = <&cluster1_cooling_dev 1 2>;
++					contribution = <4096>;
++				};
++			};
++		};
++	};
 -- 
-2.9.0
+2.7.4
+
