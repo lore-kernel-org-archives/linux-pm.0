@@ -1,62 +1,446 @@
-From: Mark Rutland <mark.rutland@arm.com>
-Subject: Re: [PATCHv2 2/2] arch: Rename CONFIG_DEBUG_RODATA and
- CONFIG_DEBUG_MODULE_RONX
-Date: Fri, 3 Feb 2017 18:26:49 +0000
-Message-ID: <20170203182648.GB26578@leverpostej>
-References: <1486144343-24998-1-git-send-email-labbott@redhat.com>
- <1486144343-24998-3-git-send-email-labbott@redhat.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
+Date: Fri, 3 Feb 2017 10:54:09 -0800
+Message-ID: <20170203185408.GB3721@atomide.com>
+References: <20170131000210.5442-1-tony@atomide.com>
+ <20170131000210.5442-3-tony@atomide.com>
+ <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
+ <20170131003632.GB7403@atomide.com>
+ <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-parisc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:33536 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751895AbdBCSyO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Feb 2017 13:54:14 -0500
 Content-Disposition: inline
-In-Reply-To: <1486144343-24998-3-git-send-email-labbott@redhat.com>
-Sender: linux-parisc-owner@vger.kernel.org
-To: Laura Abbott <labbott@redhat.com>
-Cc: Kees Cook <keescook@chromium.org>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jessica Yu <jeyu@redhat.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.i
+In-Reply-To: <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Fri, Feb 03, 2017 at 09:52:22AM -0800, Laura Abbott wrote:
+* Liam Breck <liam@networkimprov.net> [170203 02:40]:
+> On Mon, Jan 30, 2017 at 4:36 PM, Tony Lindgren <tony@atomide.com> wrote:
+> > --- a/drivers/power/supply/bq24190_charger.c
+> > +++ b/drivers/power/supply/bq24190_charger.c
+> > ...
+> > @@ -1234,11 +1267,15 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+> >  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+> >  {
+> >         struct bq24190_dev_info *bdi = data;
+> > +       int ret;
+> >
+> >         bdi->irq_event = true;
+> > -       pm_runtime_get_sync(bdi->dev);
+> > +       ret = pm_runtime_get_sync(bdi->dev);
+> > +       if (ret < 0)
+> > +               return ret;
+> >         bq24190_check_status(bdi);
+> > -       pm_runtime_put_sync(bdi->dev);
+> > +       pm_runtime_mark_last_busy(bdi->dev);
+> > +       pm_runtime_put_autosuspend(bdi->dev);
+> >         bdi->irq_event = false;
+> >
+> >         return IRQ_HANDLED;
 > 
-> Both of these options are poorly named. The features they provide are
-> necessary for system security and should not be considered debug only.
-> Change the name to something that accurately describes what these
-> options do.
-> 
-> Signed-off-by: Laura Abbott <labbott@redhat.com>
+> OK get_sync() failure should return error to userspace callers, and
+> abort probe(), makes sense.
 
-As with patch 1, this looks good to me. FWIW:
+OK
 
-Acked-by: Mark Rutland <mark.rutland@arm.com>
+> But should the interrupt handler (above) emit a warning and continue
+> as in resume() and suspend()?
 
-> diff --git a/arch/arm64/Kconfig.debug b/arch/arm64/Kconfig.debug
-> index 939815e..560a8d8 100644
-> --- a/arch/arm64/Kconfig.debug
-> +++ b/arch/arm64/Kconfig.debug
-> @@ -72,7 +72,7 @@ config DEBUG_WX
->  	  If in doubt, say "Y".
->  
->  config DEBUG_ALIGN_RODATA
-> -	depends on DEBUG_RODATA
-> +	depends on STRICT_KERNEL_RWX
->  	bool "Align linker sections up to SECTION_SIZE"
->  	help
->  	  If this option is enabled, sections that may potentially be marked as
-> diff --git a/arch/arm64/kernel/insn.c b/arch/arm64/kernel/insn.c
-> index 94b62c1..67f9cb9 100644
-> --- a/arch/arm64/kernel/insn.c
-> +++ b/arch/arm64/kernel/insn.c
-> @@ -93,7 +93,7 @@ static void __kprobes *patch_map(void *addr, int fixmap)
->  	bool module = !core_kernel_text(uintaddr);
->  	struct page *page;
->  
-> -	if (module && IS_ENABLED(CONFIG_DEBUG_SET_MODULE_RONX))
-> +	if (module && IS_ENABLED(CONFIG_STRICT_MODULE_RWX))
->  		page = vmalloc_to_page(addr);
->  	else if (!module)
->  		page = pfn_to_page(PHYS_PFN(__pa(addr)));
+The interrupt subsystem will retry and eventually just give up with
+errors. No need to do anything special here to disable the irq, let's
+just add dev_err().
 
-Since CONFIG_STRICT_MODULE_RWX is mandatory for arm64, we should be able
-to simplify this, but that can wait for a later patch.
+> If not is ret the right value to return in lieu of irq_handled?
 
-Thanks,
-Mark.
+Oh you're right, we should return IRQ_NONE here.
+
+Updated patch below doing dev_err() + IRQ_NONE.
+
+Regards,
+
+Tony
+
+8< ----------------
+>From tony Mon Sep 17 00:00:00 2001
+From: Tony Lindgren <tony@atomide.com>
+Date: Mon, 30 Jan 2017 07:10:31 -0800
+Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
+
+We can get quite a few interrupts when the battery is trickle charging.
+Let's enable PM runtime autosuspend to avoid constantly toggling device
+driver PM runtime state.
+
+Let's use a 600 ms timeout as that's how long the USB chager detection
+might take.
+
+Cc: Liam Breck <kernel@networkimprov.net>
+Acked-by: Mark Greer <mgreer@animalcreek.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/power/supply/bq24190_charger.c | 156 ++++++++++++++++++++++++---------
+ 1 file changed, 114 insertions(+), 42 deletions(-)
+
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -420,6 +420,7 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
+ 	struct power_supply *psy = dev_get_drvdata(dev);
+ 	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
+ 	struct bq24190_sysfs_field_info *info;
++	ssize_t count;
+ 	int ret;
+ 	u8 v;
+ 
+@@ -427,11 +428,20 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
+ 	if (!info)
+ 		return -EINVAL;
+ 
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0)
++		return ret;
++
+ 	ret = bq24190_read_mask(bdi, info->reg, info->mask, info->shift, &v);
+ 	if (ret)
+-		return ret;
++		count = ret;
++	else
++		count = scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
+ 
+-	return scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return count;
+ }
+ 
+ static ssize_t bq24190_sysfs_store(struct device *dev,
+@@ -451,9 +461,16 @@ static ssize_t bq24190_sysfs_store(struct device *dev,
+ 	if (ret < 0)
+ 		return ret;
+ 
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0)
++		return ret;
++
+ 	ret = bq24190_write_mask(bdi, info->reg, info->mask, info->shift, v);
+ 	if (ret)
+-		return ret;
++		count = ret;
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
+ 
+ 	return count;
+ }
+@@ -795,7 +812,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
+ 
+ 	dev_dbg(bdi->dev, "prop: %d\n", psp);
+ 
+-	pm_runtime_get_sync(bdi->dev);
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0)
++		return ret;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+@@ -835,7 +854,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
+ 		ret = -ENODATA;
+ 	}
+ 
+-	pm_runtime_put_sync(bdi->dev);
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
+ 	return ret;
+ }
+ 
+@@ -848,7 +869,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
+ 
+ 	dev_dbg(bdi->dev, "prop: %d\n", psp);
+ 
+-	pm_runtime_get_sync(bdi->dev);
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0)
++		return ret;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
+@@ -864,7 +887,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
+ 		ret = -EINVAL;
+ 	}
+ 
+-	pm_runtime_put_sync(bdi->dev);
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
+ 	return ret;
+ }
+ 
+@@ -1065,7 +1090,9 @@ static int bq24190_battery_get_property(struct power_supply *psy,
+ 
+ 	dev_dbg(bdi->dev, "prop: %d\n", psp);
+ 
+-	pm_runtime_get_sync(bdi->dev);
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0)
++		return ret;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_STATUS:
+@@ -1093,7 +1120,9 @@ static int bq24190_battery_get_property(struct power_supply *psy,
+ 		ret = -ENODATA;
+ 	}
+ 
+-	pm_runtime_put_sync(bdi->dev);
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
+ 	return ret;
+ }
+ 
+@@ -1106,7 +1135,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
+ 
+ 	dev_dbg(bdi->dev, "prop: %d\n", psp);
+ 
+-	pm_runtime_get_sync(bdi->dev);
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0)
++		return ret;
+ 
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+@@ -1119,7 +1150,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
+ 		ret = -EINVAL;
+ 	}
+ 
+-	pm_runtime_put_sync(bdi->dev);
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
+ 	return ret;
+ }
+ 
+@@ -1234,11 +1267,18 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
+ static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
+ {
+ 	struct bq24190_dev_info *bdi = data;
++	int ret;
+ 
+ 	bdi->irq_event = true;
+-	pm_runtime_get_sync(bdi->dev);
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_err(bdi->dev, "Runtime PM failed in %s: %i\n",
++			__func__, ret);
++		return IRQ_NONE;
++	}
+ 	bq24190_check_status(bdi);
+-	pm_runtime_put_sync(bdi->dev);
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
+ 	bdi->irq_event = false;
+ 
+ 	return IRQ_HANDLED;
+@@ -1249,33 +1289,26 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+ 	u8 v;
+ 	int ret;
+ 
+-	pm_runtime_get_sync(bdi->dev);
+-
+ 	/* First check that the device really is what its supposed to be */
+ 	ret = bq24190_read_mask(bdi, BQ24190_REG_VPRS,
+ 			BQ24190_REG_VPRS_PN_MASK,
+ 			BQ24190_REG_VPRS_PN_SHIFT,
+ 			&v);
+ 	if (ret < 0)
+-		goto out;
++		return ret;
+ 
+-	if (v != bdi->model) {
+-		ret = -ENODEV;
+-		goto out;
+-	}
++	if (v != bdi->model)
++		return -ENODEV;
+ 
+ 	ret = bq24190_register_reset(bdi);
+ 	if (ret < 0)
+-		goto out;
++		return ret;
+ 
+ 	ret = bq24190_set_mode_host(bdi);
+ 	if (ret < 0)
+-		goto out;
++		return ret;
+ 
+-	ret = bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+-out:
+-	pm_runtime_put_sync(bdi->dev);
+-	return ret;
++	return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+ }
+ 
+ #ifdef CONFIG_OF
+@@ -1364,12 +1397,16 @@ static int bq24190_probe(struct i2c_client *client,
+ 	}
+ 
+ 	pm_runtime_enable(dev);
+-	pm_runtime_resume(dev);
++	pm_runtime_use_autosuspend(dev);
++	pm_runtime_set_autosuspend_delay(dev, 600);
++	ret = pm_runtime_get_sync(dev);
++	if (ret < 0)
++		goto out1;
+ 
+ 	ret = bq24190_hw_init(bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Hardware init failed\n");
+-		goto out1;
++		goto out2;
+ 	}
+ 
+ 	charger_cfg.drv_data = bdi;
+@@ -1380,7 +1417,7 @@ static int bq24190_probe(struct i2c_client *client,
+ 	if (IS_ERR(bdi->charger)) {
+ 		dev_err(dev, "Can't register charger\n");
+ 		ret = PTR_ERR(bdi->charger);
+-		goto out1;
++		goto out2;
+ 	}
+ 
+ 	battery_cfg.drv_data = bdi;
+@@ -1389,13 +1426,13 @@ static int bq24190_probe(struct i2c_client *client,
+ 	if (IS_ERR(bdi->battery)) {
+ 		dev_err(dev, "Can't register battery\n");
+ 		ret = PTR_ERR(bdi->battery);
+-		goto out2;
++		goto out3;
+ 	}
+ 
+ 	ret = bq24190_sysfs_create_group(bdi);
+ 	if (ret) {
+ 		dev_err(dev, "Can't create sysfs entries\n");
+-		goto out3;
++		goto out4;
+ 	}
+ 
+ 	bdi->initialized = true;
+@@ -1406,21 +1443,30 @@ static int bq24190_probe(struct i2c_client *client,
+ 			"bq24190-charger", bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Can't set up irq handler\n");
+-		goto out4;
++		goto out5;
+ 	}
+ 
++	enable_irq_wake(bdi->irq);
++
++	pm_runtime_mark_last_busy(dev);
++	pm_runtime_put_autosuspend(dev);
++
+ 	return 0;
+ 
+-out4:
++out5:
+ 	bq24190_sysfs_remove_group(bdi);
+ 
+-out3:
++out4:
+ 	power_supply_unregister(bdi->battery);
+ 
+-out2:
++out3:
+ 	power_supply_unregister(bdi->charger);
+ 
++out2:
++	pm_runtime_put_sync(dev);
++
+ out1:
++	pm_runtime_dont_use_autosuspend(dev);
+ 	pm_runtime_disable(dev);
+ 	if (bdi->gpio_int)
+ 		gpio_free(bdi->gpio_int);
+@@ -1430,14 +1476,20 @@ static int bq24190_probe(struct i2c_client *client,
+ static int bq24190_remove(struct i2c_client *client)
+ {
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
++	int error;
+ 
+-	pm_runtime_get_sync(bdi->dev);
+-	bq24190_register_reset(bdi);
+-	pm_runtime_put_sync(bdi->dev);
++	error = pm_runtime_get_sync(bdi->dev);
++	if (error < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
++		pm_runtime_put_noidle(bdi->dev);
++	}
+ 
++	bq24190_register_reset(bdi);
+ 	bq24190_sysfs_remove_group(bdi);
+ 	power_supply_unregister(bdi->battery);
+ 	power_supply_unregister(bdi->charger);
++	pm_runtime_put_sync(bdi->dev);
++	pm_runtime_dont_use_autosuspend(bdi->dev);
+ 	pm_runtime_disable(bdi->dev);
+ 
+ 	if (bdi->gpio_int)
+@@ -1480,10 +1532,20 @@ static int bq24190_pm_suspend(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
++	int error;
++
++	error = pm_runtime_get_sync(bdi->dev);
++	if (error < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
++		pm_runtime_put_noidle(bdi->dev);
++	}
+ 
+-	pm_runtime_get_sync(bdi->dev);
+ 	bq24190_register_reset(bdi);
+-	pm_runtime_put_sync(bdi->dev);
++
++	if (!error) {
++		pm_runtime_mark_last_busy(bdi->dev);
++		pm_runtime_put_autosuspend(bdi->dev);
++	}
+ 
+ 	return 0;
+ }
+@@ -1492,15 +1554,25 @@ static int bq24190_pm_resume(struct device *dev)
+ {
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
++	int error;
+ 
+ 	bdi->f_reg = 0;
+ 	bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
+ 
+-	pm_runtime_get_sync(bdi->dev);
++	error = pm_runtime_get_sync(bdi->dev);
++	if (error < 0) {
++		pm_runtime_put_noidle(bdi->dev);
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
++	}
++
+ 	bq24190_register_reset(bdi);
+ 	bq24190_set_mode_host(bdi);
+ 	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+-	pm_runtime_put_sync(bdi->dev);
++
++	if (!error) {
++		pm_runtime_mark_last_busy(bdi->dev);
++		pm_runtime_put_autosuspend(bdi->dev);
++	}
+ 
+ 	/* Things may have changed while suspended so alert upper layer */
+ 	power_supply_changed(bdi->charger);
+-- 
+2.11.0
