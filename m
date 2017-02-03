@@ -1,80 +1,99 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v5 1/2] dt-bindings: brcm: clocks: add binding for
- brcmstb-cpu-clk-div
-Date: Fri, 3 Feb 2017 12:06:52 -0800
-Message-ID: <20170203200652.GD25384@codeaurora.org>
-References: <20170119002933.7529-1-code@mmayer.net>
- <20170119002933.7529-2-code@mmayer.net>
- <20170121005202.GB8801@codeaurora.org>
- <CAGt4E5sGScHp83ufKcX3Q74vW0fo=L0FHM7tCptvqJfchHAweg@mail.gmail.com>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCHv2 1/2] arch: Move CONFIG_DEBUG_RODATA and
+ CONFIG_SET_MODULE_RONX to be common
+Date: Fri, 3 Feb 2017 20:29:19 +0000
+Message-ID: <20170203202919.GE27312@n2100.armlinux.org.uk>
+References: <1486144343-24998-1-git-send-email-labbott@redhat.com>
+ <1486144343-24998-2-git-send-email-labbott@redhat.com>
+ <CAGXu5jK6_y=dWHUDBto7ykN_sSOQ6Gx+sZs_gQ1Hoh5DjP-fTw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
+Return-path: <kernel-hardening-return-6286-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
 Content-Disposition: inline
-In-Reply-To: <CAGt4E5sGScHp83ufKcX3Q74vW0fo=L0FHM7tCptvqJfchHAweg@mail.gmail.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Markus Mayer <markus.mayer@broadcom.com>
-Cc: Markus Mayer <code@mmayer.net>, Michael Turquette <mturquette@baylibre.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Clock List <linux-clk@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <CAGXu5jK6_y=dWHUDBto7ykN_sSOQ6Gx+sZs_gQ1Hoh5DjP-fTw@mail.gmail.com>
+Sender: Russell King - ARM Linux <linux@armlinux.org.uk>
+To: Kees Cook <keescook@chromium.org>
+Cc: Laura Abbott <labbott@redhat.com>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Jessica Yu <jeyu@redhat.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-pa
 List-Id: linux-pm@vger.kernel.org
 
-On 02/01, Markus Mayer wrote:
-> On 20 January 2017 at 16:52, Stephen Boyd <sboyd@codeaurora.org> wrote:
+On Fri, Feb 03, 2017 at 11:45:56AM -0800, Kees Cook wrote:
+> On Fri, Feb 3, 2017 at 9:52 AM, Laura Abbott <labbott@redhat.com> wrote:
+> > diff --git a/arch/Kconfig b/arch/Kconfig
+> > index 99839c2..22ee01e 100644
+> > --- a/arch/Kconfig
+> > +++ b/arch/Kconfig
+> > @@ -781,4 +781,32 @@ config VMAP_STACK
+> >           the stack to map directly to the KASAN shadow map using a formula
+> >           that is incorrect if the stack is in vmalloc space.
 > >
-> > Are these properties used? Please don't put these types of
-> > details in DT.
+> > +config ARCH_NO_STRICT_RWX_DEFAULTS
+> > +       def_bool n
+> > +
+> > +config ARCH_HAS_STRICT_KERNEL_RWX
+> > +       def_bool n
+> > +
+> > +config DEBUG_RODATA
+> > +       def_bool y if !ARCH_NO_STRICT_RWX_DEFAULTS
+> > +       prompt "Make kernel text and rodata read-only" if ARCH_NO_STRICT_RWX_DEFAULTS
 > 
-> Yeah, unfortunately they are. Luckily, I think the issue can be
-> resolved quite easily, because the user of those properties isn't
-> involved in this series.
-> 
-> They are currently being used by a clock driver
-> ("drivers/clk/clk-brcmstb.c") that hasn't been upstreamed yet. I
-> performed some code archeology. While I wasn't 100% successful in
-> tracking down the origins of this interface, it looks like it was
-> designed this way a while back (4+ years or so), probably before
-> device tree best practices were developed or, at least, before they
-> were widely known.
-> 
-> So, what I can do is to remove the properties from the official
-> binding. (I'll send an update to that effect shortly.) Once the
-> binding is accepted upstream, we can work on fixing up the design of
-> clk-brcmstb.c, so it doesn't rely on these properties anymore (and
-> derives them from the compatible string instead), and then proceed to
-> upstream that, as well.
+> Ah! Yes, perfect. I totally forgot about using conditional "prompt"
+> lines. Nice!
 
-Ok. Sounds like some cleanup needs to be done on the way
-upstream.
+It's no different from the more usual:
 
-> > This register really looks like some offset in something larger.
-> > Is there some clock controller? What's the hw block at
-> > 0xf03e2000? Maybe I already asked this.
-> 
-> It looks this way, but in this case, looks are deceiving. The address
-> and the length are really correct the way they are.
-> 
-> This memory area holds a range of only loosely related configuration
-> registers. It's called the Bus Interface Unit Register Set and deals
-> with configuring the CPU in general. At address 0xf03e257c, there
-> happens to be the clock divider register we need, and it's really just
-> one register, i.e. 4 bytes.
+	bool "Make kernel text and rodata read-only" if ARCH_NO_STRICT_RWX_DEFAULTS
+	default y if !ARCH_NO_STRICT_RWX_DEFAULTS
+	depends on ARCH_HAS_STRICT_KERNEL_RWX
 
-We've seen this style of hardware design before. I'd prefer we
-make the "Bus Interface Unit Register Set" into one device node
-and have a driver probe for it that registers this clock. If
-other things need to be controlled in there then the driver will
-do more than just register one clock, possibly hooking into
-multiple frameworks. The compatible string can indicate which SoC
-it is if the divider register offset changes or if the register
-layout is a total free for all.
+But... I really don't like this - way too many negations and negatives
+which make it difficult to figure out what's going on here.
 
-Either way, having reg properties end in non-zero values is
-suspect on ARM systems because a device is usually aligned to at
-least a 1k boundary for proper CPU addressing and mapping of the
-device. We can't possibly make a smaller mapping than a page
-anyway, so the registers around this one register will need to be
-mapped with the same attributes, hence the desire to make one
-device for the hardware block.
+The situation we have today is:
+
+-config DEBUG_RODATA
+-       bool "Make kernel text and rodata read-only"
+-       depends on MMU && !XIP_KERNEL
+-       default y if CPU_V7
+
+which is "allow the user to select DEBUG_RODATA if building a MMU non-XIP
+kernel", suggesting that the user turns it on for ARMv7 CPUs.
+
+That changes with this and the above:
+
++       select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
++       select ARCH_HAS_STRICT_MODULE_RWX if MMU
++       select ARCH_NO_STRICT_RWX_DEFAULTS if !CPU_V7
+
+This means that ARCH_HAS_STRICT_KERNEL_RWX is set for a MMU non-XIP
+kernel, which carries the same pre-condition for DEBUG_RODATA - no
+problem there.
+
+However, ARCH_NO_STRICT_RWX_DEFAULTS is set for non-ARMv7 CPUs, which
+means the "Make kernel text and rodata read-only" prompt _is_ provided
+for those.  However, for all ARMv7 systems, we go from "suggesting that
+the user enables the option" to "you don't have a choice, you get this
+whether you want it or not."
+
+I'd prefer to keep it off for my development systems, where I don't
+care about kernel security.  If we don't wish to do that as a general
+rule, can we make it dependent on EMBEDDED?
+
+Given that on ARM it can add up to 4MB to the kernel image - there
+_will_ be about 1MB before the .text section, the padding on between
+__modver and __ex_table which for me is around 626k, the padding
+between .notes and the init sections start with .vectors (the space
+between __ex_table and end of .notes is only 4124, which gets padded
+up to 1MB) and lastly the padding between the .init section and the
+data section (for me around 593k).  This all adds up to an increase
+in kernel image size of 3.2MB on 14.2MB - an increase of 22%.
+
+So no, I'm really not happy with that.
 
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.
