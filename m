@@ -1,87 +1,43 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Thu, 2 Feb 2017 19:44:40 -0800
-Message-ID: <20170203034440.GI7403@atomide.com>
-References: <20170131000210.5442-1-tony@atomide.com>
- <20170131000210.5442-3-tony@atomide.com>
- <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
- <20170131003632.GB7403@atomide.com>
- <CAKvHMgTP40_YTHZn=mNNYBW5aheVNV2WskuikQeyjv3Zn27fOg@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: use cpumask_var_t for on-stack cpu masks
+Date: Fri, 3 Feb 2017 09:16:18 +0530
+Message-ID: <20170203034618.GI7458@vireshk-i7>
+References: <20170202144821.3721926-1-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:33482 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751512AbdBCDop (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 2 Feb 2017 22:44:45 -0500
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:34401 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752268AbdBCDqX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 22:46:23 -0500
+Received: by mail-pg0-f41.google.com with SMTP id 14so2716004pgg.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Feb 2017 19:46:22 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <CAKvHMgTP40_YTHZn=mNNYBW5aheVNV2WskuikQeyjv3Zn27fOg@mail.gmail.com>
+In-Reply-To: <20170202144821.3721926-1-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-* Liam Breck <liam@networkimprov.net> [170202 17:44]:
-> > @@ -427,11 +428,20 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
-> >         if (!info)
-> >                 return -EINVAL;
-> >
-> > +       ret = pm_runtime_get_sync(bdi->dev);
-> > +       if (ret < 0)
-> > +               return ret;
+On 02-02-17, 15:46, Arnd Bergmann wrote:
+> Putting a bare cpumask structure on the stack produces a warning on
+> large SMP configurations:
 > 
-> Let's not stop here if get_sync fails.
-
-Hmm care to describe why we would want to ignore errors on pm_runtime_get()?
-I don't think that's a good idea.. And for sysfs_show() output?
-
-If these calls fail it's a sign of a serious problem somewhere
-and it should be fixed instead of ignoring the errors and attempting to
-continue. Ignoring errors with these calls can lead into problems that
-are hard to debug.
-
-> > @@ -1364,12 +1394,16 @@ static int bq24190_probe(struct i2c_client *client,
-> >         }
-> >
-> >         pm_runtime_enable(dev);
-> > -       pm_runtime_resume(dev);
-> > +       pm_runtime_use_autosuspend(dev);
-> > +       pm_runtime_set_autosuspend_delay(dev, 600);
-> > +       ret = pm_runtime_get_sync(dev);
-> > +       if (ret < 0)
-> > +               goto out1;
+> drivers/thermal/cpu_cooling.c: In function 'cpufreq_state2power':
+> drivers/thermal/cpu_cooling.c:644:1: warning: the frame size of 1056 bytes is larger than 1024 bytes [-Wframe-larger-than=]
+> drivers/thermal/cpu_cooling.c: In function '__cpufreq_cooling_register':
+> drivers/thermal/cpu_cooling.c:898:1: warning: the frame size of 1104 bytes is larger than 1024 bytes [-Wframe-larger-than=]
 > 
-> Nor here 8.
-
-Eek, let's not try to continue the probe if pm_runtime_get_fails. Let's
-just assume it's either implemented and must be working, or a nop operation
-that will not do anything. Depending on the implementation, this could
-affect something in the hardware like pin multiplexing, parent device
-clocking.. On the module exit path it might make sense as we know the
-device was working to get there so it might be possible to do something :)
-
-> We need helper funcs...
+> The recommended workaround is to use cpumask_var_t, which behaves just like
+> a normal cpu mask in most cases, but turns into a dynamic allocation
+> when CONFIG_CPUMASK_OFFSTACK is set.
 > 
-> static inline int bq24190_pmrt_get(struct device* dev) {
->   int err = pm_runtime_get_sync(dev);
->   if (err < 0) {
->     dev_warn(dev, "pm_runtime_get failed: %i\n", err);
->     pm_runtime_put_noidle(dev);
->   }
->   return err;
-> }
-> 
-> static inline void bq24190_pmrt_put(struct device* dev, int err) {
->   if (!err) {
->     pm_runtime_mark_last_busy(dev);
->     pm_runtime_put_autosuspend(dev);
->   }
-> }
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/thermal/cpu_cooling.c | 39 ++++++++++++++++++++++++++-------------
+>  1 file changed, 26 insertions(+), 13 deletions(-)
 
-If you want to implement something like that it should probably be
-done in a Linux generic way. There's still quite a bit boilerplate
-code needed for the autosuspend usage.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Regards,
-
-Tony
+-- 
+viresh
