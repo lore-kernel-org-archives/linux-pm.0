@@ -1,82 +1,117 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Fri, 3 Feb 2017 13:44:52 -0800
-Message-ID: <CAKvHMgQwhm3pBupBj8KFLwyhZpdeHtMyKj3BardbKpcAy_qXfg@mail.gmail.com>
-References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-3-tony@atomide.com>
- <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
- <20170131003632.GB7403@atomide.com> <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
- <20170203185408.GB3721@atomide.com> <CAKvHMgQs3YYtyMApYvdRAyzuzii_xA=ZKRfqG-zpFzrMef_qdg@mail.gmail.com>
- <20170203211707.GC3721@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Disable energy efficiency optimization
+Date: Fri,  3 Feb 2017 14:18:39 -0800
+Message-ID: <1486160319-35809-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:35784 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752282AbdBCVoy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 16:44:54 -0500
-In-Reply-To: <20170203211707.GC3721@atomide.com>
+Received: from mga07.intel.com ([134.134.136.100]:55004 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752376AbdBCWSl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Feb 2017 17:18:41 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, srinivas.pandruvada@linux.intel.com
 
-On Fri, Feb 3, 2017 at 1:17 PM, Tony Lindgren <tony@atomide.com> wrote:
+Some Kabylake desktop processors may not reach max turbo when running in
+HWP mode, even if running under sustained 100% utilization.
 
-> From: Tony Lindgren <tony@atomide.com>
-> Date: Mon, 30 Jan 2017 07:10:31 -0800
-> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
->
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> driver PM runtime state.
->
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
->
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
+This occurs when the HWP.EPP (Energy Performance Preference) is set to
+"balance_power" (0x80) -- the default on most systems.
 
-Acked-by: Liam Breck <kernel@networkimprov.net>
+It occurs because the platform BIOS may erroneously enable an
+energy-efficiency setting -- MSR_IA32_POWER_CTL BIT-EE, which is not
+recommended to be enabled on this SKU.
 
+On the failing systems, this BIOS issue was not discovered when the
+desktop motherboard was tested with Windows, because the BIOS also
+neglects to provide the ACPI/CPPC table, that Windows requires to enable
+HWP, and so Windows runs in legacy P-state mode, where this setting has
+no effect.
 
-> @@ -1480,10 +1531,20 @@ static int bq24190_pm_suspend(struct device *dev)
->  {
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
-> +
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0) {
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +               pm_runtime_put_noidle(bdi->dev);
-> +       }
->
-> -       pm_runtime_get_sync(bdi->dev);
->         bq24190_register_reset(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +
-> +       if (!error) {
-> +               pm_runtime_mark_last_busy(bdi->dev);
-> +               pm_runtime_put_autosuspend(bdi->dev);
-> +       }
->
->         return 0;
->  }
-> @@ -1492,15 +1553,25 @@ static int bq24190_pm_resume(struct device *dev)
->  {
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
->
->         bdi->f_reg = 0;
->         bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0) {
-> +               pm_runtime_put_noidle(bdi->dev);
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +       }
+Linux' intel_pstate driver does not require ACPI/CPPC to enable HWP, and
+so it runs in HWP mode, exposing this incorrect BIOS configuration.
 
-Last nitpick: call put_noidle after dev_warn, as in suspend :-)
+There are several ways to address this problem.
+
+First, Linux can also run in legacy P-state mode on this system.
+As intel_pstate is how Linux enables HWP, booting with
+"intel_pstate=disable"
+will run in acpi-cpufreq/ondemand legacy p-state mode.
+
+Or second, the "performance" governor can be used with intel_pstate,
+which will modify HWP.EPP to 0.
+
+Or third, starting in 4.10, the
+/sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference
+attribute in can be updated from "balance_power" to "performance".
+
+Or fourth, apply this patch, which fixes the erroneous setting of
+MSR_IA32_POWER_CTL BIT_EE on this model, allowing the default
+configuration to function as designed.
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Reviewed-by: Len Brown <len.brown@intel.com>
+Cc: 4.6+ <stable@vger.kernel.org> # 4.6+
+
+---
+ drivers/cpufreq/intel_pstate.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index a54d65a..50bd6d9 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1235,6 +1235,25 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+ 		cpudata->epp_default = intel_pstate_get_epp(cpudata, 0);
+ }
+ 
++#define MSR_IA32_POWER_CTL_BIT_EE	19
++
++/* Disable energy efficiency optimization */
++static void intel_pstate_disable_ee(int cpu)
++{
++	u64 power_ctl;
++	int ret;
++
++	ret = rdmsrl_on_cpu(cpu, MSR_IA32_POWER_CTL, &power_ctl);
++	if (ret)
++		return;
++
++	if (!(power_ctl & BIT(MSR_IA32_POWER_CTL_BIT_EE))) {
++		pr_info("Disabling energy efficiency optimization\n");
++		power_ctl |= BIT(MSR_IA32_POWER_CTL_BIT_EE);
++		wrmsrl_on_cpu(cpu, MSR_IA32_POWER_CTL, power_ctl);
++	}
++}
++
+ static int atom_get_min_pstate(void)
+ {
+ 	u64 value;
+@@ -1845,6 +1864,11 @@ static const struct x86_cpu_id intel_pstate_cpu_oob_ids[] __initconst = {
+ 	{}
+ };
+ 
++static const struct x86_cpu_id intel_pstate_cpu_ee_disable_ids[] = {
++	ICPU(INTEL_FAM6_KABYLAKE_DESKTOP, core_params),
++	{}
++};
++
+ static int intel_pstate_init_cpu(unsigned int cpunum)
+ {
+ 	struct cpudata *cpu;
+@@ -1875,6 +1899,12 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+ 	cpu->cpu = cpunum;
+ 
+ 	if (hwp_active) {
++		const struct x86_cpu_id *id;
++
++		id = x86_match_cpu(intel_pstate_cpu_ee_disable_ids);
++		if (id)
++			intel_pstate_disable_ee(cpunum);
++
+ 		intel_pstate_hwp_enable(cpu);
+ 		pid_params.sample_rate_ms = 50;
+ 		pid_params.sample_rate_ns = 50 * NSEC_PER_MSEC;
+-- 
+2.7.4
+
