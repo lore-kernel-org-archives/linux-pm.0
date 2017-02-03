@@ -1,84 +1,61 @@
-From: Leo Li <pku.leo@gmail.com>
-Subject: Re: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock implementation details
-Date: Thu, 2 Feb 2017 12:11:36 -0600
-Message-ID: <CADRPPNR0xh_9Q3FZ_-94QD-B7PP=aGBySSi1+n=RmmjvkpKYzA@mail.gmail.com>
-References: <1466058085-19353-1-git-send-email-oss@buserror.net>
- <1466058085-19353-2-git-send-email-oss@buserror.net> <146785501714.73491.8643317356949121718@resonance>
- <1467864803.32358.63.camel@buserror.net> <146794477678.73491.8244253339435407853@resonance>
- <1468012014.32358.74.camel@buserror.net> <DB6PR0401MB2648CA1169D59950CD8BEC78F0080@DB6PR0401MB2648.eurprd04.prod.outlook.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH 1/2] power: bq24190_charger: Check the interrupt status on resume
+Date: Thu, 2 Feb 2017 16:32:50 -0800
+Message-ID: <CAKvHMgQ4TCu28Bb8aG-mEQKN4DqQ13E57Une=Xjo3STZS_rzOg@mail.gmail.com>
+References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-2-tony@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <DB6PR0401MB2648CA1169D59950CD8BEC78F0080@DB6PR0401MB2648.eurprd04.prod.outlook.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Yuantian Tang <yuantian.tang@nxp.com>
-Cc: Scott Wood <oss@buserror.net>, Michael Turquette <mturquette@baylibre.com>, Russell King <linux@armlinux.org.uk>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yang-Leo Li <leoyang.li@nxp.com>, Xiaofeng Ren <xiaofeng.ren@nxp.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:36344 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751512AbdBCAcv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 19:32:51 -0500
+In-Reply-To: <20170131000210.5442-2-tony@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Tue, Jul 19, 2016 at 10:02 PM, Yuantian Tang <yuantian.tang@nxp.com> wrote:
+On Mon, Jan 30, 2017 at 4:02 PM, Tony Lindgren <tony@atomide.com> wrote:
+> Some SoCs like omap3 can configure GPIO irqs to use Linux generic
+> dedicated wakeirq support. If the dedicated wakeirq is configured,
+> the SoC will use a always-on interrupt controller to produce wake-up
+> events.
 >
-> PING.
+> If bq24190 is configured for dedicated wakeirq, we need to check the
+> interrupt status on PM runtime resume. This is because the Linux
+> generic wakeirq will call pm_runtime_resume() on the device on a
+> wakeirq. And as the bq24190 interrupt is falling edge sensitive
+> and only active for 250 us, there will be no device interrupt seen
+> by the runtime SoC IRQ controller.
 >
-> Regards,
-> Yuantian
+> Note that this can cause spurious interrupts on omap3 devices with
+> bq24190 connected to gpio banks 2 - 5 as there's a glitch on those
+> pins waking from off mode as listed in "Advisory 1.45". Devices
+> with this issue should not configure the optional wakeirq interrupt
+> in the dts file.
 >
-> > -----Original Message-----
-> > From: Scott Wood [mailto:oss@buserror.net]
-> > Sent: Saturday, July 09, 2016 5:07 AM
-> > To: Michael Turquette <mturquette@baylibre.com>; Russell King
-> > <linux@armlinux.org.uk>; Stephen Boyd <sboyd@codeaurora.org>; Viresh
-> > Kumar <viresh.kumar@linaro.org>; Rafael J. Wysocki <rjw@rjwysocki.net>
-> > Cc: linux-clk@vger.kernel.org; linux-pm@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org; Yuantian Tang <yuantian.tang@nxp.com>; Yang-Leo Li
-> > <leoyang.li@nxp.com>; Xiaofeng Ren <xiaofeng.ren@nxp.com>
-> > Subject: Re: [PATCH v3 2/2] cpufreq: qoriq: Don't look at clock
-> > implementation details
-> >
-> > On Thu, 2016-07-07 at 19:26 -0700, Michael Turquette wrote:
-> > > Quoting Scott Wood (2016-07-06 21:13:23)
-> > > >
-> > > > On Wed, 2016-07-06 at 18:30 -0700, Michael Turquette wrote:
-> > > > >
-> > > > > Quoting Scott Wood (2016-06-15 23:21:25)
-> > > > > >
-> > > > > >
-> > > > > > -static struct device_node *cpu_to_clk_node(int cpu)
-> > > > > > +static struct clk *cpu_to_clk(int cpu)
-> > > > > >  {
-> > > > > > -       struct device_node *np, *clk_np;
-> > > > > > +       struct device_node *np;
-> > > > > > +       struct clk *clk;
-> > > > > >
-> > > > > >         if (!cpu_present(cpu))
-> > > > > >                 return NULL;
-> > > > > > @@ -112,37 +80,28 @@ static struct device_node
-> > > > > > *cpu_to_clk_node(int
-> > > > > > cpu)
-> > > > > >         if (!np)
-> > > > > >                 return NULL;
-> > > > > >
-> > > > > > -       clk_np = of_parse_phandle(np, "clocks", 0);
-> > > > > > -       if (!clk_np)
-> > > > > > -               return NULL;
-> > > > > > -
-> > > > > > +       clk = of_clk_get(np, 0);
-> > > > > Why not use devm_clk_get here?
-> > > > devm_clk_get() is a wrapper around clk_get() which is not the same
-> > > > as of_clk_get().  What device would you pass to devm_clk_get(), and
-> > > > what name would you pass?
-> > > I'm fuzzy on whether or not you get a struct device from a cpufreq
-> > > driver. If so, then that would be the one to use. I would hope that
-> > > cpufreq drivers model cpus as devices, but I'm really not sure without
-> > > looking into the code.
-> >
-> > It's not the cpufreq code that provides it, but get_cpu_device() could be
-> > used.
-> >
-> > Do you have any comments on the first patch of this set?
+> Cc: Liam Breck <kernel@networkimprov.net>
+> Acked-by: Mark Greer <mgreer@animalcreek.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  drivers/power/supply/bq24190_charger.c | 62 ++++++++++++++++++++++++++++------
+>  1 file changed, 52 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> ...
+> @@ -1472,7 +1510,11 @@ static int bq24190_pm_resume(struct device *dev)
+>  }
+>  #endif
+>
+> -static SIMPLE_DEV_PM_OPS(bq24190_pm_ops, bq24190_pm_suspend, bq24190_pm_resume);
+> +static const struct dev_pm_ops bq24190_pm_ops = {
+> +       SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
+> +                          NULL)
+> +       SET_SYSTEM_SLEEP_PM_OPS(bq24190_pm_suspend, bq24190_pm_resume)
 
+Can delete newline before NULL) here, if so inclined :-)
 
-Any action on this patch?  This patch is still a dependency for
-cpufreq to work on all QorIQ platforms.
-
-Regards,
-Leo
+Acked-by: Liam Breck <kernel@networkimprov.net>
