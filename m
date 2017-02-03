@@ -1,61 +1,49 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 1/2] power: bq24190_charger: Check the interrupt status on resume
-Date: Thu, 2 Feb 2017 16:32:50 -0800
-Message-ID: <CAKvHMgQ4TCu28Bb8aG-mEQKN4DqQ13E57Une=Xjo3STZS_rzOg@mail.gmail.com>
-References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-2-tony@atomide.com>
+From: Alexandre Vicenzi <vicenzi.alexandre@gmail.com>
+Subject: Re: Kworker with high cpu usage (~80%)
+Date: Thu, 2 Feb 2017 23:22:54 -0200
+Message-ID: <CAMHH1fU0Rq7eKvN7O8B1YA5XzsHA1feRtBYanrj5caWC8dYsxw@mail.gmail.com>
+References: <CAMHH1fXRbWaBv2U2duKF+v6RRcfKLLKkNf=mb0TYA4foj2i5kw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:36344 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751512AbdBCAcv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 19:32:51 -0500
-In-Reply-To: <20170131000210.5442-2-tony@atomide.com>
+Received: from mail-lf0-f49.google.com ([209.85.215.49]:36225 "EHLO
+        mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751831AbdBCBW5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 20:22:57 -0500
+In-Reply-To: <CAMHH1fXRbWaBv2U2duKF+v6RRcfKLLKkNf=mb0TYA4foj2i5kw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-On Mon, Jan 30, 2017 at 4:02 PM, Tony Lindgren <tony@atomide.com> wrote:
-> Some SoCs like omap3 can configure GPIO irqs to use Linux generic
-> dedicated wakeirq support. If the dedicated wakeirq is configured,
-> the SoC will use a always-on interrupt controller to produce wake-up
-> events.
->
-> If bq24190 is configured for dedicated wakeirq, we need to check the
-> interrupt status on PM runtime resume. This is because the Linux
-> generic wakeirq will call pm_runtime_resume() on the device on a
-> wakeirq. And as the bq24190 interrupt is falling edge sensitive
-> and only active for 250 us, there will be no device interrupt seen
-> by the runtime SoC IRQ controller.
->
-> Note that this can cause spurious interrupts on omap3 devices with
-> bq24190 connected to gpio banks 2 - 5 as there's a glitch on those
-> pins waking from off mode as listed in "Advisory 1.45". Devices
-> with this issue should not configure the optional wakeirq interrupt
-> in the dts file.
->
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 62 ++++++++++++++++++++++++++++------
->  1 file changed, 52 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> ...
-> @@ -1472,7 +1510,11 @@ static int bq24190_pm_resume(struct device *dev)
->  }
->  #endif
->
-> -static SIMPLE_DEV_PM_OPS(bq24190_pm_ops, bq24190_pm_suspend, bq24190_pm_resume);
-> +static const struct dev_pm_ops bq24190_pm_ops = {
-> +       SET_RUNTIME_PM_OPS(bq24190_runtime_suspend, bq24190_runtime_resume,
-> +                          NULL)
-> +       SET_SYSTEM_SLEEP_PM_OPS(bq24190_pm_suspend, bq24190_pm_resume)
+Hi,
 
-Can delete newline before NULL) here, if so inclined :-)
+Any ideas?
 
-Acked-by: Liam Breck <kernel@networkimprov.net>
+Regards,
+
+Alexandre Vicenzi
+
+2017-01-19 0:13 GMT-02:00 Alexandre Vicenzi <vicenzi.alexandre@gmail.com>:
+> Hello,
+>
+> It has been a while that I noticed that kworker/0:1 eats a lot of CPU
+> on my computer, about ~80%.
+>
+> I never found the real problem, but googling the solution was to
+> disable some GPE interrupt, in my case it is
+> /sys/firmware/acpi/interrupts/gpe13.
+>
+> This is a dirty solution, actually, it hides the problem I think. I
+> have no idea what is the real problem and I would like to understand
+> what is.
+>
+> I'm using kernel 4.9.0-2 now, but it was present on older versions
+> too. I'm running OpenSuse on a Samsung laptop (Intel i5 3rd gen).
+>
+> If someone could point me in the right direction I'll be happy to
+> share more info.
+>
+> Regards,
+>
+> Alexandre Vicenzi
