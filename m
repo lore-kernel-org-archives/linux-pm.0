@@ -1,99 +1,236 @@
-From: Petr Cvek <petr.cvek@tul.cz>
-Subject: Re: [RFC] w1: regression, remove need for ida and use
- PLATFORM_DEVID_AUTO
-Date: Sat, 4 Feb 2017 00:30:51 +0100
-Message-ID: <8f24eb01-d9f3-4c7a-7b51-36a7b9b8d023@tul.cz>
-References: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
- <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
- <cfa35897-383e-674a-f049-e45c4dfeb534@tul.cz>
- <0928fc89-490f-1d12-dc3d-51f2d433d2e0@roeck-us.net>
- <822b1827-959b-13dc-6331-f0954954c010@tul.cz>
- <0a4d4a6d-5ede-b77a-0600-19a8d815a33f@roeck-us.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / runtime: Avoid false-positive warnings from might_sleep_if()
+Date: Sat, 04 Feb 2017 00:58:53 +0100
+Message-ID: <15818372.6qr0ZfnSx1@aspire.rjw.lan>
+References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com> <CAJZ5v0gaVL1zkVdb3G8p=Lgk5fX8fB2pv-RR54j8_UTd9PYFmA@mail.gmail.com> <CA+icZUWgV-NGyHVWo4yo0c-qOew=W=GKdDEY6L2Le1vSh+SpQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-hwmon-owner@vger.kernel.org>
-In-Reply-To: <0a4d4a6d-5ede-b77a-0600-19a8d815a33f@roeck-us.net>
-Sender: linux-hwmon-owner@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, "Andrew F. Davis" <afd@ti.com>, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com, jdelvare@suse.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64060 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752872AbdBDADj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 19:03:39 -0500
+In-Reply-To: <CA+icZUWgV-NGyHVWo4yo0c-qOew=W=GKdDEY6L2Le1vSh+SpQg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sedat.dilek@gmail.com
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Daniel Vetter <daniel.vetter@ffwll.ch>, Jani Nikula <jani.nikula@intel.com>, Pavel Machek <pavel@ucw.cz>, Chris Wilson <chris@chris-wilson.co.uk>, intel-gfx <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mika Kuoppala <mika.kuoppala@linux.intel.com>, Imre Deak <imre.deak@intel.com>
 
-Dne 3.2.2017 v 15:07 Guenter Roeck napsal(a):
-> On 02/03/2017 05:28 AM, Petr Cvek wrote:
->> Dne 3.2.2017 v 04:31 Guenter Roeck napsal(a):
->>> On 02/02/2017 05:31 PM, Petr Cvek wrote:
->>>> Dne 2.2.2017 v 15:23 Andrew F. Davis napsal(a):
->>>>> On 02/01/2017 07:05 PM, Petr Cvek wrote:
->>>>>> Patch
->>>>>>     w1: remove need for ida and use PLATFORM_DEVID_AUTO
->>>>>>     098f9fb0c962eb2fdba5f9d34f4cf7a938237184
->>>>>>
->>>>>> causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
->>>>>>
->>>>>>     if (type && strlen(type) >= THERMAL_NAME_LENGTH)
->>>>>>         return ERR_PTR(-EINVAL);
->>>>>>
->>>>>> A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
->>>>>>
->>>>>> Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
->>>>>>
->>>>>>     pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
->>>>>>
->>>>>> to
->>>>>>
->>>>>>     pdev = platform_device_alloc("ds2760-battery", 0);
->>>>>>
->>>>>> Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
->>>>>>
->>>>>
->>>>> If 20 is no longer the max thermal name then THERMAL_NAME_LENGTH should
->>>>> be changed.
->>>>
->>>> Yes it is that ".auto" addition to "ds2760-battery.0" makes 21 chars long string. With higher number (".10" onwards) it is 22 chars. Load of the module then fails at test in thermal_zone_device_register():
->>>>
->>>>     https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/thermal/thermal_core.c?id=refs/tags/v4.10-rc6#n1158
->>>>
->>>>     if (type && strlen(type) >= THERMAL_NAME_LENGTH)
->>>>         return ERR_PTR(-EINVAL);
->>>>
->>>> I searched in code further and with THERMAL_NAME_LENGTH = 30 (enough space) the module load fails at another place in __hwmon_device_register():
->>>>
->>>>     https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hwmon/hwmon.c?id=refs/tags/v4.10-rc6#n548
->>>>
->>>>     if (name && (!strlen(name) || strpbrk(name, "-* \t\n")))
->>>>         return ERR_PTR(-EINVAL);
->>>>
->>>> That's because there is "-" in "ds2760-battery.0.auto" (and that's why shortening to "ds2760.0" works). Is there some reason for disallowing "-" in a name? If not then I'm for removal (in other case we need to change ds2760-battery and others names). Increasing THERMAL_NAME_LENGTH to 22 should be just OK for ds2760 (but maybe not enough for others) I would increased it to 32 (nice number ;-) ).
->>>>
->>>
->>> '-' is not permitted in hwmon name attributes, primarily because libsensors
->>> interprets it as a delimiter in its configuration file.
->>>
->>
->> OK so this means we need to rename ds2760-battery so libsensors works.
->>
->> Hmm is an underscore in "ds2760_battery.0.auto" OK?
+On Thursday, February 02, 2017 02:34:42 PM Sedat Dilek wrote:
+> On Wed, Feb 1, 2017 at 1:22 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Mon, Jan 30, 2017 at 11:44 PM, Rafael J. Wysocki
+> > <rafael.j.wysocki@intel.com> wrote:
+> >> On 1/24/2017 2:33 AM, Sedat Dilek wrote:
+> >>>
+> >>> On Fri, Dec 30, 2016 at 3:02 PM, Rafael J. Wysocki <rafael@kernel.org>
+> >>> wrote:
+> >>>>
+> >>>> On Fri, Dec 30, 2016 at 12:40 PM, Sedat Dilek <sedat.dilek@gmail.com>
+> >>>> wrote:
+> >>>>>
+> >>>>> Hi,
+> >>>>>
+> >>>>> I have already reported this issue in [1].
+> >>>>> One of the issue was solved.
+> >>>>> Unfortunately, it looks like there is still a different problem here
+> >>>>> (Ubuntu/precise AMD64).
+> >>>>>
+> >>>>> I tried v4.10-rc1 and latest Linus tree up to...
+> >>>>>
+> >>>>> commit 98473f9f3f9bd404873cd1178c8be7d6d619f0d1
+> >>>>> "mm/filemap: fix parameters to test_bit()"
+> >>>>>
+> >>>>> Here we go...
+> >>>>>
+> >>>>> [   29.636047] BUG: sleeping function called from invalid context at
+> >>>>> drivers/base/power/runtime.c:1032
+> >>>>> [   29.636055] in_atomic(): 1, irqs_disabled(): 0, pid: 1500, name: Xorg
+> >>>>> [   29.636058] 1 lock held by Xorg/1500:
+> >>>>> [   29.636060]  #0:  (&dev->struct_mutex){+.+.+.}, at:
+> >>>>> [<ffffffffa0680c13>] i915_mutex_lock_interruptible+0x43/0x140 [i915]
+> >>>>> [   29.636107] CPU: 0 PID: 1500 Comm: Xorg Not tainted
+> >>>>> 4.10.0-rc1-6-iniza-amd64 #1
+> >>>>> [   29.636109] Hardware name: SAMSUNG ELECTRONICS CO., LTD.
+> >>>>> 530U3BI/530U4BI/530U4BH/530U3BI/530U4BI/530U4BH, BIOS 13XK 03/28/2013
+> >>>>> [   29.636111] Call Trace:
+> >>>>> [   29.636120]  dump_stack+0x85/0xc2
+> >>>>> [   29.636124]  ___might_sleep+0x196/0x260
+> >>>>> [   29.636127]  __might_sleep+0x53/0xb0
+> >>>>> [   29.636131]  __pm_runtime_resume+0x7a/0x90
+> >>>>> [   29.636159]  intel_runtime_pm_get+0x25/0x90 [i915]
+> >>>>> [   29.636189]  aliasing_gtt_bind_vma+0xaa/0xf0 [i915]
+> >>>>> [   29.636220]  i915_vma_bind+0xaf/0x1e0 [i915]
+> >>>>> [   29.636248]  i915_gem_execbuffer_relocate_entry+0x513/0x6f0 [i915]
+> >>>>> [   29.636272]  i915_gem_execbuffer_relocate_vma.isra.34+0x188/0x250
+> >>>>> [i915]
+> >>>>> [   29.636275]  ? trace_hardirqs_on+0xd/0x10
+> >>>>> [   29.636294]  ? i915_gem_execbuffer_reserve_vma.isra.31+0x152/0x1f0
+> >>>>> [i915]
+> >>>>> [   29.636316]  ? i915_gem_execbuffer_reserve.isra.32+0x372/0x3a0 [i915]
+> >>>>> [   29.636342]  i915_gem_do_execbuffer.isra.38+0xa70/0x1a40 [i915]
+> >>>>> [   29.636347]  ? __might_fault+0x4e/0xb0
+> >>>>> [   29.636373]  i915_gem_execbuffer2+0xc5/0x260 [i915]
+> >>>>> [   29.636376]  ? __might_fault+0x4e/0xb0
+> >>>>> [   29.636395]  drm_ioctl+0x206/0x450 [drm]
+> >>>>> [   29.636420]  ? i915_gem_execbuffer+0x340/0x340 [i915]
+> >>>>> [   29.636425]  ? __fget+0x5/0x200
+> >>>>> [   29.636429]  do_vfs_ioctl+0x91/0x6f0
+> >>>>> [   29.636431]  ? __fget+0x111/0x200
+> >>>>> [   29.636433]  ? __fget+0x5/0x200
+> >>>>> [   29.636436]  SyS_ioctl+0x79/0x90
+> >>>>> [   29.636441]  entry_SYSCALL_64_fastpath+0x23/0xc6
+> >>>>>
+> >>>>> On suspend/resume I see the same call trace.
+> >>>>> [2] points to the "BUG" line.
+> >>>>
+> >>>> Well, this appears to be an i915 issue, but not a serious one.
+> >>>>
+> >>>> Clearly, a function that may sleep (pm_runtime_get_sync() in
+> >>>> intel_runtime_pm_get()) is called with disabled interrupts.  If I
+> >>>> understand the code correctly, though, it actually is not going to
+> >>>> sleep in this particular case, because pm_runtime_get_sync() has
+> >>>> already been called once for this device in the same code path which
+> >>>> means that this particular instance will return immediately, so this
+> >>>> is a false-positive (most likely).
+> >>>>
+> >>>> Let me see if I the might_sleep_if() assertion in
+> >>>> __pm_runtime_resume(() can be moved to a better place.
+> >>>>
+> >>> Hi Rafael,
+> >>>
+> >>> did you had a chance to look at this?
+> >>> The problem still remains in Linux v4.10-rc5.
+> >>
+> >>
+> >> No, I didn't.
+> >>
+> >> As I said, this is not a serious issue.
+> >
+> > Something like the attached (untested).
+> >
+> > Please try it and let me know if it makes the splat go away.
+> >
 > 
-> Theoretically yes, but there was objection to that idea because replacing the '-'
-> with '_' is considered by some to be an ABI change (why the addition of '.auto'
-> doesn't matter escapes me, though).
+> Your patch fixes the issue here.
+> I tested against vanilla Linux v4.10-rc5.
 > 
+> Feel free to give appropriate credits.
 
-I read that discussion and both ways are not optimal. Many drivers has "-" in its
-name and even "*" is a valid filename. And changing to underscore is ugly too. 
-Too bad libsensors parses "-" that way.
+OK, thanks!
 
->>
->>> Anyway, the related change in thermal has been reverted, so that should
->>
->> s/thermal/hwmon ? Or I'm confused :-D (there was no change in thermal, code stopped working because of change in w1 driver (".auto" addition))
->>
-> 
-> 3feb479cea37 Revert "thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()"
+Below is a full version with a changelog & tags.
 
-But after applying revert on my kernel copy there still will be a problem
-in arch init with missing ".auto" match and driver load still fails on a shorter string array.
+Thanks,
+Rafael
 
-Petr
+---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Subject: [PATCH] PM / runtime: Avoid false-positive warnings from might_sleep_if()
+
+The might_sleep_if() assertions in __pm_runtime_idle(),
+__pm_runtime_suspend() and __pm_runtime_resume() may generate
+false-positive warnings in some situations.  For example, that
+happens if a nested pm_runtime_get_sync()/pm_runtime_put() pair
+is executed with disabled interrupts within an outer
+pm_runtime_get_sync()/pm_runtime_put() section for the same device.
+[Generally, pm_runtime_get_sync() may sleep, so it should not be
+called with disabled interrupts, but in this particular case the
+previous pm_runtime_get_sync() guarantees that the device will not
+be suspended, so the inner pm_runtime_get_sync() will return
+immediately after incrementing the device's usage counter.]
+
+That started to happen in the i915 driver in 4.10-rc, leading to
+the following splat:
+
+ BUG: sleeping function called from invalid context at drivers/base/power/runtime.c:1032
+ in_atomic(): 1, irqs_disabled(): 0, pid: 1500, name: Xorg
+ 1 lock held by Xorg/1500:
+  #0:  (&dev->struct_mutex){+.+.+.}, at:
+  [<ffffffffa0680c13>] i915_mutex_lock_interruptible+0x43/0x140 [i915]
+ CPU: 0 PID: 1500 Comm: Xorg Not tainted
+ Call Trace:
+  dump_stack+0x85/0xc2
+  ___might_sleep+0x196/0x260
+  __might_sleep+0x53/0xb0
+  __pm_runtime_resume+0x7a/0x90
+  intel_runtime_pm_get+0x25/0x90 [i915]
+  aliasing_gtt_bind_vma+0xaa/0xf0 [i915]
+  i915_vma_bind+0xaf/0x1e0 [i915]
+  i915_gem_execbuffer_relocate_entry+0x513/0x6f0 [i915]
+  i915_gem_execbuffer_relocate_vma.isra.34+0x188/0x250 [i915]
+  ? trace_hardirqs_on+0xd/0x10
+  ? i915_gem_execbuffer_reserve_vma.isra.31+0x152/0x1f0 [i915]
+  ? i915_gem_execbuffer_reserve.isra.32+0x372/0x3a0 [i915]
+  i915_gem_do_execbuffer.isra.38+0xa70/0x1a40 [i915]
+  ? __might_fault+0x4e/0xb0
+  i915_gem_execbuffer2+0xc5/0x260 [i915]
+  ? __might_fault+0x4e/0xb0
+  drm_ioctl+0x206/0x450 [drm]
+  ? i915_gem_execbuffer+0x340/0x340 [i915]
+  ? __fget+0x5/0x200
+  do_vfs_ioctl+0x91/0x6f0
+  ? __fget+0x111/0x200
+  ? __fget+0x5/0x200
+  SyS_ioctl+0x79/0x90
+  entry_SYSCALL_64_fastpath+0x23/0xc6
+
+even though the code triggering it is correct.
+
+Unfortunately, the might_sleep_if() assertions in question are
+too coarse-grained to cover such cases correctly, so make them
+a bit less sensitive in order to avoid the false-positives.
+
+Reported-and-tested-by: Sedat Dilek <sedat.dilek@gmail.com> 
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/runtime.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -966,13 +966,13 @@ int __pm_runtime_idle(struct device *dev
+ 	unsigned long flags;
+ 	int retval;
+ 
+-	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
+-
+ 	if (rpmflags & RPM_GET_PUT) {
+ 		if (!atomic_dec_and_test(&dev->power.usage_count))
+ 			return 0;
+ 	}
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+ 	retval = rpm_idle(dev, rpmflags);
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+@@ -998,13 +998,13 @@ int __pm_runtime_suspend(struct device *
+ 	unsigned long flags;
+ 	int retval;
+ 
+-	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
+-
+ 	if (rpmflags & RPM_GET_PUT) {
+ 		if (!atomic_dec_and_test(&dev->power.usage_count))
+ 			return 0;
+ 	}
+ 
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++
+ 	spin_lock_irqsave(&dev->power.lock, flags);
+ 	retval = rpm_suspend(dev, rpmflags);
+ 	spin_unlock_irqrestore(&dev->power.lock, flags);
+@@ -1029,7 +1029,8 @@ int __pm_runtime_resume(struct device *d
+ 	unsigned long flags;
+ 	int retval;
+ 
+-	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe);
++	might_sleep_if(!(rpmflags & RPM_ASYNC) && !dev->power.irq_safe &&
++			dev->power.runtime_status != RPM_ACTIVE);
+ 
+ 	if (rpmflags & RPM_GET_PUT)
+ 		atomic_inc(&dev->power.usage_count);
 
