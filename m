@@ -1,93 +1,130 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Fri, 3 Feb 2017 13:00:51 -0800
-Message-ID: <CAKvHMgQs3YYtyMApYvdRAyzuzii_xA=ZKRfqG-zpFzrMef_qdg@mail.gmail.com>
-References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-3-tony@atomide.com>
- <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
- <20170131003632.GB7403@atomide.com> <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
- <20170203185408.GB3721@atomide.com>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCHv2 1/2] arch: Move CONFIG_DEBUG_RODATA and
+ CONFIG_SET_MODULE_RONX to be common
+Date: Fri, 3 Feb 2017 13:08:40 -0800
+Message-ID: <CAGXu5j+HOTHRrFJFMsMaAvqcTAUoEBuphzrYAr7VAjJQU9_RYA@mail.gmail.com>
+References: <1486144343-24998-1-git-send-email-labbott@redhat.com>
+ <1486144343-24998-2-git-send-email-labbott@redhat.com> <CAGXu5jK6_y=dWHUDBto7ykN_sSOQ6Gx+sZs_gQ1Hoh5DjP-fTw@mail.gmail.com>
+ <20170203202919.GE27312@n2100.armlinux.org.uk>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:35919 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752362AbdBCVAw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 16:00:52 -0500
-In-Reply-To: <20170203185408.GB3721@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-parisc-owner@vger.kernel.org>
+In-Reply-To: <20170203202919.GE27312@n2100.armlinux.org.uk>
+Sender: linux-parisc-owner@vger.kernel.org
+To: Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: Laura Abbott <labbott@redhat.com>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Jessica Yu <jeyu@redhat.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Fri, Feb 3, 2017 at 10:54 AM, Tony Lindgren <tony@atomide.com> wrote:
-> ...
-> From: Tony Lindgren <tony@atomide.com>
-> Date: Mon, 30 Jan 2017 07:10:31 -0800
-> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
+On Fri, Feb 3, 2017 at 12:29 PM, Russell King - ARM Linux
+<linux@armlinux.org.uk> wrote:
+> On Fri, Feb 03, 2017 at 11:45:56AM -0800, Kees Cook wrote:
+>> On Fri, Feb 3, 2017 at 9:52 AM, Laura Abbott <labbott@redhat.com> wrote:
+>> > diff --git a/arch/Kconfig b/arch/Kconfig
+>> > index 99839c2..22ee01e 100644
+>> > --- a/arch/Kconfig
+>> > +++ b/arch/Kconfig
+>> > @@ -781,4 +781,32 @@ config VMAP_STACK
+>> >           the stack to map directly to the KASAN shadow map using a formula
+>> >           that is incorrect if the stack is in vmalloc space.
+>> >
+>> > +config ARCH_NO_STRICT_RWX_DEFAULTS
+>> > +       def_bool n
+>> > +
+>> > +config ARCH_HAS_STRICT_KERNEL_RWX
+>> > +       def_bool n
+>> > +
+>> > +config DEBUG_RODATA
+>> > +       def_bool y if !ARCH_NO_STRICT_RWX_DEFAULTS
+>> > +       prompt "Make kernel text and rodata read-only" if ARCH_NO_STRICT_RWX_DEFAULTS
+>>
+>> Ah! Yes, perfect. I totally forgot about using conditional "prompt"
+>> lines. Nice!
 >
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> driver PM runtime state.
+> It's no different from the more usual:
 >
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
+>         bool "Make kernel text and rodata read-only" if ARCH_NO_STRICT_RWX_DEFAULTS
+>         default y if !ARCH_NO_STRICT_RWX_DEFAULTS
+>         depends on ARCH_HAS_STRICT_KERNEL_RWX
 >
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 156 ++++++++++++++++++++++++---------
->  1 file changed, 114 insertions(+), 42 deletions(-)
+> But... I really don't like this - way too many negations and negatives
+> which make it difficult to figure out what's going on here.
 >
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
+> The situation we have today is:
 >
-> @@ -1234,11 +1267,18 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
->  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->  {
->         struct bq24190_dev_info *bdi = data;
-> +       int ret;
+> -config DEBUG_RODATA
+> -       bool "Make kernel text and rodata read-only"
+> -       depends on MMU && !XIP_KERNEL
+> -       default y if CPU_V7
 >
->         bdi->irq_event = true;
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0) {
-> +               dev_err(bdi->dev, "Runtime PM failed in %s: %i\n",
-> +                       __func__, ret);
-> +               return IRQ_NONE;
-> +       }
+> which is "allow the user to select DEBUG_RODATA if building a MMU non-XIP
+> kernel", suggesting that the user turns it on for ARMv7 CPUs.
+>
+> That changes with this and the above:
+>
+> +       select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
+> +       select ARCH_HAS_STRICT_MODULE_RWX if MMU
+> +       select ARCH_NO_STRICT_RWX_DEFAULTS if !CPU_V7
+>
+> This means that ARCH_HAS_STRICT_KERNEL_RWX is set for a MMU non-XIP
+> kernel, which carries the same pre-condition for DEBUG_RODATA - no
+> problem there.
+>
+> However, ARCH_NO_STRICT_RWX_DEFAULTS is set for non-ARMv7 CPUs, which
+> means the "Make kernel text and rodata read-only" prompt _is_ provided
+> for those.  However, for all ARMv7 systems, we go from "suggesting that
+> the user enables the option" to "you don't have a choice, you get this
+> whether you want it or not."
+>
+> I'd prefer to keep it off for my development systems, where I don't
+> care about kernel security.  If we don't wish to do that as a general
+> rule, can we make it dependent on EMBEDDED?
+>
+> Given that on ARM it can add up to 4MB to the kernel image - there
+> _will_ be about 1MB before the .text section, the padding on between
+> __modver and __ex_table which for me is around 626k, the padding
+> between .notes and the init sections start with .vectors (the space
+> between __ex_table and end of .notes is only 4124, which gets padded
+> up to 1MB) and lastly the padding between the .init section and the
+> data section (for me around 593k).  This all adds up to an increase
+> in kernel image size of 3.2MB on 14.2MB - an increase of 22%.
+>
+> So no, I'm really not happy with that.
 
-Now this is a nitpick... Error msg should be consistent with suspend/resume:
+Ah yeah, good point. We have three cases: unsupported, mandatory,
+optional, but we have the case of setting the default for the optional
+case. Maybe something like this?
 
-> @@ -1480,10 +1532,20 @@ static int bq24190_pm_suspend(struct device *dev)
->  {
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
-> +
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0) {
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +               pm_runtime_put_noidle(bdi->dev);
-> +       }
+config STRICT_KERNEL_RWX
+  bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_RWX
+  depends on ARCH_HAS_STRICT_KERNEL_RWX
+  default ARCH_OPTIONAL_KERNEL_RWX_DEFAULT
 
-Like here.
+unsupported:
+!ARCH_HAS_STRICT_KERNEL_RWX
 
-> @@ -1492,15 +1554,25 @@ static int bq24190_pm_resume(struct device *dev)
->  {
->         struct i2c_client *client = to_i2c_client(dev);
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
->
->         bdi->f_reg = 0;
->         bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
->
-> -       pm_runtime_get_sync(bdi->dev);
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0) {
-> +               pm_runtime_put_noidle(bdi->dev);
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +       }
+mandatory:
+ARCH_HAS_STRICT_KERNEL_RWX
+!ARCH_OPTIONAL_KERNEL_RWX
 
-And here.
+optional:
+ARCH_HAS_STRICT_KERNEL_RWX
+ARCH_OPTIONAL_KERNEL_RWX
+with default controlled by ARCH_OPTIONAL_KERNEL_RWX_DEFAULT
+
+Then arm is:
+  select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
+  select ARCH_HAS_STRICT_MODULE_RWX if MMU
+  select ARCH_OPTIONAL_KERNEL_RWX if ARCH_HAS_STRICT_KERNEL_RWX
+  select ARCH_OPTIONAL_KERNEL_RWX_DEFAULT if CPU_V7
+
+x86 and arm64 are:
+  select ARCH_HAS_STRICT_KERNEL_RWX
+  select ARCH_HAS_STRICT_MODULE_RWX
+
+?
+
+-Kees
+
+-- 
+Kees Cook
+Pixel Security
