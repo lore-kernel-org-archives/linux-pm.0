@@ -1,49 +1,77 @@
-From: Alexandre Vicenzi <vicenzi.alexandre@gmail.com>
-Subject: Re: Kworker with high cpu usage (~80%)
-Date: Thu, 2 Feb 2017 23:22:54 -0200
-Message-ID: <CAMHH1fU0Rq7eKvN7O8B1YA5XzsHA1feRtBYanrj5caWC8dYsxw@mail.gmail.com>
-References: <CAMHH1fXRbWaBv2U2duKF+v6RRcfKLLKkNf=mb0TYA4foj2i5kw@mail.gmail.com>
+From: Petr Cvek <petr.cvek@tul.cz>
+Subject: Re: [RFC] w1: regression, remove need for ida and use
+ PLATFORM_DEVID_AUTO
+Date: Fri, 3 Feb 2017 02:31:44 +0100
+Message-ID: <cfa35897-383e-674a-f049-e45c4dfeb534@tul.cz>
+References: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
+ <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-2
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f49.google.com ([209.85.215.49]:36225 "EHLO
-        mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751831AbdBCBW5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 20:22:57 -0500
-In-Reply-To: <CAMHH1fXRbWaBv2U2duKF+v6RRcfKLLKkNf=mb0TYA4foj2i5kw@mail.gmail.com>
+Received: from bubo.tul.cz ([147.230.16.1]:36492 "EHLO bubo.tul.cz"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751881AbdBCBaK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 2 Feb 2017 20:30:10 -0500
+In-Reply-To: <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com, jdelvare@suse.com, linux@roeck-us.net
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org
 
-Hi,
+Dne 2.2.2017 v 15:23 Andrew F. Davis napsal(a):
+> On 02/01/2017 07:05 PM, Petr Cvek wrote:
+>> Patch 
+>> 	w1: remove need for ida and use PLATFORM_DEVID_AUTO
+>> 	098f9fb0c962eb2fdba5f9d34f4cf7a938237184 
+>>
+>> causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
+>>
+>> 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+>> 		return ERR_PTR(-EINVAL);
+>>
+>> A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
+>>
+>> Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
+>>
+>> 	pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
+>>
+>> to
+>>
+>> 	pdev = platform_device_alloc("ds2760-battery", 0);
+>>
+>> Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
+>>
+> 
+> If 20 is no longer the max thermal name then THERMAL_NAME_LENGTH should
+> be changed.
 
-Any ideas?
+Yes it is that ".auto" addition to "ds2760-battery.0" makes 21 chars long string. With higher number (".10" onwards) it is 22 chars. Load of the module then fails at test in thermal_zone_device_register():
 
-Regards,
+	https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/thermal/thermal_core.c?id=refs/tags/v4.10-rc6#n1158
 
-Alexandre Vicenzi
+	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+		return ERR_PTR(-EINVAL);
 
-2017-01-19 0:13 GMT-02:00 Alexandre Vicenzi <vicenzi.alexandre@gmail.com>:
-> Hello,
->
-> It has been a while that I noticed that kworker/0:1 eats a lot of CPU
-> on my computer, about ~80%.
->
-> I never found the real problem, but googling the solution was to
-> disable some GPE interrupt, in my case it is
-> /sys/firmware/acpi/interrupts/gpe13.
->
-> This is a dirty solution, actually, it hides the problem I think. I
-> have no idea what is the real problem and I would like to understand
-> what is.
->
-> I'm using kernel 4.9.0-2 now, but it was present on older versions
-> too. I'm running OpenSuse on a Samsung laptop (Intel i5 3rd gen).
->
-> If someone could point me in the right direction I'll be happy to
-> share more info.
->
-> Regards,
->
-> Alexandre Vicenzi
+I searched in code further and with THERMAL_NAME_LENGTH = 30 (enough space) the module load fails at another place in __hwmon_device_register():
+	
+	https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hwmon/hwmon.c?id=refs/tags/v4.10-rc6#n548
+
+	if (name && (!strlen(name) || strpbrk(name, "-* \t\n")))
+		return ERR_PTR(-EINVAL);
+
+That's because there is "-" in "ds2760-battery.0.auto" (and that's why shortening to "ds2760.0" works). Is there some reason for disallowing "-" in a name? If not then I'm for removal (in other case we need to change ds2760-battery and others names). Increasing THERMAL_NAME_LENGTH to 22 should be just OK for ds2760 (but maybe not enough for others) I would increased it to 32 (nice number ;-) ).
+
+> 
+> As for the couple boards hard-coding "ds2760-battery.0", this is a
+> problem that should be fix regardless of any fix we chose here as IDA is
+> not guaranteed to return 0, so the battery could just as easily be
+> called ds2760-battery.7. (I've had this discussion before as the N900
+> user-space also make this mistake).
+> 
+
+I'm not familiar with power supply subsystem, so just a naive idea. Should suffice to change drivers/power/supply/power_supply_core.c __power_supply_is_supplied_by() for only first part of the string? (like "ds2760-battery" subset of "ds2760-battery.7").
+
+Do you have a link to discussion about N900?
+
+Petr
