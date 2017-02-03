@@ -1,91 +1,87 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC] w1: regression, remove need for ida and use
- PLATFORM_DEVID_AUTO
-Date: Thu, 2 Feb 2017 19:31:12 -0800
-Message-ID: <0928fc89-490f-1d12-dc3d-51f2d433d2e0@roeck-us.net>
-References: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
- <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
- <cfa35897-383e-674a-f049-e45c4dfeb534@tul.cz>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
+Date: Thu, 2 Feb 2017 19:44:40 -0800
+Message-ID: <20170203034440.GI7403@atomide.com>
+References: <20170131000210.5442-1-tony@atomide.com>
+ <20170131000210.5442-3-tony@atomide.com>
+ <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
+ <20170131003632.GB7403@atomide.com>
+ <CAKvHMgTP40_YTHZn=mNNYBW5aheVNV2WskuikQeyjv3Zn27fOg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:45811 "EHLO
-        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752174AbdBCDbS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Feb 2017 22:31:18 -0500
-In-Reply-To: <cfa35897-383e-674a-f049-e45c4dfeb534@tul.cz>
+Received: from muru.com ([72.249.23.125]:33482 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751512AbdBCDop (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 2 Feb 2017 22:44:45 -0500
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgTP40_YTHZn=mNNYBW5aheVNV2WskuikQeyjv3Zn27fOg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>, "Andrew F. Davis" <afd@ti.com>, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com, jdelvare@suse.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On 02/02/2017 05:31 PM, Petr Cvek wrote:
-> Dne 2.2.2017 v 15:23 Andrew F. Davis napsal(a):
->> On 02/01/2017 07:05 PM, Petr Cvek wrote:
->>> Patch
->>> 	w1: remove need for ida and use PLATFORM_DEVID_AUTO
->>> 	098f9fb0c962eb2fdba5f9d34f4cf7a938237184
->>>
->>> causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
->>>
->>> 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
->>> 		return ERR_PTR(-EINVAL);
->>>
->>> A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
->>>
->>> Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
->>>
->>> 	pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
->>>
->>> to
->>>
->>> 	pdev = platform_device_alloc("ds2760-battery", 0);
->>>
->>> Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
->>>
->>
->> If 20 is no longer the max thermal name then THERMAL_NAME_LENGTH should
->> be changed.
->
-> Yes it is that ".auto" addition to "ds2760-battery.0" makes 21 chars long string. With higher number (".10" onwards) it is 22 chars. Load of the module then fails at test in thermal_zone_device_register():
->
-> 	https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/thermal/thermal_core.c?id=refs/tags/v4.10-rc6#n1158
->
-> 	if (type && strlen(type) >= THERMAL_NAME_LENGTH)
-> 		return ERR_PTR(-EINVAL);
->
-> I searched in code further and with THERMAL_NAME_LENGTH = 30 (enough space) the module load fails at another place in __hwmon_device_register():
-> 	
-> 	https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hwmon/hwmon.c?id=refs/tags/v4.10-rc6#n548
->
-> 	if (name && (!strlen(name) || strpbrk(name, "-* \t\n")))
-> 		return ERR_PTR(-EINVAL);
->
-> That's because there is "-" in "ds2760-battery.0.auto" (and that's why shortening to "ds2760.0" works). Is there some reason for disallowing "-" in a name? If not then I'm for removal (in other case we need to change ds2760-battery and others names). Increasing THERMAL_NAME_LENGTH to 22 should be just OK for ds2760 (but maybe not enough for others) I would increased it to 32 (nice number ;-) ).
->
+* Liam Breck <liam@networkimprov.net> [170202 17:44]:
+> > @@ -427,11 +428,20 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
+> >         if (!info)
+> >                 return -EINVAL;
+> >
+> > +       ret = pm_runtime_get_sync(bdi->dev);
+> > +       if (ret < 0)
+> > +               return ret;
+> 
+> Let's not stop here if get_sync fails.
 
-'-' is not permitted in hwmon name attributes, primarily because libsensors
-interprets it as a delimiter in its configuration file.
+Hmm care to describe why we would want to ignore errors on pm_runtime_get()?
+I don't think that's a good idea.. And for sysfs_show() output?
 
-Anyway, the related change in thermal has been reverted, so that should
-no longer be an issue. Also, we'll change the hwmon code in 4.11 to no longer
-return an error but to (only) issue a warning if an invalid name is provided.
+If these calls fail it's a sign of a serious problem somewhere
+and it should be fixed instead of ignoring the errors and attempting to
+continue. Ignoring errors with these calls can lead into problems that
+are hard to debug.
 
-Guenter
+> > @@ -1364,12 +1394,16 @@ static int bq24190_probe(struct i2c_client *client,
+> >         }
+> >
+> >         pm_runtime_enable(dev);
+> > -       pm_runtime_resume(dev);
+> > +       pm_runtime_use_autosuspend(dev);
+> > +       pm_runtime_set_autosuspend_delay(dev, 600);
+> > +       ret = pm_runtime_get_sync(dev);
+> > +       if (ret < 0)
+> > +               goto out1;
+> 
+> Nor here 8.
 
->>
->> As for the couple boards hard-coding "ds2760-battery.0", this is a
->> problem that should be fix regardless of any fix we chose here as IDA is
->> not guaranteed to return 0, so the battery could just as easily be
->> called ds2760-battery.7. (I've had this discussion before as the N900
->> user-space also make this mistake).
->>
->
-> I'm not familiar with power supply subsystem, so just a naive idea. Should suffice to change drivers/power/supply/power_supply_core.c __power_supply_is_supplied_by() for only first part of the string? (like "ds2760-battery" subset of "ds2760-battery.7").
->
-> Do you have a link to discussion about N900?
->
-> Petr
->
+Eek, let's not try to continue the probe if pm_runtime_get_fails. Let's
+just assume it's either implemented and must be working, or a nop operation
+that will not do anything. Depending on the implementation, this could
+affect something in the hardware like pin multiplexing, parent device
+clocking.. On the module exit path it might make sense as we know the
+device was working to get there so it might be possible to do something :)
 
+> We need helper funcs...
+> 
+> static inline int bq24190_pmrt_get(struct device* dev) {
+>   int err = pm_runtime_get_sync(dev);
+>   if (err < 0) {
+>     dev_warn(dev, "pm_runtime_get failed: %i\n", err);
+>     pm_runtime_put_noidle(dev);
+>   }
+>   return err;
+> }
+> 
+> static inline void bq24190_pmrt_put(struct device* dev, int err) {
+>   if (!err) {
+>     pm_runtime_mark_last_busy(dev);
+>     pm_runtime_put_autosuspend(dev);
+>   }
+> }
+
+If you want to implement something like that it should probably be
+done in a Linux generic way. There's still quite a bit boilerplate
+code needed for the autosuspend usage.
+
+Regards,
+
+Tony
