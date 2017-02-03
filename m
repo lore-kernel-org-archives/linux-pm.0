@@ -1,68 +1,82 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/8] power: add power sequence library
-Date: Fri, 03 Feb 2017 22:14:31 +0100
-Message-ID: <16336642.sihi7izbLX@aspire.rjw.lan>
-References: <1483425211-14473-1-git-send-email-peter.chen@nxp.com> <20170201080817.GD17968@kroah.com> <20170203081614.GA24614@b29397-desktop>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
+Date: Fri, 3 Feb 2017 13:44:52 -0800
+Message-ID: <CAKvHMgQwhm3pBupBj8KFLwyhZpdeHtMyKj3BardbKpcAy_qXfg@mail.gmail.com>
+References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-3-tony@atomide.com>
+ <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
+ <20170131003632.GB7403@atomide.com> <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
+ <20170203185408.GB3721@atomide.com> <CAKvHMgQs3YYtyMApYvdRAyzuzii_xA=ZKRfqG-zpFzrMef_qdg@mail.gmail.com>
+ <20170203211707.GC3721@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170203081614.GA24614@b29397-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Chen <hzpeterchen@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Peter Chen <peter.chen@nxp.com>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Heiko Stuebner <heiko@sntech.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, p.zabel@pengutronix.de, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, "open list:ULTRA-WIDEBAND (UWB) SUBSYSTEM:" <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:35784 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752282AbdBCVoy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 16:44:54 -0500
+In-Reply-To: <20170203211707.GC3721@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Friday, February 03, 2017 04:16:15 PM Peter Chen wrote:
-> On Wed, Feb 01, 2017 at 09:08:17AM +0100, Greg Kroah-Hartman wrote:
-> > On Wed, Feb 01, 2017 at 12:10:17AM +0100, Rafael J. Wysocki wrote:
-> > > On Tue, Jan 3, 2017 at 7:33 AM, Peter Chen <peter.chen@nxp.com> wrote:
-> > > > We have an well-known problem that the device needs to do some power
-> > > > sequence before it can be recognized by related host, the typical
-> > > > example like hard-wired mmc devices and usb devices.
-> > > >
-> > > > This power sequence is hard to be described at device tree and handled by
-> > > > related host driver, so we have created a common power sequence
-> > > > library to cover this requirement. The core code has supplied
-> > > > some common helpers for host driver, and individual power sequence
-> > > > libraries handle kinds of power sequence for devices. The pwrseq
-> > > > librares always need to allocate extra instance for compatible
-> > > > string match.
-> > > >
-> > > > pwrseq_generic is intended for general purpose of power sequence, which
-> > > > handles gpios and clocks currently, and can cover other controls in
-> > > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > > > if only one power sequence is needed, else call of_pwrseq_on_list
-> > > > /of_pwrseq_off_list instead (eg, USB hub driver).
-> > > >
-> > > > For new power sequence library, it can add its compatible string
-> > > > to pwrseq_of_match_table, then the pwrseq core will match it with
-> > > > DT's, and choose this library at runtime.
-> > > >
-> > > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> > > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-> > > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> > > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > > 
-> > > Quite honestly, I have a really hard time with trying to follow this
-> > > code and the total lack of documentation makes it even harder. 
-> 
-> Sorry about that, Is it ok I add the design doc at:
-> Documentation/power/power-sequence/design.rst?
+On Fri, Feb 3, 2017 at 1:17 PM, Tony Lindgren <tony@atomide.com> wrote:
 
-You can do that if you think it will address the request to explain the design.
+> From: Tony Lindgren <tony@atomide.com>
+> Date: Mon, 30 Jan 2017 07:10:31 -0800
+> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
+>
+> We can get quite a few interrupts when the battery is trickle charging.
+> Let's enable PM runtime autosuspend to avoid constantly toggling device
+> driver PM runtime state.
+>
+> Let's use a 600 ms timeout as that's how long the USB chager detection
+> might take.
+>
+> Cc: Liam Breck <kernel@networkimprov.net>
+> Acked-by: Mark Greer <mgreer@animalcreek.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
 
-> > > particular, the generic power sequence code is not even commented at
-> > > all, 
-> 
-> The generic power sequence code just implements the APIs which are 
-> called at power/pwrseq/core.c, and those API are commented at
-> include/linux/power/pwrseq.h. Anyway, I will add more comments at it.
+Acked-by: Liam Breck <kernel@networkimprov.net>
 
-It actually seems to be doing more than that and I'm not sure why the code in
-core.c is necessary at all.  The "generic" thing seems to be the only user of
-it anyway and the callbacks seem to be tailored to its needs.
 
-Thanks,
-Rafael
+> @@ -1480,10 +1531,20 @@ static int bq24190_pm_suspend(struct device *dev)
+>  {
+>         struct i2c_client *client = to_i2c_client(dev);
+>         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+> +       int error;
+> +
+> +       error = pm_runtime_get_sync(bdi->dev);
+> +       if (error < 0) {
+> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
+> +               pm_runtime_put_noidle(bdi->dev);
+> +       }
+>
+> -       pm_runtime_get_sync(bdi->dev);
+>         bq24190_register_reset(bdi);
+> -       pm_runtime_put_sync(bdi->dev);
+> +
+> +       if (!error) {
+> +               pm_runtime_mark_last_busy(bdi->dev);
+> +               pm_runtime_put_autosuspend(bdi->dev);
+> +       }
+>
+>         return 0;
+>  }
+> @@ -1492,15 +1553,25 @@ static int bq24190_pm_resume(struct device *dev)
+>  {
+>         struct i2c_client *client = to_i2c_client(dev);
+>         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
+> +       int error;
+>
+>         bdi->f_reg = 0;
+>         bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
+>
+> -       pm_runtime_get_sync(bdi->dev);
+> +       error = pm_runtime_get_sync(bdi->dev);
+> +       if (error < 0) {
+> +               pm_runtime_put_noidle(bdi->dev);
+> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
+> +       }
+
+Last nitpick: call put_noidle after dev_warn, as in suspend :-)
