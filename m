@@ -1,70 +1,39 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH 2/8] power: add power sequence library
-Date: Fri, 3 Feb 2017 16:16:15 +0800
-Message-ID: <20170203081614.GA24614@b29397-desktop>
-References: <1483425211-14473-1-git-send-email-peter.chen@nxp.com>
- <1483425211-14473-3-git-send-email-peter.chen@nxp.com>
- <CAJZ5v0iR7p-ftUzvVwW96Y55A=vYG8_UbhjuA4vw0BFFZ8a9iw@mail.gmail.com>
- <20170201080817.GD17968@kroah.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: Re: [PATCH 8/9] mfd: wm97xx-core: core support for wm97xx Codec
+Date: Fri, 03 Feb 2017 09:37:03 +0100
+Message-ID: <87y3xn1xhs.fsf@belgarion.home>
+References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
+        <1477510907-23495-9-git-send-email-robert.jarzmik@free.fr>
+        <20161118165040.GB19884@dell.home> <87twb3r94s.fsf@belgarion.home>
+        <20161121101219.GB32509@dell> <87y406ppjl.fsf@belgarion.home>
+        <20161206111353.fq5445yuzsy7li4i@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33888 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751878AbdBCIQj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 03:16:39 -0500
-Content-Disposition: inline
-In-Reply-To: <20170201080817.GD17968@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20161206111353.fq5445yuzsy7li4i@sirena.org.uk> (Mark Brown's
+        message of "Tue, 6 Dec 2016 11:13:53 +0000")
+Sender: linux-input-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>, Lee Jones <lee.jones@linaro.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Peter Chen <peter.chen@nxp.com>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, Mark Brown <broonie@kernel.org>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Heiko Stuebner <heiko@sntech.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, p.zabel@pengutronix.de, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, "open list:ULTRA-WIDEBAND (UWB) SUBSYSTEM:" <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Sas
 
-On Wed, Feb 01, 2017 at 09:08:17AM +0100, Greg Kroah-Hartman wrote:
-> On Wed, Feb 01, 2017 at 12:10:17AM +0100, Rafael J. Wysocki wrote:
-> > On Tue, Jan 3, 2017 at 7:33 AM, Peter Chen <peter.chen@nxp.com> wrote:
-> > > We have an well-known problem that the device needs to do some power
-> > > sequence before it can be recognized by related host, the typical
-> > > example like hard-wired mmc devices and usb devices.
-> > >
-> > > This power sequence is hard to be described at device tree and handled by
-> > > related host driver, so we have created a common power sequence
-> > > library to cover this requirement. The core code has supplied
-> > > some common helpers for host driver, and individual power sequence
-> > > libraries handle kinds of power sequence for devices. The pwrseq
-> > > librares always need to allocate extra instance for compatible
-> > > string match.
-> > >
-> > > pwrseq_generic is intended for general purpose of power sequence, which
-> > > handles gpios and clocks currently, and can cover other controls in
-> > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > > if only one power sequence is needed, else call of_pwrseq_on_list
-> > > /of_pwrseq_off_list instead (eg, USB hub driver).
-> > >
-> > > For new power sequence library, it can add its compatible string
-> > > to pwrseq_of_match_table, then the pwrseq core will match it with
-> > > DT's, and choose this library at runtime.
-> > >
-> > > Signed-off-by: Peter Chen <peter.chen@nxp.com>
-> > > Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-> > > Tested-by Joshua Clayton <stillcompiling@gmail.com>
-> > > Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-> > > Tested-by: Matthias Kaehlcke <mka@chromium.org>
-> > 
-> > Quite honestly, I have a really hard time with trying to follow this
-> > code and the total lack of documentation makes it even harder. 
+Mark Brown <broonie@kernel.org> writes:
+>> >> As for the "sound specific part", it's because AC97 bus is mainly used in sound
+>> >> oriented drivers, but still the codec IPs provide more than just sound, as the
+>> >> Wolfson codecs for instance.
+>
+>> > I'd like to get Mark Brown's opinion on this.
+>
+> I'm not sure what the question is, sorry.
 
-Sorry about that, Is it ok I add the design doc at:
-Documentation/power/power-sequence/design.rst?
+Ok, I've been busy lately and didn't pay attention to this. As I can't answer to
+Mark in Lee's place, and there is a good chance that almost everybody forgot
+what this was about, I'll respin the serie.
 
-> > particular, the generic power sequence code is not even commented at
-> > all, 
+Then Lee can ask again his question to Mark so that you guys can talk directly
+one to the other.
 
-The generic power sequence code just implements the APIs which are 
-called at power/pwrseq/core.c, and those API are commented at
-include/linux/power/pwrseq.h. Anyway, I will add more comments at it.
-	
--- 
+Cheers.
 
-Best Regards,
-Peter Chen
+--
+Robert
