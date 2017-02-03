@@ -1,39 +1,42 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Subject: Re: [PATCH 8/9] mfd: wm97xx-core: core support for wm97xx Codec
-Date: Fri, 03 Feb 2017 09:37:03 +0100
-Message-ID: <87y3xn1xhs.fsf@belgarion.home>
-References: <1477510907-23495-1-git-send-email-robert.jarzmik@free.fr>
-        <1477510907-23495-9-git-send-email-robert.jarzmik@free.fr>
-        <20161118165040.GB19884@dell.home> <87twb3r94s.fsf@belgarion.home>
-        <20161121101219.GB32509@dell> <87y406ppjl.fsf@belgarion.home>
-        <20161206111353.fq5445yuzsy7li4i@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <20161206111353.fq5445yuzsy7li4i@sirena.org.uk> (Mark Brown's
-        message of "Tue, 6 Dec 2016 11:13:53 +0000")
-Sender: linux-input-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>, Lee Jones <lee.jones@linaro.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Sebastian Reichel <sre@kernel.org>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-pm@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: Fix typos
+Date: Fri,  3 Feb 2017 15:26:25 +0530
+Message-ID: <4164c0bc9ba2e15876c8efe868f9ae1c851f105b.1486115779.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Mark Brown <broonie@kernel.org> writes:
->> >> As for the "sound specific part", it's because AC97 bus is mainly used in sound
->> >> oriented drivers, but still the codec IPs provide more than just sound, as the
->> >> Wolfson codecs for instance.
->
->> > I'd like to get Mark Brown's opinion on this.
->
-> I'm not sure what the question is, sorry.
+- s/freqnency/frequency
+-s/accomodating/accommodating
 
-Ok, I've been busy lately and didn't pay attention to this. As I can't answer to
-Mark in Lee's place, and there is a good chance that almost everybody forgot
-what this was about, I'll respin the serie.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ include/linux/cpufreq.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Then Lee can ask again his question to Mark so that you guys can talk directly
-one to the other.
-
-Cheers.
-
---
-Robert
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index b07838b1fc60..87165f06a307 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -31,7 +31,7 @@
+ 
+ #define CPUFREQ_ETERNAL			(-1)
+ #define CPUFREQ_NAME_LEN		16
+-/* Print length for names. Extra 1 space for accomodating '\n' in prints */
++/* Print length for names. Extra 1 space for accommodating '\n' in prints */
+ #define CPUFREQ_NAME_PLEN		(CPUFREQ_NAME_LEN + 1)
+ 
+ struct cpufreq_governor;
+@@ -115,7 +115,7 @@ struct cpufreq_policy {
+ 	 *   guarantee that frequency can be changed on any CPU sharing the
+ 	 *   policy and that the change will affect all of the policy CPUs then.
+ 	 * - fast_switch_enabled is to be set by governors that support fast
+-	 *   freqnency switching with the help of cpufreq_enable_fast_switch().
++	 *   frequency switching with the help of cpufreq_enable_fast_switch().
+ 	 */
+ 	bool			fast_switch_possible;
+ 	bool			fast_switch_enabled;
+-- 
+2.7.1.410.g6faf27b
