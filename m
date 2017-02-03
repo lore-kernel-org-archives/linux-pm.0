@@ -1,69 +1,116 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Fri, 3 Feb 2017 02:38:59 -0800
-Message-ID: <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
-References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-3-tony@atomide.com>
- <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com> <20170131003632.GB7403@atomide.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device
+ pointer to of_xlate callback
+Date: Fri, 03 Feb 2017 14:01:27 +0100
+Message-ID: <22bc3f1b-a629-482a-71b6-06a3c4df628c@samsung.com>
+References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
+ <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
+ <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
+ <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:33432 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752238AbdBCKjA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 05:39:00 -0500
-In-Reply-To: <20170131003632.GB7403@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
+In-reply-to: <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Mark Brown <broonie@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Mon, Jan 30, 2017 at 4:36 PM, Tony Lindgren <tony@atomide.com> wrote:
+Hi All,
 
-> From: Tony Lindgren <tony@atomide.com>
-> Date: Mon, 30 Jan 2017 07:10:31 -0800
-> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
+On 2017-01-26 15:43, Marek Szyprowski wrote:
+> On 2017-01-25 14:12, Lars-Peter Clausen wrote:
+>> On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
+>>> Add pointer to slave device to of_dma_xlate to let DMA engine driver
+>>> to know which slave device is using given DMA channel. This will be
+>>> later used to implement non-irq-safe runtime PM for DMA engine driver.
+>> of_dma_xlate() is used to translate from a OF phandle and a specifier 
+>> to a
+>> DMA channel. On one hand this does not necessarily mean that the 
+>> channel is
+>> actually going to be used by the slave that called the xlate function.
+>> Modifying the driver state when a lookup of the channel is done is a
+>> layering violation. And this approach is also missing a way to 
+>> disassociate
+>> a slave from a DMA channel, e.g. when it is no longer used.
+>>
+>> On the other hand there are other mechanisms to translate between 
+>> some kind
+>> of firmware handle to a DMA channel which are completely ignored here.
+>>
+>> So this approach does not work. This is something that needs to be 
+>> done at
+>> the dmaengine level, not a the firmware resource translation level. 
+>> And it
+>> needs a matching method that is called when the channel is disassociated
+>> from a device, when the device no longer uses the DMA channel.
 >
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> driver PM runtime state.
+> Frankly I agree that of_dma_xlate() should only return the requested 
+> channel
+> to the dmaengine core and do not do any modification in the the driver 
+> state.
 >
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
+> However the current dma engine design and implementation breaks this 
+> rule.
+> Please check the drivers - how do they implement of_xlate callback. They
+> usually call dma_get_any_slave_channel, dma_get_slave_channel or
+> __dma_request_channel there, which in turn calls dma_chan_get, which then
+> calls back to device_alloc_chan_resources callback. Some of the 
+> drivers also
+> do a hardware configuration or other resource allocation in of_xlate.
+> This is a bit messy design and leave no place in the core to set slave 
+> device
+> before device_alloc_chan_resources callback, where one would expect to 
+> have
+> it already set.
 >
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 153 ++++++++++++++++++++++++---------
->  1 file changed, 111 insertions(+), 42 deletions(-)
+> The best place to add new calls to the dmaengine drivers to set slave 
+> device
+> would be just before device_alloc_chan_resources(), what in turn means 
+> that
+> the current dmaengine core should do in dma_chan_get(). This would 
+> require to
+> forward the slave device pointer via even more layers including the 
+> of_xlate
+> callback too. IMHO this is not worth the effort.
 >
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> ...
-> @@ -1234,11 +1267,15 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
->  static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
->  {
->         struct bq24190_dev_info *bdi = data;
-> +       int ret;
+> DMA engine core and API definitely needs some cleanup. During such 
+> cleanup
+> the slave device pointer might be moved out of xlate into separate 
+> callback
+> when the core gets ready for such operation.
 >
->         bdi->irq_event = true;
-> -       pm_runtime_get_sync(bdi->dev);
-> +       ret = pm_runtime_get_sync(bdi->dev);
-> +       if (ret < 0)
-> +               return ret;
->         bq24190_check_status(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_mark_last_busy(bdi->dev);
-> +       pm_runtime_put_autosuspend(bdi->dev);
->         bdi->irq_event = false;
+> I ignored other paths for other firmware handle to a DMA channel 
+> translation
+> mechanism because for the current pl330 driver they are simply not 
+> used. I
+> assume that if one needs to implement similar things for drivers 
+> relying on
+> them, he will update the respective DMA engine core parts.
 >
->         return IRQ_HANDLED;
+> Slave device assignments can be cleared in 
+> device_chan_release_resources if
+> this is needed and that what existing DMA engine drivers do with the 
+> resources
+> allocated in the of_xlate callback...
 
-OK get_sync() failure should return error to userspace callers, and
-abort probe(), makes sense.
+Vinod: could you comment this patchset? Is there a chance to get it 
+merged or
+at least give it a try in -next? If not, could you provide some hints 
+what should
+I do?
 
-But should the interrupt handler (above) emit a warning and continue
-as in resume() and suspend()?
-
-If not is ret the right value to return in lieu of irq_handled?
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
