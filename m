@@ -1,111 +1,217 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [RFC] w1: regression, remove need for ida and use
- PLATFORM_DEVID_AUTO
-Date: Fri, 3 Feb 2017 20:13:21 -0800
-Message-ID: <0a085ba7-0d05-ef7e-9918-2079cab04c10@roeck-us.net>
-References: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
- <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
- <cfa35897-383e-674a-f049-e45c4dfeb534@tul.cz>
- <0928fc89-490f-1d12-dc3d-51f2d433d2e0@roeck-us.net>
- <822b1827-959b-13dc-6331-f0954954c010@tul.cz>
- <0a4d4a6d-5ede-b77a-0600-19a8d815a33f@roeck-us.net>
- <8f24eb01-d9f3-4c7a-7b51-36a7b9b8d023@tul.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-hwmon-owner@vger.kernel.org>
-In-Reply-To: <8f24eb01-d9f3-4c7a-7b51-36a7b9b8d023@tul.cz>
-Sender: linux-hwmon-owner@vger.kernel.org
-To: Petr Cvek <petr.cvek@tul.cz>, "Andrew F. Davis" <afd@ti.com>, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com, jdelvare@suse.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org
+From: kernel@martin.sperl.org
+Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Sat, 4 Feb 2017 09:35:47 +0100
+Message-ID: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org> <20170120041400.GA24617@localhost.localdomain> <060918B6-A773-46A5-8D10-C9F6BBA6D3F1@martin.sperl.org> <20170124093127.GB3651@localhost.localdomain> <0452720A-5914-469B-9EF7-0581CF1B5478@martin.sperl.org> <20170202042930.GA6377@localhost.localdomain>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:55144
+        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753718AbdBDIfv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 03:35:51 -0500
+In-Reply-To: <20170202042930.GA6377@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, linux-pm@vger.kernel.org, linux-rpi-kernel <linux-rpi-kernel@lists.infradead.org>, linux-arm-kernel@lists.infradead.org
 
-On 02/03/2017 03:30 PM, Petr Cvek wrote:
-> Dne 3.2.2017 v 15:07 Guenter Roeck napsal(a):
->> On 02/03/2017 05:28 AM, Petr Cvek wrote:
->>> Dne 3.2.2017 v 04:31 Guenter Roeck napsal(a):
->>>> On 02/02/2017 05:31 PM, Petr Cvek wrote:
->>>>> Dne 2.2.2017 v 15:23 Andrew F. Davis napsal(a):
->>>>>> On 02/01/2017 07:05 PM, Petr Cvek wrote:
->>>>>>> Patch
->>>>>>>     w1: remove need for ida and use PLATFORM_DEVID_AUTO
->>>>>>>     098f9fb0c962eb2fdba5f9d34f4cf7a938237184
->>>>>>>
->>>>>>> causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
->>>>>>>
->>>>>>>     if (type && strlen(type) >= THERMAL_NAME_LENGTH)
->>>>>>>         return ERR_PTR(-EINVAL);
->>>>>>>
->>>>>>> A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
->>>>>>>
->>>>>>> Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
->>>>>>>
->>>>>>>     pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
->>>>>>>
->>>>>>> to
->>>>>>>
->>>>>>>     pdev = platform_device_alloc("ds2760-battery", 0);
->>>>>>>
->>>>>>> Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
->>>>>>>
->>>>>>
->>>>>> If 20 is no longer the max thermal name then THERMAL_NAME_LENGTH should
->>>>>> be changed.
->>>>>
->>>>> Yes it is that ".auto" addition to "ds2760-battery.0" makes 21 chars long string. With higher number (".10" onwards) it is 22 chars. Load of the module then fails at test in thermal_zone_device_register():
->>>>>
->>>>>     https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/thermal/thermal_core.c?id=refs/tags/v4.10-rc6#n1158
->>>>>
->>>>>     if (type && strlen(type) >= THERMAL_NAME_LENGTH)
->>>>>         return ERR_PTR(-EINVAL);
->>>>>
->>>>> I searched in code further and with THERMAL_NAME_LENGTH = 30 (enough space) the module load fails at another place in __hwmon_device_register():
->>>>>
->>>>>     https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hwmon/hwmon.c?id=refs/tags/v4.10-rc6#n548
->>>>>
->>>>>     if (name && (!strlen(name) || strpbrk(name, "-* \t\n")))
->>>>>         return ERR_PTR(-EINVAL);
->>>>>
->>>>> That's because there is "-" in "ds2760-battery.0.auto" (and that's why shortening to "ds2760.0" works). Is there some reason for disallowing "-" in a name? If not then I'm for removal (in other case we need to change ds2760-battery and others names). Increasing THERMAL_NAME_LENGTH to 22 should be just OK for ds2760 (but maybe not enough for others) I would increased it to 32 (nice number ;-) ).
->>>>>
->>>>
->>>> '-' is not permitted in hwmon name attributes, primarily because libsensors
->>>> interprets it as a delimiter in its configuration file.
->>>>
->>>
->>> OK so this means we need to rename ds2760-battery so libsensors works.
->>>
->>> Hmm is an underscore in "ds2760_battery.0.auto" OK?
->>
->> Theoretically yes, but there was objection to that idea because replacing the '-'
->> with '_' is considered by some to be an ABI change (why the addition of '.auto'
->> doesn't matter escapes me, though).
->>
->
-> I read that discussion and both ways are not optimal. Many drivers has "-" in its
-> name and even "*" is a valid filename. And changing to underscore is ugly too.
-> Too bad libsensors parses "-" that way.
->
 
-FWIW, libsensors also parses '*' as wildcard.
+> On 02.02.2017, at 05:29, Eduardo Valentin <edubezval@gmail.com> wrote:
+> 
+> Hello Martin,
+> 
+> On Tue, Jan 24, 2017 at 10:52:43AM +0100, kernel@martin.sperl.org wrote:
+>> 
+>>> On 24.01.2017, at 10:31, Eduardo Valentin <edubezval@gmail.com> wrote:
+>>> 
+>>> Hello Martin,
+>>> 
+>>> On Fri, Jan 20, 2017 at 08:54:07AM +0100, kernel@martin.sperl.org wrote:
+>>>> 
+>>>>> On 20.01.2017, at 05:14, Eduardo Valentin <edubezval@gmail.com> wrote:
+>>>>> 
+>>>>> Hello Martin,
+>>>>> 
+>>>>> On Sat, Jan 07, 2017 at 04:55:45PM +0000, kernel@martin.sperl.org wrote:
+>>>>>> From: Martin Sperl <kernel@martin.sperl.org>
+>>>>>> 
+>>>>>> Add basic thermal driver for bcm2835 SOC.
+>>>>>> 
+>>>>>> This driver currently relies on the firmware setting up the
+>>>>>> tsense HW block and does not set it up itself.
+>>>>>> 
+>>>>>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
+>>>>>> Acked-by: Eric Anholt <eric@anholt.net>
+>>>>>> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+>>>>>> 
+>>>>> 
+>>>>> <cut>
+>>>>> 
+>>>>>> +
+>>>>>> +static const struct of_device_id bcm2835_thermal_of_match_table[] = {
+>>>>>> +	{
+>>>>>> +		.compatible = "brcm,bcm2835-thermal",
+>>>>>> +		.data = &(struct bcm2835_thermal_info) {
+>>>>>> +			.offset = 407000,
+>>>>>> +			.slope = -538,
+>>>>>> +			.trip_temp = 80000
+>>>>>> +		}
+>>>>>> +	},
+>>>>>> +	{
+>>>>>> +		.compatible = "brcm,bcm2836-thermal",
+>>>>>> +		.data = &(struct bcm2835_thermal_info) {
+>>>>>> +			.offset = 407000,
+>>>>>> +			.slope = -538,
+>>>>>> +			.trip_temp = 80000
+>>>>>> +		}
+>>>>>> +	},
+>>>>>> +	{
+>>>>>> +		.compatible = "brcm,bcm2837-thermal",
+>>>>>> +		.data = &(struct bcm2835_thermal_info) {
+>>>>>> +			/* the bcm2837 needs adjustment of +5C */
+>>>>>> +			.offset = 407000 + 5000,
+>>>>>> +			.slope = -538,
+>>>>>> +			.trip_temp = 80000
+>>>>>> +		}
+>>>>>> +	},
+>>>>>> +	{},
+>>>>> 
+>>>>> Just for the same of clarification, is there anything preventing this
+>>>>> driver of using of-thermal API? the above data (slope, offset, and
+>>>>> trip_temps) would be in DT the place where they are supposed to be,
+>>>>> instead of code.
+>>>>> 
+>>>> 
+>>>> As the DT changes, that only define compatible strings, have already gone
+>>>> in without any such properties set, we need to define defaults for the 
+>>>> slope/offset and trip_temp values.
+>>>> 
+>>> 
+>>> These properties won't go into the same node you are referring to. They
+>>> go into the thermal-zone node you would create, which would then refer
+>>> to the node you referred (already merged). Therefore, I do not see
+>>> anything blocking a proper of-thermal usage to cover for the above data.
+>>> 
+>>>> I guess (for newer SOC) you still can use the values in the DT,
+>>>> as (I guess) these are parsed and set in thermal_zone_device_register
+>>>> after the defaults are set in thermal_zone_params.
+>>> 
+>>> Not sure what you meant here, but these values, when correctly used in
+>>> DT, they would come as part of the thermal_zone_params and in the
+>>> thermal trips of the thermal zones, as the of-thermal code with already
+>>> deal with those for you.
+>>> 
+>>> Please have a look at:
+>>> a. Documentation/devicetree/bindings/thermal/thermal.txt
+>>> b. drivers/thermal/of-thermal.c
+>>> 
+>>> And let me know if you see anything that would prevent this driver of
+>>> using the correct API to describe hardware data with DT.
+>> 
+>> 
+>> I guess you miss my point:
+> 
+> Maybe you missed, or did not read the doc I pointed you...
+> 
+>> The argument is that we have DT in the 4.10.0-rc2 kernel right now that
+>> look like this:
+>>                thermal@7e212000 {
+>>                        compatible = "brcm,bcm2835-thermal";
+>>                        clocks = <0x6 0x1b>;
+>>                        status = "okay";
+>>                        reg = <0x7e212000 0x8>;
+>>                }
+>> so we still need to be compatible with those without any extra defines.
+> 
+> Yes, but the above DT entry will still be valid if you add the correct
+> of-thermal support. In fact, you would add in your DTS a thermal-zones
+> node, and in one of the defined zone, you would then reference the node
+> you already got into mainline. Below is a copy of the doc I mentioned
+> before:
+> 
+> 
+> #include <dt-bindings/thermal/thermal.h>
+> 
+> ocp {
+> 	...
+> 	/*
+> 	 * A simple IC with several bandgap temperature sensors.
+> 	 */
+> 	bandgap0: bandgap@0x0000ED00 {
+> 		...
+> 		#thermal-sensor-cells = <1>;
+> 	};
+> };
+> 
+> thermal-zones {
+> 	cpu_thermal: cpu-thermal {
+> 		polling-delay-passive = <250>; /* milliseconds */
+> 		polling-delay = <1000>; /* milliseconds */
+> 
+> 				/* sensor       ID */
+> 		thermal-sensors = <&bandgap0     0>;
+> 
+> 		trips {
+> 			/* each zone within the SoC may have its own trips */
+> 			cpu_alert: cpu-alert {
+> 				temperature = <100000>; /* millicelsius */
+> 				hysteresis = <2000>; /* millicelsius */
+> 				type = "passive";
+> 			};
+> 			cpu_crit: cpu-crit {
+> 				temperature = <125000>; /* millicelsius */
+> 				hysteresis = <2000>; /* millicelsius */
+> 				type = "critical";
+> 			};
+> 		};
+> 
+> 		cooling-maps {
+> 			/* each zone within the SoC may have its own cooling */
+> 			...
+> 		};
+> 	};
+> 
+>> 
+>> Hence we need to define those slopes and offsets in the driver itself
+>> to stay compatible with those older device-trees.
+> 
+> not really, as long as we do not merge the driver with the missing
+> of-thermal support, I see no need to have both supports in your driver,
+> i.e., if we start correct for the beggining there is no need to have
+> offsets and slopes data in your driver code.
+> 
+>> 
+>> As for if it works with the framework - I have to admit I do not
+>> have the slightest clue - it looks way to complicated for the soc right
+>> now.
+> 
+> Well, there is the documentation I mentioned, which several other
+> drivers used as base for their support. You can also look at other
+> thermal zones already defined in the existing DTS(I)'s.
+> 
+>> 
+>> As a note: afaiu the trip_temp register is the temperature at which the
+>> soc will reboot on its own - similar to a watchdog, but for temperatures.
+>> (main reason for the assumption is because there is no interrupt that
+>> can get assigned a handler to catch this situation).
+>> 
+> 
+> OK. But that does not prevent you to have other trips so your running
+> system can act before the shutdown trip is crossed.
+> 
+>> Martin
+>> 
+>> 
 
-There was a suggestion to change libsensors to be more name-forgiving.
-I suspect that may not be as easy as it sounds, but as always everyone
-should feel free to submit patches.
+So how does this change/impact the driver code itself?
 
->>>
->>>> Anyway, the related change in thermal has been reverted, so that should
->>>
->>> s/thermal/hwmon ? Or I'm confused :-D (there was no change in thermal, code stopped working because of change in w1 driver (".auto" addition))
->>>
->>
->> 3feb479cea37 Revert "thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()"
->
-> But after applying revert on my kernel copy there still will be a problem
-> in arch init with missing ".auto" match and driver load still fails on a shorter string array.
->
+Defining a thermal zone in the dts is just an additional feature
+that only impacts the device tree.
+The DT as is works fine and at least allows to read the current temperature.
 
-Can't help you there, sorry.
+So can we just merge the driver now and look into the DT separately?
 
-Guenter
+Martin
 
