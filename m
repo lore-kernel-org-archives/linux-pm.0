@@ -1,316 +1,111 @@
-From: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v8 3/3] thermal: zx2967: add thermal driver for ZTE's zx2967  family
-Date: Sat,  4 Feb 2017 11:39:57 +0800
-Message-ID: <1486179597-30953-3-git-send-email-baoyou.xie@linaro.org>
-References: <1486179597-30953-1-git-send-email-baoyou.xie@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1486179597-30953-1-git-send-email-baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: mathieu.poirier-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, jun.nie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, xie.baoyou-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org, chen.chaokai-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org, wang.qiang01-Th6q7B73Y6EnDS1+zs4M5A@public.gmane.org
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC] w1: regression, remove need for ida and use
+ PLATFORM_DEVID_AUTO
+Date: Fri, 3 Feb 2017 20:13:21 -0800
+Message-ID: <0a085ba7-0d05-ef7e-9918-2079cab04c10@roeck-us.net>
+References: <d0b52b94-0c87-61f8-32ff-99f2a354e500@tul.cz>
+ <308e185e-26eb-39ee-d82f-a0d210a41743@ti.com>
+ <cfa35897-383e-674a-f049-e45c4dfeb534@tul.cz>
+ <0928fc89-490f-1d12-dc3d-51f2d433d2e0@roeck-us.net>
+ <822b1827-959b-13dc-6331-f0954954c010@tul.cz>
+ <0a4d4a6d-5ede-b77a-0600-19a8d815a33f@roeck-us.net>
+ <8f24eb01-d9f3-4c7a-7b51-36a7b9b8d023@tul.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-hwmon-owner@vger.kernel.org>
+In-Reply-To: <8f24eb01-d9f3-4c7a-7b51-36a7b9b8d023@tul.cz>
+Sender: linux-hwmon-owner@vger.kernel.org
+To: Petr Cvek <petr.cvek@tul.cz>, "Andrew F. Davis" <afd@ti.com>, zbr@ioremap.net, Sebastian Reichel <sre@kernel.org>, philipp.zabel@gmail.com, lost.distance@yahoo.com, daniel@caiaq.de, rui.zhang@intel.com, edubezval@gmail.com, jdelvare@suse.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This patch adds thermal driver for ZTE's zx2967 family.
+On 02/03/2017 03:30 PM, Petr Cvek wrote:
+> Dne 3.2.2017 v 15:07 Guenter Roeck napsal(a):
+>> On 02/03/2017 05:28 AM, Petr Cvek wrote:
+>>> Dne 3.2.2017 v 04:31 Guenter Roeck napsal(a):
+>>>> On 02/02/2017 05:31 PM, Petr Cvek wrote:
+>>>>> Dne 2.2.2017 v 15:23 Andrew F. Davis napsal(a):
+>>>>>> On 02/01/2017 07:05 PM, Petr Cvek wrote:
+>>>>>>> Patch
+>>>>>>>     w1: remove need for ida and use PLATFORM_DEVID_AUTO
+>>>>>>>     098f9fb0c962eb2fdba5f9d34f4cf7a938237184
+>>>>>>>
+>>>>>>> causes a regression in the w1_ds2760 driver. Initialization creates a name "ds2760-battery.0.auto". It seems that name of that size will cause checking code in __thermal_cooling_device_register() from thermal_core.c to fail as it checks for names shorter than 20 chars:
+>>>>>>>
+>>>>>>>     if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+>>>>>>>         return ERR_PTR(-EINVAL);
+>>>>>>>
+>>>>>>> A second problem seems to be with magician_supplicants list as "ds2760-battery.0" does not match in a test power_supply_am_i_supplied() in ds2760_battery_update_status() from drivers/power/supply/ds2760_battery.c . This causes status flag to be forever in POWER_SUPPLY_STATUS_DISCHARGING state.
+>>>>>>>
+>>>>>>> Functionality returned after I hotfix changed (drivers/w1/slaves/w1_ds2760.c)
+>>>>>>>
+>>>>>>>     pdev = platform_device_alloc("ds2760-battery", PLATFORM_DEVID_AUTO);
+>>>>>>>
+>>>>>>> to
+>>>>>>>
+>>>>>>>     pdev = platform_device_alloc("ds2760-battery", 0);
+>>>>>>>
+>>>>>>> Which solution do you advise. Shortening the name let's say just to "ds2760" (with changes to arch files, w1 files and supply files), increasing THERMAL_NAME_LENGTH to let's say 32 (I don't know if this doesn't break something other) or just reverting to the old behavior?
+>>>>>>>
+>>>>>>
+>>>>>> If 20 is no longer the max thermal name then THERMAL_NAME_LENGTH should
+>>>>>> be changed.
+>>>>>
+>>>>> Yes it is that ".auto" addition to "ds2760-battery.0" makes 21 chars long string. With higher number (".10" onwards) it is 22 chars. Load of the module then fails at test in thermal_zone_device_register():
+>>>>>
+>>>>>     https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/thermal/thermal_core.c?id=refs/tags/v4.10-rc6#n1158
+>>>>>
+>>>>>     if (type && strlen(type) >= THERMAL_NAME_LENGTH)
+>>>>>         return ERR_PTR(-EINVAL);
+>>>>>
+>>>>> I searched in code further and with THERMAL_NAME_LENGTH = 30 (enough space) the module load fails at another place in __hwmon_device_register():
+>>>>>
+>>>>>     https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/drivers/hwmon/hwmon.c?id=refs/tags/v4.10-rc6#n548
+>>>>>
+>>>>>     if (name && (!strlen(name) || strpbrk(name, "-* \t\n")))
+>>>>>         return ERR_PTR(-EINVAL);
+>>>>>
+>>>>> That's because there is "-" in "ds2760-battery.0.auto" (and that's why shortening to "ds2760.0" works). Is there some reason for disallowing "-" in a name? If not then I'm for removal (in other case we need to change ds2760-battery and others names). Increasing THERMAL_NAME_LENGTH to 22 should be just OK for ds2760 (but maybe not enough for others) I would increased it to 32 (nice number ;-) ).
+>>>>>
+>>>>
+>>>> '-' is not permitted in hwmon name attributes, primarily because libsensors
+>>>> interprets it as a delimiter in its configuration file.
+>>>>
+>>>
+>>> OK so this means we need to rename ds2760-battery so libsensors works.
+>>>
+>>> Hmm is an underscore in "ds2760_battery.0.auto" OK?
+>>
+>> Theoretically yes, but there was objection to that idea because replacing the '-'
+>> with '_' is considered by some to be an ABI change (why the addition of '.auto'
+>> doesn't matter escapes me, though).
+>>
+>
+> I read that discussion and both ways are not optimal. Many drivers has "-" in its
+> name and even "*" is a valid filename. And changing to underscore is ugly too.
+> Too bad libsensors parses "-" that way.
+>
 
-Signed-off-by: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
----
- drivers/thermal/Kconfig          |   8 ++
- drivers/thermal/Makefile         |   1 +
- drivers/thermal/zx2967_thermal.c | 255 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 264 insertions(+)
- create mode 100644 drivers/thermal/zx2967_thermal.c
+FWIW, libsensors also parses '*' as wildcard.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 18f2de6..f64bd50 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -444,4 +444,12 @@ config BCM2835_THERMAL
- 	help
- 	  Support for thermal sensors on Broadcom bcm2835 SoCs.
- 
-+config ZX2967_THERMAL
-+	tristate "Thermal sensors on zx2967 SoC"
-+	depends on ARCH_ZX || COMPILE_TEST
-+	help
-+	  Enable the zx2967 thermal sensors driver, which supports
-+	  the primitive temperature sensor embedded in zx2967 SoCs.
-+	  This sensor generates the real time die temperature.
-+
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 677c6d9..c00c05e 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -57,3 +57,4 @@ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
- obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
- obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
- obj-$(CONFIG_BCM2835_THERMAL)	+= bcm2835_thermal.o
-+obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
-diff --git a/drivers/thermal/zx2967_thermal.c b/drivers/thermal/zx2967_thermal.c
-new file mode 100644
-index 0000000..d177238
---- /dev/null
-+++ b/drivers/thermal/zx2967_thermal.c
-@@ -0,0 +1,255 @@
-+/*
-+ * ZTE's zx2967 family thermal sensor driver
-+ *
-+ * Copyright (C) 2017 ZTE Ltd.
-+ *
-+ * Author: Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/iopoll.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/thermal.h>
-+
-+/* Power Mode: 0->low 1->high */
-+#define ZX2967_THERMAL_POWER_MODE	0
-+#define ZX2967_POWER_MODE_LOW		0
-+#define ZX2967_POWER_MODE_HIGH		1
-+
-+/* DCF Control Register */
-+#define ZX2967_THERMAL_DCF		0x4
-+#define ZX2967_DCF_EN			BIT(1)
-+#define ZX2967_DCF_FREEZE		BIT(0)
-+
-+/* Selection Register */
-+#define ZX2967_THERMAL_SEL		0x8
-+
-+/* Control Register */
-+#define ZX2967_THERMAL_CTRL		0x10
-+
-+#define ZX2967_THERMAL_READY		BIT(12)
-+#define ZX2967_THERMAL_TEMP_MASK	GENMASK(11, 0)
-+#define ZX2967_THERMAL_ID_MASK		0x18
-+#define ZX2967_THERMAL_ID		0x10
-+
-+#define ZX2967_GET_TEMP_TIMEOUT_US	(100 * 1024)
-+
-+/* zx2967 Thermal Sensor Private Structure */
-+struct zx2967_thermal_priv {
-+	/* struct thermal_zone_device where the sensor is registered */
-+	struct thermal_zone_device	*tzd;
-+	/* prevents reads sensor in parallel */
-+	struct mutex			lock;
-+	/* topcrm clk structure */
-+	struct clk			*clk_topcrm;
-+	/* apb clk structure */
-+	struct clk			*clk_apb;
-+	/* pointer to base address of the thermal sensor */
-+	void __iomem			*regs;
-+	struct device			*dev;
-+};
-+
-+static int zx2967_thermal_get_temp(void *data, int *temp)
-+{
-+	void __iomem *regs;
-+	struct zx2967_thermal_priv *priv = data;
-+	u32 val;
-+	int ret;
-+
-+	if (!priv->tzd)
-+		return -EAGAIN;
-+
-+	regs = priv->regs;
-+	mutex_lock(&priv->lock);
-+	writel_relaxed(ZX2967_POWER_MODE_LOW,
-+		       regs + ZX2967_THERMAL_POWER_MODE);
-+	writel_relaxed(ZX2967_DCF_EN, regs + ZX2967_THERMAL_DCF);
-+
-+	val = readl_relaxed(regs + ZX2967_THERMAL_SEL);
-+	val &= ~ZX2967_THERMAL_ID_MASK;
-+	val |= ZX2967_THERMAL_ID;
-+	writel_relaxed(val, regs + ZX2967_THERMAL_SEL);
-+
-+	/*
-+	 * Must wait for a while, surely it's a bit odd.
-+	 * otherwise temperature value we got has a few deviation, even if
-+	 * the THERMAL_READY bit is set.
-+	 */
-+	usleep_range(100, 300);
-+	ret = readx_poll_timeout(readl, regs + ZX2967_THERMAL_CTRL,
-+				 val, val & ZX2967_THERMAL_READY, 300,
-+				 ZX2967_GET_TEMP_TIMEOUT_US);
-+	if (ret) {
-+		dev_err(priv->dev, "Thermal sensor data timeout\n");
-+		goto unlock;
-+	}
-+
-+	writel_relaxed(ZX2967_DCF_FREEZE | ZX2967_DCF_EN,
-+		       regs + ZX2967_THERMAL_DCF);
-+	val = readl_relaxed(regs + ZX2967_THERMAL_CTRL)
-+			 & ZX2967_THERMAL_TEMP_MASK;
-+	writel_relaxed(ZX2967_POWER_MODE_HIGH,
-+		       regs + ZX2967_THERMAL_POWER_MODE);
-+
-+	/*
-+	 * Calculate temperature
-+	 * In dts, slope is multiplied by 1000.
-+	 */
-+	*temp = DIV_ROUND_CLOSEST(((s32)val + priv->tzd->tzp->offset) * 1000,
-+				  priv->tzd->tzp->slope);
-+
-+unlock:
-+	mutex_unlock(&priv->lock);
-+	return ret;
-+}
-+
-+static struct thermal_zone_of_device_ops zx2967_of_thermal_ops = {
-+	.get_temp = zx2967_thermal_get_temp,
-+};
-+
-+static int zx2967_thermal_probe(struct platform_device *pdev)
-+{
-+	struct zx2967_thermal_priv *priv;
-+	struct resource *res;
-+	int ret;
-+
-+	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	priv->regs = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(priv->regs))
-+		return PTR_ERR(priv->regs);
-+
-+	priv->clk_topcrm = devm_clk_get(&pdev->dev, "topcrm");
-+	if (IS_ERR(priv->clk_topcrm)) {
-+		ret = PTR_ERR(priv->clk_topcrm);
-+		dev_err(&pdev->dev, "failed to get topcrm clock: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = clk_prepare_enable(priv->clk_topcrm);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to enable topcrm clock: %d\n",
-+			ret);
-+		return ret;
-+	}
-+
-+	priv->clk_apb = devm_clk_get(&pdev->dev, "apb");
-+	if (IS_ERR(priv->clk_apb)) {
-+		ret = PTR_ERR(priv->clk_apb);
-+		dev_err(&pdev->dev, "failed to get apb clock: %d\n", ret);
-+		goto disable_clk_topcrm;
-+	}
-+
-+	ret = clk_prepare_enable(priv->clk_apb);
-+	if (ret) {
-+		dev_err(&pdev->dev, "failed to enable apb clock: %d\n",
-+			ret);
-+		goto disable_clk_topcrm;
-+	}
-+
-+	mutex_init(&priv->lock);
-+	priv->tzd = thermal_zone_of_sensor_register(&pdev->dev,
-+					0, priv, &zx2967_of_thermal_ops);
-+
-+	if (IS_ERR(priv->tzd)) {
-+		ret = PTR_ERR(priv->tzd);
-+		dev_err(&pdev->dev, "failed to register sensor: %d\n", ret);
-+		goto disable_clk_all;
-+	}
-+
-+	if (priv->tzd->tzp->slope == 0) {
-+		thermal_zone_of_sensor_unregister(&pdev->dev, priv->tzd);
-+		dev_err(&pdev->dev, "coefficients of sensor is invalid\n");
-+		ret = -EINVAL;
-+		goto disable_clk_all;
-+	}
-+
-+	priv->dev = &pdev->dev;
-+	platform_set_drvdata(pdev, priv);
-+
-+	return 0;
-+
-+disable_clk_all:
-+	clk_disable_unprepare(priv->clk_apb);
-+disable_clk_topcrm:
-+	clk_disable_unprepare(priv->clk_topcrm);
-+	return ret;
-+}
-+
-+static int zx2967_thermal_exit(struct platform_device *pdev)
-+{
-+	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
-+
-+	thermal_zone_of_sensor_unregister(&pdev->dev, priv->tzd);
-+	clk_disable_unprepare(priv->clk_topcrm);
-+	clk_disable_unprepare(priv->clk_apb);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id zx2967_thermal_id_table[] = {
-+	{ .compatible = "zte,zx296718-thermal" },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, zx2967_thermal_id_table);
-+
-+#ifdef CONFIG_PM_SLEEP
-+static int zx2967_thermal_suspend(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
-+
-+	if (priv && priv->clk_topcrm)
-+		clk_disable_unprepare(priv->clk_topcrm);
-+
-+	if (priv && priv->clk_apb)
-+		clk_disable_unprepare(priv->clk_apb);
-+
-+	return 0;
-+}
-+
-+static int zx2967_thermal_resume(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct zx2967_thermal_priv *priv = platform_get_drvdata(pdev);
-+	int error;
-+
-+	error = clk_prepare_enable(priv->clk_topcrm);
-+	if (error)
-+		return error;
-+
-+	error = clk_prepare_enable(priv->clk_apb);
-+	if (error) {
-+		clk_disable_unprepare(priv->clk_topcrm);
-+		return error;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+static SIMPLE_DEV_PM_OPS(zx2967_thermal_pm_ops,
-+			 zx2967_thermal_suspend, zx2967_thermal_resume);
-+
-+static struct platform_driver zx2967_thermal_driver = {
-+	.probe = zx2967_thermal_probe,
-+	.remove = zx2967_thermal_exit,
-+	.driver = {
-+		.name = "zx2967_thermal",
-+		.of_match_table = zx2967_thermal_id_table,
-+		.pm = &zx2967_thermal_pm_ops,
-+	},
-+};
-+module_platform_driver(zx2967_thermal_driver);
-+
-+MODULE_AUTHOR("Baoyou Xie <baoyou.xie-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>");
-+MODULE_DESCRIPTION("ZTE zx2967 thermal driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
+There was a suggestion to change libsensors to be more name-forgiving.
+I suspect that may not be as easy as it sounds, but as always everyone
+should feel free to submit patches.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
+>>>> Anyway, the related change in thermal has been reverted, so that should
+>>>
+>>> s/thermal/hwmon ? Or I'm confused :-D (there was no change in thermal, code stopped working because of change in w1 driver (".auto" addition))
+>>>
+>>
+>> 3feb479cea37 Revert "thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()"
+>
+> But after applying revert on my kernel copy there still will be a problem
+> in arch init with missing ".auto" match and driver load still fails on a shorter string array.
+>
+
+Can't help you there, sorry.
+
+Guenter
+
