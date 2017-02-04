@@ -1,217 +1,75 @@
-From: kernel@martin.sperl.org
-Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
-Date: Sat, 4 Feb 2017 09:35:47 +0100
-Message-ID: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
-References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org> <20170120041400.GA24617@localhost.localdomain> <060918B6-A773-46A5-8D10-C9F6BBA6D3F1@martin.sperl.org> <20170124093127.GB3651@localhost.localdomain> <0452720A-5914-469B-9EF7-0581CF1B5478@martin.sperl.org> <20170202042930.GA6377@localhost.localdomain>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v5 0/8] Devicetree battery support and client bq27xxx_battery
+Date: Sat,  4 Feb 2017 01:15:55 -0800
+Message-ID: <20170204091603.32242-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 212-186-180-163.static.upcbusiness.at ([212.186.180.163]:55144
-        "EHLO cgate.sperl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753718AbdBDIfv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 03:35:51 -0500
-In-Reply-To: <20170202042930.GA6377@localhost.localdomain>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:35763 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753745AbdBDJQv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 04:16:51 -0500
+Received: by mail-pg0-f68.google.com with SMTP id 204so4124378pge.2
+        for <linux-pm@vger.kernel.org>; Sat, 04 Feb 2017 01:16:50 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Lee Jones <lee@kernel.org>, Eric Anholt <eric@anholt.net>, linux-pm@vger.kernel.org, linux-rpi-kernel <linux-rpi-kernel@lists.infradead.org>, linux-arm-kernel@lists.infradead.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, Matt Ranostay <matt@ranostay.consulting>, linux-pm@vger.kernel.org
+
+Overview:
+* new devicetree battery node specifies static battery data
+* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
+* new power_supply_get_battery_info() reads battery data from devicetree
+* new struct power_supply_battery_info provides battery data to drivers
+* drivers surface battery data in sysfs via related power_supply_prop_* fields
+* bq27xxx driver calls the above and writes battery data to NVRAM
+
+Changes in v5:
+* incorporate feedback into Documentation/devicetree/.../battery.txt
+* use power_supply_prop_* names in devicetree and power_supply_battery_info
+* add battery:voltage-max-design-microvolt
+* default fields to -EINVAL in power_supply_battery_info
+* power_supply_get_battery_info() always looks for "monitored-battery"
+* power_supply_get_battery_info() emits a warning if !psy->of_node
+* squash patches for power_supply_battery_info
+* bq27xxx_battery: check power_supply_battery_info values
+* bq27xxx_battery: note missing power_supply_prop_* features
+* bq27xxx_battery: new patch for access methods
+
+Changes in v4:
+* add "fixed-battery" compatible field to be be more consistant with devicetree
+
+Changes in v3:
+* split i2c changes into respective patches
+* add documentation for battery information for fuel gauge
+* rebased documentation patches on change on the list
+* abstracted the battery configuration for the state machine
+  to an generic struct and platform data access function
+
+Changes in v2:
+* add documentation for uWh and uAh property units
+* change devicetree entries to match new property units
 
 
-> On 02.02.2017, at 05:29, Eduardo Valentin <edubezval@gmail.com> wrote:
-> 
-> Hello Martin,
-> 
-> On Tue, Jan 24, 2017 at 10:52:43AM +0100, kernel@martin.sperl.org wrote:
->> 
->>> On 24.01.2017, at 10:31, Eduardo Valentin <edubezval@gmail.com> wrote:
->>> 
->>> Hello Martin,
->>> 
->>> On Fri, Jan 20, 2017 at 08:54:07AM +0100, kernel@martin.sperl.org wrote:
->>>> 
->>>>> On 20.01.2017, at 05:14, Eduardo Valentin <edubezval@gmail.com> wrote:
->>>>> 
->>>>> Hello Martin,
->>>>> 
->>>>> On Sat, Jan 07, 2017 at 04:55:45PM +0000, kernel@martin.sperl.org wrote:
->>>>>> From: Martin Sperl <kernel@martin.sperl.org>
->>>>>> 
->>>>>> Add basic thermal driver for bcm2835 SOC.
->>>>>> 
->>>>>> This driver currently relies on the firmware setting up the
->>>>>> tsense HW block and does not set it up itself.
->>>>>> 
->>>>>> Signed-off-by: Martin Sperl <kernel@martin.sperl.org>
->>>>>> Acked-by: Eric Anholt <eric@anholt.net>
->>>>>> Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
->>>>>> 
->>>>> 
->>>>> <cut>
->>>>> 
->>>>>> +
->>>>>> +static const struct of_device_id bcm2835_thermal_of_match_table[] = {
->>>>>> +	{
->>>>>> +		.compatible = "brcm,bcm2835-thermal",
->>>>>> +		.data = &(struct bcm2835_thermal_info) {
->>>>>> +			.offset = 407000,
->>>>>> +			.slope = -538,
->>>>>> +			.trip_temp = 80000
->>>>>> +		}
->>>>>> +	},
->>>>>> +	{
->>>>>> +		.compatible = "brcm,bcm2836-thermal",
->>>>>> +		.data = &(struct bcm2835_thermal_info) {
->>>>>> +			.offset = 407000,
->>>>>> +			.slope = -538,
->>>>>> +			.trip_temp = 80000
->>>>>> +		}
->>>>>> +	},
->>>>>> +	{
->>>>>> +		.compatible = "brcm,bcm2837-thermal",
->>>>>> +		.data = &(struct bcm2835_thermal_info) {
->>>>>> +			/* the bcm2837 needs adjustment of +5C */
->>>>>> +			.offset = 407000 + 5000,
->>>>>> +			.slope = -538,
->>>>>> +			.trip_temp = 80000
->>>>>> +		}
->>>>>> +	},
->>>>>> +	{},
->>>>> 
->>>>> Just for the same of clarification, is there anything preventing this
->>>>> driver of using of-thermal API? the above data (slope, offset, and
->>>>> trip_temps) would be in DT the place where they are supposed to be,
->>>>> instead of code.
->>>>> 
->>>> 
->>>> As the DT changes, that only define compatible strings, have already gone
->>>> in without any such properties set, we need to define defaults for the 
->>>> slope/offset and trip_temp values.
->>>> 
->>> 
->>> These properties won't go into the same node you are referring to. They
->>> go into the thermal-zone node you would create, which would then refer
->>> to the node you referred (already merged). Therefore, I do not see
->>> anything blocking a proper of-thermal usage to cover for the above data.
->>> 
->>>> I guess (for newer SOC) you still can use the values in the DT,
->>>> as (I guess) these are parsed and set in thermal_zone_device_register
->>>> after the defaults are set in thermal_zone_params.
->>> 
->>> Not sure what you meant here, but these values, when correctly used in
->>> DT, they would come as part of the thermal_zone_params and in the
->>> thermal trips of the thermal zones, as the of-thermal code with already
->>> deal with those for you.
->>> 
->>> Please have a look at:
->>> a. Documentation/devicetree/bindings/thermal/thermal.txt
->>> b. drivers/thermal/of-thermal.c
->>> 
->>> And let me know if you see anything that would prevent this driver of
->>> using the correct API to describe hardware data with DT.
->> 
->> 
->> I guess you miss my point:
-> 
-> Maybe you missed, or did not read the doc I pointed you...
-> 
->> The argument is that we have DT in the 4.10.0-rc2 kernel right now that
->> look like this:
->>                thermal@7e212000 {
->>                        compatible = "brcm,bcm2835-thermal";
->>                        clocks = <0x6 0x1b>;
->>                        status = "okay";
->>                        reg = <0x7e212000 0x8>;
->>                }
->> so we still need to be compatible with those without any extra defines.
-> 
-> Yes, but the above DT entry will still be valid if you add the correct
-> of-thermal support. In fact, you would add in your DTS a thermal-zones
-> node, and in one of the defined zone, you would then reference the node
-> you already got into mainline. Below is a copy of the doc I mentioned
-> before:
-> 
-> 
-> #include <dt-bindings/thermal/thermal.h>
-> 
-> ocp {
-> 	...
-> 	/*
-> 	 * A simple IC with several bandgap temperature sensors.
-> 	 */
-> 	bandgap0: bandgap@0x0000ED00 {
-> 		...
-> 		#thermal-sensor-cells = <1>;
-> 	};
-> };
-> 
-> thermal-zones {
-> 	cpu_thermal: cpu-thermal {
-> 		polling-delay-passive = <250>; /* milliseconds */
-> 		polling-delay = <1000>; /* milliseconds */
-> 
-> 				/* sensor       ID */
-> 		thermal-sensors = <&bandgap0     0>;
-> 
-> 		trips {
-> 			/* each zone within the SoC may have its own trips */
-> 			cpu_alert: cpu-alert {
-> 				temperature = <100000>; /* millicelsius */
-> 				hysteresis = <2000>; /* millicelsius */
-> 				type = "passive";
-> 			};
-> 			cpu_crit: cpu-crit {
-> 				temperature = <125000>; /* millicelsius */
-> 				hysteresis = <2000>; /* millicelsius */
-> 				type = "critical";
-> 			};
-> 		};
-> 
-> 		cooling-maps {
-> 			/* each zone within the SoC may have its own cooling */
-> 			...
-> 		};
-> 	};
-> 
->> 
->> Hence we need to define those slopes and offsets in the driver itself
->> to stay compatible with those older device-trees.
-> 
-> not really, as long as we do not merge the driver with the missing
-> of-thermal support, I see no need to have both supports in your driver,
-> i.e., if we start correct for the beggining there is no need to have
-> offsets and slopes data in your driver code.
-> 
->> 
->> As for if it works with the framework - I have to admit I do not
->> have the slightest clue - it looks way to complicated for the soc right
->> now.
-> 
-> Well, there is the documentation I mentioned, which several other
-> drivers used as base for their support. You can also look at other
-> thermal zones already defined in the existing DTS(I)'s.
-> 
->> 
->> As a note: afaiu the trip_temp register is the temperature at which the
->> soc will reboot on its own - similar to a watchdog, but for temperatures.
->> (main reason for the assumption is because there is no interrupt that
->> can get assigned a handler to catch this situation).
->> 
-> 
-> OK. But that does not prevent you to have other trips so your running
-> system can act before the shutdown trip is crossed.
-> 
->> Martin
->> 
->> 
+Matt Ranostay (8):
+  devicetree: power: Add battery.txt
+  devicetree: property-units: Add uWh and uAh units
+  devicetree: power: bq27xxx: Add monitored-battery documentation
+  power: power_supply: Add power_supply_battery_info and API
+  power: bq27xxx_battery: Add power_supply_battery_info support
+  power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
+  power: bq27xxx_battery: Define access methods to write chip registers
+  power: bq27xxx_battery: Add BQ27425 chip id
 
-So how does this change/impact the driver code itself?
+ .../devicetree/bindings/power/supply/battery.txt   |  39 +++
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |   9 +
+ .../devicetree/bindings/property-units.txt         |   2 +
+ drivers/power/supply/bq27xxx_battery.c             | 326 ++++++++++++++++++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c         |  64 +++-
+ drivers/power/supply/power_supply_core.c           |  43 +++
+ include/linux/power/bq27xxx_battery.h              |   7 +-
+ include/linux/power_supply.h                       |  19 ++
+ 8 files changed, 505 insertions(+), 4 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 
-Defining a thermal zone in the dts is just an additional feature
-that only impacts the device tree.
-The DT as is works fine and at least allows to read the current temperature.
-
-So can we just merge the driver now and look into the DT separately?
-
-Martin
+-- 
+2.9.3
 
