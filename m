@@ -1,34 +1,80 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v5 7/8] power: bq27xxx_battery: Define access methods to
- write chip registers
-Date: Sat, 4 Feb 2017 01:35:22 -0800
-Message-ID: <CAKvHMgQ2mDq+pM5S_eY_vAOb4v-TwK=m=PKS6ZxJNUj_3wzxzQ@mail.gmail.com>
-References: <20170204091603.32242-1-liam@networkimprov.net> <20170204091603.32242-8-liam@networkimprov.net>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Sat, 4 Feb 2017 10:36:23 +0100 (CET)
+Message-ID: <48317588.166823.1486200983836@email.1und1.de>
+References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
+ <20170120041400.GA24617@localhost.localdomain>
+ <060918B6-A773-46A5-8D10-C9F6BBA6D3F1@martin.sperl.org>
+ <20170124093127.GB3651@localhost.localdomain>
+ <0452720A-5914-469B-9EF7-0581CF1B5478@martin.sperl.org>
+ <20170202042930.GA6377@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:36239 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753811AbdBDJfX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 04:35:23 -0500
-Received: by mail-it0-f66.google.com with SMTP id f200so3782967itf.3
-        for <linux-pm@vger.kernel.org>; Sat, 04 Feb 2017 01:35:23 -0800 (PST)
-In-Reply-To: <20170204091603.32242-8-liam@networkimprov.net>
+Received: from mout.kundenserver.de ([212.227.17.10]:49384 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753811AbdBDJhG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 04:37:06 -0500
+In-Reply-To: <20170202042930.GA6377@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, Matt Ranostay <matt@ranostay.consulting>, linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Lee Jones <lee@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-rpi-kernel <linux-rpi-kernel@lists.infradead.org>, linux-arm-kernel@lists.infradead.org, kernel@martin.sperl.org
 
-On Sat, Feb 4, 2017 at 1:16 AM, Liam Breck <liam@networkimprov.net> wrote:
-> From: Liam <github@networkimprov.net>
->
-> From: Matt Ranostay <matt@ranostay.consulting>
->
-> write(), read_bulk(), write_bulk() support setting chip registers,
-> e.g. with data obtained from power_supply_battery_info.
->
-> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Hi Eduardo,
 
-Pls drop the first From line; Matt's is the correct one.
-git-send-email doesn't check for an extant From line :-/
+> Eduardo Valentin <edubezval@gmail.com> hat am 2. Februar 2017 um 05:29 geschrieben:
+> 
+> 
+> Hello Martin,
+> 
+> ...
+> 
+> 
+> #include <dt-bindings/thermal/thermal.h>
+> 
+> ocp {
+> 	...
+> 	/*
+> 	 * A simple IC with several bandgap temperature sensors.
+> 	 */
+> 	bandgap0: bandgap@0x0000ED00 {
+> 		...
+> 		#thermal-sensor-cells = <1>;
+> 	};
+> };
+> 
+> thermal-zones {
+> 	cpu_thermal: cpu-thermal {
+> 		polling-delay-passive = <250>; /* milliseconds */
+> 		polling-delay = <1000>; /* milliseconds */
+> 
+> 				/* sensor       ID */
+> 		thermal-sensors = <&bandgap0     0>;
+> 
+> 		trips {
+> 			/* each zone within the SoC may have its own trips */
+> 			cpu_alert: cpu-alert {
+> 				temperature = <100000>; /* millicelsius */
+> 				hysteresis = <2000>; /* millicelsius */
+> 				type = "passive";
+> 			};
+> 			cpu_crit: cpu-crit {
+> 				temperature = <125000>; /* millicelsius */
+> 				hysteresis = <2000>; /* millicelsius */
+> 				type = "critical";
+> 			};
+> 		};
+> 
+> 		cooling-maps {
+> 			/* each zone within the SoC may have its own cooling */
+> 			...
+> 		};
+> 	};
+> 
+
+if i get it right the device tree binding requires also a cooling map. But how should we model this without a fan or a DVFS driver? Is there something like a placeholder? Do you have an example?
+
+Regards
+Stefan
