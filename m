@@ -1,87 +1,56 @@
-From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Subject: Re: [PATCH v5 1/8] devicetree: power: Add battery.txt
-Date: Sat, 4 Feb 2017 02:03:06 -0800
-Message-ID: <CAJ_EiSQ6M6ker29Aat1QAgr8GtLZ3VWir6de8L4qc7phiKPU5Q@mail.gmail.com>
-References: <20170204091603.32242-1-liam@networkimprov.net> <20170204091603.32242-2-liam@networkimprov.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170204091603.32242-2-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH 1/2] dt-bindings: Add thermal zone to bcm2835-thermal example
+Date: Sat,  4 Feb 2017 14:16:26 +0000
+Message-ID: <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com>
+References: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.135]:55513 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750877AbdBDORe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 09:17:34 -0500
+In-Reply-To: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, kernel@martin.sperl.org
+Cc: Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
 
-On Sat, Feb 4, 2017 at 1:15 AM, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> wrote:
-> From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
->
-> From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Add a thermal zone in order to make the example complete.
 
-How are the double from me happening? :)  Seems odds
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+---
+ .../bindings/thermal/brcm,bcm2835-thermal.txt      |   19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
->
-> Documentation of static battery characteristics that can be defined
-> for batteries which cannot self-identify. This information is required
-> by fuel-gauge and charger chips for proper handling of the battery.
->
-> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/supply/battery.txt   | 39 ++++++++++++++++++++++
->  1 file changed, 39 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-> new file mode 100644
-> index 0000000..d663c48
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-> @@ -0,0 +1,39 @@
-> +Battery Characteristics
-> +
-> +Required Properties:
-> + - compatible: Must be "fixed-battery"
-> +
-> +Optional Properties:
-> + - voltage-min-design-microvolt: drained battery voltage
-> + - voltage-max-design-microvolt: charged battery voltage
-> + - energy-full-design-microwatt-hours: battery design energy
-> + - charge-full-design-microamp-hours: battery design capacity
-> +
-> +Future Properties must be named for the corresponding elements in
-> +enum power_supply_property, defined in include/linux/power_supply.h.
-> +
-> +Batteries must be referenced by chargers and/or fuel-gauges
-> +using a phandle. The phandle's property should be named
-> +"monitored-battery".
-> +
-> +Example:
-> +
-> +       bat: battery {
-> +               compatible = "fixed-battery";
-> +               voltage-min-design-microvolt = <3200000>;
-> +               voltage-max-design-microvolt = <4200000>;
-> +               energy-full-design-microwatt-hours = <5290000>;
-> +               charge-full-design-microamp-hours = <1430000>;
-> +       };
-> +
-> +       charger: charger@0 {
-> +               ....
-> +               monitored-battery = <&bat>;
-> +               ...
-> +       };
-> +
-> +       fuel_gauge: fuel_gauge@0 {
-> +               ....
-> +               monitored-battery = <&bat>;
-> +               ...
-> +       };
-> --
-> 2.9.3
->
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+index 474531d..680aca9 100644
+--- a/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/brcm,bcm2835-thermal.txt
+@@ -10,6 +10,25 @@ clocks: 	Phandle of the clock used by the thermal sensor.
+ 
+ Example:
+ 
++thermal-zones {
++	gpu_thermal: gpu-thermal {
++		polling-delay-passive = <0>;
++		polling-delay = <1000>;
++
++		thermal-sensors = <&thermal>;
++
++		trips {
++			cpu-crit {
++				temperature	= <80000>;
++				hysteresis	= <0>;
++				type		= "critical";
++			};
++		};
++		cooling-maps {
++		};
++	};
++};
++
+ thermal: thermal@7e212000 {
+ 	compatible = "brcm,bcm2835-thermal";
+ 	reg = <0x7e212000 0x8>;
+-- 
+1.7.9.5
+
