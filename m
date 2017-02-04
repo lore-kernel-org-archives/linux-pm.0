@@ -1,73 +1,112 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Fri, 3 Feb 2017 16:23:51 -0800
-Message-ID: <CAKvHMgRV=mm2XBtrNjQCvGXuAQY6n6xEKerP4eVw2izkS9C7ww@mail.gmail.com>
-References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-3-tony@atomide.com>
- <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
- <20170131003632.GB7403@atomide.com> <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
- <20170203185408.GB3721@atomide.com> <CAKvHMgQs3YYtyMApYvdRAyzuzii_xA=ZKRfqG-zpFzrMef_qdg@mail.gmail.com>
- <20170203211707.GC3721@atomide.com>
+From: Markus Mayer <markus.mayer@broadcom.com>
+Subject: Re: [PATCH 3/3] MIPS: BMIPS: enable CPUfreq
+Date: Fri, 3 Feb 2017 17:00:24 -0800
+Message-ID: <CAGt4E5vk6ciXPjh+ck-feyqmNu7cNRst3rArJ4MD7e8JWBfWMw@mail.gmail.com>
+References: <20170202010601.75995-1-code@mmayer.net> <20170202010601.75995-4-code@mmayer.net>
+ <20170203042917.GL7458@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:36679 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753222AbdBDAXw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 19:23:52 -0500
-In-Reply-To: <20170203211707.GC3721@atomide.com>
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:35732 "EHLO
+        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753138AbdBDBA0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 20:00:26 -0500
+Received: by mail-wm0-f41.google.com with SMTP id b65so55087949wmf.0
+        for <linux-pm@vger.kernel.org>; Fri, 03 Feb 2017 17:00:26 -0800 (PST)
+In-Reply-To: <20170203042917.GL7458@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Markus Mayer <code@mmayer.net>, Ralf Baechle <ralf@linux-mips.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Feb 3, 2017 at 1:17 PM, Tony Lindgren <tony@atomide.com> wrote:
+On 2 February 2017 at 20:29, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 01-02-17, 17:06, Markus Mayer wrote:
+>> From: Markus Mayer <mmayer@broadcom.com>
+>>
+>> Enable all applicable CPUfreq options.
+>>
+>> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+>> ---
+>>  arch/mips/configs/bmips_stb_defconfig | 10 ++++++++++
+>>  1 file changed, 10 insertions(+)
+>>
+>> diff --git a/arch/mips/configs/bmips_stb_defconfig b/arch/mips/configs/bmips_stb_defconfig
+>> index 4eb5d6e..6fda604 100644
+>> --- a/arch/mips/configs/bmips_stb_defconfig
+>> +++ b/arch/mips/configs/bmips_stb_defconfig
+>> @@ -26,6 +26,16 @@ CONFIG_INET=y
+>>  # CONFIG_INET_XFRM_MODE_BEET is not set
+>>  # CONFIG_INET_LRO is not set
+>>  # CONFIG_INET_DIAG is not set
+>> +CONFIG_CPU_FREQ=y
+>> +CONFIG_CPU_FREQ_STAT=y
+>> +CONFIG_CPU_FREQ_STAT_DETAILS=y
+>> +CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+>> +CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+>> +CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+>> +CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+>> +CONFIG_CPU_FREQ_GOV_USERSPACE=y
+>> +CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+>> +CONFIG_BMIPS_CPUFREQ=y
+>>  CONFIG_CFG80211=y
+>>  CONFIG_NL80211_TESTMODE=y
+>>  CONFIG_MAC80211=y
+>
+> Rebase your stuff over pm/linux-next and you will see some changes here. Also
+> schedutil is the new governor in town, you must give it a try.
 
-> From: Tony Lindgren <tony@atomide.com>
-> Date: Mon, 30 Jan 2017 07:10:31 -0800
-> Subject: [PATCH] power: bq24190_charger: Use PM runtime autosuspend
->
-> We can get quite a few interrupts when the battery is trickle charging.
-> Let's enable PM runtime autosuspend to avoid constantly toggling device
-> driver PM runtime state.
->
-> Let's use a 600 ms timeout as that's how long the USB chager detection
-> might take.
->
-> Cc: Liam Breck <kernel@networkimprov.net>
-> Acked-by: Mark Greer <mgreer@animalcreek.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> ---
->  drivers/power/supply/bq24190_charger.c | 155 ++++++++++++++++++++++++---------
->  1 file changed, 113 insertions(+), 42 deletions(-)
->
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
->
-> @@ -1430,14 +1475,20 @@ static int bq24190_probe(struct i2c_client *client,
->  static int bq24190_remove(struct i2c_client *client)
->  {
->         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-> +       int error;
->
-> -       pm_runtime_get_sync(bdi->dev);
-> -       bq24190_register_reset(bdi);
-> -       pm_runtime_put_sync(bdi->dev);
-> +       error = pm_runtime_get_sync(bdi->dev);
-> +       if (error < 0) {
-> +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-> +               pm_runtime_put_noidle(bdi->dev);
-> +       }
->
-> +       bq24190_register_reset(bdi);
->         bq24190_sysfs_remove_group(bdi);
->         power_supply_unregister(bdi->battery);
->         power_supply_unregister(bdi->charger);
-> +       pm_runtime_put_sync(bdi->dev);
-> +       pm_runtime_dont_use_autosuspend(bdi->dev);
->         pm_runtime_disable(bdi->dev);
+I'll definitely turn on SCHEDUTIL. As for the changes in next, I don't
+see any conflicts. My series applied fine on top of linux-next from
+https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/. Did
+I use the wrong tree?
 
-I think you addressed this, but should the above be
+$ git log
 
-if (!error)
-  pm_runtime_put_sync(bdi->dev);
+commit f81d425292d7d14d45eedc16b9f59066e6640500
+Author: Markus Mayer <mmayer@broadcom.com>
+Date:   Wed Feb 1 16:45:06 2017 -0800
+
+    MIPS: BMIPS: enable CPUfreq
+
+    Enable all applicable CPUfreq options.
+
+    Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+
+commit 9b71c19f3d9af3867f8ec144305b7f23bfaa42f3
+Author: Markus Mayer <mmayer@broadcom.com>
+Date:   Wed Feb 1 16:19:01 2017 -0800
+
+    cpufreq: bmips-cpufreq: CPUfreq driver for Broadcom's BMIPS SoCs
+
+    Add the MIPS CPUfreq driver. This driver currently supports CPUfreq on
+    BMIPS5xxx-based SoCs.
+
+    Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+
+commit 3a2894802066c8a24da6890bcc2c0b7fae1ccb40
+Author: Markus Mayer <mmayer@broadcom.com>
+Date:   Wed Feb 1 16:16:55 2017 -0800
+
+    BMIPS: Enable prerequisites for CPUfreq in MIPS Kconfig.
+
+    Turn on CPU_SUPPORTS_CPUFREQ and MIPS_EXTERNAL_TIMER for BMIPS.
+
+    Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+
+commit fd4c9e3a71b4c967731c99525a2e94085a776638
+Merge: ba358f6 a9306a6
+Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Date:   Sat Feb 4 00:45:12 2017 +0100
+
+    Merge branch 'pm-core-fixes' into linux-next
+
+    * pm-core-fixes:
+      PM / runtime: Avoid false-positive warnings from might_sleep_if()
+
+...
+
+Thanks,
+-Markus
+
+> --
+> viresh
