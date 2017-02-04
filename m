@@ -1,59 +1,39 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: [PATCH 2/2] ARM: dts: bcm283x: Add critical thermal zone for GPU
-Date: Sat,  4 Feb 2017 14:16:27 +0000
-Message-ID: <1486217787-15703-2-git-send-email-stefan.wahren@i2se.com>
-References: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
- <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.131]:55895 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750877AbdBDORh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Feb 2017 09:17:37 -0500
-In-Reply-To: <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v3 4/5] soc: samsung: pm_domains: Read domain name from
+ the new label property
+Date: Sat, 4 Feb 2017 17:46:57 +0200
+Message-ID: <20170204154657.c4pts6wppsq3wmf2@kozik-lap>
+References: <1485778740-30337-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170130121915eucas1p23aa4f4be912bcd64f9521f6e6b51132f@eucas1p2.samsung.com>
+ <1485778740-30337-5-git-send-email-m.szyprowski@samsung.com>
+ <20170201162554.airhzowkqpyaxqpf@rob-hp-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170201162554.airhzowkqpyaxqpf@rob-hp-laptop>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Sylwester Nawrocki <s.nawrocki@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, kernel@martin.sperl.org
-Cc: Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
 
-As suggested by Eduardo Valentin this adds the thermal zone for
-the bcm2835 SoC. Since we currently don't have any cooling devices
-leave this section empty.
+On Wed, Feb 01, 2017 at 10:25:54AM -0600, Rob Herring wrote:
+> On Mon, Jan 30, 2017 at 01:18:59PM +0100, Marek Szyprowski wrote:
+> > Device tree nodes for each power domain should use generic "power-domain"
+> > name, so using it as a domain name doesn't give much benefits. This patch
+> > adds support for human readable names defined in 'label' property. Such
+> > names are visible to userspace and makes debugging much easier. When no
+> > 'label' property is found, driver keeps using the name constructed from
+> > full node name.
+> 
+> I'm not sure this is really a good use of label. label is intended for 
+> end user visible things like ports/connectors on a board. It's fine 
+> here, but I wouldn't want to see it used everywhere.
+>
 
-Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
----
- arch/arm/boot/dts/bcm283x.dtsi |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+Thanks for comments. We want to use the label here for user visible
+output - through dmesg or debugfs. Otherwise, we would have to stick
+(always) to more descriptive node names, like "lcd-power-domain@xxxxx".
 
-diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
-index 9c7ec7e..359da9d 100644
---- a/arch/arm/boot/dts/bcm283x.dtsi
-+++ b/arch/arm/boot/dts/bcm283x.dtsi
-@@ -19,6 +19,25 @@
- 		bootargs = "earlyprintk console=ttyAMA0";
- 	};
- 
-+	thermal-zones {
-+		gpu_thermal: gpu-thermal {
-+			polling-delay-passive = <0>;
-+			polling-delay = <1000>;
-+
-+			thermal-sensors = <&thermal>;
-+
-+			trips {
-+				cpu-crit {
-+					temperature	= <80000>;
-+					hysteresis	= <0>;
-+					type		= "critical";
-+				};
-+			};
-+			cooling-maps {
-+			};
-+		};
-+	};
-+
- 	soc {
- 		compatible = "simple-bus";
- 		#address-cells = <1>;
--- 
-1.7.9.5
-
+Best regards,
+Krzysztof
