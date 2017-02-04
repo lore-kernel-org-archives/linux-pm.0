@@ -1,112 +1,89 @@
-From: Markus Mayer <markus.mayer@broadcom.com>
-Subject: Re: [PATCH 3/3] MIPS: BMIPS: enable CPUfreq
-Date: Fri, 3 Feb 2017 17:00:24 -0800
-Message-ID: <CAGt4E5vk6ciXPjh+ck-feyqmNu7cNRst3rArJ4MD7e8JWBfWMw@mail.gmail.com>
-References: <20170202010601.75995-1-code@mmayer.net> <20170202010601.75995-4-code@mmayer.net>
- <20170203042917.GL7458@vireshk-i7>
+From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 2/8] power: add power sequence library
+Date: Sat, 4 Feb 2017 09:56:18 +0800
+Message-ID: <20170204015618.GB25013@b29397-desktop>
+References: <1483425211-14473-1-git-send-email-peter.chen@nxp.com>
+ <20170201080817.GD17968@kroah.com>
+ <20170203081614.GA24614@b29397-desktop>
+ <16336642.sihi7izbLX@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f41.google.com ([74.125.82.41]:35732 "EHLO
-        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753138AbdBDBA0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Feb 2017 20:00:26 -0500
-Received: by mail-wm0-f41.google.com with SMTP id b65so55087949wmf.0
-        for <linux-pm@vger.kernel.org>; Fri, 03 Feb 2017 17:00:26 -0800 (PST)
-In-Reply-To: <20170203042917.GL7458@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <16336642.sihi7izbLX-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Dmitry Eremin-Solenikov <dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, "open list:ULTRA-WIDEBAND (UWB) SUBSYSTEM:" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Markus Mayer <code@mmayer.net>, Ralf Baechle <ralf@linux-mips.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 2 February 2017 at 20:29, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 01-02-17, 17:06, Markus Mayer wrote:
->> From: Markus Mayer <mmayer@broadcom.com>
->>
->> Enable all applicable CPUfreq options.
->>
->> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
->> ---
->>  arch/mips/configs/bmips_stb_defconfig | 10 ++++++++++
->>  1 file changed, 10 insertions(+)
->>
->> diff --git a/arch/mips/configs/bmips_stb_defconfig b/arch/mips/configs/bmips_stb_defconfig
->> index 4eb5d6e..6fda604 100644
->> --- a/arch/mips/configs/bmips_stb_defconfig
->> +++ b/arch/mips/configs/bmips_stb_defconfig
->> @@ -26,6 +26,16 @@ CONFIG_INET=y
->>  # CONFIG_INET_XFRM_MODE_BEET is not set
->>  # CONFIG_INET_LRO is not set
->>  # CONFIG_INET_DIAG is not set
->> +CONFIG_CPU_FREQ=y
->> +CONFIG_CPU_FREQ_STAT=y
->> +CONFIG_CPU_FREQ_STAT_DETAILS=y
->> +CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
->> +CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
->> +CONFIG_CPU_FREQ_GOV_ONDEMAND=y
->> +CONFIG_CPU_FREQ_GOV_POWERSAVE=y
->> +CONFIG_CPU_FREQ_GOV_USERSPACE=y
->> +CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
->> +CONFIG_BMIPS_CPUFREQ=y
->>  CONFIG_CFG80211=y
->>  CONFIG_NL80211_TESTMODE=y
->>  CONFIG_MAC80211=y
->
-> Rebase your stuff over pm/linux-next and you will see some changes here. Also
-> schedutil is the new governor in town, you must give it a try.
+On Fri, Feb 03, 2017 at 10:14:31PM +0100, Rafael J. Wysocki wrote:
+> On Friday, February 03, 2017 04:16:15 PM Peter Chen wrote:
+> > On Wed, Feb 01, 2017 at 09:08:17AM +0100, Greg Kroah-Hartman wrote:
+> > > On Wed, Feb 01, 2017 at 12:10:17AM +0100, Rafael J. Wysocki wrote:
+> > > > On Tue, Jan 3, 2017 at 7:33 AM, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org> wrote:
+> > > > > We have an well-known problem that the device needs to do some power
+> > > > > sequence before it can be recognized by related host, the typical
+> > > > > example like hard-wired mmc devices and usb devices.
+> > > > >
+> > > > > This power sequence is hard to be described at device tree and handled by
+> > > > > related host driver, so we have created a common power sequence
+> > > > > library to cover this requirement. The core code has supplied
+> > > > > some common helpers for host driver, and individual power sequence
+> > > > > libraries handle kinds of power sequence for devices. The pwrseq
+> > > > > librares always need to allocate extra instance for compatible
+> > > > > string match.
+> > > > >
+> > > > > pwrseq_generic is intended for general purpose of power sequence, which
+> > > > > handles gpios and clocks currently, and can cover other controls in
+> > > > > future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> > > > > if only one power sequence is needed, else call of_pwrseq_on_list
+> > > > > /of_pwrseq_off_list instead (eg, USB hub driver).
+> > > > >
+> > > > > For new power sequence library, it can add its compatible string
+> > > > > to pwrseq_of_match_table, then the pwrseq core will match it with
+> > > > > DT's, and choose this library at runtime.
+> > > > >
+> > > > > Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+> > > > > Tested-by: Maciej S. Szmigiero <mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org>
+> > > > > Tested-by Joshua Clayton <stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> > > > > Reviewed-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> > > > > Tested-by: Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> > > > 
+> > > > Quite honestly, I have a really hard time with trying to follow this
+> > > > code and the total lack of documentation makes it even harder. 
+> > 
+> > Sorry about that, Is it ok I add the design doc at:
+> > Documentation/power/power-sequence/design.rst?
+> 
+> You can do that if you think it will address the request to explain the design.
+> 
+> > > > particular, the generic power sequence code is not even commented at
+> > > > all, 
+> > 
+> > The generic power sequence code just implements the APIs which are 
+> > called at power/pwrseq/core.c, and those API are commented at
+> > include/linux/power/pwrseq.h. Anyway, I will add more comments at it.
+> 
+> It actually seems to be doing more than that and I'm not sure why the code in
+> core.c is necessary at all.  The "generic" thing seems to be the only user of
+> it anyway and the callbacks seem to be tailored to its needs.
+> 
 
-I'll definitely turn on SCHEDUTIL. As for the changes in next, I don't
-see any conflicts. My series applied fine on top of linux-next from
-https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/. Did
-I use the wrong tree?
+Currently, the "generic" pwrseq is the only use case. But some devices may have
+custom power sequence [1], and MMC devices (mmc card/wifi) have two
+power sequences (drivers/mmc/core/pwrseq_emmc.c, drivers/mmc/core/pwrseq_simple.c)
 
-$ git log
+I have an example use case at v7 named pwrseq_compatible_sample.c for
+those custom use case [2].
 
-commit f81d425292d7d14d45eedc16b9f59066e6640500
-Author: Markus Mayer <mmayer@broadcom.com>
-Date:   Wed Feb 1 16:45:06 2017 -0800
+[1] https://www.spinics.net/lists/devicetree/msg139756.html
+[2] https://lkml.org/lkml/2016/9/19/972
 
-    MIPS: BMIPS: enable CPUfreq
+-- 
 
-    Enable all applicable CPUfreq options.
-
-    Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-
-commit 9b71c19f3d9af3867f8ec144305b7f23bfaa42f3
-Author: Markus Mayer <mmayer@broadcom.com>
-Date:   Wed Feb 1 16:19:01 2017 -0800
-
-    cpufreq: bmips-cpufreq: CPUfreq driver for Broadcom's BMIPS SoCs
-
-    Add the MIPS CPUfreq driver. This driver currently supports CPUfreq on
-    BMIPS5xxx-based SoCs.
-
-    Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-
-commit 3a2894802066c8a24da6890bcc2c0b7fae1ccb40
-Author: Markus Mayer <mmayer@broadcom.com>
-Date:   Wed Feb 1 16:16:55 2017 -0800
-
-    BMIPS: Enable prerequisites for CPUfreq in MIPS Kconfig.
-
-    Turn on CPU_SUPPORTS_CPUFREQ and MIPS_EXTERNAL_TIMER for BMIPS.
-
-    Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-
-commit fd4c9e3a71b4c967731c99525a2e94085a776638
-Merge: ba358f6 a9306a6
-Author: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Date:   Sat Feb 4 00:45:12 2017 +0100
-
-    Merge branch 'pm-core-fixes' into linux-next
-
-    * pm-core-fixes:
-      PM / runtime: Avoid false-positive warnings from might_sleep_if()
-
-...
-
-Thanks,
--Markus
-
-> --
-> viresh
+Best Regards,
+Peter Chen
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
