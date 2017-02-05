@@ -1,119 +1,194 @@
-From: Elaine Zhang <zhangqing@rock-chips.com>
-Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM
- phases
-Date: Sun, 05 Feb 2017 17:34:29 +0800
-Message-ID: <5896F1A5.9080405@rock-chips.com>
-References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com> <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com> <58842848.5090806@rock-chips.com> <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Subject: Re: [PATCH] PM / runtime: Avoid false-positive warnings
+	from might_sleep_if()
+Date: Sun, 5 Feb 2017 10:58:10 +0100
+Message-ID: <CA+icZUWws+x2K8M16vzPWfypx_2zGP=jqh94hGvbdmCosq5xhQ@mail.gmail.com>
+References: <CA+icZUVydvidHHeWn7=ni1Kxr0y1kaRLKMWCPQi2YY5c_xNL_Q@mail.gmail.com>
+ <CAJZ5v0gaVL1zkVdb3G8p=Lgk5fX8fB2pv-RR54j8_UTd9PYFmA@mail.gmail.com>
+ <CA+icZUWgV-NGyHVWo4yo0c-qOew=W=GKdDEY6L2Le1vSh+SpQg@mail.gmail.com>
+ <15818372.6qr0ZfnSx1@aspire.rjw.lan>
+Reply-To: sedat.dilek@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.133]:35834 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751774AbdBEJhp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2017 04:37:45 -0500
-In-Reply-To: <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <15818372.6qr0ZfnSx1@aspire.rjw.lan>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, the arch/x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Feng Xiao <xf@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, xxx@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-
-
-On 01/26/2017 05:30 AM, Ulf Hansson wrote:
-> On 22 January 2017 at 04:34, Elaine Zhang <zhangqing@rock-chips.com> wrote:
->>
->>
->> On 01/20/2017 09:16 PM, Ulf Hansson wrote:
->>>
->>> On 20 January 2017 at 03:21, Elaine Zhang <zhangqing@rock-chips.com>
->>> wrote:
->>>>
->>>> If a PM domain is powered off before system suspend,
->>>> we hope do nothing in system runtime suspend noirq phase
->>>> and system runtime resume noirq phase.
->>>
->>>
->>> One can hope, but that isn't good enough. :-)
->>>
->>>
->>>>
->>>> This modify is to slove system resume issue for RK3399.
->>>> RK3399 SOC pd_gpu have voltage domain vdd_gpu,
->>>> so we must follow open vdd_gpu and power on pd_gpu,
->>>> power off pd_gpu and disable vdd_gpu.
->>>> Fix up in runtime resume noirq phase power on all PDs.
->>>
->>>
->>> This doesn't make any sense to me. Can please try to explain this is
->>> in great more detail, then I can try to help.
->>>
->> For example:
->> -->device suspend
->>     (mali gpu driver set pd_gpu off by pm_runtime_put_sync(),
->
-> This is the wrong approach, as runtime suspend is prevented by the PM
-> core in this phase. More precisely, it does a
-> pm_runtime_get_noresume() in the device prepare phase.
->
-> I think it seems like you would benefit from using the so called the
-> runtime PM centric approach, which gives you system PM support for
-> "free". Please have a look at the pm_runtime_force_suspend|resume()
-> helpers.
->
->>      and then disabled the vdd_gpu by regulator_disable().)
->>          --> system suspend
->>                  -->prepare
->>                          -->suspend_noirq():
->>                          (power off all pds)
->>          -->system resume
->>                  -->resume_noirq():
->>                  (power up all pds)
->>                  (in this case the vdd_gpu is still disabled,
->>                   if power on the pd_gpu maybe make the system crash)
->>          -->complete : power off the not used pd
->> -->device resuem
->>     (mali gpu driver enable vdd_gpu by regulator_enable(),
->>      and then power up the pd_gpu by pm_runtime_get_sync())
->
-> Seems like there is also a missing configuration of the relationship
-> between the PM domains. In the genpd terminology, you probably want to
-> set pd_gpu as a subdomain of the vdd_gpu.
->
-> In that way, the vdd_gpu is always powered on before pd_gpu is powered
-> on. And vice verse when powering off.
->
-I thought about this project, but can't slove the problem of sleep and 
-wakp up issue.
-Because
-	-->system resume
-                  -->resume_noirq():
-                   (power up all pds)
-In this case, we set pd_gpu as a subdomain of the vdd_gpu.
-And then to enable the vdd_gpu,but the system resume is not complete 
-yet, the regulator and i2c can't work.So the vdd_gpu enable will failed.
-
-So I think the more appropriate solution is keep the pd status during 
-system PM phases.
-If a PM domain is powered off before system suspend,
-we hope do nothing in system runtime suspend noirq phase
-and system runtime resume noirq phase.
-
->>
->> So for RK3399 soc, if to set pd_gpu the vdd_gpu must be enabled, or else
->> will can't get the ack back.
->> I hope the pd_gpu power up/off by the driver itself.
->>
->> May be I solution is not the optimal solution,Do you have better suggestion?
->>
->
-> Please see my comment above.
->
-> [...]
->
-> Kind regards
-> Uffe
->
->
->
-
+T24gU2F0LCBGZWIgNCwgMjAxNyBhdCAxMjo1OCBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJqd0By
+and5c29ja2kubmV0PiB3cm90ZToKPiBPbiBUaHVyc2RheSwgRmVicnVhcnkgMDIsIDIwMTcgMDI6
+MzQ6NDIgUE0gU2VkYXQgRGlsZWsgd3JvdGU6Cj4+IE9uIFdlZCwgRmViIDEsIDIwMTcgYXQgMToy
+MiBBTSwgUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPj4gPiBP
+biBNb24sIEphbiAzMCwgMjAxNyBhdCAxMTo0NCBQTSwgUmFmYWVsIEouIFd5c29ja2kKPj4gPiA8
+cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+IHdyb3RlOgo+PiA+PiBPbiAxLzI0LzIwMTcgMjoz
+MyBBTSwgU2VkYXQgRGlsZWsgd3JvdGU6Cj4+ID4+Pgo+PiA+Pj4gT24gRnJpLCBEZWMgMzAsIDIw
+MTYgYXQgMzowMiBQTSwgUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPgo+PiA+
+Pj4gd3JvdGU6Cj4+ID4+Pj4KPj4gPj4+PiBPbiBGcmksIERlYyAzMCwgMjAxNiBhdCAxMjo0MCBQ
+TSwgU2VkYXQgRGlsZWsgPHNlZGF0LmRpbGVrQGdtYWlsLmNvbT4KPj4gPj4+PiB3cm90ZToKPj4g
+Pj4+Pj4KPj4gPj4+Pj4gSGksCj4+ID4+Pj4+Cj4+ID4+Pj4+IEkgaGF2ZSBhbHJlYWR5IHJlcG9y
+dGVkIHRoaXMgaXNzdWUgaW4gWzFdLgo+PiA+Pj4+PiBPbmUgb2YgdGhlIGlzc3VlIHdhcyBzb2x2
+ZWQuCj4+ID4+Pj4+IFVuZm9ydHVuYXRlbHksIGl0IGxvb2tzIGxpa2UgdGhlcmUgaXMgc3RpbGwg
+YSBkaWZmZXJlbnQgcHJvYmxlbSBoZXJlCj4+ID4+Pj4+IChVYnVudHUvcHJlY2lzZSBBTUQ2NCku
+Cj4+ID4+Pj4+Cj4+ID4+Pj4+IEkgdHJpZWQgdjQuMTAtcmMxIGFuZCBsYXRlc3QgTGludXMgdHJl
+ZSB1cCB0by4uLgo+PiA+Pj4+Pgo+PiA+Pj4+PiBjb21taXQgOTg0NzNmOWYzZjliZDQwNDg3M2Nk
+MTE3OGM4YmU3ZDZkNjE5ZjBkMQo+PiA+Pj4+PiAibW0vZmlsZW1hcDogZml4IHBhcmFtZXRlcnMg
+dG8gdGVzdF9iaXQoKSIKPj4gPj4+Pj4KPj4gPj4+Pj4gSGVyZSB3ZSBnby4uLgo+PiA+Pj4+Pgo+
+PiA+Pj4+PiBbICAgMjkuNjM2MDQ3XSBCVUc6IHNsZWVwaW5nIGZ1bmN0aW9uIGNhbGxlZCBmcm9t
+IGludmFsaWQgY29udGV4dCBhdAo+PiA+Pj4+PiBkcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5j
+OjEwMzIKPj4gPj4+Pj4gWyAgIDI5LjYzNjA1NV0gaW5fYXRvbWljKCk6IDEsIGlycXNfZGlzYWJs
+ZWQoKTogMCwgcGlkOiAxNTAwLCBuYW1lOiBYb3JnCj4+ID4+Pj4+IFsgICAyOS42MzYwNThdIDEg
+bG9jayBoZWxkIGJ5IFhvcmcvMTUwMDoKPj4gPj4+Pj4gWyAgIDI5LjYzNjA2MF0gICMwOiAgKCZk
+ZXYtPnN0cnVjdF9tdXRleCl7Ky4rLisufSwgYXQ6Cj4+ID4+Pj4+IFs8ZmZmZmZmZmZhMDY4MGMx
+Mz5dIGk5MTVfbXV0ZXhfbG9ja19pbnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVdCj4+ID4+
+Pj4+IFsgICAyOS42MzYxMDddIENQVTogMCBQSUQ6IDE1MDAgQ29tbTogWG9yZyBOb3QgdGFpbnRl
+ZAo+PiA+Pj4+PiA0LjEwLjAtcmMxLTYtaW5pemEtYW1kNjQgIzEKPj4gPj4+Pj4gWyAgIDI5LjYz
+NjEwOV0gSGFyZHdhcmUgbmFtZTogU0FNU1VORyBFTEVDVFJPTklDUyBDTy4sIExURC4KPj4gPj4+
+Pj4gNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgvNTMwVTNCSS81MzBVNEJJLzUzMFU0QkgsIEJJT1Mg
+MTNYSyAwMy8yOC8yMDEzCj4+ID4+Pj4+IFsgICAyOS42MzYxMTFdIENhbGwgVHJhY2U6Cj4+ID4+
+Pj4+IFsgICAyOS42MzYxMjBdICBkdW1wX3N0YWNrKzB4ODUvMHhjMgo+PiA+Pj4+PiBbICAgMjku
+NjM2MTI0XSAgX19fbWlnaHRfc2xlZXArMHgxOTYvMHgyNjAKPj4gPj4+Pj4gWyAgIDI5LjYzNjEy
+N10gIF9fbWlnaHRfc2xlZXArMHg1My8weGIwCj4+ID4+Pj4+IFsgICAyOS42MzYxMzFdICBfX3Bt
+X3J1bnRpbWVfcmVzdW1lKzB4N2EvMHg5MAo+PiA+Pj4+PiBbICAgMjkuNjM2MTU5XSAgaW50ZWxf
+cnVudGltZV9wbV9nZXQrMHgyNS8weDkwIFtpOTE1XQo+PiA+Pj4+PiBbICAgMjkuNjM2MTg5XSAg
+YWxpYXNpbmdfZ3R0X2JpbmRfdm1hKzB4YWEvMHhmMCBbaTkxNV0KPj4gPj4+Pj4gWyAgIDI5LjYz
+NjIyMF0gIGk5MTVfdm1hX2JpbmQrMHhhZi8weDFlMCBbaTkxNV0KPj4gPj4+Pj4gWyAgIDI5LjYz
+NjI0OF0gIGk5MTVfZ2VtX2V4ZWNidWZmZXJfcmVsb2NhdGVfZW50cnkrMHg1MTMvMHg2ZjAgW2k5
+MTVdCj4+ID4+Pj4+IFsgICAyOS42MzYyNzJdICBpOTE1X2dlbV9leGVjYnVmZmVyX3JlbG9jYXRl
+X3ZtYS5pc3JhLjM0KzB4MTg4LzB4MjUwCj4+ID4+Pj4+IFtpOTE1XQo+PiA+Pj4+PiBbICAgMjku
+NjM2Mjc1XSAgPyB0cmFjZV9oYXJkaXJxc19vbisweGQvMHgxMAo+PiA+Pj4+PiBbICAgMjkuNjM2
+Mjk0XSAgPyBpOTE1X2dlbV9leGVjYnVmZmVyX3Jlc2VydmVfdm1hLmlzcmEuMzErMHgxNTIvMHgx
+ZjAKPj4gPj4+Pj4gW2k5MTVdCj4+ID4+Pj4+IFsgICAyOS42MzYzMTZdICA/IGk5MTVfZ2VtX2V4
+ZWNidWZmZXJfcmVzZXJ2ZS5pc3JhLjMyKzB4MzcyLzB4M2EwIFtpOTE1XQo+PiA+Pj4+PiBbICAg
+MjkuNjM2MzQyXSAgaTkxNV9nZW1fZG9fZXhlY2J1ZmZlci5pc3JhLjM4KzB4YTcwLzB4MWE0MCBb
+aTkxNV0KPj4gPj4+Pj4gWyAgIDI5LjYzNjM0N10gID8gX19taWdodF9mYXVsdCsweDRlLzB4YjAK
+Pj4gPj4+Pj4gWyAgIDI5LjYzNjM3M10gIGk5MTVfZ2VtX2V4ZWNidWZmZXIyKzB4YzUvMHgyNjAg
+W2k5MTVdCj4+ID4+Pj4+IFsgICAyOS42MzYzNzZdICA/IF9fbWlnaHRfZmF1bHQrMHg0ZS8weGIw
+Cj4+ID4+Pj4+IFsgICAyOS42MzYzOTVdICBkcm1faW9jdGwrMHgyMDYvMHg0NTAgW2RybV0KPj4g
+Pj4+Pj4gWyAgIDI5LjYzNjQyMF0gID8gaTkxNV9nZW1fZXhlY2J1ZmZlcisweDM0MC8weDM0MCBb
+aTkxNV0KPj4gPj4+Pj4gWyAgIDI5LjYzNjQyNV0gID8gX19mZ2V0KzB4NS8weDIwMAo+PiA+Pj4+
+PiBbICAgMjkuNjM2NDI5XSAgZG9fdmZzX2lvY3RsKzB4OTEvMHg2ZjAKPj4gPj4+Pj4gWyAgIDI5
+LjYzNjQzMV0gID8gX19mZ2V0KzB4MTExLzB4MjAwCj4+ID4+Pj4+IFsgICAyOS42MzY0MzNdICA/
+IF9fZmdldCsweDUvMHgyMDAKPj4gPj4+Pj4gWyAgIDI5LjYzNjQzNl0gIFN5U19pb2N0bCsweDc5
+LzB4OTAKPj4gPj4+Pj4gWyAgIDI5LjYzNjQ0MV0gIGVudHJ5X1NZU0NBTExfNjRfZmFzdHBhdGgr
+MHgyMy8weGM2Cj4+ID4+Pj4+Cj4+ID4+Pj4+IE9uIHN1c3BlbmQvcmVzdW1lIEkgc2VlIHRoZSBz
+YW1lIGNhbGwgdHJhY2UuCj4+ID4+Pj4+IFsyXSBwb2ludHMgdG8gdGhlICJCVUciIGxpbmUuCj4+
+ID4+Pj4KPj4gPj4+PiBXZWxsLCB0aGlzIGFwcGVhcnMgdG8gYmUgYW4gaTkxNSBpc3N1ZSwgYnV0
+IG5vdCBhIHNlcmlvdXMgb25lLgo+PiA+Pj4+Cj4+ID4+Pj4gQ2xlYXJseSwgYSBmdW5jdGlvbiB0
+aGF0IG1heSBzbGVlcCAocG1fcnVudGltZV9nZXRfc3luYygpIGluCj4+ID4+Pj4gaW50ZWxfcnVu
+dGltZV9wbV9nZXQoKSkgaXMgY2FsbGVkIHdpdGggZGlzYWJsZWQgaW50ZXJydXB0cy4gIElmIEkK
+Pj4gPj4+PiB1bmRlcnN0YW5kIHRoZSBjb2RlIGNvcnJlY3RseSwgdGhvdWdoLCBpdCBhY3R1YWxs
+eSBpcyBub3QgZ29pbmcgdG8KPj4gPj4+PiBzbGVlcCBpbiB0aGlzIHBhcnRpY3VsYXIgY2FzZSwg
+YmVjYXVzZSBwbV9ydW50aW1lX2dldF9zeW5jKCkgaGFzCj4+ID4+Pj4gYWxyZWFkeSBiZWVuIGNh
+bGxlZCBvbmNlIGZvciB0aGlzIGRldmljZSBpbiB0aGUgc2FtZSBjb2RlIHBhdGggd2hpY2gKPj4g
+Pj4+PiBtZWFucyB0aGF0IHRoaXMgcGFydGljdWxhciBpbnN0YW5jZSB3aWxsIHJldHVybiBpbW1l
+ZGlhdGVseSwgc28gdGhpcwo+PiA+Pj4+IGlzIGEgZmFsc2UtcG9zaXRpdmUgKG1vc3QgbGlrZWx5
+KS4KPj4gPj4+Pgo+PiA+Pj4+IExldCBtZSBzZWUgaWYgSSB0aGUgbWlnaHRfc2xlZXBfaWYoKSBh
+c3NlcnRpb24gaW4KPj4gPj4+PiBfX3BtX3J1bnRpbWVfcmVzdW1lKCgpIGNhbiBiZSBtb3ZlZCB0
+byBhIGJldHRlciBwbGFjZS4KPj4gPj4+Pgo+PiA+Pj4gSGkgUmFmYWVsLAo+PiA+Pj4KPj4gPj4+
+IGRpZCB5b3UgaGFkIGEgY2hhbmNlIHRvIGxvb2sgYXQgdGhpcz8KPj4gPj4+IFRoZSBwcm9ibGVt
+IHN0aWxsIHJlbWFpbnMgaW4gTGludXggdjQuMTAtcmM1Lgo+PiA+Pgo+PiA+Pgo+PiA+PiBObywg
+SSBkaWRuJ3QuCj4+ID4+Cj4+ID4+IEFzIEkgc2FpZCwgdGhpcyBpcyBub3QgYSBzZXJpb3VzIGlz
+c3VlLgo+PiA+Cj4+ID4gU29tZXRoaW5nIGxpa2UgdGhlIGF0dGFjaGVkICh1bnRlc3RlZCkuCj4+
+ID4KPj4gPiBQbGVhc2UgdHJ5IGl0IGFuZCBsZXQgbWUga25vdyBpZiBpdCBtYWtlcyB0aGUgc3Bs
+YXQgZ28gYXdheS4KPj4gPgo+Pgo+PiBZb3VyIHBhdGNoIGZpeGVzIHRoZSBpc3N1ZSBoZXJlLgo+
+PiBJIHRlc3RlZCBhZ2FpbnN0IHZhbmlsbGEgTGludXggdjQuMTAtcmM1Lgo+Pgo+PiBGZWVsIGZy
+ZWUgdG8gZ2l2ZSBhcHByb3ByaWF0ZSBjcmVkaXRzLgo+Cj4gT0ssIHRoYW5rcyEKPgo+IEJlbG93
+IGlzIGEgZnVsbCB2ZXJzaW9uIHdpdGggYSBjaGFuZ2Vsb2cgJiB0YWdzLgo+Cj4gVGhhbmtzLAo+
+IFJhZmFlbAo+Cj4gLS0tCj4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29j
+a2lAaW50ZWwuY29tPgo+IFN1YmplY3Q6IFtQQVRDSF0gUE0gLyBydW50aW1lOiBBdm9pZCBmYWxz
+ZS1wb3NpdGl2ZSB3YXJuaW5ncyBmcm9tIG1pZ2h0X3NsZWVwX2lmKCkKPgo+IFRoZSBtaWdodF9z
+bGVlcF9pZigpIGFzc2VydGlvbnMgaW4gX19wbV9ydW50aW1lX2lkbGUoKSwKPiBfX3BtX3J1bnRp
+bWVfc3VzcGVuZCgpIGFuZCBfX3BtX3J1bnRpbWVfcmVzdW1lKCkgbWF5IGdlbmVyYXRlCj4gZmFs
+c2UtcG9zaXRpdmUgd2FybmluZ3MgaW4gc29tZSBzaXR1YXRpb25zLiAgRm9yIGV4YW1wbGUsIHRo
+YXQKPiBoYXBwZW5zIGlmIGEgbmVzdGVkIHBtX3J1bnRpbWVfZ2V0X3N5bmMoKS9wbV9ydW50aW1l
+X3B1dCgpIHBhaXIKPiBpcyBleGVjdXRlZCB3aXRoIGRpc2FibGVkIGludGVycnVwdHMgd2l0aGlu
+IGFuIG91dGVyCj4gcG1fcnVudGltZV9nZXRfc3luYygpL3BtX3J1bnRpbWVfcHV0KCkgc2VjdGlv
+biBmb3IgdGhlIHNhbWUgZGV2aWNlLgo+IFtHZW5lcmFsbHksIHBtX3J1bnRpbWVfZ2V0X3N5bmMo
+KSBtYXkgc2xlZXAsIHNvIGl0IHNob3VsZCBub3QgYmUKPiBjYWxsZWQgd2l0aCBkaXNhYmxlZCBp
+bnRlcnJ1cHRzLCBidXQgaW4gdGhpcyBwYXJ0aWN1bGFyIGNhc2UgdGhlCj4gcHJldmlvdXMgcG1f
+cnVudGltZV9nZXRfc3luYygpIGd1YXJhbnRlZXMgdGhhdCB0aGUgZGV2aWNlIHdpbGwgbm90Cj4g
+YmUgc3VzcGVuZGVkLCBzbyB0aGUgaW5uZXIgcG1fcnVudGltZV9nZXRfc3luYygpIHdpbGwgcmV0
+dXJuCj4gaW1tZWRpYXRlbHkgYWZ0ZXIgaW5jcmVtZW50aW5nIHRoZSBkZXZpY2UncyB1c2FnZSBj
+b3VudGVyLl0KPgo+IFRoYXQgc3RhcnRlZCB0byBoYXBwZW4gaW4gdGhlIGk5MTUgZHJpdmVyIGlu
+IDQuMTAtcmMsIGxlYWRpbmcgdG8KPiB0aGUgZm9sbG93aW5nIHNwbGF0Ogo+Cj4gIEJVRzogc2xl
+ZXBpbmcgZnVuY3Rpb24gY2FsbGVkIGZyb20gaW52YWxpZCBjb250ZXh0IGF0IGRyaXZlcnMvYmFz
+ZS9wb3dlci9ydW50aW1lLmM6MTAzMgo+ICBpbl9hdG9taWMoKTogMSwgaXJxc19kaXNhYmxlZCgp
+OiAwLCBwaWQ6IDE1MDAsIG5hbWU6IFhvcmcKPiAgMSBsb2NrIGhlbGQgYnkgWG9yZy8xNTAwOgo+
+ICAgIzA6ICAoJmRldi0+c3RydWN0X211dGV4KXsrLisuKy59LCBhdDoKPiAgIFs8ZmZmZmZmZmZh
+MDY4MGMxMz5dIGk5MTVfbXV0ZXhfbG9ja19pbnRlcnJ1cHRpYmxlKzB4NDMvMHgxNDAgW2k5MTVd
+Cj4gIENQVTogMCBQSUQ6IDE1MDAgQ29tbTogWG9yZyBOb3QgdGFpbnRlZAo+ICBDYWxsIFRyYWNl
+Ogo+ICAgZHVtcF9zdGFjaysweDg1LzB4YzIKPiAgIF9fX21pZ2h0X3NsZWVwKzB4MTk2LzB4MjYw
+Cj4gICBfX21pZ2h0X3NsZWVwKzB4NTMvMHhiMAo+ICAgX19wbV9ydW50aW1lX3Jlc3VtZSsweDdh
+LzB4OTAKPiAgIGludGVsX3J1bnRpbWVfcG1fZ2V0KzB4MjUvMHg5MCBbaTkxNV0KPiAgIGFsaWFz
+aW5nX2d0dF9iaW5kX3ZtYSsweGFhLzB4ZjAgW2k5MTVdCj4gICBpOTE1X3ZtYV9iaW5kKzB4YWYv
+MHgxZTAgW2k5MTVdCj4gICBpOTE1X2dlbV9leGVjYnVmZmVyX3JlbG9jYXRlX2VudHJ5KzB4NTEz
+LzB4NmYwIFtpOTE1XQo+ICAgaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZWxvY2F0ZV92bWEuaXNyYS4z
+NCsweDE4OC8weDI1MCBbaTkxNV0KPiAgID8gdHJhY2VfaGFyZGlycXNfb24rMHhkLzB4MTAKPiAg
+ID8gaTkxNV9nZW1fZXhlY2J1ZmZlcl9yZXNlcnZlX3ZtYS5pc3JhLjMxKzB4MTUyLzB4MWYwIFtp
+OTE1XQo+ICAgPyBpOTE1X2dlbV9leGVjYnVmZmVyX3Jlc2VydmUuaXNyYS4zMisweDM3Mi8weDNh
+MCBbaTkxNV0KPiAgIGk5MTVfZ2VtX2RvX2V4ZWNidWZmZXIuaXNyYS4zOCsweGE3MC8weDFhNDAg
+W2k5MTVdCj4gICA/IF9fbWlnaHRfZmF1bHQrMHg0ZS8weGIwCj4gICBpOTE1X2dlbV9leGVjYnVm
+ZmVyMisweGM1LzB4MjYwIFtpOTE1XQo+ICAgPyBfX21pZ2h0X2ZhdWx0KzB4NGUvMHhiMAo+ICAg
+ZHJtX2lvY3RsKzB4MjA2LzB4NDUwIFtkcm1dCj4gICA/IGk5MTVfZ2VtX2V4ZWNidWZmZXIrMHgz
+NDAvMHgzNDAgW2k5MTVdCj4gICA/IF9fZmdldCsweDUvMHgyMDAKPiAgIGRvX3Zmc19pb2N0bCsw
+eDkxLzB4NmYwCj4gICA/IF9fZmdldCsweDExMS8weDIwMAo+ICAgPyBfX2ZnZXQrMHg1LzB4MjAw
+Cj4gICBTeVNfaW9jdGwrMHg3OS8weDkwCj4gICBlbnRyeV9TWVNDQUxMXzY0X2Zhc3RwYXRoKzB4
+MjMvMHhjNgo+Cj4gZXZlbiB0aG91Z2ggdGhlIGNvZGUgdHJpZ2dlcmluZyBpdCBpcyBjb3JyZWN0
+Lgo+Cj4gVW5mb3J0dW5hdGVseSwgdGhlIG1pZ2h0X3NsZWVwX2lmKCkgYXNzZXJ0aW9ucyBpbiBx
+dWVzdGlvbiBhcmUKPiB0b28gY29hcnNlLWdyYWluZWQgdG8gY292ZXIgc3VjaCBjYXNlcyBjb3Jy
+ZWN0bHksIHNvIG1ha2UgdGhlbQo+IGEgYml0IGxlc3Mgc2Vuc2l0aXZlIGluIG9yZGVyIHRvIGF2
+b2lkIHRoZSBmYWxzZS1wb3NpdGl2ZXMuCj4KPiBSZXBvcnRlZC1hbmQtdGVzdGVkLWJ5OiBTZWRh
+dCBEaWxlayA8c2VkYXQuZGlsZWtAZ21haWwuY29tPgo+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBK
+LiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4KPiAtLS0KPiAgZHJpdmVycy9i
+YXNlL3Bvd2VyL3J1bnRpbWUuYyB8ICAgMTEgKysrKysrLS0tLS0KPiAgMSBmaWxlIGNoYW5nZWQs
+IDYgaW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkKPgo+IEluZGV4OiBsaW51eC1wbS9kcml2
+ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jCj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQo+IC0tLSBsaW51eC1wbS5vcmln
+L2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1lLmMKPiArKysgbGludXgtcG0vZHJpdmVycy9iYXNl
+L3Bvd2VyL3J1bnRpbWUuYwo+IEBAIC05NjYsMTMgKzk2NiwxMyBAQCBpbnQgX19wbV9ydW50aW1l
+X2lkbGUoc3RydWN0IGRldmljZSAqZGV2Cj4gICAgICAgICB1bnNpZ25lZCBsb25nIGZsYWdzOwo+
+ICAgICAgICAgaW50IHJldHZhbDsKPgo+IC0gICAgICAgbWlnaHRfc2xlZXBfaWYoIShycG1mbGFn
+cyAmIFJQTV9BU1lOQykgJiYgIWRldi0+cG93ZXIuaXJxX3NhZmUpOwo+IC0KPiAgICAgICAgIGlm
+IChycG1mbGFncyAmIFJQTV9HRVRfUFVUKSB7Cj4gICAgICAgICAgICAgICAgIGlmICghYXRvbWlj
+X2RlY19hbmRfdGVzdCgmZGV2LT5wb3dlci51c2FnZV9jb3VudCkpCj4gICAgICAgICAgICAgICAg
+ICAgICAgICAgcmV0dXJuIDA7Cj4gICAgICAgICB9Cj4KPiArICAgICAgIG1pZ2h0X3NsZWVwX2lm
+KCEocnBtZmxhZ3MgJiBSUE1fQVNZTkMpICYmICFkZXYtPnBvd2VyLmlycV9zYWZlKTsKPiArCj4g
+ICAgICAgICBzcGluX2xvY2tfaXJxc2F2ZSgmZGV2LT5wb3dlci5sb2NrLCBmbGFncyk7Cj4gICAg
+ICAgICByZXR2YWwgPSBycG1faWRsZShkZXYsIHJwbWZsYWdzKTsKPiAgICAgICAgIHNwaW5fdW5s
+b2NrX2lycXJlc3RvcmUoJmRldi0+cG93ZXIubG9jaywgZmxhZ3MpOwo+IEBAIC05OTgsMTMgKzk5
+OCwxMyBAQCBpbnQgX19wbV9ydW50aW1lX3N1c3BlbmQoc3RydWN0IGRldmljZSAqCj4gICAgICAg
+ICB1bnNpZ25lZCBsb25nIGZsYWdzOwo+ICAgICAgICAgaW50IHJldHZhbDsKPgo+IC0gICAgICAg
+bWlnaHRfc2xlZXBfaWYoIShycG1mbGFncyAmIFJQTV9BU1lOQykgJiYgIWRldi0+cG93ZXIuaXJx
+X3NhZmUpOwo+IC0KPiAgICAgICAgIGlmIChycG1mbGFncyAmIFJQTV9HRVRfUFVUKSB7Cj4gICAg
+ICAgICAgICAgICAgIGlmICghYXRvbWljX2RlY19hbmRfdGVzdCgmZGV2LT5wb3dlci51c2FnZV9j
+b3VudCkpCj4gICAgICAgICAgICAgICAgICAgICAgICAgcmV0dXJuIDA7Cj4gICAgICAgICB9Cj4K
+PiArICAgICAgIG1pZ2h0X3NsZWVwX2lmKCEocnBtZmxhZ3MgJiBSUE1fQVNZTkMpICYmICFkZXYt
+PnBvd2VyLmlycV9zYWZlKTsKPiArCj4gICAgICAgICBzcGluX2xvY2tfaXJxc2F2ZSgmZGV2LT5w
+b3dlci5sb2NrLCBmbGFncyk7Cj4gICAgICAgICByZXR2YWwgPSBycG1fc3VzcGVuZChkZXYsIHJw
+bWZsYWdzKTsKPiAgICAgICAgIHNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmRldi0+cG93ZXIubG9j
+aywgZmxhZ3MpOwo+IEBAIC0xMDI5LDcgKzEwMjksOCBAQCBpbnQgX19wbV9ydW50aW1lX3Jlc3Vt
+ZShzdHJ1Y3QgZGV2aWNlICpkCj4gICAgICAgICB1bnNpZ25lZCBsb25nIGZsYWdzOwo+ICAgICAg
+ICAgaW50IHJldHZhbDsKPgo+IC0gICAgICAgbWlnaHRfc2xlZXBfaWYoIShycG1mbGFncyAmIFJQ
+TV9BU1lOQykgJiYgIWRldi0+cG93ZXIuaXJxX3NhZmUpOwo+ICsgICAgICAgbWlnaHRfc2xlZXBf
+aWYoIShycG1mbGFncyAmIFJQTV9BU1lOQykgJiYgIWRldi0+cG93ZXIuaXJxX3NhZmUgJiYKPiAr
+ICAgICAgICAgICAgICAgICAgICAgICBkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzICE9IFJQTV9B
+Q1RJVkUpOwo+Cj4gICAgICAgICBpZiAocnBtZmxhZ3MgJiBSUE1fR0VUX1BVVCkKPiAgICAgICAg
+ICAgICAgICAgYXRvbWljX2luYygmZGV2LT5wb3dlci51c2FnZV9jb3VudCk7Cj4KClRoYW5rcywg
+UmFmYWVsLgoKSnVzdCBmb3IgdGhlIHJlY29yZHM6IFRoZSBwYXRjaCBpcyBhdmFpbGFibGUgaW4g
+WzFdLgoKLSBTZWRhdCAtCgpbMV0gaHR0cDovL2dpdC5rZXJuZWwub3JnL2NnaXQvbGludXgva2Vy
+bmVsL2dpdC9yYWZhZWwvbGludXgtcG0uZ2l0L3BhdGNoLz9pZD1hOTMwNmE2MzYzMTQ5M2FmYzc1
+ODkzYTRhYzQwNWQ0ZTFjYmFlNmFhCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVk
+ZXNrdG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZv
+L2ludGVsLWdmeAo=
