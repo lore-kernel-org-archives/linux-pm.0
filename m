@@ -1,62 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 0/6] PM / Domains: Implement domain performance states
-Date: Mon, 6 Feb 2017 11:05:05 +0530
-Message-ID: <20170206053505.GI3131@vireshk-i7>
-References: <cover.1483439894.git.viresh.kumar@linaro.org>
- <20170116053007.GA15930@vireshk-i7>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v5 1/8] PCI: Recognize Thunderbolt devices
+Date: Mon, 6 Feb 2017 07:09:53 +0100
+Message-ID: <20170206060953.GB557@wunner.de>
+References: <cover.1484486499.git.lukas@wunner.de>
+ <bfabf33fc63abbeb84e11e544456098dff0e4604.1484486499.git.lukas@wunner.de>
+ <20170128215208.GM20550@bhelgaas-glaptop.roam.corp.google.com>
+ <20170129002616.GA28225@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:35987 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750879AbdBFFfJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 00:35:09 -0500
-Received: by mail-pg0-f54.google.com with SMTP id v184so25176573pgv.3
-        for <linux-pm@vger.kernel.org>; Sun, 05 Feb 2017 21:35:09 -0800 (PST)
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170116053007.GA15930@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170129002616.GA28225@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, mark.rutland@arm.com, lina.iyer@linaro.org, rnayak@codeaurora.org
 
-On 16-01-17, 11:00, Viresh Kumar wrote:
-> On 03-01-17, 16:36, Viresh Kumar wrote:
-> > Hi,
+On Sun, Jan 29, 2017 at 01:26:16AM +0100, Lukas Wunner wrote:
+> On Sat, Jan 28, 2017 at 03:52:08PM -0600, Bjorn Helgaas wrote:
+> > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
+> > > --- a/drivers/pci/probe.c
+> > > +++ b/drivers/pci/probe.c
+> > > @@ -1206,6 +1206,37 @@ void set_pcie_hotplug_bridge(struct pci_dev *pdev)
+> > >  		pdev->is_hotplug_bridge = 1;
+> > >  }
+> > >  
+> > > +static void set_pcie_vendor_specific(struct pci_dev *dev)
 > > 
-> > An earlier series[1] tried to implement bindings for PM domain
-> > performance states. Rob Herring suggested that we can actually write the
-> > supporting code first instead of bindings, as that will make things
-> > easier to understand for all.
-> > 
-> > The bindings [1] aren't discarded yet and this series is based on a
-> > version of those only. The bindings are only used by the last patch,
-> > which should not be applied and is only sent for completeness.
-> > 
-> > All other patches can be reviewed/applied whenever the maintainers feel
-> > they look good.
-> > 
-> > 
-> > A brief summary of the problem this series is trying to solve:
-> > 
-> > Some platforms have the capability to configure the performance state of
-> > their Power Domains. The performance levels are represented by positive
-> > integer values, a lower value represents lower performance state.
-> > 
-> > We decided earlier that we should extend Power Domain framework to
-> > support active state power management as well.  The power-domains until
-> > now were only concentrating on the idle state management of the device
-> > and this needs to change in order to reuse the infrastructure of power
-> > domains for active state management.
-> > 
-> > The first 5 patches update the PM domain and QoS frameworks to support
-> > that and the last one presents the front end interface to it.
-> > 
-> > All the patches are tested by hacking the OPP core a bit for now.
+> > This is very specific to Thunderbolt, so let's name it something that
+> > conveys that information.  The fact that we use a vendor-specific
+> > capability to figure it out isn't really relevant in the caller.
 > 
-> Ping !
+> I thought that we may have the necessity in the future to parse other
+> VSECs on device probe, so I gave the function this generic name.
+> 
+> Think about it, every VSEC that needs to be parsed needs the while loop
+> below.  It's more efficient to have only a single while loop that handles
+> *all* VSECs at once.
+> 
+> If someone needs to parse another VSEC, they just add it to this function.
+> So IMO the way I've solved it is preferable to just adding a Thunderbolt-
+> specific function.
+> 
+> Are you sure you want this renamed? (y/n)
 
-Ping !!
+Bjorn, I'm taking the liberty to send a gentle ping already after a week:
+Could you give me a quick yes or no for the above question so that I get
+a chance to submit a rectified version of this patch before the merge
+window opens?
 
--- 
-viresh
+Thanks!
+
+Lukas
