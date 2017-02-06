@@ -1,100 +1,162 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v12 4/9] usb: chipidea: use bus->sysdev for DMA configuration
-Date: Mon, 6 Feb 2017 17:13:36 +0800
-Message-ID: <1486372421-29073-5-git-send-email-peter.chen@nxp.com>
+From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Subject: [PATCH v12 7/9] usb: ehci: use bus->sysdev for DMA configuration
+Date: Mon, 6 Feb 2017 17:13:39 +0800
+Message-ID: <1486372421-29073-8-git-send-email-peter.chen@nxp.com>
 References: <1486372421-29073-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1486372421-29073-1-git-send-email-peter.chen@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, hverkuil@xs4all.nl, krzk@kernel.org, Sriram Dash <sriram.dash@nxp.com>, Mathias Nyman <mathias.nyman@linux.intel.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1486372421-29073-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+Set the dma for ehci from sysdev. The sysdev is pointing to device that
+is known to the system firmware or hardware.
 
-Set the dma for chipidea from sysdev. This is inherited from its
-parent node. Also, do not set dma mask for child as it is not required
-now.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Acked-by: Peter Chen <peter.chen@nxp.com>
-Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+Cc: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>
+Signed-off-by: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
 ---
- drivers/usb/chipidea/core.c |  3 ---
- drivers/usb/chipidea/host.c |  3 ++-
- drivers/usb/chipidea/udc.c  | 10 ++++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/usb/host/ehci-mem.c | 38 +++++++++++++++++++-------------------
+ 1 file changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index 79ad8e9..b4a78b2 100644
---- a/drivers/usb/chipidea/core.c
-+++ b/drivers/usb/chipidea/core.c
-@@ -783,9 +783,6 @@ struct platform_device *ci_hdrc_add_device(struct device *dev,
+diff --git a/drivers/usb/host/ehci-mem.c b/drivers/usb/host/ehci-mem.c
+index 4de4301..f54478d 100644
+--- a/drivers/usb/host/ehci-mem.c
++++ b/drivers/usb/host/ehci-mem.c
+@@ -46,21 +46,21 @@ static inline void ehci_qtd_init(struct ehci_hcd *ehci, struct ehci_qtd *qtd,
+ 	INIT_LIST_HEAD (&qtd->qtd_list);
+ }
+ 
+-static struct ehci_qtd *ehci_qtd_alloc (struct ehci_hcd *ehci, gfp_t flags)
++static struct ehci_qtd *ehci_qtd_alloc(struct ehci_hcd *ehci, gfp_t flags)
+ {
+ 	struct ehci_qtd		*qtd;
+ 	dma_addr_t		dma;
+ 
+-	qtd = dma_pool_alloc (ehci->qtd_pool, flags, &dma);
++	qtd = dma_pool_alloc(ehci->qtd_pool, flags, &dma);
+ 	if (qtd != NULL) {
+ 		ehci_qtd_init(ehci, qtd, dma);
+ 	}
+ 	return qtd;
+ }
+ 
+-static inline void ehci_qtd_free (struct ehci_hcd *ehci, struct ehci_qtd *qtd)
++static inline void ehci_qtd_free(struct ehci_hcd *ehci, struct ehci_qtd *qtd)
+ {
+-	dma_pool_free (ehci->qtd_pool, qtd, qtd->qtd_dma);
++	dma_pool_free(ehci->qtd_pool, qtd, qtd->qtd_dma);
+ }
+ 
+ 
+@@ -72,12 +72,12 @@ static void qh_destroy(struct ehci_hcd *ehci, struct ehci_qh *qh)
+ 		BUG ();
+ 	}
+ 	if (qh->dummy)
+-		ehci_qtd_free (ehci, qh->dummy);
++		ehci_qtd_free(ehci, qh->dummy);
+ 	dma_pool_free(ehci->qh_pool, qh->hw, qh->qh_dma);
+ 	kfree(qh);
+ }
+ 
+-static struct ehci_qh *ehci_qh_alloc (struct ehci_hcd *ehci, gfp_t flags)
++static struct ehci_qh *ehci_qh_alloc(struct ehci_hcd *ehci, gfp_t flags)
+ {
+ 	struct ehci_qh		*qh;
+ 	dma_addr_t		dma;
+@@ -96,7 +96,7 @@ static struct ehci_qh *ehci_qh_alloc (struct ehci_hcd *ehci, gfp_t flags)
+ 	INIT_LIST_HEAD(&qh->unlink_node);
+ 
+ 	/* dummy td enables safe urb queuing */
+-	qh->dummy = ehci_qtd_alloc (ehci, flags);
++	qh->dummy = ehci_qtd_alloc(ehci, flags);
+ 	if (qh->dummy == NULL) {
+ 		ehci_dbg (ehci, "no dummy td\n");
+ 		goto fail1;
+@@ -117,7 +117,7 @@ static struct ehci_qh *ehci_qh_alloc (struct ehci_hcd *ehci, gfp_t flags)
+  * This is the initialisation and cleanup code.
+  */
+ 
+-static void ehci_mem_cleanup (struct ehci_hcd *ehci)
++static void ehci_mem_cleanup(struct ehci_hcd *ehci)
+ {
+ 	if (ehci->async)
+ 		qh_destroy(ehci, ehci->async);
+@@ -138,7 +138,7 @@ static void ehci_mem_cleanup (struct ehci_hcd *ehci)
+ 	ehci->sitd_pool = NULL;
+ 
+ 	if (ehci->periodic)
+-		dma_free_coherent (ehci_to_hcd(ehci)->self.controller,
++		dma_free_coherent(ehci_to_hcd(ehci)->self.sysdev,
+ 			ehci->periodic_size * sizeof (u32),
+ 			ehci->periodic, ehci->periodic_dma);
+ 	ehci->periodic = NULL;
+@@ -154,8 +154,8 @@ static int ehci_mem_init (struct ehci_hcd *ehci, gfp_t flags)
+ 	int i;
+ 
+ 	/* QTDs for control/bulk/intr transfers */
+-	ehci->qtd_pool = dma_pool_create ("ehci_qtd",
+-			ehci_to_hcd(ehci)->self.controller,
++	ehci->qtd_pool = dma_pool_create("ehci_qtd",
++			ehci_to_hcd(ehci)->self.sysdev,
+ 			sizeof (struct ehci_qtd),
+ 			32 /* byte alignment (for hw parts) */,
+ 			4096 /* can't cross 4K */);
+@@ -164,22 +164,22 @@ static int ehci_mem_init (struct ehci_hcd *ehci, gfp_t flags)
  	}
  
- 	pdev->dev.parent = dev;
--	pdev->dev.dma_mask = dev->dma_mask;
--	pdev->dev.dma_parms = dev->dma_parms;
--	dma_set_coherent_mask(&pdev->dev, dev->coherent_dma_mask);
- 
- 	ret = platform_device_add_resources(pdev, res, nres);
- 	if (ret)
-diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
-index 915f3e9..18cb8e4 100644
---- a/drivers/usb/chipidea/host.c
-+++ b/drivers/usb/chipidea/host.c
-@@ -123,7 +123,8 @@ static int host_start(struct ci_hdrc *ci)
- 	if (usb_disabled())
- 		return -ENODEV;
- 
--	hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
-+	hcd = __usb_create_hcd(&ci_ehci_hc_driver, ci->dev->parent,
-+			       ci->dev, dev_name(ci->dev), NULL);
- 	if (!hcd)
- 		return -ENOMEM;
- 
-diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
-index f88e915..1fb5235 100644
---- a/drivers/usb/chipidea/udc.c
-+++ b/drivers/usb/chipidea/udc.c
-@@ -423,7 +423,8 @@ static int _hardware_enqueue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
- 
- 	hwreq->req.status = -EALREADY;
- 
--	ret = usb_gadget_map_request(&ci->gadget, &hwreq->req, hwep->dir);
-+	ret = usb_gadget_map_request_by_dev(ci->dev->parent,
-+					    &hwreq->req, hwep->dir);
- 	if (ret)
- 		return ret;
- 
-@@ -603,7 +604,8 @@ static int _hardware_dequeue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
- 		list_del_init(&node->td);
+ 	/* QHs for control/bulk/intr transfers */
+-	ehci->qh_pool = dma_pool_create ("ehci_qh",
+-			ehci_to_hcd(ehci)->self.controller,
++	ehci->qh_pool = dma_pool_create("ehci_qh",
++			ehci_to_hcd(ehci)->self.sysdev,
+ 			sizeof(struct ehci_qh_hw),
+ 			32 /* byte alignment (for hw parts) */,
+ 			4096 /* can't cross 4K */);
+ 	if (!ehci->qh_pool) {
+ 		goto fail;
+ 	}
+-	ehci->async = ehci_qh_alloc (ehci, flags);
++	ehci->async = ehci_qh_alloc(ehci, flags);
+ 	if (!ehci->async) {
+ 		goto fail;
  	}
  
--	usb_gadget_unmap_request(&hwep->ci->gadget, &hwreq->req, hwep->dir);
-+	usb_gadget_unmap_request_by_dev(hwep->ci->dev->parent,
-+					&hwreq->req, hwep->dir);
+ 	/* ITD for high speed ISO transfers */
+-	ehci->itd_pool = dma_pool_create ("ehci_itd",
+-			ehci_to_hcd(ehci)->self.controller,
++	ehci->itd_pool = dma_pool_create("ehci_itd",
++			ehci_to_hcd(ehci)->self.sysdev,
+ 			sizeof (struct ehci_itd),
+ 			32 /* byte alignment (for hw parts) */,
+ 			4096 /* can't cross 4K */);
+@@ -188,8 +188,8 @@ static int ehci_mem_init (struct ehci_hcd *ehci, gfp_t flags)
+ 	}
  
- 	hwreq->req.actual += actual;
+ 	/* SITD for full/low speed split ISO transfers */
+-	ehci->sitd_pool = dma_pool_create ("ehci_sitd",
+-			ehci_to_hcd(ehci)->self.controller,
++	ehci->sitd_pool = dma_pool_create("ehci_sitd",
++			ehci_to_hcd(ehci)->self.sysdev,
+ 			sizeof (struct ehci_sitd),
+ 			32 /* byte alignment (for hw parts) */,
+ 			4096 /* can't cross 4K */);
+@@ -199,7 +199,7 @@ static int ehci_mem_init (struct ehci_hcd *ehci, gfp_t flags)
  
-@@ -1899,13 +1901,13 @@ static int udc_start(struct ci_hdrc *ci)
- 	INIT_LIST_HEAD(&ci->gadget.ep_list);
- 
- 	/* alloc resources */
--	ci->qh_pool = dma_pool_create("ci_hw_qh", dev,
-+	ci->qh_pool = dma_pool_create("ci_hw_qh", dev->parent,
- 				       sizeof(struct ci_hw_qh),
- 				       64, CI_HDRC_PAGE_SIZE);
- 	if (ci->qh_pool == NULL)
- 		return -ENOMEM;
- 
--	ci->td_pool = dma_pool_create("ci_hw_td", dev,
-+	ci->td_pool = dma_pool_create("ci_hw_td", dev->parent,
- 				       sizeof(struct ci_hw_td),
- 				       64, CI_HDRC_PAGE_SIZE);
- 	if (ci->td_pool == NULL) {
+ 	/* Hardware periodic table */
+ 	ehci->periodic = (__le32 *)
+-		dma_alloc_coherent (ehci_to_hcd(ehci)->self.controller,
++		dma_alloc_coherent(ehci_to_hcd(ehci)->self.sysdev,
+ 			ehci->periodic_size * sizeof(__le32),
+ 			&ehci->periodic_dma, flags);
+ 	if (ehci->periodic == NULL) {
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
