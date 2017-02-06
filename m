@@ -1,113 +1,74 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v2 3/3] x86: Make the GDT remapping read-only on 64 bit
-Date: Mon, 6 Feb 2017 14:10:36 -0800
-Message-ID: <CAJcbSZHiL3OmswxAJ9gVkC9a4O01qdiy7yjsb5dvofhOn8s+8Q@mail.gmail.com>
-References: <20170126165940.30799-1-thgarnie@google.com> <20170126165940.30799-3-thgarnie@google.com>
- <CALCETrU=KY7QgdLWm43LA=_jpu_oXJgGLqv0yUVr4vR7ROYh0Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.10-rc8
+Date: Mon, 6 Feb 2017 23:41:59 +0100
+Message-ID: <CAJZ5v0hSAVexs_bJ0aYrA3Ygfa1msMCaydS-9nBb7hxJE-HDWQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <kernel-hardening-return-6353-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CALCETrU=KY7QgdLWm43LA=_jpu_oXJgGLqv0yUVr4vR7ROYh0Q@mail.gmail.com>
-To: Andy Lutomirski <luto@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Arjan van de Ven <arjan@linux.intel.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Christian Borntraeger <borntraeger@de.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>, He Chen <he.chen@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Luis
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:35112 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751524AbdBFWmA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 17:42:00 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Feb 1, 2017 at 9:14 PM, Andy Lutomirski <luto@kernel.org> wrote:
-> On Thu, Jan 26, 2017 at 8:59 AM, Thomas Garnier <thgarnie@google.com> wro=
-te:
->> This patch makes the GDT remapped pages read-only to prevent corruption.
->> This change is done only on 64 bit.
->>
->> The native_load_tr_desc function was adapted to correctly handle a
->> read-only GDT. The LTR instruction always writes to the GDT TSS entry.
->> This generates a page fault if the GDT is read-only. This change checks
->> if the current GDT is a remap and swap GDTs as needed. This function was
->> tested by booting multiple machines and checking hibernation works
->> properly.
->>
->> KVM SVM and VMX were adapted to use the writeable GDT. On VMX, the
->> per-cpu variable was removed for functions to fetch the original GDT.
->> Instead of reloading the previous GDT, VMX will reload the fixmap GDT as
->> expected. For testing, VMs were started and restored on multiple
->> configurations.
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->> ---
->> Based on next-20170125
->> ---
->>  arch/x86/include/asm/desc.h      | 46 +++++++++++++++++++++++++++++++++=
-++-----
->>  arch/x86/include/asm/processor.h |  1 +
->>  arch/x86/kernel/cpu/common.c     | 28 ++++++++++++++++++------
->>  arch/x86/kvm/svm.c               |  4 +---
->>  arch/x86/kvm/vmx.c               | 15 +++++--------
->>  5 files changed, 70 insertions(+), 24 deletions(-)
->>
->> diff --git a/arch/x86/include/asm/desc.h b/arch/x86/include/asm/desc.h
->> index 4cc176f57b78..ca7b2224fcb4 100644
->> --- a/arch/x86/include/asm/desc.h
->> +++ b/arch/x86/include/asm/desc.h
->> @@ -52,6 +52,12 @@ static inline struct desc_struct *get_cpu_direct_gdt(=
-unsigned int cpu)
->>         return per_cpu(gdt_page, cpu).gdt;
->>  }
->>
->> +/* Provide the current original GDT */
->> +static inline struct desc_struct *get_current_direct_gdt(void)
->> +{
->> +       return this_cpu_ptr(&gdt_page)->gdt;
->> +}
->
-> I'm assuming that the reason that this isn't part of patch 2 and used
-> instead of the version that takes cpu as a parameter is that TLS
-> doesn't work until the GDT is set up.  If so, perhaps that's worthy of
-> a comment in patch 2.
->
-> But give this_cpu_read(gdt_page.gdt) a try, please.
->
+Hi Linus,
 
-I tried but I can't get it working properly because the gdt field is
-an array, not a pointer. For example with this_cpu_read(gdt_page.gdt),
-I get:
+Please pull from the tag
 
-./arch/x86/include/asm/desc.h: In function =E2=80=98get_current_gdt_rw=E2=
-=80=99:
-./include/linux/percpu-defs.h:308:21: error: incompatible types when
-assigning to type =E2=80=98struct desc_struct[16]=E2=80=99 from type =E2=80=
-=98struct
-desc_struct *=E2=80=99
-  case 1: pscr_ret__ =3D stem##1(variable); break;   \
-                     ^
-I tried different variants without success. What do you think?
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.10-rc8
 
->> +/*
->> + * The LTR instruction marks the TSS GDT entry as busy. In 64bit, the G=
-DT is
->> + * a read-only remapping. To prevent a page fault, the GDT is switched =
-to the
->> + * original writeable version when needed.
->> + */
->> +#ifdef CONFIG_X86_64
->> +static inline void native_load_tr_desc(void)
->> +{
->> +       struct desc_ptr gdt;
->> +       int cpu =3D raw_smp_processor_id();
->> +       bool restore =3D false;
->> +       struct desc_struct *fixmap_gdt;
->> +
->> +       native_store_gdt(&gdt);
->
-> Off the top of my head, this is something like 10 cycles.  IMO that's
-> fast enough not to worry about the regression this will cause to KVM
-> exits.  In any event, we'll get that back and *much* more when we do
-> the optimizations that this series enables.
+with top-most commit cbf304e420da96992eae50bb6d51035681340ab8
 
+ Merge branches 'pm-core-fixes' and 'pm-cpufreq-fixes'
 
+on top of commit d5adbfcd5f7bcc6fa58a41c5c5ada0e5c826ce2c
 
---=20
-Thomas
+ Linux 4.10-rc7
+
+to receive power management fixes for v4.10-rc8 (if there is one) or
+for the final 4.10 (if there's no -rc8).
+
+These add a quirk to intel_pstate to work around a firmware setting
+that leads to frequency scaling issues (discovered recently) on some
+Intel Kaby Lake processors, fix up the recently added brcmstb-avs
+cpufreq driver and avoid false-positive warnings from the runtime PM
+framework triggered by recent changes in i915.
+
+Specifics:
+
+ - Add an intel_pstate driver quirk to work around a firmware setting
+   that leads to frequency scaling issues on desktop Intel Kaby Lake
+   processors in some configurations if the hardware-managed P-states
+   (HWP) feature is in use (Srinivas Pandruvada).
+
+ - Fix up the recently added brcmstb-avs cpufreq driver: fix a bug
+   related to system suspend and change the sysfs interface to match
+   the user space expectations (Markus Mayer).
+
+ - Modify the runtime PM framework to avoid false-positive warnings
+   from the might_sleep_if() assertions in it (Rafael Wysocki).
+
+Thanks!
+
+---------------
+
+Markus Mayer (2):
+      cpufreq: brcmstb-avs-cpufreq: extend sysfs entry brcm_avs_pmap
+      cpufreq: brcmstb-avs-cpufreq: properly retrieve P-state upon suspend
+
+Rafael J. Wysocki (1):
+      PM / runtime: Avoid false-positive warnings from might_sleep_if()
+
+Srinivas Pandruvada (1):
+      cpufreq: intel_pstate: Disable energy efficiency optimization
+
+---------------
+
+ drivers/base/power/runtime.c          | 11 ++++++-----
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 17 ++++++++++++++---
+ drivers/cpufreq/intel_pstate.c        | 30 ++++++++++++++++++++++++++++++
+ 3 files changed, 50 insertions(+), 8 deletions(-)
