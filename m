@@ -1,42 +1,113 @@
-From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH v2 4/4] MIPS: BMIPS: enable CPUfreq
-Date: Mon,  6 Feb 2017 13:51:19 -0800
-Message-ID: <20170206215119.87099-5-code@mmayer.net>
-References: <20170206215119.87099-1-code@mmayer.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170206215119.87099-1-code@mmayer.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ralf Baechle <ralf@linux-mips.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: Markus Mayer <mmayer@broadcom.com>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [PATCH v2 3/3] x86: Make the GDT remapping read-only on 64 bit
+Date: Mon, 6 Feb 2017 14:10:36 -0800
+Message-ID: <CAJcbSZHiL3OmswxAJ9gVkC9a4O01qdiy7yjsb5dvofhOn8s+8Q@mail.gmail.com>
+References: <20170126165940.30799-1-thgarnie@google.com> <20170126165940.30799-3-thgarnie@google.com>
+ <CALCETrU=KY7QgdLWm43LA=_jpu_oXJgGLqv0yUVr4vR7ROYh0Q@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <kernel-hardening-return-6353-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CALCETrU=KY7QgdLWm43LA=_jpu_oXJgGLqv0yUVr4vR7ROYh0Q@mail.gmail.com>
+To: Andy Lutomirski <luto@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Arjan van de Ven <arjan@linux.intel.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Christian Borntraeger <borntraeger@de.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>, He Chen <he.chen@linux.intel.com>, Brian Gerst <brgerst@gmail.com>, Luis
 List-Id: linux-pm@vger.kernel.org
 
-From: Markus Mayer <mmayer@broadcom.com>
+On Wed, Feb 1, 2017 at 9:14 PM, Andy Lutomirski <luto@kernel.org> wrote:
+> On Thu, Jan 26, 2017 at 8:59 AM, Thomas Garnier <thgarnie@google.com> wro=
+te:
+>> This patch makes the GDT remapped pages read-only to prevent corruption.
+>> This change is done only on 64 bit.
+>>
+>> The native_load_tr_desc function was adapted to correctly handle a
+>> read-only GDT. The LTR instruction always writes to the GDT TSS entry.
+>> This generates a page fault if the GDT is read-only. This change checks
+>> if the current GDT is a remap and swap GDTs as needed. This function was
+>> tested by booting multiple machines and checking hibernation works
+>> properly.
+>>
+>> KVM SVM and VMX were adapted to use the writeable GDT. On VMX, the
+>> per-cpu variable was removed for functions to fetch the original GDT.
+>> Instead of reloading the previous GDT, VMX will reload the fixmap GDT as
+>> expected. For testing, VMs were started and restored on multiple
+>> configurations.
+>>
+>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+>> ---
+>> Based on next-20170125
+>> ---
+>>  arch/x86/include/asm/desc.h      | 46 +++++++++++++++++++++++++++++++++=
+++-----
+>>  arch/x86/include/asm/processor.h |  1 +
+>>  arch/x86/kernel/cpu/common.c     | 28 ++++++++++++++++++------
+>>  arch/x86/kvm/svm.c               |  4 +---
+>>  arch/x86/kvm/vmx.c               | 15 +++++--------
+>>  5 files changed, 70 insertions(+), 24 deletions(-)
+>>
+>> diff --git a/arch/x86/include/asm/desc.h b/arch/x86/include/asm/desc.h
+>> index 4cc176f57b78..ca7b2224fcb4 100644
+>> --- a/arch/x86/include/asm/desc.h
+>> +++ b/arch/x86/include/asm/desc.h
+>> @@ -52,6 +52,12 @@ static inline struct desc_struct *get_cpu_direct_gdt(=
+unsigned int cpu)
+>>         return per_cpu(gdt_page, cpu).gdt;
+>>  }
+>>
+>> +/* Provide the current original GDT */
+>> +static inline struct desc_struct *get_current_direct_gdt(void)
+>> +{
+>> +       return this_cpu_ptr(&gdt_page)->gdt;
+>> +}
+>
+> I'm assuming that the reason that this isn't part of patch 2 and used
+> instead of the version that takes cpu as a parameter is that TLS
+> doesn't work until the GDT is set up.  If so, perhaps that's worthy of
+> a comment in patch 2.
+>
+> But give this_cpu_read(gdt_page.gdt) a try, please.
+>
 
-Enable all applicable CPUfreq options.
+I tried but I can't get it working properly because the gdt field is
+an array, not a pointer. For example with this_cpu_read(gdt_page.gdt),
+I get:
 
-Signed-off-by: Markus Mayer <mmayer@broadcom.com>
----
- arch/mips/configs/bmips_stb_defconfig | 8 ++++++++
- 1 file changed, 8 insertions(+)
+./arch/x86/include/asm/desc.h: In function =E2=80=98get_current_gdt_rw=E2=
+=80=99:
+./include/linux/percpu-defs.h:308:21: error: incompatible types when
+assigning to type =E2=80=98struct desc_struct[16]=E2=80=99 from type =E2=80=
+=98struct
+desc_struct *=E2=80=99
+  case 1: pscr_ret__ =3D stem##1(variable); break;   \
+                     ^
+I tried different variants without success. What do you think?
 
-diff --git a/arch/mips/configs/bmips_stb_defconfig b/arch/mips/configs/bmips_stb_defconfig
-index 3be15cb..3cefa6b 100644
---- a/arch/mips/configs/bmips_stb_defconfig
-+++ b/arch/mips/configs/bmips_stb_defconfig
-@@ -15,6 +15,14 @@ CONFIG_EXPERT=y
- # CONFIG_BLK_DEV_BSG is not set
- # CONFIG_IOSCHED_DEADLINE is not set
- # CONFIG_IOSCHED_CFQ is not set
-+CONFIG_CPU_FREQ=y
-+CONFIG_CPU_FREQ_STAT=y
-+CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-+CONFIG_CPU_FREQ_GOV_USERSPACE=y
-+CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-+CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-+CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
-+CONFIG_BMIPS_CPUFREQ=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_PACKET_DIAG=y
--- 
-2.7.4
+>> +/*
+>> + * The LTR instruction marks the TSS GDT entry as busy. In 64bit, the G=
+DT is
+>> + * a read-only remapping. To prevent a page fault, the GDT is switched =
+to the
+>> + * original writeable version when needed.
+>> + */
+>> +#ifdef CONFIG_X86_64
+>> +static inline void native_load_tr_desc(void)
+>> +{
+>> +       struct desc_ptr gdt;
+>> +       int cpu =3D raw_smp_processor_id();
+>> +       bool restore =3D false;
+>> +       struct desc_struct *fixmap_gdt;
+>> +
+>> +       native_store_gdt(&gdt);
+>
+> Off the top of my head, this is something like 10 cycles.  IMO that's
+> fast enough not to worry about the regression this will cause to KVM
+> exits.  In any event, we'll get that back and *much* more when we do
+> the optimizations that this series enables.
+
+
+
+--=20
+Thomas
