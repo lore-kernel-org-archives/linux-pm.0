@@ -1,115 +1,74 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device pointer to
- of_xlate callback
-Date: Sun, 5 Feb 2017 17:34:57 +0530
-Message-ID: <20170205120457.GX19244@localhost>
-References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
- <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
- <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
- <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
- <22bc3f1b-a629-482a-71b6-06a3c4df628c@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 3/3] MIPS: BMIPS: enable CPUfreq
+Date: Mon, 6 Feb 2017 09:05:11 +0530
+Message-ID: <20170206033511.GC3131@vireshk-i7>
+References: <20170202010601.75995-1-code@mmayer.net>
+ <20170202010601.75995-4-code@mmayer.net>
+ <20170203042917.GL7458@vireshk-i7>
+ <CAGt4E5vk6ciXPjh+ck-feyqmNu7cNRst3rArJ4MD7e8JWBfWMw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:9255 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751425AbdBEMEb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 5 Feb 2017 07:04:31 -0500
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:33094 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751907AbdBFDfP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Feb 2017 22:35:15 -0500
+Received: by mail-pg0-f50.google.com with SMTP id 204so24212827pge.0
+        for <linux-pm@vger.kernel.org>; Sun, 05 Feb 2017 19:35:15 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <22bc3f1b-a629-482a-71b6-06a3c4df628c@samsung.com>
+In-Reply-To: <CAGt4E5vk6ciXPjh+ck-feyqmNu7cNRst3rArJ4MD7e8JWBfWMw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Mark Brown <broonie@kernel.org>, Inki Dae <inki.dae@samsung.com>
+To: Markus Mayer <markus.mayer@broadcom.com>
+Cc: Markus Mayer <code@mmayer.net>, Ralf Baechle <ralf@linux-mips.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Feb 03, 2017 at 02:01:27PM +0100, Marek Szyprowski wrote:
-> Hi All,
-> 
-> On 2017-01-26 15:43, Marek Szyprowski wrote:
-> >On 2017-01-25 14:12, Lars-Peter Clausen wrote:
-> >>On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
-> >>>Add pointer to slave device to of_dma_xlate to let DMA engine driver
-> >>>to know which slave device is using given DMA channel. This will be
-> >>>later used to implement non-irq-safe runtime PM for DMA engine driver.
-> >>of_dma_xlate() is used to translate from a OF phandle and a
-> >>specifier to a
-> >>DMA channel. On one hand this does not necessarily mean that the
-> >>channel is
-> >>actually going to be used by the slave that called the xlate function.
-> >>Modifying the driver state when a lookup of the channel is done is a
-> >>layering violation. And this approach is also missing a way to
-> >>disassociate
-> >>a slave from a DMA channel, e.g. when it is no longer used.
+On 03-02-17, 17:00, Markus Mayer wrote:
+> On 2 February 2017 at 20:29, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 01-02-17, 17:06, Markus Mayer wrote:
+> >> From: Markus Mayer <mmayer@broadcom.com>
 > >>
-> >>On the other hand there are other mechanisms to translate
-> >>between some kind
-> >>of firmware handle to a DMA channel which are completely ignored here.
+> >> Enable all applicable CPUfreq options.
 > >>
-> >>So this approach does not work. This is something that needs to
-> >>be done at
-> >>the dmaengine level, not a the firmware resource translation
-> >>level. And it
-> >>needs a matching method that is called when the channel is disassociated
-> >>from a device, when the device no longer uses the DMA channel.
+> >> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> >> ---
+> >>  arch/mips/configs/bmips_stb_defconfig | 10 ++++++++++
+> >>  1 file changed, 10 insertions(+)
+> >>
+> >> diff --git a/arch/mips/configs/bmips_stb_defconfig b/arch/mips/configs/bmips_stb_defconfig
+> >> index 4eb5d6e..6fda604 100644
+> >> --- a/arch/mips/configs/bmips_stb_defconfig
+> >> +++ b/arch/mips/configs/bmips_stb_defconfig
+> >> @@ -26,6 +26,16 @@ CONFIG_INET=y
+> >>  # CONFIG_INET_XFRM_MODE_BEET is not set
+> >>  # CONFIG_INET_LRO is not set
+> >>  # CONFIG_INET_DIAG is not set
+> >> +CONFIG_CPU_FREQ=y
+> >> +CONFIG_CPU_FREQ_STAT=y
+> >> +CONFIG_CPU_FREQ_STAT_DETAILS=y
+> >> +CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=y
+> >> +CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
+> >> +CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+> >> +CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+> >> +CONFIG_CPU_FREQ_GOV_USERSPACE=y
+> >> +CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
+> >> +CONFIG_BMIPS_CPUFREQ=y
+> >>  CONFIG_CFG80211=y
+> >>  CONFIG_NL80211_TESTMODE=y
+> >>  CONFIG_MAC80211=y
 > >
-> >Frankly I agree that of_dma_xlate() should only return the
-> >requested channel
-> >to the dmaengine core and do not do any modification in the the
-> >driver state.
-> >
-> >However the current dma engine design and implementation breaks
-> >this rule.
-> >Please check the drivers - how do they implement of_xlate callback. They
-> >usually call dma_get_any_slave_channel, dma_get_slave_channel or
-> >__dma_request_channel there, which in turn calls dma_chan_get, which then
-> >calls back to device_alloc_chan_resources callback. Some of the
-> >drivers also
-> >do a hardware configuration or other resource allocation in of_xlate.
-> >This is a bit messy design and leave no place in the core to set
-> >slave device
-> >before device_alloc_chan_resources callback, where one would
-> >expect to have
-> >it already set.
-> >
-> >The best place to add new calls to the dmaengine drivers to set
-> >slave device
-> >would be just before device_alloc_chan_resources(), what in turn
-> >means that
-> >the current dmaengine core should do in dma_chan_get(). This would
-> >require to
-> >forward the slave device pointer via even more layers including
-> >the of_xlate
-> >callback too. IMHO this is not worth the effort.
-> >
-> >DMA engine core and API definitely needs some cleanup. During such
-> >cleanup
-> >the slave device pointer might be moved out of xlate into separate
-> >callback
-> >when the core gets ready for such operation.
-> >
-> >I ignored other paths for other firmware handle to a DMA channel
-> >translation
-> >mechanism because for the current pl330 driver they are simply not
-> >used. I
-> >assume that if one needs to implement similar things for drivers
-> >relying on
-> >them, he will update the respective DMA engine core parts.
-> >
-> >Slave device assignments can be cleared in
-> >device_chan_release_resources if
-> >this is needed and that what existing DMA engine drivers do with
-> >the resources
-> >allocated in the of_xlate callback...
+> > Rebase your stuff over pm/linux-next and you will see some changes here. Also
+> > schedutil is the new governor in town, you must give it a try.
 > 
-> Vinod: could you comment this patchset? Is there a chance to get it
-> merged or
-> at least give it a try in -next? If not, could you provide some
-> hints what should
-> I do?
+> I'll definitely turn on SCHEDUTIL. As for the changes in next, I don't
+> see any conflicts. My series applied fine on top of linux-next from
+> https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git/. Did
+> I use the wrong tree?
 
-Nothing :) I am slowly clearning up my queue and should process this series
-in couple of days or so...
+No, but you didn't follow the right process. You should use 'make
+savedefconfig' to update the defconfig.
+
+The symbol CONFIG_CPU_FREQ_STAT_DETAILS is removed from the kernel
+now.
 
 -- 
-~Vinod
+viresh
