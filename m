@@ -1,58 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 3/3] thermal: devfreq: Check OPP for errors
-Date: Mon,  6 Feb 2017 15:56:29 +0530
-Message-ID: <cfa2455e97b47a53b81651540fc407c0ce38143a.1486376756.git.viresh.kumar@linaro.org>
-References: <232171cd9d89c2179e10e1f2aed71ad7fc1f7872.1486376756.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <232171cd9d89c2179e10e1f2aed71ad7fc1f7872.1486376756.git.viresh.kumar@linaro.org>
-In-Reply-To: <232171cd9d89c2179e10e1f2aed71ad7fc1f7872.1486376756.git.viresh.kumar@linaro.org>
-References: <232171cd9d89c2179e10e1f2aed71ad7fc1f7872.1486376756.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH] selftest: cpufreq: Update MAINTAINERS file
+Date: Mon, 6 Feb 2017 16:08:52 +0530
+Message-ID: <20170206103852.GJ3131@vireshk-i7>
+References: <c3cd3310-7a12-134e-3c5a-c5fcacc6821d@kernel.org>
+ <ce0bdaab50468d22a46cce3cb04efbb21f467cb6.1484890757.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f52.google.com ([74.125.83.52]:34894 "EHLO
+        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750973AbdBFKi4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 05:38:56 -0500
+Received: by mail-pg0-f52.google.com with SMTP id 194so27706256pgd.2
+        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2017 02:38:56 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <ce0bdaab50468d22a46cce3cb04efbb21f467cb6.1484890757.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, shuah@kernel.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org
 
-It is possible for dev_pm_opp_find_freq_exact() to return errors. It was
-all fine earlier as dev_pm_opp_get_voltage() had a check within it to
-check for invalid OPPs, but dev_pm_opp_put() doesn't have any similar
-checks and the callers need to make sure OPP is valid before calling
-them.
+On 20-01-17, 11:10, Viresh Kumar wrote:
+> Update MAINTAINERS file with cpufreq's selftest directory.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> Hi shuah,
+> 
+> Can you please add this one as well along with the code? Thanks.
+> 
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c36976d3bd1a..bf414a1a5f82 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3381,6 +3381,7 @@ B:	https://bugzilla.kernel.org
+>  F:	Documentation/cpu-freq/
+>  F:	drivers/cpufreq/
+>  F:	include/linux/cpufreq.h
+> +F:	tools/testing/selftests/cpufreq/
+>  
+>  CPU FREQUENCY DRIVERS - ARM BIG LITTLE
+>  M:	Viresh Kumar <viresh.kumar@linaro.org>
 
-Also update the later dev_warn_ratelimited() to not print the error
-message as the OPP is guaranteed to be valid now.
+@Shuah; Can you please add this as well?
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/thermal/devfreq_cooling.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index cf71550b9d00..ee013fc02980 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -225,13 +225,20 @@ get_static_power(struct devfreq_cooling_device *dfc, unsigned long freq)
- 	if (PTR_ERR(opp) == -ERANGE)
- 		opp = dev_pm_opp_find_freq_exact(dev, freq, false);
- 
-+	if (IS_ERR(opp)) {
-+		dev_warn_ratelimited(dev,
-+				     "Failed to find OPP for frequency %lu: %ld\n",
-+				     freq, PTR_ERR(opp));
-+		return 0;
-+	}
-+
- 	voltage = dev_pm_opp_get_voltage(opp) / 1000; /* mV */
- 	dev_pm_opp_put(opp);
- 
- 	if (voltage == 0) {
- 		dev_warn_ratelimited(dev,
--				     "Failed to get voltage for frequency %lu: %ld\n",
--				     freq, IS_ERR(opp) ? PTR_ERR(opp) : 0);
-+				     "Failed to get voltage for frequency %lu\n",
-+				     freq);
- 		return 0;
- 	}
- 
 -- 
-2.7.1.410.g6faf27b
+viresh
