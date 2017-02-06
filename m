@@ -1,102 +1,425 @@
-From: Florian Fainelli <florian.fainelli@broadcom.com>
-Subject: Re: [PATCH v5 1/2] dt-bindings: brcm: clocks: add binding for
- brcmstb-cpu-clk-div
-Date: Mon, 6 Feb 2017 15:16:32 -0800
-Message-ID: <a1a11072-908b-352e-a49f-49240d430df9@broadcom.com>
-References: <20170119002933.7529-1-code@mmayer.net>
- <20170119002933.7529-2-code@mmayer.net>
- <20170121005202.GB8801@codeaurora.org>
- <CAGt4E5sGScHp83ufKcX3Q74vW0fo=L0FHM7tCptvqJfchHAweg@mail.gmail.com>
- <20170203200652.GD25384@codeaurora.org>
- <d56c827e-41cf-fcb3-42e0-792e8bf37871@gmail.com>
- <20170206225914.GJ25384@codeaurora.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v5 5/8] power: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Mon, 6 Feb 2017 17:29:53 -0600
+Message-ID: <dde60a3f-5c99-e39b-8e91-68f899f4be89@ti.com>
+References: <20170204091603.32242-1-liam@networkimprov.net>
+ <20170204091603.32242-6-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20170206225914.GJ25384@codeaurora.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>, Florian Fainelli <f.fainelli@gmail.com>
-Cc: Markus Mayer <markus.mayer@broadcom.com>, Markus Mayer <code@mmayer.net>, Michael Turquette <mturquette@baylibre.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Linux Clock List <linux-clk@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:47430 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751545AbdBFXaF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 18:30:05 -0500
+In-Reply-To: <20170204091603.32242-6-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: Matt Ranostay <matt@ranostay.consulting>, linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 02/06/2017 02:59 PM, Stephen Boyd wrote:
-> On 02/03, Florian Fainelli wrote:
->> On 02/03/2017 12:06 PM, Stephen Boyd wrote:
->>> On 02/01, Markus Mayer wrote:
->>>> On 20 January 2017 at 16:52, Stephen Boyd <sboyd@codeaurora.org> wrote:
->>>>>
->>>>> Are these properties used? Please don't put these types of
->>>>> details in DT.
->>>>
->>>> Yeah, unfortunately they are. Luckily, I think the issue can be
->>>> resolved quite easily, because the user of those properties isn't
->>>> involved in this series.
->>>>
->>>> They are currently being used by a clock driver
->>>> ("drivers/clk/clk-brcmstb.c") that hasn't been upstreamed yet. I
->>>> performed some code archeology. While I wasn't 100% successful in
->>>> tracking down the origins of this interface, it looks like it was
->>>> designed this way a while back (4+ years or so), probably before
->>>> device tree best practices were developed or, at least, before they
->>>> were widely known.
->>>>
->>>> So, what I can do is to remove the properties from the official
->>>> binding. (I'll send an update to that effect shortly.) Once the
->>>> binding is accepted upstream, we can work on fixing up the design of
->>>> clk-brcmstb.c, so it doesn't rely on these properties anymore (and
->>>> derives them from the compatible string instead), and then proceed to
->>>> upstream that, as well.
->>>
->>> Ok. Sounds like some cleanup needs to be done on the way
->>> upstream.
->>>
->>>>> This register really looks like some offset in something larger.
->>>>> Is there some clock controller? What's the hw block at
->>>>> 0xf03e2000? Maybe I already asked this.
->>>>
->>>> It looks this way, but in this case, looks are deceiving. The address
->>>> and the length are really correct the way they are.
->>>>
->>>> This memory area holds a range of only loosely related configuration
->>>> registers. It's called the Bus Interface Unit Register Set and deals
->>>> with configuring the CPU in general. At address 0xf03e257c, there
->>>> happens to be the clock divider register we need, and it's really just
->>>> one register, i.e. 4 bytes.
->>>
->>> We've seen this style of hardware design before. I'd prefer we
->>> make the "Bus Interface Unit Register Set" into one device node
->>> and have a driver probe for it that registers this clock. If
->>> other things need to be controlled in there then the driver will
->>> do more than just register one clock, possibly hooking into
->>> multiple frameworks. The compatible string can indicate which SoC
->>> it is if the divider register offset changes or if the register
->>> layout is a total free for all.
->>
->> We already have another piece of drive code that manipulates registers
->> in the Bus Interface Unit located in drivers/soc/bcm/brcmstb/biuctrl.c
->> and which has little to nothing to do with the CPU's clock ratio. And
->> actually another one being submitted that deals with the CPU's
->> read-ahead cache. I would very much prefer we keep all of them separate
->> and dealing with just the register offset they need to do, but that does
->> not mean the Device Tree binding has to look that way though.
->>
->> The binding for the BIUCTRL register made it here:
->>
->> Documentation/devicetree/bindings/arm/bcm/brcm,brcmstb.txt
->>
->> so we should re-use that, and have a small piece of clock provided that
->> just uses the relevant register range within that larger register space
->> and provide the CLOCK_RATIO. Does that work?
->>
+On 02/04/2017 03:16 AM, Liam Breck wrote:
+> From: Matt Ranostay <matt@ranostay.consulting>
 > 
-> Ok. That's fine. The existing binding will be updated to include
-> this new subnode then for the clock component?
+> From: Matt Ranostay <matt@ranostay.consulting>
+> 
+> Previously there was no way to set chip registers in the event that the
+> defaults didn't match the battery in question.
+> 
+> BQ27xxx driver now calls power_supply_get_battery_info, checks the inputs,
+> and writes battery data to NVRAM.
+> 
 
-Humm, I suppose we could do that yes, my original thought was to just
-have this CPU clock provider remap the entire BIUCTRL register range
-(of_iomap() etc.) and manipulate just the relevant register range of
-interest (CPU_CLOCK_CONFIG_REG), but if you want a sub-node to appear,
-we could probably do that as well.
--- 
-Florian
+I haven't had much time to review this, but have you seen our old
+internal version of this driver?:
+
+http://git.ti.com/bms-linux/bms-kernel/blobs/master/drivers/power/bq27x00_battery.c
+
+I would like that most of the NVRAM checks and sets are kept in userspace:
+
+http://git.ti.com/bms-linux/bqtool/trees/master
+
+In kernel don't really have a good way to know when the battery has been
+swapped and the DT info might not be valid for this new battery. I guess
+there is really no good way, but I imagine this is why we never
+upstreamed the rest of this driver before.
+
+Andrew
+
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 303 ++++++++++++++++++++++++++++++++-
+>  include/linux/power/bq27xxx_battery.h  |   1 +
+>  2 files changed, 303 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 7272d1e..54ef18a 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -37,6 +37,7 @@
+>   * http://www.ti.com/product/bq27621-g1
+>   */
+>  
+> +#include <linux/delay.h>
+>  #include <linux/device.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+> @@ -432,6 +433,54 @@ static struct {
+>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>  static LIST_HEAD(bq27xxx_battery_devices);
+>  
+> +#define BQ27XXX_MIN_V_MIN	2800
+> +#define BQ27XXX_MIN_V_MAX	3700
+> +#define BQ27XXX_MAX_V_MIN	0
+> +#define BQ27XXX_MAX_V_MAX	5000
+> +
+> +#define BQ27XXX_BLOCK_DATA_CLASS	0x3E
+> +#define BQ27XXX_DATA_BLOCK		0x3F
+> +#define BQ27XXX_BLOCK_DATA		0x40
+> +#define BQ27XXX_BLOCK_DATA_CHECKSUM	0x60
+> +#define BQ27XXX_BLOCK_DATA_CONTROL	0x61
+> +#define BQ27XXX_SET_CFGUPDATE		0x13
+> +#define BQ27XXX_SOFT_RESET		0x42
+> +
+> +enum bq27xxx_dm_subclass_index {
+> +	BQ27XXX_DM_DESIGN_CAPACITY = 0,
+> +	BQ27XXX_DM_DESIGN_ENERGY,
+> +	BQ27XXX_DM_TERMINATE_VOLTAGE,
+> +	BQ27XXX_DM_V_AT_CHARGE_TERM,
+> +	BQ27XXX_DM_END,
+> +};
+> +
+> +struct bq27xxx_dm_regs {
+> +	unsigned int subclass_id;
+> +	unsigned int offset;
+> +	char *name;
+> +};
+> +
+> +#define BQ27XXX_GAS_GAUGING_STATE_SUBCLASS	82
+> +
+> +static struct bq27xxx_dm_regs bq27425_dm_subclass_regs[] = {
+> +	[BQ27XXX_DM_DESIGN_CAPACITY] =
+> +		{ BQ27XXX_GAS_GAUGING_STATE_SUBCLASS, 12, "design-capacity" },
+> +	[BQ27XXX_DM_DESIGN_ENERGY] =
+> +		{ BQ27XXX_GAS_GAUGING_STATE_SUBCLASS, 14, "design-energy" },
+> +	[BQ27XXX_DM_TERMINATE_VOLTAGE] =
+> +		{ BQ27XXX_GAS_GAUGING_STATE_SUBCLASS, 18, "terminate-voltage" },
+> +	[BQ27XXX_DM_V_AT_CHARGE_TERM] =
+> +		{ BQ27XXX_GAS_GAUGING_STATE_SUBCLASS, 36, "v-at-charge-termination" },
+> +};
+> +
+> +static struct bq27xxx_dm_regs *bq27xxx_dm_subclass_regs[] = {
+> +	[BQ27425] = bq27425_dm_subclass_regs,
+> +};
+> +
+> +static unsigned int bq27xxx_unseal_keys[] = {
+> +	[BQ27425] = 0x04143672,
+> +};
+> +
+>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>  {
+>  	struct bq27xxx_device_info *di;
+> @@ -476,6 +525,179 @@ static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+>  	return di->bus.read(di, di->regs[reg_index], single);
+>  }
+>  
+> +static int bq27xxx_battery_set_seal_state(struct bq27xxx_device_info *di,
+> +					      bool state)
+> +{
+> +	unsigned int key = bq27xxx_unseal_keys[di->chip];
+> +	int ret;
+> +
+> +	if (state)
+> +		return di->bus.write(di, BQ27XXX_REG_CTRL, 0x20, false);
+> +
+> +	ret = di->bus.write(di, BQ27XXX_REG_CTRL, (key >> 16) & 0xffff, false);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return di->bus.write(di, BQ27XXX_REG_CTRL, key & 0xffff, false);
+> +}
+> +
+> +static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
+> +					     int subclass)
+> +{
+> +	int ret = di->bus.write(di, BQ27XXX_REG_CTRL, 0, false);
+> +
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CONTROL, 0, true);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CLASS, subclass, true);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, 0, true);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	usleep_range(1000, 1500);
+> +
+> +	return di->bus.read_bulk(di, BQ27XXX_BLOCK_DATA,
+> +				(u8 *) &di->buffer, sizeof(di->buffer));
+> +}
+> +
+> +static int bq27xxx_battery_print_config(struct bq27xxx_device_info *di)
+> +{
+> +	struct bq27xxx_dm_regs *reg = bq27xxx_dm_subclass_regs[di->chip];
+> +	int ret, i;
+> +
+> +	ret = bq27xxx_battery_read_dm_block(di,
+> +			BQ27XXX_GAS_GAUGING_STATE_SUBCLASS);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	for (i = 0; i < BQ27XXX_DM_END; i++) {
+> +		int val;
+> +
+> +		if (reg->subclass_id != BQ27XXX_GAS_GAUGING_STATE_SUBCLASS)
+> +			continue;
+> +
+> +		val = be16_to_cpup((u16 *) &di->buffer[reg->offset]);
+> +
+> +		dev_info(di->dev, "settings for %s set at %d\n", reg->name, val);
+> +
+> +		reg++;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static bool bq27xxx_battery_update_dm_setting(struct bq27xxx_device_info *di,
+> +			      unsigned int reg, unsigned int val)
+> +{
+> +	struct bq27xxx_dm_regs *dm_reg = &bq27xxx_dm_subclass_regs[di->chip][reg];
+> +	u16 *prev = (u16 *) &di->buffer[dm_reg->offset];
+> +
+> +	if (be16_to_cpup(prev) == val)
+> +		return false;
+> +
+> +	*prev = cpu_to_be16(val);
+> +
+> +	return true;
+> +}
+> +
+> +static u8 bq27xxx_battery_checksum(struct bq27xxx_device_info *di)
+> +{
+> +	u8 *data = (u8 *) &di->buffer;
+> +	u16 sum = 0;
+> +	int i;
+> +
+> +	for (i = 0; i < sizeof(di->buffer); i++) {
+> +		sum += data[i];
+> +		sum &= 0xff;
+> +	}
+> +
+> +	return 0xff - sum;
+> +}
+> +
+> +static int bq27xxx_battery_write_nvram(struct bq27xxx_device_info *di,
+> +					   unsigned int subclass)
+> +{
+> +	int ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_SET_CFGUPDATE, false);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CONTROL, 0, true);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CLASS, subclass, true);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, 0, true);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ret = di->bus.write_bulk(di, BQ27XXX_BLOCK_DATA,
+> +				(u8 *) &di->buffer, sizeof(di->buffer));
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	usleep_range(1000, 1500);
+> +
+> +	di->bus.write(di, BQ27XXX_BLOCK_DATA_CHECKSUM,
+> +				bq27xxx_battery_checksum(di), true);
+> +
+> +	usleep_range(1000, 1500);
+> +
+> +	di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_SOFT_RESET, false);
+> +
+> +	return 0;
+> +}
+> +
+> +static int bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
+> +				      struct power_supply_battery_info *info)
+> +{
+> +	int ret;
+> +
+> +	ret = bq27xxx_battery_read_dm_block(di,
+> +				BQ27XXX_GAS_GAUGING_STATE_SUBCLASS);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (info->charge_full_design_uah != -EINVAL
+> +	 && info->energy_full_design_uwh != -EINVAL) {
+> +		ret |= bq27xxx_battery_update_dm_setting(di,
+> +					BQ27XXX_DM_DESIGN_CAPACITY,
+> +					info->charge_full_design_uah / 1000);
+> +		ret |= bq27xxx_battery_update_dm_setting(di,
+> +					BQ27XXX_DM_DESIGN_ENERGY,
+> +					info->energy_full_design_uwh / 1000);
+> +	}
+> +
+> +	if (info->voltage_min_design_uv != -EINVAL)
+> +		ret |= bq27xxx_battery_update_dm_setting(di,
+> +					BQ27XXX_DM_TERMINATE_VOLTAGE,
+> +					info->voltage_min_design_uv / 1000);
+> +
+> +	if (info->voltage_max_design_uv != -EINVAL)
+> +		ret |= bq27xxx_battery_update_dm_setting(di,
+> +					BQ27XXX_DM_V_AT_CHARGE_TERM,
+> +					info->voltage_max_design_uv / 1000);
+> +
+> +	if (ret) {
+> +		dev_info(di->dev, "updating NVM settings\n");
+> +		return bq27xxx_battery_write_nvram(di,
+> +				BQ27XXX_GAS_GAUGING_STATE_SUBCLASS);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+>  /*
+>   * Return the battery State-of-Charge
+>   * Or < 0 if something fails.
+> @@ -736,6 +958,73 @@ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
+>  	return POWER_SUPPLY_HEALTH_GOOD;
+>  }
+>  
+> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
+> +{
+> +	struct power_supply_battery_info info = {};
+> +
+> +	/* functions don't exist for writing data so abort */
+> +	if (!di->bus.write || !di->bus.write_bulk)
+> +		return;
+> +
+> +	/* no settings to be set for this chipset so abort */
+> +	if (!bq27xxx_dm_subclass_regs[di->chip])
+> +		return;
+> +
+> +	bq27xxx_battery_set_seal_state(di, false);
+> +
+> +	if (power_supply_get_battery_info(di->bat, &info) < 0)
+> +		goto out;
+> +
+> +	if (info.energy_full_design_uwh != info.charge_full_design_uah) {
+> +		if (info.energy_full_design_uwh == -EINVAL)
+> +			dev_warn(di->dev,
+> +				"missing battery:energy-full-design-microwatt-hours\n");
+> +		else if (info.charge_full_design_uah == -EINVAL)
+> +			dev_warn(di->dev,
+> +				"missing battery:charge-full-design-microamp-hours\n");
+> +	}
+> +
+> +	if (info.energy_full_design_uwh > 0x7fff * 1000) {
+> +		dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
+> +			info.energy_full_design_uwh);
+> +		info.energy_full_design_uwh = -EINVAL;
+> +	}
+> +
+> +	if (info.charge_full_design_uah > 0x7fff * 1000) {
+> +		dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
+> +			info.charge_full_design_uah);
+> +		info.charge_full_design_uah = -EINVAL;
+> +	}
+> +
+> +	if ((info.voltage_min_design_uv < BQ27XXX_MIN_V_MIN * 1000
+> +	  || info.voltage_min_design_uv > BQ27XXX_MIN_V_MAX * 1000)
+> +	  && info.voltage_min_design_uv != -EINVAL) {
+> +		dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
+> +			info.voltage_min_design_uv);
+> +		info.voltage_min_design_uv = -EINVAL;
+> +	}
+> +
+> +	if ((info.voltage_max_design_uv < BQ27XXX_MAX_V_MIN * 1000
+> +	  || info.voltage_max_design_uv > BQ27XXX_MAX_V_MAX * 1000)
+> +	  && info.voltage_max_design_uv != -EINVAL) {
+> +		dev_err(di->dev, "invalid battery:voltage-max-design-microvolt %d\n",
+> +			info.voltage_max_design_uv);
+> +		info.voltage_max_design_uv = -EINVAL;
+> +	}
+> +
+> +	if ((info.energy_full_design_uwh == -EINVAL
+> +	  || info.charge_full_design_uah == -EINVAL)
+> +	  && info.voltage_min_design_uv  == -EINVAL
+> +	  && info.voltage_max_design_uv  == -EINVAL)
+> +		goto out;
+> +
+> +	bq27xxx_battery_set_config(di, &info);
+> +
+> +out:
+> +	bq27xxx_battery_print_config(di);
+> +	bq27xxx_battery_set_seal_state(di, true);
+> +}
+> +
+>  void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+>  {
+>  	struct bq27xxx_reg_cache cache = {0, };
+> @@ -985,6 +1274,14 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>  	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>  		ret = bq27xxx_simple_value(di->charge_design_full, val);
+>  		break;
+> +	/*
+> +	 * TODO: Implement these to make registers set from
+> +	 * power_supply_battery_info visible in sysfs.
+> +	 */
+> +	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+> +	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+> +		return -EINVAL;
+>  	case POWER_SUPPLY_PROP_CYCLE_COUNT:
+>  		ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+>  		break;
+> @@ -1018,7 +1315,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>  {
+>  	struct power_supply_desc *psy_desc;
+> -	struct power_supply_config psy_cfg = { .drv_data = di, };
+> +	struct power_supply_config psy_cfg = {
+> +		.of_node = di->dev->of_node,
+> +		.drv_data = di,
+> +	};
+>  
+>  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>  	mutex_init(&di->lock);
+> @@ -1043,6 +1343,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>  
+>  	dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>  
+> +	bq27xxx_battery_settings(di);
+>  	bq27xxx_battery_update(di);
+>  
+>  	mutex_lock(&bq27xxx_list_lock);
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index bed9557..c433815 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -62,6 +62,7 @@ struct bq27xxx_device_info {
+>  	struct list_head list;
+>  	struct mutex lock;
+>  	u8 *regs;
+> +	u8 buffer[32];
+>  };
+>  
+>  void bq27xxx_battery_update(struct bq27xxx_device_info *di);
+> 
