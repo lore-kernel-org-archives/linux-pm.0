@@ -1,143 +1,44 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM phases
-Date: Mon, 6 Feb 2017 13:46:26 +0100
-Message-ID: <CAPDyKFpXXL+zpGZCYSEqtJ6_1=tH+FCths7HuuO5OdRcALoRRA@mail.gmail.com>
-References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
- <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com>
- <58842848.5090806@rock-chips.com> <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
- <5896F1A5.9080405@rock-chips.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH -next] PM / OPP: Make _find_opp_table_unlocked() static
+Date: Mon,  6 Feb 2017 14:29:55 +0000
+Message-ID: <20170206142955.790-1-weiyj.lk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5896F1A5.9080405@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Elaine Zhang <zhangqing@rock-chips.com>
-Cc: Feng Xiao <xf@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, xxx@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:33256 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751395AbdBFOaB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 09:30:01 -0500
+Received: by mail-pg0-f68.google.com with SMTP id 194so9250134pgd.0
+        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2017 06:30:01 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-On 5 February 2017 at 10:34, Elaine Zhang <zhangqing@rock-chips.com> wrote:
->
->
-> On 01/26/2017 05:30 AM, Ulf Hansson wrote:
->>
->> On 22 January 2017 at 04:34, Elaine Zhang <zhangqing@rock-chips.com>
->> wrote:
->>>
->>>
->>>
->>> On 01/20/2017 09:16 PM, Ulf Hansson wrote:
->>>>
->>>>
->>>> On 20 January 2017 at 03:21, Elaine Zhang <zhangqing@rock-chips.com>
->>>> wrote:
->>>>>
->>>>>
->>>>> If a PM domain is powered off before system suspend,
->>>>> we hope do nothing in system runtime suspend noirq phase
->>>>> and system runtime resume noirq phase.
->>>>
->>>>
->>>>
->>>> One can hope, but that isn't good enough. :-)
->>>>
->>>>
->>>>>
->>>>> This modify is to slove system resume issue for RK3399.
->>>>> RK3399 SOC pd_gpu have voltage domain vdd_gpu,
->>>>> so we must follow open vdd_gpu and power on pd_gpu,
->>>>> power off pd_gpu and disable vdd_gpu.
->>>>> Fix up in runtime resume noirq phase power on all PDs.
->>>>
->>>>
->>>>
->>>> This doesn't make any sense to me. Can please try to explain this is
->>>> in great more detail, then I can try to help.
->>>>
->>> For example:
->>> -->device suspend
->>>     (mali gpu driver set pd_gpu off by pm_runtime_put_sync(),
->>
->>
->> This is the wrong approach, as runtime suspend is prevented by the PM
->> core in this phase. More precisely, it does a
->> pm_runtime_get_noresume() in the device prepare phase.
->>
->> I think it seems like you would benefit from using the so called the
->> runtime PM centric approach, which gives you system PM support for
->> "free". Please have a look at the pm_runtime_force_suspend|resume()
->> helpers.
->>
->>>      and then disabled the vdd_gpu by regulator_disable().)
->>>          --> system suspend
->>>                  -->prepare
->>>                          -->suspend_noirq():
->>>                          (power off all pds)
->>>          -->system resume
->>>                  -->resume_noirq():
->>>                  (power up all pds)
->>>                  (in this case the vdd_gpu is still disabled,
->>>                   if power on the pd_gpu maybe make the system crash)
->>>          -->complete : power off the not used pd
->>> -->device resuem
->>>     (mali gpu driver enable vdd_gpu by regulator_enable(),
->>>      and then power up the pd_gpu by pm_runtime_get_sync())
->>
->>
->> Seems like there is also a missing configuration of the relationship
->> between the PM domains. In the genpd terminology, you probably want to
->> set pd_gpu as a subdomain of the vdd_gpu.
->>
->> In that way, the vdd_gpu is always powered on before pd_gpu is powered
->> on. And vice verse when powering off.
->>
-> I thought about this project, but can't slove the problem of sleep and wakp
-> up issue.
-> Because
->         -->system resume
->                  -->resume_noirq():
->                   (power up all pds)
-> In this case, we set pd_gpu as a subdomain of the vdd_gpu.
-> And then to enable the vdd_gpu,but the system resume is not complete yet,
-> the regulator and i2c can't work.So the vdd_gpu enable will failed.
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
-Okay, I see.
+Fixes the following sparse warning:
 
->
-> So I think the more appropriate solution is keep the pd status during system
-> PM phases.
-> If a PM domain is powered off before system suspend,
-> we hope do nothing in system runtime suspend noirq phase
-> and system runtime resume noirq phase.
+drivers/base/power/opp/core.c:49:18: warning:
+ symbol '_find_opp_table_unlocked' was not declared. Should it be static?
 
-Unfortunate, I am still not fully understanding the scenarios. As you
-indicate, the problem seems related to wakeup settings.
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/base/power/opp/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Could you please try to answer the below questions, hopefully it helps
-me to better understand.
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 541d32c..91ec323 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -46,7 +46,7 @@ static struct opp_device *_find_opp_dev(const struct device *dev,
+ 	return NULL;
+ }
+ 
+-struct opp_table *_find_opp_table_unlocked(struct device *dev)
++static struct opp_table *_find_opp_table_unlocked(struct device *dev)
+ {
+ 	struct opp_table *opp_table;
 
-1)
-While starting the system suspend sequence, under what circumstances
-are you expecting the vdd_gpu and pd_gpu to be powered on?
-
-2)
-While starting the system suspend sequence, under what circumstances
-are you expecting the vdd_gpu and the pd_gpu to be powered off?
-
-3)
-What devices are attached to vdd_gpu?
-
-4)
-What devices are attached to pd_gpu?
-
-
->
->>>
->>> So for RK3399 soc, if to set pd_gpu the vdd_gpu must be enabled, or else
->>> will can't get the ack back.
->>> I hope the pd_gpu power up/off by the driver itself.
->>>
-
-[...]
-
-Kind regards
-Uffe
