@@ -1,74 +1,143 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/3] thermal: cpu_cooling: Check OPP for errors
-Date: Mon, 06 Feb 2017 13:02:02 +0100
-Message-ID: <2237771.GAr8QlFsVi@aspire.rjw.lan>
-References: <232171cd9d89c2179e10e1f2aed71ad7fc1f7872.1486376756.git.viresh.kumar@linaro.org> <de7260e97192c3fb57709340cf3766366e38ae76.1486376756.git.viresh.kumar@linaro.org>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM phases
+Date: Mon, 6 Feb 2017 13:46:26 +0100
+Message-ID: <CAPDyKFpXXL+zpGZCYSEqtJ6_1=tH+FCths7HuuO5OdRcALoRRA@mail.gmail.com>
+References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
+ <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com>
+ <58842848.5090806@rock-chips.com> <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
+ <5896F1A5.9080405@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54687 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751093AbdBFMGt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 07:06:49 -0500
-In-Reply-To: <de7260e97192c3fb57709340cf3766366e38ae76.1486376756.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5896F1A5.9080405@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Elaine Zhang <zhangqing@rock-chips.com>
+Cc: Feng Xiao <xf@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, xxx@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Dan Carpenter <dan.carpenter@oracle.com>
 
-On Monday, February 06, 2017 03:56:28 PM Viresh Kumar wrote:
-> It is possible for dev_pm_opp_find_freq_exact() to return errors. It was
-> all fine earlier as dev_pm_opp_get_voltage() had a check within it to
-> check for invalid OPPs, but dev_pm_opp_put() doesn't have any similar
-> checks and the callers need to make sure OPP is valid before calling
-> them.
-> 
-> Also update the later dev_warn_ratelimited() to not print the error
-> message as the OPP is guaranteed to be valid now.
-> 
-> Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/thermal/cpu_cooling.c | 11 +++++++++--
->  1 file changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 85fdbf762fa0..9534540434e2 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -431,13 +431,20 @@ static int get_static_power(struct cpufreq_cooling_device *cpufreq_device,
->  
->  	opp = dev_pm_opp_find_freq_exact(cpufreq_device->cpu_dev, freq_hz,
->  					 true);
-> +	if (IS_ERR(opp)) {
-> +		dev_warn_ratelimited(cpufreq_device->cpu_dev,
-> +				     "Failed to find OPP for frequency %lu: %ld\n",
-> +				     freq_hz, PTR_ERR(opp));
+On 5 February 2017 at 10:34, Elaine Zhang <zhangqing@rock-chips.com> wrote:
+>
+>
+> On 01/26/2017 05:30 AM, Ulf Hansson wrote:
+>>
+>> On 22 January 2017 at 04:34, Elaine Zhang <zhangqing@rock-chips.com>
+>> wrote:
+>>>
+>>>
+>>>
+>>> On 01/20/2017 09:16 PM, Ulf Hansson wrote:
+>>>>
+>>>>
+>>>> On 20 January 2017 at 03:21, Elaine Zhang <zhangqing@rock-chips.com>
+>>>> wrote:
+>>>>>
+>>>>>
+>>>>> If a PM domain is powered off before system suspend,
+>>>>> we hope do nothing in system runtime suspend noirq phase
+>>>>> and system runtime resume noirq phase.
+>>>>
+>>>>
+>>>>
+>>>> One can hope, but that isn't good enough. :-)
+>>>>
+>>>>
+>>>>>
+>>>>> This modify is to slove system resume issue for RK3399.
+>>>>> RK3399 SOC pd_gpu have voltage domain vdd_gpu,
+>>>>> so we must follow open vdd_gpu and power on pd_gpu,
+>>>>> power off pd_gpu and disable vdd_gpu.
+>>>>> Fix up in runtime resume noirq phase power on all PDs.
+>>>>
+>>>>
+>>>>
+>>>> This doesn't make any sense to me. Can please try to explain this is
+>>>> in great more detail, then I can try to help.
+>>>>
+>>> For example:
+>>> -->device suspend
+>>>     (mali gpu driver set pd_gpu off by pm_runtime_put_sync(),
+>>
+>>
+>> This is the wrong approach, as runtime suspend is prevented by the PM
+>> core in this phase. More precisely, it does a
+>> pm_runtime_get_noresume() in the device prepare phase.
+>>
+>> I think it seems like you would benefit from using the so called the
+>> runtime PM centric approach, which gives you system PM support for
+>> "free". Please have a look at the pm_runtime_force_suspend|resume()
+>> helpers.
+>>
+>>>      and then disabled the vdd_gpu by regulator_disable().)
+>>>          --> system suspend
+>>>                  -->prepare
+>>>                          -->suspend_noirq():
+>>>                          (power off all pds)
+>>>          -->system resume
+>>>                  -->resume_noirq():
+>>>                  (power up all pds)
+>>>                  (in this case the vdd_gpu is still disabled,
+>>>                   if power on the pd_gpu maybe make the system crash)
+>>>          -->complete : power off the not used pd
+>>> -->device resuem
+>>>     (mali gpu driver enable vdd_gpu by regulator_enable(),
+>>>      and then power up the pd_gpu by pm_runtime_get_sync())
+>>
+>>
+>> Seems like there is also a missing configuration of the relationship
+>> between the PM domains. In the genpd terminology, you probably want to
+>> set pd_gpu as a subdomain of the vdd_gpu.
+>>
+>> In that way, the vdd_gpu is always powered on before pd_gpu is powered
+>> on. And vice verse when powering off.
+>>
+> I thought about this project, but can't slove the problem of sleep and wakp
+> up issue.
+> Because
+>         -->system resume
+>                  -->resume_noirq():
+>                   (power up all pds)
+> In this case, we set pd_gpu as a subdomain of the vdd_gpu.
+> And then to enable the vdd_gpu,but the system resume is not complete yet,
+> the regulator and i2c can't work.So the vdd_gpu enable will failed.
 
-I'm quite unconvinced about the WARN level of these messages.
+Okay, I see.
 
-They seem to be mostly useful for the people who provide device trees for
-platforms (ie. system integrators).  If users see them, there is not much
-they can do to fix the problem by themselves and the hardware is OK,
-actually.
+>
+> So I think the more appropriate solution is keep the pd status during system
+> PM phases.
+> If a PM domain is powered off before system suspend,
+> we hope do nothing in system runtime suspend noirq phase
+> and system runtime resume noirq phase.
 
-> +		return -EINVAL;
-> +	}
-> +
->  	voltage = dev_pm_opp_get_voltage(opp);
->  	dev_pm_opp_put(opp);
->  
->  	if (voltage == 0) {
->  		dev_warn_ratelimited(cpufreq_device->cpu_dev,
-> -				     "Failed to get voltage for frequency %lu: %ld\n",
-> -				     freq_hz, IS_ERR(opp) ? PTR_ERR(opp) : 0);
-> +				     "Failed to get voltage for frequency %lu\n",
-> +				     freq_hz);
->  		return -EINVAL;
->  	}
->  
+Unfortunate, I am still not fully understanding the scenarios. As you
+indicate, the problem seems related to wakeup settings.
 
-Thanks,
-Rafael
+Could you please try to answer the below questions, hopefully it helps
+me to better understand.
 
+1)
+While starting the system suspend sequence, under what circumstances
+are you expecting the vdd_gpu and pd_gpu to be powered on?
+
+2)
+While starting the system suspend sequence, under what circumstances
+are you expecting the vdd_gpu and the pd_gpu to be powered off?
+
+3)
+What devices are attached to vdd_gpu?
+
+4)
+What devices are attached to pd_gpu?
+
+
+>
+>>>
+>>> So for RK3399 soc, if to set pd_gpu the vdd_gpu must be enabled, or else
+>>> will can't get the ack back.
+>>> I hope the pd_gpu power up/off by the driver itself.
+>>>
+
+[...]
+
+Kind regards
+Uffe
