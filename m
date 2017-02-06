@@ -1,55 +1,71 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH] selftest: cpufreq: Update MAINTAINERS file
-Date: Mon, 6 Feb 2017 12:22:58 -0700
-Message-ID: <269608a9-83fe-c170-b520-0e1398b39582@kernel.org>
-References: <c3cd3310-7a12-134e-3c5a-c5fcacc6821d@kernel.org>
- <ce0bdaab50468d22a46cce3cb04efbb21f467cb6.1484890757.git.viresh.kumar@linaro.org>
- <20170206103852.GJ3131@vireshk-i7>
-Reply-To: shuah@kernel.org
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCHv2 2/2] arch: Rename CONFIG_DEBUG_RODATA and CONFIG_DEBUG_MODULE_RONX
+Date: Mon, 6 Feb 2017 12:13:38 -0800
+Message-ID: <CAGXu5jKS0_a8Nq+eJN4TN142fxrtEyO7qD9FB8gDCju6PA5xEA@mail.gmail.com>
+References: <1486144343-24998-1-git-send-email-labbott@redhat.com>
+ <1486144343-24998-3-git-send-email-labbott@redhat.com> <CAGXu5j+BX_+ymWQztqtOQE-A8yFuR5sdL++46wOvi-iBGLEK-A@mail.gmail.com>
+ <e9b6bcba-8488-9502-aebf-f260396671d5@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from resqmta-po-07v.sys.comcast.net ([96.114.154.166]:46448 "EHLO
-        resqmta-po-07v.sys.comcast.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752042AbdBFTXB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 14:23:01 -0500
-In-Reply-To: <20170206103852.GJ3131@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-parisc-owner@vger.kernel.org>
+In-Reply-To: <e9b6bcba-8488-9502-aebf-f260396671d5@redhat.com>
+Sender: linux-parisc-owner@vger.kernel.org
+To: Laura Abbott <labbott@redhat.com>
+Cc: Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Jessica Yu <jeyu@redhat.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kselftest@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>
 
-On 02/06/2017 03:38 AM, Viresh Kumar wrote:
-> On 20-01-17, 11:10, Viresh Kumar wrote:
->> Update MAINTAINERS file with cpufreq's selftest directory.
+On Mon, Feb 6, 2017 at 10:49 AM, Laura Abbott <labbott@redhat.com> wrote:
+> On 02/03/2017 12:03 PM, Kees Cook wrote:
+>> On Fri, Feb 3, 2017 at 9:52 AM, Laura Abbott <labbott@redhat.com> wrote:
+>>>
+>>> Both of these options are poorly named. The features they provide are
+>>> necessary for system security and should not be considered debug only.
+>>> Change the name to something that accurately describes what these
+>>> options do.
 >>
->> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> ---
->> Hi shuah,
+>> It may help to explicitly call out the name change from/to in the
+>> commit message.
 >>
->> Can you please add this one as well along with the code? Thanks.
+>>>
+>>> Signed-off-by: Laura Abbott <labbott@redhat.com>
+>>> ---
+>>> [...]
+>>> diff --git a/arch/arm/configs/aspeed_g4_defconfig b/arch/arm/configs/aspeed_g4_defconfig
+>>> index ca39c04..beea2cc 100644
+>>> --- a/arch/arm/configs/aspeed_g4_defconfig
+>>> +++ b/arch/arm/configs/aspeed_g4_defconfig
+>>> @@ -25,7 +25,6 @@ CONFIG_MODULE_UNLOAD=y
+>>>  # CONFIG_ARCH_MULTI_V7 is not set
+>>>  CONFIG_ARCH_ASPEED=y
+>>>  CONFIG_MACH_ASPEED_G4=y
+>>> -CONFIG_DEBUG_RODATA=y
+>>>  CONFIG_AEABI=y
+>>>  CONFIG_UACCESS_WITH_MEMCPY=y
+>>>  CONFIG_SECCOMP=y
 >>
->>  MAINTAINERS | 1 +
->>  1 file changed, 1 insertion(+)
+>> Are these defconfig cases correct (dropping DEBUG_RODATA without
+>> adding STRICT_KERNEL_RWX)?
 >>
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index c36976d3bd1a..bf414a1a5f82 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -3381,6 +3381,7 @@ B:	https://bugzilla.kernel.org
->>  F:	Documentation/cpu-freq/
->>  F:	drivers/cpufreq/
->>  F:	include/linux/cpufreq.h
->> +F:	tools/testing/selftests/cpufreq/
->>  
->>  CPU FREQUENCY DRIVERS - ARM BIG LITTLE
->>  M:	Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> @Shuah; Can you please add this as well?
-> 
+>
+> Yes, I think these need to be updated to the new config option since
+> these are not CPUv7
+>
+>
+>> Who should carry this series, btw?
+>>
+>
+> An excellent question :)
+>
+> Would you be willing to carry it with Acks?
 
+Yeah, I can push this via the KSPP tree: it's cross-architecture, so
+it seems like this should go either through my tree or through akpm's
+tree.
 
-Thanks for reminding me. I will pick this up.
+Are the arch maintainers okay with that?
 
--- Shuah
+-Kees
+
+-- 
+Kees Cook
+Pixel Security
