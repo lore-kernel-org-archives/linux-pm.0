@@ -1,109 +1,53 @@
-From: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
-Subject: [PATCH 2/2] ARM: dts: imx: update snvs-poweroff mask
-Date: Tue,  7 Feb 2017 17:56:06 +0200
-Message-ID: <1486482966-4497-2-git-send-email-guy.shapiro@mobi-wize.com>
-References: <1486472054-4367-1-git-send-email-guy.shapiro@mobi-wize.com>
- <1486482966-4497-1-git-send-email-guy.shapiro@mobi-wize.com>
-Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Subject: [PATCH -next] cpufreq: brcmstb-avs-cpufreq: remove unnecessary
+ platform_set_drvdata()
+Date: Tue,  7 Feb 2017 15:56:45 +0000
+Message-ID: <20170207155645.5455-1-weiyj.lk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <rtc-linux+bncBCNJ5VGR4ANRB7G447CAKGQERMCNDEI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <1486482966-4497-1-git-send-email-guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
-List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/rtc-linux
-List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/rtc-linux/subscribe>
-To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>
-Cc: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Markus Mayer <mmayer@broadcom.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: bcm-kernel-feedback-list@broadcom.com, Wei Yongjun <weiyongjun1@huawei.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Make the syscon-poweroff driver change only the shutdown bits on the
-SNVS_LP control register.
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
-This change fixes an issue with the RTC wakeup alarm, that was
-previously disabled during power off.
+The driver core clears the driver data to NULL after device_release
+or on probe failure. Thus, it is not needed to manually clear the
+device driver data to NULL.
 
-Signed-off-by: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 ---
- arch/arm/boot/dts/imx6qdl.dtsi | 1 +
- arch/arm/boot/dts/imx6sl.dtsi  | 1 +
- arch/arm/boot/dts/imx6sx.dtsi  | 1 +
- arch/arm/boot/dts/imx6ul.dtsi  | 1 +
- arch/arm/boot/dts/imx7s.dtsi   | 1 +
- 5 files changed, 5 insertions(+)
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 89b834f..06984b1 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -757,6 +757,7 @@
- 					compatible = "syscon-poweroff";
- 					regmap = <&snvs>;
- 					offset = <0x38>;
-+					value = <0x60>;
- 					mask = <0x60>;
- 					status = "disabled";
- 				};
-diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
-index 19cbd87..58717d3 100644
---- a/arch/arm/boot/dts/imx6sl.dtsi
-+++ b/arch/arm/boot/dts/imx6sl.dtsi
-@@ -644,6 +644,7 @@
- 					compatible = "syscon-poweroff";
- 					regmap = <&snvs>;
- 					offset = <0x38>;
-+					value = <0x60>;
- 					mask = <0x60>;
- 					status = "disabled";
- 				};
-diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
-index 10f3330..be142ed5 100644
---- a/arch/arm/boot/dts/imx6sx.dtsi
-+++ b/arch/arm/boot/dts/imx6sx.dtsi
-@@ -698,6 +698,7 @@
- 					compatible = "syscon-poweroff";
- 					regmap = <&snvs>;
- 					offset = <0x38>;
-+					value = <0x60>;
- 					mask = <0x60>;
- 					status = "disabled";
- 				};
-diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
-index 39845a7..505d24e 100644
---- a/arch/arm/boot/dts/imx6ul.dtsi
-+++ b/arch/arm/boot/dts/imx6ul.dtsi
-@@ -606,6 +606,7 @@
- 					compatible = "syscon-poweroff";
- 					regmap = <&snvs>;
- 					offset = <0x38>;
-+					value = <0x60>;
- 					mask = <0x60>;
- 					status = "disabled";
- 				};
-diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
-index 8ff2cbdd..aadb1134 100644
---- a/arch/arm/boot/dts/imx7s.dtsi
-+++ b/arch/arm/boot/dts/imx7s.dtsi
-@@ -529,6 +529,7 @@
- 					compatible = "syscon-poweroff";
- 					regmap = <&snvs>;
- 					offset = <0x38>;
-+					value = <0x60>;
- 					mask = <0x60>;
- 				};
+diff --git a/drivers/cpufreq/brcmstb-avs-cpufreq.c b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+index c943606..7281a2c 100644
+--- a/drivers/cpufreq/brcmstb-avs-cpufreq.c
++++ b/drivers/cpufreq/brcmstb-avs-cpufreq.c
+@@ -878,7 +878,6 @@ static int brcm_avs_prepare_init(struct platform_device *pdev)
+ 	iounmap(priv->avs_intr_base);
+ unmap_base:
+ 	iounmap(priv->base);
+-	platform_set_drvdata(pdev, NULL);
  
--- 
-2.1.4
-
--- 
-You received this message because you are subscribed to "rtc-linux".
-Membership options at http://groups.google.com/group/rtc-linux .
-Please read http://groups.google.com/group/rtc-linux/web/checklist
-before submitting a driver.
---- 
-You received this message because you are subscribed to the Google Groups "rtc-linux" group.
-To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+ 	return ret;
+ }
+@@ -1042,7 +1041,6 @@ static int brcm_avs_cpufreq_remove(struct platform_device *pdev)
+ 	priv = platform_get_drvdata(pdev);
+ 	iounmap(priv->base);
+ 	iounmap(priv->avs_intr_base);
+-	platform_set_drvdata(pdev, NULL);
+ 
+ 	return 0;
+ }
