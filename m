@@ -1,81 +1,59 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / Domains: Restore lock-less behaviour for the genpd
- syscore APIs
-Date: Tue, 7 Feb 2017 20:09:25 +0100
-Message-ID: <CAMuHMdXZ6+hUkyZZuqO19hzpiaXKbTJgs9HFONVwjXzmA=eMKg@mail.gmail.com>
-References: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org>
+From: Jessica Yu <jeyu@redhat.com>
+Subject: Re: arch: Rename CONFIG_DEBUG_RODATA and CONFIG_DEBUG_MODULE_RONX
+Date: Tue, 7 Feb 2017 11:25:05 -0800
+Message-ID: <20170207192505.m5gg6rtqgbbwtwa4@jeyu>
+References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
+ <1486427518-14819-3-git-send-email-labbott@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:34085 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754141AbdBGTPh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 14:15:37 -0500
-Received: by mail-io0-f196.google.com with SMTP id c80so13783894iod.1
-        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2017 11:15:37 -0800 (PST)
-In-Reply-To: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <kernel-hardening-return-6376-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Disposition: inline
+In-Reply-To: <1486427518-14819-3-git-send-email-labbott@redhat.com>
+To: Laura Abbott <labbott@redhat.com>
+Cc: Kees Cook <keescook@chromium.org>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Brian Norris <briannorris@chromium.org>
 
-On Tue, Feb 7, 2017 at 4:53 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The commit ef4f7e2c8335 ("PM / Domains: Fix asynchronous execution of
-> *noirq() callbacks") went too far, as it not only changed to use locks for
-> the *noirq callbacks, but also for the genpd syscore APIs.
++++ Laura Abbott [06/02/17 16:31 -0800]:
+>Both of these options are poorly named. The features they provide are
+>necessary for system security and should not be considered debug only.
+>Change the names to CONFIG_STRICT_KERNEL_RWX and
+>CONFIG_STRICT_MODULE_RWX to better describe what these options do.
 >
-> This cause the following error, reported by Geert Uytterhoeven:
->
-> "This causes the following BUG on all my Renesas arm32 boards, where the
-> system timer is an IRQ safe device:
->
-> BUG: sleeping function called from invalid context at
-> kernel/locking/mutex.c:232
-> in_atomic(): 0, irqs_disabled(): 128, pid: 1751, name: s2ram
-> CPU: 0 PID: 1751 Comm: s2ram Not tainted
-> 4.10.0-rc7-koelsch-05643-g27f4c73972a614fe #3354
-> Hardware name: Generic R8A7791 (Flattened Device Tree)
-> [<c020e9c4>] (unwind_backtrace) from [<c020a40c>] (show_stack+0x10/0x14)
-> [<c020a40c>] (show_stack) from [<c03f9818>] (dump_stack+0x7c/0x9c)
-> [<c03f9818>] (dump_stack) from [<c0240020>] (___might_sleep+0x124/0x160)
-> [<c0240020>] (___might_sleep) from [<c06fedfc>] (mutex_lock+0x18/0x60)
-> [<c06fedfc>] (mutex_lock) from [<c04de340>]
-> (genpd_syscore_switch+0x2c/0x7c)
-> [<c04de340>] (genpd_syscore_switch) from [<c05ec328>]
-> (sh_cmt_clock_event_suspend+0x18/0x28)
-> [<c05ec328>] (sh_cmt_clock_event_suspend) from [<c027f9a4>]
-> (clockevents_suspend+0x40/0x54)
-> [<c027f9a4>] (clockevents_suspend) from [<c0276d48>]
-> (timekeeping_suspend+0x23c/0x278)
-> [<c0276d48>] (timekeeping_suspend) from [<c04cbb88>]
-> (syscore_suspend+0x88/0x138)
-> [<c04cbb88>] (syscore_suspend) from [<c025f618>]
-> (suspend_devices_and_enter+0x290/0x470)
-> [<c025f618>] (suspend_devices_and_enter) from [<c025fa20>]
-> (pm_suspend+0x228/0x280)
-> [<c025fa20>] (pm_suspend) from [<c025e60c>] (state_store+0xac/0xcc)
-> [<c025e60c>] (state_store) from [<c0340c4c>] (kernfs_fop_write+0x160/0x19c)
-> [<c0340c4c>] (kernfs_fop_write) from [<c02e3054>] (__vfs_write+0x20/0x108)
-> [<c02e3054>] (__vfs_write) from [<c02e4424>] (vfs_write+0xb8/0x144)
-> [<c02e4424>] (vfs_write) from [<c02e5014>] (SyS_write+0x40/0x80)
-> [<c02e5014>] (SyS_write) from [<c0206cc0>] (ret_fast_syscall+0x0/0x34)"
->
-> To fix this problem, restore the lock-less behaviour. However only for the
-> genpd syscore APIs.
->
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Fixes: ef4f7e2c8335 ("PM / Domains: Fix asynchronous execution of *noirq() callbacks")
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>Signed-off-by: Laura Abbott <labbott@redhat.com>
+>---
+>v3: Minor config text tweek per Kees. Corrected the change of config names in
+>the arm config files.
+>---
+> Documentation/DocBook/kgdb.tmpl            | 8 ++++----
+> Documentation/security/self-protection.txt | 4 ++--
+> arch/Kconfig                               | 4 ++--
+> arch/arm/configs/aspeed_g4_defconfig       | 4 ++--
+> arch/arm/configs/aspeed_g5_defconfig       | 4 ++--
+> arch/arm/include/asm/cacheflush.h          | 2 +-
+> arch/arm/kernel/patch.c                    | 4 ++--
+> arch/arm/kernel/vmlinux.lds.S              | 8 ++++----
+> arch/arm/mm/Kconfig                        | 2 +-
+> arch/arm/mm/init.c                         | 4 ++--
+> arch/arm64/Kconfig.debug                   | 2 +-
+> arch/arm64/kernel/insn.c                   | 2 +-
+> arch/parisc/configs/712_defconfig          | 1 -
+> arch/parisc/configs/c3000_defconfig        | 1 -
+> arch/parisc/mm/init.c                      | 2 +-
+> include/linux/filter.h                     | 4 ++--
+> include/linux/init.h                       | 4 ++--
+> include/linux/module.h                     | 2 +-
+> init/main.c                                | 4 ++--
+> kernel/configs/android-recommended.config  | 2 +-
+> kernel/module.c                            | 6 +++---
+> kernel/power/hibernate.c                   | 2 +-
+> kernel/power/power.h                       | 4 ++--
+> kernel/power/snapshot.c                    | 4 ++--
+> 24 files changed, 41 insertions(+), 43 deletions(-)
 
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+For the module.{c,h} bits:
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Acked-by: Jessica Yu <jeyu@redhat.com>
