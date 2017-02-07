@@ -1,14 +1,15 @@
 From: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
-Subject: [PATCH 1/2] power: reset: syscon-poweroff: add a mask property
-Date: Tue,  7 Feb 2017 17:56:05 +0200
-Message-ID: <1486482966-4497-1-git-send-email-guy.shapiro@mobi-wize.com>
+Subject: [PATCH 2/2] ARM: dts: imx: update snvs-poweroff mask
+Date: Tue,  7 Feb 2017 17:56:06 +0200
+Message-ID: <1486482966-4497-2-git-send-email-guy.shapiro@mobi-wize.com>
 References: <1486472054-4367-1-git-send-email-guy.shapiro@mobi-wize.com>
+ <1486482966-4497-1-git-send-email-guy.shapiro@mobi-wize.com>
 Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <rtc-linux+bncBCNJ5VGR4ANRBYW447CAKGQEHP2Z4NI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <rtc-linux+bncBCNJ5VGR4ANRB7G447CAKGQERMCNDEI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <1486472054-4367-1-git-send-email-guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+In-Reply-To: <1486482966-4497-1-git-send-email-guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
 List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Archive: <https://groups.google.com/group/rtc-linux
@@ -19,98 +20,81 @@ To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland 
 Cc: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Make the syscon-poweroff driver accept value and mask instead of
-just value.
+Make the syscon-poweroff driver change only the shutdown bits on the
+SNVS_LP control register.
 
-Prior to this patch, the property name for the value was 'mask'. If
-only the mask property is defined on a node, maintain compatibility
-by using it as the value.
+This change fixes an issue with the RTC wakeup alarm, that was
+previously disabled during power off.
 
 Signed-off-by: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
 ---
- .../bindings/power/reset/syscon-poweroff.txt          | 11 +++++++++--
- drivers/power/reset/syscon-poweroff.c                 | 19 ++++++++++++++++---
- 2 files changed, 25 insertions(+), 5 deletions(-)
+ arch/arm/boot/dts/imx6qdl.dtsi | 1 +
+ arch/arm/boot/dts/imx6sl.dtsi  | 1 +
+ arch/arm/boot/dts/imx6sx.dtsi  | 1 +
+ arch/arm/boot/dts/imx6ul.dtsi  | 1 +
+ arch/arm/boot/dts/imx7s.dtsi   | 1 +
+ 5 files changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/syscon-poweroff.txt b/Documentation/devicetree/bindings/power/reset/syscon-poweroff.txt
-index 1e2546f..022ed1f 100644
---- a/Documentation/devicetree/bindings/power/reset/syscon-poweroff.txt
-+++ b/Documentation/devicetree/bindings/power/reset/syscon-poweroff.txt
-@@ -3,13 +3,20 @@ Generic SYSCON mapped register poweroff driver
- This is a generic poweroff driver using syscon to map the poweroff register.
- The poweroff is generally performed with a write to the poweroff register
- defined by the register map pointed by syscon reference plus the offset
--with the mask defined in the poweroff node.
-+with the value and mask defined in the poweroff node.
+diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
+index 89b834f..06984b1 100644
+--- a/arch/arm/boot/dts/imx6qdl.dtsi
++++ b/arch/arm/boot/dts/imx6qdl.dtsi
+@@ -757,6 +757,7 @@
+ 					compatible = "syscon-poweroff";
+ 					regmap = <&snvs>;
+ 					offset = <0x38>;
++					value = <0x60>;
+ 					mask = <0x60>;
+ 					status = "disabled";
+ 				};
+diff --git a/arch/arm/boot/dts/imx6sl.dtsi b/arch/arm/boot/dts/imx6sl.dtsi
+index 19cbd87..58717d3 100644
+--- a/arch/arm/boot/dts/imx6sl.dtsi
++++ b/arch/arm/boot/dts/imx6sl.dtsi
+@@ -644,6 +644,7 @@
+ 					compatible = "syscon-poweroff";
+ 					regmap = <&snvs>;
+ 					offset = <0x38>;
++					value = <0x60>;
+ 					mask = <0x60>;
+ 					status = "disabled";
+ 				};
+diff --git a/arch/arm/boot/dts/imx6sx.dtsi b/arch/arm/boot/dts/imx6sx.dtsi
+index 10f3330..be142ed5 100644
+--- a/arch/arm/boot/dts/imx6sx.dtsi
++++ b/arch/arm/boot/dts/imx6sx.dtsi
+@@ -698,6 +698,7 @@
+ 					compatible = "syscon-poweroff";
+ 					regmap = <&snvs>;
+ 					offset = <0x38>;
++					value = <0x60>;
+ 					mask = <0x60>;
+ 					status = "disabled";
+ 				};
+diff --git a/arch/arm/boot/dts/imx6ul.dtsi b/arch/arm/boot/dts/imx6ul.dtsi
+index 39845a7..505d24e 100644
+--- a/arch/arm/boot/dts/imx6ul.dtsi
++++ b/arch/arm/boot/dts/imx6ul.dtsi
+@@ -606,6 +606,7 @@
+ 					compatible = "syscon-poweroff";
+ 					regmap = <&snvs>;
+ 					offset = <0x38>;
++					value = <0x60>;
+ 					mask = <0x60>;
+ 					status = "disabled";
+ 				};
+diff --git a/arch/arm/boot/dts/imx7s.dtsi b/arch/arm/boot/dts/imx7s.dtsi
+index 8ff2cbdd..aadb1134 100644
+--- a/arch/arm/boot/dts/imx7s.dtsi
++++ b/arch/arm/boot/dts/imx7s.dtsi
+@@ -529,6 +529,7 @@
+ 					compatible = "syscon-poweroff";
+ 					regmap = <&snvs>;
+ 					offset = <0x38>;
++					value = <0x60>;
+ 					mask = <0x60>;
+ 				};
  
- Required properties:
- - compatible: should contain "syscon-poweroff"
- - regmap: this is phandle to the register map node
- - offset: offset in the register map for the poweroff register (in bytes)
--- mask: the poweroff value written to the poweroff register (32 bit access)
-+- value: the poweroff value written to the poweroff register (32 bit access)
-+
-+Optional properties:
-+- mask: update only the register bits defined by the mask (32 bit)
-+
-+Legacy usage:
-+If a node doesn't contain a value property but contains a mask property, the
-+mask property is used as the value.
- 
- Default will be little endian mode, 32 bit access only.
- 
-diff --git a/drivers/power/reset/syscon-poweroff.c b/drivers/power/reset/syscon-poweroff.c
-index b683383..f9f1cb5 100644
---- a/drivers/power/reset/syscon-poweroff.c
-+++ b/drivers/power/reset/syscon-poweroff.c
-@@ -28,12 +28,13 @@
- 
- static struct regmap *map;
- static u32 offset;
-+static u32 value;
- static u32 mask;
- 
- static void syscon_poweroff(void)
- {
- 	/* Issue the poweroff */
--	regmap_write(map, offset, mask);
-+	regmap_update_bits(map, offset, mask, value);
- 
- 	mdelay(1000);
- 
-@@ -43,6 +44,7 @@ static void syscon_poweroff(void)
- static int syscon_poweroff_probe(struct platform_device *pdev)
- {
- 	char symname[KSYM_NAME_LEN];
-+	int mask_err, value_err;
- 
- 	map = syscon_regmap_lookup_by_phandle(pdev->dev.of_node, "regmap");
- 	if (IS_ERR(map)) {
-@@ -55,11 +57,22 @@ static int syscon_poweroff_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	if (of_property_read_u32(pdev->dev.of_node, "mask", &mask)) {
--		dev_err(&pdev->dev, "unable to read 'mask'");
-+	value_err = of_property_read_u32(pdev->dev.of_node, "value", &value);
-+	mask_err = of_property_read_u32(pdev->dev.of_node, "mask", &mask);
-+	if (value_err && mask_err) {
-+		dev_err(&pdev->dev, "unable to read 'value' and 'mask'");
- 		return -EINVAL;
- 	}
- 
-+	if (value_err) {
-+		/* support old binding */
-+		value = mask;
-+		mask = 0xFFFFFFFF;
-+	} else if (mask_err) {
-+		/* support value without mask*/
-+		mask = 0xFFFFFFFF;
-+	}
-+
- 	if (pm_power_off) {
- 		lookup_symbol_name((ulong)pm_power_off, symname);
- 		dev_err(&pdev->dev,
 -- 
 2.1.4
 
