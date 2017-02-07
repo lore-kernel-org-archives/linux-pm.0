@@ -1,63 +1,75 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Tue, 7 Feb 2017 10:20:46 -0800
-Message-ID: <CAKvHMgRxONjiyn2Zg-f3s0m8KAYR3vK5G3aD4WkJWjA32GsBaA@mail.gmail.com>
-References: <20170131000210.5442-1-tony@atomide.com> <20170131000210.5442-3-tony@atomide.com>
- <CAKvHMgSXVertQyZyj-C-_w72Uh7xf4DbC2rsNs_T9DMPJP2tXA@mail.gmail.com>
- <20170131003632.GB7403@atomide.com> <CAKvHMgTOKoeOxp0oxOBOO7zqothPWeC9aBrV-Km1Rq+YAafw5w@mail.gmail.com>
- <20170203185408.GB3721@atomide.com> <CAKvHMgQs3YYtyMApYvdRAyzuzii_xA=ZKRfqG-zpFzrMef_qdg@mail.gmail.com>
- <20170203211707.GC3721@atomide.com> <CAKvHMgRV=mm2XBtrNjQCvGXuAQY6n6xEKerP4eVw2izkS9C7ww@mail.gmail.com>
- <20170207160157.GA21809@atomide.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH] PM / Domains: Restore lock-less behaviour for the genpd syscore APIs
+Date: Tue, 07 Feb 2017 10:29:02 -0800
+Message-ID: <m27f51kg7l.fsf@baylibre.com>
+References: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:34343 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754412AbdBGSUs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 13:20:48 -0500
-In-Reply-To: <20170207160157.GA21809@atomide.com>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:34062 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754490AbdBGS3E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 13:29:04 -0500
+Received: by mail-pg0-f44.google.com with SMTP id 14so40813076pgg.1
+        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2017 10:29:04 -0800 (PST)
+In-Reply-To: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org> (Ulf
+        Hansson's message of "Tue, 7 Feb 2017 16:53:04 +0100")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Brian Norris <briannorris@chromium.org>
 
-On Tue, Feb 7, 2017 at 8:01 AM, Tony Lindgren <tony@atomide.com> wrote:
-> * Liam Breck <liam@networkimprov.net> [170203 16:25]:
->> On Fri, Feb 3, 2017 at 1:17 PM, Tony Lindgren <tony@atomide.com> wrote:
->> >  static int bq24190_remove(struct i2c_client *client)
->> >  {
->> >         struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
->> > +       int error;
->> >
->> > -       pm_runtime_get_sync(bdi->dev);
->> > -       bq24190_register_reset(bdi);
->> > -       pm_runtime_put_sync(bdi->dev);
->> > +       error = pm_runtime_get_sync(bdi->dev);
->> > +       if (error < 0) {
->> > +               dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
->> > +               pm_runtime_put_noidle(bdi->dev);
->> > +       }
->> >
->> > +       bq24190_register_reset(bdi);
->> >         bq24190_sysfs_remove_group(bdi);
->> >         power_supply_unregister(bdi->battery);
->> >         power_supply_unregister(bdi->charger);
->> > +       pm_runtime_put_sync(bdi->dev);
->> > +       pm_runtime_dont_use_autosuspend(bdi->dev);
->> >         pm_runtime_disable(bdi->dev);
->>
->> I think you addressed this, but should the above be
->>
->> if (!error)
->>   pm_runtime_put_sync(bdi->dev);
+Ulf Hansson <ulf.hansson@linaro.org> writes:
+
+> The commit ef4f7e2c8335 ("PM / Domains: Fix asynchronous execution of
+> *noirq() callbacks") went too far, as it not only changed to use locks for
+> the *noirq callbacks, but also for the genpd syscore APIs.
 >
-> Hmm yeah.. But we need to check for if (error >= 0), also in the other
-> places see below.
+> This cause the following error, reported by Geert Uytterhoeven:
+>
+> "This causes the following BUG on all my Renesas arm32 boards, where the
+> system timer is an IRQ safe device:
+>
+> BUG: sleeping function called from invalid context at
+> kernel/locking/mutex.c:232
+> in_atomic(): 0, irqs_disabled(): 128, pid: 1751, name: s2ram
+> CPU: 0 PID: 1751 Comm: s2ram Not tainted
+> 4.10.0-rc7-koelsch-05643-g27f4c73972a614fe #3354
+> Hardware name: Generic R8A7791 (Flattened Device Tree)
+> [<c020e9c4>] (unwind_backtrace) from [<c020a40c>] (show_stack+0x10/0x14)
+> [<c020a40c>] (show_stack) from [<c03f9818>] (dump_stack+0x7c/0x9c)
+> [<c03f9818>] (dump_stack) from [<c0240020>] (___might_sleep+0x124/0x160)
+> [<c0240020>] (___might_sleep) from [<c06fedfc>] (mutex_lock+0x18/0x60)
+> [<c06fedfc>] (mutex_lock) from [<c04de340>]
+> (genpd_syscore_switch+0x2c/0x7c)
+> [<c04de340>] (genpd_syscore_switch) from [<c05ec328>]
+> (sh_cmt_clock_event_suspend+0x18/0x28)
+> [<c05ec328>] (sh_cmt_clock_event_suspend) from [<c027f9a4>]
+> (clockevents_suspend+0x40/0x54)
+> [<c027f9a4>] (clockevents_suspend) from [<c0276d48>]
+> (timekeeping_suspend+0x23c/0x278)
+> [<c0276d48>] (timekeeping_suspend) from [<c04cbb88>]
+> (syscore_suspend+0x88/0x138)
+> [<c04cbb88>] (syscore_suspend) from [<c025f618>]
+> (suspend_devices_and_enter+0x290/0x470)
+> [<c025f618>] (suspend_devices_and_enter) from [<c025fa20>]
+> (pm_suspend+0x228/0x280)
+> [<c025fa20>] (pm_suspend) from [<c025e60c>] (state_store+0xac/0xcc)
+> [<c025e60c>] (state_store) from [<c0340c4c>] (kernfs_fop_write+0x160/0x19c)
+> [<c0340c4c>] (kernfs_fop_write) from [<c02e3054>] (__vfs_write+0x20/0x108)
+> [<c02e3054>] (__vfs_write) from [<c02e4424>] (vfs_write+0xb8/0x144)
+> [<c02e4424>] (vfs_write) from [<c02e5014>] (SyS_write+0x40/0x80)
+> [<c02e5014>] (SyS_write) from [<c0206cc0>] (ret_fast_syscall+0x0/0x34)"
+>
+> To fix this problem, restore the lock-less behaviour. However only for the
+> genpd syscore APIs.
+>
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Fixes: ef4f7e2c8335 ("PM / Domains: Fix asynchronous execution of *noirq() callbacks")
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-OK, let's roll v4. it is
+It's up to Rafael, but IMO, since this isn't yet in mainline, it would
+be cleaner for the git history to revert the original, and rework the
+patch to have just the relevant parts
 
-Acked-by: Liam Breck <kernel@networkimprov.net>
-
-(and pls include the v4 in all subjects :-)
-
-I have a patchset for DT support in the works which depends on this one.
+Kevin
