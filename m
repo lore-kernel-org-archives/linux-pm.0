@@ -1,7 +1,7 @@
 From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH v3 3/4] cpufreq: bmips-cpufreq: CPUfreq driver for Broadcom's BMIPS SoCs
-Date: Tue,  7 Feb 2017 13:58:55 -0800
-Message-ID: <20170207215856.8999-4-code@mmayer.net>
+Subject: [PATCH v3 4/4] MIPS: BMIPS: enable CPUfreq
+Date: Tue,  7 Feb 2017 13:58:56 -0800
+Message-ID: <20170207215856.8999-5-code@mmayer.net>
 References: <20170207215856.8999-1-code@mmayer.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170207215856.8999-1-code@mmayer.net>
@@ -12,243 +12,32 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Markus Mayer <mmayer@broadcom.com>
 
-Add the MIPS CPUfreq driver. This driver currently supports CPUfreq on
-BMIPS5xxx-based SoCs.
+Enable all applicable CPUfreq options.
 
 Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/cpufreq/Kconfig         |  10 +++
- drivers/cpufreq/Makefile        |   1 +
- drivers/cpufreq/bmips-cpufreq.c | 188 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 199 insertions(+)
- create mode 100644 drivers/cpufreq/bmips-cpufreq.c
+ arch/mips/configs/bmips_stb_defconfig | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 15adef4..ec040a5 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -263,6 +263,16 @@ config IA64_ACPI_CPUFREQ
- endif
- 
- if MIPS
-+config BMIPS_CPUFREQ
-+	tristate "BMIPS CPUfreq Driver"
-+	help
-+	  This option adds a CPUfreq driver for BMIPS processors with
-+	  support for configurable CPU frequency.
-+
-+	  For now, BMIPS5 chips are supported (such as the Broadcom 7425).
-+
-+	  If in doubt, say N.
-+
- config LOONGSON2_CPUFREQ
- 	tristate "Loongson2 CPUFreq Driver"
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 2078a0f..9f5a804 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -99,6 +99,7 @@ obj-$(CONFIG_POWERNV_CPUFREQ)		+= powernv-cpufreq.o
- # Other platform drivers
- obj-$(CONFIG_AVR32_AT32AP_CPUFREQ)	+= at32ap-cpufreq.o
- obj-$(CONFIG_BFIN_CPU_FREQ)		+= blackfin-cpufreq.o
-+obj-$(CONFIG_BMIPS_CPUFREQ)		+= bmips-cpufreq.o
- obj-$(CONFIG_CRIS_MACH_ARTPEC3)		+= cris-artpec3-cpufreq.o
- obj-$(CONFIG_ETRAXFS)			+= cris-etraxfs-cpufreq.o
- obj-$(CONFIG_IA64_ACPI_CPUFREQ)		+= ia64-acpi-cpufreq.o
-diff --git a/drivers/cpufreq/bmips-cpufreq.c b/drivers/cpufreq/bmips-cpufreq.c
-new file mode 100644
-index 0000000..1653151
---- /dev/null
-+++ b/drivers/cpufreq/bmips-cpufreq.c
-@@ -0,0 +1,188 @@
-+/*
-+ * CPU frequency scaling for Broadcom BMIPS SoCs
-+ *
-+ * Copyright (c) 2017 Broadcom
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation version 2.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/cpufreq.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/slab.h>
-+
-+/* for mips_hpt_frequency */
-+#include <asm/time.h>
-+
-+#define BMIPS_CPUFREQ_PREFIX	"bmips"
-+#define BMIPS_CPUFREQ_NAME	BMIPS_CPUFREQ_PREFIX "-cpufreq"
-+
-+#define TRANSITION_LATENCY	(25 * 1000)	/* 25 us */
-+
-+#define BMIPS5_CLK_DIV_SET_SHIFT	0x7
-+#define BMIPS5_CLK_DIV_SHIFT		0x4
-+#define BMIPS5_CLK_DIV_MASK		0xf
-+
-+enum bmips_type {
-+	BMIPS5000,
-+	BMIPS5200,
-+};
-+
-+struct cpufreq_compat {
-+	const char *compatible;
-+	unsigned int bmips_type;
-+	unsigned int clk_mult;
-+	unsigned int max_freqs;
-+};
-+
-+#define BMIPS(c, t, m, f) { \
-+	.compatible = c, \
-+	.bmips_type = (t), \
-+	.clk_mult = (m), \
-+	.max_freqs = (f), \
-+}
-+
-+static struct cpufreq_compat bmips_cpufreq_compat[] = {
-+	BMIPS("brcm,bmips5000", BMIPS5000, 8, 4),
-+	BMIPS("brcm,bmips5200", BMIPS5200, 8, 4),
-+	{ }
-+};
-+
-+static struct cpufreq_compat *priv;
-+
-+static int htp_freq_to_cpu_freq(unsigned int clk_mult)
-+{
-+	return mips_hpt_frequency * clk_mult / 1000;
-+}
-+
-+static struct cpufreq_frequency_table *
-+bmips_cpufreq_get_freq_table(const struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *table;
-+	unsigned long cpu_freq;
-+	int i;
-+
-+	cpu_freq = htp_freq_to_cpu_freq(priv->clk_mult);
-+
-+	table = kmalloc((priv->max_freqs + 1) * sizeof(*table), GFP_KERNEL);
-+	if (!table)
-+		return ERR_PTR(-ENOMEM);
-+
-+	for (i = 0; i < priv->max_freqs; i++) {
-+		table[i].frequency = cpu_freq / (1 << i);
-+		table[i].driver_data = i;
-+	}
-+	table[i].frequency = CPUFREQ_TABLE_END;
-+
-+	return table;
-+}
-+
-+static unsigned int bmips_cpufreq_get(unsigned int cpu)
-+{
-+	unsigned int div;
-+	uint32_t mode;
-+
-+	switch (priv->bmips_type) {
-+	case BMIPS5200:
-+	case BMIPS5000:
-+		mode = read_c0_brcm_mode();
-+		div = ((mode >> BMIPS5_CLK_DIV_SHIFT) & BMIPS5_CLK_DIV_MASK);
-+		break;
-+	default:
-+		div = 0;
-+	}
-+
-+	return htp_freq_to_cpu_freq(priv->clk_mult) / (1 << div);
-+}
-+
-+static int bmips_cpufreq_target_index(struct cpufreq_policy *policy,
-+				      unsigned int index)
-+{
-+	unsigned int div = policy->freq_table[index].driver_data;
-+
-+	switch (priv->bmips_type) {
-+	case BMIPS5200:
-+	case BMIPS5000:
-+		change_c0_brcm_mode(BMIPS5_CLK_DIV_MASK << BMIPS5_CLK_DIV_SHIFT,
-+				    (1 << BMIPS5_CLK_DIV_SET_SHIFT) |
-+				    (div << BMIPS5_CLK_DIV_SHIFT));
-+		break;
-+	default:
-+		return -ENOTSUPP;
-+	}
-+
-+	return 0;
-+}
-+
-+static int bmips_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	kfree(policy->freq_table);
-+
-+	return 0;
-+}
-+
-+static int bmips_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	struct cpufreq_frequency_table *freq_table;
-+	int ret;
-+
-+	freq_table = bmips_cpufreq_get_freq_table(policy);
-+	if (IS_ERR(freq_table)) {
-+		ret = PTR_ERR(freq_table);
-+		pr_err("%s: couldn't determine frequency table (%d).\n",
-+			BMIPS_CPUFREQ_NAME, ret);
-+		return ret;
-+	}
-+
-+	ret = cpufreq_generic_init(policy, freq_table, TRANSITION_LATENCY);
-+	if (ret)
-+		bmips_cpufreq_exit(policy);
-+	else
-+		pr_info("%s: registered\n", BMIPS_CPUFREQ_NAME);
-+
-+	return ret;
-+}
-+
-+static struct cpufreq_driver bmips_cpufreq_driver = {
-+	.flags		= CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify		= cpufreq_generic_frequency_table_verify,
-+	.target_index	= bmips_cpufreq_target_index,
-+	.get		= bmips_cpufreq_get,
-+	.init		= bmips_cpufreq_init,
-+	.exit		= bmips_cpufreq_exit,
-+	.attr		= cpufreq_generic_attr,
-+	.name		= BMIPS_CPUFREQ_PREFIX,
-+};
-+
-+static int __init bmips_cpufreq_probe(void)
-+{
-+	struct cpufreq_compat *cc;
-+	struct device_node *np;
-+
-+	for (cc = bmips_cpufreq_compat; cc->compatible; cc++) {
-+		np = of_find_compatible_node(NULL, "cpu", cc->compatible);
-+		if (np) {
-+			of_node_put(np);
-+			priv = cc;
-+			break;
-+		}
-+	}
-+
-+	/* We hit the guard element of the array. No compatible CPU found. */
-+	if (!cc->compatible)
-+		return -ENODEV;
-+
-+	return cpufreq_register_driver(&bmips_cpufreq_driver);
-+}
-+device_initcall(bmips_cpufreq_probe);
-+
-+MODULE_AUTHOR("Markus Mayer <mmayer@broadcom.com>");
-+MODULE_DESCRIPTION("CPUfreq driver for Broadcom BMIPS SoCs");
-+MODULE_LICENSE("GPL");
+diff --git a/arch/mips/configs/bmips_stb_defconfig b/arch/mips/configs/bmips_stb_defconfig
+index 3be15cb..3cefa6b 100644
+--- a/arch/mips/configs/bmips_stb_defconfig
++++ b/arch/mips/configs/bmips_stb_defconfig
+@@ -15,6 +15,14 @@ CONFIG_EXPERT=y
+ # CONFIG_BLK_DEV_BSG is not set
+ # CONFIG_IOSCHED_DEADLINE is not set
+ # CONFIG_IOSCHED_CFQ is not set
++CONFIG_CPU_FREQ=y
++CONFIG_CPU_FREQ_STAT=y
++CONFIG_CPU_FREQ_GOV_POWERSAVE=y
++CONFIG_CPU_FREQ_GOV_USERSPACE=y
++CONFIG_CPU_FREQ_GOV_ONDEMAND=y
++CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
++CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
++CONFIG_BMIPS_CPUFREQ=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_PACKET_DIAG=y
 -- 
 2.7.4
