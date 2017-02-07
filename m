@@ -1,65 +1,51 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 5/5] thermal: cpu_cooling: Check OPP for errors
-Date: Tue,  7 Feb 2017 09:40:05 +0530
-Message-ID: <c7fd8a3f970f44f6490d296b9749ef8e9a381c3c.1486440448.git.viresh.kumar@linaro.org>
-References: <79611a51240c83504c35a8739fe8e1837e903671.1486440448.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH -next] PM / OPP: Make _find_opp_table_unlocked() static
+Date: Tue, 7 Feb 2017 09:44:22 +0530
+Message-ID: <20170207041422.GM3131@vireshk-i7>
+References: <20170206142955.790-1-weiyj.lk@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:36312 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752913AbdBGEK3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 23:10:29 -0500
-Received: by mail-pf0-f181.google.com with SMTP id 189so29435045pfu.3
-        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2017 20:10:28 -0800 (PST)
-In-Reply-To: <79611a51240c83504c35a8739fe8e1837e903671.1486440448.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1486440448.git.viresh.kumar@linaro.org>
-References: <cover.1486440448.git.viresh.kumar@linaro.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:34429 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752035AbdBGEOZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 23:14:25 -0500
+Received: by mail-pg0-f46.google.com with SMTP id 14so34651989pgg.1
+        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2017 20:14:25 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20170206142955.790-1-weiyj.lk@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, rui.zhang@intel.com, edubezval@gmail.com, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dan.carpenter@oracle.com
+To: Wei Yongjun <weiyj.lk@gmail.com>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Wei Yongjun <weiyongjun1@huawei.com>, linux-pm@vger.kernel.org
 
-It is possible for dev_pm_opp_find_freq_exact() to return errors. It was
-all fine earlier as dev_pm_opp_get_voltage() had a check within it to
-check for invalid OPPs, but dev_pm_opp_put() doesn't have any similar
-checks and the callers need to make sure OPP is valid before calling
-them.
+On 06-02-17, 14:29, Wei Yongjun wrote:
+> From: Wei Yongjun <weiyongjun1@huawei.com>
+> 
+> Fixes the following sparse warning:
+> 
+> drivers/base/power/opp/core.c:49:18: warning:
+>  symbol '_find_opp_table_unlocked' was not declared. Should it be static?
+> 
+> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> ---
+>  drivers/base/power/opp/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> index 541d32c..91ec323 100644
+> --- a/drivers/base/power/opp/core.c
+> +++ b/drivers/base/power/opp/core.c
+> @@ -46,7 +46,7 @@ static struct opp_device *_find_opp_dev(const struct device *dev,
+>  	return NULL;
+>  }
+>  
+> -struct opp_table *_find_opp_table_unlocked(struct device *dev)
+> +static struct opp_table *_find_opp_table_unlocked(struct device *dev)
+>  {
+>  	struct opp_table *opp_table;
 
-Also update the later dev_warn_ratelimited() to not print the error
-message as the OPP is guaranteed to be valid now.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Reported-by: Dan Carpenter <dan.carpenter@oracle.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/thermal/cpu_cooling.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index caaaeb3ac0f0..30d736289b87 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -431,13 +431,20 @@ static int get_static_power(struct cpufreq_cooling_device *cpufreq_device,
- 
- 	opp = dev_pm_opp_find_freq_exact(cpufreq_device->cpu_dev, freq_hz,
- 					 true);
-+	if (IS_ERR(opp)) {
-+		dev_warn_ratelimited(cpufreq_device->cpu_dev,
-+				     "Failed to find OPP for frequency %lu: %ld\n",
-+				     freq_hz, PTR_ERR(opp));
-+		return -EINVAL;
-+	}
-+
- 	voltage = dev_pm_opp_get_voltage(opp);
- 	dev_pm_opp_put(opp);
- 
- 	if (voltage == 0) {
- 		dev_err_ratelimited(cpufreq_device->cpu_dev,
--				    "Failed to get voltage for frequency %lu: %ld\n",
--				    freq_hz, IS_ERR(opp) ? PTR_ERR(opp) : 0);
-+				    "Failed to get voltage for frequency %lu\n",
-+				    freq_hz);
- 		return -EINVAL;
- 	}
- 
 -- 
-2.7.1.410.g6faf27b
-
+viresh
