@@ -1,75 +1,39 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH] PM / Domains: Restore lock-less behaviour for the genpd syscore APIs
-Date: Tue, 07 Feb 2017 10:29:02 -0800
-Message-ID: <m27f51kg7l.fsf@baylibre.com>
-References: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v6 1/2] dt-bindings: brcm: clocks: add binding for
+ brcmstb-cpu-clk-div
+Date: Tue, 7 Feb 2017 12:41:45 -0600
+Message-ID: <20170207184145.32brcgfvl66p5qtm@rob-hp-laptop>
+References: <20170201232638.74396-1-code@mmayer.net>
+ <20170201232638.74396-2-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:34062 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754490AbdBGS3E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 13:29:04 -0500
-Received: by mail-pg0-f44.google.com with SMTP id 14so40813076pgg.1
-        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2017 10:29:04 -0800 (PST)
-In-Reply-To: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org> (Ulf
-        Hansson's message of "Tue, 7 Feb 2017 16:53:04 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20170201232638.74396-2-code@mmayer.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Markus Mayer <code@mmayer.net>
+Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>, Power Management List <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, Linux Clock List <linux-clk@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Geert Uytterhoeven <geert@linux-m68k.org>, Lina Iyer <lina.iyer@linaro.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Brian Norris <briannorris@chromium.org>
 
-Ulf Hansson <ulf.hansson@linaro.org> writes:
+On Wed, Feb 01, 2017 at 03:26:37PM -0800, Markus Mayer wrote:
+> From: Markus Mayer <mmayer@broadcom.com>
+> 
+> Add binding document for brcm,brcmstb-cpu-clk-div.
+> 
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> ---
+>  .../bindings/clock/brcm,brcmstb-cpu-clk-div.txt    | 22 ++++++++++++++++++++++
+>  MAINTAINERS                                        |  1 +
+>  2 files changed, 23 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
 
-> The commit ef4f7e2c8335 ("PM / Domains: Fix asynchronous execution of
-> *noirq() callbacks") went too far, as it not only changed to use locks for
-> the *noirq callbacks, but also for the genpd syscore APIs.
->
-> This cause the following error, reported by Geert Uytterhoeven:
->
-> "This causes the following BUG on all my Renesas arm32 boards, where the
-> system timer is an IRQ safe device:
->
-> BUG: sleeping function called from invalid context at
-> kernel/locking/mutex.c:232
-> in_atomic(): 0, irqs_disabled(): 128, pid: 1751, name: s2ram
-> CPU: 0 PID: 1751 Comm: s2ram Not tainted
-> 4.10.0-rc7-koelsch-05643-g27f4c73972a614fe #3354
-> Hardware name: Generic R8A7791 (Flattened Device Tree)
-> [<c020e9c4>] (unwind_backtrace) from [<c020a40c>] (show_stack+0x10/0x14)
-> [<c020a40c>] (show_stack) from [<c03f9818>] (dump_stack+0x7c/0x9c)
-> [<c03f9818>] (dump_stack) from [<c0240020>] (___might_sleep+0x124/0x160)
-> [<c0240020>] (___might_sleep) from [<c06fedfc>] (mutex_lock+0x18/0x60)
-> [<c06fedfc>] (mutex_lock) from [<c04de340>]
-> (genpd_syscore_switch+0x2c/0x7c)
-> [<c04de340>] (genpd_syscore_switch) from [<c05ec328>]
-> (sh_cmt_clock_event_suspend+0x18/0x28)
-> [<c05ec328>] (sh_cmt_clock_event_suspend) from [<c027f9a4>]
-> (clockevents_suspend+0x40/0x54)
-> [<c027f9a4>] (clockevents_suspend) from [<c0276d48>]
-> (timekeeping_suspend+0x23c/0x278)
-> [<c0276d48>] (timekeeping_suspend) from [<c04cbb88>]
-> (syscore_suspend+0x88/0x138)
-> [<c04cbb88>] (syscore_suspend) from [<c025f618>]
-> (suspend_devices_and_enter+0x290/0x470)
-> [<c025f618>] (suspend_devices_and_enter) from [<c025fa20>]
-> (pm_suspend+0x228/0x280)
-> [<c025fa20>] (pm_suspend) from [<c025e60c>] (state_store+0xac/0xcc)
-> [<c025e60c>] (state_store) from [<c0340c4c>] (kernfs_fop_write+0x160/0x19c)
-> [<c0340c4c>] (kernfs_fop_write) from [<c02e3054>] (__vfs_write+0x20/0x108)
-> [<c02e3054>] (__vfs_write) from [<c02e4424>] (vfs_write+0xb8/0x144)
-> [<c02e4424>] (vfs_write) from [<c02e5014>] (SyS_write+0x40/0x80)
-> [<c02e5014>] (SyS_write) from [<c0206cc0>] (ret_fast_syscall+0x0/0x34)"
->
-> To fix this problem, restore the lock-less behaviour. However only for the
-> genpd syscore APIs.
->
-> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> Fixes: ef4f7e2c8335 ("PM / Domains: Fix asynchronous execution of *noirq() callbacks")
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-It's up to Rafael, but IMO, since this isn't yet in mainline, it would
-be cleaner for the git history to revert the original, and rework the
-patch to have just the relevant parts
-
-Kevin
+Acked-by: Rob Herring <robh@kernel.org>
