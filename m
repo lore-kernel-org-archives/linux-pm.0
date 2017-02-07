@@ -1,125 +1,59 @@
-From: Elaine Zhang <zhangqing-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM
- phases
-Date: Tue, 07 Feb 2017 17:22:51 +0800
-Message-ID: <589991EB.9090501@rock-chips.com>
-References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
- <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com>
- <58842848.5090806@rock-chips.com>
- <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
- <5896F1A5.9080405@rock-chips.com>
- <CAPDyKFpXXL+zpGZCYSEqtJ6_1=tH+FCths7HuuO5OdRcALoRRA@mail.gmail.com>
- <589925B7.4020009@rock-chips.com>
- <CAPDyKFojbX1uiS00EsyxxkM5uLUbHkbu3xAN4R5=PKo4iFOcCA@mail.gmail.com>
+From: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] power: supply: Add driver for TI BQ2416X battery charger
+Date: Tue, 7 Feb 2017 13:08:21 +0200
+Message-ID: <CAHp75VfWNd8p7eg9TU2SNC1dqBMf0fmkbEVmkWOWcDqHrDgOLQ@mail.gmail.com>
+References: <1486429749-12973-1-git-send-email-wojciech.ziemba@verifone.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <CAPDyKFojbX1uiS00EsyxxkM5uLUbHkbu3xAN4R5=PKo4iFOcCA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
-List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
- <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Tao Huang <huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Feng Xiao <xf-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1486429749-12973-1-git-send-email-wojciech.ziemba-VFDYytZz4I1Wk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wojciech Ziemba <wo.ziemba-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, wojciech.ziemba-VFDYytZz4I1Wk0Htik3J/w@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, Feb 7, 2017 at 3:09 AM, Wojciech Ziemba <wo.ziemba-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> There is interest in adding a Linux driver for TI BQ2416X battery
+> charger. The driver supports BQ24160 chip, thus can be easily extended
+> for other BQ2416X family chargers.
+> Device exposes 'POWER_SUPPLY_PROP_*' properties and a number of knobs
+> for controlling the charging process as well as sends power supply change
+> notification via power-supply subsystem.
 
+Some style related comments
 
-On 02/07/2017 04:19 PM, Ulf Hansson wrote:
-> [...]
->
->>>
->>>
->>> Unfortunate, I am still not fully understanding the scenarios. As you
->>> indicate, the problem seems related to wakeup settings.
->>>
->>> Could you please try to answer the below questions, hopefully it helps
->>> me to better understand.
->>>
->>> 1)
->>> While starting the system suspend sequence, under what circumstances
->>> are you expecting the vdd_gpu and pd_gpu to be powered on?
->>>
->>
->> I don't want to power on the vdd_gpu and pd_gpu during the system suspend
->> sequence.
->> I hope the pd_gpu and vdd_gpu power on/off just by gpu device.
->
-> Let me rephrase my question.
->
-> Can the vdd_gpu/pd_gpu ever remain in a powered on state while the
-> system is suspended?
->
-NO, the vdd_gpu/pd_gpu ever remain in a powered off state while the
-system is suspended.
-> If yes, when is that the case?
->
->>
->>> 2)
->>> While starting the system suspend sequence, under what circumstances
->>> are you expecting the vdd_gpu and the pd_gpu to be powered off?
->>>
->>
->> I don't want to power off the vdd_gpu and pd_gpu during the system suspend
->> sequence.
->> Because before the system suspend,the vdd_gpu and pd_gpu has been power off
->> by gpu device(pm_ruantime_put).
->
-> *Exactly*, how do you guarantee that a pm_runtime_put() for the gpu
-> device triggers a runtime suspend - before a system suspend sequence
-> starts?
->
-> For example, userspace may via sysfs prevent runtime suspend for any
-> device with runtime PM enabled.
->
-Yes, you are right.I did't consider this.
-Whether on or off pd_gpu, the vdd_gpu is must be enabled.How to deal 
-with the enable/disable the vdd_gpu?
+0. Less lines of code -> better! (but not be too eager)
+1. Use GENMASK()
+2.
+int ret = -EINVAL;
 
-our process in devices/platform/ff9a0000.gpu:
-device init
-	pm_runtime_enable()
+if (a)
+ ret = x;
+else if (b)
+ ret = y;
 
-gpu_power_on
-	regulator_enable(vdd_gpu)
-	pm_runtime_get_sync(pd_gpu)
+>> else
+>> ret = -EINVAL;
 
-gpu_power_off
-	pm_runtime_put_sync(pd_gpu)
-	regulator_disable(vdd_gpu)
+Those are redundant.
 
-device remove
-	pm_runtime_disable()
+if (ret)
+ return ret;
 
->>
->>> 3)
->>> What devices are attached to vdd_gpu?
->>>
->> just pd_gpu
->>>
->>> 4)
->>> What devices are attached to pd_gpu?
->>>
->> just gpu device(mali driver)
->>
->> vdd_gpu
->> ------- pd_gpu
->> ----------------devices/platform/ff9a0000.gpu
->>>
->>>
->
-> Thanks for these details, very useful!
->
-> [...]
->
-> Kind regards
-> Uffe
->
->
->
+3. #ifdef:s are ugly.
+For CONFIG_PM_SLEEP functions just use
+__maybe_unused attribute.
+
+4. Try to avoid #ifdef CONFIG_OF (this will limit driver for OF case
+when it might be used elsewhere, e.g. ACPI case)
+
+5. Check headers and library for existing helpers. I believe some of
+your bit operations and such already have nice helpers in kernel.
+
+-- 
+With Best Regards,
+Andy Shevchenko
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
