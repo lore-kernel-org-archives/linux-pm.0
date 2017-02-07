@@ -1,181 +1,91 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCHv2 1/2] arch: Move CONFIG_DEBUG_RODATA and
- CONFIG_SET_MODULE_RONX to be common
-Date: Tue, 7 Feb 2017 08:36:07 +0100
-Message-ID: <20170207073607.GA32054@amd>
-References: <1486144343-24998-1-git-send-email-labbott@redhat.com>
- <1486144343-24998-2-git-send-email-labbott@redhat.com>
- <CAGXu5jK6_y=dWHUDBto7ykN_sSOQ6Gx+sZs_gQ1Hoh5DjP-fTw@mail.gmail.com>
- <20170203202919.GE27312@n2100.armlinux.org.uk>
- <CAGXu5j+HOTHRrFJFMsMaAvqcTAUoEBuphzrYAr7VAjJQU9_RYA@mail.gmail.com>
- <f88765d3-4c45-542e-892b-33a6c3c3c4d2@redhat.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2] PM / Domains: Keep the pd status during system PM phases
+Date: Tue, 7 Feb 2017 09:19:09 +0100
+Message-ID: <CAPDyKFojbX1uiS00EsyxxkM5uLUbHkbu3xAN4R5=PKo4iFOcCA@mail.gmail.com>
+References: <1484878893-25270-1-git-send-email-zhangqing@rock-chips.com>
+ <CAPDyKFp0GrSQYftSk1UHUSL=+OR_BGf4OVxJDVht-eXnTX8CtQ@mail.gmail.com>
+ <58842848.5090806@rock-chips.com> <CAPDyKFpHttGjKGJi5_TbaD0uepMRC8+NSUqAa5Pmg5j61PT4-Q@mail.gmail.com>
+ <5896F1A5.9080405@rock-chips.com> <CAPDyKFpXXL+zpGZCYSEqtJ6_1=tH+FCths7HuuO5OdRcALoRRA@mail.gmail.com>
+ <589925B7.4020009@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="uAKRQypu60I7Lcqm"
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51646 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752035AbdBGHgL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 02:36:11 -0500
-Content-Disposition: inline
-In-Reply-To: <f88765d3-4c45-542e-892b-33a6c3c3c4d2@redhat.com>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:37391 "EHLO
+        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752933AbdBGITL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 03:19:11 -0500
+Received: by mail-wm0-f54.google.com with SMTP id v77so143447593wmv.0
+        for <linux-pm@vger.kernel.org>; Tue, 07 Feb 2017 00:19:10 -0800 (PST)
+In-Reply-To: <589925B7.4020009@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Laura Abbott <labbott@redhat.com>
-Cc: Kees Cook <keescook@chromium.org>, Russell King - ARM Linux <linux@armlinux.org.uk>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Mark Rutland <mark.rutland@arm.com>, Jessica Yu <jeyu@redhat.com>"linux-doc@vger.kernel.org" <linux>
+To: Elaine Zhang <zhangqing@rock-chips.com>
+Cc: Feng Xiao <xf@rock-chips.com>, Heiko Stuebner <heiko@sntech.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tao Huang <huangtao@rock-chips.com>, xxx@rock-chips.com, Caesar Wang <wxt@rock-chips.com>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
+[...]
 
---uAKRQypu60I7Lcqm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>>
+>>
+>> Unfortunate, I am still not fully understanding the scenarios. As you
+>> indicate, the problem seems related to wakeup settings.
+>>
+>> Could you please try to answer the below questions, hopefully it helps
+>> me to better understand.
+>>
+>> 1)
+>> While starting the system suspend sequence, under what circumstances
+>> are you expecting the vdd_gpu and pd_gpu to be powered on?
+>>
+>
+> I don't want to power on the vdd_gpu and pd_gpu during the system suspend
+> sequence.
+> I hope the pd_gpu and vdd_gpu power on/off just by gpu device.
 
-On Mon 2017-02-06 10:47:45, Laura Abbott wrote:
-> On 02/03/2017 01:08 PM, Kees Cook wrote:
-> > On Fri, Feb 3, 2017 at 12:29 PM, Russell King - ARM Linux
-> > <linux@armlinux.org.uk> wrote:
-> >> On Fri, Feb 03, 2017 at 11:45:56AM -0800, Kees Cook wrote:
-> >>> On Fri, Feb 3, 2017 at 9:52 AM, Laura Abbott <labbott@redhat.com> wro=
-te:
-> >>>> diff --git a/arch/Kconfig b/arch/Kconfig
-> >>>> index 99839c2..22ee01e 100644
-> >>>> --- a/arch/Kconfig
-> >>>> +++ b/arch/Kconfig
-> >>>> @@ -781,4 +781,32 @@ config VMAP_STACK
-> >>>>           the stack to map directly to the KASAN shadow map using a =
-formula
-> >>>>           that is incorrect if the stack is in vmalloc space.
-> >>>>
-> >>>> +config ARCH_NO_STRICT_RWX_DEFAULTS
-> >>>> +       def_bool n
-> >>>> +
-> >>>> +config ARCH_HAS_STRICT_KERNEL_RWX
-> >>>> +       def_bool n
-> >>>> +
-> >>>> +config DEBUG_RODATA
-> >>>> +       def_bool y if !ARCH_NO_STRICT_RWX_DEFAULTS
-> >>>> +       prompt "Make kernel text and rodata read-only" if ARCH_NO_ST=
-RICT_RWX_DEFAULTS
-> >>>
-> >>> Ah! Yes, perfect. I totally forgot about using conditional "prompt"
-> >>> lines. Nice!
-> >>
-> >> It's no different from the more usual:
-> >>
-> >>         bool "Make kernel text and rodata read-only" if ARCH_NO_STRICT=
-_RWX_DEFAULTS
-> >>         default y if !ARCH_NO_STRICT_RWX_DEFAULTS
-> >>         depends on ARCH_HAS_STRICT_KERNEL_RWX
-> >>
-> >> But... I really don't like this - way too many negations and negatives
-> >> which make it difficult to figure out what's going on here.
-> >>
-> >> The situation we have today is:
-> >>
-> >> -config DEBUG_RODATA
-> >> -       bool "Make kernel text and rodata read-only"
-> >> -       depends on MMU && !XIP_KERNEL
-> >> -       default y if CPU_V7
-> >>
-> >> which is "allow the user to select DEBUG_RODATA if building a MMU non-=
-XIP
-> >> kernel", suggesting that the user turns it on for ARMv7 CPUs.
-> >>
-> >> That changes with this and the above:
-> >>
-> >> +       select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
-> >> +       select ARCH_HAS_STRICT_MODULE_RWX if MMU
-> >> +       select ARCH_NO_STRICT_RWX_DEFAULTS if !CPU_V7
-> >>
-> >> This means that ARCH_HAS_STRICT_KERNEL_RWX is set for a MMU non-XIP
-> >> kernel, which carries the same pre-condition for DEBUG_RODATA - no
-> >> problem there.
-> >>
-> >> However, ARCH_NO_STRICT_RWX_DEFAULTS is set for non-ARMv7 CPUs, which
-> >> means the "Make kernel text and rodata read-only" prompt _is_ provided
-> >> for those.  However, for all ARMv7 systems, we go from "suggesting that
-> >> the user enables the option" to "you don't have a choice, you get this
-> >> whether you want it or not."
-> >>
-> >> I'd prefer to keep it off for my development systems, where I don't
-> >> care about kernel security.  If we don't wish to do that as a general
-> >> rule, can we make it dependent on EMBEDDED?
-> >>
-> >> Given that on ARM it can add up to 4MB to the kernel image - there
-> >> _will_ be about 1MB before the .text section, the padding on between
-> >> __modver and __ex_table which for me is around 626k, the padding
-> >> between .notes and the init sections start with .vectors (the space
-> >> between __ex_table and end of .notes is only 4124, which gets padded
-> >> up to 1MB) and lastly the padding between the .init section and the
-> >> data section (for me around 593k).  This all adds up to an increase
-> >> in kernel image size of 3.2MB on 14.2MB - an increase of 22%.
-> >>
-> >> So no, I'm really not happy with that.
-> >=20
-> > Ah yeah, good point. We have three cases: unsupported, mandatory,
-> > optional, but we have the case of setting the default for the optional
-> > case. Maybe something like this?
-> >=20
-> > config STRICT_KERNEL_RWX
-> >   bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_=
-RWX
-> >   depends on ARCH_HAS_STRICT_KERNEL_RWX
-> >   default ARCH_OPTIONAL_KERNEL_RWX_DEFAULT
-> >=20
-> > unsupported:
-> > !ARCH_HAS_STRICT_KERNEL_RWX
-> >=20
-> > mandatory:
-> > ARCH_HAS_STRICT_KERNEL_RWX
-> > !ARCH_OPTIONAL_KERNEL_RWX
-> >=20
-> > optional:
-> > ARCH_HAS_STRICT_KERNEL_RWX
-> > ARCH_OPTIONAL_KERNEL_RWX
-> > with default controlled by ARCH_OPTIONAL_KERNEL_RWX_DEFAULT
-> >=20
-> > Then arm is:
-> >   select ARCH_HAS_STRICT_KERNEL_RWX if MMU && !XIP_KERNEL
-> >   select ARCH_HAS_STRICT_MODULE_RWX if MMU
-> >   select ARCH_OPTIONAL_KERNEL_RWX if ARCH_HAS_STRICT_KERNEL_RWX
-> >   select ARCH_OPTIONAL_KERNEL_RWX_DEFAULT if CPU_V7
-> >=20
-> > x86 and arm64 are:
-> >   select ARCH_HAS_STRICT_KERNEL_RWX
-> >   select ARCH_HAS_STRICT_MODULE_RWX
-> >=20
-> > ?
-> >=20
-> > -Kees
-> >=20
->=20
-> Yes, that looks good. I wanted it to be mandatory to avoid the
-> mindset of "optional means we don't need it" but I see there
-> are some cases where it's better to turn it off. I'll see if
-> I can emphasize this properly in the help text ("Say Y here
-> unless you love security exploits running in production")
+Let me rephrase my question.
 
-What about fixing the memory wastage, instead? If you want something
-almost-always-on, it should not waste megabytes of memory.
+Can the vdd_gpu/pd_gpu ever remain in a powered on state while the
+system is suspended?
 
-And BTW it is help text, not advertising for your favourite feature.
-									Pavel
+If yes, when is that the case?
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+>
+>> 2)
+>> While starting the system suspend sequence, under what circumstances
+>> are you expecting the vdd_gpu and the pd_gpu to be powered off?
+>>
+>
+> I don't want to power off the vdd_gpu and pd_gpu during the system suspend
+> sequence.
+> Because before the system suspend,the vdd_gpu and pd_gpu has been power off
+> by gpu device(pm_ruantime_put).
 
---uAKRQypu60I7Lcqm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+*Exactly*, how do you guarantee that a pm_runtime_put() for the gpu
+device triggers a runtime suspend - before a system suspend sequence
+starts?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+For example, userspace may via sysfs prevent runtime suspend for any
+device with runtime PM enabled.
 
-iEYEARECAAYFAliZeOcACgkQMOfwapXb+vIc1QCdGBBKU2hn8xN42ay0JGRyEQOp
-ihIAn0k+i064RqrbuZPkvyOSl/mzNcnF
-=eSsv
------END PGP SIGNATURE-----
+>
+>> 3)
+>> What devices are attached to vdd_gpu?
+>>
+> just pd_gpu
+>>
+>> 4)
+>> What devices are attached to pd_gpu?
+>>
+> just gpu device(mali driver)
+>
+> vdd_gpu
+> ------- pd_gpu
+> ----------------devices/platform/ff9a0000.gpu
+>>
+>>
 
---uAKRQypu60I7Lcqm--
+Thanks for these details, very useful!
+
+[...]
+
+Kind regards
+Uffe
