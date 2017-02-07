@@ -1,59 +1,58 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH v5 0/4] cpufreq: Introduce TI CPUFreq/OPP Driver
-Date: Tue, 7 Feb 2017 10:51:03 -0600
-Message-ID: <20170207165107.29394-1-d-gerlach@ti.com>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 1/2][RFC v3] ACPI throttling: Disable the MSR T-state if
+ enabled after resumed
+Date: Wed, 8 Feb 2017 00:55:20 +0800
+Message-ID: <20170207165520.GA2505@chenyu-MacBookPro>
+References: <cover.1486483294.git.yu.c.chen@intel.com>
+ <1fd9d91c7cbdd314ebb6e65264f57f430dfb89ca.1486483294.git.yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:11979 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753840AbdBGQxN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 11:53:13 -0500
+Received: from mga06.intel.com ([134.134.136.31]:7799 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754217AbdBGQzX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 Feb 2017 11:55:23 -0500
+Content-Disposition: inline
+In-Reply-To: <1fd9d91c7cbdd314ebb6e65264f57f430dfb89ca.1486483294.git.yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lukasz Majewski <lukma@denx.de>
+To: linux-pm@vger.kernel.org
+Cc: inux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Matthew Garrett <mjg59@srcf.ucam.org>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@kernel.org>
 
-Hi,
-This is v5 of the series to introduce the ti-cpufreq driver
-which parses SoC data and provides opp-supported-hw data to the
-OPP core in order to enable the proper OPPs for the silicon in use.
+On Wed, Feb 08, 2017 at 12:23:16AM +0800, Chen Yu wrote:
+> Previously a bug was reported that on certain Broadwell
+> platform, after resumed from S3, the CPU is running at
+> an anomalously low speed, due to the BIOS has enabled the
+> MSR throttling across S3. The solution to this was to introduce
+> a quirk framework to save/restore tstate MSR register around
+> suspend/resume, in Commit 7a9c2dd08ead ("x86/pm:
+> Introduce quirk framework to save/restore extra MSR
+> registers around suspend/resume").
+> 
+> There are three problems here:
+> 1. More and more reports show that other platforms also
+>    encountered the same issue, so the quirk list might
+>    be endless.
+> 2. Each CPUs should take the save/restore operation into
+>    consideration, rather than the nonboot CPU alone.
+> 3. Normally ACPI T-state re-evaluation is done on resume,
+>    however there is no _TSS on the bogus platform, thus
+>    above re-evaluation code does not run on that machine.
+> 
+> Solution:
+> This patch is based on the fact that, we generally should not
+> expect the system to come back from resume with throttling
+> enabled, but leverage the OS components to deal with it,
+> such as thermal event. So we simply clear the MSR T-state
+> and print the warning if it is found to be enabled after
+> resumed back.
+>
+[cut] 
+> +
+> +static void throttling_msr_reevaluate(int cpu)
+> +{
+> +	return -1;
+Oops, I made a mistake, should not return any value here.
+But please help check if this draft is in the right direction? thanks very much.
 
-History:
-v4: http://www.spinics.net/lists/linux-omap/msg134629.html
-v3: http://www.spinics.net/lists/linux-omap/msg132733.html
-v2: http://www.spinics.net/lists/linux-omap/msg131601.html
-v1: http://www.spinics.net/lists/linux-omap/msg129089.html
-
-Very minor changes from v4:
-	* In patch 2 change "opp_table0" to "opp_table" in example
-	* Add acks on all patches (he approved change in patch 2) from Viresh
-
-DT patches to enable this driver will follow after the DT binding is merged.
-Branch for testing, with updated DT nodes, pushed here [1].
-
-Regards,
-Dave
-
-[1] https://github.com/dgerlach/linux-pm/commits/upstream/ti-cpufreq-driver-new-v5
-
-Dave Gerlach (4):
-  PM / OPP: Expose _of_get_opp_desc_node as dev_pm_opp API
-  Documentation: dt: add bindings for ti-cpufreq
-  cpufreq: ti: Add cpufreq driver to determine available OPPs at runtime
-  cpufreq: dt: Don't use generic platdev driver for ti-cpufreq platforms
-
- .../devicetree/bindings/cpufreq/ti-cpufreq.txt     | 128 ++++++++++
- drivers/base/power/opp/of.c                        |   9 +-
- drivers/cpufreq/Kconfig.arm                        |  11 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/cpufreq-dt-platdev.c               |   2 -
- drivers/cpufreq/ti-cpufreq.c                       | 272 +++++++++++++++++++++
- include/linux/pm_opp.h                             |   6 +
- 7 files changed, 423 insertions(+), 6 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/ti-cpufreq.txt
- create mode 100644 drivers/cpufreq/ti-cpufreq.c
-
--- 
-2.11.0
-
+Yu
