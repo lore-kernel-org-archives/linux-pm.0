@@ -1,56 +1,53 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 4/4] MIPS: BMIPS: enable CPUfreq
-Date: Tue, 7 Feb 2017 09:49:59 +0530
-Message-ID: <20170207041959.GP3131@vireshk-i7>
-References: <20170206215119.87099-1-code@mmayer.net>
- <20170206215119.87099-5-code@mmayer.net>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCHv3 1/2] arch: Move CONFIG_DEBUG_RODATA and
+ CONFIG_SET_MODULE_RONX to be common
+Date: Tue, 7 Feb 2017 08:16:46 +0100
+Message-ID: <20170207071646.GA18584@gmail.com>
+References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
+ <1486427518-14819-2-git-send-email-labbott@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f43.google.com ([74.125.83.43]:36075 "EHLO
-        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752616AbdBGEUC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Feb 2017 23:20:02 -0500
-Received: by mail-pg0-f43.google.com with SMTP id v184so34655542pgv.3
-        for <linux-pm@vger.kernel.org>; Mon, 06 Feb 2017 20:20:02 -0800 (PST)
+Return-path: <linux-doc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170206215119.87099-5-code@mmayer.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1486427518-14819-2-git-send-email-labbott@redhat.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Laura Abbott <labbott@redhat.com>
+Cc: Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Jason Wessel <jason.wessel@windriver.com>, Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, Rob Herring <robh@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jessica Yu <jeyu@redhat.com>, linux-doc@vger.kernel.org, linux-ker
 List-Id: linux-pm@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Markus Mayer <mmayer@broadcom.com>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 06-02-17, 13:51, Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
+
+* Laura Abbott <labbott@redhat.com> wrote:
+
 > 
-> Enable all applicable CPUfreq options.
+> There are multiple architectures that support CONFIG_DEBUG_RODATA and
+> CONFIG_SET_MODULE_RONX. These options also now have the ability to be
+> turned off at runtime. Move these to an architecture independent
+> location and make these options def_bool y for almost all of those
+> arches.
 > 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> Signed-off-by: Laura Abbott <labbott@redhat.com>
 > ---
->  arch/mips/configs/bmips_stb_defconfig | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/arch/mips/configs/bmips_stb_defconfig b/arch/mips/configs/bmips_stb_defconfig
-> index 3be15cb..3cefa6b 100644
-> --- a/arch/mips/configs/bmips_stb_defconfig
-> +++ b/arch/mips/configs/bmips_stb_defconfig
-> @@ -15,6 +15,14 @@ CONFIG_EXPERT=y
->  # CONFIG_BLK_DEV_BSG is not set
->  # CONFIG_IOSCHED_DEADLINE is not set
->  # CONFIG_IOSCHED_CFQ is not set
-> +CONFIG_CPU_FREQ=y
-> +CONFIG_CPU_FREQ_STAT=y
-> +CONFIG_CPU_FREQ_GOV_POWERSAVE=y
-> +CONFIG_CPU_FREQ_GOV_USERSPACE=y
-> +CONFIG_CPU_FREQ_GOV_ONDEMAND=y
-> +CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
-> +CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
-> +CONFIG_BMIPS_CPUFREQ=y
->  CONFIG_NET=y
->  CONFIG_PACKET=y
->  CONFIG_PACKET_DIAG=y
+> v3: Make these configs selectable for arm. Include some documentation about
+> how the setup of the optional Kconfigs work as well. Stop spelling 'kenrel'
+> in prompt text.
+> ---
+>  Documentation/security/self-protection.txt |  6 ++++++
+>  arch/Kconfig                               | 34 ++++++++++++++++++++++++++++++
+>  arch/arm/Kconfig                           |  4 ++++
+>  arch/arm/Kconfig.debug                     | 11 ----------
+>  arch/arm/mm/Kconfig                        | 12 -----------
+>  arch/arm64/Kconfig                         |  5 ++---
+>  arch/arm64/Kconfig.debug                   | 11 ----------
+>  arch/parisc/Kconfig                        |  1 +
+>  arch/parisc/Kconfig.debug                  | 11 ----------
+>  arch/s390/Kconfig                          |  5 ++---
+>  arch/s390/Kconfig.debug                    |  3 ---
+>  arch/x86/Kconfig                           |  5 ++---
+>  arch/x86/Kconfig.debug                     | 11 ----------
+>  13 files changed, 51 insertions(+), 68 deletions(-)
 
-Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
+Acked-by: Ingo Molnar <mingo@kernel.org>
 
--- 
-viresh
+Thanks,
+
+	Ingo
