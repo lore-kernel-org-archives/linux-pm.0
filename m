@@ -1,58 +1,97 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH v5 2/4] Documentation: dt: add bindings for ti-cpufreq
-Date: Wed, 8 Feb 2017 08:45:55 -0600
-Message-ID: <2aba1159-9a48-329f-2a54-8079b32b06e2@ti.com>
-References: <20170203172929.23940-1-d-gerlach@ti.com>
- <20170203172929.23940-3-d-gerlach@ti.com>
- <CAL_Jsq+955fra0P8FFWd4-f2rLyJVMwo-FBRfeqqeO=a8m0NnA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAL_Jsq+955fra0P8FFWd4-f2rLyJVMwo-FBRfeqqeO=a8m0NnA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Rob Herring <robh+dt@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lukasz Majewski <lukma@denx.de>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: [PATCH 1/2] PM / Domains: Ignore domain-idle-states that are not compatible
+Date: Wed,  8 Feb 2017 08:34:51 -0800
+Message-ID: <1486571692-33212-3-git-send-email-lina.iyer@linaro.org>
+References: <1486571692-33212-1-git-send-email-lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f53.google.com ([74.125.83.53]:35943 "EHLO
+        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752563AbdBHQfo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2017 11:35:44 -0500
+Received: by mail-pg0-f53.google.com with SMTP id v184so50217547pgv.3
+        for <linux-pm@vger.kernel.org>; Wed, 08 Feb 2017 08:35:08 -0800 (PST)
+In-Reply-To: <1486571692-33212-1-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>, devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>
 
-On 02/08/2017 08:44 AM, Rob Herring wrote:
-> On Fri, Feb 3, 2017 at 11:29 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
->> Add the device tree bindings document for the TI CPUFreq/OPP driver
->> on AM33xx, AM43xx, DRA7xx, and AM57xx SoCs. The operating-points-v2
->> binding allows us to provide an opp-supported-hw property for each OPP
->> to define when it is available. This driver is responsible for reading
->> and parsing registers to determine which OPPs can be selectively enabled
->> based on the specific SoC in use by matching against the opp-supported-hw
->> data.
->>
->> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->> ---
->
-> [...]
->
->> +/*
->> + * cpu0 has different OPPs depending on SoC revision and some on revisions
->> + * 0x2 and 0x4 have eFuse bits that indicate if they are available or not
->> + */
->> +cpu0_opp_table: opp_table {
->
-> One step closer, but as I showed last time, use a '-', not '_'.
+domain-idle-states property may have phandles to idle state bindings
+that may not be compatible with idle state definition defined in [1].
+Such phandles would just be ignored and not throw and error when read by
+the domain core.
 
-I apologize I thought the comment was only about the 0, completely missed the 
-underscore, you are correct, thanks.
+Cc: <devicetree@vger.kernel.org>
+Cc: Rob Herring <robh@kernel.org>
+Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+---
+ Documentation/devicetree/bindings/power/power_domain.txt |  4 +++-
+ drivers/base/power/domain.c                              | 16 +++++++++-------
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-Regards,
-Dave
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 723e1ad..940707d 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -31,7 +31,9 @@ Optional properties:
+ 
+ - domain-idle-states : A phandle of an idle-state that shall be soaked into a
+                 generic domain power state. The idle state definitions are
+-                compatible with domain-idle-state specified in [1].
++                compatible with domain-idle-state specified in [1]. phandles
++                that are not compatible with domain-idle-state will be
++                ignored.
+   The domain-idle-state property reflects the idle state of this PM domain and
+   not the idle states of the devices or sub-domains in the PM domain. Devices
+   and sub-domains have their own idle-states independent of the parent
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 6b23d82..3825bb9 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2065,11 +2065,6 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
+ 	int err;
+ 	u32 residency;
+ 	u32 entry_latency, exit_latency;
+-	const struct of_device_id *match_id;
+-
+-	match_id = of_match_node(idle_state_match, state_node);
+-	if (!match_id)
+-		return -EINVAL;
+ 
+ 	err = of_property_read_u32(state_node, "entry-latency-us",
+ 						&entry_latency);
+@@ -2118,6 +2113,7 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 	int err, ret;
+ 	int count;
+ 	struct of_phandle_iterator it;
++	const struct of_device_id *match_id;
+ 
+ 	count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
+ 	if (count <= 0)
+@@ -2130,6 +2126,9 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 	/* Loop over the phandles until all the requested entry is found */
+ 	of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
+ 		np = it.node;
++		match_id = of_match_node(idle_state_match, np);
++		if (!match_id)
++			continue;
+ 		ret = genpd_parse_state(&st[i++], np);
+ 		if (ret) {
+ 			pr_err
+@@ -2141,8 +2140,11 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 		}
+ 	}
+ 
+-	*n = count;
+-	*states = st;
++	*n = i;
++	if (!i)
++		kfree(st);
++	else
++		*states = st;
+ 
+ 	return 0;
+ }
+-- 
+2.7.4
 
->
-> Rob
->
