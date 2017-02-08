@@ -1,139 +1,49 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Fix compatible for domain idle state
-Date: Wed, 8 Feb 2017 09:42:42 -0700
-Message-ID: <20170208164242.GC2564@linaro.org>
-References: <1486571692-33212-1-git-send-email-lina.iyer@linaro.org>
- <1486571692-33212-2-git-send-email-lina.iyer@linaro.org>
+From: Markus Mayer <markus.mayer@broadcom.com>
+Subject: Re: [PATCH v6 1/2] dt-bindings: brcm: clocks: add binding for
+ brcmstb-cpu-clk-div
+Date: Wed, 8 Feb 2017 09:29:20 -0800
+Message-ID: <CAGt4E5t8rtgCgCTMcU1m0Gq9BgHckTUus3h8=j03NF0k4icwzg@mail.gmail.com>
+References: <20170201232638.74396-1-code@mmayer.net>
+ <20170201232638.74396-2-code@mmayer.net>
+ <20170207184145.32brcgfvl66p5qtm@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:36816 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754058AbdBHQmn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2017 11:42:43 -0500
-Received: by mail-pg0-f44.google.com with SMTP id v184so50262666pgv.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Feb 2017 08:42:43 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1486571692-33212-2-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170207184145.32brcgfvl66p5qtm@rob-hp-laptop>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Device Tree List <devicetree@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, Power Management List <linux-pm@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Viresh Kumar <viresh.kumar@linaro.org>, Markus Mayer <code@mmayer.net>, Linux Clock List <linux-clk@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>
 
-On Wed, Feb 08 2017 at 09:35 -0700, Lina Iyer wrote:
->Re-using idle state definition provided by arm,idle-state for domain
->idle states creates a lot of confusion and limits further evolution of
->the domain idle definition. To keep things clear and simple, define a
->idle states for domain using a new compatible "domain-idle-state".
+On 7 February 2017 at 10:41, Rob Herring <robh@kernel.org> wrote:
+> On Wed, Feb 01, 2017 at 03:26:37PM -0800, Markus Mayer wrote:
+>> From: Markus Mayer <mmayer@broadcom.com>
+>>
+>> Add binding document for brcm,brcmstb-cpu-clk-div.
+>>
+>> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+>> ---
+>>  .../bindings/clock/brcm,brcmstb-cpu-clk-div.txt    | 22 ++++++++++++++++++++++
+>>  MAINTAINERS                                        |  1 +
+>>  2 files changed, 23 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/clock/brcm,brcmstb-cpu-clk-div.txt
 >
->Fix existing PM domains code to look for the newly defined compatible.
->
->Cc: <devicetree@vger.kernel.org>
->Cc: Rob Herring <robh@kernel.org>
->Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> Acked-by: Rob Herring <robh@kernel.org>
 
-Sorry, this has already been applied. Got tagged along with the email.
-Kindly ignore.
+Actually, Stephen wasn't liking this too much.
 
-Thanks,
-Lina
+See [1] for the conclusion of the ensuing discussion.
 
->---
-> .../bindings/power/domain-idle-state.txt           | 33 ++++++++++++++++++++++
-> .../devicetree/bindings/power/power_domain.txt     |  8 +++---
-> drivers/base/power/domain.c                        |  2 +-
-> 3 files changed, 38 insertions(+), 5 deletions(-)
-> create mode 100644 Documentation/devicetree/bindings/power/domain-idle-state.txt
->
->diff --git a/Documentation/devicetree/bindings/power/domain-idle-state.txt b/Documentation/devicetree/bindings/power/domain-idle-state.txt
->new file mode 100644
->index 0000000..eefc7ed
->--- /dev/null
->+++ b/Documentation/devicetree/bindings/power/domain-idle-state.txt
->@@ -0,0 +1,33 @@
->+PM Domain Idle State Node:
->+
->+A domain idle state node represents the state parameters that will be used to
->+select the state when there are no active components in the domain.
->+
->+The state node has the following parameters -
->+
->+- compatible:
->+	Usage: Required
->+	Value type: <string>
->+	Definition: Must be "domain-idle-state".
->+
->+- entry-latency-us
->+	Usage: Required
->+	Value type: <prop-encoded-array>
->+	Definition: u32 value representing worst case latency in
->+		    microseconds required to enter the idle state.
->+		    The exit-latency-us duration may be guaranteed
->+		    only after entry-latency-us has passed.
->+
->+- exit-latency-us
->+	Usage: Required
->+	Value type: <prop-encoded-array>
->+	Definition: u32 value representing worst case latency
->+		    in microseconds required to exit the idle state.
->+
->+- min-residency-us
->+	Usage: Required
->+	Value type: <prop-encoded-array>
->+	Definition: u32 value representing minimum residency duration
->+		    in microseconds after which the idle state will yield
->+		    power benefits after overcoming the overhead in entering
->+i		    the idle state.
->diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
->index e165036..723e1ad 100644
->--- a/Documentation/devicetree/bindings/power/power_domain.txt
->+++ b/Documentation/devicetree/bindings/power/power_domain.txt
->@@ -31,7 +31,7 @@ Optional properties:
->
-> - domain-idle-states : A phandle of an idle-state that shall be soaked into a
->                 generic domain power state. The idle state definitions are
->-                compatible with arm,idle-state specified in [1].
->+                compatible with domain-idle-state specified in [1].
->   The domain-idle-state property reflects the idle state of this PM domain and
->   not the idle states of the devices or sub-domains in the PM domain. Devices
->   and sub-domains have their own idle-states independent of the parent
->@@ -85,7 +85,7 @@ Example 3:
-> 	};
->
-> 	DOMAIN_RET: state@0 {
->-		compatible = "arm,idle-state";
->+		compatible = "domain-idle-state";
-> 		reg = <0x0>;
-> 		entry-latency-us = <1000>;
-> 		exit-latency-us = <2000>;
->@@ -93,7 +93,7 @@ Example 3:
-> 	};
->
-> 	DOMAIN_PWR_DN: state@1 {
->-		compatible = "arm,idle-state";
->+		compatible = "domain-idle-state";
-> 		reg = <0x1>;
-> 		entry-latency-us = <5000>;
-> 		exit-latency-us = <8000>;
->@@ -118,4 +118,4 @@ The node above defines a typical PM domain consumer device, which is located
-> inside a PM domain with index 0 of a power controller represented by a node
-> with the label "power".
->
->-[1]. Documentation/devicetree/bindings/arm/idle-states.txt
->+[1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
->diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->index 661737c..f0bc672 100644
->--- a/drivers/base/power/domain.c
->+++ b/drivers/base/power/domain.c
->@@ -2048,7 +2048,7 @@ int genpd_dev_pm_attach(struct device *dev)
-> EXPORT_SYMBOL_GPL(genpd_dev_pm_attach);
->
-> static const struct of_device_id idle_state_match[] = {
->-	{ .compatible = "arm,idle-state", },
->+	{ .compatible = "domain-idle-state", },
-> 	{ }
-> };
->
->-- 
->2.7.4
->
+Regards,
+-Markus
+
+[1] https://lkml.org/lkml/2017/2/6/982
