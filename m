@@ -1,62 +1,81 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH v2 02/25] mfd: axp20x: correct name of temperature data
- ADC registers
-Date: Wed, 8 Feb 2017 09:26:07 +0000
-Message-ID: <20170208092607.qlzm7pt4w3wqempf@dell>
-References: <20170127085458.18270-1-quentin.schulz@free-electrons.com>
- <20170127085458.18270-3-quentin.schulz@free-electrons.com>
+From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Subject: Re: [PATCH 2/2] ARM: dts: bcm283x: Add critical thermal zone for GPU
+Date: Wed, 8 Feb 2017 10:56:56 +0100
+Message-ID: <93f3ecbc-6d28-3e04-d6f3-4c03f8ac7ab3@i2se.com>
+References: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+ <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com>
+ <1486217787-15703-2-git-send-email-stefan.wahren@i2se.com>
+ <20170208041929.GA6809@localhost.localdomain>
+ <20170208042351.GB6809@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20170127085458.18270-3-quentin.schulz@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux@armlinux.org.uk, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170208042351.GB6809-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gRnJpLCAyNyBKYW4gMjAxNywgUXVlbnRpbiBTY2h1bHogd3JvdGU6Cgo+IFRoZSByZWdpc3Rl
-cnMgMHg1NiBhbmQgMHg1NyBvZiBBWFAyMlggUE1JQyBzdG9yZSB0aGUgdmFsdWUgb2YgdGhlCj4g
-aW50ZXJuYWwgdGVtcGVyYXR1cmUgb2YgdGhlIFBNSUMuCj4gCj4gVGhpcyBwYXRjaCBtb2RpZmll
-cyB0aGUgbmFtZSBvZiB0aGVzZSByZWdpc3RlcnMgZnJvbSBBWFAyMlhfUE1JQ19BRENfSC9MCj4g
-dG8gQVhQMjJYX1BNSUNfVEVNUF9IL0wgc28gdGhlaXIgcHVycG9zZSBpcyBjbGVhcmVyLgo+IAo+
-IFNpZ25lZC1vZmYtYnk6IFF1ZW50aW4gU2NodWx6IDxxdWVudGluLnNjaHVsekBmcmVlLWVsZWN0
-cm9ucy5jb20+Cj4gLS0tCj4gCj4gYWRkZWQgaW4gdjIKPiAKPiAgZHJpdmVycy9tZmQvYXhwMjB4
-LmMgICAgICAgfCAyICstCj4gIGluY2x1ZGUvbGludXgvbWZkL2F4cDIweC5oIHwgNCArKy0tCj4g
-IDIgZmlsZXMgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQoKRm9yIG15
-IG93biByZWZlcmVuY2U6CiAgQWNrZWQtZm9yLU1GRC1ieTogTGVlIEpvbmVzIDxsZWUuam9uZXNA
-bGluYXJvLm9yZz4KICAKPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tZmQvYXhwMjB4LmMgYi9kcml2
-ZXJzL21mZC9heHAyMHguYwo+IGluZGV4IDYxOWE4M2UuLjljMmZkMzcgMTAwNjQ0Cj4gLS0tIGEv
-ZHJpdmVycy9tZmQvYXhwMjB4LmMKPiArKysgYi9kcml2ZXJzL21mZC9heHAyMHguYwo+IEBAIC0x
-MDIsNyArMTAyLDcgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCByZWdtYXBfcmFuZ2UgYXhwMjJ4X3Zv
-bGF0aWxlX3Jhbmdlc1tdID0gewo+ICAJcmVnbWFwX3JlZ19yYW5nZShBWFAyMFhfVkJVU19JUFNP
-VVRfTUdNVCwgQVhQMjBYX1ZCVVNfSVBTT1VUX01HTVQpLAo+ICAJcmVnbWFwX3JlZ19yYW5nZShB
-WFAyMFhfSVJRMV9FTiwgQVhQMjBYX0lSUTVfU1RBVEUpLAo+ICAJcmVnbWFwX3JlZ19yYW5nZShB
-WFAyMlhfR1BJT19TVEFURSwgQVhQMjJYX0dQSU9fU1RBVEUpLAo+IC0JcmVnbWFwX3JlZ19yYW5n
-ZShBWFAyMlhfUE1JQ19BRENfSCwgQVhQMjBYX0lQU09VVF9WX0hJR0hfTCksCj4gKwlyZWdtYXBf
-cmVnX3JhbmdlKEFYUDIyWF9QTUlDX1RFTVBfSCwgQVhQMjBYX0lQU09VVF9WX0hJR0hfTCksCj4g
-IAlyZWdtYXBfcmVnX3JhbmdlKEFYUDIwWF9GR19SRVMsIEFYUDIwWF9GR19SRVMpLAo+ICB9Owo+
-ICAKPiBkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9tZmQvYXhwMjB4LmggYi9pbmNsdWRlL2xp
-bnV4L21mZC9heHAyMHguaAo+IGluZGV4IGE0ODYwYmMuLjVlY2FkYmIgMTAwNjQ0Cj4gLS0tIGEv
-aW5jbHVkZS9saW51eC9tZmQvYXhwMjB4LmgKPiArKysgYi9pbmNsdWRlL2xpbnV4L21mZC9heHAy
-MHguaAo+IEBAIC0yMjgsOCArMjI4LDggQEAgZW51bSB7Cj4gICNkZWZpbmUgQVhQMjBYX09DVl9N
-QVgJCQkweGYKPiAgCj4gIC8qIEFYUDIyWCBzcGVjaWZpYyByZWdpc3RlcnMgKi8KPiAtI2RlZmlu
-ZSBBWFAyMlhfUE1JQ19BRENfSAkJMHg1Ngo+IC0jZGVmaW5lIEFYUDIyWF9QTUlDX0FEQ19MCQkw
-eDU3Cj4gKyNkZWZpbmUgQVhQMjJYX1BNSUNfVEVNUF9ICQkweDU2Cj4gKyNkZWZpbmUgQVhQMjJY
-X1BNSUNfVEVNUF9MCQkweDU3Cj4gICNkZWZpbmUgQVhQMjJYX1RTX0FEQ19ICQkJMHg1OAo+ICAj
-ZGVmaW5lIEFYUDIyWF9UU19BRENfTAkJCTB4NTkKPiAgI2RlZmluZSBBWFAyMlhfQkFUTE9XX1RI
-UkVTMQkJMHhlNgoKLS0gCkxlZSBKb25lcwpMaW5hcm8gU1RNaWNyb2VsZWN0cm9uaWNzIExhbmRp
-bmcgVGVhbSBMZWFkCkxpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0g
-U29DcwpGb2xsb3cgTGluYXJvOiBGYWNlYm9vayB8IFR3aXR0ZXIgfCBCbG9nCgpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1h
-aWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xp
-c3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+Am 08.02.2017 um 05:23 schrieb Eduardo Valentin:
+> On Tue, Feb 07, 2017 at 08:19:31PM -0800, Eduardo Valentin wrote:
+>> On Sat, Feb 04, 2017 at 02:16:27PM +0000, Stefan Wahren wrote:
+>>> As suggested by Eduardo Valentin this adds the thermal zone for
+>>> the bcm2835 SoC. Since we currently don't have any cooling devices
+>>> leave this section empty.
+>>>
+>>> Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+>>> ---
+>>>  arch/arm/boot/dts/bcm283x.dtsi |   19 +++++++++++++++++++
+>>>  1 file changed, 19 insertions(+)
+>>>
+>>> diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+>>> index 9c7ec7e..359da9d 100644
+>>> --- a/arch/arm/boot/dts/bcm283x.dtsi
+>>> +++ b/arch/arm/boot/dts/bcm283x.dtsi
+>>> @@ -19,6 +19,25 @@
+>>>  		bootargs = "earlyprintk console=ttyAMA0";
+>>>  	};
+>>>  
+>>> +	thermal-zones {
+>>> +		gpu_thermal: gpu-thermal {
+>>> +			polling-delay-passive = <0>;
+>>> +			polling-delay = <1000>;
+>>> +
+>>> +			thermal-sensors = <&thermal>;
+> Just came to my mind, dont you need to have an id to specify with sensor
+> points to gpu?
+
+Sorry, i don't know the exact setup of the single thermal sensor on the
+SoC (datasheet doesn't provide any helpful information). I adapted the
+Renesas R-Car thermal binding because i think it would be the best match.
+
+@Eric: What's your opinion?
+
+>
+>>> +
+>>> +			trips {
+>>> +				cpu-crit {
+>>> +					temperature	= <80000>;
+>>> +					hysteresis	= <0>;
+>>> +					type		= "critical";
+>>> +				};
+>>> +			};
+>>> +			cooling-maps {
+>>> +			};
+>>> +		};
+>>> +	};
+>>> +
+>> This is fine with me. Checking the other patches in the series.
+>>
+>>>  	soc {
+>>>  		compatible = "simple-bus";
+>>>  		#address-cells = <1>;
+>>> -- 
+>>> 1.7.9.5
+>>>
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
