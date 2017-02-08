@@ -1,310 +1,74 @@
-From: <yuantian.tang@nxp.com>
-Subject: [PATCH 2/2 v2] cpufreq: qoriq: Don't look at clock implementation
- details
-Date: Wed, 8 Feb 2017 13:43:05 +0800
-Message-ID: <1486532585-36463-2-git-send-email-yuantian.tang@nxp.com>
-References: <1486532585-36463-1-git-send-email-yuantian.tang@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1486532585-36463-1-git-send-email-yuantian.tang@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, Scott Wood <scottwood@nxp.com>, Tang Yuantian <yuantian.tang@nxp.com>, linux-arm-kernel@lists.infradead.org
+From: kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
+Subject: Re: [PATCH V9] thermal: bcm2835: add thermal driver for bcm2835 soc
+Date: Wed, 8 Feb 2017 09:19:48 +0100
+Message-ID: <909C8619-2800-4BCA-A7C1-BCE7797D52C3@martin.sperl.org>
+References: <1483808145-6206-1-git-send-email-kernel@martin.sperl.org>
+ <20170120041400.GA24617@localhost.localdomain>
+ <060918B6-A773-46A5-8D10-C9F6BBA6D3F1@martin.sperl.org>
+ <20170124093127.GB3651@localhost.localdomain>
+ <0452720A-5914-469B-9EF7-0581CF1B5478@martin.sperl.org>
+ <20170202042930.GA6377@localhost.localdomain>
+ <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+ <20170208043107.GA7097@localhost.localdomain>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-rpi-kernel-bounces+glkr-linux-rpi-kernel=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <20170208043107.GA7097-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rpi-kernel>,
+ <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rpi-kernel/>
+List-Post: <mailto:linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rpi-kernel>,
+ <mailto:linux-rpi-kernel-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "linux-rpi-kernel" <linux-rpi-kernel-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rpi-kernel-bounces+glkr-linux-rpi-kernel=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lee Jones <lee-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-rpi-kernel <linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Tang Yuantian <Yuantian.Tang@nxp.com>
-
-Get the CPU clock's potential parent clocks from the clock interface
-itself, rather than manually parsing the clocks property to find a
-phandle, looking at the clock-names property of that, and assuming that
-those are valid parent clocks for the cpu clock.
-
-This is necessary now that the clocks are generated based on the clock
-driver's knowledge of the chip rather than a fragile device-tree
-description of the mux options.
-
-We can now rely on the clock driver to ensure that the mux only exposes
-options that are valid.  The cpufreq driver was currently being overly
-conservative in some cases -- for example, the "min_cpufreq =
-get_bus_freq()" restriction only applies to chips with erratum
-A-004510, and whether the freq_mask used on p5020 is needed depends on
-the actual frequencies of the PLLs (FWIW, p5040 has a similar
-limitation but its .freq_mask was zero) -- and the frequency mask
-mechanism made assumptions about particular parent clock indices that
-are no longer valid.
-
-Signed-off-by: Scott Wood <scottwood@nxp.com>
-Signed-off-by: Tang Yuantian <yuantian.tang@nxp.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-v2:
-  - added more soc compatible strings
-
- drivers/cpufreq/qoriq-cpufreq.c | 145 +++++++++++++---------------------------
- 1 file changed, 48 insertions(+), 97 deletions(-)
-
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 53d8c3f..eee83c1 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -11,6 +11,7 @@
- #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
- 
- #include <linux/clk.h>
-+#include <linux/clk-provider.h>
- #include <linux/cpufreq.h>
- #include <linux/cpu_cooling.h>
- #include <linux/errno.h>
-@@ -37,53 +38,20 @@ struct cpu_data {
- 	struct thermal_cooling_device *cdev;
- };
- 
-+/*
-+ * Don't use cpufreq on this SoC -- used when the SoC would have otherwise
-+ * matched a more generic compatible.
-+ */
-+#define SOC_BLACKLIST		1
-+
- /**
-  * struct soc_data - SoC specific data
-- * @freq_mask: mask the disallowed frequencies
-- * @flag: unique flags
-+ * @flags: SOC_xxx
-  */
- struct soc_data {
--	u32 freq_mask[4];
--	u32 flag;
--};
--
--#define FREQ_MASK	1
--/* see hardware specification for the allowed frqeuencies */
--static const struct soc_data sdata[] = {
--	{ /* used by p2041 and p3041 */
--		.freq_mask = {0x8, 0x8, 0x2, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p5020 */
--		.freq_mask = {0x8, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p4080, p5040 */
--		.freq_mask = {0},
--		.flag = 0,
--	},
-+	u32 flags;
- };
- 
--/*
-- * the minimum allowed core frequency, in Hz
-- * for chassis v1.0, >= platform frequency
-- * for chassis v2.0, >= platform frequency / 2
-- */
--static u32 min_cpufreq;
--static const u32 *fmask;
--
--#if defined(CONFIG_ARM)
--static int get_cpu_physical_id(int cpu)
--{
--	return topology_core_id(cpu);
--}
--#else
--static int get_cpu_physical_id(int cpu)
--{
--	return get_hard_smp_processor_id(cpu);
--}
--#endif
--
- static u32 get_bus_freq(void)
- {
- 	struct device_node *soc;
-@@ -101,9 +69,10 @@ static u32 get_bus_freq(void)
- 	return sysfreq;
- }
- 
--static struct device_node *cpu_to_clk_node(int cpu)
-+static struct clk *cpu_to_clk(int cpu)
- {
--	struct device_node *np, *clk_np;
-+	struct device_node *np;
-+	struct clk *clk;
- 
- 	if (!cpu_present(cpu))
- 		return NULL;
-@@ -112,37 +81,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
- 	if (!np)
- 		return NULL;
- 
--	clk_np = of_parse_phandle(np, "clocks", 0);
--	if (!clk_np)
--		return NULL;
--
-+	clk = of_clk_get(np, 0);
- 	of_node_put(np);
--
--	return clk_np;
-+	return clk;
- }
- 
- /* traverse cpu nodes to get cpu mask of sharing clock wire */
- static void set_affected_cpus(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *clk_np;
- 	struct cpumask *dstp = policy->cpus;
-+	struct clk *clk;
- 	int i;
- 
--	np = cpu_to_clk_node(policy->cpu);
--	if (!np)
--		return;
--
- 	for_each_present_cpu(i) {
--		clk_np = cpu_to_clk_node(i);
--		if (!clk_np)
-+		clk = cpu_to_clk(i);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: no clock for cpu %d\n", __func__, i);
- 			continue;
-+		}
- 
--		if (clk_np == np)
-+		if (clk_is_match(policy->clk, clk))
- 			cpumask_set_cpu(i, dstp);
--
--		of_node_put(clk_np);
- 	}
--	of_node_put(np);
- }
- 
- /* reduce the duplicated frequencies in frequency table */
-@@ -200,8 +160,9 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct device_node *np, *pnode;
- 	int i, count, ret;
--	u32 freq, mask;
-+	u32 freq;
- 	struct clk *clk;
-+	const struct clk_hw *hwclk;
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
- 	unsigned int cpu = policy->cpu;
-@@ -221,17 +182,13 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_nomem2;
- 	}
- 
--	pnode = of_parse_phandle(np, "clocks", 0);
--	if (!pnode) {
--		pr_err("%s: could not get clock information\n", __func__);
--		goto err_nomem2;
--	}
-+	hwclk = __clk_get_hw(policy->clk);
-+	count = clk_hw_get_num_parents(hwclk);
- 
--	count = of_property_count_strings(pnode, "clock-names");
- 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
- 	if (!data->pclk) {
- 		pr_err("%s: no memory\n", __func__);
--		goto err_node;
-+		goto err_nomem2;
- 	}
- 
- 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
-@@ -240,23 +197,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_pclk;
- 	}
- 
--	if (fmask)
--		mask = fmask[get_cpu_physical_id(cpu)];
--	else
--		mask = 0x0;
--
- 	for (i = 0; i < count; i++) {
--		clk = of_clk_get(pnode, i);
-+		clk = clk_hw_get_parent_by_index(hwclk, i)->clk;
- 		data->pclk[i] = clk;
- 		freq = clk_get_rate(clk);
--		/*
--		 * the clock is valid if its frequency is not masked
--		 * and large than minimum allowed frequency.
--		 */
--		if (freq < min_cpufreq || (mask & (1 << i)))
--			table[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			table[i].frequency = freq / 1000;
-+		table[i].frequency = freq / 1000;
- 		table[i].driver_data = i;
- 	}
- 	freq_table_redup(table, count);
-@@ -290,10 +235,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	kfree(table);
- err_pclk:
- 	kfree(data->pclk);
--err_node:
--	of_node_put(pnode);
- err_nomem2:
--	policy->driver_data = NULL;
- 	kfree(data);
- err_np:
- 	of_node_put(np);
-@@ -357,12 +299,25 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.attr		= cpufreq_generic_attr,
- };
- 
-+static const struct soc_data blacklist = {
-+	.flags = SOC_BLACKLIST,
-+};
-+
- static const struct of_device_id node_matches[] __initconst = {
--	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
--	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
--	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
-+	/* e6500 cannot use cpufreq due to erratum A-008083 */
-+	{ .compatible = "fsl,b4420-clockgen", &blacklist },
-+	{ .compatible = "fsl,b4860-clockgen", &blacklist },
-+	{ .compatible = "fsl,t2080-clockgen", &blacklist },
-+	{ .compatible = "fsl,t4240-clockgen", &blacklist },
-+
-+	{ .compatible = "fsl,ls1012a-clockgen", },
-+	{ .compatible = "fsl,ls1021a-clockgen", },
-+	{ .compatible = "fsl,ls1043a-clockgen", },
-+	{ .compatible = "fsl,ls1046a-clockgen", },
-+	{ .compatible = "fsl,ls1088a-clockgen", },
-+	{ .compatible = "fsl,ls2080a-clockgen", },
-+	{ .compatible = "fsl,p4080-clockgen", },
-+	{ .compatible = "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
- 	{}
- };
-@@ -380,16 +335,12 @@ static int __init qoriq_cpufreq_init(void)
- 
- 	match = of_match_node(node_matches, np);
- 	data = match->data;
--	if (data) {
--		if (data->flag)
--			fmask = data->freq_mask;
--		min_cpufreq = get_bus_freq();
--	} else {
--		min_cpufreq = get_bus_freq() / 2;
--	}
- 
- 	of_node_put(np);
- 
-+	if (data && data->flags & SOC_BLACKLIST)
-+		return -ENODEV;
-+
- 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
- 	if (!ret)
- 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
--- 
-2.1.0.27.g96db324
+Cj4gT24gMDguMDIuMjAxNywgYXQgMDU6MzEsIEVkdWFyZG8gVmFsZW50aW4gPGVkdWJlenZhbEBn
+bWFpbC5jb20+IHdyb3RlOgo+IAo+IE9uIFNhdCwgRmViIDA0LCAyMDE3IGF0IDA5OjM1OjQ3QU0g
+KzAxMDAsIGtlcm5lbEBtYXJ0aW4uc3Blcmwub3JnIHdyb3RlOgo+PiAKPiAKPj4gU28gaG93IGRv
+ZXMgdGhpcyBjaGFuZ2UvaW1wYWN0IHRoZSBkcml2ZXIgY29kZSBpdHNlbGY/Cj4+IAo+PiBEZWZp
+bmluZyBhIHRoZXJtYWwgem9uZSBpbiB0aGUgZHRzIGlzIGp1c3QgYW4gYWRkaXRpb25hbCBmZWF0
+dXJlCj4+IHRoYXQgb25seSBpbXBhY3RzIHRoZSBkZXZpY2UgdHJlZS4KPj4gVGhlIERUIGFzIGlz
+IHdvcmtzIGZpbmUgYW5kIGF0IGxlYXN0IGFsbG93cyB0byByZWFkIHRoZSBjdXJyZW50IHRlbXBl
+cmF0dXJlLgo+IAo+IFdlbGwsIHlvdXIgZHJpdmVyIGlzIHN0aWxsIGhhbGYgZmluaXNoZWQuIEl0
+IGlzIGEgRFQgb25seSBkcml2ZXIsIHdoaWNoCj4gZG9lcyBub3QgZm9sbG93IHRoZSBEVCBzcGVj
+IG9uIHRoZXJtYWwuIFRoZSBpbXBhY3Qgb24geW91ciBjb2RlIGlzIHRoYXQKPiBpdCB3b250IG5l
+ZWQgdG8gY2FycnkgeW91ciBoYXJkd2FyZSBkYXRhIGluIHRoZSBzb3VyY2UgY29kZS4KPiAKPiBB
+bHNvLCBoYXZpbmcgdGhlIGRhdGEgZGVzY3JpYmVkIGluIERUIGFsbG93cyB5b3UgcG9ydGluZyB5
+b3VyIGRyaXZlcgo+IHdpdGhvdXQgcGF0Y2hpbmcgaXQsIGluICBjYXNlIHlvdSBuZWVkLCBvciBh
+bnkgb3RoZXIgc3lzdGVtIGVuZ2luZWVyLAo+IHRvIGhhdmUgZGlmZmVyZW50IHRoZXJtYWwgZGF0
+YSwgdHJpcHMgdmFsdWVzLCBudW1iZXIgb3IgdHJpcHMsIG9mZnNldAo+IGFuZCBzbG9wZSBwZXIg
+c2Vuc29yLCBvbiBkaWZmZXJlbnQgYm9hcmRzLCBvciBldmVuIG9uIGRpZmZlcmVudCBjaGlwCj4g
+dmVyc2lvbi4KPiAKPiBOb3QgdG8gc2F5IHRoYXQgaGF2aW5nIHRoZSBkYXRhIGRlc2NyaWJlZCBp
+biBEVCBhbHNvIGFsbG93cyBzeXN0ZW0KPiBlbmdpbmVlcnMgdG8gZGVwbG95IGRpZmZlcmVudCB0
+aGVybWFsIHpvbmVzLCBiYXNlZCBvbiB5b3VyCj4gZHJpdmVyL3NlbnNvciwgdG8gZXh0cmFwb2xh
+dGUgZGlmZmVyZW50IGhvdHNwb3RzLgo+IAoKVGhhdCBpcyBhbGwgdHJ1ZSBhbmQgYXMgZmFyIGFz
+IEkgdW5kZXJzdGFuZCB5b3UgY2FuIGRvIGFsbCBvZiB0aGF0CnVzaW5nIHRoZSBjdXJyZW50IGRy
+aXZlciAtIHNlZSB0aGUgcGF0Y2gtc2V0cyBieSBTdGVmYW4gV2FocmVuIHRoYXQKaW5jb3Jwb3Jh
+dGVzIHRoaXMgaW50byB0aGUgZHRzLgoKTXkgcG9pbnQgaXMgc3RpbGw6IHRoZXJlIGFyZSBkdGLi
+gJlzIHRoYXQgY29tZSB3aXRoIDQuMTAtcmNYCnRoYXQgZG8gbm90IGhhdmUgYWxsIG9mIHRob3Nl
+IGRlZmluZWQgCgpCdXQgYXMgdGhlIG1hbnRyYSBmb3IgRFQgaXM6ICJpdCBpcyBhbiBBUEnigJ0s
+IHdlIGhhdmUgdG8gYmUgYmFja3dhcmRzCmNvbXBhdGlibGUgZnJvbSB0aGUgZHJpdmVyIHBlcnNw
+ZWN0aXZlLgpTbyB3ZSBuZWVkIHRob3NlIHZhbHVlcyBpbiB0aGUgZHJpdmVyIHRvIGVuc3VyZSB0
+aGUgb2xkZXIgdmVyc2lvbgpvZiBkdGLigJlzIGFyZSB3b3JraW5nIGNvcnJlY3RseS4gVGhhdCBp
+cyB3aHkgaXQgaXMgc3RpbGwgaW5jbHVkZWQuCgpBbHNvIHRoZSBzZXR0aW5ncyBvZiB0aGUgdHJp
+cCBhcmUgZm9yIHRoZSBIVyB0cmlwIHBvaW50IGZvciB0aGUgY2FzZQp0aGF0IGEgZnV0dXJlIHZl
+cnNpb24gb2YgdGhlIGZpcm13YXJlIGRvZXMgbm90IHNldCB1cCB0aGUgdGhlcm1hbApIVyBibG9j
+ay4KCkRvIHlvdSByZWFsbHkgd2FudCB0byBicmVhayB0aGlzIE1hbnRyYSBvZiBiYWNrd2FyZHMg
+Y29tcGF0aWJpbGl0eQpieSBoYXZpbmcgdGhvc2UgY29tcGF0aWJsaXR5IOKAnGRlZmluZXPigJ0g
+c3RyaXBwZWQgb3V0IHdpdGggYWxsIHRoZQpwb3NzaWJsZSBuZWdhdGl2ZSBzaWRlLWVmZmVjdHMg
+aWYgdGhpbmdzIGFyZSBub3Qgc2V0IHVwIGNvcnJlY3RseT8KClRoYW5rcywKCU1hcnRpbgoKUC5z
+OiBJIGZpbmQgaXQgc3RyYW5nZSB0aGF0IFYzIG9mIHRoZSBkcml2ZXIgd2FzIHNlbnQgb3V0IGlu
+IE1heSAyMDE2Cih3YXkgYmVmb3JlIHRoZSBEVFMgY2hhbmdlcyBnb3QgbWVyZ2VkKSBhbmQgeW91
+IG9ubHkgc3RhcnRlZCB0byAKZ2l2ZSBmZWVkYmFjayBpbiBOb3ZlbWJlciBvbmx5IGluIFY4ICh0
+aGF0IHByaW1hcmlseSBpbmNvcnBvcmF0ZWQKbWlub3IgY2hhbmdlcyBhbmQgYSByZWJhc2UgdG8g
+NC45KSBieSB3aGljaCB0aW1lIHRoZSBjaGFuZ2VzIHRvIHRoZQpkdHMgaGF2ZSBhbHJlYWR5IGJl
+ZW4gbWVyZ2VkLgoKCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KbGludXgtcnBpLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtcnBpLWtlcm5lbEBsaXN0
+cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtcnBpLWtlcm5lbAo=
