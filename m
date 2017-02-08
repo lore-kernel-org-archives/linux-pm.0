@@ -1,43 +1,73 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 3/4] cpufreq: bmips-cpufreq: CPUfreq driver for
- Broadcom's BMIPS SoCs
-Date: Wed, 8 Feb 2017 09:01:30 +0530
-Message-ID: <20170208033130.GD14503@vireshk-i7>
-References: <20170207215856.8999-1-code@mmayer.net>
- <20170207215856.8999-4-code@mmayer.net>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH 2/2] ARM: dts: bcm283x: Add critical thermal zone for GPU
+Date: Tue, 7 Feb 2017 20:23:54 -0800
+Message-ID: <20170208042351.GB6809@localhost.localdomain>
+References: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+ <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com>
+ <1486217787-15703-2-git-send-email-stefan.wahren@i2se.com>
+ <20170208041929.GA6809@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-mips-bounce@linux-mips.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170207215856.8999-4-code@mmayer.net>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: Markus Mayer <code@mmayer.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Markus Mayer <mmayer@broadcom.com>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20170208041929.GA6809-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-02-17, 13:58, Markus Mayer wrote:
-> From: Markus Mayer <mmayer@broadcom.com>
-> 
-> Add the MIPS CPUfreq driver. This driver currently supports CPUfreq on
-> BMIPS5xxx-based SoCs.
-> 
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
-> ---
->  drivers/cpufreq/Kconfig         |  10 +++
->  drivers/cpufreq/Makefile        |   1 +
->  drivers/cpufreq/bmips-cpufreq.c | 188 ++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 199 insertions(+)
->  create mode 100644 drivers/cpufreq/bmips-cpufreq.c
+On Tue, Feb 07, 2017 at 08:19:31PM -0800, Eduardo Valentin wrote:
+> On Sat, Feb 04, 2017 at 02:16:27PM +0000, Stefan Wahren wrote:
+> > As suggested by Eduardo Valentin this adds the thermal zone for
+> > the bcm2835 SoC. Since we currently don't have any cooling devices
+> > leave this section empty.
+> > 
+> > Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+> > ---
+> >  arch/arm/boot/dts/bcm283x.dtsi |   19 +++++++++++++++++++
+> >  1 file changed, 19 insertions(+)
+> > 
+> > diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+> > index 9c7ec7e..359da9d 100644
+> > --- a/arch/arm/boot/dts/bcm283x.dtsi
+> > +++ b/arch/arm/boot/dts/bcm283x.dtsi
+> > @@ -19,6 +19,25 @@
+> >  		bootargs = "earlyprintk console=ttyAMA0";
+> >  	};
+> >  
+> > +	thermal-zones {
+> > +		gpu_thermal: gpu-thermal {
+> > +			polling-delay-passive = <0>;
+> > +			polling-delay = <1000>;
+> > +
+> > +			thermal-sensors = <&thermal>;
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Just came to my mind, dont you need to have an id to specify with sensor
+points to gpu?
 
--- 
-viresh
+> > +
+> > +			trips {
+> > +				cpu-crit {
+> > +					temperature	= <80000>;
+> > +					hysteresis	= <0>;
+> > +					type		= "critical";
+> > +				};
+> > +			};
+> > +			cooling-maps {
+> > +			};
+> > +		};
+> > +	};
+> > +
+> 
+> This is fine with me. Checking the other patches in the series.
+> 
+> >  	soc {
+> >  		compatible = "simple-bus";
+> >  		#address-cells = <1>;
+> > -- 
+> > 1.7.9.5
+> > 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
