@@ -1,54 +1,48 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Restore lock-less behaviour for the genpd
- syscore APIs
-Date: Wed, 8 Feb 2017 13:41:25 +0100
-Message-ID: <CAPDyKFpvmp9TY6xyU_jS66zv-gSwuq3VBGkNFdQA9Obd4AWrCw@mail.gmail.com>
-References: <1486482784-31734-1-git-send-email-ulf.hansson@linaro.org> <20170207215229.GA2564@linaro.org>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH v5 2/4] Documentation: dt: add bindings for ti-cpufreq
+Date: Wed, 8 Feb 2017 08:44:27 -0600
+Message-ID: <CAL_Jsq+955fra0P8FFWd4-f2rLyJVMwo-FBRfeqqeO=a8m0NnA@mail.gmail.com>
+References: <20170203172929.23940-1-d-gerlach@ti.com>
+ <20170203172929.23940-3-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f180.google.com ([209.85.217.180]:36674 "EHLO
-        mail-ua0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932116AbdBHMl1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Feb 2017 07:41:27 -0500
-Received: by mail-ua0-f180.google.com with SMTP id 96so108132966uaq.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Feb 2017 04:41:26 -0800 (PST)
-In-Reply-To: <20170207215229.GA2564@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170203172929.23940-3-d-gerlach@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lukasz Majewski <lukma@denx.de>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>, Brian Norris <briannorris@chromium.org>
 
-Hi Lina,
-
---
->> drivers/base/power/domain.c | 48
->> +++++++++++++++++++++++++--------------------
->> 1 file changed, 27 insertions(+), 21 deletions(-)
->>
->> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->> index 271e208..3a75fb1 100644
->> --- a/drivers/base/power/domain.c
->> +++ b/drivers/base/power/domain.c
->> @@ -729,16 +729,17 @@ static bool genpd_dev_active_wakeup(struct
->> generic_pm_domain *genpd,
->> /**
->>  * genpd_sync_power_off - Synchronously power off a PM domain and its
->> masters.
->>  * @genpd: PM domain to power off, if possible.
->> + * @use_lock: use the lock.
+On Fri, Feb 3, 2017 at 11:29 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+> Add the device tree bindings document for the TI CPUFreq/OPP driver
+> on AM33xx, AM43xx, DRA7xx, and AM57xx SoCs. The operating-points-v2
+> binding allows us to provide an opp-supported-hw property for each OPP
+> to define when it is available. This driver is responsible for reading
+> and parsing registers to determine which OPPs can be selectively enabled
+> based on the specific SoC in use by matching against the opp-supported-hw
+> data.
 >
->
-> I am not too fond of this. It would rather be much cleaner if you could
-> overload the genpd_lock/unlock() calls to make this genpd lockless. A
-> flag for the genpd, perhaps that could turn the lock functions into a
-> NOP?
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> ---
 
-That's not going to work, because this isn't about a lock-less genpd.
+[...]
 
-The problem occurs only during system suspend for a syscore device (in
-this case the sh_cmt_clock_event device), calling pm_genpd_syscore*
-APIs.
+> +/*
+> + * cpu0 has different OPPs depending on SoC revision and some on revisions
+> + * 0x2 and 0x4 have eFuse bits that indicate if they are available or not
+> + */
+> +cpu0_opp_table: opp_table {
 
-Kind regards
-Uffe
+One step closer, but as I showed last time, use a '-', not '_'.
+
+Rob
