@@ -1,30 +1,42 @@
-From: Eduardo Valentin <edubezval@gmail.com>
+From: Shawn Guo <shawnguo@kernel.org>
 Subject: Re: [PATCH v9 2/3] MAINTAINERS: add zx2967 thermal drivers to ARM
  ZTE architecture
-Date: Tue, 7 Feb 2017 20:45:39 -0800
-Message-ID: <20170208044537.GA20633@localhost.localdomain>
+Date: Wed, 8 Feb 2017 13:12:30 +0800
+Message-ID: <20170208051228.GL3407@dragon>
 References: <1486429001-31940-1-git-send-email-baoyou.xie@linaro.org>
  <1486429001-31940-2-git-send-email-baoyou.xie@linaro.org>
+ <20170208044537.GA20633@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:34452 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751698AbdBHEpo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Feb 2017 23:45:44 -0500
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <1486429001-31940-2-git-send-email-baoyou.xie@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170208044537.GA20633@localhost.localdomain>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, mathieu.poirier@linaro.org, linux-pm@vger.kernel.org, xie.baoyou@zte.com.cn, linux-kernel@vger.kernel.org, robh+dt@kernel.org, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn, jun.nie@linaro.org, Baoyou Xie <baoyou.xie@linaro.org>, rui.zhang@intel.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Baoyou Xie <baoyou.xie@linaro.org>
-Cc: mathieu.poirier@linaro.org, jun.nie@linaro.org, rui.zhang@intel.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, shawnguo@kernel.org, xie.baoyou@zte.com.cn, chen.chaokai@zte.com.cn, wang.qiang01@zte.com.cn
 
+Hi Eduardo,
 
-On Tue, Feb 07, 2017 at 08:56:40AM +0800, Baoyou Xie wrote:
-> Add the zx2967 thermal drivers as maintained by ARM ZTE
-> architecture maintainers, as they're parts of the core IP.
-
-What kernel version is this based off? I could not apply this one
-cleanly.
-
+On Tue, Feb 07, 2017 at 08:45:39PM -0800, Eduardo Valentin wrote:
 > 
+> On Tue, Feb 07, 2017 at 08:56:40AM +0800, Baoyou Xie wrote:
+> > Add the zx2967 thermal drivers as maintained by ARM ZTE
+> > architecture maintainers, as they're parts of the core IP.
+> 
+> What kernel version is this based off? I could not apply this one
+> cleanly.
+
+I think you can skip this one.  We will update MAINTAINERS separately
+through arm-soc tree, after the patch lands on mainline.
+
+Shawn
