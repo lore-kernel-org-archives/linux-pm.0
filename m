@@ -1,387 +1,94 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 2/2] power: bq24190_charger: Use PM runtime autosuspend
-Date: Wed,  8 Feb 2017 15:13:01 -0800
-Message-ID: <20170208231301.1666-3-tony@atomide.com>
-References: <20170208231301.1666-1-tony@atomide.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:34170 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751542AbdBHXNP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 8 Feb 2017 18:13:15 -0500
-In-Reply-To: <20170208231301.1666-1-tony@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/2 v2] cpufreq: qoriq: added arm64 socs support
+Date: Thu, 09 Feb 2017 01:00:16 +0100
+Message-ID: <4804946.bZzESQTVmR@aspire.rjw.lan>
+References: <201702090419.Fn6qZqnq%fengguang.wu@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <201702090419.Fn6qZqnq%fengguang.wu@intel.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: yuantian.tang@nxp.com
+Cc: kbuild test robot <lkp@intel.com>, linux-pm@vger.kernel.org, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, leoyang.li@nxp.com, Tang Yuantian <Yuantian.Tang@nxp.com>, kbuild-all@01.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Liam Breck <kernel@networkimprov.net>, "Mark A . Greer" <mgreer@animalcreek.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-We can get quite a few interrupts when the battery is trickle charging.
-Let's enable PM runtime autosuspend to avoid constantly toggling device
-driver PM runtime state.
+On Thursday, February 09, 2017 04:51:46 AM kbuild test robot wrote:
+> Hi Tang,
+> 
+> [auto build test ERROR on pm/linux-next]
+> [also build test ERROR on v4.10-rc7 next-20170208]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
 
-Let's use a 600 ms timeout as that's how long the USB chager detection
-might take.
+Please fix this.
 
-Acked-by: Mark Greer <mgreer@animalcreek.com>
-Acked-by: Liam Breck <kernel@networkimprov.net>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/power/supply/bq24190_charger.c | 156 ++++++++++++++++++++++++---------
- 1 file changed, 114 insertions(+), 42 deletions(-)
+Thanks,
+Rafael
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -420,6 +420,7 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
- 	struct power_supply *psy = dev_get_drvdata(dev);
- 	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
- 	struct bq24190_sysfs_field_info *info;
-+	ssize_t count;
- 	int ret;
- 	u8 v;
- 
-@@ -427,11 +428,20 @@ static ssize_t bq24190_sysfs_show(struct device *dev,
- 	if (!info)
- 		return -EINVAL;
- 
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0)
-+		return ret;
-+
- 	ret = bq24190_read_mask(bdi, info->reg, info->mask, info->shift, &v);
- 	if (ret)
--		return ret;
-+		count = ret;
-+	else
-+		count = scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
- 
--	return scnprintf(buf, PAGE_SIZE, "%hhx\n", v);
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
-+
-+	return count;
- }
- 
- static ssize_t bq24190_sysfs_store(struct device *dev,
-@@ -451,9 +461,16 @@ static ssize_t bq24190_sysfs_store(struct device *dev,
- 	if (ret < 0)
- 		return ret;
- 
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0)
-+		return ret;
-+
- 	ret = bq24190_write_mask(bdi, info->reg, info->mask, info->shift, v);
- 	if (ret)
--		return ret;
-+		count = ret;
-+
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
- 
- 	return count;
- }
-@@ -795,7 +812,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
- 
- 	dev_dbg(bdi->dev, "prop: %d\n", psp);
- 
--	pm_runtime_get_sync(bdi->dev);
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0)
-+		return ret;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-@@ -835,7 +854,9 @@ static int bq24190_charger_get_property(struct power_supply *psy,
- 		ret = -ENODATA;
- 	}
- 
--	pm_runtime_put_sync(bdi->dev);
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
-+
- 	return ret;
- }
- 
-@@ -848,7 +869,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
- 
- 	dev_dbg(bdi->dev, "prop: %d\n", psp);
- 
--	pm_runtime_get_sync(bdi->dev);
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0)
-+		return ret;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-@@ -864,7 +887,9 @@ static int bq24190_charger_set_property(struct power_supply *psy,
- 		ret = -EINVAL;
- 	}
- 
--	pm_runtime_put_sync(bdi->dev);
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
-+
- 	return ret;
- }
- 
-@@ -1065,7 +1090,9 @@ static int bq24190_battery_get_property(struct power_supply *psy,
- 
- 	dev_dbg(bdi->dev, "prop: %d\n", psp);
- 
--	pm_runtime_get_sync(bdi->dev);
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0)
-+		return ret;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_STATUS:
-@@ -1093,7 +1120,9 @@ static int bq24190_battery_get_property(struct power_supply *psy,
- 		ret = -ENODATA;
- 	}
- 
--	pm_runtime_put_sync(bdi->dev);
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
-+
- 	return ret;
- }
- 
-@@ -1106,7 +1135,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
- 
- 	dev_dbg(bdi->dev, "prop: %d\n", psp);
- 
--	pm_runtime_get_sync(bdi->dev);
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0)
-+		return ret;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_ONLINE:
-@@ -1119,7 +1150,9 @@ static int bq24190_battery_set_property(struct power_supply *psy,
- 		ret = -EINVAL;
- 	}
- 
--	pm_runtime_put_sync(bdi->dev);
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
-+
- 	return ret;
- }
- 
-@@ -1234,11 +1267,17 @@ static void bq24190_check_status(struct bq24190_dev_info *bdi)
- static irqreturn_t bq24190_irq_handler_thread(int irq, void *data)
- {
- 	struct bq24190_dev_info *bdi = data;
-+	int ret;
- 
- 	bdi->irq_event = true;
--	pm_runtime_get_sync(bdi->dev);
-+	ret = pm_runtime_get_sync(bdi->dev);
-+	if (ret < 0) {
-+		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
-+		return IRQ_NONE;
-+	}
- 	bq24190_check_status(bdi);
--	pm_runtime_put_sync(bdi->dev);
-+	pm_runtime_mark_last_busy(bdi->dev);
-+	pm_runtime_put_autosuspend(bdi->dev);
- 	bdi->irq_event = false;
- 
- 	return IRQ_HANDLED;
-@@ -1249,33 +1288,26 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
- 	u8 v;
- 	int ret;
- 
--	pm_runtime_get_sync(bdi->dev);
--
- 	/* First check that the device really is what its supposed to be */
- 	ret = bq24190_read_mask(bdi, BQ24190_REG_VPRS,
- 			BQ24190_REG_VPRS_PN_MASK,
- 			BQ24190_REG_VPRS_PN_SHIFT,
- 			&v);
- 	if (ret < 0)
--		goto out;
-+		return ret;
- 
--	if (v != bdi->model) {
--		ret = -ENODEV;
--		goto out;
--	}
-+	if (v != bdi->model)
-+		return -ENODEV;
- 
- 	ret = bq24190_register_reset(bdi);
- 	if (ret < 0)
--		goto out;
-+		return ret;
- 
- 	ret = bq24190_set_mode_host(bdi);
- 	if (ret < 0)
--		goto out;
-+		return ret;
- 
--	ret = bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
--out:
--	pm_runtime_put_sync(bdi->dev);
--	return ret;
-+	return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
- }
- 
- #ifdef CONFIG_OF
-@@ -1364,12 +1396,16 @@ static int bq24190_probe(struct i2c_client *client,
- 	}
- 
- 	pm_runtime_enable(dev);
--	pm_runtime_resume(dev);
-+	pm_runtime_use_autosuspend(dev);
-+	pm_runtime_set_autosuspend_delay(dev, 600);
-+	ret = pm_runtime_get_sync(dev);
-+	if (ret < 0)
-+		goto out1;
- 
- 	ret = bq24190_hw_init(bdi);
- 	if (ret < 0) {
- 		dev_err(dev, "Hardware init failed\n");
--		goto out1;
-+		goto out2;
- 	}
- 
- 	charger_cfg.drv_data = bdi;
-@@ -1380,7 +1416,7 @@ static int bq24190_probe(struct i2c_client *client,
- 	if (IS_ERR(bdi->charger)) {
- 		dev_err(dev, "Can't register charger\n");
- 		ret = PTR_ERR(bdi->charger);
--		goto out1;
-+		goto out2;
- 	}
- 
- 	battery_cfg.drv_data = bdi;
-@@ -1389,13 +1425,13 @@ static int bq24190_probe(struct i2c_client *client,
- 	if (IS_ERR(bdi->battery)) {
- 		dev_err(dev, "Can't register battery\n");
- 		ret = PTR_ERR(bdi->battery);
--		goto out2;
-+		goto out3;
- 	}
- 
- 	ret = bq24190_sysfs_create_group(bdi);
- 	if (ret) {
- 		dev_err(dev, "Can't create sysfs entries\n");
--		goto out3;
-+		goto out4;
- 	}
- 
- 	bdi->initialized = true;
-@@ -1406,21 +1442,30 @@ static int bq24190_probe(struct i2c_client *client,
- 			"bq24190-charger", bdi);
- 	if (ret < 0) {
- 		dev_err(dev, "Can't set up irq handler\n");
--		goto out4;
-+		goto out5;
- 	}
- 
-+	enable_irq_wake(bdi->irq);
-+
-+	pm_runtime_mark_last_busy(dev);
-+	pm_runtime_put_autosuspend(dev);
-+
- 	return 0;
- 
--out4:
-+out5:
- 	bq24190_sysfs_remove_group(bdi);
- 
--out3:
-+out4:
- 	power_supply_unregister(bdi->battery);
- 
--out2:
-+out3:
- 	power_supply_unregister(bdi->charger);
- 
-+out2:
-+	pm_runtime_put_sync(dev);
-+
- out1:
-+	pm_runtime_dont_use_autosuspend(dev);
- 	pm_runtime_disable(dev);
- 	if (bdi->gpio_int)
- 		gpio_free(bdi->gpio_int);
-@@ -1430,14 +1475,21 @@ static int bq24190_probe(struct i2c_client *client,
- static int bq24190_remove(struct i2c_client *client)
- {
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-+	int error;
- 
--	pm_runtime_get_sync(bdi->dev);
--	bq24190_register_reset(bdi);
--	pm_runtime_put_sync(bdi->dev);
-+	error = pm_runtime_get_sync(bdi->dev);
-+	if (error < 0) {
-+		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-+		pm_runtime_put_noidle(bdi->dev);
-+	}
- 
-+	bq24190_register_reset(bdi);
- 	bq24190_sysfs_remove_group(bdi);
- 	power_supply_unregister(bdi->battery);
- 	power_supply_unregister(bdi->charger);
-+	if (error >= 0)
-+		pm_runtime_put_sync(bdi->dev);
-+	pm_runtime_dont_use_autosuspend(bdi->dev);
- 	pm_runtime_disable(bdi->dev);
- 
- 	if (bdi->gpio_int)
-@@ -1480,10 +1532,20 @@ static int bq24190_pm_suspend(struct device *dev)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-+	int error;
-+
-+	error = pm_runtime_get_sync(bdi->dev);
-+	if (error < 0) {
-+		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-+		pm_runtime_put_noidle(bdi->dev);
-+	}
- 
--	pm_runtime_get_sync(bdi->dev);
- 	bq24190_register_reset(bdi);
--	pm_runtime_put_sync(bdi->dev);
-+
-+	if (error >= 0) {
-+		pm_runtime_mark_last_busy(bdi->dev);
-+		pm_runtime_put_autosuspend(bdi->dev);
-+	}
- 
- 	return 0;
- }
-@@ -1492,15 +1554,25 @@ static int bq24190_pm_resume(struct device *dev)
- {
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct bq24190_dev_info *bdi = i2c_get_clientdata(client);
-+	int error;
- 
- 	bdi->f_reg = 0;
- 	bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
- 
--	pm_runtime_get_sync(bdi->dev);
-+	error = pm_runtime_get_sync(bdi->dev);
-+	if (error < 0) {
-+		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", error);
-+		pm_runtime_put_noidle(bdi->dev);
-+	}
-+
- 	bq24190_register_reset(bdi);
- 	bq24190_set_mode_host(bdi);
- 	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
--	pm_runtime_put_sync(bdi->dev);
-+
-+	if (error >= 0) {
-+		pm_runtime_mark_last_busy(bdi->dev);
-+		pm_runtime_put_autosuspend(bdi->dev);
-+	}
- 
- 	/* Things may have changed while suspended so alert upper layer */
- 	power_supply_changed(bdi->charger);
--- 
-2.11.1
+
+> url:    https://github.com/0day-ci/linux/commits/yuantian-tang-nxp-com/cpufreq-qoriq-added-arm64-socs-support/20170208-163748
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git linux-next
+> config: arm64-allyesconfig (attached as .config)
+> compiler: aarch64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=arm64 
+> 
+> Note: the linux-review/yuantian-tang-nxp-com/cpufreq-qoriq-added-arm64-socs-support/20170208-163748 HEAD bf166f8dd442ff4715f94496bc14e12a1d0778f1 builds fine.
+>       It only hurts bisectibility.
+> 
+> All errors (new ones prefixed by >>):
+> 
+>    drivers/cpufreq/qoriq-cpufreq.c: In function 'get_cpu_physical_id':
+> >> drivers/cpufreq/qoriq-cpufreq.c:83:9: error: implicit declaration of function 'get_hard_smp_processor_id' [-Werror=implicit-function-declaration]
+>      return get_hard_smp_processor_id(cpu);
+>             ^~~~~~~~~~~~~~~~~~~~~~~~~
+>    cc1: some warnings being treated as errors
+> 
+> vim +/get_hard_smp_processor_id +83 drivers/cpufreq/qoriq-cpufreq.c
+> 
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  67  /*
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  68   * the minimum allowed core frequency, in Hz
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  69   * for chassis v1.0, >= platform frequency
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  70   * for chassis v2.0, >= platform frequency / 2
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  71   */
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  72  static u32 min_cpufreq;
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  73  static const u32 *fmask;
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  74  
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  75  #if defined(CONFIG_ARM)
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  76  static int get_cpu_physical_id(int cpu)
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  77  {
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  78  	return topology_core_id(cpu);
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  79  }
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  80  #else
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  81  static int get_cpu_physical_id(int cpu)
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  82  {
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13 @83  	return get_hard_smp_processor_id(cpu);
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  84  }
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  85  #endif
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  86  
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  87  static u32 get_bus_freq(void)
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  88  {
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  89  	struct device_node *soc;
+> a4f20742 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2015-03-13  90  	u32 sysfreq;
+> defa4c73 drivers/cpufreq/ppc-corenet-cpufreq.c Tang Yuantian 2013-06-05  91  
+> 
+> :::::: The code at line 83 was first introduced by commit
+> :::::: a4f207428b53975069d12d49a509b440c707d691 cpufreq: qoriq: Make the driver usable on all QorIQ platforms
+> 
+> :::::: TO: Tang Yuantian <Yuantian.Tang@freescale.com>
+> :::::: CC: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
