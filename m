@@ -1,79 +1,100 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/6] PM / Domains: Implement domain performance states
-Date: Thu,  9 Feb 2017 09:11:46 +0530
-Message-ID: <cover.1486611268.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Vinod Koul <vinod.koul@intel.com>
+Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device
+ pointer to of_xlate callback
+Date: Thu, 9 Feb 2017 09:41:23 +0530
+Message-ID: <20170209041123.GK19244@localhost>
+References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
+ <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
+ <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
+ <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
+Content-Disposition: inline
+In-Reply-To: <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: alsa-devel@alsa-project.org, linux-samsung-soc@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Thu, Jan 26, 2017 at 03:43:05PM +0100, Marek Szyprowski wrote:
+> Hi Lars,
+> 
+> On 2017-01-25 14:12, Lars-Peter Clausen wrote:
+> >On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
+> >>Add pointer to slave device to of_dma_xlate to let DMA engine driver
+> >>to know which slave device is using given DMA channel. This will be
+> >>later used to implement non-irq-safe runtime PM for DMA engine driver.
+> >of_dma_xlate() is used to translate from a OF phandle and a specifier to a
+> >DMA channel. On one hand this does not necessarily mean that the channel is
+> >actually going to be used by the slave that called the xlate function.
+> >Modifying the driver state when a lookup of the channel is done is a
+> >layering violation. And this approach is also missing a way to disassociate
+> >a slave from a DMA channel, e.g. when it is no longer used.
+> >
+> >On the other hand there are other mechanisms to translate between some kind
+> >of firmware handle to a DMA channel which are completely ignored here.
+> >
+> >So this approach does not work. This is something that needs to be done at
+> >the dmaengine level, not a the firmware resource translation level. And it
+> >needs a matching method that is called when the channel is disassociated
+> >from a device, when the device no longer uses the DMA channel.
+> 
+> Frankly I agree that of_dma_xlate() should only return the requested channel
+> to the dmaengine core and do not do any modification in the the
+> driver state.
 
-An earlier series[1] tried to implement bindings for PM domain
-performance states. Rob Herring suggested that we can actually merge the
-supporting code first instead of bindings, as that will make things
-easier to understand for all. The bindings can be decided and merged
-later.
+True..
 
-The bindings [1] aren't discarded yet and this series is based on a
-version of those only. The bindings are only used by the last patch,
-which should not be applied and is only sent for completeness.
+> However the current dma engine design and implementation breaks this rule.
+> Please check the drivers - how do they implement of_xlate callback. They
+> usually call dma_get_any_slave_channel, dma_get_slave_channel or
+> __dma_request_channel there, which in turn calls dma_chan_get, which then
+> calls back to device_alloc_chan_resources callback. Some of the drivers also
+> do a hardware configuration or other resource allocation in of_xlate.
+> This is a bit messy design and leave no place in the core to set
+> slave device
+> before device_alloc_chan_resources callback, where one would expect to have
+> it already set.
 
-IOW, this series doesn't have any dependencies and can be merged
-straight away without waiting for the DT bindings.
+We shouldn't be doing much at this stage. We operate on a channel, so the
+channel is returned to the client. We need to do these HW configurations
+when the channel has to be prepred for a txn.
 
-A brief summary of the problem this series is trying to solve:
+> The best place to add new calls to the dmaengine drivers to set slave device
+> would be just before device_alloc_chan_resources(), what in turn means that
+> the current dmaengine core should do in dma_chan_get(). This would
+> require to
+> forward the slave device pointer via even more layers including the of_xlate
+> callback too. IMHO this is not worth the effort.
+> 
+> DMA engine core and API definitely needs some cleanup. During such cleanup
+> the slave device pointer might be moved out of xlate into separate callback
+> when the core gets ready for such operation.
 
-Some platforms have the capability to configure the performance state of
-their Power Domains. The performance levels are represented by positive
-integer values, a lower value represents lower performance state.
+Yes agreed on that, plus the runtime handling needs to be built in, right
+now the APIs dont work well with it, we disucssed these during the KS and
+this goes without saying, patches are welcome :)
 
-We decided earlier that we should extend Power Domain framework to
-support active state power management as well.  The power-domains until
-now were only concentrating on the idle state management of the device
-and this needs to change in order to reuse the infrastructure of power
-domains for active state management.
-
-The first 5 patches update the PM domain and QoS frameworks to support
-that and the last one presents the front end interface to it.
-
-The V1 series was tested by hacking the OPP core a bit but this one is
-also tested by Rajendra Nayak (Qcom) on *real* Qualcomm hardware for
-which this work is done. And most of his feedback is incorporated here.
-
-V1->V2:
-- Based over latest pm/linux-next
-- It is mostly a resend of what is sent earlier as this series hasn't
-  got any reviews so far and Rafael suggested that its better I resend
-  it.
-- Only the 4/6 patch got an update, which was shared earlier as reply to
-  V1 as well. It has got several fixes for taking care of power domain
-  hierarchy, etc.
-
---
-viresh
-
-[1] https://marc.info/?l=linux-kernel&m=148154020127722&w=2
-
-Viresh Kumar (6):
-  PM / QOS: Add default case to the switch
-  PM / QOS: Pass request type to dev_pm_qos_{add|remove}_notifier()
-  PM / QOS: Add 'performance' request
-  PM / domain: Register for PM QOS performance notifier
-  PM / domain: Save/restore performance state at runtime suspend/resume
-  PM / OPP: Add support to parse domain-performance-state
-
- Documentation/power/pm_qos_interface.txt |  11 ++-
- drivers/base/power/domain.c              | 125 +++++++++++++++++++++++++++++--
- drivers/base/power/opp/core.c            |  75 +++++++++++++++++++
- drivers/base/power/opp/debugfs.c         |   4 +
- drivers/base/power/opp/of.c              |  44 +++++++++++
- drivers/base/power/opp/opp.h             |  12 +++
- drivers/base/power/qos.c                 |  74 ++++++++++++++++--
- include/linux/pm_domain.h                |   6 ++
- include/linux/pm_qos.h                   |  16 +++-
- 9 files changed, 345 insertions(+), 22 deletions(-)
+> I ignored other paths for other firmware handle to a DMA channel translation
+> mechanism because for the current pl330 driver they are simply not used. I
+> assume that if one needs to implement similar things for drivers relying on
+> them, he will update the respective DMA engine core parts.
+> 
+> Slave device assignments can be cleared in device_chan_release_resources if
+> this is needed and that what existing DMA engine drivers do with the
+> resources
+> allocated in the of_xlate callback...
 
 -- 
-2.7.1.410.g6faf27b
+~Vinod
