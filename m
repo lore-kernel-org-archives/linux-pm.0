@@ -1,115 +1,64 @@
-From: Juri Lelli <juri.lelli@arm.com>
-Subject: [PATCH v2 8/9] arm,arm64,drivers: move externs in a new header file
-Date: Thu,  9 Feb 2017 09:25:24 +0000
-Message-ID: <20170209092525.6654-9-juri.lelli@arm.com>
-References: <20170209092525.6654-1-juri.lelli@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170209092525.6654-1-juri.lelli@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, juri.lelli@arm.com, broonie@kernel.org, gregkh@linuxfoundation.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device
+ pointer to of_xlate callback
+Date: Thu, 9 Feb 2017 10:55:43 +0100
+Message-ID: <CAPDyKFqYe0YJRzjaOo1N-fgZyJ8JqNnka66kSSg0nWiXOYj=BQ@mail.gmail.com>
+References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
+ <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
+ <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
+ <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
+ <20170209041123.GK19244@localhost>
+ <ded8b3e8-2ef8-218b-fb6d-783825588fd8@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <alsa-devel-bounces@alsa-project.org>
+In-Reply-To: <ded8b3e8-2ef8-218b-fb6d-783825588fd8@samsung.com>
+List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
+List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
+List-Post: <mailto:alsa-devel@alsa-project.org>
+List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
+List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
+ <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
+Errors-To: alsa-devel-bounces@alsa-project.org
+Sender: alsa-devel-bounces@alsa-project.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: alsa-devel@alsa-project.org, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vinod Koul <vinod.koul@intel.com>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, dmaengine@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-Create a new header file (include/linux/arch_topology.h) and put there
-declarations of interfaces used by arm, arm64 and drivers code.
+>>
+>> Yes agreed on that, plus the runtime handling needs to be built in, right
+>> now the APIs dont work well with it, we disucssed these during the KS and
+>> this goes without saying, patches are welcome :)
+>
+>
+> Okay, so what is the conclusion? Do you want me to do the whole rework of
+> dma
+> engine core to get this runtime pm patchset for pl330 merged??? Is there any
+> roadmap for this rework prepared, so I can at least take a look at the
+> amount
+> of work needed to be done?
+>
+> I'm rather new to dma engine framework and I only wanted to fix pl330 driver
+> not to block turning off the power domain on Exynos5422/5433 SoCs.
 
-Signed-off-by: Juri Lelli <juri.lelli@arm.com>
----
- arch/arm/kernel/topology.c    |  7 +------
- arch/arm64/kernel/topology.c  |  4 +---
- drivers/base/arch_topology.c  |  1 +
- include/linux/arch_topology.h | 17 +++++++++++++++++
- 4 files changed, 20 insertions(+), 9 deletions(-)
- create mode 100644 include/linux/arch_topology.h
+As you probably know, this is a common problem for many dma devices,
+slave devices and platforms.
 
-diff --git a/arch/arm/kernel/topology.c b/arch/arm/kernel/topology.c
-index 5d4679a5418b..1855632105a4 100644
---- a/arch/arm/kernel/topology.c
-+++ b/arch/arm/kernel/topology.c
-@@ -11,6 +11,7 @@
-  * for more details.
-  */
- 
-+#include <linux/arch_topology.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
-@@ -44,10 +45,6 @@
-  * updated during this sequence.
-  */
- 
--extern unsigned long
--arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
--extern void set_capacity_scale(unsigned int cpu, unsigned long capacity);
--
- #ifdef CONFIG_OF
- struct cpu_efficiency {
- 	const char *compatible;
-@@ -75,8 +72,6 @@ static unsigned long *__cpu_capacity;
- 
- static unsigned long middle_capacity = 1;
- static bool cap_from_dt = true;
--extern void normalize_cpu_capacity(void);
--extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
- 
- /*
-  * Iterate all CPUs' descriptor in DT and compute the efficiency
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index deb5ebc1bdfe..6d2af4d9479f 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -11,6 +11,7 @@
-  * for more details.
-  */
- 
-+#include <linux/arch_topology.h>
- #include <linux/cpu.h>
- #include <linux/cpumask.h>
- #include <linux/init.h>
-@@ -26,9 +27,6 @@
- #include <asm/cputype.h>
- #include <asm/topology.h>
- 
--extern void normalize_cpu_capacity(void);
--extern int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu);
--
- static int __init get_cpu_for_node(struct device_node *node)
- {
- 	struct device_node *cpu_node;
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index c75fa5ab732b..409a8bb613f2 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/acpi.h>
-+#include <linux/arch_topology.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/device.h>
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-new file mode 100644
-index 000000000000..4edae9fe8cdd
---- /dev/null
-+++ b/include/linux/arch_topology.h
-@@ -0,0 +1,17 @@
-+/*
-+ * include/linux/arch_topology.h - arch specific cpu topology information
-+ */
-+#ifndef _LINUX_ARCH_TOPOLOGY_H_
-+#define _LINUX_ARCH_TOPOLOGY_H_
-+
-+void normalize_cpu_capacity(void);
-+
-+struct device_node;
-+int parse_cpu_capacity(struct device_node *cpu_node, int cpu);
-+
-+struct sched_domain;
-+unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu);
-+
-+void set_capacity_scale(unsigned int cpu, unsigned long capacity);
-+
-+#endif /* _LINUX_ARCH_TOPOLOGY_H_ */
--- 
-2.10.0
+If possible, it would be great if we could avoid a solution that
+doesn't force changes to lots of "dma consumer" drivers.
+
+>
+> I can also check again if there is any other way to find the slave device in
+> alloc_chan_resources, like for example scanning the device tree for
+> phandles,
+> to avoid changing dmaengine core as this turned out to be too problematic
+> before one will do the proper dma engine core rework.
+>
+
+Again, thanks for working on this!
+
+Kind regards
+Uffe
