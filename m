@@ -1,125 +1,117 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v12 6/9] usb: xhci: use bus->sysdev for DMA configuration
-Date: Thu, 9 Feb 2017 11:45:35 +0530
-Message-ID: <CAFp+6iGCcTsELQQJ2n9MyS3S-3FWjTvSOEXGX3xpWwqH+7uSYQ@mail.gmail.com>
-References: <1486372421-29073-1-git-send-email-peter.chen@nxp.com>
- <1486372421-29073-7-git-send-email-peter.chen@nxp.com> <20170208204300.GC8068@usblab-sd-06.qualcomm.com>
- <20170209014113.GB460@b29397-desktop>
+From: Vivek Gautam <vivek.gautam@codeaurora.org>
+Subject: Re: [PATCH v12 3/9] usb: separate out sysdev pointer from usb_bus
+Date: Thu, 9 Feb 2017 11:50:32 +0530
+Message-ID: <CAFp+6iGJxWqyingm0oszWCfyw1fkhCMFKHwe5uhRGpcYWX-XOA@mail.gmail.com>
+References: <1486372421-29073-1-git-send-email-peter.chen@nxp.com> <1486372421-29073-4-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170209014113.GB460@b29397-desktop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jack Pham <jackp-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux USB Mailing List <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam@gmai
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:43294 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751420AbdBIGUu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2017 01:20:50 -0500
+In-Reply-To: <1486372421-29073-4-git-send-email-peter.chen@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Chen <peter.chen@nxp.com>
+Cc: Greg KH <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, broonie@kernel.org, sre@kernel.org, robh+dt <robh+dt@kernel.org>, shawnguo@kernel.org, rjw@rjwysocki.net, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, p.zabel@pengutronix.de, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux USB Mailing List <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, Fabio Estevam <festevam@gmail.com>, oscar@naiandei.net
 
-On Thu, Feb 9, 2017 at 7:11 AM, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> On Wed, Feb 08, 2017 at 12:43:00PM -0800, Jack Pham wrote:
->> Hi Peter, Sriram, Arnd,
->>
->> On Mon, Feb 06, 2017 at 05:13:38PM +0800, Peter Chen wrote:
->> > From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
->> >
->> > For xhci-hcd platform device, all the DMA parameters are not
->> > configured properly, notably dma ops for dwc3 devices. So, set
->> > the dma for xhci from sysdev. sysdev is pointing to device that
->> > is known to the system firmware or hardware.
->> >
->> > Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
->> > Signed-off-by: Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>
->> > Tested-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->> > Tested-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
->> > Tested-by: Alexander Sverdlin <alexander.sverdlin-xNZwKgViW5gAvxtiuMwx3w@public.gmane.org>
->> > Signed-off-by: Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
->> > ---
->> > diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
->> > index 6d33b42..7a9c860 100644
->> > --- a/drivers/usb/host/xhci-plat.c
->> > +++ b/drivers/usb/host/xhci-plat.c
->>
->> > -   hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
->> > +   hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
->> > +                          dev_name(&pdev->dev), NULL);
->>
->> As mentioned already in [1], usb_create_shared_hcd() is called to create
->> the second bus, however it also needs to be converted.
->>
->> Not exactly as Roger's suggestion but this worked for me:
->>
->> -       xhci->shared_hcd = usb_create_shared_hcd(driver, &pdev->dev,
->> +       xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
->>                         dev_name(&pdev->dev), hcd);
->>         if (!xhci->shared_hcd) {
->>                 ret = -ENOMEM;
->>
->> Without this, SuperSpeed devices fail to enumerate:
->>
->>  usb 2-1: new SuperSpeed USB device number 2 using xhci-hcd
->>  usb 2-1: device descriptor read/8, error -11
->>  usb 2-1: new SuperSpeed USB device number 2 using xhci-hcd
->>  usb 2-1: device descriptor read/8, error -11
->>  usb 2-1: new SuperSpeed USB device number 3 using xhci-hcd
->>  usb 2-1: device descriptor read/8, error -11
->>  usb 2-1: new SuperSpeed USB device number 3 using xhci-hcd
->>  usb 2-1: device descriptor read/8, error -11
->>  <and continues...>
->>
->> Thanks,
->> Jack
->>
->
-> Do you work at same platform with Vivek Gautam? I see his tested-by
-> tag in this patch.
+Hi,
 
-The patches [1] had worked for me on 4.9-rc4.
-But with
-(a) usb-next merged on 4.10-rc7
-(b) this patch and [PATCH 3/9] in this series:
-      [PATCH v12 3/9] usb: separate out sysdev pointer from usb_bus
-and,
-(c) phy patches for msm8996 [2] along with necessary device tree patches
-I get a hang when SuperSpeed device is being enumerated on db820c.
+On Mon, Feb 6, 2017 at 2:43 PM, Peter Chen <peter.chen@nxp.com> wrote:
+> From: Arnd Bergmann <arnd@arndb.de>
+>
+> For xhci-hcd platform device, all the DMA parameters are not
+> configured properly, notably dma ops for dwc3 devices.
+>
+> The idea here is that you pass in the parent of_node along with
+> the child device pointer, so it would behave exactly like the
+> parent already does. The difference is that it also handles all
+> the other attributes besides the mask.
+>
+> sysdev will represent the physical device, as seen from firmware
+> or bus.Splitting the usb_bus->controller field into the
+> Linux-internal device (used for the sysfs hierarchy, for printks
+> and for power management) and a new pointer (used for DMA,
+> DT enumeration and phy lookup) probably covers all that we really
+> need.
+>
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+> Tested-by: Baolin Wang <baolin.wang@linaro.org>
+> Tested-by: Brian Norris <briannorris@chromium.org>
+> Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+> Tested-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+> Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+> Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
+> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+> Cc: Sinjan Kumar <sinjank@codeaurora.org>
+> Cc: David Fisher <david.fisher1@synopsys.com>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: "Thang Q. Nguyen" <tqnguyen@apm.com>
+> Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+> Cc: Ming Lei <tom.leiming@gmail.com>
+> Cc: Jon Masters <jcm@redhat.com>
+> Cc: Dann Frazier <dann.frazier@canonical.com>
+> Cc: Peter Chen <peter.chen@nxp.com>
+> Cc: Leo Li <pku.leo@gmail.com>
+> ---
+>  drivers/usb/core/buffer.c | 12 ++++++------
+>  drivers/usb/core/hcd.c    | 48 ++++++++++++++++++++++++++++-------------------
+>  drivers/usb/core/usb.c    | 18 +++++++++---------
+>  include/linux/usb.h       |  1 +
+>  include/linux/usb/hcd.h   |  3 +++
+>  5 files changed, 48 insertions(+), 34 deletions(-)
 
-The change above suggested by Jack works for me too, and i hope that's
-the right way to do things.
+[snip]
 
-I can give a Tested-by again with the changes for shared_hcd in the
-next version.
+> @@ -2511,8 +2512,8 @@ static void init_giveback_urb_bh(struct giveback_urb_bh *bh)
+>   * Return: On success, a pointer to the created and initialized HCD structure.
+>   * On failure (e.g. if memory is unavailable), %NULL.
+>   */
 
-[1] https://lkml.org/lkml/2016/11/17/339
-[2] https://lkml.org/lkml/2017/1/10/225
+sorry for the noise, but a minor nit here.
+The comments section above explains usb_create_shared_hcd() method
+and so should be moved down to its place.
 
+> -struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+> -               struct device *dev, const char *bus_name,
+> +struct usb_hcd *__usb_create_hcd(const struct hc_driver *driver,
+> +               struct device *sysdev, struct device *dev, const char *bus_name,
+>                 struct usb_hcd *primary_hcd)
+>  {
+>         struct usb_hcd *hcd;
+> @@ -2553,8 +2554,9 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
 >
-> I have no dwc3 platform to test, I only got patches from [1], and rebase to
-> Greg's usb-next, the rebase has a conflict, and I made a
-> change which is similar to revert below patch, but it is definitely
-> not your problem.
+>         usb_bus_init(&hcd->self);
+>         hcd->self.controller = dev;
+> +       hcd->self.sysdev = sysdev;
+>         hcd->self.bus_name = bus_name;
+> -       hcd->self.uses_dma = (dev->dma_mask != NULL);
+> +       hcd->self.uses_dma = (sysdev->dma_mask != NULL);
 >
-> commit 488dc164914ff5ce5e913abd32048d28fc0d06b8
-> Author: Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
-> Date:   Fri Jan 20 15:38:24 2017 +0200
->
->     xhci: remove WARN_ON if dma mask is not set for platform devices
->
->
-> [1] http://www.spinics.net/lists/linux-usb/msg152375.html
->
-> --
->
-> Best Regards,
-> Peter Chen
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>         init_timer(&hcd->rh_timer);
+>         hcd->rh_timer.function = rh_timer_func;
+> @@ -2569,6 +2571,14 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+>                         "USB Host Controller";
+>         return hcd;
+>  }
+> +EXPORT_SYMBOL_GPL(__usb_create_hcd);
+> +
+> +struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+> +               struct device *dev, const char *bus_name,
+> +               struct usb_hcd *primary_hcd)
+> +{
+> +       return __usb_create_hcd(driver, dev, dev, bus_name, primary_hcd);
+> +}
+>  EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
 
 
+Regards
+Vivek
 
 -- 
 Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
 a Linux Foundation Collaborative Project
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
