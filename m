@@ -1,117 +1,88 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device pointer to
- of_xlate callback
-Date: Thu, 9 Feb 2017 21:58:47 +0530
-Message-ID: <20170209162847.GL19244@localhost>
-References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
- <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
- <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
- <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
- <20170209041123.GK19244@localhost>
- <ded8b3e8-2ef8-218b-fb6d-783825588fd8@samsung.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH 2/2] ARM: dts: bcm283x: Add critical thermal zone for
+ GPU
+Date: Thu, 9 Feb 2017 18:48:52 +0100 (CET)
+Message-ID: <124007607.358509.1486662532562@email.1und1.de>
+References: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org>
+ <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com>
+ <1486217787-15703-2-git-send-email-stefan.wahren@i2se.com>
+ <20170208041929.GA6809@localhost.localdomain>
+ <20170208042351.GB6809@localhost.localdomain>
+ <93f3ecbc-6d28-3e04-d6f3-4c03f8ac7ab3@i2se.com>
+ <87lgtgea1q.fsf@eliezer.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <ded8b3e8-2ef8-218b-fb6d-783825588fd8@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Lars-Peter Clausen <lars@metafoo.de>, linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, alsa-devel@alsa-project.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, Mark Brown <broonie@kernel.org>, Inki Dae <inki.dae@samsung.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([217.72.192.75]:63937 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754377AbdBIRvm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2017 12:51:42 -0500
+In-Reply-To: <87lgtgea1q.fsf@eliezer.anholt.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eric Anholt <eric@anholt.net>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Frank Rowand <frowand.list@gmail.com>, kernel@martin.sperl.org, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-On Thu, Feb 09, 2017 at 10:22:38AM +0100, Marek Szyprowski wrote:
-> Hi Vinod,
+Hi Eric,
+
+> Eric Anholt <eric@anholt.net> hat am 8. Februar 2017 um 20:50 geschrieben:
 > 
-> On 2017-02-09 05:11, Vinod Koul wrote:
-> >On Thu, Jan 26, 2017 at 03:43:05PM +0100, Marek Szyprowski wrote:
-> >>On 2017-01-25 14:12, Lars-Peter Clausen wrote:
-> >>>On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
-> >>>>Add pointer to slave device to of_dma_xlate to let DMA engine driver
-> >>>>to know which slave device is using given DMA channel. This will be
-> >>>>later used to implement non-irq-safe runtime PM for DMA engine driver.
-> >>>of_dma_xlate() is used to translate from a OF phandle and a specifier to a
-> >>>DMA channel. On one hand this does not necessarily mean that the channel is
-> >>>actually going to be used by the slave that called the xlate function.
-> >>>Modifying the driver state when a lookup of the channel is done is a
-> >>>layering violation. And this approach is also missing a way to disassociate
-> >>>a slave from a DMA channel, e.g. when it is no longer used.
-> >>>
-> >>>On the other hand there are other mechanisms to translate between some kind
-> >>>of firmware handle to a DMA channel which are completely ignored here.
-> >>>
-> >>>So this approach does not work. This is something that needs to be done at
-> >>>the dmaengine level, not a the firmware resource translation level. And it
-> >>>needs a matching method that is called when the channel is disassociated
-> >>>from a device, when the device no longer uses the DMA channel.
-> >>
-> >>Frankly I agree that of_dma_xlate() should only return the requested channel
-> >>to the dmaengine core and do not do any modification in the the
-> >>driver state.
-> >True..
+> 
+> Stefan Wahren <stefan.wahren@i2se.com> writes:
+> 
+> > Am 08.02.2017 um 05:23 schrieb Eduardo Valentin:
+> >> On Tue, Feb 07, 2017 at 08:19:31PM -0800, Eduardo Valentin wrote:
+> >>> On Sat, Feb 04, 2017 at 02:16:27PM +0000, Stefan Wahren wrote:
+> >>>> As suggested by Eduardo Valentin this adds the thermal zone for
+> >>>> the bcm2835 SoC. Since we currently don't have any cooling devices
+> >>>> leave this section empty.
+> >>>>
+> >>>> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> >>>> ---
+> >>>>  arch/arm/boot/dts/bcm283x.dtsi |   19 +++++++++++++++++++
+> >>>>  1 file changed, 19 insertions(+)
+> >>>>
+> >>>> diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> index 9c7ec7e..359da9d 100644
+> >>>> --- a/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> +++ b/arch/arm/boot/dts/bcm283x.dtsi
+> >>>> @@ -19,6 +19,25 @@
+> >>>>  		bootargs = "earlyprintk console=ttyAMA0";
+> >>>>  	};
+> >>>>  
+> >>>> +	thermal-zones {
+> >>>> +		gpu_thermal: gpu-thermal {
+> >>>> +			polling-delay-passive = <0>;
+> >>>> +			polling-delay = <1000>;
+> >>>> +
+> >>>> +			thermal-sensors = <&thermal>;
+> >> Just came to my mind, dont you need to have an id to specify with sensor
+> >> points to gpu?
 > >
-> >>However the current dma engine design and implementation breaks this rule.
-> >>Please check the drivers - how do they implement of_xlate callback. They
-> >>usually call dma_get_any_slave_channel, dma_get_slave_channel or
-> >>__dma_request_channel there, which in turn calls dma_chan_get, which then
-> >>calls back to device_alloc_chan_resources callback. Some of the drivers also
-> >>do a hardware configuration or other resource allocation in of_xlate.
-> >>This is a bit messy design and leave no place in the core to set
-> >>slave device
-> >>before device_alloc_chan_resources callback, where one would expect to have
-> >>it already set.
-> >We shouldn't be doing much at this stage. We operate on a channel, so the
-> >channel is returned to the client. We need to do these HW configurations
-> >when the channel has to be prepred for a txn.
+> > Sorry, i don't know the exact setup of the single thermal sensor on the
+> > SoC (datasheet doesn't provide any helpful information). I adapted the
+> > Renesas R-Car thermal binding because i think it would be the best match.
+> >
+> > @Eric: What's your opinion?
 > 
-> IMHO, any HW configurations should be done in alloc_chan_resources
-> callback and
-> it would be best if a pointer of slave device will come as a
-> parameter to it.
+> I don't understand the question.
 
-HW configuration is dependent upon the parameters passed, which are not part
-of alloc_chan_resources(). Consider it as kind of open() to get a handle for
-dmaengine
+i hope to get it right. We are talking about defining the thermal zone [1].
 
-> 
-> >>The best place to add new calls to the dmaengine drivers to set slave device
-> >>would be just before device_alloc_chan_resources(), what in turn means that
-> >>the current dmaengine core should do in dma_chan_get(). This would
-> >>require to
-> >>forward the slave device pointer via even more layers including the of_xlate
-> >>callback too. IMHO this is not worth the effort.
-> >>
-> >>DMA engine core and API definitely needs some cleanup. During such cleanup
-> >>the slave device pointer might be moved out of xlate into separate callback
-> >>when the core gets ready for such operation.
-> >Yes agreed on that, plus the runtime handling needs to be built in, right
-> >now the APIs dont work well with it, we disucssed these during the KS and
-> >this goes without saying, patches are welcome :)
-> 
-> Okay, so what is the conclusion? Do you want me to do the whole
-> rework of dma
-> engine core to get this runtime pm patchset for pl330 merged??? Is there any
-> roadmap for this rework prepared, so I can at least take a look at
-> the amount
-> of work needed to be done?
-> 
-> I'm rather new to dma engine framework and I only wanted to fix pl330 driver
-> not to block turning off the power domain on Exynos5422/5433 SoCs.
-> 
-> I can also check again if there is any other way to find the slave device in
-> alloc_chan_resources, like for example scanning the device tree for
-> phandles,
-> to avoid changing dmaengine core as this turned out to be too problematic
-> before one will do the proper dma engine core rework.
+There are 4 examples:
 
-There are few things we need to do for making APIs cleaner.
+(a) - CPU thermal zone with one internal sensor
+(b) - IC with several internal sensors
+(c) - Several sensors within one single thermal zone
+(d) - Board thermal
 
-We have a mini discussion during KS/Plumbers, Here are the notes
-http://www.spinics.net/lists/dmaengine/msg11570.html
+I decided to choose (a) for the patch and Eduardo tends to (b).
 
-I don't want to block your series for this, I will take a look at v8, first
-thing in morning..
+Here are the questions:
 
-Thanks
--- 
-~Vinod
+Where is the thermal sensor TSENS located (ARM core or VideoCore 4)?
+
+Do we expect several internal sensors?
+
+[1] - http://lxr.free-electrons.com/source/Documentation/devicetree/bindings/thermal/thermal.txt
