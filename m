@@ -1,117 +1,129 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH v12 3/9] usb: separate out sysdev pointer from usb_bus
-Date: Thu, 9 Feb 2017 11:50:32 +0530
-Message-ID: <CAFp+6iGJxWqyingm0oszWCfyw1fkhCMFKHwe5uhRGpcYWX-XOA@mail.gmail.com>
-References: <1486372421-29073-1-git-send-email-peter.chen@nxp.com> <1486372421-29073-4-git-send-email-peter.chen@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/2] PM / Domains: Ignore domain-idle-states that are not
+ compatible
+Date: Thu, 9 Feb 2017 09:40:29 +0100
+Message-ID: <CAPDyKFpj4LNPH-V2cziw1ULm9Ff9a3jeyrQK9XVp2G2OaQbtXw@mail.gmail.com>
+References: <1486571692-33212-1-git-send-email-lina.iyer@linaro.org>
+ <1486571692-33212-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:43294 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751420AbdBIGUu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2017 01:20:50 -0500
-In-Reply-To: <1486372421-29073-4-git-send-email-peter.chen@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1486571692-33212-3-git-send-email-lina.iyer@linaro.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Brendan Jackman <brendan.jackman@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, Rob Herring <robh@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>
-Cc: Greg KH <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, broonie@kernel.org, sre@kernel.org, robh+dt <robh+dt@kernel.org>, shawnguo@kernel.org, rjw@rjwysocki.net, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, p.zabel@pengutronix.de, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Linux USB Mailing List <linux-usb@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, Fabio Estevam <festevam@gmail.com>, oscar@naiandei.net
 
-Hi,
+On 8 February 2017 at 17:34, Lina Iyer <lina.iyer@linaro.org> wrote:
+> domain-idle-states property may have phandles to idle state bindings
+> that may not be compatible with idle state definition defined in [1].
 
-On Mon, Feb 6, 2017 at 2:43 PM, Peter Chen <peter.chen@nxp.com> wrote:
-> From: Arnd Bergmann <arnd@arndb.de>
+I don't find the reference to [1] in the change-log, could you please add it.
+
+> Such phandles would just be ignored and not throw and error when read by
+> the domain core.
+
+Perhaps, you could also share a minimal snipped from a DTS as it helps
+to describe why and what this change is needed.
+
 >
-> For xhci-hcd platform device, all the DMA parameters are not
-> configured properly, notably dma ops for dwc3 devices.
->
-> The idea here is that you pass in the parent of_node along with
-> the child device pointer, so it would behave exactly like the
-> parent already does. The difference is that it also handles all
-> the other attributes besides the mask.
->
-> sysdev will represent the physical device, as seen from firmware
-> or bus.Splitting the usb_bus->controller field into the
-> Linux-internal device (used for the sysfs hierarchy, for printks
-> and for power management) and a new pointer (used for DMA,
-> DT enumeration and phy lookup) probably covers all that we really
-> need.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-> Tested-by: Baolin Wang <baolin.wang@linaro.org>
-> Tested-by: Brian Norris <briannorris@chromium.org>
-> Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
-> Tested-by: Vivek Gautam <vivek.gautam@codeaurora.org>
-> Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
-> Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
-> Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-> Cc: Sinjan Kumar <sinjank@codeaurora.org>
-> Cc: David Fisher <david.fisher1@synopsys.com>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: "Thang Q. Nguyen" <tqnguyen@apm.com>
-> Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-> Cc: Ming Lei <tom.leiming@gmail.com>
-> Cc: Jon Masters <jcm@redhat.com>
-> Cc: Dann Frazier <dann.frazier@canonical.com>
-> Cc: Peter Chen <peter.chen@nxp.com>
-> Cc: Leo Li <pku.leo@gmail.com>
+> Cc: <devicetree@vger.kernel.org>
+> Cc: Rob Herring <robh@kernel.org>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > ---
->  drivers/usb/core/buffer.c | 12 ++++++------
->  drivers/usb/core/hcd.c    | 48 ++++++++++++++++++++++++++++-------------------
->  drivers/usb/core/usb.c    | 18 +++++++++---------
->  include/linux/usb.h       |  1 +
->  include/linux/usb/hcd.h   |  3 +++
->  5 files changed, 48 insertions(+), 34 deletions(-)
-
-[snip]
-
-> @@ -2511,8 +2512,8 @@ static void init_giveback_urb_bh(struct giveback_urb_bh *bh)
->   * Return: On success, a pointer to the created and initialized HCD structure.
->   * On failure (e.g. if memory is unavailable), %NULL.
->   */
-
-sorry for the noise, but a minor nit here.
-The comments section above explains usb_create_shared_hcd() method
-and so should be moved down to its place.
-
-> -struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
-> -               struct device *dev, const char *bus_name,
-> +struct usb_hcd *__usb_create_hcd(const struct hc_driver *driver,
-> +               struct device *sysdev, struct device *dev, const char *bus_name,
->                 struct usb_hcd *primary_hcd)
->  {
->         struct usb_hcd *hcd;
-> @@ -2553,8 +2554,9 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+>  Documentation/devicetree/bindings/power/power_domain.txt |  4 +++-
+>  drivers/base/power/domain.c                              | 16 +++++++++-------
+>  2 files changed, 12 insertions(+), 8 deletions(-)
 >
->         usb_bus_init(&hcd->self);
->         hcd->self.controller = dev;
-> +       hcd->self.sysdev = sysdev;
->         hcd->self.bus_name = bus_name;
-> -       hcd->self.uses_dma = (dev->dma_mask != NULL);
-> +       hcd->self.uses_dma = (sysdev->dma_mask != NULL);
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 723e1ad..940707d 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -31,7 +31,9 @@ Optional properties:
 >
->         init_timer(&hcd->rh_timer);
->         hcd->rh_timer.function = rh_timer_func;
-> @@ -2569,6 +2571,14 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
->                         "USB Host Controller";
->         return hcd;
+>  - domain-idle-states : A phandle of an idle-state that shall be soaked into a
+>                  generic domain power state. The idle state definitions are
+> -                compatible with domain-idle-state specified in [1].
+> +                compatible with domain-idle-state specified in [1]. phandles
+> +                that are not compatible with domain-idle-state will be
+> +                ignored.
+>    The domain-idle-state property reflects the idle state of this PM domain and
+>    not the idle states of the devices or sub-domains in the PM domain. Devices
+>    and sub-domains have their own idle-states independent of the parent
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 6b23d82..3825bb9 100644
+> --- a/drivers/base/power/domain.c
+
+Always split DT documentation changes from the code changes and make
+the DT doc changes precede the code changes in the series of patches.
+
+> +++ b/drivers/base/power/domain.c
+> @@ -2065,11 +2065,6 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
+>         int err;
+>         u32 residency;
+>         u32 entry_latency, exit_latency;
+> -       const struct of_device_id *match_id;
+> -
+> -       match_id = of_match_node(idle_state_match, state_node);
+> -       if (!match_id)
+> -               return -EINVAL;
+>
+>         err = of_property_read_u32(state_node, "entry-latency-us",
+>                                                 &entry_latency);
+> @@ -2118,6 +2113,7 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+>         int err, ret;
+>         int count;
+>         struct of_phandle_iterator it;
+> +       const struct of_device_id *match_id;
+>
+>         count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
+>         if (count <= 0)
+> @@ -2130,6 +2126,9 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+>         /* Loop over the phandles until all the requested entry is found */
+>         of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
+>                 np = it.node;
+> +               match_id = of_match_node(idle_state_match, np);
+> +               if (!match_id)
+> +                       continue;
+
+Earlier we have allocated "count" numbers of struct genpd_power_state,
+by using a kcalloc().
+
+This change may lead to that we could have allocated more memory than
+actually needed - because there may be some nodes that doesn't match.
+
+Perhaps it's better to do a pre-iteration to find the real numbers of
+how many struct genpd_power_state we actually need to allocate!?
+
+>                 ret = genpd_parse_state(&st[i++], np);
+>                 if (ret) {
+>                         pr_err
+> @@ -2141,8 +2140,11 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+>                 }
+>         }
+>
+> -       *n = count;
+> -       *states = st;
+> +       *n = i;
+> +       if (!i)
+> +               kfree(st);
+> +       else
+> +               *states = st;
+>
+>         return 0;
 >  }
-> +EXPORT_SYMBOL_GPL(__usb_create_hcd);
-> +
-> +struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
-> +               struct device *dev, const char *bus_name,
-> +               struct usb_hcd *primary_hcd)
-> +{
-> +       return __usb_create_hcd(driver, dev, dev, bus_name, primary_hcd);
-> +}
->  EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
+> --
+> 2.7.4
+>
 
-
-Regards
-Vivek
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Kind regards
+Uffe
