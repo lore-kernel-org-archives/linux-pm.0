@@ -1,100 +1,199 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v7 2/4] dmaengine: Forward slave device
- pointer to of_xlate callback
-Date: Thu, 9 Feb 2017 09:41:23 +0530
-Message-ID: <20170209041123.GK19244@localhost>
-References: <1485340088-25481-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170125102824eucas1p1cf027184286131ff628eb7113c3f9e60@eucas1p1.samsung.com>
- <1485340088-25481-3-git-send-email-m.szyprowski@samsung.com>
- <26397455-1237-2a66-acf8-215aacc7c9ce@metafoo.de>
- <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <alsa-devel-bounces@alsa-project.org>
-Content-Disposition: inline
-In-Reply-To: <49c9c23d-ff0a-268a-5edd-931e04eb98b5@samsung.com>
-List-Unsubscribe: <http://mailman.alsa-project.org/mailman/options/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=unsubscribe>
-List-Archive: <http://mailman.alsa-project.org/pipermail/alsa-devel/>
-List-Post: <mailto:alsa-devel@alsa-project.org>
-List-Help: <mailto:alsa-devel-request@alsa-project.org?subject=help>
-List-Subscribe: <http://mailman.alsa-project.org/mailman/listinfo/alsa-devel>,
- <mailto:alsa-devel-request@alsa-project.org?subject=subscribe>
-Errors-To: alsa-devel-bounces@alsa-project.org
-Sender: alsa-devel-bounces@alsa-project.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: alsa-devel@alsa-project.org, linux-samsung-soc@vger.kernel.org, Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>, linux-pm@vger.kernel.org, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, dmaengine@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, linux-arm-kernel@lists.infradead.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V2 4/6] PM / domain: Register for PM QOS performance notifier
+Date: Thu,  9 Feb 2017 09:11:50 +0530
+Message-ID: <a973289cb908a391533a4b940af671beb2e8ace4.1486611268.git.viresh.kumar@linaro.org>
+References: <cover.1486611268.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1486611268.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1486611268.git.viresh.kumar@linaro.org>
+References: <cover.1486611268.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jan 26, 2017 at 03:43:05PM +0100, Marek Szyprowski wrote:
-> Hi Lars,
-> 
-> On 2017-01-25 14:12, Lars-Peter Clausen wrote:
-> >On 01/25/2017 11:28 AM, Marek Szyprowski wrote:
-> >>Add pointer to slave device to of_dma_xlate to let DMA engine driver
-> >>to know which slave device is using given DMA channel. This will be
-> >>later used to implement non-irq-safe runtime PM for DMA engine driver.
-> >of_dma_xlate() is used to translate from a OF phandle and a specifier to a
-> >DMA channel. On one hand this does not necessarily mean that the channel is
-> >actually going to be used by the slave that called the xlate function.
-> >Modifying the driver state when a lookup of the channel is done is a
-> >layering violation. And this approach is also missing a way to disassociate
-> >a slave from a DMA channel, e.g. when it is no longer used.
-> >
-> >On the other hand there are other mechanisms to translate between some kind
-> >of firmware handle to a DMA channel which are completely ignored here.
-> >
-> >So this approach does not work. This is something that needs to be done at
-> >the dmaengine level, not a the firmware resource translation level. And it
-> >needs a matching method that is called when the channel is disassociated
-> >from a device, when the device no longer uses the DMA channel.
-> 
-> Frankly I agree that of_dma_xlate() should only return the requested channel
-> to the dmaengine core and do not do any modification in the the
-> driver state.
+Some platforms have the capability to configure the performance state of
+their Power Domains. The performance levels are represented by positive
+integer values, a lower value represents lower performance state.
 
-True..
+This patch registers the power domain framework for PM QOS performance
+notifier in order to manage performance state of power domains.
 
-> However the current dma engine design and implementation breaks this rule.
-> Please check the drivers - how do they implement of_xlate callback. They
-> usually call dma_get_any_slave_channel, dma_get_slave_channel or
-> __dma_request_channel there, which in turn calls dma_chan_get, which then
-> calls back to device_alloc_chan_resources callback. Some of the drivers also
-> do a hardware configuration or other resource allocation in of_xlate.
-> This is a bit messy design and leave no place in the core to set
-> slave device
-> before device_alloc_chan_resources callback, where one would expect to have
-> it already set.
+This also allows the power domain drivers to implement a
+->set_performance_state() callback, which will be called by the power
+domain core from the notifier routine.
 
-We shouldn't be doing much at this stage. We operate on a channel, so the
-channel is returned to the client. We need to do these HW configurations
-when the channel has to be prepred for a txn.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/base/power/domain.c | 98 ++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/pm_domain.h   |  5 +++
+ 2 files changed, 101 insertions(+), 2 deletions(-)
 
-> The best place to add new calls to the dmaengine drivers to set slave device
-> would be just before device_alloc_chan_resources(), what in turn means that
-> the current dmaengine core should do in dma_chan_get(). This would
-> require to
-> forward the slave device pointer via even more layers including the of_xlate
-> callback too. IMHO this is not worth the effort.
-> 
-> DMA engine core and API definitely needs some cleanup. During such cleanup
-> the slave device pointer might be moved out of xlate into separate callback
-> when the core gets ready for such operation.
-
-Yes agreed on that, plus the runtime handling needs to be built in, right
-now the APIs dont work well with it, we disucssed these during the KS and
-this goes without saying, patches are welcome :)
-
-> I ignored other paths for other firmware handle to a DMA channel translation
-> mechanism because for the current pl330 driver they are simply not used. I
-> assume that if one needs to implement similar things for drivers relying on
-> them, he will update the respective DMA engine core parts.
-> 
-> Slave device assignments can be cleared in device_chan_release_resources if
-> this is needed and that what existing DMA engine drivers do with the
-> resources
-> allocated in the of_xlate callback...
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index a73d79670a64..1158a07f92de 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -367,6 +367,88 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+ 	return NOTIFY_DONE;
+ }
+ 
++static void update_domain_performance_state(struct generic_pm_domain *genpd,
++					    int depth)
++{
++	struct generic_pm_domain_data *pd_data;
++	struct generic_pm_domain *subdomain;
++	struct pm_domain_data *pdd;
++	unsigned int state = 0;
++	struct gpd_link *link;
++
++	/* Traverse all devices within the domain */
++	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
++		pd_data = to_gpd_data(pdd);
++
++		if (pd_data->performance_state > state)
++			state = pd_data->performance_state;
++	}
++
++	/* Traverse all subdomains within the domain */
++	list_for_each_entry(link, &genpd->master_links, master_node) {
++		subdomain = link->slave;
++
++		if (subdomain->performance_state > state)
++			state = subdomain->performance_state;
++	}
++
++	if (genpd->performance_state == state)
++		return;
++
++	genpd->performance_state = state;
++
++	if (genpd->set_performance_state) {
++		genpd->set_performance_state(genpd, state);
++		return;
++	}
++
++	/* Propagate only if this domain has a single parent */
++	if (list_is_singular(&genpd->slave_links)) {
++		/* Performance levels are managed by parent power domain */
++
++		struct generic_pm_domain *master;
++
++		link = list_first_entry(&genpd->slave_links, struct gpd_link, slave_node);
++		master = link->master;
++
++		genpd_lock_nested(master, depth + 1);
++		update_domain_performance_state(master, depth + 1);
++		genpd_unlock(master);
++	}
++}
++
++static int genpd_dev_pm_qos_perf_notifier(struct notifier_block *nb,
++					  unsigned long val, void *ptr)
++{
++	struct generic_pm_domain_data *gpd_data;
++	struct generic_pm_domain *genpd = ERR_PTR(-ENODATA);
++	struct pm_domain_data *pdd;
++	struct device *dev;
++
++	gpd_data = container_of(nb, struct generic_pm_domain_data, perf_nb);
++	dev = gpd_data->base.dev;
++
++	spin_lock_irq(&dev->power.lock);
++
++	pdd = dev->power.subsys_data ?
++		dev->power.subsys_data->domain_data : NULL;
++
++	if (pdd && pdd->dev)
++		genpd = dev_to_genpd(dev);
++
++	spin_unlock_irq(&dev->power.lock);
++
++	if (IS_ERR(genpd))
++		return NOTIFY_DONE;
++
++	genpd_lock(genpd);
++	gpd_data->performance_state = val;
++	update_domain_performance_state(genpd, 0);
++	genpd_unlock(genpd);
++
++	return NOTIFY_DONE;
++}
++
+ /**
+  * genpd_power_off - Remove power from a given PM domain.
+  * @genpd: PM domain to power down.
+@@ -1137,6 +1219,9 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = -1;
+ 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
++	gpd_data->performance_state = 0;
++
++	gpd_data->perf_nb.notifier_call = genpd_dev_pm_qos_perf_notifier;
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+@@ -1210,12 +1295,16 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
+  out:
+ 	genpd_unlock(genpd);
+ 
+-	if (ret)
++	if (ret) {
+ 		genpd_free_dev_data(dev, gpd_data);
+-	else
++	} else {
+ 		dev_pm_qos_add_notifier(dev, &gpd_data->nb,
+ 					DEV_PM_QOS_RESUME_LATENCY);
+ 
++		dev_pm_qos_add_notifier(dev, &gpd_data->perf_nb,
++					DEV_PM_QOS_PERFORMANCE);
++	}
++
+ 	return ret;
+ }
+ 
+@@ -1249,6 +1338,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+ 
+ 	pdd = dev->power.subsys_data->domain_data;
+ 	gpd_data = to_gpd_data(pdd);
++	dev_pm_qos_remove_notifier(dev, &gpd_data->perf_nb,
++				   DEV_PM_QOS_PERFORMANCE);
+ 	dev_pm_qos_remove_notifier(dev, &gpd_data->nb,
+ 				   DEV_PM_QOS_RESUME_LATENCY);
+ 
+@@ -1277,6 +1368,9 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
+ 	genpd_unlock(genpd);
+ 	dev_pm_qos_add_notifier(dev, &gpd_data->nb, DEV_PM_QOS_RESUME_LATENCY);
+ 
++	dev_pm_qos_add_notifier(dev, &gpd_data->perf_nb,
++				DEV_PM_QOS_PERFORMANCE);
++
+ 	return ret;
+ }
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 81ece61075df..d994ad5ba1c0 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -62,8 +62,11 @@ struct generic_pm_domain {
+ 	unsigned int device_count;	/* Number of devices */
+ 	unsigned int suspended_count;	/* System suspend device counter */
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
++	unsigned int performance_state;	/* Max requested performance state */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
++	int (*set_performance_state)(struct generic_pm_domain *domain,
++				     unsigned int state);
+ 	struct gpd_dev_ops dev_ops;
+ 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
+ 	bool max_off_time_changed;
+@@ -117,6 +120,8 @@ struct generic_pm_domain_data {
+ 	struct pm_domain_data base;
+ 	struct gpd_timing_data td;
+ 	struct notifier_block nb;
++	struct notifier_block perf_nb;
++	unsigned int performance_state;
+ };
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
 -- 
-~Vinod
+2.7.1.410.g6faf27b
