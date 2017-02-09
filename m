@@ -1,52 +1,46 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: ti: move to new dev_pm_opp_set_supported_hw() API
-Date: Thu, 9 Feb 2017 23:00:49 +0100
-Message-ID: <CAJZ5v0g-wYrrUdEDaNgjnTih7=U9RitK_88P5BoTtn1uJoxbAw@mail.gmail.com>
-References: <20170209150240.1094801-1-arnd@arndb.de>
+Subject: Re: [PATCH v6 2/4] Documentation: dt: add bindings for ti-cpufreq
+Date: Thu, 9 Feb 2017 23:03:21 +0100
+Message-ID: <CAJZ5v0hT4peuRQUrLHC32GmVSoa6Npv2qutNo2WEhne72hHi6A@mail.gmail.com>
+References: <20170203172929.23940-3-d-gerlach@ti.com>
+ <20170209153549.8354-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170209150240.1094801-1-arnd@arndb.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Dave Gerlach <d-gerlach@ti.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170209153549.8354-1-d-gerlach@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Dave Gerlach <d-gerlach@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lukasz Majewski <lukma@denx.de>, Rob Herring <robh+dt@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 9, 2017 at 4:02 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> We have a conflict between the interface change in one patch, and the
-> newly added driver using the old interface:
+On Thu, Feb 9, 2017 at 4:35 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
+> Add the device tree bindings document for the TI CPUFreq/OPP driver
+> on AM33xx, AM43xx, DRA7xx, and AM57xx SoCs. The operating-points-v2
+> binding allows us to provide an opp-supported-hw property for each OPP
+> to define when it is available. This driver is responsible for reading
+> and parsing registers to determine which OPPs can be selectively enabled
+> based on the specific SoC in use by matching against the opp-supported-hw
+> data.
 >
-> drivers/cpufreq/ti-cpufreq.c: In function 'ti_cpufreq_init':
-> drivers/cpufreq/ti-cpufreq.c:250:6: error: assignment makes integer from pointer without a cast [-Werror=int-conversion]
->
-> This adapts the driver accordingly.
->
-> Fixes: fa30184d192e ("PM / OPP: Return opp_table from dev_pm_opp_set_*() routines")
-> Fixes: 36cae4bca3bc ("cpufreq: ti: Add cpufreq driver to determine available OPPs at runtime")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 > ---
->  drivers/cpufreq/ti-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> index a2a4e84c6166..d1ae3e608f59 100644
-> --- a/drivers/cpufreq/ti-cpufreq.c
-> +++ b/drivers/cpufreq/ti-cpufreq.c
-> @@ -247,8 +247,8 @@ static int ti_cpufreq_init(void)
->
->         of_node_put(opp_data->opp_node);
->
-> -       ret = dev_pm_opp_set_supported_hw(opp_data->cpu_dev, version,
-> -                                         VERSION_COUNT);
-> +       ret = PTR_ERR_OR_ZERO(dev_pm_opp_set_supported_hw(opp_data->cpu_dev,
-> +                                                version, VERSION_COUNT));
->         if (ret) {
->                 dev_err(opp_data->cpu_dev,
->                         "Failed to set supported hardware\n");
-> --
 
-Thanks for the fix, but I fixed this up manually in the original patch
-in the meantime.
+I applied this (with the Rob's ACK) along with the rest of the series
+and I fixed up things that didn't apply and didn't build and I was not
+amused by that at all.
+
+In particular, Viresh, if you ACK something, please make sure that it
+doesn't conflict with your own patches.
 
 Thanks,
 Rafael
