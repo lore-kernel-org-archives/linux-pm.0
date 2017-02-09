@@ -1,15 +1,13 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v8 1/3] dmaengine: Add new device_{set,
- release}_slave callbacks
-Date: Thu, 09 Feb 2017 15:22:49 +0100
-Message-ID: <1486650171-20598-2-git-send-email-m.szyprowski@samsung.com>
-References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170209142307eucas1p180323d005f524760913b8d04ac966423@eucas1p1.samsung.com>
+Subject: [PATCH v8 0/3] DMA Engine: switch PL330 driver to non-irq-safe runtime
+ PM
+Date: Thu, 09 Feb 2017 15:22:48 +0100
+Message-ID: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
+References: <CGME20170209142307eucas1p2592bbad82dbbffc56bbd993f5a890981@eucas1p2.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-reply-to: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -23,116 +21,112 @@ To: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kern
 Cc: Ulf Hansson <ulf.hansson@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Vinod Koul <vinod.koul@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add two new callbacks to DMA engine device. They will used to provide
-access to slave device (the device which requested given DMA channel)
-for DMA engine driver. Access to slave device might be useful for example
-for implementing advanced runtime power management.
+Hello,
 
-DMA slave channels are exclusive, so only one slave device can be set
-for a given DMA slave channel.
+This patchset changes the way the runtime PM is implemented in the PL330 DMA
+engine driver. The main goal of such change is to add support for the audio
+power domain to Exynos5 SoCs (5250, 542x, 5433, probably others) and let
+it to be properly turned off, when no audio is being used. Switching to
+non-irq-safe runtime PM is required to properly let power domain to be
+turned off (irq-safe runtime PM keeps power domain turned on all the time)
+and to integrate with clock controller's runtime PM (this cannot be
+workarounded any other way, PL330 uses clocks from the controller, which
+belongs to the same power domain).
 
-device_set_slave() will be called after the device_alloc_chan_resources()
-and device_release_slave() before the device_free_chan_resources().
+For more details of the proposed change to the PL330 driver see patch #3.
 
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
----
- drivers/dma/dmaengine.c   | 27 ++++++++++++++++++++++++---
- include/linux/dmaengine.h | 10 ++++++++++
- 2 files changed, 34 insertions(+), 3 deletions(-)
+Audio power domain on Exynos5 SoCs contains following hardware modules:
+1. clock controller
+2. pin controller
+3. PL330 DMA controller
+4. I2S audio controller
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 24e0221fd66d..5b7089d8be4d 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -705,6 +705,7 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
- {
- 	struct dma_device *d, *_d;
- 	struct dma_chan *chan = NULL;
-+	int ret;
- 
- 	/* If device-tree is present get slave info from here */
- 	if (dev->of_node)
-@@ -715,8 +716,9 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
- 		chan = acpi_dma_request_slave_chan_by_name(dev, name);
- 
- 	if (chan) {
--		/* Valid channel found or requester need to be deferred */
--		if (!IS_ERR(chan) || PTR_ERR(chan) == -EPROBE_DEFER)
-+		if (!IS_ERR(chan))
-+			goto found;
-+		if (PTR_ERR(chan) == -EPROBE_DEFER)
- 			return chan;
- 	}
- 
-@@ -738,7 +740,21 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
- 	}
- 	mutex_unlock(&dma_list_mutex);
- 
--	return chan ? chan : ERR_PTR(-EPROBE_DEFER);
-+	if (!chan)
-+		return ERR_PTR(-EPROBE_DEFER);
-+	if (IS_ERR(chan))
-+		return chan;
-+found:
-+	if (chan->device->device_set_slave) {
-+		chan->slave = dev;
-+		ret = chan->device->device_set_slave(chan, dev);
-+		if (ret) {
-+			chan->slave = NULL;
-+			dma_release_channel(chan);
-+			chan = ERR_PTR(ret);
-+		}
-+	}
-+	return chan;
- }
- EXPORT_SYMBOL_GPL(dma_request_chan);
- 
-@@ -786,6 +802,11 @@ void dma_release_channel(struct dma_chan *chan)
- 	mutex_lock(&dma_list_mutex);
- 	WARN_ONCE(chan->client_count != 1,
- 		  "chan reference count %d != 1\n", chan->client_count);
-+	if (chan->slave) {
-+		if (chan->device->device_release_slave)
-+			chan->device->device_release_slave(chan);
-+		chan->slave = NULL;
-+	}
- 	dma_chan_put(chan);
- 	/* drop PRIVATE cap enabled by __dma_request_channel() */
- 	if (--chan->device->privatecnt == 0)
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 533680860865..d22299e37e69 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -277,6 +277,9 @@ struct dma_chan {
- 	struct dma_router *router;
- 	void *route_data;
- 
-+	/* Only for SLAVE channels */
-+	struct device *slave;
-+
- 	void *private;
- };
- 
-@@ -686,6 +689,10 @@ struct dma_filter {
-  * @device_alloc_chan_resources: allocate resources and return the
-  *	number of allocated descriptors
-  * @device_free_chan_resources: release DMA channel's resources
-+ * @device_set_slave: provide access to the slave device, which requested
-+ *	given DMA channel, called after @device_alloc_chan_resources
-+ * @device_release_slave: finishes access to the slave device, called
-+ *	before @device_free_chan_resources
-  * @device_prep_dma_memcpy: prepares a memcpy operation
-  * @device_prep_dma_xor: prepares a xor operation
-  * @device_prep_dma_xor_val: prepares a xor validation operation
-@@ -746,6 +753,9 @@ struct dma_device {
- 	int (*device_alloc_chan_resources)(struct dma_chan *chan);
- 	void (*device_free_chan_resources)(struct dma_chan *chan);
- 
-+	int (*device_set_slave)(struct dma_chan *chan, struct device *slave);
-+	void (*device_release_slave)(struct dma_chan *chan);
-+
- 	struct dma_async_tx_descriptor *(*device_prep_dma_memcpy)(
- 		struct dma_chan *chan, dma_addr_t dst, dma_addr_t src,
- 		size_t len, unsigned long flags);
+Patches for adding or fixing runtime PM for each of the above devices is
+handled separately.
+
+Runtime PM patches for clock controllers is possible and has been proposed
+in the following thread (pending review): "[PATCH v4 0/4] Add runtime PM
+support for clocks (on Exynos SoC example)",
+http://www.spinics.net/lists/arm-kernel/msg550747.html
+
+Runtime PM support for Exynos pin controller has been posted in the
+following thread: "[PATCH 0/9] Runtime PM for Exynos pin controller driver",
+http://www.spinics.net/lists/arm-kernel/msg550161.html
+
+Exynos I2S driver supports runtime PM, but some fixes were needed for it
+and they are already queued to linux-next.
+
+This patchset is based on linux-next from 9th February 2017.
+
+Best regards
+Marek Szyprowski
+Samsung R&D Institute Poland
+
+
+Changelog:
+
+v8:
+- reworked slave device assignment, now it is done in separate callbacks as
+  requested by Lars-Peter Clausen, no more changes to of_xlate callback
+  in every dma engine driver are needed in this approach
+- reworked pl330 patch to use new device_{set,release}_slave callbacks
+- dropped tags because of the code changes
+- rebased onto linux next-20170209
+
+v7: https://www.spinics.net/lists/arm-kernel/msg557696.html
+- added missing of_dma_request_slave_channel API change to sound/soc/sh/rcar
+  driver
+- extended commit message with information about drawbacks of irq-safe
+  runtime pm
+- added Ulf's reviewed-by tags
+
+v6: https://www.spinics.net/lists/arm-kernel/msg557377.html
+- fixed pl330 system sleep suspend/resume callbacks, previous implementation
+  incorrectly tried to unprepare clocks unconditionally - after a fix pl330
+  suspend/resume callbacks can be simply replaced by generic
+  pm_runtime_force_{suspend,resume} helpers, what simplifies code even more
+
+v5: https://www.spinics.net/lists/arm-kernel/msg555001.html
+- added Acks
+- additional mutex is indeed not needed, rely on dma_list_mutex in dmaengine
+  core, added comment about locking
+
+v4: http://www.spinics.net/lists/dmaengine/msg12329.html
+- rebased onto "dmaengine: pl330: fix double lock" patch:
+  http://www.spinics.net/lists/dmaengine/msg12289.html
+- added a mutex to protect runtime PM links creation/removal to avoid races
+- moved mem2mem channel case handing to pl330_{add,del}_slave_pm_link
+  functions to simplify code and error paths
+
+v3: http://www.spinics.net/lists/dmaengine/msg12245.html
+- removed pl330_filter function as suggested by Arnd Bergmann
+- removed pl330.h from arch/arm/plat-samsung/devs.c
+- fixes some minor style issues pointed by Krzysztof Kozlowski
+
+v2: https://www.spinics.net/lists/arm-kernel/msg552772.html
+- rebased onto linux next-20170109
+- improved patch description
+- separated patch #3 from #4 (storing a pointer to slave device for each
+  DMA channel) as requested by Krzysztof Kozlowski
+
+v1: https://www.spinics.net/lists/arm-kernel/msg550008.html
+- initial version
+
+
+Patch summary:
+
+Marek Szyprowski (3):
+  dmaengine: Add new device_{set,release}_slave callbacks
+  dmaengine: pl330: remove pdata based initialization
+  dmaengine: pl330: Don't require irq-safe runtime PM
+
+ arch/arm/plat-samsung/devs.c |   1 -
+ drivers/dma/dmaengine.c      |  27 +++++-
+ drivers/dma/pl330.c          | 219 +++++++++++++++++--------------------------
+ include/linux/amba/pl330.h   |  35 -------
+ include/linux/dmaengine.h    |  10 ++
+ 5 files changed, 119 insertions(+), 173 deletions(-)
+ delete mode 100644 include/linux/amba/pl330.h
+
 -- 
 1.9.1
