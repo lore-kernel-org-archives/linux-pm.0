@@ -1,52 +1,90 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / Domains: Provide dummy governors if CONFIG_PM_GENERIC_DOMAINS=n
-Date: Thu, 9 Feb 2017 11:40:47 +0100
-Message-ID: <CAPDyKFoRFKbDSqD2XN4zXx+4T7yytU-1LPg=cLHWvKMXKH8uuA@mail.gmail.com>
-References: <1486579075-21498-1-git-send-email-geert+renesas@glider.be>
+From: Roger Quadros <rogerq@ti.com>
+Subject: Re: [PATCH v12 6/9] usb: xhci: use bus->sysdev for DMA configuration
+Date: Thu, 9 Feb 2017 13:53:25 +0200
+Message-ID: <85873d69-5664-0603-8cbd-a250d29ac335@ti.com>
+References: <1486372421-29073-1-git-send-email-peter.chen@nxp.com>
+ <1486372421-29073-7-git-send-email-peter.chen@nxp.com>
+ <20170208204300.GC8068@usblab-sd-06.qualcomm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ua0-f176.google.com ([209.85.217.176]:34347 "EHLO
-        mail-ua0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752028AbdBIKkt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2017 05:40:49 -0500
-Received: by mail-ua0-f176.google.com with SMTP id 35so131252956uak.1
-        for <linux-pm@vger.kernel.org>; Thu, 09 Feb 2017 02:40:48 -0800 (PST)
-In-Reply-To: <1486579075-21498-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170208204300.GC8068@usblab-sd-06.qualcomm.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Jack Pham <jackp@codeaurora.org>, Peter Chen <peter.chen@nxp.com>
+Cc: mark.rutland@arm.com, ulf.hansson@linaro.org, heiko@sntech.de, stephen.boyd@linaro.org, linux-kernel@vger.kernel.org, gary.bisson@boundarydevices.com, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, robh+dt@kernel.org, Mathias Nyman <mathias.nyman@linux.intel.com>, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, rjw@rjwysocki.net, sre@kernel.org, broonie@kernel.org, p.zabel@pengutronix.de, shawnguo@kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 8 February 2017 at 19:37, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> This allows to compile-test drivers that refer to governors (always by
-> reference) when CONFIG_PM_GENERIC_DOMAINS=n.
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Kind regards
-Uffe
+On 08/02/17 22:43, Jack Pham wrote:
+> Hi Peter, Sriram, Arnd,
+> 
+> On Mon, Feb 06, 2017 at 05:13:38PM +0800, Peter Chen wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> For xhci-hcd platform device, all the DMA parameters are not
+>> configured properly, notably dma ops for dwc3 devices. So, set
+>> the dma for xhci from sysdev. sysdev is pointing to device that
+>> is known to the system firmware or hardware.
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+>> Tested-by: Baolin Wang <baolin.wang@linaro.org>
+>> Tested-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+>> Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+>> Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+>> ---
+>> diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
+>> index 6d33b42..7a9c860 100644
+>> --- a/drivers/usb/host/xhci-plat.c
+>> +++ b/drivers/usb/host/xhci-plat.c
+> 
+>> -	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
+>> +	hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+>> +			       dev_name(&pdev->dev), NULL);
+> 
+> As mentioned already in [1], usb_create_shared_hcd() is called to create
+> the second bus, however it also needs to be converted.
+> 
+> Not exactly as Roger's suggestion but this worked for me:
+> 
+> -       xhci->shared_hcd = usb_create_shared_hcd(driver, &pdev->dev,
+> +       xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+>                         dev_name(&pdev->dev), hcd);
 
-> ---
->  include/linux/pm_domain.h | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 81ece61075dff0e7..5339ed5bd6f9d04a 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -182,6 +182,9 @@ static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
->  {
->         return -ENOTSUPP;
->  }
-> +
-> +#define simple_qos_governor            (*(struct dev_power_governor *)(NULL))
-> +#define pm_domain_always_on_gov                (*(struct dev_power_governor *)(NULL))
->  #endif
->
->  static inline int pm_genpd_add_device(struct generic_pm_domain *genpd,
-> --
-> 1.9.1
->
+But we're creating a shared_hcd and there is an API for that so why not use it
+instead of calling __usb_create_hcd()?
+
+>         if (!xhci->shared_hcd) {
+>                 ret = -ENOMEM;
+> 
+> Without this, SuperSpeed devices fail to enumerate:
+> 
+>  usb 2-1: new SuperSpeed USB device number 2 using xhci-hcd
+>  usb 2-1: device descriptor read/8, error -11
+>  usb 2-1: new SuperSpeed USB device number 2 using xhci-hcd
+>  usb 2-1: device descriptor read/8, error -11
+>  usb 2-1: new SuperSpeed USB device number 3 using xhci-hcd
+>  usb 2-1: device descriptor read/8, error -11
+>  usb 2-1: new SuperSpeed USB device number 3 using xhci-hcd
+>  usb 2-1: device descriptor read/8, error -11
+>  <and continues...>
+> 
+> Thanks,
+> Jack
+> 
+> [1] https://lkml.org/lkml/2016/12/9/240
+> 
+
+-- 
+cheers,
+-roger
