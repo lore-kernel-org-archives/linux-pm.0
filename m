@@ -1,219 +1,125 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 3/6] PM / QOS: Add 'performance' request
-Date: Thu,  9 Feb 2017 09:11:49 +0530
-Message-ID: <9820795796278bc66baa3f41220f8524cbdda537.1486611268.git.viresh.kumar@linaro.org>
-References: <cover.1486611268.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1486611268.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1486611268.git.viresh.kumar@linaro.org>
-References: <cover.1486611268.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v12 6/9] usb: xhci: use bus->sysdev for DMA configuration
+Date: Thu, 9 Feb 2017 11:45:35 +0530
+Message-ID: <CAFp+6iGCcTsELQQJ2n9MyS3S-3FWjTvSOEXGX3xpWwqH+7uSYQ@mail.gmail.com>
+References: <1486372421-29073-1-git-send-email-peter.chen@nxp.com>
+ <1486372421-29073-7-git-send-email-peter.chen@nxp.com> <20170208204300.GC8068@usblab-sd-06.qualcomm.com>
+ <20170209014113.GB460@b29397-desktop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170209014113.GB460@b29397-desktop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Jack Pham <jackp-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux USB Mailing List <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam@gmai
 List-Id: linux-pm@vger.kernel.org
 
-Add a new QOS request type: DEV_PM_QOS_PERFORMANCE.
+On Thu, Feb 9, 2017 at 7:11 AM, Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
+> On Wed, Feb 08, 2017 at 12:43:00PM -0800, Jack Pham wrote:
+>> Hi Peter, Sriram, Arnd,
+>>
+>> On Mon, Feb 06, 2017 at 05:13:38PM +0800, Peter Chen wrote:
+>> > From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+>> >
+>> > For xhci-hcd platform device, all the DMA parameters are not
+>> > configured properly, notably dma ops for dwc3 devices. So, set
+>> > the dma for xhci from sysdev. sysdev is pointing to device that
+>> > is known to the system firmware or hardware.
+>> >
+>> > Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+>> > Signed-off-by: Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>
+>> > Tested-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> > Tested-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+>> > Tested-by: Alexander Sverdlin <alexander.sverdlin-xNZwKgViW5gAvxtiuMwx3w@public.gmane.org>
+>> > Signed-off-by: Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+>> > ---
+>> > diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
+>> > index 6d33b42..7a9c860 100644
+>> > --- a/drivers/usb/host/xhci-plat.c
+>> > +++ b/drivers/usb/host/xhci-plat.c
+>>
+>> > -   hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
+>> > +   hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+>> > +                          dev_name(&pdev->dev), NULL);
+>>
+>> As mentioned already in [1], usb_create_shared_hcd() is called to create
+>> the second bus, however it also needs to be converted.
+>>
+>> Not exactly as Roger's suggestion but this worked for me:
+>>
+>> -       xhci->shared_hcd = usb_create_shared_hcd(driver, &pdev->dev,
+>> +       xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+>>                         dev_name(&pdev->dev), hcd);
+>>         if (!xhci->shared_hcd) {
+>>                 ret = -ENOMEM;
+>>
+>> Without this, SuperSpeed devices fail to enumerate:
+>>
+>>  usb 2-1: new SuperSpeed USB device number 2 using xhci-hcd
+>>  usb 2-1: device descriptor read/8, error -11
+>>  usb 2-1: new SuperSpeed USB device number 2 using xhci-hcd
+>>  usb 2-1: device descriptor read/8, error -11
+>>  usb 2-1: new SuperSpeed USB device number 3 using xhci-hcd
+>>  usb 2-1: device descriptor read/8, error -11
+>>  usb 2-1: new SuperSpeed USB device number 3 using xhci-hcd
+>>  usb 2-1: device descriptor read/8, error -11
+>>  <and continues...>
+>>
+>> Thanks,
+>> Jack
+>>
+>
+> Do you work at same platform with Vivek Gautam? I see his tested-by
+> tag in this patch.
 
-This is required to support runtime performance constraints for the
-devices. Also allow notifiers to be registered against it, which can be
-used by frameworks like genpd.
+The patches [1] had worked for me on 4.9-rc4.
+But with
+(a) usb-next merged on 4.10-rc7
+(b) this patch and [PATCH 3/9] in this series:
+      [PATCH v12 3/9] usb: separate out sysdev pointer from usb_bus
+and,
+(c) phy patches for msm8996 [2] along with necessary device tree patches
+I get a hang when SuperSpeed device is being enumerated on db820c.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/power/pm_qos_interface.txt |  2 +-
- drivers/base/power/qos.c                 | 69 +++++++++++++++++++++++++++-----
- include/linux/pm_qos.h                   |  4 ++
- 3 files changed, 63 insertions(+), 12 deletions(-)
+The change above suggested by Jack works for me too, and i hope that's
+the right way to do things.
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index c7989d140428..a0a45ecbc1a8 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -172,7 +172,7 @@ type.
- 
- The callback is called when the aggregated value of the device constraints list
- is changed. Currently it only supports the notifier to be registered for resume
--latency device PM QoS.
-+latency and performance device PM QoS.
- 
- int dev_pm_qos_remove_notifier(device, notifier, type):
- Removes the notification callback function for the device.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 9adc208cf1fc..cf070468a7ca 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -163,6 +163,10 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 			req->dev->power.set_latency_tolerance(req->dev, value);
- 		}
- 		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		ret = pm_qos_update_target(&qos->performance, &req->data.pnode,
-+					   action, value);
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
-@@ -191,12 +195,13 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	if (!qos)
- 		return -ENOMEM;
- 
--	n = kzalloc(sizeof(*n), GFP_KERNEL);
-+	n = kzalloc(2 * sizeof(*n), GFP_KERNEL);
- 	if (!n) {
- 		kfree(qos);
- 		return -ENOMEM;
- 	}
- 	BLOCKING_INIT_NOTIFIER_HEAD(n);
-+	BLOCKING_INIT_NOTIFIER_HEAD(n + 1);
- 
- 	c = &qos->resume_latency;
- 	plist_head_init(&c->list);
-@@ -213,6 +218,14 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 
-+	c = &qos->performance;
-+	plist_head_init(&c->list);
-+	c->target_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->default_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->no_constraint_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->type = PM_QOS_MAX;
-+	c->notifiers = n + 1;
-+
- 	INIT_LIST_HEAD(&qos->flags.list);
- 
- 	spin_lock_irq(&dev->power.lock);
-@@ -271,6 +284,11 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-+	c = &qos->performance;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-@@ -382,6 +400,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+	case DEV_PM_QOS_PERFORMANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
- 	case DEV_PM_QOS_FLAGS:
-@@ -492,11 +511,9 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_remove_request);
- int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
- 			    enum dev_pm_qos_req_type type)
- {
-+	struct dev_pm_qos *qos;
- 	int ret = 0;
- 
--	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
--		return -EINVAL;
--
- 	mutex_lock(&dev_pm_qos_mtx);
- 
- 	if (IS_ERR(dev->power.qos))
-@@ -504,10 +521,26 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier,
- 	else if (!dev->power.qos)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
--	if (!ret)
--		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
-+	if (ret)
-+		goto unlock;
-+
-+	qos = dev->power.qos;
-+
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
-+		ret = blocking_notifier_chain_register(qos->resume_latency.notifiers,
-+						       notifier);
-+		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		ret = blocking_notifier_chain_register(qos->performance.notifiers,
- 						       notifier);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		ret = -EINVAL;
-+	}
- 
-+unlock:
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	return ret;
- }
-@@ -528,18 +561,32 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 			       struct notifier_block *notifier,
- 			       enum dev_pm_qos_req_type type)
- {
-+	struct dev_pm_qos *qos;
- 	int retval = 0;
- 
--	if (WARN_ON(type != DEV_PM_QOS_RESUME_LATENCY))
--		return -EINVAL;
--
- 	mutex_lock(&dev_pm_qos_mtx);
- 
-+	qos = dev->power.qos;
-+
- 	/* Silently return if the constraints object is not present. */
--	if (!IS_ERR_OR_NULL(dev->power.qos))
--		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
-+	if (IS_ERR_OR_NULL(qos))
-+		goto unlock;
-+
-+	switch (type) {
-+	case DEV_PM_QOS_RESUME_LATENCY:
-+		retval = blocking_notifier_chain_unregister(qos->resume_latency.notifiers,
-+							    notifier);
-+		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		retval = blocking_notifier_chain_unregister(qos->performance.notifiers,
- 							    notifier);
-+		break;
-+	default:
-+		WARN_ON(1);
-+		retval = -EINVAL;
-+	}
- 
-+unlock:
- 	mutex_unlock(&dev_pm_qos_mtx);
- 	return retval;
- }
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 08cfaeb6c178..0e8386adb21c 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -36,6 +36,7 @@ enum pm_qos_flags_status {
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
-+#define PM_QOS_PERFORMANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
-@@ -55,6 +56,7 @@ struct pm_qos_flags_request {
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
- 	DEV_PM_QOS_LATENCY_TOLERANCE,
-+	DEV_PM_QOS_PERFORMANCE,
- 	DEV_PM_QOS_FLAGS,
- };
- 
-@@ -96,9 +98,11 @@ struct pm_qos_flags {
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
- 	struct pm_qos_constraints latency_tolerance;
-+	struct pm_qos_constraints performance;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
-+	struct dev_pm_qos_request *performance_req;
- 	struct dev_pm_qos_request *flags_req;
- };
- 
+I can give a Tested-by again with the changes for shared_hcd in the
+next version.
+
+[1] https://lkml.org/lkml/2016/11/17/339
+[2] https://lkml.org/lkml/2017/1/10/225
+
+>
+> I have no dwc3 platform to test, I only got patches from [1], and rebase to
+> Greg's usb-next, the rebase has a conflict, and I made a
+> change which is similar to revert below patch, but it is definitely
+> not your problem.
+>
+> commit 488dc164914ff5ce5e913abd32048d28fc0d06b8
+> Author: Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+> Date:   Fri Jan 20 15:38:24 2017 +0200
+>
+>     xhci: remove WARN_ON if dma mask is not set for platform devices
+>
+>
+> [1] http://www.spinics.net/lists/linux-usb/msg152375.html
+>
+> --
+>
+> Best Regards,
+> Peter Chen
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
+
 -- 
-2.7.1.410.g6faf27b
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
