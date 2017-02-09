@@ -1,46 +1,116 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v6 2/4] Documentation: dt: add bindings for ti-cpufreq
-Date: Thu, 9 Feb 2017 23:03:21 +0100
-Message-ID: <CAJZ5v0hT4peuRQUrLHC32GmVSoa6Npv2qutNo2WEhne72hHi6A@mail.gmail.com>
-References: <20170203172929.23940-3-d-gerlach@ti.com>
- <20170209153549.8354-1-d-gerlach@ti.com>
+From: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Subject: Re: [PATCH 2/2] ARM: dts: bcm283x: Add critical thermal zone for GPU
+Date: Thu, 09 Feb 2017 15:34:27 -0800
+Message-ID: <8737fnkkfw.fsf@eliezer.anholt.net>
+References: <E0A4388D-788A-40B4-9193-36FD75284654@martin.sperl.org> <1486217787-15703-1-git-send-email-stefan.wahren@i2se.com> <1486217787-15703-2-git-send-email-stefan.wahren@i2se.com> <20170208041929.GA6809@localhost.localdomain> <20170208042351.GB6809@localhost.localdomain> <93f3ecbc-6d28-3e04-d6f3-4c03f8ac7ab3@i2se.com> <87lgtgea1q.fsf@eliezer.anholt.net> <124007607.358509.1486662532562@email.1und1.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170209153549.8354-1-d-gerlach@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Dave Gerlach <d-gerlach@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Lukasz Majewski <lukma@denx.de>, Rob Herring <robh+dt@kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha512; protocol="application/pgp-signature"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <124007607.358509.1486662532562-7tX72C7vayboQLBSYMtkGA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 9, 2017 at 4:35 PM, Dave Gerlach <d-gerlach@ti.com> wrote:
-> Add the device tree bindings document for the TI CPUFreq/OPP driver
-> on AM33xx, AM43xx, DRA7xx, and AM57xx SoCs. The operating-points-v2
-> binding allows us to provide an opp-supported-hw property for each OPP
-> to define when it is available. This driver is responsible for reading
-> and parsing registers to determine which OPPs can be selectively enabled
-> based on the specific SoC in use by matching against the opp-supported-hw
-> data.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> writes:
+
+> Hi Eric,
 >
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
+>> Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org> hat am 8. Februar 2017 um 20:50 geschriebe=
+n:
+>>=20
+>>=20
+>> Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> writes:
+>>=20
+>> > Am 08.02.2017 um 05:23 schrieb Eduardo Valentin:
+>> >> On Tue, Feb 07, 2017 at 08:19:31PM -0800, Eduardo Valentin wrote:
+>> >>> On Sat, Feb 04, 2017 at 02:16:27PM +0000, Stefan Wahren wrote:
+>> >>>> As suggested by Eduardo Valentin this adds the thermal zone for
+>> >>>> the bcm2835 SoC. Since we currently don't have any cooling devices
+>> >>>> leave this section empty.
+>> >>>>
+>> >>>> Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+>> >>>> ---
+>> >>>>  arch/arm/boot/dts/bcm283x.dtsi |   19 +++++++++++++++++++
+>> >>>>  1 file changed, 19 insertions(+)
+>> >>>>
+>> >>>> diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm=
+283x.dtsi
+>> >>>> index 9c7ec7e..359da9d 100644
+>> >>>> --- a/arch/arm/boot/dts/bcm283x.dtsi
+>> >>>> +++ b/arch/arm/boot/dts/bcm283x.dtsi
+>> >>>> @@ -19,6 +19,25 @@
+>> >>>>  		bootargs =3D "earlyprintk console=3DttyAMA0";
+>> >>>>  	};
+>> >>>>=20=20
+>> >>>> +	thermal-zones {
+>> >>>> +		gpu_thermal: gpu-thermal {
+>> >>>> +			polling-delay-passive =3D <0>;
+>> >>>> +			polling-delay =3D <1000>;
+>> >>>> +
+>> >>>> +			thermal-sensors =3D <&thermal>;
+>> >> Just came to my mind, dont you need to have an id to specify with sen=
+sor
+>> >> points to gpu?
+>> >
+>> > Sorry, i don't know the exact setup of the single thermal sensor on the
+>> > SoC (datasheet doesn't provide any helpful information). I adapted the
+>> > Renesas R-Car thermal binding because i think it would be the best mat=
+ch.
+>> >
+>> > @Eric: What's your opinion?
+>>=20
+>> I don't understand the question.
+>
+> i hope to get it right. We are talking about defining the thermal zone [1=
+].
+>
+> There are 4 examples:
+>
+> (a) - CPU thermal zone with one internal sensor
+> (b) - IC with several internal sensors
+> (c) - Several sensors within one single thermal zone
+> (d) - Board thermal
+>
+> I decided to choose (a) for the patch and Eduardo tends to (b).
+>
+> Here are the questions:
+>
+> Where is the thermal sensor TSENS located (ARM core or VideoCore 4)?
+>
+> Do we expect several internal sensors?
 
-I applied this (with the Rob's ACK) along with the rest of the series
-and I fixed up things that didn't apply and didn't build and I was not
-amused by that at all.
+There is only one temperature sensor on the chip, and no others on the
+board that I know of.  The docs for tsens don't say if the actual sensor
+is closer to the center of the ARM or some VC4 component within the
+chip.
 
-In particular, Viresh, if you ACK something, please make sure that it
-doesn't conflict with your own patches.
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Thanks,
-Rafael
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE/JuuFDWp9/ZkuCBXtdYpNtH8nugFAlic/IMACgkQtdYpNtH8
+nuhGcRAAnqfwXmk4xfHdbQPgRXhTlshfFf8uD/L35MXTuWZARn8sFOLdbKkk1ZOR
+HC/GBdVTJsHJolTd5gFfFZYUF27eMVnuf7ZHE8UbLsraytwVM7NJHBocfiVV9uLx
+VjtrQIWHSmi3+5RUpbiRkSWxLEvvZkY37RXAP8iiSdkxK4bvACBBTSRa/sJNIo3E
+A16JbRPuZ+mzWwhYRa1A6816iT37VxX+Etk97I0hG9MlMSQHgURxdpV0hgJUu1Pn
+fnfNCu/cNSYQishO13F2pIZTMgeXSz/eiiNTJZ6Mny7XypffTHBbU4SbhmHBUmNj
+FgXzX7VjtxAYNPdcI95PdlVpws+yKNrKHP0ExWxTe1a/J0U/Yk1dIgylk/eu5nrg
+l7XmiyIG90i9u/cUOXf3lDGylO4lSfnEPToLZcpwVQX+pyfsop8QcsjwuPuu0XKs
+8HRh17KBGwMYAuaHmKULszb9jYcC8DzQ6z80GLhORUy3fEjZbZ9q0qDQO1ZcnZoq
+xnsnXI7MAerVWs4tp82bYHoXUB0yzEskuRpD414mcIhkQrXDlTXzwYRpJuTeNPv6
+0LVw//B3LEnxDBI9j+Sp0QCkzW1HjgHzmo71CwfpCf31VpEzvjV1fH1RE27KViri
+tIYH2qEwO8e0yCB+m0GwIx229fjciJIuArBerNjCliUCjLMGoSc=
+=+Lv1
+-----END PGP SIGNATURE-----
+--=-=-=--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
