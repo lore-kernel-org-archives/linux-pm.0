@@ -1,129 +1,120 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/2] PM / Domains: Ignore domain-idle-states that are not
- compatible
-Date: Thu, 9 Feb 2017 09:40:29 +0100
-Message-ID: <CAPDyKFpj4LNPH-V2cziw1ULm9Ff9a3jeyrQK9XVp2G2OaQbtXw@mail.gmail.com>
-References: <1486571692-33212-1-git-send-email-lina.iyer@linaro.org>
- <1486571692-33212-3-git-send-email-lina.iyer@linaro.org>
+Subject: Re: [PATCH 2/2] PM / Domains: Support in context powering off parent domain
+Date: Thu, 9 Feb 2017 10:02:55 +0100
+Message-ID: <CAPDyKFpYJ+M4girUxS5TP7+fzvDZOxUbN1oE0BJtgsuycKf3pQ@mail.gmail.com>
+References: <1486571692-33212-1-git-send-email-lina.iyer@linaro.org> <1486571692-33212-4-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1486571692-33212-3-git-send-email-lina.iyer@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Juri Lelli <Juri.Lelli@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, Brendan Jackman <brendan.jackman@arm.com>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, Rob Herring <robh@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ua0-f178.google.com ([209.85.217.178]:34619 "EHLO
+        mail-ua0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752098AbdBIJC5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Feb 2017 04:02:57 -0500
+Received: by mail-ua0-f178.google.com with SMTP id 35so129632694uak.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Feb 2017 01:02:56 -0800 (PST)
+In-Reply-To: <1486571692-33212-4-git-send-email-lina.iyer@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
 
 On 8 February 2017 at 17:34, Lina Iyer <lina.iyer@linaro.org> wrote:
-> domain-idle-states property may have phandles to idle state bindings
-> that may not be compatible with idle state definition defined in [1].
-
-I don't find the reference to [1] in the change-log, could you please add it.
-
-> Such phandles would just be ignored and not throw and error when read by
-> the domain core.
-
-Perhaps, you could also share a minimal snipped from a DTS as it helps
-to describe why and what this change is needed.
-
+> Powering off a domain schedules a work to opportunistically power off
+> the parent domains. Domains that are IRQ safe may have parents that are
+> also IRQ safe. It would be beneficial to power off such IRQ safe parents
+> in the same context as well.
 >
-> Cc: <devicetree@vger.kernel.org>
-> Cc: Rob Herring <robh@kernel.org>
 > Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > ---
->  Documentation/devicetree/bindings/power/power_domain.txt |  4 +++-
->  drivers/base/power/domain.c                              | 16 +++++++++-------
->  2 files changed, 12 insertions(+), 8 deletions(-)
+>  drivers/base/power/domain.c | 21 ++++++++++++++++-----
+>  1 file changed, 16 insertions(+), 5 deletions(-)
 >
-> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-> index 723e1ad..940707d 100644
-> --- a/Documentation/devicetree/bindings/power/power_domain.txt
-> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
-> @@ -31,7 +31,9 @@ Optional properties:
->
->  - domain-idle-states : A phandle of an idle-state that shall be soaked into a
->                  generic domain power state. The idle state definitions are
-> -                compatible with domain-idle-state specified in [1].
-> +                compatible with domain-idle-state specified in [1]. phandles
-> +                that are not compatible with domain-idle-state will be
-> +                ignored.
->    The domain-idle-state property reflects the idle state of this PM domain and
->    not the idle states of the devices or sub-domains in the PM domain. Devices
->    and sub-domains have their own idle-states independent of the parent
 > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 6b23d82..3825bb9 100644
+> index 3825bb9..51e2254 100644
 > --- a/drivers/base/power/domain.c
-
-Always split DT documentation changes from the code changes and make
-the DT doc changes precede the code changes in the series of patches.
-
 > +++ b/drivers/base/power/domain.c
-> @@ -2065,11 +2065,6 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
->         int err;
->         u32 residency;
->         u32 entry_latency, exit_latency;
-> -       const struct of_device_id *match_id;
-> -
-> -       match_id = of_match_node(idle_state_match, state_node);
-> -       if (!match_id)
-> -               return -EINVAL;
+> @@ -375,7 +375,8 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+>   * If all of the @genpd's devices have been suspended and all of its subdomains
+>   * have been powered down, remove power from @genpd.
+>   */
+> -static int genpd_power_off(struct generic_pm_domain *genpd, bool is_async)
+> +static int genpd_power_off(struct generic_pm_domain *genpd, bool is_async,
+> +                                       unsigned int depth)
+>  {
+>         struct pm_domain_data *pdd;
+>         struct gpd_link *link;
+> @@ -442,7 +443,17 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool is_async)
 >
->         err = of_property_read_u32(state_node, "entry-latency-us",
->                                                 &entry_latency);
-> @@ -2118,6 +2113,7 @@ int of_genpd_parse_idle_states(struct device_node *dn,
->         int err, ret;
->         int count;
->         struct of_phandle_iterator it;
-> +       const struct of_device_id *match_id;
->
->         count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
->         if (count <= 0)
-> @@ -2130,6 +2126,9 @@ int of_genpd_parse_idle_states(struct device_node *dn,
->         /* Loop over the phandles until all the requested entry is found */
->         of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
->                 np = it.node;
-> +               match_id = of_match_node(idle_state_match, np);
-> +               if (!match_id)
-> +                       continue;
+>         list_for_each_entry(link, &genpd->slave_links, slave_node) {
+>                 genpd_sd_counter_dec(link->master);
+> -               genpd_queue_power_off_work(link->master);
+> +               /*
+> +                * Power off the parent in the same context if the parent
+> +                * domain is also IRQ safe.
+> +                */
+> +               if (genpd_is_irq_safe(genpd) &&
+> +                               genpd_is_irq_safe(link->master)) {
+> +                       genpd_lock_nested(link->master, depth + 1);
+> +                       genpd_power_off(link->master, false, depth + 1);
 
-Earlier we have allocated "count" numbers of struct genpd_power_state,
-by using a kcalloc().
+This doesn't work. You must not call genpd_power_off() using "false" here.
 
-This change may lead to that we could have allocated more memory than
-actually needed - because there may be some nodes that doesn't match.
+That's because "true" in the recursive call, for the master domain
+tells genpd_power_off() that is has been called from genpd's
+->runtime_suspend() callback. That means genpd_power_off() thinks it's
+okay to allow *one* device in the domain to not be runtime suspended
+when allowing a power off to be done. This assumption is not correct
+for the master domain.
 
-Perhaps it's better to do a pre-iteration to find the real numbers of
-how many struct genpd_power_state we actually need to allocate!?
-
->                 ret = genpd_parse_state(&st[i++], np);
->                 if (ret) {
->                         pr_err
-> @@ -2141,8 +2140,11 @@ int of_genpd_parse_idle_states(struct device_node *dn,
->                 }
+> +                       genpd_unlock(link->master);
+> +               } else
+> +                       genpd_queue_power_off_work(link->master);
 >         }
 >
-> -       *n = count;
-> -       *states = st;
-> +       *n = i;
-> +       if (!i)
-> +               kfree(st);
-> +       else
-> +               *states = st;
+>         return 0;
+> @@ -459,7 +470,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
+>         genpd = container_of(work, struct generic_pm_domain, power_off_work);
+>
+>         genpd_lock(genpd);
+> -       genpd_power_off(genpd, true);
+> +       genpd_power_off(genpd, true, 0);
+>         genpd_unlock(genpd);
+>  }
+>
+> @@ -578,7 +589,7 @@ static int genpd_runtime_suspend(struct device *dev)
+>                 return 0;
+>
+>         genpd_lock(genpd);
+> -       genpd_power_off(genpd, false);
+> +       genpd_power_off(genpd, false, 0);
+>         genpd_unlock(genpd);
 >
 >         return 0;
->  }
+> @@ -658,7 +669,7 @@ static int genpd_runtime_resume(struct device *dev)
+>         if (!pm_runtime_is_irq_safe(dev) ||
+>                 (pm_runtime_is_irq_safe(dev) && genpd_is_irq_safe(genpd))) {
+>                 genpd_lock(genpd);
+> -               genpd_power_off(genpd, 0);
+> +               genpd_power_off(genpd, 0, 0);
+>                 genpd_unlock(genpd);
+>         }
+>
 > --
 > 2.7.4
 >
+
+Some more thoughts..
+
+Actually, I have been thinking of changing genpd to avoid queuing
+power off works, no matter if the PM domain are IRQ safe or not. There
+are several reasons, but primarily it helps to avoid wasting power.
+
+Currently I don't see any reasons to why such change shouldn't be
+feasible. As a matter of fact, changing this became possible while we
+removed the intermediate states in genpd in commit ba2bbfbf6307 ("PM /
+Domains: Remove intermediate states from the power off sequence").
+
+Allow me to help out and cook a patch for this, it's already in the pipe. :-)
 
 Kind regards
 Uffe
