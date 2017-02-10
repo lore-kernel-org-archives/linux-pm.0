@@ -1,64 +1,49 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v5 2/8] PCI: Allow runtime PM on Thunderbolt ports
-Date: Fri, 10 Feb 2017 11:57:16 -0600
-Message-ID: <20170210175716.GE29169@bhelgaas-glaptop.roam.corp.google.com>
+Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host
+ hotplug ports
+Date: Fri, 10 Feb 2017 12:39:12 -0600
+Message-ID: <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com>
 References: <cover.1484486499.git.lukas@wunner.de>
- <14d64f19bc1b1ea67371b8336dca618edddc0b52.1484486499.git.lukas@wunner.de>
- <20170128220914.GN20550@bhelgaas-glaptop.roam.corp.google.com>
- <CAJZ5v0gZgp0RVo_2toASw+-GF=FV8=TdEmauP+7+-czU5kshjg@mail.gmail.com>
+ <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.136]:56112 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753260AbdBJR70 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 Feb 2017 12:59:26 -0500
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gZgp0RVo_2toASw+-GF=FV8=TdEmauP+7+-czU5kshjg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Mon, Jan 30, 2017 at 08:15:40AM +0100, Rafael J. Wysocki wrote:
-> On Sat, Jan 28, 2017 at 11:09 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
-> >> Currently PCIe ports are only allowed to go to D3 if the BIOS is dated
-> >> 2015 or newer to avoid potential issues with old chipsets.  However for
-> >> Thunderbolt we know that even the oldest controller, Light Ridge (2010),
-> >> is able to suspend its ports to D3 just fine.
-> >>
-> >> We're about to add runtime PM for Thunderbolt on the Mac.  Apple has
-> >> released two EFI security updates in 2015 which encompass all machines
-> >> with Thunderbolt, but the achieved power saving should be made available
-> >> to users even if they haven't updated their BIOS.  To this end,
-> >> special-case Thunderbolt in pci_bridge_d3_possible().
-> >
-> > I think this whole paragraph is unnecessary detail.  I first thought
-> > you had some connection with a firmware security issue, but now I see
-> > the only point is that if you have pre-2015 firmware, you could update
-> > it since newer firmware is available.
-> >
-> >> This allows the Thunderbolt controller to power down but the root port
-> >> to which the Thunderbolt controller is attached remains in D0 unless
-> >> the EFI update is installed.  Users can pass pcie_port_pm=force on the
-> >> kernel command line if they cannot install the EFI update but still want
-> >> to benefit from the additional power saving of putting the root port
-> >> into D3.  In practice, root ports can be suspended to D3 without issues
-> >> at least on 2012 Ivy Bridge machines.
-> >
-> > I'm not sure I like advertising pcie_port_pm=force.  That just means a
-> > few leet folks will use this parameter and run in a subtly different
-> > configuration than everybody else, and possibly trip over subtly
-> > different issues.  The audience (users who read kernel change logs and
-> > are willing to use special boot parameters, but who can't install an
-> > EFI update) seems small.
-> 
-> That basically is for somebody who has a product and knows that the
-> feature works there, but doesn't want or simply can't patch the kernel
-> (which is shipped by a distro or similar).
+On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
+> Hotplug ports generally block their parents from suspending to D3hot as
+> otherwise their interrupts couldn't be delivered.
 
-Yes, OK.  This isn't adding a new parameter, and I'm OK with the actual
-change here, so
+This sounds related to PCIe r3.1, sec 5.3.1.4, which says functions
+supporting PME generation from D3 must support it for both D3cold and
+D3hot.  I think in PCIe, PMEs mean PME Messages, and the 5.3.1
+implementation note says Messages are not affected by the PM state of
+virtual bridges.
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+So that seems to say that hotplug ports *should* be able to deliver
+PMEs even while in D3hot.
+
+Maybe you're referring to the hotplug interrupts themselves, not the
+PME?  I assume a hotplug event (presence detect, attention button,
+etc) would first cause a PME, then the OS would return the path to D0,
+then the hotplug interrupt would be delivered.
+
+> An exception are Thunderbolt host controllers:  They have a separate
+> GPIO pin to side-band signal plug events even if the controller is
+> powered down or its parent ports are suspended to D3.  They can be told
+> apart from Thunderbolt controllers in attached devices by checking if
+> they're situated below a non-Thunderbolt device (typically a root port,
+> or the downstream port of a PCIe switch in the case of the MacPro6,1).
+
+In PCIe terms, does a "Thunderbolt host controller" look like a
+downstream port that supports hotplug?
+
+It seems like the PCIe PME mechanism *should* work pretty much like
+this sideband GPIO.  But I might be reading the spec wrong.
+
+Bjorn
