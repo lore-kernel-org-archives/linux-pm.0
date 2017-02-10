@@ -1,73 +1,137 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: alarm timer/timerfd expiration does not abort suspend
- operation
-Date: Fri, 10 Feb 2017 10:43:22 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1702101041240.4036@nanos>
-References: <CAOdF7nu5WXw54oN0-jK+2A78q8aDwOa8D7QmeaejBJSRi7DEiw@mail.gmail.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v8 3/3] dmaengine: pl330: Don't require irq-safe runtime PM
+Date: Fri, 10 Feb 2017 12:51:26 +0100
+Message-ID: <d299ae6c-78dc-9049-6bed-dc84fff17db3@samsung.com>
+References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170209142309eucas1p2b1277d96139eafc0d1dcc14145600476@eucas1p2.samsung.com>
+ <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
+ <20170210045004.GN19244@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAOdF7nu5WXw54oN0-jK+2A78q8aDwOa8D7QmeaejBJSRi7DEiw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Gabriel Beddingfield <gabe@nestlabs.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, John Stultz <john.stultz@linaro.org>, Harpreet Sangha <eliptus@google.com>, Andrew LeCain <alecain@google.com>, John Thompson <jthomp@nestlabs.com>, Paul Trautrim <paultrautrim@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:26819 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752084AbdBJLvd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 06:51:33 -0500
+In-reply-to: <20170210045004.GN19244@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Inki Dae <inki.dae@samsung.com>
 
-On Fri, 3 Feb 2017, Gabriel Beddingfield wrote:
+Hi Vinod,
 
-Cc'ing the PM folks
+On 2017-02-10 05:50, Vinod Koul wrote:
+> On Thu, Feb 09, 2017 at 03:22:51PM +0100, Marek Szyprowski wrote:
+>
+>> +static int pl330_set_slave(struct dma_chan *chan, struct device *slave)
+>> +{
+>> +	struct dma_pl330_chan *pch = to_pchan(chan);
+>> +	struct pl330_dmac *pl330 = pch->dmac;
+>> +	int i;
+>> +
+>> +	mutex_lock(&pl330->rpm_lock);
+>> +
+>> +	for (i = 0; i < pl330->num_peripherals; i++) {
+>> +		if (pl330->peripherals[i].chan.slave == slave &&
+>> +		    pl330->peripherals[i].slave_link) {
+>> +			pch->slave_link = pl330->peripherals[i].slave_link;
+>> +			goto done;
+>> +		}
+>> +	}
+>> +
+>> +	pch->slave_link = device_link_add(slave, pl330->ddma.dev,
+>> +				       DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
+> So you are going to add the link on channel allocation and tear down on the
+> freeup.
 
-> Hi Thomas and John,
-> 
-> TL;DR: if an alarmtimer-backed timerfd expires just prior to
-> alarmtimer_suspend() begin called, the system will continue to go into
-> suspend (with possibly no future wakeups scheduled). The expected behavior
-> is that the timer expiration would cause the suspend operation to abort. I
-> see several ways to fix it and want to know your preference.
-> 
-> When using an alarmtimer-backed timerfd (i.e. CLOCK_BOOTTIME_ALARM or
-> CLOCK_REALTIME_ALARM) we have observed the following race condition:
-> 
-> 1. Userspace commands the system to go into suspend (echo mem >
-> /sys/power/state)
-> 2. The alarmtimer for a timerfd expires, making the timer inactive until
-> someone reads from the file descriptor.
-> 3. alarmtimer_suspend() does not find any pending timers, and therefore
-> does not schedule a wakeup.
-> 4. device goes into suspend.
-> 
-> However, if steps 2 and 3 are swapped, alarmtimer_suspend() would have seen
-> that an expiration was "soon" and cause an abort of the suspend. This can
-> be reproduced on an idle system by having a process aggressively doing
-> `echo mem > /sys/power/state' while another process sets a 4-sec repeating
-> timerfd backed by CLOCK_BOOTTIME_ALARM. Eventually the system will go to
-> sleep and not wake up.
-> 
-> I see a few ways to fix it:
-> 
-> 1. Create a wakeup_source for each timerfd, and if it's an alarm timer call
-> __pm_stay_awake() in timerfd_triggered() and __pm_relax() in timerfd_read().
-> 2. call pm_system_wakeup() in alarmtimer_fired()
-> 3. call `if (isalarm(ctx)) pm_system_wakeup();' in timerfd_triggered()
-> 4. call __pm_wakeup_event(ws, 2 * MSECS_PER_SEC) in alarmtimer_fired()
-> 5. call `if (isalarm(ctc)) __pm_wakeup_event(ws, 2 * MSECS_PER_SEC);' in
-> timerfd_triggered() (using a static struct wakeup_source).
-> 
-> I think #1 is right, followed by #2. They all have pros/cons:
-> 
-> * #1 Can eliminate race conditions (rather than an arbitrary 2-sec
-> timeout)... but is effectively holding a hard-to-trace block on all PM
-> operations (e.g. read/write of /sys/power/wakeup_count blocks until someone
-> reads from the file descriptor).
-> * #2 Matches the current behavior of the "happy case"... but bypasses the
-> userspace policy system provided by wakeup.
-> * #3 same pro/con as #2... but solution is specific to timerfd's.
-> * #4 Matches the current behavior of the "happy case" if and only if
-> userspace is using the 'wakeup' system, otherwise doesn't change any
-> behavior. But, I wonder how many people think the current behavior is a bug.
-> * #5 Same pro/con as #4... but solution is specific to timerfd's.
-> 
-> I've attached a patch that implements #1.
-> 
-> -gabe
-> 
+Right. Channel allocation is typically done once per driver operation and it
+won't hurt system performance.
+
+>   I am not sure I really like the idea here.
+
+Could you point what's wrong with it?
+
+> First, these thing shouldn't be handled in the drivers. These things should
+> be set in core and each driver setting the links doesn't sound great to me.
+
+Which core? And what's wrong with the device links? They have been 
+introduced to
+model relations between devices that are behind the usual parent/child/bus
+topology.
+
+> Second, should the link be always there and we only mange the state? Here it
+> seems that we have link being created and destroyed, so why not mark it
+> ACTIVE and DORMANT instead...
+
+Link state is managed by device core and should not be touched by the 
+drivers.
+It is related to both provider and consumer drivers states (probed/not 
+probed/etc).
+
+Second we would need to create those links first. The question is where to
+create them then.
+
+> Lastly, looking at th description of the issue here, am perceiving (maybe my
+> understanding is not quite right here) that you have an IP block in SoC
+> which has multiple things and share common stuff and doing right PM is a
+> challenge for you, right?
+
+Nope. Doing right PM in my SoC is not that complex and I would say it is 
+rather
+typical for any embedded stuff. It works fine (in terms of the power
+consumption reduction) when all drivers simply properly manage their runtime
+PM state, thus if device is not in use, the state is set to suspended and
+finally, the power domain gets turned off.
+
+I've used device links for PM only because the current DMA engine API is
+simply insufficient to implement it in the other way.
+
+I want to let a power domain, which contains a few devices, among those 
+a PL330
+device, to get turned off when there is no activity. Handling power 
+domain power
+on / off requires non-atomic context, what is typical for runtime pm 
+calls. For
+that I need to have non-irq-safe runtime pm implemented for all devices that
+belongs to that domains.
+
+The problem with PL330 driver is that it use irq-safe runtime pm, which 
+like it
+was stated in the patch description doesn't bring much benefits. To 
+switch to
+standard (non-irq-safe) runtime pm, the pm_runtime calls have to be done 
+from
+a context which permits sleeping. The problem with DMA engine driver API 
+is that
+most of its callbacks have to be IRQ-safe and frankly only
+device_{alloc,release}_chan_resources() what more or less maps to
+dma_request_chan()/dma_release_channel() and friends. There are DMA engine
+drivers which do runtime PM calls there (tegra20-apb-dma, sirf-dma, cppi41,
+rcar-dmac), but this is not really efficient. DMA engine clients usually 
+allocate
+dma channel during their probe() and keep them for the whole driver 
+life. In turn
+this very similar to calling pm_runtime_get() in the DMA engine driver 
+probe().
+The result of both approaches is that DMA engine device keeps its power 
+domain
+enabled almost all the time. This problem is also mentioned in the DMA 
+engine
+TODO list, you have pointed me yesterday.
+
+To avoid such situation that DMA engine driver blocks turning off the power
+domain and avoid changing DMA engine client API I came up with the 
+device links
+pm based approach. I don't want to duplicate the description here, the 
+details
+were in the patch description, however if you have any particular 
+question about
+the details, let me know and I will try to clarify it more.
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
