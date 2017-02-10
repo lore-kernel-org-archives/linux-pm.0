@@ -1,54 +1,71 @@
-From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-Subject: Re: [PATCH v6 2/4] Documentation: dt: add bindings for ti-cpufreq
-Date: Fri, 10 Feb 2017 14:55:29 -0600
-Message-ID: <4af419d0-9730-756f-916d-88e07e704448@ti.com>
-References: <20170203172929.23940-3-d-gerlach@ti.com>
- <CAJZ5v0hT4peuRQUrLHC32GmVSoa6Npv2qutNo2WEhne72hHi6A@mail.gmail.com>
- <20170210031349.GG14503@vireshk-i7> <3046998.7dExGlRDb3@aspire.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V2 1/6] PM / QOS: Add default case to the switch
+Date: Fri, 10 Feb 2017 22:24:32 +0100
+Message-ID: <20170210212432.GA7711@amd>
+References: <cover.1486611268.git.viresh.kumar@linaro.org>
+ <338b16e4c882634e30e4f4c011a9e9c52d134cbc.1486611268.git.viresh.kumar@linaro.org>
+ <20170209142425.GC23373@xo-6d-61-c0.localdomain>
+ <20170210060030.GA8498@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <3046998.7dExGlRDb3-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux OMAP Mailing List <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Lukasz Majewski <lukma-ynQEQJNshbs@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43551 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750874AbdBJVYf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 16:24:35 -0500
+Content-Disposition: inline
+In-Reply-To: <20170210060030.GA8498@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
 
-On 02/10/2017 06:28 AM, Rafael J. Wysocki wrote:
-> On Friday, February 10, 2017 08:43:49 AM Viresh Kumar wrote:
->> On 09-02-17, 23:03, Rafael J. Wysocki wrote:
->>> In particular, Viresh, if you ACK something, please make sure that it
->>> doesn't conflict with your own patches.
->>
->> I hope you are talking about the patch 3/4 for which Arnd also sent a
->> fix.  I acked it back on 18th of January and Dave has been carrying my
->> Ack since then. When he posted again, I didn't went into reviewing it
->> again as I saw my Ack being there.
->
-> Well, OK, but you did know that the OPP API had changed in the meantime,
-> so it wouldn't have hurt to double check I suppose?
->
->> Yes, he ended up using an API which just got updated after 18th of Jan
->> and yes both me and Dave missed that. But I feel it is difficult to
->> take care of scenarios like this. Perhaps he should have made sure
->> that he base it of pm/linux-next and nothing would have gone wrong.
->
-> Yes, that would help, but then how to enforce that?
 
-I apologize, I was unaware of the conflicting series. I'm not sure of a good way 
-to enforce it but I do agree I will make sure to rebase and test against 
-pm/linux-next before sending in the future.
+--ReaqsoxgOBHFXBhH
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Dave
+On Fri 2017-02-10 11:30:30, Viresh Kumar wrote:
+> On 09-02-17, 15:24, Pavel Machek wrote:
+> > On Thu 2017-02-09 09:11:47, Viresh Kumar wrote:
+> > > The switch block handles all the QOS request types present today, but
+> > > starts giving compilation warnings as soon as a new type is added and
+> > > not handled in this.
+> > >=20
+> > > To prevent against that, add the default case as well and do a WARN f=
+rom
+> > > it.
+> >=20
+> > I'd say compilation-time warning is better than hmm.... stacktrace and =
+memory leak
+> > at runtime?
+>=20
+> Of course we aren't going to allow a compilation warning for each and eve=
+ry
+> platform that compiles this file. How do you wish to fix the issue then ?
 
->
-> Thanks,
-> Rafael
->
+Surely compilation warnings are better than getting bug reports from
+users?
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Of course, it is better to fix the switch when adding new QoS type...
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--ReaqsoxgOBHFXBhH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlieL5AACgkQMOfwapXb+vKqBQCgkTt4SGfRtkrAzsuEbn9/6q1X
+xbQAnRAquIFFBBGK0ls8Xi2iCLZ9Qv0E
+=kmWR
+-----END PGP SIGNATURE-----
+
+--ReaqsoxgOBHFXBhH--
