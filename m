@@ -1,56 +1,40 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v8 3/3] dmaengine: pl330: Don't require irq-safe runtime
- PM
-Date: Fri, 10 Feb 2017 10:20:04 +0530
-Message-ID: <20170210045004.GN19244@localhost>
-References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170209142309eucas1p2b1277d96139eafc0d1dcc14145600476@eucas1p2.samsung.com>
- <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 1/6] PM / QOS: Add default case to the switch
+Date: Fri, 10 Feb 2017 11:30:30 +0530
+Message-ID: <20170210060030.GA8498@vireshk-i7>
+References: <cover.1486611268.git.viresh.kumar@linaro.org>
+ <338b16e4c882634e30e4f4c011a9e9c52d134cbc.1486611268.git.viresh.kumar@linaro.org>
+ <20170209142425.GC23373@xo-6d-61-c0.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f181.google.com ([209.85.192.181]:35168 "EHLO
+        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750979AbdBJGBD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 01:01:03 -0500
+Received: by mail-pf0-f181.google.com with SMTP id 202so3570252pfx.2
+        for <linux-pm@vger.kernel.org>; Thu, 09 Feb 2017 22:00:34 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Ulf Hansson <ulf.hansson@linaro.org>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Inki Dae <inki.dae@samsung.com>
+In-Reply-To: <20170209142425.GC23373@xo-6d-61-c0.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
 
-On Thu, Feb 09, 2017 at 03:22:51PM +0100, Marek Szyprowski wrote:
-  
-> +static int pl330_set_slave(struct dma_chan *chan, struct device *slave)
-> +{
-> +	struct dma_pl330_chan *pch = to_pchan(chan);
-> +	struct pl330_dmac *pl330 = pch->dmac;
-> +	int i;
-> +
-> +	mutex_lock(&pl330->rpm_lock);
-> +
-> +	for (i = 0; i < pl330->num_peripherals; i++) {
-> +		if (pl330->peripherals[i].chan.slave == slave &&
-> +		    pl330->peripherals[i].slave_link) {
-> +			pch->slave_link = pl330->peripherals[i].slave_link;
-> +			goto done;
-> +		}
-> +	}
-> +
-> +	pch->slave_link = device_link_add(slave, pl330->ddma.dev,
-> +				       DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE);
+On 09-02-17, 15:24, Pavel Machek wrote:
+> On Thu 2017-02-09 09:11:47, Viresh Kumar wrote:
+> > The switch block handles all the QOS request types present today, but
+> > starts giving compilation warnings as soon as a new type is added and
+> > not handled in this.
+> > 
+> > To prevent against that, add the default case as well and do a WARN from
+> > it.
+> 
+> I'd say compilation-time warning is better than hmm.... stacktrace and memory leak
+> at runtime?
 
-So you are going to add the link on channel allocation and tear down on the
-freeup. I am not sure I really like the idea here.
-
-First, these thing shouldn't be handled in the drivers. These things should
-be set in core and each driver setting the links doesn't sound great to me.
-
-Second, should the link be always there and we only mange the state? Here it
-seems that we have link being created and destroyed, so why not mark it
-ACTIVE and DORMANT instead...
-
-Lastly, looking at th description of the issue here, am perceiving (maybe my
-understanding is not quite right here) that you have an IP block in SoC
-which has multiple things and share common stuff and doing right PM is a
-challenge for you, right?
+Of course we aren't going to allow a compilation warning for each and every
+platform that compiles this file. How do you wish to fix the issue then ?
 
 -- 
-~Vinod
+viresh
