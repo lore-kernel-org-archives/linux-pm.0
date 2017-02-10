@@ -1,71 +1,73 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V2 1/6] PM / QOS: Add default case to the switch
-Date: Fri, 10 Feb 2017 22:24:32 +0100
-Message-ID: <20170210212432.GA7711@amd>
-References: <cover.1486611268.git.viresh.kumar@linaro.org>
- <338b16e4c882634e30e4f4c011a9e9c52d134cbc.1486611268.git.viresh.kumar@linaro.org>
- <20170209142425.GC23373@xo-6d-61-c0.localdomain>
- <20170210060030.GA8498@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="ReaqsoxgOBHFXBhH"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43551 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750874AbdBJVYf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 16:24:35 -0500
-Content-Disposition: inline
-In-Reply-To: <20170210060030.GA8498@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH 1/2] PM / wakeirq: Enable dedicated wakeirq for suspend
+Date: Fri, 10 Feb 2017 14:25:00 -0800
+Message-ID: <20170210222501.7948-2-tony@atomide.com>
+References: <20170210222501.7948-1-tony@atomide.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170210222501.7948-1-tony@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, Tero Kristo <t-kristo@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
 
+From: Grygorii Strashko <grygorii.strashko@ti.com>
 
---ReaqsoxgOBHFXBhH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We currently rely on runtime PM to enable dedicated wakeirq for suspend.
+This assumption fails in the following two cases:
 
-On Fri 2017-02-10 11:30:30, Viresh Kumar wrote:
-> On 09-02-17, 15:24, Pavel Machek wrote:
-> > On Thu 2017-02-09 09:11:47, Viresh Kumar wrote:
-> > > The switch block handles all the QOS request types present today, but
-> > > starts giving compilation warnings as soon as a new type is added and
-> > > not handled in this.
-> > >=20
-> > > To prevent against that, add the default case as well and do a WARN f=
-rom
-> > > it.
-> >=20
-> > I'd say compilation-time warning is better than hmm.... stacktrace and =
-memory leak
-> > at runtime?
->=20
-> Of course we aren't going to allow a compilation warning for each and eve=
-ry
-> platform that compiles this file. How do you wish to fix the issue then ?
+1. If the consumer driver does not have runtime PM implemented, the
+   dedicated wakeirq never gets enabled for suspend
 
-Surely compilation warnings are better than getting bug reports from
-users?
+2. If the consumer driver has runtime PM implemented, but does not idle
+   in suspend
 
-Of course, it is better to fix the switch when adding new QoS type...
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Let's fix the issue by always enabling the dedicated wakeirq during
+suspend.
 
---ReaqsoxgOBHFXBhH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Depends-on: bed570307ed7 ("PM / wakeirq: Fix dedicated wakeirq for
+drivers not using autosuspend")
+Fixes: 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ
+handling")
+Cc: Brian Norris <briannorris@chromium.org>
+Cc: Tero Kristo <t-kristo@ti.com>
+Reported-by: Keerthy <j-keerthy@ti.com>
+Tested-by: Keerthy <j-keerthy@ti.com>
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+[tony@atomide.com: updated based on bed570307ed7, added description]
+Tested-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/base/power/wakeirq.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlieL5AACgkQMOfwapXb+vKqBQCgkTt4SGfRtkrAzsuEbn9/6q1X
-xbQAnRAquIFFBBGK0ls8Xi2iCLZ9Qv0E
-=kmWR
------END PGP SIGNATURE-----
-
---ReaqsoxgOBHFXBhH--
+diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+--- a/drivers/base/power/wakeirq.c
++++ b/drivers/base/power/wakeirq.c
+@@ -312,8 +312,12 @@ void dev_pm_arm_wake_irq(struct wake_irq *wirq)
+ 	if (!wirq)
+ 		return;
+ 
+-	if (device_may_wakeup(wirq->dev))
++	if (device_may_wakeup(wirq->dev)) {
++		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
++			enable_irq(wirq->irq);
++
+ 		enable_irq_wake(wirq->irq);
++	}
+ }
+ 
+ /**
+@@ -328,6 +332,10 @@ void dev_pm_disarm_wake_irq(struct wake_irq *wirq)
+ 	if (!wirq)
+ 		return;
+ 
+-	if (device_may_wakeup(wirq->dev))
++	if (device_may_wakeup(wirq->dev)) {
+ 		disable_irq_wake(wirq->irq);
++
++		if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
++			disable_irq_nosync(wirq->irq);
++	}
+ }
+-- 
+2.11.1
