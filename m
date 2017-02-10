@@ -1,91 +1,52 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: [RFC PATCH] fix: thermal: avoid possible deadlock calling thermal_zone_get_temp()
-Date: Fri, 10 Feb 2017 16:15:47 +0000
-Message-ID: <20170210161547.28625-1-lukasz.luba@arm.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v5 1/8] PCI: Recognize Thunderbolt devices
+Date: Fri, 10 Feb 2017 11:42:50 -0600
+Message-ID: <20170210174250.GD29169@bhelgaas-glaptop.roam.corp.google.com>
+References: <cover.1484486499.git.lukas@wunner.de>
+ <bfabf33fc63abbeb84e11e544456098dff0e4604.1484486499.git.lukas@wunner.de>
+ <20170128215208.GM20550@bhelgaas-glaptop.roam.corp.google.com>
+ <20170129002616.GA28225@wunner.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38258 "EHLO foss.arm.com"
+Received: from mail.kernel.org ([198.145.29.136]:54684 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752168AbdBJQYe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 Feb 2017 11:24:34 -0500
+        id S1752320AbdBJRwL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 Feb 2017 12:52:11 -0500
+Content-Disposition: inline
+In-Reply-To: <20170129002616.GA28225@wunner.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
-Cc: lukasz.luba@arm.com
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-There is possible scenario when the system hits deadlock.
-One of the examples is when IPA (power_allocator.c) calculates
-power budget and calls every cooling device in the thermal zone
-using function get_requested_power().
-This function in devfreq_cooling calls driver's code via
-get_static_power().
-If the driver code tries to calculate properly static power
-based on current temperature, it might call API functions:
-tz = thermal_zone_get_zone_by_name(priv->tz_name)
-and then:
-thermal_zone_get_temp(tz, &temp)
+On Sun, Jan 29, 2017 at 01:26:16AM +0100, Lukas Wunner wrote:
+> On Sat, Jan 28, 2017 at 03:52:08PM -0600, Bjorn Helgaas wrote:
+> > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
 
-Here is the call graph:
+> > > +static void set_pcie_vendor_specific(struct pci_dev *dev)
+> > 
+> > This is very specific to Thunderbolt, so let's name it something that
+> > conveys that information.  The fact that we use a vendor-specific
+> > capability to figure it out isn't really relevant in the caller.
+> 
+> I thought that we may have the necessity in the future to parse other
+> VSECs on device probe, so I gave the function this generic name.
+> 
+> Think about it, every VSEC that needs to be parsed needs the while loop
+> below.  It's more efficient to have only a single while loop that handles
+> *all* VSECs at once.
+> 
+> If someone needs to parse another VSEC, they just add it to this function.
+> So IMO the way I've solved it is preferable to just adding a Thunderbolt-
+> specific function.
+> 
+> Are you sure you want this renamed? (y/n)
 
-tz->gov->throttle() [=power_allocator_throttle]
-  power_allocator_throttle
-    allocate_power
-==>   (lock tz->lock taken)
-      (for each cooling device:)
-         cdev->ops->get_requested_power
-         [=devfreq_cooling_get_requested_power]
-              get_static_power
-                 (call driver specific function)
-                 dfc->power_ops->get_static_power
-                 [=mock_devfreq_get_static_power]
-                      tz = thermal_zone_get_zone_by_name()
-                      thermal_zone_get_temp(tz, &temp)
-===>                    (try to lock again tz->lock)
+Sorry for the delay; I missed this question.  If this has already been
+merged somewhere as-is, that's fine.  If you repost it for any reason,
+I would prefer to rename it so it reflects the functionality rather
+than the source of the information.  This isn't a performance path, so
+readability is more important than optimization.
 
-This patch changes the mutex_lock into mutex_trylock
-just to avoid the deadlock.
-
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
-Hi,
-
-This is a RFC to start some discussion.
-I am not sure if it should go with stable label
-(it affects few versions back though).
-It is based on v4.10-rc7.
-
-Regards,
-Lukasz Luba
-
- drivers/thermal/thermal_helpers.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 8cdf75a..7b01a85 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -75,6 +75,12 @@ EXPORT_SYMBOL(get_thermal_instance);
-  * When a valid thermal zone reference is passed, it will fetch its
-  * temperature and fill @temp.
-  *
-+ * IMPORTANT NOTICE:
-+ * This function should not be used from driver's code which is called
-+ * by IPA (power_allocator.c). The IPA already holds the tz->lock.
-+ * Therefore, it is possible to get the temperature in driver code
-+ * in a simple way: reading tz->temperature.
-+ *
-  * Return: On success returns 0, an error code otherwise
-  */
- int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
-@@ -87,7 +93,8 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- 	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
- 		goto exit;
- 
--	mutex_lock(&tz->lock);
-+	if (!mutex_trylock(&tz->lock))
-+		goto exit;
- 
- 	ret = tz->ops->get_temp(tz, temp);
- 
--- 
-2.9.2
-
+Bjorn
