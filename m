@@ -1,40 +1,142 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/6] PM / QOS: Add default case to the switch
-Date: Fri, 10 Feb 2017 11:30:30 +0530
-Message-ID: <20170210060030.GA8498@vireshk-i7>
-References: <cover.1486611268.git.viresh.kumar@linaro.org>
- <338b16e4c882634e30e4f4c011a9e9c52d134cbc.1486611268.git.viresh.kumar@linaro.org>
- <20170209142425.GC23373@xo-6d-61-c0.localdomain>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: use cpumask_var_t for on-stack cpu masks
+Date: Fri, 10 Feb 2017 16:38:47 +0800
+Message-ID: <1486715927.2645.7.camel@intel.com>
+References: <20170202144821.3721926-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:35168 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750979AbdBJGBD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 01:01:03 -0500
-Received: by mail-pf0-f181.google.com with SMTP id 202so3570252pfx.2
-        for <linux-pm@vger.kernel.org>; Thu, 09 Feb 2017 22:00:34 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20170209142425.GC23373@xo-6d-61-c0.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170202144821.3721926-1-arnd@arndb.de>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, Javi Merino <javi.merino@kernel.org>, Eduardo Valentin <edubezval@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
 
-On 09-02-17, 15:24, Pavel Machek wrote:
-> On Thu 2017-02-09 09:11:47, Viresh Kumar wrote:
-> > The switch block handles all the QOS request types present today, but
-> > starts giving compilation warnings as soon as a new type is added and
-> > not handled in this.
-> > 
-> > To prevent against that, add the default case as well and do a WARN from
-> > it.
+On Thu, 2017-02-02 at 15:46 +0100, Arnd Bergmann wrote:
+> Putting a bare cpumask structure on the stack produces a warning on
+> large SMP configurations:
 > 
-> I'd say compilation-time warning is better than hmm.... stacktrace and memory leak
-> at runtime?
+> drivers/thermal/cpu_cooling.c: In function 'cpufreq_state2power':
+> drivers/thermal/cpu_cooling.c:644:1: warning: the frame size of 1056
+> bytes is larger than 1024 bytes [-Wframe-larger-than=]
+> drivers/thermal/cpu_cooling.c: In function
+> '__cpufreq_cooling_register':
+> drivers/thermal/cpu_cooling.c:898:1: warning: the frame size of 1104
+> bytes is larger than 1024 bytes [-Wframe-larger-than=]
+> 
+> The recommended workaround is to use cpumask_var_t, which behaves
+> just like
+> a normal cpu mask in most cases, but turns into a dynamic allocation
+> when CONFIG_CPUMASK_OFFSTACK is set.
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/thermal/cpu_cooling.c | 39 ++++++++++++++++++++++++++-------
+> ------
+>  1 file changed, 26 insertions(+), 13 deletions(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c
+> b/drivers/thermal/cpu_cooling.c
+> index ca7ddaea450c..1d7f7e85f669 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -609,31 +609,39 @@ static int cpufreq_state2power(struct
+> thermal_cooling_device *cdev,
+>  			       unsigned long state, u32 *power)
+>  {
+>  	unsigned int freq, num_cpus;
+> -	cpumask_t cpumask;
+> +	cpumask_var_t cpumask;
+>  	u32 static_power, dynamic_power;
+>  	int ret;
+>  	struct cpufreq_cooling_device *cpufreq_device = cdev-
+> >devdata;
+>  
+> -	cpumask_and(&cpumask, &cpufreq_device->allowed_cpus,
+> cpu_online_mask);
+> -	num_cpus = cpumask_weight(&cpumask);
+> +	if (!alloc_cpumask_var(&cpumask, GFP_KERNEL))
+> +		return -ENOMEM;
+> +
+> +	cpumask_and(cpumask, &cpufreq_device->allowed_cpus,
+> cpu_online_mask);
+> +	num_cpus = cpumask_weight(cpumask);
+>  
+>  	/* None of our cpus are online, so no power */
+>  	if (num_cpus == 0) {
+>  		*power = 0;
+> -		return 0;
+> +		ret = 0;
+> +		goto out;
+>  	}
+>  
+>  	freq = cpufreq_device->freq_table[state];
+> -	if (!freq)
+> -		return -EINVAL;
+> +	if (!freq) {
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+>  
+>  	dynamic_power = cpu_freq_to_power(cpufreq_device, freq) *
+> num_cpus;
+>  	ret = get_static_power(cpufreq_device, tz, freq,
+> &static_power);
+>  	if (ret)
+> -		return ret;
+> +		goto out;
+>  
+>  	*power = static_power + dynamic_power;
+> -	return 0;
+> +out:
+> +	free_cpumask_var(cpumask);
+> +	return ret;;
 
-Of course we aren't going to allow a compilation warning for each and every
-platform that compiles this file. How do you wish to fix the issue then ?
+The patch looks good to me except that there is on redundant semicolon
+here.
+Patch applied with the typo fixed.
 
--- 
-viresh
+thanks,
+rui
+>  }
+>  
+>  /**
+> @@ -759,16 +767,20 @@ __cpufreq_cooling_register(struct device_node
+> *np,
+>  	struct cpufreq_cooling_device *cpufreq_dev;
+>  	char dev_name[THERMAL_NAME_LENGTH];
+>  	struct cpufreq_frequency_table *pos, *table;
+> -	struct cpumask temp_mask;
+> +	cpumask_var_t temp_mask;
+>  	unsigned int freq, i, num_cpus;
+>  	int ret;
+>  	struct thermal_cooling_device_ops *cooling_ops;
+>  
+> -	cpumask_and(&temp_mask, clip_cpus, cpu_online_mask);
+> -	policy = cpufreq_cpu_get(cpumask_first(&temp_mask));
+> +	if (!alloc_cpumask_var(&temp_mask, GFP_KERNEL))
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	cpumask_and(temp_mask, clip_cpus, cpu_online_mask);
+> +	policy = cpufreq_cpu_get(cpumask_first(temp_mask));
+>  	if (!policy) {
+>  		pr_debug("%s: CPUFreq policy not found\n",
+> __func__);
+> -		return ERR_PTR(-EPROBE_DEFER);
+> +		cool_dev = ERR_PTR(-EPROBE_DEFER);
+> +		goto free_cpumask;
+>  	}
+>  
+>  	table = policy->freq_table;
+> @@ -886,7 +898,8 @@ __cpufreq_cooling_register(struct device_node
+> *np,
+>  	kfree(cpufreq_dev);
+>  put_policy:
+>  	cpufreq_cpu_put(policy);
+> -
+> +free_cpumask:
+> +	free_cpumask_var(temp_mask);
+>  	return cool_dev;
+>  }
+>  
