@@ -1,265 +1,91 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2 6/9] arm, arm64: factorize common cpu capacity default
- code
-Date: Fri, 10 Feb 2017 15:28:57 +0100
-Message-ID: <20170210142857.GA18321@kroah.com>
-References: <20170209092525.6654-1-juri.lelli@arm.com>
- <20170209092525.6654-7-juri.lelli@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <20170209092525.6654-7-juri.lelli@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Juri Lelli <juri.lelli@arm.com>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, vincent.guittot@linaro.org, linux-pm@vger.kernel.org, peterz@infradead.org, catalin.marinas@arm.com, broonie@kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, dietmar.eggemann@arm.com, Russell King <linux@armlinux.org.uk>, robh+dt@kernel.org, sudeep.holla@arm.com, linux@arm.linux.org.uk, morten.rasmussen@arm.com, linux-arm-kernel@lists.infradead.org
+From: Lukasz Luba <lukasz.luba@arm.com>
+Subject: [RFC PATCH] fix: thermal: avoid possible deadlock calling thermal_zone_get_temp()
+Date: Fri, 10 Feb 2017 16:15:47 +0000
+Message-ID: <20170210161547.28625-1-lukasz.luba@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:38258 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752168AbdBJQYe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 Feb 2017 11:24:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org
+Cc: lukasz.luba@arm.com
 
-On Thu, Feb 09, 2017 at 09:25:22AM +0000, Juri Lelli wrote:
-> arm and arm64 share lot of code relative to parsing CPU capacity
-> information from DT, using that information for appropriate scaling and
-> exposing a sysfs interface for chaging such values at runtime.
-> 
-> Factorize such code in a common place (driver/base/arch_topology.c) in
-> preparation for further additions.
-> 
-> Suggested-by: Will Deacon <will.deacon@arm.com>
-> Suggested-by: Mark Rutland <mark.rutland@arm.com>
-> Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will.deacon@arm.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: Juri Lelli <juri.lelli@arm.com>
-> ---
-> 
-> Changes from v1:
->  - keep the original GPLv2 header
-> ---
->  arch/arm/Kconfig             |   1 +
->  arch/arm/kernel/topology.c   | 213 ++------------------------------------
->  arch/arm64/Kconfig           |   1 +
->  arch/arm64/kernel/topology.c | 219 +--------------------------------------
->  drivers/base/Kconfig         |   8 ++
->  drivers/base/Makefile        |   1 +
->  drivers/base/arch_topology.c | 237 +++++++++++++++++++++++++++++++++++++++++++
->  7 files changed, 257 insertions(+), 423 deletions(-)
->  create mode 100644 drivers/base/arch_topology.c
+There is possible scenario when the system hits deadlock.
+One of the examples is when IPA (power_allocator.c) calculates
+power budget and calls every cooling device in the thermal zone
+using function get_requested_power().
+This function in devfreq_cooling calls driver's code via
+get_static_power().
+If the driver code tries to calculate properly static power
+based on current temperature, it might call API functions:
+tz = thermal_zone_get_zone_by_name(priv->tz_name)
+and then:
+thermal_zone_get_temp(tz, &temp)
 
-Ah, so you want _me_ to maintain this, ok, I better review it...
+Here is the call graph:
 
-> --- a/drivers/base/Kconfig
-> +++ b/drivers/base/Kconfig
-> @@ -339,4 +339,12 @@ config CMA_ALIGNMENT
->  
->  endif
->  
-> +config GENERIC_ARCH_TOPOLOGY
-> +	bool
-> +	help
-> +	  Enable support for architectures common topology code: e.g., parsing
-> +	  CPU capacity information from DT, usage of such information for
-> +	  appropriate scaling, sysfs interface for changing capacity values at
-> +          runtime.
+tz->gov->throttle() [=power_allocator_throttle]
+  power_allocator_throttle
+    allocate_power
+==>   (lock tz->lock taken)
+      (for each cooling device:)
+         cdev->ops->get_requested_power
+         [=devfreq_cooling_get_requested_power]
+              get_static_power
+                 (call driver specific function)
+                 dfc->power_ops->get_static_power
+                 [=mock_devfreq_get_static_power]
+                      tz = thermal_zone_get_zone_by_name()
+                      thermal_zone_get_temp(tz, &temp)
+===>                    (try to lock again tz->lock)
 
-Mix of spaces and tabs :(
+This patch changes the mutex_lock into mutex_trylock
+just to avoid the deadlock.
 
-> +
->  endmenu
-> diff --git a/drivers/base/Makefile b/drivers/base/Makefile
-> index f2816f6ff76a..397e5c344e6a 100644
-> --- a/drivers/base/Makefile
-> +++ b/drivers/base/Makefile
-> @@ -23,6 +23,7 @@ obj-$(CONFIG_SOC_BUS) += soc.o
->  obj-$(CONFIG_PINCTRL) += pinctrl.o
->  obj-$(CONFIG_DEV_COREDUMP) += devcoredump.o
->  obj-$(CONFIG_GENERIC_MSI_IRQ_DOMAIN) += platform-msi.o
-> +obj-$(CONFIG_GENERIC_ARCH_TOPOLOGY) += arch_topology.o
->  
->  obj-y			+= test/
->  
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> new file mode 100644
-> index 000000000000..c1dd430adad2
-> --- /dev/null
-> +++ b/drivers/base/arch_topology.c
-> @@ -0,0 +1,237 @@
-> +/*
-> + * driver/base/arch_topology.c - Arch specific cpu topology information
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+Hi,
 
-No need to keep the filename in the file, you know what it is called :)
+This is a RFC to start some discussion.
+I am not sure if it should go with stable label
+(it affects few versions back though).
+It is based on v4.10-rc7.
 
-> + *
-> + * Copyright (C) 2016, ARM Ltd.
-> + * Written by: Juri Lelli, ARM Ltd.
-> + *
-> + * This file is subject to the terms and conditions of the GNU General Public
-> + * License.  See the file "COPYING" in the main directory of this archive
-> + * for more details.
+Regards,
+Lukasz Luba
 
-So, v2 only?  Please be specific.  Even better yet, use a SPDX header if
-you want to, those are always nice.
+ drivers/thermal/thermal_helpers.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-> + */
-> +
-> +#include <linux/acpi.h>
-> +#include <linux/cpu.h>
-> +#include <linux/cpufreq.h>
-> +#include <linux/device.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
-> +#include <linux/string.h>
-> +#include <linux/topology.h>
-> +
-> +static DEFINE_MUTEX(cpu_scale_mutex);
-> +static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
-> +
-> +unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index 8cdf75a..7b01a85 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -75,6 +75,12 @@ EXPORT_SYMBOL(get_thermal_instance);
+  * When a valid thermal zone reference is passed, it will fetch its
+  * temperature and fill @temp.
+  *
++ * IMPORTANT NOTICE:
++ * This function should not be used from driver's code which is called
++ * by IPA (power_allocator.c). The IPA already holds the tz->lock.
++ * Therefore, it is possible to get the temperature in driver code
++ * in a simple way: reading tz->temperature.
++ *
+  * Return: On success returns 0, an error code otherwise
+  */
+ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+@@ -87,7 +93,8 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+ 		goto exit;
+ 
+-	mutex_lock(&tz->lock);
++	if (!mutex_trylock(&tz->lock))
++		goto exit;
+ 
+ 	ret = tz->ops->get_temp(tz, temp);
+ 
+-- 
+2.9.2
 
-Why do you have sd here?  You never use it:
-
-> +{
-> +	return per_cpu(cpu_scale, cpu);
-
-See?  What am I missing?
-
-> +}
-> +
-> +void set_capacity_scale(unsigned int cpu, unsigned long capacity)
-> +{
-> +	per_cpu(cpu_scale, cpu) = capacity;
-> +}
-> +
-> +static ssize_t cpu_capacity_show(struct device *dev,
-> +				 struct device_attribute *attr,
-> +				 char *buf)
-> +{
-> +	struct cpu *cpu = container_of(dev, struct cpu, dev);
-> +
-> +	return sprintf(buf, "%lu\n",
-> +			arch_scale_cpu_capacity(NULL, cpu->dev.id));
-> +}
-> +
-> +static ssize_t cpu_capacity_store(struct device *dev,
-> +				  struct device_attribute *attr,
-> +				  const char *buf,
-> +				  size_t count)
-> +{
-> +	struct cpu *cpu = container_of(dev, struct cpu, dev);
-> +	int this_cpu = cpu->dev.id, i;
-
-new line for:
-	int i;
-please.
-
-> +	unsigned long new_capacity;
-> +	ssize_t ret;
-> +
-> +	if (count) {
-
-	if (!count)
-		return 0;
-
-then you can get on with the rest of the logic.  Don't indent if you
-don't have to.
-
-> +		ret = kstrtoul(buf, 0, &new_capacity);
-> +		if (ret)
-> +			return ret;
-> +		if (new_capacity > SCHED_CAPACITY_SCALE)
-> +			return -EINVAL;
-> +
-> +		mutex_lock(&cpu_scale_mutex);
-> +		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
-> +			set_capacity_scale(i, new_capacity);
-> +		mutex_unlock(&cpu_scale_mutex);
-> +	}
-> +
-> +	return count;
-> +}
-
-No documentation for these sysfs file?  Not good :(
-
-> +
-> +static DEVICE_ATTR_RW(cpu_capacity);
-> +
-> +static int register_cpu_capacity_sysctl(void)
-> +{
-> +	int i;
-> +	struct device *cpu;
-> +
-> +	for_each_possible_cpu(i) {
-> +		cpu = get_cpu_device(i);
-> +		if (!cpu) {
-> +			pr_err("%s: too early to get CPU%d device!\n",
-> +			       __func__, i);
-
-What is this going to help with?
-
-> +			continue;
-> +		}
-> +		device_create_file(cpu, &dev_attr_cpu_capacity);
-
-You realize you just raced userspace, right?  Why do it this way and not
-register the files when the CPU device is created/removed?
-
-> +	}
-> +
-> +	return 0;
-> +}
-> +subsys_initcall(register_cpu_capacity_sysctl);
-> +
-> +u32 capacity_scale;
-> +u32 *raw_capacity;
-> +bool cap_parsing_failed;
-
-globals?  really?  That's bold :(
-
-> +
-> +void normalize_cpu_capacity(void)
-
-naming is hard, but try to put a good, descriptive, prefix on everything
-you are exporting in the same file, the same prefix.
-
-cpu_capacity_normalize()?
-cpu_capacity_register_sysctl()?
-
-and so on.
-
-> +{
-> +	u64 capacity;
-> +	int cpu;
-> +
-> +	if (!raw_capacity || cap_parsing_failed)
-> +		return;
-> +
-> +	pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
-> +	mutex_lock(&cpu_scale_mutex);
-> +	for_each_possible_cpu(cpu) {
-> +		pr_debug("cpu_capacity: cpu=%d raw_capacity=%u\n",
-> +			 cpu, raw_capacity[cpu]);
-> +		capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
-> +			/ capacity_scale;
-> +		set_capacity_scale(cpu, capacity);
-> +		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
-> +			cpu, arch_scale_cpu_capacity(NULL, cpu));
-> +	}
-> +	mutex_unlock(&cpu_scale_mutex);
-> +}
-> +
-> +int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
-
-cpu_capacity_parse()?
-
-thanks,
-
-greg k-h
