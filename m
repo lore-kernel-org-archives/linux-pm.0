@@ -1,7 +1,7 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v13 02/12] power: add power sequence library
-Date: Sat, 11 Feb 2017 09:27:13 +0800
-Message-ID: <1486776443-2280-3-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH v13 03/12] usb: separate out sysdev pointer from usb_bus
+Date: Sat, 11 Feb 2017 09:27:14 +0800
+Message-ID: <1486776443-2280-4-git-send-email-peter.chen@nxp.com>
 References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,853 +18,417 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de, jun.li@nxp.com
+Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, heiko@sntech.de, Catalin Marinas <catalin.marinas@arm.com>, stephen.boyd@linaro.org, frank.li@nxp.com, Bjorn Andersson <bjorn.andersson@linaro.org>, gary.bisson@boundarydevices.com, Leo Li <pku.leo@gmail.com>, Sinjan Kumar <sinjank@codeaurora.org>, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, Dann Frazier <dann.frazier@canonical.com>, vaibhav.hiremath@linaro.org, krzk@kernel.org, David Fisher <david.fisher1@synopsys.com>, mka@chromium.org, Ming Lei <tom.leiming@gmail.com>, Felipe Balbi <felipe.balbi@linux.intel.com>, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, Grygorii Strashko <grygorii.strashko@ti.com>, pawel.moll@arm.com, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, Mathias Nyman <mathia>
 List-Id: linux-pm@vger.kernel.org
 
-We have an well-known problem that the device needs to do some power
-sequence before it can be recognized by related host, the typical
-example like hard-wired mmc devices and usb devices.
+From: Arnd Bergmann <arnd@arndb.de>
 
-This power sequence is hard to be described at device tree and handled by
-related host driver, so we have created a common power sequence
-library to cover this requirement. The core code has supplied
-some common helpers for host driver, and individual power sequence
-libraries handle kinds of power sequence for devices. The pwrseq
-librares always need to allocate extra instance for compatible
-string match.
+For xhci-hcd platform device, all the DMA parameters are not
+configured properly, notably dma ops for dwc3 devices.
 
-pwrseq_generic is intended for general purpose of power sequence, which
-handles gpios and clocks currently, and can cover other controls in
-future. The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-if only one power sequence is needed, else call of_pwrseq_on_list
-/of_pwrseq_off_list instead (eg, USB hub driver).
+The idea here is that you pass in the parent of_node along with
+the child device pointer, so it would behave exactly like the
+parent already does. The difference is that it also handles all
+the other attributes besides the mask.
 
-For new power sequence library, it can add its compatible string
-to pwrseq_of_match_table, then the pwrseq core will match it with
-DT's, and choose this library at runtime.
+sysdev will represent the physical device, as seen from firmware
+or bus.Splitting the usb_bus->controller field into the
+Linux-internal device (used for the sysfs hierarchy, for printks
+and for power management) and a new pointer (used for DMA,
+DT enumeration and phy lookup) probably covers all that we really
+need.
 
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
-Tested-by: Maciej S. Szmigiero <mail@maciej.szmigiero.name>
-Tested-by Joshua Clayton <stillcompiling@gmail.com>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Tested-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+Tested-by: Baolin Wang <baolin.wang@linaro.org>
+Tested-by: Brian Norris <briannorris@chromium.org>
+Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+Tested-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Sinjan Kumar <sinjank@codeaurora.org>
+Cc: David Fisher <david.fisher1@synopsys.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>
+Cc: "Thang Q. Nguyen" <tqnguyen@apm.com>
+Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Ming Lei <tom.leiming@gmail.com>
+Cc: Jon Masters <jcm@redhat.com>
+Cc: Dann Frazier <dann.frazier@canonical.com>
+Cc: Peter Chen <peter.chen@nxp.com>
+Cc: Leo Li <pku.leo@gmail.com>
 ---
- Documentation/power/power-sequence/design.rst |  54 +++++
- MAINTAINERS                                   |   9 +
- drivers/power/Kconfig                         |   1 +
- drivers/power/Makefile                        |   1 +
- drivers/power/pwrseq/Kconfig                  |  20 ++
- drivers/power/pwrseq/Makefile                 |   2 +
- drivers/power/pwrseq/core.c                   | 335 ++++++++++++++++++++++++++
- drivers/power/pwrseq/pwrseq_generic.c         | 234 ++++++++++++++++++
- include/linux/power/pwrseq.h                  |  81 +++++++
- 9 files changed, 737 insertions(+)
- create mode 100644 Documentation/power/power-sequence/design.rst
- create mode 100644 drivers/power/pwrseq/Kconfig
- create mode 100644 drivers/power/pwrseq/Makefile
- create mode 100644 drivers/power/pwrseq/core.c
- create mode 100644 drivers/power/pwrseq/pwrseq_generic.c
- create mode 100644 include/linux/power/pwrseq.h
+ drivers/usb/core/buffer.c | 12 +++----
+ drivers/usb/core/hcd.c    | 80 ++++++++++++++++++++++++++---------------------
+ drivers/usb/core/usb.c    | 18 +++++------
+ include/linux/usb.h       |  1 +
+ include/linux/usb/hcd.h   |  3 ++
+ 5 files changed, 64 insertions(+), 50 deletions(-)
 
-diff --git a/Documentation/power/power-sequence/design.rst b/Documentation/power/power-sequence/design.rst
-new file mode 100644
-index 0000000..554608e
---- /dev/null
-+++ b/Documentation/power/power-sequence/design.rst
-@@ -0,0 +1,54 @@
-+====================================
-+Power Sequence Library
-+====================================
-+
-+:Date: Feb, 2017
-+:Author: Peter Chen <peter.chen@nxp.com>
-+
-+
-+Introduction
-+============
-+
-+We have an well-known problem that the device needs to do a power
-+sequence before it can be recognized by related host, the typical
-+examples are hard-wired mmc devices and usb devices. The host controller
-+can't know what kinds of this device is in its bus if the power
-+sequence has not done, since the related devices driver's probe calling
-+is determined by runtime according to eunumeration results. Besides,
-+the devices may have custom power sequence, so the power sequence library
-+which is independent with the devices is needed.
-+
-+Design
-+============
-+
-+The power sequence library includes the core file and customer power
-+sequence library. The core file exports interfaces are called by
-+host controller driver for power sequence and customer power sequence
-+library files to register its power sequence instance to global
-+power sequence list. The custom power sequence library creates power
-+sequence instance and implement custom power sequence.
-+
-+Since the power sequence describes hardware design, the description is
-+located at board description file, eg, device tree dts file. And
-+a specific power sequence belongs to device, so its description
-+is under the device node, please refer to:
-+Documentation/devicetree/bindings/power/pwrseq/pwrseq-generic.txt
-+
-+Custom power sequence library allocates one power sequence instance at
-+bootup periods using postcore_initcall, this static allocated instance is
-+used to compare with device-tree (DT) node to see if this library can be
-+used for the node or not. When the result is matched, the core API will
-+try to get resourses (->get, implemented at each library) for power
-+sequence, if all resources are got, it will try to allocate another
-+instance for next possible request from host driver.
-+
-+Then, the host controller driver can carry out power sequence on for this
-+DT node, the library will do corresponding operations, like open clocks,
-+toggle gpio, etc. The power sequence off routine will close and free the
-+resources, and is called when the parent is removed. And the power
-+sequence suspend and resume routine can be called at host driver's
-+suspend and resume routine if needed.
-+
-+The exported interfaces
-+.. kernel-doc:: drivers/power/pwrseq/core.c
-+   :export:
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 187b961..e5cbf7d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9854,6 +9854,15 @@ F:	include/linux/pm_*
- F:	include/linux/powercap.h
- F:	drivers/powercap/
+diff --git a/drivers/usb/core/buffer.c b/drivers/usb/core/buffer.c
+index b9bf6e2..b64568c 100644
+--- a/drivers/usb/core/buffer.c
++++ b/drivers/usb/core/buffer.c
+@@ -66,7 +66,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
+ 	int		i, size;
  
-+POWER SEQUENCE LIBRARY
-+M:	Peter Chen <Peter.Chen@nxp.com>
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/peter.chen/usb.git
-+L:	linux-pm@vger.kernel.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/power/pwrseq/
-+F:	drivers/power/pwrseq/
-+F:	include/linux/power/pwrseq.h
-+
- POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS
- M:	Sebastian Reichel <sre@kernel.org>
- L:	linux-pm@vger.kernel.org
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 63454b5..c1bb046 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -1,3 +1,4 @@
- source "drivers/power/avs/Kconfig"
- source "drivers/power/reset/Kconfig"
- source "drivers/power/supply/Kconfig"
-+source "drivers/power/pwrseq/Kconfig"
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index ff35c71..7db8035 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -1,3 +1,4 @@
- obj-$(CONFIG_POWER_AVS)		+= avs/
- obj-$(CONFIG_POWER_RESET)	+= reset/
- obj-$(CONFIG_POWER_SUPPLY)	+= supply/
-+obj-$(CONFIG_POWER_SEQUENCE)	+= pwrseq/
-diff --git a/drivers/power/pwrseq/Kconfig b/drivers/power/pwrseq/Kconfig
-new file mode 100644
-index 0000000..c6b3569
---- /dev/null
-+++ b/drivers/power/pwrseq/Kconfig
-@@ -0,0 +1,20 @@
-+#
-+# Power Sequence library
-+#
-+
-+menuconfig POWER_SEQUENCE
-+	bool "Power sequence control"
-+	help
-+	   It is used for drivers which needs to do power sequence
-+	   (eg, turn on clock, toggle reset gpio) before the related
-+	   devices can be found by hardware, eg, USB bus.
-+
-+if POWER_SEQUENCE
-+
-+config PWRSEQ_GENERIC
-+	bool "Generic power sequence control"
-+	depends on OF
-+	help
-+	   This is the generic power sequence control library, and is
-+	   supposed to support common power sequence usage.
-+endif
-diff --git a/drivers/power/pwrseq/Makefile b/drivers/power/pwrseq/Makefile
-new file mode 100644
-index 0000000..ad82389
---- /dev/null
-+++ b/drivers/power/pwrseq/Makefile
-@@ -0,0 +1,2 @@
-+obj-$(CONFIG_POWER_SEQUENCE) += core.o
-+obj-$(CONFIG_PWRSEQ_GENERIC) += pwrseq_generic.o
-diff --git a/drivers/power/pwrseq/core.c b/drivers/power/pwrseq/core.c
-new file mode 100644
-index 0000000..3d19e62
---- /dev/null
-+++ b/drivers/power/pwrseq/core.c
-@@ -0,0 +1,335 @@
-+/*
-+ * core.c	power sequence core file
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Author: Peter Chen <peter.chen@nxp.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2  of
-+ * the License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.
-+ */
-+
-+#include <linux/list.h>
-+#include <linux/mutex.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/power/pwrseq.h>
-+
-+static DEFINE_MUTEX(pwrseq_list_mutex);
-+static LIST_HEAD(pwrseq_list);
-+
-+static int pwrseq_get(struct device_node *np, struct pwrseq *p)
-+{
-+	if (p && p->get)
-+		return p->get(np, p);
-+
-+	return -ENOTSUPP;
-+}
-+
-+static int pwrseq_on(struct pwrseq *p)
-+{
-+	if (p && p->on)
-+		return p->on(p);
-+
-+	return -ENOTSUPP;
-+}
-+
-+static void pwrseq_off(struct pwrseq *p)
-+{
-+	if (p && p->off)
-+		p->off(p);
-+}
-+
-+static void pwrseq_put(struct pwrseq *p)
-+{
-+	if (p && p->put)
-+		p->put(p);
-+}
-+
-+/**
-+ * pwrseq_register - Add pwrseq instance to global pwrseq list
-+ *
-+ * @pwrseq: the pwrseq instance
-+ */
-+void pwrseq_register(struct pwrseq *pwrseq)
-+{
-+	mutex_lock(&pwrseq_list_mutex);
-+	list_add(&pwrseq->node, &pwrseq_list);
-+	mutex_unlock(&pwrseq_list_mutex);
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_register);
-+
-+/**
-+ * pwrseq_unregister - Remove pwrseq instance from global pwrseq list
-+ *
-+ * @pwrseq: the pwrseq instance
-+ */
-+void pwrseq_unregister(struct pwrseq *pwrseq)
-+{
-+	mutex_lock(&pwrseq_list_mutex);
-+	list_del(&pwrseq->node);
-+	mutex_unlock(&pwrseq_list_mutex);
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_unregister);
-+
-+static struct pwrseq *pwrseq_find_available_instance(struct device_node *np)
-+{
-+	struct pwrseq *pwrseq;
-+
-+	mutex_lock(&pwrseq_list_mutex);
-+	list_for_each_entry(pwrseq, &pwrseq_list, node) {
-+		if (pwrseq->used)
-+			continue;
-+
-+		/* compare compatible string for pwrseq node */
-+		if (of_match_node(pwrseq->pwrseq_of_match_table, np)) {
-+			pwrseq->used = true;
-+			mutex_unlock(&pwrseq_list_mutex);
-+			return pwrseq;
-+		}
-+
-+		/* return generic pwrseq instance */
-+		if (!strcmp(pwrseq->pwrseq_of_match_table->compatible,
-+				"generic")) {
-+			pr_debug("using generic pwrseq instance for %s\n",
-+				np->full_name);
-+			pwrseq->used = true;
-+			mutex_unlock(&pwrseq_list_mutex);
-+			return pwrseq;
-+		}
-+	}
-+	mutex_unlock(&pwrseq_list_mutex);
-+	pr_debug("Can't find any pwrseq instances for %s\n", np->full_name);
-+
-+	return NULL;
-+}
-+
-+/**
-+ * of_pwrseq_on - Carry out power sequence on for device node
-+ *
-+ * @np: the device node would like to power on
-+ *
-+ * Carry out a single device power on.  If multiple devices
-+ * need to be handled, use of_pwrseq_on_list() instead.
-+ *
-+ * Return a pointer to the power sequence instance on success,
-+ * or an error code otherwise.
-+ */
-+struct pwrseq *of_pwrseq_on(struct device_node *np)
-+{
-+	struct pwrseq *pwrseq;
-+	int ret;
-+
-+	pwrseq = pwrseq_find_available_instance(np);
-+	if (!pwrseq)
-+		return ERR_PTR(-ENOENT);
-+
-+	ret = pwrseq_get(np, pwrseq);
-+	if (ret) {
-+		/* Mark current pwrseq as unused */
-+		pwrseq->used = false;
-+		return ERR_PTR(ret);
-+	}
-+
-+	ret = pwrseq_on(pwrseq);
-+	if (ret)
-+		goto pwr_put;
-+
-+	return pwrseq;
-+
-+pwr_put:
-+	pwrseq_put(pwrseq);
-+	return ERR_PTR(ret);
-+}
-+EXPORT_SYMBOL_GPL(of_pwrseq_on);
+ 	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
+-	    (!hcd->self.controller->dma_mask &&
++	    (!is_device_dma_capable(hcd->self.sysdev) &&
+ 	     !(hcd->driver->flags & HCD_LOCAL_MEM)))
+ 		return 0;
+ 
+@@ -75,7 +75,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
+ 		if (!size)
+ 			continue;
+ 		snprintf(name, sizeof(name), "buffer-%d", size);
+-		hcd->pool[i] = dma_pool_create(name, hcd->self.controller,
++		hcd->pool[i] = dma_pool_create(name, hcd->self.sysdev,
+ 				size, size, 0);
+ 		if (!hcd->pool[i]) {
+ 			hcd_buffer_destroy(hcd);
+@@ -130,7 +130,7 @@ void *hcd_buffer_alloc(
+ 
+ 	/* some USB hosts just use PIO */
+ 	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
+-	    (!bus->controller->dma_mask &&
++	    (!is_device_dma_capable(bus->sysdev) &&
+ 	     !(hcd->driver->flags & HCD_LOCAL_MEM))) {
+ 		*dma = ~(dma_addr_t) 0;
+ 		return kmalloc(size, mem_flags);
+@@ -140,7 +140,7 @@ void *hcd_buffer_alloc(
+ 		if (size <= pool_max[i])
+ 			return dma_pool_alloc(hcd->pool[i], mem_flags, dma);
+ 	}
+-	return dma_alloc_coherent(hcd->self.controller, size, dma, mem_flags);
++	return dma_alloc_coherent(hcd->self.sysdev, size, dma, mem_flags);
+ }
+ 
+ void hcd_buffer_free(
+@@ -157,7 +157,7 @@ void hcd_buffer_free(
+ 		return;
+ 
+ 	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
+-	    (!bus->controller->dma_mask &&
++	    (!is_device_dma_capable(bus->sysdev) &&
+ 	     !(hcd->driver->flags & HCD_LOCAL_MEM))) {
+ 		kfree(addr);
+ 		return;
+@@ -169,5 +169,5 @@ void hcd_buffer_free(
+ 			return;
+ 		}
+ 	}
+-	dma_free_coherent(hcd->self.controller, size, addr, dma);
++	dma_free_coherent(hcd->self.sysdev, size, addr, dma);
+ }
+diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
+index 612fab6..2342c1f 100644
+--- a/drivers/usb/core/hcd.c
++++ b/drivers/usb/core/hcd.c
+@@ -1073,6 +1073,7 @@ static void usb_deregister_bus (struct usb_bus *bus)
+ static int register_root_hub(struct usb_hcd *hcd)
+ {
+ 	struct device *parent_dev = hcd->self.controller;
++	struct device *sysdev = hcd->self.sysdev;
+ 	struct usb_device *usb_dev = hcd->self.root_hub;
+ 	const int devnum = 1;
+ 	int retval;
+@@ -1119,7 +1120,7 @@ static int register_root_hub(struct usb_hcd *hcd)
+ 		/* Did the HC die before the root hub was registered? */
+ 		if (HCD_DEAD(hcd))
+ 			usb_hc_died (hcd);	/* This time clean up */
+-		usb_dev->dev.of_node = parent_dev->of_node;
++		usb_dev->dev.of_node = sysdev->of_node;
+ 	}
+ 	mutex_unlock(&usb_bus_idr_lock);
+ 
+@@ -1465,19 +1466,19 @@ void usb_hcd_unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
+ 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
+ 	if (IS_ENABLED(CONFIG_HAS_DMA) &&
+ 	    (urb->transfer_flags & URB_DMA_MAP_SG))
+-		dma_unmap_sg(hcd->self.controller,
++		dma_unmap_sg(hcd->self.sysdev,
+ 				urb->sg,
+ 				urb->num_sgs,
+ 				dir);
+ 	else if (IS_ENABLED(CONFIG_HAS_DMA) &&
+ 		 (urb->transfer_flags & URB_DMA_MAP_PAGE))
+-		dma_unmap_page(hcd->self.controller,
++		dma_unmap_page(hcd->self.sysdev,
+ 				urb->transfer_dma,
+ 				urb->transfer_buffer_length,
+ 				dir);
+ 	else if (IS_ENABLED(CONFIG_HAS_DMA) &&
+ 		 (urb->transfer_flags & URB_DMA_MAP_SINGLE))
+-		dma_unmap_single(hcd->self.controller,
++		dma_unmap_single(hcd->self.sysdev,
+ 				urb->transfer_dma,
+ 				urb->transfer_buffer_length,
+ 				dir);
+@@ -1520,11 +1521,11 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+ 			return ret;
+ 		if (IS_ENABLED(CONFIG_HAS_DMA) && hcd->self.uses_dma) {
+ 			urb->setup_dma = dma_map_single(
+-					hcd->self.controller,
++					hcd->self.sysdev,
+ 					urb->setup_packet,
+ 					sizeof(struct usb_ctrlrequest),
+ 					DMA_TO_DEVICE);
+-			if (dma_mapping_error(hcd->self.controller,
++			if (dma_mapping_error(hcd->self.sysdev,
+ 						urb->setup_dma))
+ 				return -EAGAIN;
+ 			urb->transfer_flags |= URB_SETUP_MAP_SINGLE;
+@@ -1555,7 +1556,7 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+ 				}
+ 
+ 				n = dma_map_sg(
+-						hcd->self.controller,
++						hcd->self.sysdev,
+ 						urb->sg,
+ 						urb->num_sgs,
+ 						dir);
+@@ -1570,12 +1571,12 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+ 			} else if (urb->sg) {
+ 				struct scatterlist *sg = urb->sg;
+ 				urb->transfer_dma = dma_map_page(
+-						hcd->self.controller,
++						hcd->self.sysdev,
+ 						sg_page(sg),
+ 						sg->offset,
+ 						urb->transfer_buffer_length,
+ 						dir);
+-				if (dma_mapping_error(hcd->self.controller,
++				if (dma_mapping_error(hcd->self.sysdev,
+ 						urb->transfer_dma))
+ 					ret = -EAGAIN;
+ 				else
+@@ -1585,11 +1586,11 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
+ 				ret = -EAGAIN;
+ 			} else {
+ 				urb->transfer_dma = dma_map_single(
+-						hcd->self.controller,
++						hcd->self.sysdev,
+ 						urb->transfer_buffer,
+ 						urb->transfer_buffer_length,
+ 						dir);
+-				if (dma_mapping_error(hcd->self.controller,
++				if (dma_mapping_error(hcd->self.sysdev,
+ 						urb->transfer_dma))
+ 					ret = -EAGAIN;
+ 				else
+@@ -2495,24 +2496,8 @@ static void init_giveback_urb_bh(struct giveback_urb_bh *bh)
+ 	tasklet_init(&bh->bh, usb_giveback_urb_bh, (unsigned long)bh);
+ }
+ 
+-/**
+- * usb_create_shared_hcd - create and initialize an HCD structure
+- * @driver: HC driver that will use this hcd
+- * @dev: device for this HC, stored in hcd->self.controller
+- * @bus_name: value to store in hcd->self.bus_name
+- * @primary_hcd: a pointer to the usb_hcd structure that is sharing the
+- *              PCI device.  Only allocate certain resources for the primary HCD
+- * Context: !in_interrupt()
+- *
+- * Allocate a struct usb_hcd, with extra space at the end for the
+- * HC driver's private data.  Initialize the generic members of the
+- * hcd structure.
+- *
+- * Return: On success, a pointer to the created and initialized HCD structure.
+- * On failure (e.g. if memory is unavailable), %NULL.
+- */
+-struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+-		struct device *dev, const char *bus_name,
++struct usb_hcd *__usb_create_hcd(const struct hc_driver *driver,
++		struct device *sysdev, struct device *dev, const char *bus_name,
+ 		struct usb_hcd *primary_hcd)
+ {
+ 	struct usb_hcd *hcd;
+@@ -2553,8 +2538,9 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+ 
+ 	usb_bus_init(&hcd->self);
+ 	hcd->self.controller = dev;
++	hcd->self.sysdev = sysdev;
+ 	hcd->self.bus_name = bus_name;
+-	hcd->self.uses_dma = (dev->dma_mask != NULL);
++	hcd->self.uses_dma = (sysdev->dma_mask != NULL);
+ 
+ 	init_timer(&hcd->rh_timer);
+ 	hcd->rh_timer.function = rh_timer_func;
+@@ -2569,6 +2555,30 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+ 			"USB Host Controller";
+ 	return hcd;
+ }
++EXPORT_SYMBOL_GPL(__usb_create_hcd);
 +
 +/**
-+ * of_pwrseq_off - Carry out power sequence off for this pwrseq instance
++ * usb_create_shared_hcd - create and initialize an HCD structure
++ * @driver: HC driver that will use this hcd
++ * @dev: device for this HC, stored in hcd->self.controller
++ * @bus_name: value to store in hcd->self.bus_name
++ * @primary_hcd: a pointer to the usb_hcd structure that is sharing the
++ *              PCI device.  Only allocate certain resources for the primary HCD
++ * Context: !in_interrupt()
 + *
-+ * @pwrseq: the pwrseq instance which related device would like to be off
++ * Allocate a struct usb_hcd, with extra space at the end for the
++ * HC driver's private data.  Initialize the generic members of the
++ * hcd structure.
 + *
-+ * This API is used to power off single device, it is the opposite
-+ * operation for of_pwrseq_on.
++ * Return: On success, a pointer to the created and initialized HCD structure.
++ * On failure (e.g. if memory is unavailable), %NULL.
 + */
-+void of_pwrseq_off(struct pwrseq *pwrseq)
++struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
++		struct device *dev, const char *bus_name,
++		struct usb_hcd *primary_hcd)
 +{
-+	pwrseq_off(pwrseq);
-+	pwrseq_put(pwrseq);
++	return __usb_create_hcd(driver, dev, dev, bus_name, primary_hcd);
 +}
-+EXPORT_SYMBOL_GPL(of_pwrseq_off);
-+
-+/**
-+ * of_pwrseq_on_list - Carry out power sequence on for list
-+ *
-+ * @np: the device node would like to power on
-+ * @head: the list head for pwrseq list on this bus
-+ *
-+ * This API is used to power on multiple devices at single bus.
-+ * If there are several devices on bus (eg, USB bus), uses this
-+ * this API. Otherwise, use of_pwrseq_on instead. After the device
-+ * is powered on successfully, it will be added to pwrseq list for
-+ * this bus. The caller needs to use mutex_lock for concurrent.
-+ *
-+ * Return 0 on success, or an error value otherwise.
-+ */
-+int of_pwrseq_on_list(struct device_node *np, struct list_head *head)
-+{
-+	struct pwrseq *pwrseq;
-+	struct pwrseq_list_per_dev *pwrseq_list_node;
-+
-+	pwrseq_list_node = kzalloc(sizeof(*pwrseq_list_node), GFP_KERNEL);
-+	if (!pwrseq_list_node)
-+		return -ENOMEM;
-+
-+	pwrseq = of_pwrseq_on(np);
-+	if (IS_ERR(pwrseq)) {
-+		kfree(pwrseq_list_node);
-+		return PTR_ERR(pwrseq);
-+	}
-+
-+	pwrseq_list_node->pwrseq = pwrseq;
-+	list_add(&pwrseq_list_node->list, head);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(of_pwrseq_on_list);
-+
-+/**
-+ * of_pwrseq_off_list - Carry out power sequence off for the list
-+ *
-+ * @head: the list head for pwrseq instance list on this bus
-+ *
-+ * This API is used to power off all devices on this bus, it is
-+ * the opposite operation for of_pwrseq_on_list.
-+ * The caller needs to use mutex_lock for concurrent.
-+ */
-+void of_pwrseq_off_list(struct list_head *head)
-+{
-+	struct pwrseq *pwrseq;
-+	struct pwrseq_list_per_dev *pwrseq_list_node, *tmp_node;
-+
-+	list_for_each_entry_safe(pwrseq_list_node, tmp_node, head, list) {
-+		pwrseq = pwrseq_list_node->pwrseq;
-+		of_pwrseq_off(pwrseq);
-+		list_del(&pwrseq_list_node->list);
-+		kfree(pwrseq_list_node);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(of_pwrseq_off_list);
-+
-+/**
-+ * pwrseq_suspend - Carry out power sequence suspend for this pwrseq instance
-+ *
-+ * @pwrseq: the pwrseq instance
-+ *
-+ * This API is used to do suspend operation on pwrseq instance.
-+ *
-+ * Return 0 on success, or an error value otherwise.
-+ */
-+int pwrseq_suspend(struct pwrseq *p)
-+{
-+	int ret = 0;
-+
-+	if (p && p->suspend)
-+		ret = p->suspend(p);
-+	else
-+		return ret;
-+
-+	if (!ret)
-+		p->suspended = true;
-+	else
-+		pr_err("%s failed\n", __func__);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_suspend);
-+
-+/**
-+ * pwrseq_resume - Carry out power sequence resume for this pwrseq instance
-+ *
-+ * @pwrseq: the pwrseq instance
-+ *
-+ * This API is used to do resume operation on pwrseq instance.
-+ *
-+ * Return 0 on success, or an error value otherwise.
-+ */
-+int pwrseq_resume(struct pwrseq *p)
-+{
-+	int ret = 0;
-+
-+	if (p && p->resume)
-+		ret = p->resume(p);
-+	else
-+		return ret;
-+
-+	if (!ret)
-+		p->suspended = false;
-+	else
-+		pr_err("%s failed\n", __func__);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_resume);
-+
-+/**
-+ * pwrseq_suspend_list - Carry out power sequence suspend for list
-+ *
-+ * @head: the list head for pwrseq instance list on this bus
-+ *
-+ * This API is used to do suspend on all power sequence instances on this bus.
-+ * The caller needs to use mutex_lock for concurrent.
-+ */
-+int pwrseq_suspend_list(struct list_head *head)
-+{
-+	struct pwrseq *pwrseq;
-+	struct pwrseq_list_per_dev *pwrseq_list_node;
-+	int ret = 0;
-+
-+	list_for_each_entry(pwrseq_list_node, head, list) {
-+		ret = pwrseq_suspend(pwrseq_list_node->pwrseq);
-+		if (ret)
-+			break;
-+	}
-+
-+	if (ret) {
-+		list_for_each_entry(pwrseq_list_node, head, list) {
-+			pwrseq = pwrseq_list_node->pwrseq;
-+			if (pwrseq->suspended)
-+				pwrseq_resume(pwrseq);
-+		}
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_suspend_list);
-+
-+/**
-+ * pwrseq_resume_list - Carry out power sequence resume for the list
-+ *
-+ * @head: the list head for pwrseq instance list on this bus
-+ *
-+ * This API is used to do resume on all power sequence instances on this bus.
-+ * The caller needs to use mutex_lock for concurrent.
-+ */
-+int pwrseq_resume_list(struct list_head *head)
-+{
-+	struct pwrseq_list_per_dev *pwrseq_list_node;
-+	int ret = 0;
-+
-+	list_for_each_entry(pwrseq_list_node, head, list) {
-+		ret = pwrseq_resume(pwrseq_list_node->pwrseq);
-+		if (ret)
-+			break;
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pwrseq_resume_list);
-diff --git a/drivers/power/pwrseq/pwrseq_generic.c b/drivers/power/pwrseq/pwrseq_generic.c
-new file mode 100644
-index 0000000..4e7c090
---- /dev/null
-+++ b/drivers/power/pwrseq/pwrseq_generic.c
-@@ -0,0 +1,234 @@
-+/*
-+ * pwrseq_generic.c	Generic power sequence handling
-+ *
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Author: Peter Chen <peter.chen@nxp.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2  of
-+ * the License as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program.
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/delay.h>
-+#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
-+#include <linux/of.h>
-+#include <linux/of_gpio.h>
-+#include <linux/slab.h>
-+
-+#include <linux/power/pwrseq.h>
-+
-+struct pwrseq_generic {
-+	struct pwrseq pwrseq;
-+	struct gpio_desc *gpiod_reset;
-+	struct clk *clks[PWRSEQ_MAX_CLKS];
-+	u32 duration_us;
-+	bool suspended;
-+};
-+
-+#define to_generic_pwrseq(p) container_of(p, struct pwrseq_generic, pwrseq)
-+
-+static int pwrseq_generic_alloc_instance(void);
-+static const struct of_device_id generic_id_table[] = {
-+	{ .compatible = "generic",},
-+	{ /* sentinel */ }
-+};
-+
-+static int pwrseq_generic_suspend(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int clk;
-+
-+	for (clk = PWRSEQ_MAX_CLKS - 1; clk >= 0; clk--)
-+		clk_disable_unprepare(pwrseq_gen->clks[clk]);
-+
-+	pwrseq_gen->suspended = true;
-+	return 0;
-+}
-+
-+static int pwrseq_generic_resume(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int clk, ret = 0;
-+
-+	for (clk = 0; clk < PWRSEQ_MAX_CLKS && pwrseq_gen->clks[clk]; clk++) {
-+		ret = clk_prepare_enable(pwrseq_gen->clks[clk]);
-+		if (ret) {
-+			pr_err("Can't enable clock, ret=%d\n", ret);
-+			goto err_disable_clks;
-+		}
-+	}
-+
-+	pwrseq_gen->suspended = false;
-+	return ret;
-+
-+err_disable_clks:
-+	while (--clk >= 0)
-+		clk_disable_unprepare(pwrseq_gen->clks[clk]);
-+
-+	return ret;
-+}
-+
-+static void pwrseq_generic_put(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int clk;
-+
-+	if (pwrseq_gen->gpiod_reset)
-+		gpiod_put(pwrseq_gen->gpiod_reset);
-+
-+	for (clk = 0; clk < PWRSEQ_MAX_CLKS; clk++)
-+		clk_put(pwrseq_gen->clks[clk]);
-+
-+	pwrseq_unregister(&pwrseq_gen->pwrseq);
-+	kfree(pwrseq_gen);
-+}
-+
-+static void pwrseq_generic_off(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int clk;
-+
-+	if (pwrseq_gen->suspended)
-+		return;
-+
-+	for (clk = PWRSEQ_MAX_CLKS - 1; clk >= 0; clk--)
-+		clk_disable_unprepare(pwrseq_gen->clks[clk]);
-+}
-+
-+static int pwrseq_generic_on(struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	int clk, ret = 0;
-+	struct gpio_desc *gpiod_reset = pwrseq_gen->gpiod_reset;
-+
-+	for (clk = 0; clk < PWRSEQ_MAX_CLKS && pwrseq_gen->clks[clk]; clk++) {
-+		ret = clk_prepare_enable(pwrseq_gen->clks[clk]);
-+		if (ret) {
-+			pr_err("Can't enable clock, ret=%d\n", ret);
-+			goto err_disable_clks;
-+		}
-+	}
-+
-+	if (gpiod_reset) {
-+		u32 duration_us = pwrseq_gen->duration_us;
-+
-+		if (duration_us <= 10)
-+			udelay(10);
-+		else
-+			usleep_range(duration_us, duration_us + 100);
-+		gpiod_set_value(gpiod_reset, 0);
-+	}
-+
-+	return ret;
-+
-+err_disable_clks:
-+	while (--clk >= 0)
-+		clk_disable_unprepare(pwrseq_gen->clks[clk]);
-+
-+	return ret;
-+}
-+
-+static int pwrseq_generic_get(struct device_node *np, struct pwrseq *pwrseq)
-+{
-+	struct pwrseq_generic *pwrseq_gen = to_generic_pwrseq(pwrseq);
-+	enum of_gpio_flags flags;
-+	int reset_gpio, clk, ret = 0;
-+
-+	for (clk = 0; clk < PWRSEQ_MAX_CLKS; clk++) {
-+		pwrseq_gen->clks[clk] = of_clk_get(np, clk);
-+		if (IS_ERR(pwrseq_gen->clks[clk])) {
-+			ret = PTR_ERR(pwrseq_gen->clks[clk]);
-+			if (ret != -ENOENT)
-+				goto err_put_clks;
-+			pwrseq_gen->clks[clk] = NULL;
-+			break;
-+		}
-+	}
-+
-+	reset_gpio = of_get_named_gpio_flags(np, "reset-gpios", 0, &flags);
-+	if (gpio_is_valid(reset_gpio)) {
-+		unsigned long gpio_flags;
-+
-+		if (flags & OF_GPIO_ACTIVE_LOW)
-+			gpio_flags = GPIOF_ACTIVE_LOW | GPIOF_OUT_INIT_LOW;
-+		else
-+			gpio_flags = GPIOF_OUT_INIT_HIGH;
-+
-+		ret = gpio_request_one(reset_gpio, gpio_flags,
-+				"pwrseq-reset-gpios");
-+		if (ret)
-+			goto err_put_clks;
-+
-+		pwrseq_gen->gpiod_reset = gpio_to_desc(reset_gpio);
-+		of_property_read_u32(np, "reset-duration-us",
-+				&pwrseq_gen->duration_us);
-+	} else if (reset_gpio == -ENOENT) {
-+		; /* no such gpio */
-+	} else {
-+		ret = reset_gpio;
-+		pr_err("Failed to get reset gpio on %s, err = %d\n",
-+				np->full_name, reset_gpio);
-+		goto err_put_clks;
-+	}
-+
-+	/* allocate new one for later pwrseq instance request */
-+	ret = pwrseq_generic_alloc_instance();
-+	if (ret)
-+		goto err_put_gpio;
-+
-+	return 0;
-+
-+err_put_gpio:
-+	if (pwrseq_gen->gpiod_reset)
-+		gpiod_put(pwrseq_gen->gpiod_reset);
-+err_put_clks:
-+	while (--clk >= 0)
-+		clk_put(pwrseq_gen->clks[clk]);
-+	return ret;
-+}
-+
-+/**
-+ * pwrseq_generic_alloc_instance - power sequence instance allocation
-+ *
-+ * This function is used to allocate one generic power sequence instance,
-+ * it is called when the system boots up and after one power sequence
-+ * instance is got successfully.
-+ *
-+ * Return zero on success or an error code otherwise.
-+ */
-+static int pwrseq_generic_alloc_instance(void)
-+{
-+	struct pwrseq_generic *pwrseq_gen;
-+
-+	pwrseq_gen = kzalloc(sizeof(*pwrseq_gen), GFP_KERNEL);
-+	if (!pwrseq_gen)
-+		return -ENOMEM;
-+
-+	pwrseq_gen->pwrseq.pwrseq_of_match_table = generic_id_table;
-+	pwrseq_gen->pwrseq.get = pwrseq_generic_get;
-+	pwrseq_gen->pwrseq.on = pwrseq_generic_on;
-+	pwrseq_gen->pwrseq.off = pwrseq_generic_off;
-+	pwrseq_gen->pwrseq.put = pwrseq_generic_put;
-+	pwrseq_gen->pwrseq.suspend = pwrseq_generic_suspend;
-+	pwrseq_gen->pwrseq.resume = pwrseq_generic_resume;
-+
-+	pwrseq_register(&pwrseq_gen->pwrseq);
-+	return 0;
-+}
-+
-+/* Allocate one pwrseq instance during boots up */
-+static int __init pwrseq_generic_register(void)
-+{
-+	return pwrseq_generic_alloc_instance();
-+}
-+postcore_initcall(pwrseq_generic_register)
-diff --git a/include/linux/power/pwrseq.h b/include/linux/power/pwrseq.h
-new file mode 100644
-index 0000000..cbc344c
---- /dev/null
-+++ b/include/linux/power/pwrseq.h
-@@ -0,0 +1,81 @@
-+#ifndef __LINUX_PWRSEQ_H
-+#define __LINUX_PWRSEQ_H
-+
-+#include <linux/of.h>
-+
-+#define PWRSEQ_MAX_CLKS		3
-+
-+/**
-+ * struct pwrseq - the power sequence structure
-+ * @pwrseq_of_match_table: the OF device id table this pwrseq library supports
-+ * @node: the list pointer to be added to pwrseq list
-+ * @get: the API is used to get pwrseq instance from the device node
-+ * @on: do power on for this pwrseq instance
-+ * @off: do power off for this pwrseq instance
-+ * @put: release the resources on this pwrseq instance
-+ * @suspend: do suspend operation on this pwrseq instance
-+ * @resume: do resume operation on this pwrseq instance
-+ * @used: this pwrseq instance is used by device
-+ */
-+struct pwrseq {
-+	const struct of_device_id *pwrseq_of_match_table;
-+	struct list_head node;
-+	int (*get)(struct device_node *np, struct pwrseq *p);
-+	int (*on)(struct pwrseq *p);
-+	void (*off)(struct pwrseq *p);
-+	void (*put)(struct pwrseq *p);
-+	int (*suspend)(struct pwrseq *p);
-+	int (*resume)(struct pwrseq *p);
-+	bool used;
-+	bool suspended;
-+};
-+
-+/* used for power sequence instance list in one driver */
-+struct pwrseq_list_per_dev {
-+	struct pwrseq *pwrseq;
-+	struct list_head list;
-+};
-+
-+#if IS_ENABLED(CONFIG_POWER_SEQUENCE)
-+void pwrseq_register(struct pwrseq *pwrseq);
-+void pwrseq_unregister(struct pwrseq *pwrseq);
-+struct pwrseq *of_pwrseq_on(struct device_node *np);
-+void of_pwrseq_off(struct pwrseq *pwrseq);
-+int of_pwrseq_on_list(struct device_node *np, struct list_head *head);
-+void of_pwrseq_off_list(struct list_head *head);
-+int pwrseq_suspend(struct pwrseq *p);
-+int pwrseq_resume(struct pwrseq *p);
-+int pwrseq_suspend_list(struct list_head *head);
-+int pwrseq_resume_list(struct list_head *head);
-+#else
-+static inline void pwrseq_register(struct pwrseq *pwrseq) {}
-+static inline void pwrseq_unregister(struct pwrseq *pwrseq) {}
-+static inline struct pwrseq *of_pwrseq_on(struct device_node *np)
-+{
-+	return NULL;
-+}
-+static void of_pwrseq_off(struct pwrseq *pwrseq) {}
-+static int of_pwrseq_on_list(struct device_node *np, struct list_head *head)
-+{
-+	return 0;
-+}
-+static void of_pwrseq_off_list(struct list_head *head) {}
-+static int pwrseq_suspend(struct pwrseq *p)
-+{
-+	return 0;
-+}
-+static int pwrseq_resume(struct pwrseq *p)
-+{
-+	return 0;
-+}
-+static int pwrseq_suspend_list(struct list_head *head)
-+{
-+	return 0;
-+}
-+static int pwrseq_resume_list(struct list_head *head)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_POWER_SEQUENCE */
-+
-+#endif  /* __LINUX_PWRSEQ_H */
+ EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
+ 
+ /**
+@@ -2588,7 +2598,7 @@ EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
+ struct usb_hcd *usb_create_hcd(const struct hc_driver *driver,
+ 		struct device *dev, const char *bus_name)
+ {
+-	return usb_create_shared_hcd(driver, dev, bus_name, NULL);
++	return __usb_create_hcd(driver, dev, dev, bus_name, NULL);
+ }
+ EXPORT_SYMBOL_GPL(usb_create_hcd);
+ 
+@@ -2715,7 +2725,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
+ 	struct usb_device *rhdev;
+ 
+ 	if (IS_ENABLED(CONFIG_USB_PHY) && !hcd->usb_phy) {
+-		struct usb_phy *phy = usb_get_phy_dev(hcd->self.controller, 0);
++		struct usb_phy *phy = usb_get_phy_dev(hcd->self.sysdev, 0);
+ 
+ 		if (IS_ERR(phy)) {
+ 			retval = PTR_ERR(phy);
+@@ -2733,7 +2743,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
+ 	}
+ 
+ 	if (IS_ENABLED(CONFIG_GENERIC_PHY) && !hcd->phy) {
+-		struct phy *phy = phy_get(hcd->self.controller, "usb");
++		struct phy *phy = phy_get(hcd->self.sysdev, "usb");
+ 
+ 		if (IS_ERR(phy)) {
+ 			retval = PTR_ERR(phy);
+@@ -2781,7 +2791,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
+ 	 */
+ 	retval = hcd_buffer_create(hcd);
+ 	if (retval != 0) {
+-		dev_dbg(hcd->self.controller, "pool alloc failed\n");
++		dev_dbg(hcd->self.sysdev, "pool alloc failed\n");
+ 		goto err_create_buf;
+ 	}
+ 
+@@ -2791,7 +2801,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
+ 
+ 	rhdev = usb_alloc_dev(NULL, &hcd->self, 0);
+ 	if (rhdev == NULL) {
+-		dev_err(hcd->self.controller, "unable to allocate root hub\n");
++		dev_err(hcd->self.sysdev, "unable to allocate root hub\n");
+ 		retval = -ENOMEM;
+ 		goto err_allocate_root_hub;
+ 	}
+diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
+index a2ccc69f..4cd6e0e 100644
+--- a/drivers/usb/core/usb.c
++++ b/drivers/usb/core/usb.c
+@@ -453,9 +453,9 @@ struct usb_device *usb_alloc_dev(struct usb_device *parent,
+ 	 * Note: calling dma_set_mask() on a USB device would set the
+ 	 * mask for the entire HCD, so don't do that.
+ 	 */
+-	dev->dev.dma_mask = bus->controller->dma_mask;
+-	dev->dev.dma_pfn_offset = bus->controller->dma_pfn_offset;
+-	set_dev_node(&dev->dev, dev_to_node(bus->controller));
++	dev->dev.dma_mask = bus->sysdev->dma_mask;
++	dev->dev.dma_pfn_offset = bus->sysdev->dma_pfn_offset;
++	set_dev_node(&dev->dev, dev_to_node(bus->sysdev));
+ 	dev->state = USB_STATE_ATTACHED;
+ 	dev->lpm_disable_count = 1;
+ 	atomic_set(&dev->urbnum, 0);
+@@ -803,7 +803,7 @@ struct urb *usb_buffer_map(struct urb *urb)
+ 	if (!urb
+ 			|| !urb->dev
+ 			|| !(bus = urb->dev->bus)
+-			|| !(controller = bus->controller))
++			|| !(controller = bus->sysdev))
+ 		return NULL;
+ 
+ 	if (controller->dma_mask) {
+@@ -841,7 +841,7 @@ void usb_buffer_dmasync(struct urb *urb)
+ 			|| !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)
+ 			|| !urb->dev
+ 			|| !(bus = urb->dev->bus)
+-			|| !(controller = bus->controller))
++			|| !(controller = bus->sysdev))
+ 		return;
+ 
+ 	if (controller->dma_mask) {
+@@ -875,7 +875,7 @@ void usb_buffer_unmap(struct urb *urb)
+ 			|| !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)
+ 			|| !urb->dev
+ 			|| !(bus = urb->dev->bus)
+-			|| !(controller = bus->controller))
++			|| !(controller = bus->sysdev))
+ 		return;
+ 
+ 	if (controller->dma_mask) {
+@@ -925,7 +925,7 @@ int usb_buffer_map_sg(const struct usb_device *dev, int is_in,
+ 
+ 	if (!dev
+ 			|| !(bus = dev->bus)
+-			|| !(controller = bus->controller)
++			|| !(controller = bus->sysdev)
+ 			|| !controller->dma_mask)
+ 		return -EINVAL;
+ 
+@@ -961,7 +961,7 @@ void usb_buffer_dmasync_sg(const struct usb_device *dev, int is_in,
+ 
+ 	if (!dev
+ 			|| !(bus = dev->bus)
+-			|| !(controller = bus->controller)
++			|| !(controller = bus->sysdev)
+ 			|| !controller->dma_mask)
+ 		return;
+ 
+@@ -989,7 +989,7 @@ void usb_buffer_unmap_sg(const struct usb_device *dev, int is_in,
+ 
+ 	if (!dev
+ 			|| !(bus = dev->bus)
+-			|| !(controller = bus->controller)
++			|| !(controller = bus->sysdev)
+ 			|| !controller->dma_mask)
+ 		return;
+ 
+diff --git a/include/linux/usb.h b/include/linux/usb.h
+index 7e68259..1487526 100644
+--- a/include/linux/usb.h
++++ b/include/linux/usb.h
+@@ -354,6 +354,7 @@ struct usb_devmap {
+  */
+ struct usb_bus {
+ 	struct device *controller;	/* host/master side hardware */
++	struct device *sysdev;		/* as seen from firmware or bus */
+ 	int busnum;			/* Bus number (in order of reg) */
+ 	const char *bus_name;		/* stable id (PCI slot_name etc) */
+ 	u8 uses_dma;			/* Does the host controller use DMA? */
+diff --git a/include/linux/usb/hcd.h b/include/linux/usb/hcd.h
+index 40edf6a..4e8590a 100644
+--- a/include/linux/usb/hcd.h
++++ b/include/linux/usb/hcd.h
+@@ -437,6 +437,9 @@ extern int usb_hcd_alloc_bandwidth(struct usb_device *udev,
+ 		struct usb_host_interface *new_alt);
+ extern int usb_hcd_get_frame_number(struct usb_device *udev);
+ 
++struct usb_hcd *__usb_create_hcd(const struct hc_driver *driver,
++		struct device *sysdev, struct device *dev, const char *bus_name,
++		struct usb_hcd *primary_hcd);
+ extern struct usb_hcd *usb_create_hcd(const struct hc_driver *driver,
+ 		struct device *dev, const char *bus_name);
+ extern struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
 -- 
 2.7.4
