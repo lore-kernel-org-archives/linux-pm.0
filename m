@@ -1,109 +1,48 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v13 04/12] usb: chipidea: use bus->sysdev for DMA configuration
-Date: Sat, 11 Feb 2017 09:27:15 +0800
-Message-ID: <1486776443-2280-5-git-send-email-peter.chen@nxp.com>
+From: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Subject: [PATCH v13 05/12] usb: ehci: fsl: use bus->sysdev for DMA configuration
+Date: Sat, 11 Feb 2017 09:27:16 +0800
+Message-ID: <1486776443-2280-6-git-send-email-peter.chen@nxp.com>
 References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: mark.rutland@arm.com, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, gary.bisson@boundarydevices.com, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, Mathias Nyman <mathias.nyman@linux.intel.com>, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de, jun.li@nxp.com
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1486776443-2280-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Cc: heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frank.li-3arQi8VN3Tc@public.gmane.org, jun.li-3arQi8VN3Tc@public.gmane.org, Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>, Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Arnd Bergmann <arnd@arndb.de>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
 
-Set the dma for chipidea from sysdev. This is inherited from its
-parent node. Also, do not set dma mask for child as it is not required
-now.
+For the dual role ehci fsl driver, sysdev will handle the dma
+config.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Acked-by: Peter Chen <peter.chen@nxp.com>
-Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
+Signed-off-by: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Signed-off-by: Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>
+Signed-off-by: Mathias Nyman <mathias.nyman-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 ---
- drivers/usb/chipidea/core.c |  3 ---
- drivers/usb/chipidea/host.c |  3 ++-
- drivers/usb/chipidea/udc.c  | 10 ++++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/usb/host/ehci-fsl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
-index 79ad8e9..b4a78b2 100644
---- a/drivers/usb/chipidea/core.c
-+++ b/drivers/usb/chipidea/core.c
-@@ -783,9 +783,6 @@ struct platform_device *ci_hdrc_add_device(struct device *dev,
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index 3733aab..4a08b70 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -96,8 +96,8 @@ static int fsl_ehci_drv_probe(struct platform_device *pdev)
  	}
+ 	irq = res->start;
  
- 	pdev->dev.parent = dev;
--	pdev->dev.dma_mask = dev->dma_mask;
--	pdev->dev.dma_parms = dev->dma_parms;
--	dma_set_coherent_mask(&pdev->dev, dev->coherent_dma_mask);
- 
- 	ret = platform_device_add_resources(pdev, res, nres);
- 	if (ret)
-diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
-index 915f3e9..18cb8e4 100644
---- a/drivers/usb/chipidea/host.c
-+++ b/drivers/usb/chipidea/host.c
-@@ -123,7 +123,8 @@ static int host_start(struct ci_hdrc *ci)
- 	if (usb_disabled())
- 		return -ENODEV;
- 
--	hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
-+	hcd = __usb_create_hcd(&ci_ehci_hc_driver, ci->dev->parent,
-+			       ci->dev, dev_name(ci->dev), NULL);
- 	if (!hcd)
- 		return -ENOMEM;
- 
-diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
-index f88e915..1fb5235 100644
---- a/drivers/usb/chipidea/udc.c
-+++ b/drivers/usb/chipidea/udc.c
-@@ -423,7 +423,8 @@ static int _hardware_enqueue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
- 
- 	hwreq->req.status = -EALREADY;
- 
--	ret = usb_gadget_map_request(&ci->gadget, &hwreq->req, hwep->dir);
-+	ret = usb_gadget_map_request_by_dev(ci->dev->parent,
-+					    &hwreq->req, hwep->dir);
- 	if (ret)
- 		return ret;
- 
-@@ -603,7 +604,8 @@ static int _hardware_dequeue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
- 		list_del_init(&node->td);
- 	}
- 
--	usb_gadget_unmap_request(&hwep->ci->gadget, &hwreq->req, hwep->dir);
-+	usb_gadget_unmap_request_by_dev(hwep->ci->dev->parent,
-+					&hwreq->req, hwep->dir);
- 
- 	hwreq->req.actual += actual;
- 
-@@ -1899,13 +1901,13 @@ static int udc_start(struct ci_hdrc *ci)
- 	INIT_LIST_HEAD(&ci->gadget.ep_list);
- 
- 	/* alloc resources */
--	ci->qh_pool = dma_pool_create("ci_hw_qh", dev,
-+	ci->qh_pool = dma_pool_create("ci_hw_qh", dev->parent,
- 				       sizeof(struct ci_hw_qh),
- 				       64, CI_HDRC_PAGE_SIZE);
- 	if (ci->qh_pool == NULL)
- 		return -ENOMEM;
- 
--	ci->td_pool = dma_pool_create("ci_hw_td", dev,
-+	ci->td_pool = dma_pool_create("ci_hw_td", dev->parent,
- 				       sizeof(struct ci_hw_td),
- 				       64, CI_HDRC_PAGE_SIZE);
- 	if (ci->td_pool == NULL) {
+-	hcd = usb_create_hcd(&fsl_ehci_hc_driver, &pdev->dev,
+-				dev_name(&pdev->dev));
++	hcd = __usb_create_hcd(&fsl_ehci_hc_driver, pdev->dev.parent,
++			       &pdev->dev, dev_name(&pdev->dev), NULL);
+ 	if (!hcd) {
+ 		retval = -ENOMEM;
+ 		goto err1;
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
