@@ -1,7 +1,7 @@
 From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v13 03/12] usb: separate out sysdev pointer from usb_bus
-Date: Sat, 11 Feb 2017 09:27:14 +0800
-Message-ID: <1486776443-2280-4-git-send-email-peter.chen@nxp.com>
+Subject: [PATCH v13 04/12] usb: chipidea: use bus->sysdev for DMA configuration
+Date: Sat, 11 Feb 2017 09:27:15 +0800
+Message-ID: <1486776443-2280-5-git-send-email-peter.chen@nxp.com>
 References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,417 +18,92 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: mark.rutland@arm.com, Peter Chen <peter.chen@nxp.com>, heiko@sntech.de, Catalin Marinas <catalin.marinas@arm.com>, stephen.boyd@linaro.org, frank.li@nxp.com, Bjorn Andersson <bjorn.andersson@linaro.org>, gary.bisson@boundarydevices.com, Leo Li <pku.leo@gmail.com>, Sinjan Kumar <sinjank@codeaurora.org>, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, Dann Frazier <dann.frazier@canonical.com>, vaibhav.hiremath@linaro.org, krzk@kernel.org, David Fisher <david.fisher1@synopsys.com>, mka@chromium.org, Ming Lei <tom.leiming@gmail.com>, Felipe Balbi <felipe.balbi@linux.intel.com>, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, Grygorii Strashko <grygorii.strashko@ti.com>, pawel.moll@arm.com, linux-pm@vger.kernel.org, Jon Masters <jcm@redhat.com>, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, Mathias Nyman <mathia>
+Cc: mark.rutland@arm.com, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, gary.bisson@boundarydevices.com, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, Mathias Nyman <mathias.nyman@linux.intel.com>, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de, jun.li@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-For xhci-hcd platform device, all the DMA parameters are not
-configured properly, notably dma ops for dwc3 devices.
-
-The idea here is that you pass in the parent of_node along with
-the child device pointer, so it would behave exactly like the
-parent already does. The difference is that it also handles all
-the other attributes besides the mask.
-
-sysdev will represent the physical device, as seen from firmware
-or bus.Splitting the usb_bus->controller field into the
-Linux-internal device (used for the sysfs hierarchy, for printks
-and for power management) and a new pointer (used for DMA,
-DT enumeration and phy lookup) probably covers all that we really
-need.
+Set the dma for chipidea from sysdev. This is inherited from its
+parent node. Also, do not set dma mask for child as it is not required
+now.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-Tested-by: Baolin Wang <baolin.wang@linaro.org>
-Tested-by: Brian Norris <briannorris@chromium.org>
-Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
-Tested-by: Vivek Gautam <vivek.gautam@codeaurora.org>
+Acked-by: Peter Chen <peter.chen@nxp.com>
 Signed-off-by: Mathias Nyman <mathias.nyman@linux.intel.com>
-Cc: Felipe Balbi <felipe.balbi@linux.intel.com>
-Cc: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Sinjan Kumar <sinjank@codeaurora.org>
-Cc: David Fisher <david.fisher1@synopsys.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "Thang Q. Nguyen" <tqnguyen@apm.com>
-Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Ming Lei <tom.leiming@gmail.com>
-Cc: Jon Masters <jcm@redhat.com>
-Cc: Dann Frazier <dann.frazier@canonical.com>
-Cc: Peter Chen <peter.chen@nxp.com>
-Cc: Leo Li <pku.leo@gmail.com>
 ---
- drivers/usb/core/buffer.c | 12 +++----
- drivers/usb/core/hcd.c    | 80 ++++++++++++++++++++++++++---------------------
- drivers/usb/core/usb.c    | 18 +++++------
- include/linux/usb.h       |  1 +
- include/linux/usb/hcd.h   |  3 ++
- 5 files changed, 64 insertions(+), 50 deletions(-)
+ drivers/usb/chipidea/core.c |  3 ---
+ drivers/usb/chipidea/host.c |  3 ++-
+ drivers/usb/chipidea/udc.c  | 10 ++++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/usb/core/buffer.c b/drivers/usb/core/buffer.c
-index b9bf6e2..b64568c 100644
---- a/drivers/usb/core/buffer.c
-+++ b/drivers/usb/core/buffer.c
-@@ -66,7 +66,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
- 	int		i, size;
- 
- 	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
--	    (!hcd->self.controller->dma_mask &&
-+	    (!is_device_dma_capable(hcd->self.sysdev) &&
- 	     !(hcd->driver->flags & HCD_LOCAL_MEM)))
- 		return 0;
- 
-@@ -75,7 +75,7 @@ int hcd_buffer_create(struct usb_hcd *hcd)
- 		if (!size)
- 			continue;
- 		snprintf(name, sizeof(name), "buffer-%d", size);
--		hcd->pool[i] = dma_pool_create(name, hcd->self.controller,
-+		hcd->pool[i] = dma_pool_create(name, hcd->self.sysdev,
- 				size, size, 0);
- 		if (!hcd->pool[i]) {
- 			hcd_buffer_destroy(hcd);
-@@ -130,7 +130,7 @@ void *hcd_buffer_alloc(
- 
- 	/* some USB hosts just use PIO */
- 	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
--	    (!bus->controller->dma_mask &&
-+	    (!is_device_dma_capable(bus->sysdev) &&
- 	     !(hcd->driver->flags & HCD_LOCAL_MEM))) {
- 		*dma = ~(dma_addr_t) 0;
- 		return kmalloc(size, mem_flags);
-@@ -140,7 +140,7 @@ void *hcd_buffer_alloc(
- 		if (size <= pool_max[i])
- 			return dma_pool_alloc(hcd->pool[i], mem_flags, dma);
- 	}
--	return dma_alloc_coherent(hcd->self.controller, size, dma, mem_flags);
-+	return dma_alloc_coherent(hcd->self.sysdev, size, dma, mem_flags);
- }
- 
- void hcd_buffer_free(
-@@ -157,7 +157,7 @@ void hcd_buffer_free(
- 		return;
- 
- 	if (!IS_ENABLED(CONFIG_HAS_DMA) ||
--	    (!bus->controller->dma_mask &&
-+	    (!is_device_dma_capable(bus->sysdev) &&
- 	     !(hcd->driver->flags & HCD_LOCAL_MEM))) {
- 		kfree(addr);
- 		return;
-@@ -169,5 +169,5 @@ void hcd_buffer_free(
- 			return;
- 		}
- 	}
--	dma_free_coherent(hcd->self.controller, size, addr, dma);
-+	dma_free_coherent(hcd->self.sysdev, size, addr, dma);
- }
-diff --git a/drivers/usb/core/hcd.c b/drivers/usb/core/hcd.c
-index 612fab6..2342c1f 100644
---- a/drivers/usb/core/hcd.c
-+++ b/drivers/usb/core/hcd.c
-@@ -1073,6 +1073,7 @@ static void usb_deregister_bus (struct usb_bus *bus)
- static int register_root_hub(struct usb_hcd *hcd)
- {
- 	struct device *parent_dev = hcd->self.controller;
-+	struct device *sysdev = hcd->self.sysdev;
- 	struct usb_device *usb_dev = hcd->self.root_hub;
- 	const int devnum = 1;
- 	int retval;
-@@ -1119,7 +1120,7 @@ static int register_root_hub(struct usb_hcd *hcd)
- 		/* Did the HC die before the root hub was registered? */
- 		if (HCD_DEAD(hcd))
- 			usb_hc_died (hcd);	/* This time clean up */
--		usb_dev->dev.of_node = parent_dev->of_node;
-+		usb_dev->dev.of_node = sysdev->of_node;
- 	}
- 	mutex_unlock(&usb_bus_idr_lock);
- 
-@@ -1465,19 +1466,19 @@ void usb_hcd_unmap_urb_for_dma(struct usb_hcd *hcd, struct urb *urb)
- 	dir = usb_urb_dir_in(urb) ? DMA_FROM_DEVICE : DMA_TO_DEVICE;
- 	if (IS_ENABLED(CONFIG_HAS_DMA) &&
- 	    (urb->transfer_flags & URB_DMA_MAP_SG))
--		dma_unmap_sg(hcd->self.controller,
-+		dma_unmap_sg(hcd->self.sysdev,
- 				urb->sg,
- 				urb->num_sgs,
- 				dir);
- 	else if (IS_ENABLED(CONFIG_HAS_DMA) &&
- 		 (urb->transfer_flags & URB_DMA_MAP_PAGE))
--		dma_unmap_page(hcd->self.controller,
-+		dma_unmap_page(hcd->self.sysdev,
- 				urb->transfer_dma,
- 				urb->transfer_buffer_length,
- 				dir);
- 	else if (IS_ENABLED(CONFIG_HAS_DMA) &&
- 		 (urb->transfer_flags & URB_DMA_MAP_SINGLE))
--		dma_unmap_single(hcd->self.controller,
-+		dma_unmap_single(hcd->self.sysdev,
- 				urb->transfer_dma,
- 				urb->transfer_buffer_length,
- 				dir);
-@@ -1520,11 +1521,11 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 			return ret;
- 		if (IS_ENABLED(CONFIG_HAS_DMA) && hcd->self.uses_dma) {
- 			urb->setup_dma = dma_map_single(
--					hcd->self.controller,
-+					hcd->self.sysdev,
- 					urb->setup_packet,
- 					sizeof(struct usb_ctrlrequest),
- 					DMA_TO_DEVICE);
--			if (dma_mapping_error(hcd->self.controller,
-+			if (dma_mapping_error(hcd->self.sysdev,
- 						urb->setup_dma))
- 				return -EAGAIN;
- 			urb->transfer_flags |= URB_SETUP_MAP_SINGLE;
-@@ -1555,7 +1556,7 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 				}
- 
- 				n = dma_map_sg(
--						hcd->self.controller,
-+						hcd->self.sysdev,
- 						urb->sg,
- 						urb->num_sgs,
- 						dir);
-@@ -1570,12 +1571,12 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 			} else if (urb->sg) {
- 				struct scatterlist *sg = urb->sg;
- 				urb->transfer_dma = dma_map_page(
--						hcd->self.controller,
-+						hcd->self.sysdev,
- 						sg_page(sg),
- 						sg->offset,
- 						urb->transfer_buffer_length,
- 						dir);
--				if (dma_mapping_error(hcd->self.controller,
-+				if (dma_mapping_error(hcd->self.sysdev,
- 						urb->transfer_dma))
- 					ret = -EAGAIN;
- 				else
-@@ -1585,11 +1586,11 @@ int usb_hcd_map_urb_for_dma(struct usb_hcd *hcd, struct urb *urb,
- 				ret = -EAGAIN;
- 			} else {
- 				urb->transfer_dma = dma_map_single(
--						hcd->self.controller,
-+						hcd->self.sysdev,
- 						urb->transfer_buffer,
- 						urb->transfer_buffer_length,
- 						dir);
--				if (dma_mapping_error(hcd->self.controller,
-+				if (dma_mapping_error(hcd->self.sysdev,
- 						urb->transfer_dma))
- 					ret = -EAGAIN;
- 				else
-@@ -2495,24 +2496,8 @@ static void init_giveback_urb_bh(struct giveback_urb_bh *bh)
- 	tasklet_init(&bh->bh, usb_giveback_urb_bh, (unsigned long)bh);
- }
- 
--/**
-- * usb_create_shared_hcd - create and initialize an HCD structure
-- * @driver: HC driver that will use this hcd
-- * @dev: device for this HC, stored in hcd->self.controller
-- * @bus_name: value to store in hcd->self.bus_name
-- * @primary_hcd: a pointer to the usb_hcd structure that is sharing the
-- *              PCI device.  Only allocate certain resources for the primary HCD
-- * Context: !in_interrupt()
-- *
-- * Allocate a struct usb_hcd, with extra space at the end for the
-- * HC driver's private data.  Initialize the generic members of the
-- * hcd structure.
-- *
-- * Return: On success, a pointer to the created and initialized HCD structure.
-- * On failure (e.g. if memory is unavailable), %NULL.
-- */
--struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
--		struct device *dev, const char *bus_name,
-+struct usb_hcd *__usb_create_hcd(const struct hc_driver *driver,
-+		struct device *sysdev, struct device *dev, const char *bus_name,
- 		struct usb_hcd *primary_hcd)
- {
- 	struct usb_hcd *hcd;
-@@ -2553,8 +2538,9 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
- 
- 	usb_bus_init(&hcd->self);
- 	hcd->self.controller = dev;
-+	hcd->self.sysdev = sysdev;
- 	hcd->self.bus_name = bus_name;
--	hcd->self.uses_dma = (dev->dma_mask != NULL);
-+	hcd->self.uses_dma = (sysdev->dma_mask != NULL);
- 
- 	init_timer(&hcd->rh_timer);
- 	hcd->rh_timer.function = rh_timer_func;
-@@ -2569,6 +2555,30 @@ struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
- 			"USB Host Controller";
- 	return hcd;
- }
-+EXPORT_SYMBOL_GPL(__usb_create_hcd);
-+
-+/**
-+ * usb_create_shared_hcd - create and initialize an HCD structure
-+ * @driver: HC driver that will use this hcd
-+ * @dev: device for this HC, stored in hcd->self.controller
-+ * @bus_name: value to store in hcd->self.bus_name
-+ * @primary_hcd: a pointer to the usb_hcd structure that is sharing the
-+ *              PCI device.  Only allocate certain resources for the primary HCD
-+ * Context: !in_interrupt()
-+ *
-+ * Allocate a struct usb_hcd, with extra space at the end for the
-+ * HC driver's private data.  Initialize the generic members of the
-+ * hcd structure.
-+ *
-+ * Return: On success, a pointer to the created and initialized HCD structure.
-+ * On failure (e.g. if memory is unavailable), %NULL.
-+ */
-+struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
-+		struct device *dev, const char *bus_name,
-+		struct usb_hcd *primary_hcd)
-+{
-+	return __usb_create_hcd(driver, dev, dev, bus_name, primary_hcd);
-+}
- EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
- 
- /**
-@@ -2588,7 +2598,7 @@ EXPORT_SYMBOL_GPL(usb_create_shared_hcd);
- struct usb_hcd *usb_create_hcd(const struct hc_driver *driver,
- 		struct device *dev, const char *bus_name)
- {
--	return usb_create_shared_hcd(driver, dev, bus_name, NULL);
-+	return __usb_create_hcd(driver, dev, dev, bus_name, NULL);
- }
- EXPORT_SYMBOL_GPL(usb_create_hcd);
- 
-@@ -2715,7 +2725,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
- 	struct usb_device *rhdev;
- 
- 	if (IS_ENABLED(CONFIG_USB_PHY) && !hcd->usb_phy) {
--		struct usb_phy *phy = usb_get_phy_dev(hcd->self.controller, 0);
-+		struct usb_phy *phy = usb_get_phy_dev(hcd->self.sysdev, 0);
- 
- 		if (IS_ERR(phy)) {
- 			retval = PTR_ERR(phy);
-@@ -2733,7 +2743,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
+diff --git a/drivers/usb/chipidea/core.c b/drivers/usb/chipidea/core.c
+index 79ad8e9..b4a78b2 100644
+--- a/drivers/usb/chipidea/core.c
++++ b/drivers/usb/chipidea/core.c
+@@ -783,9 +783,6 @@ struct platform_device *ci_hdrc_add_device(struct device *dev,
  	}
  
- 	if (IS_ENABLED(CONFIG_GENERIC_PHY) && !hcd->phy) {
--		struct phy *phy = phy_get(hcd->self.controller, "usb");
-+		struct phy *phy = phy_get(hcd->self.sysdev, "usb");
+ 	pdev->dev.parent = dev;
+-	pdev->dev.dma_mask = dev->dma_mask;
+-	pdev->dev.dma_parms = dev->dma_parms;
+-	dma_set_coherent_mask(&pdev->dev, dev->coherent_dma_mask);
  
- 		if (IS_ERR(phy)) {
- 			retval = PTR_ERR(phy);
-@@ -2781,7 +2791,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
- 	 */
- 	retval = hcd_buffer_create(hcd);
- 	if (retval != 0) {
--		dev_dbg(hcd->self.controller, "pool alloc failed\n");
-+		dev_dbg(hcd->self.sysdev, "pool alloc failed\n");
- 		goto err_create_buf;
+ 	ret = platform_device_add_resources(pdev, res, nres);
+ 	if (ret)
+diff --git a/drivers/usb/chipidea/host.c b/drivers/usb/chipidea/host.c
+index 915f3e9..18cb8e4 100644
+--- a/drivers/usb/chipidea/host.c
++++ b/drivers/usb/chipidea/host.c
+@@ -123,7 +123,8 @@ static int host_start(struct ci_hdrc *ci)
+ 	if (usb_disabled())
+ 		return -ENODEV;
+ 
+-	hcd = usb_create_hcd(&ci_ehci_hc_driver, ci->dev, dev_name(ci->dev));
++	hcd = __usb_create_hcd(&ci_ehci_hc_driver, ci->dev->parent,
++			       ci->dev, dev_name(ci->dev), NULL);
+ 	if (!hcd)
+ 		return -ENOMEM;
+ 
+diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
+index f88e915..1fb5235 100644
+--- a/drivers/usb/chipidea/udc.c
++++ b/drivers/usb/chipidea/udc.c
+@@ -423,7 +423,8 @@ static int _hardware_enqueue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
+ 
+ 	hwreq->req.status = -EALREADY;
+ 
+-	ret = usb_gadget_map_request(&ci->gadget, &hwreq->req, hwep->dir);
++	ret = usb_gadget_map_request_by_dev(ci->dev->parent,
++					    &hwreq->req, hwep->dir);
+ 	if (ret)
+ 		return ret;
+ 
+@@ -603,7 +604,8 @@ static int _hardware_dequeue(struct ci_hw_ep *hwep, struct ci_hw_req *hwreq)
+ 		list_del_init(&node->td);
  	}
  
-@@ -2791,7 +2801,7 @@ int usb_add_hcd(struct usb_hcd *hcd,
+-	usb_gadget_unmap_request(&hwep->ci->gadget, &hwreq->req, hwep->dir);
++	usb_gadget_unmap_request_by_dev(hwep->ci->dev->parent,
++					&hwreq->req, hwep->dir);
  
- 	rhdev = usb_alloc_dev(NULL, &hcd->self, 0);
- 	if (rhdev == NULL) {
--		dev_err(hcd->self.controller, "unable to allocate root hub\n");
-+		dev_err(hcd->self.sysdev, "unable to allocate root hub\n");
- 		retval = -ENOMEM;
- 		goto err_allocate_root_hub;
- 	}
-diff --git a/drivers/usb/core/usb.c b/drivers/usb/core/usb.c
-index a2ccc69f..4cd6e0e 100644
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -453,9 +453,9 @@ struct usb_device *usb_alloc_dev(struct usb_device *parent,
- 	 * Note: calling dma_set_mask() on a USB device would set the
- 	 * mask for the entire HCD, so don't do that.
- 	 */
--	dev->dev.dma_mask = bus->controller->dma_mask;
--	dev->dev.dma_pfn_offset = bus->controller->dma_pfn_offset;
--	set_dev_node(&dev->dev, dev_to_node(bus->controller));
-+	dev->dev.dma_mask = bus->sysdev->dma_mask;
-+	dev->dev.dma_pfn_offset = bus->sysdev->dma_pfn_offset;
-+	set_dev_node(&dev->dev, dev_to_node(bus->sysdev));
- 	dev->state = USB_STATE_ATTACHED;
- 	dev->lpm_disable_count = 1;
- 	atomic_set(&dev->urbnum, 0);
-@@ -803,7 +803,7 @@ struct urb *usb_buffer_map(struct urb *urb)
- 	if (!urb
- 			|| !urb->dev
- 			|| !(bus = urb->dev->bus)
--			|| !(controller = bus->controller))
-+			|| !(controller = bus->sysdev))
- 		return NULL;
+ 	hwreq->req.actual += actual;
  
- 	if (controller->dma_mask) {
-@@ -841,7 +841,7 @@ void usb_buffer_dmasync(struct urb *urb)
- 			|| !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)
- 			|| !urb->dev
- 			|| !(bus = urb->dev->bus)
--			|| !(controller = bus->controller))
-+			|| !(controller = bus->sysdev))
- 		return;
+@@ -1899,13 +1901,13 @@ static int udc_start(struct ci_hdrc *ci)
+ 	INIT_LIST_HEAD(&ci->gadget.ep_list);
  
- 	if (controller->dma_mask) {
-@@ -875,7 +875,7 @@ void usb_buffer_unmap(struct urb *urb)
- 			|| !(urb->transfer_flags & URB_NO_TRANSFER_DMA_MAP)
- 			|| !urb->dev
- 			|| !(bus = urb->dev->bus)
--			|| !(controller = bus->controller))
-+			|| !(controller = bus->sysdev))
- 		return;
+ 	/* alloc resources */
+-	ci->qh_pool = dma_pool_create("ci_hw_qh", dev,
++	ci->qh_pool = dma_pool_create("ci_hw_qh", dev->parent,
+ 				       sizeof(struct ci_hw_qh),
+ 				       64, CI_HDRC_PAGE_SIZE);
+ 	if (ci->qh_pool == NULL)
+ 		return -ENOMEM;
  
- 	if (controller->dma_mask) {
-@@ -925,7 +925,7 @@ int usb_buffer_map_sg(const struct usb_device *dev, int is_in,
- 
- 	if (!dev
- 			|| !(bus = dev->bus)
--			|| !(controller = bus->controller)
-+			|| !(controller = bus->sysdev)
- 			|| !controller->dma_mask)
- 		return -EINVAL;
- 
-@@ -961,7 +961,7 @@ void usb_buffer_dmasync_sg(const struct usb_device *dev, int is_in,
- 
- 	if (!dev
- 			|| !(bus = dev->bus)
--			|| !(controller = bus->controller)
-+			|| !(controller = bus->sysdev)
- 			|| !controller->dma_mask)
- 		return;
- 
-@@ -989,7 +989,7 @@ void usb_buffer_unmap_sg(const struct usb_device *dev, int is_in,
- 
- 	if (!dev
- 			|| !(bus = dev->bus)
--			|| !(controller = bus->controller)
-+			|| !(controller = bus->sysdev)
- 			|| !controller->dma_mask)
- 		return;
- 
-diff --git a/include/linux/usb.h b/include/linux/usb.h
-index 7e68259..1487526 100644
---- a/include/linux/usb.h
-+++ b/include/linux/usb.h
-@@ -354,6 +354,7 @@ struct usb_devmap {
-  */
- struct usb_bus {
- 	struct device *controller;	/* host/master side hardware */
-+	struct device *sysdev;		/* as seen from firmware or bus */
- 	int busnum;			/* Bus number (in order of reg) */
- 	const char *bus_name;		/* stable id (PCI slot_name etc) */
- 	u8 uses_dma;			/* Does the host controller use DMA? */
-diff --git a/include/linux/usb/hcd.h b/include/linux/usb/hcd.h
-index 40edf6a..4e8590a 100644
---- a/include/linux/usb/hcd.h
-+++ b/include/linux/usb/hcd.h
-@@ -437,6 +437,9 @@ extern int usb_hcd_alloc_bandwidth(struct usb_device *udev,
- 		struct usb_host_interface *new_alt);
- extern int usb_hcd_get_frame_number(struct usb_device *udev);
- 
-+struct usb_hcd *__usb_create_hcd(const struct hc_driver *driver,
-+		struct device *sysdev, struct device *dev, const char *bus_name,
-+		struct usb_hcd *primary_hcd);
- extern struct usb_hcd *usb_create_hcd(const struct hc_driver *driver,
- 		struct device *dev, const char *bus_name);
- extern struct usb_hcd *usb_create_shared_hcd(const struct hc_driver *driver,
+-	ci->td_pool = dma_pool_create("ci_hw_td", dev,
++	ci->td_pool = dma_pool_create("ci_hw_td", dev->parent,
+ 				       sizeof(struct ci_hw_td),
+ 				       64, CI_HDRC_PAGE_SIZE);
+ 	if (ci->td_pool == NULL) {
 -- 
 2.7.4
