@@ -1,82 +1,49 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v6 0/8] devicetree battery support and client bq27xxx_battery
-Date: Fri, 10 Feb 2017 18:41:07 -0800
-Message-ID: <20170211024115.19436-1-liam@networkimprov.net>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH] thermal: exynos: Remove parsing unused samsung,tmu_cal_mode property
+Date: Sat, 11 Feb 2017 22:12:00 +0200
+Message-ID: <20170211201200.27616-1-krzk@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:34894 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751667AbdBKCuD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 21:50:03 -0500
-Received: by mail-pf0-f193.google.com with SMTP id 68so1490039pfx.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Feb 2017 18:50:03 -0800 (PST)
+Received: from mail.kernel.org ([198.145.29.136]:60950 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751047AbdBKUMM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 11 Feb 2017 15:12:12 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F . Davis" <afd@ti.com>, linux-pm@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-Overview:
-* new devicetree battery node specifies static battery data
-* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
-* new power_supply_get_battery_info() reads battery data from devicetree
-* new struct power_supply_battery_info provides battery data to drivers
-* drivers surface battery data in sysfs via related power_supply_prop_* fields
-* bq27xxx driver calls the above and writes battery data to NVM for params
-  essential to correct operation: energy-full-design-microwatt-hours,
-  charge-full-design-microamp-hours, voltage-min-design-microvolt
+The property samsung,tmu_cal_mode is not used and not used.  We can
+safely remove it.
 
-Changes in v6:
-* Documentation/devictree/... fixes
-* bq27xxx_battery: clarify names
-* bq27xxx_battery: verify that selected registers are supported
-* bq27xxx_battery: allocate NVM buffer on stack
-* bq27xxx_battery_i2c: fix return code of bulk_read
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/thermal/samsung/exynos_tmu.c | 1 -
+ drivers/thermal/samsung/exynos_tmu.h | 1 -
+ 2 files changed, 2 deletions(-)
 
-Changes in v5:
-* incorporate feedback into Documentation/devicetree/.../battery.txt
-* use power_supply_prop_* names in devicetree and power_supply_battery_info
-* default fields to -EINVAL in power_supply_battery_info
-* power_supply_get_battery_info() always looks for "monitored-battery"
-* power_supply_get_battery_info() emits a warning if !psy->of_node
-* squash patches for power_supply_battery_info
-* bq27xxx_battery: check power_supply_battery_info values
-* bq27xxx_battery: note missing power_supply_prop_* features
-* bq27xxx_battery: new patch for access methods
-
-Changes in v4:
-* add "fixed-battery" compatible field to be be more consistant with devicetree
-
-Changes in v3:
-* split i2c changes into respective patches
-* add documentation for battery information for fuel gauge
-* rebased documentation patches on change on the list
-* abstracted the battery configuration for the state machine
-  to an generic struct and platform data access function
-
-Changes in v2:
-* add documentation for uWh and uAh property units
-* change devicetree entries to match new property units
-
-Matt Ranostay (8):
-  devicetree: power: Add battery.txt
-  devicetree: property-units: Add uWh and uAh units
-  devicetree: power: bq27xxx: Add monitored-battery documentation
-  power: power_supply: Add power_supply_battery_info and API
-  power: bq27xxx_battery: Define access methods to write chip registers
-  power: bq27xxx_battery: Add BQ27425 chip id
-  power: bq27xxx_battery: Add power_supply_battery_info support
-  power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
-
- .../devicetree/bindings/power/supply/battery.txt   |  37 +++
- .../devicetree/bindings/power/supply/bq27xxx.txt   |  11 +-
- .../devicetree/bindings/property-units.txt         |   2 +
- drivers/power/supply/bq27xxx_battery.c             | 325 ++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c         |  67 ++++-
- drivers/power/supply/power_supply_core.c           |  40 +++
- include/linux/power/bq27xxx_battery.h              |   6 +-
- include/linux/power_supply.h                       |  18 ++
- 8 files changed, 501 insertions(+), 5 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
-
+diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
+index ad1186dd6132..7b8ef09d2b3c 100644
+--- a/drivers/thermal/samsung/exynos_tmu.c
++++ b/drivers/thermal/samsung/exynos_tmu.c
+@@ -1168,7 +1168,6 @@ static int exynos_of_sensor_conf(struct device_node *np,
+ 	pdata->default_temp_offset = (u8)value;
+ 
+ 	of_property_read_u32(np, "samsung,tmu_cal_type", &pdata->cal_type);
+-	of_property_read_u32(np, "samsung,tmu_cal_mode", &pdata->cal_mode);
+ 
+ 	of_node_put(np);
+ 	return 0;
+diff --git a/drivers/thermal/samsung/exynos_tmu.h b/drivers/thermal/samsung/exynos_tmu.h
+index 440c7140b660..5149c2a3030c 100644
+--- a/drivers/thermal/samsung/exynos_tmu.h
++++ b/drivers/thermal/samsung/exynos_tmu.h
+@@ -70,7 +70,6 @@ struct exynos_tmu_platform_data {
+ 
+ 	enum soc_type type;
+ 	u32 cal_type;
+-	u32 cal_mode;
+ };
+ 
+ #endif /* _EXYNOS_TMU_H */
 -- 
 2.9.3
 
