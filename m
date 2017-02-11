@@ -1,14 +1,14 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v6 7/8] power: bq27xxx_battery: Add power_supply_battery_info support
-Date: Fri, 10 Feb 2017 18:43:39 -0800
-Message-ID: <20170211024340.19491-8-liam@networkimprov.net>
+Subject: [PATCH v6 8/8] power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
+Date: Fri, 10 Feb 2017 18:43:40 -0800
+Message-ID: <20170211024340.19491-9-liam@networkimprov.net>
 References: <20170211024340.19491-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f67.google.com ([74.125.83.67]:36059 "EHLO
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:36062 "EHLO
         mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753379AbdBKCo1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 21:44:27 -0500
-Received: by mail-pg0-f67.google.com with SMTP id 75so4336742pgf.3
+        with ESMTP id S1753120AbdBKCo2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 21:44:28 -0500
+Received: by mail-pg0-f67.google.com with SMTP id 75so4336767pgf.3
         for <linux-pm@vger.kernel.org>; Fri, 10 Feb 2017 18:44:27 -0800 (PST)
 In-Reply-To: <20170211024340.19491-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
@@ -18,373 +18,99 @@ Cc: "Andrew F . Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <ma
 
 From: Matt Ranostay <matt@ranostay.consulting>
 
-Previously there was no way to set chip registers in the event that the
-defaults didn't match the battery in question.
-
-BQ27xxx driver now calls power_supply_get_battery_info, checks the inputs,
-and writes battery data to non-volatile memory.
+write(), read_bulk(), write_bulk() are required by bq27xxx_battery
+devicetree code.
 
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/bq27xxx_battery.c | 302 ++++++++++++++++++++++++++++++++-
- 1 file changed, 301 insertions(+), 1 deletion(-)
+ drivers/power/supply/bq27xxx_battery_i2c.c | 65 ++++++++++++++++++++++++++++++
+ 1 file changed, 65 insertions(+)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 7475a5f..70d0142 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -37,6 +37,7 @@
-  * http://www.ti.com/product/bq27621-g1
-  */
- 
-+#include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-@@ -452,6 +453,59 @@ static struct {
- static DEFINE_MUTEX(bq27xxx_list_lock);
- static LIST_HEAD(bq27xxx_battery_devices);
- 
-+#define BQ27XXX_TERM_V_MIN	2800
-+#define BQ27XXX_TERM_V_MAX	3700
-+
-+#define BQ27XXX_BLOCK_DATA_CLASS	0x3E
-+#define BQ27XXX_DATA_BLOCK		0x3F
-+#define BQ27XXX_BLOCK_DATA		0x40
-+#define BQ27XXX_BLOCK_DATA_CHECKSUM	0x60
-+#define BQ27XXX_BLOCK_DATA_CONTROL	0x61
-+#define BQ27XXX_SET_CFGUPDATE		0x13
-+#define BQ27XXX_SOFT_RESET		0x42
-+#define BQ27XXX_SUBCLASS_STATE_NVM	82
-+
-+struct bq27xxx_dm_buf {
-+	u8 a[32];
-+};
-+
-+struct bq27xxx_dm_reg {
-+	unsigned int subclass_id;
-+	unsigned int offset;
-+	unsigned int bytes;
-+	char *name;
-+};
-+
-+#define BQ27XXX_DM_SUPPORTED(r) ( \
-+	   r->subclass_id == BQ27XXX_SUBCLASS_STATE_NVM \
-+	&& r->offset <= 30 \
-+	&& r->bytes == 2 \
-+)
-+
-+enum bq27xxx_dm_reg_id {
-+	BQ27XXX_DM_DESIGN_CAPACITY = 0,
-+	BQ27XXX_DM_DESIGN_ENERGY,
-+	BQ27XXX_DM_TERMINATE_VOLTAGE,
-+	BQ27XXX_DM_END,
-+};
-+
-+static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
-+	[BQ27XXX_DM_DESIGN_CAPACITY] =
-+		{ BQ27XXX_SUBCLASS_STATE_NVM, 12, 2, "design-capacity" },
-+	[BQ27XXX_DM_DESIGN_ENERGY] =
-+		{ BQ27XXX_SUBCLASS_STATE_NVM, 14, 2, "design-energy" },
-+	[BQ27XXX_DM_TERMINATE_VOLTAGE] =
-+		{ BQ27XXX_SUBCLASS_STATE_NVM, 18, 2, "terminate-voltage" },
-+};
-+
-+static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
-+	[BQ27425] = bq27425_dm_regs,
-+};
-+
-+static unsigned int bq27xxx_unseal_keys[] = {
-+	[BQ27425] = 0x04143672,
-+};
-+
- static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
- {
- 	struct bq27xxx_device_info *di;
-@@ -496,6 +550,183 @@ static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
- 	return di->bus.read(di, di->regs[reg_index], single);
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index d7da535..c1638ad 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -68,6 +68,67 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+ 	return ret;
  }
  
-+static int bq27xxx_battery_set_seal_state(struct bq27xxx_device_info *di,
-+					  bool state)
++static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
++				     int value, bool single)
 +{
-+	unsigned int key = bq27xxx_unseal_keys[di->chip];
-+	int ret;
++	struct i2c_client *client = to_i2c_client(di->dev);
++	struct i2c_msg msg;
++	unsigned char data[4];
 +
-+	if (state)
-+		return di->bus.write(di, BQ27XXX_REG_CTRL, 0x20, false);
++	if (!client->adapter)
++		return -ENODEV;
 +
-+	ret = di->bus.write(di, BQ27XXX_REG_CTRL, (key >> 16) & 0xffff, false);
-+	if (ret < 0)
-+		return ret;
-+
-+	return di->bus.write(di, BQ27XXX_REG_CTRL, key & 0xffff, false);
-+}
-+
-+static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
-+					 int subclass,
-+					 struct bq27xxx_dm_buf *buf)
-+{
-+	int ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_REG_CTRL, 0, false);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CONTROL, 0, true);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CLASS, subclass, true);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, 0, true);
-+	if (ret < 0)
-+		return ret;
-+
-+	usleep_range(1000, 1500);
-+
-+	return di->bus.read_bulk(di, BQ27XXX_BLOCK_DATA, buf->a, sizeof buf->a);
-+}
-+
-+static int bq27xxx_battery_print_config(struct bq27xxx_device_info *di)
-+{
-+	struct bq27xxx_dm_buf buf;
-+	struct bq27xxx_dm_reg *reg = bq27xxx_dm_regs[di->chip];
-+	int ret, i;
-+
-+	ret = bq27xxx_battery_read_dm_block(di, BQ27XXX_SUBCLASS_STATE_NVM,
-+					    &buf);
-+	if (ret < 0)
-+		return ret;
-+
-+	for (i = 0; i < BQ27XXX_DM_END; i++, reg++) {
-+		int val;
-+
-+		if (!BQ27XXX_DM_SUPPORTED(reg)) {
-+			dev_warn(di->dev, "unsupported config register %s\n", reg->name);
-+			continue;
-+		}
-+
-+		val = be16_to_cpup((u16 *) &buf.a[reg->offset]);
-+
-+		dev_info(di->dev, "config register %s set at %d\n", reg->name, val);
++	data[0] = reg;
++	if (single) {
++		data[1] = (unsigned char) value;
++		msg.len = 2;
++	} else {
++		put_unaligned_le16(value, &data[1]);
++		msg.len = 3;
 +	}
 +
-+	return 0;
++	msg.buf = data;
++	msg.addr = client->addr;
++	msg.flags = 0;
++
++	return i2c_transfer(client->adapter, &msg, 1) == 1 ?
++		0 : -EINVAL;
 +}
 +
-+static bool bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
-+					    struct bq27xxx_dm_buf *buf,
-+					    enum bq27xxx_dm_reg_id reg_id,
-+					    unsigned int val)
++static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
++					 u8 *data, int len)
 +{
-+	struct bq27xxx_dm_reg *reg = &bq27xxx_dm_regs[di->chip][reg_id];
-+	u16 *prev;
++	struct i2c_client *client = to_i2c_client(di->dev);
 +
-+	if (!BQ27XXX_DM_SUPPORTED(reg))
-+		return false;
++	if (!client->adapter)
++		return -ENODEV;
 +
-+	prev = (u16 *) &buf->a[reg->offset];
-+
-+	if (be16_to_cpup(prev) == val)
-+		return false;
-+
-+	*prev = cpu_to_be16(val);
-+
-+	return true;
++	return i2c_smbus_read_i2c_block_data(client, reg, len, data) == len ?
++		0 : -EINVAL;
 +}
 +
-+static u8 bq27xxx_battery_checksum(struct bq27xxx_dm_buf *buf)
++static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
++					  u8 reg, u8 *data, int len)
 +{
-+	u16 sum = 0;
-+	int i;
++	struct i2c_client *client = to_i2c_client(di->dev);
++	struct i2c_msg msg;
++	u8 buf[33];
 +
-+	for (i = 0; i < sizeof buf->a; i++) {
-+		sum += buf->a[i];
-+		sum &= 0xff;
-+	}
++	if (!client->adapter)
++		return -ENODEV;
 +
-+	return 0xff - sum;
++	buf[0] = reg;
++	memcpy(&buf[1], data, len);
++
++	msg.buf = buf;
++	msg.addr = client->addr;
++	msg.flags = 0;
++	msg.len = len + 1;
++
++	return i2c_transfer(client->adapter, &msg, 1) == 1 ?
++		0 : -EINVAL;
 +}
 +
-+static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
-+					  int subclass,
-+					  struct bq27xxx_dm_buf *buf)
-+{
-+	int ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_SET_CFGUPDATE, false);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CONTROL, 0, true);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CLASS, subclass, true);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, 0, true);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = di->bus.write_bulk(di, BQ27XXX_BLOCK_DATA, buf->a, sizeof buf->a);
-+	if (ret < 0)
-+		return ret;
-+
-+	usleep_range(1000, 1500);
-+
-+	ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CHECKSUM,
-+			    bq27xxx_battery_checksum(buf), true);
-+	if (ret < 0)
-+		return ret;
-+
-+	usleep_range(1000, 1500);
-+
-+	return di->bus.write(di, BQ27XXX_REG_CTRL, BQ27XXX_SOFT_RESET, false);
-+}
-+
-+static int bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
-+				      struct power_supply_battery_info *info)
-+{
-+	struct bq27xxx_dm_buf buf;
-+	int ret;
-+
-+	ret = bq27xxx_battery_read_dm_block(di, BQ27XXX_SUBCLASS_STATE_NVM,
-+					    &buf);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (info->charge_full_design_uah != -EINVAL
-+	 && info->energy_full_design_uwh != -EINVAL) {
-+		ret |= bq27xxx_battery_update_dm_block(di, &buf,
-+					BQ27XXX_DM_DESIGN_CAPACITY,
-+					info->charge_full_design_uah / 1000);
-+		ret |= bq27xxx_battery_update_dm_block(di, &buf,
-+					BQ27XXX_DM_DESIGN_ENERGY,
-+					info->energy_full_design_uwh / 1000);
-+	}
-+
-+	if (info->voltage_min_design_uv != -EINVAL)
-+		ret |= bq27xxx_battery_update_dm_block(di, &buf,
-+					BQ27XXX_DM_TERMINATE_VOLTAGE,
-+					info->voltage_min_design_uv / 1000);
-+
-+	if (ret) {
-+		dev_info(di->dev, "updating NVM settings\n");
-+		return bq27xxx_battery_write_dm_block(di, BQ27XXX_SUBCLASS_STATE_NVM,
-+						      &buf);
-+	}
-+
-+	return 0;
-+}
-+
- /*
-  * Return the battery State-of-Charge
-  * Or < 0 if something fails.
-@@ -757,6 +988,64 @@ static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
- 	return POWER_SUPPLY_HEALTH_GOOD;
- }
- 
-+void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
-+{
-+	struct power_supply_battery_info info = {};
-+
-+	/* functions don't exist for writing data so abort */
-+	if (!di->bus.write || !di->bus.write_bulk)
-+		return;
-+
-+	/* no settings to be set for this chipset so abort */
-+	if (!bq27xxx_dm_regs[di->chip])
-+		return;
-+
-+	bq27xxx_battery_set_seal_state(di, false);
-+
-+	if (power_supply_get_battery_info(di->bat, &info) < 0)
-+		goto out;
-+
-+	if (info.energy_full_design_uwh != info.charge_full_design_uah) {
-+		if (info.energy_full_design_uwh == -EINVAL)
-+			dev_warn(di->dev,
-+				"missing battery:energy-full-design-microwatt-hours\n");
-+		else if (info.charge_full_design_uah == -EINVAL)
-+			dev_warn(di->dev,
-+				"missing battery:charge-full-design-microamp-hours\n");
-+	}
-+
-+	if (info.energy_full_design_uwh > 0x7fff * 1000) {
-+		dev_err(di->dev, "invalid battery:energy-full-design-microwatt-hours %d\n",
-+			info.energy_full_design_uwh);
-+		info.energy_full_design_uwh = -EINVAL;
-+	}
-+
-+	if (info.charge_full_design_uah > 0x7fff * 1000) {
-+		dev_err(di->dev, "invalid battery:charge-full-design-microamp-hours %d\n",
-+			info.charge_full_design_uah);
-+		info.charge_full_design_uah = -EINVAL;
-+	}
-+
-+	if ((info.voltage_min_design_uv < BQ27XXX_TERM_V_MIN * 1000
-+	  || info.voltage_min_design_uv > BQ27XXX_TERM_V_MAX * 1000)
-+	  && info.voltage_min_design_uv != -EINVAL) {
-+		dev_err(di->dev, "invalid battery:voltage-min-design-microvolt %d\n",
-+			info.voltage_min_design_uv);
-+		info.voltage_min_design_uv = -EINVAL;
-+	}
-+
-+	if ((info.energy_full_design_uwh == -EINVAL
-+	  || info.charge_full_design_uah == -EINVAL)
-+	  && info.voltage_min_design_uv  == -EINVAL)
-+		goto out;
-+
-+	bq27xxx_battery_set_config(di, &info);
-+
-+out:
-+	bq27xxx_battery_print_config(di);
-+	bq27xxx_battery_set_seal_state(di, true);
-+}
-+
- void bq27xxx_battery_update(struct bq27xxx_device_info *di)
+ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 				     const struct i2c_device_id *id)
  {
- 	struct bq27xxx_reg_cache cache = {0, };
-@@ -1006,6 +1295,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
- 		ret = bq27xxx_simple_value(di->charge_design_full, val);
- 		break;
-+	/*
-+	 * TODO: Implement these to make registers set from
-+	 * power_supply_battery_info visible in sysfs.
-+	 */
-+	case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
-+	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
-+		return -EINVAL;
- 	case POWER_SUPPLY_PROP_CYCLE_COUNT:
- 		ret = bq27xxx_simple_value(di->cache.cycle_count, val);
- 		break;
-@@ -1039,7 +1335,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
- int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
- {
- 	struct power_supply_desc *psy_desc;
--	struct power_supply_config psy_cfg = { .drv_data = di, };
-+	struct power_supply_config psy_cfg = {
-+		.of_node = di->dev->of_node,
-+		.drv_data = di,
-+	};
+@@ -95,7 +156,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 	di->dev = &client->dev;
+ 	di->chip = id->driver_data;
+ 	di->name = name;
++
+ 	di->bus.read = bq27xxx_battery_i2c_read;
++	di->bus.write = bq27xxx_battery_i2c_write;
++	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
++	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
  
- 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
- 	mutex_init(&di->lock);
-@@ -1064,6 +1363,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
- 
- 	dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
- 
-+	bq27xxx_battery_settings(di);
- 	bq27xxx_battery_update(di);
- 
- 	mutex_lock(&bq27xxx_list_lock);
+ 	ret = bq27xxx_battery_setup(di);
+ 	if (ret)
 -- 
 2.9.3
 
