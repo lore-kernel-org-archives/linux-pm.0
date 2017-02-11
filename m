@@ -1,129 +1,82 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v6 4/8] power: power_supply: Add power_supply_battery_info and API
-Date: Fri, 10 Feb 2017 18:43:36 -0800
-Message-ID: <20170211024340.19491-5-liam@networkimprov.net>
-References: <20170211024340.19491-1-liam@networkimprov.net>
+Subject: [PATCH v6 0/8] devicetree battery support and client bq27xxx_battery
+Date: Fri, 10 Feb 2017 18:41:07 -0800
+Message-ID: <20170211024115.19436-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33253 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753280AbdBKCoX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 21:44:23 -0500
-Received: by mail-pf0-f196.google.com with SMTP id e4so3425997pfg.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Feb 2017 18:44:23 -0800 (PST)
-In-Reply-To: <20170211024340.19491-1-liam@networkimprov.net>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:34894 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751667AbdBKCuD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 21:50:03 -0500
+Received: by mail-pf0-f193.google.com with SMTP id 68so1490039pfx.2
+        for <linux-pm@vger.kernel.org>; Fri, 10 Feb 2017 18:50:03 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F . Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+Cc: "Andrew F . Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-From: Matt Ranostay <matt@ranostay.consulting>
+Overview:
+* new devicetree battery node specifies static battery data
+* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
+* new power_supply_get_battery_info() reads battery data from devicetree
+* new struct power_supply_battery_info provides battery data to drivers
+* drivers surface battery data in sysfs via related power_supply_prop_* fields
+* bq27xxx driver calls the above and writes battery data to NVM for params
+  essential to correct operation: energy-full-design-microwatt-hours,
+  charge-full-design-microamp-hours, voltage-min-design-microvolt
 
-power_supply_get_battery_info() reads battery data from devicetree.
-struct power_supply_battery_info provides battery data to drivers.
-Drivers may surface battery data in sysfs via corresponding
-POWER_SUPPLY_PROP_* fields.
+Changes in v6:
+* Documentation/devictree/... fixes
+* bq27xxx_battery: clarify names
+* bq27xxx_battery: verify that selected registers are supported
+* bq27xxx_battery: allocate NVM buffer on stack
+* bq27xxx_battery_i2c: fix return code of bulk_read
 
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
----
- drivers/power/supply/power_supply_core.c | 40 ++++++++++++++++++++++++++++++++
- include/linux/power_supply.h             | 18 ++++++++++++++
- 2 files changed, 58 insertions(+)
+Changes in v5:
+* incorporate feedback into Documentation/devicetree/.../battery.txt
+* use power_supply_prop_* names in devicetree and power_supply_battery_info
+* default fields to -EINVAL in power_supply_battery_info
+* power_supply_get_battery_info() always looks for "monitored-battery"
+* power_supply_get_battery_info() emits a warning if !psy->of_node
+* squash patches for power_supply_battery_info
+* bq27xxx_battery: check power_supply_battery_info values
+* bq27xxx_battery: note missing power_supply_prop_* features
+* bq27xxx_battery: new patch for access methods
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a74d8ca..c121931 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -17,6 +17,7 @@
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/err.h>
-+#include <linux/of.h>
- #include <linux/power_supply.h>
- #include <linux/thermal.h>
- #include "power_supply.h"
-@@ -487,6 +488,45 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
- EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
- #endif /* CONFIG_OF */
- 
-+int power_supply_get_battery_info(struct power_supply *psy,
-+				  struct power_supply_battery_info *info)
-+{
-+	struct device_node *battery_np;
-+	const char *value;
-+	int err;
-+
-+	info->energy_full_design_uwh = -EINVAL;
-+	info->charge_full_design_uah = -EINVAL;
-+	info->voltage_min_design_uv  = -EINVAL;
-+
-+	if (!psy->of_node) {
-+		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
-+			 __func__);
-+		return -ENXIO;
-+	}
-+
-+	battery_np = of_parse_phandle(psy->of_node, "monitored-battery", 0);
-+	if (!battery_np)
-+		return -ENODEV;
-+
-+	err = of_property_read_string(battery_np, "compatible", &value);
-+	if (err)
-+		return err;
-+
-+	if (strcmp("fixed-battery", value))
-+		return -ENODEV;
-+
-+	of_property_read_u32(battery_np, "energy-full-design-microwatt-hours",
-+			     &info->energy_full_design_uwh);
-+	of_property_read_u32(battery_np, "charge-full-design-microamp-hours",
-+			     &info->charge_full_design_uah);
-+	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
-+			     &info->voltage_min_design_uv);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
-+
- int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 3965503..e84f1d3 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -288,6 +288,21 @@ struct power_supply_info {
- 	int use_for_apm;
- };
- 
-+/*
-+ * This is the recommended struct to manage static battery parameters,
-+ * populated by power_supply_get_battery_info(). Most platform drivers should
-+ * use these for consistency.
-+ * Its field names must correspond to elements in enum power_supply_property.
-+ * The default field value is -EINVAL.
-+ * Power supply class itself doesn't use this.
-+ */
-+
-+struct power_supply_battery_info {
-+	int energy_full_design_uwh;	/* microWatt-hours */
-+	int charge_full_design_uah;	/* microAmp-hours */
-+	int voltage_min_design_uv;	/* microVolts */
-+};
-+
- extern struct atomic_notifier_head power_supply_notifier;
- extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
-@@ -306,6 +321,9 @@ static inline struct power_supply *
- devm_power_supply_get_by_phandle(struct device *dev, const char *property)
- { return NULL; }
- #endif /* CONFIG_OF */
-+
-+extern int power_supply_get_battery_info(struct power_supply *psy,
-+					 struct power_supply_battery_info *info);
- extern void power_supply_changed(struct power_supply *psy);
- extern int power_supply_am_i_supplied(struct power_supply *psy);
- extern int power_supply_set_battery_charged(struct power_supply *psy);
+Changes in v4:
+* add "fixed-battery" compatible field to be be more consistant with devicetree
+
+Changes in v3:
+* split i2c changes into respective patches
+* add documentation for battery information for fuel gauge
+* rebased documentation patches on change on the list
+* abstracted the battery configuration for the state machine
+  to an generic struct and platform data access function
+
+Changes in v2:
+* add documentation for uWh and uAh property units
+* change devicetree entries to match new property units
+
+Matt Ranostay (8):
+  devicetree: power: Add battery.txt
+  devicetree: property-units: Add uWh and uAh units
+  devicetree: power: bq27xxx: Add monitored-battery documentation
+  power: power_supply: Add power_supply_battery_info and API
+  power: bq27xxx_battery: Define access methods to write chip registers
+  power: bq27xxx_battery: Add BQ27425 chip id
+  power: bq27xxx_battery: Add power_supply_battery_info support
+  power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
+
+ .../devicetree/bindings/power/supply/battery.txt   |  37 +++
+ .../devicetree/bindings/power/supply/bq27xxx.txt   |  11 +-
+ .../devicetree/bindings/property-units.txt         |   2 +
+ drivers/power/supply/bq27xxx_battery.c             | 325 ++++++++++++++++++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c         |  67 ++++-
+ drivers/power/supply/power_supply_core.c           |  40 +++
+ include/linux/power/bq27xxx_battery.h              |   6 +-
+ include/linux/power_supply.h                       |  18 ++
+ 8 files changed, 501 insertions(+), 5 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+
 -- 
 2.9.3
 
