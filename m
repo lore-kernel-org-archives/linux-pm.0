@@ -1,84 +1,71 @@
-From: Peter Chen <peter.chen@nxp.com>
-Subject: [PATCH v13 12/12] ARM: dts: imx6q-evi: Fix onboard hub reset line
-Date: Sat, 11 Feb 2017 09:27:23 +0800
-Message-ID: <1486776443-2280-13-git-send-email-peter.chen@nxp.com>
-References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v5 1/8] devicetree: power: Add battery.txt
+Date: Fri, 10 Feb 2017 18:03:41 -0800
+Message-ID: <CAKvHMgSC9jBz7_RB6MK_jtZFELHwxxqotOk8A2VKOYwqet-kMA@mail.gmail.com>
+References: <20170204091603.32242-1-liam@networkimprov.net>
+ <20170204091603.32242-2-liam@networkimprov.net> <20170208215840.w4ptnq2wj4t5eeps@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, hverkuil@xs4all.nl, krzk@kernel.org, frank.li@nxp.com, jun.li@nxp.com, Peter Chen <peter.chen@nxp.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:34393 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751953AbdBKCEa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Feb 2017 21:04:30 -0500
+In-Reply-To: <20170208215840.w4ptnq2wj4t5eeps@rob-hp-laptop>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, Matt Ranostay <matt@ranostay.consulting>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-From: Joshua Clayton <stillcompiling@gmail.com>
+On Wed, Feb 8, 2017 at 1:58 PM, Rob Herring <robh@kernel.org> wrote:
+> On Sat, Feb 04, 2017 at 01:15:56AM -0800, Liam Breck wrote:
+>> From: Matt Ranostay <matt@ranostay.consulting>
+>>
+>> From: Matt Ranostay <matt@ranostay.consulting>
+>>
+>> Documentation of static battery characteristics that can be defined
+>> for batteries which cannot self-identify. This information is required
+>> by fuel-gauge and charger chips for proper handling of the battery.
+>
+> I hope this is a common binding and not yet another battery binding.
 
-Previously the onboard hub was made to work by treating its
-reset gpio as a regulator enable.
-Get rid of that kludge now that pwseq has added reset gpio support
-Move pin muxing the hub reset pin into the usbh1 group
+Yes, Sebastian had us add support for this in power_supply_core with
 
-Signed-off-by: Joshua Clayton <stillcompiling@gmail.com>
-Signed-off-by: Peter Chen <peter.chen@nxp.com>
----
- arch/arm/boot/dts/imx6q-evi.dts | 25 +++++++------------------
- 1 file changed, 7 insertions(+), 18 deletions(-)
+int power_supply_get_battery_info(
+  struct power_supply *psy,
+  struct power_suppy_battery_info *info)
 
-diff --git a/arch/arm/boot/dts/imx6q-evi.dts b/arch/arm/boot/dts/imx6q-evi.dts
-index 7c7c1a8..79a0bd5 100644
---- a/arch/arm/boot/dts/imx6q-evi.dts
-+++ b/arch/arm/boot/dts/imx6q-evi.dts
-@@ -54,18 +54,6 @@
- 		reg = <0x10000000 0x40000000>;
- 	};
- 
--	reg_usbh1_vbus: regulator-usbhubreset {
--		compatible = "regulator-fixed";
--		regulator-name = "usbh1_vbus";
--		regulator-min-microvolt = <5000000>;
--		regulator-max-microvolt = <5000000>;
--		enable-active-high;
--		startup-delay-us = <2>;
--		pinctrl-names = "default";
--		pinctrl-0 = <&pinctrl_usbh1_hubreset>;
--		gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
--	};
--
- 	reg_usb_otg_vbus: regulator-usbotgvbus {
- 		compatible = "regulator-fixed";
- 		regulator-name = "usb_otg_vbus";
-@@ -207,12 +195,18 @@
- };
- 
- &usbh1 {
--	vbus-supply = <&reg_usbh1_vbus>;
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_usbh1>;
- 	dr_mode = "host";
- 	disable-over-current;
- 	status = "okay";
-+
-+	usb2415host: hub@1 {
-+		compatible = "usb424,2513";
-+		reg = <1>;
-+		reset-gpios = <&gpio7 12 GPIO_ACTIVE_LOW>;
-+		reset-duration-us = <3000>;
-+	};
- };
- 
- &usbotg {
-@@ -468,11 +462,6 @@
- 			MX6QDL_PAD_GPIO_3__USB_H1_OC 0x1b0b0
- 			/* usbh1_b OC */
- 			MX6QDL_PAD_GPIO_0__GPIO1_IO00 0x1b0b0
--		>;
--	};
--
--	pinctrl_usbh1_hubreset: usbh1hubresetgrp {
--		fsl,pins = <
- 			MX6QDL_PAD_GPIO_17__GPIO7_IO12 0x1b0b0
- 		>;
- 	};
--- 
-2.7.4
+
+>> Cc: Rob Herring <robh@kernel.org>
+>> Cc: devicetree@vger.kernel.org
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  .../devicetree/bindings/power/supply/battery.txt   | 39 ++++++++++++++++++++++
+>>  1 file changed, 39 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> new file mode 100644
+>> index 0000000..d663c48
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> @@ -0,0 +1,39 @@
+>> +Battery Characteristics
+>> +
+>> +Required Properties:
+>> + - compatible: Must be "fixed-battery"
+>
+> The "fixed" part seems a bit pointless. Just "battery" would be a
+> bit generic. Don't you need to know the battery chemistry typically? Or
+> number of cells?
+
+Sebastian suggested fixed-battery to indicate a non-smart battery,
+i.e. a pack without self-awareness besides a protection circuit.
+
+I don't know what compatible would have for a smart battery. That
+might be useful to establish now...
+
+I'll be posting v6 shortly, with no change re compatible.
+
+~.~
