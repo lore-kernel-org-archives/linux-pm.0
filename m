@@ -1,78 +1,72 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host
- hotplug ports
-Date: Sun, 12 Feb 2017 18:13:01 +0100
-Message-ID: <20170212171301.GA2845@wunner.de>
-References: <cover.1484486499.git.lukas@wunner.de>
- <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
- <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH V2 2/2] ARM: dts: bcm283x: Add CPU thermal zone with 1 trip point
+Date: Sun, 12 Feb 2017 19:38:48 +0000
+Message-ID: <1486928328-25870-2-git-send-email-stefan.wahren@i2se.com>
+References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.130]:63350 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750999AbdBLTjt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Feb 2017 14:39:49 -0500
+In-Reply-To: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>, kernel@martin.sperl.org
+Cc: Eric Anholt <eric@anholt.net>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>
 
-On Fri, Feb 10, 2017 at 12:39:12PM -0600, Bjorn Helgaas wrote:
-> On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
-> > Hotplug ports generally block their parents from suspending to D3hot as
-> > otherwise their interrupts couldn't be delivered.
-> 
-> This sounds related to PCIe r3.1, sec 5.3.1.4, which says functions
-> supporting PME generation from D3 must support it for both D3cold and
-> D3hot.  I think in PCIe, PMEs mean PME Messages, and the 5.3.1
-> implementation note says Messages are not affected by the PM state of
-> virtual bridges.
-> 
-> So that seems to say that hotplug ports *should* be able to deliver
-> PMEs even while in D3hot.
-> 
-> Maybe you're referring to the hotplug interrupts themselves, not the
-> PME?  I assume a hotplug event (presence detect, attention button,
-> etc) would first cause a PME, then the OS would return the path to D0,
-> then the hotplug interrupt would be delivered.
-> 
-> > An exception are Thunderbolt host controllers:  They have a separate
-> > GPIO pin to side-band signal plug events even if the controller is
-> > powered down or its parent ports are suspended to D3.  They can be told
-> > apart from Thunderbolt controllers in attached devices by checking if
-> > they're situated below a non-Thunderbolt device (typically a root port,
-> > or the downstream port of a PCIe switch in the case of the MacPro6,1).
-> 
-> In PCIe terms, does a "Thunderbolt host controller" look like a
-> downstream port that supports hotplug?
-> 
-> It seems like the PCIe PME mechanism *should* work pretty much like
-> this sideband GPIO.  But I might be reading the spec wrong.
+As suggested by Eduardo Valentin this adds the thermal zone for
+the bcm2835 SoC with its single thermal sensor. We start with
+the criticial trip point and leave the cooling devices empty
+since we don't have any at the moment.
 
-I am dropping this patch in v6 of my Thunderbolt runpm series.
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+---
 
-The "Light Ridge" Thunderbolt controller in my machine claims to support
-PME, but its WAKE# pin is not connected.  (It's pulled up to 3.3V.)
-I also have an external Thunderbolt chassis with the same controller,
-and the controller likewise claims to support PME, but its WAKE# pin is
-not connected to the PCIe root im my machine in any way.
+Changes in V2:
+- add missing thermal-sensor-cells property
+- change gpu-thermal to cpu-thermal
 
-This led me to the conclusion that PME is not reliable and therefore
-in a Thunderbolt daisy chain, which is a cascade of PCIe switches,
-only the hotplug port at the farthest end of the chain may suspend to
-D3hot, whereas all the ports between it and the root bridge must stay
-awake for interrupts to come through.
+ arch/arm/boot/dts/bcm283x.dtsi |   20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-What I failed to see, due to poor understanding of the (undocumented)
-Thunderbolt technology, is that even though ports in the middle of the
-chain may be in D3hot and prevent PCIe interrupts from coming through,
-the network of Converged I/O switches underlying the PCI tunnels
-continues to function and deliver plug events.  It is thus the NHI
-driver's job to runtime resume the PCIe switch where a CIO plug event
-occurred, as well as its parents, to ensure delivery of PCIe interrupts.
-The CIO plug event essentially serves as a sideband signal.  So far the
-thunderbolt NHI driver does not support daisy chaining, so this is not
-yet an issue.  (Only for tunnels established by the EFI driver.)
+diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
+index a3106aa..4dc74f6 100644
+--- a/arch/arm/boot/dts/bcm283x.dtsi
++++ b/arch/arm/boot/dts/bcm283x.dtsi
+@@ -19,6 +19,25 @@
+ 		bootargs = "earlyprintk console=ttyAMA0";
+ 	};
+ 
++	thermal-zones {
++		cpu_thermal: cpu-thermal {
++			polling-delay-passive = <0>;
++			polling-delay = <1000>;
++
++			thermal-sensors = <&thermal>;
++
++			trips {
++				cpu-crit {
++					temperature	= <80000>;
++					hysteresis	= <0>;
++					type		= "critical";
++				};
++			};
++			cooling-maps {
++			};
++		};
++	};
++
+ 	soc {
+ 		compatible = "simple-bus";
+ 		#address-cells = <1>;
+@@ -394,6 +413,7 @@
+ 			compatible = "brcm,bcm2835-thermal";
+ 			reg = <0x7e212000 0x8>;
+ 			clocks = <&clocks BCM2835_CLOCK_TSENS>;
++			#thermal-sensor-cells = <0>;
+ 			status = "disabled";
+ 		};
+ 
+-- 
+1.7.9.5
 
-Thanks,
-
-Lukas
