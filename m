@@ -1,71 +1,77 @@
 From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH v5 1/8] PCI: Recognize Thunderbolt devices
-Date: Sun, 12 Feb 2017 17:50:30 +0100
-Message-ID: <20170212165030.GA2801@wunner.de>
+Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host
+ hotplug ports
+Date: Sun, 12 Feb 2017 18:13:01 +0100
+Message-ID: <20170212171301.GA2845@wunner.de>
 References: <cover.1484486499.git.lukas@wunner.de>
- <bfabf33fc63abbeb84e11e544456098dff0e4604.1484486499.git.lukas@wunner.de>
- <20170128215208.GM20550@bhelgaas-glaptop.roam.corp.google.com>
- <20170129002616.GA28225@wunner.de>
- <20170210174250.GD29169@bhelgaas-glaptop.roam.corp.google.com>
+ <be633737115c0be241fccd75bc136dd1da72c1b5.1484486499.git.lukas@wunner.de>
+ <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170210174250.GD29169@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-pci-owner@vger.kernel.org
+In-Reply-To: <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Feb 10, 2017 at 11:42:50AM -0600, Bjorn Helgaas wrote:
-> On Sun, Jan 29, 2017 at 01:26:16AM +0100, Lukas Wunner wrote:
-> > On Sat, Jan 28, 2017 at 03:52:08PM -0600, Bjorn Helgaas wrote:
-> > > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
+On Fri, Feb 10, 2017 at 12:39:12PM -0600, Bjorn Helgaas wrote:
+> On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
+> > Hotplug ports generally block their parents from suspending to D3hot as
+> > otherwise their interrupts couldn't be delivered.
 > 
-> > > > +static void set_pcie_vendor_specific(struct pci_dev *dev)
-> > > 
-> > > This is very specific to Thunderbolt, so let's name it something that
-> > > conveys that information.  The fact that we use a vendor-specific
-> > > capability to figure it out isn't really relevant in the caller.
-> > 
-> > I thought that we may have the necessity in the future to parse other
-> > VSECs on device probe, so I gave the function this generic name.
-> > 
-> > Think about it, every VSEC that needs to be parsed needs the while loop
-> > below.  It's more efficient to have only a single while loop that handles
-> > *all* VSECs at once.
-> > 
-> > If someone needs to parse another VSEC, they just add it to this function.
-> > So IMO the way I've solved it is preferable to just adding a Thunderbolt-
-> > specific function.
-> > 
-> > Are you sure you want this renamed? (y/n)
+> This sounds related to PCIe r3.1, sec 5.3.1.4, which says functions
+> supporting PME generation from D3 must support it for both D3cold and
+> D3hot.  I think in PCIe, PMEs mean PME Messages, and the 5.3.1
+> implementation note says Messages are not affected by the PM state of
+> virtual bridges.
 > 
-> Sorry for the delay; I missed this question.  If this has already been
-> merged somewhere as-is, that's fine.
+> So that seems to say that hotplug ports *should* be able to deliver
+> PMEs even while in D3hot.
+> 
+> Maybe you're referring to the hotplug interrupts themselves, not the
+> PME?  I assume a hotplug event (presence detect, attention button,
+> etc) would first cause a PME, then the OS would return the path to D0,
+> then the hotplug interrupt would be delivered.
+> 
+> > An exception are Thunderbolt host controllers:  They have a separate
+> > GPIO pin to side-band signal plug events even if the controller is
+> > powered down or its parent ports are suspended to D3.  They can be told
+> > apart from Thunderbolt controllers in attached devices by checking if
+> > they're situated below a non-Thunderbolt device (typically a root port,
+> > or the downstream port of a PCIe switch in the case of the MacPro6,1).
+> 
+> In PCIe terms, does a "Thunderbolt host controller" look like a
+> downstream port that supports hotplug?
+> 
+> It seems like the PCIe PME mechanism *should* work pretty much like
+> this sideband GPIO.  But I might be reading the spec wrong.
 
-No, none of the patches in this series have been merged so far.  Greg's
-tree is closed for the duration of the merge window, which is expected
-to open today.  Therefore, please merge whatever patches in this series
-you feel comfortable with.  It would be good if you could merge at least
-patch [1/8] as it would allow me to fix the issues in apple-gmux and
-vga_switcheroo that I'm mentioning in the changelog in v4.12.  Also,
-patch [2/8] seems uncontroversial.
+I am dropping this patch in v6 of my Thunderbolt runpm series.
 
-Greg has acked v5 of this series and suggested that you take it due to
-all the PCI changes:
-https://lkml.org/lkml/2017/1/19/177
+The "Light Ridge" Thunderbolt controller in my machine claims to support
+PME, but its WAKE# pin is not connected.  (It's pulled up to 3.3V.)
+I also have an external Thunderbolt chassis with the same controller,
+and the controller likewise claims to support PME, but its WAKE# pin is
+not connected to the PCIe root im my machine in any way.
 
-Andreas Noever acked and tested v2 of this series:
-https://www.spinics.net/lists/linux-pci/msg51274.html
+This led me to the conclusion that PME is not reliable and therefore
+in a Thunderbolt daisy chain, which is a cascade of PCIe switches,
+only the hotplug port at the farthest end of the chain may suspend to
+D3hot, whereas all the ports between it and the root bridge must stay
+awake for interrupts to come through.
 
-
-> If you repost it for any reason,
-> I would prefer to rename it so it reflects the functionality rather
-> than the source of the information.  This isn't a performance path, so
-> readability is more important than optimization.
-
-Sure, I've renamed it.
+What I failed to see, due to poor understanding of the (undocumented)
+Thunderbolt technology, is that even though ports in the middle of the
+chain may be in D3hot and prevent PCIe interrupts from coming through,
+the network of Converged I/O switches underlying the PCI tunnels
+continues to function and deliver plug events.  It is thus the NHI
+driver's job to runtime resume the PCIe switch where a CIO plug event
+occurred, as well as its parents, to ensure delivery of PCIe interrupts.
+The CIO plug event essentially serves as a sideband signal.  So far the
+thunderbolt NHI driver does not support daisy chaining, so this is not
+yet an issue.  (Only for tunnels established by the EFI driver.)
 
 Thanks,
 
