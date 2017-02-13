@@ -1,37 +1,50 @@
-From: Chris Brandt <chris.brandt@renesas.com>
-Subject: [PATCH 3/3] ARM: dts: r7s72100: Add reset handler
-Date: Mon, 13 Feb 2017 13:25:32 -0500
-Message-ID: <20170213182532.4042-4-chris.brandt@renesas.com>
+From: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Subject: [PATCH 2/3] dt-bindings: power: reset: add document for renesas-reset driver
+Date: Mon, 13 Feb 2017 13:25:31 -0500
+Message-ID: <20170213182532.4042-3-chris.brandt@renesas.com>
 References: <20170213182532.4042-1-chris.brandt@renesas.com>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170213182532.4042-1-chris.brandt@renesas.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>
-Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Chris Brandt <chris.brandt@renesas.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170213182532.4042-1-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-For the RZ/A1, the only way to do a reset is to overflow the WDT.
+Add device tree bindings document for renesas-reset driver.
+This driver uses the WDT hardware to issue an immediate reset.
 
-Signed-off-by: Chris Brandt <chris.brandt@renesas.com>
+Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 ---
- arch/arm/boot/dts/r7s72100.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ .../devicetree/bindings/power/reset/renesas-reset.txt     | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/renesas-reset.txt
 
-diff --git a/arch/arm/boot/dts/r7s72100.dtsi b/arch/arm/boot/dts/r7s72100.dtsi
-index 614ba79..6fb4ef4 100644
---- a/arch/arm/boot/dts/r7s72100.dtsi
-+++ b/arch/arm/boot/dts/r7s72100.dtsi
-@@ -371,6 +371,11 @@
- 			<0xe8202000 0x1000>;
- 	};
- 
+diff --git a/Documentation/devicetree/bindings/power/reset/renesas-reset.txt b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
+new file mode 100644
+index 0000000..241722d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
+@@ -0,0 +1,15 @@
++Device-Tree bindings for Renesas WDT reset functionality
++
++Required properties:
++  - compatible: must be one or more of the following:
++    - "renesas,r7s72100-reset" for the r7s72100 SoC
++    - "renesas,wdt-reset"
++                This is a fallback for the above renesas,*-reset entries
++
++  - reg: base address and length of the WDT register block
++
++Example node:
 +	wdt: timer@fcfe0000 {
 +		compatible = "renesas,r7s72100-reset", "renesas,wdt-reset";
 +		reg = <0xfcfe0000 0x6>;
 +	};
-+
- 	i2c0: i2c@fcfee000 {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
 -- 
 2.10.1
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
