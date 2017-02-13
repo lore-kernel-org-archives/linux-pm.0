@@ -1,54 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/4] AnalyzeSuspend v4.5
-Date: Mon, 13 Feb 2017 12:52:14 +0100
-Message-ID: <2204506.DJS1CnVxSj@aspire.rjw.lan>
-References: <cover.1486675333.git.todd.e.brandt@linux.intel.com> <CAJZ5v0hPYRWwjwR=pRcLL1oazvxv40iF6GztGY9kApUBkxGJJQ@mail.gmail.com> <1486771563.13784.1.camel@linux.intel.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] ARM: dts: exynos: Use thermal fuse value for thermal zone
+ 0 on Exynos5420
+Date: Mon, 13 Feb 2017 13:59:45 +0200
+Message-ID: <CAJKOXPeVLNRCWcWMT_subo2VRXdS1147MjFNCeGot8DpqguVNg@mail.gmail.com>
+References: <20170211201456.27974-1-krzk@kernel.org> <CANAwSgSJRv6XGKvysbw+cXYyVUEcNyGv=6tYSWsvOn42dX5f1w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52947 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751964AbdBML5J (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Feb 2017 06:57:09 -0500
-In-Reply-To: <1486771563.13784.1.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CANAwSgSJRv6XGKvysbw+cXYyVUEcNyGv=6tYSWsvOn42dX5f1w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anand Moon <linux.amoon@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Willy WOLFF <willy.mh.wolff@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: todd.e.brandt@linux.intel.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, todd.e.brandt@intel.com, Rafael Wysocki <rafael.j.wysocki@intel.com>
 
-On Friday, February 10, 2017 04:06:03 PM Todd Brandt wrote:
-> On Thu, 2017-02-09 at 22:42 +0100, Rafael J. Wysocki wrote:
-> > On Thu, Feb 9, 2017 at 10:27 PM, Todd Brandt
-> > <todd.e.brandt@linux.intel.com> wrote:
-> > > This patch series updates the tool from v4.2 to v4.5. The patches
-> > > can be combined into a single commit for brevity.
-> > >
-> > > Todd Brandt (4):
-> > >   AnalyzeSuspend v4.3
-> > >   AnalyzeSuspend v4.4
-> > >   AnalyzeSuspend v4.5
-> > >   AnalyzeSuspend v4.5: fix drag and zoom bug in javascript
-> > >
-> > > v2 changes:
-> > >  - added v4.5 fixes since initial upstream attempt
-> > > v3 changes:
-> > >  - resubmit with fixes to v2 submit errors
-> > >
-> > >  scripts/analyze_suspend.py | 1933 ++++++++++++++++++++++++++------------------
-> > >  1 file changed, 1135 insertions(+), 798 deletions(-)
-> > >
-> > > --
-> > 
-> > I applied the previous iteration.
-> > 
-> > Have patches [1-3/4] changed since then?
-> 
-> Ahh ok, then ignore this then. Nothing changed in patches 1-3/4, there's
-> just the small addition in 4/4. Thanks.
+On Mon, Feb 13, 2017 at 1:38 PM, Anand Moon <linux.amoon@gmail.com> wrote:
+> Hi Krzysztof,
+>
+>
+>
+> On 12 February 2017 at 01:44, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>> In Odroid XU3 Lite board, the temperature levels reported for thermal
+>> zone 0 were weird. In warm room:
+>>         /sys/class/thermal/thermal_zone0/temp:32000
+>>         /sys/class/thermal/thermal_zone1/temp:51000
+>>         /sys/class/thermal/thermal_zone2/temp:55000
+>>         /sys/class/thermal/thermal_zone3/temp:54000
+>>         /sys/class/thermal/thermal_zone4/temp:51000
+>>
+>> Sometimes after booting the value was even equal to ambient temperature
+>> which is highly unlikely to be a real temperature of sensor in SoC.
+>>
+>> The thermal sensor's calibration (trimming) is based on fused values.
+>> In case of the board above, the fused values are: 35, 52, 43, 58 and 43
+>> (corresponding to each TMU device).  However driver defined a minimum value
+>> for fused data as 40 and for smaller values it was using a hard-coded 55
+>> instead.  This lead to mapping data from sensor to wrong temperatures
+>> for thermal zone 0.
+>>
+>> Various vendor 3.10 trees (Hardkernel's based on Samsung LSI, Artik 10)
+>> do not impose any limits on fused values.  Since we do not have any
+>> knowledge about these limits, use 0 as a minimum accepted fused value.
+>> This should essentially allow accepting any reasonable fused value thus
+>> behaving like vendor driver.
+>>
+>
+> On HK following values are define in drivers/thermal/exynos_thermal.c
+>
+> #define EFUSE_MIN_VALUE                         40
+> #define EFUSE_MAX_VALUE                         100
 
-OK, so I applied the [4/4] on top of what I had previously.
+Are they being used?
 
-Thanks,
-Rafael
-
+Best regards,
+Krzysztof
