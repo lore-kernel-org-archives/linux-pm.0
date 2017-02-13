@@ -1,55 +1,214 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH] ARM: dts: exynos: Use thermal fuse value for thermal zone
- 0 on Exynos5420
-Date: Mon, 13 Feb 2017 13:59:45 +0200
-Message-ID: <CAJKOXPeVLNRCWcWMT_subo2VRXdS1147MjFNCeGot8DpqguVNg@mail.gmail.com>
-References: <20170211201456.27974-1-krzk@kernel.org> <CANAwSgSJRv6XGKvysbw+cXYyVUEcNyGv=6tYSWsvOn42dX5f1w@mail.gmail.com>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v8 3/3] dmaengine: pl330: Don't require irq-safe runtime PM
+Date: Mon, 13 Feb 2017 13:01:25 +0100
+Message-ID: <7b0b47b2-8025-31e2-8180-6b1df63aa45f@samsung.com>
+References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170209142309eucas1p2b1277d96139eafc0d1dcc14145600476@eucas1p2.samsung.com>
+ <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
+ <20170210045004.GN19244@localhost>
+ <d299ae6c-78dc-9049-6bed-dc84fff17db3@samsung.com>
+ <CAPDyKFqW2av1mjDvRP=R1my2kepeX69TS6cchzoHmwaoydT5Sg@mail.gmail.com>
+ <20170213020340.GH2843@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CANAwSgSJRv6XGKvysbw+cXYyVUEcNyGv=6tYSWsvOn42dX5f1w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anand Moon <linux.amoon@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Willy WOLFF <willy.mh.wolff@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:10551 "EHLO
+        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751945AbdBMMBc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Feb 2017 07:01:32 -0500
+In-reply-to: <20170213020340.GH2843@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vinod Koul <vinod.koul@intel.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, dmaengine@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Inki Dae <inki.dae@samsung.com>
 
-On Mon, Feb 13, 2017 at 1:38 PM, Anand Moon <linux.amoon@gmail.com> wrote:
-> Hi Krzysztof,
->
->
->
-> On 12 February 2017 at 01:44, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->> In Odroid XU3 Lite board, the temperature levels reported for thermal
->> zone 0 were weird. In warm room:
->>         /sys/class/thermal/thermal_zone0/temp:32000
->>         /sys/class/thermal/thermal_zone1/temp:51000
->>         /sys/class/thermal/thermal_zone2/temp:55000
->>         /sys/class/thermal/thermal_zone3/temp:54000
->>         /sys/class/thermal/thermal_zone4/temp:51000
->>
->> Sometimes after booting the value was even equal to ambient temperature
->> which is highly unlikely to be a real temperature of sensor in SoC.
->>
->> The thermal sensor's calibration (trimming) is based on fused values.
->> In case of the board above, the fused values are: 35, 52, 43, 58 and 43
->> (corresponding to each TMU device).  However driver defined a minimum value
->> for fused data as 40 and for smaller values it was using a hard-coded 55
->> instead.  This lead to mapping data from sensor to wrong temperatures
->> for thermal zone 0.
->>
->> Various vendor 3.10 trees (Hardkernel's based on Samsung LSI, Artik 10)
->> do not impose any limits on fused values.  Since we do not have any
->> knowledge about these limits, use 0 as a minimum accepted fused value.
->> This should essentially allow accepting any reasonable fused value thus
->> behaving like vendor driver.
->>
->
-> On HK following values are define in drivers/thermal/exynos_thermal.c
->
-> #define EFUSE_MIN_VALUE                         40
-> #define EFUSE_MAX_VALUE                         100
+Hi Vinod,
 
-Are they being used?
+On 2017-02-13 03:03, Vinod Koul wrote:
+> On Fri, Feb 10, 2017 at 02:57:09PM +0100, Ulf Hansson wrote:
+>> On 10 February 2017 at 12:51, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+>>> On 2017-02-10 05:50, Vinod Koul wrote:
+>>>> On Thu, Feb 09, 2017 at 03:22:51PM +0100, Marek Szyprowski wrote:
+>>>>> +static int pl330_set_slave(struct dma_chan *chan, struct device *slave)
+>>>>> +{
+>>>>> +       struct dma_pl330_chan *pch = to_pchan(chan);
+>>>>> +       struct pl330_dmac *pl330 = pch->dmac;
+>>>>> +       int i;
+>>>>> +
+>>>>> +       mutex_lock(&pl330->rpm_lock);
+>>>>> +
+>>>>> +       for (i = 0; i < pl330->num_peripherals; i++) {
+>>>>> +               if (pl330->peripherals[i].chan.slave == slave &&
+>>>>> +                   pl330->peripherals[i].slave_link) {
+>>>>> +                       pch->slave_link =
+>>>>> pl330->peripherals[i].slave_link;
+>>>>> +                       goto done;
+>>>>> +               }
+>>>>> +       }
+>>>>> +
+>>>>> +       pch->slave_link = device_link_add(slave, pl330->ddma.dev,
+>>>>> +                                      DL_FLAG_PM_RUNTIME |
+>>>>> DL_FLAG_RPM_ACTIVE);
+>>>> So you are going to add the link on channel allocation and tear down on
+>>>> the
+>>>> freeup.
+>>>
+>>> Right. Channel allocation is typically done once per driver operation and it
+>>> won't hurt system performance.
+>>>
+>>>>    I am not sure I really like the idea here.
+>>>
+>>> Could you point what's wrong with it?
+>>>
+>>>> First, these thing shouldn't be handled in the drivers. These things
+>>>> should
+>>>> be set in core and each driver setting the links doesn't sound great to
+>>>> me.
+>>>
+>>> Which core? And what's wrong with the device links? They have been
+>>> introduced to
+>>> model relations between devices that are behind the usual parent/child/bus
+>>> topology.
+>> I think Vinod mean the dmaengine core. Which also would make perfect
+>> sense to me as it would benefit all dma drivers.
+> Right.
+>
+>> The only related PM thing, that shall be the decision of the driver,
+>> is whether it wants to enable runtime PM or not, during ->probe().
+> We can do pm_runtime_enabled() to check and that and do when enabled..
 
-Best regards,
-Krzysztof
+Another subtle issue is that there can be only one link between devices, but
+it is common to request more than one channel per client device (for example
+"tx" and "rx"), but this can be handled by internal reference counting.
+
+>>>> Second, should the link be always there and we only mange the state? Here
+>>>> it
+>>>> seems that we have link being created and destroyed, so why not mark it
+>>>> ACTIVE and DORMANT instead...
+>>>
+>>> Link state is managed by device core and should not be touched by the
+>>> drivers.
+>>> It is related to both provider and consumer drivers states (probed/not
+>>> probed/etc).
+>>>
+>>> Second we would need to create those links first. The question is where to
+>>> create them then.
+>> Just to fill in, to me this is really also the key question.
+>>
+>> If we could set up the device link already at device initialization,
+>> it should also be possible to avoid getting -EPROBE_DEFER for dma
+>> client drivers when requesting their dma channels.
+> Well if we defer then driver will regiser with dmaengine after it is
+> probed, so a client will either get a channel or not. IOW we won't get
+> -EPROBE_DEFER.
+
+I don't get how this will work. IMHO the link should be created WHEN client
+driver requests the channel, because otherwise we will get links that might
+be not used at all (for example optional DMA usage, but the link will force
+DMA controller to active state even if client device doesn't want to use DMA
+at all). So if client requests it for the first time and the DMA engine has
+not been probed yet, there is no way to avoid -EPROBE_DEFER.
+
+>>>> Lastly, looking at th description of the issue here, am perceiving (maybe
+>>>> my
+>>>> understanding is not quite right here) that you have an IP block in SoC
+>>>> which has multiple things and share common stuff and doing right PM is a
+>>>> challenge for you, right?
+>>>
+>>> Nope. Doing right PM in my SoC is not that complex and I would say it is
+>>> rather
+>>> typical for any embedded stuff. It works fine (in terms of the power
+>>> consumption reduction) when all drivers simply properly manage their runtime
+>>> PM state, thus if device is not in use, the state is set to suspended and
+>>> finally, the power domain gets turned off.
+>>>
+>>> I've used device links for PM only because the current DMA engine API is
+>>> simply insufficient to implement it in the other way.
+>>>
+>>> I want to let a power domain, which contains a few devices, among those a
+>>> PL330
+>>> device, to get turned off when there is no activity. Handling power domain
+>>> power
+>>> on / off requires non-atomic context, what is typical for runtime pm calls.
+>>> For
+>>> that I need to have non-irq-safe runtime pm implemented for all devices that
+>>> belongs to that domains.
+>> Again, allow me to fill in. This issue exists for all ARM SoC which
+>> has a dma controller residing in a PM domain. I think that is quite
+>> many.
+>>
+>> Currently the only solution I have seen for this problem, but which I
+>> really dislike. That is, each dma client driver requests/releases
+>> their dma channel from their respective ->runtime_suspend|resume()
+>> callbacks - then the dma driver can use the dma request/release hooks,
+>> to do pm_runtime_get|put() which then becomes non-irq-safe.
+> Yeah that is not the best way to do. But looking at it current one doesnt
+> seem best fit either.
+>
+> So on seeing the device_link_add() I was thinking that this is some SoC
+> dependent problem being solved whereas the problem statmement is non-atomic
+> channel prepare.
+>
+> As I said earlier, if we want to solve that problem a better idea is to
+> actually split the prepare as we discussed in [1]
+>
+> This way we can get a non atomic descriptor allocate/prepare and release.
+> Yes we need to redesign the APIs to solve this, but if you guys are up for
+> it, I think we can do it and avoid any further round abouts :)
+
+I also agree that the main problem here is lack of non-atomic call for
+preparing the channel. However I don't feel I'm a right person for rewriting
+all the existing DMA engine drivers and clients for the new API. :/
+
+>>> The problem with PL330 driver is that it use irq-safe runtime pm, which like
+>>> it
+>>> was stated in the patch description doesn't bring much benefits. To switch
+>>> to
+>>> standard (non-irq-safe) runtime pm, the pm_runtime calls have to be done
+>>> from
+>>> a context which permits sleeping. The problem with DMA engine driver API is
+>>> that
+>>> most of its callbacks have to be IRQ-safe and frankly only
+>>> device_{alloc,release}_chan_resources() what more or less maps to
+>>> dma_request_chan()/dma_release_channel() and friends. There are DMA engine
+>>> drivers which do runtime PM calls there (tegra20-apb-dma, sirf-dma, cppi41,
+>>> rcar-dmac), but this is not really efficient. DMA engine clients usually
+>>> allocate
+>>> dma channel during their probe() and keep them for the whole driver life. In
+>>> turn
+>>> this very similar to calling pm_runtime_get() in the DMA engine driver
+>>> probe().
+>>> The result of both approaches is that DMA engine device keeps its power
+>>> domain
+>>> enabled almost all the time. This problem is also mentioned in the DMA
+>>> engine
+>>> TODO list, you have pointed me yesterday.
+>>>
+>>> To avoid such situation that DMA engine driver blocks turning off the power
+>>> domain and avoid changing DMA engine client API I came up with the device
+>>> links
+>>> pm based approach. I don't want to duplicate the description here, the
+>>> details
+>>> were in the patch description, however if you have any particular question
+>>> about
+>>> the details, let me know and I will try to clarify it more.
+>> So besides solving the irq-safe issue for dma driver, using the
+>> device-links has additionally two advantages. I already mentioned the
+>> -EPROBE_DEFER issue above.
+>>
+>> The second thing, is the runtime/system PM relations we get for free
+>> by using the links. In other words, the dma driver/core don't need to
+>> care about dealing with pm_runtime_get|put() as that would be managed
+>> by the dma client driver.
+> Yeah sorry took me a while to figure that out :), If we do a different API
+> then dmaengine core can call pm_runtime_get|put() from non-atomic context.
+>
+> [1]: http://www.spinics.net/lists/dmaengine/msg11570.html
+>
+
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
+
