@@ -1,259 +1,69 @@
-From: Alexander Sverdlin <alexander.sverdlin@nokia.com>
-Subject: Re: [PATCH v13 06/12] usb: xhci: use bus->sysdev for DMA
- configuration
-Date: Mon, 13 Feb 2017 09:25:24 +0100
-Message-ID: <3dd29f25-5a6f-11b0-c722-5f1e4587fd4e@nokia.com>
-References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
- <1486776443-2280-7-git-send-email-peter.chen@nxp.com>
+From: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: Re: [PATCH] thermal: mt8173: minor mtk_thermal.c cleanups
+Date: Mon, 13 Feb 2017 17:01:58 +0800
+Message-ID: <1486976518.24087.7.camel@mtksdaap41>
+References: <1486531862-31945-1-git-send-email-dawei.chien@mediatek.com>
+         <ebdf54af-6290-9654-c475-53dd580582a0@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-eopbgr10126.outbound.protection.outlook.com ([40.107.1.126]:32944
-        "EHLO EUR02-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751712AbdBMI3a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Feb 2017 03:29:30 -0500
-In-Reply-To: <1486776443-2280-7-git-send-email-peter.chen@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <ebdf54af-6290-9654-c475-53dd580582a0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Fan Chen <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Erin Lo <erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
-Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, hverkuil@xs4all.nl, krzk@kernel.org, frank.li@nxp.com, jun.li@nxp.com, Baolin Wang <baolin.wang@linaro.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Sriram Dash <sriram.dash@nxp.com>
 
-Hi!
+Hi, Matthias,
 
-On 11/02/17 02:27, Peter Chen wrote:
-> For xhci-hcd platform device, all the DMA parameters are not
-> configured properly, notably dma ops for dwc3 devices. So, set
-> the dma for xhci from sysdev. sysdev is pointing to device that
-> is known to the system firmware or hardware.
+On Thu, 2017-02-09 at 22:25 +0100, Matthias Brugger wrote:
 > 
-> Cc: Baolin Wang <baolin.wang@linaro.org>
-> Cc: Vivek Gautam <vivek.gautam@codeaurora.org>
-> Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>
-> Cc: Mathias Nyman <mathias.nyman@linux.intel.com>
+> On 02/08/2017 06:31 AM, Dawei Chien wrote:
+> > Thermal driver should read TEMP_MSR3 if thermal bank with 4 sensors.
+> > However, Currently thermal driver don't need read TEMP_MSR3 since
+> > thermal controller only use 3 sensors for each thermal bank.
+> >
+> > Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > ---
 > 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
-> ---
-> Hi, Baolin, Vivek and Alexander,
-> I removed your tested-by tag due to add one change that adding sysdev
-> for shared hcd too, if your test shows this change works for you or
-> has no effect for you, please consider adding tested-by tag again,
-> thanks.
-
-This was exactly the missing/requiring part in your patch for my case.
-I had to add it extra for the first test.
-So, again, here is my
-Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
-
->  drivers/usb/host/xhci-mem.c  | 12 ++++++------
->  drivers/usb/host/xhci-plat.c | 35 +++++++++++++++++++++++++++--------
->  drivers/usb/host/xhci.c      | 15 +++++++++++----
->  3 files changed, 44 insertions(+), 18 deletions(-)
+> Actually the commit message should state:
+> Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
 > 
-> diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
-> index ba1853f4..032a702 100644
-> --- a/drivers/usb/host/xhci-mem.c
-> +++ b/drivers/usb/host/xhci-mem.c
-> @@ -586,7 +586,7 @@ static void xhci_free_stream_ctx(struct xhci_hcd *xhci,
->  		unsigned int num_stream_ctxs,
->  		struct xhci_stream_ctx *stream_ctx, dma_addr_t dma)
->  {
-> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
-> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
->  	size_t size = sizeof(struct xhci_stream_ctx) * num_stream_ctxs;
->  
->  	if (size > MEDIUM_STREAM_ARRAY_SIZE)
-> @@ -614,7 +614,7 @@ static struct xhci_stream_ctx *xhci_alloc_stream_ctx(struct xhci_hcd *xhci,
->  		unsigned int num_stream_ctxs, dma_addr_t *dma,
->  		gfp_t mem_flags)
->  {
-> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
-> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
->  	size_t size = sizeof(struct xhci_stream_ctx) * num_stream_ctxs;
->  
->  	if (size > MEDIUM_STREAM_ARRAY_SIZE)
-> @@ -1686,7 +1686,7 @@ void xhci_slot_copy(struct xhci_hcd *xhci,
->  static int scratchpad_alloc(struct xhci_hcd *xhci, gfp_t flags)
->  {
->  	int i;
-> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
-> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
->  	int num_sp = HCS_MAX_SCRATCHPAD(xhci->hcs_params2);
->  
->  	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
-> @@ -1758,7 +1758,7 @@ static void scratchpad_free(struct xhci_hcd *xhci)
->  {
->  	int num_sp;
->  	int i;
-> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
-> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
->  
->  	if (!xhci->scratchpad)
->  		return;
-> @@ -1831,7 +1831,7 @@ void xhci_free_command(struct xhci_hcd *xhci,
->  
->  void xhci_mem_cleanup(struct xhci_hcd *xhci)
->  {
-> -	struct device	*dev = xhci_to_hcd(xhci)->self.controller;
-> +	struct device	*dev = xhci_to_hcd(xhci)->self.sysdev;
->  	int size;
->  	int i, j, num_ports;
->  
-> @@ -2373,7 +2373,7 @@ static int xhci_setup_port_arrays(struct xhci_hcd *xhci, gfp_t flags)
->  int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
->  {
->  	dma_addr_t	dma;
-> -	struct device	*dev = xhci_to_hcd(xhci)->self.controller;
-> +	struct device	*dev = xhci_to_hcd(xhci)->self.sysdev;
->  	unsigned int	val, val2;
->  	u64		val_64;
->  	struct xhci_segment	*seg;
-> diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
-> index 6d33b42..4ecb3fd 100644
-> --- a/drivers/usb/host/xhci-plat.c
-> +++ b/drivers/usb/host/xhci-plat.c
-> @@ -14,6 +14,7 @@
->  #include <linux/clk.h>
->  #include <linux/dma-mapping.h>
->  #include <linux/module.h>
-> +#include <linux/pci.h>
->  #include <linux/of.h>
->  #include <linux/platform_device.h>
->  #include <linux/usb/phy.h>
-> @@ -148,6 +149,7 @@ static int xhci_plat_probe(struct platform_device *pdev)
->  {
->  	const struct of_device_id *match;
->  	const struct hc_driver	*driver;
-> +	struct device		*sysdev;
->  	struct xhci_hcd		*xhci;
->  	struct resource         *res;
->  	struct usb_hcd		*hcd;
-> @@ -164,22 +166,39 @@ static int xhci_plat_probe(struct platform_device *pdev)
->  	if (irq < 0)
->  		return -ENODEV;
->  
-> +	/*
-> +	 * sysdev must point to a device that is known to the system firmware
-> +	 * or PCI hardware. We handle these three cases here:
-> +	 * 1. xhci_plat comes from firmware
-> +	 * 2. xhci_plat is child of a device from firmware (dwc3-plat)
-> +	 * 3. xhci_plat is grandchild of a pci device (dwc3-pci)
-> +	 */
-> +	sysdev = &pdev->dev;
-> +	if (sysdev->parent && !sysdev->of_node && sysdev->parent->of_node)
-> +		sysdev = sysdev->parent;
-> +#ifdef CONFIG_PCI
-> +	else if (sysdev->parent && sysdev->parent->parent &&
-> +		 sysdev->parent->parent->bus == &pci_bus_type)
-> +		sysdev = sysdev->parent->parent;
-> +#endif
-> +
->  	/* Try to set 64-bit DMA first */
-> -	if (!pdev->dev.dma_mask)
-> +	if (WARN_ON(!sysdev->dma_mask))
->  		/* Platform did not initialize dma_mask */
-> -		ret = dma_coerce_mask_and_coherent(&pdev->dev,
-> +		ret = dma_coerce_mask_and_coherent(sysdev,
->  						   DMA_BIT_MASK(64));
->  	else
-> -		ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
-> +		ret = dma_set_mask_and_coherent(sysdev, DMA_BIT_MASK(64));
->  
->  	/* If seting 64-bit DMA mask fails, fall back to 32-bit DMA mask */
->  	if (ret) {
-> -		ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
-> +		ret = dma_set_mask_and_coherent(sysdev, DMA_BIT_MASK(32));
->  		if (ret)
->  			return ret;
->  	}
->  
-> -	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
-> +	hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
-> +			       dev_name(&pdev->dev), NULL);
->  	if (!hcd)
->  		return -ENOMEM;
->  
-> @@ -222,20 +241,20 @@ static int xhci_plat_probe(struct platform_device *pdev)
->  
->  	xhci->clk = clk;
->  	xhci->main_hcd = hcd;
-> -	xhci->shared_hcd = usb_create_shared_hcd(driver, &pdev->dev,
-> +	xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
->  			dev_name(&pdev->dev), hcd);
->  	if (!xhci->shared_hcd) {
->  		ret = -ENOMEM;
->  		goto disable_clk;
->  	}
->  
-> -	if (device_property_read_bool(&pdev->dev, "usb3-lpm-capable"))
-> +	if (device_property_read_bool(sysdev, "usb3-lpm-capable"))
->  		xhci->quirks |= XHCI_LPM_SUPPORT;
->  
->  	if (device_property_read_bool(&pdev->dev, "quirk-broken-port-ped"))
->  		xhci->quirks |= XHCI_BROKEN_PORT_PED;
->  
-> -	hcd->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev, "usb-phy", 0);
-> +	hcd->usb_phy = devm_usb_get_phy_by_phandle(sysdev, "usb-phy", 0);
->  	if (IS_ERR(hcd->usb_phy)) {
->  		ret = PTR_ERR(hcd->usb_phy);
->  		if (ret == -EPROBE_DEFER)
-> diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
-> index 6d6c460..ab0839c 100644
-> --- a/drivers/usb/host/xhci.c
-> +++ b/drivers/usb/host/xhci.c
-> @@ -237,6 +237,9 @@ static int xhci_free_msi(struct xhci_hcd *xhci)
->  static int xhci_setup_msi(struct xhci_hcd *xhci)
->  {
->  	int ret;
-> +	/*
-> +	 * TODO:Check with MSI Soc for sysdev
-> +	 */
->  	struct pci_dev  *pdev = to_pci_dev(xhci_to_hcd(xhci)->self.controller);
->  
->  	ret = pci_enable_msi(pdev);
-> @@ -263,7 +266,7 @@ static int xhci_setup_msi(struct xhci_hcd *xhci)
->   */
->  static void xhci_free_irq(struct xhci_hcd *xhci)
->  {
-> -	struct pci_dev *pdev = to_pci_dev(xhci_to_hcd(xhci)->self.controller);
-> +	struct pci_dev *pdev = to_pci_dev(xhci_to_hcd(xhci)->self.sysdev);
->  	int ret;
->  
->  	/* return if using legacy interrupt */
-> @@ -748,7 +751,7 @@ void xhci_shutdown(struct usb_hcd *hcd)
->  	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
->  
->  	if (xhci->quirks & XHCI_SPURIOUS_REBOOT)
-> -		usb_disable_xhci_ports(to_pci_dev(hcd->self.controller));
-> +		usb_disable_xhci_ports(to_pci_dev(hcd->self.sysdev));
->  
->  	spin_lock_irq(&xhci->lock);
->  	xhci_halt(xhci);
-> @@ -765,7 +768,7 @@ void xhci_shutdown(struct usb_hcd *hcd)
->  
->  	/* Yet another workaround for spurious wakeups at shutdown with HSW */
->  	if (xhci->quirks & XHCI_SPURIOUS_WAKEUP)
-> -		pci_set_power_state(to_pci_dev(hcd->self.controller), PCI_D3hot);
-> +		pci_set_power_state(to_pci_dev(hcd->self.sysdev), PCI_D3hot);
->  }
->  
->  #ifdef CONFIG_PM
-> @@ -4801,7 +4804,11 @@ int xhci_get_frame(struct usb_hcd *hcd)
->  int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks)
->  {
->  	struct xhci_hcd		*xhci;
-> -	struct device		*dev = hcd->self.controller;
-> +	/*
-> +	 * TODO: Check with DWC3 clients for sysdev according to
-> +	 * quirks
-> +	 */
-> +	struct device		*dev = hcd->self.sysdev;
->  	int			retval;
->  
->  	/* Accept arbitrarily long scatter-gather lists */
+> ...and get backported to v4.9 and v4.10.
+> 
+> Reviewed-by: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> 
+> Regards,
+> Matthias
 
--- 
-Best regards,
-Alexander Sverdlin.
+Thank you for your review. I would add below commit message on next
+version. However, currently 8173 thermal driver would not read TEMP_MSR3
+since thermal driver only use 3 sensors on each bank, this patch would
+not effect temperature.
+Only if thermal driver use 4 sensors on any thermal bank, would read
+third sensor two times, and lose fourth sensor of vale.
+Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
+
+> >  drivers/thermal/mtk_thermal.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+> > index 34169c3..c124151 100644
+> > --- a/drivers/thermal/mtk_thermal.c
+> > +++ b/drivers/thermal/mtk_thermal.c
+> > @@ -191,7 +191,7 @@ struct mtk_thermal {
+> >  };
+> >
+> >  const int mt8173_msr[MT8173_NUM_SENSORS_PER_ZONE] = {
+> > -	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2, TEMP_MSR2
+> > +	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2, TEMP_MSR3
+> >  };
+> >
+> >  const int mt8173_adcpnp[MT8173_NUM_SENSORS_PER_ZONE] = {
+> >
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
