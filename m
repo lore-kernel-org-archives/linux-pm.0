@@ -1,61 +1,69 @@
-From: Anand Moon <linux.amoon@gmail.com>
-Subject: Re: [PATCH] ARM: dts: exynos: Use thermal fuse value for thermal zone
- 0 on Exynos5420
-Date: Mon, 13 Feb 2017 17:51:06 +0530
-Message-ID: <CANAwSgQ94irFT6kkeRao6rqnXO0ejTAozSegu2Y3DLsLWJe9=w@mail.gmail.com>
-References: <20170211201456.27974-1-krzk@kernel.org> <CANAwSgSJRv6XGKvysbw+cXYyVUEcNyGv=6tYSWsvOn42dX5f1w@mail.gmail.com>
- <CAJKOXPeVLNRCWcWMT_subo2VRXdS1147MjFNCeGot8DpqguVNg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host hotplug ports
+Date: Mon, 13 Feb 2017 13:17:54 +0100
+Message-ID: <3042740.EMeTt20fd7@aspire.rjw.lan>
+References: <cover.1484486499.git.lukas@wunner.de> <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com> <20170212171301.GA2845@wunner.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJKOXPeVLNRCWcWMT_subo2VRXdS1147MjFNCeGot8DpqguVNg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, Linux PM list <linux-pm@vger.kernel.org>, "linux-samsung-soc@vger.kernel.org" <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, Willy WOLFF <willy.mh.wolff@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63546 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751023AbdBMMWt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Feb 2017 07:22:49 -0500
+In-Reply-To: <20170212171301.GA2845@wunner.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-Hi Krzysztof,
+On Sunday, February 12, 2017 06:13:01 PM Lukas Wunner wrote:
+> On Fri, Feb 10, 2017 at 12:39:12PM -0600, Bjorn Helgaas wrote:
+> > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
+> > > Hotplug ports generally block their parents from suspending to D3hot as
+> > > otherwise their interrupts couldn't be delivered.
+> > 
+> > This sounds related to PCIe r3.1, sec 5.3.1.4, which says functions
+> > supporting PME generation from D3 must support it for both D3cold and
+> > D3hot.  I think in PCIe, PMEs mean PME Messages, and the 5.3.1
+> > implementation note says Messages are not affected by the PM state of
+> > virtual bridges.
+> > 
+> > So that seems to say that hotplug ports *should* be able to deliver
+> > PMEs even while in D3hot.
+> > 
+> > Maybe you're referring to the hotplug interrupts themselves, not the
+> > PME?  I assume a hotplug event (presence detect, attention button,
+> > etc) would first cause a PME, then the OS would return the path to D0,
+> > then the hotplug interrupt would be delivered.
+> > 
+> > > An exception are Thunderbolt host controllers:  They have a separate
+> > > GPIO pin to side-band signal plug events even if the controller is
+> > > powered down or its parent ports are suspended to D3.  They can be told
+> > > apart from Thunderbolt controllers in attached devices by checking if
+> > > they're situated below a non-Thunderbolt device (typically a root port,
+> > > or the downstream port of a PCIe switch in the case of the MacPro6,1).
+> > 
+> > In PCIe terms, does a "Thunderbolt host controller" look like a
+> > downstream port that supports hotplug?
+> > 
+> > It seems like the PCIe PME mechanism *should* work pretty much like
+> > this sideband GPIO.  But I might be reading the spec wrong.
+> 
+> I am dropping this patch in v6 of my Thunderbolt runpm series.
+> 
+> The "Light Ridge" Thunderbolt controller in my machine claims to support
+> PME, but its WAKE# pin is not connected.  (It's pulled up to 3.3V.)
+> I also have an external Thunderbolt chassis with the same controller,
+> and the controller likewise claims to support PME, but its WAKE# pin is
+> not connected to the PCIe root im my machine in any way.
 
-On 13 February 2017 at 17:29, Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> On Mon, Feb 13, 2017 at 1:38 PM, Anand Moon <linux.amoon@gmail.com> wrote:
->> Hi Krzysztof,
->>
->>
->>
->> On 12 February 2017 at 01:44, Krzysztof Kozlowski <krzk@kernel.org> wrote:
->>> In Odroid XU3 Lite board, the temperature levels reported for thermal
->>> zone 0 were weird. In warm room:
->>>         /sys/class/thermal/thermal_zone0/temp:32000
->>>         /sys/class/thermal/thermal_zone1/temp:51000
->>>         /sys/class/thermal/thermal_zone2/temp:55000
->>>         /sys/class/thermal/thermal_zone3/temp:54000
->>>         /sys/class/thermal/thermal_zone4/temp:51000
->>>
->>> Sometimes after booting the value was even equal to ambient temperature
->>> which is highly unlikely to be a real temperature of sensor in SoC.
->>>
->>> The thermal sensor's calibration (trimming) is based on fused values.
->>> In case of the board above, the fused values are: 35, 52, 43, 58 and 43
->>> (corresponding to each TMU device).  However driver defined a minimum value
->>> for fused data as 40 and for smaller values it was using a hard-coded 55
->>> instead.  This lead to mapping data from sensor to wrong temperatures
->>> for thermal zone 0.
->>>
->>> Various vendor 3.10 trees (Hardkernel's based on Samsung LSI, Artik 10)
->>> do not impose any limits on fused values.  Since we do not have any
->>> knowledge about these limits, use 0 as a minimum accepted fused value.
->>> This should essentially allow accepting any reasonable fused value thus
->>> behaving like vendor driver.
->>>
->>
->> On HK following values are define in drivers/thermal/exynos_thermal.c
->>
->> #define EFUSE_MIN_VALUE                         40
->> #define EFUSE_MAX_VALUE                         100
->
-> Are they being used?
+WAKE# should not be necessary if PME messages can be delivered in-band.
 
-Opps: sorry it's not used for Exynos5422 platform.
+Of course, root ports still need to be able to signal PME wakeup via port
+interrupts for this to work, and some kind of side-band wakeup signaling
+may be necessary for waking up the system from sleep states via PME.
 
-Best regards,
--Anand
+Thanks,
+Rafael
+
