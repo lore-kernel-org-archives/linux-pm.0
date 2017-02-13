@@ -1,69 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 3/8] PCI: Don't block runtime PM for Thunderbolt host hotplug ports
-Date: Mon, 13 Feb 2017 13:17:54 +0100
-Message-ID: <3042740.EMeTt20fd7@aspire.rjw.lan>
-References: <cover.1484486499.git.lukas@wunner.de> <20170210183912.GF29169@bhelgaas-glaptop.roam.corp.google.com> <20170212171301.GA2845@wunner.de>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v13 00/12] power: add power sequence library
+Date: Mon, 13 Feb 2017 13:22:23 +0100
+Message-ID: <16530165.MCAOCP1KgW@aspire.rjw.lan>
+References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63546 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751023AbdBMMWt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Feb 2017 07:22:49 -0500
-In-Reply-To: <20170212171301.GA2845@wunner.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1486776443-2280-1-git-send-email-peter.chen-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, arnd-r2nGTMty4D4@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, oscar-Bdbr4918Nnnk1uMJSBkQmQ@public.gmane.org, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, hverkuil-qWit8jRvyhVmR6Xm/wNWPw@public.gmane.org, krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frank.li-3arQi8VN3Tc@public.gmane.org, jun.li-3arQi8VN3Tc@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Sunday, February 12, 2017 06:13:01 PM Lukas Wunner wrote:
-> On Fri, Feb 10, 2017 at 12:39:12PM -0600, Bjorn Helgaas wrote:
-> > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
-> > > Hotplug ports generally block their parents from suspending to D3hot as
-> > > otherwise their interrupts couldn't be delivered.
-> > 
-> > This sounds related to PCIe r3.1, sec 5.3.1.4, which says functions
-> > supporting PME generation from D3 must support it for both D3cold and
-> > D3hot.  I think in PCIe, PMEs mean PME Messages, and the 5.3.1
-> > implementation note says Messages are not affected by the PM state of
-> > virtual bridges.
-> > 
-> > So that seems to say that hotplug ports *should* be able to deliver
-> > PMEs even while in D3hot.
-> > 
-> > Maybe you're referring to the hotplug interrupts themselves, not the
-> > PME?  I assume a hotplug event (presence detect, attention button,
-> > etc) would first cause a PME, then the OS would return the path to D0,
-> > then the hotplug interrupt would be delivered.
-> > 
-> > > An exception are Thunderbolt host controllers:  They have a separate
-> > > GPIO pin to side-band signal plug events even if the controller is
-> > > powered down or its parent ports are suspended to D3.  They can be told
-> > > apart from Thunderbolt controllers in attached devices by checking if
-> > > they're situated below a non-Thunderbolt device (typically a root port,
-> > > or the downstream port of a PCIe switch in the case of the MacPro6,1).
-> > 
-> > In PCIe terms, does a "Thunderbolt host controller" look like a
-> > downstream port that supports hotplug?
-> > 
-> > It seems like the PCIe PME mechanism *should* work pretty much like
-> > this sideband GPIO.  But I might be reading the spec wrong.
+On Saturday, February 11, 2017 09:27:11 AM Peter Chen wrote:
+> Hi all,
 > 
-> I am dropping this patch in v6 of my Thunderbolt runpm series.
+> This is a follow-up for my last power sequence framework patch set [1].
+> According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
+> power sequence instances will be added at postcore_initcall, the match
+> criteria is compatible string first, if the compatible string is not
+> matched between dts and library, it will try to use generic power sequence.
+> 	 
+> The host driver just needs to call of_pwrseq_on/of_pwrseq_off
+> if only one power sequence instance is needed, for more power sequences
+> are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
 > 
-> The "Light Ridge" Thunderbolt controller in my machine claims to support
-> PME, but its WAKE# pin is not connected.  (It's pulled up to 3.3V.)
-> I also have an external Thunderbolt chassis with the same controller,
-> and the controller likewise claims to support PME, but its WAKE# pin is
-> not connected to the PCIe root im my machine in any way.
+> In future, if there are special power sequence requirements, the special
+> power sequence library can be created.
+> 
+> This patch set is tested on i.mx6 sabresx evk using a dts change, I use
+> two hot-plug devices to simulate this use case, the related binding
+> change is updated at patch [1/6], The udoo board changes were tested
+> using my last power sequence patch set.[3]
+> 
+> Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
+> need to power on itself before it can be found by ULPI bus.
+> 
+> Changes for v13:
+> - Add more design descriptions at design doc and fix one build error
+>   introduced by v12 wrongly [Patch 2/12]
+> - Add the last three dts patches which were forgotten at last series
+> - Move the comment for usb_create_shared_hcd to correct place [Patch 3/12]
+> - Add sysdev for shared hcd too for xhci-plat.c [Patch 6/12]
+> 
+> Rafael, if the first two power sequence patches are ok for you, would you consider
+> accept these first, the other USB patches can go through USB tree at v4.12-rc1?
 
-WAKE# should not be necessary if PME messages can be delivered in-band.
+OK, I'll look at the [1-2/12] in the first place, but please give me some time
+and stop sending new versions of the whole patchset continuously for the time
+being.
 
-Of course, root ports still need to be able to signal PME wakeup via port
-interrupts for this to work, and some kind of side-band wakeup signaling
-may be necessary for waking up the system from sleep states via PME.
+Also I'm not going to take anything from this series without the Greg's consent,
+just to be clear.
 
 Thanks,
 Rafael
 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
