@@ -1,33 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 1/6] PM / QOS: Add default case to the switch
-Date: Mon, 13 Feb 2017 08:41:48 +0530
-Message-ID: <20170213031148.GC8498@vireshk-i7>
-References: <cover.1486611268.git.viresh.kumar@linaro.org>
- <338b16e4c882634e30e4f4c011a9e9c52d134cbc.1486611268.git.viresh.kumar@linaro.org>
- <20170209142425.GC23373@xo-6d-61-c0.localdomain>
- <20170210060030.GA8498@vireshk-i7>
- <20170210121535.GA27377@amd>
+From: <yuantian.tang@nxp.com>
+Subject: [PATCH 1/2 v4] cpufreq: qoriq: added arm64 socs support
+Date: Mon, 13 Feb 2017 11:30:54 +0800
+Message-ID: <1486956655-4261-1-git-send-email-yuantian.tang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f51.google.com ([74.125.83.51]:36347 "EHLO
-        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751334AbdBMDLw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Feb 2017 22:11:52 -0500
-Received: by mail-pg0-f51.google.com with SMTP id v184so28224327pgv.3
-        for <linux-pm@vger.kernel.org>; Sun, 12 Feb 2017 19:11:51 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20170210121535.GA27377@amd>
+Received: from mail-by2nam03on0040.outbound.protection.outlook.com ([104.47.42.40]:52896
+        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751297AbdBMDon (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Feb 2017 22:44:43 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org, Len Brown <len.brown@intel.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
+To: rjw@rjwysocki.net
+Cc: viresh.kumar@linaro.org, leoyang.li@nxp.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@nxp.com>, Tang Yuantian <yuantian.tang@nxp.com>
 
-On 10-02-17, 13:15, Pavel Machek wrote:
-> As soon as new QoS request type is added, this switch can be
-> fixed. There is no issue now, and there should be no issue in future.
+From: Tang Yuantian <Yuantian.Tang@nxp.com>
 
-Sure. Will do it in V3.
+Add arm64 config to Kconfig to enable cpu frequency feature on
+nxp arm64 socs.
 
+Signed-off-by: Tang Yuantian <yuantian.tang@nxp.com>
+---
+v2-v4: no change
+
+ drivers/cpufreq/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+index 15adef4..3964383 100644
+--- a/drivers/cpufreq/Kconfig
++++ b/drivers/cpufreq/Kconfig
+@@ -324,7 +324,7 @@ endif
+ 
+ config QORIQ_CPUFREQ
+ 	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+-	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
++	depends on OF && COMMON_CLK && (PPC_E500MC || ARM || ARM64)
+ 	depends on !CPU_THERMAL || THERMAL
+ 	select CLK_QORIQ
+ 	help
 -- 
-viresh
+2.1.0.27.g96db324
+
