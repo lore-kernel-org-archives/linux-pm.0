@@ -1,69 +1,134 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: [PATCH] PM / wakeirq: report a wakeup_event on dedicated wekup irq
-Date: Mon, 13 Feb 2017 12:43:22 -0800
-Message-ID: <20170213204322.27588-1-tony@atomide.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
-Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, Tero Kristo <t-kristo@ti.com>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v6 1/8] devicetree: power: Add battery.txt
+Date: Mon, 13 Feb 2017 12:58:37 -0800
+Message-ID: <CAKvHMgSSpbkX1NMwaDmuJwBcgu6Avy65izAaBGTYongqL51kWQ@mail.gmail.com>
+References: <20170211024340.19491-1-liam@networkimprov.net>
+ <20170211024340.19491-2-liam@networkimprov.net> <ce69f358-ac3b-993d-0639-844856362c9d@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <ce69f358-ac3b-993d-0639-844856362c9d-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Grygorii Strashko <grygorii.strashko@ti.com>
+Hi Andrew, thanks for the drill-down on BQ27* chips.
 
-There are two reasons for reporting wakeup event when dedicated wakeup
-IRQ is triggered:
+On Mon, Feb 13, 2017 at 8:06 AM, Andrew F. Davis <afd-l0cyMroinI0@public.gmane.org> wrote:
+> On 02/10/2017 08:43 PM, Liam Breck wrote:
+>> From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>>
+>> Documentation of static battery characteristics that can be defined
+>> for batteries which cannot self-identify. This information is required
+>> by fuel-gauge and charger chips for proper handling of the battery.
+>
+>
+> I think some of the confusion about what a "smart-battery" binding would
+> look like is due to a miss-understanding what it means to
+> "self-identify". Originally the bq27xxx *was* the chip that lived its
+> whole life inside a battery (the iphone battery is one such example and
+> a good way to test the bq27000). This way it could be factory programmed
+> with the battery's basics and then learn about the individual pack over
+> time to provide better info on time to empty, discharge rates, etc..
+>
+> Eventually, people wanted to have the battery become cheap and
+> replaceable, so fuel-gauges were made that are "system side", and ride
+> along with the device, not the battery. Now this has one big problem,
+> how can we learn about a battery when it may be a new battery every time
+> we boot up? So we added programmable memory to the devices, and
+> programming this memory looks to be what this series is about.
+>
+> Only the battery design info is programmed in this series, but much more
+> battery info can be uploaded, including stuff that is not fixed and
+> therefor cannot be added to the DT. Even the design parameters may not
+> be fix if one changes the battery as different manufactures of the same
+> battery type may have different design capacities.
+>
+> The ideal use-case in a system with a system side gauge is the OS should
+> periodically, or just before shutdown, read the battery's learned info
+> and when the device is powered back up, if the battery serial number
+> matches from before, re-upload this learned info to the gauge so it
+> doesn't have to re-learn everything. All of this will need to happen in
+> user-space, so what we really need is a user-space API for manipulating
+> these properties.
 
-- wakeup events accounting, so proper statistical data will be
-  displayed in sysfs and debugfs;
+We would need a feature in the driver to get/set the blob of pack- or
+cell-unique data. The userspace api is one sysfs file.
 
-- there are small window when System is entering suspend during which
-  dedicated wakeup IRQ can be lost:
+However the DT fixed-battery node could indicate when/how-often the
+object is stored, and where, e.g. filename. If the latter is given,
+the driver should write/read the file itself.
 
-dpm_suspend_noirq()
-  |- device_wakeup_arm_wake_irqs()
-      |- dev_pm_arm_wake_irq(X)
-         |- IRQ is enabled and marked as wakeup source
-[1]...
-  |- suspend_device_irqs()
-     |- suspend_device_irq(X)
-	|- irqd_set(X, IRQD_WAKEUP_ARMED);
-	   |- wakup IRQ armed
+Is there some documentation about what registers should go in this blob?
 
-The wakeup IRQ can be lost if it's triggered at point [1]
-and not armed yet.
+That concept is beyond the scope of this patchset (and doesn't
+supersede it), but is something I'd like to implement for our chip,
+the *425.
 
-Hence, fix above cases by adding simple pm_wakeup_event() call in
-handle_threaded_wake_irq().
 
-Fixes: 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ
-handling")
-Cc: Brian Norris <briannorris@chromium.org>
-Cc: Tero Kristo <t-kristo@ti.com>
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
-Tested-by: Keerthy <j-keerthy@ti.com>
-[tony@atomide.com: added missing return to avoid warnings]
-Tested-by: Tony Lindgren <tony@atomide.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
----
- drivers/base/power/wakeirq.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+> The properties added in this series are okay, and it's good to have some
+> sane defaults in DT, but looking forward this may not be enough to get
+> full use out of these devices.
 
-diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
---- a/drivers/base/power/wakeirq.c
-+++ b/drivers/base/power/wakeirq.c
-@@ -141,6 +141,13 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
- 	struct wake_irq *wirq = _wirq;
- 	int res;
- 
-+	/* Maybe abort suspend? */
-+	if (irqd_is_wakeup_set(irq_get_irq_data(irq))) {
-+		pm_wakeup_event(wirq->dev, 0);
-+
-+		return IRQ_HANDLED;
-+	}
-+
- 	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
- 	res = pm_runtime_resume(wirq->dev);
- 	if (res < 0)
--- 
-2.11.1
+I'm relieved you're not opposed to our patch :-) Now I just need that
+guidance I mentioned re the chip family...
+
+
+>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>> ---
+>>  .../devicetree/bindings/power/supply/battery.txt   | 37 ++++++++++++++++++++++
+>>  1 file changed, 37 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> new file mode 100644
+>> index 0000000..d78a4aa
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> @@ -0,0 +1,37 @@
+>> +Battery Characteristics
+>> +
+>> +Required Properties:
+>> + - compatible: Must be "fixed-battery"
+>> +
+>> +Optional Properties:
+>> + - voltage-min-design-microvolt: drained battery voltage
+>> + - energy-full-design-microwatt-hours: battery design energy
+>> + - charge-full-design-microamp-hours: battery design capacity
+>> +
+>> +Future Properties must be named for the corresponding elements in
+>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>> +
+>> +Batteries must be referenced by chargers and/or fuel-gauges
+>> +using a phandle. The phandle's property should be named
+>> +"monitored-battery".
+>> +
+>> +Example:
+>> +
+>> +     bat: battery {
+>> +             compatible = "fixed-battery";
+>> +             voltage-min-design-microvolt = <3200000>;
+>> +             energy-full-design-microwatt-hours = <5290000>;
+>> +             charge-full-design-microamp-hours = <1430000>;
+>> +     };
+>> +
+>> +     charger: charger@11 {
+>> +             ....
+>> +             monitored-battery = <&bat>;
+>> +             ...
+>> +     };
+>> +
+>> +     fuel_gauge: fuel-gauge@22 {
+>> +             ....
+>> +             monitored-battery = <&bat>;
+>> +             ...
+>> +     };
+>>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
