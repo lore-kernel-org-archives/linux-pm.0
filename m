@@ -1,331 +1,259 @@
-From: <yuantian.tang@nxp.com>
-Subject: [PATCH 2/2 v4] cpufreq: qoriq: Don't look at clock implementation details
-Date: Mon, 13 Feb 2017 11:30:55 +0800
-Message-ID: <1486956655-4261-2-git-send-email-yuantian.tang@nxp.com>
-References: <1486956655-4261-1-git-send-email-yuantian.tang@nxp.com>
+From: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+Subject: Re: [PATCH v13 06/12] usb: xhci: use bus->sysdev for DMA
+ configuration
+Date: Mon, 13 Feb 2017 09:25:24 +0100
+Message-ID: <3dd29f25-5a6f-11b0-c722-5f1e4587fd4e@nokia.com>
+References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
+ <1486776443-2280-7-git-send-email-peter.chen@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-co1nam03on0089.outbound.protection.outlook.com ([104.47.40.89]:31532
-        "EHLO NAM03-CO1-obe.outbound.protection.outlook.com"
+Received: from mail-eopbgr10126.outbound.protection.outlook.com ([40.107.1.126]:32944
+        "EHLO EUR02-HE1-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751562AbdBMDo5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 12 Feb 2017 22:44:57 -0500
-In-Reply-To: <1486956655-4261-1-git-send-email-yuantian.tang@nxp.com>
+        id S1751712AbdBMI3a (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Feb 2017 03:29:30 -0500
+In-Reply-To: <1486776443-2280-7-git-send-email-peter.chen@nxp.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: viresh.kumar@linaro.org, leoyang.li@nxp.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@nxp.com>, Scott Wood <scottwood@nxp.com>, Tang Yuantian <yuantian.tang@nxp.com>
+To: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com
+Cc: heiko@sntech.de, linux-arm-kernel@lists.infradead.org, p.zabel@pengutronix.de, devicetree@vger.kernel.org, pawel.moll@arm.com, mark.rutland@arm.com, linux-usb@vger.kernel.org, arnd@arndb.de, s.hauer@pengutronix.de, mail@maciej.szmigiero.name, troy.kisky@boundarydevices.com, festevam@gmail.com, oscar@naiandei.net, stephen.boyd@linaro.org, linux-pm@vger.kernel.org, stillcompiling@gmail.com, linux-kernel@vger.kernel.org, mka@chromium.org, vaibhav.hiremath@linaro.org, gary.bisson@boundarydevices.com, hverkuil@xs4all.nl, krzk@kernel.org, frank.li@nxp.com, jun.li@nxp.com, Baolin Wang <baolin.wang@linaro.org>, Vivek Gautam <vivek.gautam@codeaurora.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Sriram Dash <sriram.dash@nxp.com>
 
-From: Tang Yuantian <Yuantian.Tang@nxp.com>
+Hi!
 
-Get the CPU clock's potential parent clocks from the clock interface
-itself, rather than manually parsing the clocks property to find a
-phandle, looking at the clock-names property of that, and assuming that
-those are valid parent clocks for the cpu clock.
+On 11/02/17 02:27, Peter Chen wrote:
+> For xhci-hcd platform device, all the DMA parameters are not
+> configured properly, notably dma ops for dwc3 devices. So, set
+> the dma for xhci from sysdev. sysdev is pointing to device that
+> is known to the system firmware or hardware.
+> 
+> Cc: Baolin Wang <baolin.wang@linaro.org>
+> Cc: Vivek Gautam <vivek.gautam@codeaurora.org>
+> Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+> Cc: Mathias Nyman <mathias.nyman@linux.intel.com>
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+> ---
+> Hi, Baolin, Vivek and Alexander,
+> I removed your tested-by tag due to add one change that adding sysdev
+> for shared hcd too, if your test shows this change works for you or
+> has no effect for you, please consider adding tested-by tag again,
+> thanks.
 
-This is necessary now that the clocks are generated based on the clock
-driver's knowledge of the chip rather than a fragile device-tree
-description of the mux options.
+This was exactly the missing/requiring part in your patch for my case.
+I had to add it extra for the first test.
+So, again, here is my
+Tested-by: Alexander Sverdlin <alexander.sverdlin@nokia.com>
 
-We can now rely on the clock driver to ensure that the mux only exposes
-options that are valid.  The cpufreq driver was currently being overly
-conservative in some cases -- for example, the "min_cpufreq =
-get_bus_freq()" restriction only applies to chips with erratum
-A-004510, and whether the freq_mask used on p5020 is needed depends on
-the actual frequencies of the PLLs (FWIW, p5040 has a similar
-limitation but its .freq_mask was zero) -- and the frequency mask
-mechanism made assumptions about particular parent clock indices that
-are no longer valid.
+>  drivers/usb/host/xhci-mem.c  | 12 ++++++------
+>  drivers/usb/host/xhci-plat.c | 35 +++++++++++++++++++++++++++--------
+>  drivers/usb/host/xhci.c      | 15 +++++++++++----
+>  3 files changed, 44 insertions(+), 18 deletions(-)
+> 
+> diff --git a/drivers/usb/host/xhci-mem.c b/drivers/usb/host/xhci-mem.c
+> index ba1853f4..032a702 100644
+> --- a/drivers/usb/host/xhci-mem.c
+> +++ b/drivers/usb/host/xhci-mem.c
+> @@ -586,7 +586,7 @@ static void xhci_free_stream_ctx(struct xhci_hcd *xhci,
+>  		unsigned int num_stream_ctxs,
+>  		struct xhci_stream_ctx *stream_ctx, dma_addr_t dma)
+>  {
+> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
+> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
+>  	size_t size = sizeof(struct xhci_stream_ctx) * num_stream_ctxs;
+>  
+>  	if (size > MEDIUM_STREAM_ARRAY_SIZE)
+> @@ -614,7 +614,7 @@ static struct xhci_stream_ctx *xhci_alloc_stream_ctx(struct xhci_hcd *xhci,
+>  		unsigned int num_stream_ctxs, dma_addr_t *dma,
+>  		gfp_t mem_flags)
+>  {
+> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
+> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
+>  	size_t size = sizeof(struct xhci_stream_ctx) * num_stream_ctxs;
+>  
+>  	if (size > MEDIUM_STREAM_ARRAY_SIZE)
+> @@ -1686,7 +1686,7 @@ void xhci_slot_copy(struct xhci_hcd *xhci,
+>  static int scratchpad_alloc(struct xhci_hcd *xhci, gfp_t flags)
+>  {
+>  	int i;
+> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
+> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
+>  	int num_sp = HCS_MAX_SCRATCHPAD(xhci->hcs_params2);
+>  
+>  	xhci_dbg_trace(xhci, trace_xhci_dbg_init,
+> @@ -1758,7 +1758,7 @@ static void scratchpad_free(struct xhci_hcd *xhci)
+>  {
+>  	int num_sp;
+>  	int i;
+> -	struct device *dev = xhci_to_hcd(xhci)->self.controller;
+> +	struct device *dev = xhci_to_hcd(xhci)->self.sysdev;
+>  
+>  	if (!xhci->scratchpad)
+>  		return;
+> @@ -1831,7 +1831,7 @@ void xhci_free_command(struct xhci_hcd *xhci,
+>  
+>  void xhci_mem_cleanup(struct xhci_hcd *xhci)
+>  {
+> -	struct device	*dev = xhci_to_hcd(xhci)->self.controller;
+> +	struct device	*dev = xhci_to_hcd(xhci)->self.sysdev;
+>  	int size;
+>  	int i, j, num_ports;
+>  
+> @@ -2373,7 +2373,7 @@ static int xhci_setup_port_arrays(struct xhci_hcd *xhci, gfp_t flags)
+>  int xhci_mem_init(struct xhci_hcd *xhci, gfp_t flags)
+>  {
+>  	dma_addr_t	dma;
+> -	struct device	*dev = xhci_to_hcd(xhci)->self.controller;
+> +	struct device	*dev = xhci_to_hcd(xhci)->self.sysdev;
+>  	unsigned int	val, val2;
+>  	u64		val_64;
+>  	struct xhci_segment	*seg;
+> diff --git a/drivers/usb/host/xhci-plat.c b/drivers/usb/host/xhci-plat.c
+> index 6d33b42..4ecb3fd 100644
+> --- a/drivers/usb/host/xhci-plat.c
+> +++ b/drivers/usb/host/xhci-plat.c
+> @@ -14,6 +14,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/dma-mapping.h>
+>  #include <linux/module.h>
+> +#include <linux/pci.h>
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/usb/phy.h>
+> @@ -148,6 +149,7 @@ static int xhci_plat_probe(struct platform_device *pdev)
+>  {
+>  	const struct of_device_id *match;
+>  	const struct hc_driver	*driver;
+> +	struct device		*sysdev;
+>  	struct xhci_hcd		*xhci;
+>  	struct resource         *res;
+>  	struct usb_hcd		*hcd;
+> @@ -164,22 +166,39 @@ static int xhci_plat_probe(struct platform_device *pdev)
+>  	if (irq < 0)
+>  		return -ENODEV;
+>  
+> +	/*
+> +	 * sysdev must point to a device that is known to the system firmware
+> +	 * or PCI hardware. We handle these three cases here:
+> +	 * 1. xhci_plat comes from firmware
+> +	 * 2. xhci_plat is child of a device from firmware (dwc3-plat)
+> +	 * 3. xhci_plat is grandchild of a pci device (dwc3-pci)
+> +	 */
+> +	sysdev = &pdev->dev;
+> +	if (sysdev->parent && !sysdev->of_node && sysdev->parent->of_node)
+> +		sysdev = sysdev->parent;
+> +#ifdef CONFIG_PCI
+> +	else if (sysdev->parent && sysdev->parent->parent &&
+> +		 sysdev->parent->parent->bus == &pci_bus_type)
+> +		sysdev = sysdev->parent->parent;
+> +#endif
+> +
+>  	/* Try to set 64-bit DMA first */
+> -	if (!pdev->dev.dma_mask)
+> +	if (WARN_ON(!sysdev->dma_mask))
+>  		/* Platform did not initialize dma_mask */
+> -		ret = dma_coerce_mask_and_coherent(&pdev->dev,
+> +		ret = dma_coerce_mask_and_coherent(sysdev,
+>  						   DMA_BIT_MASK(64));
+>  	else
+> -		ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(64));
+> +		ret = dma_set_mask_and_coherent(sysdev, DMA_BIT_MASK(64));
+>  
+>  	/* If seting 64-bit DMA mask fails, fall back to 32-bit DMA mask */
+>  	if (ret) {
+> -		ret = dma_set_mask_and_coherent(&pdev->dev, DMA_BIT_MASK(32));
+> +		ret = dma_set_mask_and_coherent(sysdev, DMA_BIT_MASK(32));
+>  		if (ret)
+>  			return ret;
+>  	}
+>  
+> -	hcd = usb_create_hcd(driver, &pdev->dev, dev_name(&pdev->dev));
+> +	hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+> +			       dev_name(&pdev->dev), NULL);
+>  	if (!hcd)
+>  		return -ENOMEM;
+>  
+> @@ -222,20 +241,20 @@ static int xhci_plat_probe(struct platform_device *pdev)
+>  
+>  	xhci->clk = clk;
+>  	xhci->main_hcd = hcd;
+> -	xhci->shared_hcd = usb_create_shared_hcd(driver, &pdev->dev,
+> +	xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+>  			dev_name(&pdev->dev), hcd);
+>  	if (!xhci->shared_hcd) {
+>  		ret = -ENOMEM;
+>  		goto disable_clk;
+>  	}
+>  
+> -	if (device_property_read_bool(&pdev->dev, "usb3-lpm-capable"))
+> +	if (device_property_read_bool(sysdev, "usb3-lpm-capable"))
+>  		xhci->quirks |= XHCI_LPM_SUPPORT;
+>  
+>  	if (device_property_read_bool(&pdev->dev, "quirk-broken-port-ped"))
+>  		xhci->quirks |= XHCI_BROKEN_PORT_PED;
+>  
+> -	hcd->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev, "usb-phy", 0);
+> +	hcd->usb_phy = devm_usb_get_phy_by_phandle(sysdev, "usb-phy", 0);
+>  	if (IS_ERR(hcd->usb_phy)) {
+>  		ret = PTR_ERR(hcd->usb_phy);
+>  		if (ret == -EPROBE_DEFER)
+> diff --git a/drivers/usb/host/xhci.c b/drivers/usb/host/xhci.c
+> index 6d6c460..ab0839c 100644
+> --- a/drivers/usb/host/xhci.c
+> +++ b/drivers/usb/host/xhci.c
+> @@ -237,6 +237,9 @@ static int xhci_free_msi(struct xhci_hcd *xhci)
+>  static int xhci_setup_msi(struct xhci_hcd *xhci)
+>  {
+>  	int ret;
+> +	/*
+> +	 * TODO:Check with MSI Soc for sysdev
+> +	 */
+>  	struct pci_dev  *pdev = to_pci_dev(xhci_to_hcd(xhci)->self.controller);
+>  
+>  	ret = pci_enable_msi(pdev);
+> @@ -263,7 +266,7 @@ static int xhci_setup_msi(struct xhci_hcd *xhci)
+>   */
+>  static void xhci_free_irq(struct xhci_hcd *xhci)
+>  {
+> -	struct pci_dev *pdev = to_pci_dev(xhci_to_hcd(xhci)->self.controller);
+> +	struct pci_dev *pdev = to_pci_dev(xhci_to_hcd(xhci)->self.sysdev);
+>  	int ret;
+>  
+>  	/* return if using legacy interrupt */
+> @@ -748,7 +751,7 @@ void xhci_shutdown(struct usb_hcd *hcd)
+>  	struct xhci_hcd *xhci = hcd_to_xhci(hcd);
+>  
+>  	if (xhci->quirks & XHCI_SPURIOUS_REBOOT)
+> -		usb_disable_xhci_ports(to_pci_dev(hcd->self.controller));
+> +		usb_disable_xhci_ports(to_pci_dev(hcd->self.sysdev));
+>  
+>  	spin_lock_irq(&xhci->lock);
+>  	xhci_halt(xhci);
+> @@ -765,7 +768,7 @@ void xhci_shutdown(struct usb_hcd *hcd)
+>  
+>  	/* Yet another workaround for spurious wakeups at shutdown with HSW */
+>  	if (xhci->quirks & XHCI_SPURIOUS_WAKEUP)
+> -		pci_set_power_state(to_pci_dev(hcd->self.controller), PCI_D3hot);
+> +		pci_set_power_state(to_pci_dev(hcd->self.sysdev), PCI_D3hot);
+>  }
+>  
+>  #ifdef CONFIG_PM
+> @@ -4801,7 +4804,11 @@ int xhci_get_frame(struct usb_hcd *hcd)
+>  int xhci_gen_setup(struct usb_hcd *hcd, xhci_get_quirks_t get_quirks)
+>  {
+>  	struct xhci_hcd		*xhci;
+> -	struct device		*dev = hcd->self.controller;
+> +	/*
+> +	 * TODO: Check with DWC3 clients for sysdev according to
+> +	 * quirks
+> +	 */
+> +	struct device		*dev = hcd->self.sysdev;
+>  	int			retval;
+>  
+>  	/* Accept arbitrarily long scatter-gather lists */
 
-Signed-off-by: Scott Wood <scottwood@nxp.com>
-Signed-off-by: Tang Yuantian <yuantian.tang@nxp.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-v2: added more soc compatible strings
-v3: Remove the now-unused pnode and the call to of_node_put()
-v4: fixed warning:
-	>> [-Werror=implicit-function-declaration]
-	>      return get_hard_smp_processor_id(cpu);
-
- drivers/cpufreq/qoriq-cpufreq.c | 152 +++++++++++++---------------------------
- 1 file changed, 49 insertions(+), 103 deletions(-)
-
-diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-index 53d8c3f..bfec1bc 100644
---- a/drivers/cpufreq/qoriq-cpufreq.c
-+++ b/drivers/cpufreq/qoriq-cpufreq.c
-@@ -11,6 +11,7 @@
- #define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
- 
- #include <linux/clk.h>
-+#include <linux/clk-provider.h>
- #include <linux/cpufreq.h>
- #include <linux/cpu_cooling.h>
- #include <linux/errno.h>
-@@ -22,10 +23,6 @@
- #include <linux/slab.h>
- #include <linux/smp.h>
- 
--#if !defined(CONFIG_ARM)
--#include <asm/smp.h>	/* for get_hard_smp_processor_id() in UP configs */
--#endif
--
- /**
-  * struct cpu_data
-  * @pclk: the parent clock of cpu
-@@ -37,53 +34,20 @@ struct cpu_data {
- 	struct thermal_cooling_device *cdev;
- };
- 
-+/*
-+ * Don't use cpufreq on this SoC -- used when the SoC would have otherwise
-+ * matched a more generic compatible.
-+ */
-+#define SOC_BLACKLIST		1
-+
- /**
-  * struct soc_data - SoC specific data
-- * @freq_mask: mask the disallowed frequencies
-- * @flag: unique flags
-+ * @flags: SOC_xxx
-  */
- struct soc_data {
--	u32 freq_mask[4];
--	u32 flag;
-+	u32 flags;
- };
- 
--#define FREQ_MASK	1
--/* see hardware specification for the allowed frqeuencies */
--static const struct soc_data sdata[] = {
--	{ /* used by p2041 and p3041 */
--		.freq_mask = {0x8, 0x8, 0x2, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p5020 */
--		.freq_mask = {0x8, 0x2},
--		.flag = FREQ_MASK,
--	},
--	{ /* used by p4080, p5040 */
--		.freq_mask = {0},
--		.flag = 0,
--	},
--};
--
--/*
-- * the minimum allowed core frequency, in Hz
-- * for chassis v1.0, >= platform frequency
-- * for chassis v2.0, >= platform frequency / 2
-- */
--static u32 min_cpufreq;
--static const u32 *fmask;
--
--#if defined(CONFIG_ARM)
--static int get_cpu_physical_id(int cpu)
--{
--	return topology_core_id(cpu);
--}
--#else
--static int get_cpu_physical_id(int cpu)
--{
--	return get_hard_smp_processor_id(cpu);
--}
--#endif
--
- static u32 get_bus_freq(void)
- {
- 	struct device_node *soc;
-@@ -101,9 +65,10 @@ static u32 get_bus_freq(void)
- 	return sysfreq;
- }
- 
--static struct device_node *cpu_to_clk_node(int cpu)
-+static struct clk *cpu_to_clk(int cpu)
- {
--	struct device_node *np, *clk_np;
-+	struct device_node *np;
-+	struct clk *clk;
- 
- 	if (!cpu_present(cpu))
- 		return NULL;
-@@ -112,37 +77,28 @@ static struct device_node *cpu_to_clk_node(int cpu)
- 	if (!np)
- 		return NULL;
- 
--	clk_np = of_parse_phandle(np, "clocks", 0);
--	if (!clk_np)
--		return NULL;
--
-+	clk = of_clk_get(np, 0);
- 	of_node_put(np);
--
--	return clk_np;
-+	return clk;
- }
- 
- /* traverse cpu nodes to get cpu mask of sharing clock wire */
- static void set_affected_cpus(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *clk_np;
- 	struct cpumask *dstp = policy->cpus;
-+	struct clk *clk;
- 	int i;
- 
--	np = cpu_to_clk_node(policy->cpu);
--	if (!np)
--		return;
--
- 	for_each_present_cpu(i) {
--		clk_np = cpu_to_clk_node(i);
--		if (!clk_np)
-+		clk = cpu_to_clk(i);
-+		if (IS_ERR(clk)) {
-+			pr_err("%s: no clock for cpu %d\n", __func__, i);
- 			continue;
-+		}
- 
--		if (clk_np == np)
-+		if (clk_is_match(policy->clk, clk))
- 			cpumask_set_cpu(i, dstp);
--
--		of_node_put(clk_np);
- 	}
--	of_node_put(np);
- }
- 
- /* reduce the duplicated frequencies in frequency table */
-@@ -198,10 +154,11 @@ static void freq_table_sort(struct cpufreq_frequency_table *freq_table,
- 
- static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	struct device_node *np, *pnode;
-+	struct device_node *np;
- 	int i, count, ret;
--	u32 freq, mask;
-+	u32 freq;
- 	struct clk *clk;
-+	const struct clk_hw *hwclk;
- 	struct cpufreq_frequency_table *table;
- 	struct cpu_data *data;
- 	unsigned int cpu = policy->cpu;
-@@ -221,17 +178,13 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_nomem2;
- 	}
- 
--	pnode = of_parse_phandle(np, "clocks", 0);
--	if (!pnode) {
--		pr_err("%s: could not get clock information\n", __func__);
--		goto err_nomem2;
--	}
-+	hwclk = __clk_get_hw(policy->clk);
-+	count = clk_hw_get_num_parents(hwclk);
- 
--	count = of_property_count_strings(pnode, "clock-names");
- 	data->pclk = kcalloc(count, sizeof(struct clk *), GFP_KERNEL);
- 	if (!data->pclk) {
- 		pr_err("%s: no memory\n", __func__);
--		goto err_node;
-+		goto err_nomem2;
- 	}
- 
- 	table = kcalloc(count + 1, sizeof(*table), GFP_KERNEL);
-@@ -240,23 +193,11 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		goto err_pclk;
- 	}
- 
--	if (fmask)
--		mask = fmask[get_cpu_physical_id(cpu)];
--	else
--		mask = 0x0;
--
- 	for (i = 0; i < count; i++) {
--		clk = of_clk_get(pnode, i);
-+		clk = clk_hw_get_parent_by_index(hwclk, i)->clk;
- 		data->pclk[i] = clk;
- 		freq = clk_get_rate(clk);
--		/*
--		 * the clock is valid if its frequency is not masked
--		 * and large than minimum allowed frequency.
--		 */
--		if (freq < min_cpufreq || (mask & (1 << i)))
--			table[i].frequency = CPUFREQ_ENTRY_INVALID;
--		else
--			table[i].frequency = freq / 1000;
-+		table[i].frequency = freq / 1000;
- 		table[i].driver_data = i;
- 	}
- 	freq_table_redup(table, count);
-@@ -282,7 +223,6 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = u64temp + 1;
- 
- 	of_node_put(np);
--	of_node_put(pnode);
- 
- 	return 0;
- 
-@@ -290,10 +230,7 @@ static int qoriq_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	kfree(table);
- err_pclk:
- 	kfree(data->pclk);
--err_node:
--	of_node_put(pnode);
- err_nomem2:
--	policy->driver_data = NULL;
- 	kfree(data);
- err_np:
- 	of_node_put(np);
-@@ -357,12 +294,25 @@ static struct cpufreq_driver qoriq_cpufreq_driver = {
- 	.attr		= cpufreq_generic_attr,
- };
- 
-+static const struct soc_data blacklist = {
-+	.flags = SOC_BLACKLIST,
-+};
-+
- static const struct of_device_id node_matches[] __initconst = {
--	{ .compatible = "fsl,p2041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p3041-clockgen", .data = &sdata[0], },
--	{ .compatible = "fsl,p5020-clockgen", .data = &sdata[1], },
--	{ .compatible = "fsl,p4080-clockgen", .data = &sdata[2], },
--	{ .compatible = "fsl,p5040-clockgen", .data = &sdata[2], },
-+	/* e6500 cannot use cpufreq due to erratum A-008083 */
-+	{ .compatible = "fsl,b4420-clockgen", &blacklist },
-+	{ .compatible = "fsl,b4860-clockgen", &blacklist },
-+	{ .compatible = "fsl,t2080-clockgen", &blacklist },
-+	{ .compatible = "fsl,t4240-clockgen", &blacklist },
-+
-+	{ .compatible = "fsl,ls1012a-clockgen", },
-+	{ .compatible = "fsl,ls1021a-clockgen", },
-+	{ .compatible = "fsl,ls1043a-clockgen", },
-+	{ .compatible = "fsl,ls1046a-clockgen", },
-+	{ .compatible = "fsl,ls1088a-clockgen", },
-+	{ .compatible = "fsl,ls2080a-clockgen", },
-+	{ .compatible = "fsl,p4080-clockgen", },
-+	{ .compatible = "fsl,qoriq-clockgen-1.0", },
- 	{ .compatible = "fsl,qoriq-clockgen-2.0", },
- 	{}
- };
-@@ -380,16 +330,12 @@ static int __init qoriq_cpufreq_init(void)
- 
- 	match = of_match_node(node_matches, np);
- 	data = match->data;
--	if (data) {
--		if (data->flag)
--			fmask = data->freq_mask;
--		min_cpufreq = get_bus_freq();
--	} else {
--		min_cpufreq = get_bus_freq() / 2;
--	}
- 
- 	of_node_put(np);
- 
-+	if (data && data->flags & SOC_BLACKLIST)
-+		return -ENODEV;
-+
- 	ret = cpufreq_register_driver(&qoriq_cpufreq_driver);
- 	if (!ret)
- 		pr_info("Freescale QorIQ CPU frequency scaling driver\n");
 -- 
-2.1.0.27.g96db324
-
+Best regards,
+Alexander Sverdlin.
