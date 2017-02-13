@@ -1,125 +1,117 @@
-From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v8 3/3] dmaengine: pl330: Don't require irq-safe runtime PM
-Date: Mon, 13 Feb 2017 21:17:27 +0530
-Message-ID: <20170213154727.GN2843@localhost>
-References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170209142309eucas1p2b1277d96139eafc0d1dcc14145600476@eucas1p2.samsung.com>
- <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
- <20170210045004.GN19244@localhost>
- <d299ae6c-78dc-9049-6bed-dc84fff17db3@samsung.com>
- <CAPDyKFqW2av1mjDvRP=R1my2kepeX69TS6cchzoHmwaoydT5Sg@mail.gmail.com>
- <20170213020340.GH2843@localhost>
- <CAPDyKFpt9O8GM-7xeNJ8bF0JqUJ7nPaRmmC+aMVsdMH-yWBCNg@mail.gmail.com>
- <20170213122742.GL2843@localhost>
- <CAPDyKFqnmhps5nhj-exZ0rnmkwdeD+iuz3CH7btjvxoJaZtVDg@mail.gmail.com>
+From: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>
+Subject: Re: [PATCH v6 1/8] devicetree: power: Add battery.txt
+Date: Mon, 13 Feb 2017 10:06:36 -0600
+Message-ID: <ce69f358-ac3b-993d-0639-844856362c9d@ti.com>
+References: <20170211024340.19491-1-liam@networkimprov.net>
+ <20170211024340.19491-2-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFqnmhps5nhj-exZ0rnmkwdeD+iuz3CH7btjvxoJaZtVDg@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, dmaengine@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170211024340.19491-2-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 13, 2017 at 04:32:32PM +0100, Ulf Hansson wrote:
-> [...]
+On 02/10/2017 08:43 PM, Liam Breck wrote:
+> From: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 > 
-> >> Although, I don't know of other examples, besides the runtime PM use
-> >> case, where non-atomic channel prepare/unprepare would make sense. Do
-> >> you?
-> >
-> > The primary ask for that has been to enable runtime_pm for drivers. It's not
-> > a new ask, but we somehow haven't gotten around to do it.
-> 
-> Okay, I see.
-> 
-> >
-> >> > As I said earlier, if we want to solve that problem a better idea is to
-> >> > actually split the prepare as we discussed in [1]
-> >> >
-> >> > This way we can get a non atomic descriptor allocate/prepare and release.
-> >> > Yes we need to redesign the APIs to solve this, but if you guys are up for
-> >> > it, I think we can do it and avoid any further round abouts :)
-> >>
-> >> Adding/re-designing dma APIs is a viable option to solve the runtime PM case.
-> >>
-> >> Changes would be needed for all related dma client drivers as well,
-> >> although if that's what we need to do - let's do it.
-> >
-> > Yes, but do bear in mind that some cases do need atomic prepare. The primary
-> > cases for DMA had that in mind and also submitting next transaction from the
-> > callback (tasklet) context, so that won't go away.
-> >
-> > It would help in other cases where clients know that they will not be in
-> > atomic context so we provide additional non-atomic "allocation" followed by
-> > prepare, so that drivers can split the work among these and people can do
-> > runtime_pm and other things..
-> 
-> That for sharing the details.
-> 
-> It seems like some dma expert really need to be heavily involved if we
-> ever are going to complete this work. :-)
+> Documentation of static battery characteristics that can be defined
+> for batteries which cannot self-identify. This information is required
+> by fuel-gauge and charger chips for proper handling of the battery.
 
-Sure, I will help out :)
 
-If anyone of you are in Portland next week, then we can discuss these f2f. I
-will try taking a stab at the new API design next week.
+I think some of the confusion about what a "smart-battery" binding would
+look like is due to a miss-understanding what it means to
+"self-identify". Originally the bq27xxx *was* the chip that lived its
+whole life inside a battery (the iphone battery is one such example and
+a good way to test the bq27000). This way it could be factory programmed
+with the battery's basics and then learn about the individual pack over
+time to provide better info on time to empty, discharge rates, etc..
+
+Eventually, people wanted to have the battery become cheap and
+replaceable, so fuel-gauges were made that are "system side", and ride
+along with the device, not the battery. Now this has one big problem,
+how can we learn about a battery when it may be a new battery every time
+we boot up? So we added programmable memory to the devices, and
+programming this memory looks to be what this series is about.
+
+Only the battery design info is programmed in this series, but much more
+battery info can be uploaded, including stuff that is not fixed and
+therefor cannot be added to the DT. Even the design parameters may not
+be fix if one changes the battery as different manufactures of the same
+battery type may have different design capacities.
+
+The ideal use-case in a system with a system side gauge is the OS should
+periodically, or just before shutdown, read the battery's learned info
+and when the device is powered back up, if the battery serial number
+matches from before, re-upload this learned info to the gauge so it
+doesn't have to re-learn everything. All of this will need to happen in
+user-space, so what we really need is a user-space API for manipulating
+these properties.
+
+The properties added in this series are okay, and it's good to have some
+sane defaults in DT, but looking forward this may not be enough to get
+full use out of these devices.
+
+Andrew
 
 > 
-> [...]
+> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+> ---
+>  .../devicetree/bindings/power/supply/battery.txt   | 37 ++++++++++++++++++++++
+>  1 file changed, 37 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 > 
-> >>
-> >> 1) Dependencies between dma drivers and dma client drivers during system
-> >> PM. For example, a dma client driver needs the dma controller to be
-> >> operational (remain system resumed), until the dma client driver itself
-> >> becomes system suspended.
-> >>
-> >> The *only* currently available solution for this, is to try to system
-> >> suspend the dma controller later than the dma client, via using the *late
-> >> or the *noirq system PM callbacks. This works for most cases, but it
-> >> becomes a problem when the dma client also needs to be system suspended at
-> >> the *late or the *noirq phase. Clearly this solution that doesn't scale.
-> >>
-> >> Using device links explicitly solves this problem as it allows to specify
-> >> this dependency between devices.
-> >
-> > Yes this is an interesting point. Yes till now people have been doing above
-> > to workaround this problem, but hey this is not a unique to dmaengine. Any
-> > subsystem which provides services to others has this issue, so the solution
-> > much be driver or pm framework and not unique to dmaengine.
+> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+> new file mode 100644
+> index 0000000..d78a4aa
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+> @@ -0,0 +1,37 @@
+> +Battery Characteristics
+> +
+> +Required Properties:
+> + - compatible: Must be "fixed-battery"
+> +
+> +Optional Properties:
+> + - voltage-min-design-microvolt: drained battery voltage
+> + - energy-full-design-microwatt-hours: battery design energy
+> + - charge-full-design-microamp-hours: battery design capacity
+> +
+> +Future Properties must be named for the corresponding elements in
+> +enum power_supply_property, defined in include/linux/power_supply.h.
+> +
+> +Batteries must be referenced by chargers and/or fuel-gauges
+> +using a phandle. The phandle's property should be named
+> +"monitored-battery".
+> +
+> +Example:
+> +
+> +	bat: battery {
+> +		compatible = "fixed-battery";
+> +		voltage-min-design-microvolt = <3200000>;
+> +		energy-full-design-microwatt-hours = <5290000>;
+> +		charge-full-design-microamp-hours = <1430000>;
+> +	};
+> +
+> +	charger: charger@11 {
+> +		....
+> +		monitored-battery = <&bat>;
+> +		...
+> +	};
+> +
+> +	fuel_gauge: fuel-gauge@22 {
+> +		....
+> +		monitored-battery = <&bat>;
+> +		...
+> +	};
 > 
-> I definitely agree, these problems aren't unique to the dmaengine
-> subsystem. Exactly how/where to manage them, that I guess, is the key
-> question.
-> 
-> However, I can't resist from finding the device links useful, as those
-> really do address and solve our issues from a runtime/system PM point
-> of view.
-> 
-> >
-> >> 2) We won't avoid dma clients from getting -EPROBE_DEFER when requesting
-> >> their dma channels in their ->probe() routines. This would be possible, if
-> >> we can set up the device links at device initialization.
-> >
-> > Well setting those links is not practical at initialization time. Most
-> > modern dma controllers feature a SW mux, with multiple clients connecting
-> > and requesting, would we link all of them? Most of times dmaengine driver
-> > wont know about those..
-> 
-> Okay, I see!
-> 
-> Kind regards
-> Uffe
-
--- 
-~Vinod
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
