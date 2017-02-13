@@ -1,51 +1,46 @@
-From: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
-Subject: Re: [PATCH V2 1/2] dt-bindings: Add thermal zone to bcm2835-thermal example
-Date: Mon, 13 Feb 2017 13:42:11 -0800
-Message-ID: <878tp9kbt8.fsf@eliezer.anholt.net>
-References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v5 7/8] thunderbolt: Power down controller when idle
+Date: Mon, 13 Feb 2017 16:57:32 -0600
+Message-ID: <20170213225732.GB8080@bhelgaas-glaptop.roam.corp.google.com>
+References: <cover.1484486499.git.lukas@wunner.de>
+ <153c459627143d2a071344567367032afa4eadef.1484486499.git.lukas@wunner.de>
+ <20170128233237.GQ20550@bhelgaas-glaptop.roam.corp.google.com>
+ <20170212163130.GA2769@wunner.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha512; protocol="application/pgp-signature"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1486928328-25870-1-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170212163130.GA2769@wunner.de>
+Sender: linux-pci-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Andreas Noever <andreas.noever@gmail.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
+On Sun, Feb 12, 2017 at 05:31:30PM +0100, Lukas Wunner wrote:
+> On Sat, Jan 28, 2017 at 05:32:37PM -0600, Bjorn Helgaas wrote:
+> > On Sun, Jan 15, 2017 at 09:03:45PM +0100, Lukas Wunner wrote:
 
-Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> writes:
+> > > +#define pr_fmt(fmt) KBUILD_MODNAME " %s: " fmt, dev_name(dev)
+> [...]
+> > > +	/* prevent interrupts during system sleep transition */
+> > > +	if (ACPI_FAILURE(acpi_disable_gpe(NULL, power->wake_gpe))) {
+> > > +		pr_err("cannot disable wake GPE, resuming\n");
+> > 
+> > Can you use dev_err() here and below?  This is related to a specific
+> > device, and it'd be nice to know which one.
+> 
+> See above, the device name is included in pr_fmt.  The reason to use
+> pr_err() instead of dev_err() is to get the error message prefixed
+> with "thunderbolt" instead of "pcieport".  Recall that this function
+> is executed in the context of the upstream bridge, whose driver name
+> is pcieport.  I would like to prevent people from grepping the portdrv
+> code for the error message.  You're the second person to raise this
+> question (Andy Shevchenko made the same comment on an earlier version
+> of this patch), so I've now added a comment to explain it.
 
-> Add a thermal zone in order to make the example complete.
->
-> Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+Oh, right, I missed the sneaky dev_name(dev) in pr_fmt().  I guess we
+may have a mix of "pcieport" and "thunderbolt" messages related to
+the same device, which is sort of sub-optimal, but maybe the best we
+can do for now.
 
-This looks fine to me.  Eduardo, will this be enough to get the driver
-in?
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE/JuuFDWp9/ZkuCBXtdYpNtH8nugFAliiKDMACgkQtdYpNtH8
-nuhJ0w//bSFsnkjjW+5b7NBjOmlHCMwgArivcxYJzidDPxs8czThyWVsCLQtbvlB
-7d0xIqkf8SpD4b72+W7N7hNmVSGJYP1fIJWgC/5BdueDL7dRHXWl+KH2noU5Nb5T
-250s6KdGSfKJbrJrdlUULLEYxuBOlO8u443q3k5u9hWZ/uAyitidpswxp8VQ/Yy6
-v2ow2zi6wZFTDRbh/y4EiMLKsycIQiCuf+jWyhvolc4AYssc6AfE3eMUSje+66Vg
-pqshOJij28bNvuTW9qPO2tlAFo5Pxhv+5jtk64/YvpBO+Q049ZTEvTm76rT5iHMT
-+Lo81s2hMUjQAit4Ldk0YoJE0Nxpo1b49hQKS320YMZw0jGPSBpYxrtLD+iRVB/8
-2L7gGH/P7/dY/SJm8sTPSTRyN2u11fsehViJCVz+BQ4cvS3fjU6rrMmjGKUuHlhk
-98Jl/HeNmojR8XjLPR5HRupJpqFrkFJwLauXyZXtMUiNs/aKq9tR3MOLpV66xfzt
-gc77TifiDt8Lv5RheMk1TkUQugLdaEDjMTFko3UGph6ACu1bdAXBB4Hrjp6wZ5zF
-U5XIUCSlzy7GmLw+3DJyK820XvxzKb3FKa8cB9VjO8WnmqUhwe3EK4IAAry3ZWDj
-xj3+a9TPzAsAJnVoeqs/QblRlocR/KqPmumYF6YZPG+nuf6fNxM=
-=PKYP
------END PGP SIGNATURE-----
---=-=-=--
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Bjorn
