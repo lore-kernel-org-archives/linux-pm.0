@@ -1,127 +1,347 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v8 3/3] dmaengine: pl330: Don't require irq-safe runtime PM
-Date: Mon, 13 Feb 2017 16:09:56 +0100
-Message-ID: <CAPDyKFr6qB7j23E2pVqkBn8OWRZkwE_Diex8ttPiyPWZrruFYw@mail.gmail.com>
-References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170209142309eucas1p2b1277d96139eafc0d1dcc14145600476@eucas1p2.samsung.com>
- <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
- <20170210045004.GN19244@localhost>
- <d299ae6c-78dc-9049-6bed-dc84fff17db3@samsung.com>
- <CAPDyKFqW2av1mjDvRP=R1my2kepeX69TS6cchzoHmwaoydT5Sg@mail.gmail.com>
- <cbccef67-54da-27ce-d0c0-ac57ef251b9b@samsung.com>
+From: Juri Lelli <juri.lelli@arm.com>
+Subject: Re: [PATCH v2 6/9] arm, arm64: factorize common cpu capacity default
+ code
+Date: Mon, 13 Feb 2017 15:09:31 +0000
+Message-ID: <20170213150918.GE3432@e106622-lin>
+References: <20170209092525.6654-1-juri.lelli@arm.com>
+ <20170209092525.6654-7-juri.lelli@arm.com>
+ <20170210142857.GA18321@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <cbccef67-54da-27ce-d0c0-ac57ef251b9b@samsung.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vinod Koul <vinod.koul@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, dmaengine@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170210142857.GA18321@kroah.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, peterz@infradead.org, vincent.guittot@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com, linux@arm.linux.org.uk, sudeep.holla@arm.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, broonie@kernel.org, Russell King <linux@armlinux.org.uk>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+Hi Greg,
 
->> The only related PM thing, that shall be the decision of the driver,
->> is whether it wants to enable runtime PM or not, during ->probe().
->
->
-> So do you want to create the links during the DMAengine driver probe? How do
-> you
-> plan to find all the client devices? Please note that you really want to
-> create
-> links to devices which will really use the DMA engine calls. Some client
-> drivers might decide in runtime weather to use DMA engine or not, depending
-> on
-> other data.
+On 10/02/17 15:28, Greg KH wrote:
+> On Thu, Feb 09, 2017 at 09:25:22AM +0000, Juri Lelli wrote:
+> > arm and arm64 share lot of code relative to parsing CPU capacity
+> > information from DT, using that information for appropriate scaling and
+> > exposing a sysfs interface for chaging such values at runtime.
+> > 
+> > Factorize such code in a common place (driver/base/arch_topology.c) in
+> > preparation for further additions.
+> > 
+> > Suggested-by: Will Deacon <will.deacon@arm.com>
+> > Suggested-by: Mark Rutland <mark.rutland@arm.com>
+> > Suggested-by: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Russell King <linux@armlinux.org.uk>
+> > Cc: Catalin Marinas <catalin.marinas@arm.com>
+> > Cc: Will Deacon <will.deacon@arm.com>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Signed-off-by: Juri Lelli <juri.lelli@arm.com>
+> > ---
+> > 
+> > Changes from v1:
+> >  - keep the original GPLv2 header
+> > ---
+> >  arch/arm/Kconfig             |   1 +
+> >  arch/arm/kernel/topology.c   | 213 ++------------------------------------
+> >  arch/arm64/Kconfig           |   1 +
+> >  arch/arm64/kernel/topology.c | 219 +--------------------------------------
+> >  drivers/base/Kconfig         |   8 ++
+> >  drivers/base/Makefile        |   1 +
+> >  drivers/base/arch_topology.c | 237 +++++++++++++++++++++++++++++++++++++++++++
+> >  7 files changed, 257 insertions(+), 423 deletions(-)
+> >  create mode 100644 drivers/base/arch_topology.c
+> 
+> Ah, so you want _me_ to maintain this, ok, I better review it...
+> 
 
-I don't have great plan, just wanted to share my thoughts around the
-problems we want to solve.
+This has been suggested as a possible way to stop replicating code between arm
+and arm64 (and possibly other archs in the future). Are you in principle OK
+with it?
 
-[...]
+Thanks a lot for your comments, please find my answers below.
 
->>
->> If we could set up the device link already at device initialization,
->> it should also be possible to avoid getting -EPROBE_DEFER for dma
->> client drivers when requesting their dma channels.
->
->
-> At the first glance this sounds like an ultimate solution for all problems,
-> but I don't think that device links can be used this way. If I get it right,
-> you would like to create links on client device initialization, preferably
-> somewhere in the kernel driver core. This will be handled somehow by a
-> completely generic code, which will create a link each pair of devices,
-> which are connected by a phandle. Is this what you meant? Please note that
-> that time no driver for both client and provider are probed. IMHO that
-> doesn't look like a right generic approach
->
-> How that code will know get following information:
-> 1. is it really needed to create a link for given device pair?
-> 2. what link flags should it use?
-> 3. what about circular dependencies?
-> 4. what about runtime optional dependencies?
-> 5. what about non-dt platforms? acpi?
->
+> > --- a/drivers/base/Kconfig
+> > +++ b/drivers/base/Kconfig
+> > @@ -339,4 +339,12 @@ config CMA_ALIGNMENT
+> >  
+> >  endif
+> >  
+> > +config GENERIC_ARCH_TOPOLOGY
+> > +	bool
+> > +	help
+> > +	  Enable support for architectures common topology code: e.g., parsing
+> > +	  CPU capacity information from DT, usage of such information for
+> > +	  appropriate scaling, sysfs interface for changing capacity values at
+> > +          runtime.
+> 
+> Mix of spaces and tabs :(
+> 
 
-To give a good answer of these questions, I need to spend more time
-investigating.
+Argh. :(
 
-However, from a top-level point of view, I think the device links
-seems like the perfect match for solving the runtime/system PM
-problems.
+> > +
+> >  endmenu
+> > diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+> > index f2816f6ff76a..397e5c344e6a 100644
+> > --- a/drivers/base/Makefile
+> > +++ b/drivers/base/Makefile
+> > @@ -23,6 +23,7 @@ obj-$(CONFIG_SOC_BUS) += soc.o
+> >  obj-$(CONFIG_PINCTRL) += pinctrl.o
+> >  obj-$(CONFIG_DEV_COREDUMP) += devcoredump.o
+> >  obj-$(CONFIG_GENERIC_MSI_IRQ_DOMAIN) += platform-msi.o
+> > +obj-$(CONFIG_GENERIC_ARCH_TOPOLOGY) += arch_topology.o
+> >  
+> >  obj-y			+= test/
+> >  
+> > diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> > new file mode 100644
+> > index 000000000000..c1dd430adad2
+> > --- /dev/null
+> > +++ b/drivers/base/arch_topology.c
+> > @@ -0,0 +1,237 @@
+> > +/*
+> > + * driver/base/arch_topology.c - Arch specific cpu topology information
+> 
+> No need to keep the filename in the file, you know what it is called :)
+> 
 
-No matter whether we can set up the links at device initialization
-time, driver probe or whatever time.
+OK, removed.
 
-> This looks like another newer ending story of "how can we avoid deferred
-> probe
-> in a generic way". IMHO we should first solve the problem of irq-safe
-> runtime
-> PM in DMA engine drivers first. I proposed how it can be done with device
-> links.
-> With no changes in the client API. Later if one decide to extend the client
-> API
-> in a way it will allow other runtime PM implementation - I see no problem to
-> convert pl330 driver to the new approach, but for the time being - this
-> would
-> be the easiest way to get it really functional.
+> > + *
+> > + * Copyright (C) 2016, ARM Ltd.
+> > + * Written by: Juri Lelli, ARM Ltd.
+> > + *
+> > + * This file is subject to the terms and conditions of the GNU General Public
+> > + * License.  See the file "COPYING" in the main directory of this archive
+> > + * for more details.
+> 
+> So, v2 only?  Please be specific.  Even better yet, use a SPDX header if
+> you want to, those are always nice.
+> 
 
-Agree, let's drop the deferred probe topic from the discussions - it's
-just going to be overwhelming. :-)
+Yes, v2 only.
 
-[...]
+  * for more details.                                                                                                                                                                                                                    
++ *                                                                                                                                                                                                                                      
++ * Released under the GPLv2 only.                                                                                                                                                                                                       
++ * SPDX-License-Identifier: GPL-2.0 
 
->> So besides solving the irq-safe issue for dma driver, using the
->> device-links has additionally two advantages. I already mentioned the
->> -EPROBE_DEFER issue above.
->
->
-> Not really. IMHO device links can be properly established once both drivers
-> are probed...
+Would do, right?
 
-Okay.
+> > + */
+> > +
+> > +#include <linux/acpi.h>
+> > +#include <linux/cpu.h>
+> > +#include <linux/cpufreq.h>
+> > +#include <linux/device.h>
+> > +#include <linux/of.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/string.h>
+> > +#include <linux/topology.h>
+> > +
+> > +static DEFINE_MUTEX(cpu_scale_mutex);
+> > +static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+> > +
+> > +unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+> 
+> Why do you have sd here?  You never use it:
+> 
+> > +{
+> > +	return per_cpu(cpu_scale, cpu);
+> 
+> See?  What am I missing?
+> 
 
->
->>
->> The second thing, is the runtime/system PM relations we get for free
->> by using the links. In other words, the dma driver/core don't need to
->> care about dealing with pm_runtime_get|put() as that would be managed
->> by the dma client driver.
->
->
-> IMHO there might be drivers which don't want to use device links based
-> runtime
-> PM in favor of irq-safe PM or something else. This should be really left to
-> drivers.
+This is how this function is defined in kernel/sched/sched.h:
 
-Okay.
+#ifndef arch_scale_cpu_capacity
+static __always_inline
+unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+{
+	if (sd && (sd->flags & SD_SHARE_CPUCAPACITY) && (sd->span_weight > 1))
+		return sd->smt_gain / sd->span_weight;
 
-Kind regards
-Uffe
+	return SCHED_CAPACITY_SCALE;
+}
+#endif
+
+and in this case the sd argument is used: there is a call site in fair.c
+that passes a non NULL sd, updated_cpu_capacity().
+
+A following set of patches will re-define the function so that the
+drivers one gets used by the kernel (only arm and arm64 will currently
+want this), with something like this in arch code
+
+#define arch_scale_cpu_capacity atd_scale_cpu_capacity
+
+Please note that last patch of this set renames this function atd_scale_
+cpu_capacity, to (hopefully) make this approach more clear.
+
+Does it make more sense to you?
+
+> > +}
+> > +
+> > +void set_capacity_scale(unsigned int cpu, unsigned long capacity)
+> > +{
+> > +	per_cpu(cpu_scale, cpu) = capacity;
+> > +}
+> > +
+> > +static ssize_t cpu_capacity_show(struct device *dev,
+> > +				 struct device_attribute *attr,
+> > +				 char *buf)
+> > +{
+> > +	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> > +
+> > +	return sprintf(buf, "%lu\n",
+> > +			arch_scale_cpu_capacity(NULL, cpu->dev.id));
+> > +}
+> > +
+> > +static ssize_t cpu_capacity_store(struct device *dev,
+> > +				  struct device_attribute *attr,
+> > +				  const char *buf,
+> > +				  size_t count)
+> > +{
+> > +	struct cpu *cpu = container_of(dev, struct cpu, dev);
+> > +	int this_cpu = cpu->dev.id, i;
+> 
+> new line for:
+> 	int i;
+> please.
+> 
+
+Sure.
+
+> > +	unsigned long new_capacity;
+> > +	ssize_t ret;
+> > +
+> > +	if (count) {
+> 
+> 	if (!count)
+> 		return 0;
+> 
+> then you can get on with the rest of the logic.  Don't indent if you
+> don't have to.
+> 
+
+Right.
+
+> > +		ret = kstrtoul(buf, 0, &new_capacity);
+> > +		if (ret)
+> > +			return ret;
+> > +		if (new_capacity > SCHED_CAPACITY_SCALE)
+> > +			return -EINVAL;
+> > +
+> > +		mutex_lock(&cpu_scale_mutex);
+> > +		for_each_cpu(i, &cpu_topology[this_cpu].core_sibling)
+> > +			set_capacity_scale(i, new_capacity);
+> > +		mutex_unlock(&cpu_scale_mutex);
+> > +	}
+> > +
+> > +	return count;
+> > +}
+> 
+> No documentation for these sysfs file?  Not good :(
+> 
+
+Patch 2/9 introduces some documentation. There is already more in
+Documentation/devicetree/bindings/arm/cpu-capacity.txt.
+
+Do you think I should improve further?
+
+> > +
+> > +static DEVICE_ATTR_RW(cpu_capacity);
+> > +
+> > +static int register_cpu_capacity_sysctl(void)
+> > +{
+> > +	int i;
+> > +	struct device *cpu;
+> > +
+> > +	for_each_possible_cpu(i) {
+> > +		cpu = get_cpu_device(i);
+> > +		if (!cpu) {
+> > +			pr_err("%s: too early to get CPU%d device!\n",
+> > +			       __func__, i);
+> 
+> What is this going to help with?
+> 
+
+Not much I guess, I can remove it.
+
+> > +			continue;
+> > +		}
+> > +		device_create_file(cpu, &dev_attr_cpu_capacity);
+> 
+> You realize you just raced userspace, right?  Why do it this way and not
+> register the files when the CPU device is created/removed?
+> 
+
+Humm, my intention for doing it this way is that I'd like to make all
+the code dealing with cpu_capacity confined in a single place (this
+file), without the need to modify other files.
+
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +subsys_initcall(register_cpu_capacity_sysctl);
+
+AFAIU, for both arm and arm64 CPU device is registered with a
+subsys_initcall(topology_init), so I'm doing the same. Other archs seem to do
+similar things. Could you explain a little more why this is a problem?
+
+> > +
+> > +u32 capacity_scale;
+> > +u32 *raw_capacity;
+> > +bool cap_parsing_failed;
+> 
+> globals?  really?  That's bold :(
+> 
+
+Yeah, ugly. However, patch 7/9 is making cap_parsing_failed static. The other
+two can be made static already, I should have done that in the first place. :(
+
+BTW, with this set I'm trying to incrementally fix things (after moving code in
+the new place), does it look reasonable to you or would you prefer to squash
+intermediate steps?
+
+> > +
+> > +void normalize_cpu_capacity(void)
+> 
+> naming is hard, but try to put a good, descriptive, prefix on everything
+> you are exporting in the same file, the same prefix.
+> 
+> cpu_capacity_normalize()?
+> cpu_capacity_register_sysctl()?
+> 
+> and so on.
+> 
+> > +{
+> > +	u64 capacity;
+> > +	int cpu;
+> > +
+> > +	if (!raw_capacity || cap_parsing_failed)
+> > +		return;
+> > +
+> > +	pr_debug("cpu_capacity: capacity_scale=%u\n", capacity_scale);
+> > +	mutex_lock(&cpu_scale_mutex);
+> > +	for_each_possible_cpu(cpu) {
+> > +		pr_debug("cpu_capacity: cpu=%d raw_capacity=%u\n",
+> > +			 cpu, raw_capacity[cpu]);
+> > +		capacity = (raw_capacity[cpu] << SCHED_CAPACITY_SHIFT)
+> > +			/ capacity_scale;
+> > +		set_capacity_scale(cpu, capacity);
+> > +		pr_debug("cpu_capacity: CPU%d cpu_capacity=%lu\n",
+> > +			cpu, arch_scale_cpu_capacity(NULL, cpu));
+> > +	}
+> > +	mutex_unlock(&cpu_scale_mutex);
+> > +}
+> > +
+> > +int __init parse_cpu_capacity(struct device_node *cpu_node, int cpu)
+> 
+> cpu_capacity_parse()?
+> 
+
+OK, I'll try to fix the naming as you suggest. Thanks!
+
+Best,
+
+- Juri
