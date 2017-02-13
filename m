@@ -1,161 +1,209 @@
 From: Vinod Koul <vinod.koul@intel.com>
-Subject: Re: [PATCH v8 1/3] dmaengine: Add new device_{set,release}_slave
- callbacks
-Date: Mon, 13 Feb 2017 07:12:29 +0530
-Message-ID: <20170213014229.GG2843@localhost>
+Subject: Re: [PATCH v8 3/3] dmaengine: pl330: Don't require irq-safe runtime
+ PM
+Date: Mon, 13 Feb 2017 07:33:40 +0530
+Message-ID: <20170213020340.GH2843@localhost>
 References: <1486650171-20598-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170209142307eucas1p180323d005f524760913b8d04ac966423@eucas1p1.samsung.com>
- <1486650171-20598-2-git-send-email-m.szyprowski@samsung.com>
- <20170210043442.GM19244@localhost>
- <05d42359-1e72-3ec1-7d86-86135a8f013e@samsung.com>
+ <CGME20170209142309eucas1p2b1277d96139eafc0d1dcc14145600476@eucas1p2.samsung.com>
+ <1486650171-20598-4-git-send-email-m.szyprowski@samsung.com>
+ <20170210045004.GN19244@localhost>
+ <d299ae6c-78dc-9049-6bed-dc84fff17db3@samsung.com>
+ <CAPDyKFqW2av1mjDvRP=R1my2kepeX69TS6cchzoHmwaoydT5Sg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:4872 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751302AbdBMBl4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 12 Feb 2017 20:41:56 -0500
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <05d42359-1e72-3ec1-7d86-86135a8f013e@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAPDyKFqW2av1mjDvRP=R1my2kepeX69TS6cchzoHmwaoydT5Sg@mail.gmail.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, dmaengine@vger.kernel.org, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Inki Dae <inki.dae@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-samsung-soc@vger.kernel.org, dmaengine@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lars-Peter Clausen <lars@metafoo.de>, Arnd Bergmann <arnd@arndb.de>, Inki Dae <inki.dae@samsung.com>
 
-On Fri, Feb 10, 2017 at 01:07:41PM +0100, Marek Szyprowski wrote:
-> Hi Vinod,
-> 
-> On 2017-02-10 05:34, Vinod Koul wrote:
-> >On Thu, Feb 09, 2017 at 03:22:49PM +0100, Marek Szyprowski wrote:
-> >>Add two new callbacks to DMA engine device. They will used to provide
-> >>access to slave device (the device which requested given DMA channel)
-> >You mean access to client devices?
-> 
-> Yes. It looks that I was confused by the code, where the term 'slave'
-> appears a few times. 'Client' is a bit more appropriate then.
-> 
-> >>for DMA engine driver. Access to slave device might be useful for example
-> >>for implementing advanced runtime power management.
+On Fri, Feb 10, 2017 at 02:57:09PM +0100, Ulf Hansson wrote:
+> On 10 February 2017 at 12:51, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+> > Hi Vinod,
+> >
+> > On 2017-02-10 05:50, Vinod Koul wrote:
 > >>
-> >>DMA slave channels are exclusive, so only one slave device can be set
-> >>for a given DMA slave channel.
-> >That is not a right assumption and my worry here. With virt-dma we don't
-> >really assume a hardware channel and exclusive. Certain implementation may
-> >do that but from framework we cannot assume that.
-> 
-> Okay, I came to such conclusion basing one the dma engine code, but maybe
-> I missed something. However in such case such callback will be called for
-> each client device and it will be up to the driver to handle that.
-
-Thats right, but the assumption that we will have once physical channel
-maynot be true.
-
-> >>device_set_slave() will be called after the device_alloc_chan_resources()
-> >>and device_release_slave() before the device_free_chan_resources().
-> >Okay, I had to relook at the series to get around this part. Sorry but we
-> >can't call it set_slave, it is actually set_client/consumer
-> 
-> That's okay, the name of the callbacks should be changed.
-> 
-> >In our context slaves means dmaengine slave devices aka provider.
-> >Client would be the consumer and not slave.
-> 
-> I'm a new to the DMA engine framework, I'm sorry for using wrong terms.
-
-That's fine :-) we all learn incrementally.
-
-> 
-> >>Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> >>---
-> >>  drivers/dma/dmaengine.c   | 27 ++++++++++++++++++++++++---
-> >>  include/linux/dmaengine.h | 10 ++++++++++
-> >>  2 files changed, 34 insertions(+), 3 deletions(-)
+> >> On Thu, Feb 09, 2017 at 03:22:51PM +0100, Marek Szyprowski wrote:
 > >>
-> >>diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-> >>index 24e0221fd66d..5b7089d8be4d 100644
-> >>--- a/drivers/dma/dmaengine.c
-> >>+++ b/drivers/dma/dmaengine.c
-> >>@@ -705,6 +705,7 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
-> >>  {
-> >>  	struct dma_device *d, *_d;
-> >>  	struct dma_chan *chan = NULL;
-> >>+	int ret;
-> >>  	/* If device-tree is present get slave info from here */
-> >>  	if (dev->of_node)
-> >>@@ -715,8 +716,9 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
-> >>  		chan = acpi_dma_request_slave_chan_by_name(dev, name);
-> >>  	if (chan) {
-> >>-		/* Valid channel found or requester need to be deferred */
-> >>-		if (!IS_ERR(chan) || PTR_ERR(chan) == -EPROBE_DEFER)
-> >>+		if (!IS_ERR(chan))
-> >>+			goto found;
-> >>+		if (PTR_ERR(chan) == -EPROBE_DEFER)
-> >>  			return chan;
-> >>  	}
-> >>@@ -738,7 +740,21 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
-> >>  	}
-> >>  	mutex_unlock(&dma_list_mutex);
-> >>-	return chan ? chan : ERR_PTR(-EPROBE_DEFER);
-> >>+	if (!chan)
-> >>+		return ERR_PTR(-EPROBE_DEFER);
-> >>+	if (IS_ERR(chan))
-> >>+		return chan;
-> >>+found:
-> >>+	if (chan->device->device_set_slave) {
-> >>+		chan->slave = dev;
-> >>+		ret = chan->device->device_set_slave(chan, dev);
-> >>+		if (ret) {
-> >>+			chan->slave = NULL;
-> >>+			dma_release_channel(chan);
-> >>+			chan = ERR_PTR(ret);
-> >>+		}
-> >>+	}
-> >>+	return chan;
-> >>  }
-> >>  EXPORT_SYMBOL_GPL(dma_request_chan);
-> >>@@ -786,6 +802,11 @@ void dma_release_channel(struct dma_chan *chan)
-> >>  	mutex_lock(&dma_list_mutex);
-> >>  	WARN_ONCE(chan->client_count != 1,
-> >>  		  "chan reference count %d != 1\n", chan->client_count);
-> >>+	if (chan->slave) {
-> >>+		if (chan->device->device_release_slave)
-> >>+			chan->device->device_release_slave(chan);
-> >>+		chan->slave = NULL;
-> >>+	}
-> >>  	dma_chan_put(chan);
-> >>  	/* drop PRIVATE cap enabled by __dma_request_channel() */
-> >>  	if (--chan->device->privatecnt == 0)
-> >>diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-> >>index 533680860865..d22299e37e69 100644
-> >>--- a/include/linux/dmaengine.h
-> >>+++ b/include/linux/dmaengine.h
-> >>@@ -277,6 +277,9 @@ struct dma_chan {
-> >>  	struct dma_router *router;
-> >>  	void *route_data;
-> >>+	/* Only for SLAVE channels */
-> >>+	struct device *slave;
-> >so assuming you refer to consumer aka client here, why do we need set if we
-> >store it here.
+> >>> +static int pl330_set_slave(struct dma_chan *chan, struct device *slave)
+> >>> +{
+> >>> +       struct dma_pl330_chan *pch = to_pchan(chan);
+> >>> +       struct pl330_dmac *pl330 = pch->dmac;
+> >>> +       int i;
+> >>> +
+> >>> +       mutex_lock(&pl330->rpm_lock);
+> >>> +
+> >>> +       for (i = 0; i < pl330->num_peripherals; i++) {
+> >>> +               if (pl330->peripherals[i].chan.slave == slave &&
+> >>> +                   pl330->peripherals[i].slave_link) {
+> >>> +                       pch->slave_link =
+> >>> pl330->peripherals[i].slave_link;
+> >>> +                       goto done;
+> >>> +               }
+> >>> +       }
+> >>> +
+> >>> +       pch->slave_link = device_link_add(slave, pl330->ddma.dev,
+> >>> +                                      DL_FLAG_PM_RUNTIME |
+> >>> DL_FLAG_RPM_ACTIVE);
+> >>
+> >> So you are going to add the link on channel allocation and tear down on
+> >> the
+> >> freeup.
+> >
+> >
+> > Right. Channel allocation is typically done once per driver operation and it
+> > won't hurt system performance.
+> >
+> >>   I am not sure I really like the idea here.
+> >
+> >
+> > Could you point what's wrong with it?
+> >
+> >> First, these thing shouldn't be handled in the drivers. These things
+> >> should
+> >> be set in core and each driver setting the links doesn't sound great to
+> >> me.
+> >
+> >
+> > Which core? And what's wrong with the device links? They have been
+> > introduced to
+> > model relations between devices that are behind the usual parent/child/bus
+> > topology.
 > 
-> DMA engine driver might need to do something with it (like setting up a pm
-> link for example) before starting any operations. It would be great if the
-> pointer to client device is available in device_alloc_chan_resources(), but
-> propagating it there is not possible without significant changes. That's why
-> I came with this a separate callback.
+> I think Vinod mean the dmaengine core. Which also would make perfect
+> sense to me as it would benefit all dma drivers.
 
-But then it gets the client device using the callback as well. So if we
-retain that, this should go away.
+Right.
 
-> Maybe the client device shouldn't be stored in the dma_chan structure at all
-> and left to the drivers to use or manage it if really needed. This will also
-> solve the issue with virt-dma you have mentioned.
+> The only related PM thing, that shall be the decision of the driver,
+> is whether it wants to enable runtime PM or not, during ->probe().
+
+We can do pm_runtime_enabled() to check and that and do when enabled..
+
+> >> Second, should the link be always there and we only mange the state? Here
+> >> it
+> >> seems that we have link being created and destroyed, so why not mark it
+> >> ACTIVE and DORMANT instead...
+> >
+> >
+> > Link state is managed by device core and should not be touched by the
+> > drivers.
+> > It is related to both provider and consumer drivers states (probed/not
+> > probed/etc).
+> >
+> > Second we would need to create those links first. The question is where to
+> > create them then.
 > 
-> In the previous version I managed to pass client device pointer to
-> device_alloc_chan_resources() via of_xlate callback (please take a look into
-> v7), but that approach was rejected by Lars-Peter Clausen.
+> Just to fill in, to me this is really also the key question.
+> 
+> If we could set up the device link already at device initialization,
+> it should also be possible to avoid getting -EPROBE_DEFER for dma
+> client drivers when requesting their dma channels.
 
-I feel this is better approach, perhaps we don't need the client pointer
-here..
+Well if we defer then driver will regiser with dmaengine after it is
+probed, so a client will either get a channel or not. IOW we won't get
+-EPROBE_DEFER.
+
+> 
+> >
+> >> Lastly, looking at th description of the issue here, am perceiving (maybe
+> >> my
+> >> understanding is not quite right here) that you have an IP block in SoC
+> >> which has multiple things and share common stuff and doing right PM is a
+> >> challenge for you, right?
+> >
+> >
+> > Nope. Doing right PM in my SoC is not that complex and I would say it is
+> > rather
+> > typical for any embedded stuff. It works fine (in terms of the power
+> > consumption reduction) when all drivers simply properly manage their runtime
+> > PM state, thus if device is not in use, the state is set to suspended and
+> > finally, the power domain gets turned off.
+> >
+> > I've used device links for PM only because the current DMA engine API is
+> > simply insufficient to implement it in the other way.
+> >
+> > I want to let a power domain, which contains a few devices, among those a
+> > PL330
+> > device, to get turned off when there is no activity. Handling power domain
+> > power
+> > on / off requires non-atomic context, what is typical for runtime pm calls.
+> > For
+> > that I need to have non-irq-safe runtime pm implemented for all devices that
+> > belongs to that domains.
+> 
+> Again, allow me to fill in. This issue exists for all ARM SoC which
+> has a dma controller residing in a PM domain. I think that is quite
+> many.
+> 
+> Currently the only solution I have seen for this problem, but which I
+> really dislike. That is, each dma client driver requests/releases
+> their dma channel from their respective ->runtime_suspend|resume()
+> callbacks - then the dma driver can use the dma request/release hooks,
+> to do pm_runtime_get|put() which then becomes non-irq-safe.
+
+Yeah that is not the best way to do. But looking at it current one doesnt
+seem best fit either.
+
+So on seeing the device_link_add() I was thinking that this is some SoC
+dependent problem being solved whereas the problem statmement is non-atomic
+channel prepare.
+
+As I said earlier, if we want to solve that problem a better idea is to
+actually split the prepare as we discussed in [1]
+
+This way we can get a non atomic descriptor allocate/prepare and release.
+Yes we need to redesign the APIs to solve this, but if you guys are up for
+it, I think we can do it and avoid any further round abouts :)
+
+> > The problem with PL330 driver is that it use irq-safe runtime pm, which like
+> > it
+> > was stated in the patch description doesn't bring much benefits. To switch
+> > to
+> > standard (non-irq-safe) runtime pm, the pm_runtime calls have to be done
+> > from
+> > a context which permits sleeping. The problem with DMA engine driver API is
+> > that
+> > most of its callbacks have to be IRQ-safe and frankly only
+> > device_{alloc,release}_chan_resources() what more or less maps to
+> > dma_request_chan()/dma_release_channel() and friends. There are DMA engine
+> > drivers which do runtime PM calls there (tegra20-apb-dma, sirf-dma, cppi41,
+> > rcar-dmac), but this is not really efficient. DMA engine clients usually
+> > allocate
+> > dma channel during their probe() and keep them for the whole driver life. In
+> > turn
+> > this very similar to calling pm_runtime_get() in the DMA engine driver
+> > probe().
+> > The result of both approaches is that DMA engine device keeps its power
+> > domain
+> > enabled almost all the time. This problem is also mentioned in the DMA
+> > engine
+> > TODO list, you have pointed me yesterday.
+> >
+> > To avoid such situation that DMA engine driver blocks turning off the power
+> > domain and avoid changing DMA engine client API I came up with the device
+> > links
+> > pm based approach. I don't want to duplicate the description here, the
+> > details
+> > were in the patch description, however if you have any particular question
+> > about
+> > the details, let me know and I will try to clarify it more.
+> 
+> So besides solving the irq-safe issue for dma driver, using the
+> device-links has additionally two advantages. I already mentioned the
+> -EPROBE_DEFER issue above.
+> 
+> The second thing, is the runtime/system PM relations we get for free
+> by using the links. In other words, the dma driver/core don't need to
+> care about dealing with pm_runtime_get|put() as that would be managed
+> by the dma client driver.
+
+Yeah sorry took me a while to figure that out :), If we do a different API
+then dmaengine core can call pm_runtime_get|put() from non-atomic context.
+
+[1]: http://www.spinics.net/lists/dmaengine/msg11570.html
 
 -- 
 ~Vinod
