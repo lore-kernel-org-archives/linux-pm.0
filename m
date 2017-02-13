@@ -1,50 +1,69 @@
-From: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Subject: [PATCH 2/3] dt-bindings: power: reset: add document for renesas-reset driver
-Date: Mon, 13 Feb 2017 13:25:31 -0500
-Message-ID: <20170213182532.4042-3-chris.brandt@renesas.com>
-References: <20170213182532.4042-1-chris.brandt@renesas.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170213182532.4042-1-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] PM / wakeirq: report a wakeup_event on dedicated wekup irq
+Date: Mon, 13 Feb 2017 12:43:22 -0800
+Message-ID: <20170213204322.27588-1-tony@atomide.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Alan Stern <stern@rowland.harvard.edu>
+Cc: Brian Norris <briannorris@chromium.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, Tero Kristo <t-kristo@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-Add device tree bindings document for renesas-reset driver.
-This driver uses the WDT hardware to issue an immediate reset.
+From: Grygorii Strashko <grygorii.strashko@ti.com>
 
-Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+There are two reasons for reporting wakeup event when dedicated wakeup
+IRQ is triggered:
+
+- wakeup events accounting, so proper statistical data will be
+  displayed in sysfs and debugfs;
+
+- there are small window when System is entering suspend during which
+  dedicated wakeup IRQ can be lost:
+
+dpm_suspend_noirq()
+  |- device_wakeup_arm_wake_irqs()
+      |- dev_pm_arm_wake_irq(X)
+         |- IRQ is enabled and marked as wakeup source
+[1]...
+  |- suspend_device_irqs()
+     |- suspend_device_irq(X)
+	|- irqd_set(X, IRQD_WAKEUP_ARMED);
+	   |- wakup IRQ armed
+
+The wakeup IRQ can be lost if it's triggered at point [1]
+and not armed yet.
+
+Hence, fix above cases by adding simple pm_wakeup_event() call in
+handle_threaded_wake_irq().
+
+Fixes: 4990d4fe327b ("PM / Wakeirq: Add automated device wake IRQ
+handling")
+Cc: Brian Norris <briannorris@chromium.org>
+Cc: Tero Kristo <t-kristo@ti.com>
+Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+Tested-by: Keerthy <j-keerthy@ti.com>
+[tony@atomide.com: added missing return to avoid warnings]
+Tested-by: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- .../devicetree/bindings/power/reset/renesas-reset.txt     | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/renesas-reset.txt
+ drivers/base/power/wakeirq.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/reset/renesas-reset.txt b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
-new file mode 100644
-index 0000000..241722d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
-@@ -0,0 +1,15 @@
-+Device-Tree bindings for Renesas WDT reset functionality
+diff --git a/drivers/base/power/wakeirq.c b/drivers/base/power/wakeirq.c
+--- a/drivers/base/power/wakeirq.c
++++ b/drivers/base/power/wakeirq.c
+@@ -141,6 +141,13 @@ static irqreturn_t handle_threaded_wake_irq(int irq, void *_wirq)
+ 	struct wake_irq *wirq = _wirq;
+ 	int res;
+ 
++	/* Maybe abort suspend? */
++	if (irqd_is_wakeup_set(irq_get_irq_data(irq))) {
++		pm_wakeup_event(wirq->dev, 0);
 +
-+Required properties:
-+  - compatible: must be one or more of the following:
-+    - "renesas,r7s72100-reset" for the r7s72100 SoC
-+    - "renesas,wdt-reset"
-+                This is a fallback for the above renesas,*-reset entries
++		return IRQ_HANDLED;
++	}
 +
-+  - reg: base address and length of the WDT register block
-+
-+Example node:
-+	wdt: timer@fcfe0000 {
-+		compatible = "renesas,r7s72100-reset", "renesas,wdt-reset";
-+		reg = <0xfcfe0000 0x6>;
-+	};
+ 	/* We don't want RPM_ASYNC or RPM_NOWAIT here */
+ 	res = pm_runtime_resume(wirq->dev);
+ 	if (res < 0)
 -- 
-2.10.1
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.11.1
