@@ -1,7 +1,7 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v3 10/18] ARM: sun5i: chip: enable ACIN power supply subnode
-Date: Tue, 14 Feb 2017 10:41:04 +0100
-Message-ID: <20170214094112.27426-11-quentin.schulz@free-electrons.com>
+Subject: [PATCH v3 08/18] ARM: dtsi: axp22x: add AC power supply subnode
+Date: Tue, 14 Feb 2017 10:41:02 +0100
+Message-ID: <20170214094112.27426-9-quentin.schulz@free-electrons.com>
 References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,32 +21,38 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The NextThing Co. CHIP has an AXP209 PMIC and can be power-supplied by
-ACIN via the CHG-IN pin.
+The X-Powers AXP22X PMIC exposes the status of AC power supply.
 
-This enables the ACIN power supply subnode in the DT.
+This adds the AC power supply subnode for the AXP22X PMIC.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
 Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Acked-by: Chen-Yu Tsai <wens@csie.org>
 ---
- arch/arm/boot/dts/sun5i-r8-chip.dts | 4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun5i-r8-chip.dts b/arch/arm/boot/dts/sun5i-r8-chip.dts
-index c6da5ad..6011757 100644
---- a/arch/arm/boot/dts/sun5i-r8-chip.dts
-+++ b/arch/arm/boot/dts/sun5i-r8-chip.dts
-@@ -128,6 +128,10 @@
+v2:
+ - changed DT node name from ac_power_supply to ac-power-supply,
+ - removed io-channels and io-channel-names from DT (the IIO mapping is
+ done in the IIO ADC driver now),
+
+ arch/arm/boot/dts/axp22x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm/boot/dts/axp22x.dtsi b/arch/arm/boot/dts/axp22x.dtsi
+index 458b668..67331c5 100644
+--- a/arch/arm/boot/dts/axp22x.dtsi
++++ b/arch/arm/boot/dts/axp22x.dtsi
+@@ -52,6 +52,11 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
  
- #include "axp209.dtsi"
- 
-+&ac_power_supply {
-+	status = "okay";
-+};
++	ac_power_supply: ac-power-supply {
++		compatible = "x-powers,axp221-ac-power-supply";
++		status = "disabled";
++	};
 +
- &i2c1 {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&i2c1_pins_a>;
+ 	regulators {
+ 		/* Default work frequency for buck regulators */
+ 		x-powers,dcdc-freq = <3000>;
 -- 
 2.9.3
