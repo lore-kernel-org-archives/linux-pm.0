@@ -1,95 +1,93 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Subject: Re: Regression in next with use printk_safe buffers in printk
-Date: Tue, 14 Feb 2017 08:54:52 -0800
-Message-ID: <20170214165451.GI21809@atomide.com>
+Date: Wed, 15 Feb 2017 01:56:45 +0900
+Message-ID: <20170214165645.GB10321@tigerII.localdomain>
 References: <20170213185956.GM3897@atomide.com>
  <20170214160140.GA401@tigerII.localdomain>
+ <20170214161809.GQ6500@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:35144 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753823AbdBNQy5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 14 Feb 2017 11:54:57 -0500
+Received: from mail-it0-f66.google.com ([209.85.214.66]:34085 "EHLO
+        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754725AbdBNQ5a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 11:57:30 -0500
 Content-Disposition: inline
-In-Reply-To: <20170214160140.GA401@tigerII.localdomain>
+In-Reply-To: <20170214161809.GQ6500@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tony Lindgren <tony@atomide.com>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, John Stultz <john.stultz@linaro.org>
 
-* Sergey Senozhatsky <sergey.senozhatsky@gmail.com> [170214 08:03]:
-> Hello,
-> 
-> Cc Rafael, just in case
-> 
-> On (02/13/17 10:59), Tony Lindgren wrote:
-> > Looks like commit f975237b7682 ("printk: use printk_safe buffers in
-> > printk") causes "possible circular locking dependency detected " for
-> > me on the first suspend.
-> 
-> thanks for the report.
-> 
-> > Reverting the following four patches in next makes it go away:
+On (02/14/17 17:18), Peter Zijlstra wrote:
+> On Wed, Feb 15, 2017 at 01:01:40AM +0900, Sergey Senozhatsky wrote:
 > > 
-> > d9c23523ed98 ("printk: drop call_console_drivers() unused param")
-> > de6fcbdb68b2 ("printk: convert the rest to printk-safe")
-> > 8b1742c9c207 ("printk: remove zap_locks() function")
-> > f975237b7682 ("printk: use printk_safe buffers in printk")
+> > but I'm a bit confused by rt_b->rt_runtime_lock in this unsafe lock
+> > scenario (so it's not ABBA, but ABAD)
+> > 
+> > >   lock(hrtimer_bases.lock);
+> > >                                lock(&rt_b->rt_runtime_lock);
+> > >                                lock(hrtimer_bases.lock);
+> > >   lock(tk_core);
+> > >
+> > >
+> > > Chain exists of:
+> > >
+> > >	tk_core --> &rt_b->rt_runtime_lock --> hrtimer_bases.lock
+> > 
+> > 
+> > I'm lacking some knowledge here, sorry. where does the tk_core --> &rt_b->rt_runtime_lock
+> > come from?
 > 
-> 
-> these patches basically just enable locked where it previously was
-> forcibly turned off. no timekeeping/pm/sched/etc code was modified.
-> can you share the link where Peter pointed out that this might be
-> caused by printk() changes?
+> rt_b->rt_runtime_lock is one of the scheduler locks, since we do
+> printk() under tk_core, which does semaphore muck, which then includes
+> the entire scheduler chain of locks.
 
-Oh sorry I should have been more specific. Not much there to share,
-I got redirected over to Peter's department in a private email thread
-while chasing this issue. So that was just Peter's comment looking at
-the log output.
+thanks, Peter.
 
-> 	timekeeping_resume()
-> 		lock timekeeper_lock
-> 		lock tk_core
-> 			tk_debug_account_sleep_time()
-> 			printk()			<< lockdep was disabled here before
-> 				try_to_wake_up()
-> 					lock_hrtimer_base()  ##hrtimer_bases.lock
+that crossed my mind, but I kinda assumed that we do printk() from
+under tk_core using sched fair, and rt_runtime_lock is from sched rt.
 
-Yeah above seems describe what changed, so your patch makes sense.
 
-> shouldn't tk_debug_account_sleep_time() do printk_deferred() instead of
-> 'normal' printk()?
-> printk() calls from under timekeeping seqlock are not safe, aren't they?
-> and tk_debug_account_sleep_time() is under tk_core seq lock.
-> 
-> IOW, replace pr_info() in tk_debug_account_sleep_time() with something
-> like this
-> 
-> 	printk_deferred(KERN_INFO "Suspended for %lld.%03lu seconds\n",
-> 			(s64)t->tv_sec, t->tv_nsec / NSEC_PER_MSEC);
+so something like below, perhaps. would be helpful if Tony can test it.
 
-Your patch below fixes the issue for me thanks. I had to apply it manually
-though as tabs got replaced by spaces probably by some mail daemons.
+(I'll send out this patch 'in a proper way' tomorrow, after some sleep,
+it's 2am here).
 
-Regards,
+8< ====
 
-Tony
+>From e1755b0bf7f8a0be5fdf4dd7303bf4cd150d9d20 Mon Sep 17 00:00:00 2001
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Date: Wed, 15 Feb 2017 01:42:18 +0900
+Subject: [PATCH] time/timekeeping_debug: use printk_deferred()
 
-> ---
-> 
-> diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
-> index ca9fb800336b..b8f7146c3538 100644
-> --- a/kernel/time/timekeeping_debug.c
-> +++ b/kernel/time/timekeeping_debug.c
-> @@ -75,7 +75,8 @@ void tk_debug_account_sleep_time(struct timespec64 *t)
->         int bin = min(fls(t->tv_sec), NUM_BINS-1);
->  
->         sleep_time_bin[bin]++;
-> -       pr_info("Suspended for %lld.%03lu seconds\n", (s64)t->tv_sec,
-> +       printk_deferred(KERN_INFO "Suspended for %lld.%03lu seconds\n",
-> +                       (s64)t->tv_sec,
->                         t->tv_nsec / NSEC_PER_MSEC);
->  }
->  
-> 
+Do not call printk() from tk_debug_account_sleep_time(), because
+tk_debug_account_sleep_time() is called under tk_core seq lock.
+It's not safe to call printk() under tk_core, because console_sem
+invokes scheduled (via wake_up_process()->activate_task()), which,
+in turn, can call timekeeping code again, for instance, via
+get_time()->ktime_get(). This may result in infinite loop on
+tk_core.
+
+Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+---
+ kernel/time/timekeeping_debug.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
+index ca9fb800336b..b8f7146c3538 100644
+--- a/kernel/time/timekeeping_debug.c
++++ b/kernel/time/timekeeping_debug.c
+@@ -75,7 +75,8 @@ void tk_debug_account_sleep_time(struct timespec64 *t)
+ 	int bin = min(fls(t->tv_sec), NUM_BINS-1);
+ 
+ 	sleep_time_bin[bin]++;
+-	pr_info("Suspended for %lld.%03lu seconds\n", (s64)t->tv_sec,
++	printk_deferred(KERN_INFO "Suspended for %lld.%03lu seconds\n",
++			(s64)t->tv_sec,
+ 			t->tv_nsec / NSEC_PER_MSEC);
+ }
+ 
+-- 
+2.11.1
+
