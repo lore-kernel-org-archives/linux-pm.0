@@ -1,41 +1,46 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] Power: Supply: sbs-charger: simplfied bool function
-Date: Tue, 14 Feb 2017 05:58:02 -0800
-Message-ID: <1487080682.6214.25.camel@perches.com>
-References: <1487079790-724-1-git-send-email-danielperezdeandres@gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v2] tools/power/x86: Debug utility for intel_pstate
+ driver
+Date: Tue, 14 Feb 2017 06:36:22 -0800
+Message-ID: <1487082982.21310.0.camel@linux.intel.com>
+References: <1487027947-14306-1-git-send-email-dsmythies@telus.net>
+         <1487045940.3025.5.camel@linux.intel.com>
+         <4440842.OSZWjPAjve@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1487079790-724-1-git-send-email-danielperezdeandres@gmail.com>
+In-Reply-To: <4440842.OSZWjPAjve@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Perez <danielperezdeandres@gmail.com>, sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolassaenzj@gmail.com
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Doug Smythies <doug.smythies@gmail.com>, len.brown@intel.com, dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2017-02-14 at 14:43 +0100, Daniel Perez wrote:
-> Simplified the syntax of a simple bool return value function.
+On Tue, 2017-02-14 at 12:15 +0100, Rafael J. Wysocki wrote:
+> On Monday, February 13, 2017 08:19:00 PM Srinivas Pandruvada wrote:
+> > On Mon, 2017-02-13 at 15:19 -0800, Doug Smythies wrote:
+> > > This utility can be used to debug and tune the performance of the
+> > > intel_pstate driver.
+> > > This utility can be used in two ways:
+> > > - If there is Linux trace file with pstate_sample events enabled,
+> > > then
+> > > this utility can parse the trace file and generate performance
+> > > plots.
+> > > - If user has not specified a trace file as input via command
+> > > line
+> > > parameters, then this utility enables and collects trace data for
+> > > a
+> > > user
+> > > specified interval and generates performance plots.
+> > > 
+> > > Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> > 
+> > I am fine with this version. But since Rafael may have already
+> > prepared
+> > for pull request, so it is up to him.
 > 
-> Signed-off-by: Daniel Perez <danielperezdeandres@gmail.com>
-> ---
->  drivers/power/supply/sbs-charger.c | 5 +----
->  1 file changed, 1 insertion(+), 4 deletions(-)
-> 
-> diff --git a/drivers/power/supply/sbs-charger.c b/drivers/power/supply/sbs-charger.c
-> index 353765a..3e40553 100644
-> --- a/drivers/power/supply/sbs-charger.c
-> +++ b/drivers/power/supply/sbs-charger.c
-> @@ -137,10 +137,7 @@ static enum power_supply_property sbs_properties[] = {
->  
->  static bool sbs_readable_reg(struct device *dev, unsigned int reg)
->  {
-> -	if (reg < SBS_CHARGER_REG_SPEC_INFO)
-> -		return false;
-> -	else
-> -		return true;
-> +	return reg < SBS_CHARGER_REG_SPEC_INFO ? false : true;
+> I can replace your version with this one if that's OK.
+Please do that.
 
-Any ternary with true false could be simplified.
-Why not just
-
-	return reg >= SBS_CHARGER_REG_SPEC_INFO;
+Thanks,
+Srinivas
