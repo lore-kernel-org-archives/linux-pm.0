@@ -1,28 +1,108 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Regression in next with use printk_safe buffers in printk
-Date: Tue, 14 Feb 2017 19:29:56 +0100
-Message-ID: <20170214182956.GS6500@twins.programming.kicks-ass.net>
-References: <20170213185956.GM3897@atomide.com>
- <20170214160140.GA401@tigerII.localdomain>
- <20170214161809.GQ6500@twins.programming.kicks-ass.net>
- <20170214165645.GB10321@tigerII.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Thomas Garnier <thgarnie@google.com>
+Subject: [PATCH v3 1/4] x86/mm: Adapt MODULES_END based on Fixmap section size
+Date: Tue, 14 Feb 2017 11:42:56 -0800
+Message-ID: <20170214194259.75960-1-thgarnie@google.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:40203 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752105AbdBNSaJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 13:30:09 -0500
-Content-Disposition: inline
-In-Reply-To: <20170214165645.GB10321@tigerII.localdomain>
+Received: from mail-oi0-f48.google.com ([209.85.218.48]:33578 "EHLO
+        mail-oi0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751602AbdBNTnG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 14:43:06 -0500
+Received: by mail-oi0-f48.google.com with SMTP id w204so76539859oiw.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2017 11:43:06 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Tony Lindgren <tony@atomide.com>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, John Stultz <john.stultz@linaro.org>
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Thomas Garnier <thgarnie@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-pm@vger.kernel.org, linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, lguest@lists.ozlabs.org, kvm@vger.kernel.org, kernel-hardening@lists.openwall.com
 
-On Wed, Feb 15, 2017 at 01:56:45AM +0900, Sergey Senozhatsky wrote:
-> that crossed my mind, but I kinda assumed that we do printk() from
-> under tk_core using sched fair, and rt_runtime_lock is from sched rt.
+This patch aligns MODULES_END to the beginning of the Fixmap section.
+It optimizes the space available for both sections. The address is
+pre-computed based on the number of pages required by the Fixmap
+section.
 
-That's all true; lockdep doesn't care :-) All it knows is that at some
-point those locks nest.
+It will allow GDT remapping in the Fixmap section. The current
+MODULES_END static address does not provide enough space for the kernel
+to support a large number of processors.
+
+Signed-off-by: Thomas Garnier <thgarnie@google.com>
+---
+Based on next-20170213
+---
+ arch/x86/include/asm/fixmap.h           | 8 ++++++++
+ arch/x86/include/asm/pgtable_64_types.h | 3 ---
+ arch/x86/kernel/module.c                | 1 +
+ arch/x86/mm/dump_pagetables.c           | 1 +
+ arch/x86/mm/kasan_init_64.c             | 1 +
+ 5 files changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+index 8554f960e21b..20231189e0e3 100644
+--- a/arch/x86/include/asm/fixmap.h
++++ b/arch/x86/include/asm/fixmap.h
+@@ -132,6 +132,14 @@ enum fixed_addresses {
+ 
+ extern void reserve_top_address(unsigned long reserve);
+ 
++/* On 64-bit, the module sections ends with the start of the fixmap */
++#ifdef CONFIG_X86_64
++#define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
++#define MODULES_END   __fix_to_virt(__end_of_fixed_addresses + 1)
++#define MODULES_LEN   (MODULES_END - MODULES_VADDR)
++#endif /* CONFIG_X86_64 */
++
++
+ #define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
+ #define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
+ 
+diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+index 3a264200c62f..de8bace10200 100644
+--- a/arch/x86/include/asm/pgtable_64_types.h
++++ b/arch/x86/include/asm/pgtable_64_types.h
+@@ -66,9 +66,6 @@ typedef struct { pteval_t pte; } pte_t;
+ #define VMEMMAP_START	__VMEMMAP_BASE
+ #endif /* CONFIG_RANDOMIZE_MEMORY */
+ #define VMALLOC_END	(VMALLOC_START + _AC((VMALLOC_SIZE_TB << 40) - 1, UL))
+-#define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
+-#define MODULES_END      _AC(0xffffffffff000000, UL)
+-#define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+ #define ESPFIX_PGD_ENTRY _AC(-2, UL)
+ #define ESPFIX_BASE_ADDR (ESPFIX_PGD_ENTRY << PGDIR_SHIFT)
+ #define EFI_VA_START	 ( -4 * (_AC(1, UL) << 30))
+diff --git a/arch/x86/kernel/module.c b/arch/x86/kernel/module.c
+index 477ae806c2fa..fad61caac75e 100644
+--- a/arch/x86/kernel/module.c
++++ b/arch/x86/kernel/module.c
+@@ -35,6 +35,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/setup.h>
++#include <asm/fixmap.h>
+ 
+ #if 0
+ #define DEBUGP(fmt, ...)				\
+diff --git a/arch/x86/mm/dump_pagetables.c b/arch/x86/mm/dump_pagetables.c
+index 8aa6bea1cd6c..90170415f08a 100644
+--- a/arch/x86/mm/dump_pagetables.c
++++ b/arch/x86/mm/dump_pagetables.c
+@@ -19,6 +19,7 @@
+ #include <linux/seq_file.h>
+ 
+ #include <asm/pgtable.h>
++#include <asm/fixmap.h>
+ 
+ /*
+  * The dumper groups pagetable entries of the same type into one, and for
+diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
+index 0493c17b8a51..34f167cf3316 100644
+--- a/arch/x86/mm/kasan_init_64.c
++++ b/arch/x86/mm/kasan_init_64.c
+@@ -8,6 +8,7 @@
+ 
+ #include <asm/tlbflush.h>
+ #include <asm/sections.h>
++#include <asm/fixmap.h>
+ 
+ extern pgd_t early_level4_pgt[PTRS_PER_PGD];
+ extern struct range pfn_mapped[E820_X_MAX];
+-- 
+2.11.0.483.g087da7b7c-goog
+
