@@ -1,294 +1,195 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: [PATCH v3 3/4] x86: Make the GDT remapping read-only on 64-bit
-Date: Tue, 14 Feb 2017 11:42:58 -0800
-Message-ID: <20170214194259.75960-3-thgarnie@google.com>
-References: <20170214194259.75960-1-thgarnie@google.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v6 1/8] devicetree: power: Add battery.txt
+Date: Tue, 14 Feb 2017 14:22:01 -0600
+Message-ID: <646198ab-b079-59c4-506f-34e446bcd67d@ti.com>
+References: <20170211024340.19491-1-liam@networkimprov.net>
+ <20170211024340.19491-2-liam@networkimprov.net>
+ <ce69f358-ac3b-993d-0639-844856362c9d@ti.com>
+ <CAKvHMgSSpbkX1NMwaDmuJwBcgu6Avy65izAaBGTYongqL51kWQ@mail.gmail.com>
+ <f38dc321-b32d-1053-75e4-ac9bf3438bb4@ti.com>
+ <CAKvHMgTB8D+9mjpm16mAKZtHeTWZhyv0iEAvxw04fm-7GM1wqA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f173.google.com ([74.125.82.173]:34994 "EHLO
-        mail-ot0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753154AbdBNTnJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 14:43:09 -0500
-Received: by mail-ot0-f173.google.com with SMTP id 65so102259535otq.2
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2017 11:43:08 -0800 (PST)
-In-Reply-To: <20170214194259.75960-1-thgarnie@google.com>
+Received: from fllnx209.ext.ti.com ([198.47.19.16]:9006 "EHLO
+        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754941AbdBNUWx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 15:22:53 -0500
+In-Reply-To: <CAKvHMgTB8D+9mjpm16mAKZtHeTWZhyv0iEAvxw04fm-7GM1wqA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Thomas Garnier <thgarnie@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org, kasan-dev@googlegroups.com, linux-pm@vger.kernel.org, linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org, lguest@lists.ozlabs.org, kvm@vger.kernel.org, kernel-hardening@lists.openwall.com
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-This patch makes the GDT remapped pages read-only to prevent corruption.
-This change is done only on 64-bit.
+On 02/13/2017 03:31 PM, Liam Breck wrote:
+> [Dropped devicetree from CC]
+> 
+> On Mon, Feb 13, 2017 at 1:12 PM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 02/13/2017 02:58 PM, Liam Breck wrote:
+>>> Hi Andrew, thanks for the drill-down on BQ27* chips.
+>>>
+>>> On Mon, Feb 13, 2017 at 8:06 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>> On 02/10/2017 08:43 PM, Liam Breck wrote:
+>>>>> From: Matt Ranostay <matt@ranostay.consulting>
+>>>>>
+>>>>> Documentation of static battery characteristics that can be defined
+>>>>> for batteries which cannot self-identify. This information is required
+>>>>> by fuel-gauge and charger chips for proper handling of the battery.
+>>>>
+>>>>
+>>>> I think some of the confusion about what a "smart-battery" binding would
+>>>> look like is due to a miss-understanding what it means to
+>>>> "self-identify". Originally the bq27xxx *was* the chip that lived its
+>>>> whole life inside a battery (the iphone battery is one such example and
+>>>> a good way to test the bq27000). This way it could be factory programmed
+>>>> with the battery's basics and then learn about the individual pack over
+>>>> time to provide better info on time to empty, discharge rates, etc..
+>>>>
+>>>> Eventually, people wanted to have the battery become cheap and
+>>>> replaceable, so fuel-gauges were made that are "system side", and ride
+>>>> along with the device, not the battery. Now this has one big problem,
+>>>> how can we learn about a battery when it may be a new battery every time
+>>>> we boot up? So we added programmable memory to the devices, and
+>>>> programming this memory looks to be what this series is about.
+>>>>
+>>>> Only the battery design info is programmed in this series, but much more
+>>>> battery info can be uploaded, including stuff that is not fixed and
+>>>> therefor cannot be added to the DT. Even the design parameters may not
+>>>> be fix if one changes the battery as different manufactures of the same
+>>>> battery type may have different design capacities.
+>>>>
+>>>> The ideal use-case in a system with a system side gauge is the OS should
+>>>> periodically, or just before shutdown, read the battery's learned info
+>>>> and when the device is powered back up, if the battery serial number
+>>>> matches from before, re-upload this learned info to the gauge so it
+>>>> doesn't have to re-learn everything. All of this will need to happen in
+>>>> user-space, so what we really need is a user-space API for manipulating
+>>>> these properties.
+>>>
+>>> We would need a feature in the driver to get/set the blob of pack- or
+>>> cell-unique data. The userspace api is one sysfs file.
+>>>
+>>> However the DT fixed-battery node could indicate when/how-often the
+>>> object is stored, and where, e.g. filename. If the latter is given,
+>>> the driver should write/read the file itself.
+>>>
+>>> Is there some documentation about what registers should go in this blob?
+>>>
+>>
+>> This should all be available in the parts' technical reference (looks
+>> like page 24 for your device), but the blob isn't meant to be modified,
+>> the information/format is mostly internal to the part, all we should do
+>> is save blob / restore blob as needed.
+> 
+> Page 24 has "8.5.5 Data Block Summary" That?
+> 
+> Subclass IDs for NVM are 82, 88,104, 105. Do all those go in the blob?
+> 
 
-The native_load_tr_desc function was adapted to correctly handle a
-read-only GDT. The LTR instruction always writes to the GDT TSS entry.
-This generates a page fault if the GDT is read-only. This change checks
-if the current GDT is a remap and swap GDTs as needed. This function was
-tested by booting multiple machines and checking hibernation works
-properly.
+Some devices (bq27421) do not contain an NVM, and so rely on the host to
+restore its "learned data" across power cycles with the same battery.
 
-KVM SVM and VMX were adapted to use the writeable GDT. On VMX, the
-per-cpu variable was removed for functions to fetch the original GDT.
-Instead of reloading the previous GDT, VMX will reload the fixmap GDT as
-expected. For testing, VMs were started and restored on multiple
-configurations.
+When using devices with NVM this "learned data" can be saved to the NVM
+and it will automatically be copied over to the run-time RAM sections on
+powerup.
 
-Signed-off-by: Thomas Garnier <thgarnie@google.com>
----
-Based on next-20170213
----
- arch/x86/include/asm/desc.h      | 51 ++++++++++++++++++++++++++++++++++++----
- arch/x86/include/asm/processor.h |  1 +
- arch/x86/kernel/cpu/common.c     | 28 +++++++++++++++++-----
- arch/x86/kvm/svm.c               |  4 +---
- arch/x86/kvm/vmx.c               | 15 ++++--------
- 5 files changed, 75 insertions(+), 24 deletions(-)
+So we should only ever need to save the RAM section.
 
-diff --git a/arch/x86/include/asm/desc.h b/arch/x86/include/asm/desc.h
-index 5d4ba1311737..15b2a86c9267 100644
---- a/arch/x86/include/asm/desc.h
-+++ b/arch/x86/include/asm/desc.h
-@@ -57,6 +57,17 @@ static inline unsigned long get_cpu_gdt_rw_vaddr(unsigned int cpu)
- 	return (unsigned long)get_cpu_gdt_rw(cpu);
- }
- 
-+/* Provide the current original GDT */
-+static inline struct desc_struct *get_current_gdt_rw(void)
-+{
-+	return this_cpu_ptr(&gdt_page)->gdt;
-+}
-+
-+static inline unsigned long get_current_gdt_rw_vaddr(void)
-+{
-+	return (unsigned long)get_current_gdt_rw();
-+}
-+
- /* Get the fixmap index for a specific processor */
- static inline unsigned int get_cpu_gdt_ro_index(int cpu)
- {
-@@ -233,11 +244,6 @@ static inline void native_set_ldt(const void *addr, unsigned int entries)
- 	}
- }
- 
--static inline void native_load_tr_desc(void)
--{
--	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
--}
--
- static inline void native_load_gdt(const struct desc_ptr *dtr)
- {
- 	asm volatile("lgdt %0"::"m" (*dtr));
-@@ -258,6 +264,41 @@ static inline void native_store_idt(struct desc_ptr *dtr)
- 	asm volatile("sidt %0":"=m" (*dtr));
- }
- 
-+/*
-+ * The LTR instruction marks the TSS GDT entry as busy. On 64-bit, the GDT is
-+ * a read-only remapping. To prevent a page fault, the GDT is switched to the
-+ * original writeable version when needed.
-+ */
-+#ifdef CONFIG_X86_64
-+static inline void native_load_tr_desc(void)
-+{
-+	struct desc_ptr gdt;
-+	int cpu = raw_smp_processor_id();
-+	bool restore = 0;
-+	struct desc_struct *fixmap_gdt;
-+
-+	native_store_gdt(&gdt);
-+	fixmap_gdt = get_cpu_gdt_ro(cpu);
-+
-+	/*
-+	 * If the current GDT is the read-only fixmap, swap to the original
-+	 * writeable version. Swap back at the end.
-+	 */
-+	if (gdt.address == (unsigned long)fixmap_gdt) {
-+		load_direct_gdt(cpu);
-+		restore = 1;
-+	}
-+	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
-+	if (restore)
-+		load_fixmap_gdt(cpu);
-+}
-+#else
-+static inline void native_load_tr_desc(void)
-+{
-+	asm volatile("ltr %w0"::"q" (GDT_ENTRY_TSS*8));
-+}
-+#endif
-+
- static inline unsigned long native_store_tr(void)
- {
- 	unsigned long tr;
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c441d1f7e275..6ea9e419a856 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -706,6 +706,7 @@ extern struct desc_ptr		early_gdt_descr;
- 
- extern void cpu_set_gdt(int);
- extern void switch_to_new_gdt(int);
-+extern void load_direct_gdt(int);
- extern void load_fixmap_gdt(int);
- extern void load_percpu_segment(int);
- extern void cpu_init(void);
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 2853a42ded2d..bdf521383900 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -444,13 +444,31 @@ void load_percpu_segment(int cpu)
- 	load_stack_canary_segment();
- }
- 
-+/* On 64-bit the GDT remapping is read-only */
-+#ifdef CONFIG_X86_64
-+#define PAGE_FIXMAP_GDT PAGE_KERNEL_RO
-+#else
-+#define PAGE_FIXMAP_GDT PAGE_KERNEL
-+#endif
-+
- /* Setup the fixmap mapping only once per-processor */
- static inline void setup_fixmap_gdt(int cpu)
- {
- 	__set_fixmap(get_cpu_gdt_ro_index(cpu),
--		     __pa(get_cpu_gdt_rw(cpu)), PAGE_KERNEL);
-+		     __pa(get_cpu_gdt_rw(cpu)), PAGE_FIXMAP_GDT);
- }
- 
-+/* Load the original GDT from the per-cpu structure */
-+void load_direct_gdt(int cpu)
-+{
-+	struct desc_ptr gdt_descr;
-+
-+	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
-+	gdt_descr.size = GDT_SIZE - 1;
-+	load_gdt(&gdt_descr);
-+}
-+EXPORT_SYMBOL_GPL(load_direct_gdt);
-+
- /* Load a fixmap remapping of the per-cpu GDT */
- void load_fixmap_gdt(int cpu)
- {
-@@ -460,6 +478,7 @@ void load_fixmap_gdt(int cpu)
- 	gdt_descr.size = GDT_SIZE - 1;
- 	load_gdt(&gdt_descr);
- }
-+EXPORT_SYMBOL_GPL(load_fixmap_gdt);
- 
- /*
-  * Current gdt points %fs at the "master" per-cpu area: after this,
-@@ -467,11 +486,8 @@ void load_fixmap_gdt(int cpu)
-  */
- void switch_to_new_gdt(int cpu)
- {
--	struct desc_ptr gdt_descr;
--
--	gdt_descr.address = (long)get_cpu_gdt_rw(cpu);
--	gdt_descr.size = GDT_SIZE - 1;
--	load_gdt(&gdt_descr);
-+	/* Load the original GDT */
-+	load_direct_gdt(cpu);
- 	/* Reload the per-cpu base */
- 	load_percpu_segment(cpu);
- }
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index d0414f054bdf..7b9a71e465b1 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -741,7 +741,6 @@ static int svm_hardware_enable(void)
- 
- 	struct svm_cpu_data *sd;
- 	uint64_t efer;
--	struct desc_ptr gdt_descr;
- 	struct desc_struct *gdt;
- 	int me = raw_smp_processor_id();
- 
-@@ -763,8 +762,7 @@ static int svm_hardware_enable(void)
- 	sd->max_asid = cpuid_ebx(SVM_CPUID_FUNC) - 1;
- 	sd->next_asid = sd->max_asid + 1;
- 
--	native_store_gdt(&gdt_descr);
--	gdt = (struct desc_struct *)gdt_descr.address;
-+	gdt = get_current_gdt_rw();
- 	sd->tss_desc = (struct kvm_ldttss_desc *)(gdt + GDT_ENTRY_TSS);
- 
- 	wrmsrl(MSR_EFER, efer | EFER_SVME);
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index 7c3e42623090..99167f20bc34 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -935,7 +935,6 @@ static DEFINE_PER_CPU(struct vmcs *, current_vmcs);
-  * when a CPU is brought down, and we need to VMCLEAR all VMCSs loaded on it.
-  */
- static DEFINE_PER_CPU(struct list_head, loaded_vmcss_on_cpu);
--static DEFINE_PER_CPU(struct desc_ptr, host_gdt);
- 
- /*
-  * We maintian a per-CPU linked-list of vCPU, so in wakeup_handler() we
-@@ -1997,10 +1996,9 @@ static void reload_tss(void)
- 	/*
- 	 * VT restores TR but not its size.  Useless.
- 	 */
--	struct desc_ptr *gdt = this_cpu_ptr(&host_gdt);
- 	struct desc_struct *descs;
- 
--	descs = (void *)gdt->address;
-+	descs = get_current_gdt_rw();
- 	descs[GDT_ENTRY_TSS].type = 9; /* available TSS */
- 	load_TR_desc();
- }
-@@ -2061,7 +2059,6 @@ static bool update_transition_efer(struct vcpu_vmx *vmx, int efer_offset)
- 
- static unsigned long segment_base(u16 selector)
- {
--	struct desc_ptr *gdt = this_cpu_ptr(&host_gdt);
- 	struct desc_struct *d;
- 	unsigned long table_base;
- 	unsigned long v;
-@@ -2069,7 +2066,7 @@ static unsigned long segment_base(u16 selector)
- 	if (!(selector & ~3))
- 		return 0;
- 
--	table_base = gdt->address;
-+	table_base = get_current_gdt_rw_vaddr();
- 
- 	if (selector & 4) {           /* from ldt */
- 		u16 ldt_selector = kvm_read_ldt();
-@@ -2185,7 +2182,7 @@ static void __vmx_load_host_state(struct vcpu_vmx *vmx)
- #endif
- 	if (vmx->host_state.msr_host_bndcfgs)
- 		wrmsrl(MSR_IA32_BNDCFGS, vmx->host_state.msr_host_bndcfgs);
--	load_gdt(this_cpu_ptr(&host_gdt));
-+	load_fixmap_gdt(raw_smp_processor_id());
- }
- 
- static void vmx_load_host_state(struct vcpu_vmx *vmx)
-@@ -2287,7 +2284,7 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 	}
- 
- 	if (!already_loaded) {
--		struct desc_ptr *gdt = this_cpu_ptr(&host_gdt);
-+		unsigned long gdt = get_current_gdt_rw_vaddr();
- 		unsigned long sysenter_esp;
- 
- 		kvm_make_request(KVM_REQ_TLB_FLUSH, vcpu);
-@@ -2297,7 +2294,7 @@ static void vmx_vcpu_load(struct kvm_vcpu *vcpu, int cpu)
- 		 * processors.
- 		 */
- 		vmcs_writel(HOST_TR_BASE, kvm_read_tr_base()); /* 22.2.4 */
--		vmcs_writel(HOST_GDTR_BASE, gdt->address);   /* 22.2.4 */
-+		vmcs_writel(HOST_GDTR_BASE, gdt);   /* 22.2.4 */
- 
- 		rdmsrl(MSR_IA32_SYSENTER_ESP, sysenter_esp);
- 		vmcs_writel(HOST_IA32_SYSENTER_ESP, sysenter_esp); /* 22.2.3 */
-@@ -3523,8 +3520,6 @@ static int hardware_enable(void)
- 		ept_sync_global();
- 	}
- 
--	native_store_gdt(this_cpu_ptr(&host_gdt));
--
- 	return 0;
- }
- 
--- 
-2.11.0.483.g087da7b7c-goog
+Another thing to consider is that we (TI) have GUI tools to allow
+manufacturers to input battery info and have it generate a blob that can
+be deployed to these devices. The blob format is meant to be handled and
+uploaded by custom user-space tools as it only really needs to be done
+once (power-down events should only happen when changing batteries, in
+which case you want to let the device forget what it has learned about
+the old battery).
 
+All of the details of this programming are probably not the job of the
+kernel, in end-user hands the kernel only needs to know how to read from
+the device, not program it.
+
+Take everything I say with a grain of salt though, I'm not on the team
+that makes these. I don't have much additional info not in the public
+data-sheets.
+
+Andrew
+
+> 
+>>> That concept is beyond the scope of this patchset (and doesn't
+>>> supersede it), but is something I'd like to implement for our chip,
+>>> the *425.
+>>>
+>>>
+>>>> The properties added in this series are okay, and it's good to have some
+>>>> sane defaults in DT, but looking forward this may not be enough to get
+>>>> full use out of these devices.
+>>>
+>>> I'm relieved you're not opposed to our patch :-) Now I just need that
+>>> guidance I mentioned re the chip family...
+>>>
+>>
+>> Still looking into it, I think for now would be easiest to add the
+>> register info to each chip family struct. The un-seal sequence should be
+>> generic enough already.
+> 
+> I'll wait for your full reply on that thread.
+> 
+> 
+>>>>> Cc: Rob Herring <robh@kernel.org>
+>>>>> Cc: devicetree@vger.kernel.org
+>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>>>> ---
+>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 37 ++++++++++++++++++++++
+>>>>>  1 file changed, 37 insertions(+)
+>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>>
+>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>> new file mode 100644
+>>>>> index 0000000..d78a4aa
+>>>>> --- /dev/null
+>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>>>>> @@ -0,0 +1,37 @@
+>>>>> +Battery Characteristics
+>>>>> +
+>>>>> +Required Properties:
+>>>>> + - compatible: Must be "fixed-battery"
+>>>>> +
+>>>>> +Optional Properties:
+>>>>> + - voltage-min-design-microvolt: drained battery voltage
+>>>>> + - energy-full-design-microwatt-hours: battery design energy
+>>>>> + - charge-full-design-microamp-hours: battery design capacity
+>>>>> +
+>>>>> +Future Properties must be named for the corresponding elements in
+>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>>>>> +
+>>>>> +Batteries must be referenced by chargers and/or fuel-gauges
+>>>>> +using a phandle. The phandle's property should be named
+>>>>> +"monitored-battery".
+>>>>> +
+>>>>> +Example:
+>>>>> +
+>>>>> +     bat: battery {
+>>>>> +             compatible = "fixed-battery";
+>>>>> +             voltage-min-design-microvolt = <3200000>;
+>>>>> +             energy-full-design-microwatt-hours = <5290000>;
+>>>>> +             charge-full-design-microamp-hours = <1430000>;
+>>>>> +     };
+>>>>> +
+>>>>> +     charger: charger@11 {
+>>>>> +             ....
+>>>>> +             monitored-battery = <&bat>;
+>>>>> +             ...
+>>>>> +     };
+>>>>> +
+>>>>> +     fuel_gauge: fuel-gauge@22 {
+>>>>> +             ....
+>>>>> +             monitored-battery = <&bat>;
+>>>>> +             ...
+>>>>> +     };
+>>>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>
