@@ -1,37 +1,63 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] tools/power/x86: Debug utility for intel_pstate driver
-Date: Tue, 14 Feb 2017 12:15:18 +0100
-Message-ID: <4440842.OSZWjPAjve@aspire.rjw.lan>
-References: <1487027947-14306-1-git-send-email-dsmythies@telus.net> <1487045940.3025.5.camel@linux.intel.com>
+Subject: Re: PCI / PM: Crashes in PME scan during system suspend
+Date: Tue, 14 Feb 2017 12:26:01 +0100
+Message-ID: <2661070.8D7d40DjM3@aspire.rjw.lan>
+References: <CAMuHMdVf-NT_6oGQVba_QgFuW-fZMBDF1CtidfxSxnCr8+BGHg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1487045940.3025.5.camel@linux.intel.com>
+In-Reply-To: <CAMuHMdVf-NT_6oGQVba_QgFuW-fZMBDF1CtidfxSxnCr8+BGHg@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: Doug Smythies <doug.smythies@gmail.com>, len.brown@intel.com, dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Yinghai Lu <yinghai@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms@verge.net.au>, linux-pci <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, February 13, 2017 08:19:00 PM Srinivas Pandruvada wrote:
-> On Mon, 2017-02-13 at 15:19 -0800, Doug Smythies wrote:
-> > This utility can be used to debug and tune the performance of the
-> > intel_pstate driver.
-> > This utility can be used in two ways:
-> > - If there is Linux trace file with pstate_sample events enabled,
-> > then
-> > this utility can parse the trace file and generate performance plots.
-> > - If user has not specified a trace file as input via command line
-> > parameters, then this utility enables and collects trace data for a
-> > user
-> > specified interval and generates performance plots.
-> > 
-> > Signed-off-by: Doug Smythies <dsmythies@telus.net>
+On Tuesday, February 14, 2017 10:31:38 AM Geert Uytterhoeven wrote:
+> Hi all,
 > 
-> I am fine with this version. But since Rafael may have already prepared
-> for pull request, so it is up to him.
+> Laurent Pinchart reported that r8a7790/Lager crashes during suspend tests.
+> 
+> I managed to reproduce the issue on r8a7791/koelsch:
+>   - It only happens during suspend tests, after writing either "platform"
+>     or "processors" to /sys/power/pm_test,
+>   - It does not (or is less likely) to happen during full system suspend
+>     ("core" or "none").
+> 
+> More investigation shows this happens when the PME scan runs, once per
+> second.  During PME scan, the PCI host bridge (rcar-pci) registers are
+> accessed while the host bridge's module clock has already been disabled,
+> leading to a crash.
 
-I can replace your version with this one if that's OK.
+OK, so clearly PME scans should be suspended before the host bridge
+registers become inaccessible.
+
+Another question, though, is whether or not PME scans are actually necessary
+on the affected platforms at all.
+
+> With "core" or "none", system suspend also disables timers, and thus the
+> workqueue handling PME scan no longer runs.  I believe the issue can still
+> happen, as there's a small window between disabling module clocks and
+> disabling timers.
+> 
+> Lukas' patch "[PATCH v2] PCI: pciehp: Don't enable PME on runtime suspend"
+> (http://lkml.iu.edu/hypermail/linux/kernel/1702.0/03245.html) is not
+> sufficient to fix the issue.
+> 
+> Note that the issue was not introduced by commit 68db9bc81436 ("PCI:
+> pciehp: Add runtime PM support for PCIe hotplug ports"):  I managed to
+> trigger it on 68db9bc81436^ too, albeit not at first try.
+> 
+> Do you have a clue?
+
+Pretty much. :-)
+
+The PME scans cannot run on a suspended host bridge.
+
+> Shall I bisect it? I have no idea when the issue appeared first, or if it ever
+> worked.
+
+It's never worked IMO.
 
 Thanks,
 Rafael
