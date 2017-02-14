@@ -1,7 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v3 07/18] ARM: dtsi: axp209: add AC power supply subnode
-Date: Tue, 14 Feb 2017 10:41:01 +0100
-Message-ID: <20170214094112.27426-8-quentin.schulz@free-electrons.com>
+Subject: [PATCH v3 03/18] mfd: axp20x: correct name of temperature data ADC
+ registers
+Date: Tue, 14 Feb 2017 10:40:57 +0100
+Message-ID: <20170214094112.27426-4-quentin.schulz@free-electrons.com>
 References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,40 +22,51 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X PMIC exposes the status of AC power supply, the
-current current and voltage supplied to the board by the AC power
-supply.
+The registers 0x56 and 0x57 of AXP22X PMIC store the value of the
+internal temperature of the PMIC.
 
-This adds the AC power supply subnode for AXP20X PMIC.
+This patch modifies the name of these registers from AXP22X_PMIC_ADC_H/L
+to AXP22X_PMIC_TEMP_H/L so their purpose is clearer.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 Acked-by: Chen-Yu Tsai <wens@csie.org>
 Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 ---
 
-v2:
- - changed DT node name from ac_power_supply to ac-power-supply,
- - removed io-channels and io-channel-names from DT (the IIO mapping is
- done in the IIO ADC driver now),
+added in v2
 
- arch/arm/boot/dts/axp209.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/mfd/axp20x.c       | 2 +-
+ include/linux/mfd/axp20x.h | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 675bb0f..9677dd5 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -53,6 +53,11 @@
- 	interrupt-controller;
- 	#interrupt-cells = <1>;
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index 619a83e..9c2fd37 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -102,7 +102,7 @@ static const struct regmap_range axp22x_volatile_ranges[] = {
+ 	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
+ 	regmap_reg_range(AXP20X_IRQ1_EN, AXP20X_IRQ5_STATE),
+ 	regmap_reg_range(AXP22X_GPIO_STATE, AXP22X_GPIO_STATE),
+-	regmap_reg_range(AXP22X_PMIC_ADC_H, AXP20X_IPSOUT_V_HIGH_L),
++	regmap_reg_range(AXP22X_PMIC_TEMP_H, AXP20X_IPSOUT_V_HIGH_L),
+ 	regmap_reg_range(AXP20X_FG_RES, AXP20X_FG_RES),
+ };
  
-+	ac_power_supply: ac-power-supply {
-+		compatible = "x-powers,axp202-ac-power-supply";
-+		status = "disabled";
-+	};
-+
- 	axp_gpio: gpio {
- 		compatible = "x-powers,axp209-gpio";
- 		gpio-controller;
+diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+index a4860bc..5ecadbb 100644
+--- a/include/linux/mfd/axp20x.h
++++ b/include/linux/mfd/axp20x.h
+@@ -228,8 +228,8 @@ enum {
+ #define AXP20X_OCV_MAX			0xf
+ 
+ /* AXP22X specific registers */
+-#define AXP22X_PMIC_ADC_H		0x56
+-#define AXP22X_PMIC_ADC_L		0x57
++#define AXP22X_PMIC_TEMP_H		0x56
++#define AXP22X_PMIC_TEMP_L		0x57
+ #define AXP22X_TS_ADC_H			0x58
+ #define AXP22X_TS_ADC_L			0x59
+ #define AXP22X_BATLOW_THRES1		0xe6
 -- 
 2.9.3
