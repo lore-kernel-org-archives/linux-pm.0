@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v3 05/18] mfd: axp20x: add ADC cells for AXP20X and AXP22X
- PMICs
-Date: Tue, 14 Feb 2017 10:40:59 +0100
-Message-ID: <20170214094112.27426-6-quentin.schulz@free-electrons.com>
+Subject: [PATCH v3 09/18] ARM: dts: sun8i: sina33: enable ACIN power supply
+ subnode
+Date: Tue, 14 Feb 2017 10:41:03 +0100
+Message-ID: <20170214094112.27426-10-quentin.schulz@free-electrons.com>
 References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,50 +22,30 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the AXP20X/AXP22x ADCs driver to the mfd cells of the AXP209,
-AXP221 and AXP223 MFD.
+The Sinlinx SinA33 has an AXP223 PMIC and an ACIN connector, thus, we
+enable the ACIN power supply in its Device Tree.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+Acked-by: Chen-Yu Tsai <wens@csie.org>
 Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 ---
+ arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-v3:
- - removed of_compatible as DT node has been removed,
- - use different names to probe the ADC driver,
-
- drivers/mfd/axp20x.c | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 9c2fd37..a44a2fe 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -581,6 +581,8 @@ static struct mfd_cell axp20x_cells[] = {
- 	}, {
- 		.name		= "axp20x-regulator",
- 	}, {
-+		.name		= "axp20x-adc",
-+	}, {
- 		.name		= "axp20x-ac-power-supply",
- 		.of_compatible	= "x-powers,axp202-ac-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
-@@ -601,6 +603,8 @@ static struct mfd_cell axp221_cells[] = {
- 	}, {
- 		.name		= "axp20x-regulator",
- 	}, {
-+		.name		= "axp22x-adc"
-+	}, {
- 		.name		= "axp20x-usb-power-supply",
- 		.of_compatible	= "x-powers,axp221-usb-power-supply",
- 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
-@@ -614,6 +618,8 @@ static struct mfd_cell axp223_cells[] = {
- 		.num_resources		= ARRAY_SIZE(axp22x_pek_resources),
- 		.resources		= axp22x_pek_resources,
- 	}, {
-+		.name		= "axp22x-adc",
-+	}, {
- 		.name			= "axp20x-regulator",
- 	}, {
- 		.name		= "axp20x-usb-power-supply",
+diff --git a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
+index 28c58c5..bf53408 100644
+--- a/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
++++ b/arch/arm/boot/dts/sun8i-a33-sinlinx-sina33.dts
+@@ -147,6 +147,10 @@
+ 
+ #include "axp223.dtsi"
+ 
++&ac_power_supply {
++	status = "okay";
++};
++
+ &reg_aldo1 {
+ 	regulator-always-on;
+ 	regulator-min-microvolt = <3000000>;
 -- 
 2.9.3
