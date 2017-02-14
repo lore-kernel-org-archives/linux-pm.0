@@ -1,63 +1,72 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: PCI / PM: Crashes in PME scan during system suspend
-Date: Tue, 14 Feb 2017 12:26:01 +0100
-Message-ID: <2661070.8D7d40DjM3@aspire.rjw.lan>
-References: <CAMuHMdVf-NT_6oGQVba_QgFuW-fZMBDF1CtidfxSxnCr8+BGHg@mail.gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v13 06/12] usb: xhci: use bus->sysdev for DMA configuration
+Date: Tue, 14 Feb 2017 12:44:26 +0100
+Message-ID: <CAK8P3a1D1v=LXrW=-t-fRJjbo_C6OpSuoqiGuZPOaBzQYCT-kA@mail.gmail.com>
+References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
+ <1486776443-2280-7-git-send-email-peter.chen@nxp.com>
+ <e532a212-cd15-ab42-6188-fc11a12633af@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdVf-NT_6oGQVba_QgFuW-fZMBDF1CtidfxSxnCr8+BGHg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Yinghai Lu <yinghai@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms@verge.net.au>, linux-pci <linux-pci@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <e532a212-cd15-ab42-6188-fc11a12633af@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Roger Quadros <rogerq@ti.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, stephen.boyd@linaro.org, frank.li@nxp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gary.bisson@boundarydevices.com, Vivek Gautam <vivek.gautam@codeaurora.org>, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, Krzysztof Kozlowski <krzk@kernel.org>, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, Rob Herring <robh+dt@kernel.org>, Alexander Sverdlin <alexander.sverdlin@nokia.com>, oscar@naiandei.net, Linux ARM <linux-arm-kernel@lists.infradead.org>, hverkuil@xs4all.nl, Mathias
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, February 14, 2017 10:31:38 AM Geert Uytterhoeven wrote:
-> Hi all,
-> 
-> Laurent Pinchart reported that r8a7790/Lager crashes during suspend tests.
-> 
-> I managed to reproduce the issue on r8a7791/koelsch:
->   - It only happens during suspend tests, after writing either "platform"
->     or "processors" to /sys/power/pm_test,
->   - It does not (or is less likely) to happen during full system suspend
->     ("core" or "none").
-> 
-> More investigation shows this happens when the PME scan runs, once per
-> second.  During PME scan, the PCI host bridge (rcar-pci) registers are
-> accessed while the host bridge's module clock has already been disabled,
-> leading to a crash.
+On Tue, Feb 14, 2017 at 11:36 AM, Roger Quadros <rogerq@ti.com> wrote:
+> On 11/02/17 03:27, Peter Chen wrote:
+>> From: Arnd Bergmann <arnd@arndb.de>
+>>
+>> For xhci-hcd platform device, all the DMA parameters are not
+>> configured properly, notably dma ops for dwc3 devices. So, set
+>> the dma for xhci from sysdev. sysdev is pointing to device that
+>> is known to the system firmware or hardware.
+>>
+>> Cc: Baolin Wang <baolin.wang@linaro.org>
+>> Cc: Vivek Gautam <vivek.gautam@codeaurora.org>
+>> Cc: Alexander Sverdlin <alexander.sverdlin@nokia.com>
+>> Cc: Mathias Nyman <mathias.nyman@linux.intel.com>
+>>
+>> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>> Signed-off-by: Sriram Dash <sriram.dash@nxp.com>
+>> ---
+>> Hi, Baolin, Vivek and Alexander,
+>> I removed your tested-by tag due to add one change that adding sysdev
+>> for shared hcd too, if your test shows this change works for you or
+>> has no effect for you, please consider adding tested-by tag again,
+>> thanks.
 
-OK, so clearly PME scans should be suspended before the host bridge
-registers become inaccessible.
+>> @@ -222,20 +241,20 @@ static int xhci_plat_probe(struct platform_device *pdev)
+>>
+>>       xhci->clk = clk;
+>>       xhci->main_hcd = hcd;
+>> -     xhci->shared_hcd = usb_create_shared_hcd(driver, &pdev->dev,
+>> +     xhci->shared_hcd = __usb_create_hcd(driver, sysdev, &pdev->dev,
+>>                       dev_name(&pdev->dev), hcd);
+>>       if (!xhci->shared_hcd) {
+>>               ret = -ENOMEM;
+>>               goto disable_clk;
+>>       }
+>>
+>> -     if (device_property_read_bool(&pdev->dev, "usb3-lpm-capable"))
+>> +     if (device_property_read_bool(sysdev, "usb3-lpm-capable"))
+>
+> Why are we using sysdev to read DT property? We should be using the
+> XHCI device (&pdev->dev) here, no?
 
-Another question, though, is whether or not PME scans are actually necessary
-on the affected platforms at all.
+If I remember correctly, this is one of the cases where pdev does not
+have a device node attached to it because it was created by the driver
+of the parent device on the fly in case of dwc3. When you have a pure xhci
+device in DT, the two pointers are the same.
 
-> With "core" or "none", system suspend also disables timers, and thus the
-> workqueue handling PME scan no longer runs.  I believe the issue can still
-> happen, as there's a small window between disabling module clocks and
-> disabling timers.
-> 
-> Lukas' patch "[PATCH v2] PCI: pciehp: Don't enable PME on runtime suspend"
-> (http://lkml.iu.edu/hypermail/linux/kernel/1702.0/03245.html) is not
-> sufficient to fix the issue.
-> 
-> Note that the issue was not introduced by commit 68db9bc81436 ("PCI:
-> pciehp: Add runtime PM support for PCIe hotplug ports"):  I managed to
-> trigger it on 68db9bc81436^ too, albeit not at first try.
-> 
-> Do you have a clue?
-
-Pretty much. :-)
-
-The PME scans cannot run on a suspended host bridge.
-
-> Shall I bisect it? I have no idea when the issue appeared first, or if it ever
-> worked.
-
-It's never worked IMO.
-
-Thanks,
-Rafael
+    Arnd
