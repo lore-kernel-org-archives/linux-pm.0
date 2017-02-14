@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v3 12/18] mfd: axp20x: add CHRG_CTRL1/2/3 to writeable regs
- for AXP20X/AXP22X
-Date: Tue, 14 Feb 2017 10:41:06 +0100
-Message-ID: <20170214094112.27426-13-quentin.schulz@free-electrons.com>
+Subject: [PATCH v3 05/18] mfd: axp20x: add ADC cells for AXP20X and AXP22X
+ PMICs
+Date: Tue, 14 Feb 2017 10:40:59 +0100
+Message-ID: <20170214094112.27426-6-quentin.schulz@free-electrons.com>
 References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,49 +22,50 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The CHRG_CTRL1 and CHRG_CTRL2 registers are made for controlling
-different battery charging settings such as the constant current charge
-value.
-
-The AXP22X also have a third register CHRG_CTRL3 which has settings for
-battery charging too.
-
-This adds the CHRG_CTRL1, CHRG_CTRL2 and CHRG_CTRL3 registers to the
-list of writeable registers for AXP20X and AXP22X PMICs.
+This adds the AXP20X/AXP22x ADCs driver to the mfd cells of the AXP209,
+AXP221 and AXP223 MFD.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-Acked-by: Chen-Yu Tsai <wens@csie.org>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 ---
 
-v2:
- - added AXP20X_CHRG_CTRL2 and AXP20X_CHRG_CTRL3 to the writeable
- registers table,
- - removed added reg range for ADC data in volatile regs range,
+v3:
+ - removed of_compatible as DT node has been removed,
+ - use different names to probe the ADC driver,
 
- drivers/mfd/axp20x.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/mfd/axp20x.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 98abe4b..86bc1d5 100644
+index 9c2fd37..a44a2fe 100644
 --- a/drivers/mfd/axp20x.c
 +++ b/drivers/mfd/axp20x.c
-@@ -66,6 +66,7 @@ static const struct regmap_access_table axp152_volatile_table = {
- static const struct regmap_range axp20x_writeable_ranges[] = {
- 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
- 	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
-+	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP20X_CHRG_CTRL2),
- 	regmap_reg_range(AXP20X_DCDC_MODE, AXP20X_FG_RES),
- 	regmap_reg_range(AXP20X_RDC_H, AXP20X_OCV(AXP20X_OCV_MAX)),
- };
-@@ -94,6 +95,7 @@ static const struct regmap_access_table axp20x_volatile_table = {
- static const struct regmap_range axp22x_writeable_ranges[] = {
- 	regmap_reg_range(AXP20X_DATACACHE(0), AXP20X_IRQ5_STATE),
- 	regmap_reg_range(AXP20X_VBUS_IPSOUT_MGMT, AXP20X_VBUS_IPSOUT_MGMT),
-+	regmap_reg_range(AXP20X_CHRG_CTRL1, AXP22X_CHRG_CTRL3),
- 	regmap_reg_range(AXP20X_DCDC_MODE, AXP22X_BATLOW_THRES1),
- };
- 
+@@ -581,6 +581,8 @@ static struct mfd_cell axp20x_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-regulator",
+ 	}, {
++		.name		= "axp20x-adc",
++	}, {
+ 		.name		= "axp20x-ac-power-supply",
+ 		.of_compatible	= "x-powers,axp202-ac-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
+@@ -601,6 +603,8 @@ static struct mfd_cell axp221_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-regulator",
+ 	}, {
++		.name		= "axp22x-adc"
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp221-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
+@@ -614,6 +618,8 @@ static struct mfd_cell axp223_cells[] = {
+ 		.num_resources		= ARRAY_SIZE(axp22x_pek_resources),
+ 		.resources		= axp22x_pek_resources,
+ 	}, {
++		.name		= "axp22x-adc",
++	}, {
+ 		.name			= "axp20x-regulator",
+ 	}, {
+ 		.name		= "axp20x-usb-power-supply",
 -- 
 2.9.3
