@@ -1,96 +1,69 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: Regression in next with use printk_safe buffers in printk
-Date: Tue, 14 Feb 2017 09:03:35 -0800
-Message-ID: <20170214170335.GS3897@atomide.com>
-References: <20170213185956.GM3897@atomide.com>
- <20170214160140.GA401@tigerII.localdomain>
- <20170214161809.GQ6500@twins.programming.kicks-ass.net>
- <20170214165645.GB10321@tigerII.localdomain>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH 2/3] dt-bindings: power: reset: add document for
+ renesas-reset driver
+Date: Tue, 14 Feb 2017 18:18:33 +0100
+Message-ID: <CAMuHMdWdiosERjUm3ZxZiZL90_4j+CrNm9RU9GaPft7AXbN8kA@mail.gmail.com>
+References: <20170213182532.4042-1-chris.brandt@renesas.com> <20170213182532.4042-3-chris.brandt@renesas.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170214165645.GB10321@tigerII.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, John Stultz <john.stultz@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170213182532.4042-3-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Sergey Senozhatsky <sergey.senozhatsky@gmail.com> [170214 08:58]:
-> On (02/14/17 17:18), Peter Zijlstra wrote:
-> > On Wed, Feb 15, 2017 at 01:01:40AM +0900, Sergey Senozhatsky wrote:
-> > > 
-> > > but I'm a bit confused by rt_b->rt_runtime_lock in this unsafe lock
-> > > scenario (so it's not ABBA, but ABAD)
-> > > 
-> > > >   lock(hrtimer_bases.lock);
-> > > >                                lock(&rt_b->rt_runtime_lock);
-> > > >                                lock(hrtimer_bases.lock);
-> > > >   lock(tk_core);
-> > > >
-> > > >
-> > > > Chain exists of:
-> > > >
-> > > >	tk_core --> &rt_b->rt_runtime_lock --> hrtimer_bases.lock
-> > > 
-> > > 
-> > > I'm lacking some knowledge here, sorry. where does the tk_core --> &rt_b->rt_runtime_lock
-> > > come from?
-> > 
-> > rt_b->rt_runtime_lock is one of the scheduler locks, since we do
-> > printk() under tk_core, which does semaphore muck, which then includes
-> > the entire scheduler chain of locks.
-> 
-> thanks, Peter.
-> 
-> that crossed my mind, but I kinda assumed that we do printk() from
-> under tk_core using sched fair, and rt_runtime_lock is from sched rt.
-> 
-> 
-> so something like below, perhaps. would be helpful if Tony can test it.
-> 
-> (I'll send out this patch 'in a proper way' tomorrow, after some sleep,
-> it's 2am here).
-> 
-> 8< ====
-> 
-> From e1755b0bf7f8a0be5fdf4dd7303bf4cd150d9d20 Mon Sep 17 00:00:00 2001
-> From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> Date: Wed, 15 Feb 2017 01:42:18 +0900
-> Subject: [PATCH] time/timekeeping_debug: use printk_deferred()
-> 
-> Do not call printk() from tk_debug_account_sleep_time(), because
-> tk_debug_account_sleep_time() is called under tk_core seq lock.
-> It's not safe to call printk() under tk_core, because console_sem
-> invokes scheduled (via wake_up_process()->activate_task()), which,
-> in turn, can call timekeeping code again, for instance, via
-> get_time()->ktime_get(). This may result in infinite loop on
-> tk_core.
-> 
-> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Hi Chris,
 
-Thanks yeah this fixes the issue for me:
-
-Tested-by: Tony Lindgren <tony@atomide.com>
-
+On Mon, Feb 13, 2017 at 7:25 PM, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org> wrote:
+> Add device tree bindings document for renesas-reset driver.
+> This driver uses the WDT hardware to issue an immediate reset.
+>
+> Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 > ---
->  kernel/time/timekeeping_debug.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/kernel/time/timekeeping_debug.c b/kernel/time/timekeeping_debug.c
-> index ca9fb800336b..b8f7146c3538 100644
-> --- a/kernel/time/timekeeping_debug.c
-> +++ b/kernel/time/timekeeping_debug.c
-> @@ -75,7 +75,8 @@ void tk_debug_account_sleep_time(struct timespec64 *t)
->  	int bin = min(fls(t->tv_sec), NUM_BINS-1);
->  
->  	sleep_time_bin[bin]++;
-> -	pr_info("Suspended for %lld.%03lu seconds\n", (s64)t->tv_sec,
-> +	printk_deferred(KERN_INFO "Suspended for %lld.%03lu seconds\n",
-> +			(s64)t->tv_sec,
->  			t->tv_nsec / NSEC_PER_MSEC);
->  }
->  
-> -- 
-> 2.11.1
-> 
+>  .../devicetree/bindings/power/reset/renesas-reset.txt     | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/renesas-reset.txt
+>
+> diff --git a/Documentation/devicetree/bindings/power/reset/renesas-reset.txt b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
+> new file mode 100644
+> index 0000000..241722d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
+> @@ -0,0 +1,15 @@
+> +Device-Tree bindings for Renesas WDT reset functionality
+
+Please drop "reset", as this is a watchdog device.
+
+> +Required properties:
+> +  - compatible: must be one or more of the following:
+> +    - "renesas,r7s72100-reset" for the r7s72100 SoC
+> +    - "renesas,wdt-reset"
+> +                This is a fallback for the above renesas,*-reset entries
+
+Please use "renesas,r7s72100-wdt". DT describes the hardware (watchdog),
+not the software policy (use it for reset only, as a max. timeout of 125 ms is
+too short for a usable watchdog).
+
+> +  - reg: base address and length of the WDT register block
+> +
+> +Example node:
+> +       wdt: timer@fcfe0000 {
+> +               compatible = "renesas,r7s72100-reset", "renesas,wdt-reset";
+> +               reg = <0xfcfe0000 0x6>;
+> +       };
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
