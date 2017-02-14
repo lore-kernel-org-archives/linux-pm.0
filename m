@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: [PATCH v3 11/18] dt-bindings: power: supply: add AXP20X/AXP22X
- battery DT binding
-Date: Tue, 14 Feb 2017 10:41:05 +0100
-Message-ID: <20170214094112.27426-12-quentin.schulz@free-electrons.com>
+Subject: [PATCH v3 06/18] mfd: axp20x: add AC power supply cells for AXP22X
+ PMICs
+Date: Tue, 14 Feb 2017 10:41:00 +0100
+Message-ID: <20170214094112.27426-7-quentin.schulz@free-electrons.com>
 References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,58 +22,48 @@ To: knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mar
 Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, Quentin Schulz <quentin.schulz@free-electrons.com>, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+The X-Powers AXP20X and AXP22X PMICs expose the status of AC power
+supply.
 
-This patch adds the DT binding documentation for the battery power
-supply which gets various data from the PMIC, such as the battery status
-(charging, discharging, full, dead), current max limit, current current,
-battery capacity (in percentage), voltage max and min limits, current
-voltage and battery capacity (in Ah).
+This adds the AC power supply driver to the MFD cells of the AXP22X
+PMICs.
 
 Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Acked-By: Sebastian Reichel <sre@kernel.org>
+Acked-by: Chen-Yu Tsai <wens@csie.org>
+Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 ---
+ drivers/mfd/axp20x.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-v3:
- - removed constant charge current property, now should use the WIP
- battery framework,
-
-v2:
- - changed DT node name from ac_power_supply to ac-power-supply,
- - removed io-channels and io-channel-names from DT (the IIO mapping is
- done in the IIO ADC driver now),
- - added x-powers,constant-charge-current property to set the maximal
- default constant current charge of the battery,
-
- .../bindings/power/supply/axp20x_battery.txt         | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-
-diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-new file mode 100644
-index 0000000..c248866
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
-@@ -0,0 +1,20 @@
-+AXP20x and AXP22x battery power supply
-+
-+Required Properties:
-+ - compatible, one of:
-+			"x-powers,axp209-battery-power-supply"
-+			"x-powers,axp221-battery-power-supply"
-+
-+This node is a subnode of the axp20x/axp22x PMIC.
-+
-+The AXP20X and AXP22X can read the battery voltage, charge and discharge
-+currents of the battery by reading ADC channels from the AXP20X/AXP22X
-+ADC.
-+
-+Example:
-+
-+&axp209 {
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp209-battery-power-supply";
-+	}
-+};
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index a44a2fe..98abe4b 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -605,6 +605,11 @@ static struct mfd_cell axp221_cells[] = {
+ 	}, {
+ 		.name		= "axp22x-adc"
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp221-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp221-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
+@@ -622,6 +627,11 @@ static struct mfd_cell axp223_cells[] = {
+ 	}, {
+ 		.name			= "axp20x-regulator",
+ 	}, {
++		.name		= "axp20x-ac-power-supply",
++		.of_compatible	= "x-powers,axp221-ac-power-supply",
++		.num_resources	= ARRAY_SIZE(axp20x_ac_power_supply_resources),
++		.resources	= axp20x_ac_power_supply_resources,
++	}, {
+ 		.name		= "axp20x-usb-power-supply",
+ 		.of_compatible	= "x-powers,axp223-usb-power-supply",
+ 		.num_resources	= ARRAY_SIZE(axp22x_usb_power_supply_resources),
 -- 
 2.9.3
