@@ -1,69 +1,62 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH 2/3] dt-bindings: power: reset: add document for
+From: Chris Brandt <Chris.Brandt@renesas.com>
+Subject: RE: [PATCH 2/3] dt-bindings: power: reset: add document for
  renesas-reset driver
-Date: Tue, 14 Feb 2017 18:18:33 +0100
-Message-ID: <CAMuHMdWdiosERjUm3ZxZiZL90_4j+CrNm9RU9GaPft7AXbN8kA@mail.gmail.com>
-References: <20170213182532.4042-1-chris.brandt@renesas.com> <20170213182532.4042-3-chris.brandt@renesas.com>
+Date: Tue, 14 Feb 2017 17:51:09 +0000
+Message-ID: <SG2PR06MB116546F41D4915C453B28FF68A580@SG2PR06MB1165.apcprd06.prod.outlook.com>
+References: <20170213182532.4042-1-chris.brandt@renesas.com>
+ <20170213182532.4042-3-chris.brandt@renesas.com>
+ <CAMuHMdWdiosERjUm3ZxZiZL90_4j+CrNm9RU9GaPft7AXbN8kA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170213182532.4042-3-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relmlor4.renesas.com ([210.160.252.174]:26685 "EHLO
+        relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1753447AbdBNRvQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 12:51:16 -0500
+In-Reply-To: <CAMuHMdWdiosERjUm3ZxZiZL90_4j+CrNm9RU9GaPft7AXbN8kA@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-Hi Chris,
-
-On Mon, Feb 13, 2017 at 7:25 PM, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org> wrote:
-> Add device tree bindings document for renesas-reset driver.
-> This driver uses the WDT hardware to issue an immediate reset.
->
-> Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/reset/renesas-reset.txt     | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/renesas-reset.txt
->
-> diff --git a/Documentation/devicetree/bindings/power/reset/renesas-reset.txt b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
-> new file mode 100644
-> index 0000000..241722d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/renesas-reset.txt
-> @@ -0,0 +1,15 @@
-> +Device-Tree bindings for Renesas WDT reset functionality
-
-Please drop "reset", as this is a watchdog device.
-
-> +Required properties:
-> +  - compatible: must be one or more of the following:
-> +    - "renesas,r7s72100-reset" for the r7s72100 SoC
-> +    - "renesas,wdt-reset"
-> +                This is a fallback for the above renesas,*-reset entries
-
-Please use "renesas,r7s72100-wdt". DT describes the hardware (watchdog),
-not the software policy (use it for reset only, as a max. timeout of 125 ms is
-too short for a usable watchdog).
-
-> +  - reg: base address and length of the WDT register block
-> +
-> +Example node:
-> +       wdt: timer@fcfe0000 {
-> +               compatible = "renesas,r7s72100-reset", "renesas,wdt-reset";
-> +               reg = <0xfcfe0000 0x6>;
-> +       };
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGkgR2VlcnQsDQoNClRoYW5rIHlvdSBmb3IgeW91ciByZXZpZXchDQoNCg0KQ2hyaXMNCg0KDQoN
+Ck9uIFR1ZXNkYXksIEZlYnJ1YXJ5IDE0LCAyMDE3LCBHZWVydCBVeXR0ZXJob2V2ZW4gd3JvdGU6
+DQo+IE9uIE1vbiwgRmViIDEzLCAyMDE3IGF0IDc6MjUgUE0sIENocmlzIEJyYW5kdCA8Y2hyaXMu
+YnJhbmR0QHJlbmVzYXMuY29tPg0KPiB3cm90ZToNCj4gPiBBZGQgZGV2aWNlIHRyZWUgYmluZGlu
+Z3MgZG9jdW1lbnQgZm9yIHJlbmVzYXMtcmVzZXQgZHJpdmVyLg0KPiA+IFRoaXMgZHJpdmVyIHVz
+ZXMgdGhlIFdEVCBoYXJkd2FyZSB0byBpc3N1ZSBhbiBpbW1lZGlhdGUgcmVzZXQuDQo+ID4NCj4g
+PiBTaWduZWQtb2ZmLWJ5OiBDaHJpcyBCcmFuZHQgPGNocmlzLmJyYW5kdEByZW5lc2FzLmNvbT4N
+Cj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvcmVzZXQvcmVuZXNh
+cy1yZXNldC50eHQgICAgIHwgMTUNCj4gKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFu
+Z2VkLCAxNSBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IERvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9yZXNldC9yZW5lc2FzLXJlc2V0LnR4
+dA0KPiA+DQo+ID4gZGlmZiAtLWdpdA0KPiA+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL3Bvd2VyL3Jlc2V0L3JlbmVzYXMtcmVzZXQudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvcmVzZXQvcmVuZXNhcy1yZXNldC50eHQNCj4gPiBu
+ZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLjI0MTcyMmQNCj4gPiAtLS0g
+L2Rldi9udWxsDQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bv
+d2VyL3Jlc2V0L3JlbmVzYXMtcmVzZXQudHh0DQo+ID4gQEAgLTAsMCArMSwxNSBAQA0KPiA+ICtE
+ZXZpY2UtVHJlZSBiaW5kaW5ncyBmb3IgUmVuZXNhcyBXRFQgcmVzZXQgZnVuY3Rpb25hbGl0eQ0K
+PiANCj4gUGxlYXNlIGRyb3AgInJlc2V0IiwgYXMgdGhpcyBpcyBhIHdhdGNoZG9nIGRldmljZS4N
+Cj4gDQo+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gKyAgLSBjb21wYXRpYmxlOiBtdXN0
+IGJlIG9uZSBvciBtb3JlIG9mIHRoZSBmb2xsb3dpbmc6DQo+ID4gKyAgICAtICJyZW5lc2FzLHI3
+czcyMTAwLXJlc2V0IiBmb3IgdGhlIHI3czcyMTAwIFNvQw0KPiA+ICsgICAgLSAicmVuZXNhcyx3
+ZHQtcmVzZXQiDQo+ID4gKyAgICAgICAgICAgICAgICBUaGlzIGlzIGEgZmFsbGJhY2sgZm9yIHRo
+ZSBhYm92ZSByZW5lc2FzLCotcmVzZXQNCj4gPiArZW50cmllcw0KPiANCj4gUGxlYXNlIHVzZSAi
+cmVuZXNhcyxyN3M3MjEwMC13ZHQiLiBEVCBkZXNjcmliZXMgdGhlIGhhcmR3YXJlICh3YXRjaGRv
+ZyksDQo+IG5vdCB0aGUgc29mdHdhcmUgcG9saWN5ICh1c2UgaXQgZm9yIHJlc2V0IG9ubHksIGFz
+IGEgbWF4LiB0aW1lb3V0IG9mIDEyNQ0KPiBtcyBpcyB0b28gc2hvcnQgZm9yIGEgdXNhYmxlIHdh
+dGNoZG9nKS4NCj4gDQo+ID4gKyAgLSByZWc6IGJhc2UgYWRkcmVzcyBhbmQgbGVuZ3RoIG9mIHRo
+ZSBXRFQgcmVnaXN0ZXIgYmxvY2sNCj4gPiArDQo+ID4gK0V4YW1wbGUgbm9kZToNCj4gPiArICAg
+ICAgIHdkdDogdGltZXJAZmNmZTAwMDAgew0KPiA+ICsgICAgICAgICAgICAgICBjb21wYXRpYmxl
+ID0gInJlbmVzYXMscjdzNzIxMDAtcmVzZXQiLCAicmVuZXNhcyx3ZHQtDQo+IHJlc2V0IjsNCj4g
+PiArICAgICAgICAgICAgICAgcmVnID0gPDB4ZmNmZTAwMDAgMHg2PjsNCj4gPiArICAgICAgIH07
+DQo+IA0KPiBHcntvZXRqZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAg
+IEdlZXJ0DQo+IA0KPiAtLQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9m
+IExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LQ0KPiBtNjhrLm9yZw0KPiANCj4gSW4g
+cGVyc29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNl
+bGYgYSBoYWNrZXIuDQo+IEJ1dCB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVz
+dCBzYXkgInByb2dyYW1tZXIiIG9yIHNvbWV0aGluZw0KPiBsaWtlIHRoYXQuDQo+ICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMNCg==
