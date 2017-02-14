@@ -1,62 +1,28 @@
-From: Chris Brandt <Chris.Brandt@renesas.com>
-Subject: RE: [PATCH 2/3] dt-bindings: power: reset: add document for
- renesas-reset driver
-Date: Tue, 14 Feb 2017 17:51:09 +0000
-Message-ID: <SG2PR06MB116546F41D4915C453B28FF68A580@SG2PR06MB1165.apcprd06.prod.outlook.com>
-References: <20170213182532.4042-1-chris.brandt@renesas.com>
- <20170213182532.4042-3-chris.brandt@renesas.com>
- <CAMuHMdWdiosERjUm3ZxZiZL90_4j+CrNm9RU9GaPft7AXbN8kA@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Regression in next with use printk_safe buffers in printk
+Date: Tue, 14 Feb 2017 19:29:56 +0100
+Message-ID: <20170214182956.GS6500@twins.programming.kicks-ass.net>
+References: <20170213185956.GM3897@atomide.com>
+ <20170214160140.GA401@tigerII.localdomain>
+ <20170214161809.GQ6500@twins.programming.kicks-ass.net>
+ <20170214165645.GB10321@tigerII.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor4.renesas.com ([210.160.252.174]:26685 "EHLO
-        relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1753447AbdBNRvQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 12:51:16 -0500
-In-Reply-To: <CAMuHMdWdiosERjUm3ZxZiZL90_4j+CrNm9RU9GaPft7AXbN8kA@mail.gmail.com>
-Content-Language: en-US
+Received: from bombadil.infradead.org ([65.50.211.133]:40203 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752105AbdBNSaJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 13:30:09 -0500
+Content-Disposition: inline
+In-Reply-To: <20170214165645.GB10321@tigerII.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, John Stultz <john.stultz@linaro.org>
 
-SGkgR2VlcnQsDQoNClRoYW5rIHlvdSBmb3IgeW91ciByZXZpZXchDQoNCg0KQ2hyaXMNCg0KDQoN
-Ck9uIFR1ZXNkYXksIEZlYnJ1YXJ5IDE0LCAyMDE3LCBHZWVydCBVeXR0ZXJob2V2ZW4gd3JvdGU6
-DQo+IE9uIE1vbiwgRmViIDEzLCAyMDE3IGF0IDc6MjUgUE0sIENocmlzIEJyYW5kdCA8Y2hyaXMu
-YnJhbmR0QHJlbmVzYXMuY29tPg0KPiB3cm90ZToNCj4gPiBBZGQgZGV2aWNlIHRyZWUgYmluZGlu
-Z3MgZG9jdW1lbnQgZm9yIHJlbmVzYXMtcmVzZXQgZHJpdmVyLg0KPiA+IFRoaXMgZHJpdmVyIHVz
-ZXMgdGhlIFdEVCBoYXJkd2FyZSB0byBpc3N1ZSBhbiBpbW1lZGlhdGUgcmVzZXQuDQo+ID4NCj4g
-PiBTaWduZWQtb2ZmLWJ5OiBDaHJpcyBCcmFuZHQgPGNocmlzLmJyYW5kdEByZW5lc2FzLmNvbT4N
-Cj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvcmVzZXQvcmVuZXNh
-cy1yZXNldC50eHQgICAgIHwgMTUNCj4gKysrKysrKysrKysrKysrDQo+ID4gIDEgZmlsZSBjaGFu
-Z2VkLCAxNSBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NA0KPiA+IERvY3Vt
-ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlci9yZXNldC9yZW5lc2FzLXJlc2V0LnR4
-dA0KPiA+DQo+ID4gZGlmZiAtLWdpdA0KPiA+IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3Bvd2VyL3Jlc2V0L3JlbmVzYXMtcmVzZXQudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvcmVzZXQvcmVuZXNhcy1yZXNldC50eHQNCj4gPiBu
-ZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiA+IGluZGV4IDAwMDAwMDAuLjI0MTcyMmQNCj4gPiAtLS0g
-L2Rldi9udWxsDQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Bv
-d2VyL3Jlc2V0L3JlbmVzYXMtcmVzZXQudHh0DQo+ID4gQEAgLTAsMCArMSwxNSBAQA0KPiA+ICtE
-ZXZpY2UtVHJlZSBiaW5kaW5ncyBmb3IgUmVuZXNhcyBXRFQgcmVzZXQgZnVuY3Rpb25hbGl0eQ0K
-PiANCj4gUGxlYXNlIGRyb3AgInJlc2V0IiwgYXMgdGhpcyBpcyBhIHdhdGNoZG9nIGRldmljZS4N
-Cj4gDQo+ID4gK1JlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gKyAgLSBjb21wYXRpYmxlOiBtdXN0
-IGJlIG9uZSBvciBtb3JlIG9mIHRoZSBmb2xsb3dpbmc6DQo+ID4gKyAgICAtICJyZW5lc2FzLHI3
-czcyMTAwLXJlc2V0IiBmb3IgdGhlIHI3czcyMTAwIFNvQw0KPiA+ICsgICAgLSAicmVuZXNhcyx3
-ZHQtcmVzZXQiDQo+ID4gKyAgICAgICAgICAgICAgICBUaGlzIGlzIGEgZmFsbGJhY2sgZm9yIHRo
-ZSBhYm92ZSByZW5lc2FzLCotcmVzZXQNCj4gPiArZW50cmllcw0KPiANCj4gUGxlYXNlIHVzZSAi
-cmVuZXNhcyxyN3M3MjEwMC13ZHQiLiBEVCBkZXNjcmliZXMgdGhlIGhhcmR3YXJlICh3YXRjaGRv
-ZyksDQo+IG5vdCB0aGUgc29mdHdhcmUgcG9saWN5ICh1c2UgaXQgZm9yIHJlc2V0IG9ubHksIGFz
-IGEgbWF4LiB0aW1lb3V0IG9mIDEyNQ0KPiBtcyBpcyB0b28gc2hvcnQgZm9yIGEgdXNhYmxlIHdh
-dGNoZG9nKS4NCj4gDQo+ID4gKyAgLSByZWc6IGJhc2UgYWRkcmVzcyBhbmQgbGVuZ3RoIG9mIHRo
-ZSBXRFQgcmVnaXN0ZXIgYmxvY2sNCj4gPiArDQo+ID4gK0V4YW1wbGUgbm9kZToNCj4gPiArICAg
-ICAgIHdkdDogdGltZXJAZmNmZTAwMDAgew0KPiA+ICsgICAgICAgICAgICAgICBjb21wYXRpYmxl
-ID0gInJlbmVzYXMscjdzNzIxMDAtcmVzZXQiLCAicmVuZXNhcyx3ZHQtDQo+IHJlc2V0IjsNCj4g
-PiArICAgICAgICAgICAgICAgcmVnID0gPDB4ZmNmZTAwMDAgMHg2PjsNCj4gPiArICAgICAgIH07
-DQo+IA0KPiBHcntvZXRqZSxlZXRpbmd9cywNCj4gDQo+ICAgICAgICAgICAgICAgICAgICAgICAg
-IEdlZXJ0DQo+IA0KPiAtLQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9m
-IExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4LQ0KPiBtNjhrLm9yZw0KPiANCj4gSW4g
-cGVyc29uYWwgY29udmVyc2F0aW9ucyB3aXRoIHRlY2huaWNhbCBwZW9wbGUsIEkgY2FsbCBteXNl
-bGYgYSBoYWNrZXIuDQo+IEJ1dCB3aGVuIEknbSB0YWxraW5nIHRvIGpvdXJuYWxpc3RzIEkganVz
-dCBzYXkgInByb2dyYW1tZXIiIG9yIHNvbWV0aGluZw0KPiBsaWtlIHRoYXQuDQo+ICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgLS0gTGludXMgVG9ydmFsZHMNCg==
+On Wed, Feb 15, 2017 at 01:56:45AM +0900, Sergey Senozhatsky wrote:
+> that crossed my mind, but I kinda assumed that we do printk() from
+> under tk_core using sched fair, and rt_runtime_lock is from sched rt.
+
+That's all true; lockdep doesn't care :-) All it knows is that at some
+point those locks nest.
