@@ -1,41 +1,36 @@
-From: Daniel Perez <danielperezdeandres@gmail.com>
-Subject: [PATCH v2] Power: supply: sbs-charger: simplified bool function
-Date: Wed, 15 Feb 2017 16:46:21 +0100
-Message-ID: <1487173581-19388-1-git-send-email-danielperezdeandres@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:35954 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750999AbdBOPr3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2017 10:47:29 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v3 1/4] x86/mm: Adapt MODULES_END based on Fixmap section
+ size
+Date: Wed, 15 Feb 2017 16:49:21 +0100
+Message-ID: <20170215154921.5xgrifrg54ssq7lr@pd.tnic>
+References: <20170214194259.75960-1-thgarnie@google.com>
+ <20170215135824.tflwuf3esu2npwwo@pd.tnic>
+ <CAJcbSZEsCzBQEFELm1wbc4DP2=dZTCFYfsb-eX0ifoCKF4EQUw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <kernel-hardening-return-6695-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Disposition: inline
+In-Reply-To: <CAJcbSZEsCzBQEFELm1wbc4DP2=dZTCFYfsb-eX0ifoCKF4EQUw@mail.gmail.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>, He Chen <he.chen@linux.inte>
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolassaenzj@gmail.com, Daniel Perez <danielperezdeandres@gmail.com>
 
-v1 -> v2:
- - given Joe Perches' comment, I've further simplified the syntax
-   of the bool function, removing the ternary conditional
+On Wed, Feb 15, 2017 at 07:40:51AM -0800, Thomas Garnier wrote:
+> Why do you think they rely on it being static? The VSYSCALL address is
+> not changed for example.
 
-Signed-off-by: Daniel Perez <danielperezdeandres@gmail.com>
----
- drivers/power/supply/sbs-charger.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+I don't know, that's why I'm asking first. Userspace is known to pick
+different aspects of the kernel and deciding to use them for whatever.
+And once it relies on that, there's no changing it.
 
-diff --git a/drivers/power/supply/sbs-charger.c b/drivers/power/supply/sbs-charger.c
-index 353765a..15947db 100644
---- a/drivers/power/supply/sbs-charger.c
-+++ b/drivers/power/supply/sbs-charger.c
-@@ -137,10 +137,7 @@ static enum power_supply_property sbs_properties[] = {
- 
- static bool sbs_readable_reg(struct device *dev, unsigned int reg)
- {
--	if (reg < SBS_CHARGER_REG_SPEC_INFO)
--		return false;
--	else
--		return true;
-+	return reg >= SBS_CHARGER_REG_SPEC_INFO;
- }
- 
- static bool sbs_volatile_reg(struct device *dev, unsigned int reg)
 -- 
-2.7.4
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
