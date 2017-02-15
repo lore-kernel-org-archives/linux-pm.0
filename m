@@ -1,79 +1,92 @@
-From: Peter Chen <hzpeterchen-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v13 06/12] usb: xhci: use bus->sysdev for DMA
- configuration
-Date: Wed, 15 Feb 2017 16:51:27 +0800
-Message-ID: <20170215085127.GA26227@b29397-desktop>
-References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
- <1486776443-2280-7-git-send-email-peter.chen@nxp.com>
- <e532a212-cd15-ab42-6188-fc11a12633af@ti.com>
- <CAK8P3a1D1v=LXrW=-t-fRJjbo_C6OpSuoqiGuZPOaBzQYCT-kA@mail.gmail.com>
- <cb7182c6-0236-26f2-4f96-9bc001994728@ti.com>
- <CAK8P3a22f=sQXt+3-PeAuBFQN7_4iXDQhu41teExd6bxJXxDAQ@mail.gmail.com>
- <20170215013514.GA6579@b29397-desktop>
- <cb3ee971-6d97-fff1-64f7-1b527559b047@ti.com>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH v3 01/18] dt-bindings: power: battery: add
+ constant-charge-current property
+Date: Wed, 15 Feb 2017 09:53:40 +0100
+Message-ID: <6a678b03-124a-76b3-066e-858731fc6c80@free-electrons.com>
+References: <20170215004646.23607-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <cb3ee971-6d97-fff1-64f7-1b527559b047-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Roger Quadros <rogerq-l0cyMroinI0@public.gmane.org>
-Cc: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Peter Chen <peter.chen-3arQi8VN3Tc@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, stephen.boyd-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, frank.li-3arQi8VN3Tc@public.gmane.org, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, gary.bisson-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sriram Dash <sriram.dash-3arQi8VN3Tc@public.gmane.org>, festevam-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stillcompiling-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, dbaryshkov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, vaibhav.hiremath-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, mail-APzI5cXaD1zVlRWJc41N0YvC60bnQu0Y@public.gmane.org, pawel.moll-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, s.hauer-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, troy.kisky-Q5RJGjKts06CY9SHAMCTRUEOCMrvLtNR@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alexander
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170215004646.23607-1-liam@networkimprov.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Liam Breck <liam@networkimprov.net>, knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, robh+dt@kernel.org, mark.rutland@arm.com, wens@csie.org, sre@kernel.org, linux@armlinux.org.uk, maxime.ripard@free-electrons.com, lee.jones@linaro.org
+Cc: thomas.petazzoni@free-electrons.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, bonbons@linux-vserver.org, icenowy@aosc.xyz, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 15, 2017 at 10:18:03AM +0200, Roger Quadros wrote:
-> Peter,
+Hi,
+
+On 15/02/2017 01:46, Liam Breck wrote:
 > 
-> On 15/02/17 03:35, Peter Chen wrote:
-> > On Tue, Feb 14, 2017 at 01:58:40PM +0100, Arnd Bergmann wrote:
-> >> On Tue, Feb 14, 2017 at 1:26 PM, Roger Quadros <rogerq-l0cyMroinI0@public.gmane.org> wrote:
-> >>> On 14/02/17 13:44, Arnd Bergmann wrote:
-> >>>> On Tue, Feb 14, 2017 at 11:36 AM, Roger Quadros <rogerq-l0cyMroinI0@public.gmane.org> wrote:
-> >>
-> >>>>> Why are we using sysdev to read DT property? We should be using the
-> >>>>> XHCI device (&pdev->dev) here, no?
-> >>>>
-> >>>> If I remember correctly, this is one of the cases where pdev does not
-> >>>> have a device node attached to it because it was created by the driver
-> >>>> of the parent device on the fly in case of dwc3. When you have a pure xhci
-> >>>> device in DT, the two pointers are the same.
-> >>>
-> >>> From drivers/usb/dwc3/host.c
-> >>>
-> >>>>         if (dwc->usb3_lpm_capable) {
-> >>>>                 props[0].name = "usb3-lpm-capable";
-> >>>>                 ret = platform_device_add_properties(xhci, props);
-> >>>>                 if (ret) {
-> >>>>                         dev_err(dwc->dev, "failed to add properties to xHCI\n");
-> >>>>                         goto err1;
-> >>>>                 }
-> >>>>         }
-> >>>
-> >>> So it is setting the usb3-lpm-capable property into the xhci platform device
-> >>> and we should be reading the property from there.
-> > 
-> > Why dwc3 needs another "snps,usb3_lpm_capable"? Why not using
-> > "usb3-lpm-capable" at firmware directly?
+> On Tue, 14 Feb 2017 10:40:55 +0100 Quentin Schulz wrote:
+>> This adds the constant-charge-current property to the list of optional
+>> properties of the battery.
+>>
+>> The constant charge current is critical for batteries as they can't
+>> handle all charge currents.
+>>
+>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>> ---
+>>
+>> added in v3
+>>
+>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
 > 
-> dwc3 is not setting "snps,usb3_lpm_capable" but "usb3-lpm-capable" for the
-> xhci platform device.
+> Is constant-charge-current dependent on the battery (e.g. capacity, nominal voltage, etc) or the 
+> system (charger chip, input current/voltage, etc)?
 > 
-> What did you mean by firmware? Did you mean something like BIOS?
-> At least TI platforms don't use any firmware like BIOS. So dwc3 driver
-> needs to create a platform device for xhci on the fly and set the DT properties.
+> It belongs in Doc.../power/supply/battery.txt if it's a characteristic of the battery.
+> 
+> Note, this page asserts that constant-current charging applies to NiMH batteries:
+> http://power-topics.blogspot.com/2016/05/constant-voltage-constant-current.html
+> 
+> Related properties to be added to battery.txt near-future in a patchset for the BQ24190 
+> charger are as follows. These are not currently in enum power_supply_property, so the actual names 
+> are still to be decided.
+> 
+> precharge-current-microamp:
+>    maximum charge current during precharge phase (typically 20% of battery capacity)
+> 
+> termination-current-microamp (or endcharge-current):
+>    a charge cycle terminates when the battery voltage is above recharge threshold,
+>    and the current is below this setting (typically 10% of battery capacity)
 > 
 
-By readying code, the dwc3 calls dwc3_get_properties to set
-dwc->usb3_lpm_capable, and at dwc3/host.c, it sets property
-"usb3-lpm-capable" according to this flag, why not let common
-code xhci-plat.c to get this property from sysdev which is DT
-nodes for dwc3?
+We have a client with a board whose battery accepts a maximum of 300mA
+for charging. So depending on the battery, we cannot have any charging
+current we want. The AXP PmMICs set constant charge current in a range
+of 300mA-1800mA, so it is enforced by the charger but needs to be
+adapted depending on the battery present in the system.
+
+The AXP PMICs charge battery with constant current (Ichrg) between the
+trickle voltage (Vtrkl which is ~3.0V) and the targeted voltage (Vtrgt;
+which seems to be the voltage telling the battery is fully charged).
+
+So if I understand correctly, "my" constant-charge-current would be
+located in the charging cycle between your precharge-current-microamp
+and the termination-current-microamp as it is the current for the
+charging process as a whole.
+
+See here[1] for the explanation in the datasheet (page 20).
+
+That would definitely match what is explained in your link for constant
+current.
+
+[1] http://dl.linux-sunxi.org/AXP/AXP209_Datasheet_v1.0en.pdf
+
+Let me know if something seems odd,
+Thanks,
+Quentin
 
 -- 
-
-Best Regards,
-Peter Chen
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
