@@ -1,50 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cppc: add ACPI_PROCESSOR dependency
-Date: Wed, 15 Feb 2017 09:26:54 +0530
-Message-ID: <20170215035654.GI3537@vireshk-i7>
-References: <20170214211934.2663689-1-arnd@arndb.de>
+From: Andy Lutomirski <luto@amacapital.net>
+Subject: Re: [PATCH v3 4/4] KVM: VMX: Simplify segment_base
+Date: Tue, 14 Feb 2017 19:57:21 -0800
+Message-ID: <CALCETrXDQaWyo02b2q7JN3W1frR0QAOy1Wj_ft5YpPbEbZEfPw@mail.gmail.com>
+References: <20170214194259.75960-1-thgarnie@google.com> <20170214194259.75960-4-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f42.google.com ([74.125.83.42]:33580 "EHLO
-        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751410AbdBOD46 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 22:56:58 -0500
-Received: by mail-pg0-f42.google.com with SMTP id 204so33009033pge.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2017 19:56:58 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20170214211934.2663689-1-arnd@arndb.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <kernel-hardening-return-6677-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170214194259.75960-4-thgarnie@google.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>, He Chen <he.chen@linux.intel.com>B
 List-Id: linux-pm@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 14-02-17, 22:19, Arnd Bergmann wrote:
-> Without the Kconfig dependency, we can get this warning:
-> 
-> warning: ACPI_CPPC_CPUFREQ selects ACPI_CPPC_LIB which has unmet direct dependencies (ACPI && ACPI_PROCESSOR)
-> 
-> Fixes: 5477fb3bd1e8 ("ACPI / CPPC: Add a CPUFreq driver for use with CPPC")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+On Tue, Feb 14, 2017 at 11:42 AM, Thomas Garnier <thgarnie@google.com> wrote:
+> The KVM segment_base function is confusing. This patch replaces integers
+> with appropriate flags, simplify constructs and add comments.
+
+It could pay to put this first in the series, but last is probably fine, too.
+
+>
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
 > ---
->  drivers/cpufreq/Kconfig.arm | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index 6d87742fc5aa..74fa5c5904d3 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -268,7 +268,7 @@ config ARM_PXA2xx_CPUFREQ
->  
->  config ACPI_CPPC_CPUFREQ
->  	tristate "CPUFreq driver based on the ACPI CPPC spec"
-> -	depends on ACPI
-> +	depends on ACPI_PROCESSOR
->  	select ACPI_CPPC_LIB
->  	default n
->  	help
+> Based on next-20170213
+> ---
+>  arch/x86/kvm/vmx.c | 26 ++++++++++++++++++--------
+>  1 file changed, 18 insertions(+), 8 deletions(-)
+>
+> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+> index 99167f20bc34..edb8326108dd 100644
+> --- a/arch/x86/kvm/vmx.c
+> +++ b/arch/x86/kvm/vmx.c
+> @@ -2062,25 +2062,35 @@ static unsigned long segment_base(u16 selector)
+>         struct desc_struct *d;
+>         unsigned long table_base;
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This should go away IMO.  It should be struct desc_struct *table;
 
--- 
-viresh
+> +               table_base = get_current_gdt_rw_vaddr();
+
+Then this can go away, too, and you can stop having the silly
+get_current_gdt_rw_vaddr() function at all.
+
+> +       d = (struct desc_struct *)table_base + (selector >> 3);
+
+And this cast goes away too.
