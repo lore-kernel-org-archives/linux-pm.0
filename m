@@ -1,59 +1,41 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v3 4/4] KVM: VMX: Simplify segment_base
-Date: Wed, 15 Feb 2017 07:44:04 -0800
-Message-ID: <CAJcbSZGiff-ciLtaVf6m7=m+6LT+ef+-zqPGO6iVPBpQEnd56Q@mail.gmail.com>
-References: <20170214194259.75960-1-thgarnie@google.com> <20170214194259.75960-4-thgarnie@google.com>
- <CALCETrXDQaWyo02b2q7JN3W1frR0QAOy1Wj_ft5YpPbEbZEfPw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <kernel-hardening-return-6694-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CALCETrXDQaWyo02b2q7JN3W1frR0QAOy1Wj_ft5YpPbEbZEfPw@mail.gmail.com>
-To: Andy Lutomirski <luto@amacapital.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>, He Chen <he.chen@linux.intel.com>B
+From: Daniel Perez <danielperezdeandres@gmail.com>
+Subject: [PATCH v2] Power: supply: sbs-charger: simplified bool function
+Date: Wed, 15 Feb 2017 16:46:21 +0100
+Message-ID: <1487173581-19388-1-git-send-email-danielperezdeandres@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:35954 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750999AbdBOPr3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2017 10:47:29 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, nicolassaenzj@gmail.com, Daniel Perez <danielperezdeandres@gmail.com>
 
-On Tue, Feb 14, 2017 at 7:57 PM, Andy Lutomirski <luto@amacapital.net> wrote:
-> On Tue, Feb 14, 2017 at 11:42 AM, Thomas Garnier <thgarnie@google.com> wrote:
->> The KVM segment_base function is confusing. This patch replaces integers
->> with appropriate flags, simplify constructs and add comments.
->
-> It could pay to put this first in the series, but last is probably fine, too.
->
+v1 -> v2:
+ - given Joe Perches' comment, I've further simplified the syntax
+   of the bool function, removing the ternary conditional
 
-:)
+Signed-off-by: Daniel Perez <danielperezdeandres@gmail.com>
+---
+ drivers/power/supply/sbs-charger.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->> ---
->> Based on next-20170213
->> ---
->>  arch/x86/kvm/vmx.c | 26 ++++++++++++++++++--------
->>  1 file changed, 18 insertions(+), 8 deletions(-)
->>
->> diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
->> index 99167f20bc34..edb8326108dd 100644
->> --- a/arch/x86/kvm/vmx.c
->> +++ b/arch/x86/kvm/vmx.c
->> @@ -2062,25 +2062,35 @@ static unsigned long segment_base(u16 selector)
->>         struct desc_struct *d;
->>         unsigned long table_base;
->
-> This should go away IMO.  It should be struct desc_struct *table;
->
->> +               table_base = get_current_gdt_rw_vaddr();
->
-> Then this can go away, too, and you can stop having the silly
-> get_current_gdt_rw_vaddr() function at all.
->
->> +       d = (struct desc_struct *)table_base + (selector >> 3);
->
-> And this cast goes away too.
-
-No problem.
-
+diff --git a/drivers/power/supply/sbs-charger.c b/drivers/power/supply/sbs-charger.c
+index 353765a..15947db 100644
+--- a/drivers/power/supply/sbs-charger.c
++++ b/drivers/power/supply/sbs-charger.c
+@@ -137,10 +137,7 @@ static enum power_supply_property sbs_properties[] = {
+ 
+ static bool sbs_readable_reg(struct device *dev, unsigned int reg)
+ {
+-	if (reg < SBS_CHARGER_REG_SPEC_INFO)
+-		return false;
+-	else
+-		return true;
++	return reg >= SBS_CHARGER_REG_SPEC_INFO;
+ }
+ 
+ static bool sbs_volatile_reg(struct device *dev, unsigned int reg)
 -- 
-Thomas
+2.7.4
