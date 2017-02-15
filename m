@@ -1,100 +1,113 @@
-From: Felipe Balbi <balbi@kernel.org>
-Subject: Re: [PATCH v13 06/12] usb: xhci: use bus->sysdev for DMA configuration
-Date: Wed, 15 Feb 2017 13:51:31 +0200
-Message-ID: <87mvdnoenw.fsf@linux.intel.com>
-References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com> <1486776443-2280-7-git-send-email-peter.chen@nxp.com> <e532a212-cd15-ab42-6188-fc11a12633af@ti.com> <CAK8P3a1D1v=LXrW=-t-fRJjbo_C6OpSuoqiGuZPOaBzQYCT-kA@mail.gmail.com> <cb7182c6-0236-26f2-4f96-9bc001994728@ti.com> <CAK8P3a22f=sQXt+3-PeAuBFQN7_4iXDQhu41teExd6bxJXxDAQ@mail.gmail.com> <20170215013514.GA6579@b29397-desktop> <cb3ee971-6d97-fff1-64f7-1b527559b047@ti.com> <20170215085127.GA26227@b29397-desktop> <2a3d2d65-e531-aaca-d5a1-a71f818cec61@ti.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v3 1/4] x86/mm: Adapt MODULES_END based on Fixmap section
+ size
+Date: Wed, 15 Feb 2017 14:58:24 +0100
+Message-ID: <20170215135824.tflwuf3esu2npwwo@pd.tnic>
+References: <20170214194259.75960-1-thgarnie@google.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="=-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2a3d2d65-e531-aaca-d5a1-a71f818cec61@ti.com>
+Content-Disposition: inline
+In-Reply-To: <20170214194259.75960-1-thgarnie@google.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Roger Quadros <rogerq@ti.com>, Peter Chen <hzpeterchen@gmail.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>, Peter Chen <peter.chen@nxp.com>, Ulf Hansson <ulf.hansson@linaro.org>, Heiko Stuebner <heiko@sntech.de>, stephen.boyd@linaro.org, frank.li@nxp.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, gary.bisson@boundarydevices.com, Vivek Gautam <vivek.gautam@codeaurora.org>, Sriram Dash <sriram.dash@nxp.com>, festevam@gmail.com, stillcompiling@gmail.com, dbaryshkov@gmail.com, vaibhav.hiremath@linaro.org, Krzysztof Kozlowski <krzk@kernel.org>, mka@chromium.org, stern@rowland.harvard.edu, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, Rob Herring <robh+dt@kernel.org>, Alexander
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead>
 List-Id: linux-pm@vger.kernel.org
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 14, 2017 at 11:42:56AM -0800, Thomas Garnier wrote:
+> This patch aligns MODULES_END to the beginning of the Fixmap section.
+> It optimizes the space available for both sections. The address is
+> pre-computed based on the number of pages required by the Fixmap
+> section.
+> 
+> It will allow GDT remapping in the Fixmap section. The current
+> MODULES_END static address does not provide enough space for the kernel
+> to support a large number of processors.
+> 
+> Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> ---
+> Based on next-20170213
+> ---
+>  arch/x86/include/asm/fixmap.h           | 8 ++++++++
+>  arch/x86/include/asm/pgtable_64_types.h | 3 ---
+>  arch/x86/kernel/module.c                | 1 +
+>  arch/x86/mm/dump_pagetables.c           | 1 +
+>  arch/x86/mm/kasan_init_64.c             | 1 +
+>  5 files changed, 11 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/fixmap.h b/arch/x86/include/asm/fixmap.h
+> index 8554f960e21b..20231189e0e3 100644
+> --- a/arch/x86/include/asm/fixmap.h
+> +++ b/arch/x86/include/asm/fixmap.h
+> @@ -132,6 +132,14 @@ enum fixed_addresses {
+>  
+>  extern void reserve_top_address(unsigned long reserve);
+>  
+> +/* On 64-bit, the module sections ends with the start of the fixmap */
+> +#ifdef CONFIG_X86_64
+> +#define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
+> +#define MODULES_END   __fix_to_virt(__end_of_fixed_addresses + 1)
+> +#define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+> +#endif /* CONFIG_X86_64 */
 
+JFYI: so there's another patchset which adds KERNEL_MAPPING_SIZE:
 
-Hi,
+https://lkml.kernel.org/r/1486040077-3719-1-git-send-email-bhe@redhat.com
 
-Roger Quadros <rogerq@ti.com> writes:
->>>>>>>> Why are we using sysdev to read DT property? We should be using the
->>>>>>>> XHCI device (&pdev->dev) here, no?
->>>>>>>
->>>>>>> If I remember correctly, this is one of the cases where pdev does n=
-ot
->>>>>>> have a device node attached to it because it was created by the dri=
-ver
->>>>>>> of the parent device on the fly in case of dwc3. When you have a pu=
-re xhci
->>>>>>> device in DT, the two pointers are the same.
->>>>>>
->>>>>> From drivers/usb/dwc3/host.c
->>>>>>
->>>>>>>         if (dwc->usb3_lpm_capable) {
->>>>>>>                 props[0].name =3D "usb3-lpm-capable";
->>>>>>>                 ret =3D platform_device_add_properties(xhci, props);
->>>>>>>                 if (ret) {
->>>>>>>                         dev_err(dwc->dev, "failed to add properties=
- to xHCI\n");
->>>>>>>                         goto err1;
->>>>>>>                 }
->>>>>>>         }
->>>>>>
->>>>>> So it is setting the usb3-lpm-capable property into the xhci platfor=
-m device
->>>>>> and we should be reading the property from there.
->>>>
->>>> Why dwc3 needs another "snps,usb3_lpm_capable"? Why not using
->>>> "usb3-lpm-capable" at firmware directly?
->>>
->>> dwc3 is not setting "snps,usb3_lpm_capable" but "usb3-lpm-capable" for =
-the
->>> xhci platform device.
->>>
->>> What did you mean by firmware? Did you mean something like BIOS?
->>> At least TI platforms don't use any firmware like BIOS. So dwc3 driver
->>> needs to create a platform device for xhci on the fly and set the DT pr=
-operties.
->>>
->>=20
->> By readying code, the dwc3 calls dwc3_get_properties to set
->> dwc->usb3_lpm_capable, and at dwc3/host.c, it sets property
->> "usb3-lpm-capable" according to this flag, why not let common
->> code xhci-plat.c to get this property from sysdev which is DT
->> nodes for dwc3?
->>=20
->
-> Felipe, any comments?
+and makes it a 1G, i.e., the KASLR default. I guess the above will have
+to be KERNEL_MAPPING_SIZE then.
 
-Won't work. We have quirk flags which are based on DWC3's revision which
-is not accessible by xhci-plat. Also, we can't call
-device_add_property() because it's not really *adding*. It's *setting*,
-meaning that we would loose all other properties.
+And why are you moving those to fixmap.h? What's wrong with
+including fixmap.h into pgtable_64_types.h so that you can get
+__end_of_fixed_addresses?
 
-=2D-=20
-balbi
+FWIW, I didn't even have to add any includes with my .config, i.e., that builds:
 
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+---
+diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+index 3a264200c62f..eda7fa856fa9 100644
+--- a/arch/x86/include/asm/pgtable_64_types.h
++++ b/arch/x86/include/asm/pgtable_64_types.h
+@@ -67,7 +67,7 @@ typedef struct { pteval_t pte; } pte_t;
+ #endif /* CONFIG_RANDOMIZE_MEMORY */
+ #define VMALLOC_END	(VMALLOC_START + _AC((VMALLOC_SIZE_TB << 40) - 1, UL))
+ #define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
+-#define MODULES_END      _AC(0xffffffffff000000, UL)
++#define MODULES_END   __fix_to_virt(__end_of_fixed_addresses + 1)
+ #define MODULES_LEN   (MODULES_END - MODULES_VADDR)
+ #define ESPFIX_PGD_ENTRY _AC(-2, UL)
+ #define ESPFIX_BASE_ADDR (ESPFIX_PGD_ENTRY << PGDIR_SHIFT)
+---
 
------BEGIN PGP SIGNATURE-----
+but I wouldn't be surprised if some strange configuration would need it.
 
-iQIzBAEBCAAdFiEElLzh7wn96CXwjh2IzL64meEamQYFAlikQMMACgkQzL64meEa
-mQZZhw/+PLmXD6TQO67lv7gOh1A0QrX48cqA0ZQr+XfOvreKsJIet6f8FY1XNeDo
-yWfRqHZKmViE2B4MKySBMREV+AV4gALzGNfbZexwUYVdxWZAoBGVJv5WAKWUdLwe
-3+VMyeGeibutjktxy3eQI4gWeVu8v5FGK0zW7uZU7gIyU0mVae8fkxCfUIiYlfft
-xp8KPbN2zovhumgmq9z4Mpc8D/hIyTwRVswsx4BQ693CiAx685lb5VA4MXS28Q+B
-zzIoMZ6b3t8RJPA0bG2DGa88ga88/JIjyXQnpp7ofQXJ3xjUs4D9k2/CFEHp/TZD
-7oBf1tUZQ+jpejCTAwA2Z4gsd6YiE8gB8eRWUU20PeFRMBICJxwWuYyG9hs1+lec
-SwoQfCInmygNBR3uqKmVOuJ+KgO7iHlmEz5xLnYYa9HBIvg9tttP/Nj8pR2tm93N
-IKKL+uWeUsQuutmDTEP2PuVTX0iPTaMIElQQsP1hHvF4PjAcYT6gk1sIcEbxP1vi
-4AuJVfISdc/TPfsNBwKCuncqhBa3qrgKZQirQrOEF1QasW3HPym2SppiPBTqTQeh
-8d6zQzxfD1GsHHdn2gq/5EAq9sX0MvjJyl67CvuTa0jTjlOPBOLFTSTV5vI/0rIa
-XsltXbtHfm1hkpCe9GS2DOFGbDHNdagsdysBT6+CfY95xMfWB2o=
-=EbP5
------END PGP SIGNATURE-----
---=-=-=--
+>  #define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
+>  #define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
+>  
+> diff --git a/arch/x86/include/asm/pgtable_64_types.h b/arch/x86/include/asm/pgtable_64_types.h
+> index 3a264200c62f..de8bace10200 100644
+> --- a/arch/x86/include/asm/pgtable_64_types.h
+> +++ b/arch/x86/include/asm/pgtable_64_types.h
+> @@ -66,9 +66,6 @@ typedef struct { pteval_t pte; } pte_t;
+>  #define VMEMMAP_START	__VMEMMAP_BASE
+>  #endif /* CONFIG_RANDOMIZE_MEMORY */
+>  #define VMALLOC_END	(VMALLOC_START + _AC((VMALLOC_SIZE_TB << 40) - 1, UL))
+> -#define MODULES_VADDR    (__START_KERNEL_map + KERNEL_IMAGE_SIZE)
+> -#define MODULES_END      _AC(0xffffffffff000000, UL)
+
+How much of an ABI breakage would that be? See
+Documentation/x86/x86_64/mm.txt.
+
+With my .config MODULES_END becomes 0xffffffffff1fe000 and it'll remain
+dynamic depending on .config. No idea how much in userspace relies on
+MODULES_END being static 0xffffffffff000000...
+
+Hmm.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
