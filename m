@@ -1,237 +1,102 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v6 1/8] devicetree: power: Add battery.txt
-Date: Wed, 15 Feb 2017 09:54:24 -0600
-Message-ID: <28a76212-ed8d-e8a2-b761-78437ebfdac1@ti.com>
-References: <20170211024340.19491-1-liam@networkimprov.net>
- <20170211024340.19491-2-liam@networkimprov.net>
- <ce69f358-ac3b-993d-0639-844856362c9d@ti.com>
- <CAKvHMgSSpbkX1NMwaDmuJwBcgu6Avy65izAaBGTYongqL51kWQ@mail.gmail.com>
- <f38dc321-b32d-1053-75e4-ac9bf3438bb4@ti.com>
- <CAKvHMgTB8D+9mjpm16mAKZtHeTWZhyv0iEAvxw04fm-7GM1wqA@mail.gmail.com>
- <646198ab-b079-59c4-506f-34e446bcd67d@ti.com>
- <CAKvHMgSwi2XZx-evXQ8fB2nbrsZhHWEc0feO+XbKk2syB6Cskg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] cpufreq: schedutil: govern how frequently we change frequency with rate_limit
+Date: Wed, 15 Feb 2017 22:45:47 +0530
+Message-ID: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:39515 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751140AbdBOPzR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2017 10:55:17 -0500
-In-Reply-To: <CAKvHMgSwi2XZx-evXQ8fB2nbrsZhHWEc0feO+XbKk2syB6Cskg@mail.gmail.com>
+Received: from mail-pg0-f51.google.com ([74.125.83.51]:33862 "EHLO
+        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751659AbdBORPz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2017 12:15:55 -0500
+Received: by mail-pg0-f51.google.com with SMTP id z67so6505860pgb.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Feb 2017 09:15:55 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 02/14/2017 04:38 PM, Liam Breck wrote:
-> On Tue, Feb 14, 2017 at 12:22 PM, Andrew F. Davis <afd@ti.com> wrote:
->> On 02/13/2017 03:31 PM, Liam Breck wrote:
->>> [Dropped devicetree from CC]
->>>
->>> On Mon, Feb 13, 2017 at 1:12 PM, Andrew F. Davis <afd@ti.com> wrote:
->>>> On 02/13/2017 02:58 PM, Liam Breck wrote:
->>>>> Hi Andrew, thanks for the drill-down on BQ27* chips.
->>>>>
->>>>> On Mon, Feb 13, 2017 at 8:06 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>>>> On 02/10/2017 08:43 PM, Liam Breck wrote:
->>>>>>> From: Matt Ranostay <matt@ranostay.consulting>
->>>>>>>
->>>>>>> Documentation of static battery characteristics that can be defined
->>>>>>> for batteries which cannot self-identify. This information is required
->>>>>>> by fuel-gauge and charger chips for proper handling of the battery.
->>>>>>
->>>>>>
->>>>>> I think some of the confusion about what a "smart-battery" binding would
->>>>>> look like is due to a miss-understanding what it means to
->>>>>> "self-identify". Originally the bq27xxx *was* the chip that lived its
->>>>>> whole life inside a battery (the iphone battery is one such example and
->>>>>> a good way to test the bq27000). This way it could be factory programmed
->>>>>> with the battery's basics and then learn about the individual pack over
->>>>>> time to provide better info on time to empty, discharge rates, etc..
->>>>>>
->>>>>> Eventually, people wanted to have the battery become cheap and
->>>>>> replaceable, so fuel-gauges were made that are "system side", and ride
->>>>>> along with the device, not the battery. Now this has one big problem,
->>>>>> how can we learn about a battery when it may be a new battery every time
->>>>>> we boot up? So we added programmable memory to the devices, and
->>>>>> programming this memory looks to be what this series is about.
->>>>>>
->>>>>> Only the battery design info is programmed in this series, but much more
->>>>>> battery info can be uploaded, including stuff that is not fixed and
->>>>>> therefor cannot be added to the DT. Even the design parameters may not
->>>>>> be fix if one changes the battery as different manufactures of the same
->>>>>> battery type may have different design capacities.
->>>>>>
->>>>>> The ideal use-case in a system with a system side gauge is the OS should
->>>>>> periodically, or just before shutdown, read the battery's learned info
->>>>>> and when the device is powered back up, if the battery serial number
->>>>>> matches from before, re-upload this learned info to the gauge so it
->>>>>> doesn't have to re-learn everything. All of this will need to happen in
->>>>>> user-space, so what we really need is a user-space API for manipulating
->>>>>> these properties.
->>>>>
->>>>> We would need a feature in the driver to get/set the blob of pack- or
->>>>> cell-unique data. The userspace api is one sysfs file.
->>>>>
->>>>> However the DT fixed-battery node could indicate when/how-often the
->>>>> object is stored, and where, e.g. filename. If the latter is given,
->>>>> the driver should write/read the file itself.
->>>>>
->>>>> Is there some documentation about what registers should go in this blob?
->>>>>
->>>>
->>>> This should all be available in the parts' technical reference (looks
->>>> like page 24 for your device), but the blob isn't meant to be modified,
->>>> the information/format is mostly internal to the part, all we should do
->>>> is save blob / restore blob as needed.
->>>
->>> Page 24 has "8.5.5 Data Block Summary" That?
->>>
->>> Subclass IDs for NVM are 82, 88,104, 105. Do all those go in the blob?
->>>
->>
->> Some devices (bq27421) do not contain an NVM, and so rely on the host to
->> restore its "learned data" across power cycles with the same battery.
-> 
-> Ah, so my concept for DT battery:nvm-storage: "filename" would apply
-> to these RAM-only chips.
-> 
+For an ideal system (where frequency change doesn't incur any penalty)
+we would like to change the frequency as soon as the load changes for a
+CPU. But the systems we have to work with are far from ideal and it
+takes time to change the frequency of a CPU. For many ARM platforms
+specially, it is at least 1 ms. In order to not spend too much time
+changing frequency, we have earlier introduced a sysfs controlled
+tunable for the schedutil governor: rate_limit_us.
 
-I think so, I was going to do something similar, but let userspace take
-care of the filename, or have it a fixed/module param like firmware. DT
-is not really the right spot for filenames.
+Currently, rate_limit_us controls how frequently we reevaluate frequency
+for a set of CPUs controlled by a cpufreq policy. But that may not be
+the ideal behavior we want.
 
-If you can find a kernel-friendly way to do this then I'm all for it!
+Consider for example the following scenario. The rate_limit_us tunable
+is set to 10 ms. The CPU has a constant load X and that requires the
+frequency to be set to Y. The schedutil governor changes the frequency
+to Y, updates last_freq_update_time and we wait for 10 ms to reevaluate
+the frequency again. After 10 ms, the schedutil governor reevaluates the
+load and finds it to be the same. And so it doesn't update the
+frequency, but updates last_freq_update_time before returning. Right
+after this point, the scheduler puts more load on the CPU and the CPU
+needs to go to a higher frequency Z. Because last_freq_update_time was
+updated just now, the schedutil governor waits for additional 10ms
+before reevaluating the load again.
 
->> When using devices with NVM this "learned data" can be saved to the NVM
->> and it will automatically be copied over to the run-time RAM sections on
->> powerup. So we should only ever need to save the RAM section.
-> 
-> For the NVM chips, we'd want a userspace-accessible reset_nvm function
-> in driver which returns the pack-unique data to factory defaults. That
-> can be provided via a sysfs file to which you write a key (safer than
-> "echo 1 > /sys/class.../reset_nvm") to trigger the reset.
-> 
+Normally, the time it takes to reevaluate the frequency is negligible
+compared to the time it takes to change the frequency. And considering
+that in the above scenario, as we haven't updated the frequency for over
+10ms, we should have changed the frequency as soon as the load changed.
 
-Still not sure why one would need this, the only time you would want to
-reset the gauge is when changing the battery, and that will already
-cause it to power cycle (unless you have some kind of back-up battery,
-but that doesn't make sense to me).
+This patch changes the way rate_limit_us is used, i.e. It now governs
+"How frequently we change the frequency" instead of "How frequently we
+reevaluate the frequency".
 
->> Another thing to consider is that we (TI) have GUI tools to allow
->> manufacturers to input battery info and have it generate a blob that can
->> be deployed to these devices. The blob format is meant to be handled and
->> uploaded by custom user-space tools as it only really needs to be done
->> once (power-down events should only happen when changing batteries, in
->> which case you want to let the device forget what it has learned about
->> the old battery).
->>
->> All of the details of this programming are probably not the job of the
->> kernel, in end-user hands the kernel only needs to know how to read from
->> the device, not program it.
-> 
-> Were there an independently maintained battery manager app with wide
-> support for battery ICs, it would be a natural venue for BQ27*
-> reset/save/restore_nvm functions. But there is none that I know of,
-> and these features can be implemented in the driver with little new
-> code beyond the read/write_dm_block functions added by this patchset.
-> 
-> It's fine to ask hardware makers to rely on IC vendor tools in the
-> factory, but I don't think such tools belong in the end-user's stack.
-> 
+One may think that this change may have increased the number of times we
+reevaluate the frequency after a period of rate_limit_us has expired
+since the last change, if the load isn't changing. But that is protected
+by the scheduler as normally it doesn't call into the schedutil governor
+before 1 ms (Hint: "decayed" in update_cfs_rq_load_avg()) since the
+last call.
 
-If they don't belong in the end-user's user-space tool-set then they
-definitely don't belong in kernel-space. The other option is to define a
-whole new API for interfacing with all these device specific parameters
-and internal info tables. It's that or we accept that these are factory
-settings and we don't need all too much kernel infrastructure for
-handling them.
+Tests were performed with this patch on a Dual cluster (same frequency
+domain), octa-core ARM64 platform (Hikey). Hackbench (Debian) and
+Vellamo/Galleryfling (Android) didn't had much difference in
+performance w/ or w/o this patch.
 
-Andrew
+Its difficult to create a test case (tried rt-app as well) where this
+patch will show a lot of improvements as the target of this patch is a
+real corner case. I.e. Current load is X (resulting in freq change),
+load after rate_limit_us is also X, but right after that load becomes Y.
+Undoubtedly this patch would improve the responsiveness in such cases.
 
->> Take everything I say with a grain of salt though, I'm not on the team
->> that makes these. I don't have much additional info not in the public
->> data-sheets.
->>
->> Andrew
->>
->>>
->>>>> That concept is beyond the scope of this patchset (and doesn't
->>>>> supersede it), but is something I'd like to implement for our chip,
->>>>> the *425.
->>>>>
->>>>>
->>>>>> The properties added in this series are okay, and it's good to have some
->>>>>> sane defaults in DT, but looking forward this may not be enough to get
->>>>>> full use out of these devices.
->>>>>
->>>>> I'm relieved you're not opposed to our patch :-) Now I just need that
->>>>> guidance I mentioned re the chip family...
->>>>>
->>>>
->>>> Still looking into it, I think for now would be easiest to add the
->>>> register info to each chip family struct. The un-seal sequence should be
->>>> generic enough already.
->>>
->>> I'll wait for your full reply on that thread.
->>>
->>>
->>>>>>> Cc: Rob Herring <robh@kernel.org>
->>>>>>> Cc: devicetree@vger.kernel.org
->>>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
->>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>>>>>> ---
->>>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 37 ++++++++++++++++++++++
->>>>>>>  1 file changed, 37 insertions(+)
->>>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>
->>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>> new file mode 100644
->>>>>>> index 0000000..d78a4aa
->>>>>>> --- /dev/null
->>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>> @@ -0,0 +1,37 @@
->>>>>>> +Battery Characteristics
->>>>>>> +
->>>>>>> +Required Properties:
->>>>>>> + - compatible: Must be "fixed-battery"
->>>>>>> +
->>>>>>> +Optional Properties:
->>>>>>> + - voltage-min-design-microvolt: drained battery voltage
->>>>>>> + - energy-full-design-microwatt-hours: battery design energy
->>>>>>> + - charge-full-design-microamp-hours: battery design capacity
->>>>>>> +
->>>>>>> +Future Properties must be named for the corresponding elements in
->>>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
->>>>>>> +
->>>>>>> +Batteries must be referenced by chargers and/or fuel-gauges
->>>>>>> +using a phandle. The phandle's property should be named
->>>>>>> +"monitored-battery".
->>>>>>> +
->>>>>>> +Example:
->>>>>>> +
->>>>>>> +     bat: battery {
->>>>>>> +             compatible = "fixed-battery";
->>>>>>> +             voltage-min-design-microvolt = <3200000>;
->>>>>>> +             energy-full-design-microwatt-hours = <5290000>;
->>>>>>> +             charge-full-design-microamp-hours = <1430000>;
->>>>>>> +     };
->>>>>>> +
->>>>>>> +     charger: charger@11 {
->>>>>>> +             ....
->>>>>>> +             monitored-battery = <&bat>;
->>>>>>> +             ...
->>>>>>> +     };
->>>>>>> +
->>>>>>> +     fuel_gauge: fuel-gauge@22 {
->>>>>>> +             ....
->>>>>>> +             monitored-battery = <&bat>;
->>>>>>> +             ...
->>>>>>> +     };
->>>>>>>
->>>>> --
->>>>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->>>>> the body of a message to majordomo@vger.kernel.org
->>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index fd4659313640..306d97e7b57c 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -92,14 +92,13 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+ {
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+ 
+-	sg_policy->last_freq_update_time = time;
+-
+ 	if (policy->fast_switch_enabled) {
+ 		if (sg_policy->next_freq == next_freq) {
+ 			trace_cpu_frequency(policy->cur, smp_processor_id());
+ 			return;
+ 		}
+ 		sg_policy->next_freq = next_freq;
++		sg_policy->last_freq_update_time = time;
+ 		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
+ 		if (next_freq == CPUFREQ_ENTRY_INVALID)
+ 			return;
+@@ -108,6 +107,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+ 		trace_cpu_frequency(next_freq, smp_processor_id());
+ 	} else if (sg_policy->next_freq != next_freq) {
+ 		sg_policy->next_freq = next_freq;
++		sg_policy->last_freq_update_time = time;
+ 		sg_policy->work_in_progress = true;
+ 		irq_work_queue(&sg_policy->irq_work);
+ 	}
+-- 
+2.7.1.410.g6faf27b
