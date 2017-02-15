@@ -1,102 +1,42 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v3 01/18] dt-bindings: power: battery: add
- constant-charge-current property
-Date: Wed, 15 Feb 2017 12:18:20 -0800
-Message-ID: <CAKvHMgQZkNagd=93fDju9SZFZrFMt9GfhLQ45V+bP7YNJykjFw@mail.gmail.com>
-References: <20170215004646.23607-1-liam@networkimprov.net>
- <6a678b03-124a-76b3-066e-858731fc6c80@free-electrons.com>
+From: Borislav Petkov <bp@suse.de>
+Subject: Re: [PATCH v3 1/4] x86/mm: Adapt MODULES_END based on Fixmap section
+ size
+Date: Wed, 15 Feb 2017 22:08:58 +0100
+Message-ID: <20170215210858.e3sfhliay7bck5qx@pd.tnic>
+References: <20170214194259.75960-1-thgarnie@google.com>
+ <20170215135824.tflwuf3esu2npwwo@pd.tnic>
+ <CAJcbSZEsCzBQEFELm1wbc4DP2=dZTCFYfsb-eX0ifoCKF4EQUw@mail.gmail.com>
+ <20170215154921.5xgrifrg54ssq7lr@pd.tnic>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <6a678b03-124a-76b3-066e-858731fc6c80@free-electrons.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Quentin Schulz <quentin.schulz@free-electrons.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, thomas.petazzoni@free-electrons.com, lars@metafoo.de, devicetree@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux@armlinux.org.uk, Chen-Yu Tsai <wens@csie.org>, robh+dt@kernel.org, icenowy@aosc.xyz, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <kernel-hardening-return-6706-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Disposition: inline
+In-Reply-To: <20170215154921.5xgrifrg54ssq7lr@pd.tnic>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>, He Chen <he.chen@linux.inte>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 15, 2017 at 12:53 AM, Quentin Schulz
-<quentin.schulz@free-electrons.com> wrote:
-> Hi,
->
-> On 15/02/2017 01:46, Liam Breck wrote:
->>
->> On Tue, 14 Feb 2017 10:40:55 +0100 Quentin Schulz wrote:
->>> This adds the constant-charge-current property to the list of optional
->>> properties of the battery.
->>>
->>> The constant charge current is critical for batteries as they can't
->>> handle all charge currents.
->>>
->>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->>> ---
->>>
->>> added in v3
->>>
->>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
->>
->> Is constant-charge-current dependent on the battery (e.g. capacity, nominal voltage, etc) or the
->> system (charger chip, input current/voltage, etc)?
->>
->> It belongs in Doc.../power/supply/battery.txt if it's a characteristic of the battery.
->>
->> Note, this page asserts that constant-current charging applies to NiMH batteries:
->> http://power-topics.blogspot.com/2016/05/constant-voltage-constant-current.html
->>
->> Related properties to be added to battery.txt near-future in a patchset for the BQ24190
->> charger are as follows. These are not currently in enum power_supply_property, so the actual names
->> are still to be decided.
->>
->> precharge-current-microamp:
->>    maximum charge current during precharge phase (typically 20% of battery capacity)
->>
->> termination-current-microamp (or endcharge-current):
->>    a charge cycle terminates when the battery voltage is above recharge threshold,
->>    and the current is below this setting (typically 10% of battery capacity)
->>
->
-> We have a client with a board whose battery accepts a maximum of 300mA
-> for charging. So depending on the battery, we cannot have any charging
-> current we want. The AXP PmMICs set constant charge current in a range
-> of 300mA-1800mA, so it is enforced by the charger but needs to be
-> adapted depending on the battery present in the system.
->
-> The AXP PMICs charge battery with constant current (Ichrg) between the
-> trickle voltage (Vtrkl which is ~3.0V) and the targeted voltage (Vtrgt;
-> which seems to be the voltage telling the battery is fully charged).
->
-> So if I understand correctly, "my" constant-charge-current would be
-> located in the charging cycle between your precharge-current-microamp
-> and the termination-current-microamp as it is the current for the
-> charging process as a whole.
->
-> See here[1] for the explanation in the datasheet (page 20).
->
-> That would definitely match what is explained in your link for constant
-> current.
->
-> [1] http://dl.linux-sunxi.org/AXP/AXP209_Datasheet_v1.0en.pdf
->
-> Let me know if something seems odd,
+On Wed, Feb 15, 2017 at 04:49:21PM +0100, Borislav Petkov wrote:
+> On Wed, Feb 15, 2017 at 07:40:51AM -0800, Thomas Garnier wrote:
+> > Why do you think they rely on it being static? The VSYSCALL address is
+> > not changed for example.
+> 
+> I don't know, that's why I'm asking first. Userspace is known to pick
+> different aspects of the kernel and deciding to use them for whatever.
+> And once it relies on that, there's no changing it.
 
-Sounds OK to me. I'm happy to ack this, after my patchset goes in.
-I'll be posting v7 this weekend, with a minor addition to battery.txt.
+Ok, so we should be fine here because those addresses are internal to
+the kernel, I'm being told, so anything using them will break and gets
+to keep the pieces even.
 
-BTW there's rather a lot of ppl and lists CC'd on this, none of which
-are listed in the patch comment...
+-- 
+Regards/Gruss,
+    Boris.
 
-> Thanks,
-> Quentin
->
-> --
-> Quentin Schulz, Free Electrons
-> Embedded Linux and Kernel engineering
-> http://free-electrons.com
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+-- 
