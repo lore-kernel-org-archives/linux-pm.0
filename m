@@ -1,50 +1,75 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 3/3] ARM: dts: r7s72100: Add reset handler
-Date: Wed, 15 Feb 2017 10:21:19 +0100
-Message-ID: <CAMuHMdWBRJeU+f_Bn9pFPU1_LRG6WHSie8a0v+_qxKftujWAzw@mail.gmail.com>
-References: <20170213182532.4042-1-chris.brandt@renesas.com> <20170213182532.4042-4-chris.brandt@renesas.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v3 00/18] add support for AXP20X and AXP22X power supply
+ drivers
+Date: Wed, 15 Feb 2017 09:36:03 +0000
+Message-ID: <20170215093603.5bk5hqq6p3istxdi@dell>
+References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170213182532.4042-4-chris.brandt@renesas.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Chris Brandt <chris.brandt@renesas.com>
-Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, lars@metafoo.de, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, sre@kernel.org, linux@armlinux.org.uk, wens@csie.org, robh+dt@kernel.org, icenowy@aosc.xyz, pmeerw@pmeerw.net, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, thomas.petazzoni@free-electrons.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Feb 13, 2017 at 7:25 PM, Chris Brandt <chris.brandt@renesas.com> wrote:
-> For the RZ/A1, the only way to do a reset is to overflow the WDT.
->
-> Signed-off-by: Chris Brandt <chris.brandt@renesas.com>
-> ---
->  arch/arm/boot/dts/r7s72100.dtsi | 5 +++++
->  1 file changed, 5 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/r7s72100.dtsi b/arch/arm/boot/dts/r7s72100.dtsi
-> index 614ba79..6fb4ef4 100644
-> --- a/arch/arm/boot/dts/r7s72100.dtsi
-> +++ b/arch/arm/boot/dts/r7s72100.dtsi
-> @@ -371,6 +371,11 @@
->                         <0xe8202000 0x1000>;
->         };
->
-> +       wdt: timer@fcfe0000 {
-> +               compatible = "renesas,r7s72100-reset", "renesas,wdt-reset";
-> +               reg = <0xfcfe0000 0x6>;
-
-No clocks property, pointing to p0_clk?
-No interrupts property?
-Yes, those should be documented in the bindings, too.
-
-> +       };
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ClsuLi5dCgo+IFF1ZW50aW4gU2NodWx6ICgxOCk6Cj4gICBkdC1iaW5kaW5nczogcG93ZXI6IGJh
+dHRlcnk6IGFkZCBjb25zdGFudC1jaGFyZ2UtY3VycmVudCBwcm9wZXJ0eQo+ICAgcG93ZXI6IHN1
+cHBseTogcG93ZXJfc3VwcGx5X2NvcmU6IGFkZCBjb25zdGFudC1jdXJyZW50LWNoYXJnZSBvcHRp
+b25hbAo+ICAgICBwcm9wZXJ0eQo+ICAgbWZkOiBheHAyMHg6IGNvcnJlY3QgbmFtZSBvZiB0ZW1w
+ZXJhdHVyZSBkYXRhIEFEQyByZWdpc3RlcnMKPiAgIGlpbzogYWRjOiBhZGQgc3VwcG9ydCBmb3Ig
+WC1Qb3dlcnMgQVhQMjBYIGFuZCBBWFAyMlggUE1JQ3MgQURDcwo+ICAgbWZkOiBheHAyMHg6IGFk
+ZCBBREMgY2VsbHMgZm9yIEFYUDIwWCBhbmQgQVhQMjJYIFBNSUNzCj4gICBtZmQ6IGF4cDIweDog
+YWRkIEFDIHBvd2VyIHN1cHBseSBjZWxscyBmb3IgQVhQMjJYIFBNSUNzCj4gICBBUk06IGR0c2k6
+IGF4cDIwOTogYWRkIEFDIHBvd2VyIHN1cHBseSBzdWJub2RlCj4gICBBUk06IGR0c2k6IGF4cDIy
+eDogYWRkIEFDIHBvd2VyIHN1cHBseSBzdWJub2RlCj4gICBBUk06IGR0czogc3VuOGk6IHNpbmEz
+MzogZW5hYmxlIEFDSU4gcG93ZXIgc3VwcGx5IHN1Ym5vZGUKPiAgIEFSTTogc3VuNWk6IGNoaXA6
+IGVuYWJsZSBBQ0lOIHBvd2VyIHN1cHBseSBzdWJub2RlCj4gICBkdC1iaW5kaW5nczogcG93ZXI6
+IHN1cHBseTogYWRkIEFYUDIwWC9BWFAyMlggYmF0dGVyeSBEVCBiaW5kaW5nCj4gICBtZmQ6IGF4
+cDIweDogYWRkIENIUkdfQ1RSTDEvMi8zIHRvIHdyaXRlYWJsZSByZWdzIGZvciBBWFAyMFgvQVhQ
+MjJYCj4gICBwb3dlcjogc3VwcGx5OiBhZGQgYmF0dGVyeSBkcml2ZXIgZm9yIEFYUDIwWCBhbmQg
+QVhQMjJYIFBNSUNzCj4gICBtZmQ6IGF4cDIweDogYWRkIE1GRCBjZWxscyBmb3IgQVhQMjBYIGFu
+ZCBBWFAyMlggYmF0dGVyeSBkcml2ZXIKPiAgIEFSTTogZHRzaTogYXhwMjA5OiBhZGQgYmF0dGVy
+eSBwb3dlciBzdXBwbHkgc3Vibm9kZQo+ICAgQVJNOiBkdHNpOiBheHAyMng6IGFkZCBiYXR0ZXJ5
+IHBvd2VyIHN1cHBseSBzdWJub2RlCj4gICBBUk06IGR0czogc3VuOGk6IHNpbmEzMzogZW5hYmxl
+IGJhdHRlcnkgcG93ZXIgc3VwcGx5IHN1Ym5vZGUKPiAgIEFSTTogc3VuNWk6IGNoaXA6IGVuYWJs
+ZSBiYXR0ZXJ5IHBvd2VyIHN1cHBseSBzdWJub2RlCgpUaGlzIHNldCBpcyBzdGlsbCBtaXNzaW5n
+IGEgYnVuY2ggb2YgQWNrcy4KCj4gIC4uLi9iaW5kaW5ncy9wb3dlci9zdXBwbHkvYXhwMjB4X2Jh
+dHRlcnkudHh0ICAgICAgIHwgIDIwICsKPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIv
+c3VwcGx5L2JhdHRlcnkudHh0ICAgfCAgIDIgKwo+ICBhcmNoL2FybS9ib290L2R0cy9heHAyMDku
+ZHRzaSAgICAgICAgICAgICAgICAgICAgICB8ICAxMCArCj4gIGFyY2gvYXJtL2Jvb3QvZHRzL2F4
+cDIyeC5kdHNpICAgICAgICAgICAgICAgICAgICAgIHwgIDEwICsKPiAgYXJjaC9hcm0vYm9vdC9k
+dHMvc3VuNWktcjgtY2hpcC5kdHMgICAgICAgICAgICAgICAgfCAgIDggKwo+ICBhcmNoL2FybS9i
+b290L2R0cy9zdW44aS1hMzMtc2lubGlueC1zaW5hMzMuZHRzICAgICB8ICAgOCArCj4gIGRyaXZl
+cnMvaWlvL2FkYy9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDEwICsKPiAg
+ZHJpdmVycy9paW8vYWRjL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAgIDEg
+Kwo+ICBkcml2ZXJzL2lpby9hZGMvYXhwMjB4X2FkYy5jICAgICAgICAgICAgICAgICAgICAgICB8
+IDYwNiArKysrKysrKysrKysrKysrKysrKysKPiAgZHJpdmVycy9tZmQvYXhwMjB4LmMgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgfCAgMjkgKy0KPiAgZHJpdmVycy9wb3dlci9zdXBwbHkv
+S2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgfCAgMTIgKwo+ICBkcml2ZXJzL3Bvd2VyL3N1
+cHBseS9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICB8ICAgMSArCj4gIGRyaXZlcnMvcG93
+ZXIvc3VwcGx5L2F4cDIweF9iYXR0ZXJ5LmMgICAgICAgICAgICAgIHwgNDkyICsrKysrKysrKysr
+KysrKysrCj4gIGRyaXZlcnMvcG93ZXIvc3VwcGx5L3Bvd2VyX3N1cHBseV9jb3JlLmMgICAgICAg
+ICAgIHwgICAzICsKPiAgaW5jbHVkZS9saW51eC9tZmQvYXhwMjB4LmggICAgICAgICAgICAgICAg
+ICAgICAgICAgfCAgIDQgKy0KPiAgaW5jbHVkZS9saW51eC9wb3dlcl9zdXBwbHkuaCAgICAgICAg
+ICAgICAgICAgICAgICAgfCAgIDEgKwo+ICAxNiBmaWxlcyBjaGFuZ2VkLCAxMjE0IGluc2VydGlv
+bnMoKyksIDMgZGVsZXRpb25zKC0pCj4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBEb2N1bWVudGF0aW9u
+L2RldmljZXRyZWUvYmluZGluZ3MvcG93ZXIvc3VwcGx5L2F4cDIweF9iYXR0ZXJ5LnR4dAo+ICBj
+cmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9paW8vYWRjL2F4cDIweF9hZGMuYwo+ICBjcmVhdGUg
+bW9kZSAxMDA2NDQgZHJpdmVycy9wb3dlci9zdXBwbHkvYXhwMjB4X2JhdHRlcnkuYwo+IAoKLS0g
+CkxlZSBKb25lcwpMaW5hcm8gU1RNaWNyb2VsZWN0cm9uaWNzIExhbmRpbmcgVGVhbSBMZWFkCkxp
+bmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3YXJlIGZvciBBUk0gU29DcwpGb2xsb3cgTGlu
+YXJvOiBGYWNlYm9vayB8IFR3aXR0ZXIgfCBCbG9nCgpfX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51
+eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5v
+cmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
