@@ -1,69 +1,114 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: schedutil: govern how frequently we change frequency with rate_limit
-Date: Wed, 15 Feb 2017 23:52:49 +0100
-Message-ID: <4960111.i7trI6xaX7@aspire.rjw.lan>
-References: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org> <6429586.HoWBhxDx3r@aspire.rjw.lan>
+From: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 6/9] arm, arm64: factorize common cpu capacity default code
+Date: Wed, 15 Feb 2017 17:17:05 -0600
+Message-ID: <CAL_JsqKLiQ2cSffadMWbN2PkqBOiA-6Mx5YVMCehVQNpy7YqrQ@mail.gmail.com>
+References: <20170209092525.6654-1-juri.lelli@arm.com> <20170209092525.6654-7-juri.lelli@arm.com>
+ <20170210142857.GA18321@kroah.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6429586.HoWBhxDx3r@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170210142857.GA18321-U8xfFu+wG4EAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, peterz-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-lFZ/pmaqli7XmaaqVzeoHQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Morten Rasmussen <morten.rasmussen-5wv7dgnIgG8@public.gmane.org>, dietmar.eggemann-5wv7dgnIgG8@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, February 15, 2017 11:35:29 PM Rafael J. Wysocki wrote:
-> On Wednesday, February 15, 2017 10:45:47 PM Viresh Kumar wrote:
-> 
-> First of all, [RFC] pretty please on things like this.
-> 
-> > For an ideal system (where frequency change doesn't incur any penalty)
-> > we would like to change the frequency as soon as the load changes for a
-> > CPU. But the systems we have to work with are far from ideal and it
-> > takes time to change the frequency of a CPU. For many ARM platforms
-> > specially, it is at least 1 ms. In order to not spend too much time
-> > changing frequency, we have earlier introduced a sysfs controlled
-> > tunable for the schedutil governor: rate_limit_us.
-> > 
-> > Currently, rate_limit_us controls how frequently we reevaluate frequency
-> > for a set of CPUs controlled by a cpufreq policy. But that may not be
-> > the ideal behavior we want.
-> > 
-> > Consider for example the following scenario. The rate_limit_us tunable
-> > is set to 10 ms. The CPU has a constant load X and that requires the
-> > frequency to be set to Y. The schedutil governor changes the frequency
-> > to Y, updates last_freq_update_time and we wait for 10 ms to reevaluate
-> > the frequency again. After 10 ms, the schedutil governor reevaluates the
-> > load and finds it to be the same. And so it doesn't update the
-> > frequency, but updates last_freq_update_time before returning. Right
-> > after this point, the scheduler puts more load on the CPU and the CPU
-> > needs to go to a higher frequency Z. Because last_freq_update_time was
-> > updated just now, the schedutil governor waits for additional 10ms
-> > before reevaluating the load again.
-> > 
-> > Normally, the time it takes to reevaluate the frequency is negligible
-> > compared to the time it takes to change the frequency.
-> 
-> This should be "the time it takes to reevaluate the load is negligible
-> relative to the time it takes to change the frequency" I suppose?
-> 
-> Specifically, the "to reevaluate the frequency" phrase is ambiguous.
-> 
-> > And considering
-> > that in the above scenario, as we haven't updated the frequency for over
-> > 10ms, we should have changed the frequency as soon as the load changed.
-> 
-> Why should we?
-> 
-> > This patch changes the way rate_limit_us is used, i.e. It now governs
-> > "How frequently we change the frequency" instead of "How frequently we
-> > reevaluate the frequency".
-> 
-> That's questionable IMO.
+On Fri, Feb 10, 2017 at 8:28 AM, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org> wrote:
+> On Thu, Feb 09, 2017 at 09:25:22AM +0000, Juri Lelli wrote:
+>> arm and arm64 share lot of code relative to parsing CPU capacity
+>> information from DT, using that information for appropriate scaling and
+>> exposing a sysfs interface for chaging such values at runtime.
+>>
+>> Factorize such code in a common place (driver/base/arch_topology.c) in
+>> preparation for further additions.
+>>
+>> Suggested-by: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+>> Suggested-by: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+>> Suggested-by: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>
+>> Cc: Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+>> Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+>> Signed-off-by: Juri Lelli <juri.lelli-5wv7dgnIgG8@public.gmane.org>
+>> ---
+>>
+>> Changes from v1:
+>>  - keep the original GPLv2 header
+>> ---
+>>  arch/arm/Kconfig             |   1 +
+>>  arch/arm/kernel/topology.c   | 213 ++------------------------------------
+>>  arch/arm64/Kconfig           |   1 +
+>>  arch/arm64/kernel/topology.c | 219 +--------------------------------------
+>>  drivers/base/Kconfig         |   8 ++
+>>  drivers/base/Makefile        |   1 +
+>>  drivers/base/arch_topology.c | 237 +++++++++++++++++++++++++++++++++++++++++++
+>>  7 files changed, 257 insertions(+), 423 deletions(-)
+>>  create mode 100644 drivers/base/arch_topology.c
+>
+> Ah, so you want _me_ to maintain this, ok, I better review it...
+>
+>> --- a/drivers/base/Kconfig
+>> +++ b/drivers/base/Kconfig
+>> @@ -339,4 +339,12 @@ config CMA_ALIGNMENT
+>>
+>>  endif
+>>
+>> +config GENERIC_ARCH_TOPOLOGY
+>> +     bool
+>> +     help
+>> +       Enable support for architectures common topology code: e.g., parsing
+>> +       CPU capacity information from DT, usage of such information for
+>> +       appropriate scaling, sysfs interface for changing capacity values at
+>> +          runtime.
+>
+> Mix of spaces and tabs :(
+>
+>> +
+>>  endmenu
+>> diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+>> index f2816f6ff76a..397e5c344e6a 100644
+>> --- a/drivers/base/Makefile
+>> +++ b/drivers/base/Makefile
+>> @@ -23,6 +23,7 @@ obj-$(CONFIG_SOC_BUS) += soc.o
+>>  obj-$(CONFIG_PINCTRL) += pinctrl.o
+>>  obj-$(CONFIG_DEV_COREDUMP) += devcoredump.o
+>>  obj-$(CONFIG_GENERIC_MSI_IRQ_DOMAIN) += platform-msi.o
+>> +obj-$(CONFIG_GENERIC_ARCH_TOPOLOGY) += arch_topology.o
+>>
+>>  obj-y                        += test/
+>>
+>> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+>> new file mode 100644
+>> index 000000000000..c1dd430adad2
+>> --- /dev/null
+>> +++ b/drivers/base/arch_topology.c
+>> @@ -0,0 +1,237 @@
+>> +/*
+>> + * driver/base/arch_topology.c - Arch specific cpu topology information
+>
+> No need to keep the filename in the file, you know what it is called :)
+>
+>> + *
+>> + * Copyright (C) 2016, ARM Ltd.
+>> + * Written by: Juri Lelli, ARM Ltd.
+>> + *
+>> + * This file is subject to the terms and conditions of the GNU General Public
+>> + * License.  See the file "COPYING" in the main directory of this archive
+>> + * for more details.
+>
+> So, v2 only?  Please be specific.  Even better yet, use a SPDX header if
+> you want to, those are always nice.
 
-It actually changes the meaning of rate_limit_us, which may not be wrong in
-principle, but really the question is what its meaning *should* be.
+Sorry to hijack this thread, but you're recommending SPDX now? You
+seemed pretty negative on it last time it came up[1]. Or was that just
+in context of the churn of converting existing files? Personally, I
+like the use of SPDX tags over free form license text and would like
+to encourage it for dts files.
 
-Thanks,
-Rafael
+Rob
+
+[1] https://lkml.org/lkml/2015/2/5/65
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
