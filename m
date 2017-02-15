@@ -1,42 +1,48 @@
-From: Borislav Petkov <bp@suse.de>
-Subject: Re: [PATCH v3 1/4] x86/mm: Adapt MODULES_END based on Fixmap section
- size
-Date: Wed, 15 Feb 2017 22:08:58 +0100
-Message-ID: <20170215210858.e3sfhliay7bck5qx@pd.tnic>
-References: <20170214194259.75960-1-thgarnie@google.com>
- <20170215135824.tflwuf3esu2npwwo@pd.tnic>
- <CAJcbSZEsCzBQEFELm1wbc4DP2=dZTCFYfsb-eX0ifoCKF4EQUw@mail.gmail.com>
- <20170215154921.5xgrifrg54ssq7lr@pd.tnic>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 1/2] power: reset: syscon-poweroff: add a mask property
+Date: Wed, 15 Feb 2017 16:00:10 -0600
+Message-ID: <20170215220010.psk37r4belykyquy@rob-hp-laptop>
+References: <1486472054-4367-1-git-send-email-guy.shapiro@mobi-wize.com>
+ <1486482966-4497-1-git-send-email-guy.shapiro@mobi-wize.com>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <kernel-hardening-return-6706-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <rtc-linux+bncBDJIP47K7MERB3E6SPCQKGQEMAYLCFY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Content-Disposition: inline
-In-Reply-To: <20170215154921.5xgrifrg54ssq7lr@pd.tnic>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>, He Chen <he.chen@linux.inte>
+In-Reply-To: <1486482966-4497-1-git-send-email-guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+Cc: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Feb 15, 2017 at 04:49:21PM +0100, Borislav Petkov wrote:
-> On Wed, Feb 15, 2017 at 07:40:51AM -0800, Thomas Garnier wrote:
-> > Why do you think they rely on it being static? The VSYSCALL address is
-> > not changed for example.
+On Tue, Feb 07, 2017 at 05:56:05PM +0200, Guy Shapiro wrote:
+> Make the syscon-poweroff driver accept value and mask instead of
+> just value.
 > 
-> I don't know, that's why I'm asking first. Userspace is known to pick
-> different aspects of the kernel and deciding to use them for whatever.
-> And once it relies on that, there's no changing it.
+> Prior to this patch, the property name for the value was 'mask'. If
+> only the mask property is defined on a node, maintain compatibility
+> by using it as the value.
+> 
+> Signed-off-by: Guy Shapiro <guy.shapiro-2HKgp+mgmS5l57MIdRCFDg@public.gmane.org>
+> ---
+>  .../bindings/power/reset/syscon-poweroff.txt          | 11 +++++++++--
+>  drivers/power/reset/syscon-poweroff.c                 | 19 ++++++++++++++++---
+>  2 files changed, 25 insertions(+), 5 deletions(-)
 
-Ok, so we should be fine here because those addresses are internal to
-the kernel, I'm being told, so anything using them will break and gets
-to keep the pieces even.
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
 -- 
-Regards/Gruss,
-    Boris.
-
-SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
--- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
