@@ -1,53 +1,50 @@
-From: Peter Chen <hzpeterchen@gmail.com>
-Subject: Re: [PATCH v13 00/12] power: add power sequence library
-Date: Wed, 15 Feb 2017 09:38:09 +0800
-Message-ID: <20170215013808.GB6579@b29397-desktop>
-References: <1486776443-2280-1-git-send-email-peter.chen@nxp.com>
- <f34acc40-41e2-a7ea-a2aa-6cf604086182@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: cppc: add ACPI_PROCESSOR dependency
+Date: Wed, 15 Feb 2017 09:26:54 +0530
+Message-ID: <20170215035654.GI3537@vireshk-i7>
+References: <20170214211934.2663689-1-arnd@arndb.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f42.google.com ([74.125.83.42]:33580 "EHLO
+        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751410AbdBOD46 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Feb 2017 22:56:58 -0500
+Received: by mail-pg0-f42.google.com with SMTP id 204so33009033pge.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Feb 2017 19:56:58 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <f34acc40-41e2-a7ea-a2aa-6cf604086182@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Roger Quadros <rogerq@ti.com>
-Cc: Peter Chen <peter.chen@nxp.com>, gregkh@linuxfoundation.org, stern@rowland.harvard.edu, ulf.hansson@linaro.org, broonie@kernel.org, sre@kernel.org, robh+dt@kernel.org, shawnguo@kernel.org, rjw@rjwysocki.net, dbaryshkov@gmail.com, mark.rutland@arm.com, heiko@sntech.de, stephen.boyd@linaro.org, frank.li@nxp.com, gary.bisson@boundarydevices.com, festevam@gmail.com, stillcompiling@gmail.com, arnd@arndb.de, vaibhav.hiremath@linaro.org, krzk@kernel.org, mka@chromium.org, devicetree@vger.kernel.org, mail@maciej.szmigiero.name, pawel.moll@arm.com, linux-pm@vger.kernel.org, s.hauer@pengutronix.de, troy.kisky@boundarydevices.com, linux-arm-kernel@lists.infradead.org, hverkuil@xs4all.nl, oscar@naiandei.net, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+In-Reply-To: <20170214211934.2663689-1-arnd@arndb.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Feb 14, 2017 at 12:21:48PM +0200, Roger Quadros wrote:
-> Peter,
+On 14-02-17, 22:19, Arnd Bergmann wrote:
+> Without the Kconfig dependency, we can get this warning:
 > 
-> On 11/02/17 03:27, Peter Chen wrote:
-> > Hi all,
-> > 
-> > This is a follow-up for my last power sequence framework patch set [1].
-> > According to Rob Herring and Ulf Hansson's comments[2]. The kinds of
-> > power sequence instances will be added at postcore_initcall, the match
-> > criteria is compatible string first, if the compatible string is not
-> > matched between dts and library, it will try to use generic power sequence.
-> > 	 
-> > The host driver just needs to call of_pwrseq_on/of_pwrseq_off
-> > if only one power sequence instance is needed, for more power sequences
-> > are used, using of_pwrseq_on_list/of_pwrseq_off_list instead (eg, USB hub driver).
-> > 
-> > In future, if there are special power sequence requirements, the special
-> > power sequence library can be created.
-> > 
-> > This patch set is tested on i.mx6 sabresx evk using a dts change, I use
-> > two hot-plug devices to simulate this use case, the related binding
-> > change is updated at patch [1/6], The udoo board changes were tested
-> > using my last power sequence patch set.[3]
-> > 
-> > Except for hard-wired MMC and USB devices, I find the USB ULPI PHY also
-> > need to power on itself before it can be found by ULPI bus.
+> warning: ACPI_CPPC_CPUFREQ selects ACPI_CPPC_LIB which has unmet direct dependencies (ACPI && ACPI_PROCESSOR)
 > 
-> Can patches 3-7 can be sent independently of the power related patches?
+> Fixes: 5477fb3bd1e8 ("ACPI / CPPC: Add a CPUFreq driver for use with CPPC")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/cpufreq/Kconfig.arm | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index 6d87742fc5aa..74fa5c5904d3 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -268,7 +268,7 @@ config ARM_PXA2xx_CPUFREQ
+>  
+>  config ACPI_CPPC_CPUFREQ
+>  	tristate "CPUFreq driver based on the ACPI CPPC spec"
+> -	depends on ACPI
+> +	depends on ACPI_PROCESSOR
+>  	select ACPI_CPPC_LIB
+>  	default n
+>  	help
 
-Yes, I had planned to submit patches 3-7 for v4.11-rc1 today first, but it
-seems you still have comments for patch 6, let's wait a conclusion first.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-
-Best Regards,
-Peter Chen
+viresh
