@@ -1,252 +1,102 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v6 1/8] devicetree: power: Add battery.txt
-Date: Wed, 15 Feb 2017 12:05:21 -0800
-Message-ID: <CAKvHMgSgTAFH02GgbeZY4t=BaKHrB-yABwbQkRxOTsM=cU==eA@mail.gmail.com>
-References: <20170211024340.19491-1-liam@networkimprov.net>
- <20170211024340.19491-2-liam@networkimprov.net> <ce69f358-ac3b-993d-0639-844856362c9d@ti.com>
- <CAKvHMgSSpbkX1NMwaDmuJwBcgu6Avy65izAaBGTYongqL51kWQ@mail.gmail.com>
- <f38dc321-b32d-1053-75e4-ac9bf3438bb4@ti.com> <CAKvHMgTB8D+9mjpm16mAKZtHeTWZhyv0iEAvxw04fm-7GM1wqA@mail.gmail.com>
- <646198ab-b079-59c4-506f-34e446bcd67d@ti.com> <CAKvHMgSwi2XZx-evXQ8fB2nbrsZhHWEc0feO+XbKk2syB6Cskg@mail.gmail.com>
- <28a76212-ed8d-e8a2-b761-78437ebfdac1@ti.com>
+Subject: Re: [PATCH v3 01/18] dt-bindings: power: battery: add
+ constant-charge-current property
+Date: Wed, 15 Feb 2017 12:18:20 -0800
+Message-ID: <CAKvHMgQZkNagd=93fDju9SZFZrFMt9GfhLQ45V+bP7YNJykjFw@mail.gmail.com>
+References: <20170215004646.23607-1-liam@networkimprov.net>
+ <6a678b03-124a-76b3-066e-858731fc6c80@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:34815 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751313AbdBOUFX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2017 15:05:23 -0500
-Received: by mail-oi0-f68.google.com with SMTP id w144so3764452oiw.1
-        for <linux-pm@vger.kernel.org>; Wed, 15 Feb 2017 12:05:23 -0800 (PST)
-In-Reply-To: <28a76212-ed8d-e8a2-b761-78437ebfdac1@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <6a678b03-124a-76b3-066e-858731fc6c80@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, thomas.petazzoni@free-electrons.com, lars@metafoo.de, devicetree@vger.kernel.org, linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux@armlinux.org.uk, Chen-Yu Tsai <wens@csie.org>, robh+dt@kernel.org, icenowy@aosc.xyz, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, maxime.ripard@free-electrons.com, bonbons@linux-vserver.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-On Wed, Feb 15, 2017 at 7:54 AM, Andrew F. Davis <afd@ti.com> wrote:
-> On 02/14/2017 04:38 PM, Liam Breck wrote:
->> On Tue, Feb 14, 2017 at 12:22 PM, Andrew F. Davis <afd@ti.com> wrote:
->>> On 02/13/2017 03:31 PM, Liam Breck wrote:
->>>> [Dropped devicetree from CC]
->>>>
->>>> On Mon, Feb 13, 2017 at 1:12 PM, Andrew F. Davis <afd@ti.com> wrote:
->>>>> On 02/13/2017 02:58 PM, Liam Breck wrote:
->>>>>> Hi Andrew, thanks for the drill-down on BQ27* chips.
->>>>>>
->>>>>> On Mon, Feb 13, 2017 at 8:06 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>>>>> On 02/10/2017 08:43 PM, Liam Breck wrote:
->>>>>>>> From: Matt Ranostay <matt@ranostay.consulting>
->>>>>>>>
->>>>>>>> Documentation of static battery characteristics that can be defined
->>>>>>>> for batteries which cannot self-identify. This information is required
->>>>>>>> by fuel-gauge and charger chips for proper handling of the battery.
->>>>>>>
->>>>>>>
->>>>>>> I think some of the confusion about what a "smart-battery" binding would
->>>>>>> look like is due to a miss-understanding what it means to
->>>>>>> "self-identify". Originally the bq27xxx *was* the chip that lived its
->>>>>>> whole life inside a battery (the iphone battery is one such example and
->>>>>>> a good way to test the bq27000). This way it could be factory programmed
->>>>>>> with the battery's basics and then learn about the individual pack over
->>>>>>> time to provide better info on time to empty, discharge rates, etc..
->>>>>>>
->>>>>>> Eventually, people wanted to have the battery become cheap and
->>>>>>> replaceable, so fuel-gauges were made that are "system side", and ride
->>>>>>> along with the device, not the battery. Now this has one big problem,
->>>>>>> how can we learn about a battery when it may be a new battery every time
->>>>>>> we boot up? So we added programmable memory to the devices, and
->>>>>>> programming this memory looks to be what this series is about.
->>>>>>>
->>>>>>> Only the battery design info is programmed in this series, but much more
->>>>>>> battery info can be uploaded, including stuff that is not fixed and
->>>>>>> therefor cannot be added to the DT. Even the design parameters may not
->>>>>>> be fix if one changes the battery as different manufactures of the same
->>>>>>> battery type may have different design capacities.
->>>>>>>
->>>>>>> The ideal use-case in a system with a system side gauge is the OS should
->>>>>>> periodically, or just before shutdown, read the battery's learned info
->>>>>>> and when the device is powered back up, if the battery serial number
->>>>>>> matches from before, re-upload this learned info to the gauge so it
->>>>>>> doesn't have to re-learn everything. All of this will need to happen in
->>>>>>> user-space, so what we really need is a user-space API for manipulating
->>>>>>> these properties.
->>>>>>
->>>>>> We would need a feature in the driver to get/set the blob of pack- or
->>>>>> cell-unique data. The userspace api is one sysfs file.
->>>>>>
->>>>>> However the DT fixed-battery node could indicate when/how-often the
->>>>>> object is stored, and where, e.g. filename. If the latter is given,
->>>>>> the driver should write/read the file itself.
->>>>>>
->>>>>> Is there some documentation about what registers should go in this blob?
->>>>>>
->>>>>
->>>>> This should all be available in the parts' technical reference (looks
->>>>> like page 24 for your device), but the blob isn't meant to be modified,
->>>>> the information/format is mostly internal to the part, all we should do
->>>>> is save blob / restore blob as needed.
->>>>
->>>> Page 24 has "8.5.5 Data Block Summary" That?
->>>>
->>>> Subclass IDs for NVM are 82, 88,104, 105. Do all those go in the blob?
->>>>
->>>
->>> Some devices (bq27421) do not contain an NVM, and so rely on the host to
->>> restore its "learned data" across power cycles with the same battery.
+On Wed, Feb 15, 2017 at 12:53 AM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> Hi,
+>
+> On 15/02/2017 01:46, Liam Breck wrote:
 >>
->> Ah, so my concept for DT battery:nvm-storage: "filename" would apply
->> to these RAM-only chips.
+>> On Tue, 14 Feb 2017 10:40:55 +0100 Quentin Schulz wrote:
+>>> This adds the constant-charge-current property to the list of optional
+>>> properties of the battery.
+>>>
+>>> The constant charge current is critical for batteries as they can't
+>>> handle all charge currents.
+>>>
+>>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>>> ---
+>>>
+>>> added in v3
+>>>
+>>>  Documentation/devicetree/bindings/power/supply/battery.txt | 2 ++
+>>
+>> Is constant-charge-current dependent on the battery (e.g. capacity, nominal voltage, etc) or the
+>> system (charger chip, input current/voltage, etc)?
+>>
+>> It belongs in Doc.../power/supply/battery.txt if it's a characteristic of the battery.
+>>
+>> Note, this page asserts that constant-current charging applies to NiMH batteries:
+>> http://power-topics.blogspot.com/2016/05/constant-voltage-constant-current.html
+>>
+>> Related properties to be added to battery.txt near-future in a patchset for the BQ24190
+>> charger are as follows. These are not currently in enum power_supply_property, so the actual names
+>> are still to be decided.
+>>
+>> precharge-current-microamp:
+>>    maximum charge current during precharge phase (typically 20% of battery capacity)
+>>
+>> termination-current-microamp (or endcharge-current):
+>>    a charge cycle terminates when the battery voltage is above recharge threshold,
+>>    and the current is below this setting (typically 10% of battery capacity)
 >>
 >
-> I think so, I was going to do something similar, but let userspace take
-> care of the filename, or have it a fixed/module param like firmware. DT
-> is not really the right spot for filenames.
+> We have a client with a board whose battery accepts a maximum of 300mA
+> for charging. So depending on the battery, we cannot have any charging
+> current we want. The AXP PmMICs set constant charge current in a range
+> of 300mA-1800mA, so it is enforced by the charger but needs to be
+> adapted depending on the battery present in the system.
 >
-> If you can find a kernel-friendly way to do this then I'm all for it!
-
-Hm, you have a point about filenames in DT. Maybe an inode number? (kidding :-)
-
-We could hand the driver a filename via sysfs file or module param.
-Perhaps use a filename in DT as a fallback.
-
-
->>> When using devices with NVM this "learned data" can be saved to the NVM
->>> and it will automatically be copied over to the run-time RAM sections on
->>> powerup. So we should only ever need to save the RAM section.
->>
->> For the NVM chips, we'd want a userspace-accessible reset_nvm function
->> in driver which returns the pack-unique data to factory defaults. That
->> can be provided via a sysfs file to which you write a key (safer than
->> "echo 1 > /sys/class.../reset_nvm") to trigger the reset.
->>
+> The AXP PMICs charge battery with constant current (Ichrg) between the
+> trickle voltage (Vtrkl which is ~3.0V) and the targeted voltage (Vtrgt;
+> which seems to be the voltage telling the battery is fully charged).
 >
-> Still not sure why one would need this, the only time you would want to
-> reset the gauge is when changing the battery, and that will already
-> cause it to power cycle (unless you have some kind of back-up battery,
-> but that doesn't make sense to me).
-
-This is for gauges with NVM, where power-cycle does not clear the
-pack-specific stats. Or do those gauges recognize that the pack has
-changed?
-
-
->>> Another thing to consider is that we (TI) have GUI tools to allow
->>> manufacturers to input battery info and have it generate a blob that can
->>> be deployed to these devices. The blob format is meant to be handled and
->>> uploaded by custom user-space tools as it only really needs to be done
->>> once (power-down events should only happen when changing batteries, in
->>> which case you want to let the device forget what it has learned about
->>> the old battery).
->>>
->>> All of the details of this programming are probably not the job of the
->>> kernel, in end-user hands the kernel only needs to know how to read from
->>> the device, not program it.
->>
->> Were there an independently maintained battery manager app with wide
->> support for battery ICs, it would be a natural venue for BQ27*
->> reset/save/restore_nvm functions. But there is none that I know of,
->> and these features can be implemented in the driver with little new
->> code beyond the read/write_dm_block functions added by this patchset.
->>
->> It's fine to ask hardware makers to rely on IC vendor tools in the
->> factory, but I don't think such tools belong in the end-user's stack.
->>
+> So if I understand correctly, "my" constant-charge-current would be
+> located in the charging cycle between your precharge-current-microamp
+> and the termination-current-microamp as it is the current for the
+> charging process as a whole.
 >
-> If they don't belong in the end-user's user-space tool-set then they
-> definitely don't belong in kernel-space. The other option is to define a
-> whole new API for interfacing with all these device specific parameters
-> and internal info tables. It's that or we accept that these are factory
-> settings and we don't need all too much kernel infrastructure for
-> handling them.
+> See here[1] for the explanation in the datasheet (page 20).
+>
+> That would definitely match what is explained in your link for constant
+> current.
+>
+> [1] http://dl.linux-sunxi.org/AXP/AXP209_Datasheet_v1.0en.pdf
+>
+> Let me know if something seems odd,
 
-My point is that an IC vendor *codebase* does not belong in the
-end-user's stack; it's a production tool. The functionality we're
-discussing clearly belongs in both the device driver and the
-production tool.
+Sounds OK to me. I'm happy to ack this, after my patchset goes in.
+I'll be posting v7 this weekend, with a minor addition to battery.txt.
 
+BTW there's rather a lot of ppl and lists CC'd on this, none of which
+are listed in the patch comment...
 
->>> Take everything I say with a grain of salt though, I'm not on the team
->>> that makes these. I don't have much additional info not in the public
->>> data-sheets.
->>>
->>> Andrew
->>>
->>>>
->>>>>> That concept is beyond the scope of this patchset (and doesn't
->>>>>> supersede it), but is something I'd like to implement for our chip,
->>>>>> the *425.
->>>>>>
->>>>>>
->>>>>>> The properties added in this series are okay, and it's good to have some
->>>>>>> sane defaults in DT, but looking forward this may not be enough to get
->>>>>>> full use out of these devices.
->>>>>>
->>>>>> I'm relieved you're not opposed to our patch :-) Now I just need that
->>>>>> guidance I mentioned re the chip family...
->>>>>>
->>>>>
->>>>> Still looking into it, I think for now would be easiest to add the
->>>>> register info to each chip family struct. The un-seal sequence should be
->>>>> generic enough already.
->>>>
->>>> I'll wait for your full reply on that thread.
->>>>
->>>>
->>>>>>>> Cc: Rob Herring <robh@kernel.org>
->>>>>>>> Cc: devicetree@vger.kernel.org
->>>>>>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
->>>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>>>>>>> ---
->>>>>>>>  .../devicetree/bindings/power/supply/battery.txt   | 37 ++++++++++++++++++++++
->>>>>>>>  1 file changed, 37 insertions(+)
->>>>>>>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>>
->>>>>>>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>> new file mode 100644
->>>>>>>> index 0000000..d78a4aa
->>>>>>>> --- /dev/null
->>>>>>>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->>>>>>>> @@ -0,0 +1,37 @@
->>>>>>>> +Battery Characteristics
->>>>>>>> +
->>>>>>>> +Required Properties:
->>>>>>>> + - compatible: Must be "fixed-battery"
->>>>>>>> +
->>>>>>>> +Optional Properties:
->>>>>>>> + - voltage-min-design-microvolt: drained battery voltage
->>>>>>>> + - energy-full-design-microwatt-hours: battery design energy
->>>>>>>> + - charge-full-design-microamp-hours: battery design capacity
->>>>>>>> +
->>>>>>>> +Future Properties must be named for the corresponding elements in
->>>>>>>> +enum power_supply_property, defined in include/linux/power_supply.h.
->>>>>>>> +
->>>>>>>> +Batteries must be referenced by chargers and/or fuel-gauges
->>>>>>>> +using a phandle. The phandle's property should be named
->>>>>>>> +"monitored-battery".
->>>>>>>> +
->>>>>>>> +Example:
->>>>>>>> +
->>>>>>>> +     bat: battery {
->>>>>>>> +             compatible = "fixed-battery";
->>>>>>>> +             voltage-min-design-microvolt = <3200000>;
->>>>>>>> +             energy-full-design-microwatt-hours = <5290000>;
->>>>>>>> +             charge-full-design-microamp-hours = <1430000>;
->>>>>>>> +     };
->>>>>>>> +
->>>>>>>> +     charger: charger@11 {
->>>>>>>> +             ....
->>>>>>>> +             monitored-battery = <&bat>;
->>>>>>>> +             ...
->>>>>>>> +     };
->>>>>>>> +
->>>>>>>> +     fuel_gauge: fuel-gauge@22 {
->>>>>>>> +             ....
->>>>>>>> +             monitored-battery = <&bat>;
->>>>>>>> +             ...
->>>>>>>> +     };
->>>>>>>>
->>>>>> --
->>>>>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
->>>>>> the body of a message to majordomo@vger.kernel.org
->>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>>>>>
+> Thanks,
+> Quentin
+>
+> --
+> Quentin Schulz, Free Electrons
+> Embedded Linux and Kernel engineering
+> http://free-electrons.com
