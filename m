@@ -1,63 +1,49 @@
-From: John Keeping <john@metanate.com>
-Subject: [PATCH] PM / QoS: Fix memory leak on resume_latency.notifiers
-Date: Thu, 16 Feb 2017 17:21:50 +0000
-Message-ID: <20170216172150.17948-1-john@metanate.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, John Keeping <john@metanate.com>
+From: Chris Brandt <chris.brandt@renesas.com>
+Subject: [PATCH v2 0/3] power: reset: add reset for renesas r7s72100
+Date: Thu, 16 Feb 2017 12:23:17 -0500
+Message-ID: <20170216172320.10897-1-chris.brandt@renesas.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relmlor4.renesas.com ([210.160.252.174]:37211 "EHLO
+        relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S932193AbdBPRX7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Feb 2017 12:23:59 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-watchdog@vger.kernel.org, Chris Brandt <chris.brandt@renesas.com>
 
-Since commit 2d984ad132a8 ("PM / QoS: Introcuce latency tolerance device
-PM QoS type") we reassign "c" to point at qos->latency_tolerance before
-freeing c->notifiers, but the notifiers field of latency_tolerance is
-never used.
+Some Renesas SoCs do not have a reset register and the only way to do a SW
+controlled reset is to use the watchdog timer.
 
-Restore the original behaviour of freeing the notifiers pointer on
-qos->resume_latency, which is used, and fix the following kmemleak
-warning.
+Additionally, since all the WDT timeout options are so quick, a system
+reset is about the only thing it's good for.
+For example, the longest WDT overflow you can get with a RZ/A1 (R7S72100)
+with its 8-bit wide counter is 125ms.
 
-unreferenced object 0xed9dba00 (size 64):
-  comm "kworker/0:1", pid 36, jiffies 4294670128 (age 15202.983s)
-  hex dump (first 32 bytes):
-    00 00 00 00 04 ba 9d ed 04 ba 9d ed 00 00 00 00  ................
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<c06f6084>] kmemleak_alloc+0x74/0xb8
-    [<c011c964>] kmem_cache_alloc_trace+0x170/0x25c
-    [<c035f448>] dev_pm_qos_constraints_allocate+0x3c/0xe4
-    [<c035f574>] __dev_pm_qos_add_request+0x84/0x1a0
-    [<c035f6cc>] dev_pm_qos_add_request+0x3c/0x54
-    [<c03c3fc4>] usb_hub_create_port_device+0x110/0x2b8
-    [<c03b2a60>] hub_probe+0xadc/0xc80
-    [<c03bb050>] usb_probe_interface+0x1b4/0x260
-    [<c035773c>] driver_probe_device+0x198/0x40c
-    [<c0357b14>] __device_attach_driver+0x8c/0x98
-    [<c0355bbc>] bus_for_each_drv+0x8c/0x9c
-    [<c0357494>] __device_attach+0x98/0x138
-    [<c0357c64>] device_initial_probe+0x14/0x18
-    [<c03569dc>] bus_probe_device+0x30/0x88
-    [<c0354c54>] device_add+0x430/0x554
-    [<c03b92d8>] usb_set_configuration+0x660/0x6fc
+v2:
+* added to renesas-wdt.txt instead of creating a new file
+* changed "renesas,r7s72100-reset" to "renesas,r7s72100-wdt"
+* changed "renesas,wdt-reset" to "renesas,rza-wdt"
+* added "renesas,rza-wdt" as a fallback
+* added interupt property (even though it is not used)
+* added clocks property
+* changed hard coded register values to defines
+* added msleep to while(1) loop
+* removed unnecessary #include files
+* added Reviewed-by: Geert Uytterhoeven for renesas-reset.c
 
-Fixes: 2d984ad132a8 ("PM / QoS: Introcuce latency tolerance device PM QoS type")
-Signed-off-by: John Keeping <john@metanate.com>
----
- drivers/base/power/qos.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Chris Brandt (3):
+  power: reset: Add Renesas reset driver
+  watchdog: renesas-wdt: add support for rza
+  ARM: dts: r7s72100: Add reset handler
 
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 58fcc758334e..d888d9869b6a 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -281,7 +281,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 	dev->power.qos = ERR_PTR(-ENODEV);
- 	spin_unlock_irq(&dev->power.lock);
- 
--	kfree(c->notifiers);
-+	kfree(qos->resume_latency.notifiers);
- 	kfree(qos);
- 
-  out:
+ .../devicetree/bindings/watchdog/renesas-wdt.txt   |   4 +-
+ arch/arm/boot/dts/r7s72100.dtsi                    |   7 ++
+ drivers/power/reset/Kconfig                        |   9 ++
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/renesas-reset.c                | 112 +++++++++++++++++++++
+ 5 files changed, 132 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/power/reset/renesas-reset.c
+
 -- 
-2.12.0.rc0.230.gf625d4cdb9.dirty
+2.10.1
