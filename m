@@ -1,95 +1,100 @@
-From: Chris Brandt <Chris.Brandt@renesas.com>
-Subject: RE: [PATCH v2 1/3] power: reset: Add Renesas reset driver
-Date: Thu, 16 Feb 2017 18:40:05 +0000
-Message-ID: <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-2-chris.brandt@renesas.com>
- <20170216182644.GA17814@roeck-us.net>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: Regression in next with use printk_safe buffers in printk
+Date: Thu, 16 Feb 2017 11:13:03 -0800
+Message-ID: <20170216191302.GZ21809@atomide.com>
+References: <20170213185956.GM3897@atomide.com>
+ <20170214160140.GA401@tigerII.localdomain>
+ <20170215180158.GO21809@atomide.com>
+ <20170216013109.GA772@jagdpanzerIV.localdomain>
+ <20170216040335.GR21809@atomide.com>
+ <20170216042500.GC772@jagdpanzerIV.localdomain>
+ <20170216151009.GS21809@atomide.com>
+ <20170216163148.GA22354@tigerII.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor1.renesas.com ([210.160.252.171]:20257 "EHLO
-        relmlie4.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S932423AbdBPSkQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Feb 2017 13:40:16 -0500
-In-Reply-To: <20170216182644.GA17814@roeck-us.net>
-Content-Language: en-US
+Received: from muru.com ([72.249.23.125]:35576 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932595AbdBPTNI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Feb 2017 14:13:08 -0500
+Content-Disposition: inline
+In-Reply-To: <20170216163148.GA22354@tigerII.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Russell King <rmk@armlinux.org.uk>
 
-On Thursday, February 16, 2017, Guenter Roeck wrote:
-> On Thu, Feb 16, 2017 at 12:23:18PM -0500, Chris Brandt wrote:
-> > Some Renesas SoCs do not have a reset register and the only way to do
-> > a SW controlled reset is to use the watchdog timer. Additionally,
-> > since all the WDT timeout options are so quick, a system reset is
-> > about the only thing it's good for.
-> >
-> > Signed-off-by: Chris Brandt <chris.brandt@renesas.com>
-> > Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
->=20
-> Wondering - why not use the watchdog driver and the infrastructure
-> provided by the watchdog core (ie the restart callback) instead ?
+* Sergey Senozhatsky <sergey.senozhatsky@gmail.com> [170216 08:33]:
+> On (02/16/17 07:10), Tony Lindgren wrote:
+> [..]
+> > > > > [..]
+> > > > > > Below is another issue I noticed caused by commit f975237b7682 that
+> > > > > > I noticed during booting.
+> > > > > 
+> > > > > do you mean that with f975237b7682 you _always_ see that illegal RCU
+> > > > > usage warning?
+> > > > 
+> > > > Yeah on every boot on devices using cpuidle_coupled.
+> > > 
+> > > does this mean that with the printk-safe patches reverted
+> > > (so, basically, the same conditions module 4 printk patches)
+> > > you don't see illegal RCU usage reports? at the moment I can't
+> > > see any connection between f975237b7682 and RCU usage from idle CPU.
+> > 
+> > Yes reverting those four patches I listed earlier also makes it go
+> > away.
+> 
+> aha... so, the previous RCU warning was simply suppressed by lockdep_off()
+> that we used to have in printk().
+> 
+> 
+> RCU dereference check
+> 
+> #define __rcu_dereference_check(p, c, space) \
+> ({ \
+> 	/* Dependency order vs. p above. */ \
+> 	typeof(*p) *________p1 = (typeof(*p) *__force)lockless_dereference(p); \
+> 	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_check() usage"); \
+> 	rcu_dereference_sparse(p, space); \
+> 	((typeof(*p) __force __kernel *)(________p1)); \
+> })
+> 
+> 
+> where RCU_LOCKDEP_WARN() that prints "suspicious rcu_dereference_check() usage"
+> is
+> 
+> 
+> #define RCU_LOCKDEP_WARN(c, s)						\
+> 	do {								\
+> 		static bool __section(.data.unlikely) __warned;		\
+> 		if (debug_lockdep_rcu_enabled() && !__warned && (c)) {	\
+> 			__warned = true;				\
+> 			lockdep_rcu_suspicious(__FILE__, __LINE__, s);	\
+> 		}							\
+> 	} while (0)
+> 
+> 
+> 
+> where debug_lockdep_rcu_enabled()
+> 
+> int notrace debug_lockdep_rcu_enabled(void)
+> {
+> 	return rcu_scheduler_active != RCU_SCHEDULER_INACTIVE && debug_locks &&
+> 	       current->lockdep_recursion == 0;
+> }
+> 
+> depends on lockdep state. and we just used to have
+> 'current->lockdep_recursion != 0' here, because of lockdep_off()
+> in printk() around console_unlock(), which increments ->lockdep_recursion.
+> 
+> now we have lockdep enabled and the ->lockdep_recursion == 0.
+> 
+> 
+> so the RCU warning is valid and I need to Cc stable on that _rcuidle
+> patch, the tracepoint is pretty old. it's from 3.4
 
-That was Geert's first suggestion, but then he said:
+OK thanks for checking why it changed.
 
-On Friday, February 10, 2017, Geert Uytterhoeven wrote:
-> On Fri, Feb 10, 2017 at 3:59 PM, Chris Brandt <Chris.Brandt@renesas.com>
-> wrote:
-> > On Friday, February 10, 2017, Geert Uytterhoeven wrote:
-> >> >  static const char *const r7s72100_boards_compat_dt[] __initconst =
-=3D {
-> >> >         "renesas,r7s72100",
-> >> >         NULL,
-> >> > @@ -29,4 +58,5 @@ DT_MACHINE_START(R7S72100_DT, "Generic R7S72100
-> >> (Flattened Device Tree)")
-> >> >         .init_early     =3D shmobile_init_delay,
-> >> >         .init_late      =3D shmobile_init_late,
-> >> >         .dt_compat      =3D r7s72100_boards_compat_dt,
-> >> > +       .restart        =3D r7s72100_restart,
-> >> >  MACHINE_END
-> >>
-> >> Perhaps unsurprisingly, I'd recommend writing a watchdog driver instea=
-d.
-> >> drivers/watchdog/renesas_wdt.c (currently supporting R-Car Gen3 only)
-> >> may serve as an example.
-> >
-> > Why do you guys always make things more difficult for me... ;)
-> >
-> > To be clear, you are recommending I make a WDT timer driver (and not
-> > use .restart) and that will reset the system?
-> >
-> > Or, make a WDT driver just so I can steal the base address?
->=20
-> I meant a WDT timer driver. If the watchdog driver provides a .restart
-> callback, it will be used for system reset (hmm, renesas_wdt.c no longer
-> has the .restart callback, as per arm64 "system reset must be implemented
-> using PSCI"-policy).
+Regards,
 
-
-
-> > v2:
-> > * changed DT bindings from 'wdt-reset' to 'rza-wdt'
-> > * changed hard coded register values to defines
-> > * added msleep to while(1) loop
->=20
-> Sure you can sleep here ?
-
-As per Geert's review:
-
-On Wednesday, February 15, 2017, Geert Uytterhoeven wrote:
-> > +
-> > +       /* Wait for WDT overflow */
-> > +       while (1)
-> > +               ;
->=20
-> This burns CPU, and thus power, albeit for a very short time.
-> Perhaps add an msleep() to the loop body?
-
-Note that you only have 7.7us before the restart occurs, so probably
-not much sleeping will be going on.
-
-
-Chris
+Tony
