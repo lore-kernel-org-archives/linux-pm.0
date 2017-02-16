@@ -1,93 +1,57 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 1/3] power: reset: Add Renesas reset driver
-Date: Thu, 16 Feb 2017 14:20:15 -0800
-Message-ID: <20170216222014.GA29672@roeck-us.net>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-2-chris.brandt@renesas.com>
- <20170216182644.GA17814@roeck-us.net>
- <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCHv3 2/2] arch: Rename CONFIG_DEBUG_RODATA and
+ CONFIG_DEBUG_MODULE_RONX
+Date: Thu, 16 Feb 2017 23:25:29 +0100
+Message-ID: <20170216222529.GA7531@amd>
+References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
+ <1486427518-14819-3-git-send-email-labbott@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="0F1p//8PRICkK4MW"
+Return-path: <linux-parisc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Chris Brandt <Chris.Brandt@renesas.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
+In-Reply-To: <1486427518-14819-3-git-send-email-labbott@redhat.com>
+Sender: linux-parisc-owner@vger.kernel.org
+To: Laura Abbott <labbott@redhat.com>
+Cc: Kees Cook <keescook@chromium.org>, Mark Rutland <mark.rutland@arm.com>, linux-doc@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, "H. Peter Anvin" <hpa@zytor.com>, kernel-hardening@lists.openwall.com, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>, x86@kernel.org, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, linux-s390@vger.kernel.org, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org, linux-parisc@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysoc>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Feb 16, 2017 at 06:40:05PM +0000, Chris Brandt wrote:
-> On Thursday, February 16, 2017, Guenter Roeck wrote:
-> > On Thu, Feb 16, 2017 at 12:23:18PM -0500, Chris Brandt wrote:
-> > > Some Renesas SoCs do not have a reset register and the only way to do a SW
-> > > controlled reset is to use the watchdog timer. Additionally, since all the
-> > > WDT timeout options are so quick, a system reset is about the only thing
-> > > it's good for.
-> > >
-> > > Signed-off-by: Chris Brandt <chris.brandt@renesas.com> Reviewed-by: Geert
-> > > Uytterhoeven <geert+renesas@glider.be>
-> > 
-> > Wondering - why not use the watchdog driver and the infrastructure provided
-> > by the watchdog core (ie the restart callback) instead ?
-> 
-> That was Geert's first suggestion, but then he said:
-> 
-> On Friday, February 10, 2017, Geert Uytterhoeven wrote:
-> > On Fri, Feb 10, 2017 at 3:59 PM, Chris Brandt <Chris.Brandt@renesas.com>
-> > wrote:
-> > > On Friday, February 10, 2017, Geert Uytterhoeven wrote:
-> > >> >  static const char *const r7s72100_boards_compat_dt[] __initconst = {
-> > >> >  "renesas,r7s72100", NULL, @@ -29,4 +58,5 @@
-> > >> >  DT_MACHINE_START(R7S72100_DT, "Generic R7S72100
-> > >> (Flattened Device Tree)")
-> > >> >         .init_early     = shmobile_init_delay, .init_late      =
-> > >> >         shmobile_init_late, .dt_compat      =
-> > >> >         r7s72100_boards_compat_dt, +       .restart        =
-> > >> >         r7s72100_restart, MACHINE_END
-> > >>
-> > >> Perhaps unsurprisingly, I'd recommend writing a watchdog driver instead.
-> > >> drivers/watchdog/renesas_wdt.c (currently supporting R-Car Gen3 only) may
-> > >> serve as an example.
-> > >
-> > > Why do you guys always make things more difficult for me... ;)
-> > >
-> > > To be clear, you are recommending I make a WDT timer driver (and not use
-> > > .restart) and that will reset the system?
-> > >
-> > > Or, make a WDT driver just so I can steal the base address?
-> > 
-> > I meant a WDT timer driver. If the watchdog driver provides a .restart
-> > callback, it will be used for system reset (hmm, renesas_wdt.c no longer has
-> > the .restart callback, as per arm64 "system reset must be implemented using
-> > PSCI"-policy).
-> 
 
-Hmm, ok. Guess I don't have to understand that you can not use the watchdog
-driver because of the above, but implementing exactly the same functionality
-in a separate driver is ok.
+--0F1p//8PRICkK4MW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-[ I am sure I am missing something here, so just ignore what I am saying ]
+Hi!
 
-> 
-> 
-> > > v2: * changed DT bindings from 'wdt-reset' to 'rza-wdt' * changed hard
-> > > coded register values to defines * added msleep to while(1) loop
-> > 
-> > Sure you can sleep here ?
-> 
-> As per Geert's review:
-> 
-> On Wednesday, February 15, 2017, Geert Uytterhoeven wrote:
-> > > + +       /* Wait for WDT overflow */ +       while (1) +               ;
-> > 
-> > This burns CPU, and thus power, albeit for a very short time.  Perhaps add
-> > an msleep() to the loop body?
-> 
-> Note that you only have 7.7us before the restart occurs, so probably not much
-> sleeping will be going on.
-> 
-Let me rephrase my question. Is it guaranteed that you _can_ sleep in this
-function, or in other words that it is guaranteed that interrupts are enabled ?
+> =20
+> -config DEBUG_RODATA
+> +config STRICT_KERNEL_RWX
+>  	bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_RWX
+>  	depends on ARCH_HAS_STRICT_KERNEL_RWX
+>  	default !ARCH_OPTIONAL_KERNEL_RWX ||
 
-Thanks,
-Guenter
+Debug features are expected to have runtime cost, so kconfig help is
+silent about those. But there are runtime costs, right? It would be
+nice to mention them in the help text...
+
+								Pavel
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--0F1p//8PRICkK4MW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlimJtkACgkQMOfwapXb+vIejgCgsvrn5eQ2U0NHrSk8jkwMzi0k
+mSAAnR5YQy0wi16SGmy3kL+mPGH3sglk
+=h8TA
+-----END PGP SIGNATURE-----
+
+--0F1p//8PRICkK4MW--
