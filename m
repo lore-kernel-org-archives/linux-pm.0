@@ -1,70 +1,77 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: Regression in next with use printk_safe buffers in printk
-Date: Thu, 16 Feb 2017 13:25:00 +0900
-Message-ID: <20170216042500.GC772@jagdpanzerIV.localdomain>
-References: <20170213185956.GM3897@atomide.com>
- <20170214160140.GA401@tigerII.localdomain>
- <20170215180158.GO21809@atomide.com>
- <20170216013109.GA772@jagdpanzerIV.localdomain>
- <20170216040335.GR21809@atomide.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: schedutil: govern how frequently we change
+ frequency with rate_limit
+Date: Thu, 16 Feb 2017 11:57:19 +0530
+Message-ID: <20170216062719.GB21911@vireshk-i7>
+References: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org>
+ <6429586.HoWBhxDx3r@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35629 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751635AbdBPEYl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Feb 2017 23:24:41 -0500
+Received: from mail-pg0-f51.google.com ([74.125.83.51]:35420 "EHLO
+        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751768AbdBPG1W (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Feb 2017 01:27:22 -0500
+Received: by mail-pg0-f51.google.com with SMTP id t188so3572547pgt.2
+        for <linux-pm@vger.kernel.org>; Wed, 15 Feb 2017 22:27:22 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20170216040335.GR21809@atomide.com>
+In-Reply-To: <6429586.HoWBhxDx3r@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Russell King <rmk@armlinux.org.uk>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On (02/15/17 20:03), Tony Lindgren wrote:
-> * Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com> [170215 17:32]:
-> > On (02/15/17 10:01), Tony Lindgren wrote:
-> > [..]
-> > > Below is another issue I noticed caused by commit f975237b7682 that
-> > > I noticed during booting.
-> > 
-> > do you mean that with f975237b7682 you _always_ see that illegal RCU
-> > usage warning?
+On 15-02-17, 23:35, Rafael J. Wysocki wrote:
+> On Wednesday, February 15, 2017 10:45:47 PM Viresh Kumar wrote:
 > 
-> Yeah on every boot on devices using cpuidle_coupled.
+> First of all, [RFC] pretty please on things like this.
 
-does this mean that with the printk-safe patches reverted
-(so, basically, the same conditions module 4 printk patches)
-you don't see illegal RCU usage reports? at the moment I can't
-see any connection between f975237b7682 and RCU usage from idle CPU.
+Sure.
 
-[..]
-
-> > ---
-> > 
-> > diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> > index 7180088cbb23..34da86e73d00 100644
-> > --- a/kernel/printk/printk.c
-> > +++ b/kernel/printk/printk.c
-> > @@ -1563,7 +1563,7 @@ static void call_console_drivers(const char *ext_text, size_t ext_len,
-> >  {
-> >  	struct console *con;
-> >  
-> > -	trace_console(text, len);
-> > +	trace_console_rcuidle(text, len);
-> >  
-> >  	if (!console_drivers)
-> >  		return;
-> > 
-> > ---
-> > 
-> > 
-> > I need to look more at this.
+> > Normally, the time it takes to reevaluate the frequency is negligible
+> > compared to the time it takes to change the frequency.
 > 
-> That fixes it for me thanks, so feel free to add:
+> This should be "the time it takes to reevaluate the load is negligible
+> relative to the time it takes to change the frequency" I suppose?
 > 
-> Tested-by: Tony Lindgren <tony@atomide.com>
+> Specifically, the "to reevaluate the frequency" phrase is ambiguous.
 
-thanks.
+Actually we reevaluate both load and frequency, but I am fine with what you have
+suggested here.
 
-	-ss
+> > And considering
+> > that in the above scenario, as we haven't updated the frequency for over
+> > 10ms, we should have changed the frequency as soon as the load changed.
+> 
+> Why should we?
+
+I will modify above as:
+
+... we should have changed the frequency as soon as the load changed in order to
+be more responsive to the load on the CPUs.
+
+Is that the missing part you are pointing at ?
+
+> > Its difficult to create a test case (tried rt-app as well) where this
+> > patch will show a lot of improvements as the target of this patch is a
+> > real corner case. I.e. Current load is X (resulting in freq change),
+> > load after rate_limit_us is also X, but right after that load becomes Y.
+> > Undoubtedly this patch would improve the responsiveness in such cases.
+> 
+> But can that be demonstrated somehow?
+
+I hope you are talking about demonstrating performance enhancement here? I am
+not sure if we can actually have a testcase to show that. Can you or others give
+some testcases where we can hit similar situation again and again ?
+
+Though I can surely try to get some traces which show that such cases do exist
+and we are able to change the frequency before waiting for another 10ms. But
+such an outcome is quite obvious here.
+
+> Otherwise it is rather not "undoubtedly", but "theoretically".
+
+Do you want to see the traces to confirm that we actually changed the frequency
+earlier due to this change ?
+
+-- 
+viresh
