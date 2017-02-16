@@ -1,90 +1,63 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: Re: Regression in next with use printk_safe buffers in printk
-Date: Fri, 17 Feb 2017 01:31:48 +0900
-Message-ID: <20170216163148.GA22354@tigerII.localdomain>
-References: <20170213185956.GM3897@atomide.com>
- <20170214160140.GA401@tigerII.localdomain>
- <20170215180158.GO21809@atomide.com>
- <20170216013109.GA772@jagdpanzerIV.localdomain>
- <20170216040335.GR21809@atomide.com>
- <20170216042500.GC772@jagdpanzerIV.localdomain>
- <20170216151009.GS21809@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: John Keeping <john@metanate.com>
+Subject: [PATCH] PM / QoS: Fix memory leak on resume_latency.notifiers
+Date: Thu, 16 Feb 2017 17:21:50 +0000
+Message-ID: <20170216172150.17948-1-john@metanate.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170216151009.GS21809@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Russell King <rmk@armlinux.org.uk>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, John Keeping <john@metanate.com>
 List-Id: linux-pm@vger.kernel.org
 
-On (02/16/17 07:10), Tony Lindgren wrote:
-[..]
-> > > > [..]
-> > > > > Below is another issue I noticed caused by commit f975237b7682 that
-> > > > > I noticed during booting.
-> > > > 
-> > > > do you mean that with f975237b7682 you _always_ see that illegal RCU
-> > > > usage warning?
-> > > 
-> > > Yeah on every boot on devices using cpuidle_coupled.
-> > 
-> > does this mean that with the printk-safe patches reverted
-> > (so, basically, the same conditions module 4 printk patches)
-> > you don't see illegal RCU usage reports? at the moment I can't
-> > see any connection between f975237b7682 and RCU usage from idle CPU.
-> 
-> Yes reverting those four patches I listed earlier also makes it go
-> away.
+Since commit 2d984ad132a8 ("PM / QoS: Introcuce latency tolerance device
+PM QoS type") we reassign "c" to point at qos->latency_tolerance before
+freeing c->notifiers, but the notifiers field of latency_tolerance is
+never used.
 
-aha... so, the previous RCU warning was simply suppressed by lockdep_off()
-that we used to have in printk().
+Restore the original behaviour of freeing the notifiers pointer on
+qos->resume_latency, which is used, and fix the following kmemleak
+warning.
 
+unreferenced object 0xed9dba00 (size 64):
+  comm "kworker/0:1", pid 36, jiffies 4294670128 (age 15202.983s)
+  hex dump (first 32 bytes):
+    00 00 00 00 04 ba 9d ed 04 ba 9d ed 00 00 00 00  ................
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<c06f6084>] kmemleak_alloc+0x74/0xb8
+    [<c011c964>] kmem_cache_alloc_trace+0x170/0x25c
+    [<c035f448>] dev_pm_qos_constraints_allocate+0x3c/0xe4
+    [<c035f574>] __dev_pm_qos_add_request+0x84/0x1a0
+    [<c035f6cc>] dev_pm_qos_add_request+0x3c/0x54
+    [<c03c3fc4>] usb_hub_create_port_device+0x110/0x2b8
+    [<c03b2a60>] hub_probe+0xadc/0xc80
+    [<c03bb050>] usb_probe_interface+0x1b4/0x260
+    [<c035773c>] driver_probe_device+0x198/0x40c
+    [<c0357b14>] __device_attach_driver+0x8c/0x98
+    [<c0355bbc>] bus_for_each_drv+0x8c/0x9c
+    [<c0357494>] __device_attach+0x98/0x138
+    [<c0357c64>] device_initial_probe+0x14/0x18
+    [<c03569dc>] bus_probe_device+0x30/0x88
+    [<c0354c54>] device_add+0x430/0x554
+    [<c03b92d8>] usb_set_configuration+0x660/0x6fc
 
-RCU dereference check
+Fixes: 2d984ad132a8 ("PM / QoS: Introcuce latency tolerance device PM QoS type")
+Signed-off-by: John Keeping <john@metanate.com>
+---
+ drivers/base/power/qos.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-#define __rcu_dereference_check(p, c, space) \
-({ \
-	/* Dependency order vs. p above. */ \
-	typeof(*p) *________p1 = (typeof(*p) *__force)lockless_dereference(p); \
-	RCU_LOCKDEP_WARN(!(c), "suspicious rcu_dereference_check() usage"); \
-	rcu_dereference_sparse(p, space); \
-	((typeof(*p) __force __kernel *)(________p1)); \
-})
-
-
-where RCU_LOCKDEP_WARN() that prints "suspicious rcu_dereference_check() usage"
-is
-
-
-#define RCU_LOCKDEP_WARN(c, s)						\
-	do {								\
-		static bool __section(.data.unlikely) __warned;		\
-		if (debug_lockdep_rcu_enabled() && !__warned && (c)) {	\
-			__warned = true;				\
-			lockdep_rcu_suspicious(__FILE__, __LINE__, s);	\
-		}							\
-	} while (0)
-
-
-
-where debug_lockdep_rcu_enabled()
-
-int notrace debug_lockdep_rcu_enabled(void)
-{
-	return rcu_scheduler_active != RCU_SCHEDULER_INACTIVE && debug_locks &&
-	       current->lockdep_recursion == 0;
-}
-
-depends on lockdep state. and we just used to have
-'current->lockdep_recursion != 0' here, because of lockdep_off()
-in printk() around console_unlock(), which increments ->lockdep_recursion.
-
-now we have lockdep enabled and the ->lockdep_recursion == 0.
-
-
-so the RCU warning is valid and I need to Cc stable on that _rcuidle
-patch, the tracepoint is pretty old. it's from 3.4
-
-	-ss
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 58fcc758334e..d888d9869b6a 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -281,7 +281,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+ 	dev->power.qos = ERR_PTR(-ENODEV);
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+-	kfree(c->notifiers);
++	kfree(qos->resume_latency.notifiers);
+ 	kfree(qos);
+ 
+  out:
+-- 
+2.12.0.rc0.230.gf625d4cdb9.dirty
