@@ -1,91 +1,41 @@
-From: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Subject: Re: [PATCH v2 1/3] power: reset: Add Renesas reset driver
-Date: Thu, 16 Feb 2017 20:45:47 -0800
-Message-ID: <55cf087f-aa70-3660-1186-af9b9b20376d@roeck-us.net>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-2-chris.brandt@renesas.com>
- <20170216182644.GA17814@roeck-us.net>
- <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <20170216222014.GA29672@roeck-us.net>
- <PS1PR06MB11622077DE4673C1879C05278A5D0@PS1PR06MB1162.apcprd06.prod.outlook.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V2 0/6] PM / Domains: Implement domain performance states
+Date: Fri, 17 Feb 2017 11:08:30 +0530
+Message-ID: <20170217053830.GI21911@vireshk-i7>
+References: <cover.1486611268.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <PS1PR06MB11622077DE4673C1879C05278A5D0-l4vAwRX7WilTTnd0MlXEO20DtJ1/0DrXvxpqHgZTriW3zl9H0oFU5g@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chris Brandt <Chris.Brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Cc: Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:34560 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750772AbdBQFif (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2017 00:38:35 -0500
+Received: by mail-pg0-f43.google.com with SMTP id z67so12553157pgb.1
+        for <linux-pm@vger.kernel.org>; Thu, 16 Feb 2017 21:38:35 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <cover.1486611268.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, khilman@baylibre.com, ulf.hansson@linaro.org
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
 
-On 02/16/2017 06:00 PM, Chris Brandt wrote:
-> On Thursday, February 16, 2017, Guenter Roeck wrote:
->> Hmm, ok. Guess I don't have to understand that you can not use the
->> watchdog driver because of the above, but implementing exactly the same
->> functionality in a separate driver is ok.
->>
->> [ I am sure I am missing something here, so just ignore what I am saying ]
->
-> Honestly, I don't have a handle on all the latest 'policies and procedures'
-> for all the various subsystems. All I know is that I want to figure out how
-> to execute my 5 lines of code to reset the system when the user types "reboot"
-> on the command line.
->
-> If this WDT had a timeout longer than 125ms, I would make a real watchdog driver
-> out of it. But at the moment, it just serves as the only way to reset the chip.
-> Historically, this was the only way to reset a SH4 device...and we just lived
-> with that fact. When Renesas moved from SH4 to ARM, a lot of the design teams
-> just kept the same philosophy (and copied the HW blocks they knew already worked)
->
+On 09-02-17, 09:11, Viresh Kumar wrote:
+> The first 5 patches update the PM domain and QoS frameworks to support
+> that and the last one presents the front end interface to it.
 
-FWIW, the watchdog subsystem should support that easily, even with 125 ms hardware
-timeout. We added that capability for that very purpose. That would only fail if
-the system is stuck with interrupts disabled for more than 125 ms, which seems
-unlikely. I think the gpio watchdog on some systems has a similar low hardware
-timeout.
+@Kevin and Ulf,
 
->
->>>>> v2: * changed DT bindings from 'wdt-reset' to 'rza-wdt' * changed
->>>>> hard coded register values to defines * added msleep to while(1)
->>>>> loop
->>>>
->>>> Sure you can sleep here ?
->>>
->>> As per Geert's review:
->>>
->>> On Wednesday, February 15, 2017, Geert Uytterhoeven wrote:
->>>>> + +       /* Wait for WDT overflow */ +       while (1)
->> +               ;
->>>>
->>>> This burns CPU, and thus power, albeit for a very short time.
->>>> Perhaps add an msleep() to the loop body?
->>>
->>> Note that you only have 7.7us before the restart occurs, so probably
->>> not much sleeping will be going on.
->>>
->> Let me rephrase my question. Is it guaranteed that you _can_ sleep in this
->> function, or in other words that it is guaranteed that interrupts are
->> enabled ?
->
-> Hmm, I'm not sure if will actually 'sleep' or not. Regardless, interrupts or not,
-> in 7.7us, the internal reset circuit is going to get triggered and the whole system
-> is going to reboot not matter what is going on.
->
+Is there something wrong with this series? Its been 7 weeks since this
+series is getting posted and I haven't received a single review from
+you guys. We will get into the merge window very soon and then it
+wouldn't be good for me to ask for reviews as everyone would be busy.
 
-That isn't the point, really. You might get a WARN blob if msleep() is called
-with interrupts disabled, but of course you won't really see that because it can
-not be displayed in 7.7 us.
+This stuff and the rest of the development around it is getting
+delayed unnecessarily.
 
-> I know Geert's suggestion was in reference to saving power...but in reality it's
-> probably negligible when we are talking about 7.7us. The reboot is going to
-> automatically shut off all the peripherals clocks as well.
->
+Please see if you guys can take some time out to get this reviewed.
 
-Maybe udelay(10); would have been more acceptable (and appropriate).
+Thanks.
 
-Guenter
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+viresh
