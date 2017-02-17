@@ -1,126 +1,72 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v2 1/3] power: reset: Add Renesas reset driver
-Date: Fri, 17 Feb 2017 09:09:52 +0100
-Message-ID: <CAMuHMdUChhntL0Mw2CY7au87WHj11nBi+0Q2mWSi+RcYpHXgAQ@mail.gmail.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-2-chris.brandt@renesas.com> <20170216182644.GA17814@roeck-us.net>
- <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <20170216222014.GA29672@roeck-us.net> <PS1PR06MB11622077DE4673C1879C05278A5D0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <55cf087f-aa70-3660-1186-af9b9b20376d@roeck-us.net>
+From: Helge Deller <deller@gmx.de>
+Subject: Re: [PATCHv3 2/2] arch: Rename CONFIG_DEBUG_RODATA and
+ CONFIG_DEBUG_MODULE_RONX
+Date: Fri, 17 Feb 2017 09:22:44 +0100
+Message-ID: <fe5a4a8c-6f5d-126d-abd9-025e9ff97351@gmx.de>
+References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
+ <1486427518-14819-3-git-send-email-labbott@redhat.com>
+ <20170216222529.GA7531@amd>
+ <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <55cf087f-aa70-3660-1186-af9b9b20376d-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Cc: Chris Brandt <Chris.Brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <kernel-hardening-return-6738-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
+To: Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>
+Cc: Laura Abbott <labbott@redhat.com>, Mark Rutland <mark.rutland@arm.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, "H. Peter Anvin" <hpa@zytor.com>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-parisc <linux-parisc@vger.kernel.org>Linux PM list <l>
 List-Id: linux-pm@vger.kernel.org
 
-Hi G=C3=BCnter,
-
-On Fri, Feb 17, 2017 at 5:45 AM, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org> wrote:
-> On 02/16/2017 06:00 PM, Chris Brandt wrote:
->> On Thursday, February 16, 2017, Guenter Roeck wrote:
->> If this WDT had a timeout longer than 125ms, I would make a real watchdo=
-g
->> driver
->> out of it. But at the moment, it just serves as the only way to reset th=
-e
->> chip.
->> Historically, this was the only way to reset a SH4 device...and we just
->> lived
->> with that fact. When Renesas moved from SH4 to ARM, a lot of the design
->> teams
->> just kept the same philosophy (and copied the HW blocks they knew alread=
-y
->> worked)
->
-> FWIW, the watchdog subsystem should support that easily, even with 125 ms
-> hardware
-> timeout. We added that capability for that very purpose. That would only
-> fail if
-> the system is stuck with interrupts disabled for more than 125 ms, which
-> seems
-> unlikely. I think the gpio watchdog on some systems has a similar low
-> hardware
-> timeout.
-
-I also thought 125ms was a bit short, but I'm happy to be proven wrong!
-Let's make a real watchdog driver instead ;-)
-
->>>>>> v2: * changed DT bindings from 'wdt-reset' to 'rza-wdt' * changed
->>>>>> hard coded register values to defines * added msleep to while(1)
->>>>>> loop
->>>>>
->>>>> Sure you can sleep here ?
->>>>
->>>> As per Geert's review:
->>>>
->>>> On Wednesday, February 15, 2017, Geert Uytterhoeven wrote:
->>>>>>
->>>>>> + +       /* Wait for WDT overflow */ +       while (1)
+On 17.02.2017 02:08, Kees Cook wrote:
+> On Thu, Feb 16, 2017 at 2:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> Hi!
+>>
 >>>
->>> +               ;
->>>>>
->>>>> This burns CPU, and thus power, albeit for a very short time.
->>>>> Perhaps add an msleep() to the loop body?
->>>>
->>>> Note that you only have 7.7us before the restart occurs, so probably
->>>> not much sleeping will be going on.
->>>>
->>> Let me rephrase my question. Is it guaranteed that you _can_ sleep in
->>> this
->>> function, or in other words that it is guaranteed that interrupts are
->>> enabled ?
+>>> -config DEBUG_RODATA
+>>> +config STRICT_KERNEL_RWX
+>>>       bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_RWX
+>>>       depends on ARCH_HAS_STRICT_KERNEL_RWX
+>>>       default !ARCH_OPTIONAL_KERNEL_RWX ||
 >>
->> Hmm, I'm not sure if will actually 'sleep' or not. Regardless, interrupt=
-s
->> or not,
->> in 7.7us, the internal reset circuit is going to get triggered and the
->> whole system
->> is going to reboot not matter what is going on.
->>
->
-> That isn't the point, really. You might get a WARN blob if msleep() is
-> called
-> with interrupts disabled, but of course you won't really see that because=
- it
-> can
-> not be displayed in 7.7 us.
+>> Debug features are expected to have runtime cost, so kconfig help is
+>> silent about those. But there are runtime costs, right? It would be
+>> nice to mention them in the help text...
+> 
+> It depends on the architecture. The prior help text for arm said:
+> 
+>          The tradeoff is that each region is padded to section-size (1MiB)
+>          boundaries (because their permissions are different and splitting
+>          the 1M pages into 4K ones causes TLB performance problems), which
+>          can waste memory.
+> 
+> parisc (somewhat inaccurately) said:
+> 
+>          This option may have a slight performance impact because a
+>          portion of the kernel code won't be covered by a TLB anymore.
 
-If it's not 100% guaranteed that we cannot sleep, we should not use msleep(=
-),
-and stick to busy waiting.
-On ARM, we could also use wfi().
+The logic on parisc is actually:
+If huge page support is enabled, we map 1MB pages (and behave like arm wrt alignments).
+If huge page support is disabled we stay at 4k/PAGE_SIZE pages (without 1M alignment).
+ 
+> IIUC, arm64 does what parisc is hinting at: mappings at the end are
+> broken down to PAGE_SIZE. 
 
->> I know Geert's suggestion was in reference to saving power...but in
->> reality it's
->> probably negligible when we are talking about 7.7us. The reboot is going
->> to
->> automatically shut off all the peripherals clocks as well.
->
-> Maybe udelay(10); would have been more acceptable (and appropriate).
+On parisc we never implemented that.
 
-Inside the while (1) loop? That's the same as a plain "while (1) ;" ;-)
-Or just udelay(10) and return, with the latter never happening if everythin=
-g
-goes well? Then the next restart handler will be tried, if available.
+> On x86, IIUC, there's actually no change to
+> TLB performance due to how the mappings are already set up.
+> 
+> I'm not sure the best way to express this in the new help text. Do you
+> have some suggestions on wording? Personally, I don't really think
+> it's worth mentioning this in Kconfig help,
 
-Gr{oetje,eeting}s,
+I agree on this.
 
-                        Geert
+> which, in theory, is
+> supposed to limit how technical it gets. And I think the performance
+> impact is almost entirely negligible compared to the risks addressed.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Helge
