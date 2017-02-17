@@ -1,19 +1,19 @@
 From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v2 2/3] watchdog: renesas-wdt: add support for rza
-Date: Fri, 17 Feb 2017 11:27:56 +0100
-Message-ID: <CAMuHMdWH69WZrZP3c5S_QN+bn9GvC+LPWLmy0zs908d3w+1KHA@mail.gmail.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com> <20170216172320.10897-3-chris.brandt@renesas.com>
+Subject: Re: [PATCH v2 3/3] ARM: dts: r7s72100: Add reset handler
+Date: Fri, 17 Feb 2017 11:29:25 +0100
+Message-ID: <CAMuHMdVMBo9fNMTqz_XdU27FF5TX98r-OE5pJ5atJ1s4XLxcTw@mail.gmail.com>
+References: <20170216172320.10897-1-chris.brandt@renesas.com> <20170216172320.10897-4-chris.brandt@renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170216172320.10897-3-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+In-Reply-To: <20170216172320.10897-4-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 Cc: Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Watchdog Mailing List <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Feb 16, 2017 at 6:23 PM, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org> wrote:
-> Describe the WDT hardware in the RZ/A series.
+> For the RZ/A1, the only way to do a reset is to overflow the WDT.
 >
 > Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 
