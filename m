@@ -1,62 +1,82 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCHv3 2/2] arch: Rename CONFIG_DEBUG_RODATA and CONFIG_DEBUG_MODULE_RONX
-Date: Thu, 16 Feb 2017 17:08:20 -0800
-Message-ID: <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
-References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
- <1486427518-14819-3-git-send-email-labbott@redhat.com> <20170216222529.GA7531@amd>
+From: Chris Brandt <Chris.Brandt@renesas.com>
+Subject: RE: [PATCH v2 1/3] power: reset: Add Renesas reset driver
+Date: Fri, 17 Feb 2017 02:00:48 +0000
+Message-ID: <PS1PR06MB11622077DE4673C1879C05278A5D0@PS1PR06MB1162.apcprd06.prod.outlook.com>
+References: <20170216172320.10897-1-chris.brandt@renesas.com>
+ <20170216172320.10897-2-chris.brandt@renesas.com>
+ <20170216182644.GA17814@roeck-us.net>
+ <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
+ <20170216222014.GA29672@roeck-us.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f47.google.com ([209.85.214.47]:38753 "EHLO
-        mail-it0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754071AbdBQBIV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Feb 2017 20:08:21 -0500
-Received: by mail-it0-f47.google.com with SMTP id g67so1523959itb.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Feb 2017 17:08:21 -0800 (PST)
-In-Reply-To: <20170216222529.GA7531@amd>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <20170216222014.GA29672@roeck-us.net>
+Content-Language: en-US
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Laura Abbott <labbott@redhat.com>, Mark Rutland <mark.rutland@arm.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, "H. Peter Anvin" <hpa@zytor.com>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linut>
 
-On Thu, Feb 16, 2017 at 2:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->>
->> -config DEBUG_RODATA
->> +config STRICT_KERNEL_RWX
->>       bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_RWX
->>       depends on ARCH_HAS_STRICT_KERNEL_RWX
->>       default !ARCH_OPTIONAL_KERNEL_RWX ||
->
-> Debug features are expected to have runtime cost, so kconfig help is
-> silent about those. But there are runtime costs, right? It would be
-> nice to mention them in the help text...
+On Thursday, February 16, 2017, Guenter Roeck wrote:
+> Hmm, ok. Guess I don't have to understand that you can not use the
+> watchdog driver because of the above, but implementing exactly the same
+> functionality in a separate driver is ok.
+>=20
+> [ I am sure I am missing something here, so just ignore what I am saying =
+]
 
-It depends on the architecture. The prior help text for arm said:
+Honestly, I don't have a handle on all the latest 'policies and procedures'
+for all the various subsystems. All I know is that I want to figure out how
+to execute my 5 lines of code to reset the system when the user types "rebo=
+ot"
+on the command line.
 
-         The tradeoff is that each region is padded to section-size (1MiB)
-         boundaries (because their permissions are different and splitting
-         the 1M pages into 4K ones causes TLB performance problems), which
-         can waste memory.
+If this WDT had a timeout longer than 125ms, I would make a real watchdog d=
+river
+out of it. But at the moment, it just serves as the only way to reset the c=
+hip.
+Historically, this was the only way to reset a SH4 device...and we just liv=
+ed
+with that fact. When Renesas moved from SH4 to ARM, a lot of the design tea=
+ms
+just kept the same philosophy (and copied the HW blocks they knew already w=
+orked)
 
-parisc (somewhat inaccurately) said:
 
-         This option may have a slight performance impact because a
-         portion of the kernel code won't be covered by a TLB anymore.
+> > > > v2: * changed DT bindings from 'wdt-reset' to 'rza-wdt' * changed
+> > > > hard coded register values to defines * added msleep to while(1)
+> > > > loop
+> > >
+> > > Sure you can sleep here ?
+> >
+> > As per Geert's review:
+> >
+> > On Wednesday, February 15, 2017, Geert Uytterhoeven wrote:
+> > > > + +       /* Wait for WDT overflow */ +       while (1)
+> +               ;
+> > >
+> > > This burns CPU, and thus power, albeit for a very short time.
+> > > Perhaps add an msleep() to the loop body?
+> >
+> > Note that you only have 7.7us before the restart occurs, so probably
+> > not much sleeping will be going on.
+> >
+> Let me rephrase my question. Is it guaranteed that you _can_ sleep in thi=
+s
+> function, or in other words that it is guaranteed that interrupts are
+> enabled ?
 
-IIUC, arm64 does what parisc is hinting at: mappings at the end are
-broken down to PAGE_SIZE. On x86, IIUC, there's actually no change to
-TLB performance due to how the mappings are already set up.
+Hmm, I'm not sure if will actually 'sleep' or not. Regardless, interrupts o=
+r not,
+in 7.7us, the internal reset circuit is going to get triggered and the whol=
+e system
+is going to reboot not matter what is going on.
 
-I'm not sure the best way to express this in the new help text. Do you
-have some suggestions on wording? Personally, I don't really think
-it's worth mentioning this in Kconfig help, which, in theory, is
-supposed to limit how technical it gets. And I think the performance
-impact is almost entirely negligible compared to the risks addressed.
+I know Geert's suggestion was in reference to saving power...but in reality=
+ it's
+probably negligible when we are talking about 7.7us. The reboot is going to
+automatically shut off all the peripherals clocks as well.
 
--Kees
 
--- 
-Kees Cook
-Pixel Security
+Chris
