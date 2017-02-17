@@ -1,70 +1,34 @@
-From: Chris Brandt <Chris.Brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH v2 1/3] power: reset: Add Renesas reset driver
-Date: Fri, 17 Feb 2017 13:49:34 +0000
-Message-ID: <SG2PR06MB11659AB2F7D659FF1AB8FEDB8A5D0@SG2PR06MB1165.apcprd06.prod.outlook.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-2-chris.brandt@renesas.com>
- <20170216182644.GA17814@roeck-us.net>
- <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <20170216222014.GA29672@roeck-us.net>
- <PS1PR06MB11622077DE4673C1879C05278A5D0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <55cf087f-aa70-3660-1186-af9b9b20376d@roeck-us.net>
- <CAMuHMdUChhntL0Mw2CY7au87WHj11nBi+0Q2mWSi+RcYpHXgAQ@mail.gmail.com>
- <fb92af5b-6ed8-ef52-d1d1-4615b5026738@roeck-us.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <fb92af5b-6ed8-ef52-d1d1-4615b5026738-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
-Content-Language: en-US
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH trivial 4/4] PM / Documentation: Spelling s/wrtie/write/
+Date: Fri, 17 Feb 2017 16:36:39 +0100
+Message-ID: <1487345799-1638-4-git-send-email-geert+renesas@glider.be>
+References: <1487345799-1638-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1487345799-1638-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Kosina <trivial@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgR8O8bnRlciBhbmQgR2VlcnQsDQoNCkNhdGNoaW5nIHVwIG9uIHRoZSBzdWJqZWN0IChiZWNh
-dXNlIEkgd2FzIHNsZWVwaW5nIGhlcmUgaW4gdGhlIFVTLi4uKQ0KDQoNCk9uIEZyaWRheSwgRmVi
-cnVhcnkgMTcsIDIwMTcsIEdlZXJ0IFV5dHRlcmhvZXZlbiB3cm90ZToNCj4gPiBGV0lXLCB0aGUg
-d2F0Y2hkb2cgc3Vic3lzdGVtIHNob3VsZCBzdXBwb3J0IHRoYXQgZWFzaWx5LCBldmVuIHdpdGgg
-MTI1DQo+ID4gbXMgaGFyZHdhcmUgdGltZW91dC4gV2UgYWRkZWQgdGhhdCBjYXBhYmlsaXR5IGZv
-ciB0aGF0IHZlcnkgcHVycG9zZS4NCj4gPiBUaGF0IHdvdWxkIG9ubHkgZmFpbCBpZiB0aGUgc3lz
-dGVtIGlzIHN0dWNrIHdpdGggaW50ZXJydXB0cyBkaXNhYmxlZA0KPiA+IGZvciBtb3JlIHRoYW4g
-MTI1IG1zLCB3aGljaCBzZWVtcyB1bmxpa2VseS4gSSB0aGluayB0aGUgZ3BpbyB3YXRjaGRvZw0K
-PiA+IG9uIHNvbWUgc3lzdGVtcyBoYXMgYSBzaW1pbGFyIGxvdyBoYXJkd2FyZSB0aW1lb3V0Lg0K
-PiANCj4gSSBhbHNvIHRob3VnaHQgMTI1bXMgd2FzIGEgYml0IHNob3J0LCBidXQgSSdtIGhhcHB5
-IHRvIGJlIHByb3ZlbiB3cm9uZyENCj4gTGV0J3MgbWFrZSBhIHJlYWwgd2F0Y2hkb2cgZHJpdmVy
-IGluc3RlYWQgOy0pDQoNCk9LLCBJJ2xsIHNlZSBhYm91dCBzd2l0Y2hpbmcgb3ZlciB0byBhIHJl
-YWwgd2F0Y2hkb2cgZHJpdmVyLiBBcyBsb25nIGFzIEkNCmNhbiBnZXQgbXkgcmVzZXQgaGFuZGxl
-ciwgSSdsbCBiZSBoYXBweS4NCg0KQmVzaWRlcywgaWYgSSBnZXQgdGhlIDgtYml0IGNvdW50ZXIg
-cmVnaXN0ZXIgY2hhbmdlZCB0byAxNi1iaXQgKGEgdXNlZnVsDQpXRFQpLCB0aGVuIEkgYWxyZWFk
-eSBoYXZlIGEgV0RUIG1hZGUuDQoNClRoZSBnb29kIHRoaW5nIGlzIHRoYXQgdGhlIERUIGJpbmRp
-bmcgd2lsbCBzdGF5IGV4YWN0bHkgdGhlIHNhbWUsIEkganVzdA0KbmVlZCBhIG5ldyBkcml2ZXIu
-DQoNCkZXSVcsIGlmIEkgd2FzIG1ha2luZyBhIHJlYWwgcHJvZHVjdCBJIHdvdWxkIGFsd2F5cyBo
-YXZlIGEgV0RUIHJ1bm5pbmcgKGJ1dA0Kd2l0aCBhIDEtMyBzZWNvbmQgdGltZW91dCBqdXN0IHRv
-IG1ha2Ugc3VyZSBJIHdhcyBjb21wbGV0ZWx5IGRlYWQpLg0KDQojIHNpZGUgbm90ZSwgSSB0ZWxs
-IHBlb3BsZSB0byBzZXQgdXAgYSBETUEgd2l0aCBhIHRpbWVyIHRyaWdnZXIgYW5kDQphdXRvbWF0
-aWNhbGx5IGZlZWQgdGhlIFdEVCB0aGF0IHdheSwgdGhlbiB0aGV5IGNhbiBzZXQgdGhlIERNQSBj
-b3VudCB0bw0Kd2hhdGV2ZXIgZmFpbHNhZmUgdGltZW91dCB0aGV5IHdhbnQuIE5vdCBzdXJlIGlm
-IEkgY291bGQgc3VibWl0IHRoYXQga2luZA0Kb2YgaGFja2VyeSBpbiBhbiB1cHN0cmVhbSBkcml2
-ZXIuDQoNCg0KPiA+Pj4gSSBrbm93IEdlZXJ0J3Mgc3VnZ2VzdGlvbiB3YXMgaW4gcmVmZXJlbmNl
-IHRvIHNhdmluZyBwb3dlci4uLmJ1dCBpbg0KPiA+Pj4gcmVhbGl0eSBpdCdzIHByb2JhYmx5IG5l
-Z2xpZ2libGUgd2hlbiB3ZSBhcmUgdGFsa2luZyBhYm91dCA3Ljd1cy4NCj4gPj4+IFRoZSByZWJv
-b3QgaXMgZ29pbmcgdG8gYXV0b21hdGljYWxseSBzaHV0IG9mZiBhbGwgdGhlIHBlcmlwaGVyYWxz
-DQo+ID4+PiBjbG9ja3MgYXMgd2VsbC4NCj4gPj4NCj4gPj4gTWF5YmUgdWRlbGF5KDEwKTsgd291
-bGQgaGF2ZSBiZWVuIG1vcmUgYWNjZXB0YWJsZSAoYW5kIGFwcHJvcHJpYXRlKS4NCj4gPg0KPiA+
-IEluc2lkZSB0aGUgd2hpbGUgKDEpIGxvb3A/IFRoYXQncyB0aGUgc2FtZSBhcyBhIHBsYWluICJ3
-aGlsZSAoMSkgOyINCj4gPiA7LSkgT3IganVzdCB1ZGVsYXkoMTApIGFuZCByZXR1cm4sIHdpdGgg
-dGhlIGxhdHRlciBuZXZlciBoYXBwZW5pbmcgaWYNCj4gPiBldmVyeXRoaW5nIGdvZXMgd2VsbD8g
-VGhlbiB0aGUgbmV4dCByZXN0YXJ0IGhhbmRsZXIgd2lsbCBiZSB0cmllZCwgaWYNCj4gYXZhaWxh
-YmxlLg0KPiA+DQo+IA0KPiBUaGF0IGlzIHdoYXQgSSBtZWFudC4gT3IgdXNlIHVkZWxheSgyMCkg
-dG8gYmUgb24gdGhlIHNhZmUgc2lkZS4NCg0KT0suIFNvdW5kcyBsaWtlIHdlIGFncmVlIG9uOg0K
-DQoJLyogU3RhcnQgdGltZXIgKi8NCgl3cml0ZXcoV1RDU1JfTUFHSUMgfCBXVFNDUl9XVCB8IFdU
-U0NSX1RNRSwgYmFzZSArIFdUQ1NSKTsNCg0KCS8qIFdhaXQgZm9yIFdEVCBvdmVyZmxvdyAocmVz
-ZXQpICovDQoJVWRlbGF5KDIwKTsNCg0KCXJldHVybiBOT1RJRllfRE9ORTsNCn0NCg0KDQpGWUks
-IEknbGwgYmUgYXQgRUxDIG5leHQgd2Vlaywgc28gSSBtaWdodCBub3QgZ2V0IHRvIHRoaXMgdW50
-aWwgYWZ0ZXIgdGhlbi4NCg0KVGhhbmtzIGZvciB0aGUgZGlzY3Vzc2lvbi4NCg0KQ2hlZXJzDQoN
-CkNocmlzDQo=
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+---
+ Documentation/power/states.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/power/states.txt b/Documentation/power/states.txt
+index 008ecb588317bc1d..bc4548245a243134 100644
+--- a/Documentation/power/states.txt
++++ b/Documentation/power/states.txt
+@@ -25,7 +25,7 @@ to be used subsequently to change to the one represented by that string.
+ Consequently, there are two ways to cause the system to go into the
+ Suspend-To-Idle sleep state.  The first one is to write "freeze" directly to
+ /sys/power/state.  The second one is to write "s2idle" to /sys/power/mem_sleep
+-and then to wrtie "mem" to /sys/power/state.  Similarly, there are two ways
++and then to write "mem" to /sys/power/state.  Similarly, there are two ways
+ to cause the system to go into the Power-On Suspend sleep state (the strings to
+ write to the control files in that case are "standby" or "shallow" and "mem",
+ respectively) if that state is supported by the platform.  In turn, there is
+-- 
+1.9.1
