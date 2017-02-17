@@ -1,35 +1,114 @@
-From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Subject: Re: [PATCH v2 3/3] ARM: dts: r7s72100: Add reset handler
-Date: Fri, 17 Feb 2017 11:29:25 +0100
-Message-ID: <CAMuHMdVMBo9fNMTqz_XdU27FF5TX98r-OE5pJ5atJ1s4XLxcTw@mail.gmail.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com> <20170216172320.10897-4-chris.brandt@renesas.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170216172320.10897-4-chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Cc: Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Watchdog Mailing List <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: [PATCH 01/10] x86: assembly, ENTRY for fn, GLOBAL for data
+Date: Fri, 17 Feb 2017 11:47:48 +0100
+Message-ID: <20170217104757.28588-1-jslaby@suse.cz>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:44816 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755428AbdBQKsC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 17 Feb 2017 05:48:02 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mingo@redhat.com
+Cc: tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, jpoimboe@redhat.com, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
 
-On Thu, Feb 16, 2017 at 6:23 PM, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org> wrote:
-> For the RZ/A1, the only way to do a reset is to overflow the WDT.
->
-> Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+This is a start of series to unify use of ENTRY, ENDPROC, GLOBAL, END,
+and other macros across x86. When we have all this sorted out, this will
+help to inject DWARF unwinding info by objtool later.
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+So, let us use the macros this way:
+* ENTRY -- start of a global function
+* ENDPROC -- end of a local/global function
+* GLOBAL -- start of a globally visible data symbol
+* END -- end of local/global data symbol
 
-Gr{oetje,eeting}s,
+The goal is forcing ENTRY to emit .cfi_startproc and ENDPROC to emit
+.cfi_endproc.
 
-                        Geert
+This particular patch makes proper use of GLOBAL on data and ENTRY on a
+function which was not the case on 4 locations.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: <x86@kernel.org>
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: <xen-devel@lists.xenproject.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: <linux-pm@vger.kernel.org>
+---
+ arch/x86/kernel/acpi/wakeup_64.S | 14 +++++++-------
+ arch/x86/kernel/head_64.S        |  2 +-
+ arch/x86/kernel/mcount_64.S      |  2 +-
+ arch/x86/xen/xen-head.S          |  2 +-
+ 4 files changed, 10 insertions(+), 10 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/x86/kernel/acpi/wakeup_64.S b/arch/x86/kernel/acpi/wakeup_64.S
+index 50b8ed0317a3..bfd0ddefa5e8 100644
+--- a/arch/x86/kernel/acpi/wakeup_64.S
++++ b/arch/x86/kernel/acpi/wakeup_64.S
+@@ -125,12 +125,12 @@ ENTRY(do_suspend_lowlevel)
+ ENDPROC(do_suspend_lowlevel)
+ 
+ .data
+-ENTRY(saved_rbp)	.quad	0
+-ENTRY(saved_rsi)	.quad	0
+-ENTRY(saved_rdi)	.quad	0
+-ENTRY(saved_rbx)	.quad	0
++GLOBAL(saved_rbp)	.quad	0
++GLOBAL(saved_rsi)	.quad	0
++GLOBAL(saved_rdi)	.quad	0
++GLOBAL(saved_rbx)	.quad	0
+ 
+-ENTRY(saved_rip)	.quad	0
+-ENTRY(saved_rsp)	.quad	0
++GLOBAL(saved_rip)	.quad	0
++GLOBAL(saved_rsp)	.quad	0
+ 
+-ENTRY(saved_magic)	.quad	0
++GLOBAL(saved_magic)	.quad	0
+diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
+index b467b14b03eb..7c14ab3a0f3b 100644
+--- a/arch/x86/kernel/head_64.S
++++ b/arch/x86/kernel/head_64.S
+@@ -489,7 +489,7 @@ early_gdt_descr:
+ early_gdt_descr_base:
+ 	.quad	INIT_PER_CPU_VAR(gdt_page)
+ 
+-ENTRY(phys_base)
++GLOBAL(phys_base)
+ 	/* This must match the first entry in level2_kernel_pgt */
+ 	.quad   0x0000000000000000
+ EXPORT_SYMBOL(phys_base)
+diff --git a/arch/x86/kernel/mcount_64.S b/arch/x86/kernel/mcount_64.S
+index b50b283f90e4..3e35675e201e 100644
+--- a/arch/x86/kernel/mcount_64.S
++++ b/arch/x86/kernel/mcount_64.S
+@@ -314,7 +314,7 @@ ENTRY(ftrace_graph_caller)
+ 	retq
+ END(ftrace_graph_caller)
+ 
+-GLOBAL(return_to_handler)
++ENTRY(return_to_handler)
+ 	subq  $24, %rsp
+ 
+ 	/* Save the return values */
+diff --git a/arch/x86/xen/xen-head.S b/arch/x86/xen/xen-head.S
+index 37794e42b67d..39ea5484763a 100644
+--- a/arch/x86/xen/xen-head.S
++++ b/arch/x86/xen/xen-head.S
+@@ -37,7 +37,7 @@ ENTRY(startup_xen)
+ 
+ .pushsection .text
+ 	.balign PAGE_SIZE
+-ENTRY(hypercall_page)
++GLOBAL(hypercall_page)
+ 	.skip PAGE_SIZE
+ 
+ #define HYPERCALL(n) \
+-- 
+2.11.1
