@@ -1,138 +1,59 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v3 4/4] KVM: VMX: Simplify segment_base
-Date: Fri, 17 Feb 2017 14:01:29 -0800
-Message-ID: <CAJcbSZEkqFPVNzygmAjkyxNssZxnJTYBYuMbvjms+3ZGcCY_sQ@mail.gmail.com>
-References: <20170214194259.75960-1-thgarnie@google.com> <20170214194259.75960-4-thgarnie@google.com>
- <CALMp9eT_G_Mhsk1k7Xc8L+bnpFwTUoC=ae4LhB1ppqKynKEQ9g@mail.gmail.com>
- <CAJcbSZESdSQncHeKNVzHO90W7UJUKxKGy-h+rM82OhBc-Nh=cg@mail.gmail.com> <CALMp9eQAZchjpgmqP1=qj-FXka8+Xbwqiu3xDz9KoLQ60nh-UQ@mail.gmail.com>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH V2 0/6] PM / Domains: Implement domain performance states
+Date: Fri, 17 Feb 2017 15:22:19 -0800
+Message-ID: <m2mvdk4d3o.fsf@baylibre.com>
+References: <cover.1486611268.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <kernel-hardening-return-6749-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CALMp9eQAZchjpgmqP1=qj-FXka8+Xbwqiu3xDz9KoLQ60nh-UQ@mail.gmail.com>
-To: Jim Mattson <jmattson@google.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:33414 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964874AbdBQXWb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2017 18:22:31 -0500
+Received: by mail-pf0-f176.google.com with SMTP id c73so16535303pfb.0
+        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2017 15:22:22 -0800 (PST)
+In-Reply-To: <cover.1486611268.git.viresh.kumar@linaro.org> (Viresh Kumar's
+        message of "Thu, 9 Feb 2017 09:11:46 +0530")
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sboyd@codeaurora.org, nm@ti.com, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org
 
-On Fri, Feb 17, 2017 at 1:00 PM, Jim Mattson <jmattson@google.com> wrote:
-> On Fri, Feb 17, 2017 at 12:11 PM, Thomas Garnier <thgarnie@google.com> wr=
-ote:
->> On Fri, Feb 17, 2017 at 9:49 AM, Jim Mattson <jmattson@google.com> wrote=
-:
->>>
->>> Can we use the read-only GDT here? When expanding the virtual address
->>> for 64-bit system descriptors, isn't it sufficient to check (d->s =3D=
-=3D 0
->>> && d->type !=3D 0)?
->>
->> We can use the readonly GDT but I think doesn't matter one or the
->> other here. We have to check specific types for LDT or TSS, other
->> values describe other entries (cf Intel volume 3, 3.5) (for example 14
->> & 15 on 64-bits are for trap & interrupt gates).
+Viresh Kumar <viresh.kumar@linaro.org> writes:
+
+> An earlier series[1] tried to implement bindings for PM domain
+> performance states. Rob Herring suggested that we can actually merge the
+> supporting code first instead of bindings, as that will make things
+> easier to understand for all. The bindings can be decided and merged
+> later.
 >
-> According to volume 3 of the SDM, section 3.5.2:
+> The bindings [1] aren't discarded yet and this series is based on a
+> version of those only. The bindings are only used by the last patch,
+> which should not be applied and is only sent for completeness.
 >
-> The following system descriptors expand to 16 bytes:
-> =E2=80=94 Call gate descriptors (see Section 5.8.3.1, =E2=80=9CIA-32e Mod=
-e Call Gates=E2=80=9D)
-> =E2=80=94 IDT gate descriptors (see Section 6.14.1, =E2=80=9C64-Bit Mode =
-IDT=E2=80=9D)
-> =E2=80=94 LDT and TSS descriptors (see Section 7.2.3, =E2=80=9CTSS Descri=
-ptor in 64-bit mode=E2=80=9D).
+> IOW, this series doesn't have any dependencies and can be merged
+> straight away without waiting for the DT bindings.
 >
-> All legal system descriptor types (except for 0: Upper 8 bytes of an 16-b=
-yte
-> descriptor) should get the high 32 bits of the base address from the next=
- 8-byte
-> descriptor.
+> A brief summary of the problem this series is trying to solve:
 >
+> Some platforms have the capability to configure the performance state of
+> their Power Domains. The performance levels are represented by positive
+> integer values, a lower value represents lower performance state.
 
-Ok, then I will test an updated version next week.
+And what about domains where the performance levels are represented by
+someting other than positive integer values? 
 
->>
->>>
->>>
->>> On Tue, Feb 14, 2017 at 11:42 AM, Thomas Garnier <thgarnie@google.com> =
-wrote:
->>> > The KVM segment_base function is confusing. This patch replaces integ=
-ers
->>> > with appropriate flags, simplify constructs and add comments.
->>> >
->>> > Signed-off-by: Thomas Garnier <thgarnie@google.com>
->>> > ---
->>> > Based on next-20170213
->>> > ---
->>> >  arch/x86/kvm/vmx.c | 26 ++++++++++++++++++--------
->>> >  1 file changed, 18 insertions(+), 8 deletions(-)
->>> >
->>> > diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
->>> > index 99167f20bc34..edb8326108dd 100644
->>> > --- a/arch/x86/kvm/vmx.c
->>> > +++ b/arch/x86/kvm/vmx.c
->>> > @@ -2062,25 +2062,35 @@ static unsigned long segment_base(u16 selecto=
-r)
->>> >         struct desc_struct *d;
->>> >         unsigned long table_base;
->>> >         unsigned long v;
->>> > +       u32 high32;
->>> >
->>> > -       if (!(selector & ~3))
->>> > +       if (!(selector & ~SEGMENT_RPL_MASK))
->>> >                 return 0;
->>> >
->>> > -       table_base =3D get_current_gdt_rw_vaddr();
->>> > -
->>> > -       if (selector & 4) {           /* from ldt */
->>> > +       /* LDT selector */
->>> > +       if ((selector & SEGMENT_TI_MASK) =3D=3D SEGMENT_LDT) {
->>> >                 u16 ldt_selector =3D kvm_read_ldt();
->>> >
->>> > -               if (!(ldt_selector & ~3))
->>> > +               if (!(ldt_selector & ~SEGMENT_RPL_MASK))
->>> >                         return 0;
->>> >
->>> >                 table_base =3D segment_base(ldt_selector);
->>> > +       } else {
->>> > +               table_base =3D get_current_gdt_rw_vaddr();
->>> >         }
->>> > -       d =3D (struct desc_struct *)(table_base + (selector & ~7));
->>> > +
->>> > +       d =3D (struct desc_struct *)table_base + (selector >> 3);
->>> >         v =3D get_desc_base(d);
->>> >  #ifdef CONFIG_X86_64
->>> > -       if (d->s =3D=3D 0 && (d->type =3D=3D 2 || d->type =3D=3D 9 ||=
- d->type =3D=3D 11))
->>> > -               v |=3D ((unsigned long)((struct ldttss_desc64 *)d)->b=
-ase3) << 32;
->>> > +       /*
->>> > +        * Extend the virtual address if we have a system descriptor =
-entry for
->>> > +        * LDT or TSS (available or busy).
->>> > +        */
->>> > +       if (d->s =3D=3D 0 && (d->type =3D=3D DESC_LDT || d->type =3D=
-=3D DESC_TSS ||
->>> > +                         d->type =3D=3D 11/*Busy TSS */)) {
->>> > +               high32 =3D ((struct ldttss_desc64 *)d)->base3;
->>> > +               v |=3D (u64)high32 << 32;
->>> > +       }
->>> >  #endif
->>> >         return v;
->>> >  }
->>> > --
->>> > 2.11.0.483.g087da7b7c-goog
->>> >
->>
->>
->>
->>
->> --
->> Thomas
+IMO, this implementation should start with a more generic approach
+(e.g. OPPs) that would be useful on more SoCs that just qcom.  For SoCs
+like QCOM, you could use dummy/simplfied OPPs that represent the integer
+values passed to the qcom firmware.
 
+> We decided earlier that we should extend Power Domain framework to
+> support active state power management as well. The power-domains until
+> now were only concentrating on the idle state management of the device
+> and this needs to change in order to reuse the infrastructure of power
+> domains for active state management.
 
+Yes.  Thanks for working on it!
 
---=20
-Thomas
+Kevin
