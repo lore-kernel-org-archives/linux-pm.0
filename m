@@ -1,54 +1,39 @@
-From: Juergen Gross <jgross@suse.com>
-Subject: Re: [PATCH 02/10] x86: assembly, use ENDPROC for functions
-Date: Fri, 17 Feb 2017 12:08:19 +0100
-Message-ID: <5d296d92-12f4-8863-1f37-f8f75d836f6c@suse.com>
-References: <20170217104757.28588-1-jslaby@suse.cz>
- <20170217104757.28588-2-jslaby@suse.cz>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: schedutil: govern how frequently we change frequency with rate_limit
+Date: Fri, 17 Feb 2017 13:15:56 +0100
+Message-ID: <2324492.GOLxZvFDJN@aspire.rjw.lan>
+References: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org> <20170216101210.GD21911@vireshk-i7> <20170216123605.GA6515@twins.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:47574 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932505AbdBQLXw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 17 Feb 2017 06:23:52 -0500
-In-Reply-To: <20170217104757.28588-2-jslaby@suse.cz>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60654 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932941AbdBQMU4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2017 07:20:56 -0500
+In-Reply-To: <20170216123605.GA6515@twins.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jiri Slaby <jslaby@suse.cz>, mingo@redhat.com
-Cc: tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, jpoimboe@redhat.com, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, xen-devel@lists.xenproject.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 17/02/17 11:47, Jiri Slaby wrote:
-> Somewhere END was used to end a function, elsewhere, nothing was used.
-> So unify it and mark them all by ENDPROC.
+On Thursday, February 16, 2017 01:36:05 PM Peter Zijlstra wrote:
+> On Thu, Feb 16, 2017 at 03:42:10PM +0530, Viresh Kumar wrote:
+> > But when I discussed this with Vincent, he suggested that it may not be required
+> > at all as the scheduler (with the helped of "decayed") doesn't call into
+> > schedutil too often, i.e. at least 1 ms. And if the CPUs are stable enough (i.e.
+> > no interruptions to the running task), we wouldn't reevaluate before the next
+> > tick.
 > 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: <x86@kernel.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: <linux-pm@vger.kernel.org>
-> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-> Cc: Juergen Gross <jgross@suse.com>
-> Cc: <xen-devel@lists.xenproject.org>
-> ---
->  arch/x86/entry/entry_64.S            | 40 ++++++++++++++++++------------------
->  arch/x86/entry/entry_64_compat.S     |  4 ++--
->  arch/x86/kernel/mcount_64.S          | 10 +++++----
->  arch/x86/power/hibernate_asm_64.S    |  2 ++
->  arch/x86/realmode/rm/reboot.S        |  1 +
->  arch/x86/realmode/rm/trampoline_64.S |  4 ++++
->  arch/x86/realmode/rm/wakeup_asm.S    |  1 +
->  arch/x86/xen/xen-asm_64.S            |  2 ++
->  arch/x86/xen/xen-head.S              |  2 +-
->  arch/x86/xen/xen-pvh.S               |  2 +-
->  10 files changed, 40 insertions(+), 28 deletions(-)
+> There are still the attach/detach callers to cfs_rq_util_change() that
+> kick in for fork/exit and migration.
+> 
+> But yes, barring those we shouldn't end up calling it at silly rates.
 
-Xen parts:
+OK
 
-Reviewed-by: Juergen Gross <jgross@suse.com>
+Does this mean that running governor computations every time its callback
+is invoked by the scheduler would be fine?
 
-
-Juergen
+Thanks,
+Rafael
