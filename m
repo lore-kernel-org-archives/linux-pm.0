@@ -1,77 +1,99 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v6 7/8] power: bq27xxx_battery: Add power_supply_battery_info
- support
-Date: Fri, 17 Feb 2017 11:56:42 -0800
-Message-ID: <CAKvHMgQZuC02udrqcLs_GYoJoOLTVojhbra3k5T5=QYuc9j_bA@mail.gmail.com>
-References: <20170211024340.19491-1-liam@networkimprov.net>
- <20170211024340.19491-8-liam@networkimprov.net> <CAKvHMgQQ16+Xcffz8hE8oRPFhPMq7xtPDDXCP5mnJnh8ma7aDg@mail.gmail.com>
- <CAKvHMgRCJqD9PaB3n7tEFz-anb-r+4cmUayjkRjOvt4UVvSY1w@mail.gmail.com>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [PATCH v3 4/4] KVM: VMX: Simplify segment_base
+Date: Fri, 17 Feb 2017 12:11:00 -0800
+Message-ID: <CAJcbSZESdSQncHeKNVzHO90W7UJUKxKGy-h+rM82OhBc-Nh=cg@mail.gmail.com>
+References: <20170214194259.75960-1-thgarnie@google.com> <20170214194259.75960-4-thgarnie@google.com>
+ <CALMp9eT_G_Mhsk1k7Xc8L+bnpFwTUoC=ae4LhB1ppqKynKEQ9g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:35218 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934855AbdBQUDJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2017 15:03:09 -0500
-Received: by mail-it0-f65.google.com with SMTP id 203so4545380ith.2
-        for <linux-pm@vger.kernel.org>; Fri, 17 Feb 2017 12:03:09 -0800 (PST)
-In-Reply-To: <CAKvHMgRCJqD9PaB3n7tEFz-anb-r+4cmUayjkRjOvt4UVvSY1w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <kernel-hardening-return-6747-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CALMp9eT_G_Mhsk1k7Xc8L+bnpFwTUoC=ae4LhB1ppqKynKEQ9g@mail.gmail.com>
+To: Jim Mattson <jmattson@google.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, Andy Lutomirski <luto@amacapital.net>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, "Luis R . Rodriguez" <mcgrof@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F . Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-On Wed, Feb 15, 2017 at 11:45 AM, Liam Breck <liam@networkimprov.net> wrote:
-> On Sun, Feb 12, 2017 at 6:32 PM, Liam Breck <liam@networkimprov.net> wrote:
->> Hi Andrew,
->>
->> Based on Sebastian's feedback on v1-4 of this patchset, I believe it
->> will go upstream. (He hasn't written anything on linux-pm since before
->> I posted v5 a week ago.)
->>
->> Could we get your feedback on making this adaptable to the rest of the
->> BQ27 family? Specifically...
->>
->> Is the op sequence in these functions common across the chips?
->>
->> bq27xxx_battery_set_seal_state()
->> bq27xxx_battery_read_dm_block()
->> bq27xxx_battery_write_dm_block()
->>
->> Should we move these constants to bq27xxx_regs[chip][name]?
->>
->> /* writable registers */
->> #define BQ27XXX_DATA_CLASS             0x3E
->> #define BQ27XXX_DATA_BLOCK             0x3F
->> #define BQ27XXX_BLOCK_DATA             0x40
->> #define BQ27XXX_BLOCK_DATA_CHECKSUM    0x60
->> #define BQ27XXX_BLOCK_DATA_CONTROL     0x61
->>
->> /* writable register inputs */
->> #define BQ27XXX_SET_CFGUPDATE          0x13
->> #define BQ27XXX_SOFT_RESET             0x42
->> #define BQ27XXX_SUBCLASS_STATE_NVM     82
+On Fri, Feb 17, 2017 at 9:49 AM, Jim Mattson <jmattson@google.com> wrote:
 >
-> I dug into bqtool:gauge.c. I learned a couple things which I've added
-> to the patch, e.g. retrieve and compare checksum after read_dm_block.
+> Can we use the read-only GDT here? When expanding the virtual address
+> for 64-bit system descriptors, isn't it sufficient to check (d->s == 0
+> && d->type != 0)?
+
+We can use the readonly GDT but I think doesn't matter one or the
+other here. We have to check specific types for LDT or TSS, other
+values describe other entries (cf Intel volume 3, 3.5) (for example 14
+& 15 on 64-bits are for trap & interrupt gates).
+
 >
-> Re command ids and params, only subclass, field offsets, and unseal
-> key differ among chips, which I planned for. However the driver's
-> current 9 enumerated chips won't accommodate all the diff unseal keys.
-> But I shall leave that for others to solve.
 >
-> Re op sequence, bqtool apparently uses set_cfgupdate for the 441 & 621
-> chips, but not others, whereas the 425 manual implies that it's nec.
-> And bqtool uses exit_cfgupdate where 425 manual indicates soft_reset.
-> See open/close_dm_rom (441 & 621) vs. open/close_dm_flash. We need
-> some guidance on that issue.
+> On Tue, Feb 14, 2017 at 11:42 AM, Thomas Garnier <thgarnie@google.com> wrote:
+> > The KVM segment_base function is confusing. This patch replaces integers
+> > with appropriate flags, simplify constructs and add comments.
+> >
+> > Signed-off-by: Thomas Garnier <thgarnie@google.com>
+> > ---
+> > Based on next-20170213
+> > ---
+> >  arch/x86/kvm/vmx.c | 26 ++++++++++++++++++--------
+> >  1 file changed, 18 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+> > index 99167f20bc34..edb8326108dd 100644
+> > --- a/arch/x86/kvm/vmx.c
+> > +++ b/arch/x86/kvm/vmx.c
+> > @@ -2062,25 +2062,35 @@ static unsigned long segment_base(u16 selector)
+> >         struct desc_struct *d;
+> >         unsigned long table_base;
+> >         unsigned long v;
+> > +       u32 high32;
+> >
+> > -       if (!(selector & ~3))
+> > +       if (!(selector & ~SEGMENT_RPL_MASK))
+> >                 return 0;
+> >
+> > -       table_base = get_current_gdt_rw_vaddr();
+> > -
+> > -       if (selector & 4) {           /* from ldt */
+> > +       /* LDT selector */
+> > +       if ((selector & SEGMENT_TI_MASK) == SEGMENT_LDT) {
+> >                 u16 ldt_selector = kvm_read_ldt();
+> >
+> > -               if (!(ldt_selector & ~3))
+> > +               if (!(ldt_selector & ~SEGMENT_RPL_MASK))
+> >                         return 0;
+> >
+> >                 table_base = segment_base(ldt_selector);
+> > +       } else {
+> > +               table_base = get_current_gdt_rw_vaddr();
+> >         }
+> > -       d = (struct desc_struct *)(table_base + (selector & ~7));
+> > +
+> > +       d = (struct desc_struct *)table_base + (selector >> 3);
+> >         v = get_desc_base(d);
+> >  #ifdef CONFIG_X86_64
+> > -       if (d->s == 0 && (d->type == 2 || d->type == 9 || d->type == 11))
+> > -               v |= ((unsigned long)((struct ldttss_desc64 *)d)->base3) << 32;
+> > +       /*
+> > +        * Extend the virtual address if we have a system descriptor entry for
+> > +        * LDT or TSS (available or busy).
+> > +        */
+> > +       if (d->s == 0 && (d->type == DESC_LDT || d->type == DESC_TSS ||
+> > +                         d->type == 11/*Busy TSS */)) {
+> > +               high32 = ((struct ldttss_desc64 *)d)->base3;
+> > +               v |= (u64)high32 << 32;
+> > +       }
+> >  #endif
+> >         return v;
+> >  }
+> > --
+> > 2.11.0.483.g087da7b7c-goog
+> >
 
-I checked datasheets for one chip in each family defined in bqtool,
-and all chips in the 421-621 & 425 families. Only the latter 2
-families use set_cfgupdate & soft_reset. I've rev'd patch accordingly;
-will post this evening.
 
-http://git.ti.com/bms-linux/bqtool/blobs/master/gauge.c#line732
 
-Bqtool may have a bug on 425 since it doesn't set_cfgupdate in that
-case, which the manual says is required.
+
+-- 
+Thomas
