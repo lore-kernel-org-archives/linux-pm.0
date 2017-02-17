@@ -1,72 +1,153 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [PATCHv3 2/2] arch: Rename CONFIG_DEBUG_RODATA and
- CONFIG_DEBUG_MODULE_RONX
-Date: Fri, 17 Feb 2017 09:22:44 +0100
-Message-ID: <fe5a4a8c-6f5d-126d-abd9-025e9ff97351@gmx.de>
-References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
- <1486427518-14819-3-git-send-email-labbott@redhat.com>
- <20170216222529.GA7531@amd>
- <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-hardening-return-6738-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
-To: Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>
-Cc: Laura Abbott <labbott@redhat.com>, Mark Rutland <mark.rutland@arm.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, "H. Peter Anvin" <hpa@zytor.com>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-parisc <linux-parisc@vger.kernel.org>Linux PM list <l>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH][RFC v4] ACPI throttling: Disable the MSR T-state if enabled after resumed
+Date: Fri, 17 Feb 2017 16:27:30 +0800
+Message-ID: <1487320050-22894-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 17.02.2017 02:08, Kees Cook wrote:
-> On Thu, Feb 16, 2017 at 2:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
->> Hi!
->>
->>>
->>> -config DEBUG_RODATA
->>> +config STRICT_KERNEL_RWX
->>>       bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_RWX
->>>       depends on ARCH_HAS_STRICT_KERNEL_RWX
->>>       default !ARCH_OPTIONAL_KERNEL_RWX ||
->>
->> Debug features are expected to have runtime cost, so kconfig help is
->> silent about those. But there are runtime costs, right? It would be
->> nice to mention them in the help text...
-> 
-> It depends on the architecture. The prior help text for arm said:
-> 
->          The tradeoff is that each region is padded to section-size (1MiB)
->          boundaries (because their permissions are different and splitting
->          the 1M pages into 4K ones causes TLB performance problems), which
->          can waste memory.
-> 
-> parisc (somewhat inaccurately) said:
-> 
->          This option may have a slight performance impact because a
->          portion of the kernel code won't be covered by a TLB anymore.
+Previously a bug was reported that on certain Broadwell
+platform, after resumed from S3, the CPU is running at
+an anomalously low speed, due to the BIOS has enabled the
+MSR throttling across S3. The solution to this was to introduce
+a quirk framework to save/restore tstate MSR register around
+suspend/resume, in Commit 7a9c2dd08ead ("x86/pm:
+Introduce quirk framework to save/restore extra MSR
+registers around suspend/resume").
 
-The logic on parisc is actually:
-If huge page support is enabled, we map 1MB pages (and behave like arm wrt alignments).
-If huge page support is disabled we stay at 4k/PAGE_SIZE pages (without 1M alignment).
+However there are still three problems left:
+1. More and more reports show that other platforms also
+   encountered the same issue, so the quirk list might
+   be endless.
+2. Each CPUs should take the save/restore operation into
+   consideration, rather than the boot CPU alone.
+3. Normally ACPI T-state re-evaluation is done on resume,
+   however there is no _TSS on the bogus platform, thus
+   above re-evaluation code does not run on that machine.
+
+Solution:
+This patch is based on the fact that, we generally should not
+expect the system to come back from resume with throttling
+enabled, but leverage the OS components to deal with it,
+such as thermal event. So we simply clear the MSR T-state
+and print the warning if it is found to be enabled after
+resumed back. Besides, we can remove the quirk in previous patch
+later.
+
+Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=90041
+Reported-and-tested-by: Kadir <kadir@colakoglu.nl>
+Suggested-by: Len Brown <lenb@kernel.org>
+Cc: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ drivers/acpi/processor_throttling.c | 58 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
+index a12f96c..e121449 100644
+--- a/drivers/acpi/processor_throttling.c
++++ b/drivers/acpi/processor_throttling.c
+@@ -29,6 +29,7 @@
+ #include <linux/sched.h>
+ #include <linux/cpufreq.h>
+ #include <linux/acpi.h>
++#include <linux/syscore_ops.h>
+ #include <acpi/processor.h>
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+@@ -64,6 +65,7 @@ struct acpi_processor_throttling_arg {
+ static int acpi_processor_get_throttling(struct acpi_processor *pr);
+ int acpi_processor_set_throttling(struct acpi_processor *pr,
+ 						int state, bool force);
++static void throttling_msr_reevaluate(int cpu);
  
-> IIUC, arm64 does what parisc is hinting at: mappings at the end are
-> broken down to PAGE_SIZE. 
-
-On parisc we never implemented that.
-
-> On x86, IIUC, there's actually no change to
-> TLB performance due to how the mappings are already set up.
-> 
-> I'm not sure the best way to express this in the new help text. Do you
-> have some suggestions on wording? Personally, I don't really think
-> it's worth mentioning this in Kconfig help,
-
-I agree on this.
-
-> which, in theory, is
-> supposed to limit how technical it gets. And I think the performance
-> impact is almost entirely negligible compared to the risks addressed.
-
-Helge
+ static int acpi_processor_update_tsd_coord(void)
+ {
+@@ -386,6 +388,15 @@ void acpi_processor_reevaluate_tstate(struct acpi_processor *pr,
+ 		pr->flags.throttling = 0;
+ 		return;
+ 	}
++	/*
++	 * It was found after resumed from suspend to ram, some BIOSes would
++	 * adjust the MSR tstate, however on these platforms no _PSS is provided
++	 * thus we never have a chance to adjust the MSR T-state anymore.
++	 * Thus force clearing it if MSR T-state is enabled, because generally
++	 * we never expect to come back from resume with throttling enabled.
++	 * Later let other components to adjust T-state if necessary.
++	 */
++	throttling_msr_reevaluate(pr->id);
+ 	/* the following is to recheck whether the T-state is valid for
+ 	 * the online CPU
+ 	 */
+@@ -758,6 +769,24 @@ static int acpi_throttling_wrmsr(u64 value)
+ 	}
+ 	return ret;
+ }
++
++static long msr_reevaluate_fn(void *data)
++{
++	u64 msr = 0;
++
++	acpi_throttling_rdmsr(&msr);
++	if (msr) {
++		printk_once(KERN_ERR "PM: The BIOS might have modified the MSR T-state, clear it for now.\n");
++		acpi_throttling_wrmsr(0);
++	}
++	return 0;
++}
++
++static void throttling_msr_reevaluate(int cpu)
++{
++	work_on_cpu(cpu, msr_reevaluate_fn, NULL);
++}
++
+ #else
+ static int acpi_throttling_rdmsr(u64 *value)
+ {
+@@ -772,8 +801,37 @@ static int acpi_throttling_wrmsr(u64 value)
+ 		"HARDWARE addr space,NOT supported yet\n");
+ 	return -1;
+ }
++
++static long msr_reevaluate_fn(void *data)
++{
++	return 0;
++}
++
++static void throttling_msr_reevaluate(int cpu)
++{
++}
+ #endif
+ 
++void acpi_throttling_resume(void)
++{
++	msr_reevaluate_fn(NULL);
++}
++
++static struct syscore_ops acpi_throttling_syscore_ops = {
++	.resume		= acpi_throttling_resume,
++};
++
++static int acpi_throttling_init_ops(void)
++{
++	/*
++	 * Reevaluate on boot CPU. Since it is not always CPU0,
++	 * we can not invoke throttling_msr_reevaluate(0) directly.
++	 */
++	register_syscore_ops(&acpi_throttling_syscore_ops);
++	return 0;
++}
++device_initcall(acpi_throttling_init_ops);
++
+ static int acpi_read_throttling_status(struct acpi_processor *pr,
+ 					u64 *value)
+ {
+-- 
+2.7.4
