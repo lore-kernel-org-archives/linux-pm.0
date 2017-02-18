@@ -1,46 +1,64 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH trivial 4/4] PM / Documentation: Spelling s/wrtie/write/
-Date: Sat, 18 Feb 2017 02:19:57 +0100
-Message-ID: <2312756.vT8pqHgMWZ@aspire.rjw.lan>
-References: <1487345799-1638-1-git-send-email-geert+renesas@glider.be> <1487345799-1638-4-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH] MAINTAINERS: cpufreq: add bmips-cpufreq.c
+Date: Sat, 18 Feb 2017 02:20:28 +0100
+Message-ID: <2370147.zGx6MqB346@aspire.rjw.lan>
+References: <20170217183050.31889-1-code@mmayer.net> <c7a1f607-6619-445a-db35-902f11569dad@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44845 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63635 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752384AbdBRBY5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2017 20:24:57 -0500
-In-Reply-To: <1487345799-1638-4-git-send-email-geert+renesas@glider.be>
+        by vger.kernel.org with ESMTP id S1752468AbdBRBZ2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Feb 2017 20:25:28 -0500
+In-Reply-To: <c7a1f607-6619-445a-db35-902f11569dad@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Jiri Kosina <trivial@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <code@mmayer.net>
+Cc: Ralf Baechle <ralf@linux-mips.org>, Viresh Kumar <viresh.kumar@linaro.org>, Markus Mayer <mmayer@broadcom.com>, MIPS Linux Kernel List <linux-mips@linux-mips.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Friday, February 17, 2017 04:36:39 PM Geert Uytterhoeven wrote:
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> ---
->  Documentation/power/states.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Friday, February 17, 2017 11:24:56 AM Florian Fainelli wrote:
+> On 02/17/2017 10:30 AM, Markus Mayer wrote:
+> > From: Markus Mayer <mmayer@broadcom.com>
+> > 
+> > Add maintainer information for bmips-cpufreq.c.
+> > 
+> > Signed-off-by: Markus Mayer <mmayer@broadcom.com>
 > 
-> diff --git a/Documentation/power/states.txt b/Documentation/power/states.txt
-> index 008ecb588317bc1d..bc4548245a243134 100644
-> --- a/Documentation/power/states.txt
-> +++ b/Documentation/power/states.txt
-> @@ -25,7 +25,7 @@ to be used subsequently to change to the one represented by that string.
->  Consequently, there are two ways to cause the system to go into the
->  Suspend-To-Idle sleep state.  The first one is to write "freeze" directly to
->  /sys/power/state.  The second one is to write "s2idle" to /sys/power/mem_sleep
-> -and then to wrtie "mem" to /sys/power/state.  Similarly, there are two ways
-> +and then to write "mem" to /sys/power/state.  Similarly, there are two ways
->  to cause the system to go into the Power-On Suspend sleep state (the strings to
->  write to the control files in that case are "standby" or "shallow" and "mem",
->  respectively) if that state is supported by the platform.  In turn, there is
+> Looks great, thanks for adding this, one nit below:
+> 
+> > ---
+> > 
+> > This is based on PM's linux-next from today (February 17).
+> > 
+> > This patch could be squashed into patch 3/4 of the original series if that
+> > is acceptable (see [1]) or it can remain separate.
+> > 
+> > [1] https://lkml.org/lkml/2017/2/7/775
+> > 
+> >  MAINTAINERS | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 107c10e..db251c0 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -2692,6 +2692,12 @@ F:	drivers/irqchip/irq-brcmstb*
+> >  F:	include/linux/bcm963xx_nvram.h
+> >  F:	include/linux/bcm963xx_tag.h
+> >  
+> > +BROADCOM BMIPS CPUFREQ DRIVER
+> > +M:	Markus Mayer <mmayer@broadcom.com>
+> > +L:	linux-pm@vger.kernel.org
+> 
+> Please also include bcm-kernel-feedback-list@broadcom.com here
+> 
+> With that:
+> 
+> Acked-by: Florian Fainelli <f.fainelli@gmail.com>
 > 
 
-Applied.
+Patch applied.
 
 Thanks,
 Rafael
