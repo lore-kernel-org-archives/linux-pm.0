@@ -1,79 +1,91 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: [GIT PULL] Thermal SoC management updates for v4.11-rc1 #1
-Date: Sat, 18 Feb 2017 17:53:31 -0800
-Message-ID: <20170219015330.GC20845@localhost.localdomain>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][RFC v4] ACPI throttling: Disable the MSR T-state if
+ enabled after resumed
+Date: Sun, 19 Feb 2017 12:37:18 +0800
+Message-ID: <20170219043718.GA4953@yu-desktop-1.sh.intel.com>
+References: <1487320050-22894-1-git-send-email-yu.c.chen@intel.com>
+ <20170218090207.GB8937@amd>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:16315 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751297AbdBSEhw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Feb 2017 23:37:52 -0500
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+In-Reply-To: <20170218090207.GB8937@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-Hello Rui,
+Hi,
+On Sat, Feb 18, 2017 at 10:02:07AM +0100, Pavel Machek wrote:
+> On Fri 2017-02-17 16:27:30, Chen Yu wrote:
+> > Previously a bug was reported that on certain Broadwell
+> > platform, after resumed from S3, the CPU is running at
+> > an anomalously low speed, due to the BIOS has enabled the
+> > MSR throttling across S3. The solution to this was to introduce
+> > a quirk framework to save/restore tstate MSR register around
+> > suspend/resume, in Commit 7a9c2dd08ead ("x86/pm:
+> > Introduce quirk framework to save/restore extra MSR
+> > registers around suspend/resume").
+> > 
+> > However there are still three problems left:
+> > 1. More and more reports show that other platforms also
+> >    encountered the same issue, so the quirk list might
+> >    be endless.
+> > 2. Each CPUs should take the save/restore operation into
+> >    consideration, rather than the boot CPU alone.
+> > 3. Normally ACPI T-state re-evaluation is done on resume,
+> >    however there is no _TSS on the bogus platform, thus
+> >    above re-evaluation code does not run on that machine.
+> > 
+> > Solution:
+> > This patch is based on the fact that, we generally should not
+> > expect the system to come back from resume with throttling
+> > enabled, but leverage the OS components to deal with it,
+> > such as thermal event. So we simply clear the MSR T-state
+> > and print the warning if it is found to be enabled after
+> > resumed back. Besides, we can remove the quirk in previous patch
+> > later.
+> 
+> What if the machine _is_ hot? 
+> 
+Later the linux has a chance to adjust the tstate if the system is too hot,
+with the help of thermal framework.
+But if the cpu is not inside any thermal zone, then there is no way for the
+OS to adjust the tstate after resume, however in this case I think it is up
+to the user space to adjust the tstate msr, for example, by using thermald
+daemon to bind the cpu to the thermal zone.
 
-Please pull the following changes to get the Thermal SoC updates
-for 4.11-rc1. Here we have:
-- thermal support for zx2967. thanks to Baoyou Xie.
-- new driver support for rcar-gen3.
-- a couple of fixes on TI, exynos, and IMX drivers.
+> > +static int acpi_throttling_init_ops(void)
+> > +{
+> > +	/*
+> > +	 * Reevaluate on boot CPU. Since it is not always CPU0,
+> > +	 * we can not invoke throttling_msr_reevaluate(0) directly.
+> > +	 */
+> 
+> Boot cpu is not cpu#0? How can that be?
+> 
+In disable_nonboot_cpus, it first tries to disable cpus other than cpu#0,
+but if cpu#0 is found to be offline, it will try to bypass it and use another
+cpu as the boot/primary cpu:
 
-I might also send a second pull, depending if we get new versions
-of other two drivers that have been on review for some time.
+if (!cpu_online(primary))
+	primary = cpumask_first(cpu_online_mask);
 
-BR,
+> Should we introduce generic framework to "fix" all the cpus? Actually,
+> should this be done right on cpu hotplug?
+Do you mean, fix other MSR-inconsistent issues, not only the tstate MSR?
+Currently the tstate re-adjusting is invoked in cpuhotplug notifier
+after each nonboot cpus are brought up:
+acpi_soft_cpu_online -> acpi_processor_reevaluate_tstate -> adjust_tstate_msr
 
-The following changes since commit cdb98c2698b4af287925abcba4d77d92af82a0c3:
-
-  Revert "nvme: add support for the Write Zeroes command" (2016-12-13 19:53:37 -0800)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
-
-for you to fetch changes up to 992edf395b8a8411c506f4345bc04451eba95976:
-
-  thermal: mtk_thermal: Staticise a number of data variables (2017-02-18 17:44:29 -0800)
-
-----------------------------------------------------------------
-Baoyou Xie (2):
-      dt: bindings: add documentation for zx2967 family thermal sensor
-      thermal: zx2967: add thermal driver for ZTE's zx2967 family
-
-Keerthy (3):
-      thermal: ti-soc-thermal: Remove CPU_THERMAL Dependency from TI_THERMAL
-      thermal: arm: dra752: Remove TSHUT configuration
-      thermal: arm: dra752: Remove all TSHUT related definitions
-
-Krzysztof Kozlowski (1):
-      thermal: exynos: Remove parsing unused samsung,tmu_cal_mode property
-
-Shailendra Verma (1):
-      thermal: imx: Fix possible NULL dereference.
-
-Vivek Gautam (1):
-      thermal: mtk_thermal: Staticise a number of data variables
-
-Wolfram Sang (2):
-      thermal: rcar_gen3_thermal: Document the R-Car Gen3
-      thermal: rcar_gen3_thermal: Add R-Car Gen3 thermal driver
-
- .../bindings/thermal/rcar-gen3-thermal.txt         |  56 ++++
- .../devicetree/bindings/thermal/zx2967-thermal.txt | 116 +++++++
- drivers/thermal/Kconfig                            |  17 ++
- drivers/thermal/Makefile                           |   2 +
- drivers/thermal/imx_thermal.c                      |   4 +
- drivers/thermal/mtk_thermal.c                      |  16 +-
- drivers/thermal/rcar_gen3_thermal.c                | 335 +++++++++++++++++++++
- drivers/thermal/samsung/exynos_tmu.c               |   1 -
- drivers/thermal/samsung/exynos_tmu.h               |   1 -
- drivers/thermal/ti-soc-thermal/Kconfig             |   1 -
- drivers/thermal/ti-soc-thermal/dra752-bandgap.h    |  19 --
- .../thermal/ti-soc-thermal/dra752-thermal-data.c   |  28 +-
- drivers/thermal/zx2967_thermal.c                   | 258 ++++++++++++++++
- 13 files changed, 797 insertions(+), 57 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/zx2967-thermal.txt
- create mode 100644 drivers/thermal/rcar_gen3_thermal.c
- create mode 100644 drivers/thermal/zx2967_thermal.c
+Thanks,
+Yu
+> 
+> 									Pavel
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
