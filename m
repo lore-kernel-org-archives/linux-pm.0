@@ -1,63 +1,54 @@
-From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V2 2/2] ARM: dts: bcm283x: Add CPU thermal zone with 1
- trip point
-Date: Sat, 18 Feb 2017 17:17:55 -0800
-Message-ID: <20170219011753.GB21016@localhost.localdomain>
-References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
- <1486928328-25870-2-git-send-email-stefan.wahren@i2se.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] thermal: mt8173: minor mtk_thermal.c cleanups
+Date: Sat, 18 Feb 2017 17:23:07 -0800
+Message-ID: <20170219012306.GA28525@localhost.localdomain>
+References: <1486531862-31945-1-git-send-email-dawei.chien@mediatek.com>
+ <ebdf54af-6290-9654-c475-53dd580582a0@gmail.com>
+ <1486976518.24087.7.camel@mtksdaap41>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:35371 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750838AbdBSBXM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Feb 2017 20:23:12 -0500
 Content-Disposition: inline
-In-Reply-To: <1486928328-25870-2-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <1486976518.24087.7.camel@mtksdaap41>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dawei Chien <dawei.chien@mediatek.com>
+Cc: Matthias Brugger <matthias.bgg@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>, Kumar Gala <galak@codeaurora.org>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Sascha Hauer <kernel@pengutronix.de>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, Yingjoe Chen <yingjoe.chen@mediatek.com>, Erin Lo <erin.lo@mediatek.com>
 
-On Sun, Feb 12, 2017 at 07:38:48PM +0000, Stefan Wahren wrote:
-> As suggested by Eduardo Valentin this adds the thermal zone for
-> the bcm2835 SoC with its single thermal sensor. We start with
-> the criticial trip point and leave the cooling devices empty
-> since we don't have any at the moment.
+On Mon, Feb 13, 2017 at 05:01:58PM +0800, Dawei Chien wrote:
+> Hi, Matthias,
 > 
-> Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-> ---
+> On Thu, 2017-02-09 at 22:25 +0100, Matthias Brugger wrote:
+> > 
+> > On 02/08/2017 06:31 AM, Dawei Chien wrote:
+> > > Thermal driver should read TEMP_MSR3 if thermal bank with 4 sensors.
+> > > However, Currently thermal driver don't need read TEMP_MSR3 since
+> > > thermal controller only use 3 sensors for each thermal bank.
+> > >
+> > > Signed-off-by: Dawei Chien <dawei.chien@mediatek.com>
+> > > ---
+> > 
+> > Actually the commit message should state:
+> > Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
+> > 
+> > ...and get backported to v4.9 and v4.10.
+> > 
+> > Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+> > 
+> > Regards,
+> > Matthias
 > 
-> Changes in V2:
-> - add missing thermal-sensor-cells property
-> - change gpu-thermal to cpu-thermal
+> Thank you for your review. I would add below commit message on next
+> version. However, currently 8173 thermal driver would not read TEMP_MSR3
+> since thermal driver only use 3 sensors on each bank, this patch would
+> not effect temperature.
+> Only if thermal driver use 4 sensors on any thermal bank, would read
+> third sensor two times, and lose fourth sensor of vale.
+> Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
 > 
->  arch/arm/boot/dts/bcm283x.dtsi |   20 ++++++++++++++++++++
->  1 file changed, 20 insertions(+)
-> 
-> diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
-> index a3106aa..4dc74f6 100644
-> --- a/arch/arm/boot/dts/bcm283x.dtsi
-> +++ b/arch/arm/boot/dts/bcm283x.dtsi
-> @@ -19,6 +19,25 @@
->  		bootargs = "earlyprintk console=ttyAMA0";
->  	};
->  
-> +	thermal-zones {
-> +		cpu_thermal: cpu-thermal {
-> +			polling-delay-passive = <0>;
-> +			polling-delay = <1000>;
-> +
 
-Check the diff I sent and also add the following for differentiating the
-offsets and slopes depending on which chip the zone describes:
-			coefficients = <-538 407000>; /* for the zone on bcm2835 and bcm2836 */
-
-and
-
-			coefficients = <-538 412000>; /* for the zone on bcm2837 */
-
-
-Despite the changes mentioned for the driver and DT, I am ok with the driver and the DTS descriptors.
-
-BR,
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please send a new version with the tag in the commit message.
