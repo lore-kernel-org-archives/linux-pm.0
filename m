@@ -1,145 +1,275 @@
 From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH] ARM: dts: exynos: Use thermal fuse value for thermal
- zone 0 on Exynos5420
-Date: Sat, 18 Feb 2017 16:34:40 -0800
-Message-ID: <20170219003438.GA2268@localhost.localdomain>
-References: <20170211201456.27974-1-krzk@kernel.org>
+Subject: Re: [PATCH V2 1/2] dt-bindings: Add thermal zone to bcm2835-thermal
+ example
+Date: Sat, 18 Feb 2017 17:13:29 -0800
+Message-ID: <20170219011328.GA21016@localhost.localdomain>
+References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
+ <878tp9kbt8.fsf@eliezer.anholt.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20170211201456.27974-1-krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+In-Reply-To: <878tp9kbt8.fsf-omZaPlIz5HhaEpDpdNBo/KxOck334EZe@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Kukjin Kim <kgene-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Javier Martinez Canillas <javier-JPH+aEBZ4P+UEJcrhfAQsw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Willy WOLFF <willy.mh.wolff-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Anand Moon <linux.amoon-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>
+Cc: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Feb 11, 2017 at 10:14:56PM +0200, Krzysztof Kozlowski wrote:
-> In Odroid XU3 Lite board, the temperature levels reported for thermal
-> zone 0 were weird. In warm room:
-> 	/sys/class/thermal/thermal_zone0/temp:32000
-> 	/sys/class/thermal/thermal_zone1/temp:51000
-> 	/sys/class/thermal/thermal_zone2/temp:55000
-> 	/sys/class/thermal/thermal_zone3/temp:54000
-> 	/sys/class/thermal/thermal_zone4/temp:51000
+On Mon, Feb 13, 2017 at 01:42:11PM -0800, Eric Anholt wrote:
+> Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org> writes:
 > 
-> Sometimes after booting the value was even equal to ambient temperature
-> which is highly unlikely to be a real temperature of sensor in SoC.
+> > Add a thermal zone in order to make the example complete.
+> >
+> > Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
 > 
-> The thermal sensor's calibration (trimming) is based on fused values.
-> In case of the board above, the fused values are: 35, 52, 43, 58 and 43
-> (corresponding to each TMU device).  However driver defined a minimum value
-> for fused data as 40 and for smaller values it was using a hard-coded 55
-> instead.  This lead to mapping data from sensor to wrong temperatures
-> for thermal zone 0.
-> 
-> Various vendor 3.10 trees (Hardkernel's based on Samsung LSI, Artik 10)
-> do not impose any limits on fused values.  Since we do not have any
-> knowledge about these limits, use 0 as a minimum accepted fused value.
-> This should essentially allow accepting any reasonable fused value thus
-> behaving like vendor driver.
-> 
-> The exynos5420-tmu-sensor-conf.dtsi is copied directly from existing
-> exynso4412 with one change - the samsung,tmu_min_efuse_value.
-> 
-> Signed-off-by: Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> This looks fine to me.  Eduardo, will this be enough to get the driver
+> in?
 
-Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-> 
-> ---
-> 
-> Testing on other Exynos542x boards is much appreciated. Especially I
-> wonder what efuse values are there.
-> ---
->  arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi | 25 +++++++++++++++++++++++
->  arch/arm/boot/dts/exynos5420.dtsi                 | 10 ++++-----
->  2 files changed, 30 insertions(+), 5 deletions(-)
->  create mode 100644 arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
-> 
-> diff --git a/arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi b/arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
-> new file mode 100644
-> index 000000000000..c8771c660550
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/exynos5420-tmu-sensor-conf.dtsi
-> @@ -0,0 +1,25 @@
-> +/*
-> + * Device tree sources for Exynos5420 TMU sensor configuration
-> + *
-> + * Copyright (c) 2014 Lukasz Majewski <l.majewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-> + * Copyright (c) 2017 Krzysztof Kozlowski <krzk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + */
-> +
-> +#include <dt-bindings/thermal/thermal_exynos.h>
-> +
-> +#thermal-sensor-cells = <0>;
-> +samsung,tmu_gain = <8>;
-> +samsung,tmu_reference_voltage = <16>;
-> +samsung,tmu_noise_cancel_mode = <4>;
-> +samsung,tmu_efuse_value = <55>;
-> +samsung,tmu_min_efuse_value = <0>;
-> +samsung,tmu_max_efuse_value = <100>;
-> +samsung,tmu_first_point_trim = <25>;
-> +samsung,tmu_second_point_trim = <85>;
-> +samsung,tmu_default_temp_offset = <50>;
-> +samsung,tmu_cal_type = <TYPE_ONE_POINT_TRIMMING>;
-> diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
-> index 7dc9dc82afd8..83b3899d228d 100644
-> --- a/arch/arm/boot/dts/exynos5420.dtsi
-> +++ b/arch/arm/boot/dts/exynos5420.dtsi
-> @@ -699,7 +699,7 @@
->  			interrupts = <0 65 IRQ_TYPE_LEVEL_HIGH>;
->  			clocks = <&clock CLK_TMU>;
->  			clock-names = "tmu_apbif";
-> -			#include "exynos4412-tmu-sensor-conf.dtsi"
-> +			#include "exynos5420-tmu-sensor-conf.dtsi"
->  		};
->  
->  		tmu_cpu1: tmu@10064000 {
-> @@ -708,7 +708,7 @@
->  			interrupts = <0 183 IRQ_TYPE_LEVEL_HIGH>;
->  			clocks = <&clock CLK_TMU>;
->  			clock-names = "tmu_apbif";
-> -			#include "exynos4412-tmu-sensor-conf.dtsi"
-> +			#include "exynos5420-tmu-sensor-conf.dtsi"
->  		};
->  
->  		tmu_cpu2: tmu@10068000 {
-> @@ -717,7 +717,7 @@
->  			interrupts = <0 184 IRQ_TYPE_LEVEL_HIGH>;
->  			clocks = <&clock CLK_TMU>, <&clock CLK_TMU>;
->  			clock-names = "tmu_apbif", "tmu_triminfo_apbif";
-> -			#include "exynos4412-tmu-sensor-conf.dtsi"
-> +			#include "exynos5420-tmu-sensor-conf.dtsi"
->  		};
->  
->  		tmu_cpu3: tmu@1006c000 {
-> @@ -726,7 +726,7 @@
->  			interrupts = <0 185 IRQ_TYPE_LEVEL_HIGH>;
->  			clocks = <&clock CLK_TMU>, <&clock CLK_TMU_GPU>;
->  			clock-names = "tmu_apbif", "tmu_triminfo_apbif";
-> -			#include "exynos4412-tmu-sensor-conf.dtsi"
-> +			#include "exynos5420-tmu-sensor-conf.dtsi"
->  		};
->  
->  		tmu_gpu: tmu@100a0000 {
-> @@ -735,7 +735,7 @@
->  			interrupts = <0 215 IRQ_TYPE_LEVEL_HIGH>;
->  			clocks = <&clock CLK_TMU_GPU>, <&clock CLK_TMU>;
->  			clock-names = "tmu_apbif", "tmu_triminfo_apbif";
-> -			#include "exynos4412-tmu-sensor-conf.dtsi"
-> +			#include "exynos5420-tmu-sensor-conf.dtsi"
->  		};
->  
->  		sysmmu_g2dr: sysmmu@0x10A60000 {
-> -- 
-> 2.9.3
-> 
+Well, yes, but the driver needs to support the descriptors by
+registering to of-thermal. But that would actually simplify the driver
+as follows (patch on bcm2835 patch v9, so it supports the descriptors in
+this thread):
+
+ ------------------------8------------------------
+diff --git a/drivers/thermal/bcm2835_thermal.c b/drivers/thermal/bcm2835_thermal.c
+index 5e2fea9..ffcf847 100644
+--- a/drivers/thermal/bcm2835_thermal.c
++++ b/drivers/thermal/bcm2835_thermal.c
+@@ -61,14 +61,8 @@
+ #define BCM2835_TS_TSENSSTAT_VALID		BIT(10)
+ #define BCM2835_TS_TSENSSTAT_INTERRUPT		BIT(11)
+ 
+-struct bcm2835_thermal_info {
+-	int offset;
+-	int slope;
+-	int trip_temp;
+-};
+-
+ struct bcm2835_thermal_data {
+-	const struct bcm2835_thermal_info *info;
++	struct thermal_zone_device *tz;
+ 	void __iomem *regs;
+ 	struct clk *clk;
+ 	struct dentry *debugfsdir;
+@@ -92,40 +86,9 @@ static int bcm2835_thermal_temp2adc(int temp, int offset, int slope)
+ 	return temp;
+ }
+ 
+-static int bcm2835_thermal_get_trip_type(
+-	struct thermal_zone_device *tz, int trip,
+-	enum thermal_trip_type *type)
++static int bcm2835_thermal_get_temp(void *d, int *temp)
+ {
+-	*type = THERMAL_TRIP_CRITICAL;
+-	return 0;
+-}
+-
+-static int bcm2835_thermal_get_trip_temp(
+-	struct thermal_zone_device *tz, int trip, int *temp)
+-{
+-	struct bcm2835_thermal_data *data = tz->devdata;
+-	u32 val = readl(data->regs + BCM2835_TS_TSENSCTL);
+-
+-	/* get the THOLD bits */
+-	val &= BCM2835_TS_TSENSCTL_THOLD_MASK;
+-	val >>= BCM2835_TS_TSENSCTL_THOLD_SHIFT;
+-
+-	/* if it is zero then use the info value */
+-	if (val)
+-		*temp = bcm2835_thermal_adc2temp(
+-			val,
+-			thermal_zone_get_offset(tz),
+-			thermal_zone_get_slope(tz));
+-	else
+-		*temp = data->info->trip_temp;
+-
+-	return 0;
+-}
+-
+-static int bcm2835_thermal_get_temp(struct thermal_zone_device *tz,
+-				    int *temp)
+-{
+-	struct bcm2835_thermal_data *data = tz->devdata;
++	struct bcm2835_thermal_data *data = d;
+ 	u32 val = readl(data->regs + BCM2835_TS_TSENSSTAT);
+ 
+ 	if (!(val & BCM2835_TS_TSENSSTAT_VALID))
+@@ -135,8 +98,8 @@ static int bcm2835_thermal_get_temp(struct thermal_zone_device *tz,
+ 
+ 	*temp = bcm2835_thermal_adc2temp(
+ 		val,
+-		thermal_zone_get_offset(tz),
+-		thermal_zone_get_slope(tz));
++		thermal_zone_get_offset(data->tz),
++		thermal_zone_get_slope(data->tz));
+ 
+ 	return 0;
+ }
+@@ -174,10 +137,8 @@ static void bcm2835_thermal_debugfs(struct platform_device *pdev)
+ 				data->debugfsdir, regset);
+ }
+ 
+-static struct thermal_zone_device_ops bcm2835_thermal_ops  = {
++static struct thermal_zone_of_device_ops bcm2835_thermal_ops = {
+ 	.get_temp = bcm2835_thermal_get_temp,
+-	.get_trip_temp = bcm2835_thermal_get_trip_temp,
+-	.get_trip_type = bcm2835_thermal_get_trip_type,
+ };
+ 
+ static const struct of_device_id bcm2835_thermal_of_match_table[];
+@@ -186,10 +147,9 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 	const struct of_device_id *match;
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_zone_params *tzp;
+-	const struct bcm2835_thermal_info *ti;
+ 	struct bcm2835_thermal_data *data;
+ 	struct resource *res;
+-	int err;
++	int err = 0;
+ 	u32 val;
+ 	unsigned long rate;
+ 
+@@ -205,10 +165,6 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 				&pdev->dev);
+ 	if (!match)
+ 		return -EINVAL;
+-	ti = match->data;
+-	data->info = ti;
+-	tzp->slope = ti->slope;
+-	tzp->offset = ti->offset;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	data->regs = devm_ioremap_resource(&pdev->dev, res);
+@@ -236,6 +192,17 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 			 "Clock %pCn running at %pCr Hz is outside of the recommended range: 1.92 to 5MHz\n",
+ 			 data->clk, data->clk);
+ 
++	/* register of thermal sensor and get info from DT */
++	tz = thermal_zone_of_sensor_register(&pdev->dev, 0, data,
++					     &bcm2835_thermal_ops);
++	if (IS_ERR(tz)) {
++		err = PTR_ERR(tz);
++		dev_err(&pdev->dev,
++			"Failed to register the thermal device: %d\n",
++			err);
++		goto err_clk;
++	}
++
+ 	/*
+ 	 * right now the FW does set up the HW-block, so we are not
+ 	 * touching the configuration registers.
+@@ -244,6 +211,23 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 	 */
+ 	val = readl(data->regs + BCM2835_TS_TSENSCTL);
+ 	if (!(val & BCM2835_TS_TSENSCTL_RSTB)) {
++		int trip_temp, offset, slope;
++
++		slope = thermal_zone_get_slope(tz);
++		offset = thermal_zone_get_offset(tz);
++		/*
++		 * For now we deal only with critical, otherwise
++		 * would need to iterate
++		 */
++		err = tz->ops->get_trip_temp(tz, 0, &trip_temp);
++		if (err < 0) {
++			err = PTR_ERR(tz);
++			dev_err(&pdev->dev,
++				"Not able to read trip_temp: %d\n",
++				err);
++			goto err_tz;
++		}
++
+ 		/* the basic required flags */
+ 		val = (BCM2835_TS_TSENSCTL_CTRL_DEFAULT <<
+ 		       BCM2835_TS_TSENSCTL_CTRL_SHIFT) |
+@@ -256,9 +240,9 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 		val |= (14 << BCM2835_TS_TSENSCTL_RSTDELAY_SHIFT);
+ 
+ 		/*  trip_adc value from info */
+-		val |= bcm2835_thermal_temp2adc(data->info->trip_temp,
+-						data->info->offset,
+-						data->info->slope)
++		val |= bcm2835_thermal_temp2adc(trip_temp,
++						offset,
++						slope)
+ 			<< BCM2835_TS_TSENSCTL_THOLD_SHIFT;
+ 
+ 		/* write the value back to the register as 2 steps */
+@@ -267,26 +251,18 @@ static int bcm2835_thermal_probe(struct platform_device *pdev)
+ 		writel(val, data->regs + BCM2835_TS_TSENSCTL);
+ 	}
+ 
+-	/* register thermal zone with 1 trip point an 1s polling */
+-	tz = thermal_zone_device_register("bcm2835_thermal",
+-					  1, 0, data,
+-					  &bcm2835_thermal_ops,
+-					  tzp,
+-					  0, 1000);
+-	if (IS_ERR(tz)) {
+-		clk_disable_unprepare(data->clk);
+-		err = PTR_ERR(tz);
+-		dev_err(&pdev->dev,
+-			"Failed to register the thermal device: %d\n",
+-			err);
+-		return err;
+-	}
++	data->tz = tz;
+ 
+ 	platform_set_drvdata(pdev, tz);
+ 
+ 	bcm2835_thermal_debugfs(pdev);
+ 
+-	return 0;
++err_tz:
++	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
++err_clk:
++	clk_disable_unprepare(data->clk);
++
++	return err;
+ }
+ 
+ static int bcm2835_thermal_remove(struct platform_device *pdev)
+@@ -295,7 +271,7 @@ static int bcm2835_thermal_remove(struct platform_device *pdev)
+ 	struct bcm2835_thermal_data *data = tz->devdata;
+ 
+ 	debugfs_remove_recursive(data->debugfsdir);
+-	thermal_zone_device_unregister(tz);
++	thermal_zone_of_sensor_unregister(&pdev->dev, tz);
+ 	clk_disable_unprepare(data->clk);
+ 
+ 	return 0;
+@@ -312,28 +288,12 @@ static int bcm2835_thermal_remove(struct platform_device *pdev)
+ static const struct of_device_id bcm2835_thermal_of_match_table[] = {
+ 	{
+ 		.compatible = "brcm,bcm2835-thermal",
+-		.data = &(struct bcm2835_thermal_info) {
+-			.offset = 407000,
+-			.slope = -538,
+-			.trip_temp = 80000
+-		}
+ 	},
+ 	{
+ 		.compatible = "brcm,bcm2836-thermal",
+-		.data = &(struct bcm2835_thermal_info) {
+-			.offset = 407000,
+-			.slope = -538,
+-			.trip_temp = 80000
+-		}
+ 	},
+ 	{
+ 		.compatible = "brcm,bcm2837-thermal",
+-		.data = &(struct bcm2835_thermal_info) {
+-			/* the bcm2837 needs adjustment of +5C */
+-			.offset = 407000 + 5000,
+-			.slope = -538,
+-			.trip_temp = 80000
+-		}
+ 	},
+ 	{},
+ };
+
+ ------------------------8------------------------
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
