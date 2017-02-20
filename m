@@ -1,65 +1,51 @@
-From: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH] thermal: mt8173: minor mtk_thermal.c cleanups
-Date: Mon, 20 Feb 2017 12:30:44 +0100
-Message-ID: <46d6c448-a669-a748-acfa-8ed129c65b51@gmail.com>
-References: <1486531862-31945-1-git-send-email-dawei.chien@mediatek.com>
- <ebdf54af-6290-9654-c475-53dd580582a0@gmail.com>
- <1486976518.24087.7.camel@mtksdaap41>
- <20170219012306.GA28525@localhost.localdomain>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: schedutil: govern how frequently we change frequency with rate_limit
+Date: Mon, 20 Feb 2017 14:49:18 +0100
+Message-ID: <4853380.1xLm2rt1ou@aspire.rjw.lan>
+References: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org> <20170217124854.GD6500@twins.programming.kicks-ass.net> <20170220095803.GT21911@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170219012306.GA28525-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pawel Moll <pawel.moll-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ian Campbell <ijc+devicetree-KcIKpvwj1kUDXYZnReoRVg@public.gmane.org>, Kumar Gala <galak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Fan Chen <fan.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Eddie Huang <eddie.huang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Yingjoe Chen <yingjoe.chen-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, Erin Lo <erin.lo-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48105 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752726AbdBTNyW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 08:54:22 -0500
+In-Reply-To: <20170220095803.GT21911@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
+On Monday, February 20, 2017 03:28:03 PM Viresh Kumar wrote:
+> On 17-02-17, 13:48, Peter Zijlstra wrote:
+> > On Fri, Feb 17, 2017 at 01:15:56PM +0100, Rafael J. Wysocki wrote:
+> > > On Thursday, February 16, 2017 01:36:05 PM Peter Zijlstra wrote:
+> > > > On Thu, Feb 16, 2017 at 03:42:10PM +0530, Viresh Kumar wrote:
+> > > > > But when I discussed this with Vincent, he suggested that it may not be required
+> > > > > at all as the scheduler (with the helped of "decayed") doesn't call into
+> > > > > schedutil too often, i.e. at least 1 ms. And if the CPUs are stable enough (i.e.
+> > > > > no interruptions to the running task), we wouldn't reevaluate before the next
+> > > > > tick.
+> > > > 
+> > > > There are still the attach/detach callers to cfs_rq_util_change() that
+> > > > kick in for fork/exit and migration.
+> > > > 
+> > > > But yes, barring those we shouldn't end up calling it at silly rates.
+> > > 
+> > > OK
+> > > 
+> > > Does this mean that running governor computations every time its callback
+> > > is invoked by the scheduler would be fine?
+> > 
+> > I'd say yes right up till the point someone reports a regression ;-)
+> 
+> @Rafael: Do you want me to send a V2 with the changes you suggested in
+> commit log?
 
+Yes, in general, but I have more suggestions regarding that. :-)
 
-On 19/02/17 02:23, Eduardo Valentin wrote:
-> On Mon, Feb 13, 2017 at 05:01:58PM +0800, Dawei Chien wrote:
->> Hi, Matthias,
->>
->> On Thu, 2017-02-09 at 22:25 +0100, Matthias Brugger wrote:
->>>
->>> On 02/08/2017 06:31 AM, Dawei Chien wrote:
->>>> Thermal driver should read TEMP_MSR3 if thermal bank with 4 sensors.
->>>> However, Currently thermal driver don't need read TEMP_MSR3 since
->>>> thermal controller only use 3 sensors for each thermal bank.
->>>>
->>>> Signed-off-by: Dawei Chien <dawei.chien-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
->>>> ---
->>>
->>> Actually the commit message should state:
->>> Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
->>>
->>> ...and get backported to v4.9 and v4.10.
->>>
->>> Reviewed-by: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
->>>
->>> Regards,
->>> Matthias
->>
->> Thank you for your review. I would add below commit message on next
->> version. However, currently 8173 thermal driver would not read TEMP_MSR3
->> since thermal driver only use 3 sensors on each bank, this patch would
->> not effect temperature.
->> Only if thermal driver use 4 sensors on any thermal bank, would read
->> third sensor two times, and lose fourth sensor of vale.
->> Fixes: b7cf0053738c ("thermal: Add Mediatek thermal driver for mt2701.")
->>
->
-> Please send a new version with the tag in the commit message.
->
+I'll send them shortly.
 
-And don't forget to add stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org so that the fix ends up 
-in the older kernels as well.
-
-Regards,
-Matthias
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
