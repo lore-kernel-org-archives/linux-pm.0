@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 1/6] alarmtimer: Postpone wake-up source registration until really available
-Date: Mon, 20 Feb 2017 21:33:24 +0100
-Message-ID: <1487622809-25127-2-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC 3/6] drivers: firmware: psci: Implement shallow suspend mode
+Date: Mon, 20 Feb 2017 21:33:26 +0100
+Message-ID: <1487622809-25127-4-git-send-email-geert+renesas@glider.be>
 References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
@@ -10,59 +10,91 @@ To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@ar
 Cc: Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the alarmtimer registers a wake-up source unconditionally,
-regardless of the system having a (wake-up capable) RTC or not.
-To fix this, postpone registration until a wake-up capable RTC device is
-added.
+Enable support for "shallow" suspend mode, also known as "Standby" or
+"Power-On Suspend".
 
-After this, the alarmtimer no longer shows up in
-/sys/kernel/debug/wakeup_sources, unless it is available for real.
+As secondary CPU cores are taken offline, "shallow" suspend mode saves
+slightly more power than "s2idle", but less than "deep" suspend mode.
+However, unlike "deep" suspend mode, "shallow" suspend mode can be used
+regardless of the presence of support for PSCI_SYSTEM_SUSPEND, which is
+an optional API in PSCI v1.0.
+
+List the available system suspend modes:
+
+    $ cat /sys/power/mem_sleep
+    s2idle shallow [deep]
+
+Suspend to "shallow" mode:
+
+    $ echo shallow > /sys/power/mem_sleep
+    $ echo mem > /sys/power/state
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- kernel/time/alarmtimer.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ drivers/firmware/psci.c | 32 +++++++++++++++++++++++++++++---
+ 1 file changed, 29 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/time/alarmtimer.c b/kernel/time/alarmtimer.c
-index e6dc9a538efa2116..5e0ce78607da5b5d 100644
---- a/kernel/time/alarmtimer.c
-+++ b/kernel/time/alarmtimer.c
-@@ -82,6 +82,7 @@ static int alarmtimer_rtc_add_device(struct device *dev,
+diff --git a/drivers/firmware/psci.c b/drivers/firmware/psci.c
+index 493a56a4cfc4a836..13b4d50bb3577384 100644
+--- a/drivers/firmware/psci.c
++++ b/drivers/firmware/psci.c
+@@ -85,6 +85,7 @@ static u32 psci_function_id[PSCI_FN_MAX];
+ 				PSCI_1_0_EXT_POWER_STATE_TYPE_MASK)
+ 
+ static u32 psci_cpu_suspend_feature;
++static bool psci_suspend_mem_supported;
+ 
+ static inline bool psci_has_ext_power_state(void)
  {
- 	unsigned long flags;
- 	struct rtc_device *rtc = to_rtc_device(dev);
-+	struct wakeup_source *__ws;
- 
- 	if (rtcdev)
- 		return -EBUSY;
-@@ -91,13 +92,20 @@ static int alarmtimer_rtc_add_device(struct device *dev,
- 	if (!device_may_wakeup(rtc->dev.parent))
- 		return -1;
- 
-+	__ws = wakeup_source_register("alarmtimer");
-+
- 	spin_lock_irqsave(&rtcdev_lock, flags);
- 	if (!rtcdev) {
- 		rtcdev = rtc;
- 		/* hold a reference so it doesn't go away */
- 		get_device(dev);
-+		ws = __ws;
-+		__ws = NULL;
- 	}
- 	spin_unlock_irqrestore(&rtcdev_lock, flags);
-+
-+	wakeup_source_unregister(__ws);
-+
- 	return 0;
+@@ -422,13 +423,36 @@ static int psci_system_suspend(unsigned long unused)
+ 			      __pa_symbol(cpu_resume), 0, 0);
  }
  
-@@ -908,7 +916,6 @@ static int __init alarmtimer_init(void)
- 		error = PTR_ERR(pdev);
- 		goto out_drv;
- 	}
--	ws = wakeup_source_register("alarmtimer");
- 	return 0;
++static int psci_system_suspend_valid(suspend_state_t state)
++{
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++		return true;
++
++	case PM_SUSPEND_MEM:
++		return psci_suspend_mem_supported;
++
++	default:
++		return false;
++	}
++}
++
+ static int psci_system_suspend_enter(suspend_state_t state)
+ {
+-	return cpu_suspend(0, psci_system_suspend);
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++		cpu_do_idle();
++		break;
++
++	case PM_SUSPEND_MEM:
++		return cpu_suspend(0, psci_system_suspend);
++	}
++
++	return 0;
+ }
  
- out_drv:
+ static const struct platform_suspend_ops psci_suspend_ops = {
+-	.valid          = suspend_valid_only_mem,
++	.valid          = psci_system_suspend_valid,
+ 	.enter          = psci_system_suspend_enter,
+ };
+ 
+@@ -442,7 +466,9 @@ static void __init psci_init_system_suspend(void)
+ 	ret = psci_features(PSCI_FN_NATIVE(1_0, SYSTEM_SUSPEND));
+ 
+ 	if (ret != PSCI_RET_NOT_SUPPORTED)
+-		suspend_set_ops(&psci_suspend_ops);
++		psci_suspend_mem_supported = true;
++
++	suspend_set_ops(&psci_suspend_ops);
+ }
+ 
+ static void __init psci_init_cpu_suspend(void)
 -- 
 2.7.4
