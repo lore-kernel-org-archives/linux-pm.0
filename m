@@ -1,183 +1,76 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [PATCH] cpufreq: imx6q: use devm to fetch resources
-Date: Mon, 20 Feb 2017 16:02:35 +0200
-Message-ID: <964303696dfe1462bd0af2bcd2735d9a6b7ac52c.1487598539.git.leonard.crestez@nxp.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC][PATCH] cpufreq: User/admin documentation update and consolidation
+Date: Mon, 20 Feb 2017 14:58:27 +0100
+Message-ID: <4488503.27M9KJWnWE@aspire.rjw.lan>
+References: <6949552.t0rZsBY3Lp@aspire.rjw.lan> <20170220095608.GS21911@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-dm3nam03on0077.outbound.protection.outlook.com ([104.47.41.77]:61075
-        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1753039AbdBTODT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 Feb 2017 09:03:19 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20170220095608.GS21911@vireshk-i7>
+Sender: linux-doc-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jacky Bai <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, linux-kernel@vger.kernel.org
 
-Replace the clk_get and regulator_get will devm variants to free the
-resources automatically when probe failed or driver is removed.
+On Monday, February 20, 2017 03:26:08 PM Viresh Kumar wrote:
+> On 18-02-17, 02:36, Rafael J. Wysocki wrote:
+> > +CPU Initialization
+> > +==================
+> > +
+> 
+> 
+> > +Next, the scaling driver's ``->init()`` callback is invoked with the policy
+> > +pointer of the new CPU passed to it as the argument.  If the policy object
+> > +pointed to by it is new
+> 
+> The callbacks don't need to do anything special for a new policy.
+> Infact, ->init() is only called for new policies or policies which
+> don't have any active CPUs as of now.
 
-The device we are probing is not cpu_dev but the cpufreq platform_device
-(pdev->dev). In order for this to actually work correctly we assign to
-the cpufreq device the of_node from cpu_dev.
+Yes, it is called for new and inactive policies.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- drivers/cpufreq/imx6q-cpufreq.c | 75 +++++++++++++----------------------------
- 1 file changed, 24 insertions(+), 51 deletions(-)
+For new policies it has to populate policy->cpus (because otherwise the core
+doesn't know what CPUs should be there), which quite arguably doesn't have
+to (or even doesn't need to) be done for inactive policies (because they already
+have policy->real_cpus and policy->related_cpus populated).
 
-Something similar was rejected in the past: https://patchwork.kernel.org/patch/7099051/
+I would even argue that ->init() should not update policy->cpus for inactive
+(but not new) policies.
 
-New version assigns the of_node from the cpu device to the cpufreq device so
-that devm_clk_get(pdev->dev, ...) works as expected. It is not clear if this is
-allowed but I don't see why it wouldn't.
+> > , that callback is expected to initialize the performance
+> > +scaling hardware interface for the given CPU (or, more precisely, for the set of
+> > +CPUs sharing the hardware interface it belongs to, represented by its policy
+> > +object) and to set parameters of the policy, like the minimum and maximum
+> > +frequencies supported by the hardware, the table of available frequencies (if
+> > +the set of supported P-states is not a continuous range), and the mask of CPUs
+> > +that belong to the same policy.
+> 
+> Maybe we should explicitly mention that both online and offline CPUs
+> should be set in the mask ?
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index ef1fa81..374bc72 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -1,5 +1,6 @@
- /*
-  * Copyright (C) 2013 Freescale Semiconductor, Inc.
-+ * Copyright (C) 2017 NXP
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License version 2 as
-@@ -198,35 +199,37 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		return -ENOENT;
- 	}
- 
--	arm_clk = clk_get(cpu_dev, "arm");
--	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
--	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
--	step_clk = clk_get(cpu_dev, "step");
--	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
-+	pdev->dev.of_node = cpu_dev->of_node;
-+
-+	arm_clk = devm_clk_get(&pdev->dev, "arm");
-+	pll1_sys_clk = devm_clk_get(&pdev->dev, "pll1_sys");
-+	pll1_sw_clk = devm_clk_get(&pdev->dev, "pll1_sw");
-+	step_clk = devm_clk_get(&pdev->dev, "step");
-+	pll2_pfd2_396m_clk = devm_clk_get(&pdev->dev, "pll2_pfd2_396m");
- 	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
- 	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
- 		dev_err(cpu_dev, "failed to get clocks\n");
- 		ret = -ENOENT;
--		goto put_clk;
-+		goto put_node;
- 	}
- 
- 	if (of_machine_is_compatible("fsl,imx6ul")) {
--		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
--		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
-+		pll2_bus_clk = devm_clk_get(&pdev->dev, "pll2_bus");
-+		secondary_sel_clk = devm_clk_get(&pdev->dev, "secondary_sel");
- 		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
- 			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
- 			ret = -ENOENT;
--			goto put_clk;
-+			goto put_node;
- 		}
- 	}
- 
--	arm_reg = regulator_get(cpu_dev, "arm");
--	pu_reg = regulator_get_optional(cpu_dev, "pu");
--	soc_reg = regulator_get(cpu_dev, "soc");
-+	arm_reg = devm_regulator_get(&pdev->dev, "arm");
-+	pu_reg = devm_regulator_get_optional(&pdev->dev, "pu");
-+	soc_reg = devm_regulator_get(&pdev->dev, "soc");
- 	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
- 		dev_err(cpu_dev, "failed to get regulators\n");
- 		ret = -ENOENT;
--		goto put_reg;
-+		goto put_node;
- 	}
- 
- 	/*
-@@ -239,7 +242,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		ret = dev_pm_opp_of_add_table(cpu_dev);
- 		if (ret < 0) {
- 			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
--			goto put_reg;
-+			goto put_node;
- 		}
- 
- 		/* Because we have added the OPPs here, we must free them */
-@@ -256,11 +259,11 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
- 	if (ret) {
- 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
--		goto put_reg;
-+		goto out_free_opp;
- 	}
- 
- 	/* Make imx6_soc_volt array's size same as arm opp number */
--	imx6_soc_volt = devm_kzalloc(cpu_dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
-+	imx6_soc_volt = devm_kzalloc(&pdev->dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
- 	if (imx6_soc_volt == NULL) {
- 		ret = -ENOMEM;
- 		goto free_freq_table;
-@@ -339,7 +342,6 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		goto free_freq_table;
- 	}
- 
--	of_node_put(np);
- 	return 0;
- 
- free_freq_table:
-@@ -347,29 +349,9 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- out_free_opp:
- 	if (free_opp)
- 		dev_pm_opp_of_remove_table(cpu_dev);
--put_reg:
--	if (!IS_ERR(arm_reg))
--		regulator_put(arm_reg);
--	if (!IS_ERR(pu_reg))
--		regulator_put(pu_reg);
--	if (!IS_ERR(soc_reg))
--		regulator_put(soc_reg);
--put_clk:
--	if (!IS_ERR(arm_clk))
--		clk_put(arm_clk);
--	if (!IS_ERR(pll1_sys_clk))
--		clk_put(pll1_sys_clk);
--	if (!IS_ERR(pll1_sw_clk))
--		clk_put(pll1_sw_clk);
--	if (!IS_ERR(step_clk))
--		clk_put(step_clk);
--	if (!IS_ERR(pll2_pfd2_396m_clk))
--		clk_put(pll2_pfd2_396m_clk);
--	if (!IS_ERR(pll2_bus_clk))
--		clk_put(pll2_bus_clk);
--	if (!IS_ERR(secondary_sel_clk))
--		clk_put(secondary_sel_clk);
--	of_node_put(np);
-+put_node:
-+	of_node_put(pdev->dev.of_node);
-+	pdev->dev.of_node = NULL;
- 	return ret;
- }
- 
-@@ -379,17 +361,8 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
- 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
- 	if (free_opp)
- 		dev_pm_opp_of_remove_table(cpu_dev);
--	regulator_put(arm_reg);
--	if (!IS_ERR(pu_reg))
--		regulator_put(pu_reg);
--	regulator_put(soc_reg);
--	clk_put(arm_clk);
--	clk_put(pll1_sys_clk);
--	clk_put(pll1_sw_clk);
--	clk_put(step_clk);
--	clk_put(pll2_pfd2_396m_clk);
--	clk_put(pll2_bus_clk);
--	clk_put(secondary_sel_clk);
-+	of_node_put(pdev->dev.of_node);
-+	pdev->dev.of_node = NULL;
- 
- 	return 0;
- }
--- 
-2.7.4
+I can do that.
+
+But offline CPUs can only be set in that mask if the policy is actually new.
+
+> > That mask is then used by the core to populate
+> > +the policy pointers for all of the CPUs in it.
+> > +
+> > +The next major initialization step for a new policy object is to attach a
+> > +scaling governor to it (to begin with, that is the default scaling governor
+> > +determined by the kernel configuration, but it may be changed later
+> > +via ``sysfs``).  First, a pointer to the new policy object is passed to the
+> > +governor's ``->init()`` callback which is expected to initialize all of the
+> > +data structures necessary to handle the given policy and, possibly, to add
+> > +a governor ``sysfs`` interface to it.  Next, the governor is started by
+> > +invoking its ``->start()`` callback.
+> 
+> The rest of it looked good. Nice work Rafael :)
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+Thanks!
+
+Cheers,
+Rafael
+
