@@ -1,42 +1,41 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Subject: [PATCH] PM / OPP: fix off-by-one bug in
- dev_pm_opp_get_max_volt_latency loop
-Date: Mon, 20 Feb 2017 19:57:57 +0100
-Message-ID: <1487617077-21865-1-git-send-email-a.hajda@samsung.com>
-References: <CGME20170220185824eucas1p227fb1d8679f66825702296113c776095@eucas1p2.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:34547 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750868AbdBTS6e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 13:58:34 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH/RFC 5/6] arm64: dts: r8a7795: Fix non-PMIC wake-up sources
+Date: Mon, 20 Feb 2017 21:33:28 +0100
+Message-ID: <1487622809-25127-6-git-send-email-geert+renesas@glider.be>
+References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1487622809-25127-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Andrzej Hajda <a.hajda@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Reading array at given index before checking if index is valid results in
-illegal memory access.
+The PSCI firmware on boards equipped with an R-Car H3 SoC implements the
+PSCI SYSTEM_SUSPEND operation by cutting power to the SoC.  Hence the
+only possibly wake-up sources are the ones connected to the PMIC, unless
+the "arm,psci-system-suspend-is-power-down" property is specified.
 
-The bug was detected using KASAN framework.
-
-Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
 ---
- drivers/base/power/opp/core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 91ec323..dae6172 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -231,7 +231,8 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
- 	 * The caller needs to ensure that opp_table (and hence the regulator)
- 	 * isn't freed, while we are executing this routine.
- 	 */
--	for (i = 0; reg = regulators[i], i < count; i++) {
-+	for (i = 0; i < count; i++) {
-+		reg = regulators[i];
- 		ret = regulator_set_voltage_time(reg, uV[i].min, uV[i].max);
- 		if (ret > 0)
- 			latency_ns += ret * 1000;
+diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+index f05a9c4dd3b60c82..cf43e9c7cab224b2 100644
+--- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+@@ -31,6 +31,7 @@
+ 	psci {
+ 		compatible = "arm,psci-0.2";
+ 		method = "smc";
++		arm,psci-system-suspend-is-power-down;
+ 	};
+ 
+ 	cpus {
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
