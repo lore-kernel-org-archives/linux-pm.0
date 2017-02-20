@@ -1,88 +1,113 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 2/2] ARM: dts: bcm283x: Add CPU thermal zone with 1
- trip point
-Date: Sun, 19 Feb 2017 13:27:01 -0800
-Message-ID: <20170219212659.GA22580@localhost.localdomain>
-References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
- <1486928328-25870-2-git-send-email-stefan.wahren@i2se.com>
- <20170219011753.GB21016@localhost.localdomain>
- <1762674971.70633.1487507509664@email.1und1.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Wu <david.wu@rock-chips.com>
+Subject: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for rk3328
+Date: Mon, 20 Feb 2017 10:08:05 +0800
+Message-ID: <1487556485-18871-1-git-send-email-david.wu@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:33010 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751183AbdBSV1E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Feb 2017 16:27:04 -0500
-Content-Disposition: inline
-In-Reply-To: <1762674971.70633.1487507509664@email.1und1.de>
+Received: from lucky1.263xmail.com ([211.157.147.135]:35786 "EHLO
+        lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751789AbdBTCGv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 19 Feb 2017 21:06:51 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Frank Rowand <frowand.list@gmail.com>, kernel@martin.sperl.org, Eric Anholt <eric@anholt.net>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+To: khilman@kernel.org, nm@ti.com, heiko@sntech.de
+Cc: huangtao@rock-chips.com, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, "david.wu" <david.wu@rock-chips.com>
 
-Hey Stefan,
+From: "david.wu" <david.wu@rock-chips.com>
 
+This adds the necessary data for handling io voltage domains on the rk3328.
+As interesting tidbit, the rk3328 only contains one iodomain area in the
+regular General Register Files (GRF).
 
-On Sun, Feb 19, 2017 at 01:31:49PM +0100, Stefan Wahren wrote:
-> Hi Eduardo,
-> 
-> > Eduardo Valentin <edubezval@gmail.com> hat am 19. Februar 2017 um 02:17 geschrieben:
-> > 
-> > 
-> > On Sun, Feb 12, 2017 at 07:38:48PM +0000, Stefan Wahren wrote:
-> > > As suggested by Eduardo Valentin this adds the thermal zone for
-> > > the bcm2835 SoC with its single thermal sensor. We start with
-> > > the criticial trip point and leave the cooling devices empty
-> > > since we don't have any at the moment.
-> > > 
-> > > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> > > ---
-> > > 
-> > > Changes in V2:
-> > > - add missing thermal-sensor-cells property
-> > > - change gpu-thermal to cpu-thermal
-> > > 
-> > >  arch/arm/boot/dts/bcm283x.dtsi |   20 ++++++++++++++++++++
-> > >  1 file changed, 20 insertions(+)
-> > > 
-> > > diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
-> > > index a3106aa..4dc74f6 100644
-> > > --- a/arch/arm/boot/dts/bcm283x.dtsi
-> > > +++ b/arch/arm/boot/dts/bcm283x.dtsi
-> > > @@ -19,6 +19,25 @@
-> > >  		bootargs = "earlyprintk console=ttyAMA0";
-> > >  	};
-> > >  
-> > > +	thermal-zones {
-> > > +		cpu_thermal: cpu-thermal {
-> > > +			polling-delay-passive = <0>;
-> > > +			polling-delay = <1000>;
-> > > +
-> > 
-> > Check the diff I sent and also add the following for differentiating the
-> > offsets and slopes depending on which chip the zone describes:
-> > 			coefficients = <-538 407000>; /* for the zone on bcm2835 and bcm2836 */
-> > 
-> > and
-> > 
-> > 			coefficients = <-538 412000>; /* for the zone on bcm2837 */
-> > 
-> > 
-> > Despite the changes mentioned for the driver and DT, I am ok with the driver and the DTS descriptors.
-> 
-> thanks for providing the necessary driver changes, but the coefficients above causes a DTC parse error. The Device Tree doesn't provide support for native signed integer. Looking at this old thread [1] suggests to add parentheses which fixed the parse issue. But of-thermal expected u32 for coefficients [2].
-> 
-> Any suggestions?
+Signed-off-by: david.wu <david.wu@rock-chips.com>
+---
+ .../bindings/power/rockchip-io-domain.txt          |  1 +
+ drivers/power/avs/rockchip-io-domain.c             | 41 ++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
 
-I am OK if you provide a patch to of-thermal in your series, assuming
-that would fix the  representation issue the data of your driver has.
-
-BR,
-
-> 
-> [1] - http://lists.infradead.org/pipermail/linux-arm-kernel/2013-April/159681.html
-> [2] - http://elixir.free-electrons.com/source/drivers/thermal/of-thermal.c?v=4.10-rc7#L854
-> 
-> > 
-> > BR,
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index d23dc00..d3a5a93 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -33,6 +33,7 @@ Required properties:
+ - compatible: should be one of:
+   - "rockchip,rk3188-io-voltage-domain" for rk3188
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
++  - "rockchip,rk3328-io-voltage-domain" for rk3328
+   - "rockchip,rk3368-io-voltage-domain" for rk3368
+   - "rockchip,rk3368-pmu-io-voltage-domain" for rk3368 pmu-domains
+   - "rockchip,rk3399-io-voltage-domain" for rk3399
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index 56bce19..8581252 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -43,6 +43,10 @@
+ #define RK3288_SOC_CON2_FLASH0		BIT(7)
+ #define RK3288_SOC_FLASH_SUPPLY_NUM	2
+ 
++#define RK3328_SOC_CON4			0x410
++#define RK3328_SOC_CON4_VCCIO2		BIT(7)
++#define RK3328_SOC_VCCIO2_SUPPLY_NUM	1
++
+ #define RK3368_SOC_CON15		0x43c
+ #define RK3368_SOC_CON15_FLASH0		BIT(14)
+ #define RK3368_SOC_FLASH_SUPPLY_NUM	2
+@@ -166,6 +170,25 @@ static void rk3288_iodomain_init(struct rockchip_iodomain *iod)
+ 		dev_warn(iod->dev, "couldn't update flash0 ctrl\n");
+ }
+ 
++static void rk3328_iodomain_init(struct rockchip_iodomain *iod)
++{
++	int ret;
++	u32 val;
++
++	/* if no vccio2 supply we should leave things alone */
++	if (!iod->supplies[RK3328_SOC_VCCIO2_SUPPLY_NUM].reg)
++		return;
++
++	/*
++	 * set vccio2 iodomain to also use this framework
++	 * instead of a special gpio.
++	 */
++	val = RK3328_SOC_CON4_VCCIO2 | (RK3328_SOC_CON4_VCCIO2 << 16);
++	ret = regmap_write(iod->grf, RK3328_SOC_CON4, val);
++	if (ret < 0)
++		dev_warn(iod->dev, "couldn't update vccio2 vsel ctrl\n");
++}
++
+ static void rk3368_iodomain_init(struct rockchip_iodomain *iod)
+ {
+ 	int ret;
+@@ -247,6 +270,20 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 	.init = rk3288_iodomain_init,
+ };
+ 
++static const struct rockchip_iodomain_soc_data soc_data_rk3328 = {
++	.grf_offset = 0x410,
++	.supply_names = {
++		"vccio1",
++		"vccio2",
++		"vccio3",
++		"vccio4",
++		"vccio5",
++		"vccio6",
++		"pmuio",
++	},
++	.init = rk3328_iodomain_init,
++};
++
+ static const struct rockchip_iodomain_soc_data soc_data_rk3368 = {
+ 	.grf_offset = 0x900,
+ 	.supply_names = {
+@@ -312,6 +349,10 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 		.data = (void *)&soc_data_rk3288
+ 	},
+ 	{
++		.compatible = "rockchip,rk3328-io-voltage-domain",
++		.data = (void *)&soc_data_rk3328
++	},
++	{
+ 		.compatible = "rockchip,rk3368-io-voltage-domain",
+ 		.data = (void *)&soc_data_rk3368
+ 	},
+-- 
+1.9.1
