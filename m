@@ -1,64 +1,33 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCHv3 2/2] arch: Rename CONFIG_DEBUG_RODATA and
- CONFIG_DEBUG_MODULE_RONX
-Date: Mon, 20 Feb 2017 08:21:30 +0100
-Message-ID: <20170220072130.GB8974@gmail.com>
-References: <1486427518-14819-1-git-send-email-labbott@redhat.com>
- <1486427518-14819-3-git-send-email-labbott@redhat.com>
- <20170216222529.GA7531@amd>
- <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH 1/3] ARM: davinci: PM: Drop useless check for
+ PM_SUSPEND_STANDBY
+Date: Mon, 20 Feb 2017 14:00:49 +0530
+Message-ID: <76eb3b09-80bd-eb5a-db32-744a7b9e1f2c@ti.com>
+References: <1487347836-14427-1-git-send-email-geert+renesas@glider.be>
+ <1487347836-14427-2-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-6777-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Content-Disposition: inline
-In-Reply-To: <CAGXu5jJ4FD=6HLK_21T079JrO569DwWBTeiD18x3WRrYBsaAqw@mail.gmail.com>
-To: Kees Cook <keescook@chromium.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Laura Abbott <labbott@redhat.com>, Mark Rutland <mark.rutland@arm.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@parisc-linux.org>, "H. Peter Anvin" <hpa@zytor.com>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Rob Herring <robh@kernel.org>, Jessica Yu <jeyu@redhat.com>, Jonathan Corbet <corbet@lwn.net>, Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>, Russell King <linux@armlinux.org.uk>, Ingo Molnar <mingo@redhat.com>, Len Brown <len.brown@intel.com>, "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>, Will Deacon <will.deacon@arm.com>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>l
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:65415 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751364AbdBTIbk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 03:31:40 -0500
+In-Reply-To: <1487347836-14427-2-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>, Dinh Nguyen <dinguyen@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
+On Friday 17 February 2017 09:40 PM, Geert Uytterhoeven wrote:
+> As DaVinci uses the standard suspend_valid_only_mem() for its
+> platform_suspend_ops.valid() callback, its platform_suspend_ops.enter()
+> callback will never be called with state equal to PM_SUSPEND_STANDBY.
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-* Kees Cook <keescook@chromium.org> wrote:
-
-> On Thu, Feb 16, 2017 at 2:25 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> > Hi!
-> >
-> >>
-> >> -config DEBUG_RODATA
-> >> +config STRICT_KERNEL_RWX
-> >>       bool "Make kernel text and rodata read-only" if ARCH_OPTIONAL_KERNEL_RWX
-> >>       depends on ARCH_HAS_STRICT_KERNEL_RWX
-> >>       default !ARCH_OPTIONAL_KERNEL_RWX ||
-> >
-> > Debug features are expected to have runtime cost, so kconfig help is
-> > silent about those. But there are runtime costs, right? It would be
-> > nice to mention them in the help text...
-> 
-> It depends on the architecture. The prior help text for arm said:
-> 
->          The tradeoff is that each region is padded to section-size (1MiB)
->          boundaries (because their permissions are different and splitting
->          the 1M pages into 4K ones causes TLB performance problems), which
->          can waste memory.
-> 
-> parisc (somewhat inaccurately) said:
-> 
->          This option may have a slight performance impact because a
->          portion of the kernel code won't be covered by a TLB anymore.
-> 
-> IIUC, arm64 does what parisc is hinting at: mappings at the end are
-> broken down to PAGE_SIZE. On x86, IIUC, there's actually no change to
-> TLB performance due to how the mappings are already set up.
-
-BTW., a good strategy with RAM sizes above say 4GB would be to just round up to 
-the next large-TLB boundary (2MB) and waste 0-2MB of RAM - which is only 0.05% of 
-4GB of RAM. On most workloads, especially with SSDs it's probably a positive RAM 
-vs. performance trade-off.
+Looks good to me. Whats the plan for applying the series. Do you want
+the individual machine maintainers to apply their parts. Or some other?
 
 Thanks,
-
-	Ingo
+Sekhar
