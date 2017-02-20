@@ -1,49 +1,42 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [GIT PULL] Thermal SoC management updates for v4.11-rc1 #1
-Date: Mon, 20 Feb 2017 09:59:14 -0800
-Message-ID: <20170220175912.GA1866@localhost.localdomain>
-References: <20170219015330.GC20845@localhost.localdomain>
- <CA+55aFxrcLMZDgM2NAz_uszZEYrT-aQ5Dp_Ms_tm8tvGKf8Mkw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CA+55aFxrcLMZDgM2NAz_uszZEYrT-aQ5Dp_Ms_tm8tvGKf8Mkw@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Rui Zhang <rui.zhang@intel.com>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Subject: [PATCH] PM / OPP: fix off-by-one bug in
+ dev_pm_opp_get_max_volt_latency loop
+Date: Mon, 20 Feb 2017 19:57:57 +0100
+Message-ID: <1487617077-21865-1-git-send-email-a.hajda@samsung.com>
+References: <CGME20170220185824eucas1p227fb1d8679f66825702296113c776095@eucas1p2.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:34547 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750868AbdBTS6e (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 13:58:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Andrzej Hajda <a.hajda@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-Hello Linus,
+Reading array at given index before checking if index is valid results in
+illegal memory access.
 
-On Mon, Feb 20, 2017 at 09:51:37AM -0800, Linus Torvalds wrote:
-> Eduardo,
->  i'm ignoring this pull request because it seems to be meant for Rui
-> ("Hello Rui"), even though he was just Cc'd and I was on the "To:"
-> field.
+The bug was detected using KASAN framework.
 
+Signed-off-by: Andrzej Hajda <a.hajda@samsung.com>
+---
+ drivers/base/power/opp/core.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Please ignore this pull. Yes, this pull was wrongly sent with your
-email  in the To: line. My bad here as I generated the wrong mbox.
-
-> 
-> So if you actually meant for me to pull it directly and the "Hello"
-> was just a thinko, please re-send saying so, so that it doesn't get
-> lost.
-
-I am resending this one, but this goes typically to Rui first, so he
-builds a single pull to you, to avoid too many changes going directly to
-you from the thermal subsystem.
-
-For for now, ignore this.
-
-Sorry for the noise.
-
-> 
->                   Linus
-> 
-> On Sat, Feb 18, 2017 at 5:53 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> > Hello Rui,
-> >
-> > Please pull the following changes to get the Thermal SoC updates
-> > for 4.11-rc1. [...]
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 91ec323..dae6172 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -231,7 +231,8 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev)
+ 	 * The caller needs to ensure that opp_table (and hence the regulator)
+ 	 * isn't freed, while we are executing this routine.
+ 	 */
+-	for (i = 0; reg = regulators[i], i < count; i++) {
++	for (i = 0; i < count; i++) {
++		reg = regulators[i];
+ 		ret = regulator_set_voltage_time(reg, uV[i].min, uV[i].max);
+ 		if (ret > 0)
+ 			latency_ns += ret * 1000;
+-- 
+2.7.4
