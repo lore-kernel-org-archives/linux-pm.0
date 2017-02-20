@@ -1,46 +1,37 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/3] ARM: davinci: PM: Drop useless check for PM_SUSPEND_STANDBY
-Date: Mon, 20 Feb 2017 09:40:44 +0100
-Message-ID: <CAMuHMdVdMeY0WFrpG_k_Ahd_EcLVTgaTW7+Z1imGmzs67uLuHg@mail.gmail.com>
-References: <1487347836-14427-1-git-send-email-geert+renesas@glider.be>
- <1487347836-14427-2-git-send-email-geert+renesas@glider.be> <76eb3b09-80bd-eb5a-db32-744a7b9e1f2c@ti.com>
+From: Steve Twiss <stwiss.opensource@diasemi.com>
+Subject: RE: [RESEND PATCH V5 7/8] thermal: da9062/61: Thermal junction
+ temperature monitoring driver
+Date: Mon, 20 Feb 2017 08:44:25 +0000
+Message-ID: <6ED8E3B22081A4459DAC7699F3695FB7018CD61B94@SW-EX-MBX02.diasemi.com>
+References: <cover.1486026227.git.stwiss.opensource@diasemi.com>
+ <6a1a651530fdaedd3e380aa33749ca5fce1a80a8.1486026227.git.stwiss.opensource@diasemi.com>
+ <20170219014007.GA20845@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:35186 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751147AbdBTIkq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 03:40:46 -0500
-In-Reply-To: <76eb3b09-80bd-eb5a-db32-744a7b9e1f2c@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <20170219014007.GA20845@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-input-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: LINUX-KERNEL <linux-kernel@vger.kernel.org>, LINUX-PM <linux-pm@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, DEVICETREE <devicetree@vger.kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Guenter Roeck <linux@roeck-us.net>, LINUX-INPUT <linux-input@vger.kernel.org>, LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Lukasz Luba <lukasz.luba@arm.com>, Mark Brown <broonie@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, Support Opensource <Support.Opensource@diasemi.com>, Wim Van Sebroeck <wim@iguana.be>
 List-Id: linux-pm@vger.kernel.org
-To: Sekhar Nori <nsekhar@ti.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>, Dinh Nguyen <dinguyen@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi Sekhar,
+On 19 February 2017 01:40, Eduardo Valentin wrote:
+> Subject: Re: [RESEND PATCH V5 7/8] thermal: da9062/61: Thermal junction
+> temperature monitoring driver
+> 
+> Steve,
+> 
+> Apologize for the very late answer on your driver. I still have few
+> minor requests, please check then:
+> 
 
-On Mon, Feb 20, 2017 at 9:30 AM, Sekhar Nori <nsekhar@ti.com> wrote:
-> On Friday 17 February 2017 09:40 PM, Geert Uytterhoeven wrote:
->> As DaVinci uses the standard suspend_valid_only_mem() for its
->> platform_suspend_ops.valid() callback, its platform_suspend_ops.enter()
->> callback will never be called with state equal to PM_SUSPEND_STANDBY.
->>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->
-> Looks good to me. Whats the plan for applying the series. Do you want
-> the individual machine maintainers to apply their parts. Or some other?
+Hi Eduardo,
 
-I think the individual machine maintainers is the simplest.
+No problem. I'll check your comments out, rebase to the latest linux-mainline tag and
+then send out a new patch set.
 
-Thanks!
+Regards,
+Steve
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
