@@ -1,78 +1,69 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/2] docs / driver-api: Fix structure references in device_link.rst
-Date: Mon, 20 Feb 2017 15:28:13 +0100
-Message-ID: <4822025.8oYAtUioMI@aspire.rjw.lan>
-References: <5600266.RVHWUkZ3Co@aspire.rjw.lan>
+Subject: Re: [PATCH] cpufreq: schedutil: govern how frequently we change frequency with rate_limit
+Date: Mon, 20 Feb 2017 15:53:46 +0100
+Message-ID: <3019123.ARXB68SVNi@aspire.rjw.lan>
+References: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org> <20170220095803.GT21911@vireshk-i7> <4853380.1xLm2rt1ou@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5600266.RVHWUkZ3Co@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58499 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753297AbdBTO7K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 09:59:10 -0500
+In-Reply-To: <4853380.1xLm2rt1ou@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, February 20, 2017 02:49:18 PM Rafael J. Wysocki wrote:
+> On Monday, February 20, 2017 03:28:03 PM Viresh Kumar wrote:
+> > On 17-02-17, 13:48, Peter Zijlstra wrote:
+> > > On Fri, Feb 17, 2017 at 01:15:56PM +0100, Rafael J. Wysocki wrote:
+> > > > On Thursday, February 16, 2017 01:36:05 PM Peter Zijlstra wrote:
+> > > > > On Thu, Feb 16, 2017 at 03:42:10PM +0530, Viresh Kumar wrote:
+> > > > > > But when I discussed this with Vincent, he suggested that it may not be required
+> > > > > > at all as the scheduler (with the helped of "decayed") doesn't call into
+> > > > > > schedutil too often, i.e. at least 1 ms. And if the CPUs are stable enough (i.e.
+> > > > > > no interruptions to the running task), we wouldn't reevaluate before the next
+> > > > > > tick.
+> > > > > 
+> > > > > There are still the attach/detach callers to cfs_rq_util_change() that
+> > > > > kick in for fork/exit and migration.
+> > > > > 
+> > > > > But yes, barring those we shouldn't end up calling it at silly rates.
+> > > > 
+> > > > OK
+> > > > 
+> > > > Does this mean that running governor computations every time its callback
+> > > > is invoked by the scheduler would be fine?
+> > > 
+> > > I'd say yes right up till the point someone reports a regression ;-)
+> > 
+> > @Rafael: Do you want me to send a V2 with the changes you suggested in
+> > commit log?
+> 
+> Yes, in general, but I have more suggestions regarding that. :-)
+> 
+> I'll send them shortly.
 
-The format of the structure references in device_link.rst is
-incorrect, because it doesn't cause proper references to the
-struct data types to be generated (for struct dev_pm_domain in
-particular).
+OK, so I think that the patch subject should be something like "Redefine the
+rate_limit_ns" tunable, because that's what really is going on here.
 
-Fix that by using the :c:type:`struct name <name>` convention
-for encoding references to struct data types.
+Next, IMO the changelog should say something like this:
 
-Fixes: aad800403a87 (Documentation/core-api/device_link: Add initial documentation)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/driver-api/device_link.rst |   18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+"The rate_limit_ns tunable is intended to reduce the possible overhead from
+running the schedutil governor.  However, that overhead can be divided into two
+separate parts: the governor computations and the invocation of the scaling
+driver to set the CPU frequency.  The former is much less expensive in terms of
+execution time and running it every time the governor callback is invoked by
+the scheduler would not be a problem, so the latter is where the real overhead
+comes from.
 
-Index: linux-pm/Documentation/driver-api/device_link.rst
-===================================================================
---- linux-pm.orig/Documentation/driver-api/device_link.rst
-+++ linux-pm/Documentation/driver-api/device_link.rst
-@@ -1,3 +1,6 @@
-+.. |struct dev_pm_domain| replace:: :c:type:`struct dev_pm_domain <dev_pm_domain>`
-+.. |struct generic_pm_domain| replace:: :c:type:`struct generic_pm_domain <generic_pm_domain>`
-+
- ============
- Device links
- ============
-@@ -120,12 +123,11 @@ Examples
-   is the same as if the MMU was the parent of the master device.
- 
-   The fact that both devices share the same power domain would normally
--  suggest usage of a :c:type:`struct dev_pm_domain` or :c:type:`struct
--  generic_pm_domain`, however these are not independent devices that
--  happen to share a power switch, but rather the MMU device serves the
--  busmaster device and is useless without it.  A device link creates a
--  synthetic hierarchical relationship between the devices and is thus
--  more apt.
-+  suggest usage of a |struct dev_pm_domain| or |struct generic_pm_domain|,
-+  however these are not independent devices that happen to share a power
-+  switch, but rather the MMU device serves the busmaster device and is
-+  useless without it.  A device link creates a synthetic hierarchical
-+  relationship between the devices and is thus more apt.
- 
- * A Thunderbolt host controller comprises a number of PCIe hotplug ports
-   and an NHI device to manage the PCIe switch.  On resume from system sleep,
-@@ -157,7 +159,7 @@ Examples
- Alternatives
- ============
- 
--* A :c:type:`struct dev_pm_domain` can be used to override the bus,
-+* A |struct dev_pm_domain| can be used to override the bus,
-   class or device type callbacks.  It is intended for devices sharing
-   a single on/off switch, however it does not guarantee a specific
-   suspend/resume ordering, this needs to be implemented separately.
-@@ -166,7 +168,7 @@ Alternatives
-   suspended.  Furthermore it cannot be used to enforce a specific shutdown
-   ordering or a driver presence dependency.
- 
--* A :c:type:`struct generic_pm_domain` is a lot more heavyweight than a
-+* A |struct generic_pm_domain| is a lot more heavyweight than a
-   device link and does not allow for shutdown ordering or driver presence
-   dependencies.  It also cannot be used on ACPI systems.
- 
+For this reason, redefine the rate_limit_ns tunable so that it means the
+minimum time that has to pass between two consecutive invocations of the
+scaling driver by the schedutil governor (to set the CPU frequency)."
+
+Thanks,
+Rafael
