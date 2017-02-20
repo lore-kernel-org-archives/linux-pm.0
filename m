@@ -1,7 +1,7 @@
 From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v19 2/4] usb: gadget: Support for the usb charger framework
-Date: Mon, 20 Feb 2017 16:51:08 +0800
-Message-ID: <b12c8ed224a033a2d5290df881ecb77fe22e388d.1487578977.git.baolin.wang@linaro.org>
+Subject: [PATCH v19 3/4] usb: gadget: Integrate with the usb gadget supporting for usb charger
+Date: Mon, 20 Feb 2017 16:51:09 +0800
+Message-ID: <084edac2d7732525d8dc437f6adbd7867377100c.1487578977.git.baolin.wang@linaro.org>
 References: <cover.1487578977.git.baolin.wang@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1487578977.git.baolin.wang@linaro.org>
@@ -12,125 +12,158 @@ To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, dbaryshkov@gma
 Cc: robh@kernel.org, jun.li@nxp.com, m.szyprowski@samsung.com, ruslan.bilovol@gmail.com, peter.chen@freescale.com, stern@rowland.harvard.edu, grygorii.strashko@ti.com, yoshihiro.shimoda.uh@renesas.com, lee.jones@linaro.org, broonie@kernel.org, john.stultz@linaro.org, neilb@suse.com, ckeepax@opensource.wolfsonmicro.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-For supporting the usb charger, it adds the usb_charger_init() and
-usb_charger_exit() functions for usb charger initialization and exit.
-
-It will report to the usb charger when the gadget state is changed,
-then the usb charger can do the power things.
+When the usb gadget supporting for usb charger is ready, the usb charger
+can implement the usb_charger_plug_by_gadget() function, usb_charger_exit()
+function and dev_to_uchger() function by getting 'struct usb_charger' from
+'struct gadget'.
 
 Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
 Reviewed-by: Li Jun <jun.li@nxp.com>
 Tested-by: Li Jun <jun.li@nxp.com>
 ---
- drivers/usb/gadget/udc/core.c |   19 ++++++++++++++++++-
- include/linux/usb/gadget.h    |    3 +++
- 2 files changed, 21 insertions(+), 1 deletion(-)
+ drivers/usb/gadget/udc/charger.c |   97 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 96 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/gadget/udc/core.c b/drivers/usb/gadget/udc/core.c
-index 9483489..90df022 100644
---- a/drivers/usb/gadget/udc/core.c
-+++ b/drivers/usb/gadget/udc/core.c
-@@ -25,6 +25,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/workqueue.h>
+diff --git a/drivers/usb/gadget/udc/charger.c b/drivers/usb/gadget/udc/charger.c
+index 6d62f54..19eb044 100644
+--- a/drivers/usb/gadget/udc/charger.c
++++ b/drivers/usb/gadget/udc/charger.c
+@@ -38,7 +38,9 @@
  
-+#include <linux/usb/charger.h>
- #include <linux/usb/ch9.h>
- #include <linux/usb/gadget.h>
- #include <linux/usb.h>
-@@ -576,12 +577,17 @@ int usb_gadget_vbus_connect(struct usb_gadget *gadget)
-  * reporting how much power the device may consume.  For example, this
-  * could affect how quickly batteries are recharged.
-  *
-+ * It will also notify the USB charger how much power the device may
-+ * consume if there is a USB charger linking with the gadget.
-+ *
-  * Returns zero on success, else negative errno.
-  */
- int usb_gadget_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+ static struct usb_charger *dev_to_uchger(struct device *dev)
  {
- 	int ret = 0;
- 
-+	usb_charger_set_cur_limit_by_gadget(gadget, mA);
+-	return NULL;
++	struct usb_gadget *gadget = container_of(dev, struct usb_gadget, dev);
 +
- 	if (!gadget->ops->vbus_draw) {
- 		ret = -EOPNOTSUPP;
- 		goto out;
-@@ -963,6 +969,9 @@ static void usb_gadget_state_work(struct work_struct *work)
- 	struct usb_gadget *gadget = work_to_gadget(work);
- 	struct usb_udc *udc = gadget->udc;
- 
-+	/* when the gadget state is changed, then report to USB charger */
-+	usb_charger_plug_by_gadget(gadget, gadget->state);
-+
- 	if (udc)
- 		sysfs_notify(&udc->dev.kobj, NULL, "state");
++	return gadget->charger;
  }
-@@ -1132,6 +1141,10 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
- 	if (ret)
- 		goto err4;
  
-+	ret = usb_charger_init(gadget);
+ /*
+@@ -398,6 +400,18 @@ static int __usb_charger_set_cur_limit_by_type(struct usb_charger *uchger,
+ int usb_charger_set_cur_limit_by_gadget(struct usb_gadget *gadget,
+ 					unsigned int cur_limit)
+ {
++	struct usb_charger *uchger = gadget->charger;
++	int ret;
++
++	if (!uchger)
++		return -EINVAL;
++
++	ret = __usb_charger_set_cur_limit_by_type(uchger, uchger->type,
++						  cur_limit);
 +	if (ret)
-+		goto err5;
++		return ret;
 +
- 	usb_gadget_set_state(gadget, USB_STATE_NOTATTACHED);
- 	udc->vbus = true;
- 
-@@ -1143,7 +1156,7 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
- 			if (ret != -EPROBE_DEFER)
- 				list_del(&driver->pending);
- 			if (ret)
--				goto err5;
-+				goto err6;
- 			break;
- 		}
- 	}
-@@ -1152,6 +1165,9 @@ int usb_add_gadget_udc_release(struct device *parent, struct usb_gadget *gadget,
- 
++	schedule_work(&uchger->work);
  	return 0;
- 
-+err6:
-+	usb_charger_exit(gadget);
-+
- err5:
- 	device_del(&udc->dev);
- 
-@@ -1263,6 +1279,7 @@ void usb_del_gadget_udc(struct usb_gadget *gadget)
- 	kobject_uevent(&udc->dev.kobj, KOBJ_REMOVE);
- 	flush_work(&gadget->work);
- 	device_unregister(&udc->dev);
-+	usb_charger_exit(gadget);
- 	device_unregister(&gadget->dev);
  }
- EXPORT_SYMBOL_GPL(usb_del_gadget_udc);
-diff --git a/include/linux/usb/gadget.h b/include/linux/usb/gadget.h
-index e4516e9..b4d7be2 100644
---- a/include/linux/usb/gadget.h
-+++ b/include/linux/usb/gadget.h
-@@ -24,6 +24,7 @@
- #include <linux/types.h>
- #include <linux/workqueue.h>
- #include <linux/usb/ch9.h>
-+#include <linux/usb/charger.h>
+ EXPORT_SYMBOL_GPL(usb_charger_set_cur_limit_by_gadget);
+@@ -622,11 +636,66 @@ static int usb_charger_plug_by_extcon(struct notifier_block *nb,
+ int usb_charger_plug_by_gadget(struct usb_gadget *gadget,
+ 			       unsigned long state)
+ {
++	struct usb_charger *uchger = gadget->charger;
++	enum usb_charger_state uchger_state;
++
++	if (WARN(!uchger, "charger can not be NULL"))
++		return -EINVAL;
++
++	/*
++	 * Report event to power to setting the current limitation
++	 * for this usb charger when one usb charger state is changed
++	 * with detecting by usb gadget state.
++	 */
++	if (uchger->old_gadget_state != state) {
++		uchger->old_gadget_state = state;
++
++		if (state >= USB_STATE_ATTACHED) {
++			uchger_state = USB_CHARGER_PRESENT;
++		} else if (state == USB_STATE_NOTATTACHED) {
++			mutex_lock(&uchger->lock);
++
++			/*
++			 * Need check the charger type to make sure the usb
++			 * cable is removed, in case it just changes the usb
++			 * function with configfs.
++			 */
++			if (uchger->type != UNKNOWN_TYPE) {
++				mutex_unlock(&uchger->lock);
++				return 0;
++			}
++
++			mutex_unlock(&uchger->lock);
++			uchger_state = USB_CHARGER_ABSENT;
++		} else {
++			uchger_state = USB_CHARGER_DEFAULT;
++		}
++
++		usb_charger_notify_state(uchger, uchger_state);
++	}
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL_GPL(usb_charger_plug_by_gadget);
  
- #define UDC_TRACE_STR_MAX	512
+ /*
++ * usb_charger_unregister() - Unregister a usb charger.
++ * @uchger - the usb charger to be unregistered.
++ */
++static int usb_charger_unregister(struct usb_charger *uchger)
++{
++	ida_simple_remove(&usb_charger_ida, uchger->id);
++	sysfs_remove_groups(&uchger->gadget->dev.kobj, usb_charger_groups);
++	uchger->id = -1;
++
++	mutex_lock(&charger_lock);
++	list_del(&uchger->list);
++	mutex_unlock(&charger_lock);
++
++	return 0;
++}
++
++/*
+  * usb_charger_register() - Register a new usb charger.
+  * @uchger - the new usb charger instance.
+  */
+@@ -725,6 +794,7 @@ int usb_charger_init(struct usb_gadget *ugadget)
+ 	}
  
-@@ -328,6 +329,7 @@ struct usb_gadget_ops {
-  * @in_epnum: last used in ep number
-  * @mA: last set mA value
-  * @otg_caps: OTG capabilities of this gadget.
-+ * @charger: Negotiate the power with the usb charger.
-  * @sg_supported: true if we can handle scatter-gather
-  * @is_otg: True if the USB device port uses a Mini-AB jack, so that the
-  *	gadget driver must provide a USB OTG descriptor.
-@@ -387,6 +389,7 @@ struct usb_gadget {
- 	unsigned			in_epnum;
- 	unsigned			mA;
- 	struct usb_otg_caps		*otg_caps;
-+	struct usb_charger		*charger;
+ 	uchger->gadget = ugadget;
++	ugadget->charger = uchger;
+ 	uchger->old_gadget_state = USB_STATE_NOTATTACHED;
  
- 	unsigned			sg_supported:1;
- 	unsigned			is_otg:1;
+ 	/* Register a new usb charger */
+@@ -762,6 +832,31 @@ int usb_charger_init(struct usb_gadget *ugadget)
+ 
+ int usb_charger_exit(struct usb_gadget *ugadget)
+ {
++	struct usb_charger *uchger = ugadget->charger;
++
++	if (!uchger)
++		return -EINVAL;
++
++	usb_charger_unregister(uchger);
++	ugadget->charger = NULL;
++
++	extcon_unregister_notifier(uchger->extcon_dev,
++				   EXTCON_USB,
++				   &uchger->extcon_nb.nb);
++	extcon_unregister_notifier(uchger->extcon_dev,
++				   EXTCON_CHG_USB_SDP,
++				   &uchger->extcon_type_nb.nb);
++	extcon_unregister_notifier(uchger->extcon_dev,
++				   EXTCON_CHG_USB_CDP,
++				   &uchger->extcon_type_nb.nb);
++	extcon_unregister_notifier(uchger->extcon_dev,
++				   EXTCON_CHG_USB_DCP,
++				   &uchger->extcon_type_nb.nb);
++	extcon_unregister_notifier(uchger->extcon_dev,
++				   EXTCON_CHG_USB_ACA,
++				   &uchger->extcon_type_nb.nb);
++
++	kfree(uchger);
+ 	return 0;
+ }
+ 
 -- 
 1.7.9.5
