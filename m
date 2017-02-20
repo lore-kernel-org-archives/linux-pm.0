@@ -1,96 +1,323 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 0/6] PSCI: Fix non-PMIC wake-up if SYSTEM_SUSPEND cuts power
-Date: Mon, 20 Feb 2017 21:33:23 +0100
-Message-ID: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>
-Cc: Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management updates for v4.11-rc1
+Date: Tue, 21 Feb 2017 00:39:05 +0100
+Message-ID: <CAJZ5v0iFCYqHeGD1MejBCsFAr3fd=8=e1BWrc0BsctHqCkXYCQ@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-	Hi all,
+Hi Linus,
 
-This patch series adds support for using non-PMIC wake-up sources on the
-Renesas R-Car Gen3 (H3 or M3-W) Salvator-X development boards.
+Please pull from the tag
 
-Nothing in the PSCI specification requires the SoC to remain powered and
-to support wake-up sources when suspended using SYSTEM_SUSPEND.
-If the firmware implements the PSCI SYSTEM_SUSPEND operation by cutting
-power to the SoC, the only possibly wake-up sources are thus the ones
-connected to the PMIC.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.11-rc1
 
-To allow other wake-up sources, this patch series documents and adds
-support for an "arm,psci-system-suspend-is-power-down" DT property, so
-Linux uses a different suspend method when other wake-up sources (e.g.
-wake on LAN, UART or GPIO) are enabled.  Hence the user no longer has to
-manually restrict "mem" suspend to "s2idle" or "shallow" states using:
+with top-most commit eee77a8a0d268b936b1641fd7d55efaa17c351d6
 
-    $ echo s2idle > /sys/power/mem_sleep # or "shallow"
+ Merge branch 'pm-tools'
 
-Contents:
-  - Patch 1 prevents the alarmtimer from showing up as a wake-up source
-    when no wake-up capable RTC device is present in the system,
-  - Patch 2 provides an API to check if any wake-up sources have been
-    registered,
-  - Patch 3 implements "shallow" suspend mode on systems using PSCI,
-    in addition to the existing "s2idle" and "deep" suspend modes,
-  - Patch 4 makes the system use "shallow" instead of "deep" suspend
-    mode on systems where this is needed to support non-PMIC wake-up
-    sources,
-  - Patches 5 and 6 enable the above on Renesas R-Car H3 and M3-W
-    systems.
+on top of commit 7089db84e356562f8ba737c29e472cc42d530dbc
 
-Dependencies:
-  - The three first patches are independent,
-  - The fourth patch depends on the first three patches,
-  - The DTS patches depend on acceptance of the DT bindings in patch 4.
+ Linux 4.10-rc8
 
-This has been tested on both the Renesas R-Car H3 (quad A57*)
-and M3-W (dual A57*) Salvator-X development boards
-(*A53 cores are unused).
+to receive power management updates for v4.11-rc1.
 
-Power consumption:
+The majority of changes go into the Operating Performance Points (OPP)
+framework and cpufreq this time, followed by devfreq and some scattered
+updates all over.
 
-		H3	M3-W
-		--	----
-  - idle:	9.2 W	7.6 W
-  - s2idle:	8.6 W	6.3 W
-  - shallow:	8.4 W	6.2 W	(secondary CPU cores off)
-  - deep:	1.4 W	1.2 W	(PSCI_SYSTEM_SUSPEND)
-  - shutdown:	7.7 W	5.6 W	(PSCI SYSTEM_OFF: needs improvement)
-  - poweroff:	1.3 W	1.1 W	(fan running)
+The OPP changes are mostly related to switching over from RCU-based
+synchronization, that turned out to be overly complicated and
+problematic, to reference counting using krefs.
 
-Thanks for your comments!
+In the cpufreq land there are core cleanups, documentation updates,
+a new driver for Broadcom BMIPS SoCs, a new cpufreq-dt sub-driver for
+TI SoCs that require special handling, ARM64 SoCs support for the
+qoriq driver, intel_pstate updates, powernv driver update and assorted
+fixes.
 
-Geert Uytterhoeven (6):
-  alarmtimer: Postpone wake-up source registration until really
-    available
-  PM / Wakeup: Add wakeup_source_available()
-  drivers: firmware: psci: Implement shallow suspend mode
-  drivers: firmware: psci: Fix non-PMIC wake-up if SYSTEM_SUSPEND cuts
-    power
-  arm64: dts: r8a7795: Fix non-PMIC wake-up sources
-  arm64: dts: r8a7796: Fix non-PMIC wake-up sources
+The devfreq changes are mostly fixes related to the sysfs interface and
+some Exynos drivers updates.
 
- Documentation/devicetree/bindings/arm/psci.txt | 11 ++++++++
- arch/arm64/boot/dts/renesas/r8a7795.dtsi       |  1 +
- arch/arm64/boot/dts/renesas/r8a7796.dtsi       |  1 +
- drivers/base/power/wakeup.c                    |  8 ++++++
- drivers/firmware/psci.c                        | 39 ++++++++++++++++++++++++--
- include/linux/pm_wakeup.h                      |  3 ++
- kernel/time/alarmtimer.c                       |  9 +++++-
- 7 files changed, 68 insertions(+), 4 deletions(-)
+Apart from that, the cpuidle menu governor will support per-CPU PM QoS
+constraints for the wakeup latency now, some bugs in the wakeup IRQs
+framework are fixed, the generic power domains framework should handle
+asynchronous invocations of *noirq suspend/resume callbacks from now on,
+the analyze_suspend.py script is updated and there is a new tool for
+intel_pstate diagnostics.
 
--- 
-2.7.4
+Specifics:
 
-Gr{oetje,eeting}s,
+ - Operating Performance Points (OPP) framework fixes, cleanups and
+   switch over from RCU-based synchronization to reference counting
+   using krefs (Viresh Kumar, Wei Yongjun, Dave Gerlach).
 
-						Geert
+ - cpufreq core cleanups and documentation updates (Viresh Kumar,
+   Rafael Wysocki).
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ - New cpufreq driver for Broadcom BMIPS SoCs (Markus Mayer).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ - New cpufreq-dt sub-driver for TI SoCs requiring special handling,
+   like in the AM335x, AM437x, DRA7x, and AM57x families, along with
+   new DT bindings for it (Dave Gerlach, Paul Gortmaker).
+
+ - ARM64 SoCs support for the qoriq cpufreq driver (Tang Yuantian).
+
+ - intel_pstate driver updates including a new sysfs knob to control
+   the driver's operation mode and fixes related to the no_turbo
+   sysfs knob and the hardware-managed P-states feature support
+   (Rafael Wysocki, Srinivas Pandruvada).
+
+ - New interface to export ultra-turbo frequencies for the powernv
+   cpufreq driver (Shilpasri Bhat).
+
+ - Assorted fixes for cpufreq drivers (Arnd Bergmann, Dan Carpenter,
+   Wei Yongjun).
+
+ - devfreq core fixes, mostly related to the sysfs interface exported
+   by it (Chanwoo Choi, Chris Diamand).
+
+ - Updates of the exynos-bus and exynos-ppmu devfreq drivers (Chanwoo
+   Choi).
+
+ - Device PM QoS extension to support CPUs and support for per-CPU
+   wakeup (device resume) latency constraints in the cpuidle menu
+   governor (Alex Shi).
+
+ - Wakeup IRQs framework fixes (Grygorii Strashko).
+
+ - Generic power domains framework update including a fix to make
+   it handle asynchronous invocations of *noirq suspend/resume
+   callbacks correctly (Ulf Hansson, Geert Uytterhoeven).
+
+ - Assorted fixes and cleanups in the core suspend/hibernate code,
+   PM QoS framework and x86 ACPI idle support code (Corentin Labbe,
+   Geert Uytterhoeven, Geliang Tang, John Keeping, Nick Desaulniers).
+
+ - Update of the analyze_suspend.py script is updated to version 4.5
+   offering multiple improvements (Todd Brandt).
+
+ - New tool for intel_pstate diagnostics using the pstate_sample
+   tracepoint (Doug Smythies).
+
+Thanks!
+
+---------------
+
+Alex Shi (3):
+      cpuidle/menu: stop seeking deeper idle if current state is deep enough
+      cpuidle/menu: add per CPU PM QoS resume latency consideration
+      CPU / PM: expose pm_qos_resume_latency for CPUs
+
+Arnd Bergmann (1):
+      cpufreq: CPPC: add ACPI_PROCESSOR dependency
+
+Chanwoo Choi (11):
+      PM / devfreq: exynos-bus: Add the detailed correlation for Exynos5433
+      PM / devfreq: exynos-ppmu: Use the regmap interface to handle
+the registers
+      PM / devfreq: exynos-bus: Print the real clock rate of bus
+      PM / devfreq: Fix the checkpatch warnings
+      PM / devfreq: Fix the wrong description for userspace governor
+      PM / devfreq: exynos-ppmu: Show the registred device for ppmu device
+      PM / devfreq: Fix available_governor sysfs
+      PM / devfreq: Fix wrong trans_stat of passive devfreq device
+      PM / devfreq: Remove unnecessary separate _remove_devfreq()
+      PM / devfreq: Simplify the sysfs name of devfreq-event device
+      PM / devfreq: Modify the device name as devfreq(X) for sysfs
+
+Chris Diamand (1):
+      PM / devfreq: Don't delete sysfs group twice
+
+Corentin LABBE (1):
+      PM / QoS: Remove unneeded linux/miscdevice.h include
+
+Dan Carpenter (1):
+      cpufreq: s3c2416: double free on driver init error path
+
+Dave Gerlach (4):
+      PM / OPP: Expose _of_get_opp_desc_node as dev_pm_opp API
+      Documentation: dt: add bindings for ti-cpufreq
+      cpufreq: ti: Add cpufreq driver to determine available OPPs at runtime
+      cpufreq: dt: Don't use generic platdev driver for ti-cpufreq platforms
+
+Doug Smythies (1):
+      tools/power/x86: Debug utility for intel_pstate driver
+
+Geert Uytterhoeven (3):
+      PM / Domains: Provide dummy governors if CONFIG_PM_GENERIC_DOMAINS=n
+      PM / sleep: Fix test_suspend after sleep state rework
+      PM / Documentation: Spelling s/wrtie/write/
+
+Geliang Tang (1):
+      PM / Hibernate: Use rb_entry() instead of container_of()
+
+Grygorii Strashko (3):
+      PM / wakeirq: Enable dedicated wakeirq for suspend
+      PM / wakeirq: Fix spurious wake-up events for dedicated wakeirqs
+      PM / wakeirq: report a wakeup_event on dedicated wekup irq
+
+John Keeping (1):
+      PM / QoS: Fix memory leak on resume_latency.notifiers
+
+Markus Mayer (5):
+      MIPS: BMIPS: Update defconfig
+      BMIPS: Enable prerequisites for CPUfreq in MIPS Kconfig.
+      cpufreq: bmips-cpufreq: CPUfreq driver for Broadcom's BMIPS SoCs
+      MIPS: BMIPS: enable CPUfreq
+      MAINTAINERS: cpufreq: add bmips-cpufreq.c
+
+Nick Desaulniers (1):
+      ACPI / idle: small formatting fixes
+
+Paul Gortmaker (1):
+      cpufreq: make ti-cpufreq explicitly non-modular
+
+Rafael J. Wysocki (3):
+      cpufreq: intel_pstate: Expose global sysfs attributes upfront
+      cpufreq: intel_pstate: Operation mode control from sysfs
+      cpufreq: Do not clear real_cpus mask on policy init
+
+Shilpasri G Bhat (1):
+      cpufreq: powernv: Add boost files to export ultra-turbo frequencies
+
+Srinivas Pandruvada (3):
+      cpufreq: intel_pstate: Lower frequency than expected under no_turbo
+      cpufreq: intel_pstate: Make HWP limits compatible with legacy
+      cpufreq: intel_pstate: Calculate guaranteed performance for HWP
+
+Tang Yuantian (2):
+      cpufreq: qoriq: add ARM64 SoCs support
+      cpufreq: qoriq: Don't look at clock implementation details
+
+Todd E Brandt (4):
+      scripts: analyze_suspend.py: Update to upstream v4.3
+      scripts: analyze_suspend.py: Update to upstream v4.4
+      scripts: analyze_suspend.py: Update to upstream v4.5
+      AnalyzeSuspend: fix drag and zoom bug in javascript
+
+Ulf Hansson (3):
+      PM / Domains: Rename functions in genpd for power on/off
+      PM / Domains: Correct comment in irq_safe_dev_in_no_sleep_domain()
+      PM / Domains: Fix asynchronous execution of *noirq() callbacks
+
+Viresh Kumar (29):
+      PM / OPP: Fix memory leak while adding duplicate OPPs
+      PM / OPP: Remove useless TODO
+      PM / OPP: Rename _allocate_opp() to _opp_allocate()
+      PM / OPP: Error out on failing to add static OPPs for v1 bindings
+      PM / OPP: Add light weight _opp_free() routine
+      PM / OPP: Rename and split _dev_pm_opp_remove_table()
+      PM / OPP: Don't allocate OPP table from _opp_allocate()
+      PM / OPP: Rename dev_pm_opp_get_suspend_opp() and return OPP rate
+      PM / OPP: Don't expose srcu_head to register notifiers
+      PM / OPP: Split out part of _add_opp_table() and _remove_opp_table()
+      PM / OPP: Add per OPP table mutex
+      PM / OPP: Add 'struct kref' to OPP table
+      PM / OPP: Return opp_table from dev_pm_opp_set_*() routines
+      PM / OPP: Take reference of the OPP table while adding/removing OPPs
+      PM / OPP: Use dev_pm_opp_get_opp_table() instead of _add_opp_table()
+      PM / OPP: Add 'struct kref' to struct dev_pm_opp
+      PM / OPP: Update OPP users to put reference
+      PM / OPP: Take kref from _find_opp_table()
+      PM / OPP: Move away from RCU locking
+      PM / OPP: Simplify _opp_set_availability()
+      PM / OPP: Simplify dev_pm_opp_get_max_volt_latency()
+      PM / OPP: Update Documentation to remove RCU specific bits
+      cpufreq: Remove policy create/remove notifiers
+      cpufreq: Remove CONFIG_CPU_FREQ_STAT_DETAILS config option
+      cpufreq: Documentation: Minor reformatting
+      cpufreq: Documentation: Updates based on current code
+      ACPI: processor_perflib: Simplify code and stop using CPUFREQ_START
+      cpufreq: Remove CPUFREQ_START notifier event
+      cpufreq: Fix typos in comments
+
+Wei Yongjun (2):
+      PM / OPP: Make _find_opp_table_unlocked() static
+      cpufreq: brcmstb-avs-cpufreq: remove unnecessary platform_set_drvdata()
+
+---------------
+
+ .../ABI/testing/sysfs-class-devfreq-event          |   25 +
+ Documentation/cpu-freq/core.txt                    |   24 +-
+ Documentation/cpu-freq/cpu-drivers.txt             |  177 +-
+ Documentation/cpu-freq/cpufreq-stats.txt           |   24 +-
+ Documentation/cpu-freq/governors.txt               |  322 ++--
+ Documentation/cpu-freq/index.txt                   |   23 +-
+ Documentation/cpu-freq/intel-pstate.txt            |   15 +
+ Documentation/cpu-freq/user-guide.txt              |   60 +-
+ .../devicetree/bindings/cpufreq/ti-cpufreq.txt     |  128 ++
+ .../devicetree/bindings/devfreq/exynos-bus.txt     |   14 +
+ Documentation/power/opp.txt                        |   52 +-
+ Documentation/power/states.txt                     |    2 +-
+ MAINTAINERS                                        |    7 +
+ arch/arm/configs/exynos_defconfig                  |    2 +-
+ arch/arm/configs/multi_v5_defconfig                |    2 +-
+ arch/arm/configs/multi_v7_defconfig                |    2 +-
+ arch/arm/configs/mvebu_v5_defconfig                |    2 +-
+ arch/arm/configs/pxa_defconfig                     |    2 +-
+ arch/arm/configs/shmobile_defconfig                |    2 +-
+ arch/arm/mach-omap2/pm.c                           |    5 +-
+ arch/mips/Kconfig                                  |    2 +
+ arch/mips/configs/bmips_stb_defconfig              |   16 +-
+ arch/mips/configs/lemote2f_defconfig               |    1 -
+ arch/powerpc/configs/ppc6xx_defconfig              |    1 -
+ arch/sh/configs/sh7785lcr_32bit_defconfig          |    2 +-
+ arch/x86/kernel/acpi/cstate.c                      |    9 +-
+ drivers/acpi/processor_perflib.c                   |    4 +-
+ drivers/base/cpu.c                                 |    2 +
+ drivers/base/power/domain.c                        |  124 +-
+ drivers/base/power/opp/core.c                      | 1011 ++++------
+ drivers/base/power/opp/cpu.c                       |   66 +-
+ drivers/base/power/opp/of.c                        |  154 +-
+ drivers/base/power/opp/opp.h                       |   40 +-
+ drivers/base/power/qos.c                           |    2 +-
+ drivers/base/power/wakeirq.c                       |   22 +-
+ drivers/clk/tegra/clk-dfll.c                       |   17 +-
+ drivers/cpufreq/Kconfig                            |   20 +-
+ drivers/cpufreq/Kconfig.arm                        |   13 +-
+ drivers/cpufreq/Makefile                           |    2 +
+ drivers/cpufreq/bmips-cpufreq.c                    |  188 ++
+ drivers/cpufreq/brcmstb-avs-cpufreq.c              |    2 -
+ drivers/cpufreq/cpufreq-dt-platdev.c               |    2 -
+ drivers/cpufreq/cpufreq-dt.c                       |    7 +-
+ drivers/cpufreq/cpufreq.c                          |   21 +-
+ drivers/cpufreq/cpufreq_stats.c                    |   14 -
+ drivers/cpufreq/exynos5440-cpufreq.c               |    5 +-
+ drivers/cpufreq/imx6q-cpufreq.c                    |   10 +-
+ drivers/cpufreq/intel_pstate.c                     |  385 +++-
+ drivers/cpufreq/mt8173-cpufreq.c                   |    8 +-
+ drivers/cpufreq/omap-cpufreq.c                     |    4 +-
+ drivers/cpufreq/powernv-cpufreq.c                  |   50 +-
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c              |    3 -
+ drivers/cpufreq/qoriq-cpufreq.c                    |  148 +-
+ drivers/cpufreq/s3c2416-cpufreq.c                  |    1 -
+ drivers/cpufreq/sti-cpufreq.c                      |   13 +-
+ drivers/cpufreq/ti-cpufreq.c                       |  268 +++
+ drivers/cpuidle/governors/menu.c                   |   11 +-
+ drivers/devfreq/devfreq-event.c                    |    4 +-
+ drivers/devfreq/devfreq.c                          |  114 +-
+ drivers/devfreq/event/exynos-ppmu.c                |  329 +++-
+ drivers/devfreq/exynos-bus.c                       |   22 +-
+ drivers/devfreq/governor.h                         |    2 +
+ drivers/devfreq/governor_passive.c                 |   10 +-
+ drivers/devfreq/governor_userspace.c               |   11 +-
+ drivers/devfreq/rk3399_dmc.c                       |   16 +-
+ drivers/devfreq/tegra-devfreq.c                    |    4 +-
+ drivers/thermal/cpu_cooling.c                      |   11 +-
+ drivers/thermal/devfreq_cooling.c                  |   15 +-
+ include/linux/cpufreq.h                            |    7 +-
+ include/linux/devfreq.h                            |    3 +
+ include/linux/pm_domain.h                          |    3 +
+ include/linux/pm_opp.h                             |   72 +-
+ include/linux/pm_qos.h                             |    1 -
+ kernel/power/suspend_test.c                        |    2 +-
+ kernel/power/swap.c                                |    2 +-
+ scripts/analyze_suspend.py                         | 1933 ++++++++++++--------
+ .../x86/intel_pstate_tracer/intel_pstate_tracer.py |  569 ++++++
+ 77 files changed, 4163 insertions(+), 2505 deletions(-)
