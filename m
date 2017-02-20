@@ -1,51 +1,183 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: schedutil: govern how frequently we change frequency with rate_limit
-Date: Mon, 20 Feb 2017 14:49:18 +0100
-Message-ID: <4853380.1xLm2rt1ou@aspire.rjw.lan>
-References: <4c9afe0a2cda5016b342f777f244c89c03cdc524.1487178939.git.viresh.kumar@linaro.org> <20170217124854.GD6500@twins.programming.kicks-ass.net> <20170220095803.GT21911@vireshk-i7>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: [PATCH] cpufreq: imx6q: use devm to fetch resources
+Date: Mon, 20 Feb 2017 16:02:35 +0200
+Message-ID: <964303696dfe1462bd0af2bcd2735d9a6b7ac52c.1487598539.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48105 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752726AbdBTNyW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Feb 2017 08:54:22 -0500
-In-Reply-To: <20170220095803.GT21911@vireshk-i7>
+Received: from mail-dm3nam03on0077.outbound.protection.outlook.com ([104.47.41.77]:61075
+        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753039AbdBTODT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 20 Feb 2017 09:03:19 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+To: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jacky Bai <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Lucas Stach <l.stach@pengutronix.de>, linux-kernel@vger.kernel.org
 
-On Monday, February 20, 2017 03:28:03 PM Viresh Kumar wrote:
-> On 17-02-17, 13:48, Peter Zijlstra wrote:
-> > On Fri, Feb 17, 2017 at 01:15:56PM +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, February 16, 2017 01:36:05 PM Peter Zijlstra wrote:
-> > > > On Thu, Feb 16, 2017 at 03:42:10PM +0530, Viresh Kumar wrote:
-> > > > > But when I discussed this with Vincent, he suggested that it may not be required
-> > > > > at all as the scheduler (with the helped of "decayed") doesn't call into
-> > > > > schedutil too often, i.e. at least 1 ms. And if the CPUs are stable enough (i.e.
-> > > > > no interruptions to the running task), we wouldn't reevaluate before the next
-> > > > > tick.
-> > > > 
-> > > > There are still the attach/detach callers to cfs_rq_util_change() that
-> > > > kick in for fork/exit and migration.
-> > > > 
-> > > > But yes, barring those we shouldn't end up calling it at silly rates.
-> > > 
-> > > OK
-> > > 
-> > > Does this mean that running governor computations every time its callback
-> > > is invoked by the scheduler would be fine?
-> > 
-> > I'd say yes right up till the point someone reports a regression ;-)
-> 
-> @Rafael: Do you want me to send a V2 with the changes you suggested in
-> commit log?
+Replace the clk_get and regulator_get will devm variants to free the
+resources automatically when probe failed or driver is removed.
 
-Yes, in general, but I have more suggestions regarding that. :-)
+The device we are probing is not cpu_dev but the cpufreq platform_device
+(pdev->dev). In order for this to actually work correctly we assign to
+the cpufreq device the of_node from cpu_dev.
 
-I'll send them shortly.
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 75 +++++++++++++----------------------------
+ 1 file changed, 24 insertions(+), 51 deletions(-)
 
-Thanks,
-Rafael
+Something similar was rejected in the past: https://patchwork.kernel.org/patch/7099051/
+
+New version assigns the of_node from the cpu device to the cpufreq device so
+that devm_clk_get(pdev->dev, ...) works as expected. It is not clear if this is
+allowed but I don't see why it wouldn't.
+
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index ef1fa81..374bc72 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -1,5 +1,6 @@
+ /*
+  * Copyright (C) 2013 Freescale Semiconductor, Inc.
++ * Copyright (C) 2017 NXP
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+@@ -198,35 +199,37 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	arm_clk = clk_get(cpu_dev, "arm");
+-	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
+-	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
+-	step_clk = clk_get(cpu_dev, "step");
+-	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
++	pdev->dev.of_node = cpu_dev->of_node;
++
++	arm_clk = devm_clk_get(&pdev->dev, "arm");
++	pll1_sys_clk = devm_clk_get(&pdev->dev, "pll1_sys");
++	pll1_sw_clk = devm_clk_get(&pdev->dev, "pll1_sw");
++	step_clk = devm_clk_get(&pdev->dev, "step");
++	pll2_pfd2_396m_clk = devm_clk_get(&pdev->dev, "pll2_pfd2_396m");
+ 	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
+ 	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
+ 		dev_err(cpu_dev, "failed to get clocks\n");
+ 		ret = -ENOENT;
+-		goto put_clk;
++		goto put_node;
+ 	}
+ 
+ 	if (of_machine_is_compatible("fsl,imx6ul")) {
+-		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
+-		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
++		pll2_bus_clk = devm_clk_get(&pdev->dev, "pll2_bus");
++		secondary_sel_clk = devm_clk_get(&pdev->dev, "secondary_sel");
+ 		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
+ 			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
+ 			ret = -ENOENT;
+-			goto put_clk;
++			goto put_node;
+ 		}
+ 	}
+ 
+-	arm_reg = regulator_get(cpu_dev, "arm");
+-	pu_reg = regulator_get_optional(cpu_dev, "pu");
+-	soc_reg = regulator_get(cpu_dev, "soc");
++	arm_reg = devm_regulator_get(&pdev->dev, "arm");
++	pu_reg = devm_regulator_get_optional(&pdev->dev, "pu");
++	soc_reg = devm_regulator_get(&pdev->dev, "soc");
+ 	if (IS_ERR(arm_reg) || IS_ERR(soc_reg)) {
+ 		dev_err(cpu_dev, "failed to get regulators\n");
+ 		ret = -ENOENT;
+-		goto put_reg;
++		goto put_node;
+ 	}
+ 
+ 	/*
+@@ -239,7 +242,7 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		ret = dev_pm_opp_of_add_table(cpu_dev);
+ 		if (ret < 0) {
+ 			dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
+-			goto put_reg;
++			goto put_node;
+ 		}
+ 
+ 		/* Because we have added the OPPs here, we must free them */
+@@ -256,11 +259,11 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
+-		goto put_reg;
++		goto out_free_opp;
+ 	}
+ 
+ 	/* Make imx6_soc_volt array's size same as arm opp number */
+-	imx6_soc_volt = devm_kzalloc(cpu_dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
++	imx6_soc_volt = devm_kzalloc(&pdev->dev, sizeof(*imx6_soc_volt) * num, GFP_KERNEL);
+ 	if (imx6_soc_volt == NULL) {
+ 		ret = -ENOMEM;
+ 		goto free_freq_table;
+@@ -339,7 +342,6 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		goto free_freq_table;
+ 	}
+ 
+-	of_node_put(np);
+ 	return 0;
+ 
+ free_freq_table:
+@@ -347,29 +349,9 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ out_free_opp:
+ 	if (free_opp)
+ 		dev_pm_opp_of_remove_table(cpu_dev);
+-put_reg:
+-	if (!IS_ERR(arm_reg))
+-		regulator_put(arm_reg);
+-	if (!IS_ERR(pu_reg))
+-		regulator_put(pu_reg);
+-	if (!IS_ERR(soc_reg))
+-		regulator_put(soc_reg);
+-put_clk:
+-	if (!IS_ERR(arm_clk))
+-		clk_put(arm_clk);
+-	if (!IS_ERR(pll1_sys_clk))
+-		clk_put(pll1_sys_clk);
+-	if (!IS_ERR(pll1_sw_clk))
+-		clk_put(pll1_sw_clk);
+-	if (!IS_ERR(step_clk))
+-		clk_put(step_clk);
+-	if (!IS_ERR(pll2_pfd2_396m_clk))
+-		clk_put(pll2_pfd2_396m_clk);
+-	if (!IS_ERR(pll2_bus_clk))
+-		clk_put(pll2_bus_clk);
+-	if (!IS_ERR(secondary_sel_clk))
+-		clk_put(secondary_sel_clk);
+-	of_node_put(np);
++put_node:
++	of_node_put(pdev->dev.of_node);
++	pdev->dev.of_node = NULL;
+ 	return ret;
+ }
+ 
+@@ -379,17 +361,8 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
+ 	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
+ 	if (free_opp)
+ 		dev_pm_opp_of_remove_table(cpu_dev);
+-	regulator_put(arm_reg);
+-	if (!IS_ERR(pu_reg))
+-		regulator_put(pu_reg);
+-	regulator_put(soc_reg);
+-	clk_put(arm_clk);
+-	clk_put(pll1_sys_clk);
+-	clk_put(pll1_sw_clk);
+-	clk_put(step_clk);
+-	clk_put(pll2_pfd2_396m_clk);
+-	clk_put(pll2_bus_clk);
+-	clk_put(secondary_sel_clk);
++	of_node_put(pdev->dev.of_node);
++	pdev->dev.of_node = NULL;
+ 
+ 	return 0;
+ }
+-- 
+2.7.4
