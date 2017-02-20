@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 6/6] arm64: dts: r8a7796: Fix non-PMIC wake-up sources
-Date: Mon, 20 Feb 2017 21:33:29 +0100
-Message-ID: <1487622809-25127-7-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC 1/6] alarmtimer: Postpone wake-up source registration until really available
+Date: Mon, 20 Feb 2017 21:33:24 +0100
+Message-ID: <1487622809-25127-2-git-send-email-geert+renesas@glider.be>
 References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
@@ -10,28 +10,59 @@ To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@ar
 Cc: Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-The PSCI firmware on boards equipped with an R-Car M3-W SoC implements
-the PSCI SYSTEM_SUSPEND operation by cutting power to the SoC.  Hence
-the only possibly wake-up sources are the ones connected to the PMIC,
-unless the "arm,psci-system-suspend-is-power-down" property is
-specified.
+Currently the alarmtimer registers a wake-up source unconditionally,
+regardless of the system having a (wake-up capable) RTC or not.
+To fix this, postpone registration until a wake-up capable RTC device is
+added.
+
+After this, the alarmtimer no longer shows up in
+/sys/kernel/debug/wakeup_sources, unless it is available for real.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- arch/arm64/boot/dts/renesas/r8a7796.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+ kernel/time/alarmtimer.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7796.dtsi b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-index 02febb434d1ca028..a11f030e97902e1c 100644
---- a/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-@@ -31,6 +31,7 @@
- 	psci {
- 		compatible = "arm,psci-0.2";
- 		method = "smc";
-+		arm,psci-system-suspend-is-power-down;
- 	};
+diff --git a/kernel/time/alarmtimer.c b/kernel/time/alarmtimer.c
+index e6dc9a538efa2116..5e0ce78607da5b5d 100644
+--- a/kernel/time/alarmtimer.c
++++ b/kernel/time/alarmtimer.c
+@@ -82,6 +82,7 @@ static int alarmtimer_rtc_add_device(struct device *dev,
+ {
+ 	unsigned long flags;
+ 	struct rtc_device *rtc = to_rtc_device(dev);
++	struct wakeup_source *__ws;
  
- 	cpus {
+ 	if (rtcdev)
+ 		return -EBUSY;
+@@ -91,13 +92,20 @@ static int alarmtimer_rtc_add_device(struct device *dev,
+ 	if (!device_may_wakeup(rtc->dev.parent))
+ 		return -1;
+ 
++	__ws = wakeup_source_register("alarmtimer");
++
+ 	spin_lock_irqsave(&rtcdev_lock, flags);
+ 	if (!rtcdev) {
+ 		rtcdev = rtc;
+ 		/* hold a reference so it doesn't go away */
+ 		get_device(dev);
++		ws = __ws;
++		__ws = NULL;
+ 	}
+ 	spin_unlock_irqrestore(&rtcdev_lock, flags);
++
++	wakeup_source_unregister(__ws);
++
+ 	return 0;
+ }
+ 
+@@ -908,7 +916,6 @@ static int __init alarmtimer_init(void)
+ 		error = PTR_ERR(pdev);
+ 		goto out_drv;
+ 	}
+-	ws = wakeup_source_register("alarmtimer");
+ 	return 0;
+ 
+ out_drv:
 -- 
 2.7.4
