@@ -1,73 +1,81 @@
 From: Javi Merino <javi.merino@kernel.org>
-Subject: Re: [PATCH v2 2/3] thermal: devfreq_cooling: add new interface for
- direct power read
-Date: Tue, 21 Feb 2017 13:34:25 +0000
-Message-ID: <20170221133425.GB23954@ct-lt-587>
+Subject: Re: [PATCH v2 0/3] devfreq_cooling: let the driver supply the real
+ power every time we need it
+Date: Tue, 21 Feb 2017 13:35:59 +0000
+Message-ID: <20170221133559.GC23954@ct-lt-587>
 References: <20170131161147.17002-1-lukasz.luba@arm.com>
- <20170131161147.17002-3-lukasz.luba@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f196.google.com ([209.85.128.196]:36533 "EHLO
-        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752628AbdBUNeL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 08:34:11 -0500
-Received: by mail-wr0-f196.google.com with SMTP id z61so14470441wrc.3
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2017 05:34:10 -0800 (PST)
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:34947 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753205AbdBUNfo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 08:35:44 -0500
+Received: by mail-wm0-f65.google.com with SMTP id u63so19712397wmu.2
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2017 05:35:43 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20170131161147.17002-3-lukasz.luba@arm.com>
+In-Reply-To: <20170131161147.17002-1-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Lukasz Luba <lukasz.luba@arm.com>
 Cc: linux-pm@vger.kernel.org, edubezval@gmail.com, rui.zhang@intel.com, orjan.eide@arm.com, chris.diamand@arm.com
 
-On Tue, Jan 31, 2017 at 04:11:46PM +0000, Lukasz Luba wrote:
-> This patch introduces a new interface for device drivers connected to
-> devfreq_cooling in the thermal framework: get_real_power().
+On Tue, Jan 31, 2017 at 04:11:44PM +0000, Lukasz Luba wrote:
+> Hi,
 > 
-> Some devices have more sophisticated methods (like power counters)
-> to approximate the actual power that they use.
-> In the previous implementation we had a pre-calculated power
-> table which was then scaled by 'utilization'
+> This patchset introduces a new interface for devfreq cooling in thermal
+> framework. The previous version of the patch can be seen here [1].
+> I have simplified the implementation and introduced resource utilization
+> scaling factor.
+> 
+> The current implementation in the thermal devfreq cooling subsystem uses
+> pre-calculated power table for each device to make a decision about allowed
+> running state. When the driver registers itself to the thermal devfreq cooling
+> subsystem, the framework creates the power table.
+> The power table is then used by the thermal subsystem to keep
+> the device in the thermal envelope.
+> In the previous implementation the pre-calculated device's power
+> table was scaled by current 'utilization'
 > ('busy_time' and 'total_time' taken from devfreq 'last_status').
 > 
-> With this new interface the driver can provide more precise data
-> regarding actual power to the thermal governor every time the power
-> budget is calculated. We then use this value and calculate the real
-> resource utilization scaling factor.
+> This idea meets the expectations of the devices which know better the actual
+> power that they consume (thanks to power counters). When some
+> parts/features of the device are not used the power value might be lower,
+> while the frequency and utilization are the same.
 > 
-> Reviewed-by: Chris Diamand <chris.diamand@arm.com>
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  drivers/thermal/devfreq_cooling.c | 78 ++++++++++++++++++++++++++++++---------
->  include/linux/devfreq_cooling.h   | 17 +++++++++
->  2 files changed, 78 insertions(+), 17 deletions(-)
+> The proposed implementation provides possibility to register a driver to
+> thermal devfreq cooling subsystem and use the driver's code during the
+> calculation of the power in runtime.
 > 
-> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-> index 7d55652..cba34bd 100644
-> --- a/drivers/thermal/devfreq_cooling.c
-> +++ b/drivers/thermal/devfreq_cooling.c
-> @@ -27,6 +27,8 @@
->  
->  #include <trace/events/thermal.h>
->  
-> +#define SCALE_ERROR_MITIGATION 100
-> +
->  static DEFINE_MUTEX(devfreq_lock);
->  static DEFINE_IDR(devfreq_idr);
->  
-> @@ -45,6 +47,12 @@ static DEFINE_IDR(devfreq_idr);
->   * @freq_table_size:	Size of the @freq_table and @power_table
->   * @power_ops:	Pointer to devfreq_cooling_power, used to generate the
->   *		@power_table.
-> + * @res_util:	Resource utilization scaling factor for the power.
-> + *		It is multiplied by 100 to minimize the error. It is used
-> + *		for estimation of the power budget instead of using
-> + *		'utilization' (which is	'busy_time / 'total_time').
-> + *		The 'res_util' range is from 100 to (power_table[state] * 100)
+> The device driver can still use pre-calculated power table when these new
+> functions are not provided (the new extension can co-exist with old
+> implementation).
+> 
+> The first patch contains some refactoring for getting the voltage,
+> the second implements the new feature, the third one changes trace function.
+> Patchset is based on v4.10-rc5.
+> 
+> Changes v2: 
+> - removed 'flags' and power2state function,
+> - split into a few patches,
+> - simplified the logic of the new interface,
+> - added resource utilization scaling factor,
+> 
+> Regards,
+> Lukasz Luba
+> 
+> [1] https://marc.info/?l=linux-pm&m=147395070729989&w=2
+> 
+> 
+> Lukasz Luba (3):
+>   thermal: devfreq_cooling: refactor code and add get_voltage function
+>   thermal: devfreq_cooling: add new interface for direct power read
+>   trace: thermal: add another parameter *power to the tracing function
+> 
 
-I was going to say that this 100s should be SCALE_ERROR_MITIGATION but
-given that we are unlikely to change SCALE_ERROR_MITIGATION, it is
-probably clearer if we leave them as is.
+For the series:
 
 Acked-by: Javi Merino <javi.merino@kernel.org>
+
+Thanks!
+Javi
