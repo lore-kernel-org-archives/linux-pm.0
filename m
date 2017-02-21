@@ -1,15 +1,15 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v7 5/9] power: bq27xxx_battery: Define access methods to write chip registers
-Date: Tue, 21 Feb 2017 13:30:04 -0800
-Message-ID: <20170221213008.30044-6-liam@networkimprov.net>
+Subject: [PATCH v7 6/9] power: bq27xxx_battery: Add BQ27425 chip id
+Date: Tue, 21 Feb 2017 13:30:05 -0800
+Message-ID: <20170221213008.30044-7-liam@networkimprov.net>
 References: <20170221213008.30044-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:33151 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752787AbdBUVcO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 16:32:14 -0500
-Received: by mail-pg0-f65.google.com with SMTP id 5so20076767pgj.0
-        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2017 13:32:08 -0800 (PST)
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:33960 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751438AbdBUVcR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 16:32:17 -0500
+Received: by mail-pg0-f66.google.com with SMTP id s67so9533045pgb.1
+        for <linux-pm@vger.kernel.org>; Tue, 21 Feb 2017 13:32:17 -0800 (PST)
 In-Reply-To: <20170221213008.30044-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,28 +18,98 @@ Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <mat
 
 From: Matt Ranostay <matt@ranostay.consulting>
 
-write(), read_bulk(), write_bulk() support setting chip registers,
-e.g. with data obtained from power_supply_battery_info.
+This patch does not alter the function of the driver.
+This chip ID is referenced in the devicetree code.
 
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- include/linux/power/bq27xxx_battery.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/power/supply/bq27xxx_battery.c     | 23 ++++++++++++++++++++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c |  2 +-
+ include/linux/power/bq27xxx_battery.h      |  3 ++-
+ 3 files changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index bed9557..92df553 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -32,6 +32,9 @@ struct bq27xxx_platform_data {
- struct bq27xxx_device_info;
- struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-+	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
-+	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
-+	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 7272d1e..7475a5f 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -259,6 +259,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+ 		[BQ27XXX_REG_DCAP] = 0x3c,
+ 		[BQ27XXX_REG_AP] = 0x18,
+ 	},
++	[BQ27425] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x02,
++		[BQ27XXX_REG_INT_TEMP] = 0x1e,
++		[BQ27XXX_REG_VOLT] = 0x04,
++		[BQ27XXX_REG_AI] = 0x10,
++		[BQ27XXX_REG_FLAGS] = 0x06,
++		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x08,
++		[BQ27XXX_REG_FCC] = 0x0e,
++		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x1c,
++		[BQ27XXX_REG_DCAP] = 0x3c,
++		[BQ27XXX_REG_AP] = 0x18,
++	},
  };
  
- struct bq27xxx_reg_cache {
+ static enum power_supply_property bq27000_battery_props[] = {
+@@ -427,6 +446,7 @@ static struct {
+ 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
+ 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
+ 	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
++	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
+ };
+ 
+ static DEFINE_MUTEX(bq27xxx_list_lock);
+@@ -682,6 +702,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+ 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
+ 	case BQ27530:
+ 	case BQ27421:
++	case BQ27425:
+ 		return flags & BQ27XXX_FLAG_OT;
+ 	default:
+ 		return false;
+@@ -693,7 +714,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+  */
+ static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
+ {
+-	if (di->chip == BQ27530 || di->chip == BQ27421)
++	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
+ 		return flags & BQ27XXX_FLAG_UT;
+ 
+ 	return false;
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 5c5c3a6..d7da535 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -159,7 +159,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+ 	{ "bq27742", BQ27541 },
+ 	{ "bq27545", BQ27545 },
+ 	{ "bq27421", BQ27421 },
+-	{ "bq27425", BQ27421 },
++	{ "bq27425", BQ27425 },
+ 	{ "bq27441", BQ27421 },
+ 	{ "bq27621", BQ27421 },
+ 	{},
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index 92df553..4925478 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -9,7 +9,8 @@ enum bq27xxx_chip {
+ 	BQ27530, /* bq27530, bq27531 */
+ 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+ 	BQ27545, /* bq27545 */
+-	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
++	BQ27421, /* bq27421, bq27441, bq27621 */
++	BQ27425, /* bq27425 */
+ };
+ 
+ /**
 -- 
 2.9.3
