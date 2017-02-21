@@ -1,51 +1,43 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3 4/4] KVM: VMX: Simplify segment_base
-Date: Tue, 21 Feb 2017 09:03:32 +0100
-Message-ID: <20170221080332.GB3125@gmail.com>
-References: <20170214194259.75960-1-thgarnie@google.com>
- <20170214194259.75960-4-thgarnie@google.com>
- <CALMp9eT_G_Mhsk1k7Xc8L+bnpFwTUoC=ae4LhB1ppqKynKEQ9g@mail.gmail.com>
- <CAJcbSZESdSQncHeKNVzHO90W7UJUKxKGy-h+rM82OhBc-Nh=cg@mail.gmail.com>
- <CALMp9eQAZchjpgmqP1=qj-FXka8+Xbwqiu3xDz9KoLQ60nh-UQ@mail.gmail.com>
- <CAJcbSZEkqFPVNzygmAjkyxNssZxnJTYBYuMbvjms+3ZGcCY_sQ@mail.gmail.com>
- <CALCETrV4JqVfHQhz4EuFKfHXK=zABsmwZpgz4ijz89O8v4GdfA@mail.gmail.com>
- <CAJcbSZHh+q-hSk9XHZuEfE9VWUTdNZHFEbf68=Qk4uPhB2jhoQ@mail.gmail.com>
- <CAJcbSZEPHBK5FfbU5uorQVkpVbENG0ZBdiA=acJ10rqtLn+TwQ@mail.gmail.com>
+From: Sekhar Nori <nsekhar@ti.com>
+Subject: Re: [PATCH 1/3] ARM: davinci: PM: Drop useless check for
+ PM_SUSPEND_STANDBY
+Date: Tue, 21 Feb 2017 14:27:02 +0530
+Message-ID: <5c0967c9-cd60-372e-9a06-5c83fb880425@ti.com>
+References: <1487347836-14427-1-git-send-email-geert+renesas@glider.be>
+ <1487347836-14427-2-git-send-email-geert+renesas@glider.be>
+ <76eb3b09-80bd-eb5a-db32-744a7b9e1f2c@ti.com>
+ <CAMuHMdVdMeY0WFrpG_k_Ahd_EcLVTgaTW7+Z1imGmzs67uLuHg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-6793-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Content-Disposition: inline
-In-Reply-To: <CAJcbSZEPHBK5FfbU5uorQVkpVbENG0ZBdiA=acJ10rqtLn+TwQ@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>, Paolo Bonzini <pbonzini@redhat.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, Jim Mattson <jmattson@google.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Alexander Potapenko <glider@google.com>, Dmitry Vyukov <dvyukov@google.com>, Kees Cook <keescook@chromium.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Paul Gortmaker <paul.gortmaker@windriver.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Jiri Kosina <jikos@kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Rusty Russell <rusty@rustcorp.com.au>, Peter Zijlstra <peterz@infradead.org>, Christian Borntraeger <borntraeger@de.ibm.com>, Lui
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:55654 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751043AbdBUI5w (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 03:57:52 -0500
+In-Reply-To: <CAMuHMdVdMeY0WFrpG_k_Ahd_EcLVTgaTW7+Z1imGmzs67uLuHg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, Kevin Hilman <khilman@kernel.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>, Dinh Nguyen <dinguyen@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-
-* Thomas Garnier <thgarnie@google.com> wrote:
-
-> > Okay, I guess I will have to wait for it to be integrated to
-> > linux-next then. Or would you rather to it after this patch set is
-> > added?
+On Monday 20 February 2017 02:10 PM, Geert Uytterhoeven wrote:
+> Hi Sekhar,
 > 
-> Read your summary for the patchset of KVM cleanup, I will wait for it to reach 
-> linux-next to rebase and send the new iteration.
+> On Mon, Feb 20, 2017 at 9:30 AM, Sekhar Nori <nsekhar@ti.com> wrote:
+>> On Friday 17 February 2017 09:40 PM, Geert Uytterhoeven wrote:
+>>> As DaVinci uses the standard suspend_valid_only_mem() for its
+>>> platform_suspend_ops.valid() callback, its platform_suspend_ops.enter()
+>>> callback will never be called with state equal to PM_SUSPEND_STANDBY.
+>>>
+>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>>
+>> Looks good to me. Whats the plan for applying the series. Do you want
+>> the individual machine maintainers to apply their parts. Or some other?
+> 
+> I think the individual machine maintainers is the simplest.
 
-Note that to be able to apply your readonly-GDT series to the x86 tree I'll need a 
-stable SHA1 to base it on.
-
-Paolo, how stable, non-rebasing are the KVM tree commits? Once Andy's patches hit 
-the KVM tree I could pull from you and order it so that I'd send it to Linus only 
-after you sent your bits upstream. That would save us 3 months of patch 
-propagation latency.
-
-Or should we keep Andy's KVM patches together with the GDT patches? Either 
-workflow works for me - it's your call as these are predominantly KVM changes.
+Patch 1/3 applied to branch v4.12/soc of my tree.
 
 Thanks,
-
-	Ingo
+Sekhar
