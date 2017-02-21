@@ -1,58 +1,37 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH/RFC 4/6] drivers: firmware: psci: Fix non-PMIC wake-up if
- SYSTEM_SUSPEND cuts power
-Date: Tue, 21 Feb 2017 12:07:30 +0100
-Message-ID: <20170221110730.GF5021@amd>
-References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
- <1487622809-25127-5-git-send-email-geert+renesas@glider.be>
+From: Vlad Zakharov <Vladislav.Zakharov@synopsys.com>
+Subject: cpufreq: get cpufreq_frequency_table from clk driver
+Date: Tue, 21 Feb 2017 11:13:35 +0000
+Message-ID: <1487675614.25108.30.camel@synopsys.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="sDKAb4OeUBrWWL6P"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1487622809-25127-5-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Lina Iyer <lina.iyer@linaro.org>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Rob Herring <robh+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay4.synopsys.com ([198.182.47.9]:41859 "EHLO
+        smtprelay.synopsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751266AbdBULNl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 06:13:41 -0500
+Content-Language: en-US
+Content-ID: <5E738EEAB7746F4F93A8B73912CDD7FB@internal.synopsys.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
 
-
---sDKAb4OeUBrWWL6P
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon 2017-02-20 21:33:27, Geert Uytterhoeven wrote:
-> Nothing in the PSCI specification requires the SoC to remain powered and
-> to support wake-up sources when suspended using SYSTEM_SUSPEND.
-> If the firmware implements the PSCI SYSTEM_SUSPEND operation by cutting
-> power to the SoC, the only possibly wake-up sources are thus the ones
-> connected to the PMIC.
->=20
-> Document and add support for an "arm,psci-system-suspend-is-power-down"
-> DT property, so Linux uses a different suspend method when other wake-up
-> sources (e.g. wake on LAN, UART or GPIO) are enabled.
-
-Should we make PSCI return that information? (At least in next
-specification version?)
-
-								Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---sDKAb4OeUBrWWL6P
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlisH3IACgkQMOfwapXb+vKzXwCfQ6p0JaA1LF0N14R18duC62oM
-BtQAniCV7LGV4EYlWZaVKjV9HXIMJfFp
-=+vMA
------END PGP SIGNATURE-----
-
---sDKAb4OeUBrWWL6P--
+SGVsbG8sDQoNCkkgYW0gdHJ5aW5nIHRvIGltcGxlbWVudCBhIGNwdWZyZXEgZHJpdmVyIGZvciBB
+UkNIUyBjcHUuDQoNCkFuZCBJIGZhY2VkIHdpdGggb25lIHF1ZXN0aW9uIEkgYW0gbm90IGFibGUg
+dG8gYW5zd2VyIG15c2VsZi4gY3B1ZnJlcSBmcmFtZXdvcmsgYWxsb3dzIHVzIHVzaW5nIGNwdWZy
+ZXEgZnJlcXVlbmN5IHRhYmxlcw0KdGhhdCBzdG9yZSBhdmFpbGFibGUgZm9yIGN1cnJlbnQgcG9s
+aWN5IHJhbmdlIG9mIGZyZXF1ZW5jaWVzIHdpdGggYW55IGFkZGl0aW9uYWwgZGF0YS4gQXMgSSB1
+bmRlcnN0YW5kIGZvciBleGFtcGxlIGl0DQpjYW4gYmUgY2xvY2sgY29uZmlndXJhdGlvbnMgZm9y
+IHRoaXMgcGFydGljdWxhciBmcmVxdWVuY3kuDQoNCkFsc28gSSBoYXZlIGEgY2xrIGRyaXZlciB0
+aGF0IG1hbmFnZXMgYWN0dWFsIGNwdSBmcmVxdWVuY3kuIEluIGZhY3QgaXQgdXNlcyB2ZXJ5IHNp
+bWlsYXIgdGFibGVzIHRoYXQgY29udGFpbiBmcmVxdWVuY2llcw0KYW5kIGNvcnJlc3BvbmRpbmcg
+dmFsdWVzIG9mIGNsb2NrIGNvbmZpZ3VyYXRpb25zIHJlZ2lzdGVycyB0aGF0IGFyZSB0byBiZSBz
+ZXQgdXAgd2l0aCBjdXJyZW50IGZyZXF1ZW5jeS4NCg0KU28gdGhlIHF1ZXN0aW9uIGlzIGNhbiBJ
+IGdldCBzdWNoIHRhYmxlcyBmcm9tIGNsayBkcml2ZXIgc29tZWhvdz8gSSB3b3VsZCBiZSB2ZXJ5
+IGNvbnZlbmllbnQ6IHRoaXMgdGFibGVzIGRpZmZlcnMgZm9yDQpBUkNIUyBDUFUuIEUuZy4gb24g
+ZGlmZmVyZW50IGJvYXJkcyBpdCBpcyBjbG9ja2VkIGJ5IGRpZmZlcmVudCBQTExzIGFuZCBvc2Np
+bGxhdG9ycy4NCg0KRG8geW91IGtub3cgYW55IHdheSB0byBnZXQgdGhlIHRhYmxlcyBmcm9tIGNs
+ayBkcml2ZXI/IEFueSBzdWdnZXN0aW9ucyBvciBjb21tZW50cyBtaWdodCBiZSB2ZXJ5IGhlbHBm
+dWwuDQoNClRoYW5rcyENCg0KLS0gDQpCZXN0IHJlZ2FyZHMsDQpWbGFkIFpha2hhcm92IDx2emFr
+aGFyQHN5bm9wc3lzLmNvbT4=
