@@ -1,41 +1,33 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC][PATCH] cpufreq: User/admin documentation update and
- consolidation
-Date: Tue, 21 Feb 2017 10:30:10 +0530
-Message-ID: <20170221050010.GW21911@vireshk-i7>
-References: <6949552.t0rZsBY3Lp@aspire.rjw.lan>
- <20170220095608.GS21911@vireshk-i7>
- <4488503.27M9KJWnWE@aspire.rjw.lan>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V2 0/5] thermal: minor cleanup/fixes
+Date: Tue, 21 Feb 2017 14:30:27 +0800
+Message-ID: <1487658627.2155.5.camel@intel.com>
+References: <cover.1486440448.git.viresh.kumar@linaro.org>
+         <20170220102920.GU21911@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4488503.27M9KJWnWE@aspire.rjw.lan>
+In-Reply-To: <20170220102920.GU21911@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dan.carpenter@oracle.com
 List-Id: linux-pm@vger.kernel.org
 
-On 20-02-17, 14:58, Rafael J. Wysocki wrote:
-> Yes, it is called for new and inactive policies.
-> 
-> For new policies it has to populate policy->cpus (because otherwise the core
-> doesn't know what CPUs should be there), which quite arguably doesn't have
-> to (or even doesn't need to) be done for inactive policies (because they already
-> have policy->real_cpus and policy->related_cpus populated).
- 
-> I would even argue that ->init() should not update policy->cpus for inactive
-> (but not new) policies.
+On Mon, 2017-02-20 at 15:59 +0530, Viresh Kumar wrote:
+> On 07-02-17, 09:39, Viresh Kumar wrote:
+> > 
+> > Hi,
+> > 
+> > This series contains minor fixes/cleanups for thermal cooling
+> > drivers.
+> > 
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+for the whole patch series.
 
-I agree, but I am not aware of any platforms that we have today which
-does any similar checks in ->init(). And I wouldn't encourage drivers
-to have such special handling at all. Why make it complex?
+As this patch set depends on commit 8a31d9d94297 ("PM / OPP: Update OPP
+users to put reference"), which goes Rafael' tree, Rafael, can you
+please take this patch set as well?
 
-The way you have written it earlier suggests that the drivers should
-check if the policy is active or not (by looking at related_cpus mask)
-and set the cpus mask only for new policies. I was just worried that
-new driver authors will actually try to write special code in init()
-for that and if we really want that to be the case.
-
--- 
-viresh
+thanks,
+rui
