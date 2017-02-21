@@ -1,15 +1,15 @@
 From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH v3 15/18] ARM: dtsi: axp209: add battery power supply
- subnode
-Date: Tue, 21 Feb 2017 12:47:23 +0800
-Message-ID: <CAGb2v675ySdU=Ht6h5zyDOWFU3xZU32iDVOv5vj4AFDH+GQqcw@mail.gmail.com>
+Subject: Re: [PATCH v3 17/18] ARM: dts: sun8i: sina33: enable battery power
+ supply subnode
+Date: Tue, 21 Feb 2017 12:50:28 +0800
+Message-ID: <CAGb2v64SnsrckN7+cv5woHzLTWrM455xjUQFh3dKHUNhjgBB7w@mail.gmail.com>
 References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
- <20170214094112.27426-16-quentin.schulz@free-electrons.com>
+ <20170214094112.27426-18-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170214094112.27426-16-quentin.schulz@free-electrons.com>
+In-Reply-To: <20170214094112.27426-18-quentin.schulz@free-electrons.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -25,14 +25,14 @@ List-Id: linux-pm@vger.kernel.org
 
 On Tue, Feb 14, 2017 at 5:41 PM, Quentin Schulz
 <quentin.schulz@free-electrons.com> wrote:
-> The X-Powers AXP209 PMIC exposes battery supply various data such as
-> the battery status (charging, discharging, full, dead), current max
-> limit, current current, battery capacity (in percentage), voltage max
-> and min limits, current voltage, and battery capacity (in Ah).
->
-> This adds the battery power supply subnode for AXP20X PMIC.
+> The Sinlinx SinA33 has an AXP223 PMIC and a battery connector, thus, we
+> enable the battery power supply subnode in its Device Tree.
 >
 > Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
 > Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+
+Battery charger enabled without any description of the associated battery...
+In this case I think the driver should use the lowest charge current to be
+safe?
 
 Acked-by: Chen-Yu Tsai <wens@csie.org>
