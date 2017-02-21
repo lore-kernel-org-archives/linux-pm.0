@@ -1,104 +1,77 @@
-From: Quentin Schulz <quentin.schulz@free-electrons.com>
-Subject: Re: [PATCH v3 11/18] dt-bindings: power: supply: add AXP20X/AXP22X
- battery DT binding
-Date: Tue, 21 Feb 2017 19:05:28 +0100
-Message-ID: <13eb32a3-8a84-2ad1-a3b1-39e688db31c0@free-electrons.com>
-References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
- <20170214094112.27426-12-quentin.schulz@free-electrons.com>
- <CAGb2v658e8R+qw1zbqp6rY-dXXSsax7ZZGoL0WTZR=Gya7BbnA@mail.gmail.com>
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: Re: [PATCH/RFC 3/6] drivers: firmware: psci: Implement shallow
+ suspend mode
+Date: Tue, 21 Feb 2017 19:06:04 +0100
+Message-ID: <CAMuHMdX_pot+=rJfY1Kor4gYD4CgBYivngzCLwV36LELx+AA5Q@mail.gmail.com>
+References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
+ <1487622809-25127-4-git-send-email-geert+renesas@glider.be>
+ <20170221110712.GB5021@amd> <de2a15d4-9ac2-9ba9-a47a-eacbf478f601@arm.com>
+ <CAMuHMdVmu4AYZ6MZHd79N2-2gELR6s3oZ46UnEszCfLvHymY1w@mail.gmail.com> <20170221172012.GD8605@leverpostej>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAGb2v658e8R+qw1zbqp6rY-dXXSsax7ZZGoL0WTZR=Gya7BbnA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170221172012.GD8605@leverpostej>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Chen-Yu,
+Hi Mark,
 
-On 21/02/2017 05:45, Chen-Yu Tsai wrote:
-> On Tue, Feb 14, 2017 at 5:41 PM, Quentin Schulz
-> <quentin.schulz@free-electrons.com> wrote:
->> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+On Tue, Feb 21, 2017 at 6:20 PM, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org> wrote:
+> On Tue, Feb 21, 2017 at 05:32:50PM +0100, Geert Uytterhoeven wrote:
+>> On Tue, Feb 21, 2017 at 12:14 PM, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org> wrote:
+>> > On 21/02/17 11:07, Pavel Machek wrote:
+>> >>> Enable support for "shallow" suspend mode, also known as "Standby" or
+>> >>> "Power-On Suspend".
+>> >>>
+>> >>> As secondary CPU cores are taken offline, "shallow" suspend mode saves
+>> >>> slightly more power than "s2idle", but less than "deep" suspend mode.
+>> >>> However, unlike "deep" suspend mode, "shallow" suspend mode can be used
+>> >>> regardless of the presence of support for PSCI_SYSTEM_SUSPEND, which is
+>> >>> an optional API in PSCI v1.0.
+>> >>
+>> >> If system supports "shallow" suspend, why does not PSCI implement it?
+>> >
+>> > Yes it can, and IIUC it already does on this platform with CPU_SUSPEND.
+>> > All it now needs is just to use existing "freeze" suspend mode in Linux.
 >>
->> This patch adds the DT binding documentation for the battery power
->> supply which gets various data from the PMIC, such as the battery status
->> (charging, discharging, full, dead), current max limit, current current,
->> battery capacity (in percentage), voltage max and min limits, current
->> voltage and battery capacity (in Ah).
->>
->> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
->> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
->> ---
->>
->> v3:
->>  - removed constant charge current property, now should use the WIP
->>  battery framework,
-> 
-> IIRC this should also include a property for referencing the battery?
-> 
+>> How can Linux know if using "deep" suspend will allow to wake-up the system
+>> according to configured wake-up sources, or not?
+>
+> My understanding is that if a device can wake the system from
+> PSCI_SYSTEM_SUSPEND, it should be described in the DT as a wakeup source
+> [1]. So we should be able to determine the set of devices which can wake
+> the system from a suspend. We shouldn't assume that other devices can
+> (though I don't precisely what we do currently).
+>
+> Otherwise, where PSCI_CPU_SUSPEND, we'd expect that most devices
+> (barring cpu-local timers) can wake up CPUs, and hence the system, by
+> raising an interrupt.
 
-Indeed.
+> [1] Documentation/devicetree/bindings/power/wakeup-source.txt
 
-Quentin
+"wakeup-source" in DT is used as a mix of hardware description and software
+policy.  E.g. some keys on a keyboard may have it, others don't, while there's
+not always a technical reason for that.
 
-> Otherwise,
-> 
-> Acked-by: Chen-Yu Tsai <wens@csie.org>
-> 
->>
->> v2:
->>  - changed DT node name from ac_power_supply to ac-power-supply,
->>  - removed io-channels and io-channel-names from DT (the IIO mapping is
->>  done in the IIO ADC driver now),
->>  - added x-powers,constant-charge-current property to set the maximal
->>  default constant current charge of the battery,
->>
->>  .../bindings/power/supply/axp20x_battery.txt         | 20 ++++++++++++++++++++
->>  1 file changed, 20 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
->> new file mode 100644
->> index 0000000..c248866
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
->> @@ -0,0 +1,20 @@
->> +AXP20x and AXP22x battery power supply
->> +
->> +Required Properties:
->> + - compatible, one of:
->> +                       "x-powers,axp209-battery-power-supply"
->> +                       "x-powers,axp221-battery-power-supply"
->> +
->> +This node is a subnode of the axp20x/axp22x PMIC.
->> +
->> +The AXP20X and AXP22X can read the battery voltage, charge and discharge
->> +currents of the battery by reading ADC channels from the AXP20X/AXP22X
->> +ADC.
->> +
->> +Example:
->> +
->> +&axp209 {
->> +       battery_power_supply: battery-power-supply {
->> +               compatible = "x-powers,axp209-battery-power-supply";
->> +       }
->> +};
->> --
->> 2.9.3
->>
+Also, it doesn't specify from which suspend state it can wake-up.
 
--- 
-Quentin Schulz, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+On top of that, the Linux PM subsystem allows to configure wakeup by writing
+"enabled" to a device's "wakeup" file in sysfs.  Or you can use ethtool for
+Wake-on-LAN.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
