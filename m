@@ -1,20 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH/RFC 3/6] drivers: firmware: psci: Implement shallow
- suspend mode
-Date: Tue, 21 Feb 2017 19:23:42 +0100
-Message-ID: <CAMuHMdUsWTYrUO9JtCDA5J6iPcRJMMevk9XDfiup=NpJKAkMPA@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH/RFC 0/6] PSCI: Fix non-PMIC wake-up if SYSTEM_SUSPEND cuts
+ power
+Date: Tue, 21 Feb 2017 18:27:59 +0000
+Message-ID: <94167d3a-e005-3af0-d290-a1086684d570@arm.com>
 References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
- <1487622809-25127-4-git-send-email-geert+renesas@glider.be>
- <20170221110712.GB5021@amd> <de2a15d4-9ac2-9ba9-a47a-eacbf478f601@arm.com>
- <CAMuHMdVmu4AYZ6MZHd79N2-2gELR6s3oZ46UnEszCfLvHymY1w@mail.gmail.com>
- <20170221172012.GD8605@leverpostej>
- <CAMuHMdX_pot+=rJfY1Kor4gYD4CgBYivngzCLwV36LELx+AA5Q@mail.gmail.com>
- <20170221181849.GG8605@leverpostej>
+ <69ab75a1-2e04-19e2-d1ad-12ca1cfc7625@arm.com>
+ <CAMuHMdWjseO3XSOH2XCbM411Aj12RpdZZbHkpfFUfej58myz5Q@mail.gmail.com>
+ <445b2f49-5d15-30af-a431-1c4edcd049a4@arm.com>
+ <CAMuHMdUS96tPJRqNxG6sJjvC0LN-FjCeKOm7Zg2V_qMeQ_1QSQ@mail.gmail.com>
+ <81df65a9-d2f1-26df-a977-5265feba25a3@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170221181849.GG8605@leverpostej>
+In-Reply-To: <81df65a9-d2f1-26df-a977-5265feba25a3@arm.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -24,35 +23,61 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Mark Rutland <mark.rutland@arm.com>
-Cc: Len Brown <len.brown@intel.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, John Stultz <john.stultz@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Pavel Machek <pavel@ucw.cz>, Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, John Stultz <john.stultz@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Pavel Machek <pavel@ucw.cz>, Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Mark,
 
-On Tue, Feb 21, 2017 at 7:18 PM, Mark Rutland <mark.rutland@arm.com> wrote:
->> On top of that, the Linux PM subsystem allows to configure wakeup by writing
->> "enabled" to a device's "wakeup" file in sysfs.  Or you can use ethtool for
->> Wake-on-LAN.
->
-> Sure; userspace can always do something silly here.
 
-Not that silly: you can wake up using these sources, but not necessarily from
-all states.
+On 21/02/17 17:51, Sudeep Holla wrote:
+> 
+> 
+> On 21/02/17 17:34, Geert Uytterhoeven wrote:
 
-> As I mentioned in my other reply, we could/should add an interface to
-> allow userspace to determine if it has a guaranteed wakeup, which would
-> allow us to do the right thing.
+[...]
 
-Right.
+>>
+>> The SoC can wake-up. It's just not guaranteed that it can wake-up using
+>> the wakeup-source configured from Linux. Which wakeup-sources are available
+>> depends on the actual PSCI implementation.  It's not specified by the PSCI
+>> specification.
+>>
+>>> Just botching whatever shallow state you can enter on a particular SoC
+>>> into standard "mem" state sounds *horrible* to me.
+>>
+>> That's more or less what /sys/power/mem_sleep does, though.
+>>
+> 
+> OK, I will go through that in detail.
+> 
 
-Gr{oetje,eeting}s,
+OK, I went through the patch and the main intention is was added.
+So I will begin by summarizing my understanding:
 
-                        Geert
+A new suspend interface(/sys/power/mem_sleep) is added to allow the
+"mem" string in /sys/power/state to represent multiple things that can
+be selected.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Before:
+A. echo freeze > /sys/power/state ---> Enters s2idle
+B. echo mem > /sys/power/state ---> Enters s2r(a.k.a now deep mem sleep)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+After:
+1. echo freeze > /sys/power/state ---> Enters s2idle still same
+2. echo s2idle > /sys/power/mem_sleep
+   echo mem > /sys/power/state ---> Also enter s2idle
+3. echo deep > /sys/power/mem_sleep
+   echo mem > /sys/power/state ---> Also enter s2r(same as [B] above)
+
+Please note I have carefully dropped standby/shallow as we will not
+support that state on ARM64 platforms(refer previous discussions for the
+same)
+
+Now IIUC, you need 2 above. So, since this new interface allow mem to
+mean "s2idle", we need to fix the core to register default suspend_ops
+to achieve what you need. And since I now better understand you problem,
+you get extra NACK for this series ;)
+
+-- 
+Regards,
+Sudeep
