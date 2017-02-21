@@ -1,37 +1,56 @@
-From: Vlad Zakharov <Vladislav.Zakharov@synopsys.com>
-Subject: cpufreq: get cpufreq_frequency_table from clk driver
-Date: Tue, 21 Feb 2017 11:13:35 +0000
-Message-ID: <1487675614.25108.30.camel@synopsys.com>
+From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH/RFC 3/6] drivers: firmware: psci: Implement shallow
+ suspend mode
+Date: Tue, 21 Feb 2017 11:14:16 +0000
+Message-ID: <de2a15d4-9ac2-9ba9-a47a-eacbf478f601@arm.com>
+References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
+ <1487622809-25127-4-git-send-email-geert+renesas@glider.be>
+ <20170221110712.GB5021@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay4.synopsys.com ([198.182.47.9]:41859 "EHLO
-        smtprelay.synopsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751266AbdBULNl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 06:13:41 -0500
-Content-Language: en-US
-Content-ID: <5E738EEAB7746F4F93A8B73912CDD7FB@internal.synopsys.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170221110712.GB5021@amd>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
 
-SGVsbG8sDQoNCkkgYW0gdHJ5aW5nIHRvIGltcGxlbWVudCBhIGNwdWZyZXEgZHJpdmVyIGZvciBB
-UkNIUyBjcHUuDQoNCkFuZCBJIGZhY2VkIHdpdGggb25lIHF1ZXN0aW9uIEkgYW0gbm90IGFibGUg
-dG8gYW5zd2VyIG15c2VsZi4gY3B1ZnJlcSBmcmFtZXdvcmsgYWxsb3dzIHVzIHVzaW5nIGNwdWZy
-ZXEgZnJlcXVlbmN5IHRhYmxlcw0KdGhhdCBzdG9yZSBhdmFpbGFibGUgZm9yIGN1cnJlbnQgcG9s
-aWN5IHJhbmdlIG9mIGZyZXF1ZW5jaWVzIHdpdGggYW55IGFkZGl0aW9uYWwgZGF0YS4gQXMgSSB1
-bmRlcnN0YW5kIGZvciBleGFtcGxlIGl0DQpjYW4gYmUgY2xvY2sgY29uZmlndXJhdGlvbnMgZm9y
-IHRoaXMgcGFydGljdWxhciBmcmVxdWVuY3kuDQoNCkFsc28gSSBoYXZlIGEgY2xrIGRyaXZlciB0
-aGF0IG1hbmFnZXMgYWN0dWFsIGNwdSBmcmVxdWVuY3kuIEluIGZhY3QgaXQgdXNlcyB2ZXJ5IHNp
-bWlsYXIgdGFibGVzIHRoYXQgY29udGFpbiBmcmVxdWVuY2llcw0KYW5kIGNvcnJlc3BvbmRpbmcg
-dmFsdWVzIG9mIGNsb2NrIGNvbmZpZ3VyYXRpb25zIHJlZ2lzdGVycyB0aGF0IGFyZSB0byBiZSBz
-ZXQgdXAgd2l0aCBjdXJyZW50IGZyZXF1ZW5jeS4NCg0KU28gdGhlIHF1ZXN0aW9uIGlzIGNhbiBJ
-IGdldCBzdWNoIHRhYmxlcyBmcm9tIGNsayBkcml2ZXIgc29tZWhvdz8gSSB3b3VsZCBiZSB2ZXJ5
-IGNvbnZlbmllbnQ6IHRoaXMgdGFibGVzIGRpZmZlcnMgZm9yDQpBUkNIUyBDUFUuIEUuZy4gb24g
-ZGlmZmVyZW50IGJvYXJkcyBpdCBpcyBjbG9ja2VkIGJ5IGRpZmZlcmVudCBQTExzIGFuZCBvc2Np
-bGxhdG9ycy4NCg0KRG8geW91IGtub3cgYW55IHdheSB0byBnZXQgdGhlIHRhYmxlcyBmcm9tIGNs
-ayBkcml2ZXI/IEFueSBzdWdnZXN0aW9ucyBvciBjb21tZW50cyBtaWdodCBiZSB2ZXJ5IGhlbHBm
-dWwuDQoNClRoYW5rcyENCg0KLS0gDQpCZXN0IHJlZ2FyZHMsDQpWbGFkIFpha2hhcm92IDx2emFr
-aGFyQHN5bm9wc3lzLmNvbT4=
+
+
+On 21/02/17 11:07, Pavel Machek wrote:
+> Hi!
+> 
+>> Enable support for "shallow" suspend mode, also known as "Standby" or
+>> "Power-On Suspend".
+>>
+>> As secondary CPU cores are taken offline, "shallow" suspend mode saves
+>> slightly more power than "s2idle", but less than "deep" suspend mode.
+>> However, unlike "deep" suspend mode, "shallow" suspend mode can be used
+>> regardless of the presence of support for PSCI_SYSTEM_SUSPEND, which is
+>> an optional API in PSCI v1.0.
+> 
+> If system supports "shallow" suspend, why does not PSCI implement it?
+> 
+
+Yes it can, and IIUC it already does on this platform with CPU_SUSPEND.
+All it now needs is just to use existing "freeze" suspend mode in Linux.
+
+> In the past, I was told PSCI will not turn into ACPI-like mess, and
+> that we'll be able to fix PSCI and will not have to work around its
+> problems in kernel :-(.
+
+Can you be more elaborate on the mess you see on this Renesas platform.
+
+For me, it looks like this patch is attempting to *re-implement* the
+existing "suspend-to-idle" functionality. So IMO, this patch set is
+creating unnecessary mess giving an illusion that PSCI specification is
+broken.
+
+-- 
+Regards,
+Sudeep
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
