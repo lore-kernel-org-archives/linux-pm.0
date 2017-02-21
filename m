@@ -1,173 +1,236 @@
-From: <eumann@t-online.de>
-Subject: (unknown)
-Date: Tue, 21 Feb 2017 04:09:53 -0000
-Message-ID: <148765019303.14982.294085047326783438@hinet.net>
-Reply-To: <eumann@t-online.de>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v3 04/18] iio: adc: add support for X-Powers AXP20X and
+ AXP22X PMICs ADCs
+Date: Tue, 21 Feb 2017 12:32:13 +0800
+Message-ID: <CAGb2v66D-11CcuPoTWGtBuy4z3uUu4Srgg-CZv-B9ua8p0dhzg@mail.gmail.com>
+References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
+ <20170214094112.27426-5-quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: application/zip; name="EMAIL_905865433901950_linux-pm.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from [117.244.31.184] ([117.244.31.184]:56334 "HELO hinet.net"
-        rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with SMTP
-        id S1750923AbdBUEKn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 20 Feb 2017 23:10:43 -0500
-Content-Disposition: attachment
-Subject: 
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170214094112.27426-5-quentin.schulz@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
 
-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
+On Tue, Feb 14, 2017 at 5:40 PM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> The X-Powers AXP20X and AXP22X PMICs have multiple ADCs. They expose the
+> battery voltage, battery charge and discharge currents, AC-in and VBUS
+> voltages and currents, 2 GPIOs muxable in ADC mode and PMIC temperature.
+>
+> This adds support for most of AXP20X and AXP22X ADCs.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> ---
+>
+> v3:
+>  - moved from switch to if condition in axp20x_adc_raw and
+>  axp22x_adc_raw,
+>  - removed DT support as DT node has been dropped,
+>    - use of platform_device_id
+>  - correctly defined the name of the iio device (name used to probe the
+>  driver),
+>  - added goto for errors in probe,
+>  - added iio_map_array_unregister to the remove function,
+>
+> v2:
+>  - removed unused defines,
+>  - changed BIT(x) to 1 << x when describing bits purpose for which 2 <<
+>  x or 3 << x exists, to be consistent,
+>  - changed ADC rate defines to macro formulas,
+>  - reordered IIO channels, now different measures (current/voltage) of
+>  the same part of the PMIC (e.g. battery), have the same IIO channel in
+>  their respective IIO type. When a part of the PMIC have only one
+>  measure, a number is jumped,
+>  - left IIO channel mapping in DT to use iio_map structure,
+>  - removed indexing of ADC internal temperature,
+>  - removed unused iio_dev structure in axp20x_adc_iio,
+>  - added a structure for data specific to AXP20X or AXP22X PMICs instead
+>  of using an ID and an if condition when needing to separate the
+>  behaviour of both,
+>  - added a comment on batt_chrg_i really being on 12bits rather than
+>  what the Chinese datasheets say (13 bits),
+>  - corrected the offset for AXP22X PMIC temperature,
+>  - set the ADC rate to a value (100Hz) shared by the AXP20X and AXP22X,
+>  - created macro formulas to compute the ADC rate for each,
+>  - added a condition on presence of ADC_EN2 reg before setting/resetting
+>  it,
+>  - switched from devm_iio_device_unregister to the non-devm function
+>  because of the need for a remove function,
+>  - removed some dead code,
+>
+>  drivers/iio/adc/Kconfig      |  10 +
+>  drivers/iio/adc/Makefile     |   1 +
+>  drivers/iio/adc/axp20x_adc.c | 606 +++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 617 insertions(+)
+>  create mode 100644 drivers/iio/adc/axp20x_adc.c
+>
+> diff --git a/drivers/iio/adc/Kconfig b/drivers/iio/adc/Kconfig
+> index 9c8b558..ed17fe1 100644
+> --- a/drivers/iio/adc/Kconfig
+> +++ b/drivers/iio/adc/Kconfig
+> @@ -154,6 +154,16 @@ config AT91_SAMA5D2_ADC
+>           To compile this driver as a module, choose M here: the module will be
+>           called at91-sama5d2_adc.
+>
+> +config AXP20X_ADC
+> +       tristate "X-Powers AXP20X and AXP22X ADC driver"
+> +       depends on MFD_AXP20X
+> +       help
+> +         Say yes here to have support for X-Powers power management IC (PMIC)
+> +         AXP20X and AXP22X ADC devices.
+> +
+> +         To compile this driver as a module, choose M here: the module will be
+> +         called axp20x_adc.
+> +
+>  config AXP288_ADC
+>         tristate "X-Powers AXP288 ADC driver"
+>         depends on MFD_AXP20X
+> diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
+> index d36c4be..f5c28a5 100644
+> --- a/drivers/iio/adc/Makefile
+> +++ b/drivers/iio/adc/Makefile
+> @@ -16,6 +16,7 @@ obj-$(CONFIG_AD7887) += ad7887.o
+>  obj-$(CONFIG_AD799X) += ad799x.o
+>  obj-$(CONFIG_AT91_ADC) += at91_adc.o
+>  obj-$(CONFIG_AT91_SAMA5D2_ADC) += at91-sama5d2_adc.o
+> +obj-$(CONFIG_AXP20X_ADC) += axp20x_adc.o
+>  obj-$(CONFIG_AXP288_ADC) += axp288_adc.o
+>  obj-$(CONFIG_BCM_IPROC_ADC) += bcm_iproc_adc.o
+>  obj-$(CONFIG_BERLIN2_ADC) += berlin2-adc.o
+> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> new file mode 100644
+> index 0000000..5ef6af8
+> --- /dev/null
+> +++ b/drivers/iio/adc/axp20x_adc.c
+> @@ -0,0 +1,606 @@
+
+[...]
+
+> +
+> +static const struct platform_device_id axp20x_adc_id_match[] = {
+> +       { .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
+> +       { .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
+> +       { /* sentinel */ },
+> +};
+
+MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
+
+So module autoloading works. Otherwise,
+
+Acked-by: Chen-Yu Tsai <wens@csie.org>
+
+> +
+> +static int axp20x_probe(struct platform_device *pdev)
+> +{
+> +       struct axp20x_adc_iio *info;
+> +       struct iio_dev *indio_dev;
+> +       struct axp20x_dev *axp20x_dev;
+> +       int ret;
+> +
+> +       axp20x_dev = dev_get_drvdata(pdev->dev.parent);
+> +
+> +       indio_dev = devm_iio_device_alloc(&pdev->dev, sizeof(*info));
+> +       if (!indio_dev)
+> +               return -ENOMEM;
+> +
+> +       info = iio_priv(indio_dev);
+> +       platform_set_drvdata(pdev, indio_dev);
+> +
+> +       info->regmap = axp20x_dev->regmap;
+> +       indio_dev->dev.parent = &pdev->dev;
+> +       indio_dev->dev.of_node = pdev->dev.of_node;
+> +       indio_dev->modes = INDIO_DIRECT_MODE;
+> +
+> +       info->data = (struct axp_data *)platform_get_device_id(pdev)->driver_data;
+> +
+> +       indio_dev->name = platform_get_device_id(pdev)->name;
+> +       indio_dev->info = info->data->iio_info;
+> +       indio_dev->num_channels = info->data->num_channels;
+> +       indio_dev->channels = info->data->channels;
+> +
+> +       /* Enable the ADCs on IP */
+> +       regmap_write(info->regmap, AXP20X_ADC_EN1, info->data->adc_en1_mask);
+> +
+> +       if (info->data->adc_en2)
+> +               /* Enable GPIO0/1 and internal temperature ADCs */
+> +               regmap_update_bits(info->regmap, AXP20X_ADC_EN2,
+> +                                  AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
+> +
+> +       /* Configure ADCs rate */
+> +       regmap_update_bits(info->regmap, AXP20X_ADC_RATE, AXP20X_ADC_RATE_MASK,
+> +                          info->data->adc_rate(100));
+> +
+> +       ret = iio_map_array_register(indio_dev, info->data->maps);
+> +       if (ret < 0) {
+> +               dev_err(&pdev->dev, "failed to register IIO maps: %d\n", ret);
+> +               goto fail_map;
+> +       }
+> +
+> +       ret = iio_device_register(indio_dev);
+> +       if (ret < 0) {
+> +               dev_err(&pdev->dev, "could not register the device\n");
+> +               goto fail_register;
+> +       }
+> +
+> +       return 0;
+> +
+> +fail_register:
+> +       iio_map_array_unregister(indio_dev);
+> +
+> +fail_map:
+> +       regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
+> +
+> +       if (info->data->adc_en2)
+> +               regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
+> +
+> +       return ret;
+> +}
+> +
+> +static int axp20x_remove(struct platform_device *pdev)
+> +{
+> +       struct axp20x_adc_iio *info;
+> +       struct iio_dev *indio_dev = platform_get_drvdata(pdev);
+> +
+> +       info = iio_priv(indio_dev);
+> +
+> +       iio_device_unregister(indio_dev);
+> +       iio_map_array_unregister(indio_dev);
+> +
+> +       regmap_write(info->regmap, AXP20X_ADC_EN1, 0);
+> +
+> +       if (info->data->adc_en2)
+> +               regmap_write(info->regmap, AXP20X_ADC_EN2, 0);
+> +
+> +       return 0;
+> +}
+> +
+> +static struct platform_driver axp20x_adc_driver = {
+> +       .driver = {
+> +               .name = "axp20x-adc",
+> +       },
+> +       .id_table = axp20x_adc_id_match,
+> +       .probe = axp20x_probe,
+> +       .remove = axp20x_remove,
+> +};
+> +
+> +module_platform_driver(axp20x_adc_driver);
+> +
+> +MODULE_DESCRIPTION("ADC driver for AXP20X and AXP22X PMICs");
+> +MODULE_AUTHOR("Quentin Schulz <quentin.schulz@free-electrons.com>");
+> +MODULE_LICENSE("GPL");
+> --
+> 2.9.3
+>
