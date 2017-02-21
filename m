@@ -1,103 +1,101 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH V2 2/2] ARM: dts: bcm283x: Add CPU thermal zone with 1
- trip point
-Date: Tue, 21 Feb 2017 19:14:36 +0100 (CET)
-Message-ID: <9493160.170101.1487700876375@email.1und1.de>
-References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
- <1486928328-25870-2-git-send-email-stefan.wahren@i2se.com>
- <20170219011753.GB21016@localhost.localdomain>
- <1762674971.70633.1487507509664@email.1und1.de>
- <20170219212659.GA22580@localhost.localdomain>
+From: Quentin Schulz <quentin.schulz@free-electrons.com>
+Subject: Re: [PATCH v3 13/18] power: supply: add battery driver for AXP20X and
+ AXP22X PMICs
+Date: Tue, 21 Feb 2017 19:19:39 +0100
+Message-ID: <c3b21cd4-6d1d-db6a-b1ef-ed119f683035@free-electrons.com>
+References: <20170214094112.27426-1-quentin.schulz@free-electrons.com>
+ <20170214094112.27426-14-quentin.schulz@free-electrons.com>
+ <CAGb2v64MjfYSnXET1BWsv=VaZE+v7GwNj7nrWDRafjRCM5tcQg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.187]:52684 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754629AbdBUSPd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Feb 2017 13:15:33 -0500
-In-Reply-To: <20170219212659.GA22580@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAGb2v64MjfYSnXET1BWsv=VaZE+v7GwNj7nrWDRafjRCM5tcQg@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, Lars-Peter Clausen <lars@metafoo.de>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-iio@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Russell King <linux@armlinux.org.uk>, =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Rob Herring <robh+dt@kernel.org>, Icenowy Zheng <icenowy@aosc.xyz>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, knaack.h@gmx.de, Maxime Ripard <maxime.ripard@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, kernel@martin.sperl.org
-Cc: Frank Rowand <frowand.list@gmail.com>, Eric Anholt <eric@anholt.net>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-> Eduardo Valentin <edubezval@gmail.com> hat am 19. Februar 2017 um 22:27 geschrieben:
+Hi Chen-Yu,
+
+On 21/02/2017 05:44, Chen-Yu Tsai wrote:
+> On Tue, Feb 14, 2017 at 5:41 PM, Quentin Schulz
+> <quentin.schulz@free-electrons.com> wrote:
+>> The X-Powers AXP20X and AXP22X PMICs can have a battery as power supply.
+>>
+>> This patch adds the battery power supply driver to get various data from
+>> the PMIC, such as the battery status (charging, discharging, full,
+>> dead), current max limit, current current, battery capacity (in
+>> percentage), voltage max and min limits, current voltage and battery
+>> capacity (in Ah).
+>>
+>> This battery driver uses the AXP20X/AXP22X ADC driver as PMIC data
+>> provider.
+>>
+>> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+>> Acked-by: Jonathan Cameron <jic23@kernel.org>
+>> Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+[...]
+>> +static int axp20x_set_constant_charge_current(struct axp20x_batt_ps *axp_batt,
+>> +                                             int charge_current)
+>> +{
+>> +       if (axp_batt->axp_id == AXP209_ID)
+>> +               charge_current = (charge_current - 300000) / 100000;
+>> +       else
+>> +               charge_current = (charge_current - 300000) / 150000;
+>> +
+>> +       if (charge_current > AXP20X_CHRG_CTRL1_TGT_CURR || charge_current < 0)
+>> +               return -EINVAL;
 > 
-> 
-> Hey Stefan,
-> 
-> 
-> On Sun, Feb 19, 2017 at 01:31:49PM +0100, Stefan Wahren wrote:
-> > Hi Eduardo,
-> > 
-> > > Eduardo Valentin <edubezval@gmail.com> hat am 19. Februar 2017 um 02:17 geschrieben:
-> > > 
-> > > 
-> > > On Sun, Feb 12, 2017 at 07:38:48PM +0000, Stefan Wahren wrote:
-> > > > As suggested by Eduardo Valentin this adds the thermal zone for
-> > > > the bcm2835 SoC with its single thermal sensor. We start with
-> > > > the criticial trip point and leave the cooling devices empty
-> > > > since we don't have any at the moment.
-> > > > 
-> > > > Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> > > > ---
-> > > > 
-> > > > Changes in V2:
-> > > > - add missing thermal-sensor-cells property
-> > > > - change gpu-thermal to cpu-thermal
-> > > > 
-> > > >  arch/arm/boot/dts/bcm283x.dtsi |   20 ++++++++++++++++++++
-> > > >  1 file changed, 20 insertions(+)
-> > > > 
-> > > > diff --git a/arch/arm/boot/dts/bcm283x.dtsi b/arch/arm/boot/dts/bcm283x.dtsi
-> > > > index a3106aa..4dc74f6 100644
-> > > > --- a/arch/arm/boot/dts/bcm283x.dtsi
-> > > > +++ b/arch/arm/boot/dts/bcm283x.dtsi
-> > > > @@ -19,6 +19,25 @@
-> > > >  		bootargs = "earlyprintk console=ttyAMA0";
-> > > >  	};
-> > > >  
-> > > > +	thermal-zones {
-> > > > +		cpu_thermal: cpu-thermal {
-> > > > +			polling-delay-passive = <0>;
-> > > > +			polling-delay = <1000>;
-> > > > +
-> > > 
-> > > Check the diff I sent and also add the following for differentiating the
-> > > offsets and slopes depending on which chip the zone describes:
-> > > 			coefficients = <-538 407000>; /* for the zone on bcm2835 and bcm2836 */
-> > > 
-> > > and
-> > > 
-> > > 			coefficients = <-538 412000>; /* for the zone on bcm2837 */
-> > > 
-> > > 
-> > > Despite the changes mentioned for the driver and DT, I am ok with the driver and the DTS descriptors.
-> > 
-> > thanks for providing the necessary driver changes, but the coefficients above causes a DTC parse error. The Device Tree doesn't provide support for native signed integer. Looking at this old thread [1] suggests to add parentheses which fixed the parse issue. But of-thermal expected u32 for coefficients [2].
-> > 
-> > Any suggestions?
-> 
-> I am OK if you provide a patch to of-thermal in your series, assuming
-> that would fix the  representation issue the data of your driver has.
+> I would add a check or warn if the value to be programmed exceeds that returned
+> by power_supply_get_battery_info.
+
+Completely agree on a warning.
+
+> A charge current exceeding the limits of the
+> battery is potentially disastrous. The battery may be destroyed or even burst
+> into flames and explode, taking the board and anything nearby with it. Otherwise
 > 
 
-I prepared a new patch series to fix that issue in my github repo [1]. At first we need to implement a new function of_property_read_s32_array() [2]. After that we could use this function in of-thermal in order to use signed integer for both coefficients [3].
+Yes, I understand. Maybe I'm seeing this ability to set the (max)
+constant current charge the wrong way. Here is what I think:
+If we limit the max constant charge current with a DT property, it would
+require a DT rebuild when changing the battery (i.e. if an end-user
+decides to change the battery with a bigger constant charge current, he
+has to recompile the DT to change the DT value).
 
-@Eduardo: Is it okay for you?
+What I can suggest is the following:
+ - set the max constant charge current and the default constant charge
+current from the DT property,
+ - allow the user to change the constant charge current via sysfs within
+minimal-DT value range,
+ - allow the user to set max constant charge current via sysfs (and
+print a warning as well when setting it), then the user can set a higher
+constant charge current,
 
-@Martin: Do you want to send the next version of the patch series or should i?
+That would require a two steps modification with a printed warning.
+"Safer" but does not remove the ability to change the constant charge
+current in the case of battery swapping/changing.
 
-[1] - https://github.com/lategoodbye/rpi-zero/commits/thermal
-[2] - https://github.com/lategoodbye/rpi-zero/commit/3dc43581ada74d1345f79b4c36562fdf5f7941e5
-[3] - https://github.com/lategoodbye/rpi-zero/commit/c02ed37c0ebdca98aee570862af10e90b3c9a0d0
-
-> BR,
+> Acked-by: Chen-Yu Tsai <wens@csie.org>
 > 
-> > 
-> > [1] - http://lists.infradead.org/pipermail/linux-arm-kernel/2013-April/159681.html
-> > [2] - http://elixir.free-electrons.com/source/drivers/thermal/of-thermal.c?v=4.10-rc7#L854
-> > 
-> > > 
-> > > BR,
+> Speaking of power_supply_get_battery_info, is it merged or ready to be merged?
+> 
+
+v7 under way IIRC.
+
+Thanks,
+Quentin
+
+-- 
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
