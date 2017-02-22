@@ -1,118 +1,101 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v7 8/9] power: bq27xxx_battery: Add print_dm() to log chip memory
-Date: Wed, 22 Feb 2017 13:36:09 -0800
-Message-ID: <CAKvHMgS-1+P2LcW=USftbLb-Bd84wHZ1YR5kZFe0jAZY9G91rA@mail.gmail.com>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v7 1/9] devicetree: power: Add battery.txt
+Date: Wed, 22 Feb 2017 13:39:46 -0800
+Message-ID: <CAKvHMgRLGVAUEBqt9HsUsSE8cCJdTRuxt9QDi=L6eaNV=mHZ0g@mail.gmail.com>
 References: <20170221213008.30044-1-liam@networkimprov.net>
- <20170221213008.30044-9-liam@networkimprov.net> <c8f3b791-abe8-6993-c760-92303f7e2867@ti.com>
+ <20170221213008.30044-2-liam@networkimprov.net> <bd747560-8780-3294-86dd-f7f7f4de1736@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:33257 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755204AbdBVVgP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2017 16:36:15 -0500
-Received: by mail-it0-f65.google.com with SMTP id e137so2275729itc.0
-        for <linux-pm@vger.kernel.org>; Wed, 22 Feb 2017 13:36:10 -0800 (PST)
-In-Reply-To: <c8f3b791-abe8-6993-c760-92303f7e2867@ti.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <bd747560-8780-3294-86dd-f7f7f4de1736-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Wed, Feb 22, 2017 at 12:39 PM, Andrew F. Davis <afd@ti.com> wrote:
+On Wed, Feb 22, 2017 at 12:05 PM, Andrew F. Davis <afd-l0cyMroinI0@public.gmane.org> wrote:
 > On 02/21/2017 03:30 PM, Liam Breck wrote:
->> From: Liam Breck <kernel@networkimprov.net>
+>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 >>
->
-> Do you prefer kernel@ or liam@, you should probably pick one and use it
-> uniformly.
->
-> This patch is nice for debugging, but not upstreamable, it is full of
-> checkpatch and formatting issues, it should probably just be dropped
-> from this series.
-
-Your hw developer customers will want this.
-
-It's up to you whether every line of code in bq27xxx must fit the
-format guidelines. I can adjust the format. Or leave it in commented
-out?
-
->> Enable listing of chip RAM and/or NVM at startup, for debugging use.
->> Intially supports BQ27425 State NVM, subclass 82.
->> Support for other chips may be added.
+>> Documentation of static battery characteristics that can be defined
+>> for batteries which cannot self-identify. This information is required
+>> by fuel-gauge and charger chips for proper handling of the battery.
 >>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 >> ---
->>  drivers/power/supply/bq27xxx_battery.c | 51 ++++++++++++++++++++++++++++++++++
->>  1 file changed, 51 insertions(+)
+>>  .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
+>>  1 file changed, 42 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 >>
->> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index 8085d4a..bfb3aa9 100644
->> --- a/drivers/power/supply/bq27xxx_battery.c
->> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -664,6 +664,55 @@ static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
->>       return ret;
->>  }
+>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> new file mode 100644
+>> index 0000000..3d916bd
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> @@ -0,0 +1,42 @@
+>> +Battery Characteristics
+>> +
+>> +Required Properties:
+>> + - compatible: Must be "fixed-battery"
+>> +
+>> +Optional Properties:
+>> + - voltage-min-design-microvolt: drained battery voltage
+>> + - energy-full-design-microwatt-hours: battery design energy
+>> + - charge-full-design-microamp-hours: battery design capacity
+>> +
+>> +Future Properties must be named for the corresponding elements in
+>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>> +
+>> +Batteries must be referenced by chargers and/or fuel-gauges
+>> +using a phandle. The phandle's property should be named
+>> +"monitored-battery".
+>> +
+>> +Driver code should call power_supply_get_battery_info() to obtain
+>> +battery properties via monitored-battery. For details see:
+>> +  drivers/power/supply/power_supply_core.c
+>> +  drivers/power/supply/bq27xxx_battery.c
+>> +
+>> +Example:
+>> +
+>> +     bat: battery {
+>> +             compatible = "fixed-battery";
+>> +             voltage-min-design-microvolt = <3200000>;
+>> +             energy-full-design-microwatt-hours = <5290000>;
+>> +             charge-full-design-microamp-hours = <1430000>;
+>> +     };
+>> +
+>
+> Still not sure what a non-fixed-battery would be. I guess it would be a
+> battery with an integrated fuel-gauge pre-programmed with this design
+> info. So then the charger node would want to point to a fuel-gauge node,
+> and the fuel-gauge can optionally point to a fixed-battery if that info
+> is not pre-programmable.
+
+Sebastian wondered about a chain from charger thru gauge to battery,
+but there are battery characteristics the gauge won't know about, e.g.
+pre-charge and post-charge current, which is usually derived from
+battery capacity.
+
+> The issues then is for chargers with an integrated fuel-gauge, or
+> systems without a fuel-gauge, that may get a bit messy, so I have no
+> issues with this current binding.
+>
+>> +     charger: charger@11 {
+>> +             ....
+>> +             monitored-battery = <&bat>;
+>> +             ...
+>> +     };
+>> +
+>> +     fuel_gauge: fuel-gauge@22 {
+>> +             ....
+>> +             monitored-battery = <&bat>;
+>> +             ...
+>> +     };
 >>
->> +/* Translate f4 floating point values to/from hexadecimal:
->> + *   perl -e 'printf("%08x\n", unpack("I", pack("f", 3.93e-4   )))' # 39ce0b91
->> + *   perl -e 'printf("%f\n"  , unpack("f", pack("I", 0x39ce0b91)))' # 0.000393
->> + */
->> +
->> +#define BQ27XXX_REG(f,o,v) dev_info(di->dev, "offset %d, " f "\n", o, v)
->> +
->> +static void bq27xxx_battery_print_dm(struct bq27xxx_device_info *di) {
->> +     enum { h1, h2, i2, u1, f4 };
->> +
->> +     struct dm_reg { int offset, type; }
->> +             /* each array row describes one data block */
->> +             c425_s82[][10] = {
->> +                     { { 2,h1},{ 3,i2},{ 5,h2},{12,i2},{14,i2},{18,i2},{22,i2},{29,u1},{30,i2},{99,0} },
->> +                     { {32,i2},{34,i2},{36,i2},{38,u1},{39,u1},{40,f4},{99,0} },
->> +             };
->> +             /* add more subclass maps here */
->> +
->> +     struct dm_class { int id, len; struct dm_reg (*reg)[10]; }
->> +             c425[] = {
->> +                     { .id = 82, .len = 2, .reg = c425_s82 },
->> +             };
->> +             /* add more chip maps here */
->> +
->> +     struct dm_class *chip = c425; /* set to your chip */
->> +
->> +     struct bq27xxx_dm_buf buf = { };
->> +     int c, b, r;
->> +     for (c=0; c < 1; ++c) {
->> +             buf.class = chip[c].id;
->> +             dev_info(di->dev, "subclass %d registers...\n", chip[c].id);
->> +             for (b=0; b < chip[c].len; ++b) {
->> +                     buf.block = b;
->> +                     bq27xxx_battery_read_dm_block(di, &buf);
->> +                     for (r=0; chip[c].reg[b][r].offset != 99; ++r) {
->> +                             int o = chip[c].reg[b][r].offset;
->> +                             u8* p = &buf.a[o % sizeof buf.a];
->> +                             switch (chip[c].reg[b][r].type) {
->> +                             case h1: BQ27XXX_REG("%02x", o,      *p); break;
->> +                             case h2: BQ27XXX_REG("%04x", o,      be16_to_cpup((u16*)p)); break;
->> +                             case i2: BQ27XXX_REG("%d",   o, (s16)be16_to_cpup((u16*)p)); break;
->> +                             case u1: BQ27XXX_REG("%u",   o,      *p); break;
->> +                             case f4: BQ27XXX_REG("%08x", o,      be32_to_cpup((u32*)p)); break;
->> +                             }
->> +                     }
->> +             }
->> +     }
->> +}
->> +
->>  static void bq27xxx_battery_print_config(struct bq27xxx_device_info *di)
->>  {
->>       struct bq27xxx_dm_reg *reg = bq27xxx_dm_regs[di->chip];
->> @@ -683,6 +732,8 @@ static void bq27xxx_battery_print_config(struct bq27xxx_device_info *di)
->>               else
->>                       dev_warn(di->dev, "unsupported config register %s\n", str);
->>       }
->> +     /* bq27xxx_battery_print_dm(di); uncomment for debugging */
->> +     (void)bq27xxx_battery_print_dm; /* prevent compiler warning */
->>  }
->>
->>  static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
->>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
