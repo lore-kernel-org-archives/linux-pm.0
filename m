@@ -1,88 +1,49 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH/RFC 0/6] PSCI: Fix non-PMIC wake-up if SYSTEM_SUSPEND cuts
- power
-Date: Wed, 22 Feb 2017 15:24:01 +0000
-Message-ID: <ecc87d46-6a77-3c8f-d67e-974d20b8a603@arm.com>
-References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
- <94167d3a-e005-3af0-d290-a1086684d570@arm.com>
- <3c8b3f2d-8604-f999-4208-a82f171b64f2@arm.com>
- <1975396.x0czmkNPOW@aspire.rjw.lan>
- <35840771-e16f-d6fe-3a89-1b3f51f4a8f3@arm.com>
- <CAMuHMdXpKrJn9NrkAarvMtytk9gHEFcRoZLCsWBFgriUCeWo=Q@mail.gmail.com>
- <f649d707-8b0a-5ca9-b021-93ae8cf66b33@arm.com>
- <CAJZ5v0iheYM-qj8=bO3NZhoM5=8+TikYhm23EZV72HxNxUXDsg@mail.gmail.com>
+From: Chris Brandt <Chris.Brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [PATCH v2 1/3] power: reset: Add Renesas reset driver
+Date: Wed, 22 Feb 2017 16:04:06 +0000
+Message-ID: <SG2PR06MB1165F6C78BC5F4ACA32057718A500@SG2PR06MB1165.apcprd06.prod.outlook.com>
+References: <20170216172320.10897-1-chris.brandt@renesas.com>
+ <20170216172320.10897-2-chris.brandt@renesas.com>
+ <20170216182644.GA17814@roeck-us.net>
+ <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
+ <20170216222014.GA29672@roeck-us.net>
+ <PS1PR06MB11622077DE4673C1879C05278A5D0@PS1PR06MB1162.apcprd06.prod.outlook.com>
+ <55cf087f-aa70-3660-1186-af9b9b20376d@roeck-us.net>
+ <SG2PR06MB11650D5EE485C0F44A77E0EA8A500@SG2PR06MB1165.apcprd06.prod.outlook.com>
+ <20170222152815.GA23780@roeck-us.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAJZ5v0iheYM-qj8=bO3NZhoM5=8+TikYhm23EZV72HxNxUXDsg@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Len Brown <len.brown@intel.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Geert Uytterhoeven <geert+renesas@glider.be>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Pavel Machek <pavel@ucw.cz>, Sudeep Holla <sudeep.holla@arm.com>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170222152815.GA23780-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Content-Language: en-US
+Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>
+Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, "linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hello Guenter,
+
+On Wednesday, February 22, 2017, Guenter Roeck wrote:
+> > Looking through the drivers in the watchdog directly, I see default
+> > timeouts of 20, 30, 60, and 120 seconds.
+> >
+> 30 and 60 are pretty common for default timeouts, though I personally
+> think they are a bit long. If you want direct HW support, a maximum of 12=
+0
+> seconds should be sufficient though not really necessary anymore since th=
+e
+> core supports virtual timeouts. A maximum of at least 30 seconds would be
+> needed if the watchdog is supposed to run at boot time (ie if it is
+> enabled by ROMMON/BIOS and kept running by the kernel).
 
 
-On 22/02/17 14:50, Rafael J. Wysocki wrote:
-> On Wed, Feb 22, 2017 at 3:32 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+Thank you!
+Good point about the boot time.
 
-[...]
+Chris
 
->>
->> OK, I thought I had told this before. What do you mean by PSCI system
->> suspend can't wakeup from the configured wakeup source. You just said
->> above that you can wake up from the switch.
->>
->> Just enabling the wakeup sources in Linux doesn't mean you can enter
->> system suspend anytime. You must enter only the state from which you can
->> resume. And in your case if you can't wakeup from WLAN or wakeup source
->> you have configured then simply don't enter system suspend.
-> 
-> Well, not quite.
-> 
-> The sysfs wakeup setting for devices only means whether or not to
-> enable the generation of wakeup signals for them while suspending.  It
-> allows to *prevent* devices from waking up the system, but it doesn't
-> guarantee that they will actually wake up if enabled.
-> 
-> Now, the platform doesn't decide on the sleep state it will go to on
-> the basis of what devices have been enabled to wake up the system.
-> The states ("shallow", "deep") have to be defined upfront, including
-> what devices can wake up from the "shallow" and what devices can wake
-> up from the "deep" states (these lists need not be the same).  [As I
-> said before, the assumption is that all of them will be able to wake
-> up the system from suspend-to-idle.]
-> 
-> So, if user space triggers a transition to the "shallow" state, say,
-> it will be possible to wake up the system from it by devices that (a)
-> can wake it up from the "shallow" state as defined for the given
-> platform and (b) have been enabled to wake up the system via sysfs.
-> 
-> Conversely, if you have a system power state such that only a subset
-> of devices can wake up from it, it needs to be defined as either
-> "shallow" or "deep" and the list of possible wakeup sources is part of
-> that definition.
-
-Completely agreed.
-
-And yes the current assumption is that the set of wake-up source in DT
-applies to the suspend-to-idle case and may/may not from the deeper
-s2ram state.
-
-Sorry if I conveyed something else in my emails. I was mostly referring
-to the patch set and the way it's hacking up. I still fail to understand
-what Geert is doing different in his "shallow" state that "s2idle" can't
-achieve that state. So my comments were more aligned to that when I made
-the above comment.
-
--- 
-Regards,
-Sudeep
+--
+To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
