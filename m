@@ -1,51 +1,135 @@
-From: Chris Brandt <Chris.Brandt@renesas.com>
-Subject: RE: [PATCH v2 1/3] power: reset: Add Renesas reset driver
-Date: Wed, 22 Feb 2017 13:35:12 +0000
-Message-ID: <SG2PR06MB11650D5EE485C0F44A77E0EA8A500@SG2PR06MB1165.apcprd06.prod.outlook.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-2-chris.brandt@renesas.com>
- <20170216182644.GA17814@roeck-us.net>
- <PS1PR06MB1162A4C12D144C321379E3028A5A0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <20170216222014.GA29672@roeck-us.net>
- <PS1PR06MB11622077DE4673C1879C05278A5D0@PS1PR06MB1162.apcprd06.prod.outlook.com>
- <55cf087f-aa70-3660-1186-af9b9b20376d@roeck-us.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH/RFC 0/6] PSCI: Fix non-PMIC wake-up if SYSTEM_SUSPEND cuts power
+Date: Wed, 22 Feb 2017 14:38:59 +0100
+Message-ID: <CAMuHMdXpKrJn9NrkAarvMtytk9gHEFcRoZLCsWBFgriUCeWo=Q@mail.gmail.com>
+References: <1487622809-25127-1-git-send-email-geert+renesas@glider.be>
+ <94167d3a-e005-3af0-d290-a1086684d570@arm.com> <3c8b3f2d-8604-f999-4208-a82f171b64f2@arm.com>
+ <1975396.x0czmkNPOW@aspire.rjw.lan> <35840771-e16f-d6fe-3a89-1b3f51f4a8f3@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor1.renesas.com ([210.160.252.171]:38256 "EHLO
-        relmlie4.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S932278AbdBVNfj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2017 08:35:39 -0500
-In-Reply-To: <55cf087f-aa70-3660-1186-af9b9b20376d@roeck-us.net>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <35840771-e16f-d6fe-3a89-1b3f51f4a8f3@arm.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Mark Rutland <mark.rutland@arm.com>, Lina Iyer <lina.iyer@linaro.org>, John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Magnus Damm <magnus.damm@gmail.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Wim Van Sebroeck <wim@iguana.be>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
 
-Hello Geert and Guenter,
+Hi Sudeep,
 
-On Thursday, February 16, 2017, Guenter Roeck wrote:
-> FWIW, the watchdog subsystem should support that easily, even with 125 ms
-> hardware timeout. We added that capability for that very purpose. That
-> would only fail if the system is stuck with interrupts disabled for more
-> than 125 ms, which seems unlikely. I think the gpio watchdog on some
-> systems has a similar low hardware timeout.
+On Wed, Feb 22, 2017 at 12:03 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+> On 22/02/17 01:14, Rafael J. Wysocki wrote:
+>> On Tuesday, February 21, 2017 06:45:13 PM Sudeep Holla wrote:
+>
+> [...]
+>
+>>> I take this back, you have everything you need in place, nothing needs
+>>> to be done. I just checked again. If I don't register PSCI suspend_ops,
+>>> I still get mem in /sys/power/state with s2idle in /sys/power/mem_sleep
+>>> which is exactly what we need. Again we don't support standby/shallow
+>>> state on ARM64/PSCI.
+>>
+>> Except for one thing which may or may not be a concern here.
+>>
+>> Suspend to idle should only go into states in which all of the available wakeup
+>> devices work.  If there are devices that cannot wake you up from a given state,
+>> this isn't "idle" any more, is it?
+>>
+>
+> True. In this Renasas platform, since the platform doesn't have PSCI
+> system suspend, we can only support s2idle and not s2ram. In this case
 
+Not correct: this Renesas platform does have PSCI system suspend.
+So s2ram "works" (it suspends the system, which can be resumed by a switch)
 
-While I'm going to try that for the RZ/A1, I have a question for you guys
-(or anyone else that has an opinion about end applications)
+> we don't ask platform to enter some system state whereas we suspend all
+> the devices(leaving wakeup capable devices active) and ask platform to
+> enter deepest idle state on all the CPUs. I still don't understand the
+> issue Geert is facing.
 
+PSCI system suspend does not support wake-up sources configured from Linux.
+Hence I cannot use PSCI system suspend if any wake-up sources have been
+configured from Linux, and I expect to be able to use them for wake-up.
 
-If I were going to make a request to the chip designers to make the timeout=
- longer
-for the next RZ/A chip, what would be a good max timeout for common Linux a=
-pplications?
+> Geert, so far you have failed to explain what's different from the new
+> state you are adding and the existing s2idle.
 
-Looking through the drivers in the watchdog directly, I see default timeout=
-s of 20,
-30, 60, and 120 seconds.
+I did explain, cfr.:
+  1. The power consumption figures in the cover letter:
+      - shallow:    8.4 W   6.2 W   (secondary CPU cores off)
+  2. The description for patch 3/6:
+        As secondary CPU cores are taken offline, "shallow" suspend mode saves
+        slightly more power than "s2idle", but less than "deep" suspend mode.
+        However, unlike "deep" suspend mode, "shallow" suspend mode can be used
+        regardless of the presence of support for PSCI_SYSTEM_SUSPEND, which is
+        an optional API in PSCI v1.0.
 
-Thank you,
-Chris
+>> As for the device wakeup disable/enable interface, it is for controlling
+>> whether or not a given device should be allowed to generate wakeup signals at
+>> all.
+>>
+>> The information on what states a given device can wake up the system from is
+>> platform-specific and generally would need to be taken into consideration at
+>> the platform level.
+>
+> Exactly, that's what I am trying to convince Geert ;)
+
+So, how does the communication of wake-up sources happens between PSCI
+and Linux?
+
+Perhaps, I didn't make myself clear. Let's summarize:
+  1. On Renesas R-Car Gen3 platforms, PSCI SYSTEM_SUSPEND is implemented,
+  2. On these platforms, PSCI SYSTEM_SUSPEND powers down the SoC, and supports
+     wake-up from PMIC only,
+  3. If the user wants to use a different wake-up source, these other
+wake-up sources fail
+     to wake up the system from PSCI SYSTEM_SUSPEND.,
+  4. Patch 3/6 adds a new "shallow" state, as it allows to save more
+power (the difference
+     may be due to suboptimal cpuidle platform support on R-Car Gen3, though),
+  5. Patch 4/6 makes the system use the new "shallow" state iff
+       a. the user has configured other wake-up sources, and
+       b. DT advertises that PSCI will power down the SoC on SYSTEM_SUSPEND,
+     hence other wake-up sources now work as expected.
+
+(If you're so against implementing the "shallow" state, it's a red herring,
+ and that patch can be dropped.  Patch 4/6 can be trivially modified, as
+ all it does is call cpu_do_idle() instead).
+
+E.g. on non-PSCI platforms with an Ethernet driver that supports
+Wake-on-LAN, I can do:
+
+        ethtool -s eth0 wol g
+        echo mem > /sys/power/state
+
+and be sure that the system can be woken up by sending a WoL MagicPacket.
+
+On PSCI systems, the above may work, or may not work. And there's no way to
+find out (in an automated way) whether it will work or not.
+
+If it doesn't work, the user has to configure his system (manually) to
+not use "mem" state.
+Since v4.10-rc1, that can be done using e.g.
+
+    echo s2idle > /sys/power/mem_sleep
+
+and my patches make that automatic (for a new "shallow" state instead
+of "s2idle", though).
+
+So all of this is a usability issue, and a nightmare for userspace
+that wants to treat
+different platforms in a generic way (e.g. for distros).
+
+I hope this time it's clear what I want to achieve, and how.
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
