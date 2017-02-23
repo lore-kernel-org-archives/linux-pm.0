@@ -1,15 +1,12 @@
-From: "David.Wu" <david.wu@rock-chips.com>
-Subject: Re: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for
- rk3328
-Date: Thu, 23 Feb 2017 20:28:08 +0800
-Message-ID: <c49ab15e-052d-aa6f-0ed5-83b1433a469d@rock-chips.com>
-References: <1487556485-18871-1-git-send-email-david.wu@rock-chips.com>
- <43787071.1WOyg3ntUU@phil>
+From: David Wu <david.wu@rock-chips.com>
+Subject: [RESEND PATCH] PM / AVS: rockchip-io: add io selectors and supplies
+ for rk3328
+Date: Thu, 23 Feb 2017 20:33:11 +0800
+Message-ID: <1487853191-10994-1-git-send-email-david.wu@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <43787071.1WOyg3ntUU@phil>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,25 +16,107 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Heiko Stuebner <heiko@sntech.de>, rjw@rjwysocki.net
-Cc: nm@ti.com, huangtao@rock-chips.com, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, khilman@kernel.org, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org
+To: rjw@rjwysocki.net, khilman@kernel.org, nm@ti.com, heiko@sntech.de
+Cc: huangtao@rock-chips.com, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, "david.wu" <david.wu@rock-chips.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUmFmYWVsLAoKU29ycnkgbm90IHRvIGluY2x1ZGUgeW91ciBlbWFpbCBhZGRyZXNzIGluIHRo
-ZSBlbWFpbCBsaXN0LgpBbmQgdGhhbmsgSGVpa28uCkkgd2lsbCByZXNlbmQgdGhlIHBhdGNoLgoK
-5ZyoIDIwMTcvMi8yMSAyMzowNiwgSGVpa28gU3R1ZWJuZXIg5YaZ6YGTOgo+IEFtIE1vbnRhZywg
-MjAuIEZlYnJ1YXIgMjAxNywgMTA6MDg6MDUgQ0VUIHNjaHJpZWIgRGF2aWQgV3U6Cj4+IEZyb206
-ICJkYXZpZC53dSIgPGRhdmlkLnd1QHJvY2stY2hpcHMuY29tPgo+Pgo+PiBUaGlzIGFkZHMgdGhl
-IG5lY2Vzc2FyeSBkYXRhIGZvciBoYW5kbGluZyBpbyB2b2x0YWdlIGRvbWFpbnMgb24gdGhlIHJr
-MzMyOC4KPj4gQXMgaW50ZXJlc3RpbmcgdGlkYml0LCB0aGUgcmszMzI4IG9ubHkgY29udGFpbnMg
-b25lIGlvZG9tYWluIGFyZWEgaW4gdGhlCj4+IHJlZ3VsYXIgR2VuZXJhbCBSZWdpc3RlciBGaWxl
-cyAoR1JGKS4KPj4KPj4gU2lnbmVkLW9mZi1ieTogZGF2aWQud3UgPGRhdmlkLnd1QHJvY2stY2hp
-cHMuY29tPgo+Cj4gUmV2aWV3ZWQtYnk6IEhlaWtvIFN0dWVibmVyIDxoZWlrb0BzbnRlY2guZGU+
-Cj4KPiBPbmx5IGlzc3VlIG1pZ2h0IGJlLCB0aGF0IHlvdSBkaWRuJ3QgaW5jbHVkZSBSYWZhZWwg
-KHJqd0Byand5c29ja2kubmV0KSBhbmQKPiBtb3N0IG9mIHRoZSB0aW1lIGlvLWRvbWFpbiBwYXRj
-aGVzIGdvIHRvIGhpbSBkaXJlY3RseSB3aXRoIGFuIEFjayBmcm9tIEtldmluLAo+IGFzIHRoZXJl
-IGFyZSBub3JtYWxseSBub3QgZW5vdWdoIHBvd2VyL2F2cyBwYXRjaGVzIHRvIHdhcmFudCBhIHB1
-bGwgOi0pCj4KPgo+IEhlaWtvCj4KPgo+Cj4KCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1h
-cm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcv
-bWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+From: "david.wu" <david.wu@rock-chips.com>
+
+This adds the necessary data for handling io voltage domains on the rk3328.
+As interesting tidbit, the rk3328 only contains one iodomain area in the
+regular General Register Files (GRF).
+
+Signed-off-by: david.wu <david.wu@rock-chips.com>
+Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+---
+ .../bindings/power/rockchip-io-domain.txt          |  1 +
+ drivers/power/avs/rockchip-io-domain.c             | 41 ++++++++++++++++++++++
+ 2 files changed, 42 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index d23dc00..d3a5a93 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -33,6 +33,7 @@ Required properties:
+ - compatible: should be one of:
+   - "rockchip,rk3188-io-voltage-domain" for rk3188
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
++  - "rockchip,rk3328-io-voltage-domain" for rk3328
+   - "rockchip,rk3368-io-voltage-domain" for rk3368
+   - "rockchip,rk3368-pmu-io-voltage-domain" for rk3368 pmu-domains
+   - "rockchip,rk3399-io-voltage-domain" for rk3399
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index 56bce19..8581252 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -43,6 +43,10 @@
+ #define RK3288_SOC_CON2_FLASH0		BIT(7)
+ #define RK3288_SOC_FLASH_SUPPLY_NUM	2
+ 
++#define RK3328_SOC_CON4			0x410
++#define RK3328_SOC_CON4_VCCIO2		BIT(7)
++#define RK3328_SOC_VCCIO2_SUPPLY_NUM	1
++
+ #define RK3368_SOC_CON15		0x43c
+ #define RK3368_SOC_CON15_FLASH0		BIT(14)
+ #define RK3368_SOC_FLASH_SUPPLY_NUM	2
+@@ -166,6 +170,25 @@ static void rk3288_iodomain_init(struct rockchip_iodomain *iod)
+ 		dev_warn(iod->dev, "couldn't update flash0 ctrl\n");
+ }
+ 
++static void rk3328_iodomain_init(struct rockchip_iodomain *iod)
++{
++	int ret;
++	u32 val;
++
++	/* if no vccio2 supply we should leave things alone */
++	if (!iod->supplies[RK3328_SOC_VCCIO2_SUPPLY_NUM].reg)
++		return;
++
++	/*
++	 * set vccio2 iodomain to also use this framework
++	 * instead of a special gpio.
++	 */
++	val = RK3328_SOC_CON4_VCCIO2 | (RK3328_SOC_CON4_VCCIO2 << 16);
++	ret = regmap_write(iod->grf, RK3328_SOC_CON4, val);
++	if (ret < 0)
++		dev_warn(iod->dev, "couldn't update vccio2 vsel ctrl\n");
++}
++
+ static void rk3368_iodomain_init(struct rockchip_iodomain *iod)
+ {
+ 	int ret;
+@@ -247,6 +270,20 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 	.init = rk3288_iodomain_init,
+ };
+ 
++static const struct rockchip_iodomain_soc_data soc_data_rk3328 = {
++	.grf_offset = 0x410,
++	.supply_names = {
++		"vccio1",
++		"vccio2",
++		"vccio3",
++		"vccio4",
++		"vccio5",
++		"vccio6",
++		"pmuio",
++	},
++	.init = rk3328_iodomain_init,
++};
++
+ static const struct rockchip_iodomain_soc_data soc_data_rk3368 = {
+ 	.grf_offset = 0x900,
+ 	.supply_names = {
+@@ -312,6 +349,10 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 		.data = (void *)&soc_data_rk3288
+ 	},
+ 	{
++		.compatible = "rockchip,rk3328-io-voltage-domain",
++		.data = (void *)&soc_data_rk3328
++	},
++	{
+ 		.compatible = "rockchip,rk3368-io-voltage-domain",
+ 		.data = (void *)&soc_data_rk3368
+ 	},
+-- 
+1.9.1
