@@ -1,52 +1,43 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 2/2] ARM: dts: bcm283x: Add CPU thermal zone with 1
- trip point
-Date: Wed, 22 Feb 2017 17:54:58 -0800
-Message-ID: <20170223015456.GA7769@localhost.localdomain>
-References: <1486928328-25870-1-git-send-email-stefan.wahren@i2se.com>
- <1486928328-25870-2-git-send-email-stefan.wahren@i2se.com>
- <20170219011753.GB21016@localhost.localdomain>
- <1762674971.70633.1487507509664@email.1und1.de>
- <20170219212659.GA22580@localhost.localdomain>
- <9493160.170101.1487700876375@email.1und1.de>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: cpufreq: get cpufreq_frequency_table from clk driver
+Date: Thu, 23 Feb 2017 10:24:45 +0530
+Message-ID: <20170223045445.GA21911@vireshk-i7>
+References: <1487675614.25108.30.camel@synopsys.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:36438 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932233AbdBWBzX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Feb 2017 20:55:23 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <9493160.170101.1487700876375@email.1und1.de>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1487675614.25108.30.camel@synopsys.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vlad Zakharov <Vladislav.Zakharov@synopsys.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mturquette@baylibre.com" <mturquette@baylibre.com>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: kernel@martin.sperl.org, Frank Rowand <frowand.list@gmail.com>, Eric Anholt <eric@anholt.net>, Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org
 
-Hey,
-
-On Tue, Feb 21, 2017 at 07:14:36PM +0100, Stefan Wahren wrote:
-> > 
-
-<cut>
-
+On 21-02-17, 11:13, Vlad Zakharov wrote:
+> Hello,
 > 
-> I prepared a new patch series to fix that issue in my github repo [1]. At first we need to implement a new function of_property_read_s32_array() [2]. After that we could use this function in of-thermal in order to use signed integer for both coefficients [3].
-> 
-> @Eduardo: Is it okay for you?
-> 
+> I am trying to implement a cpufreq driver for ARCHS cpu.
 
-Yes, as I mentioned before, I am OK to patch of-thermal. And the
-representation of offset and slope are already signed.
+You mean ARC architecture here ?
 
-> @Martin: Do you want to send the next version of the patch series or should i?
-> 
-> [1] - https://github.com/lategoodbye/rpi-zero/commits/thermal
-> [2] - https://github.com/lategoodbye/rpi-zero/commit/3dc43581ada74d1345f79b4c36562fdf5f7941e5
-> [3] - https://github.com/lategoodbye/rpi-zero/commit/c02ed37c0ebdca98aee570862af10e90b3c9a0d0
-> 
+> And I faced with one question I am not able to answer myself. cpufreq framework allows us using cpufreq frequency tables
+> that store available for current policy range of frequencies with any additional data. As I understand for example it
+> can be clock configurations for this particular frequency.
 
-Number 3 is fine with me. Please send them in a single series for proper
-review in linux-pm.
+Yes, it can be any platform specific data. Yes, but it is better
+handled by the clk driver in your case and cpufreq driver just needs
+to call clk_set_rate().
 
-BR,
+> Also I have a clk driver that manages actual cpu frequency. In fact it uses very similar tables that contain frequencies
+> and corresponding values of clock configurations registers that are to be set up with current frequency.
+
+Good.
+
+> So the question is can I get such tables from clk driver somehow? I would be very convenient: this tables differs for
+> ARCHS CPU. E.g. on different boards it is clocked by different PLLs and oscillators.
+
+Not that I am aware of. Just make copies for every board or if you can
+use device tree, get it using OPP tables.
+
+-- 
+viresh
