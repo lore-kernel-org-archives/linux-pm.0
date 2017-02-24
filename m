@@ -1,169 +1,117 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 5/7] PM / domain: Register for PM QOS performance notifier
-Date: Fri, 24 Feb 2017 14:36:37 +0530
-Message-ID: <4c694a1dbef6184b5ad3cfdc038fe826f6a0c972.1487926924.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state" binding to OPP nodes
+Date: Fri, 24 Feb 2017 14:36:34 +0530
+Message-ID: <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
 References: <cover.1487926924.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
-References: <cover.1487926924.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Some platforms have the capability to configure the performance state of
-their Power Domains. The performance levels are identified by positive
-integer values, a lower value represents lower performance state. The
-power domain driver should be able to retrieve all information required
-to configure the performance state of the power domain, with the help of
-the performance constraint's target value.
+If the consumers don't need the capability of switching to different
+domain performance states at runtime, then they can simply define their
+required domain performance state in their nodes directly.
 
-This patch implements performance state management in PM domain core.
-The performance QOS uses the common QOS notifier list and we call
-__performance_notifier() if the notifier is issued for performance
-constraint.
+But if the device needs the capability of switching to different domain
+performance states, as they may need to support different clock rates,
+then the per OPP node can be used to contain that information.
 
-This also allows the power domain drivers to implement a
-->set_performance_state() callback, which will be called by the power
-domain core from within the notifier routine. If a domain doesn't
-implement ->set_performance_state() callback, then it is assumed that
-its parents are responsible for performance state configuration. Both
-devices and sub-domains are accounted for while finding the highest
-performance state requested.
+This patch introduces the domain-performance-state (already defined by
+Power Domain bindings) to the per OPP node.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Tested-by: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/base/power/domain.c | 77 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   |  4 +++
- 2 files changed, 81 insertions(+)
+ Documentation/devicetree/bindings/opp/opp.txt | 64 +++++++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 303490ab5ffd..202effbebfd1 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -452,6 +452,79 @@ static int __resume_latency_notifier(struct generic_pm_domain_data *gpd_data,
- 	return NOTIFY_DONE;
- }
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 9f5ca4457b5f..7f6bb52521b6 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -154,6 +154,15 @@ properties.
  
-+static void __update_domain_performance_state(struct generic_pm_domain *genpd,
-+					      int depth)
-+{
-+	struct generic_pm_domain_data *pd_data;
-+	struct generic_pm_domain *subdomain;
-+	struct pm_domain_data *pdd;
-+	unsigned int state = 0;
-+	struct gpd_link *link;
-+
-+	/* Traverse all devices within the domain */
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		pd_data = to_gpd_data(pdd);
-+
-+		if (pd_data->performance_state > state)
-+			state = pd_data->performance_state;
-+	}
-+
-+	/* Traverse all subdomains within the domain */
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		subdomain = link->slave;
-+
-+		if (subdomain->performance_state > state)
-+			state = subdomain->performance_state;
-+	}
-+
-+	if (genpd->performance_state == state)
-+		return;
-+
-+	genpd->performance_state = state;
-+
-+	if (genpd->set_performance_state) {
-+		genpd->set_performance_state(genpd, state);
-+		return;
-+	}
-+
-+	/* Propagate to parent power domains */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-+		struct generic_pm_domain *master = link->master;
-+
-+		genpd_lock_nested(master, depth + 1);
-+		__update_domain_performance_state(master, depth + 1);
-+		genpd_unlock(master);
-+	}
-+}
-+
-+static int __performance_notifier(struct generic_pm_domain_data *gpd_data,
-+				  unsigned long val)
-+{
-+	struct generic_pm_domain *genpd = ERR_PTR(-ENODATA);
-+	struct device *dev = gpd_data->base.dev;
-+	struct pm_domain_data *pdd;
-+
-+	spin_lock_irq(&dev->power.lock);
-+
-+	pdd = dev->power.subsys_data ?
-+		dev->power.subsys_data->domain_data : NULL;
-+
-+	if (pdd && pdd->dev)
-+		genpd = dev_to_genpd(dev);
-+
-+	spin_unlock_irq(&dev->power.lock);
-+
-+	if (IS_ERR(genpd))
-+		return NOTIFY_DONE;
-+
-+	genpd_lock(genpd);
-+	gpd_data->performance_state = val;
-+	__update_domain_performance_state(genpd, 0);
-+	genpd_unlock(genpd);
-+
-+	return NOTIFY_DONE;
-+}
-+
- static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- 				     unsigned long val, void *ptr)
- {
-@@ -464,6 +537,9 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- 	if (dev_pm_qos_notifier_is_resume_latency(dev, ptr))
- 		return __resume_latency_notifier(gpd_data, val);
+ - status: Marks the node enabled/disabled.
  
-+	if (dev_pm_qos_notifier_is_performance(dev, ptr))
-+		return __performance_notifier(gpd_data, val);
++- domain-performance-state: A positive integer value representing the minimum
++  performance level (of the parent domain) required by the consumer as defined
++  by ../power/power_domain.txt binding document. The OPP nodes can contain the
++  "domain-performance-state" property, only if the device node contains a
++  "power-domains" property. The OPP nodes aren't allowed to contain the
++  "domain-performance-state" property partially, i.e. Either all OPP nodes in
++  the OPP table have the "domain-performance-state" property or none of them
++  have it.
 +
- 	dev_err(dev, "%s: Unexpected notifier call\n", __func__);
- 	return NOTIFY_BAD;
- }
-@@ -1157,6 +1233,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
- 	gpd_data->td.constraint_changed = true;
- 	gpd_data->td.effective_constraint_ns = -1;
- 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
-+	gpd_data->performance_state = 0;
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
  
- 	spin_lock_irq(&dev->power.lock);
- 
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 5339ed5bd6f9..83795935709e 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -62,8 +62,11 @@ struct generic_pm_domain {
- 	unsigned int device_count;	/* Number of devices */
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
-+	unsigned int performance_state;	/* Max requested performance state */
- 	int (*power_off)(struct generic_pm_domain *domain);
- 	int (*power_on)(struct generic_pm_domain *domain);
-+	int (*set_performance_state)(struct generic_pm_domain *domain,
-+				     unsigned int state);
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
-@@ -117,6 +120,7 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
-+	unsigned int performance_state;
+ / {
+@@ -528,3 +537,58 @@ Example 5: opp-supported-hw
+ 		};
+ 	};
  };
- 
- #ifdef CONFIG_PM_GENERIC_DOMAINS
++
++Example 7: domain-Performance-state:
++(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
++
++/ {
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp@1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			domain-performance-state = <1>;
++		};
++		opp@1100000000 {
++			opp-hz = /bits/ 64 <1100000000>;
++			domain-performance-state = <2>;
++		};
++		opp@1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			domain-performance-state = <2>;
++		};
++	};
++
++	foo_domain: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <0>;
++
++		performance-states {
++			compatible = "domain-performance-state";
++			pstate@1 {
++				reg = <1>;
++				domain-microvolt = <970000 975000 985000>;
++			};
++			pstate@2 {
++				reg = <2>;
++				domain-microvolt = <1000000 1075000 1085000>;
++			};
++		};
++	}
++
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			compatible = "arm,cortex-a9";
++			reg = <0>;
++			clocks = <&clk_controller 0>;
++			clock-names = "cpu";
++			operating-points-v2 = <&cpu0_opp_table>;
++			power-domains = <&foo_domain>;
++		};
++	};
++};
 -- 
 2.7.1.410.g6faf27b
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
