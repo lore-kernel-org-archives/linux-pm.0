@@ -1,14 +1,14 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 4/7] PM / QOS: Add DEV_PM_QOS_PERFORMANCE request
-Date: Fri, 24 Feb 2017 14:36:36 +0530
-Message-ID: <fa17d8ced7c55dcbe30f3f15325b8dc0c5726ae1.1487926924.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 5/7] PM / domain: Register for PM QOS performance notifier
+Date: Fri, 24 Feb 2017 14:36:37 +0530
+Message-ID: <4c694a1dbef6184b5ad3cfdc038fe826f6a0c972.1487926924.git.viresh.kumar@linaro.org>
 References: <cover.1487926924.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
 References: <cover.1487926924.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
@@ -19,136 +19,151 @@ power domain driver should be able to retrieve all information required
 to configure the performance state of the power domain, with the help of
 the performance constraint's target value.
 
-This patch adds a new QOS request type: DEV_PM_QOS_PERFORMANCE to
-support runtime performance constraints for the devices. Also allow
-notifiers to be registered against it, which will be used by frameworks
-like genpd.
+This patch implements performance state management in PM domain core.
+The performance QOS uses the common QOS notifier list and we call
+__performance_notifier() if the notifier is issued for performance
+constraint.
+
+This also allows the power domain drivers to implement a
+->set_performance_state() callback, which will be called by the power
+domain core from within the notifier routine. If a domain doesn't
+implement ->set_performance_state() callback, then it is assumed that
+its parents are responsible for performance state configuration. Both
+devices and sub-domains are accounted for while finding the highest
+performance state requested.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- Documentation/power/pm_qos_interface.txt |  2 +-
- drivers/base/power/qos.c                 | 21 +++++++++++++++++++++
- include/linux/pm_qos.h                   | 10 ++++++++++
- 3 files changed, 32 insertions(+), 1 deletion(-)
+ drivers/base/power/domain.c | 77 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  4 +++
+ 2 files changed, 81 insertions(+)
 
-diff --git a/Documentation/power/pm_qos_interface.txt b/Documentation/power/pm_qos_interface.txt
-index 21d2d48f87a2..4b7decdebf98 100644
---- a/Documentation/power/pm_qos_interface.txt
-+++ b/Documentation/power/pm_qos_interface.txt
-@@ -168,7 +168,7 @@ The per-device PM QoS framework has a per-device notification tree.
- int dev_pm_qos_add_notifier(device, notifier):
- Adds a notification callback function for the device.
- The callback is called when the aggregated value of the device constraints list
--is changed (for resume latency device PM QoS only).
-+is changed (for resume latency and performance device PM QoS only).
- 
- int dev_pm_qos_remove_notifier(device, notifier):
- Removes the notification callback function for the device.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 851fff60319c..ca93ef6613c9 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -151,6 +151,10 @@ static int apply_constraint(struct dev_pm_qos_request *req,
- 			req->dev->power.set_latency_tolerance(req->dev, value);
- 		}
- 		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		ret = pm_qos_update_target(&qos->performance, &req->data.pnode,
-+					   action, value);
-+		break;
- 	case DEV_PM_QOS_FLAGS:
- 		ret = pm_qos_update_flags(&qos->flags, &req->data.flr,
- 					  action, value);
-@@ -195,6 +199,14 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->no_constraint_value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 
-+	c = &qos->performance;
-+	plist_head_init(&c->list);
-+	c->target_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->default_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->no_constraint_value = PM_QOS_PERFORMANCE_DEFAULT_VALUE;
-+	c->type = PM_QOS_MAX;
-+	c->notifiers = &qos->notifiers;
-+
- 	INIT_LIST_HEAD(&qos->flags.list);
- 
- 	spin_lock_irq(&dev->power.lock);
-@@ -253,6 +265,11 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
- 		memset(req, 0, sizeof(*req));
- 	}
-+	c = &qos->performance;
-+	plist_for_each_entry_safe(req, tmp, &c->list, data.pnode) {
-+		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-+		memset(req, 0, sizeof(*req));
-+	}
- 	f = &qos->flags;
- 	list_for_each_entry_safe(req, tmp, &f->list, data.flr.node) {
- 		apply_constraint(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
-@@ -363,6 +380,7 @@ static int __dev_pm_qos_update_request(struct dev_pm_qos_request *req,
- 	switch(req->type) {
- 	case DEV_PM_QOS_RESUME_LATENCY:
- 	case DEV_PM_QOS_LATENCY_TOLERANCE:
-+	case DEV_PM_QOS_PERFORMANCE:
- 		curr_value = req->data.pnode.prio;
- 		break;
- 	case DEV_PM_QOS_FLAGS:
-@@ -572,6 +590,9 @@ static void __dev_pm_qos_drop_user_request(struct device *dev,
- 		req = dev->power.qos->flags_req;
- 		dev->power.qos->flags_req = NULL;
- 		break;
-+	case DEV_PM_QOS_PERFORMANCE:
-+		dev_err(dev, "Invalid user request (performance)\n");
-+		return;
- 	}
- 	__dev_pm_qos_remove_request(req);
- 	kfree(req);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index dd02020a02b6..c369286026b5 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -36,6 +36,7 @@ enum pm_qos_flags_status {
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
-+#define PM_QOS_PERFORMANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
-@@ -55,6 +56,7 @@ struct pm_qos_flags_request {
- enum dev_pm_qos_req_type {
- 	DEV_PM_QOS_RESUME_LATENCY = 1,
- 	DEV_PM_QOS_LATENCY_TOLERANCE,
-+	DEV_PM_QOS_PERFORMANCE,
- 	DEV_PM_QOS_FLAGS,
- };
- 
-@@ -96,9 +98,11 @@ struct pm_qos_flags {
- struct dev_pm_qos {
- 	struct pm_qos_constraints resume_latency;
- 	struct pm_qos_constraints latency_tolerance;
-+	struct pm_qos_constraints performance;
- 	struct pm_qos_flags flags;
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
-+	struct dev_pm_qos_request *performance_req;
- 	struct dev_pm_qos_request *flags_req;
- 	struct blocking_notifier_head notifiers; /* common for all constraints */
- };
-@@ -121,6 +125,12 @@ static inline bool dev_pm_qos_notifier_is_resume_latency(struct device *dev,
- 	return &dev->power.qos->resume_latency == c;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 303490ab5ffd..202effbebfd1 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -452,6 +452,79 @@ static int __resume_latency_notifier(struct generic_pm_domain_data *gpd_data,
+ 	return NOTIFY_DONE;
  }
  
-+static inline bool dev_pm_qos_notifier_is_performance(struct device *dev,
-+		struct pm_qos_constraints *c)
++static void __update_domain_performance_state(struct generic_pm_domain *genpd,
++					      int depth)
 +{
-+	return &dev->power.qos->performance == c;
++	struct generic_pm_domain_data *pd_data;
++	struct generic_pm_domain *subdomain;
++	struct pm_domain_data *pdd;
++	unsigned int state = 0;
++	struct gpd_link *link;
++
++	/* Traverse all devices within the domain */
++	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
++		pd_data = to_gpd_data(pdd);
++
++		if (pd_data->performance_state > state)
++			state = pd_data->performance_state;
++	}
++
++	/* Traverse all subdomains within the domain */
++	list_for_each_entry(link, &genpd->master_links, master_node) {
++		subdomain = link->slave;
++
++		if (subdomain->performance_state > state)
++			state = subdomain->performance_state;
++	}
++
++	if (genpd->performance_state == state)
++		return;
++
++	genpd->performance_state = state;
++
++	if (genpd->set_performance_state) {
++		genpd->set_performance_state(genpd, state);
++		return;
++	}
++
++	/* Propagate to parent power domains */
++	list_for_each_entry(link, &genpd->slave_links, slave_node) {
++		struct generic_pm_domain *master = link->master;
++
++		genpd_lock_nested(master, depth + 1);
++		__update_domain_performance_state(master, depth + 1);
++		genpd_unlock(master);
++	}
 +}
 +
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
++static int __performance_notifier(struct generic_pm_domain_data *gpd_data,
++				  unsigned long val)
++{
++	struct generic_pm_domain *genpd = ERR_PTR(-ENODATA);
++	struct device *dev = gpd_data->base.dev;
++	struct pm_domain_data *pdd;
++
++	spin_lock_irq(&dev->power.lock);
++
++	pdd = dev->power.subsys_data ?
++		dev->power.subsys_data->domain_data : NULL;
++
++	if (pdd && pdd->dev)
++		genpd = dev_to_genpd(dev);
++
++	spin_unlock_irq(&dev->power.lock);
++
++	if (IS_ERR(genpd))
++		return NOTIFY_DONE;
++
++	genpd_lock(genpd);
++	gpd_data->performance_state = val;
++	__update_domain_performance_state(genpd, 0);
++	genpd_unlock(genpd);
++
++	return NOTIFY_DONE;
++}
++
+ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+ 				     unsigned long val, void *ptr)
+ {
+@@ -464,6 +537,9 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+ 	if (dev_pm_qos_notifier_is_resume_latency(dev, ptr))
+ 		return __resume_latency_notifier(gpd_data, val);
+ 
++	if (dev_pm_qos_notifier_is_performance(dev, ptr))
++		return __performance_notifier(gpd_data, val);
++
+ 	dev_err(dev, "%s: Unexpected notifier call\n", __func__);
+ 	return NOTIFY_BAD;
+ }
+@@ -1157,6 +1233,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev,
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = -1;
+ 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
++	gpd_data->performance_state = 0;
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 5339ed5bd6f9..83795935709e 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -62,8 +62,11 @@ struct generic_pm_domain {
+ 	unsigned int device_count;	/* Number of devices */
+ 	unsigned int suspended_count;	/* System suspend device counter */
+ 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
++	unsigned int performance_state;	/* Max requested performance state */
+ 	int (*power_off)(struct generic_pm_domain *domain);
+ 	int (*power_on)(struct generic_pm_domain *domain);
++	int (*set_performance_state)(struct generic_pm_domain *domain,
++				     unsigned int state);
+ 	struct gpd_dev_ops dev_ops;
+ 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
+ 	bool max_off_time_changed;
+@@ -117,6 +120,7 @@ struct generic_pm_domain_data {
+ 	struct pm_domain_data base;
+ 	struct gpd_timing_data td;
+ 	struct notifier_block nb;
++	unsigned int performance_state;
+ };
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
 -- 
 2.7.1.410.g6faf27b
