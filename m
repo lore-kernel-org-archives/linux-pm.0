@@ -1,175 +1,136 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 3/7] PM / QOS: Keep common notifier list for genpd constraints
-Date: Fri, 24 Feb 2017 14:36:35 +0530
-Message-ID: <851a8ddd4b30e632f2491fc034c62a0b0ebcccfa.1487926924.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V3 1/7] PM / Domains: Introduce "performance-states" binding
+Date: Fri, 24 Feb 2017 14:36:33 +0530
+Message-ID: <132e9200102bf2f1175567f0862596d098363d9e.1487926924.git.viresh.kumar@linaro.org>
 References: <cover.1487926924.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
-References: <cover.1487926924.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Only the resume_latency constraint uses the notifiers right now. In
-order to prepare for adding new constraint types with notifiers, move to
-a common notifier list.
+Some platforms have the capability to configure the performance state of
+their power domains. The process of configuring the performance state is
+pretty much platform dependent and we may need to work with a wide range
+of configurables. For some platforms, like Qcom, it can be a positive
+integer value alone, while in other cases it can be voltage levels, etc.
 
-Update pm_qos_update_target() to pass a pointer to the constraint
-structure to the notifier callbacks. Also update the notifier callbacks
-as well to error out for unexpected constraints.
+The power-domain framework until now was only designed for the idle
+state management of the device and this needs to change in order to
+reuse the power-domain framework for active state management of the
+devices.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
+This patch adds DT bindings to describe the performance states of a
+power domain. The power domain node needs to contain a
+"performance-states" node, which itself is an array of per-state nodes.
+Each per-state node represents individual performance state of a device.
+Individual nodes are identified by their (mandatory) "reg" field. These
+nodes can also contain an optional "domain-microvolt" property. More
+properties can be added later on once we have more platforms using it.
+
+If the consumers don't need the capability of switching to different
+domain performance states at runtime, then they can simply define their
+required domain performance state in their node directly using the
+"domain-performance-state" property. Otherwise the consumers can define
+their requirements with help of other infrastructure, for example the
+OPP table (added in a later commit).
+
+Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Tested-by: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/base/power/domain.c | 26 +++++++++++++++++++-------
- drivers/base/power/qos.c    | 15 ++++-----------
- include/linux/pm_qos.h      |  7 +++++++
- kernel/power/qos.c          |  2 +-
- 4 files changed, 31 insertions(+), 19 deletions(-)
+ .../devicetree/bindings/power/power_domain.txt     | 67 ++++++++++++++++++++++
+ 1 file changed, 67 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index e697dec9d25b..303490ab5ffd 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -416,14 +416,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 	return ret;
- }
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 723e1ad937da..9be09e576f68 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -38,6 +38,33 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+   domain's idle states. In the absence of this property, the domain would be
+   considered as capable of being powered-on or powered-off.
  
--static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
--				     unsigned long val, void *ptr)
-+static int __resume_latency_notifier(struct generic_pm_domain_data *gpd_data,
-+				     unsigned long val)
- {
--	struct generic_pm_domain_data *gpd_data;
--	struct device *dev;
--
--	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
--	dev = gpd_data->base.dev;
-+	struct device *dev = gpd_data->base.dev;
- 
- 	for (;;) {
- 		struct generic_pm_domain *genpd;
-@@ -456,6 +452,22 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
- 	return NOTIFY_DONE;
- }
- 
-+static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
-+				     unsigned long val, void *ptr)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+	struct device *dev;
++- performance-states : This describes the performance states of a PM domain.
++  The performance-states node reflects the performance states of this PM domain
++  and not the performance states of the devices or sub-domains in the PM domain.
++  Sub domains can have their own performance states. Sub domains without their
++  own performance states are governed by the performance states of the parent
++  domain and the "domain-performance-state" properties of their consumers refer
++  to the "reg" properties of the nodes in the parent domain.
 +
-+	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
-+	dev = gpd_data->base.dev;
++  Required properties of the performance-states node:
++  - compatible: Allow performance states to express their compatibility. It
++    should be: "domain-performance-state".
 +
-+	if (dev_pm_qos_notifier_is_resume_latency(dev, ptr))
-+		return __resume_latency_notifier(gpd_data, val);
++  - nodes: The performance-states node should contain one or
++    more nodes, each representing a supported performance state.
 +
-+	dev_err(dev, "%s: Unexpected notifier call\n", __func__);
-+	return NOTIFY_BAD;
-+}
++    Required properties of the performance state nodes:
++    - reg: A positive integer value representing the performance level
++      associated with a performance state. The integer value '0' represents the
++      lowest performance level and the highest value represents the highest
++      performance level. The exact meaning and performance implications of
++      individual values is left to be defined by the user platform.
 +
- /**
-  * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
-  * @work: Work structure used for scheduling the execution of this function.
-diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
-index 271bec73185e..851fff60319c 100644
---- a/drivers/base/power/qos.c
-+++ b/drivers/base/power/qos.c
-@@ -173,18 +173,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- {
- 	struct dev_pm_qos *qos;
- 	struct pm_qos_constraints *c;
--	struct blocking_notifier_head *n;
- 
- 	qos = kzalloc(sizeof(*qos), GFP_KERNEL);
- 	if (!qos)
- 		return -ENOMEM;
- 
--	n = kzalloc(sizeof(*n), GFP_KERNEL);
--	if (!n) {
--		kfree(qos);
--		return -ENOMEM;
--	}
--	BLOCKING_INIT_NOTIFIER_HEAD(n);
-+	BLOCKING_INIT_NOTIFIER_HEAD(&qos->notifiers);
- 
- 	c = &qos->resume_latency;
- 	plist_head_init(&c->list);
-@@ -192,7 +186,7 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
- 	c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->type = PM_QOS_MIN;
--	c->notifiers = n;
-+	c->notifiers = &qos->notifiers;
- 
- 	c = &qos->latency_tolerance;
- 	plist_head_init(&c->list);
-@@ -269,7 +263,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
- 	dev->power.qos = ERR_PTR(-ENODEV);
- 	spin_unlock_irq(&dev->power.lock);
- 
--	kfree(qos->resume_latency.notifiers);
- 	kfree(qos);
- 
-  out:
-@@ -488,7 +481,7 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
- 		ret = dev_pm_qos_constraints_allocate(dev);
- 
- 	if (!ret)
--		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
-+		ret = blocking_notifier_chain_register(&dev->power.qos->notifiers,
- 						       notifier);
- 
- 	mutex_unlock(&dev_pm_qos_mtx);
-@@ -515,7 +508,7 @@ int dev_pm_qos_remove_notifier(struct device *dev,
- 
- 	/* Silently return if the constraints object is not present. */
- 	if (!IS_ERR_OR_NULL(dev->power.qos))
--		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
-+		retval = blocking_notifier_chain_unregister(&dev->power.qos->notifiers,
- 							    notifier);
- 
- 	mutex_unlock(&dev_pm_qos_mtx);
-diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
-index 3e2547d6e207..dd02020a02b6 100644
---- a/include/linux/pm_qos.h
-+++ b/include/linux/pm_qos.h
-@@ -100,6 +100,7 @@ struct dev_pm_qos {
- 	struct dev_pm_qos_request *resume_latency_req;
- 	struct dev_pm_qos_request *latency_tolerance_req;
- 	struct dev_pm_qos_request *flags_req;
-+	struct blocking_notifier_head notifiers; /* common for all constraints */
- };
- 
- /* Action requested to pm_qos_update_target */
-@@ -114,6 +115,12 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
- 	return req->dev != NULL;
- }
- 
-+static inline bool dev_pm_qos_notifier_is_resume_latency(struct device *dev,
-+		struct pm_qos_constraints *c)
-+{
-+	return &dev->power.qos->resume_latency == c;
-+}
++    Optional properties of performance state nodes:
++    - domain-microvolt: voltage in micro Volts. A single regulator's voltage is
++      specified with an array of size one or three.  Single entry is for target
++      voltage and three entries are for <target min max> voltages.
 +
- int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 			 enum pm_qos_req_action action, int value);
- bool pm_qos_update_flags(struct pm_qos_flags *pqf,
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 97b0df71303e..073324e0c3c8 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -315,7 +315,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
- 		if (c->notifiers)
- 			blocking_notifier_call_chain(c->notifiers,
- 						     (unsigned long)curr_value,
--						     NULL);
-+						     c);
- 	} else {
- 		ret = 0;
- 	}
+ Example:
+ 
+ 	power: power-controller@12340000 {
+@@ -118,4 +145,44 @@ The node above defines a typical PM domain consumer device, which is located
+ inside a PM domain with index 0 of a power controller represented by a node
+ with the label "power".
+ 
++Optional properties:
++- domain-performance-state: A positive integer value representing the minimum
++  performance level (of the parent domain) required by the consumer for its
++  working. The integer value '0' represents the lowest performance level and the
++  highest value represents the highest performance level. The value of
++  domain-performance-state field should match one of the "reg" fields in the
++  "performance-states" table of the parent power domain.
++
++
++Example:
++
++	parent: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <0>;
++
++		performance-states {
++			compatible = "domain-performance-state";
++			pstate@1 {
++				reg = <1>;
++				domain-microvolt = <970000 975000 985000>;
++			};
++			pstate@2 {
++				reg = <2>;
++				domain-microvolt = <1000000 1075000 1085000>;
++			};
++			pstate@3 {
++				reg = <3>;
++				domain-microvolt = <1100000 1175000 1185000>;
++			};
++		};
++	};
++
++	leaky-device@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&power 0>;
++		domain-performance-state = <2>;
++	};
++
+ [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
 -- 
 2.7.1.410.g6faf27b
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
