@@ -1,103 +1,533 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpuidle: menu: Avoid taking spinlock for accessing QoS values
-Date: Fri, 24 Feb 2017 13:25:14 +0100
-Message-ID: <4299615.p769K17ZAr@aspire.rjw.lan>
-References: <1487768197.27533.5.camel@gmx.de> <2909793.Vfsrmqmg03@aspire.rjw.lan> <55ee4ca6-9369-06b5-b680-f6483ca496af@linaro.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v7 7/9] power: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Fri, 24 Feb 2017 08:47:59 -0600
+Message-ID: <66f7b39d-744d-cc00-1a6f-b609461e47c0@ti.com>
+References: <20170221213008.30044-1-liam@networkimprov.net>
+ <20170221213008.30044-8-liam@networkimprov.net>
+ <14c63dd0-9784-87e1-74b2-2d3e4026dab7@ti.com>
+ <CAKvHMgRLm+Lmi0s3voa42JKn_ycjhm8mt4ajkABnfef8t1gnkg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <55ee4ca6-9369-06b5-b680-f6483ca496af@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alex Shi <alex.shi@linaro.org>, Linux PM <linux-pm@vger.kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Mike Galbraith <efault@gmx.de>, LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx194.ext.ti.com ([198.47.27.80]:16226 "EHLO
+        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751125AbdBXOsH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Feb 2017 09:48:07 -0500
+In-Reply-To: <CAKvHMgRLm+Lmi0s3voa42JKn_ycjhm8mt4ajkABnfef8t1gnkg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+I can get ahold of any BQ27xxx part, I'm holding off on testing until
+the comments start to get sorted out, that way I don't have to test
+again after all these changes.
 
-After commit 9908859acaa9 (cpuidle/menu: add per CPU PM QoS resume
-latency consideration) the cpuidle menu governor calls
-dev_pm_qos_read_value() on CPU devices to read the current resume
-latency QoS constraint values for them.  That function takes a spinlock
-to prevent the device's power.qos pointer from becoming NULL during
-the access which is a problem for the RT patchset where spinlocks are
-converted into mutexes and the idle loop stops working.
-
-However, it is not even necessary for the menu governor to take
-that spinlock, because the power.qos pointer accessed under it
-cannot be modified during the access anyway.
-
-For this reason, introduce a "raw" routine for accessing device
-QoS resume latency constraints without locking and use it in the
-menu governor.
-
-Fixes: 9908859acaa9 (cpuidle/menu: add per CPU PM QoS resume latency consideration)
-Acked-by: Alex Shi <alex.shi@linaro.org>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-OK
-
-This doesn't break my test machine outright, so here it goes officially.
-
-Thanks,
-Rafael
-
----
- drivers/base/power/qos.c         |    3 +--
- drivers/cpuidle/governors/menu.c |    2 +-
- include/linux/pm_qos.h           |    7 +++++++
- 3 files changed, 9 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/base/power/qos.c
-===================================================================
---- linux-pm.orig/drivers/base/power/qos.c
-+++ linux-pm/drivers/base/power/qos.c
-@@ -108,8 +108,7 @@ s32 __dev_pm_qos_read_value(struct devic
- {
- 	lockdep_assert_held(&dev->power.lock);
- 
--	return IS_ERR_OR_NULL(dev->power.qos) ?
--		0 : pm_qos_read_value(&dev->power.qos->resume_latency);
-+	return dev_pm_qos_raw_read_value(dev);
- }
- 
- /**
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -287,7 +287,7 @@ static int menu_select(struct cpuidle_dr
- 	unsigned int interactivity_req;
- 	unsigned int expected_interval;
- 	unsigned long nr_iowaiters, cpu_load;
--	int resume_latency = dev_pm_qos_read_value(device);
-+	int resume_latency = dev_pm_qos_raw_read_value(device);
- 
- 	if (data->needs_update) {
- 		menu_update(drv, dev);
-Index: linux-pm/include/linux/pm_qos.h
-===================================================================
---- linux-pm.orig/include/linux/pm_qos.h
-+++ linux-pm/include/linux/pm_qos.h
-@@ -172,6 +172,12 @@ static inline s32 dev_pm_qos_requested_f
- {
- 	return dev->power.qos->flags_req->data.flr.flags;
- }
-+
-+static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
-+{
-+	return IS_ERR_OR_NULL(dev->power.qos) ?
-+		0 : pm_qos_read_value(&dev->power.qos->resume_latency);
-+}
- #else
- static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
- 							  s32 mask)
-@@ -236,6 +242,7 @@ static inline void dev_pm_qos_hide_laten
- 
- static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev) { return 0; }
- static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
-+static inline s32 dev_pm_qos_raw_read_value(struct device *dev) { return 0; }
- #endif
- 
- #endif
+On 02/23/2017 03:15 PM, Liam Breck wrote:
+> Did you have a chance to test the patchset against hardware?
+> 
+> If you don't have a board with a 425 chip, I can send you the dm_regs
+> tables for whatever parts you have to hand...
+> 
+> 
+> On Wed, Feb 22, 2017 at 12:35 PM, Andrew F. Davis <afd@ti.com> wrote:
+>> On 02/21/2017 03:30 PM, Liam Breck wrote:
+>>> From: Liam Breck <kernel@networkimprov.net>
+>>>
+>>> Previously there was no way to configure chip registers in the event that the
+>>> defaults didn't match the battery in question.
+>>>
+>>> BQ27xxx driver now calls power_supply_get_battery_info, checks the inputs,
+>>> and writes battery data to chip RAM or non-volatile memory.
+>>>
+>>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>> ---
+>>>  drivers/power/supply/bq27xxx_battery.c | 399 ++++++++++++++++++++++++++++++++-
+>>>  1 file changed, 397 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>> index 7475a5f..8085d4a 100644
+>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>> @@ -51,7 +51,7 @@
+>>>
+>>>  #include <linux/power/bq27xxx_battery.h>
+>>>
+>>> -#define DRIVER_VERSION               "1.2.0"
+>>> +#define DRIVER_VERSION               "1.3.0"
+>>>
+>>>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
+>>>
+>>> @@ -452,6 +452,99 @@ static struct {
+>>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>>
+>>> +/* writable registers */
+>>> +#define BQ27XXX_CONTROL                      0x00
+>>> +#define BQ27XXX_DATA_CLASS           0x3E
+>>> +#define BQ27XXX_DATA_BLOCK           0x3F
+>>> +#define BQ27XXX_BLOCK_DATA           0x40
+>>> +#define BQ27XXX_BLOCK_DATA_CHECKSUM  0x60
+>>> +#define BQ27XXX_BLOCK_DATA_CONTROL   0x61
+>>> +
+>>
+>> These all belong in the bq27xxx_regs array, you can add new register
+>> types to the bq27xxx_reg_index enum.
+>>
+>>> +/* control register params */
+>>> +#define BQ27XXX_SEALED                       0x20
+>>> +#define BQ27XXX_SET_CFGUPDATE                0x13
+>>> +#define BQ27XXX_SOFT_RESET           0x42
+>>> +
+>>> +#define BQ27XXX_MSLEEP(i) usleep_range((i)*1000, (i)*1000+500)
+>>
+>> why?
+>>
+>>> +
+>>> +struct bq27xxx_dm_reg {
+>>> +     u8 subclass_id;
+>>> +     u8 offset;
+>>> +     u8 bytes;
+>>> +     u16 min, max;
+>>> +};
+>>> +
+>>> +struct bq27xxx_dm_buf {
+>>> +     u8 class;
+>>> +     u8 block;
+>>> +     u8 a[32];
+>>> +     bool full, updt;
+>>> +};
+>>> +
+>>> +#define BQ27XXX_DM_BUF_PTR(b, r) \
+>>> +     ( (u16*) &(b).a[ (r)->offset % sizeof (b).a ] )
+>>> +
+>>
+>> This could compete in the IOCCC, there has to be a more readable way to
+>> do this..
+>>
+>>> +#define BQ27XXX_DM_BUF(di, i) { \
+>>> +     .class = bq27xxx_dm_regs[(di)->chip][i].subclass_id, \
+>>> +     .block = bq27xxx_dm_regs[(di)->chip][i].offset / sizeof ((struct bq27xxx_dm_buf*)0)->a, \
+>>> +}
+>>> +
+>>> +static inline bool bq27xxx_dm_buf_set(struct bq27xxx_dm_buf *buf,
+>>> +                                   struct bq27xxx_dm_reg *reg) {
+>>> +     if (buf->class == reg->subclass_id
+>>> +      && buf->block == reg->offset / sizeof buf->a
+>>> +      && buf->full)
+>>
+>> Some alignment issues here.
+>>
+>>> +             return false;
+>>> +     buf->class = reg->subclass_id;
+>>> +     buf->block = reg->offset / sizeof buf->a;
+>>> +     buf->full = buf->updt = false;
+>>
+>> newline before return
+>>
+>>> +     return true;
+>>> +}
+>>> +
+>>> +enum bq27xxx_dm_reg_id {
+>>> +     BQ27XXX_DM_DESIGN_CAPACITY = 0,
+>>> +     BQ27XXX_DM_DESIGN_ENERGY,
+>>> +     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>> +     BQ27XXX_DM_END,
+>>> +};
+>>> +
+>>> +static const char* bq27xxx_dm_reg_name[] = {
+>>> +     [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
+>>> +     [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
+>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>>> +};
+>>> +
+>>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>>> +};
+>>> +
+>>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = { /* not tested */
+>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>>> +};
+>>> +
+>>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = { /* not tested */
+>>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>>> +     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>>> +};
+>>> +
+>>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+>>> +     [BQ27421] = bq27421_dm_regs, /* and BQ27441 */
+>>> +     [BQ27425] = bq27425_dm_regs,
+>>> +/*   [BQ27621] = */ bq27621_dm_regs,
+>>> +};
+>>> +
+>>> +static u32 bq27xxx_unseal_keys[] = {
+>>> +     [BQ27421] = 0x80008000, /* and BQ27441 */
+>>> +     [BQ27425] = 0x04143672,
+>>> +/*   [BQ27621] = */ 0x80008000,
+>>
+>> Why is this commented out.
+>>
+>>> +};
+>>> +
+>>> +
+>>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>>>  {
+>>>       struct bq27xxx_device_info *di;
+>>> @@ -496,6 +589,297 @@ static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+>>>       return di->bus.read(di, di->regs[reg_index], single);
+>>>  }
+>>>
+>>> +static int bq27xxx_battery_set_seal_state(struct bq27xxx_device_info *di,
+>>> +                                       bool state)
+>>> +{
+>>> +     u32 key = bq27xxx_unseal_keys[di->chip];
+>>> +     int ret;
+>>> +
+>>> +     if (state) {
+>>> +             ret = di->bus.write(di, BQ27XXX_CONTROL, BQ27XXX_SEALED, false);
+>>> +             if (ret < 0)
+>>> +                     goto out;
+>>> +     } else {
+>>> +             ret = di->bus.write(di, BQ27XXX_CONTROL, (u16)(key >> 16), false);
+>>> +             if (ret < 0)
+>>> +                     goto out;
+>>> +
+>>> +             ret = di->bus.write(di, BQ27XXX_CONTROL, (u16)key, false);
+>>> +             if (ret < 0)
+>>> +                     goto out;
+>>> +     }
+>>> +     return 0;
+>>> +
+>>> +out:
+>>> +     dev_err(di->dev, "bus error in %s: %d\n", __func__, ret);
+>>
+>> This is not a debug statement, we don't need the function name, just say
+>> where it broke.
+>>
+>>> +     return ret;
+>>> +}
+>>> +
+>>> +static u8 bq27xxx_battery_checksum(struct bq27xxx_dm_buf *buf)
+>>> +{
+>>> +     u16 sum = 0;
+>>> +     int i;
+>>> +
+>>> +     for (i = 0; i < sizeof buf->a; i++)
+>>
+>> Linus would like a word with you:
+>> https://lkml.org/lkml/2012/7/11/103
+>>
+>>> +             sum += buf->a[i];
+>>> +     sum &= 0xff;
+>>> +
+>>> +     return 0xff - sum;
+>>> +}
+>>> +
+>>> +static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
+>>> +                                      struct bq27xxx_dm_buf *buf)
+>>> +{
+>>> +     int ret;
+>>> +
+>>> +     ret = di->bus.write(di, BQ27XXX_DATA_CLASS, buf->class, true);
+>>> +     if (ret < 0)
+>>> +             goto out;
+>>> +
+>>> +     ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, buf->block, true);
+>>> +     if (ret < 0)
+>>> +             goto out;
+>>> +
+>>> +     BQ27XXX_MSLEEP(1);
+>>> +
+>>> +     ret = di->bus.read_bulk(di, BQ27XXX_BLOCK_DATA, buf->a, sizeof buf->a);
+>>> +     if (ret < 0)
+>>> +             goto out;
+>>> +
+>>> +     ret = di->bus.read(di, BQ27XXX_BLOCK_DATA_CHECKSUM, true);
+>>> +     if (ret < 0)
+>>> +             goto out;
+>>> +
+>>> +     if ((u8)ret != bq27xxx_battery_checksum(buf)) {
+>>> +             ret = -EINVAL;
+>>> +             goto out;
+>>> +     }
+>>> +
+>>> +     buf->full = true;
+>>> +     buf->updt = false;
+>>> +     return 0;
+>>> +
+>>> +out:
+>>> +     dev_err(di->dev, "bus error in %s: %d\n", __func__, ret);
+>>> +     return ret;
+>>> +}
+>>> +
+>>> +static void bq27xxx_battery_print_config(struct bq27xxx_device_info *di)
+>>> +{
+>>> +     struct bq27xxx_dm_reg *reg = bq27xxx_dm_regs[di->chip];
+>>> +     struct bq27xxx_dm_buf buf = { .class = 0xFF };
+>>> +     int i;
+>>> +
+>>> +     for (i = 0; i < BQ27XXX_DM_END; i++, reg++) {
+>>> +             const char* str = bq27xxx_dm_reg_name[i];
+>>> +
+>>> +             if (bq27xxx_dm_buf_set(&buf, reg))
+>>> +                     if (bq27xxx_battery_read_dm_block(di, &buf) < 0)
+>>> +                             continue;
+>>> +
+>>> +             if (reg->bytes == 2)
+>>> +                     dev_info(di->dev, "config register %s is %d\n", str,
+>>> +                              be16_to_cpup(BQ27XXX_DM_BUF_PTR(buf, reg)));
+>>> +             else
+>>> +                     dev_warn(di->dev, "unsupported config register %s\n", str);
+>>> +     }
+>>> +}
+>>> +
+>>> +static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
+>>> +                                         struct bq27xxx_dm_buf *buf,
+>>> +                                         enum bq27xxx_dm_reg_id reg_id,
+>>> +                                         unsigned int val)
+>>> +{
+>>> +     struct bq27xxx_dm_reg *reg = &bq27xxx_dm_regs[di->chip][reg_id];
+>>> +     u16 *prev;
+>>> +
+>>> +     if (reg->bytes != 2)
+>>> +             return;
+>>> +
+>>> +     prev = BQ27XXX_DM_BUF_PTR(*buf, reg);
+>>> +     if (be16_to_cpup(prev) == val)
+>>> +             return;
+>>> +     *prev = cpu_to_be16(val);
+>>> +
+>>> +     dev_info(di->dev, "update chip %d, class %u, block %u, offset %u, value %u\n",
+>>> +              di->chip, buf->class, buf->block, reg->offset, val);
+>>> +
+>>
+>> This should probably be dev_debug, no normal user cares about all this
+>> detail.
+>>
+>>> +     buf->updt = true;
+>>> +     return;
+>>> +}
+>>> +
+>>> +static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>>> +                                       struct bq27xxx_dm_buf *buf)
+>>> +{
+>>> +     bool cfgup = di->chip == BQ27425 || di->chip == BQ27421; /* || BQ27441 || BQ27621 */
+>>> +     int ret;
+>>> +
+>>> +     if (cfgup) {
+>>> +             ret = di->bus.write(di, BQ27XXX_CONTROL, BQ27XXX_SET_CFGUPDATE, false);
+>>> +             if (ret < 0)
+>>> +                     goto out1;
+>>> +     }
+>>> +
+>>> +     ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CONTROL, 0, true);
+>>> +     if (ret < 0)
+>>> +             goto out2;
+>>> +
+>>> +     ret = di->bus.write(di, BQ27XXX_DATA_CLASS, buf->class, true);
+>>> +     if (ret < 0)
+>>> +             goto out2;
+>>> +
+>>> +     ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, buf->block, true);
+>>> +     if (ret < 0)
+>>> +             goto out2;
+>>> +
+>>> +     BQ27XXX_MSLEEP(1);
+>>> +
+>>> +     ret = di->bus.write_bulk(di, BQ27XXX_BLOCK_DATA, buf->a, sizeof buf->a);
+>>> +     if (ret < 0)
+>>> +             goto out2;
+>>> +
+>>> +     ret = di->bus.write(di, BQ27XXX_BLOCK_DATA_CHECKSUM,
+>>> +                         bq27xxx_battery_checksum(buf), true);
+>>> +     if (ret < 0)
+>>> +             goto out2;
+>>> +
+>>> +     /* THE FOLLOWING CODE IS TOXIC. DO NOT USE!
+>>
+>> Then why include it, what is this code supposed to do, and what do we
+>> lose without it? If it is really needed we can find a way to guarantee
+>> the delay length.
+>>
+>>> +      * If the 350ms delay is insufficient, NVM corruption results
+>>> +      * on the '425 chip, which could damage the chip.
+>>> +      * It was suggested in this TI tool:
+>>> +      *   http://git.ti.com/bms-linux/bqtool/blobs/master/gauge.c#line328
+>>> +      *
+>>> +      * BQ27XXX_MSLEEP(350);
+>>> +      * ret = di->bus.write(di, BQ27XXX_DATA_BLOCK, buf->block, true);
+>>> +      * BQ27XXX_MSLEEP(1);
+>>> +      * ret = di->bus.read(di, BQ27XXX_BLOCK_DATA_CHECKSUM, true);
+>>> +      * if ((u8)ret != bq27xxx_battery_checksum(buf))
+>>> +      *      ret = -EINVAL;
+>>> +      */
+>>> +
+>>> +     if (cfgup) {
+>>> +             BQ27XXX_MSLEEP(1);
+>>> +             ret = di->bus.write(di, BQ27XXX_CONTROL, BQ27XXX_SOFT_RESET, false);
+>>> +             if (ret < 0)
+>>> +                     goto out1;
+>>> +     }
+>>> +
+>>> +     buf->updt = false;
+>>> +     return 0;
+>>> +
+>>> +out2:
+>>> +     if (cfgup)
+>>> +             di->bus.write(di, BQ27XXX_CONTROL, BQ27XXX_SOFT_RESET, false);
+>>> +out1:
+>>> +     dev_err(di->dev, "bus error in %s: %d\n", __func__, ret);
+>>> +     return ret;
+>>> +}
+>>> +
+>>> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
+>>> +                                    struct power_supply_battery_info *info)
+>>> +{
+>>> +     struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_ENERGY);
+>>> +     struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
+>>> +
+>>> +     if (info->charge_full_design_uah != -EINVAL
+>>> +      && info->energy_full_design_uwh != -EINVAL) {
+>>> +             bq27xxx_battery_read_dm_block(di, &bd);
+>>> +             if (bd.full) {
+>>> +                     /* assume design energy & capacity are in same block */
+>>> +                     bq27xxx_battery_update_dm_block(di, &bd,
+>>> +                                     BQ27XXX_DM_DESIGN_CAPACITY,
+>>> +                                     info->charge_full_design_uah / 1000);
+>>> +                     bq27xxx_battery_update_dm_block(di, &bd,
+>>> +                                     BQ27XXX_DM_DESIGN_ENERGY,
+>>> +                                     info->energy_full_design_uwh / 1000);
+>>> +             }
+>>> +     }
+>>> +
+>>> +     if (info->voltage_min_design_uv != -EINVAL) {
+>>> +             bool same = bd.full && bd.class == bt.class && bd.block == bt.block;
+>>> +             if (!same)
+>>> +                     bq27xxx_battery_read_dm_block(di, &bt);
+>>> +             if (same ? bd.full : bt.full)
+>>> +                     bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
+>>> +                                     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>>> +                                     info->voltage_min_design_uv / 1000);
+>>> +     }
+>>> +
+>>> +     if (bd.updt)
+>>> +             bq27xxx_battery_write_dm_block(di, &bd);
+>>> +     if (bt.updt)
+>>> +             bq27xxx_battery_write_dm_block(di, &bt);
+>>> +}
+>>> +
+>>> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
+>>> +{
+>>> +     struct power_supply_battery_info info = {};
+>>> +     unsigned int min, max;
+>>> +
+>>> +     /* functions don't exist for writing data so abort */
+>>> +     if (!di->bus.write || !di->bus.write_bulk)
+>>> +             return;
+>>> +
+>>> +     /* no settings to be set for this chipset so abort */
+>>> +     if (!bq27xxx_dm_regs[di->chip])
+>>> +             return;
+>>> +
+>>> +     if (bq27xxx_battery_set_seal_state(di, false) < 0)
+>>> +             return;
+>>> +
+>>> +     if (power_supply_get_battery_info(di->bat, &info) < 0)
+>>> +             goto out;
+>>> +
+>>> +     if (info.energy_full_design_uwh != info.charge_full_design_uah) {
+>>> +             if (info.energy_full_design_uwh == -EINVAL)
+>>> +                     dev_warn(di->dev,
+>>> +                             "missing battery:energy-full-design-microwatt-hours\n");
+>>> +             else if (info.charge_full_design_uah == -EINVAL)
+>>> +                     dev_warn(di->dev,
+>>> +                             "missing battery:charge-full-design-microamp-hours\n");
+>>> +     }
+>>> +
+>>> +     /* assume min == 0 */
+>>> +     max = bq27xxx_dm_regs[di->chip][BQ27XXX_DM_DESIGN_ENERGY].max;
+>>> +     if (info.energy_full_design_uwh > max * 1000) {
+>>> +             dev_err(di->dev,
+>>> +                    "invalid battery:energy-full-design-microwatt-hours %d\n",
+>>> +                     info.energy_full_design_uwh);
+>>> +             info.energy_full_design_uwh = -EINVAL;
+>>> +     }
+>>> +
+>>> +     /* assume min == 0 */
+>>> +     max = bq27xxx_dm_regs[di->chip][BQ27XXX_DM_DESIGN_CAPACITY].max;
+>>> +     if (info.charge_full_design_uah > max * 1000) {
+>>> +             dev_err(di->dev,
+>>> +                    "invalid battery:charge-full-design-microamp-hours %d\n",
+>>> +                     info.charge_full_design_uah);
+>>> +             info.charge_full_design_uah = -EINVAL;
+>>> +     }
+>>> +
+>>> +     min = bq27xxx_dm_regs[di->chip][BQ27XXX_DM_TERMINATE_VOLTAGE].min;
+>>> +     max = bq27xxx_dm_regs[di->chip][BQ27XXX_DM_TERMINATE_VOLTAGE].max;
+>>> +     if ((info.voltage_min_design_uv < min * 1000
+>>> +       || info.voltage_min_design_uv > max * 1000)
+>>> +       && info.voltage_min_design_uv != -EINVAL) {
+>>> +             dev_err(di->dev,
+>>> +                    "invalid battery:voltage-min-design-microvolt %d\n",
+>>> +                     info.voltage_min_design_uv);
+>>> +             info.voltage_min_design_uv = -EINVAL;
+>>> +     }
+>>> +
+>>> +     if ((info.energy_full_design_uwh == -EINVAL
+>>> +       || info.charge_full_design_uah == -EINVAL)
+>>> +       && info.voltage_min_design_uv  == -EINVAL)
+>>> +             goto out;
+>>> +
+>>> +     bq27xxx_battery_set_config(di, &info);
+>>> +
+>>> +out:
+>>> +     bq27xxx_battery_print_config(di);
+>>> +     bq27xxx_battery_set_seal_state(di, true);
+>>> +}
+>>> +
+>>>  /*
+>>>   * Return the battery State-of-Charge
+>>>   * Or < 0 if something fails.
+>>> @@ -1006,6 +1390,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>>>       case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>>>               ret = bq27xxx_simple_value(di->charge_design_full, val);
+>>>               break;
+>>> +     /*
+>>> +      * TODO: Implement these to make registers set from
+>>> +      * power_supply_battery_info visible in sysfs.
+>>> +      */
+>>> +     case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+>>> +     case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>>> +             return -EINVAL;
+>>>       case POWER_SUPPLY_PROP_CYCLE_COUNT:
+>>>               ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+>>>               break;
+>>> @@ -1039,7 +1430,10 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>  {
+>>>       struct power_supply_desc *psy_desc;
+>>> -     struct power_supply_config psy_cfg = { .drv_data = di, };
+>>> +     struct power_supply_config psy_cfg = {
+>>> +             .of_node = di->dev->of_node,
+>>> +             .drv_data = di,
+>>> +     };
+>>>
+>>>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>>>       mutex_init(&di->lock);
+>>> @@ -1064,6 +1458,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>>
+>>>       dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>>>
+>>> +     bq27xxx_battery_settings(di);
+>>>       bq27xxx_battery_update(di);
+>>>
+>>>       mutex_lock(&bq27xxx_list_lock);
+>>>
