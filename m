@@ -1,136 +1,188 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH V3 1/7] PM / Domains: Introduce "performance-states" binding
-Date: Fri, 24 Feb 2017 14:36:33 +0530
-Message-ID: <132e9200102bf2f1175567f0862596d098363d9e.1487926924.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3 6/7] PM / Domains: Allow domain performance states to be read from DT
+Date: Fri, 24 Feb 2017 14:36:38 +0530
+Message-ID: <84786c05d90e5f3c9dc41a65fe3b8ce6052a7628.1487926924.git.viresh.kumar@linaro.org>
 References: <cover.1487926924.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-In-Reply-To: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-References: <cover.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:35520 "EHLO
+        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751319AbdBXJOL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Feb 2017 04:14:11 -0500
+Received: by mail-pf0-f179.google.com with SMTP id 68so1826701pfx.2
+        for <linux-pm@vger.kernel.org>; Fri, 24 Feb 2017 01:14:11 -0800 (PST)
+In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
+References: <cover.1487926924.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 
-Some platforms have the capability to configure the performance state of
-their power domains. The process of configuring the performance state is
-pretty much platform dependent and we may need to work with a wide range
-of configurables. For some platforms, like Qcom, it can be a positive
-integer value alone, while in other cases it can be voltage levels, etc.
+This patch allows SoC's to define domains performance states in the DT
+using the "performance-states" node in the domain provider node.
 
-The power-domain framework until now was only designed for the idle
-state management of the device and this needs to change in order to
-reuse the power-domain framework for active state management of the
-devices.
+Add API to read the performance states from DT by the domain specific
+drivers. Note that this information is only used by the domain specific
+drivers and the power domain core doesn't need to store it for now.
 
-This patch adds DT bindings to describe the performance states of a
-power domain. The power domain node needs to contain a
-"performance-states" node, which itself is an array of per-state nodes.
-Each per-state node represents individual performance state of a device.
-Individual nodes are identified by their (mandatory) "reg" field. These
-nodes can also contain an optional "domain-microvolt" property. More
-properties can be added later on once we have more platforms using it.
-
-If the consumers don't need the capability of switching to different
-domain performance states at runtime, then they can simply define their
-required domain performance state in their node directly using the
-"domain-performance-state" property. Otherwise the consumers can define
-their requirements with help of other infrastructure, for example the
-OPP table (added in a later commit).
-
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Tested-by: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
- .../devicetree/bindings/power/power_domain.txt     | 67 ++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ drivers/base/power/domain.c | 101 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  15 +++++++
+ 2 files changed, 116 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
-index 723e1ad937da..9be09e576f68 100644
---- a/Documentation/devicetree/bindings/power/power_domain.txt
-+++ b/Documentation/devicetree/bindings/power/power_domain.txt
-@@ -38,6 +38,33 @@ phandle arguments (so called PM domain specifiers) of length specified by the
-   domain's idle states. In the absence of this property, the domain would be
-   considered as capable of being powered-on or powered-off.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 202effbebfd1..a7449c492990 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2251,6 +2251,107 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ }
+ EXPORT_SYMBOL_GPL(of_genpd_parse_idle_states);
  
-+- performance-states : This describes the performance states of a PM domain.
-+  The performance-states node reflects the performance states of this PM domain
-+  and not the performance states of the devices or sub-domains in the PM domain.
-+  Sub domains can have their own performance states. Sub domains without their
-+  own performance states are governed by the performance states of the parent
-+  domain and the "domain-performance-state" properties of their consumers refer
-+  to the "reg" properties of the nodes in the parent domain.
++/* Power domain performance state management helpers */
++static const struct of_device_id performance_state_match[] = {
++	{ .compatible = "domain-performance-state", },
++	{ }
++};
 +
-+  Required properties of the performance-states node:
-+  - compatible: Allow performance states to express their compatibility. It
-+    should be: "domain-performance-state".
++static int genpd_parse_performance_state(struct genpd_performance_state *state,
++					 struct device_node *np)
++{
++	int ret;
 +
-+  - nodes: The performance-states node should contain one or
-+    more nodes, each representing a supported performance state.
++	ret = of_property_read_u32(np, "reg", &state->performance_state);
++	if (ret) {
++		pr_err(" * %s missing reg property\n", np->full_name);
++		return ret;
++	}
 +
-+    Required properties of the performance state nodes:
-+    - reg: A positive integer value representing the performance level
-+      associated with a performance state. The integer value '0' represents the
-+      lowest performance level and the highest value represents the highest
-+      performance level. The exact meaning and performance implications of
-+      individual values is left to be defined by the user platform.
++	ret = of_property_read_variable_u32_array(np, "domain-microvolt",
++						  &state->u_volt, 1, 3);
++	if (ret >= 0)
++		return 0;
 +
-+    Optional properties of performance state nodes:
-+    - domain-microvolt: voltage in micro Volts. A single regulator's voltage is
-+      specified with an array of size one or three.  Single entry is for target
-+      voltage and three entries are for <target min max> voltages.
++	/* Property not found */
++	if (ret == -EINVAL)
++		return 0;
 +
- Example:
++	pr_err(" * %s Invalid domain-microvolt property\n", np->full_name);
++	return ret;
++}
++
++/**
++ * of_genpd_parse_performance_states: Return array of performance states for the
++ *				      genpd.
++ *
++ * @dn: The genpd device node
++ * @states: The pointer to which the state array will be saved.
++ * @n: The count of elements in the array returned from this function.
++ *
++ * Returns the device performance states parsed from the OF node. The memory for
++ * the states is allocated by this function and is the responsibility of the
++ * caller to free the memory after use.
++ */
++int of_genpd_parse_performance_states(struct device_node *dn,
++				struct genpd_performance_state **states, int *n)
++{
++	struct genpd_performance_state *st;
++	struct device_node *perf_np, *np;
++	int i = 0, ret, count;
++
++	perf_np = of_get_child_by_name(dn, "performance-states");
++	if (!perf_np) {
++		pr_err("performance-states node not found in %s node\n",
++		       dn->full_name);
++		return -ENODEV;
++	}
++
++	if (!of_match_node(performance_state_match, perf_np)) {
++		pr_err("performance-states node found in %s node isn't compatible\n",
++		       dn->full_name);
++		ret = -EINVAL;
++		goto put_node;
++	}
++
++	count = of_get_child_count(perf_np);
++	if (count <= 0) {
++		pr_err("performance-states node found in %s node doesn't have any child nodes\n",
++		       dn->full_name);
++		ret = -EINVAL;
++		goto put_node;
++	}
++
++	st = kcalloc(count, sizeof(*st), GFP_KERNEL);
++	if (!st) {
++		ret = -ENOMEM;
++		goto put_node;
++	}
++
++	for_each_available_child_of_node(perf_np, np) {
++		ret = genpd_parse_performance_state(&st[i++], np);
++		if (ret) {
++			pr_err("Parsing of performance state node %s failed with err %d\n",
++			       np->full_name, ret);
++			goto free_st;
++		}
++	}
++
++	of_node_put(perf_np);
++	*n = count;
++	*states = st;
++
++	return 0;
++
++free_st:
++	kfree(st);
++put_node:
++	of_node_put(perf_np);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(of_genpd_parse_performance_states);
++
+ #endif /* CONFIG_PM_GENERIC_DOMAINS_OF */
  
- 	power: power-controller@12340000 {
-@@ -118,4 +145,44 @@ The node above defines a typical PM domain consumer device, which is located
- inside a PM domain with index 0 of a power controller represented by a node
- with the label "power".
  
-+Optional properties:
-+- domain-performance-state: A positive integer value representing the minimum
-+  performance level (of the parent domain) required by the consumer for its
-+  working. The integer value '0' represents the lowest performance level and the
-+  highest value represents the highest performance level. The value of
-+  domain-performance-state field should match one of the "reg" fields in the
-+  "performance-states" table of the parent power domain.
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 83795935709e..7659ce3968c7 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -44,6 +44,13 @@ struct genpd_power_state {
+ 	struct fwnode_handle *fwnode;
+ };
+ 
++struct genpd_performance_state {
++	unsigned int performance_state;
++	unsigned int u_volt;
++	unsigned int u_volt_min;
++	unsigned int u_volt_max;
++};
 +
+ struct genpd_lock_ops;
+ 
+ struct generic_pm_domain {
+@@ -226,6 +233,8 @@ extern int of_genpd_add_subdomain(struct of_phandle_args *parent,
+ extern struct generic_pm_domain *of_genpd_remove_last(struct device_node *np);
+ extern int of_genpd_parse_idle_states(struct device_node *dn,
+ 			struct genpd_power_state **states, int *n);
++extern int of_genpd_parse_performance_states(struct device_node *dn,
++			struct genpd_performance_state **states, int *n);
+ 
+ int genpd_dev_pm_attach(struct device *dev);
+ #else /* !CONFIG_PM_GENERIC_DOMAINS_OF */
+@@ -261,6 +270,12 @@ static inline int of_genpd_parse_idle_states(struct device_node *dn,
+ 	return -ENODEV;
+ }
+ 
++static inline int of_genpd_parse_performance_states(struct device_node *dn,
++			struct genpd_performance_state **states, int *n)
++{
++	return -ENODEV;
++}
 +
-+Example:
-+
-+	parent: power-controller@12340000 {
-+		compatible = "foo,power-controller";
-+		reg = <0x12340000 0x1000>;
-+		#power-domain-cells = <0>;
-+
-+		performance-states {
-+			compatible = "domain-performance-state";
-+			pstate@1 {
-+				reg = <1>;
-+				domain-microvolt = <970000 975000 985000>;
-+			};
-+			pstate@2 {
-+				reg = <2>;
-+				domain-microvolt = <1000000 1075000 1085000>;
-+			};
-+			pstate@3 {
-+				reg = <3>;
-+				domain-microvolt = <1100000 1175000 1185000>;
-+			};
-+		};
-+	};
-+
-+	leaky-device@12350000 {
-+		compatible = "foo,i-leak-current";
-+		reg = <0x12350000 0x1000>;
-+		power-domains = <&power 0>;
-+		domain-performance-state = <2>;
-+	};
-+
- [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
+ static inline int genpd_dev_pm_attach(struct device *dev)
+ {
+ 	return -ENODEV;
 -- 
 2.7.1.410.g6faf27b
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
