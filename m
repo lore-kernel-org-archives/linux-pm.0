@@ -1,180 +1,175 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3 0/7] PM / Domains: Implement domain performance states
-Date: Fri, 24 Feb 2017 14:36:32 +0530
-Message-ID: <cover.1487926924.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 3/7] PM / QOS: Keep common notifier list for genpd constraints
+Date: Fri, 24 Feb 2017 14:36:35 +0530
+Message-ID: <851a8ddd4b30e632f2491fc034c62a0b0ebcccfa.1487926924.git.viresh.kumar@linaro.org>
+References: <cover.1487926924.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1487926924.git.viresh.kumar@linaro.org>
+References: <cover.1487926924.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@linaro.org>, Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
 Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Only the resume_latency constraint uses the notifiers right now. In
+order to prepare for adding new constraint types with notifiers, move to
+a common notifier list.
 
-This series contain V3 of both the bindings and the code that implement
-them. They were sent separately earlier.
+Update pm_qos_update_target() to pass a pointer to the constraint
+structure to the notifier callbacks. Also update the notifier callbacks
+as well to error out for unexpected constraints.
 
-Some platforms have the capability to configure the performance state of
-their power domains. The process of configuring the performance state is
-pretty much platform dependent and we may need to work with a wide range
-of configurables.  For some platforms, like Qcom, it can be a positive
-integer value alone, while in other cases it can be voltage levels, etc.
-
-The power-domain framework until now was only designed for the idle
-state management of the device and this needs to change in order to
-reuse the power-domain framework for active state management of the
-devices.
-
-The first 2 patches update the DT bindings of the power-domains and OPP
-tables. And the other 5 patches implement the details in QoS, genpd and
-OPP frameworks.
-
-This is tested currently by hacking the kernel a bit with virtual
-power-domains for the dual A15 exynos platform. The earlier version of
-patches was also tested by Rajendra Nayak (Qcom) on *real* Qualcomm
-hardware for which this work is getting done. And so this version should
-work as well.
-
-Here is sample DT and C code we need to write for platforms:
-
-DT:
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
 ---
+ drivers/base/power/domain.c | 26 +++++++++++++++++++-------
+ drivers/base/power/qos.c    | 15 ++++-----------
+ include/linux/pm_qos.h      |  7 +++++++
+ kernel/power/qos.c          |  2 +-
+ 4 files changed, 31 insertions(+), 19 deletions(-)
 
-        foo: foo-power-domain@08000000 {
-                compatible = "foo,genpd";
-                #power-domain-cells = <0>;
-
-                performance-states {
-                        compatible = "domain-performance-state";
-                        pstate@1 {
-                                reg = <1>;
-                                domain-microvolt = <970000 975000 985000>;
-                        };
-                        pstate@2 {
-                                reg = <2>;
-                                domain-microvolt = <1000000 1075000 1085000>;
-                        };
-                };
-        };
-
-        cpu0_opp_table: opp_table0 {
-                compatible = "operating-points-v2";
-                opp-shared;
-
-                opp00 {
-                        opp-hz = /bits/ 64 <1700000000>;
-                        clock-latency-ns = <30>;
-                        domain-performance-state = <2>;
-                        opp-suspend;
-                };
-                opp01 {
-                        opp-hz = /bits/ 64 <1600000000>;
-                        clock-latency-ns = <300>;
-                        domain-performance-state = <1>;
-                };
-        }
-
-Driver code:
-------------
-
-static int pd_performance(struct generic_pm_domain *domain, unsigned int state)
-{
-       int i = state - 1;
-
-       pr_info("%d: %d: %u: %u: %u\n", state,
-	       states[i].performance_state, states[i].u_volt,
-	       states[i].u_volt_min, states[i].u_volt_max);
-       return 0;
-}
-
-static const struct of_device_id pm_domain_of_match[] __initconst = {
-       { .compatible = "foo,genpd", },
-       { },
-};
-
-static int __init genpd_test_init(void)
-{
-       struct device *dev = get_cpu_device(0);
-       struct device_node *np;
-       const struct of_device_id *match;
-       int n;
-       int ret;
-
-       for_each_matching_node_and_match(np, pm_domain_of_match, &match) {
-               pd.name = kstrdup_const(strrchr(np->full_name, '/') + 1,
-                               GFP_KERNEL);
-               if (!pd.name) {
-                       of_node_put(np);
-                       return -ENOMEM;
-               }
-
-               pd.set_performance_state = pd_performance;
-
-               pm_genpd_init(&pd, NULL, false);
-               of_genpd_parse_performance_states(np, &states, &n);
-               of_genpd_add_provider_simple(np, &pd);
-       }
-
-       ret = dev_pm_domain_attach(dev, false);
-
-       return ret;
-}
-
-
-V2->V3:
-- Based over latest pm/linux-next
-- Bindings and code are merged together
-- Lots of updates in bindings
-  - the performance-states node is present within the power-domain now,
-    instead of its phandle.
-  - performance-level property is replaced by "reg".
-  - domain-performance-state property of the consumers contain an
-    integer value now instead of phandle.
-- Lots of updates to the code as well
-  - Patch "PM / QOS: Add default case to the switch" is merged with
-    other patches and the code is changed a bit as well.
-  - Don't pass 'type' to dev_pm_qos_add_notifier(), rather handle all
-    notifiers with a single list. A new patch is added for that.
-  - The OPP framework patch can be applied now and has proper SoB from
-    me.
-  - Dropped "PM / domain: Save/restore performance state at runtime
-    suspend/resume".
-  - Drop all WARN().
-  - Tested-by Rajendra nayak.
-
-V1->V2:
-- Based over latest pm/linux-next
-- It is mostly a resend of what is sent earlier as this series hasn't
-  got any reviews so far and Rafael suggested that its better I resend
-  it.
-- Only the 4/6 patch got an update, which was shared earlier as reply to
-  V1 as well. It has got several fixes for taking care of power domain
-  hierarchy, etc.
-
---
-viresh
-
-Viresh Kumar (7):
-  PM / Domains: Introduce "performance-states" binding
-  PM / OPP: Introduce "domain-performance-state" binding to OPP nodes
-  PM / QOS: Keep common notifier list for genpd constraints
-  PM / QOS: Add DEV_PM_QOS_PERFORMANCE request
-  PM / domain: Register for PM QOS performance notifier
-  PM / Domains: Allow domain performance states to be read from DT
-  PM / OPP: Add support to parse domain-performance-state
-
- Documentation/devicetree/bindings/opp/opp.txt      |  64 +++++++
- .../devicetree/bindings/power/power_domain.txt     |  67 +++++++
- Documentation/power/pm_qos_interface.txt           |   2 +-
- drivers/base/power/domain.c                        | 204 ++++++++++++++++++++-
- drivers/base/power/opp/core.c                      |  73 ++++++++
- drivers/base/power/opp/debugfs.c                   |   4 +
- drivers/base/power/opp/of.c                        |  37 ++++
- drivers/base/power/opp/opp.h                       |  12 ++
- drivers/base/power/qos.c                           |  36 ++--
- include/linux/pm_domain.h                          |  19 ++
- include/linux/pm_qos.h                             |  17 ++
- kernel/power/qos.c                                 |   2 +-
- 12 files changed, 517 insertions(+), 20 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index e697dec9d25b..303490ab5ffd 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -416,14 +416,10 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+ 	return ret;
+ }
+ 
+-static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+-				     unsigned long val, void *ptr)
++static int __resume_latency_notifier(struct generic_pm_domain_data *gpd_data,
++				     unsigned long val)
+ {
+-	struct generic_pm_domain_data *gpd_data;
+-	struct device *dev;
+-
+-	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
+-	dev = gpd_data->base.dev;
++	struct device *dev = gpd_data->base.dev;
+ 
+ 	for (;;) {
+ 		struct generic_pm_domain *genpd;
+@@ -456,6 +452,22 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+ 	return NOTIFY_DONE;
+ }
+ 
++static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
++				     unsigned long val, void *ptr)
++{
++	struct generic_pm_domain_data *gpd_data;
++	struct device *dev;
++
++	gpd_data = container_of(nb, struct generic_pm_domain_data, nb);
++	dev = gpd_data->base.dev;
++
++	if (dev_pm_qos_notifier_is_resume_latency(dev, ptr))
++		return __resume_latency_notifier(gpd_data, val);
++
++	dev_err(dev, "%s: Unexpected notifier call\n", __func__);
++	return NOTIFY_BAD;
++}
++
+ /**
+  * genpd_power_off_work_fn - Power off PM domain whose subdomain count is 0.
+  * @work: Work structure used for scheduling the execution of this function.
+diff --git a/drivers/base/power/qos.c b/drivers/base/power/qos.c
+index 271bec73185e..851fff60319c 100644
+--- a/drivers/base/power/qos.c
++++ b/drivers/base/power/qos.c
+@@ -173,18 +173,12 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ {
+ 	struct dev_pm_qos *qos;
+ 	struct pm_qos_constraints *c;
+-	struct blocking_notifier_head *n;
+ 
+ 	qos = kzalloc(sizeof(*qos), GFP_KERNEL);
+ 	if (!qos)
+ 		return -ENOMEM;
+ 
+-	n = kzalloc(sizeof(*n), GFP_KERNEL);
+-	if (!n) {
+-		kfree(qos);
+-		return -ENOMEM;
+-	}
+-	BLOCKING_INIT_NOTIFIER_HEAD(n);
++	BLOCKING_INIT_NOTIFIER_HEAD(&qos->notifiers);
+ 
+ 	c = &qos->resume_latency;
+ 	plist_head_init(&c->list);
+@@ -192,7 +186,7 @@ static int dev_pm_qos_constraints_allocate(struct device *dev)
+ 	c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+ 	c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+ 	c->type = PM_QOS_MIN;
+-	c->notifiers = n;
++	c->notifiers = &qos->notifiers;
+ 
+ 	c = &qos->latency_tolerance;
+ 	plist_head_init(&c->list);
+@@ -269,7 +263,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
+ 	dev->power.qos = ERR_PTR(-ENODEV);
+ 	spin_unlock_irq(&dev->power.lock);
+ 
+-	kfree(qos->resume_latency.notifiers);
+ 	kfree(qos);
+ 
+  out:
+@@ -488,7 +481,7 @@ int dev_pm_qos_add_notifier(struct device *dev, struct notifier_block *notifier)
+ 		ret = dev_pm_qos_constraints_allocate(dev);
+ 
+ 	if (!ret)
+-		ret = blocking_notifier_chain_register(dev->power.qos->resume_latency.notifiers,
++		ret = blocking_notifier_chain_register(&dev->power.qos->notifiers,
+ 						       notifier);
+ 
+ 	mutex_unlock(&dev_pm_qos_mtx);
+@@ -515,7 +508,7 @@ int dev_pm_qos_remove_notifier(struct device *dev,
+ 
+ 	/* Silently return if the constraints object is not present. */
+ 	if (!IS_ERR_OR_NULL(dev->power.qos))
+-		retval = blocking_notifier_chain_unregister(dev->power.qos->resume_latency.notifiers,
++		retval = blocking_notifier_chain_unregister(&dev->power.qos->notifiers,
+ 							    notifier);
+ 
+ 	mutex_unlock(&dev_pm_qos_mtx);
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 3e2547d6e207..dd02020a02b6 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -100,6 +100,7 @@ struct dev_pm_qos {
+ 	struct dev_pm_qos_request *resume_latency_req;
+ 	struct dev_pm_qos_request *latency_tolerance_req;
+ 	struct dev_pm_qos_request *flags_req;
++	struct blocking_notifier_head notifiers; /* common for all constraints */
+ };
+ 
+ /* Action requested to pm_qos_update_target */
+@@ -114,6 +115,12 @@ static inline int dev_pm_qos_request_active(struct dev_pm_qos_request *req)
+ 	return req->dev != NULL;
+ }
+ 
++static inline bool dev_pm_qos_notifier_is_resume_latency(struct device *dev,
++		struct pm_qos_constraints *c)
++{
++	return &dev->power.qos->resume_latency == c;
++}
++
+ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+ 			 enum pm_qos_req_action action, int value);
+ bool pm_qos_update_flags(struct pm_qos_flags *pqf,
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 97b0df71303e..073324e0c3c8 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -315,7 +315,7 @@ int pm_qos_update_target(struct pm_qos_constraints *c, struct plist_node *node,
+ 		if (c->notifiers)
+ 			blocking_notifier_call_chain(c->notifiers,
+ 						     (unsigned long)curr_value,
+-						     NULL);
++						     c);
+ 	} else {
+ 		ret = 0;
+ 	}
 -- 
 2.7.1.410.g6faf27b
