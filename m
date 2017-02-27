@@ -1,124 +1,62 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v8 8/9] power: bq27xxx_battery: Add print_dm_blocks() to
- log chip memory
-Date: Mon, 27 Feb 2017 12:07:50 -0600
-Message-ID: <d516681b-5a05-012c-4b2b-b79f6cacea23@ti.com>
-References: <20170227071117.18934-1-liam@networkimprov.net>
- <20170227071117.18934-9-liam@networkimprov.net>
+From: Icenowy Zheng <icenowy@aosc.xyz>
+Subject: [PATCH 1/3] dt-bindings: document the thermal sensor of Allwinner H3
+ SoC
+Date: Tue, 28 Feb 2017 03:40:52 +0800
+Message-ID: <20170227194054.51951-1-icenowy@aosc.xyz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:17942 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751497AbdB0SI1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Feb 2017 13:08:27 -0500
-In-Reply-To: <20170227071117.18934-9-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Ondrej Jirman <megous@megous.com>
+Cc: devicetree@vger.kernel.org, Icenowy Zheng <icenowy@aosc.xyz>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On 02/27/2017 01:11 AM, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
-> 
-> Enable listing of chip RAM and/or NVM at startup, for debugging use.
-> Intially supports BQ27425. Support for other chips may be added.
-> 
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq27xxx_battery.c | 70 ++++++++++++++++++++++++++++++++++
->  1 file changed, 70 insertions(+)
-> 
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-> index 41d4ce7..8ba0568 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -703,6 +703,74 @@ static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
->  	return ret;
->  }
->  
-> +/* Translate F4 floating point values to/from hexadecimal:
-> + *   perl -e 'printf("%08x\n", unpack("I", pack("f", 3.93e-4   )))' # 39ce0b91
-> + *   perl -e 'printf("%f\n"  , unpack("f", pack("I", 0x39ce0b91)))' # 0.000393
-> + */
-> +
-> +#define BQ27XXX_DM_INFO(f,o,v) dev_info(di->dev, "offset %d, " f "\n", o, v)
-> +
-> +static void bq27xxx_battery_print_dm_blocks(struct bq27xxx_device_info *di) {
-> +	enum { H1, H2, H4, I1, I2, U1, F4 };
-> +
-> +	struct dm_reg { int offset, type; }
-> +		/* each array row describes one data block */
-> +		c425_s82[][10] = {
-> +			{ { 2,H1},{ 3,I2},{ 5,H2},{12,I2},{14,I2},{18,I2},{22,I2},{29,U1},{30,I2},{99,0} },
-> +			{ {32,I2},{34,I2},{36,I2},{38,U1},{39,U1},{40,F4},{99,0} },
-> +		},
-> +		c425_s104[][10] = {
-> +			{ { 0,I2},{ 2,I1},{ 3,I1},{ 4,I1},{99,0} },
-> +		},
-> +		c425_s105[][10] = {
-> +			{ { 0,F4},{ 4,I2},{99,0} },
-> +		};
-> +		/* add more subclass maps here */
-> +
-> +	struct dm_class { int id, blocks; struct dm_reg (*reg)[10]; }
-> +		c425[] = {
-> +			{ .id =  82, .blocks = 2, .reg = c425_s82  },
-> +			{ .id = 104, .blocks = 1, .reg = c425_s104 },
-> +			{ .id = 105, .blocks = 1, .reg = c425_s105 },
-> +			{ .reg = NULL }
-> +		};
-> +		/* add more chip maps here */
-> +
-> +	struct dm_class *chip = c425; /* set to your chip */
-> +
-> +	struct bq27xxx_dm_buf buf = { };
-> +	int c, b, r;
-> +
-> +	for (c=0; chip[c].reg != NULL; ++c) {
-> +		buf.class = chip[c].id;
-> +		dev_info(di->dev, "subclass %d registers...\n", chip[c].id);
-> +
-> +		for (b=0; b < chip[c].blocks; ++b) {
-> +			buf.block = b;
-> +			if (bq27xxx_battery_read_dm_block(di, &buf) < 0)
-> +				continue;
-> +
-> +			for (r=0; chip[c].reg[b][r].offset != 99; ++r) {
-> +				int o = chip[c].reg[b][r].offset;
-> +				u8* p = &buf.a[o % BQ27XXX_DM_SZ];
-> +
-> +				switch (chip[c].reg[b][r].type) {
-> +				case H1: BQ27XXX_DM_INFO("%02x", o,   *p); break;
-> +				case I1: BQ27XXX_DM_INFO("%d", o, (s8)*p); break;
-> +				case U1: BQ27XXX_DM_INFO("%u", o,     *p); break;
-> +				case H2: BQ27XXX_DM_INFO("%04x", o,
-> +						   be16_to_cpup((u16*)p)); break;
-> +				case I2: BQ27XXX_DM_INFO("%d", o,
-> +					      (s16)be16_to_cpup((u16*)p)); break;
-> +				case H4:
-> +				case F4: BQ27XXX_DM_INFO("%08x", o,
-> +						   be32_to_cpup((u32*)p)); break;
-> +				}
-> +			}
-> +		}
-> +	}
-> +}
-> +
->  static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
->  					    struct bq27xxx_dm_buf *buf,
->  					    enum bq27xxx_dm_reg_id reg_id,
-> @@ -936,6 +1004,8 @@ void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
->  	bq27xxx_battery_set_config(di, &info);
->  
->  out:
-> +	/* bq27xxx_battery_print_dm_blocks(di); uncomment for debugging */
-> +	(void)bq27xxx_battery_print_dm_blocks; /* prevent compiler warning */
-
-__maybe_unused
-
->  	bq27xxx_battery_set_seal_state(di, true);
->  }
->  
-> 
+RnJvbTogT25kcmVqIEppcm1hbiA8bWVnb3VzQG1lZ291cy5jb20+CgpUaGlzIHBhdGNoIGFkZHMg
+dGhlIGJpbmRpbmcgZG9jdW1lbnRhdGlvbiBmb3IgdGhlIHRoZXJtYWwgc2Vuc29yCmZvdW5kIGlu
+IEFsbHdpbm5lciBIMyBTb0MuCgpTaWduZWQtb2ZmLWJ5OiBPbmTFmWVqIEppcm1hbiA8bWVnb3Vz
+QG1lZ291cy5jb20+CltJY2Vub3d5OiBzb21lIGFkanVzdG1lbnRzIHRvIGRvY3VtZW50YXRpb24g
+YW5kIHRoZSBjb21taXQgbWVzc2FnZV0KU2lnbmVkLW9mZi1ieTogSWNlbm93eSBaaGVuZyA8aWNl
+bm93eUBhb3NjLnh5ej4KLS0tCiAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3N1bjhp
+LXRocy50eHQgICAgICB8IDM1ICsrKysrKysrKysrKysrKysrKysrKysKIDEgZmlsZSBjaGFuZ2Vk
+LCAzNSBpbnNlcnRpb25zKCspCiBjcmVhdGUgbW9kZSAxMDA2NDQgRG9jdW1lbnRhdGlvbi9kZXZp
+Y2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvc3VuOGktdGhzLnR4dAoKZGlmZiAtLWdpdCBhL0RvY3Vt
+ZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3N1bjhpLXRocy50eHQgYi9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9zdW44aS10aHMudHh0Cm5ldyBm
+aWxlIG1vZGUgMTAwNjQ0CmluZGV4IDAwMDAwMDAwMDAwMC4uZWVjMDk0YzQ1OWI4Ci0tLSAvZGV2
+L251bGwKKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvc3Vu
+OGktdGhzLnR4dApAQCAtMCwwICsxLDM1IEBACisqIFRoZXJtYWwgc2Vuc29yIGZvciBuZXcgQWxs
+d2lubmVyIFNvQ3MKKworUmVxdWlyZWQgcHJvcGVydGllczoKKy0gY29tcGF0aWJsZSA6IFNob3Vs
+ZCBiZSBvbmUgb2YgdGhlIGZvbGxvd2luZzoKKyAtICJhbGx3aW5uZXIsc3VuOGktaDMtdGhzIgor
+LSByZWcgOiBBZGRyZXNzIHJhbmdlIG9mIHRoZSB0aGVybWFsIHNlbnNvciByZWdpc3RlcnMKKy0g
+cmVzZXRzIDogTXVzdCBjb250YWluIHBoYW5kbGVzIHRvIHJlc2V0IGNvbnRyb2xzIG1hdGNoaW5n
+IHRoZSBlbnRyaWVzCisgIG9mIHRoZSBuYW1lcworLSByZXNldC1uYW1lcyA6IE11c3QgaW5jbHVk
+ZSB0aGUgbmFtZSAiYWhiIgorLSBjbG9ja3MgOiBNdXN0IGNvbnRhaW4gcGhhbmRsZXMgdG8gY2xv
+Y2sgY29udHJvbHMgbWF0Y2hpbmcgdGhlIGVudHJpZXMKKyAgb2YgdGhlIG5hbWVzCistIGNsb2Nr
+LW5hbWVzIDogTXVzdCBjb250YWluICJhaGIiIGZvciB0aGUgYnVzIGdhdGUgYW5kICJ0aHMiIGZv
+ciB0aGUgVEhTCisgIGNsb2NrCistICN0aGVybWFsLXNlbnNvci1jZWxscyA6IFNob3VsZCBiZSAx
+LiBTZWUgLi90aGVybWFsLnR4dCBmb3IgYSBkZXNjcmlwdGlvbi4KKworT3B0aW9uYWwgcHJvcGVy
+dGllczoKKy0gbnZtZW0tY2VsbHM6IEEgcGhhbmRsZSB0byB0aGUgY2FsaWJyYXRpb24gZGF0YSBw
+cm92aWRlZCBieSBhIG52bWVtIGRldmljZS4gSWYKKyAgICAgICAgICAgICAgIHVuc3BlY2lmaWVk
+IGRlZmF1bHQgdmFsdWVzIHNoYWxsIGJlIHVzZWQuIFJlZmVyIHRvCisgICAgICAgICAgICAgICBE
+b2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbnZtZW0vbnZtZW0udHh0IHRvIGtub3cg
+aG93IHRvCisgICAgICAgICAgICAgICBzcGVjaWZ5IG52bWVtIGNlbGxzLgorLSBudm1lbS1jZWxs
+LW5hbWVzOiBTaG91bGQgYmUgImNhbCIKKworRXhhbXBsZToKK3RoczogdGhzQDAxYzI1MDAwIHsK
+Kwljb21wYXRpYmxlID0gImFsbHdpbm5lcixzdW44aS1oMy10aHMiOworCXJlZyA9IDwweDAxYzI1
+MDAwIDB4NDAwPjsKKwlpbnRlcnJ1cHRzID0gPEdJQ19TUEkgNjMgSVJRX1RZUEVfTEVWRUxfSElH
+SD47CisJcmVzZXRzID0gPCZjY3UgUlNUX0JVU19USFM+OworCXJlc2V0LW5hbWVzID0gImFoYiI7
+CisJY2xvY2tzID0gPCZjY3UgQ0xLX0JVU19USFM+LCA8JmNjdSBDTEtfVEhTPjsKKwljbG9jay1u
+YW1lcyA9ICJhaGIiLCAidGhzIjsKKwludm1lbS1jZWxscyA9IDwmdGhzX2NhbD47CisJbnZtZW0t
+Y2VsbC1uYW1lcyA9ICJjYWwiOworCSN0aGVybWFsLXNlbnNvci1jZWxscyA9IDwxPjsKK307Ci0t
+IAoyLjExLjEKCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+XwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmlu
+ZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9s
+aW51eC1hcm0ta2VybmVsCg==
