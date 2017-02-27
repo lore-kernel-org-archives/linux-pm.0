@@ -1,46 +1,122 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RESEND PATCH] PM / AVS: rockchip-io: add io selectors and
- supplies for rk3328
-Date: Mon, 27 Feb 2017 14:26:03 +0100
-Message-ID: <5273870.ds1UUp6ZfE@aspire.rjw.lan>
-References: <1487853191-10994-1-git-send-email-david.wu@rock-chips.com>
- <m2innw39on.fsf@baylibre.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v8 6/9] power: bq27xxx_battery: Add BQ27425 chip id
+Date: Mon, 27 Feb 2017 10:28:38 -0600
+Message-ID: <57c43999-835d-64e3-c198-76a3cd36c21e@ti.com>
+References: <20170227071117.18934-1-liam@networkimprov.net>
+ <20170227071117.18934-7-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <m2innw39on.fsf@baylibre.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: nm@ti.com, huangtao@rock-chips.com, heiko@sntech.de, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, David Wu <david.wu@rock-chips.com>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:26873 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751173AbdB0Qh3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Feb 2017 11:37:29 -0500
+In-Reply-To: <20170227071117.18934-7-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On Sunday, February 26, 2017 01:48:40 PM Kevin Hilman wrote:
-> David Wu <david.wu@rock-chips.com> writes:
+On 02/27/2017 01:11 AM, Liam Breck wrote:
+> From: Matt Ranostay <matt@ranostay.consulting>
 > 
-> > From: "david.wu" <david.wu@rock-chips.com>
-> >
-> > This adds the necessary data for handling io voltage domains on the rk3328.
-> > As interesting tidbit, the rk3328 only contains one iodomain area in the
-> > regular General Register Files (GRF).
-> >
-> > Signed-off-by: david.wu <david.wu@rock-chips.com>
-> > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> This patch does not alter the function of the driver.
+> This chip ID is referenced in the devicetree code.
 > 
-> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
-> 
-> Rafael, feel free to take directly.  I don't currently have any other
-> AVS stuff in the queue.
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
 
-I'll queue it up for 4.12 then.
+I think I already acked this one..
 
-Thanks,
-Rafael
+Acked-by: Andrew F. Davis <afd@ti.com>
+
+> ---
+>  drivers/power/supply/bq27xxx_battery.c     | 23 ++++++++++++++++++++++-
+>  drivers/power/supply/bq27xxx_battery_i2c.c |  2 +-
+>  include/linux/power/bq27xxx_battery.h      |  3 ++-
+>  3 files changed, 25 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 7272d1e..7475a5f 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -259,6 +259,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_DCAP] = 0x3c,
+>  		[BQ27XXX_REG_AP] = 0x18,
+>  	},
+> +	[BQ27425] = {
+> +		[BQ27XXX_REG_CTRL] = 0x00,
+> +		[BQ27XXX_REG_TEMP] = 0x02,
+> +		[BQ27XXX_REG_INT_TEMP] = 0x1e,
+> +		[BQ27XXX_REG_VOLT] = 0x04,
+> +		[BQ27XXX_REG_AI] = 0x10,
+> +		[BQ27XXX_REG_FLAGS] = 0x06,
+> +		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_NAC] = 0x08,
+> +		[BQ27XXX_REG_FCC] = 0x0e,
+> +		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_SOC] = 0x1c,
+> +		[BQ27XXX_REG_DCAP] = 0x3c,
+> +		[BQ27XXX_REG_AP] = 0x18,
+> +	},
+>  };
+>  
+>  static enum power_supply_property bq27000_battery_props[] = {
+> @@ -427,6 +446,7 @@ static struct {
+>  	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
+>  	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
+>  	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
+> +	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
+>  };
+>  
+>  static DEFINE_MUTEX(bq27xxx_list_lock);
+> @@ -682,6 +702,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+>  		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
+>  	case BQ27530:
+>  	case BQ27421:
+> +	case BQ27425:
+>  		return flags & BQ27XXX_FLAG_OT;
+>  	default:
+>  		return false;
+> @@ -693,7 +714,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+>   */
+>  static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
+>  {
+> -	if (di->chip == BQ27530 || di->chip == BQ27421)
+> +	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
+>  		return flags & BQ27XXX_FLAG_UT;
+>  
+>  	return false;
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index 5c5c3a6..d7da535 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -159,7 +159,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>  	{ "bq27742", BQ27541 },
+>  	{ "bq27545", BQ27545 },
+>  	{ "bq27421", BQ27421 },
+> -	{ "bq27425", BQ27421 },
+> +	{ "bq27425", BQ27425 },
+>  	{ "bq27441", BQ27421 },
+>  	{ "bq27621", BQ27421 },
+>  	{},
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index 92df553..4925478 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -9,7 +9,8 @@ enum bq27xxx_chip {
+>  	BQ27530, /* bq27530, bq27531 */
+>  	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+>  	BQ27545, /* bq27545 */
+> -	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+> +	BQ27421, /* bq27421, bq27441, bq27621 */
+> +	BQ27425, /* bq27425 */
+>  };
+>  
+>  /**
+> 
