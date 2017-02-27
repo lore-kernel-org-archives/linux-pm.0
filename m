@@ -1,139 +1,128 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v8 9/9] power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
-Date: Sun, 26 Feb 2017 23:11:17 -0800
-Message-ID: <20170227071117.18934-10-liam@networkimprov.net>
+Subject: [PATCH v8 4/9] power: power_supply: Add power_supply_battery_info and API
+Date: Sun, 26 Feb 2017 23:11:12 -0800
+Message-ID: <20170227071117.18934-5-liam@networkimprov.net>
 References: <20170227071117.18934-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:33108 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751644AbdB0HNp (ORCPT
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:33077 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751583AbdB0HNp (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Feb 2017 02:13:45 -0500
-Received: by mail-pg0-f65.google.com with SMTP id x17so627914pgi.0
-        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2017 23:12:17 -0800 (PST)
+Received: by mail-pg0-f66.google.com with SMTP id x17so627638pgi.0
+        for <linux-pm@vger.kernel.org>; Sun, 26 Feb 2017 23:12:11 -0800 (PST)
 In-Reply-To: <20170227071117.18934-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Matt Ranostay <matt@ranostay.consulting>
+From: Liam Breck <kernel@networkimprov.net>
 
-write(), read_bulk(), write_bulk() are required by bq27xxx_battery
-devicetree code.
+power_supply_get_battery_info() reads battery data from devicetree.
+struct power_supply_battery_info provides battery data to drivers.
+Drivers may surface battery data in sysfs via corresponding
+POWER_SUPPLY_PROP_* fields.
 
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
- 1 file changed, 81 insertions(+), 1 deletion(-)
+ drivers/power/supply/power_supply_core.c | 40 ++++++++++++++++++++++++++++++++
+ include/linux/power_supply.h             | 18 ++++++++++++++
+ 2 files changed, 58 insertions(+)
 
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index d7da535..0414573 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- {
- 	struct i2c_client *client = to_i2c_client(di->dev);
- 	struct i2c_msg msg[2];
--	unsigned char data[2];
-+	u8 data[2];
- 	int ret;
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index a74d8ca..c121931 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -17,6 +17,7 @@
+ #include <linux/device.h>
+ #include <linux/notifier.h>
+ #include <linux/err.h>
++#include <linux/of.h>
+ #include <linux/power_supply.h>
+ #include <linux/thermal.h>
+ #include "power_supply.h"
+@@ -487,6 +488,45 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
+ EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
+ #endif /* CONFIG_OF */
  
- 	if (!client->adapter)
-@@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
- 	return ret;
- }
- 
-+static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
-+				     int value, bool single)
++int power_supply_get_battery_info(struct power_supply *psy,
++				  struct power_supply_battery_info *info)
 +{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 data[4];
-+	int ret;
++	struct device_node *battery_np;
++	const char *value;
++	int err;
 +
-+	if (!client->adapter)
-+		return -ENODEV;
++	info->energy_full_design_uwh = -EINVAL;
++	info->charge_full_design_uah = -EINVAL;
++	info->voltage_min_design_uv  = -EINVAL;
 +
-+	data[0] = reg;
-+	if (single) {
-+		data[1] = (u8) value;
-+		msg.len = 2;
-+	} else {
-+		put_unaligned_le16(value, &data[1]);
-+		msg.len = 3;
++	if (!psy->of_node) {
++		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
++			 __func__);
++		return -ENXIO;
 +	}
 +
-+	msg.buf = data;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
-+					 u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	int ret;
-+
-+	if (!client->adapter)
++	battery_np = of_parse_phandle(psy->of_node, "monitored-battery", 0);
++	if (!battery_np)
 +		return -ENODEV;
 +
-+	ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != len)
-+		return -EINVAL;
-+	return 0;
-+}
++	err = of_property_read_string(battery_np, "compatible", &value);
++	if (err)
++		return err;
 +
-+static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
-+					  u8 reg, u8 *data, int len)
-+{
-+	struct i2c_client *client = to_i2c_client(di->dev);
-+	struct i2c_msg msg;
-+	u8 buf[33];
-+	int ret;
-+
-+	if (!client->adapter)
++	if (strcmp("fixed-battery", value))
 +		return -ENODEV;
 +
-+	buf[0] = reg;
-+	memcpy(&buf[1], data, len);
++	of_property_read_u32(battery_np, "energy-full-design-microwatt-hours",
++			     &info->energy_full_design_uwh);
++	of_property_read_u32(battery_np, "charge-full-design-microamp-hours",
++			     &info->charge_full_design_uah);
++	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
++			     &info->voltage_min_design_uv);
 +
-+	msg.buf = buf;
-+	msg.addr = client->addr;
-+	msg.flags = 0;
-+	msg.len = len + 1;
-+
-+	ret = i2c_transfer(client->adapter, &msg, 1);
-+	if (ret < 0)
-+		return ret;
-+	if (ret != 1)
-+		return -EINVAL;
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
 +
- static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 				     const struct i2c_device_id *id)
- {
-@@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
- 	di->dev = &client->dev;
- 	di->chip = id->driver_data;
- 	di->name = name;
-+
- 	di->bus.read = bq27xxx_battery_i2c_read;
-+	di->bus.write = bq27xxx_battery_i2c_write;
-+	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
-+	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+ int power_supply_get_property(struct power_supply *psy,
+ 			    enum power_supply_property psp,
+ 			    union power_supply_propval *val)
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 3965503..e84f1d3 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -288,6 +288,21 @@ struct power_supply_info {
+ 	int use_for_apm;
+ };
  
- 	ret = bq27xxx_battery_setup(di);
- 	if (ret)
++/*
++ * This is the recommended struct to manage static battery parameters,
++ * populated by power_supply_get_battery_info(). Most platform drivers should
++ * use these for consistency.
++ * Its field names must correspond to elements in enum power_supply_property.
++ * The default field value is -EINVAL.
++ * Power supply class itself doesn't use this.
++ */
++
++struct power_supply_battery_info {
++	int energy_full_design_uwh;	/* microWatt-hours */
++	int charge_full_design_uah;	/* microAmp-hours */
++	int voltage_min_design_uv;	/* microVolts */
++};
++
+ extern struct atomic_notifier_head power_supply_notifier;
+ extern int power_supply_reg_notifier(struct notifier_block *nb);
+ extern void power_supply_unreg_notifier(struct notifier_block *nb);
+@@ -306,6 +321,9 @@ static inline struct power_supply *
+ devm_power_supply_get_by_phandle(struct device *dev, const char *property)
+ { return NULL; }
+ #endif /* CONFIG_OF */
++
++extern int power_supply_get_battery_info(struct power_supply *psy,
++					 struct power_supply_battery_info *info);
+ extern void power_supply_changed(struct power_supply *psy);
+ extern int power_supply_am_i_supplied(struct power_supply *psy);
+ extern int power_supply_set_battery_charged(struct power_supply *psy);
 -- 
 2.9.3
