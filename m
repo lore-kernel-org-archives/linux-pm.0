@@ -1,95 +1,301 @@
-From: Icenowy Zheng <icenowy@aosc.xyz>
-Subject: [PATCH 3/3] ARM: dts: sun8i: add device node for H3 thermal sensor
-Date: Tue, 28 Feb 2017 03:40:54 +0800
-Message-ID: <20170227194054.51951-3-icenowy@aosc.xyz>
-References: <20170227194054.51951-1-icenowy@aosc.xyz>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v8 7/9] power: bq27xxx_battery: Add power_supply_battery_info
+ support
+Date: Mon, 27 Feb 2017 12:05:49 -0800
+Message-ID: <CAKvHMgR8Ly9GYYmE5BgPsayQmd7_gwTV1_4NfdEfU3Giacdqcg@mail.gmail.com>
+References: <20170227071117.18934-1-liam@networkimprov.net>
+ <20170227071117.18934-8-liam@networkimprov.net> <164968b9-e809-d7fc-176b-cbeded20d43d@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170227194054.51951-1-icenowy@aosc.xyz>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Ondrej Jirman <megous@megous.com>
-Cc: devicetree@vger.kernel.org, Icenowy Zheng <icenowy@aosc.xyz>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:34439 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751510AbdB0UGV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Feb 2017 15:06:21 -0500
+Received: by mail-io0-f196.google.com with SMTP id n76so5471520ioe.1
+        for <linux-pm@vger.kernel.org>; Mon, 27 Feb 2017 12:05:50 -0800 (PST)
+In-Reply-To: <164968b9-e809-d7fc-176b-cbeded20d43d@ti.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-Allwinner H3 features a new "sun8i-ths" thermal sensor.
+On Mon, Feb 27, 2017 at 10:06 AM, Andrew F. Davis <afd@ti.com> wrote:
+> On 02/27/2017 01:11 AM, Liam Breck wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> Previously there was no way to configure chip registers in the event tha=
+t the
+>> defaults didn't match the battery in question.
+>>
+>> BQ27xxx driver now calls power_supply_get_battery_info, checks the input=
+s,
+>> and writes battery data to chip RAM or non-volatile memory.
+>>
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c | 458 ++++++++++++++++++++++++++=
+++++++-
+>>  1 file changed, 456 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supp=
+ly/bq27xxx_battery.c
+>> index 7475a5f..41d4ce7 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -51,7 +51,7 @@
+>>
+>>  #include <linux/power/bq27xxx_battery.h>
+>>
+>> -#define DRIVER_VERSION               "1.2.0"
+>> +#define DRIVER_VERSION               "1.3.0"
+>>
+>>  #define BQ27XXX_MANUFACTURER "Texas Instruments"
+>>
+>> @@ -59,6 +59,7 @@
+>>  #define BQ27XXX_FLAG_DSC     BIT(0)
+>>  #define BQ27XXX_FLAG_SOCF    BIT(1) /* State-of-Charge threshold final =
+*/
+>>  #define BQ27XXX_FLAG_SOC1    BIT(2) /* State-of-Charge threshold 1 */
+>> +#define BQ27XXX_FLAG_CFGUP   BIT(5)
+>>  #define BQ27XXX_FLAG_FC              BIT(9)
+>>  #define BQ27XXX_FLAG_OTD     BIT(14)
+>>  #define BQ27XXX_FLAG_OTC     BIT(15)
+>> @@ -72,6 +73,11 @@
+>>  #define BQ27000_FLAG_FC              BIT(5)
+>>  #define BQ27000_FLAG_CHGS    BIT(7) /* Charge state flag */
+>>
+>> +/* control register params */
+>> +#define BQ27XXX_SEALED                       0x20
+>> +#define BQ27XXX_SET_CFGUPDATE                0x13
+>> +#define BQ27XXX_SOFT_RESET           0x42
+>> +
+>>  #define BQ27XXX_RS                   (20) /* Resistor sense mOhm */
+>>  #define BQ27XXX_POWER_CONSTANT               (29200) /* 29.2 =C2=B5V^2 =
+* 1000 */
+>>  #define BQ27XXX_CURRENT_CONSTANT     (3570) /* 3.57 =C2=B5V * 1000 */
+>> @@ -102,6 +108,11 @@ enum bq27xxx_reg_index {
+>>       BQ27XXX_REG_SOC,        /* State-of-Charge */
+>>       BQ27XXX_REG_DCAP,       /* Design Capacity */
+>>       BQ27XXX_REG_AP,         /* Average Power */
+>> +     BQ27XXX_DM_CTRL,        /* BlockDataControl() */
+>
+> /* Block Data Control */
+>
+>> +     BQ27XXX_DM_CLASS,       /* DataClass() */
+>
+> /* Data Class */
 
-Add the device node for it, as well as the eFUSE cell for its
-calibration data.
+I used the terms from the docs, so a search will find meaningful results.
 
-Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
----
+>> +     BQ27XXX_DM_BLOCK,       /* DataBlock() */
+>> +     BQ27XXX_DM_DATA,        /* BlockData() */
+>> +     BQ27XXX_DM_CKSUM,       /* BlockDataChecksum() */
+>>       BQ27XXX_REG_MAX,        /* sentinel */
+>>  };
+>>
+>> @@ -125,6 +136,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x0b,
+>>               [BQ27XXX_REG_DCAP] =3D 0x76,
+>>               [BQ27XXX_REG_AP] =3D 0x24,
+>> +             [BQ27XXX_DM_CTRL] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CLASS] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_BLOCK] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_DATA] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CKSUM] =3D INVALID_REG_ADDR,
+>>       },
+>>       [BQ27010] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -144,6 +160,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x0b,
+>>               [BQ27XXX_REG_DCAP] =3D 0x76,
+>>               [BQ27XXX_REG_AP] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CTRL] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CLASS] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_BLOCK] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_DATA] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CKSUM] =3D INVALID_REG_ADDR,
+>>       },
+>>       [BQ27500] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -163,6 +184,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x2c,
+>>               [BQ27XXX_REG_DCAP] =3D 0x3c,
+>>               [BQ27XXX_REG_AP] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>>       },
+>>       [BQ27510] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -182,6 +208,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x20,
+>>               [BQ27XXX_REG_DCAP] =3D 0x2e,
+>>               [BQ27XXX_REG_AP] =3D INVALID_REG_ADDR,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>>       },
+>>       [BQ27530] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -201,6 +232,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x2c,
+>>               [BQ27XXX_REG_DCAP] =3D INVALID_REG_ADDR,
+>>               [BQ27XXX_REG_AP] =3D 0x24,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>>       },
+>>       [BQ27541] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -220,6 +256,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x2c,
+>>               [BQ27XXX_REG_DCAP] =3D 0x3c,
+>>               [BQ27XXX_REG_AP] =3D 0x24,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>>       },
+>>       [BQ27545] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -239,6 +280,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x2c,
+>>               [BQ27XXX_REG_DCAP] =3D INVALID_REG_ADDR,
+>>               [BQ27XXX_REG_AP] =3D 0x24,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>>       },
+>>       [BQ27421] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -258,6 +304,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x1c,
+>>               [BQ27XXX_REG_DCAP] =3D 0x3c,
+>>               [BQ27XXX_REG_AP] =3D 0x18,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>>       },
+>>       [BQ27425] =3D {
+>>               [BQ27XXX_REG_CTRL] =3D 0x00,
+>> @@ -277,6 +328,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] =3D {
+>>               [BQ27XXX_REG_SOC] =3D 0x1c,
+>>               [BQ27XXX_REG_DCAP] =3D 0x3c,
+>>               [BQ27XXX_REG_AP] =3D 0x18,
+>> +             [BQ27XXX_DM_CTRL] =3D 0x61,
+>> +             [BQ27XXX_DM_CLASS] =3D 0x3e,
+>> +             [BQ27XXX_DM_BLOCK] =3D 0x3f,
+>> +             [BQ27XXX_DM_DATA] =3D 0x40,
+>> +             [BQ27XXX_DM_CKSUM] =3D 0x60,
+>
+> That wasn't so painful was it :)
 
-This patch depends on the H3 SID dtsi patch [1].
+It added 11% to the patch :-/
 
-If this patch is merged before that one, the hunk about SID controller and the
-two nvmem properties in THS node can just be dropped.
+>>       },
+>>  };
+>>
+>> @@ -452,6 +508,81 @@ static struct {
+>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>
+>> +#define BQ27XXX_DM_SZ                        32
+>> +
+>> +#define BQ27XXX_MSLEEP(i) usleep_range((i)*1000, (i)*1000+500)
+>> +
+>> +struct bq27xxx_dm_reg {
+>> +     u8 subclass_id;
+>> +     u8 offset;
+>> +     u8 bytes;
+>> +     u16 min, max;
+>> +};
+>> +
+>> +struct bq27xxx_dm_buf {
+>> +     u8 class;
+>> +     u8 block;
+>> +     u8 a[BQ27XXX_DM_SZ];
+>> +     bool full, updt;
+>> +};
+>> +
+>> +#define BQ27XXX_DM_BUF(di, i) { \
+>> +     .class =3D bq27xxx_dm_regs[(di)->chip][i].subclass_id, \
+>> +     .block =3D bq27xxx_dm_regs[(di)->chip][i].offset / BQ27XXX_DM_SZ, =
+\
+>> +}
+>> +
+>> +static inline u16* bq27xxx_dm_buf_ptr(struct bq27xxx_dm_buf *buf,
+>> +                                   struct bq27xxx_dm_reg *reg) {
+>> +     if (buf->class =3D=3D reg->subclass_id
+>> +      && buf->block =3D=3D reg->offset / BQ27XXX_DM_SZ)
+>> +             return (u16*) (buf->a + reg->offset % BQ27XXX_DM_SZ);
+>> +
+>> +     return NULL;
+>> +}
+>> +
+>> +enum bq27xxx_dm_reg_id {
+>> +     BQ27XXX_DM_DESIGN_CAPACITY =3D 0,
+>> +     BQ27XXX_DM_DESIGN_ENERGY,
+>> +     BQ27XXX_DM_TERMINATE_VOLTAGE,
+>> +};
+>> +
+>> +static const char* bq27xxx_dm_reg_name[] =3D {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY] =3D "design-capacity",
+>> +     [BQ27XXX_DM_DESIGN_ENERGY] =3D "design-energy",
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] =3D "terminate-voltage",
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] =3D {
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   =3D { 82, 12, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     =3D { 82, 14, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 18, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] =3D { /* not tested */
+>> +     [BQ27XXX_DM_DESIGN_CAPACITY]   =3D { 82, 10, 2,    0,  8000 },
+>> +     [BQ27XXX_DM_DESIGN_ENERGY]     =3D { 82, 12, 2,    0, 32767 },
+>> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 16, 2, 2500,  3700 },
+>> +};
+>> +
+>> +//static struct bq27xxx_dm_reg bq27621_dm_regs[] =3D { /* not tested */
+>> +//   [BQ27XXX_DM_DESIGN_CAPACITY]   =3D { 82, 3, 2,    0,  8000 },
+>> +//   [BQ27XXX_DM_DESIGN_ENERGY]     =3D { 82, 5, 2,    0, 32767 },
+>> +//   [BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 82, 9, 2, 2500,  3700 },
+>> +//};
+>
+> I don't think this comment style is allowed.
 
-[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2017-February/490300.html
+This is a to-do item.
 
- arch/arm/boot/dts/sun8i-h3.dtsi | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+>> +
+>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] =3D {
+>> +     [BQ27421] =3D bq27421_dm_regs, /* and BQ27441 */
+>> +     [BQ27425] =3D bq27425_dm_regs,
+>> +//   [BQ27621] =3D bq27621_dm_regs,
+>> +};
+>
+> I know it is not tested, but lets not comment it out, I'll do a round of
+> testing for this part when this series is ready.
 
-diff --git a/arch/arm/boot/dts/sun8i-h3.dtsi b/arch/arm/boot/dts/sun8i-h3.dtsi
-index ed2eede5f1f0..fdf7f20b1526 100644
---- a/arch/arm/boot/dts/sun8i-h3.dtsi
-+++ b/arch/arm/boot/dts/sun8i-h3.dtsi
-@@ -79,6 +79,14 @@
- 		};
- 	};
- 
-+	thermal-zones {
-+		cpu_thermal: cpu_thermal {
-+			polling-delay-passive = <330>;
-+			polling-delay = <1000>;
-+			thermal-sensors = <&ths 0>;
-+		};
-+	};
-+
- 	timer {
- 		compatible = "arm,armv7-timer";
- 		interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
-@@ -209,6 +217,12 @@
- 		sid: eeprom@01c14000 {
- 			compatible = "allwinner,sun8i-h3-sid";
- 			reg = <0x01c14000 0x400>;
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+
-+			ths_cal: ths-calibration@34 {
-+				reg = <0x34 0x4>;
-+			};
- 		};
- 
- 		usbphy: phy@01c19400 {
-@@ -429,6 +443,19 @@
- 			clocks = <&osc24M>;
- 		};
- 
-+		ths: ths@01c25000 {
-+			compatible = "allwinner,sun8i-h3-ths";
-+			reg = <0x01c25000 0x400>;
-+			interrupts = <GIC_SPI 31 IRQ_TYPE_LEVEL_HIGH>;
-+			resets = <&ccu RST_BUS_THS>;
-+			reset-names = "ahb";
-+			clocks = <&ccu CLK_BUS_THS>, <&ccu CLK_THS>;
-+			clock-names = "ahb", "ths";
-+			nvmem-cells = <&ths_cal>;
-+			nvmem-cell-names = "cal";
-+			#thermal-sensor-cells = <1>;
-+		};
-+
- 		spi0: spi@01c68000 {
- 			compatible = "allwinner,sun8i-h3-spi";
- 			reg = <0x01c68000 0x1000>;
--- 
-2.11.1
+ID for 621 is not yet defined. We need an efficient way to add IDs.
+Perhaps via chip-id and group-id. Most current ID refs would be to
+group-id. I'd like to defer that, so we should only add inputs for the
+single-chip groups in this patchset: 500, 545, 425.
+
+We must NOT set one-time program (OTP) memory, mentioned in 421 & 441
+docs. It's not clear whether documented data-memory ops change OTP.
+Can you ask? The 425 has rewritable NVM. The 621 docs don't say. All
+the above have cfgupdate mode, which the rest of the family lacks.
