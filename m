@@ -1,7 +1,7 @@
 From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: [PATCH v8 3/9] devicetree: power: bq27xxx: Add monitored-battery documentation
-Date: Sun, 26 Feb 2017 23:11:11 -0800
-Message-ID: <20170227071117.18934-4-liam@networkimprov.net>
+Subject: [PATCH v8 1/9] devicetree: power: Add battery.txt
+Date: Sun, 26 Feb 2017 23:11:09 -0800
+Message-ID: <20170227071117.18934-2-liam@networkimprov.net>
 References: <20170227071117.18934-1-liam@networkimprov.net>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20170227071117.18934-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
@@ -12,40 +12,67 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 
-Document monitored-battery = <&battery_node>
+Documentation of static battery characteristics that can be defined
+for batteries which cannot self-identify. This information is required
+by fuel-gauge and charger chips for proper handling of the battery.
 
 Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
 Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 ---
- Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index b0c95ef..cf83371 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -28,9 +28,18 @@ Required properties:
-  * "ti,bq27621" - BQ27621
- - reg: integer, i2c address of the device.
- 
-+Optional properties:
-+- monitored-battery: phandle of battery information devicetree node
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+new file mode 100644
+index 0000000..3d916bd
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -0,0 +1,42 @@
++Battery Characteristics
 +
-+  See Documentation/devicetree/bindings/power/supply/battery.txt
-+  If either of the referenced battery's *-full-design-*-hours properties are set,
-+  then both must be.
++Required Properties:
++ - compatible: Must be "fixed-battery"
 +
- Example:
- 
--bq27510g3 {
-+bq27510g3 : fuel-gauge@55 {
-     compatible = "ti,bq27510g3";
-     reg = <0x55>;
++Optional Properties:
++ - voltage-min-design-microvolt: drained battery voltage
++ - energy-full-design-microwatt-hours: battery design energy
++ - charge-full-design-microamp-hours: battery design capacity
 +
-+    monitored-battery = <&bat>;
- };
++Future Properties must be named for the corresponding elements in
++enum power_supply_property, defined in include/linux/power_supply.h.
++
++Batteries must be referenced by chargers and/or fuel-gauges
++using a phandle. The phandle's property should be named
++"monitored-battery".
++
++Driver code should call power_supply_get_battery_info() to obtain
++battery properties via monitored-battery. For details see:
++  drivers/power/supply/power_supply_core.c
++  drivers/power/supply/bq27xxx_battery.c
++
++Example:
++
++	bat: battery {
++		compatible = "fixed-battery";
++		voltage-min-design-microvolt = <3200000>;
++		energy-full-design-microwatt-hours = <5290000>;
++		charge-full-design-microamp-hours = <1430000>;
++	};
++
++	charger: charger@11 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
++
++	fuel_gauge: fuel-gauge@22 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
 -- 
 2.9.3
 
