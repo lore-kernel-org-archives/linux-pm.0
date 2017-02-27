@@ -1,60 +1,46 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: Recommended notation for OPP to avoid DTC warnings
-Date: Mon, 27 Feb 2017 19:58:28 +0900
-Message-ID: <CAK7LNARnxdi4B2G2FnvfQNM8iVK+rsdH7N7Uwd+Qc2d9hSsuUA@mail.gmail.com>
-References: <CAK7LNAQyc9=3d07-1upywYDk-AaRUGK4mJwAVduCuEJgnY1uFA@mail.gmail.com>
- <20170227104445.GE6795@leverpostej> <20170227105533.GA19417@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RESEND PATCH] PM / AVS: rockchip-io: add io selectors and
+ supplies for rk3328
+Date: Mon, 27 Feb 2017 14:26:03 +0100
+Message-ID: <5273870.ds1UUp6ZfE@aspire.rjw.lan>
+References: <1487853191-10994-1-git-send-email-david.wu@rock-chips.com>
+ <m2innw39on.fsf@baylibre.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170227105533.GA19417@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <m2innw39on.fsf@baylibre.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Kevin Hilman <khilman@baylibre.com>
+Cc: nm@ti.com, huangtao@rock-chips.com, heiko@sntech.de, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, David Wu <david.wu@rock-chips.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-2017-02-27 19:55 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
-> On 27-02-17, 10:44, Mark Rutland wrote:
->> On Sun, Feb 26, 2017 at 02:18:03PM +0900, Masahiro Yamada wrote:
->> > Hi.
->> >
->> >
->> > Decumentation/devicetree/bindings/opp/opp.txt
->> > takes examples like this:
->> >
->> >         opp@1000000000 {
->> >                 opp-hz = /bits/ 64 <1000000000>;
->> >                 opp-microvolt = <970000 975000 985000>;
->> >                 opp-microamp = <70000>;
->> >                 clock-latency-ns = <300000>;
->> >                 opp-suspend;
->> >         };
->>
->> > If we follow this notation and the device-tree is built with W=1,
->> > DTC warns like follows:
->> >
->> > Warning (unit_address_vs_reg): Node /opp_table0/opp@1000000000 has a
->> > unit name, but no reg property
->> >
->> > Is there a recommended notation to avoid it?
->> >
->> > Maybe, simply omit the "@" ?
->>
->> I think just s/@/-/ should be fine, e.g. call the above opp-1000000000.
->
-> That's fine with me. I can send a patch to fix all existing users if we all
-> agree for it.
+On Sunday, February 26, 2017 01:48:40 PM Kevin Hilman wrote:
+> David Wu <david.wu@rock-chips.com> writes:
+> 
+> > From: "david.wu" <david.wu@rock-chips.com>
+> >
+> > This adds the necessary data for handling io voltage domains on the rk3328.
+> > As interesting tidbit, the rk3328 only contains one iodomain area in the
+> > regular General Register Files (GRF).
+> >
+> > Signed-off-by: david.wu <david.wu@rock-chips.com>
+> > Reviewed-by: Heiko Stuebner <heiko@sntech.de>
+> 
+> Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+> 
+> Rafael, feel free to take directly.  I don't currently have any other
+> AVS stuff in the queue.
 
+I'll queue it up for 4.12 then.
 
-OK with me.
-
-Also, please remember to update the examples
-in Documentation/devicetree/bindings/opp/opp.txt
-
-
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+Thanks,
+Rafael
