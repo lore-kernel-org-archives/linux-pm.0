@@ -1,62 +1,66 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH] cpufreq: Add the "cpufreq.off=1" cmdline option
-Date: Tue, 28 Feb 2017 16:44:16 -0500
-Message-ID: <5fd2c737538635f032e8cfa115c802145f0a9911.1488318151.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:34413 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751826AbdB1VrM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Feb 2017 16:47:12 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] cpufreq: intel_pstate: Fix global settings in active mode
+Date: Tue, 28 Feb 2017 23:21:31 +0100
+Message-ID: <CAJZ5v0h3ShvFdNpxdn4K=jMJEjZbvgMimaq3DE6umkcmzgGtow@mail.gmail.com>
+References: <2694426.SgxlQuL17D@aspire.rjw.lan> <15204258.A1E69B1e9T@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <15204258.A1E69B1e9T@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-From: Len Brown <len.brown@intel.com>
+On Tue, Feb 28, 2017 at 2:14 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Commit 111b8b3fe4fa (cpufreq: intel_pstate: Always keep all
+> limits settings in sync) changed intel_pstate to invoke
+> cpufreq_update_policy() for every registered CPU on global sysfs
+> attributes updates, but that led to undesirable effects in the
+> active mode if the "performance" P-state selection algorithm is
+> configufred for one CPU and the "powersave" one is chosen for
+> all of the other CPUs.
+>
+> Namely, in that case, the following is possible:
+>
+>  # cd /sys/devices/system/cpu/
+>  # cat intel_pstate/max_perf_pct
+>  100
+>  # cat intel_pstate/min_perf_pct
+>  26
+>  # echo performance > cpufreq/policy0/scaling_governor
+>  # cat intel_pstate/max_perf_pct
+>  100
+>  # cat intel_pstate/min_perf_pct
+>  100
+>  # echo 94 > intel_pstate/min_perf_pct
+>  # cat intel_pstate/min_perf_pct
+>  26
+>
+> The reason why this happens is because intel_pstate attempts to
+> maintain two sets of global limits in the active mode, one for
+> the "performance" P-state selection algorithm and one for the
+> "powersave"  P-state selection algorithm, but the P-state selection
+> algorithms are set per policy, so the global limits cannot reflect
+> all of them at the same time if they are different for different
+> policies.
+>
+> In the particular situation above, the attempt to change
+> min_perf_pct to 94 caused cpufreq_update_policy() to be run
+> for a CPU with the "powersave"  P-state selection algorithm
+> and intel_pstate_set_policy() called by it silently switched the
+> global limits to the "powersave" set which finally was reflected
+> by the sysfs interface.
+>
+> To prevent that from happening, modify intel_pstate_update_policies()
+> to always switch back to the set of limits that was used right before
+> it has been invoked.
 
-Add the "cpufreq.off=1" cmdline option.
+Scratch this, it's too racy.
 
-At boot-time, this allows a user to request CONFIG_CPU_FREQ=n
-behavior from a kernel built with CONFIG_CPU_FREQ=y.
+I'll send a new version shortly.
 
-This is analogous to the existing "cpuidle.off=1" option
-and CONFIG_CPU_IDLE=y
-
-This capability is valuable when we need to debug end-user
-issues in the BIOS or in Linux.  It is also convenient
-for enabling comparisons, which may otherwise require a new kernel,
-or help from BIOS SETUP, which may be buggy or unavailable.
-
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- Documentation/admin-guide/kernel-parameters.txt | 3 +++
- drivers/cpufreq/cpufreq.c                       | 1 +
- 2 files changed, 4 insertions(+)
-
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index be7c0d9506b1..3988d2311f97 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -662,6 +662,9 @@
- 	cpuidle.off=1	[CPU_IDLE]
- 			disable the cpuidle sub-system
- 
-+	cpufreq.off=1	[CPU_FREQ]
-+			disable the cpufreq sub-system
-+
- 	cpu_init_udelay=N
- 			[X86] Delay for N microsec between assert and de-assert
- 			of APIC INIT to start processors.  This delay occurs
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index cc475eff90b3..1c90782e3e11 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2543,4 +2543,5 @@ static int __init cpufreq_core_init(void)
- 
- 	return 0;
- }
-+module_param(off, int, 0444);
- core_initcall(cpufreq_core_init);
--- 
-2.11.0.161.g6610af872
+Thanks,
+Rafael
