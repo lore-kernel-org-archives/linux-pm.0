@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 2/3] cpufreq: intel_pstate: Do not reinit performance limits in ->setpolicy
-Date: Wed, 01 Mar 2017 00:09:02 +0100
-Message-ID: <2188688.SPioTUuSuO@aspire.rjw.lan>
+Subject: [PATCH v2 1/3] cpufreq: intel_pstate: Fix global settings in active mode
+Date: Wed, 01 Mar 2017 00:07:36 +0100
+Message-ID: <2483232.iIe76OATof@aspire.rjw.lan>
 References: <2694426.SgxlQuL17D@aspire.rjw.lan> <2326598.n0dkg1GrdM@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,98 +15,124 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-If the current P-state selection algorithm is set to "performance"
-in intel_pstate_set_policy(), the limits may be initialized from
-scratch, but only if no_turbo is not set and the maximum frequency
-allowed for the given CPU (i.e. the policy object representing it)
-is at least equal to the max frequency supported by the CPU.  In all
-of the other cases, the limits will not be updated.
+Commit 111b8b3fe4fa (cpufreq: intel_pstate: Always keep all
+limits settings in sync) changed intel_pstate to invoke
+cpufreq_update_policy() for every registered CPU on global sysfs
+attributes updates, but that led to undesirable effects in the
+active mode if the "performance" P-state selection algorithm is
+configufred for one CPU and the "powersave" one is chosen for
+all of the other CPUs.
 
-For example, the following can happen:
+Namely, in that case, the following is possible:
 
- # cat intel_pstate/status
- active
+ # cd /sys/devices/system/cpu/
+ # cat intel_pstate/max_perf_pct
+ 100
+ # cat intel_pstate/min_perf_pct
+ 26
  # echo performance > cpufreq/policy0/scaling_governor
+ # cat intel_pstate/max_perf_pct
+ 100
  # cat intel_pstate/min_perf_pct
  100
  # echo 94 > intel_pstate/min_perf_pct
  # cat intel_pstate/min_perf_pct
- 100
- # cat cpufreq/policy0/scaling_max_freq
- 3100000
- echo 3000000 > cpufreq/policy0/scaling_max_freq
- # cat intel_pstate/min_perf_pct
- 94
- # echo 95 > intel_pstate/min_perf_pct
- # cat intel_pstate/min_perf_pct
- 95
+ 26
 
-That is confusing for two reasons.  First, the initial attempt to
-change min_perf_pct to 94 seems to have no effect, even though
-setting the global limits should always work.  Second, after
-changing scaling_max_freq for policy0 the global min_perf_pct
-attribute shows 94, even though it should have not been affected
-by that operation in principle.
+The reason why this happens is because intel_pstate attempts to
+maintain two sets of global limits in the active mode, one for
+the "performance" P-state selection algorithm and one for the
+"powersave"  P-state selection algorithm, but the P-state selection
+algorithms are set per policy, so the global limits cannot reflect
+all of them at the same time if they are different for different
+policies.
 
-Moreover, the final attempt to change min_perf_pct to 95 worked
-as expected, because scaling_max_freq for the only policy with
-scaling_governor equal to "performance" was different from the
-maximum at that time.
+In the particular situation above, the attempt to change
+min_perf_pct to 94 caused cpufreq_update_policy() to be run
+for a CPU with the "powersave"  P-state selection algorithm
+and intel_pstate_set_policy() called by it silently switched the
+global limits to the "powersave" set which finally was reflected
+by the sysfs interface.
 
-To make all that confusion go away, modify intel_pstate_set_policy()
-so that it doesn't reinitialize the limits at all.
+To prevent that from happening, modify intel_pstate_update_policies()
+to always switch back to the set of limits that was used right before
+it has been invoked.
 
-At the same time, change intel_pstate_set_performance_limits() to
-set min_sysfs_pct to 100 in the "performance" limits set so that
-switching the P-state selection algorithm to "performance" causes
-intel_pstate/min_perf_pct in sysfs to go to 100 (or whatever value
-min_sysfs_pct in the "performance" limits is set to later).
-
+Fixes: 111b8b3fe4fa (cpufreq: intel_pstate: Always keep all limits settings in sync)
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
 
--> v2: No changes
+-> v2:
+Save and restore the limits value in intel_pstate_update_policies() under
+intel_pstate_limits_lock or otherwise (a) it may change in the middle of an
+update from a concurrent thread and (b) it may not point to the set of
+limits that has just been updated any more when read outside of the lock.
 
 ---
- drivers/cpufreq/intel_pstate.c |   10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
 +++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -382,6 +382,7 @@ static void intel_pstate_set_performance
- 	intel_pstate_init_limits(limits);
- 	limits->min_perf_pct = 100;
- 	limits->min_perf = int_ext_tofp(1);
-+	limits->min_sysfs_pct = 100;
+@@ -973,11 +973,20 @@ static int intel_pstate_resume(struct cp
  }
  
- static DEFINE_MUTEX(intel_pstate_driver_lock);
-@@ -2146,16 +2147,11 @@ static int intel_pstate_set_policy(struc
- 	mutex_lock(&intel_pstate_limits_lock);
+ static void intel_pstate_update_policies(void)
++	__releases(&intel_pstate_limits_lock)
++	__acquires(&intel_pstate_limits_lock)
+ {
++	struct perf_limits *saved_limits = limits;
+ 	int cpu;
  
- 	if (policy->policy == CPUFREQ_POLICY_PERFORMANCE) {
-+		pr_debug("set performance\n");
- 		if (!perf_limits) {
- 			limits = &performance_limits;
- 			perf_limits = limits;
- 		}
--		if (policy->max >= policy->cpuinfo.max_freq &&
--		    !limits->no_turbo) {
--			pr_debug("set performance\n");
--			intel_pstate_set_performance_limits(perf_limits);
--			goto out;
--		}
- 	} else {
- 		pr_debug("set powersave\n");
- 		if (!perf_limits) {
-@@ -2166,7 +2162,7 @@ static int intel_pstate_set_policy(struc
- 	}
- 
- 	intel_pstate_update_perf_limits(policy, perf_limits);
-- out:
++	mutex_unlock(&intel_pstate_limits_lock);
 +
- 	if (cpu->policy == CPUFREQ_POLICY_PERFORMANCE) {
- 		/*
- 		 * NOHZ_FULL CPUs need this as the governor callback may not
+ 	for_each_possible_cpu(cpu)
+ 		cpufreq_update_policy(cpu);
++
++	mutex_lock(&intel_pstate_limits_lock);
++
++	limits = saved_limits;
+ }
+ 
+ /************************** debugfs begin ************************/
+@@ -1185,10 +1194,10 @@ static ssize_t store_no_turbo(struct kob
+ 
+ 	limits->no_turbo = clamp_t(int, input, 0, 1);
+ 
+-	mutex_unlock(&intel_pstate_limits_lock);
+-
+ 	intel_pstate_update_policies();
+ 
++	mutex_unlock(&intel_pstate_limits_lock);
++
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+ 	return count;
+@@ -1222,10 +1231,10 @@ static ssize_t store_max_perf_pct(struct
+ 				   limits->max_perf_pct);
+ 	limits->max_perf = div_ext_fp(limits->max_perf_pct, 100);
+ 
+-	mutex_unlock(&intel_pstate_limits_lock);
+-
+ 	intel_pstate_update_policies();
+ 
++	mutex_unlock(&intel_pstate_limits_lock);
++
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+ 	return count;
+@@ -1259,10 +1268,10 @@ static ssize_t store_min_perf_pct(struct
+ 				   limits->min_perf_pct);
+ 	limits->min_perf = div_ext_fp(limits->min_perf_pct, 100);
+ 
+-	mutex_unlock(&intel_pstate_limits_lock);
+-
+ 	intel_pstate_update_policies();
+ 
++	mutex_unlock(&intel_pstate_limits_lock);
++
+ 	mutex_unlock(&intel_pstate_driver_lock);
+ 
+ 	return count;
