@@ -1,140 +1,132 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix operation mode switching
-Date: Mon, 27 Feb 2017 18:11:47 -0800
-Message-ID: <1488247907.4085.0.camel@linux.intel.com>
-References: <2958124.3ADodeN5Y5@aspire.rjw.lan>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V3 1/7] PM / Domains: Introduce "performance-states"
+ binding
+Date: Tue, 28 Feb 2017 11:06:23 +0530
+Message-ID: <20170228053623.GC19417@vireshk-i7>
+References: <cover.1487926924.git.viresh.kumar@linaro.org>
+ <132e9200102bf2f1175567f0862596d098363d9e.1487926924.git.viresh.kumar@linaro.org>
+ <20170228003108.2jcclpkawi3o74c2@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:15954 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750971AbdB1CPE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 27 Feb 2017 21:15:04 -0500
-In-Reply-To: <2958124.3ADodeN5Y5@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170228003108.2jcclpkawi3o74c2@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
 
-On Tue, 2017-02-28 at 00:05 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 27-02-17, 18:31, Rob Herring wrote:
+> On Fri, Feb 24, 2017 at 02:36:33PM +0530, Viresh Kumar wrote:
+> > Some platforms have the capability to configure the performance state of
+> > their power domains. The process of configuring the performance state is
+> > pretty much platform dependent and we may need to work with a wide range
+> > of configurables. For some platforms, like Qcom, it can be a positive
+> > integer value alone, while in other cases it can be voltage levels, etc.
+> > 
+> > The power-domain framework until now was only designed for the idle
+> > state management of the device and this needs to change in order to
+> > reuse the power-domain framework for active state management of the
+> > devices.
+> > 
+> > This patch adds DT bindings to describe the performance states of a
+> > power domain. The power domain node needs to contain a
+> > "performance-states" node, which itself is an array of per-state nodes.
+> > Each per-state node represents individual performance state of a device.
+> > Individual nodes are identified by their (mandatory) "reg" field. These
+> > nodes can also contain an optional "domain-microvolt" property. More
+> > properties can be added later on once we have more platforms using it.
+> > 
+> > If the consumers don't need the capability of switching to different
+> > domain performance states at runtime, then they can simply define their
+> > required domain performance state in their node directly using the
+> > "domain-performance-state" property. Otherwise the consumers can define
+> > their requirements with help of other infrastructure, for example the
+> > OPP table (added in a later commit).
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > Tested-by: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> > ---
+> >  .../devicetree/bindings/power/power_domain.txt     | 67 ++++++++++++++++++++++
+> >  1 file changed, 67 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> > index 723e1ad937da..9be09e576f68 100644
+> > --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> > +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> > @@ -38,6 +38,33 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+> >    domain's idle states. In the absence of this property, the domain would be
+> >    considered as capable of being powered-on or powered-off.
+> >  
+> > +- performance-states : This describes the performance states of a PM domain.
+> > +  The performance-states node reflects the performance states of this PM domain
+> > +  and not the performance states of the devices or sub-domains in the PM domain.
+> > +  Sub domains can have their own performance states. Sub domains without their
+> > +  own performance states are governed by the performance states of the parent
+> > +  domain and the "domain-performance-state" properties of their consumers refer
+> > +  to the "reg" properties of the nodes in the parent domain.
+> > +
+> > +  Required properties of the performance-states node:
+> > +  - compatible: Allow performance states to express their compatibility. It
+> > +    should be: "domain-performance-state".
+> > +
+> > +  - nodes: The performance-states node should contain one or
+> > +    more nodes, each representing a supported performance state.
+> > +
+> > +    Required properties of the performance state nodes:
+> > +    - reg: A positive integer value representing the performance level
+> > +      associated with a performance state. The integer value '0' represents the
+> > +      lowest performance level and the highest value represents the highest
+> > +      performance level. The exact meaning and performance implications of
+> > +      individual values is left to be defined by the user platform.
+> > +
+> > +    Optional properties of performance state nodes:
+> > +    - domain-microvolt: voltage in micro Volts. A single regulator's voltage is
+> > +      specified with an array of size one or three.  Single entry is for target
+> > +      voltage and three entries are for <target min max> voltages.
+> > +
+> >  Example:
+> >  
+> >  	power: power-controller@12340000 {
+> > @@ -118,4 +145,44 @@ The node above defines a typical PM domain consumer device, which is located
+> >  inside a PM domain with index 0 of a power controller represented by a node
+> >  with the label "power".
+> >  
+> > +Optional properties:
+> > +- domain-performance-state: A positive integer value representing the minimum
+> > +  performance level (of the parent domain) required by the consumer for its
+> > +  working. The integer value '0' represents the lowest performance level and the
+> > +  highest value represents the highest performance level. The value of
+> > +  domain-performance-state field should match one of the "reg" fields in the
+> > +  "performance-states" table of the parent power domain.
+> > +
+> > +
+> > +Example:
+> > +
+> > +	parent: power-controller@12340000 {
+> > +		compatible = "foo,power-controller";
+> > +		reg = <0x12340000 0x1000>;
+> > +		#power-domain-cells = <0>;
+> > +
+> > +		performance-states {
+> > +			compatible = "domain-performance-state";
+> > +			pstate@1 {
+> > +				reg = <1>;
+> > +				domain-microvolt = <970000 975000 985000>;
 > 
-> There is a problem with intel_pstate operation mode switching
-> introduced by commit fb1fe1041c04 (cpufreq: intel_pstate: Operation
-> mode control from sysfs), because the global sysfs limits are
-> preserved across operation modes while per-policy limits are
-> reinitialized from scratch and both sets of limits may get out of
-> sync this wya.
-> 
-> Fix that by always reinitializing the global limits upon the
-> registration of the driver.
-> 
-> Fixes: fb1fe1041c04 (cpufreq: intel_pstate: Operation mode control
-> from sysfs)
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> This doesn't look like "<target> <min> <max>".
 
-> ---
->  drivers/cpufreq/intel_pstate.c |   65 +++++++++++++-----------------
-> -----------
->  1 file changed, 22 insertions(+), 43 deletions(-)
+Wow, even the examples in the OPP document have these screwed up :(
+
+> With that fixed,
 > 
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -364,37 +364,25 @@ static bool driver_registered __read_mos
->  static bool acpi_ppc;
->  #endif
->  
-> -static struct perf_limits performance_limits = {
-> -	.no_turbo = 0,
-> -	.turbo_disabled = 0,
-> -	.max_perf_pct = 100,
-> -	.max_perf = int_ext_tofp(1),
-> -	.min_perf_pct = 100,
-> -	.min_perf = int_ext_tofp(1),
-> -	.max_policy_pct = 100,
-> -	.max_sysfs_pct = 100,
-> -	.min_policy_pct = 0,
-> -	.min_sysfs_pct = 0,
-> -};
-> +static struct perf_limits performance_limits;
-> +static struct perf_limits powersave_limits;
-> +static struct perf_limits *limits;
->  
-> -static struct perf_limits powersave_limits = {
-> -	.no_turbo = 0,
-> -	.turbo_disabled = 0,
-> -	.max_perf_pct = 100,
-> -	.max_perf = int_ext_tofp(1),
-> -	.min_perf_pct = 0,
-> -	.min_perf = 0,
-> -	.max_policy_pct = 100,
-> -	.max_sysfs_pct = 100,
-> -	.min_policy_pct = 0,
-> -	.min_sysfs_pct = 0,
-> -};
-> +static void intel_pstate_init_limits(struct perf_limits *limits)
-> +{
-> +	memset(limits, 0, sizeof(*limits));
-> +	limits->max_perf_pct = 100;
-> +	limits->max_perf = int_ext_tofp(1);
-> +	limits->max_policy_pct = 100;
-> +	limits->max_sysfs_pct = 100;
-> +}
->  
-> -#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-> -static struct perf_limits *limits = &performance_limits;
-> -#else
-> -static struct perf_limits *limits = &powersave_limits;
-> -#endif
-> +static void intel_pstate_set_performance_limits(struct perf_limits
-> *limits)
-> +{
-> +	intel_pstate_init_limits(limits);
-> +	limits->min_perf_pct = 100;
-> +	limits->min_perf = int_ext_tofp(1);
-> +}
->  
->  static DEFINE_MUTEX(intel_pstate_driver_lock);
->  static DEFINE_MUTEX(intel_pstate_limits_lock);
-> @@ -2084,20 +2072,6 @@ static void intel_pstate_clear_update_ut
->  	synchronize_sched();
->  }
->  
-> -static void intel_pstate_set_performance_limits(struct perf_limits
-> *limits)
-> -{
-> -	limits->no_turbo = 0;
-> -	limits->turbo_disabled = 0;
-> -	limits->max_perf_pct = 100;
-> -	limits->max_perf = int_ext_tofp(1);
-> -	limits->min_perf_pct = 100;
-> -	limits->min_perf = int_ext_tofp(1);
-> -	limits->max_policy_pct = 100;
-> -	limits->max_sysfs_pct = 100;
-> -	limits->min_policy_pct = 0;
-> -	limits->min_sysfs_pct = 0;
-> -}
-> -
->  static void intel_pstate_update_perf_limits(struct cpufreq_policy
-> *policy,
->  					    struct perf_limits
-> *limits)
->  {
-> @@ -2466,6 +2440,11 @@ static int intel_pstate_register_driver(
->  {
->  	int ret;
->  
-> +	intel_pstate_init_limits(&powersave_limits);
-> +	intel_pstate_set_performance_limits(&performance_limits);
-> +	limits = IS_ENABLED(CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE)
-> ?
-> +			&performance_limits : &powersave_limits;
-> +
->  	ret = cpufreq_register_driver(intel_pstate_driver);
->  	if (ret) {
->  		intel_pstate_driver_cleanup();
-> 
+> Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+
+Thanks.
+
+-- 
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
