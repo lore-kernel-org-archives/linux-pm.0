@@ -1,66 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] cpufreq: intel_pstate: Fix global settings in active mode
-Date: Tue, 28 Feb 2017 23:21:31 +0100
-Message-ID: <CAJZ5v0h3ShvFdNpxdn4K=jMJEjZbvgMimaq3DE6umkcmzgGtow@mail.gmail.com>
-References: <2694426.SgxlQuL17D@aspire.rjw.lan> <15204258.A1E69B1e9T@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v2 3/3] cpufreq: intel_pstate: Fix intel_pstate_verify_policy()
+Date: Wed, 01 Mar 2017 00:11:05 +0100
+Message-ID: <2160593.qOyP8m7930@aspire.rjw.lan>
+References: <2694426.SgxlQuL17D@aspire.rjw.lan> <2326598.n0dkg1GrdM@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <15204258.A1E69B1e9T@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63145 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751877AbdB1XZF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Feb 2017 18:25:05 -0500
+In-Reply-To: <2326598.n0dkg1GrdM@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 
-On Tue, Feb 28, 2017 at 2:14 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Commit 111b8b3fe4fa (cpufreq: intel_pstate: Always keep all
-> limits settings in sync) changed intel_pstate to invoke
-> cpufreq_update_policy() for every registered CPU on global sysfs
-> attributes updates, but that led to undesirable effects in the
-> active mode if the "performance" P-state selection algorithm is
-> configufred for one CPU and the "powersave" one is chosen for
-> all of the other CPUs.
->
-> Namely, in that case, the following is possible:
->
->  # cd /sys/devices/system/cpu/
->  # cat intel_pstate/max_perf_pct
->  100
->  # cat intel_pstate/min_perf_pct
->  26
->  # echo performance > cpufreq/policy0/scaling_governor
->  # cat intel_pstate/max_perf_pct
->  100
->  # cat intel_pstate/min_perf_pct
->  100
->  # echo 94 > intel_pstate/min_perf_pct
->  # cat intel_pstate/min_perf_pct
->  26
->
-> The reason why this happens is because intel_pstate attempts to
-> maintain two sets of global limits in the active mode, one for
-> the "performance" P-state selection algorithm and one for the
-> "powersave"  P-state selection algorithm, but the P-state selection
-> algorithms are set per policy, so the global limits cannot reflect
-> all of them at the same time if they are different for different
-> policies.
->
-> In the particular situation above, the attempt to change
-> min_perf_pct to 94 caused cpufreq_update_policy() to be run
-> for a CPU with the "powersave"  P-state selection algorithm
-> and intel_pstate_set_policy() called by it silently switched the
-> global limits to the "powersave" set which finally was reflected
-> by the sysfs interface.
->
-> To prevent that from happening, modify intel_pstate_update_policies()
-> to always switch back to the set of limits that was used right before
-> it has been invoked.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Scratch this, it's too racy.
+The code added to intel_pstate_verify_policy() by commit 1443ebbacfd7
+(cpufreq: intel_pstate: Fix sysfs limits enforcement for performance
+policy) should use perf_limits instead of limits, because otherwise
+setting global limits via sysfs may affect policies inconsistently.
 
-I'll send a new version shortly.
+For example, in the sequence of shell commands below, the
+scaling_min_freq attribute for policy1 and policy2 should be
+affected in the same way, because scaling_governor is set in
+the same way for both of them:
 
-Thanks,
-Rafael
+ # cat cpufreq/policy1/scaling_governor
+ powersave
+ # cat cpufreq/policy2/scaling_governor
+ powersave
+ # echo performance > cpufreq/policy0/scaling_governor
+ # echo 94 > intel_pstate/min_perf_pct
+ # cat cpufreq/policy0/scaling_min_freq
+ 2914000
+ # cat cpufreq/policy1/scaling_min_freq
+ 2914000
+ # cat cpufreq/policy2/scaling_min_freq
+ 800000
+
+The are affected differently, because intel_pstate_verify_policy()
+is invoked with limits set to &performance_limits (left behind by
+policy0) for policy1 and with limits set to &powersave_limits (left
+behind by policy1) for policy2.  Since perf_limits is set to the
+set of limits matching the policy being updated, using it instead
+of limits fixes the inconsistency.
+
+Fixes: 1443ebbacfd7 (cpufreq: intel_pstate: Fix sysfs limits enforcement for performance policy)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2208,9 +2208,9 @@ static int intel_pstate_verify_policy(st
+ 		unsigned int max_freq, min_freq;
+ 
+ 		max_freq = policy->cpuinfo.max_freq *
+-						limits->max_sysfs_pct / 100;
++					perf_limits->max_sysfs_pct / 100;
+ 		min_freq = policy->cpuinfo.max_freq *
+-						limits->min_sysfs_pct / 100;
++					perf_limits->min_sysfs_pct / 100;
+ 		cpufreq_verify_within_limits(policy, min_freq, max_freq);
+ 	}
+ 
