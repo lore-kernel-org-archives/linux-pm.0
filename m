@@ -1,180 +1,45 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [RFC v3 3/5] sched/core: sync capacity_{min,max} between slow and fast paths
-Date: Tue, 28 Feb 2017 14:38:40 +0000
-Message-ID: <1488292722-19410-4-git-send-email-patrick.bellasi@arm.com>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
+ binding to OPP nodes
+Date: Tue, 28 Feb 2017 16:14:06 +0100
+Message-ID: <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com>
+References: <cover.1487926924.git.viresh.kumar@linaro.org> <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
+ <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop> <20170228065711.GD19417@vireshk-i7>
+ <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-At enqueue/dequeue time a task needs to be placed in the CPU's rb_tree,
-depending on the current capacity_{min,max} value of the cgroup it
-belongs to. Thus, we need to grant that these values cannot be changed
-while the task is in these critical sections.
+[...]
 
-To this purpose, this patch uses the same locking schema already used by
-the __set_cpus_allowed_ptr. We might uselessly lock the (previous) RQ of
-a !RUNNABLE task, but that's the price to pay to safely serialize
-capacity_{min,max} updates with enqueues, dequeues and migrations.
+>>                                     ---> Parent domain-2 (Contains Perfomance states)
+>>                                     |
+>>                                     |
+>> C.) DeviceX  --->  Parent-domain-1  |
+>>                                     |
+>>                                     |
+>>                                     ---> Parent domain-3 (Contains Perfomance states)
+>
+> I'm a bit confused. How does a domain have 2 parent domains?
 
-This patch adds the synchronization calls required to grant that each
-RUNNABLE task is always in the correct relative position within the
-RBTree. Specifically, when a group's capacity_{min,max} value is
-updated, each task in that group is re-positioned within the rb_tree, if
-currently RUNNABLE and its relative position has changed.
-This operation is mutually exclusive with the task being {en,de}queued
-or migrated via a task_rq_lock().
+This comes from the early design of the generic PM domain, thus I
+assume we have some HW with such complex PM topology. However, I don't
+know if it is actually being used.
 
-It's worth to notice that moving a task from a CGroup to another,
-perhaps with different capacity_{min,max} values, is already covered by
-the current locking schema. Indeed, this operation requires a dequeue
-from the original cgroup's RQ followed by an enqueue in the new one.
-The same argument is true for tasks migrations thus, tasks migrations
-between CPUs and CGruoups are ultimately managed like tasks
-wakeups/sleeps.
+Moreover, the corresponding DT bindings for "power-domains" parents,
+can easily be extended to cover more than one parent. See more in
+Documentation/devicetree/bindings/power/power_domain.txt
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org
----
- kernel/sched/core.c | 78 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
+[...]
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 8f509be..d620bc4 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -846,9 +846,68 @@ cap_clamp_remove_capacity(struct rq *rq, struct task_struct *p,
- 	RB_CLEAR_NODE(node);
- }
- 
-+static void
-+cap_clamp_update_capacity(struct task_struct *p, unsigned int cap_idx)
-+{
-+	struct task_group *tg = task_group(p);
-+	unsigned int next_cap = SCHED_CAPACITY_SCALE;
-+	unsigned int prev_cap = 0;
-+	struct task_struct *entry;
-+	struct rb_node *node;
-+	struct rq_flags rf;
-+	struct rq *rq;
-+
-+	/*
-+	 * Lock the CPU's RBTree where the task is (eventually) queued.
-+	 *
-+	 * We might uselessly lock the (previous) RQ of a !RUNNABLE task, but
-+	 * that's the price to pay to safely serializ capacity_{min,max}
-+	 * updates with enqueues, dequeues and migration operations, which is
-+	 * the same locking schema already in use by __set_cpus_allowed_ptr().
-+	 */
-+	rq = task_rq_lock(p, &rf);
-+
-+	/*
-+	 * If the task has not a node in the rbtree, it's not yet RUNNABLE or
-+	 * it's going to be enqueued with the proper value.
-+	 * The setting of the cap_clamp_node is serialized by task_rq_lock().
-+	 */
-+	if (RB_EMPTY_NODE(&p->cap_clamp_node[cap_idx]))
-+		goto done;
-+
-+	/* Check current position in the capacity rbtree */
-+	node = rb_next(&p->cap_clamp_node[cap_idx]);
-+	if (node) {
-+		entry = rb_entry(node, struct task_struct,
-+				 cap_clamp_node[cap_idx]);
-+		next_cap = task_group(entry)->cap_clamp[cap_idx];
-+	}
-+	node = rb_prev(&p->cap_clamp_node[cap_idx]);
-+	if (node) {
-+		entry = rb_entry(node, struct task_struct,
-+				 cap_clamp_node[cap_idx]);
-+		prev_cap = task_group(entry)->cap_clamp[cap_idx];
-+	}
-+
-+	/* If relative position has not changed: nothing to do */
-+	if (prev_cap <= tg->cap_clamp[cap_idx] &&
-+	    next_cap >= tg->cap_clamp[cap_idx])
-+		goto done;
-+
-+	/* Reposition this node within the rbtree */
-+	cap_clamp_remove_capacity(rq, p, cap_idx);
-+	cap_clamp_insert_capacity(rq, p, cap_idx);
-+
-+done:
-+	task_rq_unlock(rq, p, &rf);
-+}
-+
- static inline void
- cap_clamp_enqueue_task(struct rq *rq, struct task_struct *p, int flags)
- {
-+	lockdep_assert_held(&p->pi_lock);
-+	lockdep_assert_held(&rq->lock);
-+
- 	/* Track task's min/max capacities */
- 	cap_clamp_insert_capacity(rq, p, CAP_CLAMP_MIN);
- 	cap_clamp_insert_capacity(rq, p, CAP_CLAMP_MAX);
-@@ -857,6 +916,9 @@ cap_clamp_enqueue_task(struct rq *rq, struct task_struct *p, int flags)
- static inline void
- cap_clamp_dequeue_task(struct rq *rq, struct task_struct *p, int flags)
- {
-+	lockdep_assert_held(&p->pi_lock);
-+	lockdep_assert_held(&rq->lock);
-+
- 	/* Track task's min/max capacities */
- 	cap_clamp_remove_capacity(rq, p, CAP_CLAMP_MIN);
- 	cap_clamp_remove_capacity(rq, p, CAP_CLAMP_MAX);
-@@ -7046,8 +7108,10 @@ static int cpu_capacity_min_write_u64(struct cgroup_subsys_state *css,
- 				      struct cftype *cftype, u64 value)
- {
- 	struct cgroup_subsys_state *pos;
-+	struct css_task_iter it;
- 	unsigned int min_value;
- 	struct task_group *tg;
-+	struct task_struct *p;
- 	int ret = -EINVAL;
- 
- 	min_value = min_t(unsigned int, value, SCHED_CAPACITY_SCALE);
-@@ -7078,6 +7142,12 @@ static int cpu_capacity_min_write_u64(struct cgroup_subsys_state *css,
- 
- 	tg->cap_clamp[CAP_CLAMP_MIN] = min_value;
- 
-+	/* Update the capacity_min of RUNNABLE tasks */
-+	css_task_iter_start(css, &it);
-+	while ((p = css_task_iter_next(&it)))
-+		cap_clamp_update_capacity(p, CAP_CLAMP_MIN);
-+	css_task_iter_end(&it);
-+
- done:
- 	ret = 0;
- out:
-@@ -7091,8 +7161,10 @@ static int cpu_capacity_max_write_u64(struct cgroup_subsys_state *css,
- 				      struct cftype *cftype, u64 value)
- {
- 	struct cgroup_subsys_state *pos;
-+	struct css_task_iter it;
- 	unsigned int max_value;
- 	struct task_group *tg;
-+	struct task_struct *p;
- 	int ret = -EINVAL;
- 
- 	max_value = min_t(unsigned int, value, SCHED_CAPACITY_SCALE);
-@@ -7123,6 +7195,12 @@ static int cpu_capacity_max_write_u64(struct cgroup_subsys_state *css,
- 
- 	tg->cap_clamp[CAP_CLAMP_MAX] = max_value;
- 
-+	/* Update the capacity_max of RUNNABLE tasks */
-+	css_task_iter_start(css, &it);
-+	while ((p = css_task_iter_next(&it)))
-+		cap_clamp_update_capacity(p, CAP_CLAMP_MAX);
-+	css_task_iter_end(&it);
-+
- done:
- 	ret = 0;
- out:
--- 
-2.7.4
+Kind regards
+Uffe
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
