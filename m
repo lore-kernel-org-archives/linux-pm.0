@@ -1,127 +1,131 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Fix operation mode switching
-Date: Tue, 28 Feb 2017 00:05:01 +0100
-Message-ID: <2958124.3ADodeN5Y5@aspire.rjw.lan>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
+ binding to OPP nodes
+Date: Mon, 27 Feb 2017 18:39:48 -0600
+Message-ID: <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop>
+References: <cover.1487926924.git.viresh.kumar@linaro.org>
+ <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61760 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751465AbdB0XQ5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Feb 2017 18:16:57 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Feb 24, 2017 at 02:36:34PM +0530, Viresh Kumar wrote:
+> If the consumers don't need the capability of switching to different
+> domain performance states at runtime, then they can simply define their
+> required domain performance state in their nodes directly.
+> 
+> But if the device needs the capability of switching to different domain
+> performance states, as they may need to support different clock rates,
+> then the per OPP node can be used to contain that information.
+> 
+> This patch introduces the domain-performance-state (already defined by
+> Power Domain bindings) to the per OPP node.
+> 
 
-There is a problem with intel_pstate operation mode switching
-introduced by commit fb1fe1041c04 (cpufreq: intel_pstate: Operation
-mode control from sysfs), because the global sysfs limits are
-preserved across operation modes while per-policy limits are
-reinitialized from scratch and both sets of limits may get out of
-sync this wya.
+We already have OPP voltages, why are those not sufficient?
 
-Fix that by always reinitializing the global limits upon the
-registration of the driver.
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Tested-by: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt | 64 +++++++++++++++++++++++++++
+>  1 file changed, 64 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index 9f5ca4457b5f..7f6bb52521b6 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -154,6 +154,15 @@ properties.
+>  
+>  - status: Marks the node enabled/disabled.
+>  
+> +- domain-performance-state: A positive integer value representing the minimum
+> +  performance level (of the parent domain) required by the consumer as defined
+> +  by ../power/power_domain.txt binding document. The OPP nodes can contain the
+> +  "domain-performance-state" property, only if the device node contains a
+> +  "power-domains" property. The OPP nodes aren't allowed to contain the
+> +  "domain-performance-state" property partially, i.e. Either all OPP nodes in
+> +  the OPP table have the "domain-performance-state" property or none of them
+> +  have it.
+> +
+>  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+>  
+>  / {
+> @@ -528,3 +537,58 @@ Example 5: opp-supported-hw
+>  		};
+>  	};
+>  };
+> +
+> +Example 7: domain-Performance-state:
+> +(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
+> +
+> +/ {
+> +	cpu0_opp_table: opp_table0 {
+> +		compatible = "operating-points-v2";
+> +		opp-shared;
+> +
+> +		opp@1000000000 {
+> +			opp-hz = /bits/ 64 <1000000000>;
+> +			domain-performance-state = <1>;
 
-Fixes: fb1fe1041c04 (cpufreq: intel_pstate: Operation mode control from sysfs)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |   65 +++++++++++++----------------------------
- 1 file changed, 22 insertions(+), 43 deletions(-)
+Thinking about this some more, there's a problem here that you have no 
+link to foo_domain. I guess that resides in the cpu's node?
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -364,37 +364,25 @@ static bool driver_registered __read_mos
- static bool acpi_ppc;
- #endif
- 
--static struct perf_limits performance_limits = {
--	.no_turbo = 0,
--	.turbo_disabled = 0,
--	.max_perf_pct = 100,
--	.max_perf = int_ext_tofp(1),
--	.min_perf_pct = 100,
--	.min_perf = int_ext_tofp(1),
--	.max_policy_pct = 100,
--	.max_sysfs_pct = 100,
--	.min_policy_pct = 0,
--	.min_sysfs_pct = 0,
--};
-+static struct perf_limits performance_limits;
-+static struct perf_limits powersave_limits;
-+static struct perf_limits *limits;
- 
--static struct perf_limits powersave_limits = {
--	.no_turbo = 0,
--	.turbo_disabled = 0,
--	.max_perf_pct = 100,
--	.max_perf = int_ext_tofp(1),
--	.min_perf_pct = 0,
--	.min_perf = 0,
--	.max_policy_pct = 100,
--	.max_sysfs_pct = 100,
--	.min_policy_pct = 0,
--	.min_sysfs_pct = 0,
--};
-+static void intel_pstate_init_limits(struct perf_limits *limits)
-+{
-+	memset(limits, 0, sizeof(*limits));
-+	limits->max_perf_pct = 100;
-+	limits->max_perf = int_ext_tofp(1);
-+	limits->max_policy_pct = 100;
-+	limits->max_sysfs_pct = 100;
-+}
- 
--#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
--static struct perf_limits *limits = &performance_limits;
--#else
--static struct perf_limits *limits = &powersave_limits;
--#endif
-+static void intel_pstate_set_performance_limits(struct perf_limits *limits)
-+{
-+	intel_pstate_init_limits(limits);
-+	limits->min_perf_pct = 100;
-+	limits->min_perf = int_ext_tofp(1);
-+}
- 
- static DEFINE_MUTEX(intel_pstate_driver_lock);
- static DEFINE_MUTEX(intel_pstate_limits_lock);
-@@ -2084,20 +2072,6 @@ static void intel_pstate_clear_update_ut
- 	synchronize_sched();
- }
- 
--static void intel_pstate_set_performance_limits(struct perf_limits *limits)
--{
--	limits->no_turbo = 0;
--	limits->turbo_disabled = 0;
--	limits->max_perf_pct = 100;
--	limits->max_perf = int_ext_tofp(1);
--	limits->min_perf_pct = 100;
--	limits->min_perf = int_ext_tofp(1);
--	limits->max_policy_pct = 100;
--	limits->max_sysfs_pct = 100;
--	limits->min_policy_pct = 0;
--	limits->min_sysfs_pct = 0;
--}
--
- static void intel_pstate_update_perf_limits(struct cpufreq_policy *policy,
- 					    struct perf_limits *limits)
- {
-@@ -2466,6 +2440,11 @@ static int intel_pstate_register_driver(
- {
- 	int ret;
- 
-+	intel_pstate_init_limits(&powersave_limits);
-+	intel_pstate_set_performance_limits(&performance_limits);
-+	limits = IS_ENABLED(CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE) ?
-+			&performance_limits : &powersave_limits;
-+
- 	ret = cpufreq_register_driver(intel_pstate_driver);
- 	if (ret) {
- 		intel_pstate_driver_cleanup();
+Perhaps instead of a number, this should be a phandle to pstate@1. Then 
+you just get the parent if you need to know the domain.
+
+> +		};
+> +		opp@1100000000 {
+> +			opp-hz = /bits/ 64 <1100000000>;
+> +			domain-performance-state = <2>;
+> +		};
+> +		opp@1200000000 {
+> +			opp-hz = /bits/ 64 <1200000000>;
+> +			domain-performance-state = <2>;
+> +		};
+> +	};
+> +
+> +	foo_domain: power-controller@12340000 {
+> +		compatible = "foo,power-controller";
+> +		reg = <0x12340000 0x1000>;
+> +		#power-domain-cells = <0>;
+> +
+> +		performance-states {
+> +			compatible = "domain-performance-state";
+> +			pstate@1 {
+> +				reg = <1>;
+> +				domain-microvolt = <970000 975000 985000>;
+> +			};
+> +			pstate@2 {
+> +				reg = <2>;
+> +				domain-microvolt = <1000000 1075000 1085000>;
+> +			};
+> +		};
+> +	}
+> +
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		cpu@0 {
+> +			compatible = "arm,cortex-a9";
+> +			reg = <0>;
+> +			clocks = <&clk_controller 0>;
+> +			clock-names = "cpu";
+> +			operating-points-v2 = <&cpu0_opp_table>;
+> +			power-domains = <&foo_domain>;
+> +		};
+> +	};
+> +};
+> -- 
+> 2.7.1.410.g6faf27b
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
