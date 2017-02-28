@@ -1,158 +1,87 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [RFC v3 4/5] sched/{core,cpufreq_schedutil}: add capacity clamping for FAIR tasks
-Date: Tue, 28 Feb 2017 14:38:41 +0000
-Message-ID: <1488292722-19410-5-git-send-email-patrick.bellasi@arm.com>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:38120 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751677AbdB1Ot3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 28 Feb 2017 09:49:29 -0500
-In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [RFC v3 0/5] Add capacity capping support to the CPU controller
+Date: Tue, 28 Feb 2017 14:38:37 +0000
+Message-ID: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Juri Lelli <juri.lelli@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Each time a frequency update is required via schedutil, we must grant
-the capacity_{min,max} constraints enforced in the current CPU by the
-set of currently RUNNABLE tasks.
+Was: SchedTune: central, scheduler-driven, power-perfomance control
 
-This patch adds the required support to clamp the utilization generated
-by FAIR tasks within the boundaries defined by the current constraints.
-The clamped utilization is ultimately used to select the frequency
-thus allowing both to:
- - boost small tasks
-   by running them at least at a minimum granted capacity (i.e. frequency)
- - cap background tasks
-   by running them only up to a maximum granted capacity (i.e. frequency)
+This series presents a possible alternative design for what has been presented
+in the past as SchedTune. This redesign has been defined to address the main
+concerns and comments collected in the LKML discussion [1] as well at the last
+LPC [2].
+The aim of this posting is to present a working prototype which implements
+what has been discussed [2] with people like PeterZ, PaulT and TejunH.
 
-The default values for boosting and capping are defined to be:
- - capacity_min: 0
- - capacity_max: SCHED_CAPACITY_SCALE
-which means that by default no boosting/capping is enforced.
+The main differences with respect to the previous proposal [1] are:
+ 1. Task boosting/capping is now implemented as an extension on top of
+    the existing CGroup CPU controller.
+ 2. The previous boosting strategy, based on the inflation of the CPU's
+    utilization, has been now replaced by a more simple yet effective set
+    of capacity constraints.
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- kernel/sched/cpufreq_schedutil.c | 68 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+The proposed approach allows to constrain the minimum and maximum capacity
+of a CPU depending on the set of tasks currently RUNNABLE on that CPU.
+The set of active constraints are tracked by the core scheduler, thus they
+apply across all the scheduling classes. The value of the constraints are
+used to clamp the CPU utilization when the schedutil CPUFreq's governor
+selects a frequency for that CPU.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index fd46593..51484f7 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -192,6 +192,54 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
- 	sg_cpu->iowait_boost >>= 1;
- }
- 
-+#ifdef CONFIG_CAPACITY_CLAMPING
-+
-+static inline
-+void cap_clamp_cpu_range(unsigned int cpu, unsigned int *cap_min,
-+			 unsigned int *cap_max)
-+{
-+	struct cap_clamp_cpu *cgc;
-+
-+	*cap_min = 0;
-+	cgc = &cpu_rq(cpu)->cap_clamp_cpu[CAP_CLAMP_MIN];
-+	if (cgc->node)
-+		*cap_min = cgc->value;
-+
-+	*cap_max = SCHED_CAPACITY_SCALE;
-+	cgc = &cpu_rq(cpu)->cap_clamp_cpu[CAP_CLAMP_MAX];
-+	if (cgc->node)
-+		*cap_max = cgc->value;
-+}
-+
-+static inline
-+unsigned int cap_clamp_cpu_util(unsigned int cpu, unsigned int util)
-+{
-+	unsigned int cap_max, cap_min;
-+
-+	cap_clamp_cpu_range(cpu, &cap_min, &cap_max);
-+	return clamp(util, cap_min, cap_max);
-+}
-+
-+static inline
-+void cap_clamp_compose(unsigned int *cap_min, unsigned int *cap_max,
-+		       unsigned int j_cap_min, unsigned int j_cap_max)
-+{
-+	*cap_min = max(*cap_min, j_cap_min);
-+	*cap_max = max(*cap_max, j_cap_max);
-+}
-+
-+#define cap_clamp_util_range(util, cap_min, cap_max) \
-+	clamp_t(typeof(util), util, cap_min, cap_max)
-+
-+#else
-+
-+#define cap_clamp_cpu_range(cpu, cap_min, cap_max) { }
-+#define cap_clamp_cpu_util(cpu, util) util
-+#define cap_clamp_compose(cap_min, cap_max, j_cap_min, j_cap_max) { }
-+#define cap_clamp_util_range(util, cap_min, cap_max) util
-+
-+#endif /* CONFIG_CAPACITY_CLAMPING */
-+
- static void sugov_update_single(struct update_util_data *hook, u64 time,
- 				unsigned int flags)
- {
-@@ -212,6 +260,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	} else {
- 		sugov_get_util(&util, &max);
- 		sugov_iowait_boost(sg_cpu, &util, &max);
-+		util = cap_clamp_cpu_util(smp_processor_id(), util);
- 		next_f = get_next_freq(sg_cpu, util, max);
- 	}
- 	sugov_update_commit(sg_policy, time, next_f);
-@@ -225,6 +274,8 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned int max_f = policy->cpuinfo.max_freq;
- 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
-+	unsigned int cap_max = SCHED_CAPACITY_SCALE;
-+	unsigned int cap_min = 0;
- 	unsigned int j;
- 
- 	if (flags & SCHED_CPUFREQ_RT_DL)
-@@ -232,9 +283,13 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 
- 	sugov_iowait_boost(sg_cpu, &util, &max);
- 
-+	/* Initialize clamping range based on caller CPU constraints */
-+	cap_clamp_cpu_range(smp_processor_id(), &cap_min, &cap_max);
-+
- 	for_each_cpu(j, policy->cpus) {
- 		struct sugov_cpu *j_sg_cpu;
- 		unsigned long j_util, j_max;
-+		unsigned int j_cap_max, j_cap_min;
- 		s64 delta_ns;
- 
- 		if (j == smp_processor_id())
-@@ -264,8 +319,21 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
- 		}
- 
- 		sugov_iowait_boost(j_sg_cpu, &util, &max);
-+
-+		/*
-+		 * Update clamping range based on this CPU constraints, but
-+		 * only if this CPU is not currently idle. Idle CPUs do not
-+		 * enforce constraints in a shared frequency domain.
-+		 */
-+		if (!idle_cpu(j)) {
-+			cap_clamp_cpu_range(j, &j_cap_min, &j_cap_max);
-+			cap_clamp_compose(&cap_min, &cap_max,
-+					  j_cap_min, j_cap_max);
-+		}
- 	}
- 
-+	/* Clamp utilization on aggregated CPUs ranges */
-+	util = cap_clamp_util_range(util, cap_min, cap_max);
- 	return get_next_freq(sg_cpu, util, max);
- }
- 
+This means that the new proposed approach allows to extend the concept of
+tasks classification to frequencies selection, thus allowing informed
+run-times (e.g. Android, ChromeOS, etc.) to efficiently implement different
+optimization policies such as:
+ a) Boosting of important tasks, by enforcing a minimum capacity in the
+    CPUs where they are enqueued for execution.
+ b) Capping of background tasks, by enforcing a maximum capacity.
+ c) Containment of OPPs for RT tasks which cannot easily be switched to
+    the usage of the DL class, but still don't need to run at the maximum
+    frequency.
+
+The new approach has also been designed to be compliant to CGroups v2
+principles, such as the support for single hierarchy and the "limit"
+resource distribution model (described in Documentation/cgroup-v2.txt).
+
+A further development of this idea is under development and will allow to
+exploit the same capacity capping attributes, in conjunction to the recently
+merged capacity awareness bits [3], in order to achieve a more complete tasks
+boosting/capping strategy which is completely scheduler driven and based on
+user-space defined tasks classification.
+
+The first three patches of this series introduces capacity_{min,max} tracking
+in the core scheduler, as an extension of the CPU controller.
+The fourth patch integrates capacity capping with schedutil for FAIR tasks,
+while the last patch does the same for RT/DL tasks.
+
+This series is based on top of today's tip/sched/core and is public available
+from this repository:
+
+  git://www.linux-arm.com/linux-pb eas/stune/rfcv3
+
+Cheers Patrick
+
+.:: References
+[1] https://lkml.org/lkml/2016/10/27/503
+[2] https://lkml.org/lkml/2016/11/25/342
+[3] https://lkml.org/lkml/2016/10/14/312
+
+Patrick Bellasi (5):
+  sched/core: add capacity constraints to CPU controller
+  sched/core: track CPU's capacity_{min,max}
+  sched/core: sync capacity_{min,max} between slow and fast paths
+  sched/{core,cpufreq_schedutil}: add capacity clamping for FAIR tasks
+  sched/{core,cpufreq_schedutil}: add capacity clamping for RT/DL tasks
+
+ include/linux/sched.h            |   3 +
+ init/Kconfig                     |  17 ++
+ kernel/sched/core.c              | 352 +++++++++++++++++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c |  83 ++++++++-
+ kernel/sched/sched.h             |  31 ++++
+ 5 files changed, 478 insertions(+), 8 deletions(-)
+
 -- 
 2.7.4
