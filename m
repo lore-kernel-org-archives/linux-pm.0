@@ -1,109 +1,158 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
- binding to OPP nodes
-Date: Tue, 28 Feb 2017 08:10:01 -0600
-Message-ID: <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
-References: <cover.1487926924.git.viresh.kumar@linaro.org> <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
- <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop> <20170228065711.GD19417@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170228065711.GD19417@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org" <linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Lina Iyer <lina.iyer-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [RFC v3 4/5] sched/{core,cpufreq_schedutil}: add capacity clamping for FAIR tasks
+Date: Tue, 28 Feb 2017 14:38:41 +0000
+Message-ID: <1488292722-19410-5-git-send-email-patrick.bellasi@arm.com>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:38120 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751677AbdB1Ot3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 28 Feb 2017 09:49:29 -0500
+In-Reply-To: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On Tue, Feb 28, 2017 at 12:57 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On 27-02-17, 18:39, Rob Herring wrote:
->> On Fri, Feb 24, 2017 at 02:36:34PM +0530, Viresh Kumar wrote:
->> > If the consumers don't need the capability of switching to different
->> > domain performance states at runtime, then they can simply define their
->> > required domain performance state in their nodes directly.
->> >
->> > But if the device needs the capability of switching to different domain
->> > performance states, as they may need to support different clock rates,
->> > then the per OPP node can be used to contain that information.
->> >
->> > This patch introduces the domain-performance-state (already defined by
->> > Power Domain bindings) to the per OPP node.
->> >
->>
->> We already have OPP voltages, why are those not sufficient?
->
-> Those are for the regulator that ONLY controls the device, and
-> domain-performance-state belongs to the parent domain which controls many
-> devices.
->
->> > +Example 7: domain-Performance-state:
->> > +(example: For 1GHz require domain state 1 and for 1.1 & 1.2 GHz require state 2)
->> > +
->> > +/ {
->> > +   cpu0_opp_table: opp_table0 {
->> > +           compatible = "operating-points-v2";
->> > +           opp-shared;
->> > +
->> > +           opp@1000000000 {
->> > +                   opp-hz = /bits/ 64 <1000000000>;
->>
->> Thinking about this some more, there's a problem here that you have no
->> link to foo_domain. I guess that resides in the cpu's node?
->
-> Right, the "cpus" node below demonstrates that.
->
->> > +   cpus {
->> > +           #address-cells = <1>;
->> > +           #size-cells = <0>;
->> > +
->> > +           cpu@0 {
->> > +                   compatible = "arm,cortex-a9";
->> > +                   reg = <0>;
->> > +                   clocks = <&clk_controller 0>;
->> > +                   clock-names = "cpu";
->> > +                   operating-points-v2 = <&cpu0_opp_table>;
->> > +                   power-domains = <&foo_domain>;
->> > +           };
->> > +   };
->> > +};
->
->> > +                   domain-performance-state = <1>;
->
->> Perhaps instead of a number, this should be a phandle to pstate@1. Then
->> you just get the parent if you need to know the domain.
->
-> That's what I did in V2, but then I turned it down considering the parent/child
-> relationships we may have.
->
-> There are multiple cases we can have:
->
-> A.) DeviceX  --->  Parent-domain-1 (Contains Perfomance states)
->
-> B.) DeviceX  --->  Parent-domain-1  ---> Parent domain-2 (Contains Perfomance states)
->
->                                     ---> Parent domain-2 (Contains Perfomance states)
->                                     |
->                                     |
-> C.) DeviceX  --->  Parent-domain-1  |
->                                     |
->                                     |
->                                     ---> Parent domain-3 (Contains Perfomance states)
+Each time a frequency update is required via schedutil, we must grant
+the capacity_{min,max} constraints enforced in the current CPU by the
+set of currently RUNNABLE tasks.
 
-I'm a bit confused. How does a domain have 2 parent domains?
+This patch adds the required support to clamp the utilization generated
+by FAIR tasks within the boundaries defined by the current constraints.
+The clamped utilization is ultimately used to select the frequency
+thus allowing both to:
+ - boost small tasks
+   by running them at least at a minimum granted capacity (i.e. frequency)
+ - cap background tasks
+   by running them only up to a maximum granted capacity (i.e. frequency)
 
-You have the same problem either way. If I have performance state 2
-for the device, that corresponds to domain 2 or 3?
+The default values for boosting and capping are defined to be:
+ - capacity_min: 0
+ - capacity_max: SCHED_CAPACITY_SCALE
+which means that by default no boosting/capping is enforced.
 
-> The case A.) represents a simple case where the parent domain of the device
-> contains the performance states. The phandle can work pretty well in this case.
-> But the other cases B.) and C.) are a bit complicated as the direct parent
-> domain doesn't allow changing the performance states, but its parents. And so I
-> went ahead with numbers instead of phandles. Yes, we will still be able to get
-> to the performance state node with the help of phandles, but will that be the
-> right thing to do ?
->
-> --
-> viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
+---
+ kernel/sched/cpufreq_schedutil.c | 68 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 68 insertions(+)
+
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index fd46593..51484f7 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -192,6 +192,54 @@ static void sugov_iowait_boost(struct sugov_cpu *sg_cpu, unsigned long *util,
+ 	sg_cpu->iowait_boost >>= 1;
+ }
+ 
++#ifdef CONFIG_CAPACITY_CLAMPING
++
++static inline
++void cap_clamp_cpu_range(unsigned int cpu, unsigned int *cap_min,
++			 unsigned int *cap_max)
++{
++	struct cap_clamp_cpu *cgc;
++
++	*cap_min = 0;
++	cgc = &cpu_rq(cpu)->cap_clamp_cpu[CAP_CLAMP_MIN];
++	if (cgc->node)
++		*cap_min = cgc->value;
++
++	*cap_max = SCHED_CAPACITY_SCALE;
++	cgc = &cpu_rq(cpu)->cap_clamp_cpu[CAP_CLAMP_MAX];
++	if (cgc->node)
++		*cap_max = cgc->value;
++}
++
++static inline
++unsigned int cap_clamp_cpu_util(unsigned int cpu, unsigned int util)
++{
++	unsigned int cap_max, cap_min;
++
++	cap_clamp_cpu_range(cpu, &cap_min, &cap_max);
++	return clamp(util, cap_min, cap_max);
++}
++
++static inline
++void cap_clamp_compose(unsigned int *cap_min, unsigned int *cap_max,
++		       unsigned int j_cap_min, unsigned int j_cap_max)
++{
++	*cap_min = max(*cap_min, j_cap_min);
++	*cap_max = max(*cap_max, j_cap_max);
++}
++
++#define cap_clamp_util_range(util, cap_min, cap_max) \
++	clamp_t(typeof(util), util, cap_min, cap_max)
++
++#else
++
++#define cap_clamp_cpu_range(cpu, cap_min, cap_max) { }
++#define cap_clamp_cpu_util(cpu, util) util
++#define cap_clamp_compose(cap_min, cap_max, j_cap_min, j_cap_max) { }
++#define cap_clamp_util_range(util, cap_min, cap_max) util
++
++#endif /* CONFIG_CAPACITY_CLAMPING */
++
+ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 				unsigned int flags)
+ {
+@@ -212,6 +260,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	} else {
+ 		sugov_get_util(&util, &max);
+ 		sugov_iowait_boost(sg_cpu, &util, &max);
++		util = cap_clamp_cpu_util(smp_processor_id(), util);
+ 		next_f = get_next_freq(sg_cpu, util, max);
+ 	}
+ 	sugov_update_commit(sg_policy, time, next_f);
+@@ -225,6 +274,8 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+ 	unsigned int max_f = policy->cpuinfo.max_freq;
+ 	u64 last_freq_update_time = sg_policy->last_freq_update_time;
++	unsigned int cap_max = SCHED_CAPACITY_SCALE;
++	unsigned int cap_min = 0;
+ 	unsigned int j;
+ 
+ 	if (flags & SCHED_CPUFREQ_RT_DL)
+@@ -232,9 +283,13 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
+ 
+ 	sugov_iowait_boost(sg_cpu, &util, &max);
+ 
++	/* Initialize clamping range based on caller CPU constraints */
++	cap_clamp_cpu_range(smp_processor_id(), &cap_min, &cap_max);
++
+ 	for_each_cpu(j, policy->cpus) {
+ 		struct sugov_cpu *j_sg_cpu;
+ 		unsigned long j_util, j_max;
++		unsigned int j_cap_max, j_cap_min;
+ 		s64 delta_ns;
+ 
+ 		if (j == smp_processor_id())
+@@ -264,8 +319,21 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
+ 		}
+ 
+ 		sugov_iowait_boost(j_sg_cpu, &util, &max);
++
++		/*
++		 * Update clamping range based on this CPU constraints, but
++		 * only if this CPU is not currently idle. Idle CPUs do not
++		 * enforce constraints in a shared frequency domain.
++		 */
++		if (!idle_cpu(j)) {
++			cap_clamp_cpu_range(j, &j_cap_min, &j_cap_max);
++			cap_clamp_compose(&cap_min, &cap_max,
++					  j_cap_min, j_cap_max);
++		}
+ 	}
+ 
++	/* Clamp utilization on aggregated CPUs ranges */
++	util = cap_clamp_util_range(util, cap_min, cap_max);
+ 	return get_next_freq(sg_cpu, util, max);
+ }
+ 
+-- 
+2.7.4
