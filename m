@@ -1,30 +1,49 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: Re: [PATCH 01/10] x86: assembly, ENTRY for fn,
-	GLOBAL for data
-Date: Wed, 1 Mar 2017 10:50:06 +0100
-Message-ID: <897aceb2-9be1-26ca-6426-b5901e139a3c@suse.cz>
-References: <20170217104757.28588-1-jslaby@suse.cz>
- <20170301093855.GA27152@gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 01/10] x86: assembly, ENTRY for fn, GLOBAL for data
+Date: Wed, 1 Mar 2017 11:09:16 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1703011108220.4005@nanos>
+References: <20170217104757.28588-1-jslaby@suse.cz> <20170301093855.GA27152@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:38739 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751467AbdCAKJp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 05:09:45 -0500
 In-Reply-To: <20170301093855.GA27152@gmail.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, hpa@zytor.com, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, tglx@linutronix.de, Linus Torvalds <torvalds@linux-foundation.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Jiri Slaby <jslaby@suse.cz>, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, jpoimboe@redhat.com, linux-kernel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, xen-devel@lists.xenproject.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-T24gMDMvMDEvMjAxNywgMTA6MzggQU0sIEluZ28gTW9sbmFyIHdyb3RlOgo+IEFncmVlZD8KClN1
-cmUuIEkgd2FudGVkIHRvIGtlZXAgaXQgbWluaW1hbCB0byBzZWUgaWYgeW91IGFncmVlIHdpdGgg
-dGhpcwpkaXJlY3Rpb24gYXQgYWxsLiBObyBwcm9ibGVtIHRvIGJlIG1vcmUgaW50cnVzaXZlIDop
-LgoKdGhhbmtzLAotLSAKanMKc3VzZSBsYWJzCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fXwpYZW4tZGV2ZWwgbWFpbGluZyBsaXN0Clhlbi1kZXZlbEBsaXN0
-cy54ZW4ub3JnCmh0dHBzOi8vbGlzdHMueGVuLm9yZy94ZW4tZGV2ZWwK
+On Wed, 1 Mar 2017, Ingo Molnar wrote:
+> 
+> * Jiri Slaby <jslaby@suse.cz> wrote:
+> 
+> > This is a start of series to unify use of ENTRY, ENDPROC, GLOBAL, END,
+> > and other macros across x86. When we have all this sorted out, this will
+> > help to inject DWARF unwinding info by objtool later.
+> > 
+> > So, let us use the macros this way:
+> > * ENTRY -- start of a global function
+> > * ENDPROC -- end of a local/global function
+> > * GLOBAL -- start of a globally visible data symbol
+> > * END -- end of local/global data symbol
+> 
+> So how about using macro names that actually show the purpose, instead of 
+> importing all the crappy, historic, essentially randomly chosen debug symbol macro 
+> names from the binutils and older kernels?
+> 
+> Something sane, like:
+> 
+> 	SYM__FUNCTION_START
+
+Sane would be:
+
+     	SYM_FUNCTION_START
+
+The double underscore is just not giving any value.
+
+Thanks,
+
+	tglx
