@@ -1,11 +1,13 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 01/44] tools/power turbostat: fix bugs in --add option
-Date: Wed,  1 Mar 2017 00:27:05 -0500
-Message-ID: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+Subject: [PATCH 13/44] tools/power turbostat: further decode MSR_IA32_MISC_ENABLE
+Date: Wed,  1 Mar 2017 00:27:17 -0500
+Message-ID: <e651262477c6d8cba79dffc1a6039da43d9c96b0.1488345270.git.len.brown@intel.com>
 References: <20170301052748.27810-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
+In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
@@ -13,241 +15,42 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-When --add was used more than once, overflowed buffers
-caused some counters to be stored on top of others,
-corrupting the results.  Simplify the code by simply
-reserving space for up to 16 added counters per each
-cpu, core, package.
+Decode MISC_ENABLE.NO_TURBO,
+also use the #defines in msr-index.h for decoding this register
 
-Per-cpu added counters were being printed only per-core.
+cpu0: MSR_IA32_MISC_ENABLE: 0x00850089 (TCC EIST MWAIT TURBO)
+
+Although it is not architectural, decode also
+MSR_IA32_MISC_ENABLE.prefetch-disable (bit-9).
+documented to be present on: Core, P4, Intel-Xeon
+reserved on: Atom, Silvermont, Nehalem, SNB, PHI ec.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 88 +++++++++++++++++++++--------------
- 1 file changed, 52 insertions(+), 36 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index f13f61b065c6..c7fadf0faa4b 100644
+index 762b81497c3b..a1ec9d816dfa 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -154,6 +154,7 @@ char *progname;
+@@ -3509,11 +3509,13 @@ void decode_misc_enable_msr(void)
+ 	unsigned long long msr;
  
- cpu_set_t *cpu_present_set, *cpu_affinity_set;
- size_t cpu_present_setsize, cpu_affinity_setsize;
-+#define MAX_ADDED_COUNTERS 16
+ 	if (!get_msr(base_cpu, MSR_IA32_MISC_ENABLE, &msr))
+-		fprintf(outf, "cpu%d: MSR_IA32_MISC_ENABLE: 0x%08llx (%s %s %s)\n",
++		fprintf(outf, "cpu%d: MSR_IA32_MISC_ENABLE: 0x%08llx (%sTCC %sEIST %sMWAIT %sPREFETCH %sTURBO)\n",
+ 			base_cpu, msr,
+-			msr & (1 << 3) ? "TCC" : "",
+-			msr & (1 << 16) ? "EIST" : "",
+-			msr & (1 << 18) ? "MONITOR" : "");
++			msr & MSR_IA32_MISC_ENABLE_TM1 ? "" : "No-",
++			msr & MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP ? "" : "No-",
++			msr & MSR_IA32_MISC_ENABLE_MWAIT ? "No-" : "",
++			msr & MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE ? "No-" : "",
++			msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ? "No-" : "");
+ }
  
- struct thread_data {
- 	unsigned long long tsc;
-@@ -166,7 +167,7 @@ struct thread_data {
- 	unsigned int flags;
- #define CPU_IS_FIRST_THREAD_IN_CORE	0x2
- #define CPU_IS_FIRST_CORE_IN_PACKAGE	0x4
--	unsigned long long counter[1];
-+	unsigned long long counter[MAX_ADDED_COUNTERS];
- } *thread_even, *thread_odd;
- 
- struct core_data {
-@@ -175,7 +176,7 @@ struct core_data {
- 	unsigned long long c7;
- 	unsigned int core_temp_c;
- 	unsigned int core_id;
--	unsigned long long counter[1];
-+	unsigned long long counter[MAX_ADDED_COUNTERS];
- } *core_even, *core_odd;
- 
- struct pkg_data {
-@@ -200,7 +201,7 @@ struct pkg_data {
- 	unsigned int rapl_pkg_perf_status;	/* MSR_PKG_PERF_STATUS */
- 	unsigned int rapl_dram_perf_status;	/* MSR_DRAM_PERF_STATUS */
- 	unsigned int pkg_temp_c;
--	unsigned long long counter[1];
-+	unsigned long long counter[MAX_ADDED_COUNTERS];
- } *package_even, *package_odd;
- 
- #define ODD_COUNTERS thread_odd, core_odd, package_odd
-@@ -228,9 +229,9 @@ struct msr_counter {
- };
- 
- struct sys_counters {
--	unsigned int thread_counter_bytes;
--	unsigned int core_counter_bytes;
--	unsigned int package_counter_bytes;
-+	unsigned int added_thread_counters;
-+	unsigned int added_core_counters;
-+	unsigned int added_package_counters;
- 	struct msr_counter *tp;
- 	struct msr_counter *cp;
- 	struct msr_counter *pp;
-@@ -374,12 +375,6 @@ void print_header(void)
- 
- 	if (do_nhm_cstates)
- 		outp += sprintf(outp, "\tCPU%%c1");
--	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
--		outp += sprintf(outp, "\tCPU%%c3");
--	if (do_nhm_cstates)
--		outp += sprintf(outp, "\tCPU%%c6");
--	if (do_snb_cstates)
--		outp += sprintf(outp, "\tCPU%%c7");
- 
- 	for (mp = sys.tp; mp; mp = mp->next) {
- 		if (mp->format == FORMAT_RAW) {
-@@ -392,6 +387,14 @@ void print_header(void)
- 		}
- 	}
- 
-+	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
-+		outp += sprintf(outp, "\tCPU%%c3");
-+	if (do_nhm_cstates)
-+		outp += sprintf(outp, "\tCPU%%c6");
-+	if (do_snb_cstates)
-+		outp += sprintf(outp, "\tCPU%%c7");
-+
-+
- 	if (do_dts)
- 		outp += sprintf(outp, "\tCoreTmp");
- 
-@@ -635,20 +638,11 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 	if (do_smi)
- 		outp += sprintf(outp, "\t%d", t->smi_count);
- 
-+	/* C1 */
- 	if (do_nhm_cstates)
- 		outp += sprintf(outp, "\t%.2f", 100.0 * t->c1/t->tsc);
- 
--	/* print per-core data only for 1st thread in core */
--	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
--		goto done;
--
--	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
--		outp += sprintf(outp, "\t%.2f", 100.0 * c->c3/t->tsc);
--	if (do_nhm_cstates)
--		outp += sprintf(outp, "\t%.2f", 100.0 * c->c6/t->tsc);
--	if (do_snb_cstates)
--		outp += sprintf(outp, "\t%.2f", 100.0 * c->c7/t->tsc);
--
-+	/* Added counters */
- 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
- 		if (mp->format == FORMAT_RAW) {
- 			if (mp->width == 32)
-@@ -656,12 +650,23 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 			else
- 				outp += sprintf(outp, "\t0x%016llx", t->counter[i]);
- 		} else if (mp->format == FORMAT_DELTA) {
--			outp += sprintf(outp, "\t%8lld", t->counter[i]);
-+			outp += sprintf(outp, "\t%lld", t->counter[i]);
- 		} else if (mp->format == FORMAT_PERCENT) {
- 			outp += sprintf(outp, "\t%.2f", 100.0 * t->counter[i]/t->tsc);
- 		}
- 	}
- 
-+	/* print per-core data only for 1st thread in core */
-+	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
-+		goto done;
-+
-+	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
-+		outp += sprintf(outp, "\t%.2f", 100.0 * c->c3/t->tsc);
-+	if (do_nhm_cstates)
-+		outp += sprintf(outp, "\t%.2f", 100.0 * c->c6/t->tsc);
-+	if (do_snb_cstates)
-+		outp += sprintf(outp, "\t%.2f", 100.0 * c->c7/t->tsc);
-+
- 
- 	if (do_dts)
- 		outp += sprintf(outp, "\t%d", c->core_temp_c);
-@@ -673,7 +678,7 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 			else
- 				outp += sprintf(outp, "\t0x%016llx", c->counter[i]);
- 		} else if (mp->format == FORMAT_DELTA) {
--			outp += sprintf(outp, "\t%8lld", c->counter[i]);
-+			outp += sprintf(outp, "\t%lld", c->counter[i]);
- 		} else if (mp->format == FORMAT_PERCENT) {
- 			outp += sprintf(outp, "\t%.2f", 100.0 * c->counter[i]/t->tsc);
- 		}
-@@ -770,7 +775,7 @@ int format_counters(struct thread_data *t, struct core_data *c,
- 			else
- 				outp += sprintf(outp, "\t0x%016llx", p->counter[i]);
- 		} else if (mp->format == FORMAT_DELTA) {
--			outp += sprintf(outp, "\t%8lld", p->counter[i]);
-+			outp += sprintf(outp, "\t%lld", p->counter[i]);
- 		} else if (mp->format == FORMAT_PERCENT) {
- 			outp += sprintf(outp, "\t%.2f", 100.0 * p->counter[i]/t->tsc);
- 		}
-@@ -1036,7 +1041,6 @@ void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data
- 
- 	p->gfx_rc6_ms = 0;
- 	p->gfx_mhz = 0;
--
- 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next)
- 		t->counter[i] = 0;
- 
-@@ -3662,7 +3666,7 @@ allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data
- 	int i;
- 
- 	*t = calloc(topo.num_threads_per_core * topo.num_cores_per_pkg *
--		topo.num_packages, sizeof(struct thread_data) + sys.thread_counter_bytes);
-+		topo.num_packages, sizeof(struct thread_data));
- 	if (*t == NULL)
- 		goto error;
- 
-@@ -3671,14 +3675,14 @@ allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data
- 		(*t)[i].cpu_id = -1;
- 
- 	*c = calloc(topo.num_cores_per_pkg * topo.num_packages,
--		sizeof(struct core_data) + sys.core_counter_bytes);
-+		sizeof(struct core_data));
- 	if (*c == NULL)
- 		goto error;
- 
- 	for (i = 0; i < topo.num_cores_per_pkg * topo.num_packages; i++)
- 		(*c)[i].core_id = -1;
- 
--	*p = calloc(topo.num_packages, sizeof(struct pkg_data) + sys.package_counter_bytes);
-+	*p = calloc(topo.num_packages, sizeof(struct pkg_data));
- 	if (*p == NULL)
- 		goto error;
- 
-@@ -3901,24 +3905,36 @@ int add_counter(unsigned int msr_num, char *name, unsigned int width,
- 	switch (scope) {
- 
- 	case SCOPE_CPU:
--		sys.thread_counter_bytes += 64;
- 		msrp->next = sys.tp;
- 		sys.tp = msrp;
--		sys.thread_counter_bytes += sizeof(unsigned long long);
-+		sys.added_thread_counters++;
-+		if (sys.added_thread_counters > MAX_ADDED_COUNTERS) {
-+			fprintf(stderr, "exceeded max %d added thread counters\n",
-+				MAX_ADDED_COUNTERS);
-+			exit(-1);
-+		}
- 		break;
- 
- 	case SCOPE_CORE:
--		sys.core_counter_bytes += 64;
- 		msrp->next = sys.cp;
- 		sys.cp = msrp;
--		sys.core_counter_bytes += sizeof(unsigned long long);
-+		sys.added_core_counters++;
-+		if (sys.added_core_counters > MAX_ADDED_COUNTERS) {
-+			fprintf(stderr, "exceeded max %d added core counters\n",
-+				MAX_ADDED_COUNTERS);
-+			exit(-1);
-+		}
- 		break;
- 
- 	case SCOPE_PACKAGE:
--		sys.package_counter_bytes += 64;
- 		msrp->next = sys.pp;
- 		sys.pp = msrp;
--		sys.package_counter_bytes += sizeof(unsigned long long);
-+		sys.added_package_counters++;
-+		if (sys.added_package_counters > MAX_ADDED_COUNTERS) {
-+			fprintf(stderr, "exceeded max %d added package counters\n",
-+				MAX_ADDED_COUNTERS);
-+			exit(-1);
-+		}
- 		break;
- 	}
- 
+ /*
 -- 
 2.11.0.161.g6610af872
