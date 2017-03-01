@@ -1,45 +1,48 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 14/44] x86 msr-index.h: Define Atom specific core ratio MSR locations
-Date: Wed,  1 Mar 2017 00:27:18 -0500
-Message-ID: <8a34fd0226eaae64d61ff9a113d276e28acb6b5c.1488345270.git.len.brown@intel.com>
-References: <20170301052748.27810-1-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
-In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
-References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
+ binding to OPP nodes
+Date: Wed, 1 Mar 2017 11:44:02 +0530
+Message-ID: <20170301061402.GE24323@vireshk-i7>
+References: <cover.1487926924.git.viresh.kumar@linaro.org>
+ <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
+ <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop>
+ <20170228065711.GD19417@vireshk-i7>
+ <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
+ <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com>
+ <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:33483 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750703AbdCAGOF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 01:14:05 -0500
+Received: by mail-pf0-f173.google.com with SMTP id w189so7693819pfb.0
+        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2017 22:14:05 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-From: Len Brown <len.brown@intel.com>
+On 28-02-17, 09:52, Rob Herring wrote:
+> On Tue, Feb 28, 2017 at 9:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> > This comes from the early design of the generic PM domain, thus I
+> > assume we have some HW with such complex PM topology. However, I don't
+> > know if it is actually being used.
+> >
+> > Moreover, the corresponding DT bindings for "power-domains" parents,
+> > can easily be extended to cover more than one parent. See more in
+> > Documentation/devicetree/bindings/power/power_domain.txt
+> 
+> I could easily see device having 2 power domains. For example a cpu
+> may have separate domains for RAM/caches and logic.
 
-These MSRs are currently used by the intel_pstate driver,
-using a local definition.
+An important thing here is that PM domain doesn't support such devices. i.e. a
+device isn't allowed to have multiple PM domains today. So a way to support such
+devices can be to create a virtual PM domain, that has two parents and device as
+its child.
 
-Cc: x86@kernel.org
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- arch/x86/include/asm/msr-index.h | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index 079db99f6560..83bc672c225c 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -209,6 +209,12 @@
- #define MSR_CC6_DEMOTION_POLICY_CONFIG	0x00000668
- #define MSR_MC6_DEMOTION_POLICY_CONFIG	0x00000669
- 
-+#define MSR_ATOM_CORE_RATIOS		0x0000066a
-+#define MSR_ATOM_CORE_VIDS		0x0000066b
-+#define MSR_ATOM_CORE_TURBO_RATIOS	0x0000066c
-+#define MSR_ATOM_CORE_TURBO_VIDS	0x0000066d
-+
-+
- #define MSR_CORE_PERF_LIMIT_REASONS	0x00000690
- #define MSR_GFX_PERF_LIMIT_REASONS	0x000006B0
- #define MSR_RING_PERF_LIMIT_REASONS	0x000006B1
 -- 
-2.11.0.161.g6610af872
+viresh
