@@ -1,48 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
- binding to OPP nodes
-Date: Wed, 1 Mar 2017 11:44:02 +0530
-Message-ID: <20170301061402.GE24323@vireshk-i7>
-References: <cover.1487926924.git.viresh.kumar@linaro.org>
- <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
- <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop>
- <20170228065711.GD19417@vireshk-i7>
- <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
- <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com>
- <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that require
+ multiple domains
+Date: Wed, 01 Mar 2017 11:49:11 +0530
+Message-ID: <58B667DF.3010601@codeaurora.org>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com> <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f173.google.com ([209.85.192.173]:33483 "EHLO
-        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750703AbdCAGOF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 01:14:05 -0500
-Received: by mail-pf0-f173.google.com with SMTP id w189so7693819pfb.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2017 22:14:05 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jon Hunter <jonathanh@nvidia.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, geert@linux-m68k.org, stanimir.varbanov@linaro.org, sboyd@codeaurora.org, Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 28-02-17, 09:52, Rob Herring wrote:
-> On Tue, Feb 28, 2017 at 9:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > This comes from the early design of the generic PM domain, thus I
-> > assume we have some HW with such complex PM topology. However, I don't
-> > know if it is actually being used.
-> >
-> > Moreover, the corresponding DT bindings for "power-domains" parents,
-> > can easily be extended to cover more than one parent. See more in
-> > Documentation/devicetree/bindings/power/power_domain.txt
+
+On 02/28/2017 08:48 PM, Jon Hunter wrote:
+> Hi all,
 > 
-> I could easily see device having 2 power domains. For example a cpu
-> may have separate domains for RAM/caches and logic.
+> On 20/09/16 11:28, Jon Hunter wrote:
+>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>> controllers) is partitioned across 3 PM domains which are:
+>> - XUSBA: Superspeed logic (for USB 3.0)
+>> - XUSBB: Device controller
+>> - XUSBC: Host controller
+>>
+>> These power domains are not nested and can be powered-up and down
+>> independently of one another. In practice different scenarios require
+>> different combinations of the power domains, for example:
+>> - Superspeed host: XUSBA and XUSBC
+>> - Superspeed device: XUSBA and XUSBB
+>>
+>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>> domains under the XUSBA, superspeed may not always be used/required and
+>> so this would keep it on unnecessarily.
+>>
+>> Given that Tegra uses device-tree for describing the hardware, it would
+>> be ideal that the device-tree 'power-domains' property for generic PM
+>> domains could be extended to allow more than one PM domain to be
+>> specified. For example, define the following the Tegra210 xHCI device ...
+>>
+>> 	usb@70090000 {
+>> 		compatible = "nvidia,tegra210-xusb";
+>> 		...
+>> 		power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>> 	};
+>>
+>> This RFC extends the generic PM domain framework to allow a device to
+>> define more than one PM domain in the device-tree 'power-domains'
+>> property.
+> 
+> I wanted to kick this thread again now in the new year and see if there
+> is still some interest in pursuing this?
 
-An important thing here is that PM domain doesn't support such devices. i.e. a
-device isn't allowed to have multiple PM domains today. So a way to support such
-devices can be to create a virtual PM domain, that has two parents and device as
-its child.
+Thanks Jon for reviving this thread. I ran into the issue of having to
+support multiple powerdomains for a single device again while working with
+Viresh's 'domain performance state' patches [1], to add support for corners
+on qualcomm platforms.
+We do have devices which have logic and memory powered via separate rails,
+and the drivers would want to set 'performance states' on both, which an
+external core then translates into actual uV and programs the PMIC.
+
+[1] http://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1340018.html
+
+> 
+> There is still very much a need from a Tegra perspective. I have put all
+> those who responded on TO.
+> 
+> I know that a lot of time has passed since we discuss this and so if you
+> are scratching your head wondering what I am harping on about,
+> essentially with this RFC I was looking for a way to support devices
+> that require multiple power domains where the domains do not have a
+> parent-child relationship and so not are nested in anyway.
+> 
+> If you need me to elaborate on the need for this, I am happy to do this.
+> My take away from when we discussed this last year, was that there was a
+> need for this.
+> 
+> Cheers
+> Jon
+> 
 
 -- 
-viresh
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
