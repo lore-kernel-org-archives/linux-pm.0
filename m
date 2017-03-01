@@ -1,62 +1,76 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
- binding to OPP nodes
-Date: Wed, 01 Mar 2017 11:57:41 +0530
-Message-ID: <58B669DD.5010309@codeaurora.org>
-References: <cover.1487926924.git.viresh.kumar@linaro.org> <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org> <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop> <20170228065711.GD19417@vireshk-i7> <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com> <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com> <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 09/44] tools/power turbostat: use new name for MSR_PKG_CST_CONFIG_CONTROL
+Date: Wed,  1 Mar 2017 00:27:13 -0500
+Message-ID: <1df2e55abce64e2f3117fac3968a9ac382fbc9c3.1488345270.git.len.brown@intel.com>
+References: <20170301052748.27810-1-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:60942 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751009AbdCAHug (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 02:50:36 -0500
-In-Reply-To: <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
+Received: from mail-qk0-f195.google.com ([209.85.220.195]:36231 "EHLO
+        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750988AbdCAITk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 03:19:40 -0500
+In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
+In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
+From: Len Brown <len.brown@intel.com>
 
+Previously called MSR_NHM_SNB_PKG_CST_CFG_CTL
 
-On 02/28/2017 09:22 PM, Rob Herring wrote:
-> On Tue, Feb 28, 2017 at 9:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> [...]
->>
->>>>                                     ---> Parent domain-2 (Contains Perfomance states)
->>>>                                     |
->>>>                                     |
->>>> C.) DeviceX  --->  Parent-domain-1  |
->>>>                                     |
->>>>                                     |
->>>>                                     ---> Parent domain-3 (Contains Perfomance states)
->>>
->>> I'm a bit confused. How does a domain have 2 parent domains?
->>
->> This comes from the early design of the generic PM domain, thus I
->> assume we have some HW with such complex PM topology. However, I don't
->> know if it is actually being used.
->>
->> Moreover, the corresponding DT bindings for "power-domains" parents,
->> can easily be extended to cover more than one parent. See more in
->> Documentation/devicetree/bindings/power/power_domain.txt
-> 
-> I could easily see device having 2 power domains. For example a cpu
-> may have separate domains for RAM/caches and logic. And nesting of
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-yet the bindings for power-domains (for consumer devices) only allows for
-one powerdomain to be associated with a device.
-
-> power domains is certainly common, but a power domain being contained
-> in 2 different parents? I don't even see how that is possible in the
-> physical design. Now if we're mixing PM and power domains again and
-> the cpu device is pointing to the cpu PM domain which contains 2 power
-> domains, then certainly that is possible.
-> 
-> Rob
-> 
-
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index aedfaddbad30..d56f2b75dc58 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -1761,12 +1761,12 @@ dump_nhm_cst_cfg(void)
+ {
+ 	unsigned long long msr;
+ 
+-	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
++	get_msr(base_cpu, MSR_PKG_CST_CONFIG_CONTROL, &msr);
+ 
+ #define SNB_C1_AUTO_UNDEMOTE              (1UL << 27)
+ #define SNB_C3_AUTO_UNDEMOTE              (1UL << 28)
+ 
+-	fprintf(outf, "cpu%d: MSR_NHM_SNB_PKG_CST_CFG_CTL: 0x%08llx", base_cpu, msr);
++	fprintf(outf, "cpu%d: MSR_PKG_CST_CONFIG_CONTROL: 0x%08llx", base_cpu, msr);
+ 
+ 	fprintf(outf, " (%s%s%s%s%slocked: pkg-cstate-limit=%d: %s)\n",
+ 		(msr & SNB_C3_AUTO_UNDEMOTE) ? "UNdemote-C3, " : "",
+@@ -2383,7 +2383,7 @@ void check_permissions()
+  * MSR_SMI_COUNT                   0x00000034
+  *
+  * MSR_PLATFORM_INFO               0x000000ce
+- * MSR_NHM_SNB_PKG_CST_CFG_CTL     0x000000e2
++ * MSR_PKG_CST_CONFIG_CONTROL     0x000000e2
+  *
+  * MSR_MISC_PWR_MGMT               0x000001aa
+  *
+@@ -2393,7 +2393,7 @@ void check_permissions()
+  * MSR_CORE_C6_RESIDENCY           0x000003fd
+  *
+  * Side effect:
+- * sets global pkg_cstate_limit to decode MSR_NHM_SNB_PKG_CST_CFG_CTL
++ * sets global pkg_cstate_limit to decode MSR_PKG_CST_CONFIG_CONTROL
+  */
+ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ {
+@@ -2462,7 +2462,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ 	default:
+ 		return 0;
+ 	}
+-	get_msr(base_cpu, MSR_NHM_SNB_PKG_CST_CFG_CTL, &msr);
++	get_msr(base_cpu, MSR_PKG_CST_CONFIG_CONTROL, &msr);
+ 	pkg_cstate_limit = pkg_cstate_limits[msr & 0xF];
+ 
+ 	get_msr(base_cpu, MSR_PLATFORM_INFO, &msr);
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+2.11.0.161.g6610af872
