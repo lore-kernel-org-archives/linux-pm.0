@@ -1,72 +1,253 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
- binding to OPP nodes
-Date: Wed, 1 Mar 2017 11:42:28 +0530
-Message-ID: <20170301061228.GD24323@vireshk-i7>
-References: <cover.1487926924.git.viresh.kumar@linaro.org>
- <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
- <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop>
- <20170228065711.GD19417@vireshk-i7>
- <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:33757 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750736AbdCAGlM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 01:41:12 -0500
-Received: by mail-pf0-f181.google.com with SMTP id w189so7922380pfb.0
-        for <linux-pm@vger.kernel.org>; Tue, 28 Feb 2017 22:40:16 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 01/44] tools/power turbostat: fix bugs in --add option
+Date: Wed,  1 Mar 2017 00:27:05 -0500
+Message-ID: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+References: <20170301052748.27810-1-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-On 28-02-17, 08:10, Rob Herring wrote:
-> On Tue, Feb 28, 2017 at 12:57 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > That's what I did in V2, but then I turned it down considering the parent/child
-> > relationships we may have.
-> >
-> > There are multiple cases we can have:
-> >
-> > A.) DeviceX  --->  Parent-domain-1 (Contains Perfomance states)
-> >
-> > B.) DeviceX  --->  Parent-domain-1  ---> Parent domain-2 (Contains Perfomance states)
+From: Len Brown <len.brown@intel.com>
 
-Okay, how about this case first? Should we still use a phandle or an index
-value?
+When --add was used more than once, overflowed buffers
+caused some counters to be stored on top of others,
+corrupting the results.  Simplify the code by simply
+reserving space for up to 16 added counters per each
+cpu, core, package.
 
-> >
-> >                                     ---> Parent domain-2 (Contains Perfomance states)
-> >                                     |
-> >                                     |
-> > C.) DeviceX  --->  Parent-domain-1  |
-> >                                     |
-> >                                     |
-> >                                     ---> Parent domain-3 (Contains Perfomance states)
-> 
-> I'm a bit confused. How does a domain have 2 parent domains?
+Per-cpu added counters were being printed only per-core.
 
-The framework supported it and so I thought it should be fairly common. Even in
-the last version, I coded the notifier to handle cases where we have only one
-parent domain. But then Kevin pointed out that we shouldn't be doing any such
-special things. But binding doesn't say anything about it though, and I was just
-presenting an example.
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 88 +++++++++++++++++++++--------------
+ 1 file changed, 52 insertions(+), 36 deletions(-)
 
-> You have the same problem either way. If I have performance state 2
-> for the device, that corresponds to domain 2 or 3?
-
-Right now I have used the same performance state for both the domains in the
-code, as I am not sure if we will have such a case. And probably we can figure
-this out when we have a case with separate levels for both parents. It would be
-trivial to extend the bindings to include a list instead of a single value here.
-
-So, to conclude, should I use a phandle here or it is fine the way it is written
-right now ? With direct numbers, its easy to parse it in the OPP framework for
-example, as that's the value the QoS framework will use. Else we need to parse
-the phandle and read the "reg" value from there.
-
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index f13f61b065c6..c7fadf0faa4b 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -154,6 +154,7 @@ char *progname;
+ 
+ cpu_set_t *cpu_present_set, *cpu_affinity_set;
+ size_t cpu_present_setsize, cpu_affinity_setsize;
++#define MAX_ADDED_COUNTERS 16
+ 
+ struct thread_data {
+ 	unsigned long long tsc;
+@@ -166,7 +167,7 @@ struct thread_data {
+ 	unsigned int flags;
+ #define CPU_IS_FIRST_THREAD_IN_CORE	0x2
+ #define CPU_IS_FIRST_CORE_IN_PACKAGE	0x4
+-	unsigned long long counter[1];
++	unsigned long long counter[MAX_ADDED_COUNTERS];
+ } *thread_even, *thread_odd;
+ 
+ struct core_data {
+@@ -175,7 +176,7 @@ struct core_data {
+ 	unsigned long long c7;
+ 	unsigned int core_temp_c;
+ 	unsigned int core_id;
+-	unsigned long long counter[1];
++	unsigned long long counter[MAX_ADDED_COUNTERS];
+ } *core_even, *core_odd;
+ 
+ struct pkg_data {
+@@ -200,7 +201,7 @@ struct pkg_data {
+ 	unsigned int rapl_pkg_perf_status;	/* MSR_PKG_PERF_STATUS */
+ 	unsigned int rapl_dram_perf_status;	/* MSR_DRAM_PERF_STATUS */
+ 	unsigned int pkg_temp_c;
+-	unsigned long long counter[1];
++	unsigned long long counter[MAX_ADDED_COUNTERS];
+ } *package_even, *package_odd;
+ 
+ #define ODD_COUNTERS thread_odd, core_odd, package_odd
+@@ -228,9 +229,9 @@ struct msr_counter {
+ };
+ 
+ struct sys_counters {
+-	unsigned int thread_counter_bytes;
+-	unsigned int core_counter_bytes;
+-	unsigned int package_counter_bytes;
++	unsigned int added_thread_counters;
++	unsigned int added_core_counters;
++	unsigned int added_package_counters;
+ 	struct msr_counter *tp;
+ 	struct msr_counter *cp;
+ 	struct msr_counter *pp;
+@@ -374,12 +375,6 @@ void print_header(void)
+ 
+ 	if (do_nhm_cstates)
+ 		outp += sprintf(outp, "\tCPU%%c1");
+-	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
+-		outp += sprintf(outp, "\tCPU%%c3");
+-	if (do_nhm_cstates)
+-		outp += sprintf(outp, "\tCPU%%c6");
+-	if (do_snb_cstates)
+-		outp += sprintf(outp, "\tCPU%%c7");
+ 
+ 	for (mp = sys.tp; mp; mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+@@ -392,6 +387,14 @@ void print_header(void)
+ 		}
+ 	}
+ 
++	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
++		outp += sprintf(outp, "\tCPU%%c3");
++	if (do_nhm_cstates)
++		outp += sprintf(outp, "\tCPU%%c6");
++	if (do_snb_cstates)
++		outp += sprintf(outp, "\tCPU%%c7");
++
++
+ 	if (do_dts)
+ 		outp += sprintf(outp, "\tCoreTmp");
+ 
+@@ -635,20 +638,11 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 	if (do_smi)
+ 		outp += sprintf(outp, "\t%d", t->smi_count);
+ 
++	/* C1 */
+ 	if (do_nhm_cstates)
+ 		outp += sprintf(outp, "\t%.2f", 100.0 * t->c1/t->tsc);
+ 
+-	/* print per-core data only for 1st thread in core */
+-	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
+-		goto done;
+-
+-	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
+-		outp += sprintf(outp, "\t%.2f", 100.0 * c->c3/t->tsc);
+-	if (do_nhm_cstates)
+-		outp += sprintf(outp, "\t%.2f", 100.0 * c->c6/t->tsc);
+-	if (do_snb_cstates)
+-		outp += sprintf(outp, "\t%.2f", 100.0 * c->c7/t->tsc);
+-
++	/* Added counters */
+ 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW) {
+ 			if (mp->width == 32)
+@@ -656,12 +650,23 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "\t0x%016llx", t->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+-			outp += sprintf(outp, "\t%8lld", t->counter[i]);
++			outp += sprintf(outp, "\t%lld", t->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			outp += sprintf(outp, "\t%.2f", 100.0 * t->counter[i]/t->tsc);
+ 		}
+ 	}
+ 
++	/* print per-core data only for 1st thread in core */
++	if (!(t->flags & CPU_IS_FIRST_THREAD_IN_CORE))
++		goto done;
++
++	if (do_nhm_cstates && !do_slm_cstates && !do_knl_cstates)
++		outp += sprintf(outp, "\t%.2f", 100.0 * c->c3/t->tsc);
++	if (do_nhm_cstates)
++		outp += sprintf(outp, "\t%.2f", 100.0 * c->c6/t->tsc);
++	if (do_snb_cstates)
++		outp += sprintf(outp, "\t%.2f", 100.0 * c->c7/t->tsc);
++
+ 
+ 	if (do_dts)
+ 		outp += sprintf(outp, "\t%d", c->core_temp_c);
+@@ -673,7 +678,7 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "\t0x%016llx", c->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+-			outp += sprintf(outp, "\t%8lld", c->counter[i]);
++			outp += sprintf(outp, "\t%lld", c->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			outp += sprintf(outp, "\t%.2f", 100.0 * c->counter[i]/t->tsc);
+ 		}
+@@ -770,7 +775,7 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "\t0x%016llx", p->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+-			outp += sprintf(outp, "\t%8lld", p->counter[i]);
++			outp += sprintf(outp, "\t%lld", p->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			outp += sprintf(outp, "\t%.2f", 100.0 * p->counter[i]/t->tsc);
+ 		}
+@@ -1036,7 +1041,6 @@ void clear_counters(struct thread_data *t, struct core_data *c, struct pkg_data
+ 
+ 	p->gfx_rc6_ms = 0;
+ 	p->gfx_mhz = 0;
+-
+ 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next)
+ 		t->counter[i] = 0;
+ 
+@@ -3662,7 +3666,7 @@ allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data
+ 	int i;
+ 
+ 	*t = calloc(topo.num_threads_per_core * topo.num_cores_per_pkg *
+-		topo.num_packages, sizeof(struct thread_data) + sys.thread_counter_bytes);
++		topo.num_packages, sizeof(struct thread_data));
+ 	if (*t == NULL)
+ 		goto error;
+ 
+@@ -3671,14 +3675,14 @@ allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data
+ 		(*t)[i].cpu_id = -1;
+ 
+ 	*c = calloc(topo.num_cores_per_pkg * topo.num_packages,
+-		sizeof(struct core_data) + sys.core_counter_bytes);
++		sizeof(struct core_data));
+ 	if (*c == NULL)
+ 		goto error;
+ 
+ 	for (i = 0; i < topo.num_cores_per_pkg * topo.num_packages; i++)
+ 		(*c)[i].core_id = -1;
+ 
+-	*p = calloc(topo.num_packages, sizeof(struct pkg_data) + sys.package_counter_bytes);
++	*p = calloc(topo.num_packages, sizeof(struct pkg_data));
+ 	if (*p == NULL)
+ 		goto error;
+ 
+@@ -3901,24 +3905,36 @@ int add_counter(unsigned int msr_num, char *name, unsigned int width,
+ 	switch (scope) {
+ 
+ 	case SCOPE_CPU:
+-		sys.thread_counter_bytes += 64;
+ 		msrp->next = sys.tp;
+ 		sys.tp = msrp;
+-		sys.thread_counter_bytes += sizeof(unsigned long long);
++		sys.added_thread_counters++;
++		if (sys.added_thread_counters > MAX_ADDED_COUNTERS) {
++			fprintf(stderr, "exceeded max %d added thread counters\n",
++				MAX_ADDED_COUNTERS);
++			exit(-1);
++		}
+ 		break;
+ 
+ 	case SCOPE_CORE:
+-		sys.core_counter_bytes += 64;
+ 		msrp->next = sys.cp;
+ 		sys.cp = msrp;
+-		sys.core_counter_bytes += sizeof(unsigned long long);
++		sys.added_core_counters++;
++		if (sys.added_core_counters > MAX_ADDED_COUNTERS) {
++			fprintf(stderr, "exceeded max %d added core counters\n",
++				MAX_ADDED_COUNTERS);
++			exit(-1);
++		}
+ 		break;
+ 
+ 	case SCOPE_PACKAGE:
+-		sys.package_counter_bytes += 64;
+ 		msrp->next = sys.pp;
+ 		sys.pp = msrp;
+-		sys.package_counter_bytes += sizeof(unsigned long long);
++		sys.added_package_counters++;
++		if (sys.added_package_counters > MAX_ADDED_COUNTERS) {
++			fprintf(stderr, "exceeded max %d added package counters\n",
++				MAX_ADDED_COUNTERS);
++			exit(-1);
++		}
+ 		break;
+ 	}
+ 
 -- 
-viresh
+2.11.0.161.g6610af872
