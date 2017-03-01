@@ -1,54 +1,210 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
- binding to OPP nodes
-Date: Wed, 1 Mar 2017 14:24:12 +0530
-Message-ID: <20170301085412.GF24323@vireshk-i7>
-References: <cover.1487926924.git.viresh.kumar@linaro.org>
- <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org>
- <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop>
- <20170228065711.GD19417@vireshk-i7>
- <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com>
- <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com>
- <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com>
- <20170301061402.GE24323@vireshk-i7>
- <CAMuHMdWnDJ2RvGgYOxSiB=2Z32-bZwNjnEQG6TK2Umtf4eiAYw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdWnDJ2RvGgYOxSiB=2Z32-bZwNjnEQG6TK2Umtf4eiAYw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rob Herring <robh@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 35/44] tools/power turbostat: use wide columns to display large numbers
+Date: Wed,  1 Mar 2017 00:27:39 -0500
+Message-ID: <0de6c0df4ecc32ffaf064fea3a43846ba4474bd0.1488345270.git.len.brown@intel.com>
+References: <20170301052748.27810-1-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f195.google.com ([209.85.220.195]:35531 "EHLO
+        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750713AbdCAJar (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 04:30:47 -0500
+In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
+In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-On 01-03-17, 09:45, Geert Uytterhoeven wrote:
-> On Wed, Mar 1, 2017 at 7:14 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > On 28-02-17, 09:52, Rob Herring wrote:
-> >> On Tue, Feb 28, 2017 at 9:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> >> > This comes from the early design of the generic PM domain, thus I
-> >> > assume we have some HW with such complex PM topology. However, I don't
-> >> > know if it is actually being used.
-> >> >
-> >> > Moreover, the corresponding DT bindings for "power-domains" parents,
-> >> > can easily be extended to cover more than one parent. See more in
-> >> > Documentation/devicetree/bindings/power/power_domain.txt
-> >>
-> >> I could easily see device having 2 power domains. For example a cpu
-> >> may have separate domains for RAM/caches and logic.
-> >
-> > An important thing here is that PM domain doesn't support such devices. i.e. a
-> > device isn't allowed to have multiple PM domains today. So a way to support such
-> > devices can be to create a virtual PM domain, that has two parents and device as
-> > its child.
-> 
-> As clock domains (and their support code) are fairly orthogonal to power
-> areas, currently our power area controller driver just forwards the
-> clock handling
-> to the clock driver (cfr. rcar-sysc).
+From: Len Brown <len.brown@intel.com>
 
-Perhaps Rajendra can explain better but Qcom have a case where they need to
-program two power domains as well.
+When a counter overlfows 7 columns, it shifts the remaining
+columns to the right, so they no longer line up under
+their column header.
 
+Update turbostat to dectect when it is handling large
+numbers, and switch to wider columns where, necessary.
+
+Reported-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 68 ++++++++++++++++++++++++++++-------
+ 1 file changed, 55 insertions(+), 13 deletions(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 7b02fbb65893..cafc6bba6539 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -50,6 +50,7 @@ int *fd_percpu;
+ struct timespec interval_ts = {5, 0};
+ unsigned int debug;
+ unsigned int quiet;
++unsigned int sums_need_wide_columns;
+ unsigned int rapl_joules;
+ unsigned int summary_only;
+ unsigned int list_header_only;
+@@ -154,7 +155,7 @@ struct thread_data {
+ 	unsigned long long aperf;
+ 	unsigned long long mperf;
+ 	unsigned long long c1;
+-	unsigned int irq_count;
++	unsigned long long  irq_count;
+ 	unsigned int smi_count;
+ 	unsigned int cpu_id;
+ 	unsigned int flags;
+@@ -489,8 +490,13 @@ void print_header(char *delim)
+ 	if (DO_BIC(BIC_TSC_MHz))
+ 		outp += sprintf(outp, "%sTSC_MHz", delim);
+ 
+-	if (DO_BIC(BIC_IRQ))
+-		outp += sprintf(outp, "%sIRQ", delim);
++	if (DO_BIC(BIC_IRQ)) {
++		if (sums_need_wide_columns)
++			outp += sprintf(outp, "%s     IRQ", delim);
++		else
++			outp += sprintf(outp, "%sIRQ", delim);
++	}
++
+ 	if (DO_BIC(BIC_SMI))
+ 		outp += sprintf(outp, "%sSMI", delim);
+ 
+@@ -501,7 +507,10 @@ void print_header(char *delim)
+ 			else
+ 				outp += sprintf(outp, "%s%10.10s", delim, mp->name);
+ 		} else {
+-			outp += sprintf(outp, "%s%s", delim, mp->name);
++			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
++				outp += sprintf(outp, "%s%8s", delim, mp->name);
++			else
++				outp += sprintf(outp, "%s%s", delim, mp->name);
+ 		}
+ 	}
+ 
+@@ -527,7 +536,10 @@ void print_header(char *delim)
+ 			else
+ 				outp += sprintf(outp, "%s%10.10s", delim, mp->name);
+ 		} else {
+-			outp += sprintf(outp, "%s%s", delim, mp->name);
++			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
++				outp += sprintf(outp, "%s%8s", delim, mp->name);
++			else
++				outp += sprintf(outp, "%s%s", delim, mp->name);
+ 		}
+ 	}
+ 
+@@ -596,7 +608,10 @@ void print_header(char *delim)
+ 			else
+ 				outp += sprintf(outp, "%s%10.10s", delim, mp->name);
+ 		} else {
+-			outp += sprintf(outp, "%s%s", delim, mp->name);
++			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
++				outp += sprintf(outp, "%s%8s", delim, mp->name);
++			else
++				outp += sprintf(outp, "%s%s", delim, mp->name);
+ 		}
+ 	}
+ 
+@@ -620,7 +635,7 @@ int dump_counters(struct thread_data *t, struct core_data *c,
+ 		outp += sprintf(outp, "c1: %016llX\n", t->c1);
+ 
+ 		if (DO_BIC(BIC_IRQ))
+-			outp += sprintf(outp, "IRQ: %d\n", t->irq_count);
++			outp += sprintf(outp, "IRQ: %lld\n", t->irq_count);
+ 		if (DO_BIC(BIC_SMI))
+ 			outp += sprintf(outp, "SMI: %d\n", t->smi_count);
+ 
+@@ -755,8 +770,12 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 		outp += sprintf(outp, "\t%.0f", 1.0 * t->tsc/units/interval_float);
+ 
+ 	/* IRQ */
+-	if (DO_BIC(BIC_IRQ))
+-		outp += sprintf(outp, "\t%d", t->irq_count);
++	if (DO_BIC(BIC_IRQ)) {
++		if (sums_need_wide_columns)
++			outp += sprintf(outp, "\t%8lld", t->irq_count);
++		else
++			outp += sprintf(outp, "\t%lld", t->irq_count);
++	}
+ 
+ 	/* SMI */
+ 	if (DO_BIC(BIC_SMI))
+@@ -770,7 +789,10 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "\t0x%016llx", t->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+-			outp += sprintf(outp, "\t%lld", t->counter[i]);
++			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
++				outp += sprintf(outp, "\t%8lld", t->counter[i]);
++			else
++				outp += sprintf(outp, "\t%lld", t->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			if (mp->type == COUNTER_USEC)
+ 				outp += sprintf(outp, "\t%.2f", t->counter[i]/interval_float/10000);
+@@ -809,7 +831,10 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "\t0x%016llx", c->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+-			outp += sprintf(outp, "\t%lld", c->counter[i]);
++			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
++				outp += sprintf(outp, "\t%8lld", c->counter[i]);
++			else
++				outp += sprintf(outp, "\t%lld", c->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			outp += sprintf(outp, "\t%.2f", 100.0 * c->counter[i]/tsc);
+ 		}
+@@ -897,7 +922,10 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "\t0x%016llx", p->counter[i]);
+ 		} else if (mp->format == FORMAT_DELTA) {
+-			outp += sprintf(outp, "\t%lld", p->counter[i]);
++			if ((mp->type == COUNTER_ITEMS) && sums_need_wide_columns)
++				outp += sprintf(outp, "\t%8lld", p->counter[i]);
++			else
++				outp += sprintf(outp, "\t%lld", p->counter[i]);
+ 		} else if (mp->format == FORMAT_PERCENT) {
+ 			outp += sprintf(outp, "\t%.2f", 100.0 * p->counter[i]/tsc);
+ 		}
+@@ -1272,6 +1300,9 @@ void compute_average(struct thread_data *t, struct core_data *c,
+ 	average.threads.mperf /= topo.num_cpus;
+ 	average.threads.c1 /= topo.num_cpus;
+ 
++	if (average.threads.irq_count > 9999999)
++		sums_need_wide_columns = 1;
++
+ 	average.cores.c3 /= topo.num_cores;
+ 	average.cores.c6 /= topo.num_cores;
+ 	average.cores.c7 /= topo.num_cores;
+@@ -1299,18 +1330,29 @@ void compute_average(struct thread_data *t, struct core_data *c,
+ 	for (i = 0, mp = sys.tp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW)
+ 			continue;
+-		if (mp->flags & SYSFS_PERCPU && mp->type == COUNTER_ITEMS)
++		if (mp->type == COUNTER_ITEMS) {
++			if (average.threads.counter[i] > 9999999)
++				sums_need_wide_columns = 1;
+ 			continue;
++		}
+ 		average.threads.counter[i] /= topo.num_cpus;
+ 	}
+ 	for (i = 0, mp = sys.cp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW)
+ 			continue;
++		if (mp->type == COUNTER_ITEMS) {
++			if (average.cores.counter[i] > 9999999)
++				sums_need_wide_columns = 1;
++		}
+ 		average.cores.counter[i] /= topo.num_cores;
+ 	}
+ 	for (i = 0, mp = sys.pp; mp; i++, mp = mp->next) {
+ 		if (mp->format == FORMAT_RAW)
+ 			continue;
++		if (mp->type == COUNTER_ITEMS) {
++			if (average.packages.counter[i] > 9999999)
++				sums_need_wide_columns = 1;
++		}
+ 		average.packages.counter[i] /= topo.num_packages;
+ 	}
+ }
 -- 
-viresh
+2.11.0.161.g6610af872
