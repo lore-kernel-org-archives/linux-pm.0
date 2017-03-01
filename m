@@ -1,175 +1,196 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH] PM / OPP: Documentation: Fix opp-microvolt in examples
-Date: Wed,  1 Mar 2017 16:39:55 +0530
-Message-ID: <e527318dc8b5a1acf260499c65cf025732d9fc51.1488365712.git.viresh.kumar@linaro.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: linaro-kernel-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 28/44] tools/power turbostat: fix decoding for GLM, DNV, SKX turbo-ratio limits
+Date: Wed,  1 Mar 2017 00:27:32 -0500
+Message-ID: <31e07522be566cd039ff7a770550076cc1707a0c.1488345270.git.len.brown@intel.com>
+References: <20170301052748.27810-1-lenb@kernel.org>
+Reply-To: Len Brown <lenb@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
+In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-The triplet present in "opp-microvolt" property should be in the order
-<target min max>, while all the examples have it in the order
-<min target max>.
+From: Len Brown <len.brown@intel.com>
 
-Fix it.
+Newer processors do not hard-code the the number of cpus in each bin
+to {1, 2, 3, 4, 5, 6, 7, 8}  Rather, they can specify any number
+of CPUS in each of the 8 bins:
 
-Luckily all of the users of "opp-microvolt" property have applied brain
-instead of copying the examples from documentation and none of the
-actual dts files have it wrong.
+eg.
 
-Reported-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+...
+37 * 100.0 = 3600.0 MHz max turbo 4 active cores
+38 * 100.0 = 3700.0 MHz max turbo 3 active cores
+39 * 100.0 = 3800.0 MHz max turbo 2 active cores
+39 * 100.0 = 3900.0 MHz max turbo 1 active cores
+
+could now look something like this:
+
+...
+37 * 100.0 = 3600.0 MHz max turbo 16 active cores
+38 * 100.0 = 3700.0 MHz max turbo 8 active cores
+39 * 100.0 = 3800.0 MHz max turbo 4 active cores
+39 * 100.0 = 3900.0 MHz max turbo 2 active cores
+
+Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 44 +++++++++++++--------------
- 1 file changed, 22 insertions(+), 22 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 90 ++++++++++++++++++++++++++---------
+ 1 file changed, 67 insertions(+), 23 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 9f5ca4457b5f..7951961ef356 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -188,14 +188,14 @@ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 8c437115d41b..67a275882a8d 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -1671,56 +1671,84 @@ dump_ivt_turbo_ratio_limits(void)
+ 			ratio, bclk, ratio * bclk);
+ 	return;
+ }
++int has_turbo_ratio_group_limits(int family, int model)
++{
++
++	if (!genuine_intel)
++		return 0;
++
++	switch (model) {
++	case INTEL_FAM6_ATOM_GOLDMONT:
++	case INTEL_FAM6_SKYLAKE_X:
++	case INTEL_FAM6_ATOM_DENVERTON:
++		return 1;
++	}
++	return 0;
++}
  
- 		opp@1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>;
-+			opp-microvolt = <975000 970000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
- 			opp-suspend;
- 		};
- 		opp@1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
--			opp-microvolt = <980000 1000000 1010000>;
-+			opp-microvolt = <1000000 980000 1010000>;
- 			opp-microamp = <80000>;
- 			clock-latency-ns = <310000>;
- 		};
-@@ -267,14 +267,14 @@ independently.
+ static void
+-dump_nhm_turbo_ratio_limits(void)
++dump_turbo_ratio_limits(int family, int model)
+ {
+-	unsigned long long msr;
+-	unsigned int ratio;
++	unsigned long long msr, core_counts;
++	unsigned int ratio, group_size;
  
- 		opp@1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>;
-+			opp-microvolt = <975000 970000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
- 			opp-suspend;
- 		};
- 		opp@1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
--			opp-microvolt = <980000 1000000 1010000>;
-+			opp-microvolt = <1000000 980000 1010000>;
- 			opp-microamp = <80000>;
- 			clock-latency-ns = <310000>;
- 		};
-@@ -343,14 +343,14 @@ DVFS state together.
+ 	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT, &msr);
+-
+ 	fprintf(outf, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n", base_cpu, msr);
  
- 		opp@1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>;
-+			opp-microvolt = <975000 970000 985000>;
- 			opp-microamp = <70000>;
- 			clock-latency-ns = <300000>;
- 			opp-suspend;
- 		};
- 		opp@1100000000 {
- 			opp-hz = /bits/ 64 <1100000000>;
--			opp-microvolt = <980000 1000000 1010000>;
-+			opp-microvolt = <1000000 980000 1010000>;
- 			opp-microamp = <80000>;
- 			clock-latency-ns = <310000>;
- 		};
-@@ -369,7 +369,7 @@ DVFS state together.
++	if (has_turbo_ratio_group_limits(family, model)) {
++		get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT1, &core_counts);
++		fprintf(outf, "cpu%d: MSR_TURBO_RATIO_LIMIT1: 0x%08llx\n", base_cpu, core_counts);
++	} else {
++		core_counts = 0x0807060504030201;
++	}
++
+ 	ratio = (msr >> 56) & 0xFF;
++	group_size = (core_counts >> 56) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 8 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
  
- 		opp@1300000000 {
- 			opp-hz = /bits/ 64 <1300000000>;
--			opp-microvolt = <1045000 1050000 1055000>;
-+			opp-microvolt = <1050000 1045000 1055000>;
- 			opp-microamp = <95000>;
- 			clock-latency-ns = <400000>;
- 			opp-suspend;
-@@ -382,7 +382,7 @@ DVFS state together.
- 		};
- 		opp@1500000000 {
- 			opp-hz = /bits/ 64 <1500000000>;
--			opp-microvolt = <1010000 1100000 1110000>;
-+			opp-microvolt = <1100000 1010000 1110000>;
- 			opp-microamp = <95000>;
- 			clock-latency-ns = <400000>;
- 			turbo-mode;
-@@ -424,9 +424,9 @@ Example 4: Handling multiple regulators
+ 	ratio = (msr >> 48) & 0xFF;
++	group_size = (core_counts >> 48) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 7 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
  
- 		opp@1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
--					<960000 965000 975000>, /* Supply 1 */
--					<960000 965000 975000>; /* Supply 2 */
-+			opp-microvolt = <975000 970000 985000>, /* Supply 0 */
-+					<965000 960000 975000>, /* Supply 1 */
-+					<965000 960000 975000>; /* Supply 2 */
- 			opp-microamp =  <70000>,		/* Supply 0 */
- 					<70000>,		/* Supply 1 */
- 					<70000>;		/* Supply 2 */
-@@ -437,9 +437,9 @@ Example 4: Handling multiple regulators
+ 	ratio = (msr >> 40) & 0xFF;
++	group_size = (core_counts >> 40) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 6 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
  
- 		opp@1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt = <970000 975000 985000>, /* Supply 0 */
--					<960000 965000 975000>, /* Supply 1 */
--					<960000 965000 975000>; /* Supply 2 */
-+			opp-microvolt = <975000 970000 985000>, /* Supply 0 */
-+					<965000 960000 975000>, /* Supply 1 */
-+					<965000 960000 975000>; /* Supply 2 */
- 			opp-microamp =  <70000>,		/* Supply 0 */
- 					<0>,			/* Supply 1 doesn't need this */
- 					<70000>;		/* Supply 2 */
-@@ -474,7 +474,7 @@ Example 5: opp-supported-hw
- 			 */
- 			opp-supported-hw = <0xF 0xFFFFFFFF 0xFFFFFFFF>
- 			opp-hz = /bits/ 64 <600000000>;
--			opp-microvolt = <900000 915000 925000>;
-+			opp-microvolt = <915000 900000 925000>;
- 			...
- 		};
+ 	ratio = (msr >> 32) & 0xFF;
++	group_size = (core_counts >> 32) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 5 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
  
-@@ -487,7 +487,7 @@ Example 5: opp-supported-hw
- 			 */
- 			opp-supported-hw = <0x20 0xff0000ff 0x0000f4f0>
- 			opp-hz = /bits/ 64 <800000000>;
--			opp-microvolt = <900000 915000 925000>;
-+			opp-microvolt = <915000 900000 925000>;
- 			...
- 		};
- 	};
-@@ -512,18 +512,18 @@ Example 5: opp-supported-hw
+ 	ratio = (msr >> 24) & 0xFF;
++	group_size = (core_counts >> 24) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 4 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
  
- 		opp@1000000000 {
- 			opp-hz = /bits/ 64 <1000000000>;
--			opp-microvolt-slow = <900000 915000 925000>;
--			opp-microvolt-fast = <970000 975000 985000>;
-+			opp-microvolt-slow = <915000 900000 925000>;
-+			opp-microvolt-fast = <975000 970000 985000>;
- 			opp-microamp-slow =  <70000>;
- 			opp-microamp-fast =  <71000>;
- 		};
+ 	ratio = (msr >> 16) & 0xFF;
++	group_size = (core_counts >> 16) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 3 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
  
- 		opp@1200000000 {
- 			opp-hz = /bits/ 64 <1200000000>;
--			opp-microvolt-slow = <900000 915000 925000>, /* Supply vcc0 */
--					      <910000 925000 935000>; /* Supply vcc1 */
--			opp-microvolt-fast = <970000 975000 985000>, /* Supply vcc0 */
--					     <960000 965000 975000>; /* Supply vcc1 */
-+			opp-microvolt-slow = <915000 900000 925000>, /* Supply vcc0 */
-+					      <925000 910000 935000>; /* Supply vcc1 */
-+			opp-microvolt-fast = <975000 970000 985000>, /* Supply vcc0 */
-+					     <965000 960000 975000>; /* Supply vcc1 */
- 			opp-microamp =  <70000>; /* Will be used for both slow/fast */
- 		};
- 	};
+ 	ratio = (msr >> 8) & 0xFF;
++	group_size = (core_counts >> 8) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 2 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
+ 
+ 	ratio = (msr >> 0) & 0xFF;
++	group_size = (core_counts >> 0) & 0xFF;
+ 	if (ratio)
+-		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 1 active cores\n",
+-			ratio, bclk, ratio * bclk);
++		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
++			ratio, bclk, ratio * bclk, group_size);
+ 	return;
+ }
+ 
+@@ -2597,7 +2625,7 @@ int is_skx(unsigned int family, unsigned int model)
+ 	return 0;
+ }
+ 
+-int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
++int has_turbo_ratio_limit(unsigned int family, unsigned int model)
+ {
+ 	if (has_slv_msrs(family, model))
+ 		return 0;
+@@ -2668,6 +2696,22 @@ int has_knl_turbo_ratio_limit(unsigned int family, unsigned int model)
+ 		return 0;
+ 	}
+ }
++int has_glm_turbo_ratio_limit(unsigned int family, unsigned int model)
++{
++	if (!genuine_intel)
++		return 0;
++
++	if (family != 6)
++		return 0;
++
++	switch (model) {
++	case INTEL_FAM6_ATOM_GOLDMONT:
++	case INTEL_FAM6_SKYLAKE_X:
++		return 1;
++	default:
++		return 0;
++	}
++}
+ int has_config_tdp(unsigned int family, unsigned int model)
+ {
+ 	if (!genuine_intel)
+@@ -2714,8 +2758,8 @@ dump_cstate_pstate_config_info(unsigned int family, unsigned int model)
+ 	if (has_ivt_turbo_ratio_limit(family, model))
+ 		dump_ivt_turbo_ratio_limits();
+ 
+-	if (has_nhm_turbo_ratio_limit(family, model))
+-		dump_nhm_turbo_ratio_limits();
++	if (has_turbo_ratio_limit(family, model))
++		dump_turbo_ratio_limits(family, model);
+ 
+ 	if (has_atom_turbo_ratio_limit(family, model))
+ 		dump_atom_turbo_ratio_limits();
 -- 
-2.7.1.410.g6faf27b
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.11.0.161.g6610af872
