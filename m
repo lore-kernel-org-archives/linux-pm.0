@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 08/44] intel_idle: use new name for MSR_PKG_CST_CONFIG_CONTROL
-Date: Wed,  1 Mar 2017 00:27:12 -0500
-Message-ID: <6cfb2374f83bc70b8acb0ddb989988ba3f140b61.1488345270.git.len.brown@intel.com>
+Subject: [PATCH 03/44] tools/power turbostat: BYT does not have MSR_MISC_PWR_MGMT
+Date: Wed,  1 Mar 2017 00:27:07 -0500
+Message-ID: <cf4cbe5314884c3123fe4ca137e9d750b6e2b8c9.1488345270.git.len.brown@intel.com>
 References: <20170301052748.27810-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,37 +15,80 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-previously known as  MSR_NHM_SNB_PKG_CST_CFG_CTL
+and so --debug fails with:
+
+turbostat: msr 1 offset 0x1aa read failed: Input/output error
+
+It seems that baytrail, and airmont do not have this MSR.
+It is included in subsequent Goldmont Atom.
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- drivers/idle/intel_idle.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index 7d8ea3d5fda6..930537da76d4 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -961,9 +961,9 @@ static void auto_demotion_disable(void)
- {
- 	unsigned long long msr_bits;
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index fff280b50af0..fdf0273465fa 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -70,6 +70,7 @@ unsigned int units = 1000000;	/* MHz etc */
+ unsigned int genuine_intel;
+ unsigned int has_invariant_tsc;
+ unsigned int do_nhm_platform_info;
++unsigned int no_MSR_MISC_PWR_MGMT;
+ unsigned int aperf_mperf_multiplier = 1;
+ double bclk;
+ double base_hz;
+@@ -330,7 +331,7 @@ int get_msr(int cpu, off_t offset, unsigned long long *msr)
+ 	retval = pread(get_msr_fd(cpu), msr, sizeof(*msr), offset);
  
--	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
-+	rdmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr_bits);
- 	msr_bits &= ~(icpu->auto_demotion_disable_flags);
--	wrmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr_bits);
-+	wrmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr_bits);
+ 	if (retval != sizeof *msr)
+-		err(-1, "msr %d offset 0x%llx read failed", cpu, (unsigned long long)offset);
++		err(-1, "cpu%d: msr offset 0x%llx read failed", cpu, (unsigned long long)offset);
+ 
+ 	return 0;
  }
- static void c1e_promotion_disable(void)
- {
-@@ -1273,7 +1273,7 @@ static void sklh_idle_state_table_update(void)
- 	if ((mwait_substates & (0xF << 28)) == 0)
+@@ -2384,6 +2385,8 @@ void check_permissions()
+  * MSR_PLATFORM_INFO               0x000000ce
+  * MSR_NHM_SNB_PKG_CST_CFG_CTL     0x000000e2
+  *
++ * MSR_MISC_PWR_MGMT               0x000001aa
++ *
+  * MSR_PKG_C3_RESIDENCY            0x000003f8
+  * MSR_PKG_C6_RESIDENCY            0x000003f9
+  * MSR_CORE_C3_RESIDENCY           0x000003fc
+@@ -2440,11 +2443,13 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
+ 		pkg_cstate_limits = skx_pkg_cstate_limits;
+ 		break;
+ 	case INTEL_FAM6_ATOM_SILVERMONT1:	/* BYT */
++		no_MSR_MISC_PWR_MGMT = 1;
+ 	case INTEL_FAM6_ATOM_SILVERMONT2:	/* AVN */
+ 		pkg_cstate_limits = slv_pkg_cstate_limits;
+ 		break;
+ 	case INTEL_FAM6_ATOM_AIRMONT:	/* AMT */
+ 		pkg_cstate_limits = amt_pkg_cstate_limits;
++		no_MSR_MISC_PWR_MGMT = 1;
+ 		break;
+ 	case INTEL_FAM6_XEON_PHI_KNL:	/* PHI */
+ 	case INTEL_FAM6_XEON_PHI_KNM:
+@@ -3481,6 +3486,9 @@ void decode_misc_pwr_mgmt_msr(void)
+ 	if (!do_nhm_platform_info)
  		return;
  
--	rdmsrl(MSR_NHM_SNB_PKG_CST_CFG_CTL, msr);
-+	rdmsrl(MSR_PKG_CST_CONFIG_CONTROL, msr);
++	if (no_MSR_MISC_PWR_MGMT)
++		return;
++
+ 	if (!get_msr(base_cpu, MSR_MISC_PWR_MGMT, &msr))
+ 		fprintf(outf, "cpu%d: MSR_MISC_PWR_MGMT: 0x%08llx (%sable-EIST_Coordination %sable-EPB %sable-OOB)\n",
+ 			base_cpu, msr,
+@@ -4061,7 +4069,7 @@ int get_and_dump_counters(void)
+ }
  
- 	/* PC10 is not enabled in PKG C-state limit */
- 	if ((msr & 0xF) != 8)
+ void print_version() {
+-	fprintf(outf, "turbostat version 4.16 24 Dec 2016"
++	fprintf(outf, "turbostat version 4.17 1 Jan 2017"
+ 		" - Len Brown <lenb@kernel.org>\n");
+ }
+ 
 -- 
 2.11.0.161.g6610af872
