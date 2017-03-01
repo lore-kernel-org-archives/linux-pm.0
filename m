@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 25/44] tools/power turbostat: initial Gemini Lake SOC support
-Date: Wed,  1 Mar 2017 00:27:29 -0500
-Message-ID: <ac01ac1371d01beb02827f89fff9aac9d7941e91.1488345270.git.len.brown@intel.com>
+Subject: [PATCH 17/44] tools/power turbostat: decode CPUID(6).TURBO
+Date: Wed,  1 Mar 2017 00:27:21 -0500
+Message-ID: <b3a34e9382a4aacfa7c0b24f9548737bbb20338e.1488345270.git.len.brown@intel.com>
 References: <20170301052748.27810-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,56 +15,48 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-Gemini Lake is similar to Apollo Lake (Broxton/Goldmont)
+show the CPUID feature for turbo to clarify the case
+when it may not be shown in MISC_ENABLE
+
+CPUID(6): APERF, TURBO, DTS, PTM, No-HWP, No-HWPnotify, No-HWPwindow, No-HWPepp, No-HWPpkg, EPB
+cpu4: MSR_IA32_MISC_ENABLE: 0x00850089 (TCC EIST MWAIT TURBO)
 
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ tools/power/x86/turbostat/turbostat.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 4b04ba86e44f..819d67fbb6ca 100644
+index da6ec640caf7..1011b5f7f21f 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2535,6 +2535,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
- 		pkg_cstate_limits = phi_pkg_cstate_limits;
- 		break;
- 	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
-+	case INTEL_FAM6_ATOM_GEMINI_LAKE:
- 	case INTEL_FAM6_ATOM_DENVERTON:	/* DNV */
- 		pkg_cstate_limits = bxt_pkg_cstate_limits;
- 		break;
-@@ -3018,6 +3019,7 @@ void rapl_probe(unsigned int family, unsigned int model)
- 		}
- 		break;
- 	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
-+	case INTEL_FAM6_ATOM_GEMINI_LAKE:
- 		do_rapl = RAPL_PKG | RAPL_PKG_POWER_INFO;
- 		if (rapl_joules)
- 			BIC_PRESENT(BIC_Pkg_J);
-@@ -3361,6 +3363,7 @@ int has_snb_msrs(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
- 	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
- 	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
-+	case INTEL_FAM6_ATOM_GEMINI_LAKE:
- 	case INTEL_FAM6_ATOM_DENVERTON:	/* DNV */
- 		return 1;
- 	}
-@@ -3392,6 +3395,7 @@ int has_hsw_msrs(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
- 	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
- 	case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
-+	case INTEL_FAM6_ATOM_GEMINI_LAKE:
- 		return 1;
- 	}
- 	return 0;
-@@ -3783,6 +3787,7 @@ void process_cpuid()
- 					crystal_hz = 25000000;	/* 25.0 MHz */
- 					break;
- 				case INTEL_FAM6_ATOM_GOLDMONT:	/* BXT */
-+				case INTEL_FAM6_ATOM_GEMINI_LAKE:
- 					crystal_hz = 19200000;	/* 19.2 MHz */
- 					break;
- 				default:
+@@ -3626,6 +3626,7 @@ void process_cpuid()
+ {
+ 	unsigned int eax, ebx, ecx, edx, max_level, max_extended_level;
+ 	unsigned int fms, family, model, stepping;
++	unsigned int has_turbo;
+ 
+ 	eax = ebx = ecx = edx = 0;
+ 
+@@ -3696,6 +3697,7 @@ void process_cpuid()
+ 	do_dts = eax & (1 << 0);
+ 	if (do_dts)
+ 		BIC_PRESENT(BIC_CoreTmp);
++	has_turbo = eax & (1 << 1);
+ 	do_ptm = eax & (1 << 6);
+ 	if (do_ptm)
+ 		BIC_PRESENT(BIC_PkgTmp);
+@@ -3707,9 +3709,10 @@ void process_cpuid()
+ 	has_epb = ecx & (1 << 3);
+ 
+ 	if (debug)
+-		fprintf(outf, "CPUID(6): %sAPERF, %sDTS, %sPTM, %sHWP, "
++		fprintf(outf, "CPUID(6): %sAPERF, %sTURBO, %sDTS, %sPTM, %sHWP, "
+ 			"%sHWPnotify, %sHWPwindow, %sHWPepp, %sHWPpkg, %sEPB\n",
+ 			has_aperf ? "" : "No-",
++			has_turbo ? "" : "No-",
+ 			do_dts ? "" : "No-",
+ 			do_ptm ? "" : "No-",
+ 			has_hwp ? "" : "No-",
 -- 
 2.11.0.161.g6610af872
