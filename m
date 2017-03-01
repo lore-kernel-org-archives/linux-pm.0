@@ -1,196 +1,135 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 28/44] tools/power turbostat: fix decoding for GLM, DNV, SKX turbo-ratio limits
-Date: Wed,  1 Mar 2017 00:27:32 -0500
-Message-ID: <31e07522be566cd039ff7a770550076cc1707a0c.1488345270.git.len.brown@intel.com>
-References: <20170301052748.27810-1-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
-In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
-References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Subject: Re: [PATCH 2/3] thermal: add support for the thermal sensor on
+ Allwinner new SoCs
+Date: Wed, 1 Mar 2017 16:56:06 +0100
+Message-ID: <20170301155606.dkx3nfm4rkj2kewc@lukather>
+References: <20170301132108.L3LK6WWv@smtp1h.mail.yandex.net>
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============8858907203287569530=="
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170301132108.L3LK6WWv@smtp1h.mail.yandex.net>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Icenowy Zheng <icenowy@aosc.xyz>
+Cc: Ondrej Jirman <megous@megous.com>, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Eduardo Valentin <edubezval@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
 
-Newer processors do not hard-code the the number of cpus in each bin
-to {1, 2, 3, 4, 5, 6, 7, 8}  Rather, they can specify any number
-of CPUS in each of the 8 bins:
+--===============8858907203287569530==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="qoq7slwd2joajh2m"
+Content-Disposition: inline
 
-eg.
 
-...
-37 * 100.0 = 3600.0 MHz max turbo 4 active cores
-38 * 100.0 = 3700.0 MHz max turbo 3 active cores
-39 * 100.0 = 3800.0 MHz max turbo 2 active cores
-39 * 100.0 = 3900.0 MHz max turbo 1 active cores
+--qoq7slwd2joajh2m
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-could now look something like this:
+On Wed, Mar 01, 2017 at 06:20:51PM +0800, Icenowy Zheng wrote:
+>=20
+> 2017=E5=B9=B43=E6=9C=881=E6=97=A5 18:14=E4=BA=8E Maxime Ripard <maxime.ri=
+pard@free-electrons.com>=E5=86=99=E9=81=93=EF=BC=9A
+> >
+> > On Tue, Feb 28, 2017 at 03:18:13PM +0800, Icenowy Zheng wrote:=20
+> > >=20
+> > > 2017=E5=B9=B42=E6=9C=8828=E6=97=A5 14:44=E4=BA=8E Maxime Ripard <maxi=
+me.ripard@free-electrons.com>=E5=86=99=E9=81=93=EF=BC=9A=20
+> > > >=20
+> > > > On Tue, Feb 28, 2017 at 03:40:53AM +0800, Icenowy Zheng wrote:=20
+> > > > > From: Ondrej Jirman <megous@megous.com>=20
+> > > > >=20
+> > > > > Allwinner SoCs from H3 (including H5, A64, etc) have a new versio=
+n of=20
+> > > > > thermal sensor, and needs a new driver for it.=20
+> > > > >=20
+> > > > > Add such a driver.=20
+> > > > >=20
+> > > > > Currently only H3 is supported, but other SoCs are easily to be=
+=20
+> > > > > supported by adding new formula and set the sensor number.=20
+> > > > >=20
+> > > > > Signed-off-by: Ond=C5=99ej Jirman <megous@megous.com>=20
+> > > > > [Icenowy: extend to support further multiple-sensor SoCs, change =
+commit=20
+> > > > >=C2=A0 message]=20
+> > > > > Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>=20
+> > > >=20
+> > > > There's no need to create a new driver for that. This can be handle=
+d=20
+> > > > by the GPADC driver we already have.=20
+> > >=20
+> > > sun8i-ths is not GPADC at all.=20
+> > >=20
+> > > The latest SoC I know that use GPADC as thermal sensor is A33.=20
+> >
+> > It's not called the same way, but it definitely is an evolution of the=
+=20
+> > same controller. There's no need for a new driver, only reworking what=
+=20
+> > is already there.=20
+>=20
+> I don't think so -- here's some evidence:
+>=20
+> 1. The old GPADC do not have module clock.
 
-...
-37 * 100.0 = 3600.0 MHz max turbo 16 active cores
-38 * 100.0 = 3700.0 MHz max turbo 8 active cores
-39 * 100.0 = 3800.0 MHz max turbo 4 active cores
-39 * 100.0 = 3900.0 MHz max turbo 2 active cores
+The A33 could use a PLL.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 90 ++++++++++++++++++++++++++---------
- 1 file changed, 67 insertions(+), 23 deletions(-)
+> 2. The old GPADC do not have calibration stored in eFUSE.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 8c437115d41b..67a275882a8d 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -1671,56 +1671,84 @@ dump_ivt_turbo_ratio_limits(void)
- 			ratio, bclk, ratio * bclk);
- 	return;
- }
-+int has_turbo_ratio_group_limits(int family, int model)
-+{
-+
-+	if (!genuine_intel)
-+		return 0;
-+
-+	switch (model) {
-+	case INTEL_FAM6_ATOM_GOLDMONT:
-+	case INTEL_FAM6_SKYLAKE_X:
-+	case INTEL_FAM6_ATOM_DENVERTON:
-+		return 1;
-+	}
-+	return 0;
-+}
- 
- static void
--dump_nhm_turbo_ratio_limits(void)
-+dump_turbo_ratio_limits(int family, int model)
- {
--	unsigned long long msr;
--	unsigned int ratio;
-+	unsigned long long msr, core_counts;
-+	unsigned int ratio, group_size;
- 
- 	get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT, &msr);
--
- 	fprintf(outf, "cpu%d: MSR_TURBO_RATIO_LIMIT: 0x%08llx\n", base_cpu, msr);
- 
-+	if (has_turbo_ratio_group_limits(family, model)) {
-+		get_msr(base_cpu, MSR_TURBO_RATIO_LIMIT1, &core_counts);
-+		fprintf(outf, "cpu%d: MSR_TURBO_RATIO_LIMIT1: 0x%08llx\n", base_cpu, core_counts);
-+	} else {
-+		core_counts = 0x0807060504030201;
-+	}
-+
- 	ratio = (msr >> 56) & 0xFF;
-+	group_size = (core_counts >> 56) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 8 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 48) & 0xFF;
-+	group_size = (core_counts >> 48) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 7 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 40) & 0xFF;
-+	group_size = (core_counts >> 40) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 6 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 32) & 0xFF;
-+	group_size = (core_counts >> 32) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 5 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 24) & 0xFF;
-+	group_size = (core_counts >> 24) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 4 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 16) & 0xFF;
-+	group_size = (core_counts >> 16) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 3 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 8) & 0xFF;
-+	group_size = (core_counts >> 8) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 2 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 
- 	ratio = (msr >> 0) & 0xFF;
-+	group_size = (core_counts >> 0) & 0xFF;
- 	if (ratio)
--		fprintf(outf, "%d * %.1f = %.1f MHz max turbo 1 active cores\n",
--			ratio, bclk, ratio * bclk);
-+		fprintf(outf, "%d * %.1f = %.1f MHz max turbo %d active cores\n",
-+			ratio, bclk, ratio * bclk, group_size);
- 	return;
- }
- 
-@@ -2597,7 +2625,7 @@ int is_skx(unsigned int family, unsigned int model)
- 	return 0;
- }
- 
--int has_nhm_turbo_ratio_limit(unsigned int family, unsigned int model)
-+int has_turbo_ratio_limit(unsigned int family, unsigned int model)
- {
- 	if (has_slv_msrs(family, model))
- 		return 0;
-@@ -2668,6 +2696,22 @@ int has_knl_turbo_ratio_limit(unsigned int family, unsigned int model)
- 		return 0;
- 	}
- }
-+int has_glm_turbo_ratio_limit(unsigned int family, unsigned int model)
-+{
-+	if (!genuine_intel)
-+		return 0;
-+
-+	if (family != 6)
-+		return 0;
-+
-+	switch (model) {
-+	case INTEL_FAM6_ATOM_GOLDMONT:
-+	case INTEL_FAM6_SKYLAKE_X:
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
- int has_config_tdp(unsigned int family, unsigned int model)
- {
- 	if (!genuine_intel)
-@@ -2714,8 +2758,8 @@ dump_cstate_pstate_config_info(unsigned int family, unsigned int model)
- 	if (has_ivt_turbo_ratio_limit(family, model))
- 		dump_ivt_turbo_ratio_limits();
- 
--	if (has_nhm_turbo_ratio_limit(family, model))
--		dump_nhm_turbo_ratio_limits();
-+	if (has_turbo_ratio_limit(family, model))
-+		dump_turbo_ratio_limits(family, model);
- 
- 	if (has_atom_turbo_ratio_limit(family, model))
- 		dump_atom_turbo_ratio_limits();
--- 
-2.11.0.161.g6610af872
+The A33 had calibration data stored in the efuses.
+
+> 3. R40 SoC have both RTP (it should be the old GPADC) and
+> new-generation THS.
+
+And this is probably just to be compatible with the A20.
+
+Maxime
+
+--=20
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+
+--qoq7slwd2joajh2m
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAEBCAAGBQJYtu8WAAoJEBx+YmzsjxAgU3AP/jcf+wtudZBUyNEn+c3kosVC
+fWFRvRQrmD9ojWX1oh9koVilRhjqWaZ7rVwrbRQETutl9gJBaqc3JfZrx7G9Qx9Z
+Dv2RMNCYP+lOhsxKc6/2nHu1aY1gFNcZ/ToicWD0uNvly25wUndTLN/aovS38v8J
+1QFgE1PrrkXDi3iNpjby1t4ICEU7ijejgoWVn5UdoXPv5zu3amLRFShgm5eHSFfk
+O2aPvM0D1N8kBhUJZmr/rOycSudDlkUV59uVMzMSb+d3ChMwLSCOI7LdVmqmw4PL
+CsSkRtKChS5ieBKKm1hMhdjzbl/vZta7HgaTGA+pBg91AELCHv3VbjnknrLB1jtt
+f1rb08z8CBfuOClYkB8V3+lDonRywaTR80OBpHZVBbLEZK8FHwBmZseybXyHCwtF
+UJKQKkGah5Lmn83bd05inKrdBheM2vBWHzc4LwEaDF4dOLhN8EGw9zPpT97iLpf7
+q6dN2n3WLs5ZlT4nyR1ujIJp2cJEUSGW855Pgvor7kwuZkupexb30u7vEkm43hxC
+G7DxTdKLcN0Jt9SiCdspGCLWoLvrcSvTeWjdrQ0AJCRQ6keMvbuZtH4Q2+aytLuk
+Sn/+YW9WZL6gykkxpJbXmPifh+7ikpOCvMXSz6gz2xpDglSilSHHCWec9+ANC4Hz
+GTVw6xcKwhYc4aXdbgDp
+=nEVk
+-----END PGP SIGNATURE-----
+
+--qoq7slwd2joajh2m--
+
+
+--===============8858907203287569530==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+linux-arm-kernel mailing list
+linux-arm-kernel@lists.infradead.org
+http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+
+--===============8858907203287569530==--
