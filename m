@@ -1,7 +1,7 @@
 From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 42/44] tools/power turbostat: show error on exec
-Date: Wed,  1 Mar 2017 00:27:46 -0500
-Message-ID: <0815a3d09baf2cd330f75020bdaad0f1adac0ecb.1488345270.git.len.brown@intel.com>
+Subject: [PATCH 44/44] tools/power turbostat: version 17.02.24
+Date: Wed,  1 Mar 2017 00:27:48 -0500
+Message-ID: <e3942ed8c66bcff496abee5182422cd542962d9e.1488345270.git.len.brown@intel.com>
 References: <20170301052748.27810-1-lenb@kernel.org>
 Reply-To: Len Brown <lenb@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -15,47 +15,28 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Len Brown <len.brown@intel.com>
 
-When turbostat is run in one-shot command mode,
-the parent takes the 'before' counter snapshot,
-fork/exec/wait for the child to exit,
-takes the 'after' counter snapshot,
-and prints the results.
+The turbostat before this last set of changes is obsolete.
+This new version can do a lot more, but it also has
+some different defaults, that might catch some off-guard.
+So it seems a good time to give a new version number.
 
-however, if the child fails to exec the command,
-it immediately returns, without indicating that
-anythign was wrong.
-
-Add an error message showing that exec failed:
-
-sudo turbostat sleeeep 4
-...
-turbostat: exec sleeeep: No such file or directory
-...
-
-Note that the parent will still print out the statistics,
-because it can't tell the difference between the failed
-exec and a command that is purposefully returning
-the same status.  Unfortunately, this may obscure the
-error message.  However, if the --out parameter is used,
-the error message is evident on stderr.
-
-Reported-by: Wendy Wang <wendy.wang@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 1 +
- 1 file changed, 1 insertion(+)
+ tools/power/x86/turbostat/turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 7af5f42a9792..2d758abecd56 100644
+index 5216549957f4..828dccd3f01e 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -4525,6 +4525,7 @@ int fork_it(char **argv)
- 	if (!child_pid) {
- 		/* child */
- 		execvp(argv[0], argv);
-+		err(errno, "exec %s", argv[0]);
- 	} else {
+@@ -4578,7 +4578,7 @@ int get_and_dump_counters(void)
+ }
  
- 		/* parent */
+ void print_version() {
+-	fprintf(outf, "turbostat version 4.17 10 Jan 2017"
++	fprintf(outf, "turbostat version 17.02.24"
+ 		" - Len Brown <lenb@kernel.org>\n");
+ }
+ 
 -- 
 2.11.0.161.g6610af872
