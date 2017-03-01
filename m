@@ -1,61 +1,32 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH] power: supply: twl4030_charger: remove incorrect __exit
- markups
-Date: Wed, 1 Mar 2017 15:44:53 -0800
-Message-ID: <20170301234453.GA13831@dtor-ws>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH 24/44] x86: intel-family.h: Add GEMINI_LAKE SOC
+Date: Thu, 2 Mar 2017 01:48:00 +0200
+Message-ID: <CAHp75Vcv_B=Od9isbH_d-eMWJ7zf3myTG1Hdj-dFzAKFE6mUVg@mail.gmail.com>
+References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+ <20170301052748.27810-1-lenb@kernel.org> <311f77708f362c1af0a999ba5ebbbc062fdc5601.1488345270.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:34545 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752514AbdCAXpt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Mar 2017 18:45:49 -0500
-Content-Disposition: inline
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <311f77708f362c1af0a999ba5ebbbc062fdc5601.1488345270.git.len.brown@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, "x86@kernel.org" <x86@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Even if bus is not hot-pluggable, the devices can be unbound from the
-driver via sysfs, so we should not be using __exit annotations on
-remove() methods. The only exception is drivers registered with
-platform_driver_probe() which specifically disables sysfs bind/unbind
-attributes.
+On Wed, Mar 1, 2017 at 7:27 AM, Len Brown <lenb@kernel.org> wrote:
+> From: Len Brown <len.brown@intel.com>
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/power/supply/twl4030_charger.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> --- a/arch/x86/include/asm/intel-family.h
+> +++ b/arch/x86/include/asm/intel-family.h
+> @@ -59,6 +59,7 @@
+>  #define INTEL_FAM6_ATOM_MERRIFIELD     0x4A /* Tangier */
+>  #define INTEL_FAM6_ATOM_MOOREFIELD     0x5A /* Anniedale */
+>  #define INTEL_FAM6_ATOM_GOLDMONT       0x5C
+> +#define INTEL_FAM6_ATOM_GEMINI_LAKE    0x7A
+>  #define INTEL_FAM6_ATOM_DENVERTON      0x5F /* Goldmont Microserver */
 
-diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
-index bcd4dc304f27..990ff3d218bc 100644
---- a/drivers/power/supply/twl4030_charger.c
-+++ b/drivers/power/supply/twl4030_charger.c
-@@ -1117,7 +1117,7 @@ static int twl4030_bci_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static int __exit twl4030_bci_remove(struct platform_device *pdev)
-+static int twl4030_bci_remove(struct platform_device *pdev)
- {
- 	struct twl4030_bci *bci = platform_get_drvdata(pdev);
- 
-@@ -1148,11 +1148,11 @@ MODULE_DEVICE_TABLE(of, twl_bci_of_match);
- 
- static struct platform_driver twl4030_bci_driver = {
- 	.probe = twl4030_bci_probe,
-+	.remove	= twl4030_bci_remove,
- 	.driver	= {
- 		.name	= "twl4030_bci",
- 		.of_match_table = of_match_ptr(twl_bci_of_match),
- 	},
--	.remove	= __exit_p(twl4030_bci_remove),
- };
- module_platform_driver(twl4030_bci_driver);
- 
--- 
-2.12.0.rc1.440.g5b76565f74-goog
-
+One nit: can we keep it in order by model ID?
 
 -- 
-Dmitry
+With Best Regards,
+Andy Shevchenko
