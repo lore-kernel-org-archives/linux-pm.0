@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/3] cpufreq: intel_pstate: Fix intel_cpufreq_verify_policy()
-Date: Thu, 02 Mar 2017 23:24:36 +0100
-Message-ID: <2885960.26GOj6xOKI@aspire.rjw.lan>
+Subject: [PATCH 1/3] cpufreq: intel_pstate: Do not use performance_limits in passive mode
+Date: Thu, 02 Mar 2017 23:22:29 +0100
+Message-ID: <2612157.PpWm9LcpIt@aspire.rjw.lan>
 References: <1573986.gdsgdO0VUn@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,59 +15,40 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The intel_pstate_update_perf_limits() called from
-intel_cpufreq_verify_policy() may cause global P-state limits
-to change which is generally confusing and unnecessary.
+Using performance_limits in the passive mode doesn't make
+sense, because in that mode the global limits are applied to the
+frequency selected by the scaling governor.
 
-In the passive mode the global limits are only applied to the
-frequency selected by the scaling governor (they are not taken
-into account by governors when making decisions anyway), so making
-them follow the per-policy limits serves no purpose and may go
-against user expectations (as it generally causes the global
-attributes in sysfs to change even though they have not been
-written to in some cases).
+The maximum and minimum P-state limits in performance_limits are both
+set to 100 percent which will put all CPUs into the turbo range
+regardless of what governor is used and what frequencies are
+selected by it (that is particularly undesirable on CPUs with the
+generic powersave governor attached).
 
-Fix that by dropping the intel_pstate_update_perf_limits()
-invocation from intel_cpufreq_verify_policy() (which also
-reduces the code size by a few lines).
-
-This change does not affect the per-CPU limits case, because those
-limits allow any P-state to be set by default in the passive mode
-and it removes the only piece of code updating them in that mode,
-so the per-policy settings will be the only ones taken into account
-in that case as expected.
+For this reason, make intel_pstate_register_driver() always point
+limits to powersave_limits in the passive mode.
 
 Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   10 ----------
- 1 file changed, 10 deletions(-)
+ drivers/cpufreq/intel_pstate.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
 +++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2306,7 +2306,6 @@ static struct cpufreq_driver intel_pstat
- static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
- {
- 	struct cpudata *cpu = all_cpu_data[policy->cpu];
--	struct perf_limits *perf_limits = limits;
+@@ -2442,8 +2442,11 @@ static int intel_pstate_register_driver(
  
- 	update_turbo_state();
- 	policy->cpuinfo.max_freq = limits->turbo_disabled ?
-@@ -2314,15 +2313,6 @@ static int intel_cpufreq_verify_policy(s
+ 	intel_pstate_init_limits(&powersave_limits);
+ 	intel_pstate_set_performance_limits(&performance_limits);
+-	limits = IS_ENABLED(CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE) ?
+-			&performance_limits : &powersave_limits;
++	if (IS_ENABLED(CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE) &&
++	    intel_pstate_driver == &intel_pstate)
++		limits = &performance_limits;
++	else
++		limits = &powersave_limits;
  
- 	cpufreq_verify_within_cpu_limits(policy);
- 
--	if (per_cpu_limits)
--		perf_limits = cpu->perf_limits;
--
--	mutex_lock(&intel_pstate_limits_lock);
--
--	intel_pstate_update_perf_limits(policy, perf_limits);
--
--	mutex_unlock(&intel_pstate_limits_lock);
--
- 	return 0;
- }
- 
+ 	ret = cpufreq_register_driver(intel_pstate_driver);
+ 	if (ret) {
