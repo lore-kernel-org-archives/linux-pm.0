@@ -1,51 +1,33 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [RFC v0 1/2] interconnect: Add generic interconnect controller API
-Date: Thu, 2 Mar 2017 15:53:35 -0800
-Message-ID: <15929d7a-65e5-f8ba-2fac-0381c5f8e8fc@infradead.org>
-References: <20170301182235.19154-1-georgi.djakov@linaro.org>
- <20170301182235.19154-2-georgi.djakov@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] cpufreq: schedutil: move cached_raw_freq to struct sugov_policy
+Date: Thu, 02 Mar 2017 23:05:39 +0100
+Message-ID: <1692186.fFRXBJz7b4@aspire.rjw.lan>
+References: <cover.1488437503.git.viresh.kumar@linaro.org> <0ee63c640d47281997d544d05f9dd543aef80588.1488437503.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170301182235.19154-2-georgi.djakov@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Georgi Djakov <georgi.djakov@linaro.org>, linux-pm@vger.kernel.org, rjw@rjwysocki.net, robh+dt@kernel.org
-Cc: linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org, vincent.guittot@linaro.org, seansw@qti.qualcomm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, davidai@quicinc.com, skannan@codeaurora.org, khilman@baylibre.com, andy.gross@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50114 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751229AbdCBX7N (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Mar 2017 18:59:13 -0500
+In-Reply-To: <0ee63c640d47281997d544d05f9dd543aef80588.1488437503.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 03/01/17 10:22, Georgi Djakov wrote:
+On Thursday, March 02, 2017 02:03:20 PM Viresh Kumar wrote:
+> cached_raw_freq applies to the entire cpufreq policy and not individual
+> CPUs. Apart from wasting per-cpu memory, it is actually wrong to keep it
+> in struct sugov_cpu as we may end up comparing next_freq with a stale
+> cached_raw_freq of a random CPU.
 > 
-> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
-> new file mode 100644
-> index 000000000000..103524b59905
-> --- /dev/null
-> +++ b/drivers/interconnect/Kconfig
-> @@ -0,0 +1,10 @@
-> +menuconfig INTERCONNECT
-> +	bool "On-Chip Interconnect management support"
+> Move cached_raw_freq to struct sugov_policy.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Why isn't this symbol tristate instead of bool so that the
-interconnect management support can be built as a loadable module?
+Any chance for a Fixes: tag?
 
-
-> +	help
-> +	  Support for management of the on-chip interconnects.
-> +
-> +	  This framework is designed to provide a generic interface for
-> +          managing the interconnects in a SoC.
-> +
-> +	  If unsure, say no.
-> +
-
-
--- 
-~Randy
+Thanks,
+Rafael
