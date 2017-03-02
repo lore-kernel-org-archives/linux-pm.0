@@ -1,91 +1,107 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 2/3] cpufreq: intel_pstate: Do not reinit performance
- limits in ->setpolicy
-Date: Thu, 2 Mar 2017 18:18:44 +0100
-Message-ID: <CAJZ5v0h5dWg22Fjb4oMbXTBMX7Rs1NrYyh64rK7RE5nJtu_6-w@mail.gmail.com>
-References: <2694426.SgxlQuL17D@aspire.rjw.lan> <2326598.n0dkg1GrdM@aspire.rjw.lan>
- <2188688.SPioTUuSuO@aspire.rjw.lan>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v8 1/9] devicetree: power: Add battery.txt
+Date: Thu, 2 Mar 2017 10:31:44 -0800
+Message-ID: <CAKvHMgR6eVTUp6je3D_YDUMAksWiHx6JnJc8cRHSHp6tj30OPA@mail.gmail.com>
+References: <20170227071117.18934-1-liam@networkimprov.net>
+ <20170227071117.18934-2-liam@networkimprov.net> <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2188688.SPioTUuSuO@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Mar 1, 2017 at 12:09 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> If the current P-state selection algorithm is set to "performance"
-> in intel_pstate_set_policy(), the limits may be initialized from
-> scratch, but only if no_turbo is not set and the maximum frequency
-> allowed for the given CPU (i.e. the policy object representing it)
-> is at least equal to the max frequency supported by the CPU.  In all
-> of the other cases, the limits will not be updated.
->
-> For example, the following can happen:
->
->  # cat intel_pstate/status
->  active
->  # echo performance > cpufreq/policy0/scaling_governor
->  # cat intel_pstate/min_perf_pct
->  100
->  # echo 94 > intel_pstate/min_perf_pct
->  # cat intel_pstate/min_perf_pct
->  100
->  # cat cpufreq/policy0/scaling_max_freq
->  3100000
->  echo 3000000 > cpufreq/policy0/scaling_max_freq
->  # cat intel_pstate/min_perf_pct
->  94
->  # echo 95 > intel_pstate/min_perf_pct
->  # cat intel_pstate/min_perf_pct
->  95
->
-> That is confusing for two reasons.  First, the initial attempt to
-> change min_perf_pct to 94 seems to have no effect, even though
-> setting the global limits should always work.  Second, after
-> changing scaling_max_freq for policy0 the global min_perf_pct
-> attribute shows 94, even though it should have not been affected
-> by that operation in principle.
->
-> Moreover, the final attempt to change min_perf_pct to 95 worked
-> as expected, because scaling_max_freq for the only policy with
-> scaling_governor equal to "performance" was different from the
-> maximum at that time.
->
-> To make all that confusion go away, modify intel_pstate_set_policy()
-> so that it doesn't reinitialize the limits at all.
->
-> At the same time, change intel_pstate_set_performance_limits() to
-> set min_sysfs_pct to 100 in the "performance" limits set so that
-> switching the P-state selection algorithm to "performance" causes
-> intel_pstate/min_perf_pct in sysfs to go to 100 (or whatever value
-> min_sysfs_pct in the "performance" limits is set to later).
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->
-> -> v2: No changes
->
-> ---
->  drivers/cpufreq/intel_pstate.c |   10 +++-------
->  1 file changed, 3 insertions(+), 7 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -382,6 +382,7 @@ static void intel_pstate_set_performance
->         intel_pstate_init_limits(limits);
->         limits->min_perf_pct = 100;
->         limits->min_perf = int_ext_tofp(1);
-> +       limits->min_sysfs_pct = 100;
+Hi Rob,
 
-This change breaks the per-CPU limits, so the patch is not correct.
+On Thu, Mar 2, 2017 at 7:14 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Sun, Feb 26, 2017 at 11:11:09PM -0800, Liam Breck wrote:
+>> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>>
+>> Documentation of static battery characteristics that can be defined
+>> for batteries which cannot self-identify. This information is required
+>> by fuel-gauge and charger chips for proper handling of the battery.
+>>
+>> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+>> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>> ---
+>>  .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
+>>  1 file changed, 42 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> new file mode 100644
+>> index 0000000..3d916bd
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+>> @@ -0,0 +1,42 @@
+>> +Battery Characteristics
+>> +
+>> +Required Properties:
+>> + - compatible: Must be "fixed-battery"
+>
+> Still not liking this name, but I don't have a better suggestion. Please
+> describe here what is and isn't a "fixed battery".
 
-Withdrawing.
+Sebastian...?
 
-Thanks,
-Rafael
+>> +
+>> +Optional Properties:
+>> + - voltage-min-design-microvolt: drained battery voltage
+>> + - energy-full-design-microwatt-hours: battery design energy
+>> + - charge-full-design-microamp-hours: battery design capacity
+>> +
+>> +Future Properties must be named for the corresponding elements in
+>> +enum power_supply_property, defined in include/linux/power_supply.h.
+>
+> Um, no. That's exactly not how DT bindings should be done.
+
+Power supply components surface stats in sysfs using the names in enum
+power_supply_property. For example,
+/sys/class/power_supply/.../voltage_min_design. Matching input (DT)
+and output (sysfs) names is sensible. The above comment is already
+attached to struct power_supply_battery_info, which is the initial
+destination for the above DT properties.
+
+Shall I mention sysfs in the above comment?
+
+>> +
+>> +Batteries must be referenced by chargers and/or fuel-gauges
+>> +using a phandle. The phandle's property should be named
+>> +"monitored-battery".
+>> +
+>> +Driver code should call power_supply_get_battery_info() to obtain
+>> +battery properties via monitored-battery. For details see:
+>> +  drivers/power/supply/power_supply_core.c
+>> +  drivers/power/supply/bq27xxx_battery.c
+>> +
+>> +Example:
+>> +
+>> +     bat: battery {
+>> +             compatible = "fixed-battery";
+>> +             voltage-min-design-microvolt = <3200000>;
+>> +             energy-full-design-microwatt-hours = <5290000>;
+>> +             charge-full-design-microamp-hours = <1430000>;
+>> +     };
+>> +
+>> +     charger: charger@11 {
+>> +             ....
+>> +             monitored-battery = <&bat>;
+>> +             ...
+>> +     };
+>> +
+>> +     fuel_gauge: fuel-gauge@22 {
+>> +             ....
+>> +             monitored-battery = <&bat>;
+>> +             ...
+>> +     };
+>> --
+>> 2.9.3
+>>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
