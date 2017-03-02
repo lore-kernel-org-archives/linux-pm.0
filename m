@@ -1,107 +1,63 @@
-From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: Re: [PATCH v8 1/9] devicetree: power: Add battery.txt
-Date: Thu, 2 Mar 2017 10:31:44 -0800
-Message-ID: <CAKvHMgR6eVTUp6je3D_YDUMAksWiHx6JnJc8cRHSHp6tj30OPA@mail.gmail.com>
-References: <20170227071117.18934-1-liam@networkimprov.net>
- <20170227071117.18934-2-liam@networkimprov.net> <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 3/3] cpufreq: intel_pstate: Avoid triggering cpu_frequency tracepoint unnecessarily
+Date: Thu, 02 Mar 2017 23:26:27 +0100
+Message-ID: <6304036.Ap76kdd4Kf@aspire.rjw.lan>
+References: <1573986.gdsgdO0VUn@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170302151449.j7i3ecpy2ipxu6tq@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1573986.gdsgdO0VUn@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On Thu, Mar 2, 2017 at 7:14 AM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Sun, Feb 26, 2017 at 11:11:09PM -0800, Liam Breck wrote:
->> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->>
->> Documentation of static battery characteristics that can be defined
->> for batteries which cannot self-identify. This information is required
->> by fuel-gauge and charger chips for proper handling of the battery.
->>
->> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
->> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
->> ---
->>  .../devicetree/bindings/power/supply/battery.txt   | 42 ++++++++++++++++++++++
->>  1 file changed, 42 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
->> new file mode 100644
->> index 0000000..3d916bd
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/supply/battery.txt
->> @@ -0,0 +1,42 @@
->> +Battery Characteristics
->> +
->> +Required Properties:
->> + - compatible: Must be "fixed-battery"
->
-> Still not liking this name, but I don't have a better suggestion. Please
-> describe here what is and isn't a "fixed battery".
+In the passive mode the cpu_frequency trace event is already
+triggered by the cpufreq core or by scaling governors, so
+intel_pstate should not trigger it once again for the same
+P-state updates.
 
-Sebastian...?
+Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
->> +
->> +Optional Properties:
->> + - voltage-min-design-microvolt: drained battery voltage
->> + - energy-full-design-microwatt-hours: battery design energy
->> + - charge-full-design-microamp-hours: battery design capacity
->> +
->> +Future Properties must be named for the corresponding elements in
->> +enum power_supply_property, defined in include/linux/power_supply.h.
->
-> Um, no. That's exactly not how DT bindings should be done.
-
-Power supply components surface stats in sysfs using the names in enum
-power_supply_property. For example,
-/sys/class/power_supply/.../voltage_min_design. Matching input (DT)
-and output (sysfs) names is sensible. The above comment is already
-attached to struct power_supply_battery_info, which is the initial
-destination for the above DT properties.
-
-Shall I mention sysfs in the above comment?
-
->> +
->> +Batteries must be referenced by chargers and/or fuel-gauges
->> +using a phandle. The phandle's property should be named
->> +"monitored-battery".
->> +
->> +Driver code should call power_supply_get_battery_info() to obtain
->> +battery properties via monitored-battery. For details see:
->> +  drivers/power/supply/power_supply_core.c
->> +  drivers/power/supply/bq27xxx_battery.c
->> +
->> +Example:
->> +
->> +     bat: battery {
->> +             compatible = "fixed-battery";
->> +             voltage-min-design-microvolt = <3200000>;
->> +             energy-full-design-microwatt-hours = <5290000>;
->> +             charge-full-design-microamp-hours = <1430000>;
->> +     };
->> +
->> +     charger: charger@11 {
->> +             ....
->> +             monitored-battery = <&bat>;
->> +             ...
->> +     };
->> +
->> +     fuel_gauge: fuel-gauge@22 {
->> +             ....
->> +             monitored-battery = <&bat>;
->> +             ...
->> +     };
->> --
->> 2.9.3
->>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1879,13 +1879,11 @@ static int intel_pstate_prepare_request(
+ 
+ 	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
+ 	pstate = clamp_t(int, pstate, min_perf, max_perf);
+-	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+ 	return pstate;
+ }
+ 
+ static void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
+ {
+-	pstate = intel_pstate_prepare_request(cpu, pstate);
+ 	if (pstate == cpu->pstate.current_pstate)
+ 		return;
+ 
+@@ -1905,6 +1903,8 @@ static inline void intel_pstate_adjust_b
+ 
+ 	update_turbo_state();
+ 
++	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++	trace_cpu_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu);
+ 	intel_pstate_update_pstate(cpu, target_pstate);
+ 
+ 	sample = &cpu->sample;
+@@ -2378,6 +2378,7 @@ static unsigned int intel_cpufreq_fast_s
+ 
+ 	target_freq = intel_cpufreq_turbo_update(cpu, policy, target_freq);
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
++	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+ 	intel_pstate_update_pstate(cpu, target_pstate);
+ 	return target_freq;
+ }
