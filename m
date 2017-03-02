@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 3/3] cpufreq: intel_pstate: Avoid triggering cpu_frequency tracepoint unnecessarily
-Date: Thu, 02 Mar 2017 23:26:27 +0100
-Message-ID: <6304036.Ap76kdd4Kf@aspire.rjw.lan>
+Subject: [PATCH 2/3] cpufreq: intel_pstate: Fix intel_cpufreq_verify_policy()
+Date: Thu, 02 Mar 2017 23:24:36 +0100
+Message-ID: <2885960.26GOj6xOKI@aspire.rjw.lan>
 References: <1573986.gdsgdO0VUn@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,49 +15,59 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-In the passive mode the cpu_frequency trace event is already
-triggered by the cpufreq core or by scaling governors, so
-intel_pstate should not trigger it once again for the same
-P-state updates.
+The intel_pstate_update_perf_limits() called from
+intel_cpufreq_verify_policy() may cause global P-state limits
+to change which is generally confusing and unnecessary.
+
+In the passive mode the global limits are only applied to the
+frequency selected by the scaling governor (they are not taken
+into account by governors when making decisions anyway), so making
+them follow the per-policy limits serves no purpose and may go
+against user expectations (as it generally causes the global
+attributes in sysfs to change even though they have not been
+written to in some cases).
+
+Fix that by dropping the intel_pstate_update_perf_limits()
+invocation from intel_cpufreq_verify_policy() (which also
+reduces the code size by a few lines).
+
+This change does not affect the per-CPU limits case, because those
+limits allow any P-state to be set by default in the passive mode
+and it removes the only piece of code updating them in that mode,
+so the per-policy settings will be the only ones taken into account
+in that case as expected.
 
 Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   10 ----------
+ 1 file changed, 10 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
 +++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1879,13 +1879,11 @@ static int intel_pstate_prepare_request(
- 
- 	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
- 	pstate = clamp_t(int, pstate, min_perf, max_perf);
--	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
- 	return pstate;
- }
- 
- static void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
+@@ -2306,7 +2306,6 @@ static struct cpufreq_driver intel_pstat
+ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
  {
--	pstate = intel_pstate_prepare_request(cpu, pstate);
- 	if (pstate == cpu->pstate.current_pstate)
- 		return;
- 
-@@ -1905,6 +1903,8 @@ static inline void intel_pstate_adjust_b
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+-	struct perf_limits *perf_limits = limits;
  
  	update_turbo_state();
+ 	policy->cpuinfo.max_freq = limits->turbo_disabled ?
+@@ -2314,15 +2313,6 @@ static int intel_cpufreq_verify_policy(s
  
-+	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+	trace_cpu_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu);
- 	intel_pstate_update_pstate(cpu, target_pstate);
+ 	cpufreq_verify_within_cpu_limits(policy);
  
- 	sample = &cpu->sample;
-@@ -2378,6 +2378,7 @@ static unsigned int intel_cpufreq_fast_s
- 
- 	target_freq = intel_cpufreq_turbo_update(cpu, policy, target_freq);
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
-+	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
- 	intel_pstate_update_pstate(cpu, target_pstate);
- 	return target_freq;
+-	if (per_cpu_limits)
+-		perf_limits = cpu->perf_limits;
+-
+-	mutex_lock(&intel_pstate_limits_lock);
+-
+-	intel_pstate_update_perf_limits(policy, perf_limits);
+-
+-	mutex_unlock(&intel_pstate_limits_lock);
+-
+ 	return 0;
  }
+ 
