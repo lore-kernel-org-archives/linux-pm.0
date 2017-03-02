@@ -1,108 +1,78 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 19/44] tools/power turbostat: decode MSR_MISC_FEATURE_CONTROL
-Date: Wed,  1 Mar 2017 00:27:23 -0500
-Message-ID: <33148d671cc191fceaca5017e1bb060e9f30fbf7.1488345270.git.len.brown@intel.com>
-References: <20170301052748.27810-1-lenb@kernel.org>
-Reply-To: Len Brown <lenb@kernel.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
+ binding to OPP nodes
+Date: Thu, 02 Mar 2017 09:00:49 +0530
+Message-ID: <58B791E9.4000505@codeaurora.org>
+References: <cover.1487926924.git.viresh.kumar@linaro.org> <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org> <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop> <20170228065711.GD19417@vireshk-i7> <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com> <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com> <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com> <58B669DD.5010309@codeaurora.org> <CAL_JsqLJ_QYZza4=DobUStWpQ7V-H2dF_2d=25XR+x-eWfszEA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170301052748.27810-1-lenb@kernel.org>
-In-Reply-To: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
-References: <678a3bd1b3de6d2ebf604e7d708bc8150bb667e9.1488345270.git.len.brown@intel.com>
+In-Reply-To: <CAL_JsqLJ_QYZza4=DobUStWpQ7V-H2dF_2d=25XR+x-eWfszEA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
 
-useful for observing if the BIOS disabled prefetch
-Not architectural, but docuemented as present on NHM, SNB
-and is present on others.
+On 03/02/2017 04:43 AM, Rob Herring wrote:
+> On Wed, Mar 1, 2017 at 12:27 AM, Rajendra Nayak <rnayak@codeaurora.org> wrote:
+>>
+>>
+>> On 02/28/2017 09:22 PM, Rob Herring wrote:
+>>> On Tue, Feb 28, 2017 at 9:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> [...]
+>>>>
+>>>>>>                                     ---> Parent domain-2 (Contains Perfomance states)
+>>>>>>                                     |
+>>>>>>                                     |
+>>>>>> C.) DeviceX  --->  Parent-domain-1  |
+>>>>>>                                     |
+>>>>>>                                     |
+>>>>>>                                     ---> Parent domain-3 (Contains Perfomance states)
+>>>>>
+>>>>> I'm a bit confused. How does a domain have 2 parent domains?
+>>>>
+>>>> This comes from the early design of the generic PM domain, thus I
+>>>> assume we have some HW with such complex PM topology. However, I don't
+>>>> know if it is actually being used.
+>>>>
+>>>> Moreover, the corresponding DT bindings for "power-domains" parents,
+>>>> can easily be extended to cover more than one parent. See more in
+>>>> Documentation/devicetree/bindings/power/power_domain.txt
+>>>
+>>> I could easily see device having 2 power domains. For example a cpu
+>>> may have separate domains for RAM/caches and logic. And nesting of
+>>
+>> yet the bindings for power-domains (for consumer devices) only allows for
+>> one powerdomain to be associated with a device.
+> 
+> There's nothing in the binding only allowing that. If that was true,
+> then #powerdomain-cells would be pointless
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+Is't #powerdomain-cells a powerdomain provider property? and used to
+specify if a powerdomain provider supports providing 1 or many powerdomains?
+I was talking about the power domain consumer property.
+Looking at Documentation/devicetree/bindings/power/power_domain.txt..
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 1011b5f7f21f..2f033f3d2a21 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -102,6 +102,7 @@ unsigned int has_hwp_notify;		/* IA32_HWP_INTERRUPT */
- unsigned int has_hwp_activity_window;	/* IA32_HWP_REQUEST[bits 41:32] */
- unsigned int has_hwp_epp;		/* IA32_HWP_REQUEST[bits 31:24] */
- unsigned int has_hwp_pkg;		/* IA32_HWP_REQUEST_PKG */
-+unsigned int has_misc_feature_control;
- 
- #define RAPL_PKG		(1 << 0)
- 					/* 0x610 MSR_PKG_POWER_LIMIT */
-@@ -2466,6 +2467,7 @@ void check_permissions()
-  *
-  * Side effect:
-  * sets global pkg_cstate_limit to decode MSR_PKG_CST_CONFIG_CONTROL
-+ * sets has_misc_feature_control
-  */
- int probe_nhm_msrs(unsigned int family, unsigned int model)
- {
-@@ -2496,6 +2498,7 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_IVYBRIDGE:	/* IVB */
- 	case INTEL_FAM6_IVYBRIDGE_X:	/* IVB Xeon */
- 		pkg_cstate_limits = snb_pkg_cstate_limits;
-+		has_misc_feature_control = 1;
- 		break;
- 	case INTEL_FAM6_HASWELL_CORE:	/* HSW */
- 	case INTEL_FAM6_HASWELL_X:	/* HSX */
-@@ -2510,9 +2513,11 @@ int probe_nhm_msrs(unsigned int family, unsigned int model)
- 	case INTEL_FAM6_KABYLAKE_MOBILE:	/* KBL */
- 	case INTEL_FAM6_KABYLAKE_DESKTOP:	/* KBL */
- 		pkg_cstate_limits = hsw_pkg_cstate_limits;
-+		has_misc_feature_control = 1;
- 		break;
- 	case INTEL_FAM6_SKYLAKE_X:	/* SKX */
- 		pkg_cstate_limits = skx_pkg_cstate_limits;
-+		has_misc_feature_control = 1;
- 		break;
- 	case INTEL_FAM6_ATOM_SILVERMONT1:	/* BYT */
- 		no_MSR_MISC_PWR_MGMT = 1;
-@@ -3579,6 +3584,21 @@ void decode_misc_enable_msr(void)
- 			msr & MSR_IA32_MISC_ENABLE_TURBO_DISABLE ? "No-" : "");
- }
- 
-+void decode_misc_feature_control(void)
-+{
-+	unsigned long long msr;
-+
-+	if (!has_misc_feature_control)
-+		return;
-+
-+	if (!get_msr(base_cpu, MSR_MISC_FEATURE_CONTROL, &msr))
-+		fprintf(outf, "cpu%d: MSR_MISC_FEATURE_CONTROL: 0x%08llx (%sL2-Prefetch %sL2-Prefetch-pair %sL1-Prefetch %sL1-IP-Prefetch)\n",
-+			base_cpu, msr,
-+			msr & (0 << 0) ? "No-" : "",
-+			msr & (1 << 0) ? "No-" : "",
-+			msr & (2 << 0) ? "No-" : "",
-+			msr & (3 << 0) ? "No-" : "");
-+}
- /*
-  * Decode MSR_MISC_PWR_MGMT
-  *
-@@ -3725,6 +3745,7 @@ void process_cpuid()
- 	if (debug)
- 		decode_misc_enable_msr();
- 
-+
- 	if (max_level >= 0x7 && debug) {
- 		int has_sgx;
- 
-@@ -3852,6 +3873,9 @@ void process_cpuid()
- 	if (!access("/sys/class/graphics/fb0/device/drm/card0/gt_cur_freq_mhz", R_OK))
- 		BIC_PRESENT(BIC_GFXMHz);
- 
-+	if (debug)
-+		decode_misc_feature_control();
-+
- 	return;
- }
- 
+==PM domain consumers==
+
+Required properties:
+ - power-domains : A phandle and PM domain specifier as defined by bindings of
+                   the power controller specified by phandle.
+
+It clearly says 'A phandle'. If there was a way to specify multiple power-domains
+for a consumer device should it not be saying a list of phandles? Like we do for
+clocks and regulators?
+
+> as the property size would
+> tell you the number of cells. Now it may be that we simply don't have
+> any cases with more than 1. Hopefully that's not because bindings are
+> working around PM domain limitations/requirements.
+> 
+> Rob
+> 
+
 -- 
-2.11.0.161.g6610af872
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
