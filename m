@@ -1,78 +1,69 @@
-From: Rajendra Nayak <rnayak@codeaurora.org>
-Subject: Re: [PATCH V3 2/7] PM / OPP: Introduce "domain-performance-state"
- binding to OPP nodes
-Date: Thu, 02 Mar 2017 09:00:49 +0530
-Message-ID: <58B791E9.4000505@codeaurora.org>
-References: <cover.1487926924.git.viresh.kumar@linaro.org> <ceb1bf5f696138c30b30743c24b619336d438d7c.1487926924.git.viresh.kumar@linaro.org> <20170228003948.ihf4c2ppu2rf3lt2@rob-hp-laptop> <20170228065711.GD19417@vireshk-i7> <CAL_JsqLx6Y=JgaVtJPFwERQ_=5qwqp5EY1+B=cdfBJO55Vct4w@mail.gmail.com> <CAPDyKFo5TjTa-hTzNp5KCpozU87L22piCXaSjWMTr4xVkgP+Pg@mail.gmail.com> <CAL_Jsq+7DGX_1U99cc3rhk8zzSj6iKe3kpijp7KTz90xXA_V9g@mail.gmail.com> <58B669DD.5010309@codeaurora.org> <CAL_JsqLJ_QYZza4=DobUStWpQ7V-H2dF_2d=25XR+x-eWfszEA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 2/3] cpufreq: schedutil: Pass sg_policy to get_next_freq()
+Date: Thu,  2 Mar 2017 14:03:21 +0530
+Message-ID: <7558e39af874a470fcfc3e64d0d1d93ec1ce009e.1488437503.git.viresh.kumar@linaro.org>
+References: <cover.1488437503.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAL_JsqLJ_QYZza4=DobUStWpQ7V-H2dF_2d=25XR+x-eWfszEA@mail.gmail.com>
+In-Reply-To: <cover.1488437503.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1488437503.git.viresh.kumar@linaro.org>
+References: <cover.1488437503.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lina Iyer <lina.iyer@linaro.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jon Hunter <jonathanh@nvidia.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+get_next_freq() uses sg_cpu only to get sg_policy, which the callers of
+get_next_freq() already have. Pass sg_policy instead of sg_cpu to
+get_next_freq(), to make it more efficient.
 
-On 03/02/2017 04:43 AM, Rob Herring wrote:
-> On Wed, Mar 1, 2017 at 12:27 AM, Rajendra Nayak <rnayak@codeaurora.org> wrote:
->>
->>
->> On 02/28/2017 09:22 PM, Rob Herring wrote:
->>> On Tue, Feb 28, 2017 at 9:14 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> [...]
->>>>
->>>>>>                                     ---> Parent domain-2 (Contains Perfomance states)
->>>>>>                                     |
->>>>>>                                     |
->>>>>> C.) DeviceX  --->  Parent-domain-1  |
->>>>>>                                     |
->>>>>>                                     |
->>>>>>                                     ---> Parent domain-3 (Contains Perfomance states)
->>>>>
->>>>> I'm a bit confused. How does a domain have 2 parent domains?
->>>>
->>>> This comes from the early design of the generic PM domain, thus I
->>>> assume we have some HW with such complex PM topology. However, I don't
->>>> know if it is actually being used.
->>>>
->>>> Moreover, the corresponding DT bindings for "power-domains" parents,
->>>> can easily be extended to cover more than one parent. See more in
->>>> Documentation/devicetree/bindings/power/power_domain.txt
->>>
->>> I could easily see device having 2 power domains. For example a cpu
->>> may have separate domains for RAM/caches and logic. And nesting of
->>
->> yet the bindings for power-domains (for consumer devices) only allows for
->> one powerdomain to be associated with a device.
-> 
-> There's nothing in the binding only allowing that. If that was true,
-> then #powerdomain-cells would be pointless
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-Is't #powerdomain-cells a powerdomain provider property? and used to
-specify if a powerdomain provider supports providing 1 or many powerdomains?
-I was talking about the power domain consumer property.
-Looking at Documentation/devicetree/bindings/power/power_domain.txt..
-
-==PM domain consumers==
-
-Required properties:
- - power-domains : A phandle and PM domain specifier as defined by bindings of
-                   the power controller specified by phandle.
-
-It clearly says 'A phandle'. If there was a way to specify multiple power-domains
-for a consumer device should it not be saying a list of phandles? Like we do for
-clocks and regulators?
-
-> as the property size would
-> tell you the number of cells. Now it may be that we simply don't have
-> any cases with more than 1. Hopefully that's not because bindings are
-> working around PM domain limitations/requirements.
-> 
-> Rob
-> 
-
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 721f4e011366..570925ea7253 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -115,7 +115,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+ 
+ /**
+  * get_next_freq - Compute a new frequency for a given cpufreq policy.
+- * @sg_cpu: schedutil cpu object to compute the new frequency for.
++ * @sg_policy: schedutil policy object to compute the new frequency for.
+  * @util: Current CPU utilization.
+  * @max: CPU capacity.
+  *
+@@ -135,10 +135,9 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+  * next_freq (as calculated above) is returned, subject to policy min/max and
+  * cpufreq driver limitations.
+  */
+-static unsigned int get_next_freq(struct sugov_cpu *sg_cpu, unsigned long util,
+-				  unsigned long max)
++static unsigned int get_next_freq(struct sugov_policy *sg_policy,
++				  unsigned long util, unsigned long max)
+ {
+-	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
+ 	struct cpufreq_policy *policy = sg_policy->policy;
+ 	unsigned int freq = arch_scale_freq_invariant() ?
+ 				policy->cpuinfo.max_freq : policy->cur;
+@@ -212,7 +211,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 	} else {
+ 		sugov_get_util(&util, &max);
+ 		sugov_iowait_boost(sg_cpu, &util, &max);
+-		next_f = get_next_freq(sg_cpu, util, max);
++		next_f = get_next_freq(sg_policy, util, max);
+ 	}
+ 	sugov_update_commit(sg_policy, time, next_f);
+ }
+@@ -266,7 +265,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
+ 		sugov_iowait_boost(j_sg_cpu, &util, &max);
+ 	}
+ 
+-	return get_next_freq(sg_cpu, util, max);
++	return get_next_freq(sg_policy, util, max);
+ }
+ 
+ static void sugov_update_shared(struct update_util_data *hook, u64 time,
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-hosted by The Linux Foundation
+2.7.1.410.g6faf27b
