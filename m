@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH V5 3/9] kernel/cpu_pm: Add runtime PM support for CPUs
-Date: Fri,  3 Mar 2017 12:41:29 -0800
-Message-ID: <1488573695-106680-4-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH V5 5/9] timer: Export next wake up of a CPU
+Date: Fri,  3 Mar 2017 12:41:31 -0800
+Message-ID: <1488573695-106680-6-git-send-email-lina.iyer@linaro.org>
 References: <1488573695-106680-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,121 +18,78 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Thomas Gleixner <tglx@linutronix.de>, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Notify runtime PM when the CPU is going to be powered off in the idle
-state. This allows for runtime PM suspend/resume of the CPU as well as
-its PM domain.
+Knowing the sleep length of the CPU is useful for the power state
+determination on idle. The value is relative to the time when the call
+was invoked by the CPU. This doesn't work well when there is a need to
+know when the actual wakeup is.
 
-Cc: Kevin Hilman <khilman@kernel.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+By reading the next wake up event of a CPU, governors can determine the
+first CPU to wake up (due to timer) amongst a cluster of CPUs and the
+sleep time available between the last CPU to idle and the first CPU to
+resume. This information is useful to determine if the caches and other
+common hardware blocks can also be put in idle during this common period
+of inactivity.
+
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- include/linux/cpuhotplug.h |  1 +
- kernel/cpu_pm.c            | 47 ++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 48 insertions(+)
+ include/linux/tick.h     | 10 ++++++++++
+ kernel/time/tick-sched.c | 11 +++++++++++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
-index 921acaa..448226a 100644
---- a/include/linux/cpuhotplug.h
-+++ b/include/linux/cpuhotplug.h
-@@ -79,6 +79,7 @@ enum cpuhp_state {
- 	CPUHP_AP_OFFLINE,
- 	CPUHP_AP_SCHED_STARTING,
- 	CPUHP_AP_RCUTREE_DYING,
-+	CPUHP_AP_CPU_PM_STARTING,
- 	CPUHP_AP_IRQ_GIC_STARTING,
- 	CPUHP_AP_IRQ_HIP04_STARTING,
- 	CPUHP_AP_IRQ_ARMADA_XP_STARTING,
-diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
-index 009cc9a..db95ef3 100644
---- a/kernel/cpu_pm.c
-+++ b/kernel/cpu_pm.c
-@@ -16,9 +16,12 @@
-  */
- 
- #include <linux/kernel.h>
-+#include <linux/cpu.h>
-+#include <linux/cpuhotplug.h>
- #include <linux/cpu_pm.h>
- #include <linux/module.h>
- #include <linux/notifier.h>
-+#include <linux/pm_runtime.h>
- #include <linux/spinlock.h>
- #include <linux/syscore_ops.h>
- 
-@@ -99,6 +102,7 @@ int cpu_pm_enter(void)
+diff --git a/include/linux/tick.h b/include/linux/tick.h
+index a04fea1..2416021 100644
+--- a/include/linux/tick.h
++++ b/include/linux/tick.h
+@@ -117,6 +117,7 @@ extern void tick_nohz_idle_enter(void);
+ extern void tick_nohz_idle_exit(void);
+ extern void tick_nohz_irq_exit(void);
+ extern ktime_t tick_nohz_get_sleep_length(void);
++extern ktime_t tick_nohz_get_next_wakeup(int cpu);
+ extern u64 get_cpu_idle_time_us(int cpu, u64 *last_update_time);
+ extern u64 get_cpu_iowait_time_us(int cpu, u64 *last_update_time);
+ #else /* !CONFIG_NO_HZ_COMMON */
+@@ -129,6 +130,15 @@ static inline ktime_t tick_nohz_get_sleep_length(void)
  {
- 	int nr_calls;
- 	int ret = 0;
-+	struct device *dev = get_cpu_device(smp_processor_id());
- 
- 	read_lock(&cpu_pm_notifier_lock);
- 	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
-@@ -110,6 +114,10 @@ int cpu_pm_enter(void)
- 		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
- 	read_unlock(&cpu_pm_notifier_lock);
- 
-+	/* Notify Runtime PM that we are suspending the CPU */
-+	if (!ret && dev)
-+		RCU_NONIDLE(pm_runtime_put_sync_suspend(dev));
-+
- 	return ret;
+ 	return NSEC_PER_SEC / HZ;
  }
- EXPORT_SYMBOL_GPL(cpu_pm_enter);
-@@ -129,6 +137,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
- int cpu_pm_exit(void)
- {
- 	int ret;
-+	struct device *dev = get_cpu_device(smp_processor_id());
 +
-+	/* Notify Runtime PM that we are resuming the CPU */
-+	if (dev)
-+		RCU_NONIDLE(pm_runtime_get_sync(dev));
- 
- 	read_lock(&cpu_pm_notifier_lock);
- 	ret = cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
-@@ -200,6 +213,40 @@ int cpu_cluster_pm_exit(void)
++static inline ktime_t tick_nohz_get_next_wakeup(int cpu)
++{
++	ktime_t len = NSEC_PER_SEC/HZ;
++
++	/* Next wake up is the tick period, assume it starts now */
++	return ktime_add(len, ktime_get());
++}
++
+ static inline u64 get_cpu_idle_time_us(int cpu, u64 *unused) { return -1; }
+ static inline u64 get_cpu_iowait_time_us(int cpu, u64 *unused) { return -1; }
+ #endif /* !CONFIG_NO_HZ_COMMON */
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index 2c115fd..03e7c17 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -989,6 +989,17 @@ ktime_t tick_nohz_get_sleep_length(void)
+ 	return ts->sleep_length;
  }
- EXPORT_SYMBOL_GPL(cpu_cluster_pm_exit);
  
-+#ifdef CONFIG_HOTPLUG_CPU
-+static int cpu_pm_cpu_dying(unsigned int cpu)
++/**
++ * tick_nohz_get_next_wakeup - return the next wake up of the CPU
++ */
++ktime_t tick_nohz_get_next_wakeup(int cpu)
 +{
-+	struct device *dev = get_cpu_device(cpu);
++	struct clock_event_device *dev =
++			per_cpu(tick_cpu_device.evtdev, cpu);
 +
-+	if (dev)
-+		pm_runtime_put_sync_suspend(dev);
-+
-+	return 0;
++	return dev->next_event;
 +}
 +
-+static int cpu_pm_cpu_starting(unsigned int cpu)
-+{
-+	struct device *dev = get_cpu_device(cpu);
-+
-+	if (dev)
-+		pm_runtime_get_sync(dev);
-+
-+	return 0;
-+}
-+
-+static int __init cpu_pm_hotplug_init(void)
-+{
-+	int ret;
-+
-+	ret = cpuhp_setup_state(CPUHP_AP_CPU_PM_STARTING,
-+				"AP_CPU_PM_STARTING",
-+				cpu_pm_cpu_starting, cpu_pm_cpu_dying);
-+
-+	return ret;
-+}
-+device_initcall(cpu_pm_hotplug_init);
-+#endif
-+
- #ifdef CONFIG_PM
- static int cpu_pm_suspend(void)
+ static void tick_nohz_account_idle_ticks(struct tick_sched *ts)
  {
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
 -- 
 2.7.4
