@@ -1,13 +1,11 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH V5 1/6] drivers: cpuidle: Read CPU's idle state from PM domain
-Date: Fri,  3 Mar 2017 13:48:12 -0800
-Message-ID: <1488577697-127445-2-git-send-email-lina.iyer@linaro.org>
-References: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH V5 0/6] PSCI: Support hierarchical PM domains
+Date: Fri,  3 Mar 2017 13:48:11 -0800
+Message-ID: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,93 +19,47 @@ To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger
 Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently CPUs idle states and idle states of its parent are represented
-in a flattened model by the cpu-dile-states property of the CPU node.
-The CPUs idle states are followed by its cluster idle states. With the
-introduction of CPU PM domains, the CPUs and domain idle states may be
-represented hierarchically as part of the domain DT definition. This
-would mean presenting idle state information in 2 places - CPU nodes for
-the CPU and the cluster's with the PM domains.
+Hi all,
 
-Also, it makes sense to define domains around each individual CPU since
-each of them is a power domain in its own right. The CPU idle states can
-now be represented as its domain's idle state, defined by the
-domain-idle-states property. This avoids presenting idle states in
-multiple places in the DT.
+This series adds support for hierarchical idle states in PSCI. Up until and
+including PSCI v1.0, CPUs idle states could only be represented as flattened
+model with CPU as part of the cpu-idle-states property in DT. For ex.,
+	CPU0: cpu@0 {
+		device_type = "cpu";
+		cpu-idle-states = <&CPU_PWRDN>, <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
+	};
 
-Modify the DT-based cpuidle driver to check for the presence of a CPU's
-domain and if present read the domain-idle-states of the PM domain and
-if the CPU's domain is absent, revert to reading in the cpu-idle-states
-property of the CPU DT node.
+This patchset adds support to split CPU and cluster idle states and
+present them in hierarchy. The documentation in patch 5 explains this difference.
+ 
+In order to be backwards compatible, the cpuidle driver and the PSCI driver has
+been updated to look for hierarchy first and if not present will revert to
+initializing using the flattened model.
 
-Suggested-by: Sudeep Holla <sudeep.holla@qrm.com>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- drivers/cpuidle/dt_idle_states.c | 38 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 35 insertions(+), 3 deletions(-)
+This patch uses CPU PM domains published earlier.
 
-diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-index ffca4fc..4df7d45 100644
---- a/drivers/cpuidle/dt_idle_states.c
-+++ b/drivers/cpuidle/dt_idle_states.c
-@@ -98,6 +98,39 @@ static int init_state_node(struct cpuidle_state *idle_state,
- }
- 
- /*
-+ * Get the state node at @idx. State node may be defined as domain's idle state
-+ * if the CPU has its own domain or defined as CPU's idle state if it doesn't
-+ * have a domain provider.
-+ */
-+static struct device_node *get_state_node(struct device_node *cpu_node,
-+				unsigned int idx)
-+{
-+	struct device_node *dn;
-+	bool cpu_has_domain = false;
-+	struct of_phandle_args args;
-+	const char *property;
-+	int err;
-+
-+	err = of_parse_phandle_with_args(cpu_node, "power-domains",
-+					"#power-domain-cells", 0, &args);
-+	if (!err) {
-+		dn = args.np;
-+		err = of_count_phandle_with_args(dn, "domain-idle-states",
-+								NULL);
-+		cpu_has_domain = (err > 0);
-+	}
-+
-+	if (cpu_has_domain) {
-+		property = "domain-idle-states";
-+	} else {
-+		property = "cpu-idle-states";
-+		dn = cpu_node;
-+	}
-+
-+	return of_parse_phandle(dn, property, idx);
-+}
-+
-+/*
-  * Check that the idle state is uniform across all CPUs in the CPUidle driver
-  * cpumask
-  */
-@@ -118,8 +151,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
- 	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
- 	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
- 		cpu_node = of_cpu_device_node_get(cpu);
--		curr_state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
--						   idx);
-+		curr_state_node = get_state_node(cpu_node, idx);
- 		if (state_node != curr_state_node)
- 			valid = false;
- 
-@@ -176,7 +208,7 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
- 	cpu_node = of_cpu_device_node_get(cpumask_first(cpumask));
- 
- 	for (i = 0; ; i++) {
--		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-+		state_node = get_state_node(cpu_node, i);
- 		if (!state_node)
- 			break;
- 
+Changes since last submission -
+- Support both hierarchical model and flattened model
+- Documentation updates.
+- Rebase on top of Rafael's linux-next
+
+Thanks,
+Lina
+
+Lina Iyer (6):
+  drivers: cpuidle: Read CPU's idle state from PM domain
+  drivers: firmware: psci: Allow OS Initiated suspend mode
+  drivers: firmware: psci: Support cluster idle states for OS-Initiated
+  drivers: firmwware: psci: Support hierachical idle states
+  dt/bindings: Update binding for hierarchical PSCI states
+  ARM64: dts: Define CPU power domain for MSM8916
+
+ Documentation/devicetree/bindings/arm/psci.txt | 156 +++++++++++++++++++++++
+ arch/arm64/boot/dts/qcom/msm8916.dtsi          |  53 +++++++-
+ drivers/cpuidle/dt_idle_states.c               |  38 +++++-
+ drivers/firmware/psci.c                        | 167 +++++++++++++++++++++----
+ include/uapi/linux/psci.h                      |   5 +
+ 5 files changed, 388 insertions(+), 31 deletions(-)
+
 -- 
 2.7.4
