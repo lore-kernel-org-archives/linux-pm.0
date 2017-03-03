@@ -1,7 +1,7 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH V5 2/9] drivers: cpu: Setup CPU devices to do runtime PM
-Date: Fri,  3 Mar 2017 12:41:28 -0800
-Message-ID: <1488573695-106680-3-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH V5 3/9] kernel/cpu_pm: Add runtime PM support for CPUs
+Date: Fri,  3 Mar 2017 12:41:29 -0800
+Message-ID: <1488573695-106680-4-git-send-email-lina.iyer@linaro.org>
 References: <1488573695-106680-1-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,56 +21,118 @@ To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger
 Cc: lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-CPU devices just like any other device, can do runtime PM. However, CPU
-devices may only do runtime only when IRQs are disabled. The devices
-must be set as IRQ safe.
+Notify runtime PM when the CPU is going to be powered off in the idle
+state. This allows for runtime PM suspend/resume of the CPU as well as
+its PM domain.
 
 Cc: Kevin Hilman <khilman@kernel.org>
 Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- drivers/base/cpu.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+ include/linux/cpuhotplug.h |  1 +
+ kernel/cpu_pm.c            | 47 ++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 2c3b359..77451ad 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -18,6 +18,7 @@
- #include <linux/cpufeature.h>
- #include <linux/tick.h>
- #include <linux/pm_qos.h>
+diff --git a/include/linux/cpuhotplug.h b/include/linux/cpuhotplug.h
+index 921acaa..448226a 100644
+--- a/include/linux/cpuhotplug.h
++++ b/include/linux/cpuhotplug.h
+@@ -79,6 +79,7 @@ enum cpuhp_state {
+ 	CPUHP_AP_OFFLINE,
+ 	CPUHP_AP_SCHED_STARTING,
+ 	CPUHP_AP_RCUTREE_DYING,
++	CPUHP_AP_CPU_PM_STARTING,
+ 	CPUHP_AP_IRQ_GIC_STARTING,
+ 	CPUHP_AP_IRQ_HIP04_STARTING,
+ 	CPUHP_AP_IRQ_ARMADA_XP_STARTING,
+diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+index 009cc9a..db95ef3 100644
+--- a/kernel/cpu_pm.c
++++ b/kernel/cpu_pm.c
+@@ -16,9 +16,12 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/cpu.h>
++#include <linux/cpuhotplug.h>
+ #include <linux/cpu_pm.h>
+ #include <linux/module.h>
+ #include <linux/notifier.h>
 +#include <linux/pm_runtime.h>
+ #include <linux/spinlock.h>
+ #include <linux/syscore_ops.h>
  
- #include "base.h"
+@@ -99,6 +102,7 @@ int cpu_pm_enter(void)
+ {
+ 	int nr_calls;
+ 	int ret = 0;
++	struct device *dev = get_cpu_device(smp_processor_id());
  
-@@ -345,6 +346,19 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
+ 	read_lock(&cpu_pm_notifier_lock);
+ 	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+@@ -110,6 +114,10 @@ int cpu_pm_enter(void)
+ 		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+ 	read_unlock(&cpu_pm_notifier_lock);
+ 
++	/* Notify Runtime PM that we are suspending the CPU */
++	if (!ret && dev)
++		RCU_NONIDLE(pm_runtime_put_sync_suspend(dev));
++
+ 	return ret;
  }
- #endif
+ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+@@ -129,6 +137,11 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+ int cpu_pm_exit(void)
+ {
+ 	int ret;
++	struct device *dev = get_cpu_device(smp_processor_id());
++
++	/* Notify Runtime PM that we are resuming the CPU */
++	if (dev)
++		RCU_NONIDLE(pm_runtime_get_sync(dev));
  
-+#ifdef CONFIG_PM
-+static void cpu_runtime_pm_init(struct device *dev)
+ 	read_lock(&cpu_pm_notifier_lock);
+ 	ret = cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+@@ -200,6 +213,40 @@ int cpu_cluster_pm_exit(void)
+ }
+ EXPORT_SYMBOL_GPL(cpu_cluster_pm_exit);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static int cpu_pm_cpu_dying(unsigned int cpu)
 +{
-+	pm_runtime_irq_safe(dev);
-+	pm_runtime_enable(dev);
-+	if (cpu_online(dev->id))
-+		pm_runtime_set_active(dev);
++	struct device *dev = get_cpu_device(cpu);
++
++	if (dev)
++		pm_runtime_put_sync_suspend(dev);
++
++	return 0;
 +}
-+#else
-+static void cpu_runtime_pm_init(struct device *dev)
-+{ }
++
++static int cpu_pm_cpu_starting(unsigned int cpu)
++{
++	struct device *dev = get_cpu_device(cpu);
++
++	if (dev)
++		pm_runtime_get_sync(dev);
++
++	return 0;
++}
++
++static int __init cpu_pm_hotplug_init(void)
++{
++	int ret;
++
++	ret = cpuhp_setup_state(CPUHP_AP_CPU_PM_STARTING,
++				"AP_CPU_PM_STARTING",
++				cpu_pm_cpu_starting, cpu_pm_cpu_dying);
++
++	return ret;
++}
++device_initcall(cpu_pm_hotplug_init);
 +#endif
 +
- /*
-  * register_cpu - Setup a sysfs device for a CPU.
-  * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
-@@ -379,6 +393,7 @@ int register_cpu(struct cpu *cpu, int num)
- 	register_cpu_under_node(num, cpu_to_node(num));
- 	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
- 
-+	cpu_runtime_pm_init(&cpu->dev);
- 	return 0;
- }
- 
+ #ifdef CONFIG_PM
+ static int cpu_pm_suspend(void)
+ {
 -- 
 2.7.4
