@@ -1,67 +1,113 @@
-From: hpa@zytor.com
-Subject: Re: [PATCH 01/10] x86: assembly, ENTRY for fn,
-	GLOBAL for data
-Date: Fri, 03 Mar 2017 10:24:43 -0800
-Message-ID: <39064F86-5BE2-417F-8A28-2B4CB5177D7D@zytor.com>
-References: <20170217104757.28588-1-jslaby@suse.cz>
- <20170301093855.GA27152@gmail.com> <alpine.DEB.2.20.1703011108220.4005@nanos>
- <20170301102754.GA13374@gmail.com>
+From: Lina Iyer <lina.iyer@linaro.org>
+Subject: Re: [PATCH 3/3] PM / Domains: Power off masters immediately in the
+ power off sequence
+Date: Fri, 3 Mar 2017 11:28:07 -0700
+Message-ID: <20170303182807.GB1683@linaro.org>
+References: <1487325325-18212-1-git-send-email-ulf.hansson@linaro.org>
+ <1487325325-18212-4-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-In-Reply-To: <20170301102754.GA13374@gmail.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Jiri Slaby <jslaby@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:36593 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751699AbdCCSfS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2017 13:35:18 -0500
+Received: by mail-pg0-f46.google.com with SMTP id s67so46531354pgb.3
+        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2017 10:34:31 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1487325325-18212-4-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jon Hunter <jonathanh@nvidia.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
-T24gTWFyY2ggMSwgMjAxNyAyOjI3OjU0IEFNIFBTVCwgSW5nbyBNb2xuYXIgPG1pbmdvQGtlcm5l
-bC5vcmc+IHdyb3RlOgo+Cj4qIFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPiB3
-cm90ZToKPgo+PiBPbiBXZWQsIDEgTWFyIDIwMTcsIEluZ28gTW9sbmFyIHdyb3RlOgo+PiA+IAo+
-PiA+ICogSmlyaSBTbGFieSA8anNsYWJ5QHN1c2UuY3o+IHdyb3RlOgo+PiA+IAo+PiA+ID4gVGhp
-cyBpcyBhIHN0YXJ0IG9mIHNlcmllcyB0byB1bmlmeSB1c2Ugb2YgRU5UUlksIEVORFBST0MsIEdM
-T0JBTCwKPkVORCwKPj4gPiA+IGFuZCBvdGhlciBtYWNyb3MgYWNyb3NzIHg4Ni4gV2hlbiB3ZSBo
-YXZlIGFsbCB0aGlzIHNvcnRlZCBvdXQsCj50aGlzIHdpbGwKPj4gPiA+IGhlbHAgdG8gaW5qZWN0
-IERXQVJGIHVud2luZGluZyBpbmZvIGJ5IG9ianRvb2wgbGF0ZXIuCj4+ID4gPiAKPj4gPiA+IFNv
-LCBsZXQgdXMgdXNlIHRoZSBtYWNyb3MgdGhpcyB3YXk6Cj4+ID4gPiAqIEVOVFJZIC0tIHN0YXJ0
-IG9mIGEgZ2xvYmFsIGZ1bmN0aW9uCj4+ID4gPiAqIEVORFBST0MgLS0gZW5kIG9mIGEgbG9jYWwv
-Z2xvYmFsIGZ1bmN0aW9uCj4+ID4gPiAqIEdMT0JBTCAtLSBzdGFydCBvZiBhIGdsb2JhbGx5IHZp
-c2libGUgZGF0YSBzeW1ib2wKPj4gPiA+ICogRU5EIC0tIGVuZCBvZiBsb2NhbC9nbG9iYWwgZGF0
-YSBzeW1ib2wKPj4gPiAKPj4gPiBTbyBob3cgYWJvdXQgdXNpbmcgbWFjcm8gbmFtZXMgdGhhdCBh
-Y3R1YWxseSBzaG93IHRoZSBwdXJwb3NlLAo+aW5zdGVhZCBvZiAKPj4gPiBpbXBvcnRpbmcgYWxs
-IHRoZSBjcmFwcHksIGhpc3RvcmljLCBlc3NlbnRpYWxseSByYW5kb21seSBjaG9zZW4KPmRlYnVn
-IHN5bWJvbCBtYWNybyAKPj4gPiBuYW1lcyBmcm9tIHRoZSBiaW51dGlscyBhbmQgb2xkZXIga2Vy
-bmVscz8KPj4gPiAKPj4gPiBTb21ldGhpbmcgc2FuZSwgbGlrZToKPj4gPiAKPj4gPiAJU1lNX19G
-VU5DVElPTl9TVEFSVAo+PiAKPj4gU2FuZSB3b3VsZCBiZToKPj4gCj4+ICAgICAgCVNZTV9GVU5D
-VElPTl9TVEFSVAo+PiAKPj4gVGhlIGRvdWJsZSB1bmRlcnNjb3JlIGlzIGp1c3Qgbm90IGdpdmlu
-ZyBhbnkgdmFsdWUuCj4KPlNvIHRoZSBkb3VibGUgdW5kZXJzY29yZSAoYXQgbGVhc3QgaW4gbXkg
-dmlldykgaGFzIHR3byBhZHZhbnRhZ2VzOgo+Cj4xKSBpdCBoZWxwcyBzZXBhcmF0ZSB0aGUgcHJl
-Zml4IGZyb20gdGhlIHBvc3RmaXguCj4KPkkuZS4gaXQncyBhICdzeW1ib2xzJyBuYW1lc3BhY2Us
-IGFuZCBhICdmdW5jdGlvbiBzdGFydCcsIG5vdCB0aGUKPidzdGFydCcgb2YgYSAKPidzeW1ib2wg
-ZnVuY3Rpb24nLgo+Cj4yKSBJdCBhbHNvIGhlbHBzIGVhc3kgZ3JlcHBhYmlsaXR5Lgo+Cj5Ucnkg
-dGhpcyBpbiBsYXRlc3QgLXRpcDoKPgo+ICBnaXQgZ3JlcCBlODIwX18KPgo+VG8gc2VlIGFsbCB0
-aGUgRTgyMCBBUEkgY2FsbHMgLSB3aXRoIG5vIGZhbHNlIHBvc2l0aXZlcyEKPgo+J2dpdCBncmVw
-IGU4MjBfJyBvbiB0aGUgb3RoZXIgaGFuZCBpcyBhIGxvdCBsZXNzIHJlbGlhYmxlLi4uCj4KPkJ1
-dCBubyBzdHJvbmcgZmVlbGluZ3MgZWl0aGVyIHdheSwgSSBqdXN0IHRyeSB0byBzbmVhayBpbiB0
-aGVzZSBzbWFsbAo+bmFtZXNwYWNlIAo+c3RydWN0dXJlIHRyaWNrcyB3aGVuIG5vYm9keSdzIGxv
-b2tpbmchIDstKQo+Cj5UaGFua3MsCj4KPglJbmdvCgpJTU8gdGhlc2UgbGl0dGxlICJuYW1lc3Bh
-Y2UgdHJpY2tzIiBlc3BlY2lhbGx5IGZvciBzbWFsbCBjb21tb24gbWFjcm9zIGxpa2Ugd2UgYXJl
-IHRha2luZyBhYm91dCBoZXJlIG1ha2UgdGhlIGNvZGUgdmVyeSBmcnVzdHJhdGluZyB0byByZWFk
-LCBhbmQgZXZlbiBtb3JlIHRvIHdyaXRlLiAgTm9vbmUgd291bGQgZGVzaWduIGEgcHJvZ3JhbW1p
-bmcgbGFuZ3VhZ2UgdGhhdCB3YXksIGFuZCB0aGluZ3MgbGlrZSBQUk9DIGFyZSByZWFsbHkganVz
-dCBzdWJzdGl0dXRlcyBmb3IgcHJvcGVyIGxhbmd1YWdlIGZlYXR1cmVzIChhbmQgY291bGQgZXZl
-biBiZSBhcyBhc3NlbWJseSByYXRoZXIgdGhhbiBjcHAgbWFjcm9zLikKCldoZW4gSSBzYXkgZnJ1
-c3RyYXRpbmcgSSBtZWFuLCBhdCBsZWFzdCBmb3IgbWUsIGZ1bGwtQmFsbG1lciBsYXVuY2gtY2hh
-aXItYXQtbW9uaXRvciBsZXZlbCBmcnVzdHJhdGluZy4KLS0gClNlbnQgZnJvbSBteSBBbmRyb2lk
-IGRldmljZSB3aXRoIEstOSBNYWlsLiBQbGVhc2UgZXhjdXNlIG15IGJyZXZpdHkuCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpYZW4tZGV2ZWwgbWFpbGlu
-ZyBsaXN0Clhlbi1kZXZlbEBsaXN0cy54ZW4ub3JnCmh0dHBzOi8vbGlzdHMueGVuLm9yZy94ZW4t
-ZGV2ZWwK
+On Fri, Feb 17 2017 at 02:55 -0700, Ulf Hansson wrote:
+>Once a subdomain is powered off, genpd queues a power off work for each of
+>the subdomain's corresponding masters, thus postponing the masters to be
+>powered off to a later point.
+>
+>When genpd used intermediate power off states, which was removed in
+>commit ba2bbfbf6307 ("PM / Domains: Remove intermediate states from the
+>power off sequence"), this behaviour made sense, but now it simply doesn't.
+>
+>Genpd can easily try to power off the masters in the same context as the
+>subdomain, of course by acquiring/releasing the lock. Then, let's convert
+>to this behaviour, as it avoids unnecessary works from being queued.
+>
+>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Tested-by: Lina Iyer <lina.iyer@linaro.org>
+
+Thanks,
+Lina
+
+>---
+> drivers/base/power/domain.c | 17 +++++++++++------
+> 1 file changed, 11 insertions(+), 6 deletions(-)
+>
+>diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+>index 179bb26..e697dec 100644
+>--- a/drivers/base/power/domain.c
+>+++ b/drivers/base/power/domain.c
+>@@ -284,7 +284,8 @@ static void genpd_queue_power_off_work(struct generic_pm_domain *genpd)
+>  * If all of the @genpd's devices have been suspended and all of its subdomains
+>  * have been powered down, remove power from @genpd.
+>  */
+>-static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on)
+>+static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
+>+			   unsigned int depth)
+> {
+> 	struct pm_domain_data *pdd;
+> 	struct gpd_link *link;
+>@@ -351,7 +352,9 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on)
+>
+> 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
+> 		genpd_sd_counter_dec(link->master);
+>-		genpd_queue_power_off_work(link->master);
+>+		genpd_lock_nested(link->master, depth + 1);
+>+		genpd_power_off(link->master, false, depth + 1);
+>+		genpd_unlock(link->master);
+> 	}
+>
+> 	return 0;
+>@@ -405,7 +408,9 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
+> 					&genpd->slave_links,
+> 					slave_node) {
+> 		genpd_sd_counter_dec(link->master);
+>-		genpd_queue_power_off_work(link->master);
+>+		genpd_lock_nested(link->master, depth + 1);
+>+		genpd_power_off(link->master, false, depth + 1);
+>+		genpd_unlock(link->master);
+> 	}
+>
+> 	return ret;
+>@@ -462,7 +467,7 @@ static void genpd_power_off_work_fn(struct work_struct *work)
+> 	genpd = container_of(work, struct generic_pm_domain, power_off_work);
+>
+> 	genpd_lock(genpd);
+>-	genpd_power_off(genpd, false);
+>+	genpd_power_off(genpd, false, 0);
+> 	genpd_unlock(genpd);
+> }
+>
+>@@ -581,7 +586,7 @@ static int genpd_runtime_suspend(struct device *dev)
+> 		return 0;
+>
+> 	genpd_lock(genpd);
+>-	genpd_power_off(genpd, true);
+>+	genpd_power_off(genpd, true, 0);
+> 	genpd_unlock(genpd);
+>
+> 	return 0;
+>@@ -661,7 +666,7 @@ static int genpd_runtime_resume(struct device *dev)
+> 	if (!pm_runtime_is_irq_safe(dev) ||
+> 		(pm_runtime_is_irq_safe(dev) && genpd_is_irq_safe(genpd))) {
+> 		genpd_lock(genpd);
+>-		genpd_power_off(genpd, true);
+>+		genpd_power_off(genpd, true, 0);
+> 		genpd_unlock(genpd);
+> 	}
+>
+>-- 
+>1.9.1
+>
