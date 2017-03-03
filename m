@@ -1,118 +1,67 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH v7 0/9] devicetree battery support and client
- bq27xxx_battery
-Date: Thu, 2 Mar 2017 17:04:57 -0600
-Message-ID: <98438e24-3259-034c-d327-242c8ca831fc@ti.com>
-References: <20170221213008.30044-1-liam@networkimprov.net>
- <CAKvHMgQxYSeuwGmLWH6Okg9xVYsyF3fuXNFKgSM0THJHyY1Ehw@mail.gmail.com>
+From: hpa@zytor.com
+Subject: Re: [PATCH 01/10] x86: assembly, ENTRY for fn,
+	GLOBAL for data
+Date: Fri, 03 Mar 2017 10:24:43 -0800
+Message-ID: <39064F86-5BE2-417F-8A28-2B4CB5177D7D@zytor.com>
+References: <20170217104757.28588-1-jslaby@suse.cz>
+ <20170301093855.GA27152@gmail.com> <alpine.DEB.2.20.1703011108220.4005@nanos>
+ <20170301102754.GA13374@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:44887 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751584AbdCCSXx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2017 13:23:53 -0500
-In-Reply-To: <CAKvHMgQxYSeuwGmLWH6Okg9xVYsyF3fuXNFKgSM0THJHyY1Ehw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <xen-devel-bounces@lists.xen.org>
+In-Reply-To: <20170301102754.GA13374@gmail.com>
+List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xen.org>
+List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
+List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xen.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
+To: Ingo Molnar <mingo@kernel.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Jiri Slaby <jslaby@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
 
-On 03/02/2017 04:52 PM, Liam Breck wrote:
-> Hi Andrew,
-> 
-> I have a new rev ready,with support for bq27500 & 545 & 421. How soon
-> could you test it? If this week, I'll post ASAP...
-> 
-
-Probably no time this week, so take your time. Although it never hurts
-to post.
-
-Andrew
-
-> 
-> On Tue, Feb 21, 2017 at 1:29 PM, Liam Breck <liam@networkimprov.net> wrote:
->> Overview:
->> * new devicetree battery node specifies static battery data
->> * fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
->> * new power_supply_get_battery_info() reads battery data from devicetree
->> * new struct power_supply_battery_info provides battery data to drivers
->> * drivers surface battery data in sysfs via related power_supply_prop_* fields
->> * bq27xxx driver calls the above and writes battery data to RAM/NVM for params
->>   essential to correct operation: energy-full-design-microwatt-hours,
->>   charge-full-design-microamp-hours, voltage-min-design-microvolt
->>
->> Changes in v7:
->>   bq27xxx_battery:
->> *   support chips where terminate_voltage & design_* live in separate blocks
->> *   draft support for 421, 441, 621 chips
->> *   new patch to log chip memory fields
->> *   report bus I/O errors; return error code in bq27xxx_battery_i2c
->> *   verify checksum in read_dm_block()
->> *   use set_cfgupdate only if chip provides it, soft_reset on I/O error
->> *   block_data_control=0 only in write_dm_block()
->> *   note toxic code from TI bqtool in write_dm_block()
->> *   lots of functionally neutral polishing
->>   Documentation/devicetree/.../battery.txt:
->> *   mention power_supply_get_battery_info()
->>
->> Changes in v6:
->> * Documentation/devictree/... fixes
->> * bq27xxx_battery: clarify names
->> * bq27xxx_battery: verify that selected registers are supported
->> * bq27xxx_battery: allocate NVM buffer on stack
->> * bq27xxx_battery_i2c: fix return code of bulk_read
->>
->> Changes in v5:
->> * incorporate feedback into Documentation/devicetree/.../battery.txt
->> * use power_supply_prop_* names in devicetree and power_supply_battery_info
->> * default fields to -EINVAL in power_supply_battery_info
->> * power_supply_get_battery_info() always looks for "monitored-battery"
->> * power_supply_get_battery_info() emits a warning if !psy->of_node
->> * squash patches for power_supply_battery_info
->> * bq27xxx_battery: check power_supply_battery_info values
->> * bq27xxx_battery: note missing power_supply_prop_* features
->> * bq27xxx_battery: new patch for access methods
->>
->> Changes in v4:
->> * add "fixed-battery" compatible field to be be more consistant with devicetree
->>
->> Changes in v3:
->> * split i2c changes into respective patches
->> * add documentation for battery information for fuel gauge
->> * rebased documentation patches on change on the list
->> * abstracted the battery configuration for the state machine
->>   to an generic struct and platform data access function
->>
->> Changes in v2:
->> * add documentation for uWh and uAh property units
->> * change devicetree entries to match new property units
->>
->> Liam (5):
->>   devicetree: power: Add battery.txt
->>   devicetree: power: bq27xxx: Add monitored-battery documentation
->>   power: power_supply: Add power_supply_battery_info and API
->>   power: bq27xxx_battery: Add power_supply_battery_info support
->>   power: bq27xxx_battery: Add print_dm() to log chip memory
->>
->> Matt Ranostay (4):
->>   devicetree: property-units: Add uWh and uAh units
->>   power: bq27xxx_battery: Define access methods to write chip registers
->>   power: bq27xxx_battery: Add BQ27425 chip id
->>   power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
->>
->>  .../devicetree/bindings/power/supply/battery.txt   |  42 ++
->>  .../devicetree/bindings/power/supply/bq27xxx.txt   |  11 +-
->>  .../devicetree/bindings/property-units.txt         |   2 +
->>  drivers/power/supply/bq27xxx_battery.c             | 473 ++++++++++++++++++++-
->>  drivers/power/supply/bq27xxx_battery_i2c.c         |  84 +++-
->>  drivers/power/supply/power_supply_core.c           |  40 ++
->>  include/linux/power/bq27xxx_battery.h              |   6 +-
->>  include/linux/power_supply.h                       |  18 +
->>  8 files changed, 669 insertions(+), 7 deletions(-)
->>  create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
->>
->> --
->> 2.9.3
->>
+T24gTWFyY2ggMSwgMjAxNyAyOjI3OjU0IEFNIFBTVCwgSW5nbyBNb2xuYXIgPG1pbmdvQGtlcm5l
+bC5vcmc+IHdyb3RlOgo+Cj4qIFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPiB3
+cm90ZToKPgo+PiBPbiBXZWQsIDEgTWFyIDIwMTcsIEluZ28gTW9sbmFyIHdyb3RlOgo+PiA+IAo+
+PiA+ICogSmlyaSBTbGFieSA8anNsYWJ5QHN1c2UuY3o+IHdyb3RlOgo+PiA+IAo+PiA+ID4gVGhp
+cyBpcyBhIHN0YXJ0IG9mIHNlcmllcyB0byB1bmlmeSB1c2Ugb2YgRU5UUlksIEVORFBST0MsIEdM
+T0JBTCwKPkVORCwKPj4gPiA+IGFuZCBvdGhlciBtYWNyb3MgYWNyb3NzIHg4Ni4gV2hlbiB3ZSBo
+YXZlIGFsbCB0aGlzIHNvcnRlZCBvdXQsCj50aGlzIHdpbGwKPj4gPiA+IGhlbHAgdG8gaW5qZWN0
+IERXQVJGIHVud2luZGluZyBpbmZvIGJ5IG9ianRvb2wgbGF0ZXIuCj4+ID4gPiAKPj4gPiA+IFNv
+LCBsZXQgdXMgdXNlIHRoZSBtYWNyb3MgdGhpcyB3YXk6Cj4+ID4gPiAqIEVOVFJZIC0tIHN0YXJ0
+IG9mIGEgZ2xvYmFsIGZ1bmN0aW9uCj4+ID4gPiAqIEVORFBST0MgLS0gZW5kIG9mIGEgbG9jYWwv
+Z2xvYmFsIGZ1bmN0aW9uCj4+ID4gPiAqIEdMT0JBTCAtLSBzdGFydCBvZiBhIGdsb2JhbGx5IHZp
+c2libGUgZGF0YSBzeW1ib2wKPj4gPiA+ICogRU5EIC0tIGVuZCBvZiBsb2NhbC9nbG9iYWwgZGF0
+YSBzeW1ib2wKPj4gPiAKPj4gPiBTbyBob3cgYWJvdXQgdXNpbmcgbWFjcm8gbmFtZXMgdGhhdCBh
+Y3R1YWxseSBzaG93IHRoZSBwdXJwb3NlLAo+aW5zdGVhZCBvZiAKPj4gPiBpbXBvcnRpbmcgYWxs
+IHRoZSBjcmFwcHksIGhpc3RvcmljLCBlc3NlbnRpYWxseSByYW5kb21seSBjaG9zZW4KPmRlYnVn
+IHN5bWJvbCBtYWNybyAKPj4gPiBuYW1lcyBmcm9tIHRoZSBiaW51dGlscyBhbmQgb2xkZXIga2Vy
+bmVscz8KPj4gPiAKPj4gPiBTb21ldGhpbmcgc2FuZSwgbGlrZToKPj4gPiAKPj4gPiAJU1lNX19G
+VU5DVElPTl9TVEFSVAo+PiAKPj4gU2FuZSB3b3VsZCBiZToKPj4gCj4+ICAgICAgCVNZTV9GVU5D
+VElPTl9TVEFSVAo+PiAKPj4gVGhlIGRvdWJsZSB1bmRlcnNjb3JlIGlzIGp1c3Qgbm90IGdpdmlu
+ZyBhbnkgdmFsdWUuCj4KPlNvIHRoZSBkb3VibGUgdW5kZXJzY29yZSAoYXQgbGVhc3QgaW4gbXkg
+dmlldykgaGFzIHR3byBhZHZhbnRhZ2VzOgo+Cj4xKSBpdCBoZWxwcyBzZXBhcmF0ZSB0aGUgcHJl
+Zml4IGZyb20gdGhlIHBvc3RmaXguCj4KPkkuZS4gaXQncyBhICdzeW1ib2xzJyBuYW1lc3BhY2Us
+IGFuZCBhICdmdW5jdGlvbiBzdGFydCcsIG5vdCB0aGUKPidzdGFydCcgb2YgYSAKPidzeW1ib2wg
+ZnVuY3Rpb24nLgo+Cj4yKSBJdCBhbHNvIGhlbHBzIGVhc3kgZ3JlcHBhYmlsaXR5Lgo+Cj5Ucnkg
+dGhpcyBpbiBsYXRlc3QgLXRpcDoKPgo+ICBnaXQgZ3JlcCBlODIwX18KPgo+VG8gc2VlIGFsbCB0
+aGUgRTgyMCBBUEkgY2FsbHMgLSB3aXRoIG5vIGZhbHNlIHBvc2l0aXZlcyEKPgo+J2dpdCBncmVw
+IGU4MjBfJyBvbiB0aGUgb3RoZXIgaGFuZCBpcyBhIGxvdCBsZXNzIHJlbGlhYmxlLi4uCj4KPkJ1
+dCBubyBzdHJvbmcgZmVlbGluZ3MgZWl0aGVyIHdheSwgSSBqdXN0IHRyeSB0byBzbmVhayBpbiB0
+aGVzZSBzbWFsbAo+bmFtZXNwYWNlIAo+c3RydWN0dXJlIHRyaWNrcyB3aGVuIG5vYm9keSdzIGxv
+b2tpbmchIDstKQo+Cj5UaGFua3MsCj4KPglJbmdvCgpJTU8gdGhlc2UgbGl0dGxlICJuYW1lc3Bh
+Y2UgdHJpY2tzIiBlc3BlY2lhbGx5IGZvciBzbWFsbCBjb21tb24gbWFjcm9zIGxpa2Ugd2UgYXJl
+IHRha2luZyBhYm91dCBoZXJlIG1ha2UgdGhlIGNvZGUgdmVyeSBmcnVzdHJhdGluZyB0byByZWFk
+LCBhbmQgZXZlbiBtb3JlIHRvIHdyaXRlLiAgTm9vbmUgd291bGQgZGVzaWduIGEgcHJvZ3JhbW1p
+bmcgbGFuZ3VhZ2UgdGhhdCB3YXksIGFuZCB0aGluZ3MgbGlrZSBQUk9DIGFyZSByZWFsbHkganVz
+dCBzdWJzdGl0dXRlcyBmb3IgcHJvcGVyIGxhbmd1YWdlIGZlYXR1cmVzIChhbmQgY291bGQgZXZl
+biBiZSBhcyBhc3NlbWJseSByYXRoZXIgdGhhbiBjcHAgbWFjcm9zLikKCldoZW4gSSBzYXkgZnJ1
+c3RyYXRpbmcgSSBtZWFuLCBhdCBsZWFzdCBmb3IgbWUsIGZ1bGwtQmFsbG1lciBsYXVuY2gtY2hh
+aXItYXQtbW9uaXRvciBsZXZlbCBmcnVzdHJhdGluZy4KLS0gClNlbnQgZnJvbSBteSBBbmRyb2lk
+IGRldmljZSB3aXRoIEstOSBNYWlsLiBQbGVhc2UgZXhjdXNlIG15IGJyZXZpdHkuCgpfX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpYZW4tZGV2ZWwgbWFpbGlu
+ZyBsaXN0Clhlbi1kZXZlbEBsaXN0cy54ZW4ub3JnCmh0dHBzOi8vbGlzdHMueGVuLm9yZy94ZW4t
+ZGV2ZWwK
