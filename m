@@ -1,42 +1,88 @@
-From: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Subject: [PATCH V10 5/6] ARM64: dts: bcm2837: Define CPU thermal coefficients
-Date: Fri,  3 Mar 2017 23:18:48 +0000
-Message-ID: <1488583129-4159-6-git-send-email-stefan.wahren@i2se.com>
-References: <1488583129-4159-1-git-send-email-stefan.wahren@i2se.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1488583129-4159-1-git-send-email-stefan.wahren-eS4NqCHxEME@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eric Anholt <eric-WhKQ6XTQaPysTnJN9+BGXg@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Martin Sperl <kernel-TqfNSX0MhmxHKSADF0wUEw@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [Update][PATCH v2 3/3] cpufreq: intel_pstate: Avoid triggering cpu_frequency tracepoint unnecessarily
+Date: Fri, 03 Mar 2017 23:51:31 +0100
+Message-ID: <2721031.hrvEgV4ixJ@aspire.rjw.lan>
+References: <1573986.gdsgdO0VUn@aspire.rjw.lan> <6304036.Ap76kdd4Kf@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <6304036.Ap76kdd4Kf@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-This defines the bcm2837 SoC specific thermal coefficients in
-order to initialize the thermal driver correctly.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Stefan Wahren <stefan.wahren-eS4NqCHxEME@public.gmane.org>
+In the passive mode the cpu_frequency trace event is already
+triggered by the cpufreq core or by scaling governors, so
+intel_pstate should not trigger it once again for the same
+P-state updates.
+
+In addition to that, the frequency returned by
+intel_cpufreq_fast_switch() and passed via freqs.new from
+intel_cpufreq_target() to cpufreq_freq_transition_end() should
+reflect the P-state actually set, so make that happen.
+
+Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/arm64/boot/dts/broadcom/bcm2837.dtsi |    4 ++++
- 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-index 19f2fe6..666c713 100644
---- a/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-+++ b/arch/arm64/boot/dts/broadcom/bcm2837.dtsi
-@@ -75,6 +75,10 @@
- 	interrupts = <8>;
- };
+-> v2:
+As mentioned in the changelog, the frequencies propagated to the
+caller of intel_cpufreq_fast_switch() and to cpufreq_freq_transition_end()
+should reflect the P-state that was set and not the requested
+frequency (which may be different due to the global limits, rounding
+etc).
+
+---
+ drivers/cpufreq/intel_pstate.c |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1879,13 +1879,11 @@ static int intel_pstate_prepare_request(
  
-+&cpu_thermal {
-+	coefficients = <(-538)	412000>;
-+}
-+
- /* enable thermal sensor with the correct compatible property set */
- &thermal {
- 	compatible = "brcm,bcm2837-thermal";
--- 
-1.7.9.5
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ 	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
+ 	pstate = clamp_t(int, pstate, min_perf, max_perf);
+-	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
+ 	return pstate;
+ }
+ 
+ static void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
+ {
+-	pstate = intel_pstate_prepare_request(cpu, pstate);
+ 	if (pstate == cpu->pstate.current_pstate)
+ 		return;
+ 
+@@ -1905,6 +1903,8 @@ static inline void intel_pstate_adjust_b
+ 
+ 	update_turbo_state();
+ 
++	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++	trace_cpu_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu);
+ 	intel_pstate_update_pstate(cpu, target_pstate);
+ 
+ 	sample = &cpu->sample;
+@@ -2365,6 +2365,7 @@ static int intel_cpufreq_target(struct c
+ 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ 	}
++	freqs.new = target_pstate * cpu->pstate.scaling;
+ 	cpufreq_freq_transition_end(policy, &freqs, false);
+ 
+ 	return 0;
+@@ -2378,8 +2379,9 @@ static unsigned int intel_cpufreq_fast_s
+ 
+ 	target_freq = intel_cpufreq_turbo_update(cpu, policy, target_freq);
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
++	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+ 	intel_pstate_update_pstate(cpu, target_pstate);
+-	return target_freq;
++	return target_pstate * cpu->pstate.scaling;
+ }
+ 
+ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
