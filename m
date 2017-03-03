@@ -1,206 +1,144 @@
-From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH V5 5/6] dt/bindings: Update binding for hierarchical PSCI
- states
-Date: Fri,  3 Mar 2017 13:48:16 -0800
-Message-ID: <1488577697-127445-6-git-send-email-lina.iyer@linaro.org>
-References: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v8 7/9] power: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Fri, 3 Mar 2017 15:51:41 -0600
+Message-ID: <3690ab9c-ea76-1b18-b51c-8ed6c165bf43@ti.com>
+References: <20170227071117.18934-1-liam@networkimprov.net>
+ <20170227071117.18934-8-liam@networkimprov.net>
+ <CAKvHMgQCfVK5k1-HU4UjT4oxOYDXU2LP7UaApNHZ8_NXM94How@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx194.ext.ti.com ([198.47.27.80]:56158 "EHLO
+        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752256AbdCCVvs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2017 16:51:48 -0500
+In-Reply-To: <CAKvHMgQCfVK5k1-HU4UjT4oxOYDXU2LP7UaApNHZ8_NXM94How@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-Update device bindings to represent hierarchical CPU and CPU domain idle
-states. Also update the examples to clearly show how flattened and
-hierarchical states can be represented in DT.
+On 03/03/2017 03:36 PM, Liam Breck wrote:
+> Hi Andrew,
+> 
+> On Sun, Feb 26, 2017 at 11:11 PM, Liam Breck <liam@networkimprov.net> wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> Previously there was no way to configure chip registers in the event that the
+>> defaults didn't match the battery in question.
+>>
+>> BQ27xxx driver now calls power_supply_get_battery_info, checks the inputs,
+>> and writes battery data to chip RAM or non-volatile memory.
+>>
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c | 458 ++++++++++++++++++++++++++++++++-
+>>  1 file changed, 456 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index 7475a5f..41d4ce7 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+> 
+>> @@ -452,6 +508,81 @@ static struct {
+>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>
+>> +#define BQ27XXX_DM_SZ                  32
+>> +
+>> +#define BQ27XXX_MSLEEP(i) usleep_range((i)*1000, (i)*1000+500)
+>> +
+>> +struct bq27xxx_dm_reg {
+>> +       u8 subclass_id;
+>> +       u8 offset;
+>> +       u8 bytes;
+>> +       u16 min, max;
+>> +};
+>> +
+>> +struct bq27xxx_dm_buf {
+>> +       u8 class;
+>> +       u8 block;
+>> +       u8 a[BQ27XXX_DM_SZ];
+>> +       bool full, updt;
+>> +};
+>> +
+>> +#define BQ27XXX_DM_BUF(di, i) { \
+>> +       .class = bq27xxx_dm_regs[(di)->chip][i].subclass_id, \
+>> +       .block = bq27xxx_dm_regs[(di)->chip][i].offset / BQ27XXX_DM_SZ, \
+>> +}
+>> +
+>> +static inline u16* bq27xxx_dm_buf_ptr(struct bq27xxx_dm_buf *buf,
+>> +                                     struct bq27xxx_dm_reg *reg) {
+>> +       if (buf->class == reg->subclass_id
+>> +        && buf->block == reg->offset / BQ27XXX_DM_SZ)
+>> +               return (u16*) (buf->a + reg->offset % BQ27XXX_DM_SZ);
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +enum bq27xxx_dm_reg_id {
+>> +       BQ27XXX_DM_DESIGN_CAPACITY = 0,
+>> +       BQ27XXX_DM_DESIGN_ENERGY,
+>> +       BQ27XXX_DM_TERMINATE_VOLTAGE,
+>> +};
+>> +
+>> +static const char* bq27xxx_dm_reg_name[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
+>> +       [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = { /* not tested */
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>> +};
+>> +
+>> +//static struct bq27xxx_dm_reg bq27621_dm_regs[] = { /* not tested */
+>> +//     [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>> +//     [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>> +//     [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>> +//};
+>> +
+>> +static struct bq27xxx_dm_reg *bq27xxx_dm_regs[] = {
+>> +       [BQ27421] = bq27421_dm_regs, /* and BQ27441 */
+>> +       [BQ27425] = bq27425_dm_regs,
+>> +//     [BQ27621] = bq27621_dm_regs,
+>> +};
+>> +
+>> +static u32 bq27xxx_unseal_keys[] = {
+>> +       [BQ27421] = 0x80008000, /* and BQ27441 */
+>> +       [BQ27425] = 0x04143672,
+>> +//     [BQ27621] = 0x80008000,
+>> +};
+> 
+> Maybe instead of defining dm_regs_* tables for many chips in this
+> file, we should land them in a new header, to let the kernel builder
+> define and/or pick one for his platform by setting a config option,
+> e.g. config_bq27xxx_dm_type=421
+> 
 
-Cc: <devicetree@vger.kernel.org>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
----
- Documentation/devicetree/bindings/arm/psci.txt | 156 +++++++++++++++++++++++++
- 1 file changed, 156 insertions(+)
+Size isn't really an issue, we build drivers for parts we may not have,
+you should be able to add a part to a system and only change the DT. So
+supporting all these chips is okay.
 
-diff --git a/Documentation/devicetree/bindings/arm/psci.txt b/Documentation/devicetree/bindings/arm/psci.txt
-index a2c4f1d..e0e9281 100644
---- a/Documentation/devicetree/bindings/arm/psci.txt
-+++ b/Documentation/devicetree/bindings/arm/psci.txt
-@@ -105,7 +105,163 @@ Case 3: PSCI v0.2 and PSCI v0.1.
- 		...
- 	};
- 
-+PSCI v1.0 onwards, supports OS-Initiated mode for powering off CPU domains
-+from the firmware. Such PM domains for which the PSCI firmware driver acts as
-+pseudo-controller, may also be specified in the DT under the psci node. The
-+domain definitions must follow the domain idle state specifications per [3].
-+The domain states themselves must be compatible with 'domain-idle-state'
-+defined in [1] and need to specify the arm,psci-suspend-param property for
-+each idle state.
-+
-+DT allows representing CPU and CPU cluster idle states in two different ways -
-+
-+The flattened model as given in Example 1, lists CPU's idle states followed by
-+the domain idle state that the CPUs may choose. This is the general practice
-+followed in PSCI firmwares that support Platform Coordinated mode. Note that
-+the idle states are all compatible with "arm,idle-state".
-+
-+Example 2 represents the hierarchical model of CPU and domain idle states.
-+CPUs define their domain provider in their DT node. The domain controls the
-+power to the CPU and possibly other h/w blocks that would be powered off when
-+the CPU is powered off. The CPU's idle states may therefore be considered as
-+the domain's idle states and have the compatible "arm,idle-state". Such
-+domains may be embedded within another domain that represents common h/w
-+blocks between these CPUs viz., the cluster. The idle states of the cluster
-+would be represented as the domain's idle states. In order to use OS-Initiated
-+mode of PSCI in the firmware, the hierarchial representation must be used.
-+
-+More information on defining CPU PM domains is available in [4].
-+
-+Example 1: Flattened representation of CPU and domain idle states
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		CPU0: cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a53", "arm,armv8";
-+			reg = <0x0>;
-+			enable-method = "psci";
-+			cpu-idle-states = <&CPU_PWRDN>, <&CLUSTER_RET>,
-+					  <&CLUSTER_PWR_DWN>;
-+		};
-+
-+		CPU1: cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a57", "arm,armv8";
-+			reg = <0x100>;
-+			enable-method = "psci";
-+			cpu-idle-states = <&CPU_PWRDN>, <&CLUSTER_RET>,
-+					  <&CLUSTER_PWR_DWN>;
-+		};
-+
-+		idle-states {
-+			CPU_PWRDN: cpu_power_down{
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x000001>;
-+				entry-latency-us = <10>;
-+				exit-latency-us = <10>;
-+				min-residency-us = <100>;
-+			};
-+
-+			CLUSTER_RET: domain_ret {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x1000010>;
-+				entry-latency-us = <500>;
-+				exit-latency-us = <500>;
-+				min-residency-us = <2000>;
-+			};
-+
-+			CLUSTER_PWR_DWN: domain_off {
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x1000030>;
-+				entry-latency-us = <2000>;
-+				exit-latency-us = <2000>;
-+				min-residency-us = <6000>;
-+			};
-+	};
-+
-+	psci {
-+		compatible = "arm,psci-0.2";
-+		method = "smc";
-+	};
-+
-+Example 2: Hierarchical representation of CPU and domain idle states
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		CPU0: cpu@0 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a53", "arm,armv8";
-+			reg = <0x0>;
-+			enable-method = "psci";
-+			power-domains = <&CPU_PD0>;
-+		};
-+
-+		CPU1: cpu@1 {
-+			device_type = "cpu";
-+			compatible = "arm,cortex-a57", "arm,armv8";
-+			reg = <0x100>;
-+			enable-method = "psci";
-+			power-domains = <&CPU_PD1>;
-+		};
-+
-+		idle-states {
-+			CPU_PWRDN: cpu_power_down{
-+				compatible = "arm,idle-state";
-+				arm,psci-suspend-param = <0x000001>;
-+				entry-latency-us = <10>;
-+				exit-latency-us = <10>;
-+				min-residency-us = <100>;
-+			};
-+
-+			CLUSTER_RET: domain_ret {
-+				compatible = "domain-idle-state";
-+				arm,psci-suspend-param = <0x1000010>;
-+				entry-latency-us = <500>;
-+				exit-latency-us = <500>;
-+				min-residency-us = <2000>;
-+			};
-+
-+			CLUSTER_PWR_DWN: domain_off {
-+				compatible = "domain-idle-state";
-+				arm,psci-suspend-param = <0x1000030>;
-+				entry-latency-us = <2000>;
-+				exit-latency-us = <2000>;
-+				min-residency-us = <6000>;
-+			};
-+		};
-+	};
-+
-+	psci {
-+		compatible = "arm,psci-1.0";
-+		method = "smc";
-+
-+		CPU_PD0: cpu-pd@0 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CPU_PWRDN>;
-+			power-domains = <&CLUSTER_PD>;
-+		};
-+
-+		CPU_PD1: cpu-pd@1 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states =  <&CPU_PWRDN>;
-+			power-domains = <&CLUSTER_PD>;
-+		};
-+
-+		CLUSTER_PD: cluster-pd@0 {
-+			#power-domain-cells = <0>;
-+			domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWR_DWN>;
-+		};
-+	};
-+
- [1] Kernel documentation - ARM idle states bindings
-     Documentation/devicetree/bindings/arm/idle-states.txt
- [2] Power State Coordination Interface (PSCI) specification
-     http://infocenter.arm.com/help/topic/com.arm.doc.den0022c/DEN0022C_Power_State_Coordination_Interface.pdf
-+[3]. PM Domains description
-+    Documentation/devicetree/bindings/power/power_domain.txt
-+[4]. CPU PM Domains description
-+    Documentation/power/cpu_domains.txt
--- 
-2.7.4
+> We could also pull in the dm update code if such an option is defined,
+> tho it isn't that much code, ~230 lines plus whitespace.
+> 
+
+We can have a config option to enable support for DM update, if it can
+be factored out in such a way. Otherwise if someone uses it, just
+include it for everyone, if they need it it's there, if they don't then
+no harm done.
+
+> Thoughts?
+> 
