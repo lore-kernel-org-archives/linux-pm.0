@@ -1,146 +1,102 @@
 From: Lina Iyer <lina.iyer@linaro.org>
-Subject: [PATCH V5 9/9] doc / cpu_domains: Describe CPU PM domains setup and governor
-Date: Fri,  3 Mar 2017 12:41:35 -0800
-Message-ID: <1488573695-106680-10-git-send-email-lina.iyer@linaro.org>
+Subject: [PATCH V5 1/9] PM / Domains: Ignore domain-idle-states that are not
+ compatible
+Date: Fri,  3 Mar 2017 12:41:27 -0800
+Message-ID: <1488573695-106680-2-git-send-email-lina.iyer@linaro.org>
 References: <1488573695-106680-1-git-send-email-lina.iyer@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:34177 "EHLO
-        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752082AbdCCUmy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2017 15:42:54 -0500
-Received: by mail-pf0-f172.google.com with SMTP id e66so18039687pfe.1
-        for <linux-pm@vger.kernel.org>; Fri, 03 Mar 2017 12:42:02 -0800 (PST)
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1488573695-106680-1-git-send-email-lina.iyer@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, brendan.jackman@arm.com, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com, Lina Iyer <lina.iyer@linaro.org>
+Cc: devicetree@vger.kernel.org, lorenzo.pieralisi@arm.com, Juri.Lelli@arm.com, Rob Herring <robh@kernel.org>, linux-arm-msm@vger.kernel.org, sboyd@codeaurora.org, brendan.jackman@arm.com, sudeep.holla@arm.com, andy.gross@linaro.org, Lina Iyer <lina.iyer@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-A generic CPU PM domain functionality is provided by
-drivers/base/power/cpu_domains.c. This document describes the generic
-usecase of CPU's PM domains, the setup of such domains and a CPU
-specific genpd governor.
+domain-idle-states property may have phandles to idle state bindings
+that may not be compatible with idle state definition defined in [1].
+Such phandles would just be ignored and not throw and error when read by
+the domain core.
 
+Cc: <devicetree@vger.kernel.org>
+Cc: Rob Herring <robh@kernel.org>
 Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 ---
- Documentation/power/cpu_domains.txt | 109 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 109 insertions(+)
- create mode 100644 Documentation/power/cpu_domains.txt
+ Documentation/devicetree/bindings/power/power_domain.txt |  4 +++-
+ drivers/base/power/domain.c                              | 16 +++++++++-------
+ 2 files changed, 12 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/power/cpu_domains.txt b/Documentation/power/cpu_domains.txt
-new file mode 100644
-index 0000000..6a39a64
---- /dev/null
-+++ b/Documentation/power/cpu_domains.txt
-@@ -0,0 +1,109 @@
-+CPU PM domains
-+==============
-+
-+Newer CPUs are grouped in SoCs as clusters. A cluster in addition to the CPUs
-+may have caches, floating point units and other architecture specific power
-+controller that share resources when any of the CPUs are active. When the CPUs
-+are in idle, some of these cluster components may also idle. A cluster may
-+also be nested inside another cluster that provides common coherency
-+interfaces to share data between the clusters. The organization of such
-+clusters and CPU may be descibed in DT, since they are SoC specific.
-+
-+CPUIdle framework enables the CPUs to determine the sleep time and enter low
-+power state to save power during periods of idle. CPUs in a cluster may enter
-+and exit idle state independently of each other. During the time when all the
-+CPUs are in idle state, the cluster may safely put some of the shared
-+resources in their idle state. The time between the last CPU to enter idle and
-+the first CPU to wake up is the time available for the cluster to enter its
-+idle state.
-+
-+When SoCs power down the CPU during cpuidle, they generally have supplemental
-+hardware that can handshake with the CPU with a signal that indicates that the
-+CPU has stopped execution. The hardware is also responsible for warm booting
-+the CPU on receiving an interrupt. In a cluster architecture, common resources
-+that are shared by a cluster may also be powered down by an external
-+microcontroller or a processor. The microcontroller may be programmed in
-+advance to put the hardware blocks in a low power state, when the last active
-+CPU sends the idle signal. When the signal is received, the microcontroller
-+may trigger the hardware blocks to enter their low power state. When an
-+interrupt to wakeup the processor is received, the microcontroller is
-+responsible for bringing up the hardware blocks to its active state, before
-+waking up the CPU. The timelines for such operations should be in the
-+acceptable range for for CPU idle to get power benefits.
-+
-+CPU PM Domain Setup
-+-------------------
-+
-+PM domains are represented in the DT as domain consumers and providers. A
-+device may have a domain provider and a domain provider may support multiple
-+domain consumers. Domains like clusters, may also be nested inside one
-+another. A domain that has no active consumer, may be powered off and any
-+resuming consumer would trigger the domain back to active. Parent domains may
-+be powered off when the child domains are powered off. The CPU cluster can be
-+fashioned as a PM domain. When the CPU devices are powered off, the PM domain
-+may be powered off.
-+
-+Device idle is reference counted by runtime PM. When there is no active need
-+for the device, runtime PM invokes callbacks to suspend the parent domain.
-+Generic PM domain (genpd) handles the hierarchy of devices, domains and the
-+reference counting of objects leading to last man down and first man up in the
-+domain. The CPU domains helper functions defines PM domains for each CPU
-+cluster and attaches the CPU devices to the respective PM domains.
-+
-+Platform drivers may use the following API to register their CPU PM domains.
-+
-+of_setup_cpu_pd() -
-+Provides a single step registration of the CPU PM domain and attach CPUs to
-+the genpd. Platform drivers may additionally register callbacks for power_on
-+and power_off operations for the PM domain.
-+
-+of_setup_cpu_pd_single() -
-+Define PM domain for a single CPU and attach the CPU to its domain.
-+
-+
-+CPU PM Domain governor
-+----------------------
-+
-+CPUs have a unique ability to determine their next wakeup. CPUs may wake up
-+for known timer interrupts and unknown interrupts from idle. Prediction
-+algorithms and heuristic based algorithms like the Menu governor for cpuidle
-+can determine the next wakeup of the CPU. However, determining the wakeup
-+across a group of CPUs is a tough problem to solve.
-+
-+A simplistic approach would be to resort to known wakeups of the CPUs in
-+determining the next wakeup of any CPU in the cluster. The CPU PM domain
-+governor does just that. By looking into the tick device of the CPUs, the
-+governor can determine the sleep time between the last CPU and the first
-+scheduled wakeup of any CPU in that domain. This combined with the PM QoS
-+requirement for CPU_DMA_LATENCY can be used to determine the deepest possible
-+idle state of the CPU domain.
-+
-+
-+PSCI based CPU PM Domains
-+-------------------------
-+
-+ARM PSCI v1.0 supports PM domains for CPU clusters like in big.Little
-+architecture. It is supported as part of the OS-Initiated (OSI) mode of the
-+PSCI firmware. Since the control of domains is abstracted in the firmware,
-+Linux does not need even a driver to control these domains. The complexity of
-+determining the idle state of the PM domain is handled by the CPU PM domains.
-+
-+Every PSCI CPU PM domain idle state has a unique PSCI state id. The state id
-+is read from the DT and specified using the arm,psci-suspend-param property.
-+This makes it easy for big.Little SoCs to just specify the PM domain idle
-+states for the CPU along with the psci-suspend-param and everything else is
-+handled by the PSCI fimrware drivers and the firmware.
-+
-+
-+DT definitions for PSCI CPU PM Domains
-+--------------------------------------
-+
-+A PM domain's idle state can be defined in DT, the description of which is
-+available in [1]. PSCI based CPU PM domains may define their idle states as
-+part of the psci node. The additional parameter arm,psci-suspend-param is used
-+to indicate to the firmwware the addition cluster state that would be achieved
-+after the last CPU makes the PSCI call to suspend the CPU. The description of
-+PSCI domain states is available in [2].
-+
-+[1]. Documentation/devicetree/bindings/arm/idle-states.txt
-+[2]. Documentation/devicetree/bindings/arm/psci.txt
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 723e1ad..940707d 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -31,7 +31,9 @@ Optional properties:
+ 
+ - domain-idle-states : A phandle of an idle-state that shall be soaked into a
+                 generic domain power state. The idle state definitions are
+-                compatible with domain-idle-state specified in [1].
++                compatible with domain-idle-state specified in [1]. phandles
++                that are not compatible with domain-idle-state will be
++                ignored.
+   The domain-idle-state property reflects the idle state of this PM domain and
+   not the idle states of the devices or sub-domains in the PM domain. Devices
+   and sub-domains have their own idle-states independent of the parent
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index e697dec..de3e489 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2079,11 +2079,6 @@ static int genpd_parse_state(struct genpd_power_state *genpd_state,
+ 	int err;
+ 	u32 residency;
+ 	u32 entry_latency, exit_latency;
+-	const struct of_device_id *match_id;
+-
+-	match_id = of_match_node(idle_state_match, state_node);
+-	if (!match_id)
+-		return -EINVAL;
+ 
+ 	err = of_property_read_u32(state_node, "entry-latency-us",
+ 						&entry_latency);
+@@ -2132,6 +2127,7 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 	int err, ret;
+ 	int count;
+ 	struct of_phandle_iterator it;
++	const struct of_device_id *match_id;
+ 
+ 	count = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
+ 	if (count <= 0)
+@@ -2144,6 +2140,9 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 	/* Loop over the phandles until all the requested entry is found */
+ 	of_for_each_phandle(&it, err, dn, "domain-idle-states", NULL, 0) {
+ 		np = it.node;
++		match_id = of_match_node(idle_state_match, np);
++		if (!match_id)
++			continue;
+ 		ret = genpd_parse_state(&st[i++], np);
+ 		if (ret) {
+ 			pr_err
+@@ -2155,8 +2154,11 @@ int of_genpd_parse_idle_states(struct device_node *dn,
+ 		}
+ 	}
+ 
+-	*n = count;
+-	*states = st;
++	*n = i;
++	if (!i)
++		kfree(st);
++	else
++		*states = st;
+ 
+ 	return 0;
+ }
 -- 
 2.7.4
