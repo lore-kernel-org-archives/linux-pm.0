@@ -1,50 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 3/6] cpufreq: schedutil: ensure max frequency while
- running RT/DL tasks
-Date: Fri, 3 Mar 2017 14:01:45 +0530
-Message-ID: <20170303083145.GA8206@vireshk-i7>
-References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
- <1488469507-32463-4-git-send-email-patrick.bellasi@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1488469507-32463-4-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH] cpupower: Fix no-rounding MHz frequency output
+Date: Fri,  3 Mar 2017 06:26:46 -0500
+Message-ID: <1488540406-13738-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:54418 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751445AbdCCL2T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Mar 2017 06:28:19 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.com>, Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>
 
-On 02-03-17, 15:45, Patrick Bellasi wrote:
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> @@ -293,15 +305,29 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->  	if (curr == sg_policy->thread)
->  		goto done;
->  
-> +	/*
-> +	 * While RT/DL tasks are running we do not want FAIR tasks to
-> +	 * overwrite this CPU's flags, still we can update utilization and
-> +	 * frequency (if required/possible) to be fair with these tasks.
-> +	 */
-> +	rt_mode = task_has_dl_policy(curr) ||
-> +		  task_has_rt_policy(curr) ||
-> +		  (flags & SCHED_CPUFREQ_RT_DL);
-> +	if (rt_mode)
-> +		sg_cpu->flags |= flags;
-> +	else
-> +		sg_cpu->flags = flags;
+'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+the command returns
 
-This looks so hacked up :)
+hardware limits: 800000 MHz - 4.200000 GHz
 
-Wouldn't it be better to let the scheduler tell us what all kind of tasks it has
-in the rq of a CPU and pass a mask of flags? I think it wouldn't be difficult
-(or time consuming) for the scheduler to know that, but I am not 100% sure.
+The value of speed passed into print_speed is in kHz, so divide speed by
+1000 in the MHz else-if section to get MHz.
 
-IOW, the flags field in cpufreq_update_util() will represent all tasks in the
-rq, instead of just the task that is getting enqueued/dequeued..
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Thomas Renninger <trenn@suse.com>
+Cc: Stafford Horne <shorne@gmail.com>
+Cc: Shuah Khan <shuah@kernel.org>
+---
+ tools/power/cpupower/utils/cpufreq-info.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-And obviously we need to get some utilization numbers for the RT and DL tasks
-going forward, switching to max isn't going to work for ever :)
-
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+index 3e701f0e9c14..fe7c25147b3a 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -94,7 +94,7 @@ static void print_speed(unsigned long speed)
+ 			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+ 				((unsigned int) speed%1000000));
+ 		else if (speed > 100000)
+-			printf("%u MHz", (unsigned int) speed);
++			printf("%u MHz", (unsigned int) speed/1000);
+ 		else if (speed > 1000)
+ 			printf("%u.%03u MHz", ((unsigned int) speed/1000),
+ 				(unsigned int) (speed%1000));
 -- 
-viresh
+1.7.9.3
