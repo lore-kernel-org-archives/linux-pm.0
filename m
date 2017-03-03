@@ -1,38 +1,84 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/3] cpufreq: schedutil: move cached_raw_freq to struct
- sugov_policy
-Date: Fri, 3 Mar 2017 08:37:06 +0530
-Message-ID: <20170303030706.GE13760@vireshk-i7>
-References: <cover.1488437503.git.viresh.kumar@linaro.org>
- <0ee63c640d47281997d544d05f9dd543aef80588.1488437503.git.viresh.kumar@linaro.org>
- <1692186.fFRXBJz7b4@aspire.rjw.lan>
+Subject: Re: [PATCH 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
+ enter
+Date: Fri, 3 Mar 2017 09:11:25 +0530
+Message-ID: <20170303034125.GH13760@vireshk-i7>
+References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
+ <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f173.google.com ([209.85.192.173]:34755 "EHLO
+        mail-pf0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751512AbdCCDsA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Mar 2017 22:48:00 -0500
+Received: by mail-pf0-f173.google.com with SMTP id e66so10250077pfe.1
+        for <linux-pm@vger.kernel.org>; Thu, 02 Mar 2017 19:48:00 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1692186.fFRXBJz7b4@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
+In-Reply-To: <1488469507-32463-2-git-send-email-patrick.bellasi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 02-03-17, 23:05, Rafael J. Wysocki wrote:
-> On Thursday, March 02, 2017 02:03:20 PM Viresh Kumar wrote:
-> > cached_raw_freq applies to the entire cpufreq policy and not individual
-> > CPUs. Apart from wasting per-cpu memory, it is actually wrong to keep it
-> > in struct sugov_cpu as we may end up comparing next_freq with a stale
-> > cached_raw_freq of a random CPU.
-> > 
-> > Move cached_raw_freq to struct sugov_policy.
-> > 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Any chance for a Fixes: tag?
+On 02-03-17, 15:45, Patrick Bellasi wrote:
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index e2ed46d..739b29d 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -3653,6 +3653,7 @@ static inline unsigned long rlimit_max(unsigned int limit)
+>  #define SCHED_CPUFREQ_RT	(1U << 0)
+>  #define SCHED_CPUFREQ_DL	(1U << 1)
+>  #define SCHED_CPUFREQ_IOWAIT	(1U << 2)
+> +#define SCHED_CPUFREQ_IDLE	(1U << 3)
+>  
+>  #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
+>  
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index fd46593..084a98b 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -281,6 +281,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  
+>  	raw_spin_lock(&sg_policy->update_lock);
+>  
+> +	/* CPU is entering IDLE, reset flags without triggering an update */
+> +	if (flags & SCHED_CPUFREQ_IDLE) {
 
-Fixes: 5cbea46984d6 ("cpufreq: schedutil: map raw required frequency
-to driver frequency")
+Will "flags == SCHED_CPUFREQ_IDLE" generate better assembly ?
 
-Sorry to miss that in the first place.
+> +		sg_cpu->flags = 0;
+> +		goto done;
+> +	}
+> +
+>  	sg_cpu->util = util;
+>  	sg_cpu->max = max;
+>  	sg_cpu->flags = flags;
+> @@ -293,6 +299,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  		sugov_update_commit(sg_policy, time, next_f);
+>  	}
+>  
+> +done:
+>  	raw_spin_unlock(&sg_policy->update_lock);
+>  }
+>  
+> diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
+> index 0c00172..a844c91 100644
+> --- a/kernel/sched/idle_task.c
+> +++ b/kernel/sched/idle_task.c
+> @@ -29,6 +29,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
+>  	put_prev_task(rq, prev);
+>  	update_idle_core(rq);
+>  	schedstat_inc(rq->sched_goidle);
+> +
+> +	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
+> +	cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_IDLE);
+> +
+>  	return rq->idle;
+>  }
+>  
+> -- 
+> 2.7.4
 
 -- 
 viresh
