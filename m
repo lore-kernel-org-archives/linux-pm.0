@@ -1,41 +1,129 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3] cpufreq: schedutil: remove redundant code from sugov_next_freq_shared()
-Date: Sat, 04 Mar 2017 01:11:32 +0100
-Message-ID: <1668614.4zDQWLsnmH@aspire.rjw.lan>
-References: <cover.1488437503.git.viresh.kumar@linaro.org> <639aad743bac7f3292146738f44dbd1480169c8e.1488437503.git.viresh.kumar@linaro.org> <1772276.4tCnP8C0XV@aspire.rjw.lan>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH] ARM: dts: exynos: Use thermal fuse value for thermal
+ zone 0 on Exynos5420
+Date: Sat, 4 Mar 2017 10:01:09 +0200
+Message-ID: <20170304080109.j2kuwmqj7mgfx3ky@kozik-lap>
+References: <20170211201456.27974-1-krzk@kernel.org>
+ <252f9e32-ff2c-a1ce-3c98-6383a1148e02@osg.samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49149 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752146AbdCDAQ4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2017 19:16:56 -0500
-In-Reply-To: <1772276.4tCnP8C0XV@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <252f9e32-ff2c-a1ce-3c98-6383a1148e02@osg.samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Javier Martinez Canillas <javier@osg.samsung.com>
+Cc: devicetree@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, Anand Moon <linux.amoon@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, Willy WOLFF <willy.mh.wolff@gmail.com>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, Zhang Rui <rui.zhang@intel.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-On Saturday, March 04, 2017 01:03:17 AM Rafael J. Wysocki wrote:
-> On Thursday, March 02, 2017 02:03:22 PM Viresh Kumar wrote:
-> > The same code is present both within and outside the loop and it doesn't
-> > look like it provides any additional benefit.
+On Fri, Mar 03, 2017 at 06:50:06PM -0300, Javier Martinez Canillas wrote:
+> Hello Krzysztof,
 > 
-> Well, not quite.  This is on purpose.
+> On 02/11/2017 05:14 PM, Krzysztof Kozlowski wrote:
+> > In Odroid XU3 Lite board, the temperature levels reported for thermal
+> > zone 0 were weird. In warm room:
+> > 	/sys/class/thermal/thermal_zone0/temp:32000
+> > 	/sys/class/thermal/thermal_zone1/temp:51000
+> > 	/sys/class/thermal/thermal_zone2/temp:55000
+> > 	/sys/class/thermal/thermal_zone3/temp:54000
+> > 	/sys/class/thermal/thermal_zone4/temp:51000
+> > 
+> > Sometimes after booting the value was even equal to ambient temperature
+> > which is highly unlikely to be a real temperature of sensor in SoC.
+> > 
+> > The thermal sensor's calibration (trimming) is based on fused values.
+> > In case of the board above, the fused values are: 35, 52, 43, 58 and 43
+> > (corresponding to each TMU device).  However driver defined a minimum value
+> > for fused data as 40 and for smaller values it was using a hard-coded 55
+> > instead.  This lead to mapping data from sensor to wrong temperatures
+> > for thermal zone 0.
+> > 
+> > Various vendor 3.10 trees (Hardkernel's based on Samsung LSI, Artik 10)
+> > do not impose any limits on fused values.  Since we do not have any
+> > knowledge about these limits, use 0 as a minimum accepted fused value.
+> > This should essentially allow accepting any reasonable fused value thus
+> > behaving like vendor driver.
+> > 
+> > The exynos5420-tmu-sensor-conf.dtsi is copied directly from existing
+> > exynso4412 with one change - the samsung,tmu_min_efuse_value.
+> > 
+> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > 
+> > ---
+> > 
+> > Testing on other Exynos542x boards is much appreciated. Especially I
+> > wonder what efuse values are there.
 > 
-> Note the "if (j == smp_processor_id())" condition within the loop and think
-> about how the current CPU is taken into account. :-)
+> I tested on both Exynos5422 Odroid XU4 and Exynos5800 Peach Pi boards.
+> 
+> The temperatures levels reported for these two boards on a warm room are:
+> 
+> Odroid XU4
+> 
+> # cat /sys/class/thermal/thermal_zone*/temp
+> 50000
+> 50000
+> 54000
+> 51000
+> 48000
+> 
+> Peach Pi
+> 
+> # cat /sys/class/thermal/thermal_zone*/temp
+> 42000
+> 44000
+> 27000 <-- weird value for thermal zone 2 like zone 0 in your XU3 lite
+> 45000
+> 45000
+> 
+> And the efuse values for the TMU devices are:
+> 
+> Odroid XU4
+> 
+> TMU0 = 45
+> TMU1 = 44
+> TMU2 = 44
+> TMU3 = 46
+> TMU3 = 46
+> 
+> Peach Pi
+> 
+> TMU0 = 44
+> TMU1 = 46
+> TMU2 = 36
+> TMU3 = 53
+> TMU3 = 46
+> 
+> The fused value for TMU2 is < 40 so that explains the weird temperature
+> level for thermal zone 2 in Peach. So after your patch, makes more sense:
+> 
+> # cat /sys/class/thermal/thermal_zone*/temp
+> 41000
+> 42000
+> 45000
+> 43000
+> 43000
 
-Ah OK, you did that, sorry.
+Great! Thanks for testing!
 
-So one idea is that if SCHED_CPUFREQ_RT_DL is set in flags, we don't even
-need to start the loop which is quite a cost to simply notice that there's
-nothing to do.
 
-Also I don't quite agree with adding an extra pair of integer multiplications
-to that loop just to get rid of the extra args.  That aside from chasing extra
-pointers, of course.
+> I wonder though if 0 is the best value or if we should just lower more
+> to cover the used e-fuse values in Exynos5 boards. But as you said,
+> we have no knowledge about these limits...
+
+Yeah... we could set value of 10 or 20... but that would be blind shot.
+> 
+> Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+> Tested-by: Javier Martinez Canillas <javier@osg.samsung.com>
+> 
 
 Thanks,
-Rafael
+Krzysztof
