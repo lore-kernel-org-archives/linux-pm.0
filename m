@@ -1,88 +1,30 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [Update][PATCH v2 3/3] cpufreq: intel_pstate: Avoid triggering cpu_frequency tracepoint unnecessarily
-Date: Fri, 03 Mar 2017 23:51:31 +0100
-Message-ID: <2721031.hrvEgV4ixJ@aspire.rjw.lan>
-References: <1573986.gdsgdO0VUn@aspire.rjw.lan> <6304036.Ap76kdd4Kf@aspire.rjw.lan>
+Subject: Re: [PATCH 3/3] cpufreq: schedutil: remove redundant code from sugov_next_freq_shared()
+Date: Sat, 04 Mar 2017 01:03:17 +0100
+Message-ID: <1772276.4tCnP8C0XV@aspire.rjw.lan>
+References: <cover.1488437503.git.viresh.kumar@linaro.org> <639aad743bac7f3292146738f44dbd1480169c8e.1488437503.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6304036.Ap76kdd4Kf@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54210 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751742AbdCDALD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Mar 2017 19:11:03 -0500
+In-Reply-To: <639aad743bac7f3292146738f44dbd1480169c8e.1488437503.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thursday, March 02, 2017 02:03:22 PM Viresh Kumar wrote:
+> The same code is present both within and outside the loop and it doesn't
+> look like it provides any additional benefit.
 
-In the passive mode the cpu_frequency trace event is already
-triggered by the cpufreq core or by scaling governors, so
-intel_pstate should not trigger it once again for the same
-P-state updates.
+Well, not quite.  This is on purpose.
 
-In addition to that, the frequency returned by
-intel_cpufreq_fast_switch() and passed via freqs.new from
-intel_cpufreq_target() to cpufreq_freq_transition_end() should
-reflect the P-state actually set, so make that happen.
+Note the "if (j == smp_processor_id())" condition within the loop and think
+about how the current CPU is taken into account. :-)
 
-Fixes: 001c76f05b01 (cpufreq: intel_pstate: Generic governors support)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
--> v2:
-As mentioned in the changelog, the frequencies propagated to the
-caller of intel_cpufreq_fast_switch() and to cpufreq_freq_transition_end()
-should reflect the P-state that was set and not the requested
-frequency (which may be different due to the global limits, rounding
-etc).
-
----
- drivers/cpufreq/intel_pstate.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1879,13 +1879,11 @@ static int intel_pstate_prepare_request(
- 
- 	intel_pstate_get_min_max(cpu, &min_perf, &max_perf);
- 	pstate = clamp_t(int, pstate, min_perf, max_perf);
--	trace_cpu_frequency(pstate * cpu->pstate.scaling, cpu->cpu);
- 	return pstate;
- }
- 
- static void intel_pstate_update_pstate(struct cpudata *cpu, int pstate)
- {
--	pstate = intel_pstate_prepare_request(cpu, pstate);
- 	if (pstate == cpu->pstate.current_pstate)
- 		return;
- 
-@@ -1905,6 +1903,8 @@ static inline void intel_pstate_adjust_b
- 
- 	update_turbo_state();
- 
-+	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+	trace_cpu_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu);
- 	intel_pstate_update_pstate(cpu, target_pstate);
- 
- 	sample = &cpu->sample;
-@@ -2365,6 +2365,7 @@ static int intel_cpufreq_target(struct c
- 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
- 			      pstate_funcs.get_val(cpu, target_pstate));
- 	}
-+	freqs.new = target_pstate * cpu->pstate.scaling;
- 	cpufreq_freq_transition_end(policy, &freqs, false);
- 
- 	return 0;
-@@ -2378,8 +2379,9 @@ static unsigned int intel_cpufreq_fast_s
- 
- 	target_freq = intel_cpufreq_turbo_update(cpu, policy, target_freq);
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
-+	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
- 	intel_pstate_update_pstate(cpu, target_pstate);
--	return target_freq;
-+	return target_pstate * cpu->pstate.scaling;
- }
- 
- static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+Thanks,
+Rafael
