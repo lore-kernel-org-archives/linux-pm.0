@@ -1,114 +1,60 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v9 0/8] devicetree battery support and client bq27xxx_battery
-Date: Sun,  5 Mar 2017 23:25:31 -0800
-Message-ID: <20170306072539.980-1-liam@networkimprov.net>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/3] cpufreq: schedutil: remove redundant code from sugov_next_freq_shared()
+Date: Mon, 6 Mar 2017 13:24:11 +0100
+Message-ID: <CAJZ5v0hov8Lz_MK9dxP9MyqSmPNRfWV9Wia4DtAZtOPmoTOqAw@mail.gmail.com>
+References: <cover.1488437503.git.viresh.kumar@linaro.org> <639aad743bac7f3292146738f44dbd1480169c8e.1488437503.git.viresh.kumar@linaro.org>
+ <1772276.4tCnP8C0XV@aspire.rjw.lan> <1668614.4zDQWLsnmH@aspire.rjw.lan> <20170306044553.GE8206@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:35577 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752557AbdCFHeb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 02:34:31 -0500
-Received: by mail-pg0-f66.google.com with SMTP id 187so5323940pgb.2
-        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2017 23:34:30 -0800 (PST)
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:34195 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753009AbdCFMdf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 07:33:35 -0500
+In-Reply-To: <20170306044553.GE8206@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Overview:
-* new devicetree battery node specifies static battery data
-* fuel gauge and charger nodes shall use monitored-battery=<&battery_node>
-* new power_supply_get_battery_info() reads battery data from devicetree
-* new struct power_supply_battery_info provides battery data to drivers
-* drivers surface battery data in sysfs via related power_supply_prop_* fields
-* bq27xxx driver calls the above and writes battery data to RAM/NVM for params
-  essential to correct operation: energy-full-design-microwatt-hours,
-  charge-full-design-microamp-hours, voltage-min-design-microvolt
+On Mon, Mar 6, 2017 at 5:45 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 04-03-17, 01:11, Rafael J. Wysocki wrote:
+>> So one idea is that if SCHED_CPUFREQ_RT_DL is set in flags, we don't even
+>> need to start the loop which is quite a cost to simply notice that there's
+>> nothing to do.
+>
+> Hmm. Isn't the probability of this flag being set, same for all CPUs in the
+> policy?
 
-Changes in v9:
-  bq27xxx_battery:
-*   fix set_cfgupdate()
-*   support bq27500, 545, 421; defer others
-*   bq27441, 621 use enum BQ27425 instead of BQ27421
-*   drop print_dm_blocks() patch
-*   minor polishing
-  Documentation/devicetree/.../battery.txt:
-*   describe rationale for enum power_supply_property names
+No, I don't think so.
 
-Changes in v8:
-  bq27xxx_battery:
-*   wait on flag after set_cfgupdate & soft_reset
-*   drop print_config(), report status in update_dm_block()
-*   clarify error messages
-*   cleanup from Andrew's feedback; minor polishing
+> If yes, then why do we need to handle the current CPU specially?
 
-Changes in v7:
-  bq27xxx_battery:
-*   support chips where terminate_voltage & design_* live in separate blocks
-*   draft support for 421, 441, 621 chips
-*   new patch to log chip memory fields
-*   report bus I/O errors; return error code in bq27xxx_battery_i2c
-*   verify checksum in read_dm_block()
-*   use set_cfgupdate only if chip provides it, soft_reset on I/O error
-*   block_data_control=0 only in write_dm_block()
-*   note toxic code from TI bqtool in write_dm_block()
-*   lots of functionally neutral polishing
-  Documentation/devicetree/.../battery.txt:
-*   mention power_supply_get_battery_info()
+We don't need to chase a pointer to get to the flags for the current
+CPU (and same goes for util and max) and what if it is the last one in
+the policy->cpus mask?
 
-Changes in v6:
-* Documentation/devictree/... fixes
-* bq27xxx_battery: clarify names
-* bq27xxx_battery: verify that selected registers are supported
-* bq27xxx_battery: allocate NVM buffer on stack
-* bq27xxx_battery_i2c: fix return code of bulk_read
+>> Also I don't quite agree with adding an extra pair of integer multiplications
+>> to that loop just to get rid of the extra args.
+>
+> But that should be cheap enough as we would be multiplying with 1 in one of them
+> and with 0 on the other.
 
-Changes in v5:
-* incorporate feedback into Documentation/devicetree/.../battery.txt
-* use power_supply_prop_* names in devicetree and power_supply_battery_info
-* default fields to -EINVAL in power_supply_battery_info
-* power_supply_get_battery_info() always looks for "monitored-battery"
-* power_supply_get_battery_info() emits a warning if !psy->of_node
-* squash patches for power_supply_battery_info
-* bq27xxx_battery: check power_supply_battery_info values
-* bq27xxx_battery: note missing power_supply_prop_* features
-* bq27xxx_battery: new patch for access methods
+I'm not sure it will be really that cheap.
 
-Changes in v4:
-* add "fixed-battery" compatible field to be be more consistant with devicetree
+> Isn't that better then keeping same code at two places?
 
-Changes in v3:
-* split i2c changes into respective patches
-* add documentation for battery information for fuel gauge
-* rebased documentation patches on change on the list
-* abstracted the battery configuration for the state machine
-  to an generic struct and platform data access function
+Well, it isn't IMO, unless you have numbers to support your point.
 
-Changes in v2:
-* add documentation for uWh and uAh property units
-* change devicetree entries to match new property units
+> Also as I mentioned in the commit log, the number of extra comparisons for the
+> current CPU will be balanced if we have three CPUs in the policy and with every
+> other CPU in the policy, we will end up doing one comparison less. With
+> Quad-core policies, we reduce the number of comparisons by 1 and for octa-core
+> ones, we reduce it by 5.
 
-Liam (4):
-  devicetree: power: Add battery.txt
-  devicetree: power: bq27xxx: Add monitored-battery documentation
-  power: power_supply: Add power_supply_battery_info and API
-  power: bq27xxx_battery: Add power_supply_battery_info support
+So to the point, the code was written this way on purpose and not just
+by accident as your changelog suggests and if you want to change it,
+you need numbers.
 
-Matt Ranostay (4):
-  devicetree: property-units: Add uWh and uAh units
-  power: bq27xxx_battery: Define access methods to write chip registers
-  power: bq27xxx_battery: Move BQ27421 chip id to its own group
-  power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
-
- .../devicetree/bindings/power/supply/battery.txt   |  45 ++
- .../devicetree/bindings/power/supply/bq27xxx.txt   |  11 +-
- .../devicetree/bindings/property-units.txt         |   2 +
- drivers/power/supply/bq27xxx_battery.c             | 506 ++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c         |  88 +++-
- drivers/power/supply/power_supply_core.c           |  40 ++
- include/linux/power/bq27xxx_battery.h              |   6 +-
- include/linux/power_supply.h                       |  18 +
- 8 files changed, 707 insertions(+), 9 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
-
--- 
-2.9.3
+Thanks,
+Rafael
