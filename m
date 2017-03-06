@@ -1,8 +1,8 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 4/7] thermal: rcar_gen3_thermal: record more information about each TSC
-Date: Mon,  6 Mar 2017 21:03:58 +0100
-Message-ID: <20170306200401.29923-5-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 3/7] thermal: rcar_gen3_thermal: remove unneeded mutex
+Date: Mon,  6 Mar 2017 21:03:57 +0100
+Message-ID: <20170306200401.29923-4-niklas.soderlund+renesas@ragnatech.se>
 References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -14,36 +14,59 @@ To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 List-Id: linux-pm@vger.kernel.org
 
-The struct rcar_gen3_thermal_tsc benefits from knowing which TSC it
-represent. Record this at probe time before this information is lost.
+There is no point in protecting a register read with a lock. This is
+most likely a leftover from when the driver was reworked before submitted
+for upstream.
 
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/thermal/rcar_gen3_thermal.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
 diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 5d4a5483eb13e796..65f7204936a18278 100644
+index 97958f91047b4c3a..5d4a5483eb13e796 100644
 --- a/drivers/thermal/rcar_gen3_thermal.c
 +++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -68,6 +68,8 @@ struct equation_coefs {
- };
- 
- struct rcar_gen3_thermal_tsc {
-+	struct device *dev;
-+	int num;
+@@ -20,7 +20,6 @@
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+-#include <linux/mutex.h>
+ #include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/pm_runtime.h>
+@@ -72,7 +71,6 @@ struct rcar_gen3_thermal_tsc {
  	void __iomem *base;
  	struct thermal_zone_device *zone;
  	struct equation_coefs coef;
-@@ -282,6 +284,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 			goto error_unregister;
+-	struct mutex lock;
+ };
+ 
+ struct rcar_gen3_thermal_priv {
+@@ -163,16 +161,12 @@ static int rcar_gen3_thermal_get_temp(void *devdata, int *temp)
+ 	u32 reg;
+ 
+ 	/* Read register and convert to mili Celsius */
+-	mutex_lock(&tsc->lock);
+-
+ 	reg = rcar_gen3_thermal_read(tsc, REG_GEN3_TEMP) & CTEMP_MASK;
+ 
+ 	val1 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b1, tsc->coef.a1);
+ 	val2 = FIXPT_DIV(FIXPT_INT(reg) - tsc->coef.b2, tsc->coef.a2);
+ 	mcelsius = FIXPT_TO_MCELSIUS((val1 + val2) / 2);
+ 
+-	mutex_unlock(&tsc->lock);
+-
+ 	/* Make sure we are inside specifications */
+ 	if ((mcelsius < MCELSIUS(-40)) || (mcelsius > MCELSIUS(125)))
+ 		return -EIO;
+@@ -301,7 +295,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
  		}
  
-+		tsc->dev = dev;
-+		tsc->num = i;
-+
- 		res = platform_get_resource(pdev, IORESOURCE_MEM, i);
- 		if (!res) {
- 			ret = -ENODEV;
+ 		priv->tscs[i] = tsc;
+-		mutex_init(&tsc->lock);
+ 
+ 		match_data->thermal_init(tsc);
+ 		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
 -- 
 2.12.0
