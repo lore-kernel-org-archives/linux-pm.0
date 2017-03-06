@@ -1,45 +1,85 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v9 5/8] power: bq27xxx_battery: Define access methods to write chip registers
-Date: Sun,  5 Mar 2017 23:25:36 -0800
-Message-ID: <20170306072539.980-6-liam@networkimprov.net>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: [PATCH v9 1/8] devicetree: power: Add battery.txt
+Date: Sun,  5 Mar 2017 23:25:32 -0800
+Message-ID: <20170306072539.980-2-liam@networkimprov.net>
 References: <20170306072539.980-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:36304 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752688AbdCFH1Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 02:27:24 -0500
-Received: by mail-pf0-f195.google.com with SMTP id j5so16759001pfb.3
-        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2017 23:26:55 -0800 (PST)
-In-Reply-To: <20170306072539.980-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170306072539.980-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Matt Ranostay <matt@ranostay.consulting>
+From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 
-write(), read_bulk(), write_bulk() support setting chip registers,
-e.g. with data obtained from power_supply_battery_info.
+Documentation of static battery characteristics that can be defined
+for batteries which cannot self-identify. This information is required
+by fuel-gauge and charger chips for proper handling of the battery.
 
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
+Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 ---
- include/linux/power/bq27xxx_battery.h | 3 +++
- 1 file changed, 3 insertions(+)
+ .../devicetree/bindings/power/supply/battery.txt   | 45 ++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/battery.txt
 
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index bed9557..92df553 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -32,6 +32,9 @@ struct bq27xxx_platform_data {
- struct bq27xxx_device_info;
- struct bq27xxx_access_methods {
- 	int (*read)(struct bq27xxx_device_info *di, u8 reg, bool single);
-+	int (*write)(struct bq27xxx_device_info *di, u8 reg, int value, bool single);
-+	int (*read_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
-+	int (*write_bulk)(struct bq27xxx_device_info *di, u8 reg, u8 *data, int len);
- };
- 
- struct bq27xxx_reg_cache {
+diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
+new file mode 100644
+index 0000000..0278617
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/battery.txt
+@@ -0,0 +1,45 @@
++Battery Characteristics
++
++Required Properties:
++ - compatible: Must be "fixed-battery"
++
++Optional Properties:
++ - voltage-min-design-microvolt: drained battery voltage
++ - energy-full-design-microwatt-hours: battery design energy
++ - charge-full-design-microamp-hours: battery design capacity
++
++Because drivers surface properties in sysfs using names derived
++from enum power_supply_property, e.g.
++/sys/class/power_supply/<device>/charge_full_design, our
++battery properties must be named for the corresponding elements in
++enum power_supply_property, defined in include/linux/power_supply.h.
++
++Batteries must be referenced by chargers and/or fuel-gauges
++using a phandle. The phandle's property should be named
++"monitored-battery".
++
++Driver code should call power_supply_get_battery_info() to obtain
++battery properties via monitored-battery. For details see:
++  drivers/power/supply/power_supply_core.c
++  drivers/power/supply/bq27xxx_battery.c
++
++Example:
++
++	bat: battery {
++		compatible = "fixed-battery";
++		voltage-min-design-microvolt = <3200000>;
++		energy-full-design-microwatt-hours = <5290000>;
++		charge-full-design-microamp-hours = <1430000>;
++	};
++
++	charger: charger@11 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
++
++	fuel_gauge: fuel-gauge@22 {
++		....
++		monitored-battery = <&bat>;
++		...
++	};
 -- 
 2.9.3
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
