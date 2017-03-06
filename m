@@ -1,96 +1,139 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/6] cpufreq: schedutil: ignore the sugov kthread for
- frequencies selections
-Date: Mon, 6 Mar 2017 10:38:05 +0530
-Message-ID: <20170306050805.GF8206@vireshk-i7>
-References: <1488469507-32463-1-git-send-email-patrick.bellasi@arm.com>
- <1488469507-32463-3-git-send-email-patrick.bellasi@arm.com>
- <20170303051943.GI13760@vireshk-i7>
- <20170303121247.GA10420@e110439-lin>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v9 8/8] power: bq27xxx_battery_i2c: Add I2C bulk read/write functions
+Date: Sun,  5 Mar 2017 23:25:39 -0800
+Message-ID: <20170306072539.980-9-liam@networkimprov.net>
+References: <20170306072539.980-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f47.google.com ([74.125.83.47]:32811 "EHLO
-        mail-pg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752890AbdCFFQP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 00:16:15 -0500
-Received: by mail-pg0-f47.google.com with SMTP id 25so62178594pgy.0
-        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2017 21:16:15 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20170303121247.GA10420@e110439-lin>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:35273 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752704AbdCFH1Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 02:27:24 -0500
+Received: by mail-pg0-f66.google.com with SMTP id 187so5306101pgb.2
+        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2017 23:26:58 -0800 (PST)
+In-Reply-To: <20170306072539.980-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Juri Lelli <juri.lelli@arm.com>, Todd Kjos <tkjos@android.com>, Tim Murray <timmurray@google.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Chris Redpath <chris.redpath@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-On 03-03-17, 12:12, Patrick Bellasi wrote:
-> On 03-Mar 10:49, Viresh Kumar wrote:
-> > I always wanted to avoid such hacks when I moved to the RT thread :(
-> 
-> Indeed, it is a bit of an hack... but still it's true that this is a
-> "special" RT thread which must not bias OPP selection.
+From: Matt Ranostay <matt@ranostay.consulting>
 
-I agree. We have a problem in hand and we need to fix it somehow.
+write(), read_bulk(), write_bulk() are required by bq27xxx_battery
+devicetree code.
 
-> > I was discussing the exact same problem with Vincent few days back and
-> > one of the ideas we had was to clear the flags when any RT task is
-> > dequeued from a rq.
-> 
-> That's a possible solution, however at dequeue time we don't know
-> what's going on right after. We can end up picking up another RT task.
-> Thus we can reset the flag when it's not really required, and this
-> open for possible races...
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+---
+ drivers/power/supply/bq27xxx_battery_i2c.c | 82 +++++++++++++++++++++++++++++-
+ 1 file changed, 81 insertions(+), 1 deletion(-)
 
-I don't have much knowledge of the scheduler right now and so I will not be able
-to tell the exact places where we can clear the flag. So, dequeue was just one
-of the places I could think of logically.
-
-My idea was to make sure that we clear the RT and DL flags once we know that we
-don't have any more RT/DL work to do. Dequeue or any other place that would suit
-better, but we should be clearing it.
-
-And once that is done, we wouldn't be required to have hacks like what this
-patch is doing.
-
-> > AFAIU, the problem we are discussing here
-> > shouldn't normally occur while the sugov RT thread is running as the
-> > work_in_progress flag makes sure we don't reevaluate the load while
-> > the RT thread is updating the frequency.
-> 
-> True...
-> 
-> > The problem perhaps occurs as the flag for CPU X is never cleared,
-> > and so on the next callback from the scheduler (after the frequency
-> > is updated and work_in_progress is cleared) we move to the highest
-> > frequency.
-> 
-> ... right.
-> 
-> > So what about clearing the flags, just like the previous patch, when
-> > the RT or DL task has finished?
-> 
-> As a general goal I think it would be useful to feed input only when
-> the scheduler knows something is going to happen. That's why in the
-> last patch of these series I'm proposing to remove updates from
-> update_curr_rt() and replace it with calls in most interesting events,
-> like enqueue/pickup instead of dequeue.
-
-Sure, I liked that. I am just wondering if we can have such a location to clear
-the RT/DL flags.
-
-> > Sorry for the noise if it was all nonsense :)
-> 
-> That's absolutely not nonsense, thanks for the feedback.
-> 
-> I agree with you that the solution proposed by this patch sound a bit
-> of an hack, but still we can argue that using an RT task to change an
-> OPP is by itself a sort-of an hack.
-
-Just for the sake of argument, why do you think so ? :)
-
-That work needs to get done via some sort of task, wq or RT thread, etc. We
-chose RT to make sure we do it in time and never delay it. The ugliness happened
-because we hit max frequency on RT task, which will be optimized later on.
-
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 7781ca9..4039b9d 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -38,7 +38,7 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+ {
+ 	struct i2c_client *client = to_i2c_client(di->dev);
+ 	struct i2c_msg msg[2];
+-	unsigned char data[2];
++	u8 data[2];
+ 	int ret;
+ 
+ 	if (!client->adapter)
+@@ -68,6 +68,82 @@ static int bq27xxx_battery_i2c_read(struct bq27xxx_device_info *di, u8 reg,
+ 	return ret;
+ }
+ 
++static int bq27xxx_battery_i2c_write(struct bq27xxx_device_info *di, u8 reg,
++				     int value, bool single)
++{
++	struct i2c_client *client = to_i2c_client(di->dev);
++	struct i2c_msg msg;
++	u8 data[4];
++	int ret;
++
++	if (!client->adapter)
++		return -ENODEV;
++
++	data[0] = reg;
++	if (single) {
++		data[1] = (u8) value;
++		msg.len = 2;
++	} else {
++		put_unaligned_le16(value, &data[1]);
++		msg.len = 3;
++	}
++
++	msg.buf = data;
++	msg.addr = client->addr;
++	msg.flags = 0;
++
++	ret = i2c_transfer(client->adapter, &msg, 1);
++	if (ret < 0)
++		return ret;
++	if (ret != 1)
++		return -EINVAL;
++	return 0;
++}
++
++static int bq27xxx_battery_i2c_bulk_read(struct bq27xxx_device_info *di, u8 reg,
++					 u8 *data, int len)
++{
++	struct i2c_client *client = to_i2c_client(di->dev);
++	int ret;
++
++	if (!client->adapter)
++		return -ENODEV;
++
++	ret = i2c_smbus_read_i2c_block_data(client, reg, len, data);
++	if (ret < 0)
++		return ret;
++	if (ret != len)
++		return -EINVAL;
++	return 0;
++}
++
++static int bq27xxx_battery_i2c_bulk_write(struct bq27xxx_device_info *di,
++					  u8 reg, u8 *data, int len)
++{
++	struct i2c_client *client = to_i2c_client(di->dev);
++	struct i2c_msg msg;
++	u8 buf[33];
++	int ret;
++
++	if (!client->adapter)
++		return -ENODEV;
++
++	buf[0] = reg;
++	memcpy(&buf[1], data, len);
++
++	msg.buf = buf;
++	msg.addr = client->addr;
++	msg.flags = 0;
++	msg.len = len + 1;
++
++	ret = i2c_transfer(client->adapter, &msg, 1);
++	if (ret < 0)
++		return ret;
++	if (ret != 1)
++		return -EINVAL;
++	return 0;
++}
++
+ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 				     const struct i2c_device_id *id)
+ {
+@@ -95,7 +171,11 @@ static int bq27xxx_battery_i2c_probe(struct i2c_client *client,
+ 	di->dev = &client->dev;
+ 	di->chip = id->driver_data;
+ 	di->name = name;
++
+ 	di->bus.read = bq27xxx_battery_i2c_read;
++	di->bus.write = bq27xxx_battery_i2c_write;
++	di->bus.read_bulk = bq27xxx_battery_i2c_bulk_read;
++	di->bus.write_bulk = bq27xxx_battery_i2c_bulk_write;
+ 
+ 	ret = bq27xxx_battery_setup(di);
+ 	if (ret)
 -- 
-viresh
+2.9.3
