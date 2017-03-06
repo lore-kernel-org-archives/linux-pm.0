@@ -1,128 +1,119 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v9 4/8] power: power_supply: Add power_supply_battery_info and API
-Date: Sun,  5 Mar 2017 23:25:35 -0800
-Message-ID: <20170306072539.980-5-liam@networkimprov.net>
+Subject: [PATCH v9 6/8] power: bq27xxx_battery: Move BQ27421 chip id to its own group
+Date: Sun,  5 Mar 2017 23:25:37 -0800
+Message-ID: <20170306072539.980-7-liam@networkimprov.net>
 References: <20170306072539.980-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:34149 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752687AbdCFH1Y (ORCPT
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:34104 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752694AbdCFH1Y (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 02:27:24 -0500
-Received: by mail-pg0-f66.google.com with SMTP id b5so2157467pgg.1
-        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2017 23:26:54 -0800 (PST)
+Received: by mail-pf0-f196.google.com with SMTP id o126so2614951pfb.1
+        for <linux-pm@vger.kernel.org>; Sun, 05 Mar 2017 23:26:56 -0800 (PST)
 In-Reply-To: <20170306072539.980-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
 
-From: Liam Breck <kernel@networkimprov.net>
+From: Matt Ranostay <matt@ranostay.consulting>
 
-power_supply_get_battery_info() reads battery data from devicetree.
-struct power_supply_battery_info provides battery data to drivers.
-Drivers may surface battery data in sysfs via corresponding
-POWER_SUPPLY_PROP_* fields.
+Add BQ27425 id to cover 425, 441, 621 chips.
+This allows support for 421 by the devicetree code.
 
 Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/power_supply_core.c | 40 ++++++++++++++++++++++++++++++++
- include/linux/power_supply.h             | 18 ++++++++++++++
- 2 files changed, 58 insertions(+)
+ drivers/power/supply/bq27xxx_battery.c     | 23 ++++++++++++++++++++++-
+ drivers/power/supply/bq27xxx_battery_i2c.c |  6 +++---
+ include/linux/power/bq27xxx_battery.h      |  3 ++-
+ 3 files changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index a74d8ca..c121931 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -17,6 +17,7 @@
- #include <linux/device.h>
- #include <linux/notifier.h>
- #include <linux/err.h>
-+#include <linux/of.h>
- #include <linux/power_supply.h>
- #include <linux/thermal.h>
- #include "power_supply.h"
-@@ -487,6 +488,45 @@ struct power_supply *devm_power_supply_get_by_phandle(struct device *dev,
- EXPORT_SYMBOL_GPL(devm_power_supply_get_by_phandle);
- #endif /* CONFIG_OF */
- 
-+int power_supply_get_battery_info(struct power_supply *psy,
-+				  struct power_supply_battery_info *info)
-+{
-+	struct device_node *battery_np;
-+	const char *value;
-+	int err;
-+
-+	info->energy_full_design_uwh = -EINVAL;
-+	info->charge_full_design_uah = -EINVAL;
-+	info->voltage_min_design_uv  = -EINVAL;
-+
-+	if (!psy->of_node) {
-+		dev_warn(&psy->dev, "%s currently only supports devicetree\n",
-+			 __func__);
-+		return -ENXIO;
-+	}
-+
-+	battery_np = of_parse_phandle(psy->of_node, "monitored-battery", 0);
-+	if (!battery_np)
-+		return -ENODEV;
-+
-+	err = of_property_read_string(battery_np, "compatible", &value);
-+	if (err)
-+		return err;
-+
-+	if (strcmp("fixed-battery", value))
-+		return -ENODEV;
-+
-+	of_property_read_u32(battery_np, "energy-full-design-microwatt-hours",
-+			     &info->energy_full_design_uwh);
-+	of_property_read_u32(battery_np, "charge-full-design-microamp-hours",
-+			     &info->charge_full_design_uah);
-+	of_property_read_u32(battery_np, "voltage-min-design-microvolt",
-+			     &info->voltage_min_design_uv);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(power_supply_get_battery_info);
-+
- int power_supply_get_property(struct power_supply *psy,
- 			    enum power_supply_property psp,
- 			    union power_supply_propval *val)
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 3965503..e84f1d3 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -288,6 +288,21 @@ struct power_supply_info {
- 	int use_for_apm;
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 7272d1e..7475a5f 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -259,6 +259,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+ 		[BQ27XXX_REG_DCAP] = 0x3c,
+ 		[BQ27XXX_REG_AP] = 0x18,
+ 	},
++	[BQ27425] = {
++		[BQ27XXX_REG_CTRL] = 0x00,
++		[BQ27XXX_REG_TEMP] = 0x02,
++		[BQ27XXX_REG_INT_TEMP] = 0x1e,
++		[BQ27XXX_REG_VOLT] = 0x04,
++		[BQ27XXX_REG_AI] = 0x10,
++		[BQ27XXX_REG_FLAGS] = 0x06,
++		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_NAC] = 0x08,
++		[BQ27XXX_REG_FCC] = 0x0e,
++		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
++		[BQ27XXX_REG_SOC] = 0x1c,
++		[BQ27XXX_REG_DCAP] = 0x3c,
++		[BQ27XXX_REG_AP] = 0x18,
++	},
  };
  
-+/*
-+ * This is the recommended struct to manage static battery parameters,
-+ * populated by power_supply_get_battery_info(). Most platform drivers should
-+ * use these for consistency.
-+ * Its field names must correspond to elements in enum power_supply_property.
-+ * The default field value is -EINVAL.
-+ * Power supply class itself doesn't use this.
-+ */
-+
-+struct power_supply_battery_info {
-+	int energy_full_design_uwh;	/* microWatt-hours */
-+	int charge_full_design_uah;	/* microAmp-hours */
-+	int voltage_min_design_uv;	/* microVolts */
-+};
-+
- extern struct atomic_notifier_head power_supply_notifier;
- extern int power_supply_reg_notifier(struct notifier_block *nb);
- extern void power_supply_unreg_notifier(struct notifier_block *nb);
-@@ -306,6 +321,9 @@ static inline struct power_supply *
- devm_power_supply_get_by_phandle(struct device *dev, const char *property)
- { return NULL; }
- #endif /* CONFIG_OF */
-+
-+extern int power_supply_get_battery_info(struct power_supply *psy,
-+					 struct power_supply_battery_info *info);
- extern void power_supply_changed(struct power_supply *psy);
- extern int power_supply_am_i_supplied(struct power_supply *psy);
- extern int power_supply_set_battery_charged(struct power_supply *psy);
+ static enum power_supply_property bq27000_battery_props[] = {
+@@ -427,6 +446,7 @@ static struct {
+ 	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
+ 	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
+ 	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
++	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
+ };
+ 
+ static DEFINE_MUTEX(bq27xxx_list_lock);
+@@ -682,6 +702,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+ 		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
+ 	case BQ27530:
+ 	case BQ27421:
++	case BQ27425:
+ 		return flags & BQ27XXX_FLAG_OT;
+ 	default:
+ 		return false;
+@@ -693,7 +714,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+  */
+ static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
+ {
+-	if (di->chip == BQ27530 || di->chip == BQ27421)
++	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
+ 		return flags & BQ27XXX_FLAG_UT;
+ 
+ 	return false;
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 5c5c3a6..7781ca9 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -159,9 +159,9 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+ 	{ "bq27742", BQ27541 },
+ 	{ "bq27545", BQ27545 },
+ 	{ "bq27421", BQ27421 },
+-	{ "bq27425", BQ27421 },
+-	{ "bq27441", BQ27421 },
+-	{ "bq27621", BQ27421 },
++	{ "bq27425", BQ27425 },
++	{ "bq27441", BQ27425 },
++	{ "bq27621", BQ27425 },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index 92df553..44f469a 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -9,7 +9,8 @@ enum bq27xxx_chip {
+ 	BQ27530, /* bq27530, bq27531 */
+ 	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+ 	BQ27545, /* bq27545 */
+-	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
++	BQ27421, /* bq27421 */
++	BQ27425, /* bq27425, bq27441, bq27621 */
+ };
+ 
+ /**
 -- 
 2.9.3
