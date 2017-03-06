@@ -1,41 +1,49 @@
 From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH 5/5] ARM: omap2plus_defconfig: Enable support for ti-cpufreq
-Date: Mon, 6 Mar 2017 09:23:42 -0600
-Message-ID: <1488813822-26042-6-git-send-email-d-gerlach@ti.com>
+Subject: [PATCH 2/5] ARM: dts: am335x-boneblack: Enable 1GHz OPP for cpu
+Date: Mon, 6 Mar 2017 09:23:39 -0600
+Message-ID: <1488813822-26042-3-git-send-email-d-gerlach@ti.com>
 References: <1488813822-26042-1-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:43915 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752797AbdCFPYm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 10:24:42 -0500
+Received: from fllnx209.ext.ti.com ([198.47.19.16]:13225 "EHLO
+        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754404AbdCFPZ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 10:25:59 -0500
 In-Reply-To: <1488813822-26042-1-git-send-email-d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Tony Lindgren <tony@atomide.com>
 Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>, Lukasz Majewski <lukma@denx.de>, Yegor Yefremov <yegorslists@googlemail.com>
 
-AM335x, AM437x, DRA7xx, and AM57xx platforms all now depend on
-ti-cpufreq driver to enable proper OPPs for use with cpufreq, so
-enable the same.
+Although all PG2.0 silicon may not support 1GHz OPP for the MPU, older
+Beaglebone Blacks may have PG2.0 silicon populated and these particular
+parts are guaranteed to support the OPP, so enable it for PG2.0 on
+am335x-boneblack only.
 
 Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 ---
- arch/arm/configs/omap2plus_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+ arch/arm/boot/dts/am335x-boneblack.dts | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
-index f2462a6bdba6..62a4b6cf16f0 100644
---- a/arch/arm/configs/omap2plus_defconfig
-+++ b/arch/arm/configs/omap2plus_defconfig
-@@ -64,6 +64,7 @@ CONFIG_CPU_FREQ_GOV_POWERSAVE=y
- CONFIG_CPU_FREQ_GOV_USERSPACE=y
- CONFIG_CPU_FREQ_GOV_CONSERVATIVE=y
- CONFIG_CPUFREQ_DT=m
-+CONFIG_ARM_TI_CPUFREQ=y
- # CONFIG_ARM_OMAP2PLUS_CPUFREQ is not set
- CONFIG_CPU_IDLE=y
- CONFIG_BINFMT_MISC=y
+diff --git a/arch/arm/boot/dts/am335x-boneblack.dts b/arch/arm/boot/dts/am335x-boneblack.dts
+index 77273df1a028..935ed17d22e4 100644
+--- a/arch/arm/boot/dts/am335x-boneblack.dts
++++ b/arch/arm/boot/dts/am335x-boneblack.dts
+@@ -15,3 +15,14 @@
+ 	model = "TI AM335x BeagleBone Black";
+ 	compatible = "ti,am335x-bone-black", "ti,am335x-bone", "ti,am33xx";
+ };
++
++&cpu0_opp_table {
++	/*
++	 * All PG 2.0 silicon may not support 1GHz but some of the early
++	 * BeagleBone Blacks have PG 2.0 silicon which is guaranteed
++	 * to support 1GHz OPP so enable it for PG 2.0 on this board.
++	 */
++	oppnitro@1000000000 {
++		opp-supported-hw = <0x06 0x0100>;
++	};
++};
 -- 
 2.11.0
