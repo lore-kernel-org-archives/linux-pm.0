@@ -1,56 +1,49 @@
-From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Subject: [PATCH v9 3/8] devicetree: power: bq27xxx: Add monitored-battery documentation
-Date: Sun,  5 Mar 2017 23:25:34 -0800
-Message-ID: <20170306072539.980-4-liam@networkimprov.net>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v9 2/8] devicetree: property-units: Add uWh and uAh units
+Date: Sun,  5 Mar 2017 23:25:33 -0800
+Message-ID: <20170306072539.980-3-liam@networkimprov.net>
 References: <20170306072539.980-1-liam@networkimprov.net>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170306072539.980-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: "Andrew F. Davis" <afd-l0cyMroinI0@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:36620 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752664AbdCFH1Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Mar 2017 02:27:24 -0500
+In-Reply-To: <20170306072539.980-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, Matt Ranostay <matt@ranostay.consulting>, Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+From: Matt Ranostay <matt@ranostay.consulting>
 
-Document monitored-battery = <&battery_node>
+Add entries for microwatt-hours and microamp-hours.
 
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Signed-off-by: Matt Ranostay <matt-sk+viVC6FLCDq+mSdOJa79kegs52MxvZ@public.gmane.org>
-Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: devicetree@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Acked-by: Sebastian Reichel <sre@kernel.org>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- Documentation/devicetree/bindings/power/supply/bq27xxx.txt | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/property-units.txt | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-index b0c95ef..cf83371 100644
---- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-+++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
-@@ -28,9 +28,18 @@ Required properties:
-  * "ti,bq27621" - BQ27621
- - reg: integer, i2c address of the device.
+diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+index 12278d7..0849618 100644
+--- a/Documentation/devicetree/bindings/property-units.txt
++++ b/Documentation/devicetree/bindings/property-units.txt
+@@ -25,8 +25,10 @@ Distance
+ Electricity
+ ----------------------------------------
+ -microamp	: micro amps
++-microamp-hours : micro amp-hours
+ -ohms		: Ohms
+ -micro-ohms	: micro Ohms
++-microwatt-hours: micro Watt-hours
+ -microvolt	: micro volts
  
-+Optional properties:
-+- monitored-battery: phandle of battery information devicetree node
-+
-+  See Documentation/devicetree/bindings/power/supply/battery.txt
-+  If either of the referenced battery's *-full-design-*-hours properties are set,
-+  then both must be.
-+
- Example:
- 
--bq27510g3 {
-+bq27510g3 : fuel-gauge@55 {
-     compatible = "ti,bq27510g3";
-     reg = <0x55>;
-+
-+    monitored-battery = <&bat>;
- };
+ Temperature
 -- 
 2.9.3
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
