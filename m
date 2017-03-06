@@ -1,42 +1,48 @@
 From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 0/3] ARM: PM: Drop useless checks for PM_SUSPEND_STANDBY
-Date: Mon, 6 Mar 2017 10:38:57 -0800
-Message-ID: <20170306183856.GM20572@atomide.com>
-References: <1487347836-14427-1-git-send-email-geert+renesas@glider.be>
- <20170217164018.GE21809@atomide.com>
+Subject: Re: [PATCH 0/7] thermal: ti-soc-thermal: Migrate slope/offset data
+ to device tree
+Date: Mon, 6 Mar 2017 10:42:16 -0800
+Message-ID: <20170306184215.GO20572@atomide.com>
+References: <1488364190-23488-1-git-send-email-j-keerthy@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:38190 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753208AbdCFSjb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 6 Mar 2017 13:39:31 -0500
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 Content-Disposition: inline
-In-Reply-To: <20170217164018.GE21809@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1488364190-23488-1-git-send-email-j-keerthy@ti.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Keerthy <j-keerthy@ti.com>
+Cc: t-kristo@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Aaro Koskinen <aaro.koskinen@iki.fi>, Dinh Nguyen <dinguyen@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 
-* Tony Lindgren <tony@atomide.com> [170217 08:41]:
-> * Geert Uytterhoeven <geert+renesas@glider.be> [170217 08:12]:
-> > 	Hi all,
-> > 
-> > The system suspend implementations for DaVinci, OMAP, and SoCFPGA use
-> > the standard suspend_valid_only_mem() for their
-> > platform_suspend_ops.valid() callbacks.  Hence their
-> > platform_suspend_ops.enter() callbacks will never be called with state
-> > equal to PM_SUSPEND_STANDBY, and checks for this can thus be removed.
-> > 
-> > Thanks for your comments!
+* Keerthy <j-keerthy@ti.com> [170301 02:31]:
+> Currently the slope and offset values for calculating the
+> hot spot temperature of a particular thermal zone is part
+> of driver data. Pass them here instead and obtain the values
+> while of node parsing.
 > 
-> Seems safe to remove:
+> Tested for the slope and constant values on DRA7-EVM.
 > 
-> Acked-by: Tony Lindgren <tony@atomide.com>
+> Keerthy (7):
+>   ARM: DRA7: Thermal: Add slope and offset values
+>   ARM: OMAP5: Thermal: Add slope and offset values
+>   ARM: OMAP443x: Thermal: Add slope and offset values
+>   ARM: OMAP4460: Thermal: Add slope and offset values
+>   thermal: ti-soc-thermal: Fetch slope and offset from DT
+>   thermal: ti-soc-thermal: Remove redundant constants
+>   thermal: ti-soc-thermal: Remove redundant code
 
-Sounds like you wanted me to pick this up so applying the
-omap related patch into omap-for-v4.12/soc.
+Are the dts changes safe for me to pick separately into
+omap-for-v4.12/dt?
 
-Thanks,
+Regards,
 
 Tony
