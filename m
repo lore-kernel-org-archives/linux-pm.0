@@ -1,52 +1,44 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 1/7] thermal: rcar_gen3_thermal: add delay in .thermal_init on r8a7796
-Date: Mon,  6 Mar 2017 21:03:55 +0100
-Message-ID: <20170306200401.29923-2-niklas.soderlund+renesas@ragnatech.se>
-References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 0/7] thermal: rcar_gen3_thermal: add support for interrupt triggerd trip points
+Date: Mon,  6 Mar 2017 21:03:54 +0100
+Message-ID: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
 Sender: linux-renesas-soc-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
 Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 List-Id: linux-pm@vger.kernel.org
 
-The .thermal_init needs to be delayed a short amount of to allow for the
-TEMP register to contain something useful. If it's not delayed theses
-warnings are common during boot:
+Hi,
 
-thermal thermal_zone0: failed to read out thermal zone (-5)
-thermal thermal_zone1: failed to read out thermal zone (-5)
-thermal thermal_zone2: failed to read out thermal zone (-5)
+This series adds support for hardware backed trip point windows. It is 
+based on top of v4.11-rc1 and is tested on R-Car H3 and M3-W.
 
-The warnings are triggered by the first call to .get_temp while the TEMP
-register contains 0 and rcar_gen3_thermal_get_temp() returns -EIO since
-a TEMP value of 0 will result in a temperature reading which is out of
-specifications.
+The series starts out by fixing three issues (1/7, 2/7, 3/7) that should 
+not have been fixed by me before the initial driver where submitted to 
+upstream. Sorry for not spotting the issues sooner.
 
-This should have been done in the initial commit which adds the driver
-as the same issue was found and corrected for r8a7795.
+The series then extends the rcar_gen3_thermal driver with hardware 
+interrupts for trip point windows by implementing the .set_trips() 
+callback of struct thermal_zone_of_device_ops (4/7, 5/7). It then adds 
+suspend and resume handlers so that the hardware interrupts are 
+preserved across suspend/resume cycles (6/7, 7/7).
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/thermal/rcar_gen3_thermal.c | 2 ++
- 1 file changed, 2 insertions(+)
+Niklas Söderlund (7):
+  thermal: rcar_gen3_thermal: add delay in .thermal_init on r8a7796
+  thermal: rcar_gen3_thermal: fix probe error path
+  thermal: rcar_gen3_thermal: remove unneeded mutex
+  thermal: rcar_gen3_thermal: record more information about each TSC
+  thermal: rcar_gen3_thermal: enable hardware interrupts for trip points
+  thermal: rcar_gen3_thermal: store device match data in private
+    structure
+  thermal: rcar_gen3_thermal: add suspend and resume support
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index d33c845244b1d819..ec477d47d0bae8e5 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -222,6 +222,8 @@ static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
- 	reg_val |= THCTR_THSST;
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
-+
-+	usleep_range(1000, 2000);
- }
- 
- static const struct rcar_gen3_thermal_data r8a7795_data = {
+ drivers/thermal/rcar_gen3_thermal.c | 199 +++++++++++++++++++++++++++++++++---
+ 1 file changed, 187 insertions(+), 12 deletions(-)
+
 -- 
 2.12.0
