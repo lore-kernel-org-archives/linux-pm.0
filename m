@@ -1,101 +1,39 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Subject: [RFC] linkage: new macros for functions and data
-Date: Tue,  7 Mar 2017 18:24:04 +0100
-Message-ID: <20170307172404.27374-1-jslaby@suse.cz>
-References: <20170307082750.GA1695@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 4/7] thermal: rcar_gen3_thermal: record more information
+ about each TSC
+Date: Tue, 7 Mar 2017 16:31:28 +0100
+Message-ID: <CAMuHMdUPwpiBqhrDWJCGpp=EPCYd1SsxZOE8v=jniR6A17cwBg@mail.gmail.com>
+References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se> <20170306200401.29923-5-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-In-Reply-To: <20170307082750.GA1695@gmail.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, x86@kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Thomas Gleixner <tglx@linutronix.de>, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Jiri Slaby <jslaby@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <20170306200401.29923-5-niklas.soderlund+renesas@ragnatech.se>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-U1lNX0xPQ0FMX0FMSUFTX1NUQVJUIC0tIHVzZSB3aGVyZSB0aGVyZSBhcmUgdHdvIGxvY2FsIG5h
-bWVzIGZvciBvbmUKICBjb2RlClNZTV9BTElBU19TVEFSVCAtLSB1c2Ugd2hlcmUgdGhlcmUgYXJl
-IHR3byBnbG9iYWwgbmFtZXMgZm9yIG9uZSBjb2RlClNZTV9MT0NBTF9GVU5DX1NUQVJUIC0tIHVz
-ZSBmb3IgbG9jYWwgZnVuY3Rpb25zClNZTV9GVU5DVElPTl9TVEFSVCAtLSB1c2UgZm9yIGdsb2Jh
-bCBmdW5jdGlvbnMKU1lNX1dFQUtfRlVOQ19TVEFSVCAtLSB1c2UgZm9yIHdlYWsgZnVuY3Rpb25z
-ClNZTV9BTElBU19FTkQgLS0gdGhlIGVuZCBvZiBMT0NBTEFMSUFTZWQgb3IgQUxJQVNlZCBjb2Rl
-ClNZTV9GVU5DVElPTl9FTkQgLS0gdGhlIGVuZCBvZiBTWU1fTE9DQUxfRlVOQ19TVEFSVCwgU1lN
-X0ZVTkNUSU9OX1NUQVJULAogIFNZTV9XRUFLX0ZVTkNfU1RBUlQsIC4uLgpTWU1fREFUQV9TVEFS
-VCAtLSBnbG9iYWwgZGF0YSBzeW1ib2wKU1lNX0RBVEFfRU5EIC0tIHRoZSBlbmQgb2YgU1lNX0RB
-VEFfU1RBUlQgc3ltYm9sCgpTaWduZWQtb2ZmLWJ5OiBKaXJpIFNsYWJ5IDxqc2xhYnlAc3VzZS5j
-ej4KQ2M6IEFuZHJldyBNb3J0b24gPGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmc+CkNjOiBCb3Jp
-cyBPc3Ryb3Zza3kgPGJvcmlzLm9zdHJvdnNreUBvcmFjbGUuY29tPgpDYzogaHBhQHp5dG9yLmNv
-bQpDYzogSW5nbyBNb2xuYXIgPG1pbmdvQGtlcm5lbC5vcmc+CkNjOiBqcG9pbWJvZUByZWRoYXQu
-Y29tCkNjOiBKdWVyZ2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+CkNjOiBMZW4gQnJvd24gPGxl
-bi5icm93bkBpbnRlbC5jb20+CkNjOiBMaW51cyBUb3J2YWxkcyA8dG9ydmFsZHNAbGludXgtZm91
-bmRhdGlvbi5vcmc+CkNjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnCkNjOiBsaW51eC1w
-bUB2Z2VyLmtlcm5lbC5vcmcKQ2M6IG1pbmdvQHJlZGhhdC5jb20KQ2M6IFBhdmVsIE1hY2hlayA8
-cGF2ZWxAdWN3LmN6PgpDYzogUGV0ZXIgWmlqbHN0cmEgPGEucC56aWpsc3RyYUBjaGVsbG8ubmw+
-CkNjOiAiUmFmYWVsIEouIFd5c29ja2kiIDxyandAcmp3eXNvY2tpLm5ldD4KQ2M6IFRob21hcyBH
-bGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPgpDYzogeGVuLWRldmVsQGxpc3RzLnhlbnByb2pl
-Y3Qub3JnCkNjOiB4ODZAa2VybmVsLm9yZwotLS0KClNvIHRoaXMgaXMgd2hhdCBJIGhhdmUgQVRN
-LgoKIGluY2x1ZGUvbGludXgvbGlua2FnZS5oIHwgODcgKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKy0tLS0tLS0tLQogMSBmaWxlIGNoYW5nZWQsIDcyIGluc2VydGlvbnMo
-KyksIDE1IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2luY2x1ZGUvbGludXgvbGlua2FnZS5o
-IGIvaW5jbHVkZS9saW51eC9saW5rYWdlLmgKaW5kZXggYTZhNDJkZDAyNDY2Li43OWY2MzRhNTc0
-NjYgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvbGlua2FnZS5oCisrKyBiL2luY2x1ZGUvbGlu
-dXgvbGlua2FnZS5oCkBAIC03OCwzMyArNzgsOTAgQEAKICNkZWZpbmUgQUxJR04gX19BTElHTgog
-I2RlZmluZSBBTElHTl9TVFIgX19BTElHTl9TVFIKIAotI2lmbmRlZiBFTlRSWQotI2RlZmluZSBF
-TlRSWShuYW1lKSBcCi0JLmdsb2JsIG5hbWUgQVNNX05MIFwKKyNpZm5kZWYgRU5UUlkgLyogZGVw
-cmVjYXRlZCwgdXNlIFNZTV9GVU5DVElPTl9TVEFSVCAqLworI2RlZmluZSBFTlRSWShuYW1lKQlT
-WU1fRlVOQ1RJT05fU1RBUlQobmFtZSkKKyNlbmRpZgorI2VuZGlmIC8qIExJTktFUl9TQ1JJUFQg
-Ki8KKworLyogPT09IGNvZGUgYW5ub3RhdGlvbnMgPT09ICovCisKKy8qIFNZTV9MT0NBTF9BTElB
-U19TVEFSVCAtLSB1c2Ugd2hlcmUgdGhlcmUgYXJlIHR3byBsb2NhbCBuYW1lcyBmb3Igb25lIGNv
-ZGUgKi8KKyNpZm5kZWYgU1lNX0xPQ0FMX0FMSUFTX1NUQVJUCisjZGVmaW5lIFNZTV9MT0NBTF9B
-TElBU19TVEFSVChuYW1lKSBcCiAJQUxJR04gQVNNX05MIFwKIAluYW1lOgogI2VuZGlmCi0jZW5k
-aWYgLyogTElOS0VSX1NDUklQVCAqLwogCi0jaWZuZGVmIFdFQUsKLSNkZWZpbmUgV0VBSyhuYW1l
-KQkgICBcCisvKiBTWU1fQUxJQVNfU1RBUlQgLS0gdXNlIHdoZXJlIHRoZXJlIGFyZSB0d28gZ2xv
-YmFsIG5hbWVzIGZvciBvbmUgY29kZSAqLworI2lmbmRlZiBTWU1fQUxJQVNfU1RBUlQKKyNkZWZp
-bmUgU1lNX0FMSUFTX1NUQVJUKG5hbWUpIFwKKwkuZ2xvYmwgbmFtZSBBU01fTkwgXAorCVNZTV9M
-T0NBTF9BTElBU19TVEFSVChuYW1lKQorI2VuZGlmCisKKy8qCisgKiBzbyBmYXIgdGhlIHNhbWUg
-YXMgU1lNX0xPQ0FMX0FMSUFTX1NUQVJULCBidXQgd2Ugd2lsbCBuZWVkIHRvIGRpc3Rpbmd1aXNo
-CisgKiB0aGVtIGxhdGVyCisgKi8KKy8qIFNZTV9MT0NBTF9GVU5DX1NUQVJUIC0tIHVzZSBmb3Ig
-bG9jYWwgZnVuY3Rpb25zICovCisjaWZuZGVmIFNZTV9MT0NBTF9GVU5DX1NUQVJUCisjZGVmaW5l
-IFNZTV9MT0NBTF9GVU5DX1NUQVJUKG5hbWUpIFwKKwlTWU1fTE9DQUxfQUxJQVNfU1RBUlQobmFt
-ZSkKKyNlbmRpZgorCisvKiBTWU1fRlVOQ1RJT05fU1RBUlQgLS0gdXNlIGZvciBnbG9iYWwgZnVu
-Y3Rpb25zICovCisjaWZuZGVmIFNZTV9GVU5DVElPTl9TVEFSVAorI2RlZmluZSBTWU1fRlVOQ1RJ
-T05fU1RBUlQobmFtZSkgXAorCS5nbG9ibCBuYW1lIEFTTV9OTCBcCisJU1lNX0xPQ0FMX0ZVTkNf
-U1RBUlQobmFtZSkKKyNlbmRpZgorCisvKiBTWU1fV0VBS19GVU5DX1NUQVJUIC0tIHVzZSBmb3Ig
-d2VhayBmdW5jdGlvbnMgKi8KKyNpZm5kZWYgU1lNX1dFQUtfRlVOQ19TVEFSVAorI2RlZmluZSBT
-WU1fV0VBS19GVU5DX1NUQVJUKG5hbWUpIFwKIAkud2VhayBuYW1lIEFTTV9OTCAgIFwKIAluYW1l
-OgogI2VuZGlmCiAKLSNpZm5kZWYgRU5ECi0jZGVmaW5lIEVORChuYW1lKSBcCi0JLnNpemUgbmFt
-ZSwgLi1uYW1lCisvKiBTWU1fQUxJQVNfRU5EIC0tIHRoZSBlbmQgb2YgTE9DQUxBTElBU2VkIG9y
-IEFMSUFTZWQgY29kZSAqLworI2lmbmRlZiBTWU1fQUxJQVNfRU5ECisjZGVmaW5lIFNZTV9BTElB
-U19FTkQobmFtZSkgXAorCS50eXBlIG5hbWUsIEBmdW5jdGlvbiBBU01fTkwgXAorCVNZTV9EQVRB
-X0VORChuYW1lKQogI2VuZGlmCiAKIC8qIElmIHN5bWJvbCAnbmFtZScgaXMgdHJlYXRlZCBhcyBh
-IHN1YnJvdXRpbmUgKGdldHMgY2FsbGVkLCBhbmQgcmV0dXJucykKLSAqIHRoZW4gcGxlYXNlIHVz
-ZSBFTkRQUk9DIHRvIG1hcmsgJ25hbWUnIGFzIFNUVF9GVU5DIGZvciB0aGUgYmVuZWZpdCBvZgot
-ICogc3RhdGljIGFuYWx5c2lzIHRvb2xzIHN1Y2ggYXMgc3RhY2sgZGVwdGggYW5hbHl6ZXIuCisg
-KiB0aGVuIHBsZWFzZSB1c2UgU1lNX0ZVTkNUSU9OX0VORCB0byBtYXJrICduYW1lJyBhcyBTVFRf
-RlVOQyBmb3IgdGhlIGJlbmVmaXQKKyAqIG9mIHN0YXRpYyBhbmFseXNpcyB0b29scyBzdWNoIGFz
-IHN0YWNrIGRlcHRoIGFuYWx5emVyLgogICovCi0jaWZuZGVmIEVORFBST0MKLSNkZWZpbmUgRU5E
-UFJPQyhuYW1lKSBcCi0JLnR5cGUgbmFtZSwgQGZ1bmN0aW9uIEFTTV9OTCBcCi0JRU5EKG5hbWUp
-CisvKgorICogU1lNX0ZVTkNUSU9OX0VORCAtLSB0aGUgZW5kIG9mIFNZTV9MT0NBTF9GVU5DX1NU
-QVJULCBTWU1fRlVOQ1RJT05fU1RBUlQsCisgKiBTWU1fV0VBS19GVU5DX1NUQVJULCAuLi4KKyAq
-LworI2lmbmRlZiBTWU1fRlVOQ1RJT05fRU5ECisjZGVmaW5lIFNZTV9GVU5DVElPTl9FTkQobmFt
-ZSkgXAorCVNZTV9BTElBU19FTkQobmFtZSkgLyogdGhlIHNhbWUgYXMgZm9yIFNZTV9MT0NBTF9G
-VU5DX1NUQVJUICovCisjZW5kaWYKKworI2lmbmRlZiBXRUFLIC8qIGRlcHJlY2F0ZWQsIHVzZSBT
-WU1fV0VBS19GVU5DX1NUQVJUICovCisjZGVmaW5lIFdFQUsobmFtZSkJU1lNX1dFQUtfRlVOQ19T
-VEFSVChuYW1lKQorI2VuZGlmCisKKy8qID09PSBkYXRhIGFubm90YXRpb25zID09PSAqLworCisv
-KiBTWU1fREFUQV9TVEFSVCAtLSBnbG9iYWwgZGF0YSBzeW1ib2wgKi8KKyNpZm5kZWYgU1lNX0RB
-VEFfU1RBUlQKKyNkZWZpbmUgU1lNX0RBVEFfU1RBUlQobmFtZSkJU1lNX0ZVTkNUSU9OX1NUQVJU
-KG5hbWUpCisjZW5kaWYKKworLyogU1lNX0RBVEFfRU5EIC0tIHRoZSBlbmQgb2YgU1lNX0RBVEFf
-U1RBUlQgc3ltYm9sICovCisjaWZuZGVmIFNZTV9EQVRBX0VORAorI2RlZmluZSBTWU1fREFUQV9F
-TkQobmFtZSkgXAorCS5zaXplIG5hbWUsIC4tbmFtZQorI2VuZGlmCisKKyNpZm5kZWYgRU5EIC8q
-IGRlcHJlY2F0ZWQsIHVzZSBTWU1fREFUQV9FTkQgKi8KKyNkZWZpbmUgRU5EKG5hbWUpIFNZTV9E
-QVRBX0VORChuYW1lKQogI2VuZGlmCiAKICNlbmRpZgotLSAKMi4xMi4wCgoKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1haWxpbmcgbGlz
-dApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xpc3RzLnhlbi5vcmcveGVuLWRldmVs
-Cg==
+On Mon, Mar 6, 2017 at 9:03 PM, Niklas S=C3=B6derlund
+<niklas.soderlund+renesas@ragnatech.se> wrote:
+> The struct rcar_gen3_thermal_tsc benefits from knowing which TSC it
+> represent. Record this at probe time before this information is lost.
+>
+> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
+se>
+
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
