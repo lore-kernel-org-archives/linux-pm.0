@@ -1,55 +1,49 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH 0/7] thermal: ti-soc-thermal: Migrate slope/offset data
- to device tree
-Date: Tue, 7 Mar 2017 07:12:28 -0800
-Message-ID: <20170307151227.GR20572@atomide.com>
-References: <1488364190-23488-1-git-send-email-j-keerthy@ti.com>
- <20170306184215.GO20572@atomide.com>
- <1c47d169-7962-2fe7-0635-570881e85e06@ti.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/7] thermal: rcar_gen3_thermal: fix probe error path
+Date: Tue, 7 Mar 2017 16:19:41 +0100
+Message-ID: <CAMuHMdWN_iGLTTAnG8FZXdtPK89OCmvwnEfZzruf5ucmYAZ=1w@mail.gmail.com>
+References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se> <20170306200401.29923-3-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1c47d169-7962-2fe7-0635-570881e85e06@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Keerthy <j-keerthy@ti.com>
-Cc: edubezval@gmail.com, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, t-kristo@ti.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:33137 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755872AbdCGPWB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2017 10:22:01 -0500
+In-Reply-To: <20170306200401.29923-3-niklas.soderlund+renesas@ragnatech.se>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-* Keerthy <j-keerthy@ti.com> [170306 23:15]:
-> 
-> 
-> On Tuesday 07 March 2017 12:12 AM, Tony Lindgren wrote:
-> > * Keerthy <j-keerthy@ti.com> [170301 02:31]:
-> > > Currently the slope and offset values for calculating the
-> > > hot spot temperature of a particular thermal zone is part
-> > > of driver data. Pass them here instead and obtain the values
-> > > while of node parsing.
-> > > 
-> > > Tested for the slope and constant values on DRA7-EVM.
-> > > 
-> > > Keerthy (7):
-> > >   ARM: DRA7: Thermal: Add slope and offset values
-> > >   ARM: OMAP5: Thermal: Add slope and offset values
-> > >   ARM: OMAP443x: Thermal: Add slope and offset values
-> > >   ARM: OMAP4460: Thermal: Add slope and offset values
-> > >   thermal: ti-soc-thermal: Fetch slope and offset from DT
-> > >   thermal: ti-soc-thermal: Remove redundant constants
-> > >   thermal: ti-soc-thermal: Remove redundant code
-> > 
-> > Are the dts changes safe for me to pick separately into
-> > omap-for-v4.12/dt?
-> 
-> Tony,
-> 
-> Seems like omap3 has no thermal_zone node defined in Device Tree.
-> It seems like it still uses driver data. I would need to add that as well.
-> Can you confirm that? If yes i will send a new series with the omap3 device
-> tree changes as well.
+On Mon, Mar 6, 2017 at 9:03 PM, Niklas S=C3=B6derlund
+<niklas.soderlund+renesas@ragnatech.se> wrote:
+> If the memory resource for a TSC is unviable probe should fail not try
 
-OK cool. It might be worth checking how it was configured with
-the legacy platform data.
+unavailable
 
-Regards,
+> to go ahead with the remaining TSC. This fix is aligned with other
 
-Tony
+TSCs
+
+> checks in probe where probe fails if they are unavailable.
+>
+> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
+se>
+
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
