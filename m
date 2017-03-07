@@ -1,7 +1,7 @@
 From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH v4 4/5] soc: ti: Add ti_sci_pm_domains driver
-Date: Tue, 7 Mar 2017 04:22:33 -0600
-Message-ID: <1488882154-21485-5-git-send-email-d-gerlach@ti.com>
+Subject: [PATCH v4 3/5] dt-bindings: Add TI SCI PM Domains
+Date: Tue, 7 Mar 2017 04:22:32 -0600
+Message-ID: <1488882154-21485-4-git-send-email-d-gerlach@ti.com>
 References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,103 +21,117 @@ To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net
 Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Introduce a ti_sci_pm_domains driver to act as a generic pm domain
-provider to allow each device to attach and associate it's ti-sci-id so
-that it can be controlled through the TI SCI protocol.
+Add a generic power domain implementation, TI SCI PM Domains, that
+will hook into the genpd framework and allow the TI SCI protocol to
+control device power states.
 
-This driver implements a simple genpd where each device node has a
-phandle to the power domain node and also must provide an index which
-represents the ID to be passed with TI SCI representing the device using
-a single phandle cell. The driver manually parses the phandle to get the
-cell value. Through this interface the genpd dev_ops start and stop
-hooks will use TI SCI to turn on and off each device as determined by
-pm_runtime usage.
+Also, provide macros representing each device index as understood
+by TI SCI to be used in the device node power-domain references.
+These are identifiers for the K2G devices managed by the PMMC.
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
 Signed-off-by: Nishanth Menon <nm@ti.com>
 Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 ---
-v3->v4:
- Parse phandle directly instead of reading ti,sci-id property per device.
- 
- MAINTAINERS                        |   1 +
- arch/arm/mach-keystone/Kconfig     |   1 +
- drivers/soc/ti/Kconfig             |  12 +++
- drivers/soc/ti/Makefile            |   1 +
- drivers/soc/ti/ti_sci_pm_domains.c | 202 +++++++++++++++++++++++++++++++++++++
- 5 files changed, 217 insertions(+)
- create mode 100644 drivers/soc/ti/ti_sci_pm_domains.c
+ .../devicetree/bindings/soc/ti/sci-pm-domain.txt   | 59 ++++++++++++++
+ MAINTAINERS                                        |  2 +
+ include/dt-bindings/genpd/k2g.h                    | 90 ++++++++++++++++++++++
+ 3 files changed, 151 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+ create mode 100644 include/dt-bindings/genpd/k2g.h
 
+diff --git a/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+new file mode 100644
+index 000000000000..86a6a3d52ed6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
+@@ -0,0 +1,59 @@
++Texas Instruments TI-SCI Generic Power Domain
++---------------------------------------------
++
++Some TI SoCs contain a system controller (like the PMMC, etc...) that is
++responsible for controlling the state of the IPs that are present.
++Communication between the host processor running an OS and the system
++controller happens through a protocol known as TI-SCI [1]. This pm domain
++implementation plugs into the generic pm domain framework and makes use of
++the TI SCI protocol power on and off each device when needed.
++
++[1] Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
++
++PM Domain Node
++==============
++The PM domain node represents the global PM domain managed by the PMMC, which
++in this case is the implementation as documented by the generic PM domain
++bindings in Documentation/devicetree/bindings/power/power_domain.txt.  Because
++this relies on the TI SCI protocol to communicate with the PMMC it must be a
++child of the pmmc node.
++
++Required Properties:
++--------------------
++- compatible: should be "ti,sci-pm-domain"
++- #power-domain-cells: Must be 1 so that an id can be provided in each
++		       device node.
++
++Example (K2G):
++-------------
++	pmmc: pmmc {
++		compatible = "ti,k2g-sci";
++		...
++
++		k2g_pds: power-controller {
++			compatible = "ti,sci-pm-domain";
++			#power-domain-cells = <1>;
++		};
++	};
++
++PM Domain Consumers
++===================
++Hardware blocks belonging to a PM domain should contain a "power-domains"
++property that is a phandle pointing to the corresponding PM domain node
++along with an index representing the device id to be passed to the PMMC
++for device control.
++
++Required Properties:
++--------------------
++- power-domains: phandle pointing to the corresponding PM domain node
++		 and an ID representing the device.
++
++See dt-bindings/genpd/k2g.h for the list of valid identifiers for k2g.
++
++Example (K2G):
++--------------------
++	uart0: serial@02530c00 {
++		compatible = "ns16550a";
++		...
++		power-domains = <&k2g_pds K2G_DEV_UART0>;
++	};
 diff --git a/MAINTAINERS b/MAINTAINERS
-index aaf96a9b4cd4..5cce85ade551 100644
+index c265a5fe4848..aaf96a9b4cd4 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -12385,6 +12385,7 @@ F:	drivers/firmware/ti_sci*
+@@ -12383,6 +12383,8 @@ S:	Maintained
+ F:	Documentation/devicetree/bindings/arm/keystone/ti,sci.txt
+ F:	drivers/firmware/ti_sci*
  F:	include/linux/soc/ti/ti_sci_protocol.h
- F:	Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
- F:	include/dt-bindings/genpd/k2g.h
-+F:	drivers/soc/ti/ti_sci_pm_domains.c
++F:	Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
++F:	include/dt-bindings/genpd/k2g.h
  
  THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
  M:	Hans Verkuil <hverkuil@xs4all.nl>
-diff --git a/arch/arm/mach-keystone/Kconfig b/arch/arm/mach-keystone/Kconfig
-index 554357035f30..db122356b410 100644
---- a/arch/arm/mach-keystone/Kconfig
-+++ b/arch/arm/mach-keystone/Kconfig
-@@ -10,6 +10,7 @@ config ARCH_KEYSTONE
- 	select ARCH_SUPPORTS_BIG_ENDIAN
- 	select ZONE_DMA if ARM_LPAE
- 	select PINCTRL
-+	select PM_GENERIC_DOMAINS if PM
- 	help
- 	  Support for boards based on the Texas Instruments Keystone family of
- 	  SoCs.
-diff --git a/drivers/soc/ti/Kconfig b/drivers/soc/ti/Kconfig
-index 3557c5e32a93..39e152abe6b9 100644
---- a/drivers/soc/ti/Kconfig
-+++ b/drivers/soc/ti/Kconfig
-@@ -38,4 +38,16 @@ config WKUP_M3_IPC
- 	  to communicate and use the Wakeup M3 for PM features like suspend
- 	  resume and boots it using wkup_m3_rproc driver.
- 
-+config TI_SCI_PM_DOMAINS
-+	tristate "TI SCI PM Domains Driver"
-+	depends on TI_SCI_PROTOCOL
-+	depends on PM_GENERIC_DOMAINS
-+	help
-+	  Generic power domain implementation for TI device implementing
-+	  the TI SCI protocol.
-+
-+	  To compile this as a module, choose M here. The module will be
-+	  called ti_sci_pm_domains. Note this is needed early in boot before
-+	  rootfs may be available.
-+
- endif # SOC_TI
-diff --git a/drivers/soc/ti/Makefile b/drivers/soc/ti/Makefile
-index 48ff3a79634f..7d572736c86e 100644
---- a/drivers/soc/ti/Makefile
-+++ b/drivers/soc/ti/Makefile
-@@ -5,3 +5,4 @@ obj-$(CONFIG_KEYSTONE_NAVIGATOR_QMSS)	+= knav_qmss.o
- knav_qmss-y := knav_qmss_queue.o knav_qmss_acc.o
- obj-$(CONFIG_KEYSTONE_NAVIGATOR_DMA)	+= knav_dma.o
- obj-$(CONFIG_WKUP_M3_IPC)		+= wkup_m3_ipc.o
-+obj-$(CONFIG_TI_SCI_PM_DOMAINS)		+= ti_sci_pm_domains.o
-diff --git a/drivers/soc/ti/ti_sci_pm_domains.c b/drivers/soc/ti/ti_sci_pm_domains.c
+diff --git a/include/dt-bindings/genpd/k2g.h b/include/dt-bindings/genpd/k2g.h
 new file mode 100644
-index 000000000000..b0b283810e72
+index 000000000000..1f31f17e19eb
 --- /dev/null
-+++ b/drivers/soc/ti/ti_sci_pm_domains.c
-@@ -0,0 +1,202 @@
++++ b/include/dt-bindings/genpd/k2g.h
+@@ -0,0 +1,90 @@
 +/*
-+ * TI SCI Generic Power Domain Driver
++ * TI K2G SoC Device definitions
 + *
 + * Copyright (C) 2015-2017 Texas Instruments Incorporated - http://www.ti.com/
-+ *	J Keerthy <j-keerthy@ti.com>
-+ *	Dave Gerlach <d-gerlach@ti.com>
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * version 2 as published by the Free Software Foundation.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -125,190 +139,79 @@ index 000000000000..b0b283810e72
 + * GNU General Public License for more details.
 + */
 +
-+#include <linux/err.h>
-+#include <linux/module.h>
-+#include <linux/mutex.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_domain.h>
-+#include <linux/slab.h>
-+#include <linux/soc/ti/ti_sci_protocol.h>
++#ifndef _DT_BINDINGS_GENPD_K2G_H
++#define _DT_BINDINGS_GENPD_K2G_H
 +
-+/**
-+ * struct ti_sci_genpd_dev_data: holds data needed for every device attached
-+ *				 to this genpd
-+ * @idx: index of the device that identifies it with the system
-+ *	 control processor.
-+ */
-+struct ti_sci_genpd_dev_data {
-+	int idx;
-+};
++/* Documented in http://processors.wiki.ti.com/index.php/TISCI */
 +
-+/**
-+ * struct ti_sci_pm_domain: TI specific data needed for power domain
-+ * @ti_sci: handle to TI SCI protocol driver that provides ops to
-+ *	    communicate with system control processor.
-+ * @dev: pointer to dev for the driver for devm allocs
-+ * @pd: generic_pm_domain for use with the genpd framework
-+ */
-+struct ti_sci_pm_domain {
-+	const struct ti_sci_handle *ti_sci;
-+	struct device *dev;
-+	struct generic_pm_domain pd;
-+};
++#define K2G_DEV_PMMC0			0x0000
++#define K2G_DEV_MLB0			0x0001
++#define K2G_DEV_DSS0			0x0002
++#define K2G_DEV_MCBSP0			0x0003
++#define K2G_DEV_MCASP0			0x0004
++#define K2G_DEV_MCASP1			0x0005
++#define K2G_DEV_MCASP2			0x0006
++#define K2G_DEV_DCAN0			0x0008
++#define K2G_DEV_DCAN1			0x0009
++#define K2G_DEV_EMIF0			0x000a
++#define K2G_DEV_MMCHS0			0x000b
++#define K2G_DEV_MMCHS1			0x000c
++#define K2G_DEV_GPMC0			0x000d
++#define K2G_DEV_ELM0			0x000e
++#define K2G_DEV_SPI0			0x0010
++#define K2G_DEV_SPI1			0x0011
++#define K2G_DEV_SPI2			0x0012
++#define K2G_DEV_SPI3			0x0013
++#define K2G_DEV_ICSS0			0x0014
++#define K2G_DEV_ICSS1			0x0015
++#define K2G_DEV_USB0			0x0016
++#define K2G_DEV_USB1			0x0017
++#define K2G_DEV_NSS0			0x0018
++#define K2G_DEV_PCIE0			0x0019
++#define K2G_DEV_GPIO0			0x001b
++#define K2G_DEV_GPIO1			0x001c
++#define K2G_DEV_TIMER64_0		0x001d
++#define K2G_DEV_TIMER64_1		0x001e
++#define K2G_DEV_TIMER64_2		0x001f
++#define K2G_DEV_TIMER64_3		0x0020
++#define K2G_DEV_TIMER64_4		0x0021
++#define K2G_DEV_TIMER64_5		0x0022
++#define K2G_DEV_TIMER64_6		0x0023
++#define K2G_DEV_MSGMGR0			0x0025
++#define K2G_DEV_BOOTCFG0		0x0026
++#define K2G_DEV_ARM_BOOTROM0		0x0027
++#define K2G_DEV_DSP_BOOTROM0		0x0029
++#define K2G_DEV_DEBUGSS0		0x002b
++#define K2G_DEV_UART0			0x002c
++#define K2G_DEV_UART1			0x002d
++#define K2G_DEV_UART2			0x002e
++#define K2G_DEV_EHRPWM0			0x002f
++#define K2G_DEV_EHRPWM1			0x0030
++#define K2G_DEV_EHRPWM2			0x0031
++#define K2G_DEV_EHRPWM3			0x0032
++#define K2G_DEV_EHRPWM4			0x0033
++#define K2G_DEV_EHRPWM5			0x0034
++#define K2G_DEV_EQEP0			0x0035
++#define K2G_DEV_EQEP1			0x0036
++#define K2G_DEV_EQEP2			0x0037
++#define K2G_DEV_ECAP0			0x0038
++#define K2G_DEV_ECAP1			0x0039
++#define K2G_DEV_I2C0			0x003a
++#define K2G_DEV_I2C1			0x003b
++#define K2G_DEV_I2C2			0x003c
++#define K2G_DEV_EDMA0			0x003f
++#define K2G_DEV_SEMAPHORE0		0x0040
++#define K2G_DEV_INTC0			0x0041
++#define K2G_DEV_GIC0			0x0042
++#define K2G_DEV_QSPI0			0x0043
++#define K2G_DEV_ARM_64B_COUNTER0	0x0044
++#define K2G_DEV_TETRIS0			0x0045
++#define K2G_DEV_CGEM0			0x0046
++#define K2G_DEV_MSMC0			0x0047
++#define K2G_DEV_CBASS0			0x0049
++#define K2G_DEV_BOARD0			0x004c
++#define K2G_DEV_EDMA1			0x004f
 +
-+#define genpd_to_ti_sci_pd(gpd) container_of(gpd, struct ti_sci_pm_domain, pd)
-+
-+/**
-+ * ti_sci_dev_id(): get prepopulated ti_sci id from struct dev
-+ * @dev: pointer to device associated with this genpd
-+ *
-+ * Returns device_id stored from ti,sci_id property
-+ */
-+static int ti_sci_dev_id(struct device *dev)
-+{
-+	struct generic_pm_domain_data *genpd_data = dev_gpd_data(dev);
-+	struct ti_sci_genpd_dev_data *sci_dev_data = genpd_data->data;
-+
-+	return sci_dev_data->idx;
-+}
-+
-+/**
-+ * ti_sci_dev_to_sci_handle(): get pointer to ti_sci_handle
-+ * @dev: pointer to device associated with this genpd
-+ *
-+ * Returns ti_sci_handle to be used to communicate with system
-+ *	   control processor.
-+ */
-+static const struct ti_sci_handle *ti_sci_dev_to_sci_handle(struct device *dev)
-+{
-+	struct generic_pm_domain *pd = pd_to_genpd(dev->pm_domain);
-+	struct ti_sci_pm_domain *ti_sci_genpd = genpd_to_ti_sci_pd(pd);
-+
-+	return ti_sci_genpd->ti_sci;
-+}
-+
-+/**
-+ * ti_sci_dev_start(): genpd device start hook called to turn device on
-+ * @dev: pointer to device associated with this genpd to be powered on
-+ */
-+static int ti_sci_dev_start(struct device *dev)
-+{
-+	const struct ti_sci_handle *ti_sci = ti_sci_dev_to_sci_handle(dev);
-+	int idx = ti_sci_dev_id(dev);
-+
-+	return ti_sci->ops.dev_ops.get_device(ti_sci, idx);
-+}
-+
-+/**
-+ * ti_sci_dev_stop(): genpd device stop hook called to turn device off
-+ * @dev: pointer to device associated with this genpd to be powered off
-+ */
-+static int ti_sci_dev_stop(struct device *dev)
-+{
-+	const struct ti_sci_handle *ti_sci = ti_sci_dev_to_sci_handle(dev);
-+	int idx = ti_sci_dev_id(dev);
-+
-+	return ti_sci->ops.dev_ops.put_device(ti_sci, idx);
-+}
-+
-+static int ti_sci_pd_attach_dev(struct generic_pm_domain *domain,
-+				struct device *dev)
-+{
-+	struct device_node *np = dev->of_node;
-+	struct of_phandle_args pd_args;
-+	struct ti_sci_pm_domain *ti_sci_genpd = genpd_to_ti_sci_pd(domain);
-+	const struct ti_sci_handle *ti_sci = ti_sci_genpd->ti_sci;
-+	struct ti_sci_genpd_dev_data *sci_dev_data;
-+	struct generic_pm_domain_data *genpd_data;
-+	int idx, ret = 0;
-+
-+	ret = of_parse_phandle_with_args(np, "power-domains",
-+					 "#power-domain-cells", 0, &pd_args);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (pd_args.args_count != 1)
-+		return -EINVAL;
-+
-+	idx = pd_args.args[0];
-+
-+	/*
-+	 * Check the validity of the requested idx, if the index is not valid
-+	 * the PMMC will return a NAK here and we will not allocate it.
-+	 */
-+	ret = ti_sci->ops.dev_ops.is_valid(ti_sci, idx);
-+	if (ret)
-+		return -EINVAL;
-+
-+	sci_dev_data = kzalloc(sizeof(*sci_dev_data), GFP_KERNEL);
-+	if (!sci_dev_data)
-+		return -ENOMEM;
-+
-+	sci_dev_data->idx = idx;
-+
-+	genpd_data = dev_gpd_data(dev);
-+	genpd_data->data = sci_dev_data;
-+
-+	return 0;
-+}
-+
-+static void ti_sci_pd_detach_dev(struct generic_pm_domain *domain,
-+				 struct device *dev)
-+{
-+	struct generic_pm_domain_data *genpd_data = dev_gpd_data(dev);
-+	struct ti_sci_genpd_dev_data *sci_dev_data = genpd_data->data;
-+
-+	kfree(sci_dev_data);
-+	genpd_data->data = NULL;
-+}
-+
-+static const struct of_device_id ti_sci_pm_domain_matches[] = {
-+	{ .compatible = "ti,sci-pm-domain", },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(of, ti_sci_pm_domain_matches);
-+
-+static int ti_sci_pm_domain_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct device_node *np = dev->of_node;
-+	struct ti_sci_pm_domain *ti_sci_pd;
-+	int ret;
-+
-+	ti_sci_pd = devm_kzalloc(dev, sizeof(*ti_sci_pd), GFP_KERNEL);
-+	if (!ti_sci_pd)
-+		return -ENOMEM;
-+
-+	ti_sci_pd->ti_sci = devm_ti_sci_get_handle(dev);
-+	if (IS_ERR(ti_sci_pd->ti_sci))
-+		return PTR_ERR(ti_sci_pd->ti_sci);
-+
-+	ti_sci_pd->dev = dev;
-+
-+	ti_sci_pd->pd.attach_dev = ti_sci_pd_attach_dev;
-+	ti_sci_pd->pd.detach_dev = ti_sci_pd_detach_dev;
-+
-+	ti_sci_pd->pd.dev_ops.start = ti_sci_dev_start;
-+	ti_sci_pd->pd.dev_ops.stop = ti_sci_dev_stop;
-+
-+	pm_genpd_init(&ti_sci_pd->pd, NULL, true);
-+
-+	ret = of_genpd_add_provider_simple(np, &ti_sci_pd->pd);
-+
-+	return ret;
-+}
-+
-+static struct platform_driver ti_sci_pm_domains_driver = {
-+	.probe = ti_sci_pm_domain_probe,
-+	.driver = {
-+		.name = "ti_sci_pm_domains",
-+		.of_match_table = ti_sci_pm_domain_matches,
-+	},
-+};
-+module_platform_driver(ti_sci_pm_domains_driver);
-+MODULE_LICENSE("GPL v2");
-+MODULE_DESCRIPTION("TI System Control Interface (SCI) Power Domain driver");
-+MODULE_AUTHOR("Dave Gerlach");
++#endif
 -- 
 2.11.0
