@@ -1,63 +1,58 @@
-From: "Niklas =?iso-8859-1?Q?S=F6derlund?=" <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCH 1/7] thermal: rcar_gen3_thermal: add delay in
- .thermal_init on r8a7796
-Date: Tue, 7 Mar 2017 11:28:08 +0100
-Message-ID: <20170307102808.GI20587@bigcity.dyn.berto.se>
-References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
- <20170306200401.29923-2-niklas.soderlund+renesas@ragnatech.se>
- <98691387-0546-4884-b0ae-09814b7964d0@cogentembedded.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/3] cpufreq: schedutil: remove redundant code from sugov_next_freq_shared()
+Date: Tue, 7 Mar 2017 14:19:01 +0100
+Message-ID: <CAJZ5v0itZo-tybgz2p49VxkGzFL9EZBB-4aZg6R5sthVrBiAYQ@mail.gmail.com>
+References: <cover.1488437503.git.viresh.kumar@linaro.org> <639aad743bac7f3292146738f44dbd1480169c8e.1488437503.git.viresh.kumar@linaro.org>
+ <1772276.4tCnP8C0XV@aspire.rjw.lan> <1668614.4zDQWLsnmH@aspire.rjw.lan>
+ <20170306044553.GE8206@vireshk-i7> <CAJZ5v0hov8Lz_MK9dxP9MyqSmPNRfWV9Wia4DtAZtOPmoTOqAw@mail.gmail.com>
+ <20170307103108.GA4526@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f46.google.com ([209.85.215.46]:34727 "EHLO
-        mail-lf0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754670AbdCGKfg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2017 05:35:36 -0500
-Received: by mail-lf0-f46.google.com with SMTP id k202so84880744lfe.1
-        for <linux-pm@vger.kernel.org>; Tue, 07 Mar 2017 02:35:35 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <98691387-0546-4884-b0ae-09814b7964d0@cogentembedded.com>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:36125 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754790AbdCGNTd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2017 08:19:33 -0500
+In-Reply-To: <20170307103108.GA4526@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-HI Sergei,
+On Tue, Mar 7, 2017 at 11:31 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 06-03-17, 13:24, Rafael J. Wysocki wrote:
+>> On Mon, Mar 6, 2017 at 5:45 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > On 04-03-17, 01:11, Rafael J. Wysocki wrote:
+>> >> So one idea is that if SCHED_CPUFREQ_RT_DL is set in flags, we don't even
+>> >> need to start the loop which is quite a cost to simply notice that there's
+>> >> nothing to do.
+>> >
+>> > Hmm. Isn't the probability of this flag being set, same for all CPUs in the
+>> > policy?
+>>
+>> No, I don't think so.
+>
+> Why do you think so? I thought all CPU in the policy can have the RT/DL flag set
+> and the probability of all of them is just the same.
 
-Thanks will update for v2.
+Well, yes, but if the current CPU has that flag set already, we surely
+don't need to check the other ones in the policy?
 
-On 2017-03-07 12:49:25 +0300, Sergei Shtylyov wrote:
-> On 3/6/2017 11:03 PM, Niklas Söderlund wrote:
-> 
-> > The .thermal_init needs to be delayed a short amount of to allow for the
-> 
->    Amount of what? :-)
-> 
-> > TEMP register to contain something useful. If it's not delayed theses
-> 
->    These.
-> 
-> > warnings are common during boot:
-> > 
-> > thermal thermal_zone0: failed to read out thermal zone (-5)
-> > thermal thermal_zone1: failed to read out thermal zone (-5)
-> > thermal thermal_zone2: failed to read out thermal zone (-5)
-> > 
-> > The warnings are triggered by the first call to .get_temp while the TEMP
-> > register contains 0 and rcar_gen3_thermal_get_temp() returns -EIO since
-> > a TEMP value of 0 will result in a temperature reading which is out of
-> > specifications.
-> > 
-> > This should have been done in the initial commit which adds the driver
-> > as the same issue was found and corrected for r8a7795.
-> > 
-> > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> [...]
-> 
-> MBR, Sergei
-> 
+>> So to the point, the code was written this way on purpose and not just
+>> by accident as your changelog suggests and
+>
+> I didn't wanted to convey that really and I knew that it was written on purpose.
+>
+>> if you want to change it, you need numbers.
+>
+> What kind of numbers can we get for such a change ? I tried to take the running
+> average of the time it takes to execute this routine over 10000 samples, but it
+> varies a lot even with the same build. Any tests like hackbench, etc wouldn't be
+> of any help as well.
 
--- 
-Regards,
-Niklas Söderlund
+So why do you think it needs to be changed, but really?
+
+Is that because it is particularly hard to follow or similar?
+
+Thanks,
+Rafael
