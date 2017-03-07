@@ -1,56 +1,45 @@
-From: Doug Smythies <doug.smythies@gmail.com>
-Subject: [PATCH] tools/power/x86/intel_pstate_tracer: Adjust directory permissions
-Date: Mon,  6 Mar 2017 23:29:32 -0800
-Message-ID: <1488871772-12624-1-git-send-email-dsmythies@telus.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:33248 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750744AbdCGIgt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2017 03:36:49 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Subject: Re: [PATCH 1/7] thermal: rcar_gen3_thermal: add delay in
+ .thermal_init on r8a7796
+Date: Tue, 7 Mar 2017 12:49:25 +0300
+Message-ID: <98691387-0546-4884-b0ae-09814b7964d0@cogentembedded.com>
+References: <20170306200401.29923-1-niklas.soderlund+renesas@ragnatech.se>
+ <20170306200401.29923-2-niklas.soderlund+renesas@ragnatech.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <20170306200401.29923-2-niklas.soderlund+renesas@ragnatech.se>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net, len.brown@intel.com
-Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Depending on what is being done, the intel_pstate_tracer.py script
-needs to be run as root, or can be run as a regular user.
-If run the first time as root the results directory will be
-incorrect for any subsequent run as a regular user. For any run
-as root the specific testname subdirectory will not allow any
-subsequent file saves by a regular user. Typically, and for example,
-the regular user might be attempting to save a .csv file converted to
-a spreadsheet with added calculations or graphs.
+On 3/6/2017 11:03 PM, Niklas Söderlund wrote:
 
-Override the default folder permissions.
+> The .thermal_init needs to be delayed a short amount of to allow for the
 
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
----
- tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py | 6 ++++++
- 1 file changed, 6 insertions(+)
+    Amount of what? :-)
 
-diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-index fd706ac..7c855508 100755
---- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-+++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-@@ -517,13 +517,19 @@ else:
-         cpu_mask[i] = 1
- 
- if not os.path.exists('results'):
-+    # Setting permissions with the mode option doesn't work on all platforms
-     os.mkdir('results')
-+    # so use chmod to set them. Needed because user may or may not be root.
-+    os.chmod('results', 0777)
- 
- os.chdir('results')
- if os.path.exists(testname):
-     print('The test name directory already exists. Please provide a unique test name. Test re-run not supported, yet.')
-     sys.exit()
-+# Setting permissions with the mode option doesn't work on all platforms
- os.mkdir(testname)
-+os.chmod(testname, 0777)
-+# so use chmod to set them. Needed because user may or may not be root.
- os.chdir(testname)
- 
- # Temporary (or perhaps not)
--- 
-2.7.4
+> TEMP register to contain something useful. If it's not delayed theses
+
+    These.
+
+> warnings are common during boot:
+>
+> thermal thermal_zone0: failed to read out thermal zone (-5)
+> thermal thermal_zone1: failed to read out thermal zone (-5)
+> thermal thermal_zone2: failed to read out thermal zone (-5)
+>
+> The warnings are triggered by the first call to .get_temp while the TEMP
+> register contains 0 and rcar_gen3_thermal_get_temp() returns -EIO since
+> a TEMP value of 0 will result in a temperature reading which is out of
+> specifications.
+>
+> This should have been done in the initial commit which adds the driver
+> as the same issue was found and corrected for r8a7795.
+>
+> Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+[...]
+
+MBR, Sergei
