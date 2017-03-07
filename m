@@ -1,136 +1,56 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH 01/10] x86: assembly, ENTRY for fn,
-	GLOBAL for data
-Date: Tue, 7 Mar 2017 09:27:50 +0100
-Message-ID: <20170307082750.GA1695@gmail.com>
-References: <20170217104757.28588-1-jslaby@suse.cz>
- <20170301093855.GA27152@gmail.com>
- <alpine.DEB.2.20.1703011108220.4005@nanos>
- <20170301102754.GA13374@gmail.com>
- <39064F86-5BE2-417F-8A28-2B4CB5177D7D@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-Content-Disposition: inline
-In-Reply-To: <39064F86-5BE2-417F-8A28-2B4CB5177D7D@zytor.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: hpa@zytor.com
-Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jslaby@suse.cz>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH] tools/power/x86/intel_pstate_tracer: Adjust directory permissions
+Date: Mon,  6 Mar 2017 23:29:32 -0800
+Message-ID: <1488871772-12624-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:33248 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750744AbdCGIgt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Mar 2017 03:36:49 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net, len.brown@intel.com
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-CiogaHBhQHp5dG9yLmNvbSA8aHBhQHp5dG9yLmNvbT4gd3JvdGU6Cgo+IE9uIE1hcmNoIDEsIDIw
-MTcgMjoyNzo1NCBBTSBQU1QsIEluZ28gTW9sbmFyIDxtaW5nb0BrZXJuZWwub3JnPiB3cm90ZToK
-Cj4gPj4gPiBTbyBob3cgYWJvdXQgdXNpbmcgbWFjcm8gbmFtZXMgdGhhdCBhY3R1YWxseSBzaG93
-IHRoZSBwdXJwb3NlLCBpbnN0ZWFkIG9mIAo+ID4+ID4gaW1wb3J0aW5nIGFsbCB0aGUgY3JhcHB5
-LCBoaXN0b3JpYywgZXNzZW50aWFsbHkgcmFuZG9tbHkgY2hvc2VuIGRlYnVnIAo+ID4+ID4gc3lt
-Ym9sIG1hY3JvIG5hbWVzIGZyb20gdGhlIGJpbnV0aWxzIGFuZCBvbGRlciBrZXJuZWxzPwo+ID4+
-ID4gCj4gPj4gPiBTb21ldGhpbmcgc2FuZSwgbGlrZToKPiA+PiA+IAo+ID4+ID4gCVNZTV9fRlVO
-Q1RJT05fU1RBUlQKPiA+PiAKPiA+PiBTYW5lIHdvdWxkIGJlOgo+ID4+IAo+ID4+ICAgICAgCVNZ
-TV9GVU5DVElPTl9TVEFSVAo+ID4+IAo+ID4+IFRoZSBkb3VibGUgdW5kZXJzY29yZSBpcyBqdXN0
-IG5vdCBnaXZpbmcgYW55IHZhbHVlLgo+ID4KPiA+IFNvIHRoZSBkb3VibGUgdW5kZXJzY29yZSAo
-YXQgbGVhc3QgaW4gbXkgdmlldykgaGFzIHR3byBhZHZhbnRhZ2VzOgo+ID4KPiA+IDEpIGl0IGhl
-bHBzIHNlcGFyYXRlIHRoZSBwcmVmaXggZnJvbSB0aGUgcG9zdGZpeC4KPiA+Cj4gPiBJLmUuIGl0
-J3MgYSAnc3ltYm9scycgbmFtZXNwYWNlLCBhbmQgYSAnZnVuY3Rpb24gc3RhcnQnLCBub3QgdGhl
-ICdzdGFydCcgb2YgYSAKPiA+ICdzeW1ib2wgZnVuY3Rpb24nLgo+ID4KPiA+IDIpIEl0IGFsc28g
-aGVscHMgZWFzeSBncmVwcGFiaWxpdHkuCj4gPgo+ID4gVHJ5IHRoaXMgaW4gbGF0ZXN0IC10aXA6
-Cj4gPgo+ID4gICAgZ2l0IGdyZXAgZTgyMF9fCj4gPgo+ID4gVG8gc2VlIGFsbCB0aGUgRTgyMCBB
-UEkgY2FsbHMgLSB3aXRoIG5vIGZhbHNlIHBvc2l0aXZlcyEKPiA+Cj4gPiAnZ2l0IGdyZXAgZTgy
-MF8nIG9uIHRoZSBvdGhlciBoYW5kIGlzIGEgbG90IGxlc3MgcmVsaWFibGUuLi4KPiAKPiBJTU8g
-dGhlc2UgbGl0dGxlICJuYW1lc3BhY2UgdHJpY2tzIiBlc3BlY2lhbGx5IGZvciBzbWFsbCBjb21t
-b24gbWFjcm9zIGxpa2Ugd2UgCj4gYXJlIHRha2luZyBhYm91dCBoZXJlIG1ha2UgdGhlIGNvZGUg
-dmVyeSBmcnVzdHJhdGluZyB0byByZWFkLCBhbmQgZXZlbiBtb3JlIHRvIAo+IHdyaXRlLiAgTm9v
-bmUgd291bGQgZGVzaWduIGEgcHJvZ3JhbW1pbmcgbGFuZ3VhZ2UgdGhhdCB3YXksIGFuZCB0aGlu
-Z3MgbGlrZSBQUk9DIAo+IGFyZSByZWFsbHkganVzdCBzdWJzdGl0dXRlcyBmb3IgcHJvcGVyIGxh
-bmd1YWdlIGZlYXR1cmVzIChhbmQgY291bGQgZXZlbiBiZSBhcyAKPiBhc3NlbWJseSByYXRoZXIg
-dGhhbiBjcHAgbWFjcm9zLikKClRoaXMgaXMgYSB0b3RhbGx5IGRpZmZlcmVudCB0aGluZyBmcm9t
-IGxhbmd1YWdlIGtleXdvcmRzIHdoaWNoIG5lZWRzIHRvIGJlIHNob3J0IAphbmQgY29uY2lzZSBm
-b3Igb2J2aW91cyByZWFzb25zLgoKS2V5d29yZHMgb2YgbGFuZ3VhZ2VzIGdldCBuZXN0ZWQgYW5k
-IGFyZSB1c2VkIGFsbCB0aGUgdGltZSwgYW5kIGV2ZXJ5b25lIG5lZWRzIHRvIAprbm93IHRoZW0g
-YW5kIHRoZXkgbmVlZCB0byBzdGF5IG91dCBvZiB0aGUgd2F5LiBUaGUgc3ltYm9sIHN0YXJ0L2Vu
-ZCBtYWNyb3Mgd2UgYXJlIAp0YWxraW5nIGFib3V0IGhlcmUgYXJlIF9NVUNIXyBsZXNzIGNvbW1v
-biwgYW5kIHRoZXkgYXJlIG9ubHkgZXZlciB1c2VkIGluIGEgc2luZ2xlIApuZXN0aW5nIGxldmVs
-OgoKICAgICAgICBTWU1fX0ZVTkNfU1RBUlQoc29tZV9rZXJuZWxfYXNtX2Z1bmN0aW9uKQogICAg
-ICAgIC4uLgogICAgICAgIFNZTV9fRlVOQ19FTkQoc29tZV9rZXJuZWxfYXNtX2Z1bmN0aW9uKQoK
-TW9zdCBrZXJuZWwgZGV2ZWxvcGVycyB3cml0aW5nIG5ldyBhc3NlbWJseSBjb2RlIHJhcmVseSBr
-bm93IHRoZXNlIGNvbnN0cnVjdHMgYnkgCmhlYXJ0LCB0aGV5IGp1c3QgbG9vayB0aGVtIHVwIGFu
-ZCBjYXJib24gY29weSBleGlzdGluZyBwcmFjdGljZXMuIEFuZCBndWVzcyB3aGF0LCAKdGhlICds
-b29raW5nIHRoZW0gdXAnIGdldHMgaGFyZGVyIGlmIHRoZSBtYWNybyBuYW1pbmcgc2NoZW1lIGlz
-IGFuIGlkb3N5bmNyYXRpYyAKbGVmdG92ZXIgZnJvbSBsb25nIGFnby4KCktlcm5lbCBkZXZlbG9w
-ZXJzIF9yZWFkaW5nXyBhc3NlbWJseSBjb2RlIHdpbGwga25vdyB0aGUgZXhhY3QgcHVycG9zZSBv
-ZiB0aGUgCm1hY3JvcyBldmVuIGxlc3MsIGVzcGVjaWFsbHkgaWYgdGhleSBhcmUgbmFtZWQgaW4g
-YW4gYW1iaWd1b3VzLCBpbGxvZ2ljYWwgZmFzaGlvbi4KCkZ1cnRoZXJtb3JlLCB5b3VyIHN1Z2dl
-c3Rpb24gb2Y6Cgo+IFBST0MuLkVORFBST0MsIExPQ0FMUFJPQy4uRU5EUFJPQyBhbmQgREFUQS4u
-RU5EREFUQS4gIENsZWFyLCB1bmFtYmlndW91cyBhbmQgCj4gYmFsYW5jZWQuCgpBcmUgbmVpdGhl
-ciBjbGVhciwgbm90IHVuYW1iaWd1b3VzIG5vciBiYWxhbmNlZCEgSSBtZWFuLCB0aGV5IGFyZSB0
-aGUgX2V4YWN0XyAKb3Bwb3NpdGU6CgogLSAnUFJPQycgaXMgYWN0dWFsbHkgYW1iaWd1b3VzIGlu
-IHRoZSBrZXJuZWwgc291cmNlIGNvZGUgY29udGV4dCwgYXMgaXQgY2xhc2hlcyAKICAgd2l0aCBj
-b21tb24gYWJicmV2aWF0aW9ucyBvZiAncHJvY2ZzJyBhbmQgJ3Byb2Nlc3MnLgoKICAgSXQncyBh
-bHNvIGFuIHVubmVjZXNzYXJ5IGFiYnJldmlhdGlvbiBvZiBhIHdvcmQgKCdwcm9jZWR1cmUnKSB0
-aGF0IGlzIG5vdCAKICAgYWN0dWFsbHkgdXNlZCBhIF9zaW5nbGUgdGltZV8gaW4gdGhlIEMgSVNP
-L0lFQyA5ODk5OlRDMiBzdGFuZGFyZCAtIGluIGFsbCBoYWxmIAogICB0aG91c2FuZCsgcGFnZXMg
-b2YgaXQuICghKSBXaHkgdGhlIGhlbGwgZG9lcyB0aGlzIGhhdmUgdG8gYmUgdXNlZCBpbiB0aGUg
-CiAgIGtlcm5lbD8KCiAtIEl0J3MgdmlzdWFsbHkgYW5kIHNlbWFudGljYWxseSBpbWJhbGFuY2Vk
-LCBiZWNhdXNlIHNvbWUgdGVybXMgaGF2ZSBhbiAnRU5EJyAKICAgcHJlZml4LCBidXQgdGhlcmUn
-cyBubyBtYXRjaGluZyAnU1RBUlQnIG9yICdCRUdJTicgcHJlZml4IGZvciB0aGVpciAKICAgY291
-bnRlcnBhcnRzLiBUaGlzIG1ha2VzIGl0IGVhc3kgdG8gY29tbWl0IHZhcmlvdXMgc3ltYm9sIGRl
-ZmluaXRpb24gCiAgIHRlcm1pbmF0aW9uIGVycm9ycywgbGlrZToKCglQUk9DKHNvbWVfa2VybmVs
-X2FzbV9mdW5jdGlvbikKCS4uLgoKICAgSGVyZSBpdCdzIG5vdCBvYnZpb3VzIHRoYXQgaXQgbmVl
-ZHMgYW4gRU5EUFJPQy4gV2hpbGUgaWYgaXQncyB3cml0dGVuIGFzOgoKICAgICAgICBTWU1fX0ZV
-TkNfU1RBUlQoc29tZV9rZXJuZWxfYXNtX2Z1bmN0aW9uKQogICAgICAgIC4uLgoKICAgLi4uIGl0
-J3MgcHJldHR5IG9idmlvdXMgYXQgZmlyc3Qgc2lnaHQgdGhhdCBhbiAnX0VORCcgaXMgbWlzc2lu
-ZyEKCiAtIFdoYXQgeW91IHN1Z2dlc3QgYWxzbyBoYXMgc2Vuc2VsZXNzbHkgbWlzc2luZyB1bmRl
-cnNjb3Jlcywgd2hpY2ggbWFrZXMgaXQgCiAgIF9tb3JlXyBjbHV0dGVyZWQgYW5kIGxlc3MgY2xl
-YXIuIFdlIGNsZWFybHkgZG9uJ3QgaGF2ZSBhZGR0b3dhaXRxdWV1ZSgpIGFuZAogICByZW1vdmVm
-cm9td2FpdHF1ZXVlKCkgZnVuY3Rpb24gbmFtZXMgaW4gdGhlIGtlcm5lbCwgcmlnaHQ/IFdoeSBz
-aG91bGQgd2UgaGF2ZQogICAnRU5EUFJPQycgYW5kICdFTkREQVRBJyBtYWNybyBuYW1lcz8KCiAt
-IEhpZXJhcmNoaWNhbCBuYW1pbmcgc2NoZW1lcyBnZW5lcmFsbHkgdGVuZCB0byBwdXQgdGhlIG1v
-cmUgZ2VuZXJpYyBjYXRlZ29yeQogICBuYW1lIGZpcnN0LCBub3QgbGFzdC4gU28gaXQnczoKCglt
-dXRleF9pbml0KCkKCW11dGV4X2xvY2soKQoJbXV0ZXhfdW5sb2NrKCkKCW11dGV4X3RyeWxvY2so
-KQoKICAgSXQncyBfTk9UXyB0aGUgb3RoZXIgd2F5IGFyb3VuZDoKCglpbml0X211dGV4KCkKCWxv
-Y2tfbXV0ZXgoKQoJdW5sb2NrX211dGV4KCkKCXRyeWxvY2tfbXV0ZXgoKQoKICAgVGhlIHByZWZp
-eCBuYW1pbmcgc2NoZW1lIGlzIGVhc2llciB0byByZWFkIGJvdGggdmlzdWFsbHkvdHlwb2dyYXBo
-aWNhbGx5IAogICAoYmVjYXVzZSBpdCBhbGlnbnMgdmVydGljYWxseSBpbiBhIG5hdHVyYWwgZmFz
-aGlvbiBzbyBpdCdzIGVhc2llciB0byBwYXR0ZXJuIAogICBtYXRjaCksIGFuZCBhbHNvIHNlbWFu
-dGljYWxseTogYmVjYXVzZSB3aGVuIHJlYWRpbmcgaXQgaXQncyBlYXN5IHRvIHNraXAgdGhlIAog
-ICBsaW5lIG9uY2UgeW91ciBicmFpbiByZWFkcyB0aGUgZ2VuZXJpYyBjYXRlZ29yeSBvZiAnbXV0
-ZXgnLgoKICAgQnV0IHdpdGggJ0VORFBST0MnIG15IGJyYWluIGJvdGggaGFzIHRvIG5lZWRsZXNz
-bHkgcGVyZm9ybSB0aGUgZm9sbG93aW5nIHN0ZXBzOgoKCS0gZGlzYW1iaWd1YXRlIHRoZSAnRU5E
-JyBhbmQgdGhlICdQUk9DJwoKCS0gZmlsbCBpbiB0aGUgbWlzc2luZyB1bmRlcnNjb3JlCgoJLSBh
-bmQgZmluYWxseSB3aGVuIGFycml2aW5nIGF0IHRoZSBnZW5lcmljIHRlcm0gJ1BST0MnLCBkaXNj
-YXJkIGl0IGFzCgkgIHVuaW50ZXJlc3RpbmcKCiAtIFNob3J0IG5hbWVzIGhhdmUgZ29vZCB1c2Ug
-aW4gcHJvZ3JhbW1pbmcgbGFuZ3VhZ2VzLCBiZWNhdXNlIGV2ZXJ5b25lIHdobyB1c2VzCiAgIHRo
-YXQgbGFuZ3VhZ2Uga25vd3Mgd2hhdCB0aGV5IGFyZSBhbmQgdGhleSBiZWNvbWUgYSB2aXN1YWwg
-c3Vic3RpdHV0ZSBmb3IgdGhlCiAgIGxhbmd1YWdlIGVsZW1lbnQuCgogICBCdXQgYXNzZW1ibHkg
-bWFjcm9zIGFyZSBfTk9UXyBhIG5ldyBsYW5ndWFnZSBpbiB0aGlzIHNlbnNlLCB0aGV5IGFyZSBh
-Y3R1YWxseSAKICAgbW9yZSBzaW1pbGFyIHRvIGxpYnJhcnkgZnVuY3Rpb24gbmFtZXM6IHdoZXJl
-IGJyZXZpdHkgaXMgYWN0dWFsbHkKICAgY291bnRlcmludHVpdGl2ZSBhbmQgaGFybWZ1bCwgYmVj
-YXVzZSB0aGV5IGFyZSBhbWJpZ3VvdXMgYW5kIHBvbGx1dGUgdGhlIAogICBnZW5lcmljIG5hbWVz
-cGFjZS4gSWYgeW91IGxvb2sgYXQgQyBsaWJyYXJ5IEFQSSBmdW5jdGlvbiBuYW1lIGJlc3QgcHJh
-Y3RpY2VzCiAgIHlvdSdsbCBzZWUgdGhhdCB0aGUgYmVzdCBvbmVzIGFyZSBhbGwgaGllcmFyY2hp
-Y2FsbHkgbmFtZWQgYW5kIGNhdGVnb3JpemVkLAogICB3aXRoIHRoZSBtb3JlIGdlbmVyaWMgY2F0
-ZWdvcnkgcHV0IGZpcnN0LCB0aGV5IGFyZSB1bmFtYmlndW91c2x5IGJhbGFuY2VkIGV2ZW4KICAg
-aWYgdGhhdCBtYWtlcyB0aGUgbmFtZXMgbG9uZ2VyLCB0aGV5IGFyZSBjbGVhciBhbmQgdXNlIHVu
-ZGVyc2NvcmVzLgoKRm9yIGFsbCB0aGVzZSByZWFzb25zIHRoZSBuYW1pbmcgc2NoZW1lIHlvdSBz
-dWdnZXN0IGlzIG9uZSBvZiB0aGUgd29yc3Qgd2UgY291bGQgCmNvbWUgdXAgd2l0aCEgSSBtZWFu
-LCBpZiBJIGhhZCB0byBfaW50ZW50aW9uYWxseV8gZW5naW5lZXIgc29tZXRoaW5nIGFzIGhhcm1m
-dWwgYXMgCnBvc3NpYmxlIHRvIHJlYWRhYmlsaXR5IGFuZCBtYWludGFpbmFiaWxpdHkgdGhpcyB3
-b3VsZCBiZSBwcmV0dHkgY2xvc2UgdG8gaXQuLi4KCkknbSB1cHNldCwgYmVjYXVzZSBldmVuIGEg
-c2luZ2xlIG1pbnV0ZSBvZiByZWZsZWN0aW9uIHNob3VsZCBoYXZlIHRvbGQgeW91IGFsbCAKdGhp
-cy4gSSBtZWFuLCBJTUhPIGl0J3Mgbm90IGV2ZW4gYSBjbG9zZSBhcmd1bWVudDogeW91ciBzdWdn
-ZXN0ZWQgbmFtaW5nIHNjaGVtZSBpcyAKYmxlZWRpbmcgZnJvbSBoYWxmIGEgZG96ZW4gb2YgbW9y
-dGFsIHdvdW5kcy4uLgoKSSBjYW4gYmUgY29udmluY2VkIHRvIGRyb3AgdGhlIGRvdWJsZSB1bmRl
-cnNjb3JlcyAoSSBzZWVtIHRvIGJlIGluIHRoZSBtaW5vcml0eSAKcmVnYXJkIHRoZW0pLCBhbmQg
-SSBjYW4gYmUgY29udmluY2VkIHRoYXQgJ0ZVTkMnIGlzIHNob3J0ZXIgYW5kIHN0aWxsIGVhc3kg
-dG8gCnVuZGVyc3RhbmQgaW5zdGVhZCBvZiAnRlVOQ1RJT04nLCBidXQgb3RoZXIgdGhhbiB0aGF0
-IHBsZWFzZSBzdG9wIHRoZSBuYW1pbmcgCm1hZG5lc3MhCgpUaGFua3MsCgoJSW5nbwoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1haWxp
-bmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xpc3RzLnhlbi5vcmcveGVu
-LWRldmVsCg==
+Depending on what is being done, the intel_pstate_tracer.py script
+needs to be run as root, or can be run as a regular user.
+If run the first time as root the results directory will be
+incorrect for any subsequent run as a regular user. For any run
+as root the specific testname subdirectory will not allow any
+subsequent file saves by a regular user. Typically, and for example,
+the regular user might be attempting to save a .csv file converted to
+a spreadsheet with added calculations or graphs.
+
+Override the default folder permissions.
+
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+---
+ tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+index fd706ac..7c855508 100755
+--- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
++++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+@@ -517,13 +517,19 @@ else:
+         cpu_mask[i] = 1
+ 
+ if not os.path.exists('results'):
++    # Setting permissions with the mode option doesn't work on all platforms
+     os.mkdir('results')
++    # so use chmod to set them. Needed because user may or may not be root.
++    os.chmod('results', 0777)
+ 
+ os.chdir('results')
+ if os.path.exists(testname):
+     print('The test name directory already exists. Please provide a unique test name. Test re-run not supported, yet.')
+     sys.exit()
++# Setting permissions with the mode option doesn't work on all platforms
+ os.mkdir(testname)
++os.chmod(testname, 0777)
++# so use chmod to set them. Needed because user may or may not be root.
+ os.chdir(testname)
+ 
+ # Temporary (or perhaps not)
+-- 
+2.7.4
