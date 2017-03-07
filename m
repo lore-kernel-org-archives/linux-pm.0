@@ -1,7 +1,8 @@
 From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH v4 5/5] ARM: keystone: Drop PM domain support for k2g
-Date: Tue, 7 Mar 2017 04:22:34 -0600
-Message-ID: <1488882154-21485-6-git-send-email-d-gerlach@ti.com>
+Subject: [PATCH v4 1/5] PM / Domains: Add generic data pointer to genpd data
+ struct
+Date: Tue, 7 Mar 2017 04:22:30 -0600
+Message-ID: <1488882154-21485-2-git-send-email-d-gerlach@ti.com>
 References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,34 +19,31 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Santosh Shilimkar <ssantosh@kernel.org>, Rob Herring <robh+dt@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Lokesh Vutla <lokeshvutla@ti.com>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
+Cc: Nishanth Menon <nm@ti.com>, devicetree@vger.kernel.org, Dave Gerlach <d-gerlach@ti.com>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-K2G will use a different power domain driver than the rest of the
-keystone family in order to make use of the TI SCI protocol so prevent
-the standard keystone pm_domain code from registering itself in
-preparation for a new driver.
+Add a void *data pointer to struct generic_pm_domain_data. Because this
+exists for each device associated with a genpd it will allow us to
+assign per-device data if needed on a platform for control of that
+specific device.
 
-Signed-off-by: Lokesh Vutla <lokeshvutla@ti.com>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 ---
- arch/arm/mach-keystone/pm_domain.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/linux/pm_domain.h | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/mach-keystone/pm_domain.c b/arch/arm/mach-keystone/pm_domain.c
-index 8cbb35765a19..fe57e2692629 100644
---- a/arch/arm/mach-keystone/pm_domain.c
-+++ b/arch/arm/mach-keystone/pm_domain.c
-@@ -32,7 +32,9 @@ static struct pm_clk_notifier_block platform_domain_notifier = {
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 5339ed5bd6f9..b213d22daefd 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -117,6 +117,7 @@ struct generic_pm_domain_data {
+ 	struct pm_domain_data base;
+ 	struct gpd_timing_data td;
+ 	struct notifier_block nb;
++	void *data;
  };
  
- static const struct of_device_id of_keystone_table[] = {
--	{.compatible = "ti,keystone"},
-+	{.compatible = "ti,k2hk"},
-+	{.compatible = "ti,k2e"},
-+	{.compatible = "ti,k2l"},
- 	{ /* end of list */ },
- };
- 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS
 -- 
 2.11.0
