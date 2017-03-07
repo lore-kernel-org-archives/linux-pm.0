@@ -1,63 +1,93 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH 0/7] thermal: ti-soc-thermal: Migrate slope/offset data to
- device tree
-Date: Tue, 7 Mar 2017 12:43:36 +0530
-Message-ID: <1c47d169-7962-2fe7-0635-570881e85e06@ti.com>
-References: <1488364190-23488-1-git-send-email-j-keerthy@ti.com>
- <20170306184215.GO20572@atomide.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 01/10] x86: assembly, ENTRY for fn,
+	GLOBAL for data
+Date: Tue, 7 Mar 2017 08:57:55 +0100
+Message-ID: <20170307075755.GA29906@gmail.com>
+References: <20170217104757.28588-1-jslaby@suse.cz>
+ <20170301093855.GA27152@gmail.com>
+ <alpine.DEB.2.20.1703011108220.4005@nanos>
+ <20170301102754.GA13374@gmail.com>
+ <F37D3EC6-277C-4034-BB6A-B31695ADB358@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170306184215.GO20572@atomide.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: t-kristo@ti.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, edubezval@gmail.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <xen-devel-bounces@lists.xen.org>
+Content-Disposition: inline
+In-Reply-To: <F37D3EC6-277C-4034-BB6A-B31695ADB358@zytor.com>
+List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
+List-Post: <mailto:xen-devel@lists.xen.org>
+List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
+List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
+ <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
+Errors-To: xen-devel-bounces@lists.xen.org
+Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
+To: hpa@zytor.com
+Cc: Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, Andrew Morton <akpm@linux-foundation.org>, linux-pm@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, mingo@redhat.com, Pavel Machek <pavel@ucw.cz>, jpoimboe@redhat.com, xen-devel@lists.xenproject.org, Thomas Gleixner <tglx@linutronix.de>, Jiri Slaby <jslaby@suse.cz>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On Tuesday 07 March 2017 12:12 AM, Tony Lindgren wrote:
-> * Keerthy <j-keerthy@ti.com> [170301 02:31]:
->> Currently the slope and offset values for calculating the
->> hot spot temperature of a particular thermal zone is part
->> of driver data. Pass them here instead and obtain the values
->> while of node parsing.
->>
->> Tested for the slope and constant values on DRA7-EVM.
->>
->> Keerthy (7):
->>   ARM: DRA7: Thermal: Add slope and offset values
->>   ARM: OMAP5: Thermal: Add slope and offset values
->>   ARM: OMAP443x: Thermal: Add slope and offset values
->>   ARM: OMAP4460: Thermal: Add slope and offset values
->>   thermal: ti-soc-thermal: Fetch slope and offset from DT
->>   thermal: ti-soc-thermal: Remove redundant constants
->>   thermal: ti-soc-thermal: Remove redundant code
->
-> Are the dts changes safe for me to pick separately into
-> omap-for-v4.12/dt?
-
-Tony,
-
-Seems like omap3 has no thermal_zone node defined in Device Tree.
-It seems like it still uses driver data. I would need to add that as 
-well. Can you confirm that? If yes i will send a new series with the 
-omap3 device tree changes as well.
-
-Thanks,
-Keerthy
-
->
-> Regards,
->
-> Tony
->
+CiogaHBhQHp5dG9yLmNvbSA8aHBhQHp5dG9yLmNvbT4gd3JvdGU6Cgo+IE9uIE1hcmNoIDEsIDIw
+MTcgMjoyNzo1NCBBTSBQU1QsIEluZ28gTW9sbmFyIDxtaW5nb0BrZXJuZWwub3JnPiB3cm90ZToK
+PiA+Cj4gPiogVGhvbWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9uaXguZGU+IHdyb3RlOgo+ID4K
+PiA+PiBPbiBXZWQsIDEgTWFyIDIwMTcsIEluZ28gTW9sbmFyIHdyb3RlOgo+ID4+ID4gCj4gPj4g
+PiAqIEppcmkgU2xhYnkgPGpzbGFieUBzdXNlLmN6PiB3cm90ZToKPiA+PiA+IAo+ID4+ID4gPiBU
+aGlzIGlzIGEgc3RhcnQgb2Ygc2VyaWVzIHRvIHVuaWZ5IHVzZSBvZiBFTlRSWSwgRU5EUFJPQywg
+R0xPQkFMLAo+ID5FTkQsCj4gPj4gPiA+IGFuZCBvdGhlciBtYWNyb3MgYWNyb3NzIHg4Ni4gV2hl
+biB3ZSBoYXZlIGFsbCB0aGlzIHNvcnRlZCBvdXQsCj4gPnRoaXMgd2lsbAo+ID4+ID4gPiBoZWxw
+IHRvIGluamVjdCBEV0FSRiB1bndpbmRpbmcgaW5mbyBieSBvYmp0b29sIGxhdGVyLgo+ID4+ID4g
+PiAKPiA+PiA+ID4gU28sIGxldCB1cyB1c2UgdGhlIG1hY3JvcyB0aGlzIHdheToKPiA+PiA+ID4g
+KiBFTlRSWSAtLSBzdGFydCBvZiBhIGdsb2JhbCBmdW5jdGlvbgo+ID4+ID4gPiAqIEVORFBST0Mg
+LS0gZW5kIG9mIGEgbG9jYWwvZ2xvYmFsIGZ1bmN0aW9uCj4gPj4gPiA+ICogR0xPQkFMIC0tIHN0
+YXJ0IG9mIGEgZ2xvYmFsbHkgdmlzaWJsZSBkYXRhIHN5bWJvbAo+ID4+ID4gPiAqIEVORCAtLSBl
+bmQgb2YgbG9jYWwvZ2xvYmFsIGRhdGEgc3ltYm9sCj4gPj4gPiAKPiA+PiA+IFNvIGhvdyBhYm91
+dCB1c2luZyBtYWNybyBuYW1lcyB0aGF0IGFjdHVhbGx5IHNob3cgdGhlIHB1cnBvc2UsCj4gPmlu
+c3RlYWQgb2YgCj4gPj4gPiBpbXBvcnRpbmcgYWxsIHRoZSBjcmFwcHksIGhpc3RvcmljLCBlc3Nl
+bnRpYWxseSByYW5kb21seSBjaG9zZW4KPiA+ZGVidWcgc3ltYm9sIG1hY3JvIAo+ID4+ID4gbmFt
+ZXMgZnJvbSB0aGUgYmludXRpbHMgYW5kIG9sZGVyIGtlcm5lbHM/Cj4gPj4gPiAKPiA+PiA+IFNv
+bWV0aGluZyBzYW5lLCBsaWtlOgo+ID4+ID4gCj4gPj4gPiAJU1lNX19GVU5DVElPTl9TVEFSVAo+
+ID4+IAo+ID4+IFNhbmUgd291bGQgYmU6Cj4gPj4gCj4gPj4gICAgICAJU1lNX0ZVTkNUSU9OX1NU
+QVJUCj4gPj4gCj4gPj4gVGhlIGRvdWJsZSB1bmRlcnNjb3JlIGlzIGp1c3Qgbm90IGdpdmluZyBh
+bnkgdmFsdWUuCj4gPgo+ID5TbyB0aGUgZG91YmxlIHVuZGVyc2NvcmUgKGF0IGxlYXN0IGluIG15
+IHZpZXcpIGhhcyB0d28gYWR2YW50YWdlczoKPiA+Cj4gPjEpIGl0IGhlbHBzIHNlcGFyYXRlIHRo
+ZSBwcmVmaXggZnJvbSB0aGUgcG9zdGZpeC4KPiA+Cj4gPkkuZS4gaXQncyBhICdzeW1ib2xzJyBu
+YW1lc3BhY2UsIGFuZCBhICdmdW5jdGlvbiBzdGFydCcsIG5vdCB0aGUKPiA+J3N0YXJ0JyBvZiBh
+IAo+ID4nc3ltYm9sIGZ1bmN0aW9uJy4KPiA+Cj4gPjIpIEl0IGFsc28gaGVscHMgZWFzeSBncmVw
+cGFiaWxpdHkuCj4gPgo+ID5UcnkgdGhpcyBpbiBsYXRlc3QgLXRpcDoKPiA+Cj4gPiAgZ2l0IGdy
+ZXAgZTgyMF9fCj4gPgo+ID5UbyBzZWUgYWxsIHRoZSBFODIwIEFQSSBjYWxscyAtIHdpdGggbm8g
+ZmFsc2UgcG9zaXRpdmVzIQo+ID4KPiA+J2dpdCBncmVwIGU4MjBfJyBvbiB0aGUgb3RoZXIgaGFu
+ZCBpcyBhIGxvdCBsZXNzIHJlbGlhYmxlLi4uCj4gPgo+ID5CdXQgbm8gc3Ryb25nIGZlZWxpbmdz
+IGVpdGhlciB3YXksIEkganVzdCB0cnkgdG8gc25lYWsgaW4gdGhlc2Ugc21hbGwKPiA+bmFtZXNw
+YWNlIAo+ID5zdHJ1Y3R1cmUgdHJpY2tzIHdoZW4gbm9ib2R5J3MgbG9va2luZyEgOy0pCj4gPgo+
+ID5UaGFua3MsCj4gPgo+ID4JSW5nbwo+IAo+IFRoaXMgc2VlbXMgbmVlZGxlc3NseSB2ZXJib3Nl
+IHRvIG1lIGFuZCBjbHV0dGVycyB0aGUgY29kZS4KPiAKPiBIb3cgYWJvdXQ6Cj4gCj4gUFJPQy4u
+RU5EUFJPQywgTE9DQUxQUk9DLi5FTkRQUk9DIGFuZCBEQVRBLi5FTkREQVRBLiAgQ2xlYXIsIHVu
+YW1iaWd1b3VzIGFuZCBiYWxhbmNlZC4KCkknbSBzb3JyeSwgYnV0IHRoYXQgbmFtaW5nIHNjaGVt
+ZSBpcyBkaXNndXNpbmcsIGl0IHJlbWluZHMgbWUgb2YgQkFTSUMgCm5vbWVuY2xhdHVyZSAuLi4g
+ZGlkIHdlIHJ1biBvdXQgb2YgdW5kZXJzY29yZXMgb3Igd2hhdD8KCk5vciB3b3VsZCBjbGVhcmx5
+IHN0cnVjdHVyZWQgbmFtZXMgY2x1dHRlciBhbnl0aGluZywgdGhpcyBpc24ndCBnb2luZyB0byBi
+ZSB1c2VkIApkZWVwIGluc2lkZSBuZXN0ZWQgY29kZSwgaXQncyBnb2luZyB0byBiZSB0aGUgc2lu
+Z2xlIGxldmVsIHN5bnRhY3RpYyB0ZXJtIGluIAphZGRpdGlvbiB0byB0aGUgc3ltYm9sIG5hbWUg
+aXRzZWxmOgoKCVNZTV9fRlVOQ1RJT05fU1RBUlQoc29tZV9rZXJuZWxfYXNtX2Z1bmN0aW9uKQoJ
+Li4uCglTWU1fX0ZVTkNUSU9OX0VORChzb21lX2tlcm5lbF9hc21fZnVuY3Rpb24pCgpXZSBjb3Vs
+ZCBzaG9ydGVuIGl0IHRvICdGVU5DJyBpZiBsZW5ndGggaXMgcmVhbGx5IGFuIGlzc3VlOgoKCVNZ
+TV9fRlVOQ19TVEFSVChzb21lX2tlcm5lbF9hc21fZnVuY3Rpb24pCgkuLi4KCVNZTV9fRlVOQ19F
+TkQoc29tZV9rZXJuZWxfYXNtX2Z1bmN0aW9uKQoKQWxzbywgJ1BST0MnLCBwcmVzdW1hYmx5IHN0
+YW5kaW5nIGZvciAncHJvY2VkdXJlJywgaXMgYm90aCBhbWJpZ3VvdXMgYW5kIGEgCm1pc25vbWVy
+OgoKIC0gaXQncyBhbWJpZ3VvdXMgd2l0aCBjb21tb25seSB1c2VkIGFiYnJldmlhdGlvbnMgb2Yg
+cHJvY2ZzIGFuZCBwcm9jZXNzCgogLSBDIGZ1bmN0aW9ucyBhcmUgbm90IGFjdHVhbGx5ICdwcm9j
+ZWR1cmVzJy4gUHJvY2VkdXJlcyBpbiBQQVNDQUwgc3R5bGUgbGFuZ3VhZ2VzCiAgIGRlbm90ZSBm
+dW5jdGlvbnMgdGhhdCBkb24ndCByZXR1cm4gYW55IHZhbHVlcy4gTW9zdCBvZiB0aGUga2VybmVs
+IGFzbSBmdW5jdGlvbnMKICAgYWN0dWFsbHkgZG8uIEkgcmVhbGl6ZSB0aGF0IGV2ZW4gaW4gQyB3
+ZSBzb21ldGltZXMgdGFsayBhYm91dCAncHJvY2VkdXJlcycgb3V0CiAgIG9mIGh5c3RlcmljYWwg
+aW5lcnRpYSwgYnV0IGlmIHlvdSBjaGVjayB0aGUgQyBzdGFuZGFyZHMsIG1vc3Qgb2YgdGhlbSBk
+b24ndAogICBldmVuIHVzZSB0aGUgdGVybSAncHJvY2VkdXJlJy4KCidmdW5jdGlvbicgb24gdGhl
+IG90aGVyIGhhbmQgaXMgdG90YWxseSB1bmFtYmlndW91cy4KClBsdXMgdGhlIGxhY2sgb2YgU1RB
+UlQvU1RPUCAob3IgQkVHSU4vRU5EKSBtYWtlcyBpdCBlYXN5IHRvIGNvbW1pdCB0aGUgbWlzdGFr
+ZSBvZiAKZm9yZ2V0dGluZyB0byBhZGQgdGhlIGVuZCBtYXJrZXIsIGFuZCB5b3VyIG5hbWluZyBz
+Y2hlbWUgcHJlc2VydmVzIHRoYXQhCgpTbyBpZiB3ZSBmaXgvZXh0ZW5kIHRoZXNlIG1hY3JvcyB0
+aGVuIF9QTEVBU0VfIHdlIG5lZWQgdG8gZ2V0IHRoaXMgc3R1cGlkLCAKaWxsb2dpY2FsLCBub25z
+ZW5zaWNhbCwgZXh0ZXJuYWwgdG9vbGluZyBpbmhlcml0ZWQgbmFtaW5nIGNyYXppbmVzcyBmaXhl
+ZCBmaXJzdCwgCm5vdCBkb3VibGVkIGRvd24gb24uLi4KCjwvcmFudD4KClRoYW5rcywKCglJbmdv
+CgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpYZW4tZGV2
+ZWwgbWFpbGluZyBsaXN0Clhlbi1kZXZlbEBsaXN0cy54ZW4ub3JnCmh0dHBzOi8vbGlzdHMueGVu
+Lm9yZy94ZW4tZGV2ZWwK
