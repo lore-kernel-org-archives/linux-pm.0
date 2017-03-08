@@ -1,105 +1,311 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 3/3] cpufreq: schedutil: remove redundant code from sugov_next_freq_shared()
-Date: Wed, 8 Mar 2017 13:54:30 +0100
-Message-ID: <CAJZ5v0iV0Ltj98ieChRfU7JyFF9fSZJj_OUc6T6aYQt6KvTpkQ@mail.gmail.com>
-References: <cover.1488437503.git.viresh.kumar@linaro.org> <639aad743bac7f3292146738f44dbd1480169c8e.1488437503.git.viresh.kumar@linaro.org>
- <1772276.4tCnP8C0XV@aspire.rjw.lan> <1668614.4zDQWLsnmH@aspire.rjw.lan>
- <20170306044553.GE8206@vireshk-i7> <CAJZ5v0hov8Lz_MK9dxP9MyqSmPNRfWV9Wia4DtAZtOPmoTOqAw@mail.gmail.com>
- <20170307103108.GA4526@vireshk-i7> <CAJZ5v0itZo-tybgz2p49VxkGzFL9EZBB-4aZg6R5sthVrBiAYQ@mail.gmail.com>
- <20170308041823.GB4526@vireshk-i7> <CAJZ5v0jyX8DashfzBPmLxwRDqQsA_QK4OR=g7-R=jERyfOqAcw@mail.gmail.com>
- <20170308111539.GA3062@vireshk-i7>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH] power: bq27xxx_battery: Unique chip IDs
+Date: Wed, 8 Mar 2017 11:23:24 -0600
+Message-ID: <0088f5a9-995e-bc57-6fa1-3c8991287a13@ti.com>
+References: <20170307230536.22886-1-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170308111539.GA3062@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:19654 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751994AbdCHRX3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Mar 2017 12:23:29 -0500
+In-Reply-To: <20170307230536.22886-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
+Cc: Liam Breck <kernel@networkimprov.net>
 
-On Wed, Mar 8, 2017 at 12:15 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 08-03-17, 11:50, Rafael J. Wysocki wrote:
->> So overall, maybe you can move the flags check to
->> sugov_update_shared(), so that you don't need to pass flags to
->> sugov_next_freq_shared(), and then do what you did to util and max.
->
-> Just to confirm, below is what you are suggesting ?
+On 03/07/2017 05:05 PM, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+> 
+> Assign every chip a unique ID, to enable
+> power_supply_battery_info config for all supported chips.
+> There are no functional changes to the driver.
+> 
+> Depends-on: power: bq27xxx_battery: Add power_supply_battery_info support
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> 
+> ---
+> Andrew, let me know if you'd like me to include this in the other patchset.
 
-Yes, it is.
+Why do we need this at all? It may be just bit too early for me, but I'm
+not seeing what this gets us, that couldn't be done before.
 
-> -------------------------8<-------------------------
->
->  1 file changed, 9 insertions(+), 16 deletions(-)
->
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 78468aa051ab..f5ffe241812e 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -217,30 +217,19 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->         sugov_update_commit(sg_policy, time, next_f);
->  }
->
-> -static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
-> -                                          unsigned long util, unsigned long max,
-> -                                          unsigned int flags)
-> +static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
->  {
->         struct sugov_policy *sg_policy = sg_cpu->sg_policy;
->         struct cpufreq_policy *policy = sg_policy->policy;
-> -       unsigned int max_f = policy->cpuinfo.max_freq;
->         u64 last_freq_update_time = sg_policy->last_freq_update_time;
-> +       unsigned long util = 0, max = 1;
->         unsigned int j;
->
-> -       if (flags & SCHED_CPUFREQ_RT_DL)
-> -               return max_f;
-> -
-> -       sugov_iowait_boost(sg_cpu, &util, &max);
-> -
->         for_each_cpu(j, policy->cpus) {
-> -               struct sugov_cpu *j_sg_cpu;
-> +               struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
->                 unsigned long j_util, j_max;
->                 s64 delta_ns;
->
-> -               if (j == smp_processor_id())
-> -                       continue;
-> -
-> -               j_sg_cpu = &per_cpu(sugov_cpu, j);
->                 /*
->                  * If the CPU utilization was last updated before the previous
->                  * frequency update and the time elapsed between the last update
-> @@ -254,7 +243,7 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu,
->                         continue;
->                 }
->                 if (j_sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
-> -                       return max_f;
-> +                       return policy->cpuinfo.max_freq;
->
->                 j_util = j_sg_cpu->util;
->                 j_max = j_sg_cpu->max;
-> @@ -289,7 +278,11 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->         sg_cpu->last_update = time;
->
->         if (sugov_should_update_freq(sg_policy, time)) {
-> -               next_f = sugov_next_freq_shared(sg_cpu, util, max, flags);
-> +               if (flags & SCHED_CPUFREQ_RT_DL)
-> +                       next_f = sg_policy->policy->cpuinfo.max_freq;
-> +               else
-> +                       next_f = sugov_next_freq_shared(sg_cpu);
+> 
+>  drivers/power/supply/bq27xxx_battery.c     | 94 +++++++++++++++++-------------
+>  drivers/power/supply/bq27xxx_battery_i2c.c | 14 ++---
+>  include/linux/power/bq27xxx_battery.h      | 15 +++--
+>  3 files changed, 71 insertions(+), 52 deletions(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index ed976a1..30af0e4 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -117,8 +117,8 @@ enum bq27xxx_reg_index {
+>  };
+>  
+>  /* Register mappings */
+> -static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+> -	[BQ27000] = {
+> +static u8
+> +	bq27000_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
+> @@ -142,7 +142,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
+>  		[BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
+>  	},
+> -	[BQ27010] = {
+> +	bq27010_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
+> @@ -166,7 +166,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
+>  		[BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
+>  	},
+> -	[BQ27500] = {
+> +	bq27500_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = 0x28,
+> @@ -190,7 +190,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = 0x40,
+>  		[BQ27XXX_DM_CKSUM] = 0x60,
+>  	},
+> -	[BQ27510] = {
+> +	bq27510_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = 0x28,
+> @@ -214,7 +214,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = 0x40,
+>  		[BQ27XXX_DM_CKSUM] = 0x60,
+>  	},
+> -	[BQ27530] = {
+> +	bq27530_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = 0x32,
+> @@ -238,7 +238,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = 0x40,
+>  		[BQ27XXX_DM_CKSUM] = 0x60,
+>  	},
+> -	[BQ27541] = {
+> +	bq27541_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = 0x28,
+> @@ -262,7 +262,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = 0x40,
+>  		[BQ27XXX_DM_CKSUM] = 0x60,
+>  	},
+> -	[BQ27545] = {
+> +	bq27545_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x06,
+>  		[BQ27XXX_REG_INT_TEMP] = 0x28,
+> @@ -286,7 +286,7 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_DATA] = 0x40,
+>  		[BQ27XXX_DM_CKSUM] = 0x60,
+>  	},
+> -	[BQ27421] = {
+> +	bq27425_regs[BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_REG_CTRL] = 0x00,
+>  		[BQ27XXX_REG_TEMP] = 0x02,
+>  		[BQ27XXX_REG_INT_TEMP] = 0x1e,
+> @@ -309,31 +309,25 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>  		[BQ27XXX_DM_BLOCK] = 0x3f,
+>  		[BQ27XXX_DM_DATA] = 0x40,
+>  		[BQ27XXX_DM_CKSUM] = 0x60,
+> -	},
+> -	[BQ27425] = {
+> -		[BQ27XXX_REG_CTRL] = 0x00,
+> -		[BQ27XXX_REG_TEMP] = 0x02,
+> -		[BQ27XXX_REG_INT_TEMP] = 0x1e,
+> -		[BQ27XXX_REG_VOLT] = 0x04,
+> -		[BQ27XXX_REG_AI] = 0x10,
+> -		[BQ27XXX_REG_FLAGS] = 0x06,
+> -		[BQ27XXX_REG_TTE] = INVALID_REG_ADDR,
+> -		[BQ27XXX_REG_TTF] = INVALID_REG_ADDR,
+> -		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+> -		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+> -		[BQ27XXX_REG_NAC] = 0x08,
+> -		[BQ27XXX_REG_FCC] = 0x0e,
+> -		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
+> -		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> -		[BQ27XXX_REG_SOC] = 0x1c,
+> -		[BQ27XXX_REG_DCAP] = 0x3c,
+> -		[BQ27XXX_REG_AP] = 0x18,
+> -		[BQ27XXX_DM_CTRL] = 0x61,
+> -		[BQ27XXX_DM_CLASS] = 0x3e,
+> -		[BQ27XXX_DM_BLOCK] = 0x3f,
+> -		[BQ27XXX_DM_DATA] = 0x40,
+> -		[BQ27XXX_DM_CKSUM] = 0x60,
+> -	},
+> +	};
 > +
->                 sugov_update_commit(sg_policy, time, next_f);
->         }
->
->> But that would be a 4.12 change anyway.
->
-> Sure.
+> +static u8* bq27xxx_regs[] = {
+> +	[BQ27000] = bq27000_regs, /* really bq27200 */
+> +	[BQ27010] = bq27010_regs, /* really bq27210 */
 
-And IMO the subject/changelog should not talk about "redundant code",
-because the code in question is not in fact redundant, but about
-refactoring the code to eliminate one conditional from the
-for_each_cpu() loop and to make that loop treat all CPUs in the same
-way (more symmetrically).
+Not strictly true, the bq270x0 and bq272x0 are different chips, one has
+an HDQ bus and the other I2C, later chips have both ports on each chip.
 
-Thanks,
-Rafael
+Andrew
+
+> +	[BQ27500] = bq27500_regs,
+> +	[BQ27510] = bq27510_regs,
+> +	[BQ27520] = bq27510_regs,
+> +	[BQ27530] = bq27530_regs,
+> +	[BQ27531] = bq27530_regs,
+> +	[BQ27541] = bq27541_regs,
+> +	[BQ27542] = bq27541_regs,
+> +	[BQ27546] = bq27541_regs,
+> +	[BQ27742] = bq27541_regs,
+> +	[BQ27545] = bq27545_regs,
+> +	[BQ27425] = bq27425_regs,
+> +	[BQ27421] = bq27425_regs,
+> +	[BQ27441] = bq27425_regs,
+> +	[BQ27621] = bq27425_regs,
+>  };
+>  
+>  static enum power_supply_property bq27000_battery_props[] = {
+> @@ -469,7 +463,7 @@ static enum power_supply_property bq27545_battery_props[] = {
+>  	POWER_SUPPLY_PROP_MANUFACTURER,
+>  };
+>  
+> -static enum power_supply_property bq27421_battery_props[] = {
+> +static enum power_supply_property bq27425_battery_props[] = {
+>  	POWER_SUPPLY_PROP_STATUS,
+>  	POWER_SUPPLY_PROP_PRESENT,
+>  	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+> @@ -498,11 +492,18 @@ static struct {
+>  	BQ27XXX_PROP(BQ27010, bq27010_battery_props),
+>  	BQ27XXX_PROP(BQ27500, bq27500_battery_props),
+>  	BQ27XXX_PROP(BQ27510, bq27510_battery_props),
+> +	BQ27XXX_PROP(BQ27520, bq27510_battery_props),
+>  	BQ27XXX_PROP(BQ27530, bq27530_battery_props),
+> +	BQ27XXX_PROP(BQ27531, bq27530_battery_props),
+>  	BQ27XXX_PROP(BQ27541, bq27541_battery_props),
+> +	BQ27XXX_PROP(BQ27542, bq27541_battery_props),
+> +	BQ27XXX_PROP(BQ27546, bq27541_battery_props),
+> +	BQ27XXX_PROP(BQ27742, bq27541_battery_props),
+>  	BQ27XXX_PROP(BQ27545, bq27545_battery_props),
+> -	BQ27XXX_PROP(BQ27421, bq27421_battery_props),
+> -	BQ27XXX_PROP(BQ27425, bq27421_battery_props),
+> +	BQ27XXX_PROP(BQ27425, bq27425_battery_props),
+> +	BQ27XXX_PROP(BQ27421, bq27425_battery_props),
+> +	BQ27XXX_PROP(BQ27441, bq27425_battery_props),
+> +	BQ27XXX_PROP(BQ27621, bq27425_battery_props),
+>  };
+>  
+>  static DEFINE_MUTEX(bq27xxx_list_lock);
+> @@ -796,7 +797,8 @@ static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di,
+>  static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>  					  struct bq27xxx_dm_buf *buf)
+>  {
+> -	bool cfgup = di->chip == BQ27425 || di->chip == BQ27421; /* || BQ27441 || BQ27621 */
+> +	bool cfgup = di->chip == BQ27425 || di->chip == BQ27421
+> +		  || di->chip == BQ27441 || di->chip == BQ27621;
+>  	int ret;
+>  
+>  	if (!buf->updt)
+> @@ -1169,8 +1171,11 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+>  	case BQ27545:
+>  		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
+>  	case BQ27530:
+> +	case BQ27531:
+>  	case BQ27421:
+>  	case BQ27425:
+> +	case BQ27441:
+> +	case BQ27621:
+>  		return flags & BQ27XXX_FLAG_OT;
+>  	default:
+>  		return false;
+> @@ -1182,10 +1187,17 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16 flags)
+>   */
+>  static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u16 flags)
+>  {
+> -	if (di->chip == BQ27530 || di->chip == BQ27421 || di->chip == BQ27425)
+> +	switch (di->chip) {
+> +	case BQ27530:
+> +	case BQ27531:
+> +	case BQ27421:
+> +	case BQ27425:
+> +	case BQ27441:
+> +	case BQ27621:
+>  		return flags & BQ27XXX_FLAG_UT;
+> -
+> -	return false;
+> +	default:
+> +		return false;
+> +	}
+>  }
+>  
+>  /*
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index 4039b9d..abdc266 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -230,18 +230,18 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>  	{ "bq27210", BQ27010 },
+>  	{ "bq27500", BQ27500 },
+>  	{ "bq27510", BQ27510 },
+> -	{ "bq27520", BQ27510 },
+> +	{ "bq27520", BQ27520 },
+>  	{ "bq27530", BQ27530 },
+> -	{ "bq27531", BQ27530 },
+> +	{ "bq27531", BQ27531 },
+>  	{ "bq27541", BQ27541 },
+> -	{ "bq27542", BQ27541 },
+> -	{ "bq27546", BQ27541 },
+> -	{ "bq27742", BQ27541 },
+> +	{ "bq27542", BQ27542 },
+> +	{ "bq27546", BQ27546 },
+> +	{ "bq27742", BQ27742 },
+>  	{ "bq27545", BQ27545 },
+>  	{ "bq27421", BQ27421 },
+>  	{ "bq27425", BQ27425 },
+> -	{ "bq27441", BQ27425 },
+> -	{ "bq27621", BQ27425 },
+> +	{ "bq27441", BQ27441 },
+> +	{ "bq27621", BQ27621 },
+>  	{},
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index 44f469a..870e6f5 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -2,15 +2,22 @@
+>  #define __LINUX_BQ27X00_BATTERY_H__
+>  
+>  enum bq27xxx_chip {
+> -	BQ27000 = 1, /* bq27000, bq27200 */
+> -	BQ27010, /* bq27010, bq27210 */
+> +	BQ27000 = 1, /* bq27200 */
+> +	BQ27010, /* bq27210 */
+>  	BQ27500, /* bq27500 */
+>  	BQ27510, /* bq27510, bq27520 */
+> +	BQ27520,
+>  	BQ27530, /* bq27530, bq27531 */
+> +	BQ27531,
+>  	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+> +	BQ27542,
+> +	BQ27546,
+> +	BQ27742,
+>  	BQ27545, /* bq27545 */
+> -	BQ27421, /* bq27421 */
+> -	BQ27425, /* bq27425, bq27441, bq27621 */
+> +	BQ27425, /* bq27425, bq27421, bq27441, bq27621 */
+> +	BQ27421,
+> +	BQ27441,
+> +	BQ27621,
+>  };
+>  
+>  /**
+> 
