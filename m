@@ -1,124 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [RFC 6/9] sched: cpufreq: detect, process remote callbacks
-Date: Thu,  9 Mar 2017 17:15:16 +0530
-Message-ID: <2e807adcbf0d5136876f9de48c62e9e2dd2a5b06.1489058244.git.viresh.kumar@linaro.org>
+Subject: [RFC 8/9] intel_pstate: ignore scheduler cpufreq callbacks on remote CPUs
+Date: Thu,  9 Mar 2017 17:15:18 +0530
+Message-ID: <fdd9ba5de92726cc953d36c0a84f68dda5356dd3.1489058244.git.viresh.kumar@linaro.org>
 References: <cover.1489058244.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f52.google.com ([74.125.83.52]:34420 "EHLO
+        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932299AbdCILqF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 06:46:05 -0500
+Received: by mail-pg0-f52.google.com with SMTP id 77so25636370pgc.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Mar 2017 03:46:04 -0800 (PST)
 In-Reply-To: <cover.1489058244.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1489058244.git.viresh.kumar@linaro.org>
 References: <cover.1489058244.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, Viresh Kumar <viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org
 
 From: Steve Muckle <smuckle.linux@gmail.com>
 
-A callback is considered remote if the target CPU is not the current CPU
-and if it is not managed by the policy managing the current CPU or the
-current CPU can't do DVFS on its behalf.
-
-Queue the irq work for remote callbacks on the destination CPU. The irq
-work will carry out the fast or slow switch as appropriate.
+In preparation for the scheduler cpufreq callback happening on remote
+CPUs, check for this case in intel_pstate which currently requires the
+callback run on the local CPU. Such callbacks are ignored for now.
 
 Signed-off-by: Steve Muckle <smuckle.linux@gmail.com>
-[ vk: commit log, code cleanups, introduce dvfs_possible_from_any_cpu
-      and drop late callback support to avoid IPIs on remote CPUs. ]
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- kernel/sched/cpufreq_schedutil.c | 40 +++++++++++++++++++++++++++++++++++-----
- 1 file changed, 35 insertions(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index b168c31f1c8f..9bad579b6b08 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -100,11 +100,11 @@ static void sugov_fast_switch(struct cpufreq_policy *policy,
- }
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 3d37219a0dd7..bd60f1cd7ea6 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1930,6 +1930,9 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+ 	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+ 	u64 delta_ns;
  
- static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
--				unsigned int next_freq)
-+				int cpu, bool remote, unsigned int next_freq)
- {
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 
--	if (policy->fast_switch_enabled) {
-+	if (policy->fast_switch_enabled && !remote) {
- 		if (sg_policy->next_freq == next_freq) {
- 			trace_cpu_frequency(policy->cur, policy->cpu);
- 			return;
-@@ -116,7 +116,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
- 		sg_policy->next_freq = next_freq;
- 		sg_policy->last_freq_update_time = time;
- 		sg_policy->work_in_progress = true;
--		irq_work_queue(&sg_policy->irq_work);
-+		irq_work_queue_on(&sg_policy->irq_work, cpu);
- 	}
- }
- 
-@@ -206,6 +206,20 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned long util, max;
- 	unsigned int next_f;
-+	int cpu, this_cpu = smp_processor_id();
-+	bool remote;
++	if (smp_processor_id() != data->cpu)
++		return;
 +
-+	if (policy->dvfs_possible_from_any_cpu) {
-+		/*
-+		 * Avoid sending IPI to 'hook->cpu' if this CPU can change
-+		 * frequency on its behalf.
-+		 */
-+		remote = false;
-+		cpu = this_cpu;
-+	} else {
-+		cpu = hook->cpu;
-+		remote = this_cpu != hook->cpu;
-+	}
- 
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
-@@ -220,7 +234,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 		sugov_iowait_boost(sg_cpu, &util, &max);
- 		next_f = get_next_freq(sg_policy, util, max);
- 	}
--	sugov_update_commit(sg_policy, time, next_f);
-+	sugov_update_commit(sg_policy, time, cpu, remote, next_f);
- }
- 
- static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu)
-@@ -269,8 +283,24 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-+	struct cpufreq_policy *policy = sg_policy->policy;
- 	unsigned long util, max;
- 	unsigned int next_f;
-+	int cpu, this_cpu = smp_processor_id();
-+	bool remote;
-+
-+	if (policy->dvfs_possible_from_any_cpu ||
-+	    cpumask_test_cpu(this_cpu, policy->cpus)) {
-+		/*
-+		 * Avoid sending IPI to 'hook->cpu' if this CPU can change
-+		 * frequency on its behalf.
-+		 */
-+		remote = false;
-+		cpu = this_cpu;
-+	} else {
-+		cpu = hook->cpu;
-+		remote = this_cpu != hook->cpu;
-+	}
- 
- 	sugov_get_util(&util, &max, hook->cpu);
- 
-@@ -289,7 +319,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 		else
- 			next_f = sugov_next_freq_shared(sg_cpu);
- 
--		sugov_update_commit(sg_policy, time, next_f);
-+		sugov_update_commit(sg_policy, time, cpu, remote, next_f);
- 	}
- 
- 	raw_spin_unlock(&sg_policy->update_lock);
+ 	if (pstate_funcs.get_target_pstate == get_target_pstate_use_cpu_load) {
+ 		if (flags & SCHED_CPUFREQ_IOWAIT) {
+ 			cpu->iowait_boost = int_tofp(1);
 -- 
 2.7.1.410.g6faf27b
