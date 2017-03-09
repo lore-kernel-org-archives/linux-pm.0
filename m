@@ -1,176 +1,117 @@
-From: Maxime Ripard <maxime.ripard@free-electrons.com>
-Subject: Re: [PATCH 2/3] thermal: add support for the thermal sensor on
- Allwinner new SoCs
-Date: Thu, 9 Mar 2017 15:27:12 +0100
-Message-ID: <20170309142712.tfmfrbbhagskrtaf@lukather>
-References: <20170301190220.2EgSha6N@smtp3o.mail.yandex.net>
- <20170302141105.5fr3ru72rtdyv4pd@lukather>
- <8250311489019784@web18g.yandex.ru>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH] power: bq27xxx_battery: Unique chip IDs
+Date: Thu, 9 Mar 2017 09:30:06 -0600
+Message-ID: <2fd3205a-e842-b198-28c4-1bf909856359@ti.com>
+References: <20170307230536.22886-1-liam@networkimprov.net>
+ <0088f5a9-995e-bc57-6fa1-3c8991287a13@ti.com>
+ <CAKvHMgR2g3OftVOfPiunDf25EsCz0f5LXW3ch-TZd8dr0tLBJQ@mail.gmail.com>
+ <739da500-67dc-ec2e-f790-e68855c31594@ti.com>
+ <CAKvHMgRM4c=m8UcDWvPu3RQf=vmHag6kTXa6aD8PmMu9yPYuXw@mail.gmail.com>
+ <1fc5a7ff-6cb0-a2b1-95b5-8059704c9994@ti.com>
+ <CAKvHMgRHg5Z=++B3Zu57JZHdo2o5gB7bJqKUMDH7zLVbmY2DVw@mail.gmail.com>
+ <CAKvHMgTgMZN9AJZGdeJ-4jBGUS1NkiqacJ9YQOf97kRq9SnOJA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============7681161870769237948=="
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <8250311489019784@web18g.yandex.ru>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Icenowy Zheng <icenowy@aosc.xyz>
-Cc: Ondrej Jirman <megous@megous.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-List-Id: linux-pm@vger.kernel.org
-
-
---===============7681161870769237948==
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="mzgialstztho4mk3"
-Content-Disposition: inline
-
-
---mzgialstztho4mk3
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Mar 09, 2017 at 08:36:24AM +0800, Icenowy Zheng wrote:
->=20
->=20
-> 02.03.2017, 22:11, "Maxime Ripard" <maxime.ripard@free-electrons.com>:
-> > On Thu, Mar 02, 2017 at 12:02:13AM +0800, Icenowy Zheng wrote:
-> >> =C2=A02017=E5=B9=B43=E6=9C=881=E6=97=A5 23:56=E4=BA=8E Maxime Ripard <=
-maxime.ripard@free-electrons.com>=E5=86=99=E9=81=93=EF=BC=9A
-> >> =C2=A0>
-> >> =C2=A0> On Wed, Mar 01, 2017 at 06:20:51PM +0800, Icenowy Zheng wrote:
-> >> =C2=A0> >
-> >> =C2=A0> > 2017=E5=B9=B43=E6=9C=881=E6=97=A5 18:14=E4=BA=8E Maxime Ripa=
-rd <maxime.ripard@free-electrons.com>=E5=86=99=E9=81=93=EF=BC=9A
-> >> =C2=A0> > >
-> >> =C2=A0> > > On Tue, Feb 28, 2017 at 03:18:13PM +0800, Icenowy Zheng wr=
-ote:
-> >> =C2=A0> > > >
-> >> =C2=A0> > > > 2017=E5=B9=B42=E6=9C=8828=E6=97=A5 14:44=E4=BA=8E Maxime=
- Ripard <maxime.ripard@free-electrons.com>=E5=86=99=E9=81=93=EF=BC=9A
-> >> =C2=A0> > > > >
-> >> =C2=A0> > > > > On Tue, Feb 28, 2017 at 03:40:53AM +0800, Icenowy Zhen=
-g wrote:
-> >> =C2=A0> > > > > > From: Ondrej Jirman <megous@megous.com>
-> >> =C2=A0> > > > > >
-> >> =C2=A0> > > > > > Allwinner SoCs from H3 (including H5, A64, etc) have=
- a new version of
-> >> =C2=A0> > > > > > thermal sensor, and needs a new driver for it.
-> >> =C2=A0> > > > > >
-> >> =C2=A0> > > > > > Add such a driver.
-> >> =C2=A0> > > > > >
-> >> =C2=A0> > > > > > Currently only H3 is supported, but other SoCs are e=
-asily to be
-> >> =C2=A0> > > > > > supported by adding new formula and set the sensor n=
-umber.
-> >> =C2=A0> > > > > >
-> >> =C2=A0> > > > > > Signed-off-by: Ond=C5=99ej Jirman <megous@megous.com>
-> >> =C2=A0> > > > > > [Icenowy: extend to support further multiple-sensor =
-SoCs, change commit
-> >> =C2=A0> > > > > >=C2=A0 message]
-> >> =C2=A0> > > > > > Signed-off-by: Icenowy Zheng <icenowy@aosc.xyz>
-> >> =C2=A0> > > > >
-> >> =C2=A0> > > > > There's no need to create a new driver for that. This =
-can be handled
-> >> =C2=A0> > > > > by the GPADC driver we already have.
-> >> =C2=A0> > > >
-> >> =C2=A0> > > > sun8i-ths is not GPADC at all.
-> >> =C2=A0> > > >
-> >> =C2=A0> > > > The latest SoC I know that use GPADC as thermal sensor i=
-s A33.
-> >> =C2=A0> > >
-> >> =C2=A0> > > It's not called the same way, but it definitely is an evol=
-ution of the
-> >> =C2=A0> > > same controller. There's no need for a new driver, only re=
-working what
-> >> =C2=A0> > > is already there.
-> >> =C2=A0> >
-> >> =C2=A0> > I don't think so -- here's some evidence:
-> >>
-> >> =C2=A0But the H3 THS have many new IRQs, functions, different sampling
-> >> =C2=A0rate set method and a quite different register layout.
-> >>
-> >> =C2=A0Doing this in GPADC driver is possible but meaningless.
-> >>
-> >> =C2=A0> >
-> >> =C2=A0> > 1. The old GPADC do not have module clock.
-> >> =C2=A0>
-> >> =C2=A0> The A33 could use a PLL.
-> >>
-> >> =C2=A0But it's a dedicated mod clk on new generation THS.
-> >
-> > And all of this really are evolutions. The block is still driven in
-> > the exact same way. And this is where there is value in having the
-> > same driver: you share the logic, which is mostly common, instead of
-> > duplicating it.
->=20
-> After some thinking, I can accept a common driver for A23/A33 thermal
-> sensor and H3/A64/H5 ones, but I cannot accept use iio-sun4i-gpadc
-> driver for it, as now H3/A64/H5 thermal sensors are not just an ADC --
-> they features hardware alarm levels, and in some SoC it become a
-> multiple channel thermal sensor.
-
-The A23 and A33 is trivial to support on the already existing GPADC
-driver. If you have it already working on the A33, then the amount of
-work for your driver to support the A33, or for the GPADC to support
-the newer SoC is strictly the same.
-
-Except in one case, we have a common, debugged, already reviewed and
-already merged driver. In the other case, we have no such things.
-
-> I will insist on doing a dedicated driver for it, or if you like, I can a=
-dd
-> A23/A33 support to this driver. (Considering no one have already posted
-> any patches for A23/A33 thermal sensor, except my old ones, so my
-> work at least won't conflict with anything merged)
-
-http://lists.infradead.org/pipermail/linux-arm-kernel/2016-December/474821.=
-html
-
-Maxime
-
---=20
-Maxime Ripard, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
-
---mzgialstztho4mk3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAEBCAAGBQJYwWY8AAoJEBx+YmzsjxAgoMYP/0N81x3wd/RApEmTKcpQG0fx
-M5MxuU+zNjDgXkl1jQWTnKAgcGi8VxhEKvhA5jHn4FPvAmpoDmc1KNYXYXxs15Le
-tdiVFpejcjp0UT+Wi8Jd29KEOGcey6fwLkiYSMsop5t/6KrNEySooffMD9LRvHoy
-B34EZ0xb7XZt4ZH4lZ4+hfCW7O6SDECr3/IUMEZrX8CVj2myfQdGQQRHnnOwgxTw
-if/CqxdSSepfEZcWTbwrrytbqPl1BcpIikUgBUOUvQbg9EPL3M+GloB+/bNvmCNc
-Xc/aOl35wg+grLeaFPLg3GqnqwwHxZ+bSwo/qlmdF1BSZehYtmfO0Ot7vVXHDqJA
-pbDxlByQDI9Pjl5AmKstLF/bsWn5NaYJ/hl8CGCpg1w880sgHXql7Cs3WpHXbLYw
-wJN41Yg5IUWvWgUCSiQYwjxgbwGPzU1IX90TH1I/R5ypZE/95OLwcn/FFyeA9aUG
-kCLQJYrt73XiCxlGo34wZqtb5Q2+zU3sqIGcn+2OasWORQS+Tev1FH0MHwGnZu00
-xz0V85r9AKCbnz/HTijpmBjw/VMspfsnXq1SpYVbVWXOuIEdvHRPJAHPcDfy7csq
-FVdR+wyrMCEqRdEe0a4igiggCYt5vA7IqghqkgdA/dP/106Z2173l9ou32p+eKnP
-lWlw9UBUXOxMhbuNGj3o
-=6Mot
------END PGP SIGNATURE-----
-
---mzgialstztho4mk3--
-
-
---===============7681161870769237948==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:45342 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932497AbdCIPaP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 10:30:15 -0500
+In-Reply-To: <CAKvHMgTgMZN9AJZGdeJ-4jBGUS1NkiqacJ9YQOf97kRq9SnOJA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-_______________________________________________
-linux-arm-kernel mailing list
-linux-arm-kernel@lists.infradead.org
-http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+On 03/08/2017 05:49 PM, Liam Breck wrote:
+> On Wed, Mar 8, 2017 at 1:22 PM, Liam Breck <liam@networkimprov.net> wrote:
+>> On Wed, Mar 8, 2017 at 10:23 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>> On 03/08/2017 12:16 PM, Liam Breck wrote:
+>>>> On Wed, Mar 8, 2017 at 9:58 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>>> On 03/08/2017 11:45 AM, Liam Breck wrote:
+>>>>>> On Wed, Mar 8, 2017 at 9:23 AM, Andrew F. Davis <afd@ti.com> wrote:
+>>>>>>> On 03/07/2017 05:05 PM, Liam Breck wrote:
+>>>>>>>> From: Liam Breck <kernel@networkimprov.net>
+>>>>>>>>
+>>>>>>>> Assign every chip a unique ID, to enable
+>>>>>>>> power_supply_battery_info config for all supported chips.
+>>>>>>>> There are no functional changes to the driver.
+>>>>>>>>
+>>>>>>>> Depends-on: power: bq27xxx_battery: Add power_supply_battery_info support
+>>>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>>>>>>>>
+>>>>>>>> ---
+>>>>>>>> Andrew, let me know if you'd like me to include this in the other patchset.
+>>>>>>>
+>>>>>>> Why do we need this at all? It may be just bit too early for me, but I'm
+>>>>>>> not seeing what this gets us, that couldn't be done before.
+>>>>>>
+>>>>>> Sadly, the chips mostly have different dm_reg tables, so we need the
+>>>>>> real chip ID to give each a table.
+>>>>>>
+>>>>>> My last rev only supported IDs associated with a single chip: 500,
+>>>>>> 545, 421. In the 421 case, we had to split off that ID.
+>>>>>>
+>>>>>
+>>>>> Okay, then if we need a new ID lets add it. Going back to having a table
+>>>>> of pointers is a step back, we used to do it this way, but every-time a
+>>>>> new chip appeared or we found a delta in an existing chip(s) (like you
+>>>>> are finding now) we would have to re-organize the pointer table and
+>>>>> other associated tables, it is much cleaner and easier to review (more
+>>>>> important than code size by orders of magnitude IMHO) to just add a new
+>>>>> entry into the big master table of registers.
+>>>>
+>>>> There were 8 mostly unique reg tables, and you'd need 8 dups to make
+>>>> all the IDs explicit.
+>>>>
+>>>
+>>> Why do all IDs need to be explicit, most have the same register set.
+>>
+>> The DM registers are different. See:
+>>   bq27500_dm_regs[]
+>>   bq27545_dm_regs[]
+>>   bq27421_dm_regs[]
+>>   bq27425_dm_regs[]
+>>   bq27621_dm_regs[]
+> 
+> Another way to handle this is using a separate field for the dm_regs[]
+> index, e.g. di->dmid.
+> 
+> That's a smaller patch, roughly +20 LoC.
+> 
 
---===============7681161870769237948==--
+This might work better
+
+>>>> You're already using a table of pointers for the property lists.
+>>>>
+>>>> I don't see how adding an entry to a pointer table is worse than
+>>>> adding an entire reg table. Sure, now and then you'd need to add both.
+>>>>
+>>>>>>>>  drivers/power/supply/bq27xxx_battery.c     | 94 +++++++++++++++++-------------
+>>>>>>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 14 ++---
+>>>>>>>>  include/linux/power/bq27xxx_battery.h      | 15 +++--
+>>>>>>>>  3 files changed, 71 insertions(+), 52 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>>>>>>> index ed976a1..30af0e4 100644
+>>>>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>>>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>>>>>
+>>>>>>>> +static u8* bq27xxx_regs[] = {
+>>>>>>>> +     [BQ27000] = bq27000_regs, /* really bq27200 */
+>>>>>>>> +     [BQ27010] = bq27010_regs, /* really bq27210 */
+>>>>>>>
+>>>>>>> Not strictly true, the bq270x0 and bq272x0 are different chips, one has
+>>>>>>> an HDQ bus and the other I2C, later chips have both ports on each chip.
+>>>>>>
+>>>>>> Oh, I saw only the 200 & 210 in _i2c.c, and forgot that the driver
+>>>>>> supports another interface. I'll remove those comments.
+>>>>>>
+>>>>>> I won't separate these IDs as none of them support DM update.
+>>>>>>
+>>>>>> Think you could do some testing soon?
+>>>>>>
+>>>>>
+>>>>> Yeah, I could probably fit some testing into my schedule, I'll see what
+>>>>> v9 looks like before I unpack the boards.
