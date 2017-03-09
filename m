@@ -1,134 +1,118 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH] power: bq27xxx_battery: Keep track of specific chip id
-Date: Wed,  8 Mar 2017 23:00:19 -0800
-Message-ID: <20170309070019.11892-1-liam@networkimprov.net>
+From: Keerthy <j-keerthy@ti.com>
+Subject: [PATCH v2 1/8] arm: dts: omap3: Add cpu_thermal zone
+Date: Thu, 9 Mar 2017 13:35:55 +0530
+Message-ID: <1489046762-11288-2-git-send-email-j-keerthy@ti.com>
+References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:35912 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752030AbdCIHAw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 02:00:52 -0500
-Received: by mail-pf0-f194.google.com with SMTP id j5so6312337pfb.3
-        for <linux-pm@vger.kernel.org>; Wed, 08 Mar 2017 23:00:46 -0800 (PST)
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:33893 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752704AbdCIII0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 03:08:26 -0500
+In-Reply-To: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
-Cc: Matt Ranostay <matt@ranostay.consulting>, Liam Breck <kernel@networkimprov.net>
+To: tony@atomide.com, edubezval@gmail.com
+Cc: rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, robh+dt@kernel.org, t-kristo@ti.com, j-keerthy@ti.com
 
-From: Liam Breck <kernel@networkimprov.net>
+Add cpu_thermal zone.
 
-Keep actual chip ID in di->dmid, to allow support for all chips
-by the power_supply_battery_info code.
-There are no functional changes to the driver.
-
-Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Signed-off-by: Keerthy <j-keerthy@ti.com>
 ---
-Andrew, here is the alternate method I referred to.
-I made the enum values explicit in case they are referenced externally.
+ arch/arm/boot/dts/omap3-cpu-thermal.dtsi | 20 ++++++++++++++++++++
+ arch/arm/boot/dts/omap34xx.dtsi          |  8 ++++++--
+ arch/arm/boot/dts/omap36xx.dtsi          |  8 ++++++--
+ 3 files changed, 32 insertions(+), 4 deletions(-)
+ create mode 100644 arch/arm/boot/dts/omap3-cpu-thermal.dtsi
 
- drivers/power/supply/bq27xxx_battery.c     | 13 +++++++++++++
- drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
- include/linux/power/bq27xxx_battery.h      | 26 +++++++++++++++++++-------
- 3 files changed, 40 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 7272d1e..0e6653f 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -1020,6 +1020,19 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
- 	struct power_supply_desc *psy_desc;
- 	struct power_supply_config psy_cfg = { .drv_data = di, };
- 
-+	di->dmid = di->chip;
-+	switch(di->dmid) {
-+	case BQ27520: di->chip = BQ27510; break;
-+	case BQ27531: di->chip = BQ27530; break;
-+	case BQ27542: di->chip = BQ27541; break;
-+	case BQ27546: di->chip = BQ27541; break;
-+	case BQ27742: di->chip = BQ27541; break;
-+	case BQ27425: di->chip = BQ27421; break;
-+	case BQ27441: di->chip = BQ27421; break;
-+	case BQ27621: di->chip = BQ27421; break;
-+	default: break;
-+	}
+diff --git a/arch/arm/boot/dts/omap3-cpu-thermal.dtsi b/arch/arm/boot/dts/omap3-cpu-thermal.dtsi
+new file mode 100644
+index 0000000..8dc3aa5
+--- /dev/null
++++ b/arch/arm/boot/dts/omap3-cpu-thermal.dtsi
+@@ -0,0 +1,20 @@
++/*
++ * Device Tree Source for OMAP3 SoC CPU thermal
++ *
++ * Copyright (C) 2017 Texas Instruments Incorporated - http://www.ti.com/
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of any
++ * kind, whether express or implied.
++ */
 +
- 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
- 	mutex_init(&di->lock);
- 	di->regs = bq27xxx_regs[di->chip];
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 5c5c3a6..13def59 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -150,18 +150,18 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27210", BQ27010 },
- 	{ "bq27500", BQ27500 },
- 	{ "bq27510", BQ27510 },
--	{ "bq27520", BQ27510 },
-+	{ "bq27520", BQ27520 },
- 	{ "bq27530", BQ27530 },
--	{ "bq27531", BQ27530 },
-+	{ "bq27531", BQ27531 },
- 	{ "bq27541", BQ27541 },
--	{ "bq27542", BQ27541 },
--	{ "bq27546", BQ27541 },
--	{ "bq27742", BQ27541 },
-+	{ "bq27542", BQ27542 },
-+	{ "bq27546", BQ27546 },
-+	{ "bq27742", BQ27742 },
- 	{ "bq27545", BQ27545 },
- 	{ "bq27421", BQ27421 },
--	{ "bq27425", BQ27421 },
--	{ "bq27441", BQ27421 },
--	{ "bq27621", BQ27421 },
-+	{ "bq27425", BQ27425 },
-+	{ "bq27441", BQ27441 },
-+	{ "bq27621", BQ27621 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 92df553..969f99f 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -3,13 +3,24 @@
- 
- enum bq27xxx_chip {
- 	BQ27000 = 1, /* bq27000, bq27200 */
--	BQ27010, /* bq27010, bq27210 */
--	BQ27500, /* bq27500 */
--	BQ27510, /* bq27510, bq27520 */
--	BQ27530, /* bq27530, bq27531 */
--	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
--	BQ27545, /* bq27545 */
--	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-+	BQ27010 = 2, /* bq27010, bq27210 */
-+	BQ27500 = 3, /* bq27500 */
-+	BQ27510 = 4, /* bq27510, bq27520 */
-+	BQ27530 = 5, /* bq27530, bq27531 */
-+	BQ27541 = 6, /* bq27541, bq27542, bq27546, bq27742 */
-+	BQ27545 = 7, /* bq27545 */
-+	BQ27421 = 8, /* bq27421, bq27425, bq27441, bq27621 */
++#include <dt-bindings/thermal/thermal.h>
 +
-+	/* members of above groups, for use in .dmid */
-+	/* translate these in _setup() for .chip */
-+	BQ27520 = 101,
-+	BQ27531 = 102,
-+	BQ27542 = 103,
-+	BQ27546 = 104,
-+	BQ27742 = 105,
-+	BQ27425 = 106,
-+	BQ27441 = 107,
-+	BQ27621 = 108,
++cpu_thermal: cpu_thermal {
++	polling-delay-passive = <250>; /* milliseconds */
++	polling-delay = <1000>; /* milliseconds */
++	coefficients = <0 20000>;
++
++			/* sensor       ID */
++	thermal-sensors = <&bandgap     0>;
++};
+diff --git a/arch/arm/boot/dts/omap34xx.dtsi b/arch/arm/boot/dts/omap34xx.dtsi
+index 834fdf1..ac4f879 100644
+--- a/arch/arm/boot/dts/omap34xx.dtsi
++++ b/arch/arm/boot/dts/omap34xx.dtsi
+@@ -14,7 +14,7 @@
+ 
+ / {
+ 	cpus {
+-		cpu@0 {
++		cpu: cpu@0 {
+ 			/* OMAP343x/OMAP35xx variants OPP1-5 */
+ 			operating-points = <
+ 				/* kHz    uV */
+@@ -56,12 +56,16 @@
+ 			};
+ 		};
+ 
+-		bandgap@48002524 {
++		bandgap: bandgap@48002524 {
+ 			reg = <0x48002524 0x4>;
+ 			compatible = "ti,omap34xx-bandgap";
+ 			#thermal-sensor-cells = <0>;
+ 		};
+ 	};
++
++	thermal_zones: thermal-zones {
++		#include "omap3-cpu-thermal.dtsi"
++	};
  };
  
- /**
-@@ -55,6 +66,7 @@ struct bq27xxx_device_info {
- 	struct device *dev;
- 	int id;
- 	enum bq27xxx_chip chip;
-+	enum bq27xxx_chip dmid;
- 	const char *name;
- 	struct bq27xxx_access_methods bus;
- 	struct bq27xxx_reg_cache cache;
+ &ssi {
+diff --git a/arch/arm/boot/dts/omap36xx.dtsi b/arch/arm/boot/dts/omap36xx.dtsi
+index d1a3e56..ade31d7 100644
+--- a/arch/arm/boot/dts/omap36xx.dtsi
++++ b/arch/arm/boot/dts/omap36xx.dtsi
+@@ -19,7 +19,7 @@
+ 
+ 	cpus {
+ 		/* OMAP3630/OMAP37xx 'standard device' variants OPP50 to OPP130 */
+-		cpu@0 {
++		cpu: cpu@0 {
+ 			operating-points = <
+ 				/* kHz    uV */
+ 				300000  1012500
+@@ -88,12 +88,16 @@
+ 			};
+ 		};
+ 
+-		bandgap@48002524 {
++		bandgap: bandgap@48002524 {
+ 			reg = <0x48002524 0x4>;
+ 			compatible = "ti,omap36xx-bandgap";
+ 			#thermal-sensor-cells = <0>;
+ 		};
+ 	};
++
++	thermal_zones: thermal-zones {
++		#include "omap3-cpu-thermal.dtsi"
++	};
+ };
+ 
+ /* OMAP3630 needs dss_96m_fck for VENC */
 -- 
-2.9.3
+1.9.1
