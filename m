@@ -1,48 +1,73 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: [PATCH v2 4/8] ARM: OMAP443x: Thermal: Add slope and offset values
-Date: Thu, 9 Mar 2017 13:35:58 +0530
-Message-ID: <1489046762-11288-5-git-send-email-j-keerthy@ti.com>
-References: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
+From: YuanTian Tang <andy.tang@nxp.com>
+Subject: [PATCH] cpufreq: qoriq: enhance bus frequency calculation
+Date: Thu, 9 Mar 2017 16:15:06 +0800
+Message-ID: <1489047306-31818-1-git-send-email-andy.tang@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1489046762-11288-1-git-send-email-j-keerthy@ti.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: tony@atomide.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, j-keerthy@ti.com, linux-kernel@vger.kernel.org, t-kristo@ti.com, robh+dt@kernel.org, rui.zhang@intel.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-dm3nam03on0078.outbound.protection.outlook.com ([104.47.41.78]:12064
+        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752672AbdCII35 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 Mar 2017 03:29:57 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Tang Yuantian <Yuantian.Tang@nxp.com>, Tang Yuantian <yuantian.tang@nxp.com>
 
-Currently the slope and offset values for calculating the
-hot spot temperature of a particular thermal zone is part
-of driver data. Pass them here instead and obtain the values
-while of node parsing.
+From: Tang Yuantian <Yuantian.Tang@nxp.com>
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
+On some platforms, property device-type may be missed in soc node
+in dts which caused the bus-frequency can not be obtained correctly.
+
+This patch enhanced the bus-frequency calculation. When property
+device-type is missed in dts, bus-frequency will be obtained by
+looking up clock table to get platform clock and hence get its
+frequency.
+
+Signed-off-by: Tang Yuantian <yuantian.tang@nxp.com>
 ---
- arch/arm/boot/dts/omap443x.dtsi | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/cpufreq/qoriq-cpufreq.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap443x.dtsi b/arch/arm/boot/dts/omap443x.dtsi
-index fc6a861..03c8ad9 100644
---- a/arch/arm/boot/dts/omap443x.dtsi
-+++ b/arch/arm/boot/dts/omap443x.dtsi
-@@ -71,4 +71,8 @@
+diff --git a/drivers/cpufreq/qoriq-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+index bfec1bc..0f22e40 100644
+--- a/drivers/cpufreq/qoriq-cpufreq.c
++++ b/drivers/cpufreq/qoriq-cpufreq.c
+@@ -52,17 +52,27 @@ static u32 get_bus_freq(void)
+ {
+ 	struct device_node *soc;
+ 	u32 sysfreq;
++	struct clk *pltclk;
++	int ret;
  
- };
++	/* get platform freq by searching bus-frequency property */
+ 	soc = of_find_node_by_type(NULL, "soc");
+-	if (!soc)
+-		return 0;
+-
+-	if (of_property_read_u32(soc, "bus-frequency", &sysfreq))
+-		sysfreq = 0;
++	if (soc) {
++		ret = of_property_read_u32(soc, "bus-frequency", &sysfreq);
++		of_node_put(soc);
++		if (!ret)
++			return sysfreq;
++	}
  
-+&cpu_thermal {
-+	coefficients = <0 20000>;
-+};
-+
- /include/ "omap443x-clocks.dtsi"
+-	of_node_put(soc);
++	/* get platform freq by its clock name */
++	pltclk = clk_get(NULL, "cg-pll0-div1");
++	if (IS_ERR(pltclk)) {
++		pr_err("%s: can't get bus frequency %ld\n",
++		__func__, PTR_ERR(pltclk));
++		return PTR_ERR(pltclk);
++	}
+ 
+-	return sysfreq;
++	return clk_get_rate(pltclk);
+ }
+ 
+ static struct clk *cpu_to_clk(int cpu)
 -- 
-1.9.1
+2.1.0.27.g96db324
