@@ -1,71 +1,144 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [Xen-devel] [PATCH v5 2/3] x86: Remap GDT tables in the Fixmap section
-Date: Thu, 9 Mar 2017 14:31:49 -0800
-Message-ID: <CAJcbSZEnUBfLHjf+bHqY0JQhQXD9urX45BXrQjx=1=A5gPpp_w@mail.gmail.com>
-References: <20170306220348.79702-1-thgarnie@google.com> <20170306220348.79702-2-thgarnie@google.com>
- <CALCETrVXHc-EAhBtdhL9FXSW1G2VbohRY4UJuOtpRG1K0Q-Ogg@mail.gmail.com>
- <17ffcc5b-1c9a-51b6-272a-5eaecf1bc0c4@citrix.com> <CALCETrWv-u7OdjWDY+5eF7p-ngPun-yYf0QegMzYc6MGVQd-4w@mail.gmail.com>
- <CAJcbSZExVWA0jvAoxLLc+58Ag9cHchifrHP=fFfzU_onHo2PyA@mail.gmail.com>
- <5cf31779-45c5-d37f-86bc-d5afb3fb7ab6@oracle.com> <51c23e92-d1f0-427f-e069-c92fc4ed6226@oracle.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH] power: bq27xxx_battery: Keep track of specific chip id
+Date: Thu, 9 Mar 2017 14:42:48 -0800
+Message-ID: <CAKvHMgQB4pZTM-+Ubt19ZvJ4fVoZBrnYGQx3popJSKA6RmSfeQ@mail.gmail.com>
+References: <20170309070019.11892-1-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <51c23e92-d1f0-427f-e069-c92fc4ed6226@oracle.com>
-Sender: owner-linux-mm@kvack.org
-To: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: Andy Lutomirski <luto@amacapital.net>, Andrew Cooper <andrew.cooper3@citrix.com>, Michal Hocko <mhocko@suse.com>, Stanislaw Gruszka <sgruszka@redhat.com>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, kvm list <kvm@vger.kernel.org>, Fenghua Yu <fenghua.yu@intel.com>, Matt Fleming <matt@codeblueprint.co.uk>, Frederic Weisbecker <fweisbec@gmail.com>, X86 ML <x86@kernel.org>, Chris Wilson <chris@chris-wilson.co.uk>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Paul Gortmaker <paul.gortmaker@windriver.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Alexander Potapenko <glider@google.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Jiri Olsa <jolsa@redhat.com>, zijun_hu <zijun_hu@htc.com>, Dave
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:34467 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752628AbdCIWmu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 17:42:50 -0500
+Received: by mail-io0-f196.google.com with SMTP id n76so5364933ioe.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Mar 2017 14:42:49 -0800 (PST)
+In-Reply-To: <20170309070019.11892-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
 
-On Thu, Mar 9, 2017 at 2:13 PM, Boris Ostrovsky
-<boris.ostrovsky@oracle.com> wrote:
+On Wed, Mar 8, 2017 at 11:00 PM, Liam Breck <liam@networkimprov.net> wrote:
+> From: Liam Breck <kernel@networkimprov.net>
 >
->>> I don't have any experience with Xen so it would be great if virtme can=
- test it.
->>
->> I am pretty sure I tested this series at some point but I'll test it aga=
-in.
->>
+> Keep actual chip ID in di->dmid, to allow support for all chips
+> by the power_supply_battery_info code.
+> There are no functional changes to the driver.
 >
+> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> ---
+> Andrew, here is the alternate method I referred to.
+> I made the enum values explicit in case they are referenced externally.
 >
-> Fails 32-bit build:
+>  drivers/power/supply/bq27xxx_battery.c     | 13 +++++++++++++
+>  drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
+>  include/linux/power/bq27xxx_battery.h      | 26 +++++++++++++++++++-------
+>  3 files changed, 40 insertions(+), 15 deletions(-)
 >
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 7272d1e..0e6653f 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1020,6 +1020,19 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>         struct power_supply_desc *psy_desc;
+>         struct power_supply_config psy_cfg = { .drv_data = di, };
 >
-> /home/build/linux-boris/arch/x86/kvm/vmx.c: In function =E2=80=98segment_=
-base=E2=80=99:
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: =E2=80=98host_gdt=
-=E2=80=99
-> undeclared (first use in this function)
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: (Each undeclared
-> identifier is reported only once
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: for each
-> function it appears in.)
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: type defaults to
-> =E2=80=98int=E2=80=99 in declaration of =E2=80=98type name=E2=80=99
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: type defaults to
-> =E2=80=98int=E2=80=99 in declaration of =E2=80=98type name=E2=80=99
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: warning: initialization
-> from incompatible pointer type
-> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: warning: unused
-> variable =E2=80=98gdt=E2=80=99
->
->
-> -boris
+> +       di->dmid = di->chip;
+> +       switch(di->dmid) {
+> +       case BQ27520: di->chip = BQ27510; break;
+> +       case BQ27531: di->chip = BQ27530; break;
+> +       case BQ27542: di->chip = BQ27541; break;
+> +       case BQ27546: di->chip = BQ27541; break;
+> +       case BQ27742: di->chip = BQ27541; break;
+> +       case BQ27425: di->chip = BQ27421; break;
+> +       case BQ27441: di->chip = BQ27421; break;
+> +       case BQ27621: di->chip = BQ27421; break;
+> +       default: break;
+> +       }
 
-It seems that I forgot to remove line 2054 on the rebase. My 32-bit
-build comes clean but I assume it is not good enough compare to the
-full version I build for 64-bit KVM testing.
+To avoid .chip + .dmid we can add .dm_regs & .unseal_key and init them
+in the above switch. That eliminates two static arrays as well.
 
-Remove just this line and it should build fine, I will fix this on the
-next iteration.
+How soon could you test a v10?
 
-Thanks for testing,
-
---=20
-Thomas
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>         INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>         mutex_init(&di->lock);
+>         di->regs = bq27xxx_regs[di->chip];
+> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+> index 5c5c3a6..13def59 100644
+> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
+> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+> @@ -150,18 +150,18 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+>         { "bq27210", BQ27010 },
+>         { "bq27500", BQ27500 },
+>         { "bq27510", BQ27510 },
+> -       { "bq27520", BQ27510 },
+> +       { "bq27520", BQ27520 },
+>         { "bq27530", BQ27530 },
+> -       { "bq27531", BQ27530 },
+> +       { "bq27531", BQ27531 },
+>         { "bq27541", BQ27541 },
+> -       { "bq27542", BQ27541 },
+> -       { "bq27546", BQ27541 },
+> -       { "bq27742", BQ27541 },
+> +       { "bq27542", BQ27542 },
+> +       { "bq27546", BQ27546 },
+> +       { "bq27742", BQ27742 },
+>         { "bq27545", BQ27545 },
+>         { "bq27421", BQ27421 },
+> -       { "bq27425", BQ27421 },
+> -       { "bq27441", BQ27421 },
+> -       { "bq27621", BQ27421 },
+> +       { "bq27425", BQ27425 },
+> +       { "bq27441", BQ27441 },
+> +       { "bq27621", BQ27621 },
+>         {},
+>  };
+>  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+> index 92df553..969f99f 100644
+> --- a/include/linux/power/bq27xxx_battery.h
+> +++ b/include/linux/power/bq27xxx_battery.h
+> @@ -3,13 +3,24 @@
+>
+>  enum bq27xxx_chip {
+>         BQ27000 = 1, /* bq27000, bq27200 */
+> -       BQ27010, /* bq27010, bq27210 */
+> -       BQ27500, /* bq27500 */
+> -       BQ27510, /* bq27510, bq27520 */
+> -       BQ27530, /* bq27530, bq27531 */
+> -       BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+> -       BQ27545, /* bq27545 */
+> -       BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
+> +       BQ27010 = 2, /* bq27010, bq27210 */
+> +       BQ27500 = 3, /* bq27500 */
+> +       BQ27510 = 4, /* bq27510, bq27520 */
+> +       BQ27530 = 5, /* bq27530, bq27531 */
+> +       BQ27541 = 6, /* bq27541, bq27542, bq27546, bq27742 */
+> +       BQ27545 = 7, /* bq27545 */
+> +       BQ27421 = 8, /* bq27421, bq27425, bq27441, bq27621 */
+> +
+> +       /* members of above groups, for use in .dmid */
+> +       /* translate these in _setup() for .chip */
+> +       BQ27520 = 101,
+> +       BQ27531 = 102,
+> +       BQ27542 = 103,
+> +       BQ27546 = 104,
+> +       BQ27742 = 105,
+> +       BQ27425 = 106,
+> +       BQ27441 = 107,
+> +       BQ27621 = 108,
+>  };
+>
+>  /**
+> @@ -55,6 +66,7 @@ struct bq27xxx_device_info {
+>         struct device *dev;
+>         int id;
+>         enum bq27xxx_chip chip;
+> +       enum bq27xxx_chip dmid;
+>         const char *name;
+>         struct bq27xxx_access_methods bus;
+>         struct bq27xxx_reg_cache cache;
+> --
+> 2.9.3
+>
