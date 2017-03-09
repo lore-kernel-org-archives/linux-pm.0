@@ -1,117 +1,108 @@
-From: "Andrew F. Davis" <afd@ti.com>
-Subject: Re: [PATCH] power: bq27xxx_battery: Unique chip IDs
-Date: Thu, 9 Mar 2017 09:30:06 -0600
-Message-ID: <2fd3205a-e842-b198-28c4-1bf909856359@ti.com>
-References: <20170307230536.22886-1-liam@networkimprov.net>
- <0088f5a9-995e-bc57-6fa1-3c8991287a13@ti.com>
- <CAKvHMgR2g3OftVOfPiunDf25EsCz0f5LXW3ch-TZd8dr0tLBJQ@mail.gmail.com>
- <739da500-67dc-ec2e-f790-e68855c31594@ti.com>
- <CAKvHMgRM4c=m8UcDWvPu3RQf=vmHag6kTXa6aD8PmMu9yPYuXw@mail.gmail.com>
- <1fc5a7ff-6cb0-a2b1-95b5-8059704c9994@ti.com>
- <CAKvHMgRHg5Z=++B3Zu57JZHdo2o5gB7bJqKUMDH7zLVbmY2DVw@mail.gmail.com>
- <CAKvHMgTgMZN9AJZGdeJ-4jBGUS1NkiqacJ9YQOf97kRq9SnOJA@mail.gmail.com>
+From: Icenowy Zheng <icenowy@aosc.xyz>
+Subject: Re: [PATCH 2/3] thermal: add support for the thermal sensor on
+ Allwinner new SoCs
+Date: Thu, 09 Mar 2017 23:31:54 +0800
+Message-ID: <21361489073514@web39j.yandex.ru>
+References: <20170301190220.2EgSha6N@smtp3o.mail.yandex.net>
+ <20170302141105.5fr3ru72rtdyv4pd@lukather>
+ <8250311489019784@web18g.yandex.ru> <20170309142712.tfmfrbbhagskrtaf@lukather>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:45342 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932497AbdCIPaP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 10:30:15 -0500
-In-Reply-To: <CAKvHMgTgMZN9AJZGdeJ-4jBGUS1NkiqacJ9YQOf97kRq9SnOJA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170309142712.tfmfrbbhagskrtaf@lukather>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Ondrej Jirman <megous@megous.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Chen-Yu Tsai <wens@csie.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: linux-pm@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-On 03/08/2017 05:49 PM, Liam Breck wrote:
-> On Wed, Mar 8, 2017 at 1:22 PM, Liam Breck <liam@networkimprov.net> wrote:
->> On Wed, Mar 8, 2017 at 10:23 AM, Andrew F. Davis <afd@ti.com> wrote:
->>> On 03/08/2017 12:16 PM, Liam Breck wrote:
->>>> On Wed, Mar 8, 2017 at 9:58 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>>> On 03/08/2017 11:45 AM, Liam Breck wrote:
->>>>>> On Wed, Mar 8, 2017 at 9:23 AM, Andrew F. Davis <afd@ti.com> wrote:
->>>>>>> On 03/07/2017 05:05 PM, Liam Breck wrote:
->>>>>>>> From: Liam Breck <kernel@networkimprov.net>
->>>>>>>>
->>>>>>>> Assign every chip a unique ID, to enable
->>>>>>>> power_supply_battery_info config for all supported chips.
->>>>>>>> There are no functional changes to the driver.
->>>>>>>>
->>>>>>>> Depends-on: power: bq27xxx_battery: Add power_supply_battery_info support
->>>>>>>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->>>>>>>>
->>>>>>>> ---
->>>>>>>> Andrew, let me know if you'd like me to include this in the other patchset.
->>>>>>>
->>>>>>> Why do we need this at all? It may be just bit too early for me, but I'm
->>>>>>> not seeing what this gets us, that couldn't be done before.
->>>>>>
->>>>>> Sadly, the chips mostly have different dm_reg tables, so we need the
->>>>>> real chip ID to give each a table.
->>>>>>
->>>>>> My last rev only supported IDs associated with a single chip: 500,
->>>>>> 545, 421. In the 421 case, we had to split off that ID.
->>>>>>
->>>>>
->>>>> Okay, then if we need a new ID lets add it. Going back to having a table
->>>>> of pointers is a step back, we used to do it this way, but every-time a
->>>>> new chip appeared or we found a delta in an existing chip(s) (like you
->>>>> are finding now) we would have to re-organize the pointer table and
->>>>> other associated tables, it is much cleaner and easier to review (more
->>>>> important than code size by orders of magnitude IMHO) to just add a new
->>>>> entry into the big master table of registers.
->>>>
->>>> There were 8 mostly unique reg tables, and you'd need 8 dups to make
->>>> all the IDs explicit.
->>>>
->>>
->>> Why do all IDs need to be explicit, most have the same register set.
->>
->> The DM registers are different. See:
->>   bq27500_dm_regs[]
->>   bq27545_dm_regs[]
->>   bq27421_dm_regs[]
->>   bq27425_dm_regs[]
->>   bq27621_dm_regs[]
-> 
-> Another way to handle this is using a separate field for the dm_regs[]
-> index, e.g. di->dmid.
-> 
-> That's a smaller patch, roughly +20 LoC.
-> 
-
-This might work better
-
->>>> You're already using a table of pointers for the property lists.
->>>>
->>>> I don't see how adding an entry to a pointer table is worse than
->>>> adding an entire reg table. Sure, now and then you'd need to add both.
->>>>
->>>>>>>>  drivers/power/supply/bq27xxx_battery.c     | 94 +++++++++++++++++-------------
->>>>>>>>  drivers/power/supply/bq27xxx_battery_i2c.c | 14 ++---
->>>>>>>>  include/linux/power/bq27xxx_battery.h      | 15 +++--
->>>>>>>>  3 files changed, 71 insertions(+), 52 deletions(-)
->>>>>>>>
->>>>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>>>>>>> index ed976a1..30af0e4 100644
->>>>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
->>>>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>>>>
->>>>>>>> +static u8* bq27xxx_regs[] = {
->>>>>>>> +     [BQ27000] = bq27000_regs, /* really bq27200 */
->>>>>>>> +     [BQ27010] = bq27010_regs, /* really bq27210 */
->>>>>>>
->>>>>>> Not strictly true, the bq270x0 and bq272x0 are different chips, one has
->>>>>>> an HDQ bus and the other I2C, later chips have both ports on each chip.
->>>>>>
->>>>>> Oh, I saw only the 200 & 210 in _i2c.c, and forgot that the driver
->>>>>> supports another interface. I'll remove those comments.
->>>>>>
->>>>>> I won't separate these IDs as none of them support DM update.
->>>>>>
->>>>>> Think you could do some testing soon?
->>>>>>
->>>>>
->>>>> Yeah, I could probably fit some testing into my schedule, I'll see what
->>>>> v9 looks like before I unpack the boards.
+CgowOS4wMy4yMDE3LCAyMjoyNywgIk1heGltZSBSaXBhcmQiIDxtYXhpbWUucmlwYXJkQGZyZWUt
+ZWxlY3Ryb25zLmNvbT46Cj4gT24gVGh1LCBNYXIgMDksIDIwMTcgYXQgMDg6MzY6MjRBTSArMDgw
+MCwgSWNlbm93eSBaaGVuZyB3cm90ZToKPj4gwqAwMi4wMy4yMDE3LCAyMjoxMSwgIk1heGltZSBS
+aXBhcmQiIDxtYXhpbWUucmlwYXJkQGZyZWUtZWxlY3Ryb25zLmNvbT46Cj4+IMKgPiBPbiBUaHUs
+IE1hciAwMiwgMjAxNyBhdCAxMjowMjoxM0FNICswODAwLCBJY2Vub3d5IFpoZW5nIHdyb3RlOgo+
+PiDCoD4+IMKgMjAxN+W5tDPmnIgx5pelIDIzOjU25LqOIE1heGltZSBSaXBhcmQgPG1heGltZS5y
+aXBhcmRAZnJlZS1lbGVjdHJvbnMuY29tPuWGmemBk++8mgo+PiDCoD4+IMKgPgo+PiDCoD4+IMKg
+PiBPbiBXZWQsIE1hciAwMSwgMjAxNyBhdCAwNjoyMDo1MVBNICswODAwLCBJY2Vub3d5IFpoZW5n
+IHdyb3RlOgo+PiDCoD4+IMKgPiA+Cj4+IMKgPj4gwqA+ID4gMjAxN+W5tDPmnIgx5pelIDE4OjE0
+5LqOIE1heGltZSBSaXBhcmQgPG1heGltZS5yaXBhcmRAZnJlZS1lbGVjdHJvbnMuY29tPuWGmemB
+k++8mgo+PiDCoD4+IMKgPiA+ID4KPj4gwqA+PiDCoD4gPiA+IE9uIFR1ZSwgRmViIDI4LCAyMDE3
+IGF0IDAzOjE4OjEzUE0gKzA4MDAsIEljZW5vd3kgWmhlbmcgd3JvdGU6Cj4+IMKgPj4gwqA+ID4g
+PiA+Cj4+IMKgPj4gwqA+ID4gPiA+IDIwMTflubQy5pyIMjjml6UgMTQ6NDTkuo4gTWF4aW1lIFJp
+cGFyZCA8bWF4aW1lLnJpcGFyZEBmcmVlLWVsZWN0cm9ucy5jb20+5YaZ6YGT77yaCj4+IMKgPj4g
+wqA+ID4gPiA+ID4KPj4gwqA+PiDCoD4gPiA+ID4gPiBPbiBUdWUsIEZlYiAyOCwgMjAxNyBhdCAw
+Mzo0MDo1M0FNICswODAwLCBJY2Vub3d5IFpoZW5nIHdyb3RlOgo+PiDCoD4+IMKgPiA+ID4gPiA+
+ID4gRnJvbTogT25kcmVqIEppcm1hbiA8bWVnb3VzQG1lZ291cy5jb20+Cj4+IMKgPj4gwqA+ID4g
+PiA+ID4gPgo+PiDCoD4+IMKgPiA+ID4gPiA+ID4gQWxsd2lubmVyIFNvQ3MgZnJvbSBIMyAoaW5j
+bHVkaW5nIEg1LCBBNjQsIGV0YykgaGF2ZSBhIG5ldyB2ZXJzaW9uIG9mCj4+IMKgPj4gwqA+ID4g
+PiA+ID4gPiB0aGVybWFsIHNlbnNvciwgYW5kIG5lZWRzIGEgbmV3IGRyaXZlciBmb3IgaXQuCj4+
+IMKgPj4gwqA+ID4gPiA+ID4gPgo+PiDCoD4+IMKgPiA+ID4gPiA+ID4gQWRkIHN1Y2ggYSBkcml2
+ZXIuCj4+IMKgPj4gwqA+ID4gPiA+ID4gPgo+PiDCoD4+IMKgPiA+ID4gPiA+ID4gQ3VycmVudGx5
+IG9ubHkgSDMgaXMgc3VwcG9ydGVkLCBidXQgb3RoZXIgU29DcyBhcmUgZWFzaWx5IHRvIGJlCj4+
+IMKgPj4gwqA+ID4gPiA+ID4gPiBzdXBwb3J0ZWQgYnkgYWRkaW5nIG5ldyBmb3JtdWxhIGFuZCBz
+ZXQgdGhlIHNlbnNvciBudW1iZXIuCj4+IMKgPj4gwqA+ID4gPiA+ID4gPgo+PiDCoD4+IMKgPiA+
+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogT25kxZllaiBKaXJtYW4gPG1lZ291c0BtZWdvdXMuY29t
+Pgo+PiDCoD4+IMKgPiA+ID4gPiA+ID4gW0ljZW5vd3k6IGV4dGVuZCB0byBzdXBwb3J0IGZ1cnRo
+ZXIgbXVsdGlwbGUtc2Vuc29yIFNvQ3MsIGNoYW5nZSBjb21taXQKPj4gwqA+PiDCoD4gPiA+ID4g
+PiA+wqAgbWVzc2FnZV0KPj4gwqA+PiDCoD4gPiA+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEljZW5v
+d3kgWmhlbmcgPGljZW5vd3lAYW9zYy54eXo+Cj4+IMKgPj4gwqA+ID4gPiA+ID4KPj4gwqA+PiDC
+oD4gPiA+ID4gPiBUaGVyZSdzIG5vIG5lZWQgdG8gY3JlYXRlIGEgbmV3IGRyaXZlciBmb3IgdGhh
+dC4gVGhpcyBjYW4gYmUgaGFuZGxlZAo+PiDCoD4+IMKgPiA+ID4gPiA+IGJ5IHRoZSBHUEFEQyBk
+cml2ZXIgd2UgYWxyZWFkeSBoYXZlLgo+PiDCoD4+IMKgPiA+ID4gPgo+PiDCoD4+IMKgPiA+ID4g
+PiBzdW44aS10aHMgaXMgbm90IEdQQURDIGF0IGFsbC4KPj4gwqA+PiDCoD4gPiA+ID4KPj4gwqA+
+PiDCoD4gPiA+ID4gVGhlIGxhdGVzdCBTb0MgSSBrbm93IHRoYXQgdXNlIEdQQURDIGFzIHRoZXJt
+YWwgc2Vuc29yIGlzIEEzMy4KPj4gwqA+PiDCoD4gPiA+Cj4+IMKgPj4gwqA+ID4gPiBJdCdzIG5v
+dCBjYWxsZWQgdGhlIHNhbWUgd2F5LCBidXQgaXQgZGVmaW5pdGVseSBpcyBhbiBldm9sdXRpb24g
+b2YgdGhlCj4+IMKgPj4gwqA+ID4gPiBzYW1lIGNvbnRyb2xsZXIuIFRoZXJlJ3Mgbm8gbmVlZCBm
+b3IgYSBuZXcgZHJpdmVyLCBvbmx5IHJld29ya2luZyB3aGF0Cj4+IMKgPj4gwqA+ID4gPiBpcyBh
+bHJlYWR5IHRoZXJlLgo+PiDCoD4+IMKgPiA+Cj4+IMKgPj4gwqA+ID4gSSBkb24ndCB0aGluayBz
+byAtLSBoZXJlJ3Mgc29tZSBldmlkZW5jZToKPj4gwqA+Pgo+PiDCoD4+IMKgQnV0IHRoZSBIMyBU
+SFMgaGF2ZSBtYW55IG5ldyBJUlFzLCBmdW5jdGlvbnMsIGRpZmZlcmVudCBzYW1wbGluZwo+PiDC
+oD4+IMKgcmF0ZSBzZXQgbWV0aG9kIGFuZCBhIHF1aXRlIGRpZmZlcmVudCByZWdpc3RlciBsYXlv
+dXQuCj4+IMKgPj4KPj4gwqA+PiDCoERvaW5nIHRoaXMgaW4gR1BBREMgZHJpdmVyIGlzIHBvc3Np
+YmxlIGJ1dCBtZWFuaW5nbGVzcy4KPj4gwqA+Pgo+PiDCoD4+IMKgPiA+Cj4+IMKgPj4gwqA+ID4g
+MS4gVGhlIG9sZCBHUEFEQyBkbyBub3QgaGF2ZSBtb2R1bGUgY2xvY2suCj4+IMKgPj4gwqA+Cj4+
+IMKgPj4gwqA+IFRoZSBBMzMgY291bGQgdXNlIGEgUExMLgo+PiDCoD4+Cj4+IMKgPj4gwqBCdXQg
+aXQncyBhIGRlZGljYXRlZCBtb2QgY2xrIG9uIG5ldyBnZW5lcmF0aW9uIFRIUy4KPj4gwqA+Cj4+
+IMKgPiBBbmQgYWxsIG9mIHRoaXMgcmVhbGx5IGFyZSBldm9sdXRpb25zLiBUaGUgYmxvY2sgaXMg
+c3RpbGwgZHJpdmVuIGluCj4+IMKgPiB0aGUgZXhhY3Qgc2FtZSB3YXkuIEFuZCB0aGlzIGlzIHdo
+ZXJlIHRoZXJlIGlzIHZhbHVlIGluIGhhdmluZyB0aGUKPj4gwqA+IHNhbWUgZHJpdmVyOiB5b3Ug
+c2hhcmUgdGhlIGxvZ2ljLCB3aGljaCBpcyBtb3N0bHkgY29tbW9uLCBpbnN0ZWFkIG9mCj4+IMKg
+PiBkdXBsaWNhdGluZyBpdC4KPj4KPj4gwqBBZnRlciBzb21lIHRoaW5raW5nLCBJIGNhbiBhY2Nl
+cHQgYSBjb21tb24gZHJpdmVyIGZvciBBMjMvQTMzIHRoZXJtYWwKPj4gwqBzZW5zb3IgYW5kIEgz
+L0E2NC9INSBvbmVzLCBidXQgSSBjYW5ub3QgYWNjZXB0IHVzZSBpaW8tc3VuNGktZ3BhZGMKPj4g
+wqBkcml2ZXIgZm9yIGl0LCBhcyBub3cgSDMvQTY0L0g1IHRoZXJtYWwgc2Vuc29ycyBhcmUgbm90
+IGp1c3QgYW4gQURDIC0tCj4+IMKgdGhleSBmZWF0dXJlcyBoYXJkd2FyZSBhbGFybSBsZXZlbHMs
+IGFuZCBpbiBzb21lIFNvQyBpdCBiZWNvbWUgYQo+PiDCoG11bHRpcGxlIGNoYW5uZWwgdGhlcm1h
+bCBzZW5zb3IuCj4KPiBUaGUgQTIzIGFuZCBBMzMgaXMgdHJpdmlhbCB0byBzdXBwb3J0IG9uIHRo
+ZSBhbHJlYWR5IGV4aXN0aW5nIEdQQURDCj4gZHJpdmVyLiBJZiB5b3UgaGF2ZSBpdCBhbHJlYWR5
+IHdvcmtpbmcgb24gdGhlIEEzMywgdGhlbiB0aGUgYW1vdW50IG9mCj4gd29yayBmb3IgeW91ciBk
+cml2ZXIgdG8gc3VwcG9ydCB0aGUgQTMzLCBvciBmb3IgdGhlIEdQQURDIHRvIHN1cHBvcnQKPiB0
+aGUgbmV3ZXIgU29DIGlzIHN0cmljdGx5IHRoZSBzYW1lLgo+Cj4gRXhjZXB0IGluIG9uZSBjYXNl
+LCB3ZSBoYXZlIGEgY29tbW9uLCBkZWJ1Z2dlZCwgYWxyZWFkeSByZXZpZXdlZCBhbmQKPiBhbHJl
+YWR5IG1lcmdlZCBkcml2ZXIuIEluIHRoZSBvdGhlciBjYXNlLCB3ZSBoYXZlIG5vIHN1Y2ggdGhp
+bmdzLgoKSSBkaWRuJ3Qgc2VlIHN1bjRpLWdwYWRjIGlpbyBkcml2ZXIgaW4gbGludXgtbmV4dCBu
+b3csIG9ubHkgdGhlIEdQQURDIE1GRC4KCkFuZCBhYnN0cmFjdCBhIHRoZXJtYWwtb25seSBBREMg
+YXMgYSBHUEFEQyBpcyBub3QgcHJvcGVyLCBlc3BlY2lhbGx5IHdoZW4KaXQgY29tZXMgd2l0aCBz
+b21lIHRoZXJtYWwtc3BlY2lmaWMgZnVuY3Rpb25zIChoYXJkd2FyZSB0cmlwIHBvaW50cykuCgpT
+byBJIGRvIG5vdCBhY2NlcHQgaXQgdG8gYmUgaW1wbGVtZW50ZWQgYXMgSUlPIEFEQyBkcml2ZXIu
+Cgo+Cj4+IMKgSSB3aWxsIGluc2lzdCBvbiBkb2luZyBhIGRlZGljYXRlZCBkcml2ZXIgZm9yIGl0
+LCBvciBpZiB5b3UgbGlrZSwgSSBjYW4gYWRkCj4+IMKgQTIzL0EzMyBzdXBwb3J0IHRvIHRoaXMg
+ZHJpdmVyLiAoQ29uc2lkZXJpbmcgbm8gb25lIGhhdmUgYWxyZWFkeSBwb3N0ZWQKPj4gwqBhbnkg
+cGF0Y2hlcyBmb3IgQTIzL0EzMyB0aGVybWFsIHNlbnNvciwgZXhjZXB0IG15IG9sZCBvbmVzLCBz
+byBteQo+PiDCoHdvcmsgYXQgbGVhc3Qgd29uJ3QgY29uZmxpY3Qgd2l0aCBhbnl0aGluZyBtZXJn
+ZWQpCj4KPiBodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9waXBlcm1haWwvbGludXgtYXJtLWtl
+cm5lbC8yMDE2LURlY2VtYmVyLzQ3NDgyMS5odG1sCj4KPiBNYXhpbWUKPgo+IC0tCj4gTWF4aW1l
+IFJpcGFyZCwgRnJlZSBFbGVjdHJvbnMKPiBFbWJlZGRlZCBMaW51eCBhbmQgS2VybmVsIGVuZ2lu
+ZWVyaW5nCj4gaHR0cDovL2ZyZWUtZWxlY3Ryb25zLmNvbQoKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QK
+bGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRl
+YWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
