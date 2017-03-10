@@ -1,44 +1,67 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: qoriq: enhance bus frequency calculation
-Date: Fri, 10 Mar 2017 15:44:52 +0530
-Message-ID: <20170310101452.GA26510@vireshk-i7>
-References: <1489109323-11424-1-git-send-email-andy.tang@nxp.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: update timer frequencies
+Date: Fri, 10 Mar 2017 11:28:07 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1703101113370.3681@nanos>
+References: <1489137441.2333.46.camel@synopsys.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-Content-Disposition: inline
-In-Reply-To: <1489109323-11424-1-git-send-email-andy.tang@nxp.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Yuantian Tang <andy.tang@nxp.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1489137441.2333.46.camel@synopsys.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vlad Zakharov <Vladislav.Zakharov@synopsys.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "john.stultz@linaro.org" <john.stultz@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10-03-17, 09:28, Yuantian Tang wrote:
-> On some platforms, property device-type may be missed in soc node
-> in dts which caused the bus-frequency can not be obtained correctly.
-> 
-> This patch enhanced the bus-frequency calculation. When property
-> device-type is missed in dts, bus-frequency will be obtained by
-> looking up clock table to get platform clock and hence get its
-> frequency.
-> 
-> Signed-off-by: Tang Yuantian <andy.tang@nxp.com>
-> ---
-> v2: -- fix alignment issue
-> 
->  drivers/cpufreq/qoriq-cpufreq.c | 24 +++++++++++++++++-------
->  1 file changed, 17 insertions(+), 7 deletions(-)
+Vlad,
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Fri, 10 Mar 2017, Vlad Zakharov wrote:
+> 
+> I am trying to implement a cpufreq driver for ARC CPUs.  The point is
+> that ARC timers (including those are used for timekeeping) are driven by
+> the same clock as ARC CPU core(s).
 
--- 
-viresh
+To be honest: That's broken by design and you really should go and tell
+your hardware folks to fix that. Proper timekeeping is essential for any
+Operating System (not only Linux).
+
+It's well known for more than TWO decades that changing the frequency of
+the timekeeper clocksource is a complete disaster, but obviously every
+hardware vendor has to learn that the hard way instead of simply learning
+from history.
+
+> So if cpufreq driver changes CPU frequency timers frequency also
+> updates. I added notification handler to ARC timer driver were I
+> attempted to update clocksource frequency with
+> "__clocksource_update_freq_hz()" but I found that actually the frequency
+> didn't update.
+> 
+> During my further investigation I mentioned that timekeeping framework
+> doesn't allow frequency changes for more than 11%. This is quiet
+> frustratingly: ARC cores supports such adjustments themselves but current
+> framework API doesn't give us a chance to use this functionality and in
+> fact it even forbids CPU frequency changes in runtime at all.
+
+It does not forbid CPU frequency changes. It forbids timekeeper clocksource
+frequency jumps.
+
+For a very good reason. Having frequency jumps disturbs timekeeping in
+several ways (monotonic behaviour, accuracy).
+
+> Maybe I am mistaken and there is some way to get this going? Or maybe we
+> can add some minor changes to timekeeping framework to resolve this issue
+> (special flag that allows such changes or something like this?).
+
+No, we won't add a special flag because the availability will just
+proliferate completely braindead hardware designs.
+
+We had a gazillion of horrible hacks which tried to make this work in the
+past, but none of them ever worked reliably under all circumstances. We
+won't bring them back.
+
+Your hardware design is broken by making the clocksource clock depend on
+the CPU frequency. Tell your hardware people to fix that or just use a
+seperate independent clocksource.
+
+Thanks,
+
+	tglx
