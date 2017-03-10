@@ -1,316 +1,674 @@
-From: Kevin Hilman <khilman@baylibre.com>
-Subject: Re: [PATCH v4 4/5] soc: ti: Add ti_sci_pm_domains driver
-Date: Fri, 10 Mar 2017 13:22:18 -0800
-Message-ID: <m2y3wcesj9.fsf@baylibre.com>
-References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com>
-        <1488882154-21485-5-git-send-email-d-gerlach@ti.com>
+From: "Andrew F. Davis" <afd@ti.com>
+Subject: Re: [PATCH v9.3 7/8] power: bq27xxx_battery: Add
+ power_supply_battery_info support
+Date: Fri, 10 Mar 2017 15:25:31 -0600
+Message-ID: <ac96575c-6b1b-7735-87a8-77e8ef58895d@ti.com>
+References: <20170310002726.30949-1-liam@networkimprov.net>
+ <20170310002726.30949-2-liam@networkimprov.net>
+ <CAKvHMgQJ4hzDnR2BAG=Se2MOu6gk_yP_dC4vr3uCWwV07WQVLw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f182.google.com ([209.85.192.182]:33082 "EHLO
-        mail-pf0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755586AbdCJVWV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Mar 2017 16:22:21 -0500
-Received: by mail-pf0-f182.google.com with SMTP id w189so46209641pfb.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Mar 2017 13:22:20 -0800 (PST)
-In-Reply-To: <1488882154-21485-5-git-send-email-d-gerlach@ti.com> (Dave
-        Gerlach's message of "Tue, 7 Mar 2017 04:22:33 -0600")
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:46218 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934105AbdCJVZh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Mar 2017 16:25:37 -0500
+In-Reply-To: <CAKvHMgQJ4hzDnR2BAG=Se2MOu6gk_yP_dC4vr3uCWwV07WQVLw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Santosh Shilimkar <ssantosh@kernel.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Nishanth Menon <nm@ti.com>, Keerthy <j-keerthy@ti.com>, Russell King <rmk+kernel@armlinux.org.uk>, Tero Kristo <t-kristo@ti.com>, Sudeep Holla <sudeep.holla@arm.com>
+To: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org
+Cc: Liam Breck <kernel@networkimprov.net>
 
-Dave Gerlach <d-gerlach@ti.com> writes:
+On 03/10/2017 03:01 PM, Liam Breck wrote:
+> Andrew, any comments on these last two drafts?
+> 
 
-> Introduce a ti_sci_pm_domains driver to act as a generic pm domain
-> provider to allow each device to attach and associate it's ti-sci-id so
-> that it can be controlled through the TI SCI protocol.
->
-> This driver implements a simple genpd where each device node has a
-> phandle to the power domain node and also must provide an index which
-> represents the ID to be passed with TI SCI representing the device using
-> a single phandle cell. The driver manually parses the phandle to get the
-> cell value. Through this interface the genpd dev_ops start and stop
-> hooks will use TI SCI to turn on and off each device as determined by
-> pm_runtime usage.
->
-> Signed-off-by: Keerthy <j-keerthy@ti.com>
-> Signed-off-by: Nishanth Menon <nm@ti.com>
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+1) Don't ping maintainers/reviewers, I haven't forgotten about you, it
+hasn't been even 24 hours since you posted this.
+2) I have lots of comments, but it's Friday and I don't feel like
+reviewing stuff, if you want some comments to work on go read my old
+ones, many have not been fixed in this series yet.
 
-Reviewed-by: Kevin Hilman <khilman@baylibre.com>
+Thanks,
+Andrew
 
-> ---
-> v3->v4:
->  Parse phandle directly instead of reading ti,sci-id property per device.
->  
->  MAINTAINERS                        |   1 +
->  arch/arm/mach-keystone/Kconfig     |   1 +
->  drivers/soc/ti/Kconfig             |  12 +++
->  drivers/soc/ti/Makefile            |   1 +
->  drivers/soc/ti/ti_sci_pm_domains.c | 202 +++++++++++++++++++++++++++++++++++++
->  5 files changed, 217 insertions(+)
->  create mode 100644 drivers/soc/ti/ti_sci_pm_domains.c
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index aaf96a9b4cd4..5cce85ade551 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -12385,6 +12385,7 @@ F:	drivers/firmware/ti_sci*
->  F:	include/linux/soc/ti/ti_sci_protocol.h
->  F:	Documentation/devicetree/bindings/soc/ti/sci-pm-domain.txt
->  F:	include/dt-bindings/genpd/k2g.h
-> +F:	drivers/soc/ti/ti_sci_pm_domains.c
->  
->  THANKO'S RAREMONO AM/FM/SW RADIO RECEIVER USB DRIVER
->  M:	Hans Verkuil <hverkuil@xs4all.nl>
-> diff --git a/arch/arm/mach-keystone/Kconfig b/arch/arm/mach-keystone/Kconfig
-> index 554357035f30..db122356b410 100644
-> --- a/arch/arm/mach-keystone/Kconfig
-> +++ b/arch/arm/mach-keystone/Kconfig
-> @@ -10,6 +10,7 @@ config ARCH_KEYSTONE
->  	select ARCH_SUPPORTS_BIG_ENDIAN
->  	select ZONE_DMA if ARM_LPAE
->  	select PINCTRL
-> +	select PM_GENERIC_DOMAINS if PM
->  	help
->  	  Support for boards based on the Texas Instruments Keystone family of
->  	  SoCs.
-> diff --git a/drivers/soc/ti/Kconfig b/drivers/soc/ti/Kconfig
-> index 3557c5e32a93..39e152abe6b9 100644
-> --- a/drivers/soc/ti/Kconfig
-> +++ b/drivers/soc/ti/Kconfig
-> @@ -38,4 +38,16 @@ config WKUP_M3_IPC
->  	  to communicate and use the Wakeup M3 for PM features like suspend
->  	  resume and boots it using wkup_m3_rproc driver.
->  
-> +config TI_SCI_PM_DOMAINS
-> +	tristate "TI SCI PM Domains Driver"
-> +	depends on TI_SCI_PROTOCOL
-> +	depends on PM_GENERIC_DOMAINS
-> +	help
-> +	  Generic power domain implementation for TI device implementing
-> +	  the TI SCI protocol.
-> +
-> +	  To compile this as a module, choose M here. The module will be
-> +	  called ti_sci_pm_domains. Note this is needed early in boot before
-> +	  rootfs may be available.
-> +
->  endif # SOC_TI
-> diff --git a/drivers/soc/ti/Makefile b/drivers/soc/ti/Makefile
-> index 48ff3a79634f..7d572736c86e 100644
-> --- a/drivers/soc/ti/Makefile
-> +++ b/drivers/soc/ti/Makefile
-> @@ -5,3 +5,4 @@ obj-$(CONFIG_KEYSTONE_NAVIGATOR_QMSS)	+= knav_qmss.o
->  knav_qmss-y := knav_qmss_queue.o knav_qmss_acc.o
->  obj-$(CONFIG_KEYSTONE_NAVIGATOR_DMA)	+= knav_dma.o
->  obj-$(CONFIG_WKUP_M3_IPC)		+= wkup_m3_ipc.o
-> +obj-$(CONFIG_TI_SCI_PM_DOMAINS)		+= ti_sci_pm_domains.o
-> diff --git a/drivers/soc/ti/ti_sci_pm_domains.c b/drivers/soc/ti/ti_sci_pm_domains.c
-> new file mode 100644
-> index 000000000000..b0b283810e72
-> --- /dev/null
-> +++ b/drivers/soc/ti/ti_sci_pm_domains.c
-> @@ -0,0 +1,202 @@
-> +/*
-> + * TI SCI Generic Power Domain Driver
-> + *
-> + * Copyright (C) 2015-2017 Texas Instruments Incorporated - http://www.ti.com/
-> + *	J Keerthy <j-keerthy@ti.com>
-> + *	Dave Gerlach <d-gerlach@ti.com>
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * version 2 as published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#include <linux/err.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/of.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_domain.h>
-> +#include <linux/slab.h>
-> +#include <linux/soc/ti/ti_sci_protocol.h>
-> +
-> +/**
-> + * struct ti_sci_genpd_dev_data: holds data needed for every device attached
-> + *				 to this genpd
-> + * @idx: index of the device that identifies it with the system
-> + *	 control processor.
-> + */
-> +struct ti_sci_genpd_dev_data {
-> +	int idx;
-> +};
-> +
-> +/**
-> + * struct ti_sci_pm_domain: TI specific data needed for power domain
-> + * @ti_sci: handle to TI SCI protocol driver that provides ops to
-> + *	    communicate with system control processor.
-> + * @dev: pointer to dev for the driver for devm allocs
-> + * @pd: generic_pm_domain for use with the genpd framework
-> + */
-> +struct ti_sci_pm_domain {
-> +	const struct ti_sci_handle *ti_sci;
-> +	struct device *dev;
-> +	struct generic_pm_domain pd;
-> +};
-> +
-> +#define genpd_to_ti_sci_pd(gpd) container_of(gpd, struct ti_sci_pm_domain, pd)
-> +
-> +/**
-> + * ti_sci_dev_id(): get prepopulated ti_sci id from struct dev
-> + * @dev: pointer to device associated with this genpd
-> + *
-> + * Returns device_id stored from ti,sci_id property
-> + */
-> +static int ti_sci_dev_id(struct device *dev)
-> +{
-> +	struct generic_pm_domain_data *genpd_data = dev_gpd_data(dev);
-> +	struct ti_sci_genpd_dev_data *sci_dev_data = genpd_data->data;
-> +
-> +	return sci_dev_data->idx;
-> +}
-> +
-> +/**
-> + * ti_sci_dev_to_sci_handle(): get pointer to ti_sci_handle
-> + * @dev: pointer to device associated with this genpd
-> + *
-> + * Returns ti_sci_handle to be used to communicate with system
-> + *	   control processor.
-> + */
-> +static const struct ti_sci_handle *ti_sci_dev_to_sci_handle(struct device *dev)
-> +{
-> +	struct generic_pm_domain *pd = pd_to_genpd(dev->pm_domain);
-> +	struct ti_sci_pm_domain *ti_sci_genpd = genpd_to_ti_sci_pd(pd);
-> +
-> +	return ti_sci_genpd->ti_sci;
-> +}
-> +
-> +/**
-> + * ti_sci_dev_start(): genpd device start hook called to turn device on
-> + * @dev: pointer to device associated with this genpd to be powered on
-> + */
-> +static int ti_sci_dev_start(struct device *dev)
-> +{
-> +	const struct ti_sci_handle *ti_sci = ti_sci_dev_to_sci_handle(dev);
-> +	int idx = ti_sci_dev_id(dev);
-> +
-> +	return ti_sci->ops.dev_ops.get_device(ti_sci, idx);
-> +}
-> +
-> +/**
-> + * ti_sci_dev_stop(): genpd device stop hook called to turn device off
-> + * @dev: pointer to device associated with this genpd to be powered off
-> + */
-> +static int ti_sci_dev_stop(struct device *dev)
-> +{
-> +	const struct ti_sci_handle *ti_sci = ti_sci_dev_to_sci_handle(dev);
-> +	int idx = ti_sci_dev_id(dev);
-> +
-> +	return ti_sci->ops.dev_ops.put_device(ti_sci, idx);
-> +}
-> +
-> +static int ti_sci_pd_attach_dev(struct generic_pm_domain *domain,
-> +				struct device *dev)
-> +{
-> +	struct device_node *np = dev->of_node;
-> +	struct of_phandle_args pd_args;
-> +	struct ti_sci_pm_domain *ti_sci_genpd = genpd_to_ti_sci_pd(domain);
-> +	const struct ti_sci_handle *ti_sci = ti_sci_genpd->ti_sci;
-> +	struct ti_sci_genpd_dev_data *sci_dev_data;
-> +	struct generic_pm_domain_data *genpd_data;
-> +	int idx, ret = 0;
-> +
-> +	ret = of_parse_phandle_with_args(np, "power-domains",
-> +					 "#power-domain-cells", 0, &pd_args);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	if (pd_args.args_count != 1)
-> +		return -EINVAL;
-> +
-> +	idx = pd_args.args[0];
-> +
-> +	/*
-> +	 * Check the validity of the requested idx, if the index is not valid
-> +	 * the PMMC will return a NAK here and we will not allocate it.
-> +	 */
-> +	ret = ti_sci->ops.dev_ops.is_valid(ti_sci, idx);
-> +	if (ret)
-> +		return -EINVAL;
-> +
-> +	sci_dev_data = kzalloc(sizeof(*sci_dev_data), GFP_KERNEL);
-> +	if (!sci_dev_data)
-> +		return -ENOMEM;
-> +
-> +	sci_dev_data->idx = idx;
-> +
-> +	genpd_data = dev_gpd_data(dev);
-> +	genpd_data->data = sci_dev_data;
-> +
-> +	return 0;
-> +}
-> +
-> +static void ti_sci_pd_detach_dev(struct generic_pm_domain *domain,
-> +				 struct device *dev)
-> +{
-> +	struct generic_pm_domain_data *genpd_data = dev_gpd_data(dev);
-> +	struct ti_sci_genpd_dev_data *sci_dev_data = genpd_data->data;
-> +
-> +	kfree(sci_dev_data);
-> +	genpd_data->data = NULL;
-> +}
-> +
-> +static const struct of_device_id ti_sci_pm_domain_matches[] = {
-> +	{ .compatible = "ti,sci-pm-domain", },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, ti_sci_pm_domain_matches);
-> +
-> +static int ti_sci_pm_domain_probe(struct platform_device *pdev)
-> +{
-> +	struct device *dev = &pdev->dev;
-> +	struct device_node *np = dev->of_node;
-> +	struct ti_sci_pm_domain *ti_sci_pd;
-> +	int ret;
-> +
-> +	ti_sci_pd = devm_kzalloc(dev, sizeof(*ti_sci_pd), GFP_KERNEL);
-> +	if (!ti_sci_pd)
-> +		return -ENOMEM;
-> +
-> +	ti_sci_pd->ti_sci = devm_ti_sci_get_handle(dev);
-> +	if (IS_ERR(ti_sci_pd->ti_sci))
-> +		return PTR_ERR(ti_sci_pd->ti_sci);
-> +
-> +	ti_sci_pd->dev = dev;
-> +
-> +	ti_sci_pd->pd.attach_dev = ti_sci_pd_attach_dev;
-> +	ti_sci_pd->pd.detach_dev = ti_sci_pd_detach_dev;
-> +
-> +	ti_sci_pd->pd.dev_ops.start = ti_sci_dev_start;
-> +	ti_sci_pd->pd.dev_ops.stop = ti_sci_dev_stop;
-> +
-> +	pm_genpd_init(&ti_sci_pd->pd, NULL, true);
-> +
-> +	ret = of_genpd_add_provider_simple(np, &ti_sci_pd->pd);
-> +
-> +	return ret;
-> +}
-> +
-> +static struct platform_driver ti_sci_pm_domains_driver = {
-> +	.probe = ti_sci_pm_domain_probe,
-> +	.driver = {
-> +		.name = "ti_sci_pm_domains",
-> +		.of_match_table = ti_sci_pm_domain_matches,
-> +	},
-> +};
-> +module_platform_driver(ti_sci_pm_domains_driver);
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_DESCRIPTION("TI System Control Interface (SCI) Power Domain driver");
-> +MODULE_AUTHOR("Dave Gerlach");
+> 
+> On Thu, Mar 9, 2017 at 4:27 PM, Liam Breck <liam@networkimprov.net> wrote:
+>> From: Liam Breck <kernel@networkimprov.net>
+>>
+>> Previously there was no way to configure chip registers in the event that the
+>> defaults didn't match the battery in question.
+>>
+>> BQ27xxx driver now calls power_supply_get_battery_info, checks the inputs,
+>> and writes battery data to chip RAM or non-volatile memory.
+>>
+>> Supports chips BQ27500, 545, 421, 425, 441, 621. Others may be added.
+>>
+>> Signed-off-by: Matt Ranostay <matt@ranostay.consulting>
+>> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c | 476 ++++++++++++++++++++++++++++++++-
+>>  include/linux/power/bq27xxx_battery.h  |   2 +
+>>  2 files changed, 468 insertions(+), 10 deletions(-)
+>>
+>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>> index 8ce2940..f382d18 100644
+>> --- a/drivers/power/supply/bq27xxx_battery.c
+>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>> @@ -51,7 +51,7 @@
+>>
+>>  #include <linux/power/bq27xxx_battery.h>
+>>
+>> -#define DRIVER_VERSION         "1.2.0"
+>> +#define DRIVER_VERSION         "1.3.0"
+>>
+>>  #define BQ27XXX_MANUFACTURER   "Texas Instruments"
+>>
+>> @@ -59,6 +59,7 @@
+>>  #define BQ27XXX_FLAG_DSC       BIT(0)
+>>  #define BQ27XXX_FLAG_SOCF      BIT(1) /* State-of-Charge threshold final */
+>>  #define BQ27XXX_FLAG_SOC1      BIT(2) /* State-of-Charge threshold 1 */
+>> +#define BQ27XXX_FLAG_CFGUP     BIT(4)
+>>  #define BQ27XXX_FLAG_FC                BIT(9)
+>>  #define BQ27XXX_FLAG_OTD       BIT(14)
+>>  #define BQ27XXX_FLAG_OTC       BIT(15)
+>> @@ -72,6 +73,11 @@
+>>  #define BQ27000_FLAG_FC                BIT(5)
+>>  #define BQ27000_FLAG_CHGS      BIT(7) /* Charge state flag */
+>>
+>> +/* control register params */
+>> +#define BQ27XXX_SEALED                 0x20
+>> +#define BQ27XXX_SET_CFGUPDATE          0x13
+>> +#define BQ27XXX_SOFT_RESET             0x42
+>> +
+>>  #define BQ27XXX_RS                     (20) /* Resistor sense mOhm */
+>>  #define BQ27XXX_POWER_CONSTANT         (29200) /* 29.2 µV^2 * 1000 */
+>>  #define BQ27XXX_CURRENT_CONSTANT       (3570) /* 3.57 µV * 1000 */
+>> @@ -102,6 +108,11 @@ enum bq27xxx_reg_index {
+>>         BQ27XXX_REG_SOC,        /* State-of-Charge */
+>>         BQ27XXX_REG_DCAP,       /* Design Capacity */
+>>         BQ27XXX_REG_AP,         /* Average Power */
+>> +       BQ27XXX_DM_CTRL,        /* BlockDataControl() */
+>> +       BQ27XXX_DM_CLASS,       /* DataClass() */
+>> +       BQ27XXX_DM_BLOCK,       /* DataBlock() */
+>> +       BQ27XXX_DM_DATA,        /* BlockData() */
+>> +       BQ27XXX_DM_CKSUM,       /* BlockDataChecksum() */
+>>         BQ27XXX_REG_MAX,        /* sentinel */
+>>  };
+>>
+>> @@ -125,6 +136,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x0b,
+>>                 [BQ27XXX_REG_DCAP] = 0x76,
+>>                 [BQ27XXX_REG_AP] = 0x24,
+>> +               [BQ27XXX_DM_CTRL] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CLASS] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_BLOCK] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
+>>         },
+>>         [BQ27010] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -144,6 +160,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x0b,
+>>                 [BQ27XXX_REG_DCAP] = 0x76,
+>>                 [BQ27XXX_REG_AP] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CTRL] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CLASS] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_BLOCK] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_DATA] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CKSUM] = INVALID_REG_ADDR,
+>>         },
+>>         [BQ27500] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -163,6 +184,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x2c,
+>>                 [BQ27XXX_REG_DCAP] = 0x3c,
+>>                 [BQ27XXX_REG_AP] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CTRL] = 0x61,
+>> +               [BQ27XXX_DM_CLASS] = 0x3e,
+>> +               [BQ27XXX_DM_BLOCK] = 0x3f,
+>> +               [BQ27XXX_DM_DATA] = 0x40,
+>> +               [BQ27XXX_DM_CKSUM] = 0x60,
+>>         },
+>>         [BQ27510] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -182,6 +208,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x20,
+>>                 [BQ27XXX_REG_DCAP] = 0x2e,
+>>                 [BQ27XXX_REG_AP] = INVALID_REG_ADDR,
+>> +               [BQ27XXX_DM_CTRL] = 0x61,
+>> +               [BQ27XXX_DM_CLASS] = 0x3e,
+>> +               [BQ27XXX_DM_BLOCK] = 0x3f,
+>> +               [BQ27XXX_DM_DATA] = 0x40,
+>> +               [BQ27XXX_DM_CKSUM] = 0x60,
+>>         },
+>>         [BQ27530] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -201,6 +232,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x2c,
+>>                 [BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
+>>                 [BQ27XXX_REG_AP] = 0x24,
+>> +               [BQ27XXX_DM_CTRL] = 0x61,
+>> +               [BQ27XXX_DM_CLASS] = 0x3e,
+>> +               [BQ27XXX_DM_BLOCK] = 0x3f,
+>> +               [BQ27XXX_DM_DATA] = 0x40,
+>> +               [BQ27XXX_DM_CKSUM] = 0x60,
+>>         },
+>>         [BQ27541] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -220,6 +256,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x2c,
+>>                 [BQ27XXX_REG_DCAP] = 0x3c,
+>>                 [BQ27XXX_REG_AP] = 0x24,
+>> +               [BQ27XXX_DM_CTRL] = 0x61,
+>> +               [BQ27XXX_DM_CLASS] = 0x3e,
+>> +               [BQ27XXX_DM_BLOCK] = 0x3f,
+>> +               [BQ27XXX_DM_DATA] = 0x40,
+>> +               [BQ27XXX_DM_CKSUM] = 0x60,
+>>         },
+>>         [BQ27545] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -239,6 +280,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x2c,
+>>                 [BQ27XXX_REG_DCAP] = INVALID_REG_ADDR,
+>>                 [BQ27XXX_REG_AP] = 0x24,
+>> +               [BQ27XXX_DM_CTRL] = 0x61,
+>> +               [BQ27XXX_DM_CLASS] = 0x3e,
+>> +               [BQ27XXX_DM_BLOCK] = 0x3f,
+>> +               [BQ27XXX_DM_DATA] = 0x40,
+>> +               [BQ27XXX_DM_CKSUM] = 0x60,
+>>         },
+>>         [BQ27421] = {
+>>                 [BQ27XXX_REG_CTRL] = 0x00,
+>> @@ -258,6 +304,11 @@ static u8 bq27xxx_regs[][BQ27XXX_REG_MAX] = {
+>>                 [BQ27XXX_REG_SOC] = 0x1c,
+>>                 [BQ27XXX_REG_DCAP] = 0x3c,
+>>                 [BQ27XXX_REG_AP] = 0x18,
+>> +               [BQ27XXX_DM_CTRL] = 0x61,
+>> +               [BQ27XXX_DM_CLASS] = 0x3e,
+>> +               [BQ27XXX_DM_BLOCK] = 0x3f,
+>> +               [BQ27XXX_DM_DATA] = 0x40,
+>> +               [BQ27XXX_DM_CKSUM] = 0x60,
+>>         },
+>>  };
+>>
+>> @@ -432,6 +483,82 @@ static struct {
+>>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>>  static LIST_HEAD(bq27xxx_battery_devices);
+>>
+>> +#define BQ27XXX_DM_SZ  32
+>> +
+>> +#define BQ27XXX_MSLEEP(i) usleep_range((i)*1000, (i)*1000+500)
+>> +
+>> +struct bq27xxx_dm_reg {
+>> +       u8 subclass_id;
+>> +       u8 offset;
+>> +       u8 bytes;
+>> +       u16 min, max;
+>> +};
+>> +
+>> +struct bq27xxx_dm_buf {
+>> +       u8 class;
+>> +       u8 block;
+>> +       u8 a[BQ27XXX_DM_SZ];
+>> +       bool full, updt;
+>> +};
+>> +
+>> +#define BQ27XXX_DM_BUF(di, i) { \
+>> +       .class = (di)->dm_regs[i].subclass_id, \
+>> +       .block = (di)->dm_regs[i].offset / BQ27XXX_DM_SZ, \
+>> +}
+>> +
+>> +static inline u16* bq27xxx_dm_reg_ptr(struct bq27xxx_dm_buf *buf,
+>> +                                     struct bq27xxx_dm_reg *reg)
+>> +{
+>> +       if (buf->class == reg->subclass_id
+>> +        && buf->block == reg->offset / BQ27XXX_DM_SZ)
+>> +               return (u16*) (buf->a + reg->offset % BQ27XXX_DM_SZ);
+>> +
+>> +       return NULL;
+>> +}
+>> +
+>> +enum bq27xxx_dm_reg_id {
+>> +       BQ27XXX_DM_DESIGN_CAPACITY = 0,
+>> +       BQ27XXX_DM_DESIGN_ENERGY,
+>> +       BQ27XXX_DM_TERMINATE_VOLTAGE,
+>> +};
+>> +
+>> +static const char* bq27xxx_dm_reg_name[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY] = "design-capacity",
+>> +       [BQ27XXX_DM_DESIGN_ENERGY] = "design-energy",
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = "terminate-voltage",
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27500_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 10, 2,    0, 65535 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { }, /* missing on chip */
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 48, 2, 1000, 32767 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 48, 23, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 48, 25, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 80, 67, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 16, 2, 2500,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27425_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 12, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 14, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 18, 2, 2800,  3700 },
+>> +};
+>> +
+>> +static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
+>> +       [BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 3, 2,    0,  8000 },
+>> +       [BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 5, 2,    0, 32767 },
+>> +       [BQ27XXX_DM_TERMINATE_VOLTAGE] = { 82, 9, 2, 2500,  3700 },
+>> +};
+>> +
+>> +
+>>  static int poll_interval_param_set(const char *val, const struct kernel_param *kp)
+>>  {
+>>         struct bq27xxx_device_info *di;
+>> @@ -476,6 +603,316 @@ static inline int bq27xxx_read(struct bq27xxx_device_info *di, int reg_index,
+>>         return di->bus.read(di, di->regs[reg_index], single);
+>>  }
+>>
+>> +static int bq27xxx_battery_set_seal_state(struct bq27xxx_device_info *di,
+>> +                                         bool state)
+>> +{
+>> +       int ret;
+>> +
+>> +       if (state) {
+>> +               ret = di->bus.write(di, di->regs[BQ27XXX_REG_CTRL], BQ27XXX_SEALED, false);
+>> +               if (ret < 0)
+>> +                       goto out;
+>> +       } else {
+>> +               ret = di->bus.write(di, di->regs[BQ27XXX_REG_CTRL], (u16)(di->unseal_key >> 16), false);
+>> +               if (ret < 0)
+>> +                       goto out;
+>> +
+>> +               ret = di->bus.write(di, di->regs[BQ27XXX_REG_CTRL], (u16)di->unseal_key, false);
+>> +               if (ret < 0)
+>> +                       goto out;
+>> +       }
+>> +       return 0;
+>> +
+>> +out:
+>> +       dev_err(di->dev, "bus error on %s: %d\n", state ? "seal" : "unseal", ret);
+>> +       return ret;
+>> +}
+>> +
+>> +static u8 bq27xxx_battery_checksum_dm_block(struct bq27xxx_dm_buf *buf)
+>> +{
+>> +       u16 sum = 0;
+>> +       int i;
+>> +
+>> +       for (i = 0; i < BQ27XXX_DM_SZ; i++)
+>> +               sum += buf->a[i];
+>> +       sum &= 0xff;
+>> +
+>> +       return 0xff - sum;
+>> +}
+>> +
+>> +static int bq27xxx_battery_read_dm_block(struct bq27xxx_device_info *di,
+>> +                                        struct bq27xxx_dm_buf *buf)
+>> +{
+>> +       int ret;
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_DM_CLASS], buf->class, true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_DM_BLOCK], buf->block, true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       BQ27XXX_MSLEEP(1);
+>> +
+>> +       ret = di->bus.read_bulk(di, di->regs[BQ27XXX_DM_DATA], buf->a, BQ27XXX_DM_SZ);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       ret = di->bus.read(di, di->regs[BQ27XXX_DM_CKSUM], true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       if ((u8)ret != bq27xxx_battery_checksum_dm_block(buf)) {
+>> +               ret = -EINVAL;
+>> +               goto out;
+>> +       }
+>> +
+>> +       buf->full = true;
+>> +       buf->updt = false;
+>> +       return 0;
+>> +
+>> +out:
+>> +       dev_err(di->dev, "bus error reading chip memory: %d\n", ret);
+>> +       return ret;
+>> +}
+>> +
+>> +static void bq27xxx_battery_update_dm_block(struct bq27xxx_device_info *di,
+>> +                                           struct bq27xxx_dm_buf *buf,
+>> +                                           enum bq27xxx_dm_reg_id reg_id,
+>> +                                           unsigned int val)
+>> +{
+>> +       struct bq27xxx_dm_reg *reg = &di->dm_regs[reg_id];
+>> +       const char* str = bq27xxx_dm_reg_name[reg_id];
+>> +       u16 *prev = bq27xxx_dm_reg_ptr(buf, reg);
+>> +
+>> +       if (prev == NULL) {
+>> +               dev_warn(di->dev, "buffer does not match %s dm spec\n", str);
+>> +               return;
+>> +       }
+>> +
+>> +       if (reg->bytes != 2) {
+>> +               dev_warn(di->dev, "%s dm spec has unsupported byte size\n", str);
+>> +               return;
+>> +       }
+>> +
+>> +       if (!buf->full)
+>> +               return;
+>> +
+>> +       if (be16_to_cpup(prev) == val) {
+>> +               dev_info(di->dev, "%s has %u\n", str, val);
+>> +               return;
+>> +       }
+>> +
+>> +       dev_info(di->dev, "update %s to %u\n", str, val);
+>> +
+>> +       *prev = cpu_to_be16(val);
+>> +       buf->updt = true;
+>> +}
+>> +
+>> +static int bq27xxx_battery_set_cfgupdate(struct bq27xxx_device_info *di,
+>> +                                        bool state)
+>> +{
+>> +       int ret, try=100;
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_REG_CTRL],
+>> +                           state ? BQ27XXX_SET_CFGUPDATE : BQ27XXX_SOFT_RESET,
+>> +                           false);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       do {
+>> +               BQ27XXX_MSLEEP(25);
+>> +               ret = di->bus.read(di, di->regs[BQ27XXX_REG_FLAGS], false);
+>> +               if (ret < 0)
+>> +                       goto out;
+>> +       } while (!(ret & BQ27XXX_FLAG_CFGUP) == state && --try);
+>> +
+>> +       if (100-try) /* remove after other cfgupdate parts are tested */
+>> +               dev_info(di->dev, "cfgupdate %d, retries %d\n", state, 100-try);
+>> +
+>> +       if (try)
+>> +               return 0;
+>> +
+>> +       dev_err(di->dev, "timed out waiting for cfgupdate flag %d\n", state);
+>> +       return -EINVAL;
+>> +
+>> +out:
+>> +       dev_err(di->dev, "bus error on %s: %d\n", state ? "set_cfgupdate" : "soft_reset", ret);
+>> +       return ret;
+>> +}
+>> +
+>> +static int bq27xxx_battery_write_dm_block(struct bq27xxx_device_info *di,
+>> +                                         struct bq27xxx_dm_buf *buf)
+>> +{
+>> +       bool cfgup = di->chip == BQ27421; /* assume group supports cfgupdate */
+>> +       int ret;
+>> +
+>> +       if (!buf->updt)
+>> +               return 0;
+>> +
+>> +       if (cfgup) {
+>> +               ret = bq27xxx_battery_set_cfgupdate(di, true);
+>> +               if (ret < 0)
+>> +                       return ret;
+>> +       }
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_DM_CTRL], 0, true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_DM_CLASS], buf->class, true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_DM_BLOCK], buf->block, true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       BQ27XXX_MSLEEP(1);
+>> +
+>> +       ret = di->bus.write_bulk(di, di->regs[BQ27XXX_DM_DATA], buf->a, BQ27XXX_DM_SZ);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       ret = di->bus.write(di, di->regs[BQ27XXX_DM_CKSUM],
+>> +                           bq27xxx_battery_checksum_dm_block(buf), true);
+>> +       if (ret < 0)
+>> +               goto out;
+>> +
+>> +       /* THE FOLLOWING SEQUENCE IS TOXIC. DO NOT USE!
+>> +        * If the 'time' delay is insufficient, NVM corruption results on
+>> +        * the '425 chip (and perhaps others), which could damage the chip.
+>> +        * It was suggested in this TI tool:
+>> +        *   http://git.ti.com/bms-linux/bqtool/blobs/master/gauge.c#line328
+>> +        *
+>> +        * 1. MSLEEP(time) after above write(BQ27XXX_DM_CKSUM, ...)
+>> +        * 2. write(BQ27XXX_DM_BLOCK, buf->block)
+>> +        * 3. sum = read(BQ27XXX_DM_CKSUM)
+>> +        * 4. if (sum != bq27xxx_battery_checksum_dm_block(buf))
+>> +        *      report error
+>> +        */
+>> +
+>> +       if (cfgup) {
+>> +               BQ27XXX_MSLEEP(1);
+>> +               ret = bq27xxx_battery_set_cfgupdate(di, false);
+>> +               if (ret < 0)
+>> +                       return ret;
+>> +       } else {
+>> +               /* flash DM updates in <100ms, but reset time isn't documented */
+>> +               BQ27XXX_MSLEEP(400);
+>> +       }
+>> +
+>> +       buf->updt = false;
+>> +       return 0;
+>> +
+>> +out:
+>> +       if (cfgup)
+>> +               bq27xxx_battery_set_cfgupdate(di, false);
+>> +
+>> +       dev_err(di->dev, "bus error writing chip memory: %d\n", ret);
+>> +       return ret;
+>> +}
+>> +
+>> +static void bq27xxx_battery_set_config(struct bq27xxx_device_info *di,
+>> +                                      struct power_supply_battery_info *info)
+>> +{
+>> +       struct bq27xxx_dm_buf bd = BQ27XXX_DM_BUF(di, BQ27XXX_DM_DESIGN_CAPACITY);
+>> +       struct bq27xxx_dm_buf bt = BQ27XXX_DM_BUF(di, BQ27XXX_DM_TERMINATE_VOLTAGE);
+>> +
+>> +       if (info->charge_full_design_uah != -EINVAL
+>> +        && info->energy_full_design_uwh != -EINVAL) {
+>> +               bq27xxx_battery_read_dm_block(di, &bd);
+>> +               /* assume design energy & capacity are in same block */
+>> +               bq27xxx_battery_update_dm_block(di, &bd,
+>> +                                       BQ27XXX_DM_DESIGN_CAPACITY,
+>> +                                       info->charge_full_design_uah / 1000);
+>> +               bq27xxx_battery_update_dm_block(di, &bd,
+>> +                                       BQ27XXX_DM_DESIGN_ENERGY,
+>> +                                       info->energy_full_design_uwh / 1000);
+>> +       }
+>> +
+>> +       if (info->voltage_min_design_uv != -EINVAL) {
+>> +               bool same = bd.class == bt.class && bd.block == bt.block;
+>> +               if (!same)
+>> +                       bq27xxx_battery_read_dm_block(di, &bt);
+>> +               bq27xxx_battery_update_dm_block(di, same ? &bd : &bt,
+>> +                                       BQ27XXX_DM_TERMINATE_VOLTAGE,
+>> +                                       info->voltage_min_design_uv / 1000);
+>> +       }
+>> +
+>> +       bq27xxx_battery_write_dm_block(di, &bd);
+>> +       bq27xxx_battery_write_dm_block(di, &bt);
+>> +}
+>> +
+>> +void bq27xxx_battery_settings(struct bq27xxx_device_info *di)
+>> +{
+>> +       struct power_supply_battery_info info = {};
+>> +       unsigned int min, max;
+>> +
+>> +       /* functions don't exist for writing data so abort */
+>> +       if (!di->bus.write || !di->bus.write_bulk)
+>> +               return;
+>> +
+>> +       /* no settings to be set for this chipset so abort */
+>> +       if (!di->dm_regs)
+>> +               return;
+>> +
+>> +       if (bq27xxx_battery_set_seal_state(di, false) < 0)
+>> +               return;
+>> +
+>> +       if (power_supply_get_battery_info(di->bat, &info) < 0)
+>> +               goto out;
+>> +
+>> +       if (info.energy_full_design_uwh != info.charge_full_design_uah) {
+>> +               if (info.energy_full_design_uwh == -EINVAL)
+>> +                       dev_warn(di->dev,
+>> +                               "missing battery:energy-full-design-microwatt-hours\n");
+>> +               else if (info.charge_full_design_uah == -EINVAL)
+>> +                       dev_warn(di->dev,
+>> +                               "missing battery:charge-full-design-microamp-hours\n");
+>> +       }
+>> +
+>> +       /* assume min == 0 */
+>> +       max = di->dm_regs[BQ27XXX_DM_DESIGN_ENERGY].max;
+>> +       if (info.energy_full_design_uwh > max * 1000) {
+>> +               dev_err(di->dev,
+>> +                      "invalid battery:energy-full-design-microwatt-hours %d\n",
+>> +                       info.energy_full_design_uwh);
+>> +               info.energy_full_design_uwh = -EINVAL;
+>> +       }
+>> +
+>> +       /* assume min == 0 */
+>> +       max = di->dm_regs[BQ27XXX_DM_DESIGN_CAPACITY].max;
+>> +       if (info.charge_full_design_uah > max * 1000) {
+>> +               dev_err(di->dev,
+>> +                      "invalid battery:charge-full-design-microamp-hours %d\n",
+>> +                       info.charge_full_design_uah);
+>> +               info.charge_full_design_uah = -EINVAL;
+>> +       }
+>> +
+>> +       min = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].min;
+>> +       max = di->dm_regs[BQ27XXX_DM_TERMINATE_VOLTAGE].max;
+>> +       if ((info.voltage_min_design_uv < min * 1000
+>> +         || info.voltage_min_design_uv > max * 1000)
+>> +         && info.voltage_min_design_uv != -EINVAL) {
+>> +               dev_err(di->dev,
+>> +                      "invalid battery:voltage-min-design-microvolt %d\n",
+>> +                       info.voltage_min_design_uv);
+>> +               info.voltage_min_design_uv = -EINVAL;
+>> +       }
+>> +
+>> +       if ((info.energy_full_design_uwh == -EINVAL
+>> +         || info.charge_full_design_uah == -EINVAL)
+>> +         && info.voltage_min_design_uv  == -EINVAL)
+>> +               goto out;
+>> +
+>> +       bq27xxx_battery_set_config(di, &info);
+>> +
+>> +out:
+>> +       bq27xxx_battery_set_seal_state(di, true);
+>> +}
+>> +
+>>  /*
+>>   * Return the battery State-of-Charge
+>>   * Or < 0 if something fails.
+>> @@ -985,6 +1422,13 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>>         case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+>>                 ret = bq27xxx_simple_value(di->charge_design_full, val);
+>>                 break;
+>> +       /*
+>> +        * TODO: Implement these to make registers set from
+>> +        * power_supply_battery_info visible in sysfs.
+>> +        */
+>> +       case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+>> +       case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+>> +               return -EINVAL;
+>>         case POWER_SUPPLY_PROP_CYCLE_COUNT:
+>>                 ret = bq27xxx_simple_value(di->cache.cycle_count, val);
+>>                 break;
+>> @@ -1015,20 +1459,31 @@ static void bq27xxx_external_power_changed(struct power_supply *psy)
+>>         schedule_delayed_work(&di->work, 0);
+>>  }
+>>
+>> +#define BQ27XXX_INIT(c,d,k)   \
+>> +       di->chip       = (c); \
+>> +       di->dm_regs    = (d); \
+>> +       di->unseal_key = (k)
+>> +
+>>  int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>  {
+>>         struct power_supply_desc *psy_desc;
+>> -       struct power_supply_config psy_cfg = { .drv_data = di, };
+>> +       struct power_supply_config psy_cfg = {
+>> +               .of_node = di->dev->of_node,
+>> +               .drv_data = di,
+>> +       };
+>>
+>>         switch(di->chip) {
+>> -       case BQ27520: di->chip = BQ27510; break;
+>> -       case BQ27531: di->chip = BQ27530; break;
+>> -       case BQ27542: di->chip = BQ27541; break;
+>> -       case BQ27546: di->chip = BQ27541; break;
+>> -       case BQ27742: di->chip = BQ27541; break;
+>> -       case BQ27425: di->chip = BQ27421; break;
+>> -       case BQ27441: di->chip = BQ27421; break;
+>> -       case BQ27621: di->chip = BQ27421; break;
+>> +       case BQ27500: BQ27XXX_INIT(BQ27500, bq27500_dm_regs, 0x04143672); break;
+>> +       case BQ27545: BQ27XXX_INIT(BQ27545, bq27545_dm_regs, 0x04143672); break;
+>> +       case BQ27520: BQ27XXX_INIT(BQ27510, 0, 0); break;
+>> +       case BQ27531: BQ27XXX_INIT(BQ27530, 0, 0); break;
+>> +       case BQ27542: BQ27XXX_INIT(BQ27541, 0, 0); break;
+>> +       case BQ27546: BQ27XXX_INIT(BQ27541, 0, 0); break;
+>> +       case BQ27742: BQ27XXX_INIT(BQ27541, 0, 0); break;
+>> +       case BQ27421: BQ27XXX_INIT(BQ27421, bq27421_dm_regs, 0x80008000); break;
+>> +       case BQ27425: BQ27XXX_INIT(BQ27421, bq27425_dm_regs, 0x04143672); break;
+>> +       case BQ27441: BQ27XXX_INIT(BQ27421, bq27421_dm_regs, 0x80008000); break;
+>> +       case BQ27621: BQ27XXX_INIT(BQ27421, bq27621_dm_regs, 0x80008000); break;
+>>         default: break;
+>>         }
+>>
+>> @@ -1055,6 +1510,7 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+>>
+>>         dev_info(di->dev, "support ver. %s enabled\n", DRIVER_VERSION);
+>>
+>> +       bq27xxx_battery_settings(di);
+>>         bq27xxx_battery_update(di);
+>>
+>>         mutex_lock(&bq27xxx_list_lock);
+>> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+>> index 90b7ca1..9a1c30b 100644
+>> --- a/include/linux/power/bq27xxx_battery.h
+>> +++ b/include/linux/power/bq27xxx_battery.h
+>> @@ -66,6 +66,8 @@ struct bq27xxx_device_info {
+>>         int id;
+>>         enum bq27xxx_chip chip;
+>>         const char *name;
+>> +       struct bq27xxx_dm_reg* dm_regs;
+>> +       u32 unseal_key;
+>>         struct bq27xxx_access_methods bus;
+>>         struct bq27xxx_reg_cache cache;
+>>         int charge_design_full;
+>> --
+>> 2.9.3
+>>
