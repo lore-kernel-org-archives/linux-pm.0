@@ -1,130 +1,140 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v19 0/4] Introduce usb charger framework to deal with the
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v19 0/4] Introduce usb charger framework to deal with the
  usb gadget power negotation
-Date: Fri, 10 Mar 2017 15:15:11 +0800
-Message-ID: <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
-References: <cover.1487578977.git.baolin.wang@linaro.org> <87zih3m73h.fsf@notabene.neil.brown.name>
+Date: Fri, 10 Mar 2017 08:27:45 +0000
+Message-ID: <AM5PR04MB29613EEC7C49426020A538B089200@AM5PR04MB2961.eurprd04.prod.outlook.com>
+References: <cover.1487578977.git.baolin.wang@linaro.org>
+ <87zih3m73h.fsf@notabene.neil.brown.name>
  <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com>
  <AM5PR04MB29614C707DE344E5A05FAB3889210@AM5PR04MB2961.eurprd04.prod.outlook.com>
  <CAMz4kuJ31wVhbYOV+LB9tu=Wb7x9gRifcUnQPMiQSqRUjER_kQ@mail.gmail.com>
  <AM5PR04MB296177A37D96564D510FA90389210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+wkZ7webuCK+V9DPuDzdT_Tyy6Dso8==bQPyN9m06vGw@mail.gmail.com> <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
+ <CAMz4ku+wkZ7webuCK+V9DPuDzdT_Tyy6Dso8==bQPyN9m06vGw@mail.gmail.com>
+ <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
+ <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jun Li <jun.li@nxp.com>
-Cc: NeilBrown <neilb@suse.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "grygorii.strashko@ti.com" <grygorii.strashko@ti.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfson>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ve1eur01on0048.outbound.protection.outlook.com ([104.47.1.48]:23410
+        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1755176AbdCJI1t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 Mar 2017 03:27:49 -0500
+In-Reply-To: <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: NeilBrown <neilb@suse.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "grygorii.strashko@ti.com" <grygorii.strashko@ti.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource>
 
-On 10 March 2017 at 14:30, Jun Li <jun.li@nxp.com> wrote:
->> >> >
->> >> > Will generic phy need add extcon as well?
->> >>
->> >> Yes, will add a 'struct extcon_dev*' in 'struct usb_phy', which will
->> >> be common code.
->> >>
->> >
->> > I mean the common code need add 'struct extcon_dev' into both 'struct
->> > phy' and 'struct usb_phy', right? as some/new usb phy use that generic=
- phy
->> driver.
->>
->> Ah, you remind me. Seems we need also add one 'struct extcon_dev' into
->> 'struct phy'.
->>
->> >> >
->> >> >> >
->> >> >> >> Secondly, I also agreed with Peter's comments: Not only USB PHY
->> >> >> >> to register an extcon, but also for the drivers which can
->> >> >> >> detect USB charger type, it may be USB controller driver, USB
->> >> >> >> type-c driver, pmic driver, and these drivers may not have an
->> >> >> >> extcon device since the internal part can finish the vbus detec=
-t.
->> >> >> >
->> >> >> > Whichever part can detect vbus, the driver for that part must be
->> >> >> > able to find the extcon and trigger a notification.
->> >> >> > Maybe one part can detect VBUS, another can measure the
->> >> >> > resistance on ID and a third can work through the state machine
->> >> >> > to determine if D+ and D- are shorted together.
->> >> >> > Somehow these three need to work together to determine what is
->> >> >> plugged
->> >> >> > in to the external connection port.  Somewhere there much an
->> 'extcon'
->> >> >> > device which represents that port and which the three devices
->> >> >> > can find and can interact with.
->> >> >> > I think it makes sense for the usb_phy to be the connection poin=
-t.
->> >> >> > Each of the devices can get to the phy, and the phy can get to
->> >> >> > the
->> >> extcon.
->> >> >> > It doesn't matter very much if the usb phy driver creates the
->> >> >> > extcon, or if something else creates the extcon and the phy
->> >> >> > driver performs a lookup to find it (e.g. based on devicetree in=
-fo).
->> >> >> >
->> >> >> > The point is that there is obviously an external physical
->> >> >> > connection, and so there should be an 'extcon' device that
->> represents it.
->> >> >>
->> >> >> Peter & Jun, is it OK for you every phy has one extcon device to
->> >> >> receive VBUS notification, especially for detecting the charger
->> >> >> type by
->> >> software?
->> >> >>
->> >> >
->> >> > My understanding is phy/usb_phy as the connection point, will send
->> >> > the notification to PMIC driver which actually control the charge
->> >> > current, also this will be done in your common framework, right?
->> >>
->> >> Not in USB charger framework. If we are all agree every usb_phy can
->> >> register one extcon device, can get correct charger type and send out
->> >> correct vbus_draw information, then we don't need USB charger
->> >> framework as Neil suggested. So this will be okay for your case
->> >> (especially for detecting the charger type by software) ?
->> >
->> > In my case, charger detection is done by controller driver and I need
->> > do charger type detection internally, and only pass the current draw
->> > info via phy which will send out, this seems ok for me, but I think it
->> > will be good if you or someone can show us an example user based on th=
-e
->> design Neil suggested.
->> > Will you work out that common code if this USB charger framework is no=
-t
->> needed?
->>
->> I will add  a 'struct extcon_dev*' in 'struct usb_phy' and struct phy=E2=
-=80=9C. Others
->> are already ready if everyone has no complain about current design, exce=
-pt
->
-> Only adding extcon_dev into usb_phy/phy  and all others are ready?
-> My understanding you will also do:
-> - We need find a central place to send the notification(phy common part).
-
-That will include these implementation when adding extcon_dev.
-
-> - If the extcon_dev is directly added in usb_phy/phy, PMIC needs some API=
- to findup it.
-
-PMIC can find extcon device by phandle.
-
->
->> my one concern. (I am afraid if it is enough to send out vbus draw
->> information from USB phy driver, for example you will miss super speed
->> (900mA), which need get the speed information from gadget driver.)
->>
->
-> Can we handle this in USB(so has super speed information) and just send o=
-ut
-> 900mA directly?
-
->From Neil's suggestion, we only have one place to send out current
-information from usb phy, so I have this concern and doubt if we still
-need the USB charger framework.
-
---=20
-Baolin.wang
-Best Regards
+SGkNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCYW9saW4gV2FuZyBb
+bWFpbHRvOmJhb2xpbi53YW5nQGxpbmFyby5vcmddDQo+IFNlbnQ6IEZyaWRheSwgTWFyY2ggMTAs
+IDIwMTcgMzoxNSBQTQ0KPiBUbzogSnVuIExpIDxqdW4ubGlAbnhwLmNvbT4NCj4gQ2M6IE5laWxC
+cm93biA8bmVpbGJAc3VzZS5jb20+OyBGZWxpcGUgQmFsYmkgPGJhbGJpQGtlcm5lbC5vcmc+OyBH
+cmVnIEtIDQo+IDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9yZz47IFNlYmFzdGlhbiBSZWljaGVs
+IDxzcmVAa2VybmVsLm9yZz47IERtaXRyeQ0KPiBFcmVtaW4tU29sZW5pa292IDxkYmFyeXNoa292
+QGdtYWlsLmNvbT47IERhdmlkIFdvb2Rob3VzZQ0KPiA8ZHdtdzJAaW5mcmFkZWFkLm9yZz47IHJv
+YmhAa2VybmVsLm9yZzsgTWFyZWsgU3p5cHJvd3NraQ0KPiA8bS5zenlwcm93c2tpQHNhbXN1bmcu
+Y29tPjsgUnVzbGFuIEJpbG92b2wgPHJ1c2xhbi5iaWxvdm9sQGdtYWlsLmNvbT47DQo+IFBldGVy
+IENoZW4gPHBldGVyLmNoZW5AZnJlZXNjYWxlLmNvbT47IEFsYW4gU3Rlcm4NCj4gPHN0ZXJuQHJv
+d2xhbmQuaGFydmFyZC5lZHU+OyBncnlnb3JpaS5zdHJhc2hrb0B0aS5jb207IFlvc2hpaGlybyBT
+aGltb2RhDQo+IDx5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT47IExlZSBKb25lcyA8
+bGVlLmpvbmVzQGxpbmFyby5vcmc+Ow0KPiBNYXJrIEJyb3duIDxicm9vbmllQGtlcm5lbC5vcmc+
+OyBKb2huIFN0dWx0eiA8am9obi5zdHVsdHpAbGluYXJvLm9yZz47DQo+IENoYXJsZXMgS2VlcGF4
+IDxja2VlcGF4QG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbT47DQo+IHBhdGNoZXNAb3BlbnNv
+dXJjZS53b2xmc29ubWljcm8uY29tOyBMaW51eCBQTSBsaXN0IDxsaW51eC0NCj4gcG1Admdlci5r
+ZXJuZWwub3JnPjsgVVNCIDxsaW51eC11c2JAdmdlci5rZXJuZWwub3JnPjsgZGV2aWNlLQ0KPiBt
+YWlubGluaW5nQGxpc3RzLmxpbnV4Zm91bmRhdGlvbi5vcmc7IExLTUwgPGxpbnV4LWtlcm5lbEB2
+Z2VyLmtlcm5lbC5vcmc+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjE5IDAvNF0gSW50cm9kdWNl
+IHVzYiBjaGFyZ2VyIGZyYW1ld29yayB0byBkZWFsIHdpdGgNCj4gdGhlIHVzYiBnYWRnZXQgcG93
+ZXIgbmVnb3RhdGlvbg0KPiANCj4gT24gMTAgTWFyY2ggMjAxNyBhdCAxNDozMCwgSnVuIExpIDxq
+dW4ubGlAbnhwLmNvbT4gd3JvdGU6DQo+ID4+ID4+ID4NCj4gPj4gPj4gPiBXaWxsIGdlbmVyaWMg
+cGh5IG5lZWQgYWRkIGV4dGNvbiBhcyB3ZWxsPw0KPiA+PiA+Pg0KPiA+PiA+PiBZZXMsIHdpbGwg
+YWRkIGEgJ3N0cnVjdCBleHRjb25fZGV2KicgaW4gJ3N0cnVjdCB1c2JfcGh5Jywgd2hpY2gNCj4g
+Pj4gPj4gd2lsbCBiZSBjb21tb24gY29kZS4NCj4gPj4gPj4NCj4gPj4gPg0KPiA+PiA+IEkgbWVh
+biB0aGUgY29tbW9uIGNvZGUgbmVlZCBhZGQgJ3N0cnVjdCBleHRjb25fZGV2JyBpbnRvIGJvdGgN
+Cj4gPj4gPiAnc3RydWN0IHBoeScgYW5kICdzdHJ1Y3QgdXNiX3BoeScsIHJpZ2h0PyBhcyBzb21l
+L25ldyB1c2IgcGh5IHVzZQ0KPiA+PiA+IHRoYXQgZ2VuZXJpYyBwaHkNCj4gPj4gZHJpdmVyLg0K
+PiA+Pg0KPiA+PiBBaCwgeW91IHJlbWluZCBtZS4gU2VlbXMgd2UgbmVlZCBhbHNvIGFkZCBvbmUg
+J3N0cnVjdCBleHRjb25fZGV2Jw0KPiA+PiBpbnRvICdzdHJ1Y3QgcGh5Jy4NCj4gPj4NCj4gPj4g
+Pj4gPg0KPiA+PiA+PiA+PiA+DQo+ID4+ID4+ID4+ID4+IFNlY29uZGx5LCBJIGFsc28gYWdyZWVk
+IHdpdGggUGV0ZXIncyBjb21tZW50czogTm90IG9ubHkgVVNCDQo+ID4+ID4+ID4+ID4+IFBIWSB0
+byByZWdpc3RlciBhbiBleHRjb24sIGJ1dCBhbHNvIGZvciB0aGUgZHJpdmVycyB3aGljaA0KPiA+
+PiA+PiA+PiA+PiBjYW4gZGV0ZWN0IFVTQiBjaGFyZ2VyIHR5cGUsIGl0IG1heSBiZSBVU0IgY29u
+dHJvbGxlcg0KPiA+PiA+PiA+PiA+PiBkcml2ZXIsIFVTQiB0eXBlLWMgZHJpdmVyLCBwbWljIGRy
+aXZlciwgYW5kIHRoZXNlIGRyaXZlcnMNCj4gPj4gPj4gPj4gPj4gbWF5IG5vdCBoYXZlIGFuIGV4
+dGNvbiBkZXZpY2Ugc2luY2UgdGhlIGludGVybmFsIHBhcnQgY2FuIGZpbmlzaA0KPiB0aGUgdmJ1
+cyBkZXRlY3QuDQo+ID4+ID4+ID4+ID4NCj4gPj4gPj4gPj4gPiBXaGljaGV2ZXIgcGFydCBjYW4g
+ZGV0ZWN0IHZidXMsIHRoZSBkcml2ZXIgZm9yIHRoYXQgcGFydCBtdXN0DQo+ID4+ID4+ID4+ID4g
+YmUgYWJsZSB0byBmaW5kIHRoZSBleHRjb24gYW5kIHRyaWdnZXIgYSBub3RpZmljYXRpb24uDQo+
+ID4+ID4+ID4+ID4gTWF5YmUgb25lIHBhcnQgY2FuIGRldGVjdCBWQlVTLCBhbm90aGVyIGNhbiBt
+ZWFzdXJlIHRoZQ0KPiA+PiA+PiA+PiA+IHJlc2lzdGFuY2Ugb24gSUQgYW5kIGEgdGhpcmQgY2Fu
+IHdvcmsgdGhyb3VnaCB0aGUgc3RhdGUNCj4gPj4gPj4gPj4gPiBtYWNoaW5lIHRvIGRldGVybWlu
+ZSBpZiBEKyBhbmQgRC0gYXJlIHNob3J0ZWQgdG9nZXRoZXIuDQo+ID4+ID4+ID4+ID4gU29tZWhv
+dyB0aGVzZSB0aHJlZSBuZWVkIHRvIHdvcmsgdG9nZXRoZXIgdG8gZGV0ZXJtaW5lIHdoYXQNCj4g
+Pj4gPj4gPj4gPiBpcw0KPiA+PiA+PiA+PiBwbHVnZ2VkDQo+ID4+ID4+ID4+ID4gaW4gdG8gdGhl
+IGV4dGVybmFsIGNvbm5lY3Rpb24gcG9ydC4gIFNvbWV3aGVyZSB0aGVyZSBtdWNoIGFuDQo+ID4+
+ICdleHRjb24nDQo+ID4+ID4+ID4+ID4gZGV2aWNlIHdoaWNoIHJlcHJlc2VudHMgdGhhdCBwb3J0
+IGFuZCB3aGljaCB0aGUgdGhyZWUgZGV2aWNlcw0KPiA+PiA+PiA+PiA+IGNhbiBmaW5kIGFuZCBj
+YW4gaW50ZXJhY3Qgd2l0aC4NCj4gPj4gPj4gPj4gPiBJIHRoaW5rIGl0IG1ha2VzIHNlbnNlIGZv
+ciB0aGUgdXNiX3BoeSB0byBiZSB0aGUgY29ubmVjdGlvbiBwb2ludC4NCj4gPj4gPj4gPj4gPiBF
+YWNoIG9mIHRoZSBkZXZpY2VzIGNhbiBnZXQgdG8gdGhlIHBoeSwgYW5kIHRoZSBwaHkgY2FuIGdl
+dA0KPiA+PiA+PiA+PiA+IHRvIHRoZQ0KPiA+PiA+PiBleHRjb24uDQo+ID4+ID4+ID4+ID4gSXQg
+ZG9lc24ndCBtYXR0ZXIgdmVyeSBtdWNoIGlmIHRoZSB1c2IgcGh5IGRyaXZlciBjcmVhdGVzIHRo
+ZQ0KPiA+PiA+PiA+PiA+IGV4dGNvbiwgb3IgaWYgc29tZXRoaW5nIGVsc2UgY3JlYXRlcyB0aGUg
+ZXh0Y29uIGFuZCB0aGUgcGh5DQo+ID4+ID4+ID4+ID4gZHJpdmVyIHBlcmZvcm1zIGEgbG9va3Vw
+IHRvIGZpbmQgaXQgKGUuZy4gYmFzZWQgb24gZGV2aWNldHJlZSBpbmZvKS4NCj4gPj4gPj4gPj4g
+Pg0KPiA+PiA+PiA+PiA+IFRoZSBwb2ludCBpcyB0aGF0IHRoZXJlIGlzIG9idmlvdXNseSBhbiBl
+eHRlcm5hbCBwaHlzaWNhbA0KPiA+PiA+PiA+PiA+IGNvbm5lY3Rpb24sIGFuZCBzbyB0aGVyZSBz
+aG91bGQgYmUgYW4gJ2V4dGNvbicgZGV2aWNlIHRoYXQNCj4gPj4gcmVwcmVzZW50cyBpdC4NCj4g
+Pj4gPj4gPj4NCj4gPj4gPj4gPj4gUGV0ZXIgJiBKdW4sIGlzIGl0IE9LIGZvciB5b3UgZXZlcnkg
+cGh5IGhhcyBvbmUgZXh0Y29uIGRldmljZQ0KPiA+PiA+PiA+PiB0byByZWNlaXZlIFZCVVMgbm90
+aWZpY2F0aW9uLCBlc3BlY2lhbGx5IGZvciBkZXRlY3RpbmcgdGhlDQo+ID4+ID4+ID4+IGNoYXJn
+ZXIgdHlwZSBieQ0KPiA+PiA+PiBzb2Z0d2FyZT8NCj4gPj4gPj4gPj4NCj4gPj4gPj4gPg0KPiA+
+PiA+PiA+IE15IHVuZGVyc3RhbmRpbmcgaXMgcGh5L3VzYl9waHkgYXMgdGhlIGNvbm5lY3Rpb24g
+cG9pbnQsIHdpbGwNCj4gPj4gPj4gPiBzZW5kIHRoZSBub3RpZmljYXRpb24gdG8gUE1JQyBkcml2
+ZXIgd2hpY2ggYWN0dWFsbHkgY29udHJvbCB0aGUNCj4gPj4gPj4gPiBjaGFyZ2UgY3VycmVudCwg
+YWxzbyB0aGlzIHdpbGwgYmUgZG9uZSBpbiB5b3VyIGNvbW1vbiBmcmFtZXdvcmssDQo+IHJpZ2h0
+Pw0KPiA+PiA+Pg0KPiA+PiA+PiBOb3QgaW4gVVNCIGNoYXJnZXIgZnJhbWV3b3JrLiBJZiB3ZSBh
+cmUgYWxsIGFncmVlIGV2ZXJ5IHVzYl9waHkNCj4gPj4gPj4gY2FuIHJlZ2lzdGVyIG9uZSBleHRj
+b24gZGV2aWNlLCBjYW4gZ2V0IGNvcnJlY3QgY2hhcmdlciB0eXBlIGFuZA0KPiA+PiA+PiBzZW5k
+IG91dCBjb3JyZWN0IHZidXNfZHJhdyBpbmZvcm1hdGlvbiwgdGhlbiB3ZSBkb24ndCBuZWVkIFVT
+Qg0KPiA+PiA+PiBjaGFyZ2VyIGZyYW1ld29yayBhcyBOZWlsIHN1Z2dlc3RlZC4gU28gdGhpcyB3
+aWxsIGJlIG9rYXkgZm9yIHlvdXINCj4gPj4gPj4gY2FzZSAoZXNwZWNpYWxseSBmb3IgZGV0ZWN0
+aW5nIHRoZSBjaGFyZ2VyIHR5cGUgYnkgc29mdHdhcmUpID8NCj4gPj4gPg0KPiA+PiA+IEluIG15
+IGNhc2UsIGNoYXJnZXIgZGV0ZWN0aW9uIGlzIGRvbmUgYnkgY29udHJvbGxlciBkcml2ZXIgYW5k
+IEkNCj4gPj4gPiBuZWVkIGRvIGNoYXJnZXIgdHlwZSBkZXRlY3Rpb24gaW50ZXJuYWxseSwgYW5k
+IG9ubHkgcGFzcyB0aGUNCj4gPj4gPiBjdXJyZW50IGRyYXcgaW5mbyB2aWEgcGh5IHdoaWNoIHdp
+bGwgc2VuZCBvdXQsIHRoaXMgc2VlbXMgb2sgZm9yDQo+ID4+ID4gbWUsIGJ1dCBJIHRoaW5rIGl0
+IHdpbGwgYmUgZ29vZCBpZiB5b3Ugb3Igc29tZW9uZSBjYW4gc2hvdyB1cyBhbg0KPiA+PiA+IGV4
+YW1wbGUgdXNlciBiYXNlZCBvbiB0aGUNCj4gPj4gZGVzaWduIE5laWwgc3VnZ2VzdGVkLg0KPiA+
+PiA+IFdpbGwgeW91IHdvcmsgb3V0IHRoYXQgY29tbW9uIGNvZGUgaWYgdGhpcyBVU0IgY2hhcmdl
+ciBmcmFtZXdvcmsgaXMNCj4gPj4gPiBub3QNCj4gPj4gbmVlZGVkPw0KPiA+Pg0KPiA+PiBJIHdp
+bGwgYWRkICBhICdzdHJ1Y3QgZXh0Y29uX2RldionIGluICdzdHJ1Y3QgdXNiX3BoeScgYW5kIHN0
+cnVjdA0KPiA+PiBwaHnigJwuIE90aGVycyBhcmUgYWxyZWFkeSByZWFkeSBpZiBldmVyeW9uZSBo
+YXMgbm8gY29tcGxhaW4gYWJvdXQNCj4gPj4gY3VycmVudCBkZXNpZ24sIGV4Y2VwdA0KPiA+DQo+
+ID4gT25seSBhZGRpbmcgZXh0Y29uX2RldiBpbnRvIHVzYl9waHkvcGh5ICBhbmQgYWxsIG90aGVy
+cyBhcmUgcmVhZHk/DQo+ID4gTXkgdW5kZXJzdGFuZGluZyB5b3Ugd2lsbCBhbHNvIGRvOg0KPiA+
+IC0gV2UgbmVlZCBmaW5kIGEgY2VudHJhbCBwbGFjZSB0byBzZW5kIHRoZSBub3RpZmljYXRpb24o
+cGh5IGNvbW1vbiBwYXJ0KS4NCj4gDQo+IFRoYXQgd2lsbCBpbmNsdWRlIHRoZXNlIGltcGxlbWVu
+dGF0aW9uIHdoZW4gYWRkaW5nIGV4dGNvbl9kZXYuDQo+IA0KDQpPSywgdGhhbmtzLg0KDQo+ID4g
+LSBJZiB0aGUgZXh0Y29uX2RldiBpcyBkaXJlY3RseSBhZGRlZCBpbiB1c2JfcGh5L3BoeSwgUE1J
+QyBuZWVkcyBzb21lDQo+IEFQSSB0byBmaW5kdXAgaXQuDQo+IA0KPiBQTUlDIGNhbiBmaW5kIGV4
+dGNvbiBkZXZpY2UgYnkgcGhhbmRsZS4NCg0KZXh0Y29uX2Rldihub3QgYSByZWZlcmVuY2UgcG9p
+bnRlcikgaXMgZGlyZWN0bHkgYWRkZWQgaW4gdXNiX3BoeS9waHksIG5vdCB2aWEgZGV2aWNldHJl
+ZSwNCmhvdyBQTUlDIGZpbmQgaXQgYnkgcGhhbmRsZT8NCiANCj4gDQo+ID4NCj4gPj4gbXkgb25l
+IGNvbmNlcm4uIChJIGFtIGFmcmFpZCBpZiBpdCBpcyBlbm91Z2ggdG8gc2VuZCBvdXQgdmJ1cyBk
+cmF3DQo+ID4+IGluZm9ybWF0aW9uIGZyb20gVVNCIHBoeSBkcml2ZXIsIGZvciBleGFtcGxlIHlv
+dSB3aWxsIG1pc3Mgc3VwZXINCj4gPj4gc3BlZWQgKDkwMG1BKSwgd2hpY2ggbmVlZCBnZXQgdGhl
+IHNwZWVkIGluZm9ybWF0aW9uIGZyb20gZ2FkZ2V0DQo+ID4+IGRyaXZlci4pDQo+ID4+DQo+ID4N
+Cj4gPiBDYW4gd2UgaGFuZGxlIHRoaXMgaW4gVVNCKHNvIGhhcyBzdXBlciBzcGVlZCBpbmZvcm1h
+dGlvbikgYW5kIGp1c3QNCj4gPiBzZW5kIG91dCA5MDBtQSBkaXJlY3RseT8NCj4gDQo+IEZyb20g
+TmVpbCdzIHN1Z2dlc3Rpb24sIHdlIG9ubHkgaGF2ZSBvbmUgcGxhY2UgdG8gc2VuZCBvdXQgY3Vy
+cmVudA0KPiBpbmZvcm1hdGlvbiBmcm9tIHVzYiBwaHksIHNvIEkgaGF2ZSB0aGlzIGNvbmNlcm4g
+YW5kIGRvdWJ0IGlmIHdlIHN0aWxsIG5lZWQNCj4gdGhlIFVTQiBjaGFyZ2VyIGZyYW1ld29yay4N
+Cg0KU28gaWYgcHV0IGl0IGluIHBoeS91c2JfcGh5LCB0aGlzIGlzIGEgcHJvYmxlbSwgdGhhdCBv
+bmx5IG9uZSBwbGFjZSBzaG91bGQgaGF2ZQ0KdGhlIGluZm9yIG9mIGJvdGggc3BlZWQgYW5kIHVz
+YiBzdGF0ZSwgaG93IGFib3V0IHB1dCBpdCBhdCB1c2JfZ2FkZ2V0LCB0aGVuLA0KZS5nLiBzZW5k
+IHRoZSBub3RpZmljYXRpb24gaW4gdXNiX2dhZGdldF92YnVzX2Nvbm5lY3QoKT8NCg0KTGkgSnVu
+DQoNCj4gDQo+IC0tDQo+IEJhb2xpbi53YW5nDQo+IEJlc3QgUmVnYXJkcw0K
