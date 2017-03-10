@@ -1,76 +1,120 @@
-From: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Subject: Re: [Xen-devel] [PATCH v5 2/3] x86: Remap GDT tables in the Fixmap
- section
-Date: Thu, 9 Mar 2017 18:17:18 -0500
-Message-ID: <36579cc4-05e7-a448-767c-b9ad940362fc@oracle.com>
-References: <20170306220348.79702-1-thgarnie@google.com>
- <20170306220348.79702-2-thgarnie@google.com>
- <CALCETrVXHc-EAhBtdhL9FXSW1G2VbohRY4UJuOtpRG1K0Q-Ogg@mail.gmail.com>
- <17ffcc5b-1c9a-51b6-272a-5eaecf1bc0c4@citrix.com>
- <CALCETrWv-u7OdjWDY+5eF7p-ngPun-yYf0QegMzYc6MGVQd-4w@mail.gmail.com>
- <CAJcbSZExVWA0jvAoxLLc+58Ag9cHchifrHP=fFfzU_onHo2PyA@mail.gmail.com>
- <5cf31779-45c5-d37f-86bc-d5afb3fb7ab6@oracle.com>
- <51c23e92-d1f0-427f-e069-c92fc4ed6226@oracle.com>
- <CAJcbSZEnUBfLHjf+bHqY0JQhQXD9urX45BXrQjx=1=A5gPpp_w@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <CAJcbSZEnUBfLHjf+bHqY0JQhQXD9urX45BXrQjx=1=A5gPpp_w@mail.gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Michal Hocko <mhocko@suse.com>, Stanislaw Gruszka <sgruszka@redhat.com>, kvm list <kvm@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Matt Fleming <matt@codeblueprint.co.uk>, Frederic Weisbecker <fweisbec@gmail.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Chris Wilson <chris@chris-wilson.co.uk>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Dave Hansen <dave.hansen@intel.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, "linux-efi@vger.kernel.org" <linux-efi@vger.kernel.org>, Alexander Potapenko <glider@google.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, "kernel-hardening@lists.openwall.com" <kernel-hardening@lists.openwall.com>, Jiri Olsa <jolsa@redhat.com>, zijun_hu <zijun_hu@htc.com>, Prarit
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v9.3 6/8] power: bq27xxx_battery: Keep track of specific chip id
+Date: Thu,  9 Mar 2017 16:27:25 -0800
+Message-ID: <20170310002726.30949-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:34254 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750781AbdCJA1Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Mar 2017 19:27:24 -0500
+Received: by mail-pf0-f195.google.com with SMTP id o126so8864793pfb.1
+        for <linux-pm@vger.kernel.org>; Thu, 09 Mar 2017 16:27:24 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org
+Cc: Liam Breck <kernel@networkimprov.net>
 
-On 03/09/2017 05:31 PM, Thomas Garnier wrote:
-> On Thu, Mar 9, 2017 at 2:13 PM, Boris Ostrovsky
-> <boris.ostrovsky@oracle.com> wrote:
->>>> I don't have any experience with Xen so it would be great if virtme can test it.
->>> I am pretty sure I tested this series at some point but I'll test it again.
->>>
->>
->> Fails 32-bit build:
->>
->>
->> /home/build/linux-boris/arch/x86/kvm/vmx.c: In function ‘segment_base’:
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: ‘host_gdt’
->> undeclared (first use in this function)
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: (Each undeclared
->> identifier is reported only once
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: for each
->> function it appears in.)
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: type defaults to
->> ‘int’ in declaration of ‘type name’
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: error: type defaults to
->> ‘int’ in declaration of ‘type name’
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: warning: initialization
->> from incompatible pointer type
->> /home/build/linux-boris/arch/x86/kvm/vmx.c:2054: warning: unused
->> variable ‘gdt’
->>
->>
->> -boris
-> It seems that I forgot to remove line 2054 on the rebase. My 32-bit
-> build comes clean but I assume it is not good enough compare to the
-> full version I build for 64-bit KVM testing.
->
-> Remove just this line and it should build fine, I will fix this on the
-> next iteration.
->
-> Thanks for testing,
->
+From: Liam Breck <kernel@networkimprov.net>
 
+Pass actual chip ID into _setup(), which translates it to a group ID,
+to allow support for all chips by the power_supply_battery_info code.
+There are no functional changes to the driver.
 
-So this, in fact, does break Xen in that the hypercall to set GDT fails.
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+---
+ drivers/power/supply/bq27xxx_battery.c     | 12 ++++++++++++
+ drivers/power/supply/bq27xxx_battery_i2c.c | 16 ++++++++--------
+ include/linux/power/bq27xxx_battery.h      | 24 +++++++++++++++++-------
+ 3 files changed, 37 insertions(+), 15 deletions(-)
 
-I will have lo look at this tomorrow but I definitely at least built
-with v3 of this series. And I don't see why I wouldn't have tested it
-once I built it.
-
--boris
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index 7272d1e..8ce2940 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -1020,6 +1020,18 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
+ 	struct power_supply_desc *psy_desc;
+ 	struct power_supply_config psy_cfg = { .drv_data = di, };
+ 
++	switch(di->chip) {
++	case BQ27520: di->chip = BQ27510; break;
++	case BQ27531: di->chip = BQ27530; break;
++	case BQ27542: di->chip = BQ27541; break;
++	case BQ27546: di->chip = BQ27541; break;
++	case BQ27742: di->chip = BQ27541; break;
++	case BQ27425: di->chip = BQ27421; break;
++	case BQ27441: di->chip = BQ27421; break;
++	case BQ27621: di->chip = BQ27421; break;
++	default: break;
++	}
++
+ 	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+ 	mutex_init(&di->lock);
+ 	di->regs = bq27xxx_regs[di->chip];
+diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
+index 5c5c3a6..13def59 100644
+--- a/drivers/power/supply/bq27xxx_battery_i2c.c
++++ b/drivers/power/supply/bq27xxx_battery_i2c.c
+@@ -150,18 +150,18 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
+ 	{ "bq27210", BQ27010 },
+ 	{ "bq27500", BQ27500 },
+ 	{ "bq27510", BQ27510 },
+-	{ "bq27520", BQ27510 },
++	{ "bq27520", BQ27520 },
+ 	{ "bq27530", BQ27530 },
+-	{ "bq27531", BQ27530 },
++	{ "bq27531", BQ27531 },
+ 	{ "bq27541", BQ27541 },
+-	{ "bq27542", BQ27541 },
+-	{ "bq27546", BQ27541 },
+-	{ "bq27742", BQ27541 },
++	{ "bq27542", BQ27542 },
++	{ "bq27546", BQ27546 },
++	{ "bq27742", BQ27742 },
+ 	{ "bq27545", BQ27545 },
+ 	{ "bq27421", BQ27421 },
+-	{ "bq27425", BQ27421 },
+-	{ "bq27441", BQ27421 },
+-	{ "bq27621", BQ27421 },
++	{ "bq27425", BQ27425 },
++	{ "bq27441", BQ27441 },
++	{ "bq27621", BQ27621 },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
+diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
+index 92df553..90b7ca1 100644
+--- a/include/linux/power/bq27xxx_battery.h
++++ b/include/linux/power/bq27xxx_battery.h
+@@ -3,13 +3,23 @@
+ 
+ enum bq27xxx_chip {
+ 	BQ27000 = 1, /* bq27000, bq27200 */
+-	BQ27010, /* bq27010, bq27210 */
+-	BQ27500, /* bq27500 */
+-	BQ27510, /* bq27510, bq27520 */
+-	BQ27530, /* bq27530, bq27531 */
+-	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
+-	BQ27545, /* bq27545 */
+-	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
++	BQ27010 = 2, /* bq27010, bq27210 */
++	BQ27500 = 3, /* bq27500 */
++	BQ27510 = 4, /* bq27510, bq27520 */
++	BQ27530 = 5, /* bq27530, bq27531 */
++	BQ27541 = 6, /* bq27541, bq27542, bq27546, bq27742 */
++	BQ27545 = 7, /* bq27545 */
++	BQ27421 = 8, /* bq27421, bq27425, bq27441, bq27621 */
++
++	/* members of above groups; translate these in _setup() for .chip */
++	BQ27520 = 101,
++	BQ27531 = 102,
++	BQ27542 = 103,
++	BQ27546 = 104,
++	BQ27742 = 105,
++	BQ27425 = 106,
++	BQ27441 = 107,
++	BQ27621 = 108,
+ };
+ 
+ /**
+-- 
+2.9.3
