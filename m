@@ -1,34 +1,87 @@
-From: "santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org" <santosh.shilimkar-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>
-Subject: Re: [PATCH v4 3/5] dt-bindings: Add TI SCI PM Domains
-Date: Sun, 12 Mar 2017 10:21:17 -0700
-Message-ID: <0a3e4ac3-d541-8d0d-c598-91c9f71cbc39@oracle.com>
-References: <1488882154-21485-1-git-send-email-d-gerlach@ti.com>
- <1488882154-21485-4-git-send-email-d-gerlach@ti.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 14/14] cpufreq: intel_pstate: Introduce pid_in_use()
+Date: Sun, 12 Mar 2017 18:26:40 +0100
+Message-ID: <2052751.2pq54OkNPE@aspire.rjw.lan>
+References: <5656785.7SEhxaGEOz@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1488882154-21485-4-git-send-email-d-gerlach-l0cyMroinI0@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Keerthy <j-keerthy-l0cyMroinI0@public.gmane.org>, Russell King <rmk+kernel-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tero Kristo <t-kristo-l0cyMroinI0@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53402 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S934542AbdCLRcg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 13:32:36 -0400
+In-Reply-To: <5656785.7SEhxaGEOz@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 3/7/17 2:22 AM, Dave Gerlach wrote:
-> Add a generic power domain implementation, TI SCI PM Domains, that
-> will hook into the genpd framework and allow the TI SCI protocol to
-> control device power states.
->
-> Also, provide macros representing each device index as understood
-> by TI SCI to be used in the device node power-domain references.
-> These are identifiers for the K2G devices managed by the PMMC.
->
-> Signed-off-by: Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
-> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
-> ---
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Santosh Shilimkar <ssantosh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Add a new function pid_in_use() to return the information on whether
+or not the PID-based P-state selection algorithm is in use.
+
+That allows a couple of complicated conditions in the code to be
+reduced to simple checks against the new function's return value.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -1949,6 +1949,8 @@ static const struct x86_cpu_id intel_pst
+ 	{}
+ };
+ 
++static bool pid_in_use(void);
++
+ static int intel_pstate_init_cpu(unsigned int cpunum)
+ {
+ 	struct cpudata *cpu;
+@@ -1986,7 +1988,7 @@ static int intel_pstate_init_cpu(unsigne
+ 			intel_pstate_disable_ee(cpunum);
+ 
+ 		intel_pstate_hwp_enable(cpu);
+-	} else if (pstate_funcs.update_util == intel_pstate_update_util_pid) {
++	} else if (pid_in_use()) {
+ 		intel_pstate_pid_reset(cpu);
+ 	}
+ 
+@@ -2360,6 +2362,12 @@ static struct cpufreq_driver intel_cpufr
+ 
+ static struct cpufreq_driver *default_driver = &intel_pstate;
+ 
++static bool pid_in_use(void)
++{
++	return intel_pstate_driver == &intel_pstate &&
++		pstate_funcs.update_util == intel_pstate_update_util_pid;
++}
++
+ static void intel_pstate_driver_cleanup(void)
+ {
+ 	unsigned int cpu;
+@@ -2397,8 +2405,7 @@ static int intel_pstate_register_driver(
+ 		return ret;
+ 	}
+ 
+-	if (intel_pstate_driver == &intel_pstate && !hwp_active &&
+-	    pstate_funcs.update_util == intel_pstate_update_util_pid)
++	if (pid_in_use())
+ 		intel_pstate_debug_expose_params();
+ 
+ 	return 0;
+@@ -2409,8 +2416,7 @@ static int intel_pstate_unregister_drive
+ 	if (hwp_active)
+ 		return -EBUSY;
+ 
+-	if (intel_pstate_driver == &intel_pstate &&
+-	    pstate_funcs.update_util == intel_pstate_update_util_pid)
++	if (pid_in_use())
+ 		intel_pstate_debug_hide_params();
+ 
+ 	cpufreq_unregister_driver(intel_pstate_driver);
