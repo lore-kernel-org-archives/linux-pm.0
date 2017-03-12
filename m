@@ -1,173 +1,75 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 12/14] cpufreq: intel_pstate: Move cpu_defaults definitions
-Date: Sun, 12 Mar 2017 18:23:12 +0100
-Message-ID: <7732135.4E306zIhbj@aspire.rjw.lan>
-References: <5656785.7SEhxaGEOz@aspire.rjw.lan>
+From: Russell King <rmk+kernel@armlinux.org.uk>
+Subject: [PATCH RFC 1/3] thermal: allow hwmon devices to be created for of-thermal
+ zones
+Date: Sun, 12 Mar 2017 19:07:40 +0000
+Message-ID: <E1cn8qC-0002uz-PB@rmk-PC.armlinux.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5656785.7SEhxaGEOz@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:45634 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934142AbdCLTIG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 15:08:06 -0400
+Content-Disposition: inline
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory Clement <gregory.clement@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Allow hwmon devices to be optionally created for of-thermal zones,
+rather than permanently denying them "in case" there is a hwmon
+driver duplicating the thermal driver.
 
-Move the definitions of the cpu_defaults structures after the
-definitions of utilization update callback routines to avoid
-extra declarations of the latter.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
 ---
- drivers/cpufreq/intel_pstate.c |  129 +++++++++++++++++++----------------------
- 1 file changed, 62 insertions(+), 67 deletions(-)
+Without this, "sensors" is unable to report the temperature of the
+Dove SoC when it supports thermal zones.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1560,73 +1560,6 @@ static int knl_get_turbo_pstate(void)
- 	return ret;
- }
+ Documentation/devicetree/bindings/thermal/thermal.txt | 3 +++
+ arch/arm/boot/dts/dove.dtsi                           | 1 +
+ drivers/thermal/of-thermal.c                          | 3 ++-
+ 3 files changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt b/Documentation/devicetree/bindings/thermal/thermal.txt
+index 88b6ea1ad290..1478735fff85 100644
+--- a/Documentation/devicetree/bindings/thermal/thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+@@ -175,6 +175,9 @@ containing trip nodes and one sub-node containing all the zone cooling maps.
+ 			2000mW, while on a 10'' tablet is around
+ 			4500mW.
  
--static void intel_pstate_update_util_pid(struct update_util_data *data,
--					 u64 time, unsigned int flags);
--static void intel_pstate_update_util(struct update_util_data *data, u64 time,
--				     unsigned int flags);
--
--static struct cpu_defaults core_params = {
--	.funcs = {
--		.get_max = core_get_max_pstate,
--		.get_max_physical = core_get_max_pstate_physical,
--		.get_min = core_get_min_pstate,
--		.get_turbo = core_get_turbo_pstate,
--		.get_scaling = core_get_scaling,
--		.get_val = core_get_val,
--		.update_util = intel_pstate_update_util_pid,
--	},
--};
--
--static const struct cpu_defaults silvermont_params = {
--	.funcs = {
--		.get_max = atom_get_max_pstate,
--		.get_max_physical = atom_get_max_pstate,
--		.get_min = atom_get_min_pstate,
--		.get_turbo = atom_get_turbo_pstate,
--		.get_val = atom_get_val,
--		.get_scaling = silvermont_get_scaling,
--		.get_vid = atom_get_vid,
--		.update_util = intel_pstate_update_util,
--	},
--};
--
--static const struct cpu_defaults airmont_params = {
--	.funcs = {
--		.get_max = atom_get_max_pstate,
--		.get_max_physical = atom_get_max_pstate,
--		.get_min = atom_get_min_pstate,
--		.get_turbo = atom_get_turbo_pstate,
--		.get_val = atom_get_val,
--		.get_scaling = airmont_get_scaling,
--		.get_vid = atom_get_vid,
--		.update_util = intel_pstate_update_util,
--	},
--};
--
--static const struct cpu_defaults knl_params = {
--	.funcs = {
--		.get_max = core_get_max_pstate,
--		.get_max_physical = core_get_max_pstate_physical,
--		.get_min = core_get_min_pstate,
--		.get_turbo = knl_get_turbo_pstate,
--		.get_scaling = core_get_scaling,
--		.get_val = core_get_val,
--		.update_util = intel_pstate_update_util_pid,
--	},
--};
--
--static const struct cpu_defaults bxt_params = {
--	.funcs = {
--		.get_max = core_get_max_pstate,
--		.get_max_physical = core_get_max_pstate_physical,
--		.get_min = core_get_min_pstate,
--		.get_turbo = core_get_turbo_pstate,
--		.get_scaling = core_get_scaling,
--		.get_val = core_get_val,
--		.update_util = intel_pstate_update_util,
--	},
--};
--
- static void intel_pstate_get_min_max(struct cpudata *cpu, int *min, int *max)
- {
- 	int max_perf = cpu->pstate.turbo_pstate;
-@@ -1932,6 +1865,68 @@ static void intel_pstate_update_util(str
- 	}
- }
++- linux,hwmon:		Allow Linux to create hwmon devices for the thermal
++  Type: bool		zone.
++
+ Note: The delay properties are bound to the maximum dT/dt (temperature
+ derivative over time) in two situations for a thermal zone:
+ (i)  - when passive cooling is activated (polling-delay-passive); and
+diff --git a/arch/arm/boot/dts/dove.dtsi b/arch/arm/boot/dts/dove.dtsi
+index 40fb98687230..00f5971cd039 100644
+--- a/arch/arm/boot/dts/dove.dtsi
++++ b/arch/arm/boot/dts/dove.dtsi
+@@ -804,6 +804,7 @@
  
-+static struct cpu_defaults core_params = {
-+	.funcs = {
-+		.get_max = core_get_max_pstate,
-+		.get_max_physical = core_get_max_pstate_physical,
-+		.get_min = core_get_min_pstate,
-+		.get_turbo = core_get_turbo_pstate,
-+		.get_scaling = core_get_scaling,
-+		.get_val = core_get_val,
-+		.update_util = intel_pstate_update_util_pid,
-+	},
-+};
-+
-+static const struct cpu_defaults silvermont_params = {
-+	.funcs = {
-+		.get_max = atom_get_max_pstate,
-+		.get_max_physical = atom_get_max_pstate,
-+		.get_min = atom_get_min_pstate,
-+		.get_turbo = atom_get_turbo_pstate,
-+		.get_val = atom_get_val,
-+		.get_scaling = silvermont_get_scaling,
-+		.get_vid = atom_get_vid,
-+		.update_util = intel_pstate_update_util,
-+	},
-+};
-+
-+static const struct cpu_defaults airmont_params = {
-+	.funcs = {
-+		.get_max = atom_get_max_pstate,
-+		.get_max_physical = atom_get_max_pstate,
-+		.get_min = atom_get_min_pstate,
-+		.get_turbo = atom_get_turbo_pstate,
-+		.get_val = atom_get_val,
-+		.get_scaling = airmont_get_scaling,
-+		.get_vid = atom_get_vid,
-+		.update_util = intel_pstate_update_util,
-+	},
-+};
-+
-+static const struct cpu_defaults knl_params = {
-+	.funcs = {
-+		.get_max = core_get_max_pstate,
-+		.get_max_physical = core_get_max_pstate_physical,
-+		.get_min = core_get_min_pstate,
-+		.get_turbo = knl_get_turbo_pstate,
-+		.get_scaling = core_get_scaling,
-+		.get_val = core_get_val,
-+		.update_util = intel_pstate_update_util_pid,
-+	},
-+};
-+
-+static const struct cpu_defaults bxt_params = {
-+	.funcs = {
-+		.get_max = core_get_max_pstate,
-+		.get_max_physical = core_get_max_pstate_physical,
-+		.get_min = core_get_min_pstate,
-+		.get_turbo = core_get_turbo_pstate,
-+		.get_scaling = core_get_scaling,
-+		.get_val = core_get_val,
-+		.update_util = intel_pstate_update_util,
-+	},
-+};
-+
- #define ICPU(model, policy) \
- 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
- 			(unsigned long)&policy }
+ 	thermal-zones {
+ 		soc-thermal {
++			linux,hwmon;
+ 			polling-delay-passive = <250>; /* ms */
+ 			polling-delay = <1000>; /* ms */
+ 			thermal-sensors = <&thermal>;
+diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+index d04ec3b9e5ff..5cd1838405f0 100644
+--- a/drivers/thermal/of-thermal.c
++++ b/drivers/thermal/of-thermal.c
+@@ -995,7 +995,8 @@ int __init of_parse_thermal_zones(void)
+ 		}
+ 
+ 		/* No hwmon because there might be hwmon drivers registering */
+-		tzp->no_hwmon = true;
++		if (!of_property_read_bool(child, "linux,hwmon"))
++			tzp->no_hwmon = true;
+ 
+ 		if (!of_property_read_u32(child, "sustainable-power", &prop))
+ 			tzp->sustainable_power = prop;
+-- 
+2.7.4
