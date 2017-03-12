@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 14/14] cpufreq: intel_pstate: Introduce pid_in_use()
-Date: Sun, 12 Mar 2017 18:26:40 +0100
-Message-ID: <2052751.2pq54OkNPE@aspire.rjw.lan>
+Subject: [PATCH 03/14] cpufreq: intel_pstate: Initialize pid_params statically
+Date: Sun, 12 Mar 2017 18:14:51 +0100
+Message-ID: <2425284.PBSYUI062S@aspire.rjw.lan>
 References: <5656785.7SEhxaGEOz@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53402 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49850 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S934542AbdCLRcg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 13:32:36 -0400
+        by vger.kernel.org with ESMTP id S934669AbdCLRcn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 13:32:43 -0400
 In-Reply-To: <5656785.7SEhxaGEOz@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,69 +19,108 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvad
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Add a new function pid_in_use() to return the information on whether
-or not the PID-based P-state selection algorithm is in use.
+Notice that both the existing struct cpu_defaults instances in which
+PID parameters are actually initialized use the same values of those
+parameters, so it is not really necessary to copy them over to
+pid_params dynamically.
 
-That allows a couple of complicated conditions in the code to be
-reduced to simple checks against the new function's return value.
+Instead, initialize pid_params statically with those values and
+drop the unused pid_policy member from struct cpu_defaults along
+with copy_pid_params() used for initializing it.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   42 +++++++++--------------------------------
+ 1 file changed, 10 insertions(+), 32 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
 +++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1949,6 +1949,8 @@ static const struct x86_cpu_id intel_pst
- 	{}
+@@ -342,19 +342,26 @@ struct pstate_funcs {
+ 
+ /**
+  * struct cpu_defaults- Per CPU model default config data
+- * @pid_policy:	PID config data
+  * @funcs:		Callback function data
+  */
+ struct cpu_defaults {
+-	struct pstate_adjust_policy pid_policy;
+ 	struct pstate_funcs funcs;
  };
  
-+static bool pid_in_use(void);
+ static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
+ static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
+ 
+-static struct pstate_adjust_policy pid_params __read_mostly;
+ static struct pstate_funcs pstate_funcs __read_mostly;
++static struct pstate_adjust_policy pid_params __read_mostly = {
++	.sample_rate_ms = 10,
++	.sample_rate_ns = 10 * NSEC_PER_MSEC,
++	.deadband = 0,
++	.setpoint = 97,
++	.p_gain_pct = 20,
++	.d_gain_pct = 0,
++	.i_gain_pct = 0,
++};
 +
- static int intel_pstate_init_cpu(unsigned int cpunum)
- {
- 	struct cpudata *cpu;
-@@ -1986,7 +1988,7 @@ static int intel_pstate_init_cpu(unsigne
- 			intel_pstate_disable_ee(cpunum);
+ static int hwp_active __read_mostly;
+ static bool per_cpu_limits __read_mostly;
  
- 		intel_pstate_hwp_enable(cpu);
--	} else if (pstate_funcs.update_util == intel_pstate_update_util_pid) {
-+	} else if (pid_in_use()) {
- 		intel_pstate_pid_reset(cpu);
- 	}
+@@ -1572,14 +1579,6 @@ static int knl_get_turbo_pstate(void)
+ }
  
-@@ -2360,6 +2362,12 @@ static struct cpufreq_driver intel_cpufr
+ static struct cpu_defaults core_params = {
+-	.pid_policy = {
+-		.sample_rate_ms = 10,
+-		.deadband = 0,
+-		.setpoint = 97,
+-		.p_gain_pct = 20,
+-		.d_gain_pct = 0,
+-		.i_gain_pct = 0,
+-	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
+ 		.get_max_physical = core_get_max_pstate_physical,
+@@ -1618,14 +1617,6 @@ static const struct cpu_defaults airmont
+ };
  
- static struct cpufreq_driver *default_driver = &intel_pstate;
- 
-+static bool pid_in_use(void)
-+{
-+	return intel_pstate_driver == &intel_pstate &&
-+		pstate_funcs.update_util == intel_pstate_update_util_pid;
-+}
-+
- static void intel_pstate_driver_cleanup(void)
- {
- 	unsigned int cpu;
-@@ -2397,8 +2405,7 @@ static int intel_pstate_register_driver(
- 		return ret;
- 	}
- 
--	if (intel_pstate_driver == &intel_pstate && !hwp_active &&
--	    pstate_funcs.update_util == intel_pstate_update_util_pid)
-+	if (pid_in_use())
- 		intel_pstate_debug_expose_params();
- 
+ static const struct cpu_defaults knl_params = {
+-	.pid_policy = {
+-		.sample_rate_ms = 10,
+-		.deadband = 0,
+-		.setpoint = 97,
+-		.p_gain_pct = 20,
+-		.d_gain_pct = 0,
+-		.i_gain_pct = 0,
+-	},
+ 	.funcs = {
+ 		.get_max = core_get_max_pstate,
+ 		.get_max_physical = core_get_max_pstate_physical,
+@@ -2506,17 +2497,6 @@ static int __init intel_pstate_msrs_not_
  	return 0;
-@@ -2409,8 +2416,7 @@ static int intel_pstate_unregister_drive
- 	if (hwp_active)
- 		return -EBUSY;
+ }
  
--	if (intel_pstate_driver == &intel_pstate &&
--	    pstate_funcs.update_util == intel_pstate_update_util_pid)
-+	if (pid_in_use())
- 		intel_pstate_debug_hide_params();
+-static void __init copy_pid_params(struct pstate_adjust_policy *policy)
+-{
+-	pid_params.sample_rate_ms = policy->sample_rate_ms;
+-	pid_params.sample_rate_ns = pid_params.sample_rate_ms * NSEC_PER_MSEC;
+-	pid_params.p_gain_pct = policy->p_gain_pct;
+-	pid_params.i_gain_pct = policy->i_gain_pct;
+-	pid_params.d_gain_pct = policy->d_gain_pct;
+-	pid_params.deadband = policy->deadband;
+-	pid_params.setpoint = policy->setpoint;
+-}
+-
+ #ifdef CONFIG_ACPI
+ static void intel_pstate_use_acpi_profile(void)
+ {
+@@ -2698,8 +2678,6 @@ static int __init intel_pstate_init(void
  
- 	cpufreq_unregister_driver(intel_pstate_driver);
+ 	cpu_def = (struct cpu_defaults *)id->driver_data;
+ 	copy_cpu_funcs(&cpu_def->funcs);
+-	if (pstate_funcs.get_target_pstate == get_target_pstate_use_performance)
+-		copy_pid_params(&cpu_def->pid_policy);
+ 
+ 	if (intel_pstate_msrs_not_valid())
+ 		return -ENODEV;
