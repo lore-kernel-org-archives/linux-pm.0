@@ -1,129 +1,65 @@
-From: <brian@oakcrestfuneralservices.com>
-Subject: 26090 linux-pm
-Date: Sun, 12 Mar 2017 10:29:34 -0000
-Message-ID: <148931457472.4998.17728415605027760774@host-2-99-184-21.as13285.net>
-Reply-To: <brian@oakcrestfuneralservices.com>
-Mime-Version: 1.0
-Content-Type: application/zip; name="91778597662.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from host-2-99-184-21.as13285.net ([2.99.184.21]:41322 "HELO
-        host-2-99-184-21.as13285.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with SMTP id S1755667AbdCLK3v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 06:29:51 -0400
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Subject: [PATCH v2 03/23] MAINTAINERS: Add file patterns for cpufreq device tree bindings
+Date: Sun, 12 Mar 2017 14:16:47 +0100
+Message-ID: <1489324627-19126-4-git-send-email-geert@linux-m68k.org>
+References: <1489324627-19126-1-git-send-email-geert@linux-m68k.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1489324627-19126-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm <linux-pm@vger.kernel.org>
 
-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
+Submitters of device tree binding documentation may forget to CC
+the subsystem maintainer if this is missing.
+
+Signed-off-by: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+---
+Please apply this patch directly if you want to be involved in device
+tree binding documentation for your subsystem.
+
+v2:
+  - Add Acked-by.
+
+Impact on next-20170310:
+
+-Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS,commit_signer:3/3=100%)
++"Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> (maintainer:CPU FREQUENCY DRIVERS)
++Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> (maintainer:CPU FREQUENCY DRIVERS)
++Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS)
+ Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org> (maintainer:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS)
+-"Rafael J. Wysocki" <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org> (commit_signer:2/3=67%)
+-Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> (commit_signer:2/3=67%)
+-Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> (commit_signer:1/3=33%,authored:1/3=33%)
+-Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> (commit_signer:1/3=33%,authored:1/3=33%)
+-Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org> (authored:1/3=33%)
++linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org (open list:CPU FREQUENCY DRIVERS)
+ devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS)
+ linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org (open list)
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5a3655b474c5c0c6..43dcdea3febb442a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3452,6 +3452,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+ T:	git git://git.linaro.org/people/vireshk/linux.git (For ARM Updates)
+ B:	https://bugzilla.kernel.org
+ F:	Documentation/cpu-freq/
++F:	Documentation/devicetree/bindings/cpufreq/
+ F:	drivers/cpufreq/
+ F:	include/linux/cpufreq.h
+ F:	tools/testing/selftests/cpufreq/
+-- 
+2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
