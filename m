@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 03/14] cpufreq: intel_pstate: Initialize pid_params statically
-Date: Sun, 12 Mar 2017 18:14:51 +0100
-Message-ID: <2425284.PBSYUI062S@aspire.rjw.lan>
+Subject: [PATCH 05/14] cpufreq: intel_pstate: Clean up intel_pstate_busy_pid_reset()
+Date: Sun, 12 Mar 2017 18:16:45 +0100
+Message-ID: <1538192.VSKEjOmrrl@aspire.rjw.lan>
 References: <5656785.7SEhxaGEOz@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49850 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51182 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S934669AbdCLRcn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 13:32:43 -0400
+        by vger.kernel.org with ESMTP id S934664AbdCLRcm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 13:32:42 -0400
 In-Reply-To: <5656785.7SEhxaGEOz@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,108 +19,110 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvad
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Notice that both the existing struct cpu_defaults instances in which
-PID parameters are actually initialized use the same values of those
-parameters, so it is not really necessary to copy them over to
-pid_params dynamically.
+intel_pstate_busy_pid_reset() is the only caller of pid_reset(),
+pid_p_gain_set(), pid_i_gain_set(), and pid_d_gain_set().  Moreover,
+it passes constatns as two parameters of pid_reset() and all of
+the other routines above essentially contain the same code, so
+fold all of them into the caller and drop unnecessary computations.
 
-Instead, initialize pid_params statically with those values and
-drop the unused pid_policy member from struct cpu_defaults along
-with copy_pid_params() used for initializing it.
+Introduce percent_fp() for converting integer values in percent
+to fixed-point fractions and use it in the above code cleanup.
+
+Finally, rename intel_pstate_busy_pid_reset() to
+intel_pstate_pid_reset() as it also is used for the
+initialization of PID parameters for every CPU and the
+meaning of the "busy" part of the name is not particularly
+clear.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpufreq/intel_pstate.c |   42 +++++++++--------------------------------
- 1 file changed, 10 insertions(+), 32 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   46 ++++++++++++++---------------------------
+ 1 file changed, 16 insertions(+), 30 deletions(-)
 
 Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
 --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
 +++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -342,19 +342,26 @@ struct pstate_funcs {
+@@ -79,6 +79,11 @@ static inline int ceiling_fp(int32_t x)
+ 	return ret;
+ }
  
- /**
-  * struct cpu_defaults- Per CPU model default config data
-- * @pid_policy:	PID config data
-  * @funcs:		Callback function data
-  */
- struct cpu_defaults {
--	struct pstate_adjust_policy pid_policy;
- 	struct pstate_funcs funcs;
- };
- 
- static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu);
- static inline int32_t get_target_pstate_use_cpu_load(struct cpudata *cpu);
- 
--static struct pstate_adjust_policy pid_params __read_mostly;
- static struct pstate_funcs pstate_funcs __read_mostly;
-+static struct pstate_adjust_policy pid_params __read_mostly = {
-+	.sample_rate_ms = 10,
-+	.sample_rate_ns = 10 * NSEC_PER_MSEC,
-+	.deadband = 0,
-+	.setpoint = 97,
-+	.p_gain_pct = 20,
-+	.d_gain_pct = 0,
-+	.i_gain_pct = 0,
-+};
++static inline int32_t percent_fp(int percent)
++{
++	return div_fp(percent, 100);
++}
 +
- static int hwp_active __read_mostly;
- static bool per_cpu_limits __read_mostly;
- 
-@@ -1572,14 +1579,6 @@ static int knl_get_turbo_pstate(void)
+ static inline u64 mul_ext_fp(u64 x, u64 y)
+ {
+ 	return (x * y) >> EXT_FRAC_BITS;
+@@ -547,29 +552,6 @@ static inline void intel_pstate_exit_per
  }
+ #endif
  
- static struct cpu_defaults core_params = {
--	.pid_policy = {
--		.sample_rate_ms = 10,
--		.deadband = 0,
--		.setpoint = 97,
--		.p_gain_pct = 20,
--		.d_gain_pct = 0,
--		.i_gain_pct = 0,
--	},
- 	.funcs = {
- 		.get_max = core_get_max_pstate,
- 		.get_max_physical = core_get_max_pstate_physical,
-@@ -1618,14 +1617,6 @@ static const struct cpu_defaults airmont
- };
- 
- static const struct cpu_defaults knl_params = {
--	.pid_policy = {
--		.sample_rate_ms = 10,
--		.deadband = 0,
--		.setpoint = 97,
--		.p_gain_pct = 20,
--		.d_gain_pct = 0,
--		.i_gain_pct = 0,
--	},
- 	.funcs = {
- 		.get_max = core_get_max_pstate,
- 		.get_max_physical = core_get_max_pstate_physical,
-@@ -2506,17 +2497,6 @@ static int __init intel_pstate_msrs_not_
- 	return 0;
- }
- 
--static void __init copy_pid_params(struct pstate_adjust_policy *policy)
--{
--	pid_params.sample_rate_ms = policy->sample_rate_ms;
--	pid_params.sample_rate_ns = pid_params.sample_rate_ms * NSEC_PER_MSEC;
--	pid_params.p_gain_pct = policy->p_gain_pct;
--	pid_params.i_gain_pct = policy->i_gain_pct;
--	pid_params.d_gain_pct = policy->d_gain_pct;
--	pid_params.deadband = policy->deadband;
--	pid_params.setpoint = policy->setpoint;
+-static inline void pid_reset(struct _pid *pid, int setpoint, int busy,
+-			     int deadband, int integral) {
+-	pid->setpoint = int_tofp(setpoint);
+-	pid->deadband  = int_tofp(deadband);
+-	pid->integral  = int_tofp(integral);
+-	pid->last_err  = int_tofp(setpoint) - int_tofp(busy);
 -}
 -
- #ifdef CONFIG_ACPI
- static void intel_pstate_use_acpi_profile(void)
+-static inline void pid_p_gain_set(struct _pid *pid, int percent)
+-{
+-	pid->p_gain = div_fp(percent, 100);
+-}
+-
+-static inline void pid_i_gain_set(struct _pid *pid, int percent)
+-{
+-	pid->i_gain = div_fp(percent, 100);
+-}
+-
+-static inline void pid_d_gain_set(struct _pid *pid, int percent)
+-{
+-	pid->d_gain = div_fp(percent, 100);
+-}
+-
+ static signed int pid_calc(struct _pid *pid, int32_t busy)
  {
-@@ -2698,8 +2678,6 @@ static int __init intel_pstate_init(void
+ 	signed int result;
+@@ -607,13 +589,17 @@ static signed int pid_calc(struct _pid *
+ 	return (signed int)fp_toint(result);
+ }
  
- 	cpu_def = (struct cpu_defaults *)id->driver_data;
- 	copy_cpu_funcs(&cpu_def->funcs);
--	if (pstate_funcs.get_target_pstate == get_target_pstate_use_performance)
--		copy_pid_params(&cpu_def->pid_policy);
+-static inline void intel_pstate_busy_pid_reset(struct cpudata *cpu)
++static inline void intel_pstate_pid_reset(struct cpudata *cpu)
+ {
+-	pid_p_gain_set(&cpu->pid, pid_params.p_gain_pct);
+-	pid_d_gain_set(&cpu->pid, pid_params.d_gain_pct);
+-	pid_i_gain_set(&cpu->pid, pid_params.i_gain_pct);
++	struct _pid *pid = &cpu->pid;
  
- 	if (intel_pstate_msrs_not_valid())
- 		return -ENODEV;
+-	pid_reset(&cpu->pid, pid_params.setpoint, 100, pid_params.deadband, 0);
++	pid->p_gain = percent_fp(pid_params.p_gain_pct);
++	pid->d_gain = percent_fp(pid_params.d_gain_pct);
++	pid->i_gain = percent_fp(pid_params.i_gain_pct);
++	pid->setpoint = int_tofp(pid_params.setpoint);
++	pid->last_err  = pid->setpoint - int_tofp(100);
++	pid->deadband  = int_tofp(pid_params.deadband);
++	pid->integral  = 0;
+ }
+ 
+ static inline void update_turbo_state(void)
+@@ -985,7 +971,7 @@ static int pid_param_set(void *data, u64
+ 	pid_params.sample_rate_ns = pid_params.sample_rate_ms * NSEC_PER_MSEC;
+ 	for_each_possible_cpu(cpu)
+ 		if (all_cpu_data[cpu])
+-			intel_pstate_busy_pid_reset(all_cpu_data[cpu]);
++			intel_pstate_pid_reset(all_cpu_data[cpu]);
+ 
+ 	return 0;
+ }
+@@ -1994,7 +1980,7 @@ static int intel_pstate_init_cpu(unsigne
+ 
+ 	intel_pstate_get_cpu_pstates(cpu);
+ 
+-	intel_pstate_busy_pid_reset(cpu);
++	intel_pstate_pid_reset(cpu);
+ 
+ 	pr_debug("controlling: cpu %d\n", cpunum);
+ 
