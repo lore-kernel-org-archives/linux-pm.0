@@ -1,39 +1,74 @@
-From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
-Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU controller
-Date: Mon, 13 Mar 2017 03:46:13 -0700
-Message-ID: <CAEi0qNkAK_3a_2x9BgvyEC+bFvckGFoQX1fjFba6boC1ws_R5w@mail.gmail.com>
-References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com> <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 00/14] cpufreq: intel_pstate: Fixes, cleanups and optimizations
+Date: Mon, 13 Mar 2017 12:16:00 +0100
+Message-ID: <CAJZ5v0jFgdLkS+HOQ_8+bcBytAwpMFOu7bpkX+mF_bNc6YPe4w@mail.gmail.com>
+References: <001301d29bc3$29c351c0$7d49f540$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, Joel Fernandes <joelaf@google.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f173.google.com ([74.125.82.173]:35173 "EHLO
+        mail-ot0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751846AbdCMLQC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 07:16:02 -0400
+In-Reply-To: <001301d29bc3$29c351c0$7d49f540$@net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> The CPU CGroup controller allows to assign a specified (maximum)
-> bandwidth to tasks within a group, however it does not enforce any
-> constraint on how such bandwidth can be consumed.
-> With the integration of schedutil, the scheduler has now the proper
-> information about a task to select  the most suitable frequency to
-> satisfy tasks needs.
-[..]
+On Mon, Mar 13, 2017 at 7:29 AM, Doug Smythies <dsmythies@telus.net> wrote:
+> On 2017.03.12 10:12 Rafael J. Wysocki wrote:
+>
+>> This patch series fixes a couple of bugs in intel_pstate, cleans up the code in
+>> it somewhat and makes some changes targeted at overhead reductions.
+>>
+>
+> If clean up and overhead reductions are being considered, is there any interest
+> in changing the PID controller to a P controller and eliminating the integral
+> and derivative code entirely?
+>
+> Why? The application is not really best suited to a PID
+> (Proportional Integral Derivative) controller.
 
-> +static u64 cpu_capacity_min_read_u64(struct cgroup_subsys_state *css,
-> +                                    struct cftype *cft)
-> +{
-> +       struct task_group *tg;
-> +       u64 min_capacity;
-> +
-> +       rcu_read_lock();
-> +       tg = css_tg(css);
-> +       min_capacity = tg->cap_clamp[CAP_CLAMP_MIN];
+We already have the get_target_pstate_use_cpu_load() P-state selection
+routine which is not based on the PID controller and is used for
+multiple CPU models already (and for systems with ACPI system profile
+set to "mobile", which covers a lot of laptops AFAICS).  Its coverage
+may be extended in the future.
 
-Shouldn't the cap_clamp be accessed with READ_ONCE (and WRITE_ONCE in
-the write path) to avoid load-tearing?
+> Integral terms are normally used to null out accumulated errors. For example
+> position errors as a function of integrated velocity, where the overall
+> position is supposed to be time * nominal velocity, but the actual velocity
+> at any sample point is not perfect.
+>
+> In signal processing, derivatives are difficult at the best of times, let alone
+> with the drastic sample time variations (anywhere from 10 milliseconds to 5 seconds)
+> experienced here. Myself, I can not think of a need for a derivative term anyhow.
+>
+> Readers might note the old non-zero integral gain for the old methods used
+> with Atom processors (being eliminated in this patch set, see patch 2 of 14).
+> However that was due to the low proportional gain used and was needed to get
+> target pstates to tick up or down as it settled to some steady state value,
+> as otherwise and with a setpoint of 97 (which is what was being used at the
+> time), it would not. I'm saying the integral term was being used in way that
+> was not intended to overcome another issue. In that scenario, and at the very
+> least, the error term should have been cleared upon integration to the point
+> where the pstate ticked up or down as a result.
+>
+> To be clear, I'm not talking about changing the proportional code at all,
+> but only about eliminating the integral and derivative code that has never
+> been used.
+>
+> If there is interest, I'll prepare and submit a patch.
+
+While it has not been used by default, there is the debugfs interface
+for tuning the PID that allows this code to be put into use, in
+theory.  It is documented even. :-)
+
+If anyone actively uses it, they won't be happy when it's gone.
+
+Please note that the patches in this series specifically don't change
+any user-observable behavior, or at least not intentionally ...
 
 Thanks,
-Joel
+Rafael
