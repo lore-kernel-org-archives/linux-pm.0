@@ -1,181 +1,108 @@
-From: Jun Li <jun.li@nxp.com>
-Subject: RE: [PATCH v19 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 13 Mar 2017 01:09:21 +0000
-Message-ID: <AM5PR04MB29615806A8D175E3BF4BD8B089250@AM5PR04MB2961.eurprd04.prod.outlook.com>
-References: <cover.1487578977.git.baolin.wang@linaro.org>
- <87zih3m73h.fsf@notabene.neil.brown.name>
- <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com>
- <AM5PR04MB29614C707DE344E5A05FAB3889210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuJ31wVhbYOV+LB9tu=Wb7x9gRifcUnQPMiQSqRUjER_kQ@mail.gmail.com>
- <AM5PR04MB296177A37D96564D510FA90389210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+wkZ7webuCK+V9DPuDzdT_Tyy6Dso8==bQPyN9m06vGw@mail.gmail.com>
- <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
- <AM5PR04MB29613EEC7C49426020A538B089200@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+jy-Z0L4avYsDGstNnV+f=XhjmP8WS9SLOkB1eGWjjXA@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [RFC PATCH] fix: thermal: avoid possible deadlock calling
+ thermal_zone_get_temp()
+Date: Mon, 13 Mar 2017 10:43:54 +0800
+Message-ID: <1489373034.5841.14.camel@intel.com>
+References: <20170210161547.28625-1-lukasz.luba@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-eopbgr20086.outbound.protection.outlook.com ([40.107.2.86]:38880
-        "EHLO EUR02-VE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1755805AbdCMBJ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 12 Mar 2017 21:09:27 -0400
-In-Reply-To: <CAMz4ku+jy-Z0L4avYsDGstNnV+f=XhjmP8WS9SLOkB1eGWjjXA@mail.gmail.com>
-Content-Language: en-US
+Received: from mga03.intel.com ([134.134.136.65]:36925 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755789AbdCMCnw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Mar 2017 22:43:52 -0400
+In-Reply-To: <20170210161547.28625-1-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baolin Wang <baolin.wang@linaro.org>
-Cc: NeilBrown <neilb@suse.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "grygorii.strashko@ti.com" <grygorii.strashko@ti.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource>
+To: Lukasz Luba <lukasz.luba@arm.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
 
-SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcg
-W21haWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBGcmlkYXksIE1hcmNoIDEw
-LCAyMDE3IDY6NTIgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBOZWls
-QnJvd24gPG5laWxiQHN1c2UuY29tPjsgRmVsaXBlIEJhbGJpIDxiYWxiaUBrZXJuZWwub3JnPjsg
-R3JlZyBLSA0KPiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBTZWJhc3RpYW4gUmVpY2hl
-bCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkNCj4gRXJlbWluLVNvbGVuaWtvdiA8ZGJhcnlzaGtv
-dkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UNCj4gPGR3bXcyQGluZnJhZGVhZC5vcmc+OyBy
-b2JoQGtlcm5lbC5vcmc7IE1hcmVrIFN6eXByb3dza2kNCj4gPG0uc3p5cHJvd3NraUBzYW1zdW5n
-LmNvbT47IFJ1c2xhbiBCaWxvdm9sIDxydXNsYW4uYmlsb3ZvbEBnbWFpbC5jb20+Ow0KPiBQZXRl
-ciBDaGVuIDxwZXRlci5jaGVuQGZyZWVzY2FsZS5jb20+OyBBbGFuIFN0ZXJuDQo+IDxzdGVybkBy
-b3dsYW5kLmhhcnZhcmQuZWR1PjsgZ3J5Z29yaWkuc3RyYXNoa29AdGkuY29tOyBZb3NoaWhpcm8g
-U2hpbW9kYQ0KPiA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+OyBMZWUgSm9uZXMg
-PGxlZS5qb25lc0BsaW5hcm8ub3JnPjsNCj4gTWFyayBCcm93biA8YnJvb25pZUBrZXJuZWwub3Jn
-PjsgSm9obiBTdHVsdHogPGpvaG4uc3R1bHR6QGxpbmFyby5vcmc+Ow0KPiBDaGFybGVzIEtlZXBh
-eCA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+Ow0KPiBwYXRjaGVzQG9wZW5z
-b3VyY2Uud29sZnNvbm1pY3JvLmNvbTsgTGludXggUE0gbGlzdCA8bGludXgtDQo+IHBtQHZnZXIu
-a2VybmVsLm9yZz47IFVTQiA8bGludXgtdXNiQHZnZXIua2VybmVsLm9yZz47IGRldmljZS0NCj4g
-bWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBMS01MIDxsaW51eC1rZXJuZWxA
-dmdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxOSAwLzRdIEludHJvZHVj
-ZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsgdG8gZGVhbCB3aXRoDQo+IHRoZSB1c2IgZ2FkZ2V0IHBv
-d2VyIG5lZ290YXRpb24NCj4gDQo+IE9uIDEwIE1hcmNoIDIwMTcgYXQgMTY6MjcsIEp1biBMaSA8
-anVuLmxpQG54cC5jb20+IHdyb3RlOg0KPiA+IEhpDQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogQmFvbGluIFdhbmcgW21haWx0bzpiYW9saW4ud2FuZ0Bs
-aW5hcm8ub3JnXQ0KPiA+PiBTZW50OiBGcmlkYXksIE1hcmNoIDEwLCAyMDE3IDM6MTUgUE0NCj4g
-Pj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+ID4+IENjOiBOZWlsQnJvd24gPG5laWxi
-QHN1c2UuY29tPjsgRmVsaXBlIEJhbGJpIDxiYWxiaUBrZXJuZWwub3JnPjsgR3JlZw0KPiA+PiBL
-SCA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBTZWJhc3RpYW4gUmVpY2hlbCA8c3JlQGtl
-cm5lbC5vcmc+Ow0KPiA+PiBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdiA8ZGJhcnlzaGtvdkBnbWFp
-bC5jb20+OyBEYXZpZCBXb29kaG91c2UNCj4gPj4gPGR3bXcyQGluZnJhZGVhZC5vcmc+OyByb2Jo
-QGtlcm5lbC5vcmc7IE1hcmVrIFN6eXByb3dza2kNCj4gPj4gPG0uc3p5cHJvd3NraUBzYW1zdW5n
-LmNvbT47IFJ1c2xhbiBCaWxvdm9sDQo+ID4+IDxydXNsYW4uYmlsb3ZvbEBnbWFpbC5jb20+OyBQ
-ZXRlciBDaGVuIDxwZXRlci5jaGVuQGZyZWVzY2FsZS5jb20+Ow0KPiA+PiBBbGFuIFN0ZXJuIDxz
-dGVybkByb3dsYW5kLmhhcnZhcmQuZWR1PjsgZ3J5Z29yaWkuc3RyYXNoa29AdGkuY29tOw0KPiA+
-PiBZb3NoaWhpcm8gU2hpbW9kYSA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+OyBM
-ZWUgSm9uZXMNCj4gPj4gPGxlZS5qb25lc0BsaW5hcm8ub3JnPjsgTWFyayBCcm93biA8YnJvb25p
-ZUBrZXJuZWwub3JnPjsgSm9obiBTdHVsdHoNCj4gPj4gPGpvaG4uc3R1bHR6QGxpbmFyby5vcmc+
-OyBDaGFybGVzIEtlZXBheA0KPiA+PiA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5j
-b20+Ow0KPiA+PiBwYXRjaGVzQG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsgTGludXggUE0g
-bGlzdCA8bGludXgtDQo+ID4+IHBtQHZnZXIua2VybmVsLm9yZz47IFVTQiA8bGludXgtdXNiQHZn
-ZXIua2VybmVsLm9yZz47IGRldmljZS0NCj4gPj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5k
-YXRpb24ub3JnOyBMS01MDQo+ID4+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPg0KPiA+
-PiBTdWJqZWN0OiBSZTogW1BBVENIIHYxOSAwLzRdIEludHJvZHVjZSB1c2IgY2hhcmdlciBmcmFt
-ZXdvcmsgdG8gZGVhbA0KPiA+PiB3aXRoIHRoZSB1c2IgZ2FkZ2V0IHBvd2VyIG5lZ290YXRpb24N
-Cj4gPj4NCj4gPj4gT24gMTAgTWFyY2ggMjAxNyBhdCAxNDozMCwgSnVuIExpIDxqdW4ubGlAbnhw
-LmNvbT4gd3JvdGU6DQo+ID4+ID4+ID4+ID4NCj4gPj4gPj4gPj4gPiBXaWxsIGdlbmVyaWMgcGh5
-IG5lZWQgYWRkIGV4dGNvbiBhcyB3ZWxsPw0KPiA+PiA+PiA+Pg0KPiA+PiA+PiA+PiBZZXMsIHdp
-bGwgYWRkIGEgJ3N0cnVjdCBleHRjb25fZGV2KicgaW4gJ3N0cnVjdCB1c2JfcGh5Jywgd2hpY2gN
-Cj4gPj4gPj4gPj4gd2lsbCBiZSBjb21tb24gY29kZS4NCj4gPj4gPj4gPj4NCj4gPj4gPj4gPg0K
-PiA+PiA+PiA+IEkgbWVhbiB0aGUgY29tbW9uIGNvZGUgbmVlZCBhZGQgJ3N0cnVjdCBleHRjb25f
-ZGV2JyBpbnRvIGJvdGgNCj4gPj4gPj4gPiAnc3RydWN0IHBoeScgYW5kICdzdHJ1Y3QgdXNiX3Bo
-eScsIHJpZ2h0PyBhcyBzb21lL25ldyB1c2IgcGh5DQo+ID4+ID4+ID4gdXNlIHRoYXQgZ2VuZXJp
-YyBwaHkNCj4gPj4gPj4gZHJpdmVyLg0KPiA+PiA+Pg0KPiA+PiA+PiBBaCwgeW91IHJlbWluZCBt
-ZS4gU2VlbXMgd2UgbmVlZCBhbHNvIGFkZCBvbmUgJ3N0cnVjdCBleHRjb25fZGV2Jw0KPiA+PiA+
-PiBpbnRvICdzdHJ1Y3QgcGh5Jy4NCj4gPj4gPj4NCj4gPj4gPj4gPj4gPg0KPiA+PiA+PiA+PiA+
-PiA+DQo+ID4+ID4+ID4+ID4+ID4+IFNlY29uZGx5LCBJIGFsc28gYWdyZWVkIHdpdGggUGV0ZXIn
-cyBjb21tZW50czogTm90IG9ubHkNCj4gPj4gPj4gPj4gPj4gPj4gVVNCIFBIWSB0byByZWdpc3Rl
-ciBhbiBleHRjb24sIGJ1dCBhbHNvIGZvciB0aGUgZHJpdmVycw0KPiA+PiA+PiA+PiA+PiA+PiB3
-aGljaCBjYW4gZGV0ZWN0IFVTQiBjaGFyZ2VyIHR5cGUsIGl0IG1heSBiZSBVU0INCj4gPj4gPj4g
-Pj4gPj4gPj4gY29udHJvbGxlciBkcml2ZXIsIFVTQiB0eXBlLWMgZHJpdmVyLCBwbWljIGRyaXZl
-ciwgYW5kDQo+ID4+ID4+ID4+ID4+ID4+IHRoZXNlIGRyaXZlcnMgbWF5IG5vdCBoYXZlIGFuIGV4
-dGNvbiBkZXZpY2Ugc2luY2UgdGhlDQo+ID4+ID4+ID4+ID4+ID4+IGludGVybmFsIHBhcnQgY2Fu
-IGZpbmlzaA0KPiA+PiB0aGUgdmJ1cyBkZXRlY3QuDQo+ID4+ID4+ID4+ID4+ID4NCj4gPj4gPj4g
-Pj4gPj4gPiBXaGljaGV2ZXIgcGFydCBjYW4gZGV0ZWN0IHZidXMsIHRoZSBkcml2ZXIgZm9yIHRo
-YXQgcGFydA0KPiA+PiA+PiA+PiA+PiA+IG11c3QgYmUgYWJsZSB0byBmaW5kIHRoZSBleHRjb24g
-YW5kIHRyaWdnZXIgYSBub3RpZmljYXRpb24uDQo+ID4+ID4+ID4+ID4+ID4gTWF5YmUgb25lIHBh
-cnQgY2FuIGRldGVjdCBWQlVTLCBhbm90aGVyIGNhbiBtZWFzdXJlIHRoZQ0KPiA+PiA+PiA+PiA+
-PiA+IHJlc2lzdGFuY2Ugb24gSUQgYW5kIGEgdGhpcmQgY2FuIHdvcmsgdGhyb3VnaCB0aGUgc3Rh
-dGUNCj4gPj4gPj4gPj4gPj4gPiBtYWNoaW5lIHRvIGRldGVybWluZSBpZiBEKyBhbmQgRC0gYXJl
-IHNob3J0ZWQgdG9nZXRoZXIuDQo+ID4+ID4+ID4+ID4+ID4gU29tZWhvdyB0aGVzZSB0aHJlZSBu
-ZWVkIHRvIHdvcmsgdG9nZXRoZXIgdG8gZGV0ZXJtaW5lDQo+ID4+ID4+ID4+ID4+ID4gd2hhdCBp
-cw0KPiA+PiA+PiA+PiA+PiBwbHVnZ2VkDQo+ID4+ID4+ID4+ID4+ID4gaW4gdG8gdGhlIGV4dGVy
-bmFsIGNvbm5lY3Rpb24gcG9ydC4gIFNvbWV3aGVyZSB0aGVyZSBtdWNoDQo+ID4+ID4+ID4+ID4+
-ID4gYW4NCj4gPj4gPj4gJ2V4dGNvbicNCj4gPj4gPj4gPj4gPj4gPiBkZXZpY2Ugd2hpY2ggcmVw
-cmVzZW50cyB0aGF0IHBvcnQgYW5kIHdoaWNoIHRoZSB0aHJlZQ0KPiA+PiA+PiA+PiA+PiA+IGRl
-dmljZXMgY2FuIGZpbmQgYW5kIGNhbiBpbnRlcmFjdCB3aXRoLg0KPiA+PiA+PiA+PiA+PiA+IEkg
-dGhpbmsgaXQgbWFrZXMgc2Vuc2UgZm9yIHRoZSB1c2JfcGh5IHRvIGJlIHRoZSBjb25uZWN0aW9u
-DQo+IHBvaW50Lg0KPiA+PiA+PiA+PiA+PiA+IEVhY2ggb2YgdGhlIGRldmljZXMgY2FuIGdldCB0
-byB0aGUgcGh5LCBhbmQgdGhlIHBoeSBjYW4NCj4gPj4gPj4gPj4gPj4gPiBnZXQgdG8gdGhlDQo+
-ID4+ID4+ID4+IGV4dGNvbi4NCj4gPj4gPj4gPj4gPj4gPiBJdCBkb2Vzbid0IG1hdHRlciB2ZXJ5
-IG11Y2ggaWYgdGhlIHVzYiBwaHkgZHJpdmVyIGNyZWF0ZXMNCj4gPj4gPj4gPj4gPj4gPiB0aGUg
-ZXh0Y29uLCBvciBpZiBzb21ldGhpbmcgZWxzZSBjcmVhdGVzIHRoZSBleHRjb24gYW5kDQo+ID4+
-ID4+ID4+ID4+ID4gdGhlIHBoeSBkcml2ZXIgcGVyZm9ybXMgYSBsb29rdXAgdG8gZmluZCBpdCAo
-ZS5nLiBiYXNlZCBvbg0KPiBkZXZpY2V0cmVlIGluZm8pLg0KPiA+PiA+PiA+PiA+PiA+DQo+ID4+
-ID4+ID4+ID4+ID4gVGhlIHBvaW50IGlzIHRoYXQgdGhlcmUgaXMgb2J2aW91c2x5IGFuIGV4dGVy
-bmFsIHBoeXNpY2FsDQo+ID4+ID4+ID4+ID4+ID4gY29ubmVjdGlvbiwgYW5kIHNvIHRoZXJlIHNo
-b3VsZCBiZSBhbiAnZXh0Y29uJyBkZXZpY2UgdGhhdA0KPiA+PiA+PiByZXByZXNlbnRzIGl0Lg0K
-PiA+PiA+PiA+PiA+Pg0KPiA+PiA+PiA+PiA+PiBQZXRlciAmIEp1biwgaXMgaXQgT0sgZm9yIHlv
-dSBldmVyeSBwaHkgaGFzIG9uZSBleHRjb24NCj4gPj4gPj4gPj4gPj4gZGV2aWNlIHRvIHJlY2Vp
-dmUgVkJVUyBub3RpZmljYXRpb24sIGVzcGVjaWFsbHkgZm9yDQo+ID4+ID4+ID4+ID4+IGRldGVj
-dGluZyB0aGUgY2hhcmdlciB0eXBlIGJ5DQo+ID4+ID4+ID4+IHNvZnR3YXJlPw0KPiA+PiA+PiA+
-PiA+Pg0KPiA+PiA+PiA+PiA+DQo+ID4+ID4+ID4+ID4gTXkgdW5kZXJzdGFuZGluZyBpcyBwaHkv
-dXNiX3BoeSBhcyB0aGUgY29ubmVjdGlvbiBwb2ludCwgd2lsbA0KPiA+PiA+PiA+PiA+IHNlbmQg
-dGhlIG5vdGlmaWNhdGlvbiB0byBQTUlDIGRyaXZlciB3aGljaCBhY3R1YWxseSBjb250cm9sDQo+
-ID4+ID4+ID4+ID4gdGhlIGNoYXJnZSBjdXJyZW50LCBhbHNvIHRoaXMgd2lsbCBiZSBkb25lIGlu
-IHlvdXIgY29tbW9uDQo+ID4+ID4+ID4+ID4gZnJhbWV3b3JrLA0KPiA+PiByaWdodD8NCj4gPj4g
-Pj4gPj4NCj4gPj4gPj4gPj4gTm90IGluIFVTQiBjaGFyZ2VyIGZyYW1ld29yay4gSWYgd2UgYXJl
-IGFsbCBhZ3JlZSBldmVyeSB1c2JfcGh5DQo+ID4+ID4+ID4+IGNhbiByZWdpc3RlciBvbmUgZXh0
-Y29uIGRldmljZSwgY2FuIGdldCBjb3JyZWN0IGNoYXJnZXIgdHlwZQ0KPiA+PiA+PiA+PiBhbmQg
-c2VuZCBvdXQgY29ycmVjdCB2YnVzX2RyYXcgaW5mb3JtYXRpb24sIHRoZW4gd2UgZG9uJ3QgbmVl
-ZA0KPiA+PiA+PiA+PiBVU0IgY2hhcmdlciBmcmFtZXdvcmsgYXMgTmVpbCBzdWdnZXN0ZWQuIFNv
-IHRoaXMgd2lsbCBiZSBva2F5DQo+ID4+ID4+ID4+IGZvciB5b3VyIGNhc2UgKGVzcGVjaWFsbHkg
-Zm9yIGRldGVjdGluZyB0aGUgY2hhcmdlciB0eXBlIGJ5DQo+IHNvZnR3YXJlKSA/DQo+ID4+ID4+
-ID4NCj4gPj4gPj4gPiBJbiBteSBjYXNlLCBjaGFyZ2VyIGRldGVjdGlvbiBpcyBkb25lIGJ5IGNv
-bnRyb2xsZXIgZHJpdmVyIGFuZCBJDQo+ID4+ID4+ID4gbmVlZCBkbyBjaGFyZ2VyIHR5cGUgZGV0
-ZWN0aW9uIGludGVybmFsbHksIGFuZCBvbmx5IHBhc3MgdGhlDQo+ID4+ID4+ID4gY3VycmVudCBk
-cmF3IGluZm8gdmlhIHBoeSB3aGljaCB3aWxsIHNlbmQgb3V0LCB0aGlzIHNlZW1zIG9rIGZvcg0K
-PiA+PiA+PiA+IG1lLCBidXQgSSB0aGluayBpdCB3aWxsIGJlIGdvb2QgaWYgeW91IG9yIHNvbWVv
-bmUgY2FuIHNob3cgdXMgYW4NCj4gPj4gPj4gPiBleGFtcGxlIHVzZXIgYmFzZWQgb24gdGhlDQo+
-ID4+ID4+IGRlc2lnbiBOZWlsIHN1Z2dlc3RlZC4NCj4gPj4gPj4gPiBXaWxsIHlvdSB3b3JrIG91
-dCB0aGF0IGNvbW1vbiBjb2RlIGlmIHRoaXMgVVNCIGNoYXJnZXIgZnJhbWV3b3JrDQo+ID4+ID4+
-ID4gaXMgbm90DQo+ID4+ID4+IG5lZWRlZD8NCj4gPj4gPj4NCj4gPj4gPj4gSSB3aWxsIGFkZCAg
-YSAnc3RydWN0IGV4dGNvbl9kZXYqJyBpbiAnc3RydWN0IHVzYl9waHknIGFuZCBzdHJ1Y3QNCj4g
-Pj4gPj4gcGh54oCcLiBPdGhlcnMgYXJlIGFscmVhZHkgcmVhZHkgaWYgZXZlcnlvbmUgaGFzIG5v
-IGNvbXBsYWluIGFib3V0DQo+ID4+ID4+IGN1cnJlbnQgZGVzaWduLCBleGNlcHQNCj4gPj4gPg0K
-PiA+PiA+IE9ubHkgYWRkaW5nIGV4dGNvbl9kZXYgaW50byB1c2JfcGh5L3BoeSAgYW5kIGFsbCBv
-dGhlcnMgYXJlIHJlYWR5Pw0KPiA+PiA+IE15IHVuZGVyc3RhbmRpbmcgeW91IHdpbGwgYWxzbyBk
-bzoNCj4gPj4gPiAtIFdlIG5lZWQgZmluZCBhIGNlbnRyYWwgcGxhY2UgdG8gc2VuZCB0aGUgbm90
-aWZpY2F0aW9uKHBoeSBjb21tb24NCj4gcGFydCkuDQo+ID4+DQo+ID4+IFRoYXQgd2lsbCBpbmNs
-dWRlIHRoZXNlIGltcGxlbWVudGF0aW9uIHdoZW4gYWRkaW5nIGV4dGNvbl9kZXYuDQo+ID4+DQo+
-ID4NCj4gPiBPSywgdGhhbmtzLg0KPiA+DQo+ID4+ID4gLSBJZiB0aGUgZXh0Y29uX2RldiBpcyBk
-aXJlY3RseSBhZGRlZCBpbiB1c2JfcGh5L3BoeSwgUE1JQyBuZWVkcw0KPiA+PiA+IHNvbWUNCj4g
-Pj4gQVBJIHRvIGZpbmR1cCBpdC4NCj4gPj4NCj4gPj4gUE1JQyBjYW4gZmluZCBleHRjb24gZGV2
-aWNlIGJ5IHBoYW5kbGUuDQo+ID4NCj4gPiBleHRjb25fZGV2KG5vdCBhIHJlZmVyZW5jZSBwb2lu
-dGVyKSBpcyBkaXJlY3RseSBhZGRlZCBpbiB1c2JfcGh5L3BoeSwNCj4gPiBub3QgdmlhIGRldmlj
-ZXRyZWUsIGhvdyBQTUlDIGZpbmQgaXQgYnkgcGhhbmRsZT8NCj4gDQo+IEZyb20gbXkgdW5kZXJz
-dGFuZGluZywgaGVyZSB3ZSBzaG91bGQgYWRkIG9uZSBwb2ludGVyIChleHRjb25fZGV2ICopLA0K
-PiBzaW5jZSB1c2IgcGh5IGlzIG5vdCBvbmUgZXh0ZXJuYWwgY29ubmVjdCBkZXZpY2UuDQoNCkFn
-cmVlZC4NCg0KPiANCj4gPg0KPiA+Pg0KPiA+PiA+DQo+ID4+ID4+IG15IG9uZSBjb25jZXJuLiAo
-SSBhbSBhZnJhaWQgaWYgaXQgaXMgZW5vdWdoIHRvIHNlbmQgb3V0IHZidXMgZHJhdw0KPiA+PiA+
-PiBpbmZvcm1hdGlvbiBmcm9tIFVTQiBwaHkgZHJpdmVyLCBmb3IgZXhhbXBsZSB5b3Ugd2lsbCBt
-aXNzIHN1cGVyDQo+ID4+ID4+IHNwZWVkICg5MDBtQSksIHdoaWNoIG5lZWQgZ2V0IHRoZSBzcGVl
-ZCBpbmZvcm1hdGlvbiBmcm9tIGdhZGdldA0KPiA+PiA+PiBkcml2ZXIuKQ0KPiA+PiA+Pg0KPiA+
-PiA+DQo+ID4+ID4gQ2FuIHdlIGhhbmRsZSB0aGlzIGluIFVTQihzbyBoYXMgc3VwZXIgc3BlZWQg
-aW5mb3JtYXRpb24pIGFuZCBqdXN0DQo+ID4+ID4gc2VuZCBvdXQgOTAwbUEgZGlyZWN0bHk/DQo+
-ID4+DQo+ID4+IEZyb20gTmVpbCdzIHN1Z2dlc3Rpb24sIHdlIG9ubHkgaGF2ZSBvbmUgcGxhY2Ug
-dG8gc2VuZCBvdXQgY3VycmVudA0KPiA+PiBpbmZvcm1hdGlvbiBmcm9tIHVzYiBwaHksIHNvIEkg
-aGF2ZSB0aGlzIGNvbmNlcm4gYW5kIGRvdWJ0IGlmIHdlDQo+ID4+IHN0aWxsIG5lZWQgdGhlIFVT
-QiBjaGFyZ2VyIGZyYW1ld29yay4NCj4gPg0KPiA+IFNvIGlmIHB1dCBpdCBpbiBwaHkvdXNiX3Bo
-eSwgdGhpcyBpcyBhIHByb2JsZW0sIHRoYXQgb25seSBvbmUgcGxhY2UNCj4gPiBzaG91bGQgaGF2
-ZSB0aGUgaW5mb3Igb2YgYm90aCBzcGVlZCBhbmQgdXNiIHN0YXRlLCBob3cgYWJvdXQgcHV0IGl0
-IGF0DQo+ID4gdXNiX2dhZGdldCwgdGhlbiwgZS5nLiBzZW5kIHRoZSBub3RpZmljYXRpb24gaW4N
-Cj4gdXNiX2dhZGdldF92YnVzX2Nvbm5lY3QoKT8NCj4gDQo+IFRoYXQgaXMgc2FtZSB3aGF0IFVT
-QiBjaGFyZ2VyIGRpZCwgZnJvbSB0aGlzIHBvaW50LCB3ZSBuZWVkIFVTQiBjaGFyZ2VyIHRvDQo+
-IHNlbmQgb3V0IHZidXMgZHJhdyBpbmZvcm1hdGlvbiBhY2NvcmRpbmcgdG8gc3BlZWQgYW5kIHVz
-YiBzdGF0ZS4gQnV0IEkNCj4gc2hvdWxkIGxpc3RlbiB0byBvdGhlciBndXlzIHN1Z2dlc3Rpb24u
-IFBldGVyIGFuZCBGZWxpcGUsIHdoYXQgZG8geW91IHRoaW5rPw0KDQpTbyBub3cgdGhlIG9ubHkg
-dG8gZG8gd29yayBpcyB0byBmaW5kIGEgY29tbW9uIHBsYWNlIHRvIHNlbmQgdGhlIG5vdGlmaWNh
-dGlvbiBvdXQNCihiYXNlZCBvbiBnYWRnZXQgc3BlZWQgYW5kIHNhdGUpLg0KDQpMaSBKdW4NCg0K
-PiANCj4gLS0NCj4gQmFvbGluLndhbmcNCj4gQmVzdCBSZWdhcmRzDQo=
+On Fri, 2017-02-10 at 16:15 +0000, Lukasz Luba wrote:
+> There is possible scenario when the system hits deadlock.
+> One of the examples is when IPA (power_allocator.c) calculates
+> power budget and calls every cooling device in the thermal zone
+> using function get_requested_power().
+> This function in devfreq_cooling calls driver's code via
+> get_static_power().
+> If the driver code tries to calculate properly static power
+> based on current temperature, it might call API functions:
+> tz = thermal_zone_get_zone_by_name(priv->tz_name)
+> and then:
+> thermal_zone_get_temp(tz, &temp)
+> 
+> Here is the call graph:
+> 
+> tz->gov->throttle() [=power_allocator_throttle]
+>   power_allocator_throttle
+>     allocate_power
+> ==>   (lock tz->lock taken)
+>       (for each cooling device:)
+>          cdev->ops->get_requested_power
+>          [=devfreq_cooling_get_requested_power]
+>               get_static_power
+>                  (call driver specific function)
+>                  dfc->power_ops->get_static_power
+>                  [=mock_devfreq_get_static_power]
+>                       tz = thermal_zone_get_zone_by_name()
+>                       thermal_zone_get_temp(tz, &temp)
+> ===>                    (try to lock again tz->lock)
+> 
+I didn't find mock_devfreq_get_static_power, thus I don't understand
+why thermal_zone_get_zone_by_name() and thermal_zone_get_temp() needs
+to be called in .get_static_power() callback.
+
+> This patch changes the mutex_lock into mutex_trylock
+> just to avoid the deadlock.
+> 
+Well, I don't think this is the right solution.
+We should either avoid poking thermal lock in .get_static_power()
+callback, in the thermal driver, or avoid invoking the callback with
+lock hold, in power_allocator code.
+
+thanks,
+rui
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+> Hi,
+> 
+> This is a RFC to start some discussion.
+> I am not sure if it should go with stable label
+> (it affects few versions back though).
+> It is based on v4.10-rc7.
+> 
+> Regards,
+> Lukasz Luba
+> 
+>  drivers/thermal/thermal_helpers.c | 9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/thermal_helpers.c
+> b/drivers/thermal/thermal_helpers.c
+> index 8cdf75a..7b01a85 100644
+> --- a/drivers/thermal/thermal_helpers.c
+> +++ b/drivers/thermal/thermal_helpers.c
+> @@ -75,6 +75,12 @@ EXPORT_SYMBOL(get_thermal_instance);
+>   * When a valid thermal zone reference is passed, it will fetch its
+>   * temperature and fill @temp.
+>   *
+> + * IMPORTANT NOTICE:
+> + * This function should not be used from driver's code which is
+> called
+> + * by IPA (power_allocator.c). The IPA already holds the tz->lock.
+> + * Therefore, it is possible to get the temperature in driver code
+> + * in a simple way: reading tz->temperature.
+> + *
+>   * Return: On success returns 0, an error code otherwise
+>   */
+>  int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
+> @@ -87,7 +93,8 @@ int thermal_zone_get_temp(struct
+> thermal_zone_device *tz, int *temp)
+>  	if (!tz || IS_ERR(tz) || !tz->ops->get_temp)
+>  		goto exit;
+>  
+> -	mutex_lock(&tz->lock);
+> +	if (!mutex_trylock(&tz->lock))
+> +		goto exit;
+>  
+>  	ret = tz->ops->get_temp(tz, temp);
+>  
