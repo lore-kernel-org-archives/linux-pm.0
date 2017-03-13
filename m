@@ -1,239 +1,114 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5 3/4] clk: samsung: exynos5433: Add runtime PM support
-Date: Mon, 13 Mar 2017 14:31:32 +0100
-Message-ID: <CAPDyKFotSo5qcJPt9w99Rf3i_kvQnBZE36iBbfDfuBkiKhsoTw@mail.gmail.com>
-References: <CGME20170125115329eucas1p1f42bbb54d5973b6192e964dc8b3a8081@eucas1p1.samsung.com>
- <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com> <1485345194-3196-4-git-send-email-m.szyprowski@samsung.com>
+Subject: Re: [PATCH v5 2/4] clk: samsung: Add support for runtime PM
+Date: Mon, 13 Mar 2017 14:34:00 +0100
+Message-ID: <CAPDyKFpCkzq6A-QcWuaG+k_R-fcnoJCJqYJNGEWHTaeT-8bZhA@mail.gmail.com>
+References: <CGME20170125115329eucas1p1fc59d9be3421bc763d16aa331375b9f6@eucas1p1.samsung.com>
+ <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com> <1485345194-3196-3-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1485345194-3196-4-git-send-email-m.szyprowski@samsung.com>
+In-Reply-To: <1485345194-3196-3-git-send-email-m.szyprowski@samsung.com>
 Sender: linux-clk-owner@vger.kernel.org
 To: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
 On 25 January 2017 at 12:53, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
-> Add runtime pm support for all clock controller units (CMU), which belongs
-> to power domains and require special handling during on/off operations.
-> Typically special values has to be written to MUX registers to change
-> internal clocks parents to OSC clock before turning power off. During such
-> operation all clocks, which enters CMU has to be enabled to let MUX to
-> stabilize. Also for each CMU there is one special parent clock, which has
-> to be enabled all the time when any access to CMU registers is done.
->
-> This patch solves most of the mysterious external abort and freeze issues
-> caused by a lack of proper parent CMU clock enabled or incorrect turn off
-> procedure.
+> This patch adds struct device pointer to samsung_clk_provider and forwarding it
+> to clk_register_* functions, so drivers can register clocks, which use runtime
+> pm feature.
 >
 > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
 > ---
-
-[...]
-
-> --- a/drivers/clk/samsung/clk-exynos5433.c
-> +++ b/drivers/clk/samsung/clk-exynos5433.c
-> @@ -9,9 +9,14 @@
->   * Common Clock Framework support for Exynos5443 SoC.
+>  drivers/clk/samsung/clk-pll.c |  2 +-
+>  drivers/clk/samsung/clk.c     | 12 ++++++------
+>  drivers/clk/samsung/clk.h     |  1 +
+>  3 files changed, 8 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/clk/samsung/clk-pll.c b/drivers/clk/samsung/clk-pll.c
+> index 52290894857a..74c9ce89538a 100644
+> --- a/drivers/clk/samsung/clk-pll.c
+> +++ b/drivers/clk/samsung/clk-pll.c
+> @@ -1376,7 +1376,7 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
+>         pll->lock_reg = base + pll_clk->lock_offset;
+>         pll->con_reg = base + pll_clk->con_offset;
+>
+> -       clk = clk_register(NULL, &pll->hw);
+> +       clk = clk_register(ctx->dev, &pll->hw);
+>         if (IS_ERR(clk)) {
+>                 pr_err("%s: failed to register pll clock %s : %ld\n",
+>                         __func__, pll_clk->name, PTR_ERR(clk));
+> diff --git a/drivers/clk/samsung/clk.c b/drivers/clk/samsung/clk.c
+> index b7d87d6db9dc..e6923714f024 100644
+> --- a/drivers/clk/samsung/clk.c
+> +++ b/drivers/clk/samsung/clk.c
+> @@ -143,7 +143,7 @@ void __init samsung_clk_register_fixed_rate(struct samsung_clk_provider *ctx,
+>         unsigned int idx, ret;
+>
+>         for (idx = 0; idx < nr_clk; idx++, list++) {
+> -               clk = clk_register_fixed_rate(NULL, list->name,
+> +               clk = clk_register_fixed_rate(ctx->dev, list->name,
+>                         list->parent_name, list->flags, list->fixed_rate);
+>                 if (IS_ERR(clk)) {
+>                         pr_err("%s: failed to register clock %s\n", __func__,
+> @@ -172,7 +172,7 @@ void __init samsung_clk_register_fixed_factor(struct samsung_clk_provider *ctx,
+>         unsigned int idx;
+>
+>         for (idx = 0; idx < nr_clk; idx++, list++) {
+> -               clk = clk_register_fixed_factor(NULL, list->name,
+> +               clk = clk_register_fixed_factor(ctx->dev, list->name,
+>                         list->parent_name, list->flags, list->mult, list->div);
+>                 if (IS_ERR(clk)) {
+>                         pr_err("%s: failed to register clock %s\n", __func__,
+> @@ -193,7 +193,7 @@ void __init samsung_clk_register_mux(struct samsung_clk_provider *ctx,
+>         unsigned int idx, ret;
+>
+>         for (idx = 0; idx < nr_clk; idx++, list++) {
+> -               clk = clk_register_mux(NULL, list->name, list->parent_names,
+> +               clk = clk_register_mux(ctx->dev, list->name, list->parent_names,
+>                         list->num_parents, list->flags,
+>                         ctx->reg_base + list->offset,
+>                         list->shift, list->width, list->mux_flags, &ctx->lock);
+> @@ -226,13 +226,13 @@ void __init samsung_clk_register_div(struct samsung_clk_provider *ctx,
+>
+>         for (idx = 0; idx < nr_clk; idx++, list++) {
+>                 if (list->table)
+> -                       clk = clk_register_divider_table(NULL, list->name,
+> +                       clk = clk_register_divider_table(ctx->dev, list->name,
+>                                 list->parent_name, list->flags,
+>                                 ctx->reg_base + list->offset,
+>                                 list->shift, list->width, list->div_flags,
+>                                 list->table, &ctx->lock);
+>                 else
+> -                       clk = clk_register_divider(NULL, list->name,
+> +                       clk = clk_register_divider(ctx->dev, list->name,
+>                                 list->parent_name, list->flags,
+>                                 ctx->reg_base + list->offset, list->shift,
+>                                 list->width, list->div_flags, &ctx->lock);
+> @@ -264,7 +264,7 @@ void __init samsung_clk_register_gate(struct samsung_clk_provider *ctx,
+>         unsigned int idx, ret;
+>
+>         for (idx = 0; idx < nr_clk; idx++, list++) {
+> -               clk = clk_register_gate(NULL, list->name, list->parent_name,
+> +               clk = clk_register_gate(ctx->dev, list->name, list->parent_name,
+>                                 list->flags, ctx->reg_base + list->offset,
+>                                 list->bit_idx, list->gate_flags, &ctx->lock);
+>                 if (IS_ERR(clk)) {
+> diff --git a/drivers/clk/samsung/clk.h b/drivers/clk/samsung/clk.h
+> index da3bdebabf1e..9263d8a27c6b 100644
+> --- a/drivers/clk/samsung/clk.h
+> +++ b/drivers/clk/samsung/clk.h
+> @@ -26,6 +26,7 @@
 >   */
+>  struct samsung_clk_provider {
+>         void __iomem *reg_base;
+> +       struct device *dev;
+>         struct clk_onecell_data clk_data;
+>         spinlock_t lock;
+>  };
+> --
+> 1.9.1
 >
-> +#include <linux/clk.h>
->  #include <linux/clk-provider.h>
->  #include <linux/of.h>
->  #include <linux/of_address.h>
-> +#include <linux/of_device.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/pm_runtime.h>
-> +#include <linux/slab.h>
->
->  #include <dt-bindings/clock/exynos5433.h>
->
-
-[...]
-
-> +struct exynos5433_cmu_data {
-> +       struct samsung_clk_provider ctx;
-> +
-> +       struct samsung_clk_reg_dump *clk_save;
-> +       unsigned int nr_clk_save;
-> +       const struct samsung_clk_reg_dump *clk_suspend;
-> +       unsigned int nr_clk_suspend;
-> +
-> +       struct clk *clk;
-> +       struct clk **pclks;
-> +       int nr_pclks;
-> +};
-> +
-> +static int exynos5433_cmu_suspend(struct device *dev)
-> +{
-> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
-> +       int i;
-> +
-> +       samsung_clk_save(data->ctx.reg_base, data->clk_save,
-> +                        data->nr_clk_save);
-> +
-> +       for (i = 0; i < data->nr_pclks; i++)
-> +               clk_enable(data->pclks[i]);
-> +
-> +       samsung_clk_restore(data->ctx.reg_base, data->clk_suspend,
-> +                           data->nr_clk_suspend);
-> +
-> +       for (i = 0; i < data->nr_pclks; i++)
-> +               clk_disable(data->pclks[i]);
-> +
-> +       clk_disable(data->clk);
-> +
-> +       return 0;
-> +}
-> +
-> +static int exynos5433_cmu_resume(struct device *dev)
-> +{
-> +       struct exynos5433_cmu_data *data = dev_get_drvdata(dev);
-> +       int i;
-> +
-> +       clk_enable(data->clk);
-> +
-> +       for (i = 0; i < data->nr_pclks; i++)
-> +               clk_enable(data->pclks[i]);
-> +
-> +       samsung_clk_restore(data->ctx.reg_base, data->clk_save,
-> +                           data->nr_clk_save);
-> +
-> +       for (i = 0; i < data->nr_pclks; i++)
-> +               clk_disable(data->pclks[i]);
-> +
-> +       return 0;
-> +}
-> +
-> +static int __init exynos5433_cmu_probe(struct platform_device *pdev)
-> +{
-> +       const struct samsung_cmu_info *info;
-> +       struct exynos5433_cmu_data *data;
-> +       struct samsung_clk_provider *ctx;
-> +       struct device *dev = &pdev->dev;
-> +       struct resource *res;
-> +       void __iomem *reg_base;
-> +       struct clk **clk_table;
-> +       int i;
-> +
-> +       info = of_device_get_match_data(dev);
-> +
-> +       data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-> +       if (!data)
-> +               return -ENOMEM;
-> +       ctx = &data->ctx;
-> +
-> +       res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +       reg_base = devm_ioremap_resource(dev, res);
-> +       if (!reg_base) {
-> +               dev_err(dev, "failed to map registers\n");
-> +               return -ENOMEM;
-> +       }
-> +
-> +       clk_table = devm_kcalloc(dev, info->nr_clk_ids, sizeof(struct clk *),
-> +                                GFP_KERNEL);
-> +       if (!clk_table)
-> +               return -ENOMEM;
-> +
-> +       for (i = 0; i < info->nr_clk_ids; ++i)
-> +               clk_table[i] = ERR_PTR(-ENOENT);
-> +
-> +       ctx->clk_data.clks = clk_table;
-> +       ctx->clk_data.clk_num = info->nr_clk_ids;
-> +       ctx->reg_base = reg_base;
-> +       ctx->dev = dev;
-> +       spin_lock_init(&ctx->lock);
-> +
-> +       data->clk_save = samsung_clk_alloc_reg_dump(info->clk_regs,
-> +                                                   info->nr_clk_regs);
-> +       data->nr_clk_save = info->nr_clk_regs;
-> +       data->clk_suspend = info->suspend_regs;
-> +       data->nr_clk_suspend = info->nr_suspend_regs;
-> +       data->nr_pclks = of_count_phandle_with_args(dev->of_node, "clocks",
-> +                                                   "#clock-cells");
-> +       if (data->nr_pclks > 0) {
-> +               data->pclks = devm_kcalloc(dev, sizeof(struct clk *),
-> +                                          data->nr_pclks, GFP_KERNEL);
-> +
-> +               for (i = 0; i < data->nr_pclks; i++) {
-> +                       struct clk *clk = of_clk_get(dev->of_node, i);
-> +
-> +                       if (IS_ERR(clk))
-> +                               return PTR_ERR(clk);
-> +                       data->pclks[i] = clk;
-> +               }
-> +       }
-> +
-> +       /*
-> +        * Prepare all parent clocks here to avoid potential deadlock caused
-> +        * by global clock "prepare lock" grabbed by runtime pm callbacks
-> +        * from pm workers.
-> +        */
-
-I don't understand why this potentially could cause a deadlock. Can
-you please elaborate.
-
-To me, I think you should be fine doing clk_prepare_enable() and
-clk_disable_unprepare() from exynos5433_cmu_suspend|resume(), but I
-may be missing something.
-
-> +       for (i = 0; i < data->nr_pclks; i++)
-> +               clk_prepare(data->pclks[i]);
-> +
-> +       if (info->clk_name)
-> +               data->clk = clk_get(dev, info->clk_name);
-> +       clk_prepare_enable(data->clk);
-> +
-> +       platform_set_drvdata(pdev, data);
-> +
-> +       /*
-> +        * Enable runtime pm here, so clock core with use runtime pm for all
-> +        * registered clocks. Additionally call pm_runtime_get_sync to ensure
-> +        * that clock core will not runtime suspend our clock controller in
-> +        * the middle of clock registration (clock core might call runtime pm
-> +        * on newly registered clocks, for example to recalculate clock rate).
-> +        */
-
-Instead of the rather confusing comment about the call to
-pm_runtime_get_sync(), let's instead state that we increase the
-runtime PM usage count during the clock registration, to avoid the
-clock core from runtime suspending the device.
-
-In other words, before calling pm_runtime_set_active(), add a call
-pm_runtime_get_noresume() and then remove the latter call to
-pm_runtime_get_sync().
-
-> +       pm_runtime_set_active(dev);
-> +       pm_runtime_enable(dev);
-> +       pm_runtime_get_sync(dev);
-> +
-> +       if (info->pll_clks)
-> +               samsung_clk_register_pll(ctx, info->pll_clks, info->nr_pll_clks,
-> +                                        reg_base);
-> +       if (info->mux_clks)
-> +               samsung_clk_register_mux(ctx, info->mux_clks,
-> +                                        info->nr_mux_clks);
-> +       if (info->div_clks)
-> +               samsung_clk_register_div(ctx, info->div_clks,
-> +                                        info->nr_div_clks);
-> +       if (info->gate_clks)
-> +               samsung_clk_register_gate(ctx, info->gate_clks,
-> +                                         info->nr_gate_clks);
-> +       if (info->fixed_clks)
-> +               samsung_clk_register_fixed_rate(ctx, info->fixed_clks,
-> +                                               info->nr_fixed_clks);
-> +       if (info->fixed_factor_clks)
-> +               samsung_clk_register_fixed_factor(ctx, info->fixed_factor_clks,
-> +                                                 info->nr_fixed_factor_clks);
-> +
-> +       samsung_clk_of_add_provider(dev->of_node, ctx);
-> +       pm_runtime_put(dev);
-> +
-> +       return 0;
-> +}
->
-
-[...]
-
-Kind regards
-Uffe
