@@ -1,66 +1,80 @@
-From: Lukasz Luba <lukasz.luba@arm.com>
-Subject: Re: [RFC PATCH] fix: thermal: avoid possible deadlock calling
- thermal_zone_get_temp()
-Date: Mon, 13 Mar 2017 14:52:30 +0000
-Message-ID: <15cc711d-b409-06a0-097d-56afe815e0d7@arm.com>
-References: <20170210161547.28625-1-lukasz.luba@arm.com>
- <1489373034.5841.14.camel@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V5 2/9] drivers: cpu: Setup CPU devices to do runtime PM
+Date: Mon, 13 Mar 2017 16:55:12 +0100
+Message-ID: <CAPDyKFq6NP9uKPQJ7y6w9a3u071L-4e3e4hPaS8nuhnexKnJbA@mail.gmail.com>
+References: <1488573695-106680-1-git-send-email-lina.iyer@linaro.org> <1488573695-106680-3-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50624 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751244AbdCMOwd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Mar 2017 10:52:33 -0400
-In-Reply-To: <1489373034.5841.14.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1488573695-106680-3-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Andy Gross <andy.gross@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Brendan Jackman <brendan.jackman@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Sudeep Holla <sudeep.holla@arm.com>, Juri Lelli <Juri.Lelli@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, linux-pm@vger.kernel.org
 
-
->>
->> tz->gov->throttle() [=power_allocator_throttle]
->>   power_allocator_throttle
->>     allocate_power
->> ==>   (lock tz->lock taken)
->>       (for each cooling device:)
->>          cdev->ops->get_requested_power
->>          [=devfreq_cooling_get_requested_power]
->>               get_static_power
->>                  (call driver specific function)
->>                  dfc->power_ops->get_static_power
->>                  [=mock_devfreq_get_static_power]
->>                       tz = thermal_zone_get_zone_by_name()
->>                       thermal_zone_get_temp(tz, &temp)
->> ===>                    (try to lock again tz->lock)
->>
-> I didn't find mock_devfreq_get_static_power, thus I don't understand
-> why thermal_zone_get_zone_by_name() and thermal_zone_get_temp() needs
-> to be called in .get_static_power() callback.
-
-The mock_devfreq_get_static_power is just the mock function which
-mimics a driver function registered to get_static_power.
-Inside this function you can ask for thermal zone pointer
-to check the temperature in that thermal_zone.
-Based on that temperature you can scale your static power value
-before returning it to the framework.
-
-So in this case the driver code should not scale the static
-power based on temperature (for now).
-
+On 3 March 2017 at 21:41, Lina Iyer <lina.iyer@linaro.org> wrote:
+> CPU devices just like any other device, can do runtime PM. However, CPU
+> devices may only do runtime only when IRQs are disabled. The devices
+> must be set as IRQ safe.
 >
->> This patch changes the mutex_lock into mutex_trylock
->> just to avoid the deadlock.
->>
-> Well, I don't think this is the right solution.
-> We should either avoid poking thermal lock in .get_static_power()
-> callback, in the thermal driver, or avoid invoking the callback with
-> lock hold, in power_allocator code.
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
+> ---
+>  drivers/base/cpu.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index 2c3b359..77451ad 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/cpufeature.h>
+>  #include <linux/tick.h>
+>  #include <linux/pm_qos.h>
+> +#include <linux/pm_runtime.h>
+>
+>  #include "base.h"
+>
+> @@ -345,6 +346,19 @@ static int cpu_uevent(struct device *dev, struct kobj_uevent_env *env)
+>  }
+>  #endif
+>
+> +#ifdef CONFIG_PM
+> +static void cpu_runtime_pm_init(struct device *dev)
+> +{
+> +       pm_runtime_irq_safe(dev);
+> +       pm_runtime_enable(dev);
+> +       if (cpu_online(dev->id))
+> +               pm_runtime_set_active(dev);
 
-I agree that this is not the solution.
-It just highlights the problem.
-I will try to allocate some time for this issue.
+You shouldn't change the runtime PM status of the device when runtime
+PM is enabled. Instead do that before you call pm_runtime_enable().
 
-Regards,
-Lukasz Luba
+> +}
+> +#else
+> +static void cpu_runtime_pm_init(struct device *dev)
+
+There is no need for a stub function, as the runtime PM API already
+provides stubs for when CONFIG_PM is unset.
+
+> +{ }
+> +#endif
+> +
+>  /*
+>   * register_cpu - Setup a sysfs device for a CPU.
+>   * @cpu - cpu->hotpluggable field set to 1 will generate a control file in
+> @@ -379,6 +393,7 @@ int register_cpu(struct cpu *cpu, int num)
+>         register_cpu_under_node(num, cpu_to_node(num));
+>         dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
+>
+> +       cpu_runtime_pm_init(&cpu->dev);
+>         return 0;
+>  }
+>
+> --
+> 2.7.4
+>
+
+Kind regards
+Uffe
