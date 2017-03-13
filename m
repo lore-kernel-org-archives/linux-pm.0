@@ -1,131 +1,96 @@
-From: Brendan Jackman <brendan.jackman@arm.com>
-Subject: Re: [PATCH V5 1/6] drivers: cpuidle: Read CPU's idle state from PM domain
-Date: Mon, 13 Mar 2017 13:58:56 +0000
-Message-ID: <8760jds2fz.fsf@arm.com>
-References: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org> <1488577697-127445-2-git-send-email-lina.iyer@linaro.org>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Mon, 13 Mar 2017 14:09:34 +0000
+Message-ID: <3e88692d-613b-9c25-2554-7d399c45637a@nvidia.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com>
+ <CAMuHMdUAN+PHr_GSvyMzA8N6LgzPEXhQyG_rSwFUOvc9_v7JiA@mail.gmail.com>
+ <f4b3a93e-e29f-6fc6-6e7f-8c51081cbe15@nvidia.com>
+ <CAPDyKFp20tDickB9mF1ZSRUvYBEsfATysENeMzGV9O8KXH2wig@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-reply-to: <1488577697-127445-2-git-send-email-lina.iyer@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Lina Iyer <lina.iyer@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAPDyKFp20tDickB9mF1ZSRUvYBEsfATysENeMzGV9O8KXH2wig-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Ulf,
 
-Hi Lina,
+On 13/03/17 11:45, Ulf Hansson wrote:
+> +Björn
+> 
+> On 13 March 2017 at 10:37, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> Hi Rafael, Kevin, Ulf,
+>>
+>> Looks like there is still some interest/needs in/for this. Any thoughts
+>> on how we can move this forward?
+> 
+> At the Linaro Connect last week, I was talking to Björn, Rajendra and
+> Stephen more about these related issues.
+> 
+> It definitely seems like we need to progress with this somehow,
+> meaning we need a solution for being able to associate a device with
+> more than one PM domain. In that context, I don't think genpd based on
+> its current design, is a good fit to solve the problem.
+> 
+> Instead I think we need something entirely new (perhaps some code can
+> be borrowed from genpd), which is more similar to the clock/regulator
+> framework. In other words, what you also were suggesting in a earlier
+> reply.
+> In this way, the driver/subsystem gains full flexibility of managing
+> its device's PM domains, which seems like the best future-proof
+> solution.
 
-On Fri, Mar 03 2017 at 21:48, Lina Iyer wrote:
-> Currently CPUs idle states and idle states of its parent are represented
-> in a flattened model by the cpu-dile-states property of the CPU node.
-> The CPUs idle states are followed by its cluster idle states. With the
-> introduction of CPU PM domains, the CPUs and domain idle states may be
-> represented hierarchically as part of the domain DT definition. This
-> would mean presenting idle state information in 2 places - CPU nodes for
-> the CPU and the cluster's with the PM domains.
->
-> Also, it makes sense to define domains around each individual CPU since
-> each of them is a power domain in its own right. The CPU idle states can
-> now be represented as its domain's idle state, defined by the
-> domain-idle-states property. This avoids presenting idle states in
-> multiple places in the DT.
->
-> Modify the DT-based cpuidle driver to check for the presence of a CPU's
-> domain and if present read the domain-idle-states of the PM domain and
-> if the CPU's domain is absent, revert to reading in the cpu-idle-states
-> property of the CPU DT node.
->
-> Suggested-by: Sudeep Holla <sudeep.holla@qrm.com>
-s/qrm/arm/
+I agree, I think that that would give us the most flexibility to handle
+whatever scenario. However, I was thinking that we could still use the
+genpd core to register pm-domains with and control. My thought was to
+allow devices to have a bindings with multiple pm-domains ...
 
-> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
-> ---
->  drivers/cpuidle/dt_idle_states.c | 38 +++++++++++++++++++++++++++++++++++---
->  1 file changed, 35 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
-> index ffca4fc..4df7d45 100644
-> --- a/drivers/cpuidle/dt_idle_states.c
-> +++ b/drivers/cpuidle/dt_idle_states.c
-> @@ -98,6 +98,39 @@ static int init_state_node(struct cpuidle_state *idle_state,
->  }
->
->  /*
-> + * Get the state node at @idx. State node may be defined as domain's idle state
-> + * if the CPU has its own domain or defined as CPU's idle state if it doesn't
-> + * have a domain provider.
-> + */
-> +static struct device_node *get_state_node(struct device_node *cpu_node,
-> +				unsigned int idx)
-> +{
-> +	struct device_node *dn;
-> +	bool cpu_has_domain = false;
-> +	struct of_phandle_args args;
-> +	const char *property;
-> +	int err;
-> +
-> +	err = of_parse_phandle_with_args(cpu_node, "power-domains",
-> +					"#power-domain-cells", 0, &args);
-Should probably have an of_node_put to match this.
-> +	if (!err) {
-> +		dn = args.np;
-> +		err = of_count_phandle_with_args(dn, "domain-idle-states",
-> +								NULL);
-> +		cpu_has_domain = (err > 0);
+	dev-xyz {
+		...
+		power-domains = <&domain-a>, <&domain-b>;
+	};
 
-So if a CPU has a power domain but that domain doesn't have any idle
-states, then we fall back to cpu-idle-states?
+Then in the genpd core we do having something like ...
 
-I think the presence of a power domain for a CPU should mean
-cpu-idle-states is totally ignored, and this should be made clear in the
-power_domain.txt binding doc.
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index e697dec9d25b..d1ae6ddf4903 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -2026,6 +2026,15 @@ int genpd_dev_pm_attach(struct device *dev)
+                                                "samsung,power-domain", 0);
+                if (!pd_args.np)
+                        return -ENOENT;
++       } else if (ret > 1) {
++               /*
++                * If there are more than one PM domain defined for a device,
++                * then these need to be manually controlled by the device
++                * driver because the genpd core cannot bind a device with
++                * more than one PM domain.
++                */
++               dev_dbg(dev, "cannot add PM domains, %d detected!\n", ret);
++               return 0;
+        }
 
-(I have had this conversation with someone before, I think it was
- internal at ARM but if I'm wrong and we've already discussed it then
- I'm sorry!)
-> +	}
-> +
-> +	if (cpu_has_domain) {
-> +		property = "domain-idle-states";
-> +	} else {
-> +		property = "cpu-idle-states";
-> +		dn = cpu_node;
-> +	}
-> +
-> +	return of_parse_phandle(dn, property, idx);
-> +}
-> +
-> +/*
->   * Check that the idle state is uniform across all CPUs in the CPUidle driver
->   * cpumask
->   */
-> @@ -118,8 +151,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
->  	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
->  	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
->  		cpu_node = of_cpu_device_node_get(cpu);
-> -		curr_state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
-> -						   idx);
-> +		curr_state_node = get_state_node(cpu_node, idx);
->  		if (state_node != curr_state_node)
->  			valid = false;
->
-> @@ -176,7 +208,7 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
->  	cpu_node = of_cpu_device_node_get(cpumask_first(cpumask));
->
->  	for (i = 0; ; i++) {
-> -		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
-> +		state_node = get_state_node(cpu_node, i);
->  		if (!state_node)
->  			break;
+Then add some new public APIs for getting and controlling the pm-domains ...
 
-This patch only supports using domain-idle-states for the CPU-level idle
-states, i.e. it only looks at one level of the power-domains graph
-rather than walking it and "linearising"/"flattening" the discovered
-states into a cpuidle-friendly list.
+struct generic_pm_domain *pm_genpd_get(struct device *dev, char *name);
+- Use 'dev->of_node' to look-up pm-domain if populated, else uses name.
 
-That's not a reason against merging this patch but we should note the
-limitation and maybe even print a warning in if we find a parent for the
-CPU's power domain but we're using cpuidle rather than runtime PM.
+struct generic_pm_domain *of_pm_genpd_get(struct device *dev, int index);
+void pm_genpd_put(struct generic_pm_domain *pd);
+int pm_genpd_power_on(struct generic_pm_domain *pd);
+int pm_genpd_power_off(struct generic_pm_domain *pd);
+- Power on/off APIs would be synchronous types
 
-Cheers,
-Brendan
+Are there any potential pitfalls of the above?
+
+Cheers
+Jon
+
+-- 
+nvpublic
