@@ -1,114 +1,131 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v5 2/4] clk: samsung: Add support for runtime PM
-Date: Mon, 13 Mar 2017 14:34:00 +0100
-Message-ID: <CAPDyKFpCkzq6A-QcWuaG+k_R-fcnoJCJqYJNGEWHTaeT-8bZhA@mail.gmail.com>
-References: <CGME20170125115329eucas1p1fc59d9be3421bc763d16aa331375b9f6@eucas1p1.samsung.com>
- <1485345194-3196-1-git-send-email-m.szyprowski@samsung.com> <1485345194-3196-3-git-send-email-m.szyprowski@samsung.com>
+From: Brendan Jackman <brendan.jackman@arm.com>
+Subject: Re: [PATCH V5 1/6] drivers: cpuidle: Read CPU's idle state from PM domain
+Date: Mon, 13 Mar 2017 13:58:56 +0000
+Message-ID: <8760jds2fz.fsf@arm.com>
+References: <1488577697-127445-1-git-send-email-lina.iyer@linaro.org> <1488577697-127445-2-git-send-email-lina.iyer@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1485345194-3196-3-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-reply-to: <1488577697-127445-2-git-send-email-lina.iyer@linaro.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Lina Iyer <lina.iyer@linaro.org>
+Cc: ulf.hansson@linaro.org, khilman@kernel.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, andy.gross@linaro.org, sboyd@codeaurora.org, linux-arm-msm@vger.kernel.org, lorenzo.pieralisi@arm.com, sudeep.holla@arm.com, Juri.Lelli@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 25 January 2017 at 12:53, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
-> This patch adds struct device pointer to samsung_clk_provider and forwarding it
-> to clk_register_* functions, so drivers can register clocks, which use runtime
-> pm feature.
+
+Hi Lina,
+
+On Fri, Mar 03 2017 at 21:48, Lina Iyer wrote:
+> Currently CPUs idle states and idle states of its parent are represented
+> in a flattened model by the cpu-dile-states property of the CPU node.
+> The CPUs idle states are followed by its cluster idle states. With the
+> introduction of CPU PM domains, the CPUs and domain idle states may be
+> represented hierarchically as part of the domain DT definition. This
+> would mean presenting idle state information in 2 places - CPU nodes for
+> the CPU and the cluster's with the PM domains.
 >
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Also, it makes sense to define domains around each individual CPU since
+> each of them is a power domain in its own right. The CPU idle states can
+> now be represented as its domain's idle state, defined by the
+> domain-idle-states property. This avoids presenting idle states in
+> multiple places in the DT.
+>
+> Modify the DT-based cpuidle driver to check for the presence of a CPU's
+> domain and if present read the domain-idle-states of the PM domain and
+> if the CPU's domain is absent, revert to reading in the cpu-idle-states
+> property of the CPU DT node.
+>
+> Suggested-by: Sudeep Holla <sudeep.holla@qrm.com>
+s/qrm/arm/
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
+> Signed-off-by: Lina Iyer <lina.iyer@linaro.org>
 > ---
->  drivers/clk/samsung/clk-pll.c |  2 +-
->  drivers/clk/samsung/clk.c     | 12 ++++++------
->  drivers/clk/samsung/clk.h     |  1 +
->  3 files changed, 8 insertions(+), 7 deletions(-)
+>  drivers/cpuidle/dt_idle_states.c | 38 +++++++++++++++++++++++++++++++++++---
+>  1 file changed, 35 insertions(+), 3 deletions(-)
 >
-> diff --git a/drivers/clk/samsung/clk-pll.c b/drivers/clk/samsung/clk-pll.c
-> index 52290894857a..74c9ce89538a 100644
-> --- a/drivers/clk/samsung/clk-pll.c
-> +++ b/drivers/clk/samsung/clk-pll.c
-> @@ -1376,7 +1376,7 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
->         pll->lock_reg = base + pll_clk->lock_offset;
->         pll->con_reg = base + pll_clk->con_offset;
+> diff --git a/drivers/cpuidle/dt_idle_states.c b/drivers/cpuidle/dt_idle_states.c
+> index ffca4fc..4df7d45 100644
+> --- a/drivers/cpuidle/dt_idle_states.c
+> +++ b/drivers/cpuidle/dt_idle_states.c
+> @@ -98,6 +98,39 @@ static int init_state_node(struct cpuidle_state *idle_state,
+>  }
 >
-> -       clk = clk_register(NULL, &pll->hw);
-> +       clk = clk_register(ctx->dev, &pll->hw);
->         if (IS_ERR(clk)) {
->                 pr_err("%s: failed to register pll clock %s : %ld\n",
->                         __func__, pll_clk->name, PTR_ERR(clk));
-> diff --git a/drivers/clk/samsung/clk.c b/drivers/clk/samsung/clk.c
-> index b7d87d6db9dc..e6923714f024 100644
-> --- a/drivers/clk/samsung/clk.c
-> +++ b/drivers/clk/samsung/clk.c
-> @@ -143,7 +143,7 @@ void __init samsung_clk_register_fixed_rate(struct samsung_clk_provider *ctx,
->         unsigned int idx, ret;
->
->         for (idx = 0; idx < nr_clk; idx++, list++) {
-> -               clk = clk_register_fixed_rate(NULL, list->name,
-> +               clk = clk_register_fixed_rate(ctx->dev, list->name,
->                         list->parent_name, list->flags, list->fixed_rate);
->                 if (IS_ERR(clk)) {
->                         pr_err("%s: failed to register clock %s\n", __func__,
-> @@ -172,7 +172,7 @@ void __init samsung_clk_register_fixed_factor(struct samsung_clk_provider *ctx,
->         unsigned int idx;
->
->         for (idx = 0; idx < nr_clk; idx++, list++) {
-> -               clk = clk_register_fixed_factor(NULL, list->name,
-> +               clk = clk_register_fixed_factor(ctx->dev, list->name,
->                         list->parent_name, list->flags, list->mult, list->div);
->                 if (IS_ERR(clk)) {
->                         pr_err("%s: failed to register clock %s\n", __func__,
-> @@ -193,7 +193,7 @@ void __init samsung_clk_register_mux(struct samsung_clk_provider *ctx,
->         unsigned int idx, ret;
->
->         for (idx = 0; idx < nr_clk; idx++, list++) {
-> -               clk = clk_register_mux(NULL, list->name, list->parent_names,
-> +               clk = clk_register_mux(ctx->dev, list->name, list->parent_names,
->                         list->num_parents, list->flags,
->                         ctx->reg_base + list->offset,
->                         list->shift, list->width, list->mux_flags, &ctx->lock);
-> @@ -226,13 +226,13 @@ void __init samsung_clk_register_div(struct samsung_clk_provider *ctx,
->
->         for (idx = 0; idx < nr_clk; idx++, list++) {
->                 if (list->table)
-> -                       clk = clk_register_divider_table(NULL, list->name,
-> +                       clk = clk_register_divider_table(ctx->dev, list->name,
->                                 list->parent_name, list->flags,
->                                 ctx->reg_base + list->offset,
->                                 list->shift, list->width, list->div_flags,
->                                 list->table, &ctx->lock);
->                 else
-> -                       clk = clk_register_divider(NULL, list->name,
-> +                       clk = clk_register_divider(ctx->dev, list->name,
->                                 list->parent_name, list->flags,
->                                 ctx->reg_base + list->offset, list->shift,
->                                 list->width, list->div_flags, &ctx->lock);
-> @@ -264,7 +264,7 @@ void __init samsung_clk_register_gate(struct samsung_clk_provider *ctx,
->         unsigned int idx, ret;
->
->         for (idx = 0; idx < nr_clk; idx++, list++) {
-> -               clk = clk_register_gate(NULL, list->name, list->parent_name,
-> +               clk = clk_register_gate(ctx->dev, list->name, list->parent_name,
->                                 list->flags, ctx->reg_base + list->offset,
->                                 list->bit_idx, list->gate_flags, &ctx->lock);
->                 if (IS_ERR(clk)) {
-> diff --git a/drivers/clk/samsung/clk.h b/drivers/clk/samsung/clk.h
-> index da3bdebabf1e..9263d8a27c6b 100644
-> --- a/drivers/clk/samsung/clk.h
-> +++ b/drivers/clk/samsung/clk.h
-> @@ -26,6 +26,7 @@
+>  /*
+> + * Get the state node at @idx. State node may be defined as domain's idle state
+> + * if the CPU has its own domain or defined as CPU's idle state if it doesn't
+> + * have a domain provider.
+> + */
+> +static struct device_node *get_state_node(struct device_node *cpu_node,
+> +				unsigned int idx)
+> +{
+> +	struct device_node *dn;
+> +	bool cpu_has_domain = false;
+> +	struct of_phandle_args args;
+> +	const char *property;
+> +	int err;
+> +
+> +	err = of_parse_phandle_with_args(cpu_node, "power-domains",
+> +					"#power-domain-cells", 0, &args);
+Should probably have an of_node_put to match this.
+> +	if (!err) {
+> +		dn = args.np;
+> +		err = of_count_phandle_with_args(dn, "domain-idle-states",
+> +								NULL);
+> +		cpu_has_domain = (err > 0);
+
+So if a CPU has a power domain but that domain doesn't have any idle
+states, then we fall back to cpu-idle-states?
+
+I think the presence of a power domain for a CPU should mean
+cpu-idle-states is totally ignored, and this should be made clear in the
+power_domain.txt binding doc.
+
+(I have had this conversation with someone before, I think it was
+ internal at ARM but if I'm wrong and we've already discussed it then
+ I'm sorry!)
+> +	}
+> +
+> +	if (cpu_has_domain) {
+> +		property = "domain-idle-states";
+> +	} else {
+> +		property = "cpu-idle-states";
+> +		dn = cpu_node;
+> +	}
+> +
+> +	return of_parse_phandle(dn, property, idx);
+> +}
+> +
+> +/*
+>   * Check that the idle state is uniform across all CPUs in the CPUidle driver
+>   * cpumask
 >   */
->  struct samsung_clk_provider {
->         void __iomem *reg_base;
-> +       struct device *dev;
->         struct clk_onecell_data clk_data;
->         spinlock_t lock;
->  };
-> --
-> 1.9.1
+> @@ -118,8 +151,7 @@ static bool idle_state_valid(struct device_node *state_node, unsigned int idx,
+>  	for (cpu = cpumask_next(cpumask_first(cpumask), cpumask);
+>  	     cpu < nr_cpu_ids; cpu = cpumask_next(cpu, cpumask)) {
+>  		cpu_node = of_cpu_device_node_get(cpu);
+> -		curr_state_node = of_parse_phandle(cpu_node, "cpu-idle-states",
+> -						   idx);
+> +		curr_state_node = get_state_node(cpu_node, idx);
+>  		if (state_node != curr_state_node)
+>  			valid = false;
 >
+> @@ -176,7 +208,7 @@ int dt_init_idle_driver(struct cpuidle_driver *drv,
+>  	cpu_node = of_cpu_device_node_get(cpumask_first(cpumask));
+>
+>  	for (i = 0; ; i++) {
+> -		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
+> +		state_node = get_state_node(cpu_node, i);
+>  		if (!state_node)
+>  			break;
+
+This patch only supports using domain-idle-states for the CPU-level idle
+states, i.e. it only looks at one level of the power-domains graph
+rather than walking it and "linearising"/"flattening" the discovered
+states into a cpuidle-friendly list.
+
+That's not a reason against merging this patch but we should note the
+limitation and maybe even print a warning in if we find a parent for the
+CPU's power domain but we're using cpuidle rather than runtime PM.
+
+Cheers,
+Brendan
