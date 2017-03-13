@@ -1,274 +1,181 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 2/2 RESEND] power: reset: Add a driver for the Gemini poweroff
-Date: Sun, 12 Mar 2017 23:36:21 +0100
-Message-ID: <20170312223621.3010-1-linus.walleij@linaro.org>
+From: Jun Li <jun.li@nxp.com>
+Subject: RE: [PATCH v19 0/4] Introduce usb charger framework to deal with the
+ usb gadget power negotation
+Date: Mon, 13 Mar 2017 01:09:21 +0000
+Message-ID: <AM5PR04MB29615806A8D175E3BF4BD8B089250@AM5PR04MB2961.eurprd04.prod.outlook.com>
+References: <cover.1487578977.git.baolin.wang@linaro.org>
+ <87zih3m73h.fsf@notabene.neil.brown.name>
+ <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com>
+ <AM5PR04MB29614C707DE344E5A05FAB3889210@AM5PR04MB2961.eurprd04.prod.outlook.com>
+ <CAMz4kuJ31wVhbYOV+LB9tu=Wb7x9gRifcUnQPMiQSqRUjER_kQ@mail.gmail.com>
+ <AM5PR04MB296177A37D96564D510FA90389210@AM5PR04MB2961.eurprd04.prod.outlook.com>
+ <CAMz4ku+wkZ7webuCK+V9DPuDzdT_Tyy6Dso8==bQPyN9m06vGw@mail.gmail.com>
+ <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
+ <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
+ <AM5PR04MB29613EEC7C49426020A538B089200@AM5PR04MB2961.eurprd04.prod.outlook.com>
+ <CAMz4ku+jy-Z0L4avYsDGstNnV+f=XhjmP8WS9SLOkB1eGWjjXA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f54.google.com ([209.85.215.54]:34889 "EHLO
-        mail-lf0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S935355AbdCLWg2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 12 Mar 2017 18:36:28 -0400
-Received: by mail-lf0-f54.google.com with SMTP id j90so57369055lfk.2
-        for <linux-pm@vger.kernel.org>; Sun, 12 Mar 2017 15:36:27 -0700 (PDT)
+Received: from mail-eopbgr20086.outbound.protection.outlook.com ([40.107.2.86]:38880
+        "EHLO EUR02-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1755805AbdCMBJ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Mar 2017 21:09:27 -0400
+In-Reply-To: <CAMz4ku+jy-Z0L4avYsDGstNnV+f=XhjmP8WS9SLOkB1eGWjjXA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans Ulli Kroll <ulli.kroll@googlemail.com>, Florian Fainelli <f.fainelli@gmail.com>, Sebastian Reichel <sre@kernel.org>
-Cc: Janos Laube <janos.dev@gmail.com>, Paulius Zaleckas <paulius.zaleckas@gmail.com>, openwrt-devel@openwrt.org, linux-arm-kernel@lists.infradead.org, inux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org
+To: Baolin Wang <baolin.wang@linaro.org>
+Cc: NeilBrown <neilb@suse.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "grygorii.strashko@ti.com" <grygorii.strashko@ti.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource>
 
-The Gemini (SL3516) SoC has a special power controller block
-that only deal with shutting down the system.
-
-If you do not register a driver and activate the block, the
-power button on the systems utilizing this SoC will do an
-uncontrolled power cut, which is why it is important to have
-a special poweroff driver.
-
-The most basic functionality is to just shut down the system
-by writing a special bit in the control register after the
-system has reached pm_poweroff.
-
-It also handles the poweroff from a button or other sources:
-
-When the poweroff button is pressed, or a signal is sent to
-poweroff from an infrared remote control, or when the RTC
-fires a special alarm (!) the system emits an interrupt.
-At this point, Linux must acknowledge the interrupt and
-proceed to do an orderly shutdown of the system.
-
-After adding this driver, pressing the poweroff button gives
-this dmesg:
-
-root@gemini:/
-root@gemini:/ gemini-poweroff 4b000000.power-controller:
-poweroff button pressed
-
-calling shutdown scripts..
-setting /dev/rtc0 from system time
-unmounting file systems...
-umount: tmpfs busy - remounted read-only
-umount: can't unmount /: Invalid argument
-The system is going down NOW!
-Sent SIGTERM to all processes
-Sent SIGKILL to all processes
-Requesting system poweroff
-uhci_hcd 0000:00:09.1: HCRESET not completed yet!
-uhci_hcd 0000:00:09.0: HCRESET not completed yet!
-reboot: Power down
-gemini-poweroff 4b000000.power-controller: Gemini power off
-
-Cc: Janos Laube <janos.dev@gmail.com>
-Cc: Paulius Zaleckas <paulius.zaleckas@gmail.com>
-Cc: Hans Ulli Kroll <ulli.kroll@googlemail.com>
-Cc: Florian Fainelli <f.fainelli@gmail.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Sebastian Reichel <sre@kernel.org>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
-Sebastian: please just merge this when your are pleased
-with it. I will funnel the ARM parts through the ARM SoC tree.
----
- drivers/power/reset/Kconfig           |   9 ++
- drivers/power/reset/Makefile          |   1 +
- drivers/power/reset/gemini-poweroff.c | 160 ++++++++++++++++++++++++++++++++++
- 3 files changed, 170 insertions(+)
- create mode 100644 drivers/power/reset/gemini-poweroff.c
-
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index b8cacccf18c8..13f1714cf6f7 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -67,6 +67,15 @@ config POWER_RESET_BRCMSTB
- 	  Say Y here if you have a Broadcom STB board and you wish
- 	  to have restart support.
- 
-+config POWER_RESET_GEMINI_POWEROFF
-+	bool "Cortina Gemini power-off driver"
-+	depends on ARCH_GEMINI || COMPILE_TEST
-+	depends on OF && HAS_IOMEM
-+	default ARCH_GEMINI
-+	help
-+	  This driver supports turning off the Cortina Gemini SoC.
-+	  Select this if you're building a kernel with Gemini SoC support.
-+
- config POWER_RESET_GPIO
- 	bool "GPIO power-off driver"
- 	depends on OF_GPIO
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index 11dae3b56ff9..58cf5b30559f 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -5,6 +5,7 @@ obj-$(CONFIG_POWER_RESET_AT91_SAMA5D2_SHDWC) += at91-sama5d2_shdwc.o
- obj-$(CONFIG_POWER_RESET_AXXIA) += axxia-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMKONA) += brcm-kona-reset.o
- obj-$(CONFIG_POWER_RESET_BRCMSTB) += brcmstb-reboot.o
-+obj-$(CONFIG_POWER_RESET_GEMINI_POWEROFF) += gemini-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
- obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
-diff --git a/drivers/power/reset/gemini-poweroff.c b/drivers/power/reset/gemini-poweroff.c
-new file mode 100644
-index 000000000000..de878fd26f27
---- /dev/null
-+++ b/drivers/power/reset/gemini-poweroff.c
-@@ -0,0 +1,160 @@
-+/*
-+ * Gemini power management controller
-+ * Copyright (C) 2017 Linus Walleij <linus.walleij@linaro.org>
-+ *
-+ * Inspired by code from the SL3516 board support by Jason Lee
-+ * Inspired by code from Janos Laube <janos.dev@gmail.com>
-+ */
-+#include <linux/of.h>
-+#include <linux/of_platform.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm.h>
-+#include <linux/bitops.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/reboot.h>
-+
-+#define GEMINI_PWC_ID		0x00010500
-+#define	GEMINI_PWC_IDREG	0x00
-+#define	GEMINI_PWC_CTRLREG	0x04
-+#define	GEMINI_PWC_STATREG	0x08
-+
-+#define GEMINI_CTRL_SHUTDOWN	BIT(0)
-+#define GEMINI_CTRL_ENABLE	BIT(1)
-+#define GEMINI_CTRL_IRQ_CLR	BIT(2)
-+
-+#define GEMINI_STAT_CIR		BIT(4)
-+#define	GEMINI_STAT_RTC		BIT(5)
-+#define	GEMINI_STAT_POWERBUTTON	BIT(6)
-+
-+struct gemini_powercon {
-+        struct device           *dev;
-+        void __iomem            *base;
-+};
-+
-+static irqreturn_t gemini_powerbutton_interrupt(int irq, void *data)
-+{
-+	struct gemini_powercon *gpw = data;
-+	u32 val;
-+
-+	/* ACK the IRQ */
-+	val = readl(gpw->base + GEMINI_PWC_CTRLREG);
-+	val |= GEMINI_CTRL_IRQ_CLR;
-+	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
-+
-+	val = readl(gpw->base + GEMINI_PWC_STATREG);
-+	val &= 0x70U;
-+	switch (val) {
-+	case GEMINI_STAT_CIR:
-+		dev_info(gpw->dev, "infrared poweroff\n");
-+		orderly_poweroff(true);
-+		break;
-+	case GEMINI_STAT_RTC:
-+		dev_info(gpw->dev, "RTC poweroff\n");
-+		orderly_poweroff(true);
-+		break;
-+	case GEMINI_STAT_POWERBUTTON:
-+		dev_info(gpw->dev, "poweroff button pressed\n");
-+		orderly_poweroff(true);
-+		break;
-+	default:
-+		dev_info(gpw->dev, "other power management IRQ\n");
-+		break;
-+	}
-+
-+	return IRQ_HANDLED;
-+}
-+
-+/* This callback needs this static local as it has void as argument */
-+static struct gemini_powercon *gpw_poweroff;
-+
-+static void gemini_poweroff(void)
-+{
-+	struct gemini_powercon *gpw = gpw_poweroff;
-+	u32 val;
-+
-+	dev_crit(gpw->dev, "Gemini power off\n");
-+	val = readl(gpw->base + GEMINI_PWC_CTRLREG);
-+	val |= GEMINI_CTRL_ENABLE | GEMINI_CTRL_IRQ_CLR;
-+	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
-+
-+	val &= ~GEMINI_CTRL_ENABLE;
-+	val |= GEMINI_CTRL_SHUTDOWN;
-+	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
-+}
-+
-+static int gemini_poweroff_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct resource *res;
-+	struct gemini_powercon *gpw;
-+	u32 val;
-+	int irq;
-+	int ret;
-+
-+	gpw = devm_kzalloc(dev, sizeof(*gpw), GFP_KERNEL);
-+	if (!gpw)
-+		return -ENOMEM;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	gpw->base = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(gpw->base))
-+		return PTR_ERR(gpw->base);
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (!irq)
-+		return -EINVAL;
-+
-+	gpw->dev = dev;
-+
-+	val = readl(gpw->base + GEMINI_PWC_IDREG);
-+	val &= 0xFFFFFF00U;
-+	if (val != GEMINI_PWC_ID) {
-+		dev_err(dev, "wrong power controller ID: %08x\n",
-+			val);
-+		return -ENODEV;
-+	}
-+
-+	/* Clear the power management IRQ */
-+	val = readl(gpw->base + GEMINI_PWC_CTRLREG);
-+	val |= GEMINI_CTRL_IRQ_CLR;
-+	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
-+
-+	ret = devm_request_irq(dev, irq, gemini_powerbutton_interrupt, 0,
-+			       "poweroff", gpw);
-+	if (ret)
-+		return ret;
-+
-+	pm_power_off = gemini_poweroff;
-+	gpw_poweroff = gpw;
-+
-+	/*
-+	 * Enable the power controller. This is crucial on Gemini
-+	 * systems: if this is not done, pressing the power button
-+	 * will result in unconditional poweroff without any warning.
-+	 * This makes the kernel handle the poweroff.
-+	 */
-+	val = readl(gpw->base + GEMINI_PWC_CTRLREG);
-+	val |= GEMINI_CTRL_ENABLE;
-+	writel(val, gpw->base + GEMINI_PWC_CTRLREG);
-+
-+	dev_info(dev, "Gemini poweroff driver registered\n");
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id gemini_poweroff_of_match[] = {
-+	{
-+		.compatible = "cortina,gemini-power-controller",
-+	},
-+	{}
-+};
-+
-+static struct platform_driver gemini_poweroff_driver = {
-+	.probe = gemini_poweroff_probe,
-+	.driver = {
-+		.name = "gemini-poweroff",
-+		.of_match_table = gemini_poweroff_of_match,
-+	},
-+};
-+builtin_platform_driver(gemini_poweroff_driver);
--- 
-2.9.3
+SGksDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmFvbGluIFdhbmcg
+W21haWx0bzpiYW9saW4ud2FuZ0BsaW5hcm8ub3JnXQ0KPiBTZW50OiBGcmlkYXksIE1hcmNoIDEw
+LCAyMDE3IDY6NTIgUE0NCj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+IENjOiBOZWls
+QnJvd24gPG5laWxiQHN1c2UuY29tPjsgRmVsaXBlIEJhbGJpIDxiYWxiaUBrZXJuZWwub3JnPjsg
+R3JlZyBLSA0KPiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBTZWJhc3RpYW4gUmVpY2hl
+bCA8c3JlQGtlcm5lbC5vcmc+OyBEbWl0cnkNCj4gRXJlbWluLVNvbGVuaWtvdiA8ZGJhcnlzaGtv
+dkBnbWFpbC5jb20+OyBEYXZpZCBXb29kaG91c2UNCj4gPGR3bXcyQGluZnJhZGVhZC5vcmc+OyBy
+b2JoQGtlcm5lbC5vcmc7IE1hcmVrIFN6eXByb3dza2kNCj4gPG0uc3p5cHJvd3NraUBzYW1zdW5n
+LmNvbT47IFJ1c2xhbiBCaWxvdm9sIDxydXNsYW4uYmlsb3ZvbEBnbWFpbC5jb20+Ow0KPiBQZXRl
+ciBDaGVuIDxwZXRlci5jaGVuQGZyZWVzY2FsZS5jb20+OyBBbGFuIFN0ZXJuDQo+IDxzdGVybkBy
+b3dsYW5kLmhhcnZhcmQuZWR1PjsgZ3J5Z29yaWkuc3RyYXNoa29AdGkuY29tOyBZb3NoaWhpcm8g
+U2hpbW9kYQ0KPiA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+OyBMZWUgSm9uZXMg
+PGxlZS5qb25lc0BsaW5hcm8ub3JnPjsNCj4gTWFyayBCcm93biA8YnJvb25pZUBrZXJuZWwub3Jn
+PjsgSm9obiBTdHVsdHogPGpvaG4uc3R1bHR6QGxpbmFyby5vcmc+Ow0KPiBDaGFybGVzIEtlZXBh
+eCA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5jb20+Ow0KPiBwYXRjaGVzQG9wZW5z
+b3VyY2Uud29sZnNvbm1pY3JvLmNvbTsgTGludXggUE0gbGlzdCA8bGludXgtDQo+IHBtQHZnZXIu
+a2VybmVsLm9yZz47IFVTQiA8bGludXgtdXNiQHZnZXIua2VybmVsLm9yZz47IGRldmljZS0NCj4g
+bWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5kYXRpb24ub3JnOyBMS01MIDxsaW51eC1rZXJuZWxA
+dmdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYxOSAwLzRdIEludHJvZHVj
+ZSB1c2IgY2hhcmdlciBmcmFtZXdvcmsgdG8gZGVhbCB3aXRoDQo+IHRoZSB1c2IgZ2FkZ2V0IHBv
+d2VyIG5lZ290YXRpb24NCj4gDQo+IE9uIDEwIE1hcmNoIDIwMTcgYXQgMTY6MjcsIEp1biBMaSA8
+anVuLmxpQG54cC5jb20+IHdyb3RlOg0KPiA+IEhpDQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogQmFvbGluIFdhbmcgW21haWx0bzpiYW9saW4ud2FuZ0Bs
+aW5hcm8ub3JnXQ0KPiA+PiBTZW50OiBGcmlkYXksIE1hcmNoIDEwLCAyMDE3IDM6MTUgUE0NCj4g
+Pj4gVG86IEp1biBMaSA8anVuLmxpQG54cC5jb20+DQo+ID4+IENjOiBOZWlsQnJvd24gPG5laWxi
+QHN1c2UuY29tPjsgRmVsaXBlIEJhbGJpIDxiYWxiaUBrZXJuZWwub3JnPjsgR3JlZw0KPiA+PiBL
+SCA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+OyBTZWJhc3RpYW4gUmVpY2hlbCA8c3JlQGtl
+cm5lbC5vcmc+Ow0KPiA+PiBEbWl0cnkgRXJlbWluLVNvbGVuaWtvdiA8ZGJhcnlzaGtvdkBnbWFp
+bC5jb20+OyBEYXZpZCBXb29kaG91c2UNCj4gPj4gPGR3bXcyQGluZnJhZGVhZC5vcmc+OyByb2Jo
+QGtlcm5lbC5vcmc7IE1hcmVrIFN6eXByb3dza2kNCj4gPj4gPG0uc3p5cHJvd3NraUBzYW1zdW5n
+LmNvbT47IFJ1c2xhbiBCaWxvdm9sDQo+ID4+IDxydXNsYW4uYmlsb3ZvbEBnbWFpbC5jb20+OyBQ
+ZXRlciBDaGVuIDxwZXRlci5jaGVuQGZyZWVzY2FsZS5jb20+Ow0KPiA+PiBBbGFuIFN0ZXJuIDxz
+dGVybkByb3dsYW5kLmhhcnZhcmQuZWR1PjsgZ3J5Z29yaWkuc3RyYXNoa29AdGkuY29tOw0KPiA+
+PiBZb3NoaWhpcm8gU2hpbW9kYSA8eW9zaGloaXJvLnNoaW1vZGEudWhAcmVuZXNhcy5jb20+OyBM
+ZWUgSm9uZXMNCj4gPj4gPGxlZS5qb25lc0BsaW5hcm8ub3JnPjsgTWFyayBCcm93biA8YnJvb25p
+ZUBrZXJuZWwub3JnPjsgSm9obiBTdHVsdHoNCj4gPj4gPGpvaG4uc3R1bHR6QGxpbmFyby5vcmc+
+OyBDaGFybGVzIEtlZXBheA0KPiA+PiA8Y2tlZXBheEBvcGVuc291cmNlLndvbGZzb25taWNyby5j
+b20+Ow0KPiA+PiBwYXRjaGVzQG9wZW5zb3VyY2Uud29sZnNvbm1pY3JvLmNvbTsgTGludXggUE0g
+bGlzdCA8bGludXgtDQo+ID4+IHBtQHZnZXIua2VybmVsLm9yZz47IFVTQiA8bGludXgtdXNiQHZn
+ZXIua2VybmVsLm9yZz47IGRldmljZS0NCj4gPj4gbWFpbmxpbmluZ0BsaXN0cy5saW51eGZvdW5k
+YXRpb24ub3JnOyBMS01MDQo+ID4+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPg0KPiA+
+PiBTdWJqZWN0OiBSZTogW1BBVENIIHYxOSAwLzRdIEludHJvZHVjZSB1c2IgY2hhcmdlciBmcmFt
+ZXdvcmsgdG8gZGVhbA0KPiA+PiB3aXRoIHRoZSB1c2IgZ2FkZ2V0IHBvd2VyIG5lZ290YXRpb24N
+Cj4gPj4NCj4gPj4gT24gMTAgTWFyY2ggMjAxNyBhdCAxNDozMCwgSnVuIExpIDxqdW4ubGlAbnhw
+LmNvbT4gd3JvdGU6DQo+ID4+ID4+ID4+ID4NCj4gPj4gPj4gPj4gPiBXaWxsIGdlbmVyaWMgcGh5
+IG5lZWQgYWRkIGV4dGNvbiBhcyB3ZWxsPw0KPiA+PiA+PiA+Pg0KPiA+PiA+PiA+PiBZZXMsIHdp
+bGwgYWRkIGEgJ3N0cnVjdCBleHRjb25fZGV2KicgaW4gJ3N0cnVjdCB1c2JfcGh5Jywgd2hpY2gN
+Cj4gPj4gPj4gPj4gd2lsbCBiZSBjb21tb24gY29kZS4NCj4gPj4gPj4gPj4NCj4gPj4gPj4gPg0K
+PiA+PiA+PiA+IEkgbWVhbiB0aGUgY29tbW9uIGNvZGUgbmVlZCBhZGQgJ3N0cnVjdCBleHRjb25f
+ZGV2JyBpbnRvIGJvdGgNCj4gPj4gPj4gPiAnc3RydWN0IHBoeScgYW5kICdzdHJ1Y3QgdXNiX3Bo
+eScsIHJpZ2h0PyBhcyBzb21lL25ldyB1c2IgcGh5DQo+ID4+ID4+ID4gdXNlIHRoYXQgZ2VuZXJp
+YyBwaHkNCj4gPj4gPj4gZHJpdmVyLg0KPiA+PiA+Pg0KPiA+PiA+PiBBaCwgeW91IHJlbWluZCBt
+ZS4gU2VlbXMgd2UgbmVlZCBhbHNvIGFkZCBvbmUgJ3N0cnVjdCBleHRjb25fZGV2Jw0KPiA+PiA+
+PiBpbnRvICdzdHJ1Y3QgcGh5Jy4NCj4gPj4gPj4NCj4gPj4gPj4gPj4gPg0KPiA+PiA+PiA+PiA+
+PiA+DQo+ID4+ID4+ID4+ID4+ID4+IFNlY29uZGx5LCBJIGFsc28gYWdyZWVkIHdpdGggUGV0ZXIn
+cyBjb21tZW50czogTm90IG9ubHkNCj4gPj4gPj4gPj4gPj4gPj4gVVNCIFBIWSB0byByZWdpc3Rl
+ciBhbiBleHRjb24sIGJ1dCBhbHNvIGZvciB0aGUgZHJpdmVycw0KPiA+PiA+PiA+PiA+PiA+PiB3
+aGljaCBjYW4gZGV0ZWN0IFVTQiBjaGFyZ2VyIHR5cGUsIGl0IG1heSBiZSBVU0INCj4gPj4gPj4g
+Pj4gPj4gPj4gY29udHJvbGxlciBkcml2ZXIsIFVTQiB0eXBlLWMgZHJpdmVyLCBwbWljIGRyaXZl
+ciwgYW5kDQo+ID4+ID4+ID4+ID4+ID4+IHRoZXNlIGRyaXZlcnMgbWF5IG5vdCBoYXZlIGFuIGV4
+dGNvbiBkZXZpY2Ugc2luY2UgdGhlDQo+ID4+ID4+ID4+ID4+ID4+IGludGVybmFsIHBhcnQgY2Fu
+IGZpbmlzaA0KPiA+PiB0aGUgdmJ1cyBkZXRlY3QuDQo+ID4+ID4+ID4+ID4+ID4NCj4gPj4gPj4g
+Pj4gPj4gPiBXaGljaGV2ZXIgcGFydCBjYW4gZGV0ZWN0IHZidXMsIHRoZSBkcml2ZXIgZm9yIHRo
+YXQgcGFydA0KPiA+PiA+PiA+PiA+PiA+IG11c3QgYmUgYWJsZSB0byBmaW5kIHRoZSBleHRjb24g
+YW5kIHRyaWdnZXIgYSBub3RpZmljYXRpb24uDQo+ID4+ID4+ID4+ID4+ID4gTWF5YmUgb25lIHBh
+cnQgY2FuIGRldGVjdCBWQlVTLCBhbm90aGVyIGNhbiBtZWFzdXJlIHRoZQ0KPiA+PiA+PiA+PiA+
+PiA+IHJlc2lzdGFuY2Ugb24gSUQgYW5kIGEgdGhpcmQgY2FuIHdvcmsgdGhyb3VnaCB0aGUgc3Rh
+dGUNCj4gPj4gPj4gPj4gPj4gPiBtYWNoaW5lIHRvIGRldGVybWluZSBpZiBEKyBhbmQgRC0gYXJl
+IHNob3J0ZWQgdG9nZXRoZXIuDQo+ID4+ID4+ID4+ID4+ID4gU29tZWhvdyB0aGVzZSB0aHJlZSBu
+ZWVkIHRvIHdvcmsgdG9nZXRoZXIgdG8gZGV0ZXJtaW5lDQo+ID4+ID4+ID4+ID4+ID4gd2hhdCBp
+cw0KPiA+PiA+PiA+PiA+PiBwbHVnZ2VkDQo+ID4+ID4+ID4+ID4+ID4gaW4gdG8gdGhlIGV4dGVy
+bmFsIGNvbm5lY3Rpb24gcG9ydC4gIFNvbWV3aGVyZSB0aGVyZSBtdWNoDQo+ID4+ID4+ID4+ID4+
+ID4gYW4NCj4gPj4gPj4gJ2V4dGNvbicNCj4gPj4gPj4gPj4gPj4gPiBkZXZpY2Ugd2hpY2ggcmVw
+cmVzZW50cyB0aGF0IHBvcnQgYW5kIHdoaWNoIHRoZSB0aHJlZQ0KPiA+PiA+PiA+PiA+PiA+IGRl
+dmljZXMgY2FuIGZpbmQgYW5kIGNhbiBpbnRlcmFjdCB3aXRoLg0KPiA+PiA+PiA+PiA+PiA+IEkg
+dGhpbmsgaXQgbWFrZXMgc2Vuc2UgZm9yIHRoZSB1c2JfcGh5IHRvIGJlIHRoZSBjb25uZWN0aW9u
+DQo+IHBvaW50Lg0KPiA+PiA+PiA+PiA+PiA+IEVhY2ggb2YgdGhlIGRldmljZXMgY2FuIGdldCB0
+byB0aGUgcGh5LCBhbmQgdGhlIHBoeSBjYW4NCj4gPj4gPj4gPj4gPj4gPiBnZXQgdG8gdGhlDQo+
+ID4+ID4+ID4+IGV4dGNvbi4NCj4gPj4gPj4gPj4gPj4gPiBJdCBkb2Vzbid0IG1hdHRlciB2ZXJ5
+IG11Y2ggaWYgdGhlIHVzYiBwaHkgZHJpdmVyIGNyZWF0ZXMNCj4gPj4gPj4gPj4gPj4gPiB0aGUg
+ZXh0Y29uLCBvciBpZiBzb21ldGhpbmcgZWxzZSBjcmVhdGVzIHRoZSBleHRjb24gYW5kDQo+ID4+
+ID4+ID4+ID4+ID4gdGhlIHBoeSBkcml2ZXIgcGVyZm9ybXMgYSBsb29rdXAgdG8gZmluZCBpdCAo
+ZS5nLiBiYXNlZCBvbg0KPiBkZXZpY2V0cmVlIGluZm8pLg0KPiA+PiA+PiA+PiA+PiA+DQo+ID4+
+ID4+ID4+ID4+ID4gVGhlIHBvaW50IGlzIHRoYXQgdGhlcmUgaXMgb2J2aW91c2x5IGFuIGV4dGVy
+bmFsIHBoeXNpY2FsDQo+ID4+ID4+ID4+ID4+ID4gY29ubmVjdGlvbiwgYW5kIHNvIHRoZXJlIHNo
+b3VsZCBiZSBhbiAnZXh0Y29uJyBkZXZpY2UgdGhhdA0KPiA+PiA+PiByZXByZXNlbnRzIGl0Lg0K
+PiA+PiA+PiA+PiA+Pg0KPiA+PiA+PiA+PiA+PiBQZXRlciAmIEp1biwgaXMgaXQgT0sgZm9yIHlv
+dSBldmVyeSBwaHkgaGFzIG9uZSBleHRjb24NCj4gPj4gPj4gPj4gPj4gZGV2aWNlIHRvIHJlY2Vp
+dmUgVkJVUyBub3RpZmljYXRpb24sIGVzcGVjaWFsbHkgZm9yDQo+ID4+ID4+ID4+ID4+IGRldGVj
+dGluZyB0aGUgY2hhcmdlciB0eXBlIGJ5DQo+ID4+ID4+ID4+IHNvZnR3YXJlPw0KPiA+PiA+PiA+
+PiA+Pg0KPiA+PiA+PiA+PiA+DQo+ID4+ID4+ID4+ID4gTXkgdW5kZXJzdGFuZGluZyBpcyBwaHkv
+dXNiX3BoeSBhcyB0aGUgY29ubmVjdGlvbiBwb2ludCwgd2lsbA0KPiA+PiA+PiA+PiA+IHNlbmQg
+dGhlIG5vdGlmaWNhdGlvbiB0byBQTUlDIGRyaXZlciB3aGljaCBhY3R1YWxseSBjb250cm9sDQo+
+ID4+ID4+ID4+ID4gdGhlIGNoYXJnZSBjdXJyZW50LCBhbHNvIHRoaXMgd2lsbCBiZSBkb25lIGlu
+IHlvdXIgY29tbW9uDQo+ID4+ID4+ID4+ID4gZnJhbWV3b3JrLA0KPiA+PiByaWdodD8NCj4gPj4g
+Pj4gPj4NCj4gPj4gPj4gPj4gTm90IGluIFVTQiBjaGFyZ2VyIGZyYW1ld29yay4gSWYgd2UgYXJl
+IGFsbCBhZ3JlZSBldmVyeSB1c2JfcGh5DQo+ID4+ID4+ID4+IGNhbiByZWdpc3RlciBvbmUgZXh0
+Y29uIGRldmljZSwgY2FuIGdldCBjb3JyZWN0IGNoYXJnZXIgdHlwZQ0KPiA+PiA+PiA+PiBhbmQg
+c2VuZCBvdXQgY29ycmVjdCB2YnVzX2RyYXcgaW5mb3JtYXRpb24sIHRoZW4gd2UgZG9uJ3QgbmVl
+ZA0KPiA+PiA+PiA+PiBVU0IgY2hhcmdlciBmcmFtZXdvcmsgYXMgTmVpbCBzdWdnZXN0ZWQuIFNv
+IHRoaXMgd2lsbCBiZSBva2F5DQo+ID4+ID4+ID4+IGZvciB5b3VyIGNhc2UgKGVzcGVjaWFsbHkg
+Zm9yIGRldGVjdGluZyB0aGUgY2hhcmdlciB0eXBlIGJ5DQo+IHNvZnR3YXJlKSA/DQo+ID4+ID4+
+ID4NCj4gPj4gPj4gPiBJbiBteSBjYXNlLCBjaGFyZ2VyIGRldGVjdGlvbiBpcyBkb25lIGJ5IGNv
+bnRyb2xsZXIgZHJpdmVyIGFuZCBJDQo+ID4+ID4+ID4gbmVlZCBkbyBjaGFyZ2VyIHR5cGUgZGV0
+ZWN0aW9uIGludGVybmFsbHksIGFuZCBvbmx5IHBhc3MgdGhlDQo+ID4+ID4+ID4gY3VycmVudCBk
+cmF3IGluZm8gdmlhIHBoeSB3aGljaCB3aWxsIHNlbmQgb3V0LCB0aGlzIHNlZW1zIG9rIGZvcg0K
+PiA+PiA+PiA+IG1lLCBidXQgSSB0aGluayBpdCB3aWxsIGJlIGdvb2QgaWYgeW91IG9yIHNvbWVv
+bmUgY2FuIHNob3cgdXMgYW4NCj4gPj4gPj4gPiBleGFtcGxlIHVzZXIgYmFzZWQgb24gdGhlDQo+
+ID4+ID4+IGRlc2lnbiBOZWlsIHN1Z2dlc3RlZC4NCj4gPj4gPj4gPiBXaWxsIHlvdSB3b3JrIG91
+dCB0aGF0IGNvbW1vbiBjb2RlIGlmIHRoaXMgVVNCIGNoYXJnZXIgZnJhbWV3b3JrDQo+ID4+ID4+
+ID4gaXMgbm90DQo+ID4+ID4+IG5lZWRlZD8NCj4gPj4gPj4NCj4gPj4gPj4gSSB3aWxsIGFkZCAg
+YSAnc3RydWN0IGV4dGNvbl9kZXYqJyBpbiAnc3RydWN0IHVzYl9waHknIGFuZCBzdHJ1Y3QNCj4g
+Pj4gPj4gcGh54oCcLiBPdGhlcnMgYXJlIGFscmVhZHkgcmVhZHkgaWYgZXZlcnlvbmUgaGFzIG5v
+IGNvbXBsYWluIGFib3V0DQo+ID4+ID4+IGN1cnJlbnQgZGVzaWduLCBleGNlcHQNCj4gPj4gPg0K
+PiA+PiA+IE9ubHkgYWRkaW5nIGV4dGNvbl9kZXYgaW50byB1c2JfcGh5L3BoeSAgYW5kIGFsbCBv
+dGhlcnMgYXJlIHJlYWR5Pw0KPiA+PiA+IE15IHVuZGVyc3RhbmRpbmcgeW91IHdpbGwgYWxzbyBk
+bzoNCj4gPj4gPiAtIFdlIG5lZWQgZmluZCBhIGNlbnRyYWwgcGxhY2UgdG8gc2VuZCB0aGUgbm90
+aWZpY2F0aW9uKHBoeSBjb21tb24NCj4gcGFydCkuDQo+ID4+DQo+ID4+IFRoYXQgd2lsbCBpbmNs
+dWRlIHRoZXNlIGltcGxlbWVudGF0aW9uIHdoZW4gYWRkaW5nIGV4dGNvbl9kZXYuDQo+ID4+DQo+
+ID4NCj4gPiBPSywgdGhhbmtzLg0KPiA+DQo+ID4+ID4gLSBJZiB0aGUgZXh0Y29uX2RldiBpcyBk
+aXJlY3RseSBhZGRlZCBpbiB1c2JfcGh5L3BoeSwgUE1JQyBuZWVkcw0KPiA+PiA+IHNvbWUNCj4g
+Pj4gQVBJIHRvIGZpbmR1cCBpdC4NCj4gPj4NCj4gPj4gUE1JQyBjYW4gZmluZCBleHRjb24gZGV2
+aWNlIGJ5IHBoYW5kbGUuDQo+ID4NCj4gPiBleHRjb25fZGV2KG5vdCBhIHJlZmVyZW5jZSBwb2lu
+dGVyKSBpcyBkaXJlY3RseSBhZGRlZCBpbiB1c2JfcGh5L3BoeSwNCj4gPiBub3QgdmlhIGRldmlj
+ZXRyZWUsIGhvdyBQTUlDIGZpbmQgaXQgYnkgcGhhbmRsZT8NCj4gDQo+IEZyb20gbXkgdW5kZXJz
+dGFuZGluZywgaGVyZSB3ZSBzaG91bGQgYWRkIG9uZSBwb2ludGVyIChleHRjb25fZGV2ICopLA0K
+PiBzaW5jZSB1c2IgcGh5IGlzIG5vdCBvbmUgZXh0ZXJuYWwgY29ubmVjdCBkZXZpY2UuDQoNCkFn
+cmVlZC4NCg0KPiANCj4gPg0KPiA+Pg0KPiA+PiA+DQo+ID4+ID4+IG15IG9uZSBjb25jZXJuLiAo
+SSBhbSBhZnJhaWQgaWYgaXQgaXMgZW5vdWdoIHRvIHNlbmQgb3V0IHZidXMgZHJhdw0KPiA+PiA+
+PiBpbmZvcm1hdGlvbiBmcm9tIFVTQiBwaHkgZHJpdmVyLCBmb3IgZXhhbXBsZSB5b3Ugd2lsbCBt
+aXNzIHN1cGVyDQo+ID4+ID4+IHNwZWVkICg5MDBtQSksIHdoaWNoIG5lZWQgZ2V0IHRoZSBzcGVl
+ZCBpbmZvcm1hdGlvbiBmcm9tIGdhZGdldA0KPiA+PiA+PiBkcml2ZXIuKQ0KPiA+PiA+Pg0KPiA+
+PiA+DQo+ID4+ID4gQ2FuIHdlIGhhbmRsZSB0aGlzIGluIFVTQihzbyBoYXMgc3VwZXIgc3BlZWQg
+aW5mb3JtYXRpb24pIGFuZCBqdXN0DQo+ID4+ID4gc2VuZCBvdXQgOTAwbUEgZGlyZWN0bHk/DQo+
+ID4+DQo+ID4+IEZyb20gTmVpbCdzIHN1Z2dlc3Rpb24sIHdlIG9ubHkgaGF2ZSBvbmUgcGxhY2Ug
+dG8gc2VuZCBvdXQgY3VycmVudA0KPiA+PiBpbmZvcm1hdGlvbiBmcm9tIHVzYiBwaHksIHNvIEkg
+aGF2ZSB0aGlzIGNvbmNlcm4gYW5kIGRvdWJ0IGlmIHdlDQo+ID4+IHN0aWxsIG5lZWQgdGhlIFVT
+QiBjaGFyZ2VyIGZyYW1ld29yay4NCj4gPg0KPiA+IFNvIGlmIHB1dCBpdCBpbiBwaHkvdXNiX3Bo
+eSwgdGhpcyBpcyBhIHByb2JsZW0sIHRoYXQgb25seSBvbmUgcGxhY2UNCj4gPiBzaG91bGQgaGF2
+ZSB0aGUgaW5mb3Igb2YgYm90aCBzcGVlZCBhbmQgdXNiIHN0YXRlLCBob3cgYWJvdXQgcHV0IGl0
+IGF0DQo+ID4gdXNiX2dhZGdldCwgdGhlbiwgZS5nLiBzZW5kIHRoZSBub3RpZmljYXRpb24gaW4N
+Cj4gdXNiX2dhZGdldF92YnVzX2Nvbm5lY3QoKT8NCj4gDQo+IFRoYXQgaXMgc2FtZSB3aGF0IFVT
+QiBjaGFyZ2VyIGRpZCwgZnJvbSB0aGlzIHBvaW50LCB3ZSBuZWVkIFVTQiBjaGFyZ2VyIHRvDQo+
+IHNlbmQgb3V0IHZidXMgZHJhdyBpbmZvcm1hdGlvbiBhY2NvcmRpbmcgdG8gc3BlZWQgYW5kIHVz
+YiBzdGF0ZS4gQnV0IEkNCj4gc2hvdWxkIGxpc3RlbiB0byBvdGhlciBndXlzIHN1Z2dlc3Rpb24u
+IFBldGVyIGFuZCBGZWxpcGUsIHdoYXQgZG8geW91IHRoaW5rPw0KDQpTbyBub3cgdGhlIG9ubHkg
+dG8gZG8gd29yayBpcyB0byBmaW5kIGEgY29tbW9uIHBsYWNlIHRvIHNlbmQgdGhlIG5vdGlmaWNh
+dGlvbiBvdXQNCihiYXNlZCBvbiBnYWRnZXQgc3BlZWQgYW5kIHNhdGUpLg0KDQpMaSBKdW4NCg0K
+PiANCj4gLS0NCj4gQmFvbGluLndhbmcNCj4gQmVzdCBSZWdhcmRzDQo=
