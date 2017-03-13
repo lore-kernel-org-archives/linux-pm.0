@@ -1,74 +1,50 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 00/14] cpufreq: intel_pstate: Fixes, cleanups and optimizations
-Date: Mon, 13 Mar 2017 12:16:00 +0100
-Message-ID: <CAJZ5v0jFgdLkS+HOQ_8+bcBytAwpMFOu7bpkX+mF_bNc6YPe4w@mail.gmail.com>
-References: <001301d29bc3$29c351c0$7d49f540$@net>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V3 0/5] thermal: minor cleanup/fixes
+Date: Mon, 13 Mar 2017 19:37:39 +0800
+Message-ID: <1489405059.5841.23.camel@intel.com>
+References: <cover.1489399567.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f173.google.com ([74.125.82.173]:35173 "EHLO
-        mail-ot0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751846AbdCMLQC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 07:16:02 -0400
-In-Reply-To: <001301d29bc3$29c351c0$7d49f540$@net>
+Received: from mga01.intel.com ([192.55.52.88]:61523 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750865AbdCMLhb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Mar 2017 07:37:31 -0400
+In-Reply-To: <cover.1489399567.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
+Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dan.carpenter@oracle.com
 
-On Mon, Mar 13, 2017 at 7:29 AM, Doug Smythies <dsmythies@telus.net> wrote:
-> On 2017.03.12 10:12 Rafael J. Wysocki wrote:
->
->> This patch series fixes a couple of bugs in intel_pstate, cleans up the code in
->> it somewhat and makes some changes targeted at overhead reductions.
->>
->
-> If clean up and overhead reductions are being considered, is there any interest
-> in changing the PID controller to a P controller and eliminating the integral
-> and derivative code entirely?
->
-> Why? The application is not really best suited to a PID
-> (Proportional Integral Derivative) controller.
+On Mon, 2017-03-13 at 15:37 +0530, Viresh Kumar wrote:
+> Hi,
+> 
+> This series contains minor fixes/cleanups for thermal cooling
+> drivers.
+> 
+> V2->V3:
+> - Added Acks from Rui
+> - Resending as it was getting ignored until now :(
 
-We already have the get_target_pstate_use_cpu_load() P-state selection
-routine which is not based on the PID controller and is used for
-multiple CPU models already (and for systems with ACPI system profile
-set to "mobile", which covers a lot of laptops AFAICS).  Its coverage
-may be extended in the future.
+I just applied V2 this morning, and has not pushed to kernel.org yet.
+The patch set should be queued for next -rc.
 
-> Integral terms are normally used to null out accumulated errors. For example
-> position errors as a function of integrated velocity, where the overall
-> position is supposed to be time * nominal velocity, but the actual velocity
-> at any sample point is not perfect.
->
-> In signal processing, derivatives are difficult at the best of times, let alone
-> with the drastic sample time variations (anywhere from 10 milliseconds to 5 seconds)
-> experienced here. Myself, I can not think of a need for a derivative term anyhow.
->
-> Readers might note the old non-zero integral gain for the old methods used
-> with Atom processors (being eliminated in this patch set, see patch 2 of 14).
-> However that was due to the low proportional gain used and was needed to get
-> target pstates to tick up or down as it settled to some steady state value,
-> as otherwise and with a setpoint of 97 (which is what was being used at the
-> time), it would not. I'm saying the integral term was being used in way that
-> was not intended to overcome another issue. In that scenario, and at the very
-> least, the error term should have been cleared upon integration to the point
-> where the pstate ticked up or down as a result.
->
-> To be clear, I'm not talking about changing the proportional code at all,
-> but only about eliminating the integral and derivative code that has never
-> been used.
->
-> If there is interest, I'll prepare and submit a patch.
-
-While it has not been used by default, there is the debugfs interface
-for tuning the PID that allows this code to be put into use, in
-theory.  It is documented even. :-)
-
-If anyone actively uses it, they won't be happy when it's gone.
-
-Please note that the patches in this series specifically don't change
-any user-observable behavior, or at least not intentionally ...
-
-Thanks,
-Rafael
+thanks,
+rui
+> 
+> V1->V2:
+> - s/dev_warn/dev_err (Rafael)
+>   - Two new patches to make similar (^^) change at other places
+> 
+> Viresh Kumar (5):
+>   thermal: devfreq: Simplify expression
+>   thermal: devfreq_cooling: Replace dev_warn with dev_err
+>   thermal: devfreq: Check OPP for errors
+>   thermal: cpu_cooling: Replace dev_warn with dev_err
+>   thermal: cpu_cooling: Check OPP for errors
+> 
+>  drivers/thermal/cpu_cooling.c     | 19 +++++++++++++------
+>  drivers/thermal/devfreq_cooling.c | 14 ++++++++++----
+>  2 files changed, 23 insertions(+), 10 deletions(-)
+> 
