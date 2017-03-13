@@ -1,107 +1,173 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH 00/14] cpufreq: intel_pstate: Fixes, cleanups and optimizations
-Date: Mon, 13 Mar 2017 14:48:56 -0700
-Message-ID: <006601d29c43$9ef628c0$dce27a40$@net>
-References: <001301d29bc3$29c351c0$7d49f540$@net> nNxJcvSS1rrlDnNxKcnZNA
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH][RFC v4] ACPI throttling: Disable the MSR T-state if enabled after resumed
+Date: Mon, 13 Mar 2017 23:41:03 +0100
+Message-ID: <2529341.3B7i2Zl8C6@aspire.rjw.lan>
+References: <1487320050-22894-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta20.telus.net ([209.171.16.93]:60995 "EHLO cmta20.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752024AbdCMVtD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Mar 2017 17:49:03 -0400
-In-Reply-To: nNxJcvSS1rrlDnNxKcnZNA
-Content-language: en-ca
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58520 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752834AbdCMWq3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 18:46:29 -0400
+In-Reply-To: <1487320050-22894-1-git-send-email-yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'LKML' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>, Ingo Molnar <mingo@kernel.org>, linux-pm@vger.kernel.org
 
-Hi Rafael,
+On Friday, February 17, 2017 04:27:30 PM Chen Yu wrote:
+> Previously a bug was reported that on certain Broadwell
+> platform, after resumed from S3, the CPU is running at
+> an anomalously low speed, due to the BIOS has enabled the
+> MSR throttling across S3. The solution to this was to introduce
+> a quirk framework to save/restore tstate MSR register around
+> suspend/resume, in Commit 7a9c2dd08ead ("x86/pm:
+> Introduce quirk framework to save/restore extra MSR
+> registers around suspend/resume").
+> 
+> However there are still three problems left:
+> 1. More and more reports show that other platforms also
+>    encountered the same issue, so the quirk list might
+>    be endless.
+> 2. Each CPUs should take the save/restore operation into
+>    consideration, rather than the boot CPU alone.
+> 3. Normally ACPI T-state re-evaluation is done on resume,
+>    however there is no _TSS on the bogus platform, thus
+>    above re-evaluation code does not run on that machine.
+> 
+> Solution:
+> This patch is based on the fact that, we generally should not
+> expect the system to come back from resume with throttling
+> enabled, but leverage the OS components to deal with it,
+> such as thermal event. So we simply clear the MSR T-state
+> and print the warning if it is found to be enabled after
+> resumed back. Besides, we can remove the quirk in previous patch
+> later.
+> 
+> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=90041
+> Reported-and-tested-by: Kadir <kadir@colakoglu.nl>
+> Suggested-by: Len Brown <lenb@kernel.org>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Ingo Molnar <mingo@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/acpi/processor_throttling.c | 58 +++++++++++++++++++++++++++++++++++++
+>  1 file changed, 58 insertions(+)
+> 
+> diff --git a/drivers/acpi/processor_throttling.c b/drivers/acpi/processor_throttling.c
+> index a12f96c..e121449 100644
+> --- a/drivers/acpi/processor_throttling.c
+> +++ b/drivers/acpi/processor_throttling.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/cpufreq.h>
+>  #include <linux/acpi.h>
+> +#include <linux/syscore_ops.h>
+>  #include <acpi/processor.h>
+>  #include <asm/io.h>
+>  #include <linux/uaccess.h>
+> @@ -64,6 +65,7 @@ struct acpi_processor_throttling_arg {
+>  static int acpi_processor_get_throttling(struct acpi_processor *pr);
+>  int acpi_processor_set_throttling(struct acpi_processor *pr,
+>  						int state, bool force);
+> +static void throttling_msr_reevaluate(int cpu);
+>  
+>  static int acpi_processor_update_tsd_coord(void)
+>  {
+> @@ -386,6 +388,15 @@ void acpi_processor_reevaluate_tstate(struct acpi_processor *pr,
+>  		pr->flags.throttling = 0;
+>  		return;
+>  	}
+> +	/*
+> +	 * It was found after resumed from suspend to ram, some BIOSes would
+> +	 * adjust the MSR tstate, however on these platforms no _PSS is provided
+> +	 * thus we never have a chance to adjust the MSR T-state anymore.
+> +	 * Thus force clearing it if MSR T-state is enabled, because generally
+> +	 * we never expect to come back from resume with throttling enabled.
+> +	 * Later let other components to adjust T-state if necessary.
+> +	 */
+> +	throttling_msr_reevaluate(pr->id);
+>  	/* the following is to recheck whether the T-state is valid for
+>  	 * the online CPU
+>  	 */
+> @@ -758,6 +769,24 @@ static int acpi_throttling_wrmsr(u64 value)
+>  	}
+>  	return ret;
+>  }
+> +
+> +static long msr_reevaluate_fn(void *data)
+> +{
+> +	u64 msr = 0;
+> +
+> +	acpi_throttling_rdmsr(&msr);
+> +	if (msr) {
+> +		printk_once(KERN_ERR "PM: The BIOS might have modified the MSR T-state, clear it for now.\n");
+> +		acpi_throttling_wrmsr(0);
+> +	}
+> +	return 0;
+> +}
+> +
+> +static void throttling_msr_reevaluate(int cpu)
+> +{
+> +	work_on_cpu(cpu, msr_reevaluate_fn, NULL);
+> +}
+> +
+>  #else
+>  static int acpi_throttling_rdmsr(u64 *value)
+>  {
+> @@ -772,8 +801,37 @@ static int acpi_throttling_wrmsr(u64 value)
+>  		"HARDWARE addr space,NOT supported yet\n");
+>  	return -1;
+>  }
+> +
+> +static long msr_reevaluate_fn(void *data)
+> +{
+> +	return 0;
+> +}
+> +
+> +static void throttling_msr_reevaluate(int cpu)
+> +{
+> +}
+>  #endif
+>  
+> +void acpi_throttling_resume(void)
+> +{
+> +	msr_reevaluate_fn(NULL);
+> +}
+> +
+> +static struct syscore_ops acpi_throttling_syscore_ops = {
+> +	.resume		= acpi_throttling_resume,
+> +};
 
-Thanks for your quick reply.
+This should go under the #ifdef too.
 
-On 2017.03.13 04:16 Rafael J. Wysocki wrote:
-> On Mon, Mar 13, 2017 at 7:29 AM, Doug Smythies <dsmythies@telus.net> wrote:
->> On 2017.03.12 10:12 Rafael J. Wysocki wrote:
->>
->>> This patch series fixes a couple of bugs in intel_pstate, cleans up the code in
->>> it somewhat and makes some changes targeted at overhead reductions.
->>>
->>
->> If clean up and overhead reductions are being considered, is there any interest
->> in changing the PID controller to a P controller and eliminating the integral
->> and derivative code entirely?
->>
->> Why? The application is not really best suited to a PID
->> (Proportional Integral Derivative) controller.
->
-> We already have the get_target_pstate_use_cpu_load() P-state selection
-> routine which is not based on the PID controller and is used for
-> multiple CPU models already (and for systems with ACPI system profile
-> set to "mobile", which covers a lot of laptops AFAICS).
+> +
+> +static int acpi_throttling_init_ops(void)
+> +{
+> +	/*
+> +	 * Reevaluate on boot CPU. Since it is not always CPU0,
+> +	 * we can not invoke throttling_msr_reevaluate(0) directly.
+> +	 */
+> +	register_syscore_ops(&acpi_throttling_syscore_ops);
+> +	return 0;
+> +}
+> +device_initcall(acpi_throttling_init_ops);
 
-While that is a proportional control type algorithm, I am not suggesting
-(at least not this time) changing to it. I am only suggesting to eliminate
-the integral and derivative terms for the existing PID controller, but
-keeping the existing proportional controller untouched for the
-get_target_pstate_use_performance() code path.
+Isn't there a good place to call register_syscore_ops() for this aleady?
 
->  Its coverage may be extended in the future.
+I'd rather not add a new device_initcall() for that.
 
-And I will be totally onboard with that, and will help test and such,
-when the time comes.
+> +
+>  static int acpi_read_throttling_status(struct acpi_processor *pr,
+>  					u64 *value)
+>  {
+> 
 
->> Integral terms are normally used to null out accumulated errors. For example
->> position errors as a function of integrated velocity, where the overall
->> position is supposed to be time * nominal velocity, but the actual velocity
->> at any sample point is not perfect.
->>
->> In signal processing, derivatives are difficult at the best of times, let alone
->> with the drastic sample time variations (anywhere from 10 milliseconds to 5 seconds)
->> experienced here. Myself, I can not think of a need for a derivative term anyhow.
->>
->> Readers might note the old non-zero integral gain for the old methods used
->> with Atom processors (being eliminated in this patch set, see patch 2 of 14).
->> However that was due to the low proportional gain used and was needed to get
->> target pstates to tick up or down as it settled to some steady state value,
->> as otherwise and with a setpoint of 97 (which is what was being used at the
->> time), it would not. I'm saying the integral term was being used in way that
->> was not intended to overcome another issue. In that scenario, and at the very
->> least, the error term should have been cleared upon integration to the point
->> where the pstate ticked up or down as a result.
->>
->> To be clear, I'm not talking about changing the proportional code at all,
->> but only about eliminating the integral and derivative code that has never
->> been used.
->>
->> If there is interest, I'll prepare and submit a patch.
->
-> While it has not been used by default, there is the debugfs interface
-> for tuning the PID that allows this code to be put into use, in
-> theory.  It is documented even. :-)
-
-Yes, I understand that.
->
-> If anyone actively uses it, they won't be happy when it's gone.
->
-
-But is that a reason not to make a change that makes sense? (Well
-it makes sense at least to me.)
-
-I suppose it is possible that someone might be using less p_gain_pct
-and compensating with i_gain_pct instead of adjusting setpoint, just
-like Atom used to do. I'm saying it is not correct to do it that way,
-using an integral term.
-
-> Please note that the patches in this series specifically don't change
-> any user-observable behavior, or at least not intentionally ...
-
-I'm not proposing anything that would result in any user-observable
-behaviour change either, at least not with the default settings.
-However, it is true that i_gain_pct and d_gain_pct would be gone, because
-that is the whole point of it.
-
-... Doug
+Thanks,
+Rafael
