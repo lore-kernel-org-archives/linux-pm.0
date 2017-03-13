@@ -1,50 +1,139 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V3 0/5] thermal: minor cleanup/fixes
-Date: Mon, 13 Mar 2017 19:37:39 +0800
-Message-ID: <1489405059.5841.23.camel@intel.com>
-References: <cover.1489399567.git.viresh.kumar@linaro.org>
+From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Mon, 13 Mar 2017 12:45:24 +0100
+Message-ID: <CAPDyKFp20tDickB9mF1ZSRUvYBEsfATysENeMzGV9O8KXH2wig@mail.gmail.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com> <CAMuHMdUAN+PHr_GSvyMzA8N6LgzPEXhQyG_rSwFUOvc9_v7JiA@mail.gmail.com>
+ <f4b3a93e-e29f-6fc6-6e7f-8c51081cbe15@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:61523 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750865AbdCMLhb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 13 Mar 2017 07:37:31 -0400
-In-Reply-To: <cover.1489399567.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <f4b3a93e-e29f-6fc6-6e7f-8c51081cbe15-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
-Cc: linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dan.carpenter@oracle.com
 
-On Mon, 2017-03-13 at 15:37 +0530, Viresh Kumar wrote:
-> Hi,
-> 
-> This series contains minor fixes/cleanups for thermal cooling
-> drivers.
-> 
-> V2->V3:
-> - Added Acks from Rui
-> - Resending as it was getting ignored until now :(
++Bj=C3=B6rn
 
-I just applied V2 this morning, and has not pushed to kernel.org yet.
-The patch set should be queued for next -rc.
+On 13 March 2017 at 10:37, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+> Hi Rafael, Kevin, Ulf,
+>
+> Looks like there is still some interest/needs in/for this. Any thoughts
+> on how we can move this forward?
 
-thanks,
-rui
-> 
-> V1->V2:
-> - s/dev_warn/dev_err (Rafael)
->   - Two new patches to make similar (^^) change at other places
-> 
-> Viresh Kumar (5):
->   thermal: devfreq: Simplify expression
->   thermal: devfreq_cooling: Replace dev_warn with dev_err
->   thermal: devfreq: Check OPP for errors
->   thermal: cpu_cooling: Replace dev_warn with dev_err
->   thermal: cpu_cooling: Check OPP for errors
-> 
->  drivers/thermal/cpu_cooling.c     | 19 +++++++++++++------
->  drivers/thermal/devfreq_cooling.c | 14 ++++++++++----
->  2 files changed, 23 insertions(+), 10 deletions(-)
-> 
+At the Linaro Connect last week, I was talking to Bj=C3=B6rn, Rajendra and
+Stephen more about these related issues.
+
+It definitely seems like we need to progress with this somehow,
+meaning we need a solution for being able to associate a device with
+more than one PM domain. In that context, I don't think genpd based on
+its current design, is a good fit to solve the problem.
+
+Instead I think we need something entirely new (perhaps some code can
+be borrowed from genpd), which is more similar to the clock/regulator
+framework. In other words, what you also were suggesting in a earlier
+reply.
+In this way, the driver/subsystem gains full flexibility of managing
+its device's PM domains, which seems like the best future-proof
+solution.
+
+Kind regards
+Uffe
+
+>
+> Cheers
+> Jon
+>
+> On 28/02/17 15:29, Geert Uytterhoeven wrote:
+>> Hi Jon,
+>>
+>> On Tue, Feb 28, 2017 at 4:18 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote=
+:
+>>> On 20/09/16 11:28, Jon Hunter wrote:
+>>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>>> controllers) is partitioned across 3 PM domains which are:
+>>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>>> - XUSBB: Device controller
+>>>> - XUSBC: Host controller
+>>>>
+>>>> These power domains are not nested and can be powered-up and down
+>>>> independently of one another. In practice different scenarios require
+>>>> different combinations of the power domains, for example:
+>>>> - Superspeed host: XUSBA and XUSBC
+>>>> - Superspeed device: XUSBA and XUSBB
+>>>>
+>>>> Although it could be possible to logically nest both the XUSBB and XUS=
+BC
+>>>> domains under the XUSBA, superspeed may not always be used/required an=
+d
+>>>> so this would keep it on unnecessarily.
+>>>>
+>>>> Given that Tegra uses device-tree for describing the hardware, it woul=
+d
+>>>> be ideal that the device-tree 'power-domains' property for generic PM
+>>>> domains could be extended to allow more than one PM domain to be
+>>>> specified. For example, define the following the Tegra210 xHCI device =
+...
+>>>>
+>>>>       usb@70090000 {
+>>>>               compatible =3D "nvidia,tegra210-xusb";
+>>>>               ...
+>>>>               power-domains =3D <&pd_xusbhost>, <&pd_xusbss>;
+>>>>       };
+>>>>
+>>>> This RFC extends the generic PM domain framework to allow a device to
+>>>> define more than one PM domain in the device-tree 'power-domains'
+>>>> property.
+>>>
+>>> I wanted to kick this thread again now in the new year and see if there
+>>> is still some interest in pursuing this?
+>>>
+>>> There is still very much a need from a Tegra perspective. I have put al=
+l
+>>> those who responded on TO.
+>>>
+>>> I know that a lot of time has passed since we discuss this and so if yo=
+u
+>>> are scratching your head wondering what I am harping on about,
+>>> essentially with this RFC I was looking for a way to support devices
+>>> that require multiple power domains where the domains do not have a
+>>> parent-child relationship and so not are nested in anyway.
+>>>
+>>> If you need me to elaborate on the need for this, I am happy to do this=
+.
+>>> My take away from when we discussed this last year, was that there was =
+a
+>>> need for this.
+>>
+>> It definitely makes sense to me, as the "power-domains" DT binding is no=
+t
+>> limited to plain "power areas", but may refer to clock domains, too
+>> (cfr. the Linux "PM Domain" notion).
+>>
+>> For my (Renesas) use case, we have devices that are part of both a power
+>> area and a clock domain. Currently this is handled by the power area dri=
+ver
+>> calling into the clock driver.
+>>
+>> Thanks!
+>>
+>> Gr{oetje,eeting}s,
+>>
+>>                         Geert
+>>
+>> --
+>> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m=
+68k.org
+>>
+>> In personal conversations with technical people, I call myself a hacker.=
+ But
+>> when I'm talking to journalists I just say "programmer" or something lik=
+e that.
+>>                                 -- Linus Torvalds
+>>
+>
+> --
+> nvpublic
