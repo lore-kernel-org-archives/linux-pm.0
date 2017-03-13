@@ -1,231 +1,102 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH v19 0/4] Introduce usb charger framework to deal with the
- usb gadget power negotation
-Date: Mon, 13 Mar 2017 16:43:35 +0800
-Message-ID: <CAMz4kuL=h-2BM093t3BQi9f+ygR2GJ=xBVghJe69HX47re_RTQ@mail.gmail.com>
-References: <cover.1487578977.git.baolin.wang@linaro.org> <87zih3m73h.fsf@notabene.neil.brown.name>
- <CAMz4ku+98HAgVnMoCg0YaPpcY1NvdKdbK6AuDyzgNOrcbpaz9A@mail.gmail.com>
- <AM5PR04MB29614C707DE344E5A05FAB3889210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuJ31wVhbYOV+LB9tu=Wb7x9gRifcUnQPMiQSqRUjER_kQ@mail.gmail.com>
- <AM5PR04MB296177A37D96564D510FA90389210@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+wkZ7webuCK+V9DPuDzdT_Tyy6Dso8==bQPyN9m06vGw@mail.gmail.com>
- <AM5PR04MB29610364B8FA56AE7AD8A68989200@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4kuLNa=sdYQrzXZspPd9ug-Opn2jfUCGHtq2qNT4Omax4Mw@mail.gmail.com>
- <AM5PR04MB29613EEC7C49426020A538B089200@AM5PR04MB2961.eurprd04.prod.outlook.com>
- <CAMz4ku+jy-Z0L4avYsDGstNnV+f=XhjmP8WS9SLOkB1eGWjjXA@mail.gmail.com> <AM5PR04MB29615806A8D175E3BF4BD8B089250@AM5PR04MB2961.eurprd04.prod.outlook.com>
+From: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: Re: [RFC PATCH 0/3] PM / Domains: Add support for devices that
+ require multiple domains
+Date: Mon, 13 Mar 2017 09:37:06 +0000
+Message-ID: <f4b3a93e-e29f-6fc6-6e7f-8c51081cbe15@nvidia.com>
+References: <1474367287-10402-1-git-send-email-jonathanh@nvidia.com>
+ <52493231-71f4-1b62-b325-8532e63e4229@nvidia.com>
+ <CAMuHMdUAN+PHr_GSvyMzA8N6LgzPEXhQyG_rSwFUOvc9_v7JiA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f43.google.com ([209.85.218.43]:35523 "EHLO
-        mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751827AbdCMInr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 04:43:47 -0400
-Received: by mail-oi0-f43.google.com with SMTP id 62so74696021oih.2
-        for <linux-pm@vger.kernel.org>; Mon, 13 Mar 2017 01:43:46 -0700 (PDT)
-In-Reply-To: <AM5PR04MB29615806A8D175E3BF4BD8B089250@AM5PR04MB2961.eurprd04.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAMuHMdUAN+PHr_GSvyMzA8N6LgzPEXhQyG_rSwFUOvc9_v7JiA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Jun Li <jun.li@nxp.com>
-Cc: NeilBrown <neilb@suse.com>, Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, David Woodhouse <dwmw2@infradead.org>, "robh@kernel.org" <robh@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>, Ruslan Bilovol <ruslan.bilovol@gmail.com>, Peter Chen <peter.chen@freescale.com>, Alan Stern <stern@rowland.harvard.edu>, "grygorii.strashko@ti.com" <grygorii.strashko@ti.com>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Lee Jones <lee.jones@linaro.org>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, Charles Keepax <ckeepax@opensource.wolfsonmicro.com>, "patches@opensource.wolfsonmicro.com" <patches@opensource.wolfson>
 
-On 13 March 2017 at 09:09, Jun Li <jun.li@nxp.com> wrote:
-> Hi,
->
->> -----Original Message-----
->> From: Baolin Wang [mailto:baolin.wang@linaro.org]
->> Sent: Friday, March 10, 2017 6:52 PM
->> To: Jun Li <jun.li@nxp.com>
->> Cc: NeilBrown <neilb@suse.com>; Felipe Balbi <balbi@kernel.org>; Greg KH
->> <gregkh@linuxfoundation.org>; Sebastian Reichel <sre@kernel.org>; Dmitry
->> Eremin-Solenikov <dbaryshkov@gmail.com>; David Woodhouse
->> <dwmw2@infradead.org>; robh@kernel.org; Marek Szyprowski
->> <m.szyprowski@samsung.com>; Ruslan Bilovol <ruslan.bilovol@gmail.com>;
->> Peter Chen <peter.chen@freescale.com>; Alan Stern
->> <stern@rowland.harvard.edu>; grygorii.strashko@ti.com; Yoshihiro Shimoda
->> <yoshihiro.shimoda.uh@renesas.com>; Lee Jones <lee.jones@linaro.org>;
->> Mark Brown <broonie@kernel.org>; John Stultz <john.stultz@linaro.org>;
->> Charles Keepax <ckeepax@opensource.wolfsonmicro.com>;
->> patches@opensource.wolfsonmicro.com; Linux PM list <linux-
->> pm@vger.kernel.org>; USB <linux-usb@vger.kernel.org>; device-
->> mainlining@lists.linuxfoundation.org; LKML <linux-kernel@vger.kernel.org=
->
->> Subject: Re: [PATCH v19 0/4] Introduce usb charger framework to deal wit=
-h
->> the usb gadget power negotation
->>
->> On 10 March 2017 at 16:27, Jun Li <jun.li@nxp.com> wrote:
->> > Hi
->> >
->> >> -----Original Message-----
->> >> From: Baolin Wang [mailto:baolin.wang@linaro.org]
->> >> Sent: Friday, March 10, 2017 3:15 PM
->> >> To: Jun Li <jun.li@nxp.com>
->> >> Cc: NeilBrown <neilb@suse.com>; Felipe Balbi <balbi@kernel.org>; Greg
->> >> KH <gregkh@linuxfoundation.org>; Sebastian Reichel <sre@kernel.org>;
->> >> Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>; David Woodhouse
->> >> <dwmw2@infradead.org>; robh@kernel.org; Marek Szyprowski
->> >> <m.szyprowski@samsung.com>; Ruslan Bilovol
->> >> <ruslan.bilovol@gmail.com>; Peter Chen <peter.chen@freescale.com>;
->> >> Alan Stern <stern@rowland.harvard.edu>; grygorii.strashko@ti.com;
->> >> Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>; Lee Jones
->> >> <lee.jones@linaro.org>; Mark Brown <broonie@kernel.org>; John Stultz
->> >> <john.stultz@linaro.org>; Charles Keepax
->> >> <ckeepax@opensource.wolfsonmicro.com>;
->> >> patches@opensource.wolfsonmicro.com; Linux PM list <linux-
->> >> pm@vger.kernel.org>; USB <linux-usb@vger.kernel.org>; device-
->> >> mainlining@lists.linuxfoundation.org; LKML
->> >> <linux-kernel@vger.kernel.org>
->> >> Subject: Re: [PATCH v19 0/4] Introduce usb charger framework to deal
->> >> with the usb gadget power negotation
->> >>
->> >> On 10 March 2017 at 14:30, Jun Li <jun.li@nxp.com> wrote:
->> >> >> >> >
->> >> >> >> > Will generic phy need add extcon as well?
->> >> >> >>
->> >> >> >> Yes, will add a 'struct extcon_dev*' in 'struct usb_phy', which
->> >> >> >> will be common code.
->> >> >> >>
->> >> >> >
->> >> >> > I mean the common code need add 'struct extcon_dev' into both
->> >> >> > 'struct phy' and 'struct usb_phy', right? as some/new usb phy
->> >> >> > use that generic phy
->> >> >> driver.
->> >> >>
->> >> >> Ah, you remind me. Seems we need also add one 'struct extcon_dev'
->> >> >> into 'struct phy'.
->> >> >>
->> >> >> >> >
->> >> >> >> >> >
->> >> >> >> >> >> Secondly, I also agreed with Peter's comments: Not only
->> >> >> >> >> >> USB PHY to register an extcon, but also for the drivers
->> >> >> >> >> >> which can detect USB charger type, it may be USB
->> >> >> >> >> >> controller driver, USB type-c driver, pmic driver, and
->> >> >> >> >> >> these drivers may not have an extcon device since the
->> >> >> >> >> >> internal part can finish
->> >> the vbus detect.
->> >> >> >> >> >
->> >> >> >> >> > Whichever part can detect vbus, the driver for that part
->> >> >> >> >> > must be able to find the extcon and trigger a notification=
-.
->> >> >> >> >> > Maybe one part can detect VBUS, another can measure the
->> >> >> >> >> > resistance on ID and a third can work through the state
->> >> >> >> >> > machine to determine if D+ and D- are shorted together.
->> >> >> >> >> > Somehow these three need to work together to determine
->> >> >> >> >> > what is
->> >> >> >> >> plugged
->> >> >> >> >> > in to the external connection port.  Somewhere there much
->> >> >> >> >> > an
->> >> >> 'extcon'
->> >> >> >> >> > device which represents that port and which the three
->> >> >> >> >> > devices can find and can interact with.
->> >> >> >> >> > I think it makes sense for the usb_phy to be the connectio=
-n
->> point.
->> >> >> >> >> > Each of the devices can get to the phy, and the phy can
->> >> >> >> >> > get to the
->> >> >> >> extcon.
->> >> >> >> >> > It doesn't matter very much if the usb phy driver creates
->> >> >> >> >> > the extcon, or if something else creates the extcon and
->> >> >> >> >> > the phy driver performs a lookup to find it (e.g. based on
->> devicetree info).
->> >> >> >> >> >
->> >> >> >> >> > The point is that there is obviously an external physical
->> >> >> >> >> > connection, and so there should be an 'extcon' device that
->> >> >> represents it.
->> >> >> >> >>
->> >> >> >> >> Peter & Jun, is it OK for you every phy has one extcon
->> >> >> >> >> device to receive VBUS notification, especially for
->> >> >> >> >> detecting the charger type by
->> >> >> >> software?
->> >> >> >> >>
->> >> >> >> >
->> >> >> >> > My understanding is phy/usb_phy as the connection point, will
->> >> >> >> > send the notification to PMIC driver which actually control
->> >> >> >> > the charge current, also this will be done in your common
->> >> >> >> > framework,
->> >> right?
->> >> >> >>
->> >> >> >> Not in USB charger framework. If we are all agree every usb_phy
->> >> >> >> can register one extcon device, can get correct charger type
->> >> >> >> and send out correct vbus_draw information, then we don't need
->> >> >> >> USB charger framework as Neil suggested. So this will be okay
->> >> >> >> for your case (especially for detecting the charger type by
->> software) ?
->> >> >> >
->> >> >> > In my case, charger detection is done by controller driver and I
->> >> >> > need do charger type detection internally, and only pass the
->> >> >> > current draw info via phy which will send out, this seems ok for
->> >> >> > me, but I think it will be good if you or someone can show us an
->> >> >> > example user based on the
->> >> >> design Neil suggested.
->> >> >> > Will you work out that common code if this USB charger framework
->> >> >> > is not
->> >> >> needed?
->> >> >>
->> >> >> I will add  a 'struct extcon_dev*' in 'struct usb_phy' and struct
->> >> >> phy=E2=80=9C. Others are already ready if everyone has no complain=
- about
->> >> >> current design, except
->> >> >
->> >> > Only adding extcon_dev into usb_phy/phy  and all others are ready?
->> >> > My understanding you will also do:
->> >> > - We need find a central place to send the notification(phy common
->> part).
->> >>
->> >> That will include these implementation when adding extcon_dev.
->> >>
->> >
->> > OK, thanks.
->> >
->> >> > - If the extcon_dev is directly added in usb_phy/phy, PMIC needs
->> >> > some
->> >> API to findup it.
->> >>
->> >> PMIC can find extcon device by phandle.
->> >
->> > extcon_dev(not a reference pointer) is directly added in usb_phy/phy,
->> > not via devicetree, how PMIC find it by phandle?
->>
->> From my understanding, here we should add one pointer (extcon_dev *),
->> since usb phy is not one external connect device.
->
-> Agreed.
->
->>
->> >
->> >>
->> >> >
->> >> >> my one concern. (I am afraid if it is enough to send out vbus draw
->> >> >> information from USB phy driver, for example you will miss super
->> >> >> speed (900mA), which need get the speed information from gadget
->> >> >> driver.)
->> >> >>
->> >> >
->> >> > Can we handle this in USB(so has super speed information) and just
->> >> > send out 900mA directly?
->> >>
->> >> From Neil's suggestion, we only have one place to send out current
->> >> information from usb phy, so I have this concern and doubt if we
->> >> still need the USB charger framework.
->> >
->> > So if put it in phy/usb_phy, this is a problem, that only one place
->> > should have the infor of both speed and usb state, how about put it at
->> > usb_gadget, then, e.g. send the notification in
->> usb_gadget_vbus_connect()?
->>
->> That is same what USB charger did, from this point, we need USB charger =
-to
->> send out vbus draw information according to speed and usb state. But I
->> should listen to other guys suggestion. Peter and Felipe, what do you th=
-ink?
->
-> So now the only to do work is to find a common place to send the notifica=
-tion out
-> (based on gadget speed and sate).
+Hi Rafael, Kevin, Ulf,
 
-Yes.
+Looks like there is still some interest/needs in/for this. Any thoughts
+on how we can move this forward?
 
---=20
-Baolin.wang
-Best Regards
+Cheers
+Jon
+
+On 28/02/17 15:29, Geert Uytterhoeven wrote:
+> Hi Jon,
+> 
+> On Tue, Feb 28, 2017 at 4:18 PM, Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org> wrote:
+>> On 20/09/16 11:28, Jon Hunter wrote:
+>>> The Tegra124/210 XUSB subsystem (that consists of both host and device
+>>> controllers) is partitioned across 3 PM domains which are:
+>>> - XUSBA: Superspeed logic (for USB 3.0)
+>>> - XUSBB: Device controller
+>>> - XUSBC: Host controller
+>>>
+>>> These power domains are not nested and can be powered-up and down
+>>> independently of one another. In practice different scenarios require
+>>> different combinations of the power domains, for example:
+>>> - Superspeed host: XUSBA and XUSBC
+>>> - Superspeed device: XUSBA and XUSBB
+>>>
+>>> Although it could be possible to logically nest both the XUSBB and XUSBC
+>>> domains under the XUSBA, superspeed may not always be used/required and
+>>> so this would keep it on unnecessarily.
+>>>
+>>> Given that Tegra uses device-tree for describing the hardware, it would
+>>> be ideal that the device-tree 'power-domains' property for generic PM
+>>> domains could be extended to allow more than one PM domain to be
+>>> specified. For example, define the following the Tegra210 xHCI device ...
+>>>
+>>>       usb@70090000 {
+>>>               compatible = "nvidia,tegra210-xusb";
+>>>               ...
+>>>               power-domains = <&pd_xusbhost>, <&pd_xusbss>;
+>>>       };
+>>>
+>>> This RFC extends the generic PM domain framework to allow a device to
+>>> define more than one PM domain in the device-tree 'power-domains'
+>>> property.
+>>
+>> I wanted to kick this thread again now in the new year and see if there
+>> is still some interest in pursuing this?
+>>
+>> There is still very much a need from a Tegra perspective. I have put all
+>> those who responded on TO.
+>>
+>> I know that a lot of time has passed since we discuss this and so if you
+>> are scratching your head wondering what I am harping on about,
+>> essentially with this RFC I was looking for a way to support devices
+>> that require multiple power domains where the domains do not have a
+>> parent-child relationship and so not are nested in anyway.
+>>
+>> If you need me to elaborate on the need for this, I am happy to do this.
+>> My take away from when we discussed this last year, was that there was a
+>> need for this.
+> 
+> It definitely makes sense to me, as the "power-domains" DT binding is not
+> limited to plain "power areas", but may refer to clock domains, too
+> (cfr. the Linux "PM Domain" notion).
+> 
+> For my (Renesas) use case, we have devices that are part of both a power
+> area and a clock domain. Currently this is handled by the power area driver
+> calling into the clock driver.
+> 
+> Thanks!
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
+> 
+
+-- 
+nvpublic
