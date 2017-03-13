@@ -1,55 +1,39 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 0/7] PM / Domains: Implement domain performance states
-Date: Mon, 13 Mar 2017 16:09:33 +0530
-Message-ID: <20170313103933.GA3102@vireshk-i7>
-References: <cover.1487926924.git.viresh.kumar@linaro.org>
- <m237ekrhok.fsf@baylibre.com>
+From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Subject: Re: [RFC v3 1/5] sched/core: add capacity constraints to CPU controller
+Date: Mon, 13 Mar 2017 03:46:13 -0700
+Message-ID: <CAEi0qNkAK_3a_2x9BgvyEC+bFvckGFoQX1fjFba6boC1ws_R5w@mail.gmail.com>
+References: <1488292722-19410-1-git-send-email-patrick.bellasi@arm.com> <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f172.google.com ([209.85.192.172]:34866 "EHLO
-        mail-pf0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752234AbdCMKji (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Mar 2017 06:39:38 -0400
-Received: by mail-pf0-f172.google.com with SMTP id j5so67872788pfb.2
-        for <linux-pm@vger.kernel.org>; Mon, 13 Mar 2017 03:39:38 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <m237ekrhok.fsf@baylibre.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1488292722-19410-2-git-send-email-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Nishanth Menon <nm@ti.com>, linaro-kernel@lists.linaro.org, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org, robh+dt@kernel.org, rnayak@codeaurora.org, lina.iyer@linaro.org
 
-On 10-03-17, 12:38, Kevin Hilman wrote:
-> Why limit it to just voltage levels.
-> 
-> As I suggested earlier, I think this should use OPPs.  Remember that a
-> PM domain is not limited to a hardware power domain, but is just a
-> grouping mechanism for devices that share some PM properties.  As
-> mentioned by Geert, this can also be a clock domain, where frequencies
-> would make sense as well.  One can imagine using this type of PM domain
-> to manage an interconnect/bus which has scalable voltage/frequencies as
-> well.
+On Tue, Feb 28, 2017 at 6:38 AM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> The CPU CGroup controller allows to assign a specified (maximum)
+> bandwidth to tasks within a group, however it does not enforce any
+> constraint on how such bandwidth can be consumed.
+> With the integration of schedutil, the scheduler has now the proper
+> information about a task to select  the most suitable frequency to
+> satisfy tasks needs.
+[..]
 
-Okay, I tried to do that change today and am blocked a bit right now.
+> +static u64 cpu_capacity_min_read_u64(struct cgroup_subsys_state *css,
+> +                                    struct cftype *cft)
+> +{
+> +       struct task_group *tg;
+> +       u64 min_capacity;
+> +
+> +       rcu_read_lock();
+> +       tg = css_tg(css);
+> +       min_capacity = tg->cap_clamp[CAP_CLAMP_MIN];
 
-The OPP core and all of its APIs/interfaces have dependency on the
-"struct device" for their working. It gets the of_node from it, stores
-the device pointer to manage cases where multiple devices share OPP
-table, uses it to get clk and regulators.
+Shouldn't the cap_clamp be accessed with READ_ONCE (and WRITE_ONCE in
+the write path) to avoid load-tearing?
 
-But the "genpd" structure doesn't have a 'struct device' associated
-with it. How should I make both of them work together?
-
-I tried to create separate helpers that don't accept 'dev', but that
-is also not good.  Just too much redundant code everywhere.
-
-Would creating a 'dev' structure within 'generic_pm_domain' be
-acceptable? Or should we ask the domain-drivers to call something like
-of_genpd_parse_idle_states(), with a fake 'dev' structure which has
-its of_node initialized? Or maybe move that hack within the OPP-core
-API, which can create a dev structure at runtime for the genpd passed
-to it and get the OPP table out?
-
--- 
-viresh
+Thanks,
+Joel
